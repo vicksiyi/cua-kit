@@ -2148,6 +2148,20 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Exact original facade AST compared over restored dependency providers: full authority chains, failures, page-change invalidation, tab/settings/history projection and class shape. Each restored provider has separate differential tests; production host pending"
+    },
+    "packages/browser/src/service/input/input.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-class-with-explicit-input-dependencies",
+      "symbols": [
+        "cg",
+        "UF",
+        "Zv",
+        "Xy",
+        "Ve"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original cg AST and helpers compared with identical explicit Os/cS/ru fixtures; covers click/drag/scroll, nested load waits, abort/release errors and geometry fallback. Actual keyboard/DOM/shadow helpers pending"
     }
   },
   "embeddedPackages": {

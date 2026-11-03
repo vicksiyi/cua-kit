@@ -324,6 +324,11 @@
       "end": 125424,
       "kind": "FunctionDeclaration"
     },
+    "Ve": {
+      "start": 125424,
+      "end": 125534,
+      "kind": "FunctionDeclaration"
+    },
     "yp": {
       "start": 126661,
       "end": 126760,
@@ -397,6 +402,11 @@
     "F": {
       "start": 367660,
       "end": 367753,
+      "kind": "FunctionDeclaration"
+    },
+    "Xy": {
+      "start": 374087,
+      "end": 374368,
       "kind": "FunctionDeclaration"
     },
     "Z1": {
@@ -1824,6 +1834,11 @@
       "end": 1007035,
       "kind": "FunctionDeclaration"
     },
+    "Zv": {
+      "start": 1167226,
+      "end": 1167315,
+      "kind": "FunctionDeclaration"
+    },
     "lS": {
       "start": 1290218,
       "end": 1290282,
@@ -1863,6 +1878,91 @@
       "start": 1293105,
       "end": 1293563,
       "kind": "ClassExpression"
+    },
+    "cg.constructor": {
+      "start": 1294888,
+      "end": 1295009,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchKeyPress": {
+      "start": 1295052,
+      "end": 1295281,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchMouseMove": {
+      "start": 1295281,
+      "end": 1295465,
+      "kind": "MethodDefinition"
+    },
+    "cg.getBackendNodeViewportPoint": {
+      "start": 1295465,
+      "end": 1295861,
+      "kind": "MethodDefinition"
+    },
+    "cg.clickDomCuaNode": {
+      "start": 1295861,
+      "end": 1296190,
+      "kind": "MethodDefinition"
+    },
+    "cg.scrollDomCuaNode": {
+      "start": 1296190,
+      "end": 1296389,
+      "kind": "MethodDefinition"
+    },
+    "cg.dragPath": {
+      "start": 1296389,
+      "end": 1297232,
+      "kind": "MethodDefinition"
+    },
+    "cg.scrollPoint": {
+      "start": 1297232,
+      "end": 1297735,
+      "kind": "MethodDefinition"
+    },
+    "cg.clickPoint": {
+      "start": 1297735,
+      "end": 1299178,
+      "kind": "MethodDefinition"
+    },
+    "cg.mouseInputPoint": {
+      "start": 1299178,
+      "end": 1299272,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchCdpMouseMove": {
+      "start": 1299272,
+      "end": 1299481,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchMouseDown": {
+      "start": 1299481,
+      "end": 1299850,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchMouseUp": {
+      "start": 1299850,
+      "end": 1299913,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchPressedMouseMove": {
+      "start": 1299913,
+      "end": 1300125,
+      "kind": "MethodDefinition"
+    },
+    "cg.dispatchCdpMouseRelease": {
+      "start": 1300125,
+      "end": 1300366,
+      "kind": "MethodDefinition"
+    },
+    "cg": {
+      "start": 1294882,
+      "end": 1300367,
+      "kind": "ClassExpression"
+    },
+    "UF": {
+      "start": 1300368,
+      "end": 1300477,
+      "kind": "FunctionDeclaration"
     },
     "dg": {
       "start": 1300488,
