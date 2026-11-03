@@ -3521,6 +3521,27 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Exact original data equality across every family/platform/channel/distribution, shared object identity checks, lookup/default/prototype semantics, assembled MarkTab errors and FileChooser upload guidance. Static installed-version data, no runtime browser discovery or extension installation claim."
+    },
+    "packages/browser/src/service/commands/content_export.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-google-workspace-export-command",
+      "symbols": [
+        "Jv",
+        "Qh",
+        "uF",
+        "lne",
+        "cne",
+        "dne",
+        "pne",
+        "mne",
+        "lF",
+        "fne",
+        "hne",
+        "gne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "14 original-vs-readable command traces plus URL/markdown/binary cases. Real headless Chromium page fetch against routed fixture response exports 70000 binary bytes through actual filesystem. Uses reconstructed Fc/Zh-equivalent helpers; no real user document or Google service accessed. Provider/authority adapters remain fixtures."
     }
   },
   "embeddedPackages": {
