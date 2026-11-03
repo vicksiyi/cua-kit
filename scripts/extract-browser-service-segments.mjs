@@ -20,6 +20,8 @@ const wanted = new Set([
   "Bte",
   "Dte",
   "Rte",
+  "xte",
+  "Ete",
   "Cv",
   "eu",
   "Lh",

@@ -679,6 +679,16 @@
       "end": 907659,
       "kind": "FunctionDeclaration"
     },
+    "xte": {
+      "start": 907659,
+      "end": 907728,
+      "kind": "FunctionDeclaration"
+    },
+    "Ete": {
+      "start": 907728,
+      "end": 907819,
+      "kind": "FunctionDeclaration"
+    },
     "HN": {
       "start": 907819,
       "end": 907877,

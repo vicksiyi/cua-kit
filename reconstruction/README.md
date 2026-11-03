@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。139 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。142 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -313,3 +313,11 @@ Reconstructed ten qh methods for raw-event suppression reference counts, persist
 Worker start configuration serializes pending work, ignores prior rejection and rechecks attached state; final release restores OOPIF auto-attach. Bypass configuration tracks state identity so replaced state cannot modify a new lease. Acquisition failures roll back counts using the source's original error precedence.
 
 139 differential tests pass with type checking. Tests compare exact original AST methods for concurrent leases, repeated release, failed provider calls, strict provider results and stale bypass state. The privileged browserAuthNewTargetProtection provider itself is not implemented here. Full manager assembly and real backend verification remain pending.
+
+### CDP frame target resolution and attachment
+
+Reconstructed targetForFrame, targetIdForFrame, targetForFrameOrAttach and attachDebuggerFrameTarget with xte/Ete predicates. Existing sessions are initialized and reused; otherwise target listing prefers an exact frame target ID, then a unique URL match. An unscoped URL match requires DOM.getFrameOwner validation against the selected parent target. Ambiguous matches and cross-tab parents return null.
+
+Attachment preserves provider-created sessions or creates target-prefixed synthetic session IDs, updates frame/target aliases, records cleanup targets and initializes the session. Provider failures are converted to null only where the source does so, with explicit deadline checks preserved.
+
+142 differential tests pass with type checking. Tests compare original AST methods and reconstructed lifecycle indices for exact/URL/ambiguous matches, ownership checks, existing and provider-created sessions, cross-tab rejection, unsupported providers and failures. Complete manager assembly and real provider integration remain pending.
