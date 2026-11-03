@@ -1949,6 +1949,31 @@
       "end": 738915,
       "kind": "FunctionDeclaration"
     },
+    "xf": {
+      "start": 775932,
+      "end": 776013,
+      "kind": "FunctionDeclaration"
+    },
+    "XY": {
+      "start": 776013,
+      "end": 776415,
+      "kind": "FunctionDeclaration"
+    },
+    "YY": {
+      "start": 776415,
+      "end": 776559,
+      "kind": "FunctionDeclaration"
+    },
+    "JY": {
+      "start": 776559,
+      "end": 776802,
+      "kind": "FunctionDeclaration"
+    },
+    "ZY": {
+      "start": 776802,
+      "end": 777837,
+      "kind": "FunctionDeclaration"
+    },
     "HD": {
       "start": 777837,
       "end": 777935,
