@@ -377,6 +377,58 @@
       ],
       "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
       "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
+    },
+    "packages/browser/src/runtime/api_view.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "jm",
+        "pl"
+      ],
+      "scope": "jm constructor closure and per-browser disabled-member helper; p/jh lexical dependencies are explicit internal parameters pending full runtime registry",
+      "fileGrouping": "inferred from flattened bundle; original file paths unavailable",
+      "validation": "original lexical exports / original setupBrowserRuntime with fixture nodeRepl RPC differential tests; not live browser verification"
+    },
+    "packages/browser/src/errors/browser_security_error.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "r",
+        "a",
+        "i",
+        "s",
+        "n",
+        "o",
+        "c"
+      ],
+      "scope": "original security reason/message data and Error subclass",
+      "fileGrouping": "inferred from flattened bundle; original file paths unavailable",
+      "validation": "original lexical exports / original setupBrowserRuntime with fixture nodeRepl RPC differential tests; not live browser verification"
+    },
+    "packages/browser/src/errors/credential_recovery_error.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "d",
+        "l"
+      ],
+      "scope": "original recovery Error subclass and parser",
+      "fileGrouping": "inferred from flattened bundle; original file paths unavailable",
+      "validation": "original lexical exports / original setupBrowserRuntime with fixture nodeRepl RPC differential tests; not live browser verification"
+    },
+    "packages/browser/src/runtime/browser_service_executor.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Im"
+      ],
+      "scope": "Im executeAgentCommand closure and Orbit error-message transformation; complete setupBrowserRuntime entrypoint remains pending",
+      "fileGrouping": "inferred from flattened bundle; original file paths unavailable",
+      "validation": "original lexical exports / original setupBrowserRuntime with fixture nodeRepl RPC differential tests; not live browser verification"
     }
   },
   "embeddedPackages": {

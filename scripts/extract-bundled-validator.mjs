@@ -39,6 +39,15 @@ await writeFile(
   await format(code, { parser: "typescript" }),
 );
 const selected = [
+  "jm",
+  "c",
+  "d",
+  "r",
+  "a",
+  "i",
+  "s",
+  "n",
+  "o",
   "Fl",
   "_",
   "Zs",
@@ -84,6 +93,9 @@ const segments = Object.fromEntries(
   }),
 );
 for (const name of [
+  "pl",
+  "l",
+  "Im",
   "m",
   "ar",
   "cr",
