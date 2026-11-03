@@ -2207,6 +2207,57 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original-AST differential tests for snapshot refs, cache/retry/cleanup, nested target transforms, injected node geometry expression and composed resolver; actual snapshot generation and production backend pending"
+    },
+    "packages/browser/src/service/input/keyboard_data.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-keyboard-mapping",
+      "symbols": [
+        "M5",
+        "N5",
+        "F5",
+        "O5",
+        "B5",
+        "D5",
+        "Jy",
+        "gt"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact original AST tables/functions compared for all key descriptors, alias object identity, platform mapping and all modifier subsets; key-event dispatch/closed-shadow protection pending"
+    },
+    "packages/browser/src/service/input/keyboard_map.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-keyboard-mapping",
+      "symbols": [
+        "L5"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact original AST tables/functions compared for all key descriptors, alias object identity, platform mapping and all modifier subsets; key-event dispatch/closed-shadow protection pending"
+    },
+    "packages/browser/src/service/input/keyboard_keys.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-keyboard-mapping",
+      "symbols": [
+        "di",
+        "$y",
+        "vp",
+        "Ds",
+        "Sp",
+        "bl",
+        "Yy",
+        "P5",
+        "R5",
+        "xp",
+        "I5",
+        "$A",
+        "k5",
+        "Tp",
+        "VA"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact original AST tables/functions compared for all key descriptors, alias object identity, platform mapping and all modifier subsets; key-event dispatch/closed-shadow protection pending"
     }
   },
   "embeddedPackages": {
