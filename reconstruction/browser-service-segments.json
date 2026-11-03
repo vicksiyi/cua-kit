@@ -344,6 +344,201 @@
       "end": 662480,
       "kind": "ObjectExpression"
     },
+    "vX": {
+      "start": 673022,
+      "end": 673233,
+      "kind": "Literal"
+    },
+    "SX": {
+      "start": 673237,
+      "end": 673372,
+      "kind": "Literal"
+    },
+    "xX": {
+      "start": 673376,
+      "end": 673555,
+      "kind": "Literal"
+    },
+    "EX": {
+      "start": 673559,
+      "end": 674038,
+      "kind": "ObjectExpression"
+    },
+    "TX": {
+      "start": 674042,
+      "end": 674044,
+      "kind": "Literal"
+    },
+    "CX": {
+      "start": 674048,
+      "end": 674052,
+      "kind": "Literal"
+    },
+    "Tt": {
+      "start": 674115,
+      "end": 674223,
+      "kind": "ClassExpression"
+    },
+    "A_": {
+      "start": 674224,
+      "end": 674248,
+      "kind": "FunctionDeclaration"
+    },
+    "ac": {
+      "start": 674248,
+      "end": 674313,
+      "kind": "FunctionDeclaration"
+    },
+    "Fi": {
+      "start": 674313,
+      "end": 674422,
+      "kind": "FunctionDeclaration"
+    },
+    "SB": {
+      "start": 674422,
+      "end": 674588,
+      "kind": "FunctionDeclaration"
+    },
+    "xB": {
+      "start": 674588,
+      "end": 675010,
+      "kind": "FunctionDeclaration"
+    },
+    "EB": {
+      "start": 675010,
+      "end": 675587,
+      "kind": "FunctionDeclaration"
+    },
+    "Er": {
+      "start": 675587,
+      "end": 675655,
+      "kind": "FunctionDeclaration"
+    },
+    "P_": {
+      "start": 675655,
+      "end": 675857,
+      "kind": "FunctionDeclaration"
+    },
+    "Mn": {
+      "start": 675857,
+      "end": 675894,
+      "kind": "FunctionDeclaration"
+    },
+    "TB": {
+      "start": 675894,
+      "end": 675984,
+      "kind": "FunctionDeclaration"
+    },
+    "AX": {
+      "start": 675984,
+      "end": 676080,
+      "kind": "FunctionDeclaration"
+    },
+    "C_.constructor": {
+      "start": 676093,
+      "end": 676138,
+      "kind": "MethodDefinition"
+    },
+    "C_.rebind": {
+      "start": 676393,
+      "end": 676500,
+      "kind": "MethodDefinition"
+    },
+    "C_.epoch": {
+      "start": 676500,
+      "end": 676533,
+      "kind": "MethodDefinition"
+    },
+    "C_.observationEpoch": {
+      "start": 676533,
+      "end": 676588,
+      "kind": "MethodDefinition"
+    },
+    "C_.invalidateDocuments": {
+      "start": 676588,
+      "end": 676827,
+      "kind": "MethodDefinition"
+    },
+    "C_.invalidateObservations": {
+      "start": 676827,
+      "end": 677023,
+      "kind": "MethodDefinition"
+    },
+    "C_.bindNavigationEvents": {
+      "start": 677023,
+      "end": 678395,
+      "kind": "MethodDefinition"
+    },
+    "C_.usedNativeCredentials": {
+      "start": 678395,
+      "end": 678453,
+      "kind": "MethodDefinition"
+    },
+    "C_.protectionPending": {
+      "start": 678453,
+      "end": 678497,
+      "kind": "MethodDefinition"
+    },
+    "C_.protectManualSaving": {
+      "start": 678497,
+      "end": 678610,
+      "kind": "MethodDefinition"
+    },
+    "C_.hasManualSavingTab": {
+      "start": 678610,
+      "end": 678668,
+      "kind": "MethodDefinition"
+    },
+    "C_.allowOrdinaryInteraction": {
+      "start": 678668,
+      "end": 679073,
+      "kind": "MethodDefinition"
+    },
+    "C_.allowPrivateInteraction": {
+      "start": 679073,
+      "end": 679353,
+      "kind": "MethodDefinition"
+    },
+    "C_.protect": {
+      "start": 679353,
+      "end": 680020,
+      "kind": "MethodDefinition"
+    },
+    "C_.permitNavigatedDocument": {
+      "start": 680020,
+      "end": 680318,
+      "kind": "MethodDefinition"
+    },
+    "C_.assertObservationAllowed": {
+      "start": 680318,
+      "end": 680986,
+      "kind": "MethodDefinition"
+    },
+    "C_.assertRetainedObservationAllowed": {
+      "start": 680986,
+      "end": 681092,
+      "kind": "MethodDefinition"
+    },
+    "C_.observe": {
+      "start": 681092,
+      "end": 681334,
+      "kind": "MethodDefinition"
+    },
+    "C_.isPrivateContinuationDocument": {
+      "start": 681334,
+      "end": 681537,
+      "kind": "MethodDefinition"
+    },
+    "C_.readFrame": {
+      "start": 681537,
+      "end": 681920,
+      "kind": "MethodDefinition"
+    },
+    "C_": {
+      "start": 676087,
+      "end": 681921,
+      "kind": "ClassExpression"
+    },
     "PX": {
       "start": 681951,
       "end": 682163,

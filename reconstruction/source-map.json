@@ -1987,6 +1987,34 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/security/credential_observation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-shared-state-and-class",
+      "symbols": [
+        "vX",
+        "SX",
+        "xX",
+        "EX",
+        "TX",
+        "CX",
+        "Tt",
+        "A_",
+        "ac",
+        "Fi",
+        "SB",
+        "xB",
+        "EB",
+        "Er",
+        "P_",
+        "Mn",
+        "TB",
+        "AX",
+        "C_"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential execution of original AST bindings: protection, observation draining, navigation, rebinding, broker resume epochs, error redaction, document limit and method descriptors; real broker/host integration pending"
     }
   },
   "embeddedPackages": {
