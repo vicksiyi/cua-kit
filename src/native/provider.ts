@@ -1,8 +1,10 @@
+import { withClipboard } from '../core/clipboard.js';
+import { preparePasteContent, plainTextFromHtml } from '../core/paste.js';
 import { NativeClipboard } from './clipboard.js';
 import { randomUUID } from 'node:crypto';
 import { NativeHelper, type NativeAppInfo, type HelperHello } from './helper.js';
 import { assert, checkAbort } from '../core/errors.js';
-import type { Authorize, AXElement, ElementRef, ActionOptions, SelectTextOptions, PressKeyOptions } from '../core/types.js';
+import type { Authorize, AXElement, ElementRef, ActionOptions, SelectTextOptions, PressKeyOptions, PasteOptions } from '../core/types.js';
 import { SerialQueue } from '../core/serial.js';
 
 export interface NativeWindow { id: number; title: string; frame: { x: number; y: number; width: number; height: number } }
@@ -101,6 +103,29 @@ export class MacApp {
     assert(typeof key === 'string' && key.length > 0, 'INVALID_ARGUMENT', 'key must be nonempty.');
     assert((options.durationMs ?? 0) === 0, 'UNSUPPORTED_CAPABILITY', 'Native held keys require cancellable input scheduling.');
     return this.keyboard('pressKey',{key,durationMs:options.durationMs},options);
+  }
+  paste(text: string, options: PasteOptions & { timeoutMs?: number } = {}) {
+    const content = preparePasteContent(text,options.format);
+    const timeoutMs = options.timeoutMs ?? 2000;
+    assert(Number.isSafeInteger(timeoutMs) && timeoutMs >= 50 && timeoutMs <= 5000,'INVALID_ARGUMENT','Paste verification timeout must be 50..5000ms.');
+    return this.queue.run(async () => {
+      await this.authorize('paste','write',options.signal);
+      assert(this.current,'STALE_OBSERVATION','Observe the focused native editor before paste.');
+      const snapshotId = this.current.snapshotId;
+      const params = {targetId:this.id,snapshotId,text:content.text,richText:content.html === undefined ? undefined : plainTextFromHtml(content.html),timeoutMs};
+      const validate = async () => {
+        checkAbort(options.signal); assert(this.alive,'TARGET_NOT_FOUND','App handle released while paste waited.');
+        await this.provider.helper.request('validatePaste',params);
+        checkAbort(options.signal); assert(this.alive,'TARGET_NOT_FOUND','App handle released during paste validation.');
+      };
+      try {
+        const pasted = await withClipboard(this.provider.clipboard,content,async () => {
+          checkAbort(options.signal); assert(this.alive,'TARGET_NOT_FOUND','App handle released before paste dispatch.');
+          return this.provider.helper.request<{outcome:'observed';verification:'AXValue'}>('pasteInput',params);
+        },validate);
+        return {...pasted.result,clipboardRestored:pasted.restored};
+      } finally { this.current = undefined; }
+    });
   }
   async release(): Promise<void> { if (!this.alive) return; this.alive = false; this.current = undefined; await this.provider.helper.request('release', { targetId: this.id }); }
 }

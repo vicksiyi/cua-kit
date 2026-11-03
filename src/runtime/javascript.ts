@@ -61,6 +61,7 @@ const bootstrap = `(() => {
     click: (...args) => invoke(id,'click',args),
     setValue: (...args) => invoke(id,'setValue',args),
     typeText: (...args) => invoke(id,'typeText',args),
+    paste: (...args) => invoke(id,'paste',args),
     pressKey: (...args) => invoke(id,'pressKey',args),
     selectText: (...args) => invoke(id,'selectText',args),
     performSecondaryAction: (...args) => invoke(id,'performSecondaryAction',args)
@@ -202,6 +203,7 @@ export class JavascriptSession {
         case 'click': return app.click(args[0], options);
         case 'setValue': return app.setValue(args[0], args[1], options);
         case 'typeText': return app.typeText(args[0], options);
+        case 'paste': return app.paste(args[0], { ...args[1], ...options });
         case 'pressKey': return app.pressKey(args[0], { ...args[1], ...options });
         case 'selectText': return app.selectText(args[0], args[1], { ...args[2], ...options });
         case 'performSecondaryAction': return app.performSecondaryAction(args[0], args[1], options);

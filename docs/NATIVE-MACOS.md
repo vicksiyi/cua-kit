@@ -99,4 +99,10 @@ Command Line Tools 环境没有 XCTest 模块，因此采用 helper 的 `--self-
 
 ## Clipboard backend increment
 
-The helper now supplies private clipboardBegin/clipboardRestore leases for headed browser paste, with conditional change-count restoration. A permission-free named-pasteboard self-test is available with `cua-helper --clipboard-self-test`. Native App paste itself is still pending. See [clipboard protocol and limits](CLIPBOARD.md).
+The helper now supplies private clipboardBegin/clipboardRestore leases for headed browser paste, with conditional change-count restoration. A permission-free named-pasteboard self-test is available with `cua-helper --clipboard-self-test`. Native App paste is now implemented with AXValue/selection verification, but live execution remains pending permission-gated validation. See [clipboard protocol and limits](CLIPBOARD.md).
+
+## Native paste increment
+
+`app.paste(text,{format?:'text'|'html'|'md',timeoutMs?:number})` uses the same process-wide clipboard queue as browser paste. Observe the focused editor first. The helper validates the snapshot/focus/selection before mutation and again before Command+V; it waits for the expected AXValue change. Result: `{outcome:'observed',verification:'AXValue',clipboardRestored:boolean}`. No observed matching change produces ACTION_OUTCOME_UNKNOWN. Secure or non-text AX editors are unsupported; arbitrary custom-editor paste and rich-format verification are not complete.
+
+`cua-helper --paste-self-test` verifies UTF-16 replacement and invalid range handling without system input. The owned fixture gate now includes actual paste. Swift builds and the complete suite has 18 passing tests and one live native fixture skipped. Actual App paste is not verified on this machine without Accessibility.

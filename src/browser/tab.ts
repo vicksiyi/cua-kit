@@ -1,5 +1,4 @@
-import { marked } from 'marked';
-import sanitizeHtml from 'sanitize-html';
+import { preparePasteContent } from '../core/paste.js';
 import { withClipboard, type ClipboardBackend } from '../core/clipboard.js';
 import { randomUUID } from 'node:crypto';
 import type { CdpChannel as CDPSession, BrowserDriver as Page } from './driver.js';
@@ -224,9 +223,7 @@ export class CuaTab {
   paste(target: number | ElementRef | null, text: string, options: PasteOptions = {}): Promise<{eventObserved:true;clipboardRestored:boolean}> {
     return this.run('paste','write',options,async () => {
       assert(this.config.clipboard,'UNSUPPORTED_CAPABILITY','Configure a clipboard backend (nativeHelperPath on macOS) to use real paste.');
-      assert(typeof text === 'string' && text.length <= 200000,'INVALID_ARGUMENT','Paste input exceeds size budget.');
-      const format = options.format ?? 'text';
-      assert(['text','md','html'].includes(format),'INVALID_ARGUMENT','Unsupported paste format.');
+      const {text:plain,html} = preparePasteContent(text,options.format);
       let binding: ElementBinding;
       if (target === null) {
         const current = await this.collector.capture();
@@ -235,8 +232,6 @@ export class CuaTab {
         binding = current.bindings.get(focused[0]!.id)!;
       } else { binding = await this.resolve(target); }
       await onElement(binding, `function () { if (!this.isConnected || this.disabled || this.readOnly || !(this.isContentEditable || this.tagName==='TEXTAREA' || (this.tagName==='INPUT' && /^(text|search|url|tel|email|password|number)$/.test(this.type)))) throw new Error('Paste target is not editable'); this.focus(); if(this.getRootNode().activeElement !== this) throw new Error('Paste focus failed'); }`);
-      const html = format === 'text' ? undefined : sanitizeHtml(format === 'md' ? marked.parse(text,{async:false}) : text);
-      const plain = format === 'html' ? await onElement<string>(binding, `function(html) { return new DOMParser().parseFromString(html,'text/html').body.textContent || ''; }`,[html]) : text;
       const pasteEpoch = this.epoch;
       const pasteStamps = (await this.collector.capture()).stamps;
       const validatePaste = async () => {

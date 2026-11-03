@@ -78,6 +78,12 @@ test('native fixture AX actions and stale snapshot rejection', { skip: process.e
     await waitForText(/你好 🌍/);
     await app.pressKey('super+a'); await app.observe();
     await app.typeText('Keyboard replaced'); await waitForText(/Keyboard replaced/);
+    state = await app.observe();
+    await app.selectText(state.elements.find(element => element.role === 'AXTextField')!.id,'Keyboard replaced');
+    await app.observe();
+    const pasted = await app.paste('Native paste 中文 🌍');
+    assert.deepEqual(pasted,{outcome:'observed',verification:'AXValue',clipboardRestored:true});
+    await waitForText(/Native paste 中文 🌍/);
     if (process.env.CUA_TEST_NATIVE_SCREENSHOT === '1') {
       assert.equal(provider.capabilities.permissions.screenRecording, true, 'Screen Recording permission required.');
       const windows = await app.listWindows();
@@ -101,4 +107,12 @@ test('native input encoding checks run without TCC permissions', { skip: process
   const { promisify } = await import('node:util');
   const result = await promisify(execFile)(helperPath, ['--self-test']);
   assert.deepEqual(JSON.parse(result.stdout), { unicodeBoundaries:true, keyChordFlags:true });
+});
+
+
+test('native paste selection verifier handles UTF-16 and invalid ranges without input', { skip: process.platform !== 'darwin' || !existsSync(helperPath) }, async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const result = await promisify(execFile)(helperPath, ['--paste-self-test']);
+  assert.deepEqual(JSON.parse(result.stdout),{selectionReplacement:true});
 });

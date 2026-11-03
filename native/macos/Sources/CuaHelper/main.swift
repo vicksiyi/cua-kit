@@ -118,7 +118,7 @@ let clipboard = ClipboardStore()
 @MainActor
 func handle(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
     switch method {
-    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
     case "clipboardBegin": return try clipboard.begin(params)
     case "clipboardRestore": return try clipboard.restore(params["token"] as? String ?? "")
     case "listApps": return ["apps": NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map(info)]
@@ -126,9 +126,11 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
         let id = UUID().uuidString; targets[id] = Target(app)
         return ["targetId": id, "app": info(app)]
-    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput":
+    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput":
         guard let id = params["targetId"] as? String, let target = targets[id] else { throw fail("TARGET_NOT_FOUND", "Unknown target handle.") }
         if method == "release" { targets.removeValue(forKey: id); return [:] }
+        if method == "validatePaste" { _ = try target.pasteEditor(params); return [:] }
+        if method == "pasteInput" { return try await target.pasteInput(params) }
         if method == "keyboardInput" { return try target.keyboardInput(params) }
         if method == "observeWithScreenshot" {
             var state = try target.observe()
@@ -147,6 +149,10 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         return try method == "observe" ? target.observe() : target.action(params)
     default: throw fail("UNSUPPORTED_CAPABILITY", "Unknown helper method.")
     }
+}
+if CommandLine.arguments.contains("--paste-self-test") {
+    do { try runPasteChecks(); print("{\"selectionReplacement\":true}"); exit(0) }
+    catch { fputs("Paste self-test failed: \(error)\n",stderr); exit(1) }
 }
 if CommandLine.arguments.contains("--clipboard-self-test") {
     do { try runClipboardChecks(); print("{\"clipboardFormats\":true,\"externalCopyPreserved\":true}"); exit(0) }
