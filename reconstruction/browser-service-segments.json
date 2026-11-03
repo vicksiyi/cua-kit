@@ -2009,6 +2009,11 @@
       "end": 852119,
       "kind": "FunctionDeclaration"
     },
+    "xv": {
+      "start": 852130,
+      "end": 859648,
+      "kind": "TemplateLiteral"
+    },
     "Nh": {
       "start": 870563,
       "end": 870650,
