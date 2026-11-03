@@ -3054,6 +3054,18 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "128 combined original command trace comparisons across tab lifecycle and dialog wrappers; covers credential observation gates, selection failure, authority ordering and dialog projection. Dialog execution uses shared reconstructed Mv in differential test; no new real browser integration claim. Production registry/context remains pending."
+    },
+    "packages/browser/src/service/commands/history_navigation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-history-navigation-commands",
+      "symbols": [
+        "FN",
+        "LN",
+        "UN"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "63 original command trace comparisons plus real Chromium backward/forward/reload using reconstructed page-load waiter; verifies history boundaries, authority ordering, raw timeout and listener cleanup. URL navigation and production registry remain pending."
     }
   },
   "embeddedPackages": {
