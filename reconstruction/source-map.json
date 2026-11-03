@@ -2748,6 +2748,23 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Exact readable embedded-source equality and real Chromium comparisons across ten selector/frame cases plus selector capture slicing, scaled frame geometry and hidden-frame checks. OOPIF host routing and hF reconstruction remain pending."
+    },
+    "packages/browser/src/service/playwright/frame_routing.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-frame-routing",
+      "symbols": [
+        "ig",
+        "qc",
+        "rg",
+        "Rne",
+        "Ine",
+        "iS",
+        "kne",
+        "Bne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original-class comparisons across 18 routing branches, exact generated expressions and remote cleanup; real Chromium sandbox frame discovery/metadata with explicit same-target fallback. Full attached OOPIF integration, resolveSelectorTarget orchestration and hF readable reconstruction remain pending."
     }
   },
   "embeddedPackages": {
