@@ -66,3 +66,7 @@ Added MacApp.paste through SDK/QuickJS/MCP, shared format conversion, a focused 
 ## Source reconstruction: document responses
 
 Restored Xh/Mc/su/Yre as readable `@core/browser` document response capture, including request interceptor management and Fetch response ownership. Validation: 174 differential tests pass, TypeScript checks pass. Uses a CDP dependency contract; production backend and complete context assembly remain outstanding.
+
+## Source reconstruction: download state machine
+
+Restored pg and its source-origin/content-header helpers under `@core/browser`. Preserves authorization and HTTP/blob state transitions, host completion correlation and cleanup ordering. 178 tests pass with type checks. Host/security interfaces remain dependencies; production backend and full AgentLoop are not complete.

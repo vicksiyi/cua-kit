@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。174 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。178 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -395,3 +395,9 @@ Reconstructed mg/WF as SiteInstructions. Capture first clears matching-frame sta
 Reconstructed `service/context/document_responses.ts` from Xh/Mc/su/Yre. Preserves shared setup promises, serialized Fetch reconfiguration, descending interceptor priority, snapshot processing and drain-on-remove. Request exceptions block; handled requests remain owned by their interceptor. Document response ownership is released only after successful CDP continuation/failure; response listeners trigger header overrides only when the array identity changes. Session/target events are ignored as in the installed implementation, and detach clears all per-tab state.
 
 174 differential tests pass with type checking. New tests execute the installed AST class and readable class against matching CDP fixtures, covering headers, ownership, target filtering, priority, handled/block/exception outcomes, draining, setup/configuration retry and retained ownership on CDP failure. Production provider and full execution-context assembly remain pending.
+
+## Download ownership, authorization and completion (pg)
+
+Reconstructed `service/context/downloads.ts` from pg and its URL/header helpers. Preserves per-tab exclusion, source authorization, HTTP paused-response claims, frame/redirect request tracking, blob origin/session checks, host completion correlation and filename caching. The original timer is cleared during cross-origin authorization and rearmed with its previously computed remaining budget; this is preserved rather than replaced by a generic timeout wrapper. Disable deletes state before asynchronous cleanup and always stops request tracking in finally.
+
+178 tests and type checks pass. Four new differential tests execute the installed class/helpers and readable code against host/security/response fixtures: classification and overrides, HTTP completion for cdp/iab/extension, session and download ID filtering, redirect chains, blob origin rejection/completion, nested actions, cancellation and timeout cleanup. No live download, production authorization backend or end-to-end agent completion is claimed.
