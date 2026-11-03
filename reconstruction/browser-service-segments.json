@@ -4,9 +4,29 @@
   "offsetUnit": "UTF-16 code units (Acorn offsets)",
   "purpose": "Provenance and navigation only; no runtime dependency on installed vendor source",
   "segments": {
+    "zT": {
+      "start": 90180,
+      "end": 90417,
+      "kind": "FunctionDeclaration"
+    },
+    "vy": {
+      "start": 90458,
+      "end": 90491,
+      "kind": "CallExpression"
+    },
+    "O8": {
+      "start": 90495,
+      "end": 90519,
+      "kind": "NewExpression"
+    },
     "j8": {
       "start": 91828,
       "end": 92001,
+      "kind": "FunctionDeclaration"
+    },
+    "ZT": {
+      "start": 92001,
+      "end": 92215,
       "kind": "FunctionDeclaration"
     },
     "rp": {
@@ -589,6 +609,11 @@
       "end": 688490,
       "kind": "FunctionDeclaration"
     },
+    "ze": {
+      "start": 688490,
+      "end": 688522,
+      "kind": "FunctionDeclaration"
+    },
     "UB": {
       "start": 688522,
       "end": 688633,
@@ -602,6 +627,131 @@
     "IX": {
       "start": 688722,
       "end": 688773,
+      "kind": "FunctionDeclaration"
+    },
+    "wa": {
+      "start": 692703,
+      "end": 692866,
+      "kind": "ClassExpression"
+    },
+    "$B": {
+      "start": 692867,
+      "end": 693159,
+      "kind": "FunctionDeclaration"
+    },
+    "DX": {
+      "start": 693166,
+      "end": 693431,
+      "kind": "ObjectExpression"
+    },
+    "OX": {
+      "start": 693435,
+      "end": 693962,
+      "kind": "ObjectExpression"
+    },
+    "bf.constructor": {
+      "start": 693972,
+      "end": 694002,
+      "kind": "MethodDefinition"
+    },
+    "bf.triggerNetworkEgress": {
+      "start": 694489,
+      "end": 694726,
+      "kind": "MethodDefinition"
+    },
+    "bf.actInFrame": {
+      "start": 694726,
+      "end": 695262,
+      "kind": "MethodDefinition"
+    },
+    "bf.observeContent": {
+      "start": 695262,
+      "end": 695872,
+      "kind": "MethodDefinition"
+    },
+    "bf.readBrowsingHistory": {
+      "start": 695872,
+      "end": 696003,
+      "kind": "MethodDefinition"
+    },
+    "bf.uploadFiles": {
+      "start": 696003,
+      "end": 696126,
+      "kind": "MethodDefinition"
+    },
+    "bf.downloadFiles": {
+      "start": 696126,
+      "end": 696698,
+      "kind": "MethodDefinition"
+    },
+    "bf.useCdp": {
+      "start": 696698,
+      "end": 697067,
+      "kind": "MethodDefinition"
+    },
+    "bf.useWebMcp": {
+      "start": 697067,
+      "end": 697682,
+      "kind": "MethodDefinition"
+    },
+    "bf.assert": {
+      "start": 697682,
+      "end": 700615,
+      "kind": "MethodDefinition"
+    },
+    "bf.logDecision": {
+      "start": 700615,
+      "end": 701057,
+      "kind": "MethodDefinition"
+    },
+    "bf": {
+      "start": 693966,
+      "end": 701058,
+      "kind": "ClassExpression"
+    },
+    "B_": {
+      "start": 704047,
+      "end": 704054,
+      "kind": "NewExpression"
+    },
+    "NX": {
+      "start": 704058,
+      "end": 704255,
+      "kind": "NewExpression"
+    },
+    "FX": {
+      "start": 704259,
+      "end": 704491,
+      "kind": "NewExpression"
+    },
+    "LX": {
+      "start": 704495,
+      "end": 704598,
+      "kind": "NewExpression"
+    },
+    "XB": {
+      "start": 704602,
+      "end": 704842,
+      "kind": "ObjectExpression"
+    },
+    "Li": {
+      "start": 704843,
+      "end": 704921,
+      "kind": "FunctionDeclaration"
+    },
+    "Fn": {
+      "start": 704921,
+      "end": 704993,
+      "kind": "FunctionDeclaration"
+    },
+    "zX": {
+      "start": 715483,
+      "end": 715698,
+      "kind": "FunctionDeclaration"
+    },
+    "KX": {
+      "start": 715748,
+      "end": 716540,
       "kind": "FunctionDeclaration"
     },
     "an": {

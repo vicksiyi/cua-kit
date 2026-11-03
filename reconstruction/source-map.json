@@ -2015,6 +2015,44 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Differential execution of original AST bindings: protection, observation draining, navigation, rebinding, broker resume epochs, error redaction, document limit and method descriptors; real broker/host integration pending"
+    },
+    "packages/browser/src/service/security/authority_builder.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-authority-gates",
+      "symbols": [
+        "bf",
+        "DX",
+        "OX",
+        "wa",
+        "ze"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential execution against original AST: accumulation, gate invocation order, bypass modes, MCP App branches, async policy/preparation ordering, denial wrapping and audit; actual approval providers pending"
+    },
+    "packages/browser/src/service/security/gate_policy.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-authority-gates",
+      "symbols": [
+        "B_",
+        "NX",
+        "FX",
+        "LX",
+        "XB",
+        "Li",
+        "Fn",
+        "KX",
+        "Qt",
+        "zX",
+        "zT",
+        "ZT",
+        "$B",
+        "vy",
+        "O8"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential execution against original AST: accumulation, gate invocation order, bypass modes, MCP App branches, async policy/preparation ordering, denial wrapping and audit; actual approval providers pending"
     }
   },
   "embeddedPackages": {
