@@ -1014,6 +1014,80 @@
       ],
       "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
       "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/runtime/registry.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-mapped-original-registry-with-readable-imports",
+      "symbols": [
+        "p"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/commands/index.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-mapped-original-registry-with-readable-imports",
+      "symbols": [
+        "b"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/commands/runtime_config.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "ra",
+        "aa",
+        "ia",
+        "sa",
+        "na"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/runtime/request_id.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "cl"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/runtime/factory.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "jm"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/runtime/setup.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Im"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/index.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Im"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
     }
   },
   "embeddedPackages": {

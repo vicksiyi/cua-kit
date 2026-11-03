@@ -11,8 +11,8 @@ import {
 } from "../errors/credential_recovery_error";
 import type { ExecuteAgentCommand } from "./function_agent_transport";
 
-// Extracted from Im's executeAgentCommand method. Host RPC setup and the complete
-// Browser/Tab registry are still separate pending dependencies, not replaced here.
+// Extracted from Im's executeAgentCommand method; setup.ts supplies the original
+// host RPC routes. Recovery and Orbit rewriting are independently testable here.
 export function createBrowserServiceExecutor({
   execute,
   executeWithRecovery,

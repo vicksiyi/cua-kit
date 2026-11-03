@@ -14,6 +14,8 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。94 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+
 ## 验证
 
 ```bash
@@ -187,3 +189,18 @@ browserAuth 现在使用真实 PlaywrightLocator 的私有 selector 访问器，
 **86 项差分测试与类型检查通过。** 新增 Tab 路由、子 API 绑定、截图/对话框、构造/transport 错误优先级、Browser 工厂与能力装配、history、继承 setter/成员顺序、3 类命令 schema 对比。测试执行原 bundle 的 jh/fm；仍使用 fixture transport，没有真实浏览器操作。
 
 下一步还原完整 runtime registry、jm 工厂与 setupBrowserRuntime 接线，再导出可运行客户端入口。当前尚未完成完整 runtime，也未完成底层 service、Sky/cua-repl、完整类型/exports、独立 MCP/AgentLoop demo 或端到端验收。
+
+
+## Runtime 注册表、工厂与根入口
+
+新增 7 个文件（累计 81 个业务文件）：原 p/b 的运行类型和命令注册表、RuntimeConfig schema、generateRequestId、BrowserRuntimeFactory（jm）、setupBrowserRuntime（Im）和根导出。注册表保留 key 顺序、普通对象原型及不可配置的只读 getter；AX 命令补齐原命名空间的 schema/type 元数据。
+
+工厂接通已还原的 API proxy：manifest 决定 runtime class，按浏览器类型和 overrides 过滤成员，global disabled 不能被 override 重新开启；Tab 装饰、方法缓存、跨 view 参数解包沿用原实现。createBrowser 保留实例箭头字段绑定，createAgent 使用真实 FunctionAgentTransport。此处 Agent 是浏览器 API 容器，不是 LLM AgentLoop。
+
+setupBrowserRuntime 检查可信 nodeRepl.rpc，提取方法后以原 receiver 语义发出 browser setup/execute/executeWithRecovery。仅 credentialRecoveryErrorVersion 严格等于 1 时走恢复 envelope；Orbit 环境只改变指定错误后缀，不修改 setup 请求中的显式 environment。显示桥使用 host.emitImage 和 console.log，截断阈值 100000。
+
+构建后可使用 `import { setupBrowserRuntime } from "@core/browser"`，包根仅导出安装包实际导出的运行时函数。原包完整声明与其它 workspace 的 public exports 尚未完成；不把客户端入口接通等同于全套独立产品已可用。
+
+**94 项差分测试与类型检查通过。** 新增注册表键/descriptor/构造类型可用性、ID 格式、工厂过滤与装饰、setup→Browser→Tab→AX→browserAuth 的组合调用、Locator proxy 解包、严格恢复分支、Orbit 错误映射、宿主失败及包根导出。组合测试中的宿主 RPC 是明确的 fixture，没有实际点击、认证或观察用户桌面。
+
+接下来进入 browser-service 的协议入口和命令分发，继续读取其实际实现；还需完成 CUA 初始化、Sky/cua-repl、完整类型/exports、独立调用 demo 与真实端到端验证。不会把旧独立后端接到这里冒充原实现。

@@ -1,7 +1,7 @@
 import { isPlainObject } from "./object_utils";
 // Reconstructed from jm's constructor closure and pl in browser-client.js.
-// The original lexical dependencies p (runtime export registry) and jh (Tab)
-// are explicit internal dependencies until the full registry is reconstructed.
+// Original lexical dependencies p (runtime registry) and jh (Tab) are supplied
+// by BrowserRuntimeFactory; tests can also exercise the wrapper in isolation.
 export interface ApiMemberInfo {
   unsupportedByDefaultIn?: string[];
   [key: string]: unknown;

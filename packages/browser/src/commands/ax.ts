@@ -75,10 +75,17 @@ export const ActionPayloadSchema = z.object({
 });
 export const ActionResultSchema = z.object({});
 export const StateCommand = {
+  PayloadSchema: StatePayloadSchema,
+  ResultSchema: StateResultSchema,
+  commandType: "tab_ax_get_state",
   create: (payload: Record<string, unknown>) =>
     new Command("tab_ax_get_state", StatePayloadSchema, payload),
 };
 export const ActionCommand = {
+  ActionSchema,
+  PayloadSchema: ActionPayloadSchema,
+  ResultSchema: ActionResultSchema,
+  commandType: "tab_ax_action",
   create: (payload: Record<string, unknown>) =>
     new Command("tab_ax_action", ActionPayloadSchema, payload),
 };
