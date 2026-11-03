@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。98 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。104 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -216,3 +216,34 @@ dispatcher 的 createHostRuntime / initializeRuntime / withSpan 明确对应尚�
 **98 项验证通过。** 服务测试从原 bundle AST 提取指定表达式并执行，避免导入完整服务时启动无关原生/遥测依赖。覆盖四环境、拒绝非自身方法、初始化并发/失败、错误类别与身份、恢复 envelope；另将已还原客户端连到 dispatcher fixture，验证服务端错误经序列化后成为不同身份的客户端恢复错误。没有执行真实服务命令或网页操作。
 
 `node scripts/extract-browser-service-segments.mjs` 生成 `browser-service-segments.json`，记录源哈希与 UTF-16 位置（不是字节 offset），用于导航与溯源；生产代码不读取安装包。下一步进入 p6 调度和其具体依赖，完整 backend、Sky/cua-repl 与调用 demo 仍未交付。
+
+## 服务端清单命令与实际截图算法
+
+新增六类全局清单/文档处理器（xx/Ex/Tx/Cx/Ax/Px 与 c6）、环境能力过滤、浏览器 metadata 投影，以及 F 命令注册器、W tab ID 转换和完整截图分支（XD/Ui/pJ/KD/Q_/mJ/fJ/hJ/gJ/bJ）。清单命令按原顺序 refresh/get，文档读取不添加 refresh；禁用列表为空时保留数组引用。CDP 且有效 browserAuth 能力存在时，才启用两个用户接管 override。
+
+截图是服务端实际算法的还原，不只是转发壳：先观察授权，再进入 credentialObservationGate；CSS 模式读取 devicePixelRatio，错误/无效值回退比例 1；crop/整页/viewport 各自采用原布局指标和 clip。viewport 可尝试 screencast，先监听再启动、以 timestamp 丢弃旧帧、ACK 和 stop 保持原顺序；失败回退 Page.captureScreenshot。保留 2000/5000ms 分支、JPEG quality 80、空 data 错误及 finally 清理。
+
+```mermaid
+flowchart TD
+  A[TabScreenshotCommand] --> B[观察权限检查]
+  B --> C[凭据观察门 Ui]
+  C --> D{完整 crop?}
+  D -->|是| E[计算比例与裁剪]
+  D -->|否| F{fullPage?}
+  F -->|是| G[读取 cssContentSize]
+  F -->|否| H[计算 viewport 与比例]
+  H --> I{可尝试 screencast?}
+  I -->|是| J[监听 → 启动 → 过滤旧帧 → stop/ACK]
+  J -->|有效帧| K[返回图像数据]
+  J -->|无帧或失败| L[viewport clip]
+  I -->|否| L
+  E --> M[Page.captureScreenshot]
+  G --> M
+  L --> M
+  M --> N[检查非空 data]
+  N --> K
+```
+
+**104 项差分验证通过，类型检查通过。** 新测试从原 service 提取并执行真实函数，比较能力/投影/命令顺序及截图的 CDP 调用、参数、数据与清理：包括 crop/fullPage、缩放、布局异常、旧帧、visibility、start/stop/ACK 失败、保护门拒绝。尚未运行真实 CDP 传输，withInternalScreencast/CDP manager、权限与凭据门的内部实现仍待还原；不能把 fixture 中的图像数据视为真实截图验收。
+
+下一步继续服务端执行上下文和 CDP/screencast 传输管理，接通实际截图调用。p6 总调度、其他命令、Sky/cua-repl 与独立 demo 仍是未完成工作。

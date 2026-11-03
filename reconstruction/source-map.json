@@ -1150,6 +1150,96 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/capability_filter.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "dl",
+        "jy",
+        "CA",
+        "AA",
+        "yp",
+        "wp",
+        "hC",
+        "gC",
+        "fC"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/browser_info.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Hy",
+        "Sx",
+        "Go",
+        "Z1"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/commands/browser_inventory.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "xx",
+        "Ex",
+        "Tx",
+        "Cx",
+        "Ax",
+        "Px",
+        "c6"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/commands/define_command.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "F"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/tab_id.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "W"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/commands/screenshot.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "KD",
+        "XD",
+        "Ui",
+        "pJ",
+        "Q_",
+        "mJ",
+        "fJ",
+        "hJ",
+        "gJ",
+        "bJ",
+        "an",
+        "lJ",
+        "cJ",
+        "dJ"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
     }
   },
   "embeddedPackages": {
