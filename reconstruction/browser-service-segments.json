@@ -2299,9 +2299,64 @@
       "end": 940780,
       "kind": "FunctionDeclaration"
     },
+    "gre": {
+      "start": 941222,
+      "end": 941271,
+      "kind": "NewExpression"
+    },
+    "bre": {
+      "start": 941276,
+      "end": 941355,
+      "kind": "NewExpression"
+    },
     "nu": {
       "start": 942666,
       "end": 943209,
+      "kind": "FunctionDeclaration"
+    },
+    "Lv": {
+      "start": 943209,
+      "end": 943338,
+      "kind": "FunctionDeclaration"
+    },
+    "$h": {
+      "start": 943338,
+      "end": 943407,
+      "kind": "FunctionDeclaration"
+    },
+    "Lr": {
+      "start": 943407,
+      "end": 943450,
+      "kind": "FunctionDeclaration"
+    },
+    "Uv": {
+      "start": 943450,
+      "end": 943593,
+      "kind": "FunctionDeclaration"
+    },
+    "j2": {
+      "start": 943593,
+      "end": 945182,
+      "kind": "FunctionDeclaration"
+    },
+    "Bo": {
+      "start": 945182,
+      "end": 945231,
+      "kind": "FunctionDeclaration"
+    },
+    "W2": {
+      "start": 949877,
+      "end": 950013,
+      "kind": "FunctionDeclaration"
+    },
+    "jv": {
+      "start": 950013,
+      "end": 950121,
+      "kind": "FunctionDeclaration"
+    },
+    "$2": {
+      "start": 950121,
+      "end": 950412,
       "kind": "FunctionDeclaration"
     },
     "Sre": {

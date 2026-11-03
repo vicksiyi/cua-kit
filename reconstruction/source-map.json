@@ -2546,6 +2546,35 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "14 real Chromium differential scenarios compare original Zy/oo and Cp/KA through shared reconstructed focus/page executor and actual reconstructed store with explicit bridge fixture. AX default dispatcher cut/paste integration verified. Full production bridge/context assembly remains pending."
+    },
+    "packages/browser/src/service/accessibility/snapshot_metadata.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-snapshot-metadata",
+      "symbols": [
+        "j2",
+        "Bo",
+        "gre",
+        "bre"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST comparison of real Chromium DOM snapshots (open/closed nested shadow roots, slots, credential inputs, iframe documents, scroll bounds) and sparse/duplicate synthetic data."
+    },
+    "packages/browser/src/service/accessibility/navigation_state.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-navigation-state",
+      "symbols": [
+        "Lv",
+        "$h",
+        "Lr",
+        "Uv",
+        "W2",
+        "jv",
+        "$2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential transition/key/frame-cycle tests and capture retry/readiness threshold and URL matrices. Kh assembly remains pending."
     }
   },
   "embeddedPackages": {
