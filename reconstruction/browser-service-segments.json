@@ -1884,6 +1884,16 @@
       "end": 733935,
       "kind": "FunctionDeclaration"
     },
+    "_f": {
+      "start": 734013,
+      "end": 734171,
+      "kind": "FunctionDeclaration"
+    },
+    "RD": {
+      "start": 734171,
+      "end": 734270,
+      "kind": "FunctionDeclaration"
+    },
     "an": {
       "start": 778414,
       "end": 778420,
@@ -2029,6 +2039,31 @@
       "end": 829132,
       "kind": "FunctionDeclaration"
     },
+    "Ka": {
+      "start": 836425,
+      "end": 836744,
+      "kind": "FunctionDeclaration"
+    },
+    "Ch": {
+      "start": 836744,
+      "end": 836849,
+      "kind": "FunctionDeclaration"
+    },
+    "Va": {
+      "start": 836849,
+      "end": 836935,
+      "kind": "FunctionDeclaration"
+    },
+    "wv": {
+      "start": 836935,
+      "end": 837092,
+      "kind": "FunctionDeclaration"
+    },
+    "Qee": {
+      "start": 837092,
+      "end": 837405,
+      "kind": "FunctionDeclaration"
+    },
     "ote": {
       "start": 839816,
       "end": 840312,
@@ -2042,6 +2077,36 @@
     "ite": {
       "start": 840403,
       "end": 840477,
+      "kind": "FunctionDeclaration"
+    },
+    "Rh": {
+      "start": 840477,
+      "end": 840819,
+      "kind": "FunctionDeclaration"
+    },
+    "iN": {
+      "start": 840819,
+      "end": 841014,
+      "kind": "FunctionDeclaration"
+    },
+    "eN": {
+      "start": 841014,
+      "end": 841202,
+      "kind": "FunctionDeclaration"
+    },
+    "Ih": {
+      "start": 841202,
+      "end": 841793,
+      "kind": "FunctionDeclaration"
+    },
+    "_v": {
+      "start": 841793,
+      "end": 842441,
+      "kind": "FunctionDeclaration"
+    },
+    "sN": {
+      "start": 842441,
+      "end": 842512,
       "kind": "FunctionDeclaration"
     },
     "aN": {

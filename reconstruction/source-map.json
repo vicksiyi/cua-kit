@@ -3751,6 +3751,27 @@
       ],
       "status": "reconstructed-browser-auth-field-plan",
       "validation": "Original differential coverage for 30 field-plan configurations, duplicate locators, QR-only conditions, OTP option grouping, ordinary credential option versions, UTF-16 value lengths, null-prototype results and challenge completion. Synthetic values only; full browser-auth broker/checkpoint/command remains incomplete."
+    },
+    "packages/browser/src/service/browser_auth/bindings.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Ka",
+        "Ch",
+        "Va",
+        "wv",
+        "Qee",
+        "_f",
+        "RD",
+        "Rh",
+        "iN",
+        "eN",
+        "Ih",
+        "_v",
+        "sN"
+      ],
+      "status": "reconstructed-browser-auth-document-bindings",
+      "validation": "Original page-binding matrix, 12 form/option/selector scenarios and Chromium identity/DOM probes including reload rejection. Browser uses fixture selector routing; production OOPIF/provider routing and BrowserAuthHandoff orchestration remain incomplete."
     }
   },
   "embeddedPackages": {
