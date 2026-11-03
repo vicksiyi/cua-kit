@@ -3940,7 +3940,37 @@
       "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
       "symbols": [],
       "status": "reconstructed-browser-auth-qr-assembly",
-      "validation": "Composes restored decoder and monitor with one reader initialization per flow. Synthetic screenshot bytes reach supplied reader; no actual QR recognition claim."
+      "validation": "Composes restored decoder and monitor with one reader initialization per flow. Synthetic screenshot bytes reach supplied reader; no actual QR recognition claim. Restored qD/jD-equivalent factory binding now composes actual reader wrapper; synthetic module heap integration verified."
+    },
+    "packages/browser/src/service/browser_auth/zxing_reader.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "CY",
+        "BD",
+        "DD",
+        "OD",
+        "LY",
+        "V_",
+        "UY",
+        "MD",
+        "qY",
+        "ND",
+        "jY",
+        "FD",
+        "HY",
+        "Sf",
+        "kD",
+        "WY",
+        "GY",
+        "G_",
+        "VY",
+        "z_",
+        "zY",
+        "LD"
+      ],
+      "status": "reconstructed-zxing-reader-wrapper",
+      "validation": "Original option/alias/enum and grayscale comparisons, 28 input/failure traces, lazy override/promise identity checks and assembled screenshot-to-heap-to-result test. Preserves allocation/free and original result projection. Underlying Emscripten UD factory remains required; no real WASM barcode recognition claim."
     }
   },
   "embeddedPackages": {

@@ -624,3 +624,9 @@ Validation: 84 original geometry combinations, 15 original monitor traces, synch
 Restored xf/XY/YY/JY/ZY/K_ behavior in `browser_auth/qr_decode.ts`: shared initialization promise including failures, exact two-path WASM asset lookup, owned byte-buffer copy, single-symbol validation, null-versus-undefined fallback and self-contained BarcodeDetector callback with bitmap cleanup. `qr.ts` composes decoder/capture/monitor with shared reader initialization. Host supplies module asset URL and ZXing configure/read bindings.
 
 Validation: 18 original scenarios plus concurrent initialization/byte-view ownership and assembled screenshot-to-decoder checks. Type checks and all 498 tests pass. WASM reader and BarcodeDetector are fixtures; production ZXing/WASM packaging and actual QR recognition are not yet verified. Full handoff/runtime/native providers remain incomplete.
+
+### 16.159 ZXing reader wrapper and QR factory binding
+
+Restored the bundled zxing-wasm 3.1.2 reader wrapper in `browser_auth/zxing_reader.ts`: option aliases/enums/defaults, RGBA grayscale, per-factory weak cache, lazy overrides/equality, input dispatch, WASM allocation/copy/free and result projection. qr.ts now binds the restored wrapper into decoder/capture/monitor through createAuthQrFlowFromWasmFactory. Underlying Emscripten UD remains supplied.
+
+Validation: original option/enum/alias and grayscale comparisons, 28 input/failure traces, cache/promise identity checks and composed screenshot-byte allocation/result test. Type checks and all 502 tests pass. Module tests use a synthetic heap/factory; actual WASM execution, asset packaging and barcode recognition remain unverified. Full handoff/runtime/native provider work remains incomplete.
