@@ -2219,6 +2219,21 @@
       "end": 940780,
       "kind": "FunctionDeclaration"
     },
+    "Nre": {
+      "start": 966940,
+      "end": 968258,
+      "kind": "FunctionDeclaration"
+    },
+    "Fre": {
+      "start": 968258,
+      "end": 968641,
+      "kind": "FunctionDeclaration"
+    },
+    "Lre": {
+      "start": 968641,
+      "end": 969426,
+      "kind": "FunctionDeclaration"
+    },
     "G2": {
       "start": 969426,
       "end": 973417,

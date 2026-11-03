@@ -2356,6 +2356,18 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Real isolated Chromium differential execution against original AST across 35 scenarios: text/checkbox/radio/select/color/contenteditable/ARIA controls, event payloads, validation, rollback, focus/change mutations and native setter bypass. AX command dispatch remains pending."
+    },
+    "packages/browser/src/service/accessibility/selection.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-selection-page-helpers",
+      "symbols": [
+        "Nre",
+        "Fre",
+        "Lre"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Isolated Chromium differential comparison of DOM ranges/cursors, UTF-16 offsets, prefix/suffix disambiguation and errors; select routing and injected helper call order. Select injected helper is an explicit test fixture, not restored Playwright service."
     }
   },
   "embeddedPackages": {
