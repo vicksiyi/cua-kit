@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。164 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。167 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -369,3 +369,11 @@ Reconstructed Eg and yie/wie/_ie/vie validation/copy helpers. The store copies p
 Reconstructed xg and DL/OL/kL/BL for per-target installation caching, binding requests, installation verification and cleanup. CDP binding and new-document script installation preserve source ordering and rollback boundaries. Detach invalidates matching tab installations; ensure cleans and reinstalls invalidated state. Disposal reuses its pending promise and removes listeners/cleanup handlers.
 
 164 differential tests pass with type checking. Tests compose the reconstructed clipboard store with original/reconstructed bridges and compare CDP traces for shared installation, read/write/error responses, partial installation failures, invalidation and idempotent disposal. UUIDs are normalized only in trace comparisons. The injected IL/bie page installation body remains an explicit dependency and is the next reconstruction step; real page clipboard integration is not yet verified.
+
+### Page clipboard script and assembled clipboard stack
+
+Reconstructed bie/IL as self-contained readable TS: text/binary serialization, ClipboardItem fallback, binding request promises, receiver/argument checks, own/prototype patching, guarded restoration, frame cleanup messages and pending-request rejection. BrowserClipboard now assembles the real reconstructed store, host bridge and page installer.
+
+167 differential tests pass with type checking. VM comparisons execute both original and reconstructed scripts for read/write, binary blobs, illegal receivers, own/prototype restoration and pending cleanup. Serialized function text differs due to readable names; runtime behavior is compared rather than claiming byte identity.
+
+Additionally, `npx tsx reconstruction/clipboard-browser-smoke.ts` passed in isolated real headless Chromium: page write/read, reload reinjection, cleanup and absence after another reload. This uses a small CDP test adapter, not the production provider or complete MCP/AgentLoop stack. The test closes its isolated browser and does not access the system clipboard.

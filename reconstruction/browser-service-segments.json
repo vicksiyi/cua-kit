@@ -874,6 +874,21 @@
       "end": 1324034,
       "kind": "ClassExpression"
     },
+    "gie": {
+      "start": 1342998,
+      "end": 1343034,
+      "kind": "Literal"
+    },
+    "bie": {
+      "start": 1343039,
+      "end": 1347054,
+      "kind": "ArrowFunctionExpression"
+    },
+    "IL": {
+      "start": 1347055,
+      "end": 1347217,
+      "kind": "FunctionDeclaration"
+    },
     "kL": {
       "start": 1347217,
       "end": 1347369,
