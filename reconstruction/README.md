@@ -175,3 +175,15 @@ browserAuth 现在使用真实 PlaywrightLocator 的私有 selector 访问器，
 **80 项测试通过，类型检查通过。** 新测试直接实例化原 bundle 类作差分比较，覆盖动作/读取/缓存/链式选择、局部错误、认证参数与身份、页面/事件/导航时序、27 组命令 schema、公开方法顺序和 arity。诊断回调经可读 TS 重写后，Function.toString 的文本会改变；对此执行两份实际脚本并比较 DOM 诊断结果与最终错误，不宣称其序列化脚本文本相同。自定义错误逐字比较，原生 TypeError 变量名称与 stack 位置差异仍适用此前说明。
 
 本轮是完整 Playwright 客户端类的还原，不是底层 Playwright 服务已交付。尚未进行真实认证、网页输入、下载或文件上传。下一步装配 Tab/Browser 与完整 create/setup runtime，再继续 browser-service、Sky/cua-repl、声明与 exports、独立 MCP/AgentLoop demo 和真实端到端验证。
+
+## Tab 与 Browser 装配
+
+新增 Tab、Browser 和 browser_session 命令/schema，累计 74 个业务文件（4 个 AST schema 文件）。Tab 按原顺序创建 Playwright、DOM/CUA、AX、Content、Clipboard、Dev 与 capability 对象；Browser 创建 Documentation、browser capabilities、Tabs 和 BrowserUser，两个 tab 工厂入口共用原配置。
+
+保留了原实现的目标身份差异：Tab 自身方法读取当前 public id，已经构造的子 API 固定为初始 id；Browser.history 使用私有初始 id，而 documentation/nameSession 读取 public browserId。构造器仍为赋值语义，继承 setter 会被触发；未改成 TS emitted public field definitions。
+
+截图 clip 仅检查 typeof number（保留 NaN/Infinity 的原行为），数据按 atob 解码；对话框按实际 type 创建，未知/缺失返回 undefined。handoff、导航和读取保留各自 transport 检查位置。history 保留 options→queries→limit→from→to 的验证顺序、日期转换与可选字段省略，session name 按原 trim。
+
+**86 项差分测试与类型检查通过。** 新增 Tab 路由、子 API 绑定、截图/对话框、构造/transport 错误优先级、Browser 工厂与能力装配、history、继承 setter/成员顺序、3 类命令 schema 对比。测试执行原 bundle 的 jh/fm；仍使用 fixture transport，没有真实浏览器操作。
+
+下一步还原完整 runtime registry、jm 工厂与 setupBrowserRuntime 接线，再导出可运行客户端入口。当前尚未完成完整 runtime，也未完成底层 service、Sky/cua-repl、完整类型/exports、独立 MCP/AgentLoop demo 或端到端验收。
