@@ -1373,6 +1373,27 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/cdp/dialog_methods.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed-method-group-with-explicit-owner",
+      "symbols": [
+        "Ite",
+        "kte",
+        "qh.getJsDialog",
+        "qh.activeJsDialog",
+        "qh.updateJsDialogPrompt",
+        "qh.deleteJsDialog",
+        "qh.handleJavaScriptDialogEvent",
+        "qh.rememberJsDialog",
+        "qh.allowBeforeUnload",
+        "qh.deleteJsDialogForTarget",
+        "qh.throwIfJsDialogBlocksMethod",
+        "qh.nextJsDialogId"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
     }
   },
   "embeddedPackages": {

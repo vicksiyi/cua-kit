@@ -14,6 +14,8 @@ const wanted = new Set([
   "HN",
   "GN",
   "VN",
+  "Ite",
+  "kte",
   "Cv",
   "eu",
   "Lh",
