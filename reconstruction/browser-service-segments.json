@@ -714,6 +714,16 @@
       "end": 385752,
       "kind": "FunctionDeclaration"
     },
+    "q5": {
+      "start": 394109,
+      "end": 394910,
+      "kind": "TemplateLiteral"
+    },
+    "j5": {
+      "start": 396279,
+      "end": 397235,
+      "kind": "FunctionDeclaration"
+    },
     "Z1": {
       "start": 662218,
       "end": 662480,

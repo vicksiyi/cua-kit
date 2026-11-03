@@ -2500,6 +2500,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original Tre compared over restored helpers for all action branches, durations, drag interpolation and clipboard boundaries; coordinator assembly smoke with explicit context fixtures. Zy/oo remain required injected clipboard operations; full production context not complete."
+    },
+    "packages/browser/src/service/clipboard/focused_frame.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-virtual-clipboard-focus",
+      "symbols": [
+        "q5",
+        "j5"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact embedded expression match and original AST differential target/context traversal, retained initial identity, frame cycle detection, exceptions and remote-object release. Explicit CDP fixtures; full clipboard operation/page protocol remains pending."
     }
   },
   "embeddedPackages": {
