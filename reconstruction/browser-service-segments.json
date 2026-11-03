@@ -749,6 +749,16 @@
       "end": 394910,
       "kind": "TemplateLiteral"
     },
+    "oo": {
+      "start": 394911,
+      "end": 395065,
+      "kind": "FunctionDeclaration"
+    },
+    "Zy": {
+      "start": 395065,
+      "end": 396279,
+      "kind": "FunctionDeclaration"
+    },
     "j5": {
       "start": 396279,
       "end": 397235,

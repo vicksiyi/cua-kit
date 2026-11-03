@@ -1,3 +1,5 @@
+import { clipboardOperations } from "../clipboard/operations";
+import type { ClipboardContext } from "../clipboard/operations";
 import {
   clickAccessibilityTarget,
   performSecondaryAction,
@@ -15,7 +17,9 @@ import { selectElementText } from "./selection";
 import type { DialogCdp } from "./action_coordinator";
 import { createAccessibilityActions } from "./action_coordinator";
 import { performDialogAction } from "./dialog_actions";
-export type PageActionContext = { cdp: DialogCdp } & ClickContext &
+export type PageActionContext = ClipboardContext & {
+  cdp: DialogCdp;
+} & ClickContext &
   Parameters<typeof prepareAccessibilityInput>[0] &
   Parameters<typeof scrollAccessibilityTarget>[0] &
   Parameters<typeof performDialogAction>[0] & {
@@ -44,8 +48,10 @@ export interface AxClipboardOperations {
   ): Promise<unknown>;
   keypress(request: ClipboardRequest & { keypress: string }): Promise<boolean>;
 }
-/** Original Tre: clipboard dispatch remains an explicit required integration until Zy/oo and its page helpers are restored. */
-export function createPageActionDispatcher(clipboard: AxClipboardOperations) {
+/** Original Tre, assembled with reconstructed Zy/oo clipboard operations by default. */
+export function createPageActionDispatcher(
+  clipboard: AxClipboardOperations = clipboardOperations,
+) {
   return async function performPageAction(
     context: PageActionContext,
     tabId: number,
@@ -166,8 +172,10 @@ export function createPageActionDispatcher(clipboard: AxClipboardOperations) {
     }
   };
 }
-/** Gh + Tre + Cre assembly; the caller must supply the real virtual-clipboard integration. */
-export function createAxActionService(clipboard: AxClipboardOperations) {
+/** Gh + Tre + Cre assembly, including reconstructed clipboard operations. */
+export function createAxActionService(
+  clipboard: AxClipboardOperations = clipboardOperations,
+) {
   return createAccessibilityActions(
     createPageActionDispatcher(clipboard),
     performDialogAction,
