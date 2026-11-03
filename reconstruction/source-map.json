@@ -3772,6 +3772,32 @@
       ],
       "status": "reconstructed-browser-auth-document-bindings",
       "validation": "Original page-binding matrix, 12 form/option/selector scenarios and Chromium identity/DOM probes including reload rejection. Browser uses fixture selector routing; production OOPIF/provider routing and BrowserAuthHandoff orchestration remain incomplete."
+    },
+    "packages/browser/src/service/browser_auth/field_page.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Y_"
+      ],
+      "status": "reconstructed-browser-auth-field-inspection",
+      "validation": "17 Chromium original-callback comparisons cover visibility/opacity/labels, disabled/readonly/detached, fill outcomes, hidden split OTP paste cancellation and same-origin HTTPS POST native-form guards. Injected Playwright helper is a fixture; no real credentials used."
+    },
+    "packages/browser/src/service/browser_auth/field_inspection.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "oN",
+        "rte",
+        "nte",
+        "vv",
+        "Ah",
+        "Ph",
+        "QM",
+        "tte",
+        "za"
+      ],
+      "status": "reconstructed-browser-auth-field-inspection",
+      "validation": "12 original host traces cover visibility tri-state, strict versus relaxed inspection, submit/options ordering, duplicate controls, metadata normalization/truncation and required field strengthening. Uses actual restored distinct-element helper."
     }
   },
   "embeddedPackages": {
