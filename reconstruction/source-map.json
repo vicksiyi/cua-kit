@@ -3356,6 +3356,25 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "35 original command traces and 28 node-schema cases. Preserves viewport-center fallback, click counts, validation order and array-only clipboard interception. Schema/clipboard helper shared; type Hs dependency injected, bundled markdown renderer remains pending. No new real DOM command integration claim."
+    },
+    "packages/browser/src/service/commands/coordinate_input.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-coordinate-input-command-assembly",
+      "symbols": [
+        "ar",
+        "Kr",
+        "FA",
+        "LA",
+        "UA",
+        "qA",
+        "XA",
+        "YA",
+        "JA",
+        "n_"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "63 original command traces across seven commands and nine scenarios; explicit assertions for no followSessionTab on move, fixed click timeout, mac modifier bits, double-click button omission and rejection messages. Clipboard helper shared; modifier implementation previously reconstructed. Hs injected; bundled markdown renderer and production command registry remain pending. No new real-browser integration claim."
     }
   },
   "embeddedPackages": {

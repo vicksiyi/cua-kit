@@ -494,6 +494,31 @@
       "end": 368161,
       "kind": "FunctionDeclaration"
     },
+    "Kr": {
+      "start": 368161,
+      "end": 368193,
+      "kind": "FunctionDeclaration"
+    },
+    "FA": {
+      "start": 368193,
+      "end": 368356,
+      "kind": "FunctionDeclaration"
+    },
+    "LA": {
+      "start": 368368,
+      "end": 368693,
+      "kind": "CallExpression"
+    },
+    "UA": {
+      "start": 368710,
+      "end": 369029,
+      "kind": "CallExpression"
+    },
+    "qA": {
+      "start": 369046,
+      "end": 369415,
+      "kind": "CallExpression"
+    },
     "ml": {
       "start": 369436,
       "end": 369667,
@@ -769,6 +794,21 @@
       "end": 397235,
       "kind": "FunctionDeclaration"
     },
+    "XA": {
+      "start": 397242,
+      "end": 397606,
+      "kind": "CallExpression"
+    },
+    "YA": {
+      "start": 397623,
+      "end": 397854,
+      "kind": "CallExpression"
+    },
+    "JA": {
+      "start": 397871,
+      "end": 398202,
+      "kind": "CallExpression"
+    },
     "N9": {
       "start": 543621,
       "end": 543674,
@@ -813,6 +853,11 @@
       "start": 545044,
       "end": 545281,
       "kind": "FunctionDeclaration"
+    },
+    "n_": {
+      "start": 545288,
+      "end": 545480,
+      "kind": "CallExpression"
     },
     "Z1": {
       "start": 662218,
