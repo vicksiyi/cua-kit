@@ -806,6 +806,49 @@
       ],
       "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
       "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/playwright/selectors.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Tl",
+        "jl",
+        "Il",
+        "Cl",
+        "Rl",
+        "Pl",
+        "El",
+        "Al",
+        "Ml"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/playwright/collection_read_cache.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Sl"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/commands/playwright_read_all.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Yc",
+        "Xc",
+        "Qc",
+        "ed",
+        "td",
+        "rd"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
     }
   },
   "embeddedPackages": {
