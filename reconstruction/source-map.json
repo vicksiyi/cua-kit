@@ -2575,6 +2575,34 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential transition/key/frame-cycle tests and capture retry/readiness threshold and URL matrices. Kh assembly remains pending."
+    },
+    "packages/browser/src/service/accessibility/tree_conversion.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-tree-conversion",
+      "symbols": [
+        "hre",
+        "Fv",
+        "H2",
+        "yre",
+        "wre",
+        "qv",
+        "ko",
+        "_re",
+        "vre"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST comparisons on real Chromium AX trees plus synthetic ignored/credential/closed-root nodes, missing metadata, relation offsets and missing frame owners; UTF-8 identity and name-source tests."
+    },
+    "packages/browser/src/service/accessibility/dialog_tree.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-dialog-tree",
+      "symbols": [
+        "q2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST dialog tree comparison across alert/confirm/prompt/beforeunload, URL, title and prompt-text combinations. Kh capture manager assembly remains pending."
     }
   },
   "embeddedPackages": {

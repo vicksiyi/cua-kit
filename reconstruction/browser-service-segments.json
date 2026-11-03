@@ -2299,6 +2299,11 @@
       "end": 940780,
       "kind": "FunctionDeclaration"
     },
+    "hre": {
+      "start": 940797,
+      "end": 941217,
+      "kind": "NewExpression"
+    },
     "gre": {
       "start": 941222,
       "end": 941271,
@@ -2308,6 +2313,16 @@
       "start": 941276,
       "end": 941355,
       "kind": "NewExpression"
+    },
+    "Fv": {
+      "start": 941356,
+      "end": 941534,
+      "kind": "FunctionDeclaration"
+    },
+    "q2": {
+      "start": 941534,
+      "end": 942666,
+      "kind": "FunctionDeclaration"
     },
     "nu": {
       "start": 942666,
@@ -2342,6 +2357,41 @@
     "Bo": {
       "start": 945182,
       "end": 945231,
+      "kind": "FunctionDeclaration"
+    },
+    "H2": {
+      "start": 945231,
+      "end": 946075,
+      "kind": "FunctionDeclaration"
+    },
+    "yre": {
+      "start": 946075,
+      "end": 948537,
+      "kind": "FunctionDeclaration"
+    },
+    "wre": {
+      "start": 948537,
+      "end": 948904,
+      "kind": "FunctionDeclaration"
+    },
+    "qv": {
+      "start": 948904,
+      "end": 949109,
+      "kind": "FunctionDeclaration"
+    },
+    "ko": {
+      "start": 949109,
+      "end": 949146,
+      "kind": "FunctionDeclaration"
+    },
+    "_re": {
+      "start": 949146,
+      "end": 949522,
+      "kind": "FunctionDeclaration"
+    },
+    "vre": {
+      "start": 949522,
+      "end": 949877,
       "kind": "FunctionDeclaration"
     },
     "W2": {
