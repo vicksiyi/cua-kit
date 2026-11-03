@@ -3604,6 +3604,29 @@
       ],
       "fileGrouping": "Source embedded xv identifies browser-common/src/webmcp/native-tools.ts and browser-client/src/webmcp/page.ts; combined into self-contained typed serialization factory.",
       "validation": "24 original embedded-script differential scenarios cover registration generations, descriptors, toolchange invalidation, origin/window boundaries, invocation arities, errors and crash-workaround cleanup. Exact export descriptor shape compared. Real Chromium script registration/invocation and stale-handle rejection use fixture modelContext. Native WebMCP browser implementation, host registry and production OOPIF remain unverified."
+    },
+    "packages/browser/src/service/webmcp/host.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-webmcp-host-registry",
+      "symbols": [
+        "kc",
+        "dN",
+        "lN",
+        "Xa",
+        "zi",
+        "kh",
+        "nr",
+        "pN",
+        "Ev",
+        "cN",
+        "gte",
+        "mN",
+        "fN",
+        "bte",
+        "hN"
+      ],
+      "validation": "18 original call traces, 48 event state transitions and 25 target identity pairs; real Chromium frame discovery/isolated-world creation/evaluation invokes actual reconstructed page runtime. WebMCP CDP enable and modelContext are fixture dependencies. Upper capability/security/limits/notification command layer and production CDP provider integration remain incomplete."
     }
   },
   "embeddedPackages": {
