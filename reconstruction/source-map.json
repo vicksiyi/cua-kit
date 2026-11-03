@@ -2786,6 +2786,16 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original-class controlled-clock comparisons across ten resolution scenarios and four binding/validation failure scenarios; real Chromium iframe isolated-world node acquisition, scoped callback and released-handle verification. Installed hF remains an external test dependency; full locator action service and production assembly remain pending."
+    },
+    "packages/browser/src/service/playwright/locator_evaluation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-locator-evaluation",
+      "symbols": [
+        "ig"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original-class comparisons across fourteen bound/ordinary/collection routing scenarios including exact serialized expressions, arguments and retry telemetry. Real Chromium root/iframe ordinary and bound callbacks, collections and disconnected-bound-node rejection. Installed hF remains required; full actions and production/native assembly remain pending."
     }
   },
   "embeddedPackages": {
