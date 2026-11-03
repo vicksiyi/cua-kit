@@ -659,6 +659,21 @@
       "end": 686505,
       "kind": "FunctionDeclaration"
     },
+    "OB": {
+      "start": 686516,
+      "end": 686671,
+      "kind": "ObjectExpression"
+    },
+    "NB": {
+      "start": 686672,
+      "end": 686887,
+      "kind": "FunctionDeclaration"
+    },
+    "FB": {
+      "start": 686887,
+      "end": 687675,
+      "kind": "FunctionDeclaration"
+    },
     "LB": {
       "start": 687675,
       "end": 688377,
@@ -687,6 +702,31 @@
     "IX": {
       "start": 688722,
       "end": 688773,
+      "kind": "FunctionDeclaration"
+    },
+    "HB": {
+      "start": 688900,
+      "end": 689029,
+      "kind": "FunctionDeclaration"
+    },
+    "kX": {
+      "start": 689029,
+      "end": 689412,
+      "kind": "FunctionDeclaration"
+    },
+    "MB": {
+      "start": 689412,
+      "end": 690274,
+      "kind": "FunctionDeclaration"
+    },
+    "BX": {
+      "start": 690274,
+      "end": 690661,
+      "kind": "FunctionDeclaration"
+    },
+    "gf": {
+      "start": 690661,
+      "end": 690719,
       "kind": "FunctionDeclaration"
     },
     "I_": {

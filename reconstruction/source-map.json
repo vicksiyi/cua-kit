@@ -2091,6 +2091,23 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Differential original-AST tests for history/file/full-CDP/page-assets/WebMCP preparations, prompt metadata, source short-circuits, URL sanitization, structural input validation and persistence ordering; real elicitation host pending"
+    },
+    "packages/browser/src/service/security/origin_approval.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-origin-approval-orchestration",
+      "symbols": [
+        "NB",
+        "FB",
+        "HB",
+        "kX",
+        "MB",
+        "BX",
+        "gf",
+        "OB"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential original-AST execution across v1/v2, concurrent shared reviews, independent user decisions, revoke/retry, policy changes and cached-approval identity changes; live approval host pending"
     }
   },
   "embeddedPackages": {
