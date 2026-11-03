@@ -1634,6 +1634,11 @@
       "end": 791006,
       "kind": "FunctionDeclaration"
     },
+    "Z_": {
+      "start": 791013,
+      "end": 806926,
+      "kind": "ClassExpression"
+    },
     "zD": {
       "start": 807012,
       "end": 807212,

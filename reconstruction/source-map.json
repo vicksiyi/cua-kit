@@ -3111,6 +3111,22 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Differential HMAC form/password request matching including multipart, duplicate fields, URL/referrer decoding and caps; five original lease ownership/replacement/rollback traces. Registry requires original Z_ lease class, still unreconstructed. No credential submission or end-to-end claim."
+    },
+    "packages/browser/src/service/credentials/lease_cleanup.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-credential-lease-cleanup-methods",
+      "symbols": [
+        "Z_.navigateToBrowserBlank",
+        "Z_.quiesceWebsite",
+        "Z_.rejectOrdinaryRequest",
+        "Z_.close",
+        "Z_.dispose",
+        "Z_.stopPausedTarget",
+        "Z_.stopPausedTargets"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "17 original method trace scenarios covering frame/loader verification, cached promise identity and reset on failure, target drain, ordered teardown and ordinary rejection cleanup. Abstract lifecycle portion requires remaining original policy/event/start implementation; no complete lease or real CDP integration claim."
     }
   },
   "embeddedPackages": {
