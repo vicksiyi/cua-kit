@@ -3477,6 +3477,20 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "16 original-vs-readable command traces executing serialized page callbacks with fixture elements. Real Chromium blob download validates callback execution, Unicode filename, file bytes and temporary anchor removal through fixture lifecycle/selector adapters. Actual Downloads host policy and full Playwright helper are not claimed end-to-end."
+    },
+    "packages/browser/src/service/commands/browser_user.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-browser-user-commands",
+      "symbols": [
+        "Gp",
+        "Vp",
+        "rR",
+        "W9",
+        "nR"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "32 original command traces and 21 history-query cases; actual ServiceBrowserUser/TabLifecycle assembly verifies returned-ID acquisition, per-turn reclaim, session isolation and authorized-page mismatch rejection. Provider and authority remain fixtures; no personal browser/history accessed or production host claim."
     }
   },
   "embeddedPackages": {
