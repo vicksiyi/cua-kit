@@ -2409,6 +2409,11 @@
       "end": 950412,
       "kind": "FunctionDeclaration"
     },
+    "Ji": {
+      "start": 950412,
+      "end": 950471,
+      "kind": "FunctionDeclaration"
+    },
     "Sre": {
       "start": 950479,
       "end": 950481,
@@ -2543,6 +2548,11 @@
       "start": 969426,
       "end": 973417,
       "kind": "FunctionDeclaration"
+    },
+    "K2": {
+      "start": 973905,
+      "end": 974070,
+      "kind": "ObjectExpression"
     },
     "zre": {
       "start": 974393,
