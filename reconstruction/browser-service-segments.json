@@ -2854,6 +2854,46 @@
       "end": 1214951,
       "kind": "FunctionDeclaration"
     },
+    "One": {
+      "start": 1214964,
+      "end": 1214965,
+      "kind": "Literal"
+    },
+    "Mne": {
+      "start": 1214970,
+      "end": 1214973,
+      "kind": "Literal"
+    },
+    "Nne": {
+      "start": 1214978,
+      "end": 1214981,
+      "kind": "Literal"
+    },
+    "Fne": {
+      "start": 1214986,
+      "end": 1214989,
+      "kind": "Literal"
+    },
+    "qne": {
+      "start": 1215039,
+      "end": 1215114,
+      "kind": "Literal"
+    },
+    "Vne": {
+      "start": 1219810,
+      "end": 1219839,
+      "kind": "FunctionDeclaration"
+    },
+    "uS": {
+      "start": 1219839,
+      "end": 1289039,
+      "kind": "FunctionDeclaration"
+    },
+    "kF": {
+      "start": 1289039,
+      "end": 1289143,
+      "kind": "FunctionDeclaration"
+    },
     "lS": {
       "start": 1290218,
       "end": 1290282,

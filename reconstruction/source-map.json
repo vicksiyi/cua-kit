@@ -2855,6 +2855,23 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Method surface audit covers all 52 original instance methods and both static members; inherited readable modules are assembled in PlaywrightService. Exact readonly/identity source and option comparisons plus real Chromium selectors pass. Surface coverage does not prove full behavioral parity; hF, readonly sandbox service and production/native integration remain pending."
+    },
+    "packages/browser/src/service/readonly/expression.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-readonly-page-expression",
+      "symbols": [
+        "uS",
+        "Vne",
+        "kF",
+        "qne",
+        "One",
+        "Mne",
+        "Nne",
+        "Fne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Complete original generated page-source equality after substituting the readable credential predicate; import-pattern parity and nineteen independent Chromium isolated-world scenarios covering DOM/CSS/credentials/mutation/global/serialization behavior. No hF needed. Host readonly runtime, command authority integration and broader production/native reconstruction remain pending."
     }
   },
   "embeddedPackages": {
