@@ -3583,6 +3583,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "10 original command traces with actual report schema/metadata parser, metadata and hostname cases, and deduplication/error-state comparisons. Telemetry emitter dt is an explicit required dependency; no real reporting network side effect. Production telemetry bootstrap remains pending."
+    },
+    "packages/browser/src/service/webmcp/frame_discovery.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-webmcp-frame-discovery",
+      "symbols": [
+        "Ct",
+        "uN"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "13 original traversal/ownership/error scenarios and 56 secure-origin combinations. Real Chromium HTTPS frame discovery, probe-subtree exclusion, stable identity snapshot and original srcdoc :// origin exclusion verified. Attachment is fixture-tested only; native WebMCP page tool registration/invocation and production OOPIF integration remain pending."
     }
   },
   "embeddedPackages": {
