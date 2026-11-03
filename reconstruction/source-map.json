@@ -3837,7 +3837,7 @@
         "yv"
       ],
       "status": "reconstructed-browser-auth-checkpoint",
-      "validation": "19 original state-transition scenarios use actual reconstructed bindings, inspection and field planning. Checks reinspection limit, changed presentation, origins/documents/targets, selection and submission gates. Action review dc, classifier Rc and submission helper pc remain required fixture dependencies; no complete broker/provider integration claim. Action review dc and submission helper pc now default to reconstructed implementations; classifier Rc remains required."
+      "validation": "19 original state-transition scenarios plus default-classifier ordinary reinspection using actual restored bindings/inspection/planning. All action-review, classifier and submission helpers now have restored defaults. Existing trace scenarios still inject action/submission fixtures; full broker/provider integration not yet verified."
     },
     "packages/browser/src/service/browser_auth/action_review.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3850,6 +3850,17 @@
       ],
       "status": "reconstructed-browser-auth-action-review",
       "validation": "Ten original host traces plus real Chromium comparisons for body/head, connected and detached shadow roots, missing elements, whitespace and 80-character accessible-name boundary, and full target collection with actual form submission origin. Accessible-name utility remains a fixture; full injected helper/provider integration incomplete."
+    },
+    "packages/browser/src/service/browser_auth/credential_fields.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "KT",
+        "M8",
+        "Rc"
+      ],
+      "status": "reconstructed-browser-auth-credential-classification",
+      "validation": "1890 original field type/label/autocomplete combinations; option ambiguity, duplicate IDs, password-only and metadata projection comparisons. Preserves original object identity in KT and shallow metadata projection in Rc. Checkpoint default classifier is exercised through ordinary reinspection. No live credential data used."
     }
   },
   "embeddedPackages": {

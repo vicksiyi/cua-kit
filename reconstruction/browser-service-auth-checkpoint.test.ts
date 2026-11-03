@@ -1,3 +1,4 @@
+import { classifyAuthCredentialFields } from "../packages/browser/src/service/browser_auth/credential_fields";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { originalServiceBindings } from "./service-source";
@@ -155,6 +156,8 @@ async function scenario(source: boolean, mode: string) {
         : "https://fixture.test";
     },
   };
+  if (mode === "ordinary-default-classifier")
+    deps.classifyCredentialFields = classifyAuthCredentialFields;
   const Original = originalServiceBindings(["yv"], {
     Sv: isQrOnlyAuth,
     Ka: bindings.readAuthPageBinding,
@@ -174,7 +177,12 @@ async function scenario(source: boolean, mode: string) {
     aN: createAuthFieldPlan,
     Ih: bindings.readAuthFrameBinding,
   }).yv;
-  const Class = source ? Original : createAuthCheckpointClass(deps);
+  const { classifyCredentialFields: _classifier, ...otherDeps } = deps;
+  const Class = source
+    ? Original
+    : createAuthCheckpointClass(
+        mode === "ordinary-default-classifier" ? otherDeps : deps,
+      );
   const validated = await inspection.inspectAuthFields(params, context);
   const form = await bindings.readAuthFormBinding(params, context),
     options = await bindings.readAuthOptionBindings(params, context);
@@ -307,4 +315,15 @@ test("auth checkpoint requires a form binding except for exact QR-only requests"
         /form binding is required/,
       );
   }
+});
+
+test("checkpoint uses its restored default classifier for ordinary reinspection", async () => {
+  const actual = await scenario(false, "ordinary-default-classifier");
+  assert.deepEqual(actual, await scenario(true, "ordinary-default-classifier"));
+  assert.ok(
+    actual.trace.some(
+      (entry: any) =>
+        entry[0] === "attempt" && entry[1].kind === "reinspection_succeeded",
+    ),
+  );
 });

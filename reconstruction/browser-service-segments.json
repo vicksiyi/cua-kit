@@ -19,6 +19,11 @@
       "end": 90519,
       "kind": "NewExpression"
     },
+    "KT": {
+      "start": 90522,
+      "end": 91741,
+      "kind": "FunctionDeclaration"
+    },
     "j8": {
       "start": 91828,
       "end": 92001,
@@ -2077,6 +2082,11 @@
     "nN": {
       "start": 828888,
       "end": 829132,
+      "kind": "FunctionDeclaration"
+    },
+    "Rc": {
+      "start": 829132,
+      "end": 829336,
       "kind": "FunctionDeclaration"
     },
     "yv": {

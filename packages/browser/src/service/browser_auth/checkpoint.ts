@@ -1,3 +1,4 @@
+import { classifyAuthCredentialFields } from "./credential_fields";
 import { readAuthActionTargets, authSubmissionOrigin } from "./action_review";
 import { isQrOnlyAuth, createAuthFieldPlan } from "./field_plan";
 import { httpOrigin } from "../security/authority_builder";
@@ -29,12 +30,12 @@ export interface AuthCheckpointDependencies {
     requirePost?: boolean,
   ): Promise<any>;
 }
-/** Original yv. Credential classification remains required; action review and submission origin default to their restored implementations. */
+/** Original yv. All classifier, action-review and submission-origin dependencies default to restored implementations. */
 export function createAuthCheckpointClass(
-  supplied: Pick<AuthCheckpointDependencies, "classifyCredentialFields"> &
-    Partial<AuthCheckpointDependencies>,
+  supplied: Partial<AuthCheckpointDependencies> = {},
 ) {
   const dependencies: AuthCheckpointDependencies = {
+    classifyCredentialFields: classifyAuthCredentialFields,
     actionTargets: readAuthActionTargets,
     submissionOrigin: authSubmissionOrigin,
     ...supplied,
