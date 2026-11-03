@@ -2737,6 +2737,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original focus page function comparison in real Chromium across nine cases; assembled focusNode isolation/token verification. Uses required original local hF helper, whose readable TS reconstruction remains pending."
+    },
+    "packages/browser/src/service/playwright/selector_scope.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-selector-scope",
+      "symbols": [
+        "ig",
+        "au"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact readable embedded-source equality and real Chromium comparisons across ten selector/frame cases plus selector capture slicing, scaled frame geometry and hidden-frame checks. OOPIF host routing and hF reconstruction remain pending."
     }
   },
   "embeddedPackages": {

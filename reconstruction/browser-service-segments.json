@@ -2759,6 +2759,11 @@
       "end": 1212797,
       "kind": "FunctionDeclaration"
     },
+    "au": {
+      "start": 1212804,
+      "end": 1213576,
+      "kind": "TemplateLiteral"
+    },
     "SF": {
       "start": 1213630,
       "end": 1213797,
