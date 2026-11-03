@@ -3627,6 +3627,39 @@
         "hN"
       ],
       "validation": "18 original call traces, 48 event state transitions and 25 target identity pairs; real Chromium frame discovery/isolated-world creation/evaluation invokes actual reconstructed page runtime. WebMCP CDP enable and modelContext are fixture dependencies. Upper capability/security/limits/notification command layer and production CDP provider integration remain incomplete."
+    },
+    "packages/browser/src/service/webmcp/session_catalog.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-webmcp-session-directory",
+      "symbols": [
+        "Ya",
+        "gN",
+        "bN",
+        "yN",
+        "Ki",
+        "Xi",
+        "wN",
+        "Dh",
+        "_N",
+        "vN",
+        "Yi",
+        "SN",
+        "Bc",
+        "Oh",
+        "xN",
+        "EN"
+      ],
+      "validation": "11 original differential scenarios cover session isolation, snapshot clone, stale generations, denial/other errors, all-session revocation, root/nested navigation and round-robin polling. Default/config and UTF-8 sizing comparisons."
+    },
+    "packages/browser/src/service/webmcp/tool_directory.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-webmcp-session-directory",
+      "symbols": [
+        "Bh"
+      ],
+      "validation": "11 original directory scenarios use the actual reconstructed host with fixture CDP and explicit feature/config/telemetry/support dependencies. Covers count/byte/change limits, file keys, denied origins, unexpected origin errors, schema/owner rejection and URL revalidation. Production bootstrap and invoke/list command assembly remain pending."
     }
   },
   "embeddedPackages": {
