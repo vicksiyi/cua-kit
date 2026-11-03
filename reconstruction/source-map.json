@@ -3901,7 +3901,7 @@
         "_a"
       ],
       "status": "reconstructed-browser-auth-safety-review",
-      "validation": "15 original trace/audit/error comparisons cover instructions, missing auth frame, empty snapshot, prompt changes, payload projection and rejection precedence. Explicit deferred screenshot test verifies allSettled completion before precheck rejection. Defaults to actual reviewer visible DOM; tests inject capture and precheck, documentation loader remains required."
+      "validation": "15 original trace/audit/error comparisons cover instructions, missing auth frame, empty snapshot, prompt changes, payload projection and rejection precedence. Explicit deferred screenshot test verifies allSettled completion before precheck rejection. Defaults to actual reviewer visible DOM; tests inject capture and precheck, documentation loader remains required. createPackagedAuthSafetyReview now assembles restored documentation loading from host module URL/bundle."
     },
     "packages/browser/src/service/browser_auth/qr_monitor.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3971,6 +3971,25 @@
       ],
       "status": "reconstructed-zxing-reader-wrapper",
       "validation": "Original option/alias/enum and grayscale comparisons, 28 input/failure traces, lazy override/promise identity checks and assembled screenshot-to-heap-to-result test. Preserves allocation/free and original result projection. Underlying Emscripten UD factory remains required; no real WASM barcode recognition claim. Real WASM integration now verified using installed original UD factory (not reconstructed) and hash-pinned installed WASM: synthetic PNG and actual Chromium JPEG screenshot recognition, blank-page null and three-absence monitor completion. Runtime asset packaging and UD TS reconstruction still pending."
+    },
+    "packages/browser/src/service/context/documentation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "YX",
+        "wf",
+        "oD",
+        "iD",
+        "M_",
+        "JX",
+        "N_",
+        "ZX",
+        "XX",
+        "nD",
+        "O_"
+      ],
+      "status": "reconstructed-browser-documentation-loading",
+      "validation": "13 original lookup/error traces, shared failed-discovery promise and packaged identity checks, plus real temporary filesystem discovery/read. Host supplies module URL and optional bundled resources; production resource packaging remains pending."
     }
   },
   "embeddedPackages": {

@@ -1,3 +1,7 @@
+import {
+  createBrowserDocumentation,
+  type DocumentationBundle,
+} from "../context/documentation";
 import { approvalRuntime, browserDisplayName } from "../security/approval";
 import { captureReviewerVisibleDom } from "../input/visible_dom";
 
@@ -179,4 +183,15 @@ export function createAuthSafetyReview(dependencies: AuthSafetyDependencies) {
       : await revalidateAuthSafety(checkpoint, ctx);
   }
   return { captureAuthSafetySnapshot, reviewAuthSafety };
+}
+
+/** Assemble original documentation lookup with the restored review pipeline. */
+export function createPackagedAuthSafetyReview(
+  moduleUrl: string,
+  bundle?: DocumentationBundle,
+) {
+  const documentation = createBrowserDocumentation(moduleUrl, bundle);
+  return createAuthSafetyReview({
+    readDocumentation: documentation.readDocumentation,
+  });
 }

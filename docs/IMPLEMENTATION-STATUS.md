@@ -636,3 +636,9 @@ Validation: original option/enum/alias and grayscale comparisons, 28 input/failu
 Added a synthetic QR fixture generated with macOS CIQRCodeGenerator and an integration test that selects only the installed UD factory expression, verifies the installed WASM SHA-256 and uses the reconstructed reader/decoder/capture/monitor chain. No full vendor service/bootstrap execution or vendor WASM publication is involved.
 
 Validation: decodes the synthetic PNG and an actual Chromium JPEG screenshot, verifies bounds, returns null for a blank page and completes after three real absent captures; initialization is shared. Type checks and all 503 tests pass. This establishes real WASM compatibility of the restored wrapper, not reconstruction of UD: readable Emscripten factory, production asset packaging, full BrowserAuthHandoff and runtime/native providers remain incomplete.
+
+### 16.161 Packaged browser documentation lookup
+
+Restored YX/wf/oD/iD/M_/JX/N_/ZX and associated state in `service/context/documentation.ts`. Preserves environment-specific/default bundle selection, explicit root precedence, relative extensionless name validation, ordered directory probes, ENOENT-only fallback, shared failed discovery and JSON manifest parsing/reference identity. createPackagedAuthSafetyReview now connects this loader to the restored review pipeline.
+
+Validation: 13 original lookup/error traces, failed-promise sharing and packaged identity checks, plus real temporary filesystem discovery/read and traversal rejection. Type checks and all 506 tests pass. Host module URL and packaged documentation content remain assembly inputs; production packaging and full BrowserAuthHandoff/runtime/native integration remain incomplete.
