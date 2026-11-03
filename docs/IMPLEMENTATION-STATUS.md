@@ -114,3 +114,7 @@ Restored guardian-v2 approval/review caching, revocation and cleanup scheduling.
 ## Source reconstruction: prompt results
 
 Restored user/guardian prompt outcome handling and connected policy, persisted storage and caches. 206 tests pass with type checks. Full Preferences and live approval backend are still incomplete.
+
+## Source reconstruction: automatic permission decisions
+
+Restored the Preferences automatic-answer method over existing policy/table/cache modules. 208 tests pass with type checks. Full class assembly and production backend remain outstanding.

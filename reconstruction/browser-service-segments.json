@@ -1574,6 +1574,131 @@
       "end": 1329406,
       "kind": "FunctionDeclaration"
     },
+    "lu.constructor": {
+      "start": 1329756,
+      "end": 1329802,
+      "kind": "MethodDefinition"
+    },
+    "lu.getExtensionRequestHeaders": {
+      "start": 1329817,
+      "end": 1329950,
+      "kind": "MethodDefinition"
+    },
+    "lu.getNetworkPolicy": {
+      "start": 1329950,
+      "end": 1330237,
+      "kind": "MethodDefinition"
+    },
+    "lu.getOriginPermission": {
+      "start": 1330237,
+      "end": 1330391,
+      "kind": "MethodDefinition"
+    },
+    "lu.captureOriginRequestContext": {
+      "start": 1330391,
+      "end": 1330627,
+      "kind": "MethodDefinition"
+    },
+    "lu.getFileTransferPermission": {
+      "start": 1330627,
+      "end": 1330826,
+      "kind": "MethodDefinition"
+    },
+    "lu.isOriginBlockedByPolicy": {
+      "start": 1330826,
+      "end": 1330937,
+      "kind": "MethodDefinition"
+    },
+    "lu.getFullCdpPermission": {
+      "start": 1330937,
+      "end": 1331109,
+      "kind": "MethodDefinition"
+    },
+    "lu.isFullCdpEnabled": {
+      "start": 1331109,
+      "end": 1331182,
+      "kind": "MethodDefinition"
+    },
+    "lu.isWebMcpEnabled": {
+      "start": 1331182,
+      "end": 1332224,
+      "kind": "MethodDefinition"
+    },
+    "lu.assertFullCdpEnabled": {
+      "start": 1332224,
+      "end": 1332398,
+      "kind": "MethodDefinition"
+    },
+    "lu.isHistoryBlockedByPolicy": {
+      "start": 1332398,
+      "end": 1332624,
+      "kind": "MethodDefinition"
+    },
+    "lu.getHistoryPermission": {
+      "start": 1332624,
+      "end": 1332896,
+      "kind": "MethodDefinition"
+    },
+    "lu.isAutoReviewDisabled": {
+      "start": 1332896,
+      "end": 1333062,
+      "kind": "MethodDefinition"
+    },
+    "lu.isEmailOtpAlwaysAllowed": {
+      "start": 1333062,
+      "end": 1333153,
+      "kind": "MethodDefinition"
+    },
+    "lu.isOriginAutoReviewDisabled": {
+      "start": 1333153,
+      "end": 1333241,
+      "kind": "MethodDefinition"
+    },
+    "lu.isPersistentApprovalAllowed": {
+      "start": 1333241,
+      "end": 1333303,
+      "kind": "MethodDefinition"
+    },
+    "lu.allowsGlobalPersistentApproval": {
+      "start": 1333303,
+      "end": 1333365,
+      "kind": "MethodDefinition"
+    },
+    "lu.handleOriginPromptResult": {
+      "start": 1333365,
+      "end": 1333598,
+      "kind": "MethodDefinition"
+    },
+    "lu.handleFileTransferPromptResult": {
+      "start": 1333598,
+      "end": 1333782,
+      "kind": "MethodDefinition"
+    },
+    "lu.handleFullCdpPromptResult": {
+      "start": 1333782,
+      "end": 1333939,
+      "kind": "MethodDefinition"
+    },
+    "lu.handleHistoryPromptResult": {
+      "start": 1333939,
+      "end": 1334153,
+      "kind": "MethodDefinition"
+    },
+    "lu.fullCdpAccessState": {
+      "start": 1334153,
+      "end": 1334603,
+      "kind": "MethodDefinition"
+    },
+    "lu.maybeAutoAnswerBrowserUseRequest": {
+      "start": 1334603,
+      "end": 1336099,
+      "kind": "MethodDefinition"
+    },
+    "lu": {
+      "start": 1329750,
+      "end": 1336100,
+      "kind": "ClassExpression"
+    },
     "gS": {
       "start": 1336144,
       "end": 1336636,
