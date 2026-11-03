@@ -2449,6 +2449,46 @@
       "end": 933915,
       "kind": "FunctionDeclaration"
     },
+    "are": {
+      "start": 934116,
+      "end": 934136,
+      "kind": "Literal"
+    },
+    "B2": {
+      "start": 934140,
+      "end": 934391,
+      "kind": "CallExpression"
+    },
+    "ure": {
+      "start": 934409,
+      "end": 934434,
+      "kind": "Literal"
+    },
+    "D2": {
+      "start": 934438,
+      "end": 934756,
+      "kind": "CallExpression"
+    },
+    "O2": {
+      "start": 934773,
+      "end": 934794,
+      "kind": "Literal"
+    },
+    "M2": {
+      "start": 934798,
+      "end": 935050,
+      "kind": "CallExpression"
+    },
+    "Ov": {
+      "start": 935067,
+      "end": 935093,
+      "kind": "Literal"
+    },
+    "N2": {
+      "start": 935097,
+      "end": 935491,
+      "kind": "CallExpression"
+    },
     "lre": {
       "start": 935517,
       "end": 935520,
