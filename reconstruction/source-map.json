@@ -3542,6 +3542,30 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "14 original-vs-readable command traces plus URL/markdown/binary cases. Real headless Chromium page fetch against routed fixture response exports 70000 binary bytes through actual filesystem. Uses reconstructed Fc/Zh-equivalent helpers; no real user document or Google service accessed. Provider/authority adapters remain fixtures."
+    },
+    "packages/browser/src/service/content/youtube_transcript.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-youtube-transcript-capture-and-formatting",
+      "symbols": [
+        "hp",
+        "c5",
+        "d5",
+        "p5",
+        "Fy"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original formatter/record/event comparisons including 5001 items and UTF-8 overflow; 12 original serialized page capture scenarios for subtitle restoration, fetch limits and identity changes. Real Chromium PerformanceObserver/resource fetch on routed fixture player writes transcript with restored subtitle state. No actual YouTube service/user page accessed."
+    },
+    "packages/browser/src/service/commands/youtube_export.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "assembled-youtube-transcript-export",
+      "symbols": [
+        "cF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Actual reconstructed transcript reader/page function used by export command. Five command identity/error cases plus real Chromium fixture resource observation, caption fetch, disk write and subtitle state restoration. Provider/authority/player adapters are fixtures."
     }
   },
   "embeddedPackages": {
