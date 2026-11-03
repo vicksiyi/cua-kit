@@ -1894,6 +1894,26 @@
       "end": 734270,
       "kind": "FunctionDeclaration"
     },
+    "dc": {
+      "start": 734270,
+      "end": 734693,
+      "kind": "FunctionDeclaration"
+    },
+    "xY": {
+      "start": 734693,
+      "end": 735228,
+      "kind": "FunctionDeclaration"
+    },
+    "PD": {
+      "start": 735228,
+      "end": 735701,
+      "kind": "FunctionDeclaration"
+    },
+    "pc": {
+      "start": 735701,
+      "end": 735777,
+      "kind": "FunctionDeclaration"
+    },
     "vf": {
       "start": 735777,
       "end": 736618,

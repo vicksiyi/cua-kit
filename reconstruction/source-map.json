@@ -3837,7 +3837,19 @@
         "yv"
       ],
       "status": "reconstructed-browser-auth-checkpoint",
-      "validation": "19 original state-transition scenarios use actual reconstructed bindings, inspection and field planning. Checks reinspection limit, changed presentation, origins/documents/targets, selection and submission gates. Action review dc, classifier Rc and submission helper pc remain required fixture dependencies; no complete broker/provider integration claim."
+      "validation": "19 original state-transition scenarios use actual reconstructed bindings, inspection and field planning. Checks reinspection limit, changed presentation, origins/documents/targets, selection and submission gates. Action review dc, classifier Rc and submission helper pc remain required fixture dependencies; no complete broker/provider integration claim. Action review dc and submission helper pc now default to reconstructed implementations; classifier Rc remains required."
+    },
+    "packages/browser/src/service/browser_auth/action_review.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "dc",
+        "xY",
+        "PD",
+        "pc"
+      ],
+      "status": "reconstructed-browser-auth-action-review",
+      "validation": "Ten original host traces plus real Chromium comparisons for body/head, connected and detached shadow roots, missing elements, whitespace and 80-character accessible-name boundary, and full target collection with actual form submission origin. Accessible-name utility remains a fixture; full injected helper/provider integration incomplete."
     }
   },
   "embeddedPackages": {
