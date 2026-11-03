@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。146 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。150 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -329,3 +329,11 @@ Reconstructed seven remaining qh methods for JavaScript evaluation, document sta
 closeTab selects the first strictly matching numeric tab target, runs cleanup and sends Target.closeTarget or Page.close; forget occurs in finally only after attachment succeeded. detachAllTabs snapshots attachment-promise keys and settles all detach operations.
 
 146 differential tests pass with type checking. Tests verify exception message precedence, option omission, URL cache behavior, cleanup/finally boundaries and partial detach failures. Source-method inventory now leaves waitForPageLoadEvent before full qh method coverage; method coverage alone is not proof of complete manager equivalence or provider integration.
+
+### CDP page-load classification and original event emitter
+
+Reconstructed waitForPageLoadEvent and navigation helpers, plus the original Za emitter. The initial classification timer switches to the load timer only once. Same-document events are ignored for frame IDs already seen navigating; BFCache restoration has separate scope checks. Navigation blocking preserves service security errors and redacts credentials/query/hash from displayed URLs.
+
+The original emitter uses a plain object, removes the last duplicate listener, snapshots listeners for dispatch and binds callbacks to the emitter. It must not be silently replaced with Node EventEmitter during full manager assembly.
+
+150 differential tests pass with type checking, including deterministic timer-transition traces. All qh methods now have reconstruction entries, but full class field/prototype assembly and provider integration are still required. Method inventory is not proof of a runnable complete backend.
