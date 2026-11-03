@@ -90,3 +90,7 @@ Restored managed/local network merging and constraint construction. 186 tests pa
 ## Source reconstruction: origin patterns
 
 Restored origin/hostname pattern parsing and matching and connected the parser to network constraint construction. 189 tests pass with type checks, including real canonicalization collisions. Full preferences and backend policy execution remain incomplete.
+
+## Source reconstruction: origin policy resolution
+
+Restored origin-level permission merging and network denial evaluation over reconstructed parsing/config modules. 192 tests pass with type checks. Persisted permissions, guardian logic and full preferences/context assembly remain incomplete.

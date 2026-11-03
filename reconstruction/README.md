@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。189 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。192 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -433,3 +433,9 @@ Restored fS/Doe and merge helpers plus gL/Uoe in `service/preferences/network_co
 Restored Cs, hostname pattern parsing/matching and their helpers in `service/preferences/origin_patterns.ts`. Preserves exact/subdomain/apex distinctions, ASCII-only folding, UTF-8 byte wildcard matching, IPv6 zone normalization, authority validation, IDN normalization and default-port canonicalization. `buildNetworkPolicy` now assembles the real reconstructed parser; the injection factory remains available for isolated composition testing.
 
 189 tests and type checks pass. Original AST differential tests cover host/URL edge cases, wildcard Unicode byte behavior and real-parser canonical collision exclusion in network constraints. Network config no longer requires a parser placeholder. Full Preferences and policy execution/context assembly remain pending.
+
+## Origin permission resolution and network denial
+
+Restored cL/uL/lL/es, Gc/pL/mL and QC/l5, with original LC/up/Es URL acceptance, in `service/preferences/origin_policy.ts`. Canonical duplicate counting precedes policy filtering; restrictive matches win, local fields are projected exactly, and denied access forces upload/download/full-CDP/auto-review denial. Preserves original invalid/non-HTTP input behavior rather than inventing a new global policy. Network denial evaluates domain rules before origin grants, and config reads start concurrently.
+
+192 tests and type checks pass, comparing original AST functions across managed/local conflicts, missing duplicate policies, sandbox hosts, malformed/global host patterns, non-HTTP URLs and asynchronous read failures. This resolves config policy helpers; persisted permissions, guardian state and the full Preferences/runtime path remain pending.
