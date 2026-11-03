@@ -1,5 +1,6 @@
 import type { CDPSession, Page } from 'playwright';
 import type { AXElement } from '../core/types.js';
+import { FrameRevisions, type FrameStamp } from './stamp.js';
 import { CuaError } from '../core/errors.js';
 
 interface AXValue { value?: unknown }
@@ -8,14 +9,17 @@ interface RawAXNode {
   backendDOMNodeId?: number; role?: AXValue; name?: AXValue; value?: AXValue;
   properties?: { name: string; value: AXValue }[];
 }
-interface FrameTree { frame: { id: string; loaderId: string }; childFrames?: FrameTree[] }
-export interface ElementBinding { backendNodeId: number; frameId: string; loaderId: string; cdp: CDPSession }
-export interface Capture { elements: AXElement[]; bindings: Map<number, ElementBinding>; warnings: string[] }
+interface FrameTree { frame: { id: string; loaderId: string; parentId?: string }; childFrames?: FrameTree[] }
+export interface ElementBinding { backendNodeId: number; frameId: string; loaderId: string; cdp: CDPSession; contextId?: number }
+export interface Capture { elements: AXElement[]; bindings: Map<number, ElementBinding>; warnings: string[]; stamps: FrameStamp[] }
 
 /** IDs are monotonic within a target; old IDs are never recycled for different DOM nodes. */
 export class AccessibilityCollector {
+  readonly revisions = new FrameRevisions();
   private nextId = 1;
   private identities = new Map<string, number>();
+  private contextIds = new Map<string, number>();
+  private frames = new Map<string, { tree: FrameTree; cdp: CDPSession; parentId?: string }>();
   private sessions = new Map<string, CDPSession>();
   constructor(private page: Page, private cdp: CDPSession) {}
 
@@ -47,12 +51,21 @@ export class AccessibilityCollector {
         }
       }
     }
-    const frameSessions = new Map<string, { tree: FrameTree; cdp: CDPSession }>();
-    const visit = (tree: FrameTree, cdp: CDPSession) => {
-      frameSessions.set(tree.frame.id, { tree, cdp });
-      for (const child of tree.childFrames ?? []) visit(child, cdp);
+    const frameSessions = new Map<string, { tree: FrameTree; cdp: CDPSession; parentId?: string }>();
+    const visit = (tree: FrameTree, cdp: CDPSession, parentId?: string) => {
+      const previous = frameSessions.get(tree.frame.id);
+      frameSessions.set(tree.frame.id, { tree, cdp, parentId: parentId ?? tree.frame.parentId ?? previous?.parentId });
+      for (const child of tree.childFrames ?? []) visit(child, cdp, tree.frame.id);
     };
     for (const { tree, cdp } of roots) visit(tree, cdp);
+    this.frames = frameSessions;
+    const stamps: FrameStamp[] = [];
+    // Install revision observers before reading any accessibility trees.
+    for (const [frameId, { cdp }] of frameSessions) stamps.push(await this.revisions.capture(frameId, cdp));
+    this.contextIds = new Map(stamps.map(stamp => [stamp.frameId, stamp.contextId]));
+    const liveFrames = new Set(frameSessions.keys());
+    for (const [frameId, session] of this.sessions) if (!liveFrames.has(frameId)) { await session.detach().catch(() => undefined); this.sessions.delete(frameId); }
+    const liveIdentities = new Set<string>();
     const elements: AXElement[] = [];
     const bindings = new Map<number, ElementBinding>();
     for (const { tree, cdp } of frameSessions.values()) {
@@ -64,6 +77,7 @@ export class AccessibilityCollector {
       for (const node of nodes) {
         if (node.ignored) continue;
         const identity = `${frameId}:${loaderId}:${node.backendDOMNodeId ?? node.nodeId}`;
+        liveIdentities.add(identity);
         let id = this.identities.get(identity);
         if (id === undefined) { id = this.nextId++; this.identities.set(identity, id); }
         ids.set(node.nodeId, id);
@@ -79,10 +93,41 @@ export class AccessibilityCollector {
         elements.push({ id, role: String(node.role?.value ?? 'unknown'), name: String(node.name?.value ?? ''),
           ...(node.value?.value === undefined ? {} : { value: String(node.value.value) }),
           ...(node.parentId && ids.has(node.parentId) ? { parentId: ids.get(node.parentId)! } : {}), properties });
-        if (node.backendDOMNodeId !== undefined) bindings.set(id, { backendNodeId: node.backendDOMNodeId, frameId, loaderId, cdp });
+        if (node.backendDOMNodeId !== undefined) bindings.set(id, { backendNodeId: node.backendDOMNodeId, frameId, loaderId, cdp, contextId: this.contextIds.get(frameId) });
       }
     }
-    return { elements, bindings, warnings };
+    for (const identity of this.identities.keys()) if (!liveIdentities.has(identity)) this.identities.delete(identity);
+    await this.revisions.verify(stamps);
+    return { elements, bindings, warnings, stamps };
+  }
+
+  async toMainFramePoint(frameId: string, point: { x: number; y: number }): Promise<{ x: number; y: number }> {
+    let current = this.frames.get(frameId);
+    const visited = new Set<string>();
+    while (current?.parentId) {
+      if (visited.has(current.tree.frame.id)) throw new CuaError('STALE_OBSERVATION', 'Frame hierarchy is inconsistent.');
+      visited.add(current.tree.frame.id);
+      const parent = this.frames.get(current.parentId);
+      if (!parent) throw new CuaError('STALE_OBSERVATION', 'Parent frame disappeared.');
+      const owner = await parent.cdp.send('DOM.getFrameOwner', { frameId: current.tree.frame.id });
+      point = await onElement({ backendNodeId: owner.backendNodeId, frameId: parent.tree.frame.id, loaderId: parent.tree.frame.loaderId, cdp: parent.cdp, contextId: this.contextIds.get(parent.tree.frame.id) }, `function (point) {
+        const r = this.getBoundingClientRect(), style = getComputedStyle(this);
+        if (!this.isConnected || !r.width || !r.height) throw new Error('Frame has no visible bounds');
+        if (style.transform !== 'none') {
+          const matrix = new DOMMatrixReadOnly(style.transform);
+          if (!matrix.is2D || matrix.b || matrix.c || matrix.a <= 0 || matrix.d <= 0) throw new Error('Rotated or reflected frames are not supported');
+        }
+        const sx = r.width / this.offsetWidth, sy = r.height / this.offsetHeight;
+        const x = r.left + (point.x + this.clientLeft) * sx;
+        const y = r.top + (point.y + this.clientTop) * sy;
+        if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) throw new Error('Frame point is outside parent viewport');
+        if (this.getRootNode().elementFromPoint(x,y) !== this) throw new Error('Frame is covered');
+        return { x, y };
+      }`, [point]);
+      current = parent;
+    }
+    if (!current || current.cdp !== this.cdp) throw new CuaError('STALE_OBSERVATION', 'Cannot resolve frame point to main target.');
+    return point;
   }
 
   async dispose(): Promise<void> {
@@ -109,7 +154,7 @@ export function renderAX(elements: AXElement[]): string {
 
 /** Execute against the captured backend node, never a broad text selector. */
 export async function onElement<T>(binding: ElementBinding, body: string, args: unknown[] = []): Promise<T> {
-  const { object } = await binding.cdp.send('DOM.resolveNode', { backendNodeId: binding.backendNodeId });
+  const { object } = await binding.cdp.send('DOM.resolveNode', { backendNodeId: binding.backendNodeId, ...(binding.contextId === undefined ? {} : { executionContextId: binding.contextId }) });
   if (!object.objectId) throw new CuaError('STALE_OBSERVATION', 'Element is no longer available.');
   try {
     const response = await binding.cdp.send('Runtime.callFunctionOn', {

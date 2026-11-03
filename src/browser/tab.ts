@@ -5,16 +5,7 @@ import { assert, checkAbort, CuaError } from '../core/errors.js';
 import { SerialQueue } from '../core/serial.js';
 import type { ActionOptions, Authorize, AuditEvent, ClickOptions, ElementRef, Observation, Point, StateOptions } from '../core/types.js';
 
-const documentStamp = `function (id) {
-  const doc = this.nodeType === 9 ? this : this.ownerDocument;
-  const win = doc.defaultView;
-  if (!win.__cuaKitRevision) {
-    const state = { id, revision: 0 };
-    Object.defineProperty(win, '__cuaKitRevision', { value: state });
-    new MutationObserver(() => state.revision++).observe(doc, {subtree:true, childList:true, attributes:true, characterData:true});
-  }
-  return JSON.stringify(win.__cuaKitRevision);
-}`;
+import type { FrameStamp } from './stamp.js';
 
 interface TabConfig {
   sessionId: string;
@@ -32,7 +23,7 @@ export class CuaTab {
   private snapshot?: Observation;
   private previous?: Observation;
   private bindings = new Map<number, ElementBinding>();
-  private stamps = new Map<string, string>();
+  private stamps: FrameStamp[] = [];
 
   private constructor(readonly id: string, private page: Page, private cdp: CDPSession, private config: TabConfig) {
     this.collector = new AccessibilityCollector(page, cdp);
@@ -49,7 +40,7 @@ export class CuaTab {
   get capabilities(): readonly string[] {
     return ['ax', 'screenshot', 'click', 'typeText', 'pressKey', 'scroll', 'setValue', 'navigation'];
   }
-  invalidate(): void { this.epoch++; this.snapshot = undefined; this.bindings.clear(); this.stamps.clear(); }
+  invalidate(): void { this.epoch++; this.snapshot = undefined; this.bindings.clear(); this.stamps = []; }
 
   private run<T>(operation: string, effect: 'read' | 'write', options: ActionOptions, fn: () => Promise<T>): Promise<T> {
     return this.queue.run(async () => {
@@ -89,21 +80,14 @@ export class CuaTab {
   private async capture(options: StateOptions): Promise<Observation> {
       const epoch = this.epoch;
       const capture = await this.collector.capture();
-      const stamps = new Map<string, string>();
-      for (const binding of capture.bindings.values()) {
-        if (!stamps.has(binding.frameId)) stamps.set(binding.frameId, await onElement<string>(binding, documentStamp, [randomUUID()]));
-      }
       checkAbort(options.signal);
       const screenshot = options.screenshot ? {
         id: randomUUID(), bytes: new Uint8Array(Buffer.from((await this.cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true })).data, 'base64')),
         mimeType: 'image/png' as const, coordinateSpace: 'css-viewport' as const, capturedAt: new Date().toISOString(),
       } : undefined;
       assert(epoch === this.epoch, 'STALE_OBSERVATION', 'Navigation occurred during capture.');
-      for (const binding of capture.bindings.values()) {
-        if (await onElement<string>(binding, documentStamp, [randomUUID()]) !== stamps.get(binding.frameId)) {
-          throw new CuaError('STALE_OBSERVATION', 'Document changed during capture. Observe again.');
-        }
-      }
+      await this.collector.revisions.verify(capture.stamps);
+      checkAbort(options.signal);
       const result: Observation = {
         sessionId: this.config.sessionId, targetId: this.id, snapshotId: randomUUID(), epoch,
         capturedAt: new Date().toISOString(), url: this.url, elements: capture.elements,
@@ -119,7 +103,7 @@ export class CuaTab {
           changed: result.elements.filter(element => before.has(element.id) && JSON.stringify(before.get(element.id)) !== JSON.stringify(element)),
         };
       }
-      this.snapshot = result; this.previous = result; this.bindings = capture.bindings; this.stamps = stamps;
+      this.snapshot = result; this.previous = result; this.bindings = capture.bindings; this.stamps = capture.stamps;
       return structuredClone(result);
   }
   async getAXState(options: StateOptions = {}): Promise<string> { return (await this.observe(options)).text; }
@@ -140,10 +124,7 @@ export class CuaTab {
     const id = typeof target === 'number' ? target : target.elementId;
     const binding = this.bindings.get(id);
     assert(binding, 'STALE_OBSERVATION', `Element ${id} is not an actionable node in the current snapshot.`);
-    let stamp: string;
-    try { stamp = await onElement<string>(binding, documentStamp, [randomUUID()]); }
-    catch (cause) { throw new CuaError('STALE_OBSERVATION', 'Element detached or document replaced.', { cause }); }
-    assert(stamp === this.stamps.get(binding.frameId), 'STALE_OBSERVATION', 'Document changed since observation. Observe again.');
+    await this.collector.revisions.verify(this.stamps);
     return binding;
   }
   private async focus(target: number | ElementRef | null): Promise<{ cdp: CDPSession }> {
@@ -164,12 +145,15 @@ export class CuaTab {
       let cdp = this.cdp, x: number, y: number;
       if (Array.isArray(target)) {
         assert(this.snapshot?.screenshot, 'STALE_OBSERVATION', 'Coordinate input requires a fresh screenshot.');
+        await this.collector.revisions.verify(this.stamps);
+        const fresh = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true });
+        assert(Buffer.from(fresh.data, 'base64').equals(Buffer.from(this.snapshot.screenshot.bytes)), 'STALE_OBSERVATION', 'Visible pixels changed since screenshot; observe again.');
         [x, y] = target as unknown as Point;
         const metrics = await cdp.send('Page.getLayoutMetrics');
         assert(Number.isFinite(x) && Number.isFinite(y) && x >= 0 && y >= 0 && x < metrics.cssVisualViewport.clientWidth && y < metrics.cssVisualViewport.clientHeight, 'INVALID_ARGUMENT', 'Point is outside viewport.');
       } else {
         const binding = await this.resolve(target as number | ElementRef);
-        cdp = binding.cdp;
+        cdp = this.cdp;
         const point = await onElement<{ x: number; y: number }>(binding, `async function () {
           if (!this.isConnected || this.disabled) throw new Error('Element is disabled or detached');
           this.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
@@ -182,20 +166,13 @@ export class CuaTab {
           let y = Math.max(0, Math.min(innerHeight, r.bottom) + Math.max(0, r.top)) / 2;
           const hit = this.getRootNode().elementFromPoint(x,y);
           if (hit !== this && !this.contains(hit)) throw new Error('Element is covered');
-          let win = this.ownerDocument.defaultView;
-          while (win.frameElement) {
-            const f = win.frameElement, fr = f.getBoundingClientRect();
-            x += fr.left + f.clientLeft; y += fr.top + f.clientTop;
-            const parentHit = win.parent.document.elementFromPoint(x,y);
-            if (parentHit !== f) throw new Error('Frame is covered');
-            win = win.parent;
-          }
           return {x,y};
         }`);
-        ({ x, y } = point);
+        ({ x, y } = await this.collector.toMainFramePoint(binding.frameId, point));
       }
       checkAbort(options.signal);
       const button = options.mouseButton ?? 'left';
+      assert(['left', 'right', 'middle'].includes(button), 'INVALID_ARGUMENT', 'Unknown mouse button.');
       const buttonMask = button === 'left' ? 1 : button === 'right' ? 2 : 4;
       try {
         await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
@@ -203,7 +180,12 @@ export class CuaTab {
           checkAbort(options.signal);
           try {
             await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button, buttons: buttonMask, clickCount });
-            if (options.durationMs) await new Promise(resolve => setTimeout(resolve, options.durationMs));
+            if (options.durationMs) await new Promise<void>((resolve, reject) => {
+              const cancel = () => { clearTimeout(timer); reject(new CuaError('ACTION_OUTCOME_UNKNOWN', 'Click interrupted after mouse-down; release sent, observe before retrying.')); };
+              const timer = setTimeout(() => { options.signal?.removeEventListener('abort', cancel); resolve(); }, options.durationMs);
+              options.signal?.addEventListener('abort', cancel, { once: true });
+              if (options.signal?.aborted) cancel();
+            });
           } finally {
             await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button, buttons: 0, clickCount });
           }
@@ -221,6 +203,7 @@ export class CuaTab {
   }
   setValue(target: number | ElementRef, value: string, options: ActionOptions = {}): Promise<void> {
     return this.run('setValue', 'write', options, async () => {
+      assert(typeof value === 'string', 'INVALID_ARGUMENT', 'value must be a string.');
       const binding = await this.resolve(target);
       checkAbort(options.signal);
       try {
