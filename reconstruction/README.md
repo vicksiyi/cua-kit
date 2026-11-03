@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。152 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。155 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -345,3 +345,9 @@ createCdpManagerClass now assembles all reconstructed qh methods on the original
 152 tests pass with type checking. New differential tests instantiate the exact original class and the reconstructed class, compare own field order/types and prototype descriptors, then exercise attachment, dispatch, document state, dialog blocking/mutation, raw events and detach through the complete manager. All underlying browser I/O remains an explicit fixture in these tests.
 
 This completes the manager assembly milestone, not the overall service: p6 runtime/context/command handlers, privileged provider, native/Sky/cua-repl integration and independent MCP/AgentLoop demo remain pending. Current tests demonstrate exercised behavior, not exhaustive equivalence of every runtime interaction.
+
+### Execution context tab inventory, lifecycle and UI dependencies
+
+Reconstructed gg, Tg and bg as ServiceTabs, TabLifecycle and BrowserUi. Tab lookup retains strict ID matching, first-active selection, detailed missing-tab errors and provider return identity. Lifecycle state is scoped by session; acquisition refreshes per-turn claims without duplicating acquired events, creation records every event, and takeEvents drains the queue. UI mouse movement retains explicit false wait projection and catches synchronous/asynchronous provider failures.
+
+155 differential tests pass with type checking. Tests compare the original classes for arguments, state identity, session/turn changes, null-turn behavior, event draining and awaited versus detached mouse movement. These are actual ob dependencies; the full execution-context constructor, remaining security/input/observation components and privileged provider still require reconstruction.

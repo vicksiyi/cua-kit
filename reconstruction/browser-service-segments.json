@@ -814,6 +814,21 @@
       "end": 910006,
       "kind": "FunctionDeclaration"
     },
+    "gg": {
+      "start": 1323194,
+      "end": 1323796,
+      "kind": "ClassExpression"
+    },
+    "bg": {
+      "start": 1323808,
+      "end": 1324034,
+      "kind": "ClassExpression"
+    },
+    "Tg": {
+      "start": 1353467,
+      "end": 1354373,
+      "kind": "ClassExpression"
+    },
     "q3": {
       "start": 1374026,
       "end": 1376734,
