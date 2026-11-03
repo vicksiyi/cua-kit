@@ -161,3 +161,17 @@ browserAuth 的 schema 已完整还原（字段/选项/密码专用请求约束�
 选择器保留文本与属性不同的转义、正则 unicode/unicodeSets 分支、跨 realm RegExp 判断、exact 标记及原来的有限参数校验。集合缓存按 relativeSelector 共享 Promise；index 和 timeout 不进入 key，首次调用的 timeout 控制共享请求。失败删除 key，clear 不取消在途请求；旧请求失败会删除 clear 后同 key 的新缓存，忠实保留原竞态。结果不隐式执行 schema.parse。
 
 **65 项差分测试通过，类型检查通过。** 新增选择器、并发共享/超时、失败重试、clear 与在途失败竞态、命令/结果 schema 验证。未接入真实浏览器；完整 PlaywrightLocator、FrameLocator、API 与 browserAuth 装配仍待完成。上述文件是实际依赖的还原，不代表完整 Playwright 已交付。
+
+## Playwright 客户端与 browserAuth 接通
+
+本轮新增 9 个业务文件：PlaywrightLocator、FrameLocator、PlaywrightAPI、Download、FileChooser、BrowserAuthTabCapability、五类 Tab 能力注册表，以及 locator/page 两个命令 schema 文件。累计 71 个业务文件，其中 4 个 schema 文件由原 AST 提取并补充可读名称与推定类型；其余为逐方法还原。新增 schema 同样由 `scripts/reconstruct-input-schemas.mjs` 再生成。
+
+Locator 保留点击/输入/selectOption/check/等待/下载、单项与集合读取、evaluate、链式定位、and/or/filter、目标身份检查及 collection cache 传播。动作成功清缓存，waitFor 不清缓存；直接过滤集合根与过滤相对子选择器采用不同缓存规则。动作失败后请求 1000ms DOM 诊断，诊断失败退回原上下文错误。
+
+Page API 保留 URL/load 等待、timeout+2000、download 默认 120000ms、waitForEvent 内部 rejection handler，以及 expectNavigation 先启动等待、再以 Promise.then 调用 action 的顺序。下载与文件选择对象保留原字段映射、参数检查和异常包装；elementScreenshot 保留原 atob 字节解码。FrameLocator 逐层插入 enter-frame 选择器。
+
+browserAuth 现在使用真实 PlaywrightLocator 的私有 selector 访问器，拒绝形似对象及跨 browser/tab 的 locator，保留字段省略与 serialize → command.parse → send → result.parse 顺序。CDP、botDetection、browserAuth、pageAssets、webMCP 按原顺序注册。
+
+**80 项测试通过，类型检查通过。** 新测试直接实例化原 bundle 类作差分比较，覆盖动作/读取/缓存/链式选择、局部错误、认证参数与身份、页面/事件/导航时序、27 组命令 schema、公开方法顺序和 arity。诊断回调经可读 TS 重写后，Function.toString 的文本会改变；对此执行两份实际脚本并比较 DOM 诊断结果与最终错误，不宣称其序列化脚本文本相同。自定义错误逐字比较，原生 TypeError 变量名称与 stack 位置差异仍适用此前说明。
+
+本轮是完整 Playwright 客户端类的还原，不是底层 Playwright 服务已交付。尚未进行真实认证、网页输入、下载或文件上传。下一步装配 Tab/Browser 与完整 create/setup runtime，再继续 browser-service、Sky/cua-repl、声明与 exports、独立 MCP/AgentLoop demo 和真实端到端验证。
