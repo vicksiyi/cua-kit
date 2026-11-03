@@ -3902,6 +3902,24 @@
       ],
       "status": "reconstructed-browser-auth-safety-review",
       "validation": "15 original trace/audit/error comparisons cover instructions, missing auth frame, empty snapshot, prompt changes, payload projection and rejection precedence. Explicit deferred screenshot test verifies allSettled completion before precheck rejection. Defaults to actual reviewer visible DOM; tests inject capture and precheck, documentation loader remains required."
+    },
+    "packages/browser/src/service/browser_auth/qr_monitor.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "QY",
+        "HD",
+        "WD",
+        "oJ",
+        "iJ",
+        "X_",
+        "eJ",
+        "tJ",
+        "rJ",
+        "nJ"
+      ],
+      "status": "reconstructed-browser-auth-qr-monitor",
+      "validation": "84 original geometry combinations, 15 original monitor traces, initial synchronous publication and real abortable cadence wait. Preserves 8-cycle binding checks, 3-absence completion, unknown reset, page-change behavior, screenshot options and background error handling. QR decoder remains required dependency; no real QR recognition claim."
     }
   },
   "embeddedPackages": {

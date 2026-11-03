@@ -612,3 +612,9 @@ Validation: 52 original private/ordinary preflight traces plus 12 credential-bin
 Restored ID/EY/$_/TY/_a in `browser_auth/safety_review.ts`. Uses the restored approval audit/failure runtime and defaults to actual reviewer visible DOM capture. Preserves required authentication-frame presence, empty-snapshot revalidation, prompt-change failure, projected review metadata, concurrent precheck/screenshot settlement and precheck-first rejection precedence. Host documentation loading remains a required dependency.
 
 Validation: 15 original trace/audit/error scenarios and an explicit deferred screenshot test proving that precheck rejection waits for both operations to settle. Type checks and all 492 tests pass. Capture and automated precheck are fixtures in these orchestration tests; no live safety-review service claim. Full BrowserAuthHandoff, QR handling and production runtime/provider assembly remain incomplete.
+
+### 16.157 Auth QR geometry and refresh monitor
+
+Restored QY/HD/WD/oJ/iJ/X_ and cadence constants in `browser_auth/qr_monitor.ts`. Preserves outward integer bounds, synchronous initial publication, 125ms abortable cadence, every-eighth-iteration binding checks, three consecutive absent observations, unknown-result reset, navigation behavior, screenshot timeout/debugger options and swallowed background errors. Decoder remains explicitly supplied.
+
+Validation: 84 original geometry combinations, 15 original monitor traces, synchronous start/stop and real abortable timer. Type checks and all 495 tests pass. Screenshot and decoding use fixtures; actual ZXing/browser fallback decoding, full handoff and production runtime integration remain outstanding.
