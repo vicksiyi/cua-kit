@@ -669,6 +669,16 @@
       "end": 907352,
       "kind": "FunctionDeclaration"
     },
+    "Uh": {
+      "start": 907556,
+      "end": 907659,
+      "kind": "FunctionDeclaration"
+    },
+    "HN": {
+      "start": 907819,
+      "end": 907877,
+      "kind": "FunctionDeclaration"
+    },
     "WN": {
       "start": 907877,
       "end": 907920,
@@ -702,6 +712,16 @@
     "jh": {
       "start": 908620,
       "end": 908673,
+      "kind": "FunctionDeclaration"
+    },
+    "GN": {
+      "start": 908673,
+      "end": 908765,
+      "kind": "FunctionDeclaration"
+    },
+    "VN": {
+      "start": 908765,
+      "end": 908870,
       "kind": "FunctionDeclaration"
     },
     "q3": {

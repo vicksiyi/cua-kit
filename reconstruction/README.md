@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。121 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。125 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -275,3 +275,11 @@ attach 共享每 tab Promise，按 network policy → provider.attach → focus 
 Reconstructed nine original qh methods in service/cdp/lifecycle_methods.ts: event-source tab routing, detachTab, forgetAttachedTab, frame/target alias maintenance, and child-target cleanup. Numeric tabId takes precedence over session/target without fallback. During initialization, forget only clears the attached flag; remaining cleanup is deferred to attachment finalization. Child target sets are removed before allSettled cleanup. Source fields that are not cleared remain unchanged.
 
 121 tests pass, with type checking. New differential tests execute the exact original AST methods and cover routing precedence, alias migration, delayed/forced cleanup, detach reasons, provider failure, in-flight attachment and partially failing child cleanup. Full manager construction/event bridge, raw-event storage and native provider integration remain incomplete; these method groups are not a complete runnable service.
+
+### CDP target/frame events and frame initialization
+
+Reconstructed qh target attach/detach, frame navigation/detach, and shared frame initialization, plus Uh/HN/GN/VN predicates. Root frame navigation records frame ID and URL before discarding raw events when securityOrigin changes. Same-document navigation intentionally ignores targetId but excludes sessionId, as in the source. A session already associated with a different frame ID is not reassigned by frameNavigated.
+
+Initialization shares a WeakMap promise, runs Page.enable, Runtime.enable and Page.getFrameTree in order, then checks session identity before updating the frame index. Rejected shared work can be retried by a waiter. A stale session can still become initialized in the WeakSet even when its frame index update is skipped; this source behavior is preserved.
+
+125 differential tests pass; type checking passes. Tests execute original AST methods and reconstructed methods with lifecycle indices, checking event ordering, identity, same-origin retention, concurrent initialization, retry and deadlines. Provider input remains a fixture. The full manager constructor/event bridge and real backend remain incomplete.
