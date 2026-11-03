@@ -2346,6 +2346,16 @@
         "sha256": "97d2773f1f0d3f890e2dc8bbf7da5745cfb9c2686d893579ffc35bb9608185ee",
         "distribution": "not copied into repository; test-only local dependency, native implementation not reconstructed"
       }
+    },
+    "packages/browser/src/service/accessibility/set_value.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-page-value-setter",
+      "symbols": [
+        "G2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Real isolated Chromium differential execution against original AST across 35 scenarios: text/checkbox/radio/select/color/contenteditable/ARIA controls, event payloads, validation, rollback, focus/change mutations and native setter bypass. AX command dispatch remains pending."
     }
   },
   "embeddedPackages": {

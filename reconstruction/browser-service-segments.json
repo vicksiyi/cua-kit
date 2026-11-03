@@ -2219,6 +2219,11 @@
       "end": 940780,
       "kind": "FunctionDeclaration"
     },
+    "G2": {
+      "start": 969426,
+      "end": 973417,
+      "kind": "FunctionDeclaration"
+    },
     "Mc": {
       "start": 993286,
       "end": 993335,
