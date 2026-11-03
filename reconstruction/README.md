@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。199 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。201 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -451,3 +451,9 @@ Restored Qoe/wg, ConfigReadError and permission key/scope/table/matching helpers
 Restored Me/xt and preference metadata helpers, plus Sg/Yc turn and guardian-v1 cache behavior. Preserves subagent session selection, serialized metadata parsing, camel/snake fallback asymmetry, exact blank-string behavior, five-minute expiry, and separate stale-origin invalidation versus lookup. Shared assembled caches mirror source module-level ownership; factory instances isolate differential tests.
 
 199 tests and type checks pass. New source-expression comparisons cover nested metadata precedence, guardian mode, thread fallbacks, stale turns, mismatched sessions and exact expiry boundaries. Guardian-v2 review cache, prompt-result orchestration and full Preferences assembly remain pending.
+
+## DeepSeek caller-side demo
+
+Added independently authored `@core/agent-loop` with model-neutral and MCP-neutral contracts, explicit MCP server launch configuration and DeepSeek default adapter. This is demo integration, not recovered vendor code. Runs from TypeScript using tsx; no `.js` suffix on relative source imports. Uses non-thinking Chat Completions tool calls; alternate OpenAI-compatible endpoints remain configurable.
+
+201 total tests pass (199 reconstruction checks plus 2 caller integration checks). A real MCP stdio fixture and mock model HTTP endpoint verify the complete tool-call/result loop. The new package type-checks. No confirmed local DeepSeek credential was found in the inspected environment/common configuration, so live DeepSeek validation is pending.

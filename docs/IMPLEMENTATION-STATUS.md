@@ -102,3 +102,7 @@ Restored permission table read/update/matching and snapshot refresh error semant
 ## Source reconstruction: preference context and cache
 
 Restored request metadata/session/turn resolution and original turn + guardian-v1 caches. 199 tests pass with type checks. Guardian-v2 and full decision/orchestration remain incomplete.
+
+## DeepSeek caller integration
+
+Added independent `@core/agent-loop` demo with DeepSeek model adapter and configurable MCP transport. 201 tests pass including real MCP stdio + mock-model loop; package type check passes. Model credential never enters tool arguments or child-server environment. Live DeepSeek call remains pending a credential location; reconstructed production CUA backend remains incomplete.
