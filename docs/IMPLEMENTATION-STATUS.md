@@ -70,3 +70,7 @@ Restored Xh/Mc/su/Yre as readable `@core/browser` document response capture, inc
 ## Source reconstruction: download state machine
 
 Restored pg and its source-origin/content-header helpers under `@core/browser`. Preserves authorization and HTTP/blob state transitions, host completion correlation and cleanup ordering. 178 tests pass with type checks. Host/security interfaces remain dependencies; production backend and full AgentLoop are not complete.
+
+## Source reconstruction: asset content retrieval
+
+Restored loaded-resource and authorized page-fetch fallback functions, preserving error boundaries and binary serialization. 180 tests pass. Resource enumeration and full bundle orchestration are still pending; no live asset download is claimed.
