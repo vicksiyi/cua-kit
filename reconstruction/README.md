@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。104 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。109 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -247,3 +247,13 @@ flowchart TD
 **104 项差分验证通过，类型检查通过。** 新测试从原 service 提取并执行真实函数，比较能力/投影/命令顺序及截图的 CDP 调用、参数、数据与清理：包括 crop/fullPage、缩放、布局异常、旧帧、visibility、start/stop/ACK 失败、保护门拒绝。尚未运行真实 CDP 传输，withInternalScreencast/CDP manager、权限与凭据门的内部实现仍待还原；不能把 fixture 中的图像数据视为真实截图验收。
 
 下一步继续服务端执行上下文和 CDP/screencast 传输管理，接通实际截图调用。p6 总调度、其他命令、Sky/cua-repl 与独立 demo 仍是未完成工作。
+
+## CDP 事件等待与 screencast 所有权
+
+还原 qh.waitForEvent 与六个 screencast 方法，保留 qh 原字段/owner 关系。当前作为显式 owner 的方法组存在，等待完整 qh 构造/传输层接入，未冒称完整 CDP manager。事件等待保留 Number+finite 校验、tab 过滤、首次结算、initialCheck/action 次序、abort、predicate 错误转换及 finally 移除 listener/timer/abort listener。
+
+screencast 按 tab 维护 Promise 队列：同 tab 串行、不同 tab 独立，失败后释放；raw screencast 占用时不启动内部截图。内部帧先由事件入口登记 session ID，再由当前会话 matcher 接受。退休 ID 保留 10000ms、最多 32 项，避免延迟帧进入下一次截图；child session/target 事件不属于根 screencast。
+
+**109 项验证通过，类型检查通过。** 新增事件等待、并发锁、失败清理、会话隔离、过期/容量与组合截图测试。组合测试使用真实还原的 wait/ownership 方法，只有底层 CDP call 和事件输入仍为 fixture；直接对照原 qh 对应方法与原截图函数。没有真实浏览器截图或传输验收。
+
+来源索引现在包含 qh 类及各方法的精确 UTF-16 位置。下一步仍需 executeTargetCdp、attach/事件桥、权限和凭据内部边界、完整 qh/p6 装配，以及剩余浏览器命令、Sky/cua-repl 和独立 demo。

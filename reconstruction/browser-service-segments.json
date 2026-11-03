@@ -209,6 +209,436 @@
       "end": 876722,
       "kind": "FunctionDeclaration"
     },
+    "_te": {
+      "start": 876766,
+      "end": 876769,
+      "kind": "Literal"
+    },
+    "vte": {
+      "start": 876774,
+      "end": 876776,
+      "kind": "Literal"
+    },
+    "qh.constructor": {
+      "start": 876893,
+      "end": 877765,
+      "kind": "MethodDefinition"
+    },
+    "qh.call": {
+      "start": 878842,
+      "end": 879001,
+      "kind": "MethodDefinition"
+    },
+    "qh.callTarget": {
+      "start": 879001,
+      "end": 879074,
+      "kind": "MethodDefinition"
+    },
+    "qh.callRawCdp": {
+      "start": 879074,
+      "end": 879604,
+      "kind": "MethodDefinition"
+    },
+    "qh.isTabAttached": {
+      "start": 879604,
+      "end": 879663,
+      "kind": "MethodDefinition"
+    },
+    "qh.suppressRawNetworkEvents": {
+      "start": 879663,
+      "end": 879948,
+      "kind": "MethodDefinition"
+    },
+    "qh.hasBrowserAuthRawEventProtection": {
+      "start": 879948,
+      "end": 880079,
+      "kind": "MethodDefinition"
+    },
+    "qh.protectBrowserAuthCredentialDiagnostics": {
+      "start": 880079,
+      "end": 880171,
+      "kind": "MethodDefinition"
+    },
+    "qh.browserAuthNewTargetCheck": {
+      "start": 880171,
+      "end": 880338,
+      "kind": "MethodDefinition"
+    },
+    "qh.protectBrowserAuthNewTargets": {
+      "start": 880338,
+      "end": 880752,
+      "kind": "MethodDefinition"
+    },
+    "qh.closeBrowserAuthPausedTarget": {
+      "start": 880752,
+      "end": 880887,
+      "kind": "MethodDefinition"
+    },
+    "qh.protectServiceWorkerStarts": {
+      "start": 880887,
+      "end": 881404,
+      "kind": "MethodDefinition"
+    },
+    "qh.protectBrowserAuthServiceWorkerBypass": {
+      "start": 881404,
+      "end": 882099,
+      "kind": "MethodDefinition"
+    },
+    "qh.readCommittedTabUrl": {
+      "start": 882099,
+      "end": 882235,
+      "kind": "MethodDefinition"
+    },
+    "qh.currentTopLevelUrl": {
+      "start": 882235,
+      "end": 882334,
+      "kind": "MethodDefinition"
+    },
+    "qh.readRawCdpEvents": {
+      "start": 882334,
+      "end": 883110,
+      "kind": "MethodDefinition"
+    },
+    "qh.forDocument": {
+      "start": 883125,
+      "end": 883194,
+      "kind": "MethodDefinition"
+    },
+    "qh.executeTargetCdp": {
+      "start": 883194,
+      "end": 884862,
+      "kind": "MethodDefinition"
+    },
+    "qh.enableOopifAutoAttach": {
+      "start": 884862,
+      "end": 885209,
+      "kind": "MethodDefinition"
+    },
+    "qh.targetForFrame": {
+      "start": 885209,
+      "end": 885331,
+      "kind": "MethodDefinition"
+    },
+    "qh.targetIdForFrame": {
+      "start": 885331,
+      "end": 885457,
+      "kind": "MethodDefinition"
+    },
+    "qh.targetForFrameOrAttach": {
+      "start": 885457,
+      "end": 886409,
+      "kind": "MethodDefinition"
+    },
+    "qh.attachDebuggerFrameTarget": {
+      "start": 886409,
+      "end": 887209,
+      "kind": "MethodDefinition"
+    },
+    "qh.evaluateJavascript": {
+      "start": 887209,
+      "end": 887547,
+      "kind": "MethodDefinition"
+    },
+    "qh.readDocumentState": {
+      "start": 887547,
+      "end": 888114,
+      "kind": "MethodDefinition"
+    },
+    "qh.waitForPageLoadEvent": {
+      "start": 888114,
+      "end": 888932,
+      "kind": "MethodDefinition"
+    },
+    "qh.waitForEvent": {
+      "start": 888932,
+      "end": 889776,
+      "kind": "MethodDefinition"
+    },
+    "qh.withInternalScreencast": {
+      "start": 889776,
+      "end": 890292,
+      "kind": "MethodDefinition"
+    },
+    "qh.detachAllTabs": {
+      "start": 890292,
+      "end": 890422,
+      "kind": "MethodDefinition"
+    },
+    "qh.getJsDialog": {
+      "start": 890422,
+      "end": 890605,
+      "kind": "MethodDefinition"
+    },
+    "qh.activeJsDialog": {
+      "start": 890605,
+      "end": 890905,
+      "kind": "MethodDefinition"
+    },
+    "qh.updateJsDialogPrompt": {
+      "start": 890905,
+      "end": 891051,
+      "kind": "MethodDefinition"
+    },
+    "qh.deleteJsDialog": {
+      "start": 891051,
+      "end": 891315,
+      "kind": "MethodDefinition"
+    },
+    "qh.closeTab": {
+      "start": 891315,
+      "end": 891836,
+      "kind": "MethodDefinition"
+    },
+    "qh.detachTab": {
+      "start": 891836,
+      "end": 892248,
+      "kind": "MethodDefinition"
+    },
+    "qh.addTabCleanupHandler": {
+      "start": 892248,
+      "end": 892350,
+      "kind": "MethodDefinition"
+    },
+    "qh.addTabAttachHandler": {
+      "start": 892350,
+      "end": 892449,
+      "kind": "MethodDefinition"
+    },
+    "qh.runTabAttachHandlers": {
+      "start": 892449,
+      "end": 892662,
+      "kind": "MethodDefinition"
+    },
+    "qh.runTabCleanupHandlers": {
+      "start": 892662,
+      "end": 892767,
+      "kind": "MethodDefinition"
+    },
+    "qh.deleteFileChoosersForTab": {
+      "start": 892767,
+      "end": 892877,
+      "kind": "MethodDefinition"
+    },
+    "qh.waitForTabAttachment": {
+      "start": 892877,
+      "end": 893275,
+      "kind": "MethodDefinition"
+    },
+    "qh.ensureAttachedTab": {
+      "start": 893275,
+      "end": 893857,
+      "kind": "MethodDefinition"
+    },
+    "qh.attachTab": {
+      "start": 893857,
+      "end": 894317,
+      "kind": "MethodDefinition"
+    },
+    "qh.enableFocusEmulation": {
+      "start": 894317,
+      "end": 894567,
+      "kind": "MethodDefinition"
+    },
+    "qh.enableOopifAutoAttachForTarget": {
+      "start": 894567,
+      "end": 895100,
+      "kind": "MethodDefinition"
+    },
+    "qh.configureServiceWorkerStarts": {
+      "start": 895100,
+      "end": 895915,
+      "kind": "MethodDefinition"
+    },
+    "qh.recordRawCdpEvent": {
+      "start": 895915,
+      "end": 896424,
+      "kind": "MethodDefinition"
+    },
+    "qh.withScreencastLock": {
+      "start": 896424,
+      "end": 896724,
+      "kind": "MethodDefinition"
+    },
+    "qh.isInternalScreencastEvent": {
+      "start": 896724,
+      "end": 897066,
+      "kind": "MethodDefinition"
+    },
+    "qh.isCurrentInternalScreencastEvent": {
+      "start": 897066,
+      "end": 897327,
+      "kind": "MethodDefinition"
+    },
+    "qh.activeRetiredInternalScreencastSessions": {
+      "start": 897327,
+      "end": 897573,
+      "kind": "MethodDefinition"
+    },
+    "qh.retireInternalScreencast": {
+      "start": 897573,
+      "end": 897885,
+      "kind": "MethodDefinition"
+    },
+    "qh.attachedTabIdForCdpEvent": {
+      "start": 897885,
+      "end": 898178,
+      "kind": "MethodDefinition"
+    },
+    "qh.rawCdpEventsResult": {
+      "start": 898178,
+      "end": 898574,
+      "kind": "MethodDefinition"
+    },
+    "qh.rawCdpEventSequenceForTab": {
+      "start": 898574,
+      "end": 898652,
+      "kind": "MethodDefinition"
+    },
+    "qh.nextRawCdpEventSequence": {
+      "start": 898652,
+      "end": 898771,
+      "kind": "MethodDefinition"
+    },
+    "qh.rawCdpTarget": {
+      "start": 898771,
+      "end": 899296,
+      "kind": "MethodDefinition"
+    },
+    "qh.matchesRawCdpEventTarget": {
+      "start": 899296,
+      "end": 899469,
+      "kind": "MethodDefinition"
+    },
+    "qh.discardRawCdpEventsForTab": {
+      "start": 899469,
+      "end": 899699,
+      "kind": "MethodDefinition"
+    },
+    "qh.forgetAttachedTab": {
+      "start": 899699,
+      "end": 900535,
+      "kind": "MethodDefinition"
+    },
+    "qh.handleTargetEvent": {
+      "start": 900535,
+      "end": 901286,
+      "kind": "MethodDefinition"
+    },
+    "qh.handleAttachedToTarget": {
+      "start": 901286,
+      "end": 901709,
+      "kind": "MethodDefinition"
+    },
+    "qh.handleDetachedFromTarget": {
+      "start": 901709,
+      "end": 901833,
+      "kind": "MethodDefinition"
+    },
+    "qh.handleFrameNavigated": {
+      "start": 901833,
+      "end": 902090,
+      "kind": "MethodDefinition"
+    },
+    "qh.handleFrameDetached": {
+      "start": 902090,
+      "end": 902261,
+      "kind": "MethodDefinition"
+    },
+    "qh.initializeAttachedFrameSession": {
+      "start": 902261,
+      "end": 902801,
+      "kind": "MethodDefinition"
+    },
+    "qh.tryInitializeAttachedFrameSession": {
+      "start": 902801,
+      "end": 902913,
+      "kind": "MethodDefinition"
+    },
+    "qh.runAttachedFrameSessionInitialization": {
+      "start": 902913,
+      "end": 903576,
+      "kind": "MethodDefinition"
+    },
+    "qh.setFrameSessionForFrame": {
+      "start": 903576,
+      "end": 903789,
+      "kind": "MethodDefinition"
+    },
+    "qh.setFrameSessionTargetId": {
+      "start": 903789,
+      "end": 903988,
+      "kind": "MethodDefinition"
+    },
+    "qh.deleteFrameSession": {
+      "start": 903988,
+      "end": 904292,
+      "kind": "MethodDefinition"
+    },
+    "qh.deleteFrameSessionsForTab": {
+      "start": 904292,
+      "end": 904483,
+      "kind": "MethodDefinition"
+    },
+    "qh.rememberAttachedFrameTarget": {
+      "start": 904483,
+      "end": 904626,
+      "kind": "MethodDefinition"
+    },
+    "qh.detachAttachedFrameTargets": {
+      "start": 904626,
+      "end": 904890,
+      "kind": "MethodDefinition"
+    },
+    "qh.handleJavaScriptDialogEvent": {
+      "start": 904890,
+      "end": 905432,
+      "kind": "MethodDefinition"
+    },
+    "qh.rememberJsDialog": {
+      "start": 905432,
+      "end": 905805,
+      "kind": "MethodDefinition"
+    },
+    "qh.allowBeforeUnload": {
+      "start": 905805,
+      "end": 906068,
+      "kind": "MethodDefinition"
+    },
+    "qh.deleteJsDialogForTarget": {
+      "start": 906068,
+      "end": 906245,
+      "kind": "MethodDefinition"
+    },
+    "qh.throwIfJsDialogBlocksMethod": {
+      "start": 906245,
+      "end": 906498,
+      "kind": "MethodDefinition"
+    },
+    "qh.nextJsDialogId": {
+      "start": 906498,
+      "end": 906577,
+      "kind": "MethodDefinition"
+    },
+    "qh": {
+      "start": 876876,
+      "end": 906578,
+      "kind": "ClassExpression"
+    },
+    "Io": {
+      "start": 908458,
+      "end": 908505,
+      "kind": "FunctionDeclaration"
+    },
+    "$N": {
+      "start": 908505,
+      "end": 908620,
+      "kind": "FunctionDeclaration"
+    },
+    "jh": {
+      "start": 908620,
+      "end": 908673,
+      "kind": "FunctionDeclaration"
+    },
     "q3": {
       "start": 1374026,
       "end": 1376734,

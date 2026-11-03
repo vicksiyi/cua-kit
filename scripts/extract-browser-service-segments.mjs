@@ -10,6 +10,12 @@ const relative =
   "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs";
 const source = await readFile(`${root}/${relative}`, "utf8");
 const wanted = new Set([
+  "qh",
+  "$N",
+  "Io",
+  "jh",
+  "_te",
+  "vte",
   "dl",
   "jy",
   "CA",
@@ -91,6 +97,19 @@ function visit(node) {
   if (node.type === "AssignmentExpression" && node.left.type === "Identifier") {
     name = node.left.name;
     expression = node.right;
+  }
+  if (name === "qh" && expression?.type === "ClassExpression") {
+    for (const method of expression.body.body) {
+      if (
+        method.type === "MethodDefinition" &&
+        method.key.type === "Identifier"
+      )
+        segments[`qh.${method.key.name}`] = {
+          start: method.start,
+          end: method.end,
+          kind: "MethodDefinition",
+        };
+    }
   }
   if (wanted.has(name) && expression)
     segments[name] = {

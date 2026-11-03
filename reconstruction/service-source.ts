@@ -62,3 +62,14 @@ export function originalServiceBindings(
       `return {${names.join(",")}};`,
   )(...Object.values(external));
 }
+
+export function serviceClassMethod(className: string, methodName: string) {
+  const node = definitions.get(className);
+  const method = node?.body?.body?.find(
+    (item: any) =>
+      item.type === "MethodDefinition" && item.key.name === methodName,
+  );
+  if (!method)
+    throw new Error(`Missing source method ${className}.${methodName}`);
+  return source.slice(method.start, method.end);
+}
