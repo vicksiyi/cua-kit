@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Cua Kit",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkVL9aOkxDvi0Xki6qdKHQT6bzz511jh1V+VSquucV+aDHOXgUctt0c+biBI/ilHZnPb93Rb6y7foksgp9bin3YR+asBWWcaotMV/hClwADoxsMs8HVQlw8W4gCfEAtkwEGHqY0JfCkM+lXszOgU48hBCHRUueJJrj4zbGg0zPHODn4DDDEdgKxwGIRKSw8/ANYICP1mmscdQkxVfF/AKZEXHYVtuGQ4at3V4g5brIm99OGjnr1HGNBOt3+x37Z/F/UZ9G3Hk6xdpa1WzBMA7WSLHq9+xMFI0ILd3ZgNoJWLcEnQ96SF4R8YYjb5Hl5gE8YfYsLGZ1a+8qYLKKBjylQIDAQAB",
+  "permissions": [
+    "debugger",
+    "tabs",
+    "nativeMessaging",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Grant/revoke this tab for Cua Kit"
+  }
+}

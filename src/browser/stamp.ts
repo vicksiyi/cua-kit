@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { CDPSession } from 'playwright';
+import type { CdpChannel as CDPSession } from './driver.js';
 import { CuaError } from '../core/errors.js';
 
 export interface FrameStamp { frameId: string; cdp: CDPSession; contextId: number; value: string }

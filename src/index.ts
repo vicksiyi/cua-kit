@@ -1,16 +1,19 @@
 import { randomUUID } from 'node:crypto';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import { ExtensionBridge } from './extension/bridge.js';
+import { ExtensionProvider } from './extension/provider.js';
 import { MacProvider, MacApp } from './native/provider.js';
 import { CuaTab } from './browser/tab.js';
 import { assert, checkAbort, CuaError } from './core/errors.js';
 import type { Authorize, AuditEvent, ActionOptions } from './core/types.js';
-export { CuaTab, CuaError, MacProvider, MacApp };
+export { CuaTab, CuaError, MacProvider, MacApp, ExtensionBridge, ExtensionProvider };
 export type * from './core/types.js';
 
 export interface CuaOptions {
   headless?: boolean;
   executablePath?: string;
   nativeHelperPath?: string;
+  extensionBridge?: ExtensionBridge;
   /** Required: access decisions belong to the embedding application. */
   authorize: Authorize;
   audit?: (event: AuditEvent) => void;
@@ -24,6 +27,7 @@ export class Cua {
   private active = true;
   private generation = 0;
   private native?: MacProvider;
+  private extension?: ExtensionProvider;
   private apps = new Set<MacApp>();
   private pages = new Map<string, Page>();
   private ids = new WeakMap<Page, string>();
@@ -40,6 +44,7 @@ export class Cua {
       context.setDefaultTimeout(5000);
       const cua = new Cua(browser, context, options);
       if (options.nativeHelperPath) cua.native = await MacProvider.connect({ helperPath: options.nativeHelperPath, authorize: options.authorize });
+      if (options.extensionBridge) cua.extension = new ExtensionProvider(options.extensionBridge, options);
       return cua;
     } catch (error) { await browser.close(); throw error; }
   }
@@ -56,10 +61,12 @@ export class Cua {
     return id;
   }
   async listBrowsers(): Promise<BrowserInfo[]> {
-    this.assertActive(); return [{ id: 'chromium', name: 'Managed Chromium', type: 'cdp' }];
+    this.assertActive(); return [{ id: 'chromium', name: 'Managed Chromium', type: 'cdp' }, ...(this.extension ? [{id:'chrome-extension',name:'Granted Chrome tabs',type:'cdp' as const}] : [])];
   }
   async listTabs(options: { browser?: string } = {}): Promise<TabInfo[]> {
     this.assertActive(); this.validateBrowser(options.browser);
+    const extensionTabs = async () => (await this.extension!.listTabs()).map(tab => ({id:`ext:${tab.id}`,browserId:'chrome-extension',title:tab.title,url:tab.url}));
+    if (options.browser === 'chrome-extension') return extensionTabs();
     const generation = this.generation;
     const result: TabInfo[] = [];
     for (const [id, page] of this.pages) {
@@ -74,6 +81,7 @@ export class Cua {
         }
       }
     }
+    if (!options.browser && this.extension) result.push(...await extensionTabs());
     return result;
   }
   async listApps() { this.assertActive(); return this.native ? this.native.listApps() : []; }
@@ -84,13 +92,19 @@ export class Cua {
     try { this.checkGeneration(generation, options.signal); await app.observe(options); this.checkGeneration(generation, options.signal); this.apps.add(app); return app; }
     catch (error) { await app.release(); throw error; }
   }
-  async getState() { return { apps: await this.listApps(), browsers: [{ ...(await this.listBrowsers())[0]!, tabs: await this.listTabs() }] }; }
+  async getState() { return { apps: await this.listApps(), browsers: await Promise.all((await this.listBrowsers()).map(async browser => ({...browser,tabs:await this.listTabs({browser:browser.id})}))) }; }
   async getBrowser(options: { id?: string } = {}) {
     this.assertActive(); this.validateBrowser(options.id);
+    if (options.id === 'chrome-extension') return {browserId:'chrome-extension',tabs:{list:()=>this.listTabs({browser:'chrome-extension'}),get:(id:string)=>this.getTab(id,{browser:'chrome-extension'}),new:async()=>{throw new CuaError('UNSUPPORTED_CAPABILITY','New extension tabs require user browser consent; create in browser and grant.');}}};
     return { browserId: 'chromium', tabs: { list: () => this.listTabs(), get: (id: string) => this.getTab(id), new: () => this.createBrowserTab('chromium') } };
   }
   async getTab(reference: string | { url: string }, options: { browser?: string; signal?: AbortSignal } = {}): Promise<CuaTab> {
     this.assertActive(); this.validateBrowser(options.browser);
+    if ((typeof reference === 'string' && reference.startsWith('ext:')) || options.browser === 'chrome-extension') {
+      assert(options.browser === undefined || options.browser === 'chrome-extension', 'INVALID_ARGUMENT', 'Extension tab ID conflicts with requested browser.');
+      assert(this.extension, 'TARGET_NOT_FOUND', 'Extension provider is not connected.');
+      return this.extension.getTab(typeof reference === 'string' ? Number(reference.replace(/^ext:/,'')) : reference, options);
+    }
     const generation = this.generation; checkAbort(options.signal);
     let id: string;
     if (typeof reference === 'string') id = reference;
@@ -121,6 +135,7 @@ export class Cua {
   }
   async createBrowserTab(browserId: string, url = 'about:blank', options: ActionOptions = {}): Promise<CuaTab> {
     this.assertActive(); this.validateBrowser(browserId);
+    assert(browserId !== 'chrome-extension', 'UNSUPPORTED_CAPABILITY', 'Create a tab in the browser and grant it with the extension action.');
     const generation = this.generation; checkAbort(options.signal);
     assert(await this.options.authorize({ sessionId: this.sessionId, targetId: 'new', url, operation: 'createBrowserTab', effect: 'write' }), 'PERMISSION_DENIED', 'Creating this tab was denied.');
     this.checkGeneration(generation, options.signal);
@@ -133,18 +148,18 @@ export class Cua {
       this.checkGeneration(generation, options.signal); return tab;
     } catch (error) { await page.close().catch(() => undefined); throw error; }
   }
-  private validateBrowser(id?: string): void { assert(id === undefined || id === 'chromium', 'TARGET_NOT_FOUND', 'Only the managed chromium backend is currently connected.'); }
+  private validateBrowser(id?: string): void { assert(id === undefined || id === 'chromium' || (id === 'chrome-extension' && !!this.extension), 'TARGET_NOT_FOUND', 'Only the managed chromium backend is currently connected.'); }
   async reset(): Promise<void> {
     this.assertActive(); this.generation++;
     await Promise.allSettled([...this.tabs.values()].map(async tab => (await tab).dispose()));
     this.tabs.clear();
-    await Promise.allSettled([...this.apps].map(app => app.release())); this.apps.clear();
+    await Promise.allSettled([...this.apps].map(app => app.release())); this.apps.clear(); await this.extension?.reset();
   }
   async endSession(): Promise<void> {
     if (!this.active) return;
     this.active = false;
     await Promise.allSettled([...this.tabs.values()].map(async tab => (await tab).dispose()));
-    try { await this.context.close(); } finally { await this.browser.close(); await this.native?.close(); }
+    try { await this.context.close(); } finally { await this.browser.close(); await this.native?.close(); await this.extension?.close(); }
   }
 }
 export const createCua = Cua.launch;

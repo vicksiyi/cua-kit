@@ -11,17 +11,19 @@
     "./agent/contracts": "./dist/agent/contracts.js",
     "./agent/loop": "./dist/agent/loop.js",
     "./agent/mcp-client": "./dist/agent/mcp-client.js",
-    "./native": "./dist/native/provider.js"
+    "./native": "./dist/native/provider.js",
+    "./extension": "./dist/extension/provider.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && npm run build:extension",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && tsx --test tests/*.test.ts",
     "demo": "npm run build && node dist/agent/demo.js",
     "mcp": "node dist/mcp/stdio.js",
     "build:native": "swift build --package-path native/macos",
-    "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts"
+    "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts",
+    "build:extension": "node scripts/build-extension.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
@@ -31,6 +33,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@types/chrome": "0.3.7",
     "@types/node": "26.6.6",
     "tsx": "4.23.15",
     "typescript": "7.0.2"

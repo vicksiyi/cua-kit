@@ -1,4 +1,4 @@
-import type { CDPSession, Page } from 'playwright';
+import type { CdpChannel as CDPSession, BrowserDriver as Page } from './driver.js';
 import type { AXElement } from '../core/types.js';
 import { FrameRevisions, type FrameStamp } from './stamp.js';
 import { CuaError } from '../core/errors.js';
@@ -24,6 +24,7 @@ export class AccessibilityCollector {
   constructor(private page: Page, private cdp: CDPSession) {}
 
   async capture(): Promise<Capture> {
+    await this.page.prepareFrames?.();
     const roots: { tree: FrameTree; cdp: CDPSession }[] = [];
     const warnings: string[] = [];
     const root = await this.cdp.send('Page.getFrameTree');

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { CDPSession, Page } from 'playwright';
+import type { CdpChannel as CDPSession, BrowserDriver as Page } from './driver.js';
 import { AccessibilityCollector, onElement, renderAX, type ElementBinding } from './accessibility.js';
 import { assert, checkAbort, CuaError } from '../core/errors.js';
 import { SerialQueue } from '../core/serial.js';
