@@ -2941,6 +2941,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Sixteen select/checked original scenarios and seven sequential typing scenarios; real Chromium select, checkbox and Unicode text input using assembled keyboard dispatch, with marker cleanup. Remaining fill/press handlers and production registry/context remain pending."
+    },
+    "packages/browser/src/service/commands/locator_press.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-locator-press-command",
+      "symbols": [
+        "zD",
+        "Af"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Seven original authority/validation/focus/key scenarios; real Chromium Control+A/C/V and Backspace through assembled keyboard dispatch and BrowserClipboard with real page bridge. Full fill path and production registry/context remain pending."
     }
   },
   "embeddedPackages": {
