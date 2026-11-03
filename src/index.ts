@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import { MacProvider, MacApp } from './native/provider.js';
 import { CuaTab } from './browser/tab.js';
-import { assert, CuaError } from './core/errors.js';
-import type { Authorize, AuditEvent } from './core/types.js';
+import { assert, checkAbort, CuaError } from './core/errors.js';
+import type { Authorize, AuditEvent, ActionOptions } from './core/types.js';
 export { CuaTab, CuaError, MacProvider, MacApp };
 export type * from './core/types.js';
 
@@ -22,6 +22,7 @@ export interface BrowserInfo { id: string; name: string; type: 'cdp' }
 export class Cua {
   readonly sessionId = randomUUID();
   private active = true;
+  private generation = 0;
   private native?: MacProvider;
   private apps = new Set<MacApp>();
   private pages = new Map<string, Page>();
@@ -43,6 +44,10 @@ export class Cua {
     } catch (error) { await browser.close(); throw error; }
   }
   private assertActive(): void { assert(this.active, 'SESSION_CLOSED', 'Session ended.'); }
+  private checkGeneration(generation: number, signal?: AbortSignal): void {
+    this.assertActive(); checkAbort(signal);
+    assert(generation === this.generation, 'CANCELLED', 'Operation belongs to a reset session.');
+  }
   private register(page: Page): string {
     const previous = this.ids.get(page);
     if (previous) return previous;
@@ -55,20 +60,28 @@ export class Cua {
   }
   async listTabs(options: { browser?: string } = {}): Promise<TabInfo[]> {
     this.assertActive(); this.validateBrowser(options.browser);
+    const generation = this.generation;
     const result: TabInfo[] = [];
     for (const [id, page] of this.pages) {
       const url = page.url();
       if (await this.options.authorize({ sessionId: this.sessionId, targetId: id, url, operation: 'listTabs', effect: 'read' })) {
-        if (!page.isClosed()) result.push({ id, browserId: 'chromium', title: await page.title(), url });
+        this.checkGeneration(generation);
+        assert(url === page.url(), 'STALE_OBSERVATION', 'Tab navigated during discovery authorization.');
+        if (!page.isClosed()) {
+          const title = await page.title();
+          assert(url === page.url(), 'STALE_OBSERVATION', 'Tab navigated during title read.');
+          result.push({ id, browserId: 'chromium', title, url });
+        }
       }
     }
     return result;
   }
   async listApps() { this.assertActive(); return this.native ? this.native.listApps() : []; }
-  async getApp(reference: string | { pid: number }): Promise<MacApp> {
+  async getApp(reference: string | { pid: number }, options: ActionOptions = {}): Promise<MacApp> {
     this.assertActive(); assert(this.native, 'UNSUPPORTED_CAPABILITY', 'Configure nativeHelperPath to connect the macOS provider.');
+    const generation = this.generation; checkAbort(options.signal);
     const app = await this.native.getApp(reference);
-    try { await app.observe(); this.apps.add(app); return app; }
+    try { this.checkGeneration(generation, options.signal); await app.observe(options); this.checkGeneration(generation, options.signal); this.apps.add(app); return app; }
     catch (error) { await app.release(); throw error; }
   }
   async getState() { return { apps: await this.listApps(), browsers: [{ ...(await this.listBrowsers())[0]!, tabs: await this.listTabs() }] }; }
@@ -76,8 +89,9 @@ export class Cua {
     this.assertActive(); this.validateBrowser(options.id);
     return { browserId: 'chromium', tabs: { list: () => this.listTabs(), get: (id: string) => this.getTab(id), new: () => this.createBrowserTab('chromium') } };
   }
-  async getTab(reference: string | { url: string }, options: { browser?: string } = {}): Promise<CuaTab> {
+  async getTab(reference: string | { url: string }, options: { browser?: string; signal?: AbortSignal } = {}): Promise<CuaTab> {
     this.assertActive(); this.validateBrowser(options.browser);
+    const generation = this.generation; checkAbort(options.signal);
     let id: string;
     if (typeof reference === 'string') id = reference;
     else {
@@ -89,32 +103,39 @@ export class Cua {
       assert(matches.length === 1, 'AMBIGUOUS_TARGET', 'Multiple tabs match this URL. Use an explicit tab ID.');
       id = matches[0]!.id;
     }
+    this.checkGeneration(generation, options.signal);
     const page = this.pages.get(id);
     assert(page && !page.isClosed(), 'TARGET_NOT_FOUND', 'Tab ID is not owned by this session.');
     let tab = this.tabs.get(id);
     if (!tab) {
       tab = CuaTab.create(id, page, { sessionId: this.sessionId, authorize: this.options.authorize, audit: this.options.audit, active: () => this.active });
       this.tabs.set(id, tab);
-      tab.catch(() => this.tabs.delete(id));
+      const creating = tab;
+      tab.catch(() => { if (this.tabs.get(id) === creating) this.tabs.delete(id); });
     }
     const bound = await tab;
-    await bound.observe({ disableDiffing: true });
+    this.checkGeneration(generation, options.signal);
+    await bound.observe({ disableDiffing: true, signal: options.signal });
+    this.checkGeneration(generation, options.signal);
     return bound;
   }
-  async createBrowserTab(browserId: string, url = 'about:blank'): Promise<CuaTab> {
+  async createBrowserTab(browserId: string, url = 'about:blank', options: ActionOptions = {}): Promise<CuaTab> {
     this.assertActive(); this.validateBrowser(browserId);
+    const generation = this.generation; checkAbort(options.signal);
     assert(await this.options.authorize({ sessionId: this.sessionId, targetId: 'new', url, operation: 'createBrowserTab', effect: 'write' }), 'PERMISSION_DENIED', 'Creating this tab was denied.');
+    this.checkGeneration(generation, options.signal);
     const page = await this.context.newPage();
     const id = this.register(page);
     try {
-      const tab = await this.getTab(id);
-      if (url !== 'about:blank') { await tab.goto(url); await tab.observe({ disableDiffing: true }); }
-      return tab;
-    } catch (error) { await page.close(); throw error; }
+      this.checkGeneration(generation, options.signal);
+      const tab = await this.getTab(id, options);
+      if (url !== 'about:blank') { await tab.goto(url, options); await tab.observe({ disableDiffing: true, signal: options.signal }); }
+      this.checkGeneration(generation, options.signal); return tab;
+    } catch (error) { await page.close().catch(() => undefined); throw error; }
   }
   private validateBrowser(id?: string): void { assert(id === undefined || id === 'chromium', 'TARGET_NOT_FOUND', 'Only the managed chromium backend is currently connected.'); }
   async reset(): Promise<void> {
-    this.assertActive();
+    this.assertActive(); this.generation++;
     await Promise.allSettled([...this.tabs.values()].map(async tab => (await tab).dispose()));
     this.tabs.clear();
     await Promise.allSettled([...this.apps].map(app => app.release())); this.apps.clear();

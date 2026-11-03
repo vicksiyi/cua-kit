@@ -30,6 +30,7 @@ export class MacApp {
   private async authorize(operation: string, effect: 'read' | 'write', signal?: AbortSignal) {
     checkAbort(signal); assert(this.alive, 'TARGET_NOT_FOUND', 'Native app handle released.');
     await this.provider.authorize(this.id, this.info, operation, effect); checkAbort(signal);
+    assert(this.alive, 'TARGET_NOT_FOUND', 'App handle released during authorization.');
   }
   observe(options: NativeStateOptions = {}): Promise<NativeObservation> {
     return this.queue.run(async () => {
@@ -77,7 +78,7 @@ export class MacApp {
   }
   click(element: number | ElementRef, options: ActionOptions = {}) { return this.action(element, 'press', undefined, options); }
   setValue(element: number | ElementRef, value: string, options: ActionOptions = {}) { return this.action(element, 'setValue', value, options); }
-  release(): Promise<void> { return this.queue.run(async () => { if (!this.alive) return; this.alive = false; this.current = undefined; await this.provider.helper.request('release', { targetId: this.id }); }); }
+  async release(): Promise<void> { if (!this.alive) return; this.alive = false; this.current = undefined; await this.provider.helper.request('release', { targetId: this.id }); }
 }
 export class MacProvider {
   readonly sessionId = randomUUID();

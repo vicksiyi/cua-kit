@@ -52,6 +52,7 @@ export class CuaTab {
       assert(await this.config.authorize(request), 'PERMISSION_DENIED', `Access to ${operation} was denied.`);
       checkAbort(options.signal);
       assert(this.config.active(), 'SESSION_CLOSED', 'This session ended during authorization.');
+      assert(!this.closed, 'TARGET_NOT_FOUND', 'Handle released during authorization.');
       assert(beforeEpoch === this.epoch && beforeUrl === this.url, 'STALE_OBSERVATION', 'Target changed while authorization was pending. Observe again.');
       const started = performance.now(), requestId = randomUUID();
       try {
@@ -330,15 +331,18 @@ export class CuaTab {
       } finally { this.invalidate(); }
     });
   }
-  goto(url: string): Promise<void> {
-    return this.run('goto', 'write', {}, async () => {
+  goto(url: string, options: ActionOptions = {}): Promise<void> {
+    return this.run('goto', 'write', options, async () => {
       const parsed = new URL(url);
       assert(['http:', 'https:', 'about:'].includes(parsed.protocol), 'INVALID_ARGUMENT', 'Only HTTP(S) and about URLs are supported.');
       assert(await this.config.authorize({ sessionId: this.config.sessionId, targetId: this.id, url, operation: 'navigate', effect: 'write' }), 'PERMISSION_DENIED', 'Destination denied.');
+      checkAbort(options.signal);
+      assert(this.config.active(), 'SESSION_CLOSED', 'Session ended while awaiting destination authorization.');
+      assert(!this.closed, 'TARGET_NOT_FOUND', 'Handle released while awaiting destination authorization.');
       try { await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 }); }
       finally { this.invalidate(); }
     });
   }
-  close(): Promise<void> { return this.run('close', 'write', {}, () => this.page.close()); }
+  close(options: ActionOptions = {}): Promise<void> { return this.run('close', 'write', options, () => this.page.close()); }
   async dispose(): Promise<void> { this.closed = true; this.invalidate(); await this.collector.dispose(); await this.cdp.detach().catch(() => undefined); }
 }

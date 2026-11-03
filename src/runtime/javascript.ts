@@ -81,7 +81,10 @@ export class JavascriptSession {
   private tabs = new Map<string, CuaTab>();
   private apps = new Map<string, MacApp>();
   private pending = new Set<QuickJSDeferredPromise>();
+  private inFlight = new Set<Promise<void>>();
+  private hostOutstanding = 0;
   private alive = true;
+  private closing = false;
   private needsReset = false;
   private generation = 0;
   private deadline = Infinity;
@@ -106,24 +109,28 @@ export class JavascriptSession {
     });
     vm.setProp(vm.global, '__write', write); write.dispose();
     const bridge = vm.newFunction('__bridge', request => {
-      const args = JSON.parse(vm.getString(request));
+      const serialized = vm.getString(request);
+      if (serialized.length > 1024 * 1024 || this.hostOutstanding >= 64) throw new CuaError('INVALID_ARGUMENT', 'Capability request size or concurrency budget exceeded.');
+      const args = JSON.parse(serialized);
       const promise = vm.newPromise(), generation = this.generation;
       this.pending.add(promise);
-      void this.dispatch(args, generation).then(value => ({ ok: true, value }), error => ({ ok: false, code: error instanceof CuaError ? error.code : 'EXECUTION_ERROR', message: String(error.message ?? error) }))
+      const inFlight = this.inFlight; this.hostOutstanding++;
+      const task = this.dispatch(args, generation, this.currentAbort?.signal).then(value => ({ ok: true, value }), error => ({ ok: false, code: error instanceof CuaError ? error.code : 'EXECUTION_ERROR', message: String(error.message ?? error) }))
         .then(result => {
           if (!this.alive || generation !== this.generation) return;
           const handle = vm.newString(JSON.stringify(result));
           promise.resolve(handle); handle.dispose();
           this.pending.delete(promise); promise.dispose();
           this.pump();
-        });
+        }).catch(() => { if (generation === this.generation) this.currentAbort?.abort(); }).finally(() => { inFlight.delete(task); this.hostOutstanding--; });
+      inFlight.add(task);
       return promise.handle;
     });
     vm.setProp(vm.global, '__bridge', bridge); bridge.dispose();
     vm.unwrapResult(vm.evalCode(bootstrap)).dispose();
   }
   private append(output: RuntimeOutput): void {
-    const size = output.type === 'text' ? output.text.length : output.data.length;
+    const size = output.type === 'text' ? Buffer.byteLength(output.text, 'utf8') : output.data.length;
     if (this.outputBytes + size > 8 * 1024 * 1024) throw new CuaError('INVALID_ARGUMENT', 'Output budget exceeded.');
     this.outputBytes += size; this.outputs.push(output);
   }
@@ -132,7 +139,7 @@ export class JavascriptSession {
     const result = this.vm.runtime.executePendingJobs();
     if (result.error) result.error.dispose();
   }
-  private async dispatch(request: { target: unknown; method: unknown; args: unknown }, generation: number): Promise<unknown> {
+  private async dispatch(request: { target: unknown; method: unknown; args: unknown }, generation: number, signal?: AbortSignal): Promise<unknown> {
     const emit = (output: RuntimeOutput) => { if (generation === this.generation) this.append(output); };
     if (typeof request.method !== 'string' || !Array.isArray(request.args)) throw new CuaError('INVALID_ARGUMENT', 'Malformed capability request.');
     if (Date.now() > this.deadline || this.currentAbort?.signal.aborted) throw new CuaError('CANCELLED', 'Cell deadline exceeded.');
@@ -141,20 +148,20 @@ export class JavascriptSession {
       switch (request.method) {
         case 'listApps': return this.cua.listApps();
         case 'getApp': {
-          const app = await this.cua.getApp(args[0]);
+          const app = await this.cua.getApp(args[0], { signal });
           if (generation !== this.generation) { await app.release(); throw new CuaError('CANCELLED', 'Retired cell.'); }
-          this.apps.set(app.id, app); emit({ type: 'text', text: await app.getAXState() }); return app.id;
+          this.apps.set(app.id, app); emit({ type: 'text', text: await app.getAXState({ signal }) }); return app.id;
         }
         case 'getState': return this.cua.getState();
         case 'listBrowsers': return this.cua.listBrowsers();
         case 'listTabs': return this.cua.listTabs(args[0]);
         case 'getTab': case 'createBrowserTab': {
           const target = request.method === 'getTab'
-            ? await this.cua.getTab(args[0], args[1])
-            : await this.cua.createBrowserTab(args[0], args[1]);
+            ? await this.cua.getTab(args[0], { ...args[1], signal })
+            : await this.cua.createBrowserTab(args[0], args[1], { signal });
           if (generation !== this.generation) throw new CuaError('CANCELLED', 'Retired cell.');
           this.tabs.set(target.id, target);
-          emit({ type: 'text', text: await target.getAXState() });
+          emit({ type: 'text', text: await target.getAXState({ signal }) });
           return target.id;
         }
         default: throw new CuaError('UNSUPPORTED_CAPABILITY', 'Unknown SDK method.');
@@ -162,7 +169,7 @@ export class JavascriptSession {
     }
     const app = typeof request.target === 'string' ? this.apps.get(request.target) : undefined;
     if (app) {
-      const options = { signal: this.currentAbort?.signal };
+      const options = { signal };
       switch (request.method) {
         case 'observe': {
           const result = await app.observe({ ...args[0], ...options });
@@ -194,7 +201,7 @@ export class JavascriptSession {
     }
     const tab = typeof request.target === 'string' ? this.tabs.get(request.target) : undefined;
     if (!tab) throw new CuaError('TARGET_NOT_FOUND', 'Handle does not belong to this runtime session.');
-    const options = { signal: this.currentAbort?.signal };
+    const options = { signal };
     switch (request.method) {
       case 'observe': return tab.observe({ ...args[0], ...options });
       case 'getAXState': {
@@ -218,54 +225,65 @@ export class JavascriptSession {
       case 'selectText': return tab.selectText(args[0], args[1], { ...args[2], ...options });
       case 'drag': return tab.drag(args[0], args[1], { ...args[2], ...options });
       case 'scroll': return tab.scroll(args[0], args[1], args[2], options);
-      case 'goto': return tab.goto(args[0]);
-      case 'close': return tab.close();
+      case 'goto': return tab.goto(args[0], options);
+      case 'close': return tab.close(options);
       default: throw new CuaError('UNSUPPORTED_CAPABILITY', 'Unknown target method.');
     }
   }
-  execute(code: string, timeoutMs = 20000): Promise<ExecutionResult> {
+  execute(code: string, timeoutMs = 20000, options: { signal?: AbortSignal } = {}): Promise<ExecutionResult> {
     return this.queue.run(async () => {
-      if (!this.alive) throw new CuaError('SESSION_CLOSED', 'JavaScript session ended.');
-      if (this.needsReset) throw new CuaError('CANCELLED', 'Previous cell timed out; reset the session before continuing.');
+      if (!this.alive || this.closing) throw new CuaError('SESSION_CLOSED', 'JavaScript session ended.');
+      if (this.needsReset) throw new CuaError('CANCELLED', 'Previous cell was interrupted; reset before continuing.');
+      if (options.signal?.aborted) throw new CuaError('CANCELLED', 'Execution cancelled before dispatch.');
+      if (typeof code !== 'string' || code.length > 100000) throw new CuaError('INVALID_ARGUMENT', 'Cell source exceeds 100000 characters.');
       if (!Number.isFinite(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) throw new CuaError('INVALID_ARGUMENT', 'timeoutMs must be in 1..60000.');
       this.outputs = []; this.outputBytes = 0; this.deadline = Date.now() + timeoutMs;
-      this.currentAbort = new AbortController();
-      let timer: ReturnType<typeof setTimeout> | undefined;
+      const controller = new AbortController(); this.currentAbort = controller;
+      const cancel = () => controller.abort(); options.signal?.addEventListener('abort', cancel, { once: true });
+      let rejectAbort: () => void = () => {};
+      const cancelled = new Promise<never>((_, reject) => { rejectAbort = () => reject(new CuaError('CANCELLED', 'Cell interrupted; in-flight actions may have taken effect. Reset and observe.')); });
+      controller.signal.addEventListener('abort', rejectAbort, { once: true });
+      const timer = setTimeout(cancel, timeoutMs);
       let handle: import('quickjs-emscripten').QuickJSHandle | undefined;
       try {
-        const result = this.vm.evalCode(compileCell(code));
-        handle = this.vm.unwrapResult(result);
-        const resolved = this.vm.resolvePromise(handle);
-        this.pump();
-        const deadline = new Promise<never>((_, reject) => {
-          timer = setTimeout(() => { this.currentAbort?.abort(); reject(new CuaError('CANCELLED', 'JavaScript cell deadline exceeded.')); }, timeoutMs);
-        });
-        const value = await Promise.race([resolved, deadline]);
-        const data = this.vm.unwrapResult(value);
-        try { return { value: this.vm.dump(data), output: this.outputs }; }
-        finally { data.dispose(); }
+        const work = (async () => {
+          const result = this.vm.evalCode(compileCell(code)); handle = this.vm.unwrapResult(result);
+          const resolved = this.vm.resolvePromise(handle); this.pump();
+          const value = await resolved;
+          const data = this.vm.unwrapResult(value);
+          let dumped: unknown;
+          try { dumped = this.vm.dump(data); } finally { data.dispose(); }
+          // No fire-and-forget host work crosses a successful cell boundary.
+          while (this.inFlight.size) await Promise.all([...this.inFlight]);
+          return { value: dumped, output: structuredClone(this.outputs) };
+        })();
+        return await Promise.race([work, cancelled]);
       } finally {
-        clearTimeout(timer); handle?.dispose();
-        if (Date.now() > this.deadline || this.currentAbort?.signal.aborted) {
-          this.currentAbort?.abort(); this.needsReset = true; this.generation++;
+        clearTimeout(timer); options.signal?.removeEventListener('abort', cancel);
+        controller.signal.removeEventListener('abort', rejectAbort); handle?.dispose();
+        if (Date.now() > this.deadline || controller.signal.aborted || this.inFlight.size) {
+          controller.abort(); this.needsReset = true; this.generation++;
         }
         this.deadline = Infinity;
       }
     });
   }
   reset(): Promise<void> {
+    if (!this.alive || this.closing) return Promise.reject(new CuaError('SESSION_CLOSED', 'JavaScript session ended.'));
+    this.needsReset = true; this.currentAbort?.abort();
     return this.queue.run(async () => {
       this.currentAbort?.abort(); this.generation++;
-      for (const promise of this.pending) promise.dispose(); this.pending.clear();
+      for (const promise of this.pending) promise.dispose(); this.pending.clear(); this.inFlight = new Set();
       this.vm.dispose(); this.tabs.clear(); this.apps.clear(); await this.cua.reset();
       this.needsReset = false; await this.initialize();
     });
   }
   close(): Promise<void> {
+    this.closing = true; this.currentAbort?.abort();
     return this.queue.run(async () => {
       if (!this.alive) return;
       this.alive = false; this.currentAbort?.abort(); this.generation++;
-      for (const promise of this.pending) promise.dispose(); this.pending.clear();
+      for (const promise of this.pending) promise.dispose(); this.pending.clear(); this.inFlight = new Set();
       this.vm.dispose(); await this.cua.endSession();
     });
   }

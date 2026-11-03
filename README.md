@@ -4,6 +4,7 @@
 
 - [架构 RFC](docs/RFC-0001.md) · [源码行为分析](docs/SOURCE-DEEP-DIVE.md)
 - [Agent 调用架构、接口与 demo](docs/AGENT-INTEGRATION.md)
+- [持久运行时、取消与额度](docs/RUNTIME-LIFECYCLE.md)
 - [浏览器状态、frame 与取消验证](docs/BROWSER-CORRECTNESS.md)
 - [原生 macOS 构建与验收](docs/NATIVE-MACOS.md)
 - [实现状态与完整目标](docs/IMPLEMENTATION-STATUS.md)

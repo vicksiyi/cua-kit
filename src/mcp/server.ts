@@ -13,9 +13,9 @@ export function createMcpServer(runtime: JavascriptSession): McpServer {
   server.registerTool('js', {
     description: JS_DESCRIPTION,
     inputSchema: { code: z.string().max(100000), timeoutMs: z.number().int().min(1).max(60000).optional() },
-  }, async ({ code, timeoutMs }) => {
+  }, async ({ code, timeoutMs }, extra) => {
     try {
-      const result = await runtime.execute(code, timeoutMs);
+      const result = await runtime.execute(code, timeoutMs, { signal: extra.signal });
       const content = [...result.output];
       if (result.value !== undefined) content.push({ type: 'text', text: JSON.stringify(result.value) });
       return { content };

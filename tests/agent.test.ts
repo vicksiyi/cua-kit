@@ -35,6 +35,13 @@ test('question -> HTTP model adapter -> stdio MCP -> QuickJS -> real Chromium ->
     assert.match(result.answer, /17/); assert.equal(requests, 2);
     const denied = await client.callTool({ id: 'denied', name: 'js', arguments: { code: `await tab.goto('https://not-authorized.example')` } });
     assert.equal(denied.isError, true);
+    const controller = new AbortController();
+    const running = client.callTool({ id: 'cancel', name: 'js', arguments: { code: 'await new Promise(() => {})', timeoutMs: 20000 } }, controller.signal);
+    const cancelled = assert.rejects(running);
+    setTimeout(() => controller.abort(), 40); await cancelled;
+    const resetStarted = performance.now();
+    await client.callTool({ id: 'reset-cancelled', name: 'js_reset', arguments: {} });
+    assert.ok(performance.now() - resetStarted < 2000, 'MCP cancellation/reset interrupts pending cell promptly');
     const timeout = await client.callTool({ id: 'timeout', name: 'js', arguments: { code: 'await new Promise(() => {})', timeoutMs: 20 } });
     assert.equal(timeout.isError, true);
     await client.callTool({ id: 'reset', name: 'js_reset', arguments: {} });
