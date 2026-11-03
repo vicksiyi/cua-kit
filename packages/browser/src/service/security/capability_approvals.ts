@@ -1,3 +1,4 @@
+import { WebMcpInvokeTool, WebMcpListTools } from "../../commands/web_mcp";
 import type { Preferences } from "../preferences/preferences";
 import { AuthorityGateError } from "../errors/authority_gate_error";
 import { downloadSourceOrigin } from "../context/downloads";
@@ -176,6 +177,197 @@ export function createCapabilityApprovals(runtime = approvalRuntime) {
       return approvalDecision(context, result);
     };
   }
-  return { history, fileTransfer, fullCdp };
+  async function assetOrigin(
+    getElicitation: Getter,
+    origin: string,
+    message: string,
+    preferences: CapabilityPreferences,
+    localize: Localize,
+    display: Display,
+  ) {
+    const audit = { origin: httpOrigin(origin) ?? undefined };
+    const permission = await preferences.getFileTransferPermission(
+      "download",
+      origin,
+    );
+    const context = { gate: "downloadApproval", ...audit },
+      reused = savedPermissionApproval(context, permission);
+    if (reused != null) return async () => reused;
+    const name = browserDisplayName(display),
+      ask = runtime.createElicitation(getElicitation, context),
+      persistent = await preferences.isPersistentApprovalAllowed(origin);
+    return async () => {
+      const result = await ask({
+        message,
+        meta: {
+          codex_approval_kind: "mcp_tool_call",
+          connector_id: "browser-use",
+          connector_name: name,
+          persist: persistent ? ["session", "always"] : "session",
+          tool_params: { asset_origins: [origin] },
+          tool_params_display: [
+            {
+              name: "asset_origins",
+              display_name: localize({
+                id: "browser.download.sourceLabel",
+                defaultMessage: "Download from",
+                description:
+                  "Label before the website origin in a permission prompt to download assets from a webpage.",
+              }),
+              value: origin,
+            },
+          ],
+        },
+      });
+      await preferences.handleFileTransferPromptResult(
+        "download",
+        origin,
+        result,
+      );
+      return approvalDecision(context, result);
+    };
+  }
+  async function pageAssets(
+    getElicitation: Getter,
+    pageUrl: string,
+    preferences: CapabilityPreferences,
+    localize: Localize,
+    display: Display = {},
+  ) {
+    const origin = downloadSourceOrigin(pageUrl);
+    if (origin == null)
+      throw new AuthorityGateError(
+        "downloadApproval",
+        "browser_context_unavailable",
+        "The browser could not determine the origin for this operation.",
+      );
+    return assetOrigin(
+      getElicitation,
+      origin,
+      `I need your permission to download assets used by ${new URL(origin).host || origin}`,
+      preferences,
+      localize,
+      display,
+    );
+  }
+  async function pageAssetFetch(
+    getElicitation: Getter,
+    pageUrl: string,
+    assetUrl: string,
+    preferences: CapabilityPreferences,
+    localize: Localize,
+    display: Display = {},
+  ) {
+    const origin = downloadSourceOrigin(assetUrl);
+    return origin == null || origin === downloadSourceOrigin(pageUrl)
+      ? async () => {}
+      : assetOrigin(
+          getElicitation,
+          origin,
+          `I need your permission to download an asset from ${new URL(origin).host || origin}`,
+          preferences,
+          localize,
+          display,
+        );
+  }
+  async function webMcp(
+    getElicitation: Getter,
+    pageUrl: string,
+    tool: any,
+    display: Display = {},
+  ) {
+    const audit = {
+      gate: "webMcpApproval",
+      origin: httpOrigin(pageUrl) ?? undefined,
+      toolName:
+        tool.type === WebMcpInvokeTool.commandType ? tool.toolName : undefined,
+    };
+    const name = browserDisplayName(display);
+    if (downloadSourceOrigin(pageUrl) == null)
+      throw new AuthorityGateError(
+        "webMcpApproval",
+        "browser_context_unavailable",
+        "The browser could not determine the origin for this operation.",
+        audit,
+      );
+    if (tool.type === WebMcpListTools.commandType)
+      return { audit, requestApproval: async () => {} };
+    const origin = downloadSourceOrigin(tool.toolOrigin);
+    if (origin == null)
+      throw new AuthorityGateError(
+        "webMcpApproval",
+        "browser_context_unavailable",
+        "The browser could not determine the origin for this operation.",
+        audit,
+      );
+    audit.origin = httpOrigin(origin) ?? undefined;
+    const ask = runtime.createElicitation(getElicitation, audit),
+      sanitizedPage = approvalPageUrl(pageUrl),
+      host = new URL(origin).host;
+    const toolName = `webmcp:${encodeURIComponent(host)}:${encodeURIComponent(tool.toolName)}`;
+    const title =
+      tool.toolTitle == null
+        ? tool.toolName
+        : `${tool.toolTitle} (${tool.toolName})`;
+    if (!isApprovalJson(tool.input))
+      throw new AuthorityGateError(
+        "webMcpApproval",
+        "browser_context_unavailable",
+        "The WebMCP tool input cannot be represented as JSON.",
+        audit,
+      );
+    const request = {
+      message: `Allow ${name} to invoke WebMCP tool ${tool.toolName} on ${origin}?`,
+      meta: {
+        codex_approval_kind: "mcp_tool_call",
+        codex_request_type: "approval_request",
+        codex_strict_auto_review: true,
+        codex_sensitive_action: true,
+        connector_id: "browser-use",
+        connector_name: name,
+        tool_name: toolName,
+        tool_title: `Invoke ${title} on ${host}`,
+        tool_description: tool.toolDescription,
+        tool_params: tool.input,
+        origin,
+        ...(sanitizedPage == null ? {} : { page_url: sanitizedPage }),
+      },
+    };
+    return {
+      audit,
+      requestApproval: async () =>
+        approvalDecision(audit, await ask(request), "guardian-auto-review"),
+    };
+  }
+  return { history, fileTransfer, fullCdp, pageAssets, pageAssetFetch, webMcp };
 }
 export const capabilityApprovals = createCapabilityApprovals();
+
+/** Original MX: strips credentials/query/fragment but keeps the HTTP(S) path. */
+export function approvalPageUrl(value: unknown) {
+  if (typeof value === "string")
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "http:" && url.protocol !== "https:") return;
+      url.username = "";
+      url.password = "";
+      url.search = "";
+      url.hash = "";
+      return url.href;
+    } catch {
+      return;
+    }
+}
+/** Original k_: preserve its structural validation, including sparse arrays and non-plain objects. */
+export function isApprovalJson(value: any): boolean {
+  return value === null ||
+    typeof value === "string" ||
+    typeof value === "boolean"
+    ? true
+    : typeof value === "number"
+      ? Number.isFinite(value)
+      : Array.isArray(value)
+        ? value.every(isApprovalJson)
+        : typeof value === "object" &&
+          Object.values(value).every(isApprovalJson);
+}

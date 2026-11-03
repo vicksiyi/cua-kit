@@ -2081,10 +2081,16 @@
       "symbols": [
         "LB",
         "I_",
-        "WB"
+        "WB",
+        "GB",
+        "VB",
+        "zB",
+        "KB",
+        "MX",
+        "k_"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Differential execution of original AST: persisted decisions, guardian decisions, elicitation failure and identity/timing, audit isolation, history/file/full-CDP prompt preparation and persistence ordering; live approval host pending"
+      "validation": "Differential original-AST tests for history/file/full-CDP/page-assets/WebMCP preparations, prompt metadata, source short-circuits, URL sanitization, structural input validation and persistence ordering; real elicitation host pending"
     }
   },
   "embeddedPackages": {

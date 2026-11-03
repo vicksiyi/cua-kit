@@ -1,4 +1,8 @@
-import { createCapabilityApprovals } from "../packages/browser/src/service/security/capability_approvals";
+import {
+  createCapabilityApprovals,
+  approvalPageUrl,
+  isApprovalJson,
+} from "../packages/browser/src/service/security/capability_approvals";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { serviceExpression } from "./service-source";
@@ -10,6 +14,12 @@ import {
   browserDisplayName,
 } from "../packages/browser/src/service/security/approval";
 const names = [
+  "GB",
+  "VB",
+  "zB",
+  "KB",
+  "MX",
+  "k_",
   "LB",
   "I_",
   "WB",
@@ -45,11 +55,11 @@ const names = [
 ];
 function original() {
   return new Function(
-    "let AB=new WeakMap(),CB;" +
+    'let AB=new WeakMap(),CB; const oe={WebMcpInvokeTool:{commandType:"webmcp_invoke_tool"},WebMcpListTools:{commandType:"webmcp_list_tools"}};' +
       names
         .map((name) => `const ${name}=${serviceExpression(name)};`)
         .join("\n") +
-      "return {recordDuration:PB,approvalDuration:RB,setAuditSink:IB,emitAudit:hf,recordSuccess:kB,failCheck:ho,createElicitation:tr,savedPermissionApproval:sn,approvalDecision:Tr,safelyGuardianReviewed:ba,browserDisplayName:nt,history:LB,fileTransfer:I_,fullCdp:WB};",
+      "return {recordDuration:PB,approvalDuration:RB,setAuditSink:IB,emitAudit:hf,recordSuccess:kB,failCheck:ho,createElicitation:tr,savedPermissionApproval:sn,approvalDecision:Tr,safelyGuardianReviewed:ba,browserDisplayName:nt,history:LB,fileTransfer:I_,fullCdp:WB,pageAssets:GB,pageAssetFetch:VB,webMcp:KB,approvalPageUrl:MX,isApprovalJson:k_};",
   )();
 }
 function view(error: any): any {
@@ -419,4 +429,213 @@ test("history, file-transfer and full-CDP preparations match permission reuse, m
         true,
       ),
     );
+});
+
+async function resourceScenario(
+  useOriginal: boolean,
+  kind: string,
+  pageUrl: string,
+  assetUrl: string,
+  permission: any,
+  persistent: boolean,
+  action: string,
+) {
+  const runtime = useOriginal ? original() : createApprovalRuntime(),
+    api = useOriginal ? runtime : createCapabilityApprovals(runtime),
+    trace: any[] = [];
+  const preferences: any = {
+    getFileTransferPermission: async (...args: any[]) => {
+      trace.push(["permission", args]);
+      return permission;
+    },
+    isPersistentApprovalAllowed: async (...args: any[]) => {
+      trace.push(["persistent", args]);
+      return persistent;
+    },
+    handleFileTransferPromptResult: async (...args: any[]) => {
+      trace.push(["persist-result", args]);
+    },
+  };
+  const getter = () => {
+    trace.push("factory");
+    return async (request: any) => {
+      trace.push(["ask", request]);
+      return { action };
+    };
+  };
+  const localize = (message: any) => {
+    trace.push(["localize", message]);
+    return message.defaultMessage;
+  };
+  const result = await outcome(async () => {
+    const invoke =
+      kind === "pageAssets"
+        ? await api.pageAssets(getter, pageUrl, preferences, localize)
+        : await api.pageAssetFetch(
+            getter,
+            pageUrl,
+            assetUrl,
+            preferences,
+            localize,
+            { elicitationDisplayName: "Assets browser" },
+          );
+    trace.push("prepared");
+    return invoke();
+  });
+  return { result, trace };
+}
+test("page asset approvals preserve origin short-circuits, saved denials, localized metadata and persistence ordering", async () => {
+  for (const kind of ["pageAssets", "pageAssetFetch"])
+    for (const [page, asset] of [
+      ["https://page.test/path", "https://page.test/img"],
+      ["https://page.test/path", "https://cdn.test/img"],
+      ["invalid", "https://cdn.test/img"],
+      ["https://page.test", "data:text/plain,hi"],
+      ["file:///tmp/page?q#x", "file:///tmp/asset?q#x"],
+    ])
+      for (const permission of [
+        undefined,
+        { decision: "approve", source: "global" },
+        { decision: "deny", source: "session" },
+      ])
+        for (const persistent of [true, false])
+          for (const action of ["accept", "decline"]) {
+            assert.deepEqual(
+              await resourceScenario(
+                false,
+                kind,
+                page,
+                asset,
+                permission,
+                persistent,
+                action,
+              ),
+              await resourceScenario(
+                true,
+                kind,
+                page,
+                asset,
+                permission,
+                persistent,
+                action,
+              ),
+            );
+          }
+});
+async function webScenario(
+  useOriginal: boolean,
+  pageUrl: string,
+  tool: any,
+  result: any,
+  getterMissing = false,
+) {
+  const runtime = useOriginal ? original() : createApprovalRuntime(),
+    api = useOriginal ? runtime : createCapabilityApprovals(runtime),
+    trace: any[] = [];
+  const getter = () => {
+    trace.push("factory");
+    return getterMissing
+      ? undefined
+      : async (request: any) => {
+          trace.push(["request", request]);
+          return result;
+        };
+  };
+  const output = await outcome(async () => {
+    const prepared = await api.webMcp(getter, pageUrl, tool, {
+      elicitationDisplayName: "Web browser",
+    });
+    trace.push(["prepared", prepared.audit]);
+    return prepared.requestApproval();
+  });
+  return { output, trace };
+}
+test("WebMCP approval preserves list/invoke branches, tool metadata, sanitized page URL and default guardian decision source", async () => {
+  for (const type of ["webmcp_list_tools", "webmcp_invoke_tool", "unknown"])
+    for (const page of [
+      "https://user:pass@page.test/path?token=1#frag",
+      "file:///tmp/page",
+      "invalid",
+    ])
+      for (const origin of [
+        "https://tool.test/path",
+        "invalid",
+        "file:///tmp/tool",
+      ])
+        for (const action of ["accept", "decline", "cancel"]) {
+          const tool = {
+            type,
+            toolOrigin: origin,
+            toolName: "read / 搜索",
+            toolTitle: "Search",
+            toolDescription: "Find records",
+            input: { query: "x" },
+          };
+          assert.deepEqual(
+            await webScenario(false, page, tool, { action }),
+            await webScenario(true, page, tool, { action }),
+          );
+        }
+  const base = {
+    type: "webmcp_invoke_tool",
+    toolOrigin: "https://tool.test",
+    toolName: "read",
+  };
+  for (const input of [
+    undefined,
+    NaN,
+    Infinity,
+    1n,
+    () => {},
+    [undefined],
+    { x: undefined },
+    null,
+    {},
+    new Date(0),
+    new Array(3),
+  ])
+    for (const getterMissing of [false, true]) {
+      assert.deepEqual(
+        await webScenario(
+          false,
+          "https://page.test",
+          { ...base, input },
+          { action: "accept" },
+          getterMissing,
+        ),
+        await webScenario(
+          true,
+          "https://page.test",
+          { ...base, input },
+          { action: "accept" },
+          getterMissing,
+        ),
+      );
+    }
+});
+test("WebMCP helpers retain original non-plain-object and sparse-array behavior", () => {
+  const expected = original();
+  for (const value of [
+    undefined,
+    null,
+    "https://u:p@page.test/a?q#f",
+    "file:///tmp/a",
+    "invalid",
+    3,
+  ])
+    assert.equal(approvalPageUrl(value), expected.approvalPageUrl(value));
+  for (const value of [
+    undefined,
+    null,
+    {},
+    new Date(0),
+    new Map(),
+    new Set(),
+    new Array(2),
+    [1, undefined],
+    { x: NaN },
+    Symbol("x"),
+    Object.create(null),
+  ])
+    assert.equal(isApprovalJson(value), expected.isApprovalJson(value));
 });

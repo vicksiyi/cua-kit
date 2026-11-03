@@ -779,6 +779,36 @@
       "end": 701058,
       "kind": "ClassExpression"
     },
+    "GB": {
+      "start": 701063,
+      "end": 701341,
+      "kind": "FunctionDeclaration"
+    },
+    "VB": {
+      "start": 701341,
+      "end": 701512,
+      "kind": "FunctionDeclaration"
+    },
+    "zB": {
+      "start": 701512,
+      "end": 702272,
+      "kind": "FunctionDeclaration"
+    },
+    "KB": {
+      "start": 702281,
+      "end": 703648,
+      "kind": "FunctionDeclaration"
+    },
+    "MX": {
+      "start": 703648,
+      "end": 703837,
+      "kind": "FunctionDeclaration"
+    },
+    "k_": {
+      "start": 703837,
+      "end": 704026,
+      "kind": "FunctionDeclaration"
+    },
     "B_": {
       "start": 704047,
       "end": 704054,
