@@ -2184,6 +2184,31 @@
       "end": 910006,
       "kind": "FunctionDeclaration"
     },
+    "lre": {
+      "start": 935517,
+      "end": 935520,
+      "kind": "Literal"
+    },
+    "Mv": {
+      "start": 935716,
+      "end": 936316,
+      "kind": "FunctionDeclaration"
+    },
+    "cre": {
+      "start": 936316,
+      "end": 936417,
+      "kind": "FunctionDeclaration"
+    },
+    "F2": {
+      "start": 936417,
+      "end": 936832,
+      "kind": "FunctionDeclaration"
+    },
+    "dre": {
+      "start": 936832,
+      "end": 937003,
+      "kind": "FunctionDeclaration"
+    },
     "ru": {
       "start": 937012,
       "end": 937354,
@@ -2224,10 +2249,20 @@
       "end": 943209,
       "kind": "FunctionDeclaration"
     },
+    "Do": {
+      "start": 950500,
+      "end": 950521,
+      "kind": "ClassExpression"
+    },
     "Gh": {
       "start": 950525,
       "end": 951320,
       "kind": "ClassExpression"
+    },
+    "Cre": {
+      "start": 953293,
+      "end": 955079,
+      "kind": "FunctionDeclaration"
     },
     "Ire": {
       "start": 957651,

@@ -9,7 +9,7 @@ interface DialogEvent {
   params: { type?: string };
 }
 export interface DialogCdp {
-  getJsDialog(tabId: number): JavaScriptDialog | undefined;
+  getJsDialog(tabId: number): Pick<JavaScriptDialog, "id" | "type"> | undefined;
   activeJsDialog(tabId: number, id: string): JavaScriptDialog;
   on(event: "event", listener: (event: DialogEvent) => void): unknown;
   removeListener(
