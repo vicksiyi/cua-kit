@@ -72,6 +72,8 @@ const wanted = new Set([
   "lS",
   "NF",
   "lg",
+  "mg",
+  "WF",
   "Cv",
   "eu",
   "Lh",

@@ -934,6 +934,16 @@
       "end": 1303028,
       "kind": "FunctionDeclaration"
     },
+    "WF": {
+      "start": 1310459,
+      "end": 1310486,
+      "kind": "Literal"
+    },
+    "mg": {
+      "start": 1310490,
+      "end": 1311538,
+      "kind": "ClassExpression"
+    },
     "gg": {
       "start": 1323194,
       "end": 1323796,

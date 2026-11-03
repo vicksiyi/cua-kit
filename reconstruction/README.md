@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。169 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。171 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -383,3 +383,9 @@ Additionally, `npx tsx reconstruction/clipboard-browser-smoke.ts` passed in isol
 Reconstructed lg and LF/FF with validation, Workspace URL/format/name helpers and YouTube selection/transcript rules. PDF library capture is preferred; otherwise the provider reads the authorized page and its URL/title/text/truncation are validated before specialized reads. Workspace tries document-type export formats in source order, preserves changed-tab/oversized failures and skips redirects/errors where specified. YouTube selection and transcript branches retain original ordering and wrapper text.
 
 169 differential tests pass with type checking. Tests execute original source classes/helpers and reconstructed code for URL mismatch, plain pages, export fallback/errors, selection/transcript and library-capture property projection. Actual provider executeTabRead and PDF capture remain external dependencies; no live Workspace or YouTube access was performed.
+
+### Response site-instruction cache
+
+Reconstructed mg/WF as SiteInstructions. Capture first clears matching-frame state, consumes all matching headers even with proxy disabled, then applies original protocol/hostname checks and percent decoding. Invalid URL/encoding deletes the tab entry; a disallowed URL returns without deleting a different-frame entry. Peek compares stored URL to the requested URL without its fragment; take always deletes even on mismatch.
+
+171 differential tests pass with type checking. Tests cover header mutation/order, proxy state, loopback/link-local hostname cases, malformed decoding, frame isolation, fragment behavior and destructive take. This is a response-cache component, not a standalone authority or security policy engine. Execution-context assembly and document-response capture are still pending.
