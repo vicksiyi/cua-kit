@@ -3399,6 +3399,28 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "11 original command scenarios with serialized callbacks executed against fixture DOM/helper, normalization/ref comparisons and nested-frame/deadline traces. Real bundled incrementalAriaSnapshot helper remains pending; no real-browser ARIA snapshot integration claim. Preserves IAB 1000ms total / 500ms per-child budgets and document-only bypass."
+    },
+    "packages/browser/src/service/input/visible_dom_frame.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-visible-dom-frame-reader",
+      "symbols": [
+        "dY",
+        "CD",
+        "pY",
+        "mY",
+        "H_",
+        "W_",
+        "fY",
+        "hY",
+        "gY",
+        "bY",
+        "yY",
+        "wY",
+        "AD"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "21 original frame/capture/find scenarios using actual shared reconstructed DomState and fixture CDP. Shape filters, deadline boundaries, serialized ordinary/reviewer references and release-on-error verified. cY/_Y renderer remains explicit dependency; ED/q_/TD orchestration pending. No real-browser visible DOM end-to-end claim."
     }
   },
   "embeddedPackages": {
