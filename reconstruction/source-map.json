@@ -2322,6 +2322,30 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential event traces, control-character validation, abort/error boundaries, strict token enablement and deterministic UUID/fallback tests; AX provider assembly remains pending"
+    },
+    "packages/browser/src/service/accessibility/wasm.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-wasm-js-bridge-native-renderer-pending",
+      "symbols": [
+        "Hre",
+        "Wre",
+        "Gv",
+        "Vv",
+        "$re",
+        "zh",
+        "X2",
+        "Ure",
+        "qre",
+        "jre"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential bridge tests using locally installed WASM: full/diff revision text and identities, runtime ownership, input validation, allocation/copy cleanup; compressed file and in-memory loading. Native renderer source and standalone binary packaging remain pending.",
+      "nativeDependency": {
+        "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br",
+        "sha256": "97d2773f1f0d3f890e2dc8bbf7da5745cfb9c2686d893579ffc35bb9608185ee",
+        "distribution": "not copied into repository; test-only local dependency, native implementation not reconstructed"
+      }
     }
   },
   "embeddedPackages": {
