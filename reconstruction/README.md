@@ -415,3 +415,9 @@ Restored XF/YF and their DOMSnapshot/performance/CSS/URL/hash helpers in `asset_
 Restored hg and bundle helpers in `page_assets.ts`, assembling reconstructed discovery and fetch code. Preserves inventory URL/tab identity, duplicate requested IDs, SVG ID collisions, validation ordering, MIME/extension checks, file bytes and manifest layout. Fallback approvals are serialized and cached per original origin key; the first denial poisons queued approvals and removes the directory after asset tasks settle. Original dt telemetry remains an explicit factory dependency.
 
 184 tests and type checks pass. New differential cases compare installed AST and readable functions/classes for resource enrichment, hashes, SVG naming, loaded/fallback bundling, MIME mismatch, denial cleanup, inventory invalidation and selection errors. Filesystem/CDP/authorization remain fixtures; no standalone production backend or complete AgentLoop is claimed.
+
+## Real Chromium page-assets integration
+
+`npx tsx reconstruction/page-assets-browser-smoke.ts` passes against a temporary loopback HTTP fixture and real temporary filesystem. Exercises reconstructed `PageAssets.list` through actual DOMSnapshot/Runtime calls and `bundle` through Page.getResourceContent, then forced cache-miss page fetch. Verifies merged performance/attribute/CSS sources, SVG naming, exact PNG/CSS/SVG bytes and manifest contents, one fallback approval per origin, and denial preventing page evaluation while removing the failed directory. Script closes Chromium/server and removes its temporary files.
+
+This adds a browser integration smoke beyond the 184 differential tests. The adapter is test-only and authorization is an explicit local fixture; production provider/policy/MCP/AgentLoop remain unverified and incomplete.
