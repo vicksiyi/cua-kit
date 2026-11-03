@@ -3327,6 +3327,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "125 original backend/environment capability combinations and 28 command traces. Existing reconstructed schemas and method policy are shared dependencies; verifies authority targets, schema order, null result and late credential protection rechecks. Real raw command/backend integration and production registry still pending."
+    },
+    "packages/browser/src/service/commands/page_assets.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-page-assets-command-assembly",
+      "symbols": [
+        "OF",
+        "MF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Ten original command traces preserve distinct URL/authority lookup ordering. Real Chromium inline SVG discovery and reconstructed backend bundle writes verified with manifest/file contents and observed approval calls; test authority is a fixture. Remote asset fallback and production registry integration not established by this test."
     }
   },
   "embeddedPackages": {
