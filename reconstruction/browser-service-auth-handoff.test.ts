@@ -52,6 +52,17 @@ const aliases = {
 };
 async function run(source: boolean, mode: string) {
   const trace: any[] = [];
+  const protectedModes = [
+    "private",
+    "private-reject",
+    "private-start-error",
+    "ordinary",
+    "ordinary-failure",
+    "native",
+    "session-change",
+    "predecessor-error",
+  ];
+  const protectedMode = protectedModes.includes(mode);
   const fields: any[] = [
     {
       id: "user",
@@ -136,14 +147,22 @@ async function run(source: boolean, mode: string) {
             "native-unavailable",
             "manual-unavailable",
             "options",
+            ...protectedModes,
           ].includes(mode)
         ) {
           challenge.hasSubmission = true;
           submit({
             fields: { user: "synthetic-user", pass: "synthetic-password" },
             selected_option: mode === "options" ? "option" : undefined,
-            native_credential_delivery: mode === "native-unavailable",
-            manual_credential_save: mode === "manual-unavailable",
+            native_credential_delivery:
+              mode === "native-unavailable" || mode === "native",
+            manual_credential_save:
+              mode === "manual-unavailable" ||
+              (protectedMode &&
+                mode !== "native" &&
+                !mode.startsWith("ordinary")),
+            ordinary_credential_delivery: mode.startsWith("ordinary"),
+            native_observation_predecessor: null,
           });
           return { action: "accept" };
         }
@@ -281,6 +300,105 @@ async function run(source: boolean, mode: string) {
     },
     isElicitationUnavailable: () => false,
   };
+  if (protectedMode) {
+    context.runtime.env.BROWSER_AUTH_BROKER_CREDENTIAL_BINDING_VERSION =
+      mode.startsWith("ordinary") ? "2" : "1";
+    context.runtime.env.BROWSER_AUTH_BROKER_MANUAL_SAVE_BINDING_VERSION =
+      mode.startsWith("ordinary") ? "10" : "8";
+    context.credentialObservationGate = {
+      async protect(...args: any[]) {
+        trace.push(["protect", args[0]]);
+        return "private-token";
+      },
+      async protectManualSaving(tab: number, _finish: any, kind: string) {
+        trace.push(["protect-save", tab, kind]);
+        return "save-token";
+      },
+      allowPrivateInteraction(...args: any[]) {
+        trace.push(["allow-private", ...args]);
+      },
+      allowOrdinaryInteraction(...args: any[]) {
+        trace.push(["allow-ordinary", ...args]);
+      },
+    };
+    context.cdp.protectBrowserAuthCredentialDiagnostics = (tab: number) =>
+      trace.push(["protect-diagnostics", tab]);
+    deps.createCredentialBinding = async () => ({
+      session_id: "session",
+      submission_origin: request.origin,
+    });
+    deps.manualSavePreflight = async () => ({
+      kind: mode.startsWith("ordinary") ? "ordinary" : "private",
+      fields: { username: "user", password: "pass" },
+      sessionId: "session",
+      names: { username: "username", password: "password" },
+      target: { origin: request.origin, url: request.origin + "/submit" },
+      submission: { fixture: true },
+    });
+    deps.validObservationPredecessor = (...args: any[]) => {
+      trace.push(["predecessor", ...args]);
+      if (mode === "predecessor-error") throw new Error("predecessor");
+      return true;
+    };
+    deps.startCredentialLease = async (input: any) => {
+      trace.push([
+        "lease-start",
+        input.tabId,
+        input.frameId,
+        input.target,
+        input.ordinary,
+        input.credentialFields,
+      ]);
+      if (mode === "private-start-error") throw new Error("lease start");
+      return {
+        currentRejection() {
+          return null;
+        },
+        diagnostics() {
+          return { request_id: "request", attempt_events: [] };
+        },
+        recordAttempt(event: any) {
+          trace.push(["attempt", event]);
+        },
+        whenRejected() {
+          return mode === "private-reject"
+            ? Promise.resolve("origin_changed")
+            : new Promise(() => {});
+        },
+        async ordinaryResult() {
+          trace.push("ordinary-result");
+          return mode === "ordinary-failure"
+            ? "submission_failed"
+            : "submitted";
+        },
+        async result(timeout: number) {
+          trace.push(["private-result", timeout]);
+          return "submitted";
+        },
+        async waitForOrdinaryDocumentCleanup() {
+          trace.push("cleanup-document");
+        },
+        settleOrdinarySubmission() {
+          trace.push("settle-ordinary");
+        },
+        completeOrdinaryAttempt(status: string) {
+          trace.push(["attempt-complete", status]);
+        },
+        async close() {
+          trace.push("lease-close");
+        },
+      };
+    };
+    deps.submitValues = async () => {
+      trace.push("submit");
+      if (mode === "session-change")
+        deps.turnMetadata = () => ({ session_id: "other" });
+      await Promise.resolve();
+      await Promise.resolve();
+      return "submitted";
+    };
+    if (mode === "session-change") deps.metadataSession = () => "other";
+  }
   const external: any = {
     F: defineCommand,
     mr: TabBrowserAuthCommands,
@@ -475,6 +593,53 @@ test("assembled handoff uses restored binding, screenshot and challenge completi
         Array.isArray(entry) &&
         entry[0] === "prompt" &&
         entry[1] === "https://fixture.test/qr",
+    ),
+  );
+});
+
+test("auth handoff matches original protected credential leases and cleanup", async () => {
+  for (const mode of [
+    "private",
+    "private-reject",
+    "private-start-error",
+    "ordinary",
+    "ordinary-failure",
+    "native",
+    "session-change",
+    "predecessor-error",
+  ])
+    assert.deepEqual(await run(false, mode), await run(true, mode), mode);
+  const ordinary = await run(false, "ordinary");
+  assert.equal(ordinary.result.status, "submitted");
+  assert.ok(
+    ordinary.trace.some(
+      (entry: any) =>
+        Array.isArray(entry) &&
+        entry[0] === "allow-ordinary" &&
+        entry[3] === true,
+    ),
+  );
+  assert.ok(ordinary.trace.includes("cleanup-document"));
+  assert.equal(
+    (await run(false, "ordinary-failure")).result.status,
+    "submission_failed",
+  );
+  assert.equal(
+    (await run(false, "private-reject")).result.status,
+    "origin_changed",
+  );
+  assert.equal(
+    (await run(false, "private-start-error")).result.status,
+    "unavailable",
+  );
+  assert.ok(
+    !(await run(false, "session-change")).trace.some(
+      (entry: any) => Array.isArray(entry) && entry[0] === "allow-private",
+    ),
+  );
+  assert.ok(
+    (await run(false, "native")).trace.some(
+      (entry: any) => Array.isArray(entry) && entry[0] === "allow-private",
     ),
   );
 });

@@ -4,49 +4,52 @@ const signInReason = "Sign in to continue";
 const userTakeoverKey = "openai/user_took_over";
 /** Original rN. Full control flow; assembly dependencies are explicit until host wiring is completed. */
 export interface BrowserAuthHandoffDependencies {
-  closeCredentialLease: any;
-  revalidatePage: any;
-  reviewSafety: any;
-  manualSavePreflight: any;
-  readPageBinding: any;
-  parseUrl: any;
-  turnMetadata: any;
-  authCapability: any;
-  validOptions: any;
-  revalidateLocators: any;
-  validIntermediateFrames: any;
-  hasNestedFrames: any;
-  readFormBinding: any;
-  backendApiUrl: any;
-  validObservationPredecessor: any;
-  isQrOnly: any;
-  completeChallenge: any;
-  startCredentialLease: any;
-  startQrMonitor: any;
-  captureScreenshot: any;
-  createCredentialBinding: any;
-  createFieldPlan: any;
-  unsupportedCapability: any;
-  currentReviewHost: any;
-  readActionTargets: any;
-  createSafetyPrecheck: any;
-  isElicitationUnavailable: any;
-  readOptionBindings: any;
-  backendFetch: any;
-  allowsOrdinaryOption: any;
-  browserName: any;
-  firstInvisibleField: any;
-  validLocatorLayout: any;
-  mapOptions: any;
-  submitValues: any;
-  sameSite: any;
-  decodeQr: any;
-  metadataSession: any;
-  Checkpoint: any;
-  inspectFields: any;
-  httpOrigin: any;
-  initializeTelemetry: any;
-  telemetry: any;
+  closeCredentialLease: (...args: any[]) => any;
+  revalidatePage: (...args: any[]) => any;
+  reviewSafety: (...args: any[]) => any;
+  manualSavePreflight: (...args: any[]) => any;
+  readPageBinding: (...args: any[]) => any;
+  parseUrl: (...args: any[]) => any;
+  turnMetadata: (...args: any[]) => any;
+  authCapability: { id: string };
+  validOptions: (...args: any[]) => any;
+  revalidateLocators: (...args: any[]) => any;
+  validIntermediateFrames: (...args: any[]) => any;
+  hasNestedFrames: (...args: any[]) => any;
+  readFormBinding: (...args: any[]) => any;
+  backendApiUrl: (...args: any[]) => any;
+  validObservationPredecessor: (
+    challengeId: string,
+    predecessor?: unknown,
+  ) => boolean;
+  isQrOnly: (...args: any[]) => any;
+  completeChallenge: (...args: any[]) => any;
+  startCredentialLease: (...args: any[]) => any;
+  startQrMonitor: (...args: any[]) => any;
+  captureScreenshot: (...args: any[]) => any;
+  createCredentialBinding: (...args: any[]) => any;
+  createFieldPlan: (...args: any[]) => any;
+  unsupportedCapability: (...args: any[]) => any;
+  currentReviewHost: (...args: any[]) => any;
+  readActionTargets: (...args: any[]) => any;
+  createSafetyPrecheck: (...args: any[]) => any;
+  isElicitationUnavailable: (...args: any[]) => any;
+  readOptionBindings: (...args: any[]) => any;
+  backendFetch: (...args: any[]) => any;
+  allowsOrdinaryOption: (...args: any[]) => any;
+  browserName: (...args: any[]) => any;
+  firstInvisibleField: (...args: any[]) => any;
+  validLocatorLayout: (...args: any[]) => any;
+  mapOptions: (...args: any[]) => any;
+  submitValues: (...args: any[]) => any;
+  sameSite: (...args: any[]) => any;
+  decodeQr: (...args: any[]) => any;
+  metadataSession: (...args: any[]) => any;
+  Checkpoint: new (...args: any[]) => any;
+  inspectFields: (...args: any[]) => any;
+  httpOrigin: (...args: any[]) => any;
+  initializeTelemetry: (...args: any[]) => any;
+  telemetry: { logStatsigEvent(...args: any[]): any };
 }
 export function createBrowserAuthHandoff(
   dependencies: BrowserAuthHandoffDependencies,
@@ -486,27 +489,30 @@ export function createBrowserAuthHandoff(
         selectedOption: any,
         diagnostics: any,
         submissionTask: any = (async () => {
-          let ee: any;
+          let lease: any;
           try {
-            let fe: any = await challenge.waitForSubmission();
-            if ("status" in fe) return ((finalStatus = fe.status), fe.status);
-            let rt: any =
-              fe.email_otp_delivery === true
+            let delivery: any = await challenge.waitForSubmission();
+            if ("status" in delivery)
+              return ((finalStatus = delivery.status), delivery.status);
+            let emailGate: any =
+              delivery.email_otp_delivery === true
                 ? context.credentialObservationGate
                 : undefined;
             if (
-              fe.email_otp_delivery === true &&
-              (otpSession == null || rt == null)
+              delivery.email_otp_delivery === true &&
+              (otpSession == null || emailGate == null)
             )
               throw new Error("Email OTP delivery is unavailable");
-            checkpoint.nativeDelivery = fe.native_credential_delivery === true;
-            let Fe: any = fe.ordinary_credential_delivery === true,
-              Ye: any = fe.manual_credential_save === true;
-            if (Ye && (saveBinding == null || formBinding == null))
+            checkpoint.nativeDelivery =
+              delivery.native_credential_delivery === true;
+            let ordinaryDelivery: any =
+                delivery.ordinary_credential_delivery === true,
+              manualSave: any = delivery.manual_credential_save === true;
+            if (manualSave && (saveBinding == null || formBinding == null))
               throw new Error("Manual credential saving is unavailable");
             if (
-              (Fe &&
-                (Ye ||
+              (ordinaryDelivery &&
+                (manualSave ||
                   checkpoint.nativeDelivery ||
                   credentialBinding?.submission !== "ordinary" ||
                   saveBinding?.kind !== "ordinary")) ||
@@ -514,30 +520,33 @@ export function createBrowserAuthHandoff(
                 credentialBinding?.submission === "ordinary")
             )
               throw new Error("Credential delivery mode is unavailable");
-            let be: any = Ye || Fe,
-              _e: any =
-                (be || checkpoint.nativeDelivery || rt != null) &&
+            let protectedSubmission: any = manualSave || ordinaryDelivery,
+              validPredecessor: any =
+                (protectedSubmission ||
+                  checkpoint.nativeDelivery ||
+                  emailGate != null) &&
                 validObservationPredecessor(
                   challenge.id,
-                  fe.native_observation_predecessor,
+                  delivery.native_observation_predecessor,
                 ),
-              ht: any;
-            rt != null &&
-              ((ht = await rt.protect(
+              privateProtection: any;
+            emailGate != null &&
+              ((privateProtection = await emailGate.protect(
                 Number(request.tab_id),
                 context.finishNativeCredentialModelCommand,
               )),
               context.cdp.protectBrowserAuthCredentialDiagnostics(
                 Number(request.tab_id),
               ));
-            let he: any =
+            let privateBinding: any =
               saveBinding?.kind === "private" ? saveBinding : undefined;
             if (
-              ((checkpoint.manualCredentialSave = Ye && he != null),
+              ((checkpoint.manualCredentialSave =
+                manualSave && privateBinding != null),
               (checkpoint.nativeDelivery ||
-                (be && saveBinding?.kind === "ordinary")) &&
+                (protectedSubmission && saveBinding?.kind === "ordinary")) &&
                 (checkpoint.credentialSubmissionFields = validatedFields),
-              be &&
+              protectedSubmission &&
                 (saveBinding == null ||
                   formBinding == null ||
                   context.credentialObservationGate == null))
@@ -545,62 +554,73 @@ export function createBrowserAuthHandoff(
               throw new Error(
                 "Credential submission protection is unavailable",
               );
-            let Qe: any = Number(request.tab_id),
-              Xe: any;
-            if (be) {
-              checkpoint.manualSubmission = he?.submission;
+            let tabId: any = Number(request.tab_id),
+              ordinaryProtection: any;
+            if (protectedSubmission) {
+              checkpoint.manualSubmission = privateBinding?.submission;
               let it: any =
                 await context.credentialObservationGate.protectManualSaving(
-                  Qe,
+                  tabId,
                   context.finishNativeCredentialModelCommand,
-                  he == null ? "ordinary" : "private",
+                  privateBinding == null ? "ordinary" : "private",
                 );
               saveBinding?.kind === "ordinary"
-                ? ((Xe = it),
+                ? ((ordinaryProtection = it),
                   (checkpoint.ordinaryCredentialFields = saveBinding.fields))
-                : ((ht = it),
-                  context.cdp.protectBrowserAuthCredentialDiagnostics(Qe));
+                : ((privateProtection = it),
+                  context.cdp.protectBrowserAuthCredentialDiagnostics(tabId));
             }
             if (
-              ((ee =
-                be && saveBinding != null && formBinding != null
+              ((lease =
+                protectedSubmission &&
+                saveBinding != null &&
+                formBinding != null
                   ? await startCredentialLease({
                       cdp: context.cdp,
                       requests: context.documentResponses,
-                      tabId: Qe,
+                      tabId: tabId,
                       frameId:
-                        he == null ? pageBinding.frameId : formBinding.frameId,
-                      ...(he == null
+                        privateBinding == null
+                          ? pageBinding.frameId
+                          : formBinding.frameId,
+                      ...(privateBinding == null
                         ? {
                             ordinary: {
                               origin: formBinding.origin,
-                              password: fe.fields[saveBinding.fields.password],
+                              password:
+                                delivery.fields[saveBinding.fields.password],
                             },
                           }
                         : {
-                            target: he.target,
+                            target: privateBinding.target,
                             credentialFields: [
                               {
-                                name: he.names.username,
-                                value: fe.fields[he.fields.username],
+                                name: privateBinding.names.username,
+                                value:
+                                  delivery.fields[
+                                    privateBinding.fields.username
+                                  ],
                               },
                               {
-                                name: he.names.password,
-                                value: fe.fields[he.fields.password],
+                                name: privateBinding.names.password,
+                                value:
+                                  delivery.fields[
+                                    privateBinding.fields.password
+                                  ],
                               },
                             ],
                           }),
                     })
                   : undefined),
-              ee != null &&
+              lease != null &&
                 ((checkpoint.manualSavingRejection =
-                  ee.currentRejection.bind(ee)),
-                Xe != null &&
-                  ((checkpoint.ordinaryAttempt = ee),
-                  ee.recordAttempt({ kind: "prompt_completed" }))),
-              !be &&
+                  lease.currentRejection.bind(lease)),
+                ordinaryProtection != null &&
+                  ((checkpoint.ordinaryAttempt = lease),
+                  lease.recordAttempt({ kind: "prompt_completed" }))),
+              !protectedSubmission &&
                 !checkpoint.nativeDelivery &&
-                (await closeCredentialLease(context.documentResponses, Qe)),
+                (await closeCredentialLease(context.documentResponses, tabId)),
               checkpoint.nativeDelivery)
             ) {
               if (
@@ -610,21 +630,22 @@ export function createBrowserAuthHandoff(
                 throw new Error(
                   "Native credential observation protection is unavailable",
                 );
-              ht = await context.credentialObservationGate.protect(
-                Qe,
-                context.finishNativeCredentialModelCommand,
-              );
+              privateProtection =
+                await context.credentialObservationGate.protect(
+                  tabId,
+                  context.finishNativeCredentialModelCommand,
+                );
             }
-            let Wr: any = context.performanceSpan.withSpan(
+            let fillAndSubmit: any = context.performanceSpan.withSpan(
                 "browser_use.auth.fill_and_submit",
                 {
                   "browser_use.auth.submission.request_id":
-                    ee?.diagnostics().request_id,
+                    lease?.diagnostics().request_id,
                 },
                 () =>
                   submitValues(
-                    fe.fields,
-                    fe.selected_option,
+                    delivery.fields,
+                    delivery.selected_option,
                     promptOptions,
                     checkpoint,
                     challengeFields,
@@ -635,42 +656,44 @@ export function createBrowserAuthHandoff(
                   }),
                 },
               ),
-              Nt: any,
-              ri: any = false;
+              outcome: any,
+              submitted: any = false;
             try {
-              ((Nt =
-                ee == null || he == null
-                  ? await Wr
-                  : await Promise.race([Wr, ee.whenRejected()])),
-                Nt === "submitted" &&
-                  ee != null &&
-                  (Nt =
-                    he == null
-                      ? await ee.ordinaryResult()
-                      : await ee.result(request.timeout_ms ?? 5e3)),
-                (ri = Nt === "submitted"));
+              ((outcome =
+                lease == null || privateBinding == null
+                  ? await fillAndSubmit
+                  : await Promise.race([fillAndSubmit, lease.whenRejected()])),
+                outcome === "submitted" &&
+                  lease != null &&
+                  (outcome =
+                    privateBinding == null
+                      ? await lease.ordinaryResult()
+                      : await lease.result(request.timeout_ms ?? 5e3)),
+                (submitted = outcome === "submitted"));
             } finally {
-              (Xe != null && (await Promise.allSettled([Wr])),
-                he == null && (await ee?.waitForOrdinaryDocumentCleanup()),
-                Xe != null &&
+              (ordinaryProtection != null &&
+                (await Promise.allSettled([fillAndSubmit])),
+                privateBinding == null &&
+                  (await lease?.waitForOrdinaryDocumentCleanup()),
+                ordinaryProtection != null &&
                   (context.credentialObservationGate.allowOrdinaryInteraction(
-                    Qe,
-                    Xe,
-                    ri && _e,
+                    tabId,
+                    ordinaryProtection,
+                    submitted && validPredecessor,
                   ),
-                  ee?.settleOrdinarySubmission()),
-                (diagnostics = ee?.diagnostics()));
+                  lease?.settleOrdinarySubmission()),
+                (diagnostics = lease?.diagnostics()));
             }
             if (
-              (Nt === "submitted" &&
+              (outcome === "submitted" &&
                 promptOptions != null &&
-                (selectedOption = fe.selected_option),
-              (finalStatus = Nt),
-              Nt === "submitted" && ht != null)
+                (selectedOption = delivery.selected_option),
+              (finalStatus = outcome),
+              outcome === "submitted" && privateProtection != null)
             ) {
-              await ee?.close();
+              await lease?.close();
               let it: any =
-                rt != null
+                emailGate != null
                   ? otpSession
                   : checkpoint.nativeDelivery
                     ? credentialBinding?.session_id
@@ -678,30 +701,31 @@ export function createBrowserAuthHandoff(
               it != null &&
                 it === metadataSession(turnMetadata(context.runtime)) &&
                 context.credentialObservationGate.allowPrivateInteraction(
-                  Qe,
+                  tabId,
                   origin,
-                  ht,
+                  privateProtection,
                 );
             }
             if (
-              be &&
-              (Nt === "origin_changed" ||
-                (Nt === "submission_failed" &&
+              protectedSubmission &&
+              (outcome === "origin_changed" ||
+                (outcome === "submission_failed" &&
                   diagnostics?.terminal_rejection != null))
             ) {
               let it: any = diagnostics?.first_rejection,
                 xn: any = diagnostics?.terminal_rejection;
               Promise.resolve()
                 .then(() => (initializeTelemetry(), telemetry))
-                .then(({ logStatsigEvent: sy }: any) =>
-                  sy(
+                .then(({ logStatsigEvent: logEvent }: any) =>
+                  logEvent(
                     context.runtime,
-                    Nt === "origin_changed"
+                    outcome === "origin_changed"
                       ? "browser_auth_submission_rejected"
                       : "browser_auth_submission_failed",
                     xn?.reason ?? it?.reason ?? "unattributed",
                     {
-                      submission_mode: he == null ? "ordinary" : "private",
+                      submission_mode:
+                        privateBinding == null ? "ordinary" : "private",
                       request_id: diagnostics?.request_id ?? "unattributed",
                       first_outcome: it?.outcome ?? "none",
                       first_reason: it?.reason ?? "none",
@@ -718,7 +742,7 @@ export function createBrowserAuthHandoff(
                 .catch(() => {});
             }
             return await challenge.complete(
-              Nt,
+              outcome,
               fieldPlan.promptFields.some(
                 (it: any) =>
                   it.type === "password" &&
@@ -726,12 +750,12 @@ export function createBrowserAuthHandoff(
                     (xn: any) =>
                       xn?.toLowerCase().split(/\s+/).includes("one-time-code"),
                   ) &&
-                  Object.hasOwn(fe.fields, it.id),
+                  Object.hasOwn(delivery.fields, it.id),
               ),
             );
           } catch {
             return (
-              (diagnostics = ee?.diagnostics()),
+              (diagnostics = lease?.diagnostics()),
               (finalStatus ??= "unavailable"),
               await completeChallenge(challenge, finalStatus)
             );
@@ -747,28 +771,31 @@ export function createBrowserAuthHandoff(
                   : "unavailable",
               ),
                 (diagnostics = checkpoint.ordinaryAttempt.diagnostics()));
-              let fe: any = diagnostics;
+              let attemptDiagnostics: any = diagnostics;
               Promise.resolve()
                 .then(() => (initializeTelemetry(), telemetry))
-                .then(({ logStatsigEvent: rt }: any) => {
-                  for (let Fe of fe.attempt_events ?? [])
-                    rt(
+                .then(({ logStatsigEvent: logEvent }: any) => {
+                  for (let attemptEvent of attemptDiagnostics.attempt_events ??
+                    [])
+                    logEvent(
                       context.runtime,
                       "browser_auth_attempt",
-                      Fe.kind,
+                      attemptEvent.kind,
                       {
-                        request_id: fe.request_id,
-                        submission_mode: fe.submission_mode,
-                        sequence: String(Fe.sequence),
-                        phase: Fe.phase,
-                        field_index: String(Fe.field_index ?? "none"),
-                        reinspection: String(Fe.reinspection ?? "none"),
-                        outcome: Fe.outcome ?? "none",
-                        request_class: Fe.request_class ?? "none",
-                        method: Fe.method ?? "none",
-                        origin_relation: Fe.origin_relation ?? "none",
+                        request_id: attemptDiagnostics.request_id,
+                        submission_mode: attemptDiagnostics.submission_mode,
+                        sequence: String(attemptEvent.sequence),
+                        phase: attemptEvent.phase,
+                        field_index: String(attemptEvent.field_index ?? "none"),
+                        reinspection: String(
+                          attemptEvent.reinspection ?? "none",
+                        ),
+                        outcome: attemptEvent.outcome ?? "none",
+                        request_class: attemptEvent.request_class ?? "none",
+                        method: attemptEvent.method ?? "none",
+                        origin_relation: attemptEvent.origin_relation ?? "none",
                         dropped_attempt_events: String(
-                          fe.dropped_attempt_events ?? 0,
+                          attemptDiagnostics.dropped_attempt_events ?? 0,
                         ),
                       },
                       context.clientInfo,
