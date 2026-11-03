@@ -1,3 +1,4 @@
+import { nativeAuthSubmit } from "./native_submit";
 import {
   validateAuthValues,
   findAuthOption,
@@ -10,16 +11,18 @@ import { waitForAuthSubmission } from "./submission_status";
 import { pressLocator } from "../commands/locator_press";
 
 export interface AuthSubmissionDependencies {
-  /** Original J_, a self-contained page callback; native submission reconstruction is pending. */
-  nativeSubmit: (element: any, injected: any, arg: any) => any;
+  /** Original J_, defaulting to the restored self-contained page callback. */
+  nativeSubmit?: (element: any, injected: any, arg: any) => any;
   deliverFields?: typeof authFieldDelivery.fillPlan;
   waitForSubmission?: typeof waitForAuthSubmission;
   press?: typeof pressLocator;
 }
 /** Original ute. Preserve validation/retry boundaries and avoid retry after a submit action starts. */
-export function createAuthSubmission(supplied: AuthSubmissionDependencies) {
+export function createAuthSubmission(
+  supplied: AuthSubmissionDependencies = {},
+) {
   const {
-    nativeSubmit,
+    nativeSubmit = nativeAuthSubmit,
     deliverFields = authFieldDelivery.fillPlan,
     waitForSubmission = waitForAuthSubmission,
     press = pressLocator,

@@ -1934,6 +1934,11 @@
       "end": 782864,
       "kind": "FunctionDeclaration"
     },
+    "J_": {
+      "start": 782868,
+      "end": 787063,
+      "kind": "FunctionDeclaration"
+    },
     "Tf": {
       "start": 787074,
       "end": 787085,

@@ -3869,7 +3869,16 @@
         "ute"
       ],
       "status": "reconstructed-browser-auth-submission-orchestration",
-      "validation": "25 original traces cover validation, QR-only early return, reviewed presentation retry, native/manual branch, option action, field delivery, OTP polling, ordinary verification, bound click/Enter, scoped context and no retry after action starts. Default dependencies use restored fillPlan/wait/press. Native private submission callback J_ remains required; branch tests inject action/checkpoint dependencies."
+      "validation": "25 original traces cover validation, QR-only early return, reviewed presentation retry, native/manual branch, option action, field delivery, OTP polling, ordinary verification, bound click/Enter, scoped context and no retry after action starts. Default dependencies use restored fillPlan/wait/press. Native private submission callback J_ remains required; branch tests inject action/checkpoint dependencies. J_ is now restored and the default nativeSubmit; factory supports zero-argument construction. Full broker/runtime integration remains incomplete."
+    },
+    "packages/browser/src/service/browser_auth/native_submit.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "J_"
+      ],
+      "status": "reconstructed-browser-auth-native-private-submit",
+      "validation": "27 original-vs-restored Chromium cases validate origins, prototype-accessed form/control properties, duplicate names/selectors, successful-control payloads, closed-shadow form creation and value blanking including submit exceptions. Additional actual Chromium POST uses synthetic credentials and intercepted local fixture response. Injected selector/state utility remains fixture."
     }
   },
   "embeddedPackages": {
