@@ -2284,6 +2284,16 @@
       "end": 963729,
       "kind": "FunctionDeclaration"
     },
+    "Ore": {
+      "start": 963729,
+      "end": 964355,
+      "kind": "FunctionDeclaration"
+    },
+    "Mre": {
+      "start": 964355,
+      "end": 966940,
+      "kind": "FunctionDeclaration"
+    },
     "Nre": {
       "start": 966940,
       "end": 968258,
