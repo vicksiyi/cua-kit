@@ -2274,6 +2274,16 @@
       "end": 961854,
       "kind": "FunctionDeclaration"
     },
+    "Bre": {
+      "start": 962311,
+      "end": 962550,
+      "kind": "FunctionDeclaration"
+    },
+    "Dre": {
+      "start": 962550,
+      "end": 963729,
+      "kind": "FunctionDeclaration"
+    },
     "Nre": {
       "start": 966940,
       "end": 968258,
