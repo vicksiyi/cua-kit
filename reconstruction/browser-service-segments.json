@@ -1639,6 +1639,11 @@
       "end": 806926,
       "kind": "ClassExpression"
     },
+    "wo": {
+      "start": 806927,
+      "end": 806996,
+      "kind": "FunctionDeclaration"
+    },
     "zD": {
       "start": 807012,
       "end": 807212,

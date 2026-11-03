@@ -3151,6 +3151,20 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "22 original state/result scenarios: first outcome and rejection promises, background versus terminal failures, phase/event saturation, copied diagnostics, verification/timeouts and ordinary cleanup. Extends cleanup base; start and event/request policy remain pending."
+    },
+    "packages/browser/src/service/credentials/lease_events.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-credential-lease-event-correlation",
+      "symbols": [
+        "Z_.onTabDetached",
+        "Z_.onEvent",
+        "Z_.onRequestResolution",
+        "Z_.finishCandidate",
+        "wo"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "48 original event/release sequence comparisons plus 18 protection-event and two cap/detach scenarios; verifies URL hash removal, POST/loader/frame correlation and ordinary/private results. No actual credential submission or complete lease assembly claim."
     }
   },
   "embeddedPackages": {
