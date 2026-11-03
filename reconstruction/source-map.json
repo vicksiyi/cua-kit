@@ -180,6 +180,48 @@
       "sha256": "2b12305ac41a9446ecbc221bc3ff0ee8fdf9f39d553f07ffdce89ed40a2564df",
       "status": "manually-reconstructed",
       "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/core/screenshot_bytes.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/core/screenshot_bytes.js",
+      "sha256": "1898dbdcc479016a588ca1fcc6e58f0d62074266f4a7f80530603491fd483071",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/core/positive_pixels.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/core/positive_pixels.js",
+      "sha256": "e0e3a4cb0113b99ed4177acfe405afd1d538d70f955a299fab2155747f782a91",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/one_screenshot.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/one_screenshot.js",
+      "sha256": "22745e46cb646393e95a4190d973ccfe8991dd65750e3ea72076a9e5e3851015",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/require_plain_text.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/require_plain_text.js",
+      "sha256": "0a279d667c0e10a1e5c330f5ab66d2a8822ba42cee836733e50171d42052c64e",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/bind_mac_app.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_mac_app.js",
+      "sha256": "1c210ebf411e196622c6fa294fd255df10ddbb44038ab4523e68d2dcc351ea14",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/bind_linux_app.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_linux_app.js",
+      "sha256": "385b113cee3aad81f71762e92a33553c97ee0c434c50c4b94a54e9f67f18f4d8",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/bind_windows_app.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_windows_app.js",
+      "sha256": "61d568181a97aceb68beb7a5c0273f915febd75f4b2e61b8812bafc469f920c0",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
     }
   },
   "embeddedPackages": {
