@@ -3066,6 +3066,27 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "63 original command trace comparisons plus real Chromium backward/forward/reload using reconstructed page-load waiter; verifies history boundaries, authority ordering, raw timeout and listener cleanup. URL navigation and production registry remain pending."
+    },
+    "packages/browser/src/service/commands/url_navigation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-url-navigation-command-with-explicit-document-reset-dependency",
+      "symbols": [
+        "YN",
+        "KN",
+        "Nte",
+        "XN",
+        "Fte",
+        "Lte",
+        "Ute",
+        "qte",
+        "Hh",
+        "jte",
+        "Hte",
+        "Iv"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "20 original command traces plus stateful completion predicate comparisons; verifies credential epoch/loader checks, races, detach/session changes, error sanitization and cleanup. GD document response lease reset remains required injected dependency, no silent no-op default. Real browser command integration and production registry pending."
     }
   },
   "embeddedPackages": {
