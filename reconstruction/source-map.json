@@ -567,6 +567,139 @@
       ],
       "fileGrouping": "inferred from flattened bundle; original source filenames unavailable",
       "validation": "original lexical classes/command schemas differential tests; fixture transport, not live service"
+    },
+    "packages/browser/src/cua.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Bl"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions"
+    },
+    "packages/browser/src/dom_cua.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "ql",
+        "Dl",
+        "Ll"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions"
+    },
+    "packages/browser/src/commands/cua_input.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "ast-extracted-schema-with-readable-identifiers-and-inferred-types",
+      "symbols": [
+        "en",
+        "nn",
+        "un",
+        "_n",
+        "vn",
+        "jn",
+        "En",
+        "Zn",
+        "Bn",
+        "Kn",
+        "Xn",
+        "ao",
+        "co",
+        "po",
+        "go",
+        "Fn"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions",
+      "generator": "scripts/reconstruct-input-schemas.mjs"
+    },
+    "packages/browser/src/commands/tab_control.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "ast-extracted-schema-with-readable-identifiers-and-inferred-types",
+      "symbols": [
+        "Dr",
+        "zr",
+        "Hr",
+        "La",
+        "Va",
+        "Ha",
+        "ti",
+        "Ps",
+        "Ai",
+        "Di",
+        "Vr",
+        "Xr",
+        "Mi",
+        "Oi"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions",
+      "generator": "scripts/reconstruct-input-schemas.mjs"
+    },
+    "packages/browser/src/dialogs.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "vh",
+        "xh",
+        "kh",
+        "Sh",
+        "Th"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions"
+    },
+    "packages/browser/src/commands/tab_developer.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "tu",
+        "ru",
+        "au",
+        "su",
+        "nu",
+        "uu",
+        "hu",
+        "mu",
+        "pu",
+        "_u",
+        "yu",
+        "gu",
+        "vu",
+        "xu"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions"
+    },
+    "packages/browser/src/capabilities/tab_cdp.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Su",
+        "Tu",
+        "ju",
+        "Iu"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions"
+    },
+    "packages/browser/src/capabilities/tab_bot_detection.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "cu",
+        "du"
+      ],
+      "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
+      "validation": "original bundle lexical clients/command schemas differential tests; no real browser actions"
     }
   },
   "embeddedPackages": {
