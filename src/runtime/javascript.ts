@@ -58,7 +58,11 @@ const bootstrap = `(() => {
     observe: (...args) => invoke(id,'observe',args),
     getAXState: (...args) => invoke(id,'getAXState',args),
     click: (...args) => invoke(id,'click',args),
-    setValue: (...args) => invoke(id,'setValue',args)
+    setValue: (...args) => invoke(id,'setValue',args),
+    typeText: (...args) => invoke(id,'typeText',args),
+    pressKey: (...args) => invoke(id,'pressKey',args),
+    selectText: (...args) => invoke(id,'selectText',args),
+    performSecondaryAction: (...args) => invoke(id,'performSecondaryAction',args)
   });
   globalThis.cua = Object.freeze({
     listApps: () => invoke(null,'listApps',[]),
@@ -196,6 +200,10 @@ export class JavascriptSession {
         case 'getAXState': { const text = await app.getAXState(options); emit({ type: 'text', text }); return text; }
         case 'click': return app.click(args[0], options);
         case 'setValue': return app.setValue(args[0], args[1], options);
+        case 'typeText': return app.typeText(args[0], options);
+        case 'pressKey': return app.pressKey(args[0], { ...args[1], ...options });
+        case 'selectText': return app.selectText(args[0], args[1], { ...args[2], ...options });
+        case 'performSecondaryAction': return app.performSecondaryAction(args[0], args[1], options);
         default: throw new CuaError('UNSUPPORTED_CAPABILITY', 'Native target does not support this method.');
       }
     }

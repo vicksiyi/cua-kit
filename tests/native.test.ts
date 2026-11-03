@@ -62,6 +62,22 @@ test('native fixture AX actions and stale snapshot rejection', { skip: process.e
     const button = state.elements.find(element => element.name === 'Save fixture')!;
     assert.ok(button); await app.click(button.id);
     assert.match(await app.getAXState(), /Saved Alice/);
+    state = await app.observe();
+    const editor = state.elements.find(element => element.role === 'AXTextField')!;
+    await app.performSecondaryAction(editor.id, 'focus');
+    state = await app.observe();
+    const focusedEditor = state.elements.find(element => element.role === 'AXTextField')!;
+    await app.selectText(focusedEditor.id, 'Alice');
+    await app.observe();
+    const typed = await app.typeText('你好 🌍'); assert.equal(typed.outcome, 'dispatched');
+    const waitForText = async (text: RegExp) => {
+      const deadline = Date.now() + 3000;
+      while (Date.now() < deadline) { const observed = await app.observe(); if (text.test(observed.text)) return observed; await new Promise(resolve => setTimeout(resolve,50)); }
+      assert.fail('Native app did not reflect dispatched input.');
+    };
+    await waitForText(/你好 🌍/);
+    await app.pressKey('super+a'); await app.observe();
+    await app.typeText('Keyboard replaced'); await waitForText(/Keyboard replaced/);
     if (process.env.CUA_TEST_NATIVE_SCREENSHOT === '1') {
       assert.equal(provider.capabilities.permissions.screenRecording, true, 'Screen Recording permission required.');
       const windows = await app.listWindows();
@@ -77,4 +93,12 @@ test('native fixture AX actions and stale snapshot rejection', { skip: process.e
     }
     await app.release();
   } finally { child.kill(); await provider.close(); }
+});
+
+
+test('native input encoding checks run without TCC permissions', { skip: process.platform !== 'darwin' || !existsSync(helperPath) }, async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const result = await promisify(execFile)(helperPath, ['--self-test']);
+  assert.deepEqual(JSON.parse(result.stdout), { unicodeBoundaries:true, keyChordFlags:true });
 });

@@ -13,6 +13,7 @@ final class Delegate: NSObject, NSApplicationDelegate {
         result.frame = NSRect(x:25,y:40,width:380,height:40)
         window.contentView?.addSubview(field); window.contentView?.addSubview(button); window.contentView?.addSubview(result)
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
         print("READY"); fflush(stdout)
     }
     @objc func save() { result.stringValue = "Saved \(field.stringValue)" }

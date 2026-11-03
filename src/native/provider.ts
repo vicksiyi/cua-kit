@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { NativeHelper, type NativeAppInfo, type HelperHello } from './helper.js';
 import { assert, checkAbort } from '../core/errors.js';
-import type { Authorize, AXElement, ElementRef, ActionOptions } from '../core/types.js';
+import type { Authorize, AXElement, ElementRef, ActionOptions, SelectTextOptions, PressKeyOptions } from '../core/types.js';
 import { SerialQueue } from '../core/serial.js';
 
 export interface NativeWindow { id: number; title: string; frame: { x: number; y: number; width: number; height: number } }
@@ -67,17 +67,40 @@ export class MacApp {
     assert(this.current && this.current.elements.some(element => element.id === elementId), 'STALE_OBSERVATION', 'Observe before choosing an element.');
     return { targetId: this.id, snapshotId: this.current.snapshotId, elementId };
   }
-  private action(element: number | ElementRef, operation: string, value: string | undefined, options: ActionOptions) {
+  private action(element: number | ElementRef, operation: string, value: string | undefined, options: ActionOptions, extra: Record<string, unknown> = {}) {
     return this.queue.run(async () => {
       await this.authorize(operation, 'write', options.signal);
       const ref = typeof element === 'number' ? this.ref(element) : element;
       assert(this.current && ref.targetId === this.id && ref.snapshotId === this.current.snapshotId, 'STALE_OBSERVATION', 'Element belongs to a stale or different snapshot.');
       this.current = undefined;
-      return this.provider.helper.request<{ outcome: 'completed' }>('action', { targetId: this.id, snapshotId: ref.snapshotId, elementId: ref.elementId, operation, value });
+      return this.provider.helper.request<{ outcome: 'completed' }>('action', { targetId: this.id, snapshotId: ref.snapshotId, elementId: ref.elementId, operation, value, ...extra });
     });
   }
   click(element: number | ElementRef, options: ActionOptions = {}) { return this.action(element, 'press', undefined, options); }
   setValue(element: number | ElementRef, value: string, options: ActionOptions = {}) { return this.action(element, 'setValue', value, options); }
+  selectText(element: number | ElementRef, text: string, options: SelectTextOptions = {}) {
+    return this.action(element, 'selectText', text, options, {options:{prefix:options.prefix,suffix:options.suffix}});
+  }
+  performSecondaryAction(element: number | ElementRef, action: string, options: ActionOptions = {}) {
+    return this.action(element, 'secondary', action, options);
+  }
+  private keyboard(operation: string, fields: Record<string, unknown>, options: ActionOptions) {
+    return this.queue.run(async () => {
+      await this.authorize(operation, 'write', options.signal);
+      assert(this.current, 'STALE_OBSERVATION', 'Observe the app before keyboard input.');
+      const snapshotId = this.current.snapshotId; this.current = undefined;
+      return this.provider.helper.request<{outcome:'dispatched';eventPairs:number}>('keyboardInput',{targetId:this.id,snapshotId,operation,...fields});
+    });
+  }
+  typeText(text: string, options: ActionOptions = {}) {
+    assert(typeof text === 'string' && text.length <= 100000, 'INVALID_ARGUMENT', 'text must contain at most 100000 UTF-16 units.');
+    return this.keyboard('typeText',{text},options);
+  }
+  pressKey(key: string, options: PressKeyOptions = {}) {
+    assert(typeof key === 'string' && key.length > 0, 'INVALID_ARGUMENT', 'key must be nonempty.');
+    assert((options.durationMs ?? 0) === 0, 'UNSUPPORTED_CAPABILITY', 'Native held keys require cancellable input scheduling.');
+    return this.keyboard('pressKey',{key,durationMs:options.durationMs},options);
+  }
   async release(): Promise<void> { if (!this.alive) return; this.alive = false; this.current = undefined; await this.provider.helper.request('release', { targetId: this.id }); }
 }
 export class MacProvider {

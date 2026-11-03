@@ -17,7 +17,7 @@ export CUA_ALLOWED_APPS='com.example.YourApp'
 npm run mcp
 ```
 
-当前 `MacApp` 支持 `observe/getAXState`、`click`（AXPress，不等价于坐标鼠标事件）、`setValue`（可写 AXValue）。新增 listWindows、captureScreenshot/getScreenshot 和 getAXStateAndScreenshot；截图实现尚待真实权限下验收。键盘输入、拖拽、滚动、右键、窗口管理仍未实现。
+当前 `MacApp` 支持 `observe/getAXState`、`click`（AXPress，不等价于坐标鼠标事件）、`setValue`（可写 AXValue）。新增 listWindows、captureScreenshot/getScreenshot 和 getAXStateAndScreenshot；截图实现尚待真实权限下验收。当前焦点 Unicode 输入、常用组合键、AX 文本选择及辅助动作已有实现，真实事件效果仍待验收；原生拖拽、滚动、右键、窗口管理仍未实现。
 
 ## 进程与协议
 
@@ -80,3 +80,19 @@ CUA_TEST_NATIVE_SCREENSHOT=1 npm run test:native
 ```
 
 此模式在专用 fixture 上验证窗口 ID、PNG 魔数、尺寸及 AX+截图联合返回。当前未执行成功，因此不得把编译和权限拒绝测试当成截图功能验收。
+
+
+## 原生输入增量
+
+`Input.swift` 实现 typeText、pressKey、文本范围选择与辅助动作。每次原生输入都需要当前 AX 快照，helper 在发出动作前重新比对；selected text range 也纳入状态。输入后旧快照失效，调用者必须重新观察。
+
+- `app.typeText(text)`：向绑定进程的当前焦点发送 Unicode CGEvent；每段不超过 20 个 UTF-16 单位，不能拆开代理对。
+- `app.pressKey(chord)`：支持常用 US 虚拟键码与 Command/Control/Option/Shift 组合；super 映射 Command。非零 durationMs 当前显式不支持，等待可取消的原生输入调度。
+- `app.selectText(element,text,{prefix?,suffix?})`：依据 AXValue 的 UTF-16 范围设置 AXSelectedTextRange，重复文本需消歧。
+- `app.performSecondaryAction(element,name)`：仅接受元素公布的 AX action；额外支持 focus，通过 AXFocused 属性请求焦点。
+
+键盘事件使用 CGEvent.postToPid，不切换成全局输入目标；返回 `outcome:dispatched` 与事件对数，不把投递视为应用已接受。需用新的 AX 观察确认内容。不同 App 可能忽略 Unicode 字符串，参见 [Apple keyboardSetUnicodeString 文档](https://developer.apple.com/documentation/coregraphics/cgevent/keyboardsetunicodestring%28stringlength%3Aunicodestring%3A%29)。背景 App 的行为没有在本机权限条件下得到验证。
+
+Command Line Tools 环境没有 XCTest 模块，因此采用 helper 的 `--self-test` 检查纯编码逻辑；`tests/native.test.ts` 调用它，验证 emoji/中文重组与分段边界、组合键标志和未知键拒绝，不产生系统输入。真实 fixture gate 已扩展为 focus → 选择 Alice → 输入中文 emoji → Command+A → 替换，并等待观察证据；目前仍因辅助功能未授权而未验收。
+
+最新全套：13 passed、1 native fixture skipped。此计数不能替代原生 App 行为验收。
