@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。184 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。186 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -421,3 +421,9 @@ Restored hg and bundle helpers in `page_assets.ts`, assembling reconstructed dis
 `npx tsx reconstruction/page-assets-browser-smoke.ts` passes against a temporary loopback HTTP fixture and real temporary filesystem. Exercises reconstructed `PageAssets.list` through actual DOMSnapshot/Runtime calls and `bundle` through Page.getResourceContent, then forced cache-miss page fetch. Verifies merged performance/attribute/CSS sources, SVG naming, exact PNG/CSS/SVG bytes and manifest contents, one fallback approval per origin, and denial preventing page evaluation while removing the failed directory. Script closes Chromium/server and removes its temporary files.
 
 This adds a browser integration smoke beyond the 184 differential tests. The adapter is test-only and authorization is an explicit local fixture; production provider/policy/MCP/AgentLoop remain unverified and incomplete.
+
+## Network requirement and configuration composition
+
+Restored fS/Doe and merge helpers plus gL/Uoe in `service/preferences/network_config.ts`. Selects only the named default permission profile; managed-only allowlists cannot be expanded locally, false enablement remains restrictive, domain decision maps override legacy lists and aliases keep original precedence. Preserves constraint ordering, saved-origin expansion, sandbox restrictions and duplicate canonical origin exclusion from permissive lists.
+
+186 tests and type checks pass. Differential tests execute original expressions across managed/local combinations, malformed config shapes, conflicting aliases and sandbox variants. Cs origin-pattern parsing is still an explicit builder dependency tested with a shared parser fixture; full origin matching, Preferences, and production policy enforcement are not yet reconstructed.
