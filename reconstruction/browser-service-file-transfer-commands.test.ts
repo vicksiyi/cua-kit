@@ -195,3 +195,89 @@ test("download and file chooser commands match original authority, setup, owners
   ])
     assert.equal(fileUploadNotAllowed(error), original.Jte(error));
 });
+
+test("file chooser commands set real Chromium files, preserve content and clear consumed chooser state", async () => {
+  const { chromium } = await import("playwright");
+  const { EventEmitter } = await import("node:events");
+  const { mkdtemp, writeFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { waitForCdpEvent } =
+    await import("../packages/browser/src/service/cdp/event_wait");
+  const directory = await mkdtemp(join(tmpdir(), "cua-file-chooser-"));
+  const filename = join(directory, "fixture.txt");
+  await writeFile(filename, "临时测试文件🙂", "utf8");
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.setContent('<input id="file" type="file" multiple>');
+    const session = await page.context().newCDPSession(page);
+    const armed = Promise.withResolvers<void>();
+    const cdp: any = new EventEmitter();
+    cdp.fileChoosersById = new Map();
+    cdp.waitForEvent = waitForCdpEvent.bind(cdp);
+    cdp.call = async (_id: number, method: string, params: any) => {
+      const response = await session.send(method as any, params);
+      if (method === "Page.setInterceptFileChooserDialog" && params.enabled)
+        armed.resolve();
+      return response;
+    };
+    session.on("Page.fileChooserOpened", (params) =>
+      cdp.emit("event", {
+        method: "Page.fileChooserOpened",
+        params,
+        source: { tabId: 7 },
+      }),
+    );
+    const permissions: string[] = [];
+    const authorize = (kind: string) => (_url: unknown) => ({
+      assert: async () => {
+        permissions.push(kind);
+      },
+    });
+    const context: any = {
+      cdp,
+      security: {
+        currentTabUrl: async () => page.url(),
+        currentTabFileTransferUrl: async () => page.url(),
+      },
+      acquireAuthority: () => ({
+        observeContent: authorize("observe"),
+        actInFrame: authorize("act"),
+        uploadFiles: authorize("upload"),
+      }),
+    };
+    const waiting = chooser({ tab_id: 7, timeout_ms: 3000 }, context);
+    await armed.promise;
+    await session.send("Runtime.evaluate", {
+      expression: 'document.getElementById("file").click()',
+      userGesture: true,
+    });
+    const selected = await waiting;
+    assert.equal(selected.is_multiple, true);
+    assert.equal(cdp.fileChoosersById.size, 1);
+    assert.deepEqual(
+      await setFiles(
+        {
+          tab_id: 7,
+          file_chooser_id: selected.file_chooser_id,
+          files: [filename],
+        },
+        context,
+      ),
+      {},
+    );
+    const result = await page.evaluate(async () => {
+      const file = (document.querySelector("input") as HTMLInputElement)
+        .files![0];
+      return { name: file.name, text: await file.text() };
+    });
+    assert.deepEqual(result, { name: "fixture.txt", text: "临时测试文件🙂" });
+    assert.deepEqual(permissions, ["observe", "act", "upload"]);
+    assert.equal(cdp.fileChoosersById.size, 0);
+    assert.equal(cdp.listenerCount("event"), 0);
+  } finally {
+    await browser.close();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
