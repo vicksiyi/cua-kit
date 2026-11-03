@@ -39,6 +39,41 @@
       "end": 92306,
       "kind": "FunctionDeclaration"
     },
+    "QT": {
+      "start": 92306,
+      "end": 92337,
+      "kind": "FunctionDeclaration"
+    },
+    "H8": {
+      "start": 92337,
+      "end": 92422,
+      "kind": "FunctionDeclaration"
+    },
+    "eC": {
+      "start": 92422,
+      "end": 93060,
+      "kind": "FunctionDeclaration"
+    },
+    "W8": {
+      "start": 93060,
+      "end": 93442,
+      "kind": "FunctionDeclaration"
+    },
+    "$8": {
+      "start": 93442,
+      "end": 93562,
+      "kind": "FunctionDeclaration"
+    },
+    "G8": {
+      "start": 93562,
+      "end": 93667,
+      "kind": "FunctionDeclaration"
+    },
+    "YT": {
+      "start": 93667,
+      "end": 93717,
+      "kind": "FunctionDeclaration"
+    },
     "F8": {
       "start": 93832,
       "end": 93906,
@@ -304,6 +339,11 @@
       "end": 126863,
       "kind": "FunctionDeclaration"
     },
+    "Rs": {
+      "start": 127394,
+      "end": 127738,
+      "kind": "FunctionDeclaration"
+    },
     "zr": {
       "start": 127738,
       "end": 127776,
@@ -363,6 +403,11 @@
       "start": 662218,
       "end": 662480,
       "kind": "ObjectExpression"
+    },
+    "mf": {
+      "start": 672794,
+      "end": 673001,
+      "kind": "FunctionDeclaration"
     },
     "vX": {
       "start": 673022,
@@ -882,6 +927,56 @@
     "Fn": {
       "start": 704921,
       "end": 704993,
+      "kind": "FunctionDeclaration"
+    },
+    "qX": {
+      "start": 705014,
+      "end": 705025,
+      "kind": "BinaryExpression"
+    },
+    "D_.constructor": {
+      "start": 705035,
+      "end": 705098,
+      "kind": "MethodDefinition"
+    },
+    "D_.throwIfBlocksUrl": {
+      "start": 705157,
+      "end": 705681,
+      "kind": "MethodDefinition"
+    },
+    "D_.checkUrl": {
+      "start": 705681,
+      "end": 705951,
+      "kind": "MethodDefinition"
+    },
+    "D_.isBlocked": {
+      "start": 705951,
+      "end": 706453,
+      "kind": "MethodDefinition"
+    },
+    "D_.cachedBlocked": {
+      "start": 706453,
+      "end": 706586,
+      "kind": "MethodDefinition"
+    },
+    "D_.fetchBlocked": {
+      "start": 706586,
+      "end": 706756,
+      "kind": "MethodDefinition"
+    },
+    "D_": {
+      "start": 705029,
+      "end": 706757,
+      "kind": "ClassExpression"
+    },
+    "jX": {
+      "start": 706761,
+      "end": 706767,
+      "kind": "NewExpression"
+    },
+    "YB": {
+      "start": 706768,
+      "end": 706813,
       "kind": "FunctionDeclaration"
     },
     "zX": {

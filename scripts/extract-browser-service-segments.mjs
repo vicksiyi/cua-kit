@@ -10,6 +10,7 @@ const relative =
   "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs";
 const source = await readFile(`${root}/${relative}`, "utf8");
 const wanted = new Set([
+  "D_", "qX", "eC", "W8", "$8", "G8", "QT", "H8", "YT", "Rs", "mf", "YB", "jX",
   "NB", "FB", "HB", "kX", "MB", "BX", "gf", "OB",
   "GB", "VB", "zB", "KB", "MX", "k_",
   "PB", "RB", "IB", "hf", "kB", "ho", "tr", "sn", "Tr", "ba", "nt", "LB", "I_", "WB",
@@ -193,7 +194,7 @@ function visit(node) {
     name = node.left.name;
     expression = node.right;
   }
-  if ((name === "qh" || name === "lu" || name === "C_" || name === "bf") && expression?.type === "ClassExpression") {
+  if ((name === "qh" || name === "lu" || name === "C_" || name === "bf" || name === "D_") && expression?.type === "ClassExpression") {
     for (const method of expression.body.body) {
       if (
         method.type === "MethodDefinition" &&
