@@ -1,3 +1,4 @@
+import { browserFamily } from "../browser_family";
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
 import { inputTimeout } from "../input/input";
@@ -177,3 +178,7 @@ export function createFileChooserSetFilesCommand(
     },
   );
 }
+
+/** Assembled original i2/ks/sl. */
+export const PlaywrightFileChooserSetFilesCommand =
+  createFileChooserSetFilesCommand(browserFamily);

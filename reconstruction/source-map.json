@@ -3254,7 +3254,8 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "44 combined original command traces and upload error classification comparisons: authority/setup order, timeout caps, chooser ownership, nested-frame rejection, retention on failure and interception cleanup. Browser-family ks dependency explicitly injected; real file transfer and production command registry unverified.",
-      "integrationUpdate": "Real isolated Chromium tested: intercepted chooser event, original command upload authority order, DOM.setFileInputFiles with temporary synthetic Unicode file, page File.text content, consumed chooser deletion and listener cleanup. No remote upload or real download performed; browser family dependency remains explicit."
+      "integrationUpdate": "Real isolated Chromium tested: intercepted chooser event, original command upload authority order, DOM.setFileInputFiles with temporary synthetic Unicode file, page File.text content, consumed chooser deletion and listener cleanup. No remote upload or real download performed; browser family dependency remains explicit.",
+      "assemblyUpdate": "Full ks/sl/pp/si catalog restored in browser_family.ts; exported MarkTabCommand and PlaywrightFileChooserSetFilesCommand supply actual browserFamily dependency."
     },
     "packages/browser/src/service/cdp/raw_urls.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3501,7 +3502,25 @@
         "ON"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "26 original-vs-readable traces preserve authority before gates, filtered browserAuth capability, exact string client flag, get-before-mark, tab validation and extension error cause. Uses reconstructed capability filtering/turn metadata and client capability ID. Mark command family metadata is explicit pending full ks/sl assembly. No real user handoff performed."
+      "validation": "26 original-vs-readable traces preserve authority before gates, filtered browserAuth capability, exact string client flag, get-before-mark, tab validation and extension error cause. Uses reconstructed capability filtering/turn metadata and client capability ID. Mark command family metadata is explicit pending full ks/sl assembly. No real user handoff performed.",
+      "assemblyUpdate": "Full ks/sl/pp/si catalog restored in browser_family.ts; exported MarkTabCommand and PlaywrightFileChooserSetFilesCommand supply actual browserFamily dependency."
+    },
+    "packages/browser/src/service/browser_family.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-browser-family-catalog",
+      "symbols": [
+        "dp",
+        "HC",
+        "WC",
+        "si",
+        "pp",
+        "sl",
+        "ks",
+        "ky"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact original data equality across every family/platform/channel/distribution, shared object identity checks, lookup/default/prototype semantics, assembled MarkTab errors and FileChooser upload guidance. Static installed-version data, no runtime browser discovery or extension installation claim."
     }
   },
   "embeddedPackages": {

@@ -48,7 +48,13 @@ async function scenario(run: typeof waitForNetworkIdle, mode: string) {
   };
   let error: string | undefined;
   try {
-    await run(cdp, 7, 25);
+    // Successful asynchronous events need scheduling headroom under the full suite.
+    // Timeout/rejection cases retain their short deadline and original assertions.
+    await run(
+      cdp,
+      7,
+      ["idle", "buffered", "new-loader"].includes(mode) ? 1000 : 25,
+    );
   } catch (e) {
     error = (e as Error).message;
   }

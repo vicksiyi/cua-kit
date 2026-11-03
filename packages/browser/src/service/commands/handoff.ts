@@ -1,3 +1,4 @@
+import { browserFamily } from "../browser_family";
 import { browserAuthTabCapabilityDefinition } from "../../capabilities/tab_browser_auth";
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
@@ -60,7 +61,7 @@ export const ManualHandoffCommand = defineCommand(
     return {};
   },
 );
-/** Original ON. ks family metadata is explicit until the complete browser-family catalog is assembled. */
+/** Original ON. The factory keeps the original ks dependency explicit; the export below supplies the full catalog. */
 export function createMarkTabCommand(
   browserFamily: (info: any) => { displayName: string },
 ) {
@@ -88,3 +89,6 @@ export function createMarkTabCommand(
     },
   );
 }
+
+/** Assembled original ON/ks/sl. */
+export const MarkTabCommand = createMarkTabCommand(browserFamily);
