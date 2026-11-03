@@ -1,5 +1,7 @@
 # Implementation status
 
+**Direction corrected by explicit user request:** the acceptance target is source-faithful readable TypeScript reconstructed from installed JS, original package boundaries renamed to `@core/*`, and extensionless source imports. See [reconstruction status](../reconstruction/README.md). The independent implementation and milestones below are historical evidence, not proof of this new acceptance target.
+
 User authorized implementation on 2026-11-03. The design documents remain a historical baseline, not a claim of implemented features.
 
 ## Full goal (not complete)

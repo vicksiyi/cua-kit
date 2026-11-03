@@ -23,7 +23,10 @@
     "mcp": "node dist/mcp/stdio.js",
     "build:native": "swift build --package-path native/macos",
     "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts",
-    "build:extension": "node scripts/build-extension.mjs"
+    "build:extension": "node scripts/build-extension.mjs",
+    "test:reconstruction": "npm run build:reconstruction && tsx --test reconstruction/*.test.ts",
+    "check:reconstruction": "tsc -p reconstruction/tsconfig.json",
+    "build:reconstruction": "node scripts/build-reconstruction.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
@@ -39,7 +42,11 @@
     "@types/chrome": "0.3.7",
     "@types/node": "26.6.6",
     "@types/sanitize-html": "2.16.2",
+    "prettier": "3.9.10",
     "tsx": "4.23.15",
     "typescript": "7.0.2"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

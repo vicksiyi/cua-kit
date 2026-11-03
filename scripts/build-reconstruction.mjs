@@ -1,0 +1,65 @@
+import { execFileSync } from "node:child_process";
+import { readFile, readdir, writeFile } from "node:fs/promises";
+import { join, extname } from "node:path";
+import { parse } from "acorn";
+execFileSync(
+  "node_modules/.bin/tsc",
+  [
+    "-p",
+    "reconstruction/tsconfig.json",
+    "--noEmit",
+    "false",
+    "--rootDir",
+    "packages/cua/src",
+    "--outDir",
+    "packages/cua/dist",
+  ],
+  { stdio: "inherit" },
+);
+// Source uses extensionless imports. Only emitted ESM gets Node-compatible .js suffixes.
+async function patchDirectory(dir) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await patchDirectory(path);
+      continue;
+    }
+    if (!path.endsWith(".js")) continue;
+    let code = await readFile(path, "utf8");
+    const ast = parse(code, { ecmaVersion: "latest", sourceType: "module" });
+    const edits = [];
+    function visit(node) {
+      if (!node || typeof node !== "object") return;
+      if (
+        [
+          "ImportDeclaration",
+          "ExportNamedDeclaration",
+          "ExportAllDeclaration",
+          "ImportExpression",
+        ].includes(node.type)
+      ) {
+        const source = node.source;
+        if (
+          source?.type === "Literal" &&
+          typeof source.value === "string" &&
+          source.value.startsWith(".") &&
+          !extname(source.value)
+        )
+          edits.push({
+            start: source.start,
+            end: source.end,
+            text: JSON.stringify(source.value + ".js"),
+          });
+      }
+      for (const value of Object.values(node)) {
+        if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value === "object") visit(value);
+      }
+    }
+    visit(ast);
+    for (const e of edits.sort((a, b) => b.start - a.start))
+      code = code.slice(0, e.start) + e.text + code.slice(e.end);
+    await writeFile(path, code);
+  }
+}
+await patchDirectory("packages/cua/dist");

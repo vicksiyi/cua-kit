@@ -1,0 +1,114 @@
+{
+  "sourceRoot": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai",
+  "purpose": "Source reconstruction, not independent reimplementation",
+  "packages": {
+    "@oai/cua": {
+      "version": "0.2.6",
+      "originalExports": {
+        ".": "./dist/lib/js/oai_js_cua/src/index.js",
+        "./tinyskyAlt": "./dist/lib/js/oai_js_cua/src/tinysky_alt/globals.js",
+        "./tinysky_vision_only": "./dist/lib/js/oai_js_cua/src/tinysky_vision_only/globals.js",
+        "./tinyskyBrowser": "./dist/lib/js/oai_js_cua/src/tinysky_browser/create_tinysky_browser.js"
+      },
+      "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua",
+      "status": "partial-reconstruction",
+      "workspaceName": "@core/cua"
+    },
+    "@oai/cua-repl": {
+      "version": "0.1.2",
+      "originalExports": {
+        ".": "./dist/lib/js/oai_js_cua_repl/src/index.js"
+      },
+      "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl",
+      "status": "not-yet-reconstructed",
+      "workspaceName": "@core/cua-repl"
+    },
+    "@oai/sky": {
+      "version": "0.7.13",
+      "originalExports": {
+        ".": "./dist/project/cua/sky_js/src/index.js",
+        "./service": "./dist/project/cua/sky_js/src/service.js"
+      },
+      "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky",
+      "status": "not-yet-reconstructed",
+      "workspaceName": "@core/sky"
+    },
+    "@oai/browser-desktop": {
+      "version": "0.1.1",
+      "originalExports": {
+        ".": "./scripts/browser-client.mjs",
+        "./service": "./scripts/browser-service.mjs"
+      },
+      "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/browser-desktop",
+      "status": "not-yet-reconstructed",
+      "workspaceName": "@core/browser-desktop"
+    }
+  },
+  "modules": {
+    "packages/cua/src/tinysky_alt/types.d.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/types.d.ts",
+      "sha256": "d9aa0d7cd7b2ebf4f765dac3ad00431a5733ab61435ba80bf8204b2239ca93cf",
+      "status": "original-declaration-with-namespace-renaming"
+    },
+    "packages/cua/src/tinysky_alt/create_bootstrap_emitter.d.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_bootstrap_emitter.d.ts",
+      "sha256": "132ec9f95e5100b55207e7a412c2a42114c997a23d0c61368dbdc652eef1dbe8",
+      "status": "original-declaration-with-namespace-renaming"
+    },
+    "packages/cua/src/types.d.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/types.d.ts",
+      "sha256": "c83485fe4153790dda17acc6cec41f3d71eac2a5fbb4364ab653ba2245fe3625",
+      "status": "original-declaration-with-namespace-renaming"
+    },
+    "packages/cua/src/get_browser_tabs.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/get_browser_tabs.js",
+      "sha256": "cb299a0313fbe8e049b4f25b70237d3d154b170fb297bf6ac57fdb20dc3ce657",
+      "status": "manually-reconstructed",
+      "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/core/display.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/core/display.js",
+      "sha256": "f6b026dec5d590f6719edb857600a8515c95c593345e8bb06fe98edca35103b6",
+      "status": "manually-reconstructed",
+      "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/bind_tab.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_tab.js",
+      "sha256": "a693e078ecbaa34020cf0caa373edb9c525dad87fd3ada62706a07eadaa6dc2a",
+      "status": "manually-reconstructed",
+      "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/create_browser_api.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+      "sha256": "fe00757868fc4dd01b00d2cd1b315d7442497a4b33d7cd030450da4d47a114f0",
+      "status": "manually-reconstructed",
+      "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/duration_seconds.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/duration_seconds.js",
+      "sha256": "6d38d0a24c934f1141cf35236f1f423b398da2521d2c94b12387fe54f60df6c9",
+      "status": "manually-reconstructed",
+      "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/tab_reference.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/tab_reference.js",
+      "sha256": "d08f46f12ba96fd4a2844eae737697ab4ed51cf9a2beb6c5034362ca17108949",
+      "status": "manually-reconstructed",
+      "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    }
+  },
+  "embeddedPackages": {
+    "@oai/browser": {
+      "evidence": "@oai/cua .d.ts imports @oai/browser; embedded oai_js_browser/dist/skill/scripts/browser-client.js",
+      "status": "package identity referenced; exact standalone manifest/declarations not yet located",
+      "workspace": "packages/browser",
+      "versionNote": "Original version unavailable; 0.0.0-reconstructed.0 is a local placeholder, not a source version.",
+      "workspaceName": "@core/browser"
+    }
+  },
+  "namespaceMapping": {
+    "source": "@oai",
+    "reconstructed": "@core",
+    "reason": "explicit user instruction"
+  }
+}
