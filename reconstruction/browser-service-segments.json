@@ -564,9 +564,44 @@
       "end": 682163,
       "kind": "Literal"
     },
+    "PB": {
+      "start": 682182,
+      "end": 682211,
+      "kind": "FunctionDeclaration"
+    },
+    "RB": {
+      "start": 682211,
+      "end": 682243,
+      "kind": "FunctionDeclaration"
+    },
+    "IB": {
+      "start": 682243,
+      "end": 682263,
+      "kind": "FunctionDeclaration"
+    },
+    "hf": {
+      "start": 682263,
+      "end": 682348,
+      "kind": "FunctionDeclaration"
+    },
+    "kB": {
+      "start": 682348,
+      "end": 682503,
+      "kind": "FunctionDeclaration"
+    },
+    "ho": {
+      "start": 682503,
+      "end": 682815,
+      "kind": "FunctionDeclaration"
+    },
     "ga": {
       "start": 682815,
       "end": 682931,
+      "kind": "FunctionDeclaration"
+    },
+    "ba": {
+      "start": 682931,
+      "end": 682982,
       "kind": "FunctionDeclaration"
     },
     "go": {
@@ -578,6 +613,26 @@
       "start": 683139,
       "end": 683288,
       "kind": "ClassExpression"
+    },
+    "sn": {
+      "start": 683289,
+      "end": 683642,
+      "kind": "FunctionDeclaration"
+    },
+    "Tr": {
+      "start": 683642,
+      "end": 684364,
+      "kind": "FunctionDeclaration"
+    },
+    "nt": {
+      "start": 684382,
+      "end": 684445,
+      "kind": "FunctionDeclaration"
+    },
+    "tr": {
+      "start": 684445,
+      "end": 685083,
+      "kind": "FunctionDeclaration"
     },
     "fr": {
       "start": 685108,
@@ -604,6 +659,11 @@
       "end": 686505,
       "kind": "FunctionDeclaration"
     },
+    "LB": {
+      "start": 687675,
+      "end": 688377,
+      "kind": "FunctionDeclaration"
+    },
     "qe": {
       "start": 688377,
       "end": 688490,
@@ -627,6 +687,16 @@
     "IX": {
       "start": 688722,
       "end": 688773,
+      "kind": "FunctionDeclaration"
+    },
+    "I_": {
+      "start": 690723,
+      "end": 691847,
+      "kind": "FunctionDeclaration"
+    },
+    "WB": {
+      "start": 691851,
+      "end": 692678,
       "kind": "FunctionDeclaration"
     },
     "wa": {

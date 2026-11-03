@@ -2053,6 +2053,38 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Differential execution against original AST: accumulation, gate invocation order, bypass modes, MCP App branches, async policy/preparation ordering, denial wrapping and audit; actual approval providers pending"
+    },
+    "packages/browser/src/service/security/approval.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-approval-preparation",
+      "symbols": [
+        "PB",
+        "RB",
+        "IB",
+        "hf",
+        "kB",
+        "ho",
+        "tr",
+        "sn",
+        "Tr",
+        "ba",
+        "nt"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential execution of original AST: persisted decisions, guardian decisions, elicitation failure and identity/timing, audit isolation, history/file/full-CDP prompt preparation and persistence ordering; live approval host pending"
+    },
+    "packages/browser/src/service/security/capability_approvals.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-approval-preparation",
+      "symbols": [
+        "LB",
+        "I_",
+        "WB"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential execution of original AST: persisted decisions, guardian decisions, elicitation failure and identity/timing, audit isolation, history/file/full-CDP prompt preparation and persistence ordering; live approval host pending"
     }
   },
   "embeddedPackages": {
