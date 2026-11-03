@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import type { ClipboardBackend } from './core/clipboard.js';
 import { ExtensionBridge } from './extension/bridge.js';
 import { ExtensionProvider } from './extension/provider.js';
 import { MacProvider, MacApp } from './native/provider.js';
@@ -8,12 +9,14 @@ import { assert, checkAbort, CuaError } from './core/errors.js';
 import type { Authorize, AuditEvent, ActionOptions } from './core/types.js';
 export { CuaTab, CuaError, MacProvider, MacApp, ExtensionBridge, ExtensionProvider };
 export type * from './core/types.js';
+export type { ClipboardBackend, ClipboardContent } from './core/clipboard.js';
 
 export interface CuaOptions {
   headless?: boolean;
   executablePath?: string;
   nativeHelperPath?: string;
   extensionBridge?: ExtensionBridge;
+  clipboard?: ClipboardBackend;
   /** Required: access decisions belong to the embedding application. */
   authorize: Authorize;
   audit?: (event: AuditEvent) => void;
@@ -44,7 +47,7 @@ export class Cua {
       context.setDefaultTimeout(5000);
       const cua = new Cua(browser, context, options);
       if (options.nativeHelperPath) cua.native = await MacProvider.connect({ helperPath: options.nativeHelperPath, authorize: options.authorize });
-      if (options.extensionBridge) cua.extension = new ExtensionProvider(options.extensionBridge, options);
+      if (options.extensionBridge) cua.extension = new ExtensionProvider(options.extensionBridge, {...options,clipboard:options.clipboard ?? cua.native?.clipboard});
       return cua;
     } catch (error) { await browser.close(); throw error; }
   }
@@ -122,7 +125,7 @@ export class Cua {
     assert(page && !page.isClosed(), 'TARGET_NOT_FOUND', 'Tab ID is not owned by this session.');
     let tab = this.tabs.get(id);
     if (!tab) {
-      tab = CuaTab.create(id, page, { sessionId: this.sessionId, authorize: this.options.authorize, audit: this.options.audit, active: () => this.active });
+      tab = CuaTab.create(id, page, { sessionId: this.sessionId, authorize: this.options.authorize, audit: this.options.audit, active: () => this.active, clipboard: this.options.clipboard ?? (this.options.headless === false ? this.native?.clipboard : undefined) });
       this.tabs.set(id, tab);
       const creating = tab;
       tab.catch(() => { if (this.tabs.get(id) === creating) this.tabs.delete(id); });

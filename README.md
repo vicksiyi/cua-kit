@@ -22,3 +22,5 @@ npm test
 浏览器支持 AX 观察、元素引用、输入、点击、滚动、截图、导航与基本生命周期。SDK 必须由宿主提供 authorize 回调。MCP 进程使用 CUA_ALLOWED_ORIGINS 配置动作/读取授权；这不构成页面网络隔离。
 
 本仓库包含独立编写的实现，不包含 OpenAI 私有源码副本、运行时二进制或凭证。同名接口不代表已通过 unified-computer-use 全量兼容测试。RFC 中早期“设计阶段”描述是历史基线，以实现状态文档为准。
+
+Browser clipboard paste: [host adapter, sequence diagram and verification limits](docs/CLIPBOARD.md). For managed macOS Chromium, configure `nativeHelperPath` and `headless:false`; MCP/demo uses `CUA_NATIVE_HELPER_PATH` plus `CUA_HEADLESS=false`.

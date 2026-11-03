@@ -43,6 +43,7 @@ const bootstrap = `(() => {
     getAXStateAndScreenshot: (...args) => invoke(id,'getAXStateAndScreenshot',args),
     click: (...args) => invoke(id,'click',args),
     typeText: (...args) => invoke(id,'typeText',args),
+    paste: (...args) => invoke(id,'paste',args),
     setValue: (...args) => invoke(id,'setValue',args),
     pressKey: (...args) => invoke(id,'pressKey',args),
     scroll: (...args) => invoke(id,'scroll',args),
@@ -227,6 +228,7 @@ export class JavascriptSession {
         return { state: result.state, screenshotEmitted: true };
       }
       case 'click': return tab.click(args[0], { ...args[1], ...options });
+      case 'paste': return tab.paste(args[0],args[1],{...args[2],...options});
       case 'typeText': return tab.typeText(args[0], args[1], options);
       case 'setValue': return tab.setValue(args[0], args[1], options);
       case 'pressKey': return tab.pressKey(args[0], args[1], { ...args[2], ...options });

@@ -30,6 +30,7 @@ export interface Observation {
 }
 export interface StateOptions { disableDiffing?: boolean; screenshot?: boolean; signal?: AbortSignal }
 export interface ActionOptions { signal?: AbortSignal }
+export interface PasteOptions extends ActionOptions { format?: 'text' | 'md' | 'html' }
 export interface SelectTextOptions extends ActionOptions { prefix?: string; suffix?: string }
 export interface DragOptions extends ActionOptions { steps?: number; durationMs?: number }
 export interface PressKeyOptions extends ActionOptions { durationMs?: number }

@@ -17,7 +17,7 @@ User authorized implementation on 2026-11-03. The design documents remain a hist
 
 ## Current work
 
-Managed Chromium SDK, CDP AX/input/screenshot, QuickJS persistent cells, MCP stdio, ToolClient/ModelAdapter/AgentLoop and a Chat Completions demo adapter are implemented. Build and four integration tests pass, including a deterministic HTTP model fixture driving real MCP/QuickJS/Chromium and receiving screenshot evidence. Live-model reasoning, native macOS, existing Chrome extension, broad cancellation and compatibility remain unverified/unimplemented. No full capability, security or compatibility claim is made.
+Managed Chromium and consented extension tabs share CDP AX/input/screenshot and CuaTab. Persistent QuickJS, MCP stdio, ToolClient/ModelAdapter/AgentLoop and a Chat Completions demo adapter are implemented. Swift supports AX, ScreenCaptureKit, input and clipboard leases; native AX/screenshot execution still awaits TCC permission. Current suite: 16 passed, 1 native live fixture skipped. Live-model reasoning, complete cancellation, native pointer/scroll/paste and broad compatibility remain outstanding. Increment sections below record historical checkpoints, not current aggregate counts.
 
 See [caller architecture and reproducible demo](AGENT-INTEGRATION.md).
 
@@ -52,3 +52,7 @@ Implemented MV3 TypeScript extension, per-tab/origin user consent, Native Messag
 ## Native input increment
 
 Added per-process Unicode keyboard events, common native key chords, AX selected text range and advertised secondary actions, exposed through SDK/runtime. Native input reports dispatched rather than observed success. Swift builds; permission-free helper checks validate surrogate boundaries and key flags. Live fixture gate includes Chinese/emoji and replacement but remains unverified without Accessibility. Latest suite: 13 passed, 1 native fixture skipped. Native key holds, coordinates/drag/scroll and clipboard remain incomplete.
+
+## Clipboard paste increment
+
+Added a host-replaceable ClipboardBackend, Swift NSPasteboard preservation/conditional restoration and browser text/HTML/Markdown paste. Real headed browser tests verify trusted events and actual resulting text/rich formatting; named-board tests verify binary formats and preserving newer copies. Headless testing exposed a different clipboard, so automatic native clipboard wiring is restricted to headed managed browsers and extension tabs. MCP/demo exposes the headed setting. Current suite: 16 passed, 1 native fixture skipped. See [clipboard protocol and limitations](CLIPBOARD.md).

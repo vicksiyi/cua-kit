@@ -1,3 +1,4 @@
+import { NativeClipboard } from './clipboard.js';
 import { randomUUID } from 'node:crypto';
 import { NativeHelper, type NativeAppInfo, type HelperHello } from './helper.js';
 import { assert, checkAbort } from '../core/errors.js';
@@ -105,8 +106,9 @@ export class MacApp {
 }
 export class MacProvider {
   readonly sessionId = randomUUID();
+  readonly clipboard: NativeClipboard;
   private active = true;
-  private constructor(readonly helper: NativeHelper, readonly capabilities: HelperHello, private policy: Authorize) {}
+  private constructor(readonly helper: NativeHelper, readonly capabilities: HelperHello, private policy: Authorize) { this.clipboard = new NativeClipboard(helper); }
   static async connect(options: { helperPath: string; authorize: Authorize }): Promise<MacProvider> {
     assert(typeof options.authorize === 'function', 'INVALID_ARGUMENT', 'Native provider needs authorize callback.');
     const { helper, hello } = await NativeHelper.connect(options.helperPath);

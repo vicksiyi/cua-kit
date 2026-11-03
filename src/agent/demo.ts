@@ -11,7 +11,7 @@ if (!process.env.CUA_ALLOWED_ORIGINS && !process.env.CUA_ALLOWED_APPS) throw new
 const client = await McpToolClient.connect({ command: process.execPath,
   args: [fileURLToPath(new URL('../mcp/stdio.js', import.meta.url))],
   // Deliberately do not forward model credentials to the computer-use server.
-  env: Object.fromEntries(['CUA_ALLOWED_ORIGINS', 'CUA_ALLOWED_APPS', 'CUA_NATIVE_HELPER_PATH', 'CUA_EXTENSION_PROFILE'].flatMap(key => process.env[key] ? [[key, process.env[key]!]] : [])), stderr: 'inherit' });
+  env: Object.fromEntries(['CUA_HEADLESS', 'CUA_ALLOWED_ORIGINS', 'CUA_ALLOWED_APPS', 'CUA_NATIVE_HELPER_PATH', 'CUA_EXTENSION_PROFILE'].flatMap(key => process.env[key] ? [[key, process.env[key]!]] : [])), stderr: 'inherit' });
 const abort = new AbortController();
 process.once('SIGINT', () => abort.abort());
 try {

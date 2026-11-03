@@ -17,7 +17,7 @@ if (process.env.CUA_EXTENSION_PROFILE) {
   catch (error) { await extensionBridge.close(); throw error; }
   console.error('Cua Kit extension bridge installed for this session. Load dist/chrome-extension, then click its action on each intended tab.');
 }
-const cua = await createCua({ extensionBridge, nativeHelperPath: process.env.CUA_NATIVE_HELPER_PATH, authorize: request => {
+const cua = await createCua({ headless: process.env.CUA_HEADLESS !== 'false', extensionBridge, nativeHelperPath: process.env.CUA_NATIVE_HELPER_PATH, authorize: request => {
   if (request.url.startsWith('app://')) return apps.has(decodeURIComponent(request.url.slice(6)));
   if (request.url === 'about:blank') return true;
   try { return origins.has(new URL(request.url).origin); } catch { return false; }

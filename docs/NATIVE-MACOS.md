@@ -96,3 +96,7 @@ CUA_TEST_NATIVE_SCREENSHOT=1 npm run test:native
 Command Line Tools 环境没有 XCTest 模块，因此采用 helper 的 `--self-test` 检查纯编码逻辑；`tests/native.test.ts` 调用它，验证 emoji/中文重组与分段边界、组合键标志和未知键拒绝，不产生系统输入。真实 fixture gate 已扩展为 focus → 选择 Alice → 输入中文 emoji → Command+A → 替换，并等待观察证据；目前仍因辅助功能未授权而未验收。
 
 最新全套：13 passed、1 native fixture skipped。此计数不能替代原生 App 行为验收。
+
+## Clipboard backend increment
+
+The helper now supplies private clipboardBegin/clipboardRestore leases for headed browser paste, with conditional change-count restoration. A permission-free named-pasteboard self-test is available with `cua-helper --clipboard-self-test`. Native App paste itself is still pending. See [clipboard protocol and limits](CLIPBOARD.md).

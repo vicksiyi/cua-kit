@@ -70,3 +70,5 @@ npm run demo -- '打开 https://example.com，分析网页的主要内容'
 QuickJS 无 host process/require/fs/fetch；内存与输出有限额。顶层 let/const 转为 REPL globals，不承诺原生模块词法语义；顶层解构暂不支持。超时后必须 js_reset，防止继续使用不确定状态；已开始的浏览器动作未必可撤回。关闭、重置和取消仍需要进一步压力测试，现阶段不声明可安全托管任意不可信租户。
 
 后续协议演进：补充 capability 描述、明确 ActionResult outcome、将 request/session/target/snapshot 标识贯穿追踪，提供上下文压缩/图像预算策略。接入方不应依赖当前实验性内部对象布局。
+
+For managed-browser real paste on macOS, the demo forwards `CUA_HEADLESS=false` and `CUA_NATIVE_HELPER_PATH`. Clipboard implementation remains a host SDK adapter, not an AgentLoop dependency; see [clipboard boundary and sequence](CLIPBOARD.md).

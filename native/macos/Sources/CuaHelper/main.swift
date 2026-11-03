@@ -114,10 +114,13 @@ final class Target {
     }
 }
 var targets: [String: Target] = [:]
+let clipboard = ClipboardStore()
 @MainActor
 func handle(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
     switch method {
-    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "clipboardBegin": return try clipboard.begin(params)
+    case "clipboardRestore": return try clipboard.restore(params["token"] as? String ?? "")
     case "listApps": return ["apps": NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map(info)]
     case "bind":
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
@@ -145,6 +148,10 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
     default: throw fail("UNSUPPORTED_CAPABILITY", "Unknown helper method.")
     }
 }
+if CommandLine.arguments.contains("--clipboard-self-test") {
+    do { try runClipboardChecks(); print("{\"clipboardFormats\":true,\"externalCopyPreserved\":true}"); exit(0) }
+    catch { fputs("Clipboard self-test failed: \(error)\n",stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--self-test") {
     do { try runInputChecks(); print("{\"unicodeBoundaries\":true,\"keyChordFlags\":true}"); exit(0) }
     catch { fputs("Native input self-test failed: \(error)\n",stderr); exit(1) }
@@ -160,3 +167,5 @@ while let line = readLine() {
       catch { response = ["id": id, "error": ["code": "INVALID_ARGUMENT", "message": String(describing:error)]] }
     if let data = try? JSONSerialization.data(withJSONObject: response, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text); fflush(stdout) }
 }
+
+clipboard.restoreActive()

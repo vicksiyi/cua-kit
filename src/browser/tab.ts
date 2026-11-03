@@ -1,9 +1,12 @@
+import { marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
+import { withClipboard, type ClipboardBackend } from '../core/clipboard.js';
 import { randomUUID } from 'node:crypto';
 import type { CdpChannel as CDPSession, BrowserDriver as Page } from './driver.js';
 import { AccessibilityCollector, onElement, renderAX, type ElementBinding } from './accessibility.js';
 import { assert, checkAbort, CuaError } from '../core/errors.js';
 import { SerialQueue } from '../core/serial.js';
-import type { ActionOptions, Authorize, AuditEvent, ClickOptions, DragOptions, SelectTextOptions, PressKeyOptions, ElementRef, Observation, Point, StateOptions } from '../core/types.js';
+import type { ActionOptions, Authorize, AuditEvent, ClickOptions, PasteOptions, DragOptions, SelectTextOptions, PressKeyOptions, ElementRef, Observation, Point, StateOptions } from '../core/types.js';
 
 import type { FrameStamp } from './stamp.js';
 
@@ -12,6 +15,7 @@ interface TabConfig {
   authorize: Authorize;
   audit?: (event: AuditEvent) => void;
   active: () => boolean;
+  clipboard?: ClipboardBackend;
 }
 
 /** Browser implementation independent of MCP or any vendor host runtime. */
@@ -38,7 +42,7 @@ export class CuaTab {
   }
   get url(): string { return this.page.url(); }
   get capabilities(): readonly string[] {
-    return ['ax', 'screenshot', 'click', 'typeText', 'pressKey', 'scroll', 'setValue', 'navigation', 'selectText', 'drag'];
+    return ['ax', 'screenshot', 'click', 'typeText', 'pressKey', 'scroll', 'setValue', 'navigation', 'selectText', 'drag', ...(this.config.clipboard ? ['paste'] : [])];
   }
   invalidate(): void { this.epoch++; this.snapshot = undefined; this.bindings.clear(); this.stamps = []; }
 
@@ -214,6 +218,61 @@ export class CuaTab {
         }
       } finally {
         try { await this.releaseKeys(held); } finally { this.invalidate(); }
+      }
+    });
+  }
+  paste(target: number | ElementRef | null, text: string, options: PasteOptions = {}): Promise<{eventObserved:true;clipboardRestored:boolean}> {
+    return this.run('paste','write',options,async () => {
+      assert(this.config.clipboard,'UNSUPPORTED_CAPABILITY','Configure a clipboard backend (nativeHelperPath on macOS) to use real paste.');
+      assert(typeof text === 'string' && text.length <= 200000,'INVALID_ARGUMENT','Paste input exceeds size budget.');
+      const format = options.format ?? 'text';
+      assert(['text','md','html'].includes(format),'INVALID_ARGUMENT','Unsupported paste format.');
+      let binding: ElementBinding;
+      if (target === null) {
+        const current = await this.collector.capture();
+        const focused = current.elements.filter(element => element.properties.focused && element.role !== 'RootWebArea' && current.bindings.has(element.id));
+        assert(focused.length === 1,'ELEMENT_NOT_INTERACTABLE','Cannot identify a unique focused paste target.');
+        binding = current.bindings.get(focused[0]!.id)!;
+      } else { binding = await this.resolve(target); }
+      await onElement(binding, `function () { if (!this.isConnected || this.disabled || this.readOnly || !(this.isContentEditable || this.tagName==='TEXTAREA' || (this.tagName==='INPUT' && /^(text|search|url|tel|email|password|number)$/.test(this.type)))) throw new Error('Paste target is not editable'); this.focus(); if(this.getRootNode().activeElement !== this) throw new Error('Paste focus failed'); }`);
+      const html = format === 'text' ? undefined : sanitizeHtml(format === 'md' ? marked.parse(text,{async:false}) : text);
+      const plain = format === 'html' ? await onElement<string>(binding, `function(html) { return new DOMParser().parseFromString(html,'text/html').body.textContent || ''; }`,[html]) : text;
+      const pasteEpoch = this.epoch;
+      const pasteStamps = (await this.collector.capture()).stamps;
+      const validatePaste = async () => {
+        checkAbort(options.signal);
+        assert(this.config.active() && !this.closed,'CANCELLED','Paste handle was released.');
+        assert(this.epoch === pasteEpoch,'STALE_OBSERVATION','Target navigated while paste waited.');
+        await this.collector.revisions.verify(pasteStamps);
+        await onElement(binding, `function(){if(!this.isConnected || this.getRootNode().activeElement!==this) throw new Error('Paste focus changed');}`);
+      };
+      const token = randomUUID();
+      await onElement(binding, `function(token,expected,rich) {
+        const win = this.ownerDocument.defaultView, doc = this.ownerDocument;
+        win.__cuaPasteEvents ||= new Map();
+        const state = { seen:false, matches:false, doc, handler:null };
+        state.handler = event => { if(event.isTrusted && event.composedPath().includes(this)){state.seen = true;state.matches = event.clipboardData?.getData('text/plain') === expected && (!rich || event.clipboardData.types.includes('text/html'));} };
+        doc.addEventListener('paste',state.handler,true); win.__cuaPasteEvents.set(token,state);
+      }`,[token,plain,html!==undefined]);
+      try {
+        const pasted = await withClipboard(this.config.clipboard,{text:plain,...(html === undefined ? {} : {html})},async () => {
+          await validatePaste();
+          const held: string[] = [];
+          try {
+            for (const key of [process.platform === 'darwin' ? 'Meta':'Control','v']) { held.push(key); await this.page.keyboard.down(key); }
+          } finally { await this.releaseKeys(held); }
+          const seen = await onElement<boolean>(binding, `async function(token) {
+            const state = this.ownerDocument.defaultView.__cuaPasteEvents.get(token);
+            const deadline = Date.now()+2000;
+            while (!state.seen && Date.now()<deadline) await new Promise(resolve=>setTimeout(resolve,10));
+            await new Promise(resolve=>setTimeout(resolve,0)); return state.seen && state.matches;
+          }`,[token]);
+          assert(seen,'ACTION_OUTCOME_UNKNOWN','No trusted paste event with the expected payload observed; do not automatically replay.');
+        },validatePaste);
+        return {eventObserved:true,clipboardRestored:pasted.restored};
+      } finally {
+        await onElement(binding, `function(token) { const states=this.ownerDocument.defaultView.__cuaPasteEvents; const state=states?.get(token); if(state){state.doc.removeEventListener('paste',state.handler,true);states.delete(token);} }`,[token]).catch(()=>undefined);
+        this.invalidate();
       }
     });
   }

@@ -1,3 +1,4 @@
+import type { ClipboardBackend } from '../core/clipboard.js';
 import { randomUUID } from 'node:crypto';
 import { ExtensionBridge, type GrantedTab } from './bridge.js';
 import { ExtensionDriver } from './driver.js';
@@ -10,7 +11,7 @@ export class ExtensionProvider {
   private active = true;
   private generation = 0;
   private targets = new Map<number, Promise<{ tab: CuaTab; driver: ExtensionDriver }>>();
-  constructor(private bridge: ExtensionBridge, private options: { authorize: Authorize; audit?: (event: AuditEvent) => void }) {}
+  constructor(private bridge: ExtensionBridge, private options: { clipboard?: ClipboardBackend; authorize: Authorize; audit?: (event: AuditEvent) => void }) {}
   async listTabs(): Promise<GrantedTab[]> {
     assert(this.active, 'SESSION_CLOSED', 'Extension session ended.');
     const tabs = await this.bridge.listTabs(), visible: GrantedTab[] = [];
@@ -32,7 +33,7 @@ export class ExtensionProvider {
         const driver = await ExtensionDriver.create(this.bridge, info);
         try {
           assert(this.active && generation === this.generation, 'CANCELLED', 'Extension session reset while attaching.');
-          const tab = await CuaTab.create(`ext:${info.id}`, driver, { sessionId:this.sessionId,authorize:this.options.authorize,audit:this.options.audit,active:() => this.active });
+          const tab = await CuaTab.create(`ext:${info.id}`, driver, { sessionId:this.sessionId,authorize:this.options.authorize,audit:this.options.audit,active:() => this.active,clipboard:this.options.clipboard });
           return { tab, driver };
         } catch (error) { await driver.dispose(); throw error; }
       })();

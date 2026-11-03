@@ -34,4 +34,8 @@ AX 读取之前，为每个可访问 frame 创建 CDP isolated world，安装 Mu
 
 `click` 支持 key 修饰键组合（Alt/Control/Meta/Shift，super 映射本机平台）；`pressKey` 支持 durationMs 和组合键，释放路径尝试清理全部按键。`drag(from,to,{steps?,durationMs?})` 基于新截图坐标，发出 mouse-down、插值 mouse-move、mouse-up。默认 20 步/300ms；取消后释放鼠标，结果不确定。这里只验证 pointer 拖动场景，HTML5 DataTransfer 的拖放协议尚未验收。
 
-`tests/input.test.ts` 在真实 Chromium 验证重复文本消歧与替换、Shift 点击事件、按键保持和加号键、实际 pointer 拖动以及无截图时拒绝拖动。当前全套为 8 passed、1 native fixture skipped。粘贴仍未实现；insertText 不等价于剪贴板 paste，不能靠方法改名满足兼容要求。
+`tests/input.test.ts` 在真实 Chromium 验证重复文本消歧与替换、Shift 点击事件、按键保持和加号键、实际 pointer 拖动以及无截图时拒绝拖动。当前全套为 8 passed、1 native fixture skipped。该阶段尚未实现粘贴；后续剪贴板增量见下。
+
+## 剪贴板增量
+
+真实 paste 已接入共享浏览器内核、QuickJS 和 MCP：支持 text/html/md、宿主 ClipboardBackend、串行租约、条件恢复，以及可信 paste 事件的 payload 校验。已验证有窗口 Chromium，默认 headless 不接系统剪贴板。事件送达不保证编辑器接受，必须重新观察。详见 [时序、配置与失败语义](CLIPBOARD.md)。当前全套为 16 passed、1 native fixture skipped。
