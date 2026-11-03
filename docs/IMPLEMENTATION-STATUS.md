@@ -98,3 +98,7 @@ Restored origin-level permission merging and network denial evaluation over reco
 ## Source reconstruction: persisted permission storage
 
 Restored permission table read/update/matching and snapshot refresh error semantics. 196 tests pass with type checks. Store backends are injected; prompt policy/guardian orchestration is still incomplete.
+
+## Source reconstruction: preference context and cache
+
+Restored request metadata/session/turn resolution and original turn + guardian-v1 caches. 199 tests pass with type checks. Guardian-v2 and full decision/orchestration remain incomplete.

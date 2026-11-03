@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。196 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。199 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -445,3 +445,9 @@ Restored cL/uL/lL/es, Gc/pL/mL and QC/l5, with original LC/up/Es URL acceptance,
 Restored Qoe/wg, ConfigReadError and permission key/scope/table/matching helpers in `persisted_permissions.ts`. Preserves global/session selection, exact session validation, selected-table shallow copying, raw+escaped opposite-entry removal, string filtering on insertion, origin-pattern versus case-sensitive legacy wildcard fallback, and full snapshot refresh errors. This is the table layer; it does not authorize persistence independently of the caller's policy checks.
 
 196 tests and type checks pass. New differential cases compare original AST functions for wildcard escapes, host extraction, malformed tables, snapshot refresh, key precedence and scope metadata. Prompt policy/guardian orchestration and full Preferences remain pending.
+
+## Preference request metadata and turn caches
+
+Restored Me/xt and preference metadata helpers, plus Sg/Yc turn and guardian-v1 cache behavior. Preserves subagent session selection, serialized metadata parsing, camel/snake fallback asymmetry, exact blank-string behavior, five-minute expiry, and separate stale-origin invalidation versus lookup. Shared assembled caches mirror source module-level ownership; factory instances isolate differential tests.
+
+199 tests and type checks pass. New source-expression comparisons cover nested metadata precedence, guardian mode, thread fallbacks, stale turns, mismatched sessions and exact expiry boundaries. Guardian-v2 review cache, prompt-result orchestration and full Preferences assembly remain pending.
