@@ -1719,6 +1719,59 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/context/asset_discovery.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed-functions",
+      "symbols": [
+        "KF",
+        "XF",
+        "YF",
+        "moe",
+        "foe",
+        "hoe",
+        "goe",
+        "Lo",
+        "$F",
+        "boe",
+        "GF",
+        "yoe",
+        "JF",
+        "VF",
+        "fg",
+        "zF",
+        "ZF",
+        "Hc",
+        "woe",
+        "QF",
+        "_oe",
+        "voe",
+        "mS",
+        "Wc"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/context/page_assets.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed-class-with-telemetry-dependency",
+      "symbols": [
+        "hg",
+        "Soe",
+        "xoe",
+        "tL",
+        "Poe",
+        "Roe",
+        "rL",
+        "nL",
+        "Ioe",
+        "koe",
+        "Boe"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
     }
   },
   "embeddedPackages": {

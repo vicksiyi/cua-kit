@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。180 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。184 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -407,3 +407,11 @@ Reconstructed `service/context/downloads.ts` from pg and its URL/header helpers.
 Restored Eoe/Toe/Coe/eL/Aoe/oL in `service/context/asset_fetch.ts`: loaded-resource content/MIME retrieval, recursive frame resource lookup, explicit authorization before credentialed page-fetch fallback, chunked binary encoding and combined failure causes. Initial getFrameTree rejection escapes without fallback, while a missing frame ID permits authorized fallback; this original boundary is preserved.
 
 180 tests pass with type checks. Differential tests execute both original and reconstructed page functions in isolated JS contexts, including >64 KiB data, HTTP failure, Unicode content, nested MIME precedence, approval denial and causal errors. VM result objects are cloned into the test realm before value comparison. Browser/CDP and fetch use fixtures; asset discovery, bundle orchestration, telemetry and real backend integration remain outstanding.
+
+## Resource discovery and page-asset bundles
+
+Restored XF/YF and their DOMSnapshot/performance/CSS/URL/hash helpers in `asset_discovery.ts`. DOM and CSS sources enrich only already-loaded resource URLs; absent snapshot documents preserve performance-entry duplicates. SVG IDs include source position.
+
+Restored hg and bundle helpers in `page_assets.ts`, assembling reconstructed discovery and fetch code. Preserves inventory URL/tab identity, duplicate requested IDs, SVG ID collisions, validation ordering, MIME/extension checks, file bytes and manifest layout. Fallback approvals are serialized and cached per original origin key; the first denial poisons queued approvals and removes the directory after asset tasks settle. Original dt telemetry remains an explicit factory dependency.
+
+184 tests and type checks pass. New differential cases compare installed AST and readable functions/classes for resource enrichment, hashes, SVG naming, loaded/fallback bundling, MIME mismatch, denial cleanup, inventory invalidation and selection errors. Filesystem/CDP/authorization remain fixtures; no standalone production backend or complete AgentLoop is claimed.

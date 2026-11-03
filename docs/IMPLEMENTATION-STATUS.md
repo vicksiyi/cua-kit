@@ -74,3 +74,7 @@ Restored pg and its source-origin/content-header helpers under `@core/browser`. 
 ## Source reconstruction: asset content retrieval
 
 Restored loaded-resource and authorized page-fetch fallback functions, preserving error boundaries and binary serialization. 180 tests pass. Resource enumeration and full bundle orchestration are still pending; no live asset download is claimed.
+
+## Source reconstruction: discovery and asset bundle orchestration
+
+Restored resource/SVG discovery and the page-assets inventory/bundle class, connected to reconstructed asset fetch. 184 tests pass with type checks. Preserves serialized per-origin fallback approval and denial cleanup. Telemetry is injected; production filesystem/provider/security and full context assembly are still outstanding.
