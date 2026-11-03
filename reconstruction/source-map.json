@@ -2952,6 +2952,34 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Seven original authority/validation/focus/key scenarios; real Chromium Control+A/C/V and Backspace through assembled keyboard dispatch and BrowserClipboard with real page bridge. Full fill path and production registry/context remain pending."
+    },
+    "packages/browser/src/service/input/text_paste.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-text-paste-plumbing",
+      "symbols": [
+        "Hs",
+        "F9",
+        "L9",
+        "U9",
+        "q9",
+        "j9",
+        "r_",
+        "H9",
+        "N9"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original document classification, whitespace and five paste trace scenarios with an explicit deterministic renderer fixture; exact bundled markdown-it renderer implementation remains pending and is required by createTextPaste. No renderer substitute or default is installed."
+    },
+    "packages/browser/src/service/commands/locator_fill.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-locator-fill-command",
+      "symbols": [
+        "kv"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Five original fill command scenarios and real Chromium replace/append/Unicode/date input through reconstructed clipboard bridge and page operation. Plain fill bypasses markdown renderer exactly as original. Full renderer and production registry/context remain pending."
     }
   },
   "embeddedPackages": {
