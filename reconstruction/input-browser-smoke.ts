@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 import { BrowserInput } from "../packages/browser/src/service/input/index";
+import { dispatchAxText } from "../packages/browser/src/service/input/text_input";
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
@@ -58,8 +59,17 @@ try {
     input.clickPoint({ tabId: 1, point, clickCount: 1, modifiers: 0 }),
     /Cannot click content inside a closed shadow root/,
   );
+  await page.setContent('<textarea id="text"></textarea>');
+  await page.locator("#text").focus();
+  await dispatchAxText(
+    cdp,
+    { target: { tabId: 1 } },
+    "你好😀\r\nworld\t!",
+    new AbortController().signal,
+  );
+  assert.equal(await page.locator("#text").inputValue(), "你好😀\nworld\t!");
   console.log(
-    "PASS: real CDP normal typing; closed-shadow keyboard and pointer actions rejected without changing protected input.",
+    "PASS: real CDP normal typing; closed-shadow keyboard and pointer actions rejected without changing protected input; AX Unicode, newline and tab text inserted.",
   );
 } finally {
   await browser.close();

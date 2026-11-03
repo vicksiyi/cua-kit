@@ -41,7 +41,7 @@ export function clipboardKeys(value: string | string[], platform = "linux") {
     platform,
   );
 }
-/** Original gl/Os/Ky/zA. Vy remains a required dependency until protected focus inspection is restored. */
+/** Original gl/Os/Ky/zA. Vy is supplied by the reconstructed protected-focus inspector at assembly. */
 export function createKeyboardDispatch(
   assertFocusedInput: (
     cdp: Cdp,
