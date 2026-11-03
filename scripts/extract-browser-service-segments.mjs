@@ -10,6 +10,7 @@ const relative =
   "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs";
 const source = await readFile(`${root}/${relative}`, "utf8");
 const wanted = new Set([
+  "AN", "Nh", "CN", "PN", "RN", "IN", "kN", "yte", "Tv",
   "OF", "MF",
   "Bs", "Jh", "sF", "aF",
   "Jre", "Zre", "Qre", "ene", "rF", "Mc", "Yh", "tne", "une", "nF", "oF",

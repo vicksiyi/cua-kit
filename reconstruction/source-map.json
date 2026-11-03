@@ -3338,6 +3338,24 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Ten original command traces preserve distinct URL/authority lookup ordering. Real Chromium inline SVG discovery and reconstructed backend bundle writes verified with manifest/file contents and observed approval calls; test authority is a fixture. Remote asset fallback and production registry integration not established by this test."
+    },
+    "packages/browser/src/service/commands/dom_input.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-dom-input-command-assembly",
+      "symbols": [
+        "AN",
+        "Nh",
+        "CN",
+        "PN",
+        "RN",
+        "IN",
+        "kN",
+        "yte",
+        "Tv"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "35 original command traces and 28 node-schema cases. Preserves viewport-center fallback, click counts, validation order and array-only clipboard interception. Schema/clipboard helper shared; type Hs dependency injected, bundled markdown renderer remains pending. No new real DOM command integration claim."
     }
   },
   "embeddedPackages": {
