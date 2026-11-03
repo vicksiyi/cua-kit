@@ -3084,6 +3084,51 @@
       "end": 997719,
       "kind": "ClassExpression"
     },
+    "Jre": {
+      "start": 997728,
+      "end": 998014,
+      "kind": "NewExpression"
+    },
+    "Zre": {
+      "start": 998019,
+      "end": 998085,
+      "kind": "NewExpression"
+    },
+    "Qre": {
+      "start": 998090,
+      "end": 998858,
+      "kind": "NewExpression"
+    },
+    "ene": {
+      "start": 998863,
+      "end": 1000018,
+      "kind": "NewExpression"
+    },
+    "rF": {
+      "start": 1000022,
+      "end": 1000525,
+      "kind": "NewExpression"
+    },
+    "tne": {
+      "start": 1000526,
+      "end": 1000663,
+      "kind": "FunctionDeclaration"
+    },
+    "nF": {
+      "start": 1000663,
+      "end": 1000989,
+      "kind": "FunctionDeclaration"
+    },
+    "oF": {
+      "start": 1000989,
+      "end": 1001080,
+      "kind": "FunctionDeclaration"
+    },
+    "Yh": {
+      "start": 1001080,
+      "end": 1001228,
+      "kind": "FunctionDeclaration"
+    },
     "rne": {
       "start": 1001228,
       "end": 1001657,
@@ -3132,6 +3177,11 @@
     "ane": {
       "start": 1003719,
       "end": 1003964,
+      "kind": "FunctionDeclaration"
+    },
+    "une": {
+      "start": 1003964,
+      "end": 1004030,
       "kind": "FunctionDeclaration"
     },
     "Nc": {

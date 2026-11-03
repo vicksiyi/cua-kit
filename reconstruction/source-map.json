@@ -3285,6 +3285,35 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "90 original URL/cookie/header extraction comparisons, 112 parameter exclusion comparisons, four dev-log command traces. Preserves authority URLs and original parameter spelling. Raw command admission tables and sF/aF assembly still pending."
+    },
+    "packages/browser/src/service/cdp/raw_policy_data.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-raw-cdp-method-policy",
+      "symbols": [
+        "Jre",
+        "Zre",
+        "Qre",
+        "ene"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "All original catalog entries and guidance strings checked. Domain/method/parameter cross-product compares prepare parameters and authority URL results, including root/nested Fetch handling and input identity. Full sF/aF command assembly remains pending."
+    },
+    "packages/browser/src/service/cdp/raw_policy.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-raw-cdp-method-policy",
+      "symbols": [
+        "rF",
+        "Mc",
+        "Yh",
+        "tne",
+        "une",
+        "nF",
+        "oF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "All original catalog entries and guidance strings checked. Domain/method/parameter cross-product compares prepare parameters and authority URL results, including root/nested Fetch handling and input identity. Full sF/aF command assembly remains pending."
     }
   },
   "embeddedPackages": {
