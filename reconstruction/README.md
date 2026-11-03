@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。132 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。134 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -297,3 +297,11 @@ Reconstructed seven qh methods for raw event storage, filtering, pagination, cur
 A timeout option causes the default cursor to be captured before attachment; without it, the default cursor is captured after attachment. Polling settles on matching data, truncation, same-tab detach or timeout, and removes both event listeners. Zero-limit and empty-filter behavior follow the source without added validation.
 
 132 differential tests pass, with type and provenance checking. Tests run original AST methods and reconstructed methods to check reference identity, target capture, retention, pagination, attach-time events and listener cleanup. Full manager constructor/event bridge, authentication state and real provider integration remain pending.
+
+### CDP constructor event bridge
+
+Reconstructed qh constructor event registrations as registerCdpEventBridge with an explicit owner. Raw events are recorded before source.tabId normalization; target/frame handling precedes event emission, whose registered listener handles dialogs. Internal screencast and authentication-protected events still reach normalized event handling but are excluded from the raw buffer. Detach falls back to pending numeric tab attachment only when normal source resolution fails.
+
+Attach wiring calls Page.enable before OOPIF setup; cleanup wiring detaches remembered child targets. Reconstructed enableOopifAutoAttach preserves its post-attachment set recheck and successful-configuration marker.
+
+134 differential tests pass with type checking. The exact original constructor is executed against an instrumented base owner and compared with reconstructed registration using the reconstructed raw event buffer and session lookup. This does not yet instantiate the complete qh manager: remaining state/methods, authentication and provider dependencies must be restored before full assembly.

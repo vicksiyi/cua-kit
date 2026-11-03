@@ -1414,6 +1414,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/cdp/event_bridge.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed-constructor-wiring-with-explicit-owner",
+      "symbols": [
+        "qh.constructor (event registrations after owner assignments)",
+        "qh.enableOopifAutoAttach"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
     }
   },
   "embeddedPackages": {
