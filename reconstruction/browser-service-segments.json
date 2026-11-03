@@ -814,6 +814,56 @@
       "end": 910006,
       "kind": "FunctionDeclaration"
     },
+    "dg": {
+      "start": 1300488,
+      "end": 1301860,
+      "kind": "ClassExpression"
+    },
+    "noe": {
+      "start": 1301861,
+      "end": 1301997,
+      "kind": "FunctionDeclaration"
+    },
+    "ooe": {
+      "start": 1301997,
+      "end": 1302260,
+      "kind": "FunctionDeclaration"
+    },
+    "ioe": {
+      "start": 1302260,
+      "end": 1302381,
+      "kind": "FunctionDeclaration"
+    },
+    "soe": {
+      "start": 1302381,
+      "end": 1302602,
+      "kind": "FunctionDeclaration"
+    },
+    "aoe": {
+      "start": 1302602,
+      "end": 1302719,
+      "kind": "FunctionDeclaration"
+    },
+    "qF": {
+      "start": 1302719,
+      "end": 1302754,
+      "kind": "FunctionDeclaration"
+    },
+    "uoe": {
+      "start": 1302754,
+      "end": 1302915,
+      "kind": "FunctionDeclaration"
+    },
+    "jc": {
+      "start": 1302915,
+      "end": 1302978,
+      "kind": "FunctionDeclaration"
+    },
+    "Qi": {
+      "start": 1302978,
+      "end": 1303028,
+      "kind": "FunctionDeclaration"
+    },
     "gg": {
       "start": 1323194,
       "end": 1323796,

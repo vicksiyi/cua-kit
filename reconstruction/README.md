@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。155 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。158 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -351,3 +351,9 @@ This completes the manager assembly milestone, not the overall service: p6 runti
 Reconstructed gg, Tg and bg as ServiceTabs, TabLifecycle and BrowserUi. Tab lookup retains strict ID matching, first-active selection, detailed missing-tab errors and provider return identity. Lifecycle state is scoped by session; acquisition refreshes per-turn claims without duplicating acquired events, creation records every event, and takeEvents drains the queue. UI mouse movement retains explicit false wait projection and catches synchronous/asynchronous provider failures.
 
 155 differential tests pass with type checking. Tests compare the original classes for arguments, state identity, session/turn changes, null-turn behavior, event draining and awaited versus detached mouse movement. These are actual ob dependencies; the full execution-context constructor, remaining security/input/observation components and privileged provider still require reconstruction.
+
+### Execution context developer logs
+
+Reconstructed dg and console/exception conversion helpers as BrowserDev. Attach ensures Runtime.enable with shared pending promises; detach clears logs and runtime state. Authentication-protected events are excluded. Console values, warning aliases, first-stack-frame URL and exception text precedence match the source, with receipt-time ISO timestamps. Storage retains 500 entries and logs applies source filter/levels/slice behavior, including zero limit.
+
+158 differential tests pass with type checking. Tests compare source helpers/class for value conversion, filtering, retention, protection and concurrent Runtime.enable. The original detach/in-flight race is preserved: an old enable can mark the tab enabled and delete a replacement pending entry; this reconstruction does not silently repair source behavior. Full execution context and real provider remain incomplete.
