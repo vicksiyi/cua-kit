@@ -2014,6 +2014,76 @@
       "end": 811323,
       "kind": "FunctionDeclaration"
     },
+    "Vee": {
+      "start": 811331,
+      "end": 811338,
+      "kind": "BinaryExpression"
+    },
+    "Ga": {
+      "start": 811342,
+      "end": 811347,
+      "kind": "Literal"
+    },
+    "nN": {
+      "start": 828888,
+      "end": 829132,
+      "kind": "FunctionDeclaration"
+    },
+    "ote": {
+      "start": 839816,
+      "end": 840312,
+      "kind": "FunctionDeclaration"
+    },
+    "Sv": {
+      "start": 840312,
+      "end": 840403,
+      "kind": "FunctionDeclaration"
+    },
+    "ite": {
+      "start": 840403,
+      "end": 840477,
+      "kind": "FunctionDeclaration"
+    },
+    "aN": {
+      "start": 842512,
+      "end": 843147,
+      "kind": "FunctionDeclaration"
+    },
+    "ste": {
+      "start": 843147,
+      "end": 843502,
+      "kind": "FunctionDeclaration"
+    },
+    "ate": {
+      "start": 843502,
+      "end": 843719,
+      "kind": "FunctionDeclaration"
+    },
+    "Th": {
+      "start": 843719,
+      "end": 843800,
+      "kind": "FunctionDeclaration"
+    },
+    "tN": {
+      "start": 847175,
+      "end": 847234,
+      "kind": "FunctionDeclaration"
+    },
+    "dte": {
+      "start": 847234,
+      "end": 847397,
+      "kind": "FunctionDeclaration"
+    },
+    "fte": {
+      "start": 849255,
+      "end": 849508,
+      "kind": "FunctionDeclaration"
+    },
+    "hte": {
+      "start": 849508,
+      "end": 849578,
+      "kind": "FunctionDeclaration"
+    },
     "Ic": {
       "start": 849604,
       "end": 850332,

@@ -3729,6 +3729,28 @@
       ],
       "status": "reconstructed-command-registry-with-required-host-dependencies",
       "validation": "75 original names/order and getter descriptors; original literal command IDs; actual direct imports including AX/URL aliases; restored typing command dispatch via assembly. 69 direct handlers, five restored command factories, and mandatory BrowserAuthHandoff dependency. Registry membership does not establish production runtime or native backend completion."
+    },
+    "packages/browser/src/service/browser_auth/field_plan.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ote",
+        "Sv",
+        "ite",
+        "ate",
+        "aN",
+        "ste",
+        "nN",
+        "tN",
+        "dte",
+        "hte",
+        "fte",
+        "Th",
+        "Ga",
+        "Vee"
+      ],
+      "status": "reconstructed-browser-auth-field-plan",
+      "validation": "Original differential coverage for 30 field-plan configurations, duplicate locators, QR-only conditions, OTP option grouping, ordinary credential option versions, UTF-16 value lengths, null-prototype results and challenge completion. Synthetic values only; full browser-auth broker/checkpoint/command remains incomplete."
     }
   },
   "embeddedPackages": {
