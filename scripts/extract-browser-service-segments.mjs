@@ -12,6 +12,7 @@ const source = await readFile(`${root}/${relative}`, "utf8");
 const wanted = new Set([
   "kc", "dN", "lN", "Xa", "zi", "kh", "nr", "pN", "Ev", "cN", "gte", "mN", "fN", "bte", "hN",
   "Ya", "gN", "bN", "yN", "Ki", "Xi", "wN", "Dh", "_N", "vN", "Yi", "SN", "Bc", "Oh", "xN", "EN", "Bh",
+  "BA", "Ja", "tD", "uc", "rD", "Mh", "TN",
   "xv",
   "Ct", "uN",
   "Lc", "Uc", "mF", "bne", "fF", "yne", "wne", "_ne",

@@ -3660,6 +3660,29 @@
         "Bh"
       ],
       "validation": "11 original directory scenarios use the actual reconstructed host with fixture CDP and explicit feature/config/telemetry/support dependencies. Covers count/byte/change limits, file keys, denied origins, unexpected origin errors, schema/owner rejection and URL revalidation. Production bootstrap and invoke/list command assembly remain pending."
+    },
+    "packages/browser/src/service/webmcp/support.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-webmcp-command-layer",
+      "symbols": [
+        "BA",
+        "Ja",
+        "tD",
+        "uc",
+        "rD"
+      ],
+      "validation": "14 model/capability combinations and 10 approval payload cases compared with original, including inherited fields and arrays. Reuses actual metadata and approval error/audit implementation."
+    },
+    "packages/browser/src/service/commands/web_mcp.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-webmcp-command-layer",
+      "symbols": [
+        "Mh",
+        "TN"
+      ],
+      "validation": "13 original command traces with actual host/catalog dependencies. Real Chromium full list/approval/invoke chain uses fixture native modelContext, WebMCP domain and authority, modifies DOM and verifies resolved tool identity. Feature/config/telemetry bootstrap remains explicit; production runtime integration pending."
     }
   },
   "embeddedPackages": {
