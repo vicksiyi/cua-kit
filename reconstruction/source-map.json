@@ -3375,6 +3375,30 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "63 original command traces across seven commands and nine scenarios; explicit assertions for no followSessionTab on move, fixed click timeout, mac modifier bits, double-click button omission and rejection messages. Clipboard helper shared; modifier implementation previously reconstructed. Hs injected; bundled markdown renderer and production command registry remain pending. No new real-browser integration claim."
+    },
+    "packages/browser/src/service/commands/dom_snapshot.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-dom-snapshot-command",
+      "symbols": [
+        "JN",
+        "Wte",
+        "$te",
+        "e2",
+        "t2",
+        "Gte",
+        "Vte",
+        "ZN",
+        "zte",
+        "QN",
+        "r2",
+        "n2",
+        "Kte",
+        "Xte",
+        "Yte"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "11 original command scenarios with serialized callbacks executed against fixture DOM/helper, normalization/ref comparisons and nested-frame/deadline traces. Real bundled incrementalAriaSnapshot helper remains pending; no real-browser ARIA snapshot integration claim. Preserves IAB 1000ms total / 500ms per-child budgets and document-only bypass."
     }
   },
   "embeddedPackages": {
