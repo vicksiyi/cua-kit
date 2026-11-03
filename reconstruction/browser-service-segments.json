@@ -209,6 +209,11 @@
       "end": 876722,
       "kind": "FunctionDeclaration"
     },
+    "qN": {
+      "start": 876758,
+      "end": 876761,
+      "kind": "Literal"
+    },
     "_te": {
       "start": 876766,
       "end": 876769,
@@ -724,6 +729,11 @@
       "end": 908870,
       "kind": "FunctionDeclaration"
     },
+    "Rte": {
+      "start": 909000,
+      "end": 909055,
+      "kind": "FunctionDeclaration"
+    },
     "Ite": {
       "start": 909055,
       "end": 909139,
@@ -732,6 +742,16 @@
     "kte": {
       "start": 909139,
       "end": 909245,
+      "kind": "FunctionDeclaration"
+    },
+    "Bte": {
+      "start": 909245,
+      "end": 909306,
+      "kind": "FunctionDeclaration"
+    },
+    "Dte": {
+      "start": 909306,
+      "end": 909421,
       "kind": "FunctionDeclaration"
     },
     "q3": {

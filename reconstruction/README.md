@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。128 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。132 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -289,3 +289,11 @@ Initialization shares a WeakMap promise, runs Page.enable, Runtime.enable and Pa
 Reconstructed ten qh methods plus Ite/kte for dialog IDs, lookup, prompt mutation, target-specific removal, automatic beforeunload acceptance, and the CDP command guard. Protected authentication tabs auto-accept alerts and reject other dialog types without recording/replacing dialog state. The source's protected-tab predicate remains an explicit dependency, not a placeholder authentication implementation. Session-target matching intentionally compares sessionId only.
 
 128 differential tests pass with type checking. New tests execute original AST methods alongside the reconstructed methods and lifecycle session routing, covering rejected provider calls, stored-state retention, defaults, sequential IDs, frame-detach cleanup, prompt mutation, stale IDs and error ordering. Full manager event subscription, authentication state and real provider integration remain pending.
+
+### CDP raw event buffer and long polling
+
+Reconstructed seven qh methods for raw event storage, filtering, pagination, cursor sequencing, discard and long polling. Retention is 1000 events per tab. Params are shallow copied on recording, while source and nested parameter references are retained. Tracked target ID is captured at record time but omitted from public results. Discard preserves monotonically increasing sequence and eviction watermark.
+
+A timeout option causes the default cursor to be captured before attachment; without it, the default cursor is captured after attachment. Polling settles on matching data, truncation, same-tab detach or timeout, and removes both event listeners. Zero-limit and empty-filter behavior follow the source without added validation.
+
+132 differential tests pass, with type and provenance checking. Tests run original AST methods and reconstructed methods to check reference identity, target capture, retention, pagination, attach-time events and listener cleanup. Full manager constructor/event bridge, authentication state and real provider integration remain pending.

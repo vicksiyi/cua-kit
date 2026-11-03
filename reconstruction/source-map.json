@@ -1394,6 +1394,26 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/cdp/raw_event_methods.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed-method-group-with-explicit-owner",
+      "symbols": [
+        "qN",
+        "Bte",
+        "Dte",
+        "Rte",
+        "qh.recordRawCdpEvent",
+        "qh.rawCdpEventsResult",
+        "qh.rawCdpEventSequenceForTab",
+        "qh.nextRawCdpEventSequence",
+        "qh.matchesRawCdpEventTarget",
+        "qh.discardRawCdpEventsForTab",
+        "qh.readRawCdpEvents"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
     }
   },
   "embeddedPackages": {
