@@ -95,6 +95,91 @@
       "sha256": "d08f46f12ba96fd4a2844eae737697ab4ed51cf9a2beb6c5034362ca17108949",
       "status": "manually-reconstructed",
       "validation": "behavioral-differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/create_bootstrap_emitter.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_bootstrap_emitter.js",
+      "sha256": "1272257bc91109db07ffb1a823c6e07272649e4120c7065d83f35f12496e656f",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/create_documentation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_documentation.js",
+      "sha256": "f0c7d893521612e6a710e97954543dd84ba87a15047b40aa16ca84b9dde47be6",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/tinysky_alt/read_documentation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/read_documentation.js",
+      "sha256": "452e0e8e25e3802ec815512d8b165126ca6a7a01f057bf8e53108a461bcb8d09",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/docs/tinysky-alt-confirmations.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-confirmations.md",
+      "sha256": "68474884543a6a1e72275b59f27f383313fd6aa8604ccedabb5d5cd37077e6fc",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-node-repl-mac.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-node-repl-mac.md",
+      "sha256": "8d282d77ad8033c8aef5472dad24864876995c4ee1d0deaa992491d6399b3298",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-cua-repl-mac.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-cua-repl-mac.md",
+      "sha256": "b936a61951eeb1c6c9bd4557a263bac268f890dbe4f85a8dd0aaffc6b5c23e75",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-node-repl-linux.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-node-repl-linux.md",
+      "sha256": "60fbfc678fd3e1da9cab7bb9dad359c6eee53bceb42e75408f6574d7ac130d4f",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-cua-repl-no-cua.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-cua-repl-no-cua.md",
+      "sha256": "0bd84d33ef7766467e8e5a3b4f624c31dfbc54040b59625b9f3a7e66fef11068",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-cua-repl-linux.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-cua-repl-linux.md",
+      "sha256": "021d6ab7ce52d7eff6e84a2a2b2a10dec7eda56bbfc7b7ee86072c05062a994c",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-audio.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-audio.md",
+      "sha256": "b64279cbbc8d1d4967f14db265b4b6bb0339a5f7e8132f6d90172e333461cc42",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-cua-repl-windows.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-cua-repl-windows.md",
+      "sha256": "f59fd306487474bfeedd5de9f84b9db033d4802e3c792b4281499d8d97c9e290",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-node-repl-no-cua.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-node-repl-no-cua.md",
+      "sha256": "4a6f388d2d7a504ed3e4951bdc3f995a1e37d8b8a3d894324cb88de49d8ee2a4",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-other-browser-apis.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-other-browser-apis.md",
+      "sha256": "174672af7e028a5e4815318c4133fdab0a5189c5701396df837d7aac76e90fd4",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/docs/tinysky-alt-core-node-repl-windows.md": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/docs/tinysky-alt-core-node-repl-windows.md",
+      "sha256": "e6545e692da3be60f9760b5cbd19722a471ca93b07a4ea428b9fba79c428a942",
+      "status": "documentation-copied-byte-for-byte"
+    },
+    "packages/cua/src/tinysky_alt/setup_browser.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/setup_browser.js",
+      "sha256": "a1cf70b2ec89d51f9bc33b056dbe31af9cc6fd605c365e93f5d0649d12748216",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/get_browsers.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/get_browsers.js",
+      "sha256": "2b12305ac41a9446ecbc221bc3ff0ee8fdf9f39d553f07ffdce89ed40a2564df",
+      "status": "manually-reconstructed",
+      "validation": "differential-tests; not exhaustive equivalence"
     }
   },
   "embeddedPackages": {

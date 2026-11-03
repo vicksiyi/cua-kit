@@ -6,13 +6,13 @@
 
 | 原始包 | 当前 workspace | 当前状态 |
 |---|---|---|
-| @oai/cua 0.2.6 | @core/cua | 首批 6 个运行模块已还原 |
+| @oai/cua 0.2.6 | @core/cua | 11 个运行模块已还原 |
 | @oai/cua-repl 0.1.2 | @core/cua-repl | 包边界已建立，尚未还原实现 |
 | @oai/sky 0.7.13 | @core/sky | 包边界已建立，尚未还原实现 |
 | @oai/browser-desktop 0.1.1 | @core/browser-desktop | 包边界已建立，尚未还原实现 |
 | @oai/browser | @core/browser | 在原声明文件中明确引用，运行代码内嵌；独立 manifest/版本与完整声明尚未定位 |
 
-本轮还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
+第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
 ## 验证
 
@@ -36,3 +36,9 @@ npm run test:reconstruction
 4. 在还原后的原协议上接入 MCP client + AgentLoop demo，调用侧仍作为独立应用，不侵入核心包。
 
 不会为了通过测试把未读到的原逻辑替换为自写后端。若需宿主替代实现，另行标识为替代实现，不能称为原代码还原。
+
+## 初始化与文档增量
+
+新增还原 `create_bootstrap_emitter`、`create_documentation`、`read_documentation`、`setup_browser`、`get_browsers`，累计 11 个运行模块。文档资源按原字节复制到 @core/cua/docs，并记录原文件哈希。初始化总入口及 native binders 仍未完成，因此 public exports 仍未接通。
+
+当前 8 项验证通过，包括 browser facade 差分、bootstrap 串行/重试/请求身份缓存差分、环境/确认策略选择差分、实际文档读取字节对比、runtime 装配参数及部分 inventory 失败处理、来源哈希。仍不是所有行为的形式化等价证明。
