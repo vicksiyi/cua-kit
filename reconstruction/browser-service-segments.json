@@ -484,6 +484,11 @@
       "end": 368036,
       "kind": "FunctionDeclaration"
     },
+    "ar": {
+      "start": 368036,
+      "end": 368161,
+      "kind": "FunctionDeclaration"
+    },
     "ml": {
       "start": 369436,
       "end": 369667,
@@ -2289,6 +2294,11 @@
       "end": 956892,
       "kind": "FunctionDeclaration"
     },
+    "Pre": {
+      "start": 956892,
+      "end": 957323,
+      "kind": "FunctionDeclaration"
+    },
     "Ire": {
       "start": 957651,
       "end": 957978,
@@ -2312,6 +2322,16 @@
     "Oo": {
       "start": 961091,
       "end": 961854,
+      "kind": "FunctionDeclaration"
+    },
+    "Vh": {
+      "start": 961854,
+      "end": 962146,
+      "kind": "FunctionDeclaration"
+    },
+    "kre": {
+      "start": 962146,
+      "end": 962311,
       "kind": "FunctionDeclaration"
     },
     "Bre": {

@@ -2463,6 +2463,19 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential target/focus/abort traces and navigation-before-activation/deferred failure handling. Uses restored remote executor/activation and explicit Playwright/load fixtures; full production context remains pending."
+    },
+    "packages/browser/src/service/accessibility/scroll_action.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-coordinate-and-scroll-actions",
+      "symbols": [
+        "ar",
+        "kre",
+        "Vh",
+        "Pre"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential validation and CDP traces: finite/fractional coordinate bounds, node versus coordinate target, direction aliases, page multipliers and 100px floor; explicit CDP fixtures over reconstructed positioning. Full action dispatcher remains pending."
     }
   },
   "embeddedPackages": {
