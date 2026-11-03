@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。192 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。196 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -439,3 +439,9 @@ Restored Cs, hostname pattern parsing/matching and their helpers in `service/pre
 Restored cL/uL/lL/es, Gc/pL/mL and QC/l5, with original LC/up/Es URL acceptance, in `service/preferences/origin_policy.ts`. Canonical duplicate counting precedes policy filtering; restrictive matches win, local fields are projected exactly, and denied access forces upload/download/full-CDP/auto-review denial. Preserves original invalid/non-HTTP input behavior rather than inventing a new global policy. Network denial evaluates domain rules before origin grants, and config reads start concurrently.
 
 192 tests and type checks pass, comparing original AST functions across managed/local conflicts, missing duplicate policies, sandbox hosts, malformed/global host patterns, non-HTTP URLs and asynchronous read failures. This resolves config policy helpers; persisted permissions, guardian state and the full Preferences/runtime path remain pending.
+
+## Persisted permission tables and snapshots
+
+Restored Qoe/wg, ConfigReadError and permission key/scope/table/matching helpers in `persisted_permissions.ts`. Preserves global/session selection, exact session validation, selected-table shallow copying, raw+escaped opposite-entry removal, string filtering on insertion, origin-pattern versus case-sensitive legacy wildcard fallback, and full snapshot refresh errors. This is the table layer; it does not authorize persistence independently of the caller's policy checks.
+
+196 tests and type checks pass. New differential cases compare original AST functions for wildcard escapes, host extraction, malformed tables, snapshot refresh, key precedence and scope metadata. Prompt policy/guardian orchestration and full Preferences remain pending.

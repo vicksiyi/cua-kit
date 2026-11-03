@@ -94,3 +94,7 @@ Restored origin/hostname pattern parsing and matching and connected the parser t
 ## Source reconstruction: origin policy resolution
 
 Restored origin-level permission merging and network denial evaluation over reconstructed parsing/config modules. 192 tests pass with type checks. Persisted permissions, guardian logic and full preferences/context assembly remain incomplete.
+
+## Source reconstruction: persisted permission storage
+
+Restored permission table read/update/matching and snapshot refresh error semantics. 196 tests pass with type checks. Store backends are injected; prompt policy/guardian orchestration is still incomplete.
