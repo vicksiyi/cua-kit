@@ -2,7 +2,7 @@
 
 **当前方向：源码还原。** 按用户最新要求，直接从本机 unified-computer-use 相关混淆 JS / .d.ts 还原可读 TypeScript，按原包边界组织 `@core/*` workspace，源码 import 不带 `.js`。首批源码、来源映射与差分验证见 [reconstruction](reconstruction/README.md)。完整还原仍在进行，不能把旧独立实现视为原代码。
 
-当前已接通 `@core/browser` 的 `setupBrowserRuntime` 客户端入口，覆盖原注册表、工厂、Browser/Tab、Playwright 与能力装配；253 项测试通过（含模型/MCP 接入验证）。该入口依赖宿主 `nodeRepl.rpc`，底层服务、Sky/cua-repl 和独立 MCP/AgentLoop demo 尚未完成。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
+当前已接通 `@core/browser` 的 `setupBrowserRuntime` 客户端入口，覆盖原注册表、工厂、Browser/Tab、Playwright 与能力装配；256 项测试通过（含模型/MCP 接入验证）。该入口依赖宿主 `nodeRepl.rpc`，底层服务、Sky/cua-repl 和独立 MCP/AgentLoop demo 尚未完成。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
 
 DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。模型协议/MCP 回环测试通过，真实 DeepSeek 调用仍待本机凭据定位；这不表示还原后端已接通。
 
@@ -76,3 +76,7 @@ Restored complete keyboard tables, shifted/alias identity, chord parsing, platfo
 ## Source reconstruction: keyboard dispatch
 
 Restored key-event class, held-key cleanup, Unicode text dispatch and input-target token propagation. 253 tests pass with type checks. Protected focus inspection remains an explicit dependency; production input assembly is still incomplete.
+
+## Source reconstruction: input protection and assembly
+
+Restored focus/closed-shadow/iframe pointer checks and assembled BrowserInput with real restored helpers. 256 tests pass with type checks. Isolated Chromium smoke confirms ordinary typing and protected keyboard/pointer rejection (`npx tsx reconstruction/input-browser-smoke.ts`); UI/page-load adapters in that smoke are fixtures. Full DOM snapshots and production execution context remain pending.

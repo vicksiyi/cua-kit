@@ -5,6 +5,9 @@ interface Point {
   y: number;
 }
 interface Cdp {
+  platform: string;
+  targetForFrameOrAttach(...args: any[]): Promise<any>;
+  addTabCleanupHandler(handler: (tabId: number) => void): unknown;
   call(...args: any[]): Promise<any>;
   callTarget(...args: any[]): Promise<any>;
   waitForPageLoadEvent(...args: any[]): Promise<any>;

@@ -13,6 +13,7 @@ import type { KeyDescription } from "./keyboard_map";
 import { inputDelay } from "./input";
 import type { CdpTarget } from "../cdp/dispatch_helpers";
 interface Cdp {
+  targetForFrameOrAttach(...args: any[]): Promise<any>;
   platform: string;
   call(...args: any[]): Promise<any>;
   callTarget(...args: any[]): Promise<any>;

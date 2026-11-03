@@ -434,6 +434,31 @@
       "end": 368036,
       "kind": "FunctionDeclaration"
     },
+    "ml": {
+      "start": 369436,
+      "end": 369667,
+      "kind": "FunctionDeclaration"
+    },
+    "Vy": {
+      "start": 369667,
+      "end": 370530,
+      "kind": "FunctionDeclaration"
+    },
+    "jA": {
+      "start": 370530,
+      "end": 371169,
+      "kind": "FunctionDeclaration"
+    },
+    "HA": {
+      "start": 371169,
+      "end": 371287,
+      "kind": "FunctionDeclaration"
+    },
+    "Gy": {
+      "start": 371287,
+      "end": 371398,
+      "kind": "FunctionDeclaration"
+    },
     "A5": {
       "start": 371409,
       "end": 371445,
@@ -2092,6 +2117,41 @@
     "Mte": {
       "start": 909748,
       "end": 910006,
+      "kind": "FunctionDeclaration"
+    },
+    "ru": {
+      "start": 937012,
+      "end": 937354,
+      "kind": "FunctionDeclaration"
+    },
+    "Oc": {
+      "start": 937354,
+      "end": 938315,
+      "kind": "FunctionDeclaration"
+    },
+    "Nv": {
+      "start": 938315,
+      "end": 939912,
+      "kind": "FunctionDeclaration"
+    },
+    "pre": {
+      "start": 939912,
+      "end": 940057,
+      "kind": "FunctionDeclaration"
+    },
+    "mre": {
+      "start": 940057,
+      "end": 940103,
+      "kind": "FunctionDeclaration"
+    },
+    "fre": {
+      "start": 940103,
+      "end": 940654,
+      "kind": "FunctionDeclaration"
+    },
+    "U2": {
+      "start": 940654,
+      "end": 940780,
       "kind": "FunctionDeclaration"
     },
     "Mc": {

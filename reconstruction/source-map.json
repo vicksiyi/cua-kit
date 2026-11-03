@@ -2275,6 +2275,41 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST over real original key tables compared with reconstructed dispatch: protected/unprotected cleanup, abort, failure, nested target/token, Unicode and modifier state; Vy focus protection remains explicit required dependency"
+    },
+    "packages/browser/src/service/input/input_guard.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-input-protection-and-assembly",
+      "symbols": [
+        "ml",
+        "Vy",
+        "jA",
+        "HA",
+        "Gy",
+        "ru",
+        "Oc",
+        "Nv",
+        "pre",
+        "mre",
+        "fre",
+        "U2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential tests for focus/shadow/iframe checks, object release and coordinate rejection; isolated real Chromium validates normal typing and closed-shadow keyboard/pointer rejection with test UI/load adapters"
+    },
+    "packages/browser/src/service/input/index.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-input-protection-and-assembly",
+      "symbols": [
+        "cg",
+        "Os",
+        "cS",
+        "ru",
+        "Vy"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential tests for focus/shadow/iframe checks, object release and coordinate rejection; isolated real Chromium validates normal typing and closed-shadow keyboard/pointer rejection with test UI/load adapters"
     }
   },
   "embeddedPackages": {
