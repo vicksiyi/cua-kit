@@ -2258,6 +2258,23 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Exact original AST tables/functions compared for all key descriptors, alias object identity, platform mapping and all modifier subsets; key-event dispatch/closed-shadow protection pending"
+    },
+    "packages/browser/src/service/input/keyboard_dispatch.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-keyboard-dispatch-with-focus-dependency",
+      "symbols": [
+        "gl",
+        "Os",
+        "Ky",
+        "zA",
+        "Ep",
+        "zy",
+        "hl",
+        "A5"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST over real original key tables compared with reconstructed dispatch: protected/unprotected cleanup, abort, failure, nested target/token, Unicode and modifier state; Vy focus protection remains explicit required dependency"
     }
   },
   "embeddedPackages": {

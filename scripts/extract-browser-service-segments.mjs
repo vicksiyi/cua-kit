@@ -10,6 +10,7 @@ const relative =
   "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs";
 const source = await readFile(`${root}/${relative}`, "utf8");
 const wanted = new Set([
+  "gl", "Os", "Ky", "zA", "Ep", "zy", "hl", "A5",
   "M5", "N5", "F5", "O5", "B5", "D5", "Jy", "gt", "L5", "di", "$y", "vp", "Ds", "Sp", "bl", "Yy", "P5", "R5", "xp", "I5", "$A", "k5", "Tp", "VA",
   "lD", "cD", "dD", "pD", "mD", "va", "fD", "hD", "gD", "aD", "uD", "rY", "bD", "F_", "yD", "nY", "li", "b5", "gp", "L_", "U_", "cS", "Qne", "eoe", "toe", "roe", "Zne",
   "cg", "UF", "Zv", "Xy", "Ve",
@@ -198,7 +199,7 @@ function visit(node) {
     name = node.left.name;
     expression = node.right;
   }
-  if ((name === "qh" || name === "lu" || name === "C_" || name === "bf" || name === "D_" || name === "yf" || name === "cg") && expression?.type === "ClassExpression") {
+  if ((name === "qh" || name === "lu" || name === "C_" || name === "bf" || name === "D_" || name === "yf" || name === "cg" || name === "gl") && expression?.type === "ClassExpression") {
     for (const method of expression.body.body) {
       if (
         method.type === "MethodDefinition" &&
