@@ -314,6 +314,31 @@
       "end": 662480,
       "kind": "ObjectExpression"
     },
+    "fr": {
+      "start": 685108,
+      "end": 685968,
+      "kind": "ObjectExpression"
+    },
+    "BB": {
+      "start": 685969,
+      "end": 686116,
+      "kind": "FunctionDeclaration"
+    },
+    "R_": {
+      "start": 686116,
+      "end": 686312,
+      "kind": "FunctionDeclaration"
+    },
+    "DB": {
+      "start": 686312,
+      "end": 686460,
+      "kind": "FunctionDeclaration"
+    },
+    "RX": {
+      "start": 686460,
+      "end": 686505,
+      "kind": "FunctionDeclaration"
+    },
     "qe": {
       "start": 688377,
       "end": 688490,

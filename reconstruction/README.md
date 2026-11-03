@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。201 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。204 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -457,3 +457,9 @@ Restored Me/xt and preference metadata helpers, plus Sg/Yc turn and guardian-v1 
 Added independently authored `@core/agent-loop` with model-neutral and MCP-neutral contracts, explicit MCP server launch configuration and DeepSeek default adapter. This is demo integration, not recovered vendor code. Runs from TypeScript using tsx; no `.js` suffix on relative source imports. Uses non-thinking Chat Completions tool calls; alternate OpenAI-compatible endpoints remain configurable.
 
 201 total tests pass (199 reconstruction checks plus 2 caller integration checks). A real MCP stdio fixture and mock model HTTP endpoint verify the complete tool-call/result loop. The new package type-checks. No confirmed local DeepSeek credential was found in the inspected environment/common configuration, so live DeepSeek validation is pending.
+
+## Guardian-v2 origin review cache
+
+Restored fr/BB/R_/DB/RX in `guardian_cache.ts`, including per-thread/origin entries, approval identity retry, shared pending review promises, revocation tokens, old-promise cleanup identity guards, five-minute expiry/sweeps and timer unref. The exported singleton matches module-level sharing; a factory isolates tests.
+
+204 total tests pass with type checks. New differential tests execute the original object and helpers to compare concurrent sharing, revoke/replacement races, rejected review retry and exact timer behavior. This is the guardian review cache, not the guardian service or completed approval orchestration.
