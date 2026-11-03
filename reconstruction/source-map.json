@@ -3127,6 +3127,30 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "17 original method trace scenarios covering frame/loader verification, cached promise identity and reset on failure, target drain, ordered teardown and ordinary rejection cleanup. Abstract lifecycle portion requires remaining original policy/event/start implementation; no complete lease or real CDP integration claim."
+    },
+    "packages/browser/src/service/credentials/lease_results.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-credential-lease-result-state",
+      "symbols": [
+        "Z_.result",
+        "Z_.ordinaryResult",
+        "Z_.waitForOrdinaryDocumentCleanup",
+        "Z_.settleOrdinarySubmission",
+        "Z_.recordAttempt",
+        "Z_.beginOrdinaryFill",
+        "Z_.completeOrdinaryFill",
+        "Z_.beginOrdinarySubmit",
+        "Z_.completeOrdinaryAttempt",
+        "Z_.refreshOrdinaryDocument",
+        "Z_.verifiedOrdinarySiteSubmission",
+        "Z_.currentRejection",
+        "Z_.diagnostics",
+        "Z_.whenRejected",
+        "Z_.setOutcome"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "22 original state/result scenarios: first outcome and rejection promises, background versus terminal failures, phase/event saturation, copied diagnostics, verification/timeouts and ordinary cleanup. Extends cleanup base; start and event/request policy remain pending."
     }
   },
   "embeddedPackages": {
