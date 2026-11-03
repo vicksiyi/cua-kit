@@ -3420,7 +3420,23 @@
         "AD"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "21 original frame/capture/find scenarios using actual shared reconstructed DomState and fixture CDP. Shape filters, deadline boundaries, serialized ordinary/reviewer references and release-on-error verified. cY/_Y renderer remains explicit dependency; ED/q_/TD orchestration pending. No real-browser visible DOM end-to-end claim."
+      "validation": "21 original frame/capture/find scenarios using actual shared reconstructed DomState and fixture CDP. Shape filters, deadline boundaries, serialized ordinary/reviewer references and release-on-error verified. cY/_Y renderer remains explicit dependency; ED/q_/TD orchestration pending. No real-browser visible DOM end-to-end claim.",
+      "assemblyUpdate": "ED/q_/TD/SD/xD now reconstructed in visible_dom_capture.ts. cY/_Y page renderer remains pending."
+    },
+    "packages/browser/src/service/input/visible_dom_capture.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-visible-dom-capture-orchestration",
+      "symbols": [
+        "SD",
+        "xD",
+        "ED",
+        "q_",
+        "TD",
+        "j_"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "19 original-vs-readable capture/reviewer/command scenarios with actual shared DomState and explicit fixture frame reader. Output limits, priority reserve/order, nested frames, expired budgets, errors, repeat node IDs and reviewer isolation verified. cY/_Y page renderer remains pending; no real-browser end-to-end claim."
     }
   },
   "embeddedPackages": {
