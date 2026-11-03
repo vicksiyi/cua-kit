@@ -3314,6 +3314,19 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "All original catalog entries and guidance strings checked. Domain/method/parameter cross-product compares prepare parameters and authority URL results, including root/nested Fetch handling and input identity. Full sF/aF command assembly remains pending."
+    },
+    "packages/browser/src/service/commands/raw_cdp.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-raw-cdp-command-assembly",
+      "symbols": [
+        "Bs",
+        "Jh",
+        "sF",
+        "aF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "125 original backend/environment capability combinations and 28 command traces. Existing reconstructed schemas and method policy are shared dependencies; verifies authority targets, schema order, null result and late credential protection rechecks. Real raw command/backend integration and production registry still pending."
     }
   },
   "embeddedPackages": {
