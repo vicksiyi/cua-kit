@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。171 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。174 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -389,3 +389,9 @@ Reconstructed lg and LF/FF with validation, Workspace URL/format/name helpers an
 Reconstructed mg/WF as SiteInstructions. Capture first clears matching-frame state, consumes all matching headers even with proxy disabled, then applies original protocol/hostname checks and percent decoding. Invalid URL/encoding deletes the tab entry; a disallowed URL returns without deleting a different-frame entry. Peek compares stored URL to the requested URL without its fragment; take always deletes even on mismatch.
 
 171 differential tests pass with type checking. Tests cover header mutation/order, proxy state, loopback/link-local hostname cases, malformed decoding, frame isolation, fragment behavior and destructive take. This is a response-cache component, not a standalone authority or security policy engine. Execution-context assembly and document-response capture are still pending.
+
+## Document response capture and request interception (Xh)
+
+Reconstructed `service/context/document_responses.ts` from Xh/Mc/su/Yre. Preserves shared setup promises, serialized Fetch reconfiguration, descending interceptor priority, snapshot processing and drain-on-remove. Request exceptions block; handled requests remain owned by their interceptor. Document response ownership is released only after successful CDP continuation/failure; response listeners trigger header overrides only when the array identity changes. Session/target events are ignored as in the installed implementation, and detach clears all per-tab state.
+
+174 differential tests pass with type checking. New tests execute the installed AST class and readable class against matching CDP fixtures, covering headers, ownership, target filtering, priority, handled/block/exception outcomes, draining, setup/configuration retry and retained ownership on CDP failure. Production provider and full execution-context assembly remain pending.
