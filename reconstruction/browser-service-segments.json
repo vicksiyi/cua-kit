@@ -874,6 +874,31 @@
       "end": 1324034,
       "kind": "ClassExpression"
     },
+    "Eg": {
+      "start": 1351466,
+      "end": 1352217,
+      "kind": "ClassExpression"
+    },
+    "yie": {
+      "start": 1352218,
+      "end": 1352781,
+      "kind": "FunctionDeclaration"
+    },
+    "wie": {
+      "start": 1352781,
+      "end": 1353215,
+      "kind": "FunctionDeclaration"
+    },
+    "_ie": {
+      "start": 1353215,
+      "end": 1353309,
+      "kind": "FunctionDeclaration"
+    },
+    "vie": {
+      "start": 1353309,
+      "end": 1353456,
+      "kind": "FunctionDeclaration"
+    },
     "Tg": {
       "start": 1353467,
       "end": 1354373,

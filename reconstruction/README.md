@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。158 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。161 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -357,3 +357,9 @@ Reconstructed gg, Tg and bg as ServiceTabs, TabLifecycle and BrowserUi. Tab look
 Reconstructed dg and console/exception conversion helpers as BrowserDev. Attach ensures Runtime.enable with shared pending promises; detach clears logs and runtime state. Authentication-protected events are excluded. Console values, warning aliases, first-stack-frame URL and exception text precedence match the source, with receipt-time ISO timestamps. Storage retains 500 entries and logs applies source filter/levels/slice behavior, including zero limit.
 
 158 differential tests pass with type checking. Tests compare source helpers/class for value conversion, filtering, retention, protection and concurrent Runtime.enable. The original detach/in-flight race is preserved: an old enable can mark the tab enabled and delete a replacement pending entry; this reconstruction does not silently repair source behavior. Full execution context and real provider remain incomplete.
+
+### Execution context clipboard store
+
+Reconstructed Eg and yie/wie/_ie/vie validation/copy helpers. The store copies projected entries on write and read, serializes operations through a rejection-recovering tail, caches one bridge per CDP identity and retains original Promise.all cleanup/disposal behavior. Failed disposal leaves remaining maps/items intact after disposed is set. Validation preserves atob acceptance and exact field/error ordering.
+
+161 differential tests pass with type checking. The original lexical xg page bridge remains an explicit constructor dependency; this is not yet a complete browser clipboard integration. Next restore xg installation, binding calls and injected page scripts before execution-context assembly.
