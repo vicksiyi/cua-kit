@@ -1679,6 +1679,31 @@
       "end": 811323,
       "kind": "FunctionDeclaration"
     },
+    "BN": {
+      "start": 872730,
+      "end": 872909,
+      "kind": "CallExpression"
+    },
+    "DN": {
+      "start": 872921,
+      "end": 873041,
+      "kind": "CallExpression"
+    },
+    "Fh": {
+      "start": 873058,
+      "end": 873399,
+      "kind": "CallExpression"
+    },
+    "MN": {
+      "start": 873695,
+      "end": 873999,
+      "kind": "CallExpression"
+    },
+    "NN": {
+      "start": 874011,
+      "end": 874149,
+      "kind": "CallExpression"
+    },
     "Za": {
       "start": 875870,
       "end": 876257,
@@ -2449,6 +2474,11 @@
       "end": 933915,
       "kind": "FunctionDeclaration"
     },
+    "k2": {
+      "start": 933926,
+      "end": 934098,
+      "kind": "CallExpression"
+    },
     "are": {
       "start": 934116,
       "end": 934136,
@@ -2493,6 +2523,11 @@
       "start": 935517,
       "end": 935520,
       "kind": "Literal"
+    },
+    "L2": {
+      "start": 935524,
+      "end": 935715,
+      "kind": "CallExpression"
     },
     "Mv": {
       "start": 935716,
@@ -2893,6 +2928,11 @@
       "start": 1006951,
       "end": 1007035,
       "kind": "FunctionDeclaration"
+    },
+    "pF": {
+      "start": 1010152,
+      "end": 1010369,
+      "kind": "CallExpression"
     },
     "vne": {
       "start": 1166604,

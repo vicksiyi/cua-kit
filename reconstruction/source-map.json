@@ -3028,6 +3028,32 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "36 original command traces compare validation/authority/bridge/store ordering; real Chromium verifies command-to-navigator and navigator-to-command text, rich HTML clipboard round trip. Production registry/context wiring remains pending."
+    },
+    "packages/browser/src/service/commands/tabs.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-tabs-commands",
+      "symbols": [
+        "BN",
+        "DN",
+        "Fh",
+        "MN",
+        "NN",
+        "k2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "128 combined original command trace comparisons across tab lifecycle and dialog wrappers; covers credential observation gates, selection failure, authority ordering and dialog projection. Dialog execution uses shared reconstructed Mv in differential test; no new real browser integration claim. Production registry/context remains pending."
+    },
+    "packages/browser/src/service/commands/dialog.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-dialog-commands",
+      "symbols": [
+        "pF",
+        "L2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "128 combined original command trace comparisons across tab lifecycle and dialog wrappers; covers credential observation gates, selection failure, authority ordering and dialog projection. Dialog execution uses shared reconstructed Mv in differential test; no new real browser integration claim. Production registry/context remains pending."
     }
   },
   "embeddedPackages": {
