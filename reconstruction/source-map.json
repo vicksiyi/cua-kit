@@ -3467,6 +3467,16 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Real headless Chromium differential output against original cY/_Y for 10 ordinary/reviewer, clipping and capacity cases, with actual Ms/no credential filtering. Assembled SD/ED/reader/page collector reads a same-process srcdoc frame and drives real guarded BrowserInput click using public node ID; node ID retained on recapture. Authority/UI/target routing are fixture adapters; no production OOPIF/host integration claim."
+    },
+    "packages/browser/src/service/commands/download_media.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-media-download-command",
+      "symbols": [
+        "l2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "16 original-vs-readable command traces executing serialized page callbacks with fixture elements. Real Chromium blob download validates callback execution, Unicode filename, file bytes and temporary anchor removal through fixture lifecycle/selector adapters. Actual Downloads host policy and full Playwright helper are not claimed end-to-end."
     }
   },
   "embeddedPackages": {
