@@ -19,7 +19,7 @@ export function codexTurnMetadata(
   if (!(value == null || typeof value !== "object" || Array.isArray(value)))
     return value;
 }
-function metadataSession(meta: Record<string, any> | undefined) {
+export function metadataSession(meta: Record<string, any> | undefined) {
   if (meta?.thread_source === "subagent" && typeof meta.thread_id === "string")
     return meta.thread_id;
   const session = meta?.session_id;

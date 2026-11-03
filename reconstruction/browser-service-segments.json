@@ -2084,6 +2084,16 @@
       "end": 811362,
       "kind": "Literal"
     },
+    "Jee": {
+      "start": 826064,
+      "end": 828440,
+      "kind": "FunctionDeclaration"
+    },
+    "Zee": {
+      "start": 828440,
+      "end": 828888,
+      "kind": "FunctionDeclaration"
+    },
     "nN": {
       "start": 828888,
       "end": 829132,

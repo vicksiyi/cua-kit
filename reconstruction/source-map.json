@@ -3879,6 +3879,16 @@
       ],
       "status": "reconstructed-browser-auth-native-private-submit",
       "validation": "27 original-vs-restored Chromium cases validate origins, prototype-accessed form/control properties, duplicate names/selectors, successful-control payloads, closed-shadow form creation and value blanking including submit exceptions. Additional actual Chromium POST uses synthetic credentials and intercepted local fixture response. Injected selector/state utility remains fixture."
+    },
+    "packages/browser/src/service/browser_auth/broker_binding.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Jee",
+        "Zee"
+      ],
+      "status": "reconstructed-browser-auth-broker-binding-preflight",
+      "validation": "52 original private/ordinary preflight traces and 12 credential binding scenarios use restored turn metadata, classifier, option policy, inspection, submission origin and containment. Covers session/subagent identity, password-only, field names/mapping, native probe failures and async telemetry rejection. CDP and selector evaluation are fixtures; telemetry loader remains required host dependency."
     }
   },
   "embeddedPackages": {
