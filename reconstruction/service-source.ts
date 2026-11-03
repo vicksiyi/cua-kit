@@ -73,3 +73,31 @@ export function serviceClassMethod(className: string, methodName: string) {
     throw new Error(`Missing source method ${className}.${methodName}`);
   return source.slice(method.start, method.end);
 }
+
+/** Inspect one esbuild export table without evaluating the vendor module. */
+export function serviceExportTable(name: string): Record<string, string> {
+  for (const node of (ast as any).body) {
+    const call =
+      node.type === "ExpressionStatement" ? node.expression : undefined;
+    if (
+      call?.type !== "CallExpression" ||
+      call.callee?.name !== "H" ||
+      call.arguments[0]?.name !== name
+    )
+      continue;
+    const object = call.arguments[1];
+    if (object?.type !== "ObjectExpression")
+      throw new Error("Unexpected export table shape");
+    return Object.fromEntries(
+      object.properties.map((property: any) => {
+        if (
+          property.value?.type !== "ArrowFunctionExpression" ||
+          property.value.body?.type !== "Identifier"
+        )
+          throw new Error("Unexpected export getter");
+        return [property.key.name, property.value.body.name];
+      }),
+    );
+  }
+  throw new Error(`Missing export table ${name}`);
+}
