@@ -18,7 +18,7 @@ const wanted = new Set([
   "Ka", "Ch", "Va", "wv", "Qee", "_f", "RD", "Rh", "iN", "eN", "Ih", "_v", "sN",
   "Y_", "oN", "rte", "nte", "vv", "Ah", "Ph", "QM", "tte", "za",
   "vf", "pte", "mte",
-  "lte", "cte", "zee", "Kee", "yv", "dc", "xY", "PD", "pc", "KT", "Rc",
+  "lte", "cte", "zee", "Kee", "yv", "dc", "xY", "PD", "pc", "KT", "Rc", "ute",
   "xv",
   "Ct", "uN",
   "Lc", "Uc", "mF", "bne", "fF", "yne", "wne", "_ne",

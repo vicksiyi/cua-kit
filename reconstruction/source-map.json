@@ -3861,6 +3861,15 @@
       ],
       "status": "reconstructed-browser-auth-credential-classification",
       "validation": "1890 original field type/label/autocomplete combinations; option ambiguity, duplicate IDs, password-only and metadata projection comparisons. Preserves original object identity in KT and shallow metadata projection in Rc. Checkpoint default classifier is exercised through ordinary reinspection. No live credential data used."
+    },
+    "packages/browser/src/service/browser_auth/submission.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ute"
+      ],
+      "status": "reconstructed-browser-auth-submission-orchestration",
+      "validation": "25 original traces cover validation, QR-only early return, reviewed presentation retry, native/manual branch, option action, field delivery, OTP polling, ordinary verification, bound click/Enter, scoped context and no retry after action starts. Default dependencies use restored fillPlan/wait/press. Native private submission callback J_ remains required; branch tests inject action/checkpoint dependencies."
     }
   },
   "embeddedPackages": {

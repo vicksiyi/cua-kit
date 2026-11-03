@@ -2229,6 +2229,11 @@
       "end": 843800,
       "kind": "FunctionDeclaration"
     },
+    "ute": {
+      "start": 843800,
+      "end": 846657,
+      "kind": "FunctionDeclaration"
+    },
     "lte": {
       "start": 846657,
       "end": 846934,
