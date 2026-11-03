@@ -2926,6 +2926,21 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Eleven original commands across eight authority/validation/callback scenarios (88 comparisons), plus real Chromium observation handlers including protected attribute and relative-selector reads. ReadAll uses an equivalent object method to avoid tsx injecting an out-of-scope __name into serialized callback. Full command registry/context and remaining action handlers remain pending."
+    },
+    "packages/browser/src/service/commands/locator_actions.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-locator-action-handlers",
+      "symbols": [
+        "b2",
+        "y2",
+        "g2",
+        "Qte",
+        "Zte",
+        "h2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Sixteen select/checked original scenarios and seven sequential typing scenarios; real Chromium select, checkbox and Unicode text input using assembled keyboard dispatch, with marker cleanup. Remaining fill/press handlers and production registry/context remain pending."
     }
   },
   "embeddedPackages": {
