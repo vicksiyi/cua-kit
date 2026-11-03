@@ -2694,6 +2694,25 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original ig differential traces for node resolution/evaluation, exception precedence and release cleanup; real Chromium iframe node evaluation/owner lookup. Injection is an explicit abstract dependency; tests use a fixture and functions that do not require injected helper."
+    },
+    "packages/browser/src/service/playwright/injection.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "partial-reconstruction-playwright-injection",
+      "symbols": [
+        "ig",
+        "vne",
+        "eg",
+        "gF",
+        "vF",
+        "SF",
+        "Pne",
+        "nS",
+        "Mo",
+        "Ane"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "18 original ig recovery traces for thrown/returned errors, frame/root scopes, retry limits and install failures; real Chromium installs original local hF and compares selector/protection/recovery. hF body remains required external source and is not reconstructed or published."
     }
   },
   "embeddedPackages": {
