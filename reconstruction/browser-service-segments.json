@@ -874,6 +874,31 @@
       "end": 1324034,
       "kind": "ClassExpression"
     },
+    "kL": {
+      "start": 1347217,
+      "end": 1347369,
+      "kind": "FunctionDeclaration"
+    },
+    "BL": {
+      "start": 1347369,
+      "end": 1347478,
+      "kind": "FunctionDeclaration"
+    },
+    "xg": {
+      "start": 1347485,
+      "end": 1351271,
+      "kind": "ClassExpression"
+    },
+    "DL": {
+      "start": 1351272,
+      "end": 1351413,
+      "kind": "FunctionDeclaration"
+    },
+    "OL": {
+      "start": 1351413,
+      "end": 1351459,
+      "kind": "FunctionDeclaration"
+    },
     "Eg": {
       "start": 1351466,
       "end": 1352217,
