@@ -2524,6 +2524,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential expression/payload/result/error protocol and credential policy; isolated JS execution validates serialized async wrapper, with structured-clone transport simulation. Clipboard page operation Cp and cut commit remain pending."
+    },
+    "packages/browser/src/service/clipboard/page_operations.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-clipboard-page-operations",
+      "symbols": [
+        "Cp",
+        "KA"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Real isolated Chromium differential execution against original AST across 25 cases: copy/paste, two-phase cut, stale/canceled deletion, credential filtering, HTML, shadow roots, tokens, fallback and errors. Host orchestration Zy/oo remains pending."
     }
   },
   "embeddedPackages": {

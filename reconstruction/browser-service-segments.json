@@ -734,6 +734,16 @@
       "end": 387766,
       "kind": "FunctionDeclaration"
     },
+    "Cp": {
+      "start": 387777,
+      "end": 393913,
+      "kind": "ArrowFunctionExpression"
+    },
+    "KA": {
+      "start": 393917,
+      "end": 394101,
+      "kind": "ArrowFunctionExpression"
+    },
     "q5": {
       "start": 394109,
       "end": 394910,
