@@ -52,6 +52,9 @@ const bootstrap = `(() => {
     close: (...args) => invoke(id,'close',args)
   });
   const app = id => Object.freeze({ id,
+    listWindows: (...args) => invoke(id,'listWindows',args),
+    getScreenshot: (...args) => invoke(id,'getScreenshot',args),
+    getAXStateAndScreenshot: (...args) => invoke(id,'getAXStateAndScreenshot',args),
     observe: (...args) => invoke(id,'observe',args),
     getAXState: (...args) => invoke(id,'getAXState',args),
     click: (...args) => invoke(id,'click',args),
@@ -161,7 +164,28 @@ export class JavascriptSession {
     if (app) {
       const options = { signal: this.currentAbort?.signal };
       switch (request.method) {
-        case 'observe': return app.observe(options);
+        case 'observe': {
+          const result = await app.observe({ ...args[0], ...options });
+          if (result.screenshot) {
+            const { bytes, ...metadata } = result.screenshot;
+            emit({ type: 'image', mimeType: 'image/png', data: Buffer.from(bytes).toString('base64') });
+            return { ...result, screenshot: { ...metadata, emitted: true } };
+          }
+          return result;
+        }
+        case 'listWindows': return app.listWindows(options);
+        case 'getScreenshot': {
+          const result = await app.captureScreenshot({ ...args[0], ...options });
+          const { bytes, ...metadata } = result;
+          emit({ type: 'image', mimeType: 'image/png', data: Buffer.from(bytes).toString('base64') });
+          return { ...metadata, emitted: true };
+        }
+        case 'getAXStateAndScreenshot': {
+          const result = await app.getAXStateAndScreenshot({ ...args[0], ...options });
+          emit({ type: 'text', text: result.state });
+          emit({ type: 'image', mimeType: 'image/png', data: Buffer.from(result.screenshot).toString('base64') });
+          return { state: result.state, screenshotEmitted: true };
+        }
         case 'getAXState': { const text = await app.getAXState(options); emit({ type: 'text', text }); return text; }
         case 'click': return app.click(args[0], options);
         case 'setValue': return app.setValue(args[0], args[1], options);

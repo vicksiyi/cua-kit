@@ -17,7 +17,7 @@ export CUA_ALLOWED_APPS='com.example.YourApp'
 npm run mcp
 ```
 
-当前 `MacApp` 支持 `observe/getAXState`、`click`（AXPress，不等价于坐标鼠标事件）、`setValue`（可写 AXValue）。未实现原生截图、键盘输入、拖拽、滚动、右键、窗口管理；不应将这些算作兼容完成。
+当前 `MacApp` 支持 `observe/getAXState`、`click`（AXPress，不等价于坐标鼠标事件）、`setValue`（可写 AXValue）。新增 listWindows、captureScreenshot/getScreenshot 和 getAXStateAndScreenshot；截图实现尚待真实权限下验收。键盘输入、拖拽、滚动、右键、窗口管理仍未实现。
 
 ## 进程与协议
 
@@ -58,6 +58,25 @@ macOS 系统设置 → 隐私与安全性 → 辅助功能，需要给实际运�
 npm run test:native
 ```
 
-此命令构建专用 AppKit fixture，验证字段写入、AXPress、结果观察及旧引用拒绝。显式执行此验收命令但权限不足会 **失败**，不会跳过并误报成功。普通 `npm test` 不启动 GUI fixture；这项操作验收默认 skipped。屏幕录制授权不能代替辅助功能授权，原生截图尚未实现。
+此命令构建专用 AppKit fixture，验证字段写入、AXPress、结果观察及旧引用拒绝。显式执行此验收命令但权限不足会 **失败**，不会跳过并误报成功。普通 `npm test` 不启动 GUI fixture；这项操作验收默认 skipped。屏幕录制授权不能代替辅助功能授权，原生截图已编译，但本机未授权，图像内容与缩放映射尚未验收。
 
-仍需补齐：截图与坐标系契约、输入/滚动/拖拽、AXObserver 版本跟踪、授权 UI 整合、原生动作审计、进程崩溃/生命周期压力测试与完整兼容矩阵。
+仍需补齐：截图与坐标系实际验收、输入/滚动/拖拽、AXObserver 版本跟踪、授权 UI 整合、原生动作审计、进程崩溃/生命周期压力测试与完整兼容矩阵。
+
+
+## ScreenCaptureKit 窗口截图增量
+
+实现位于 `native/macos/Sources/CuaHelper/Capture.swift`。`SCShareableContent` 仅选择绑定进程的可见窗口，`SCContentFilter(desktopIndependentWindow:)` 限定单个窗口，`SCScreenshotManager.captureImage` 捕获并使用 ImageIO 编码 PNG。选择此过滤器依据 [Apple SCContentFilter 文档](https://developer.apple.com/documentation/screencapturekit/sccontentfilter)：它可限制捕获到指定窗口。
+
+`listWindows()` 返回可捕获窗口 ID、标题和矩形。应用有多个窗口时，`captureScreenshot({windowId})` 必须明确 ID，不能自动截图其他窗口。每次截图返回 ID、PNG bytes、pixelWidth/pixelHeight、pointPixelScale、windowFrame、contentRect 和 capturedAt；坐标空间命名为 window-image-pixels，不能直接当成桌面全局点。截图前后再次确认进程与窗口矩形；移动/缩放/关闭拒绝为 STALE_OBSERVATION。
+
+`getScreenshot` 只返回 PNG 字节；`captureScreenshot` 返回完整元数据。`observe({screenshot:true,windowId})` 在截图前后比对 AX 树，返回联合观察。SDK 通过 `MacProvider.getApp()` 只绑定时可独立使用截图；顶层 `Cua.getApp()` 会先做 AX 初始观察，因此仍要求辅助功能权限。
+
+MCP 将原生 PNG 作为 image 内容发给调用端，metadata 作为 JSON 返回。图像最多 5 MiB，边长最多 8192、总像素最多 3200 万；超过预算显式错误。截图不显示鼠标、不包含窗口阴影。真实尺寸、颜色、遮挡与多显示器行为仍待授权后实际验收。
+
+普通回归已验证无 Screen Recording 时 listWindows/captureScreenshot 明确拒绝；不会自动请求权限。获得辅助功能和屏幕录制权限后运行：
+
+```bash
+CUA_TEST_NATIVE_SCREENSHOT=1 npm run test:native
+```
+
+此模式在专用 fixture 上验证窗口 ID、PNG 魔数、尺寸及 AX+截图联合返回。当前未执行成功，因此不得把编译和权限拒绝测试当成截图功能验收。

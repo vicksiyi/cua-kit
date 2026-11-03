@@ -22,6 +22,7 @@ struct Node {
     let element: AXUIElement
     let data: [String: Any]
 }
+@MainActor
 final class Target {
     let app: NSRunningApplication
     let root: AXUIElement
@@ -33,8 +34,11 @@ final class Target {
         root = AXUIElementCreateApplication(app.processIdentifier)
         AXUIElementSetMessagingTimeout(root, 1.0)
     }
-    func validate() throws {
+    func validateIdentity() throws {
         guard !app.isTerminated, let current = NSRunningApplication(processIdentifier: app.processIdentifier), current.launchDate == launch else { throw fail("TARGET_NOT_FOUND", "Application exited or PID was reused.") }
+    }
+    func validate() throws {
+        try validateIdentity()
         guard AXIsProcessTrusted() else { throw fail("PERMISSION_DENIED", "Accessibility permission is required for the helper's responsible host application.") }
     }
     func collect() throws -> ([Node], [String]) {
@@ -102,17 +106,32 @@ final class Target {
     }
 }
 var targets: [String: Target] = [:]
-func handle(_ method: String, _ params: [String: Any]) throws -> [String: Any] {
+@MainActor
+func handle(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
     switch method {
-    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
     case "listApps": return ["apps": NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map(info)]
     case "bind":
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
         let id = UUID().uuidString; targets[id] = Target(app)
         return ["targetId": id, "app": info(app)]
-    case "observe", "action", "release":
+    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot":
         guard let id = params["targetId"] as? String, let target = targets[id] else { throw fail("TARGET_NOT_FOUND", "Unknown target handle.") }
         if method == "release" { targets.removeValue(forKey: id); return [:] }
+        if method == "observeWithScreenshot" {
+            var state = try target.observe()
+            let captured = try await target.screenshot(params)
+            let (after, warnings) = try target.collect()
+            guard warnings.isEmpty, after.count == target.nodes.count,
+                  zip(after,target.nodes).allSatisfy({ CFEqual($0.element,$1.element) && NSDictionary(dictionary:$0.data).isEqual(to:$1.data) }) else {
+                target.snapshot = nil; target.nodes = []
+                throw fail("STALE_OBSERVATION", "AX state changed during screenshot; observe again.")
+            }
+            state["screenshot"] = captured
+            return state
+        }
+        if method == "listWindows" { return try await target.windows() }
+        if method == "screenshot" { return try await target.screenshot(params) }
         return try method == "observe" ? target.observe() : target.action(params)
     default: throw fail("UNSUPPORTED_CAPABILITY", "Unknown helper method.")
     }
@@ -123,7 +142,7 @@ while let line = readLine() {
     do {
         guard line.utf8.count <= 1024*1024, let bytes = line.data(using: .utf8), let request = try JSONSerialization.jsonObject(with: bytes) as? [String: Any], let requestId = request["id"] as? String, let method = request["method"] as? String else { throw fail("INVALID_ARGUMENT", "Expected bounded JSON request with string id/method.") }
         id = requestId
-        response = ["id": id, "result": try handle(method, request["params"] as? [String: Any] ?? [:])]
+        response = ["id": id, "result": try await handle(method, request["params"] as? [String: Any] ?? [:])]
     } catch let error as Failure { response = ["id": id, "error": ["code": error.code, "message": error.message]] }
       catch { response = ["id": id, "error": ["code": "INVALID_ARGUMENT", "message": String(describing:error)]] }
     if let data = try? JSONSerialization.data(withJSONObject: response, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text); fflush(stdout) }

@@ -21,6 +21,10 @@ test('native helper: protocol handshake, discovery, policy, binding and permissi
       const state = await app.observe(); assert.ok(state.elements.length > 0);
       // Read-only existing app inspection. Action tests use the dedicated fixture, never arbitrary user apps.
     }
+    if (!provider.capabilities.permissions.screenRecording) {
+      await assert.rejects(app.listWindows(), (e: unknown) => e instanceof CuaError && e.code === 'PERMISSION_DENIED');
+      await assert.rejects(app.captureScreenshot(), (e: unknown) => e instanceof CuaError && e.code === 'PERMISSION_DENIED');
+    }
     await app.release();
     await assert.rejects(app.observe(), (e: unknown) => e instanceof CuaError && e.code === 'TARGET_NOT_FOUND');
     await assert.rejects(provider.getApp({ pid: -1 }), (e: unknown) => e instanceof CuaError && e.code === 'TARGET_NOT_FOUND');
@@ -58,6 +62,19 @@ test('native fixture AX actions and stale snapshot rejection', { skip: process.e
     const button = state.elements.find(element => element.name === 'Save fixture')!;
     assert.ok(button); await app.click(button.id);
     assert.match(await app.getAXState(), /Saved Alice/);
+    if (process.env.CUA_TEST_NATIVE_SCREENSHOT === '1') {
+      assert.equal(provider.capabilities.permissions.screenRecording, true, 'Screen Recording permission required.');
+      const windows = await app.listWindows();
+      const window = windows.find(window => window.title === 'Cua Kit native fixture');
+      assert.ok(window);
+      const capture = await app.captureScreenshot({ windowId: window.id });
+      assert.equal(Buffer.from(capture.bytes).subarray(0,8).toString('hex'), '89504e470d0a1a0a');
+      assert.ok(capture.pixelWidth > 0 && capture.pixelHeight > 0);
+      assert.equal(capture.windowId, window.id);
+      assert.equal(capture.coordinateSpace, 'window-image-pixels');
+      const combined = await app.observe({ screenshot: true, windowId: window.id });
+      assert.match(combined.text, /Saved Alice/); assert.ok(combined.screenshot);
+    }
     await app.release();
   } finally { child.kill(); await provider.close(); }
 });

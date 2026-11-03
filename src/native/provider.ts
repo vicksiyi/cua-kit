@@ -4,9 +4,23 @@ import { assert, checkAbort } from '../core/errors.js';
 import type { Authorize, AXElement, ElementRef, ActionOptions } from '../core/types.js';
 import { SerialQueue } from '../core/serial.js';
 
+export interface NativeWindow { id: number; title: string; frame: { x: number; y: number; width: number; height: number } }
+export interface NativeScreenshot {
+  id: string; windowId: number; mimeType: 'image/png'; bytes: Uint8Array;
+  pixelWidth: number; pixelHeight: number; pointPixelScale: number;
+  coordinateSpace: 'window-image-pixels'; windowFrame: NativeWindow['frame']; contentRect: NativeWindow['frame']; capturedAt: string;
+}
+type ScreenshotWire = Omit<NativeScreenshot, 'bytes'> & { data: string };
+export interface NativeStateOptions extends ActionOptions { screenshot?: boolean; windowId?: number }
+function decodeScreenshot(raw: ScreenshotWire): NativeScreenshot {
+  assert(raw.mimeType === 'image/png' && raw.coordinateSpace === 'window-image-pixels' && typeof raw.data === 'string', 'PROVIDER_DISCONNECTED', 'Malformed native screenshot.');
+  const bytes = Buffer.from(raw.data, 'base64');
+  assert(bytes.length <= 5 * 1024 * 1024 && bytes.subarray(0,8).toString('hex') === '89504e470d0a1a0a', 'PROVIDER_DISCONNECTED', 'Invalid native PNG payload.');
+  const { data: _, ...metadata } = raw; return { ...metadata, bytes: new Uint8Array(bytes) };
+}
 export interface NativeObservation {
   sessionId: string; targetId: string; snapshotId: string; capturedAt: string;
-  elements: AXElement[]; text: string; warnings: string[];
+  elements: AXElement[]; text: string; warnings: string[]; screenshot?: NativeScreenshot;
 }
 export class MacApp {
   private queue = new SerialQueue();
@@ -17,17 +31,37 @@ export class MacApp {
     checkAbort(signal); assert(this.alive, 'TARGET_NOT_FOUND', 'Native app handle released.');
     await this.provider.authorize(this.id, this.info, operation, effect); checkAbort(signal);
   }
-  observe(options: ActionOptions = {}): Promise<NativeObservation> {
+  observe(options: NativeStateOptions = {}): Promise<NativeObservation> {
     return this.queue.run(async () => {
       await this.authorize('observe', 'read', options.signal);
-      const state = await this.provider.helper.request<{ snapshotId: string; elements: AXElement[]; warnings: string[] }>('observe', { targetId: this.id });
+      const { screenshot, ...state } = await this.provider.helper.request<{ snapshotId: string; elements: AXElement[]; warnings: string[]; screenshot?: ScreenshotWire }>(options.screenshot ? 'observeWithScreenshot' : 'observe', { targetId: this.id, windowId: options.windowId });
       checkAbort(options.signal);
-      this.current = { ...state, sessionId: this.provider.sessionId, targetId: this.id, capturedAt: new Date().toISOString(),
+      this.current = { ...state, ...(screenshot ? { screenshot: decodeScreenshot(screenshot) } : {}), sessionId: this.provider.sessionId, targetId: this.id, capturedAt: new Date().toISOString(),
         text: state.elements.map(element => `[${element.id}] ${element.role} ${JSON.stringify(element.name)}${element.value === undefined ? '' : ' value=' + JSON.stringify(element.value)}`).join('\n') };
       return structuredClone(this.current);
     });
   }
   async getAXState(options: ActionOptions = {}): Promise<string> { return (await this.observe(options)).text; }
+  listWindows(options: ActionOptions = {}): Promise<NativeWindow[]> {
+    return this.queue.run(async () => {
+      await this.authorize('listWindows', 'read', options.signal);
+      const result = await this.provider.helper.request<{ windows: NativeWindow[] }>('listWindows', { targetId: this.id });
+      checkAbort(options.signal); return result.windows;
+    });
+  }
+  captureScreenshot(options: NativeStateOptions = {}): Promise<NativeScreenshot> {
+    return this.queue.run(async () => {
+      await this.authorize('screenshot', 'read', options.signal);
+      const result = await this.provider.helper.request<ScreenshotWire>('screenshot', { targetId: this.id, windowId: options.windowId });
+      checkAbort(options.signal); return decodeScreenshot(result);
+    });
+  }
+  async getScreenshot(options: NativeStateOptions = {}): Promise<Uint8Array> { return (await this.captureScreenshot(options)).bytes; }
+  async getAXStateAndScreenshot(options: NativeStateOptions = {}): Promise<{ state: string; screenshot: Uint8Array }> {
+    const result = await this.observe({ ...options, screenshot: true });
+    assert(result.screenshot, 'PROVIDER_DISCONNECTED', 'Native screenshot missing from combined response.');
+    return { state: result.text, screenshot: result.screenshot.bytes };
+  }
   ref(elementId: number): ElementRef {
     assert(this.current && this.current.elements.some(element => element.id === elementId), 'STALE_OBSERVATION', 'Observe before choosing an element.');
     return { targetId: this.id, snapshotId: this.current.snapshotId, elementId };
