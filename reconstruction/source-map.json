@@ -3919,7 +3919,7 @@
         "nJ"
       ],
       "status": "reconstructed-browser-auth-qr-monitor",
-      "validation": "84 original geometry combinations, 15 original monitor traces, initial synchronous publication and real abortable cadence wait. Preserves 8-cycle binding checks, 3-absence completion, unknown reset, page-change behavior, screenshot options and background error handling. QR decoder remains required dependency; no real QR recognition claim."
+      "validation": "84 original geometry combinations, 15 original monitor traces, initial synchronous publication and real abortable cadence wait. Preserves 8-cycle binding checks, 3-absence completion, unknown reset, page-change behavior, screenshot options and background error handling. QR decoder remains required dependency; no real QR recognition claim. Real WASM integration now verified using installed original UD factory (not reconstructed) and hash-pinned installed WASM: synthetic PNG and actual Chromium JPEG screenshot recognition, blank-page null and three-absence monitor completion. Runtime asset packaging and UD TS reconstruction still pending."
     },
     "packages/browser/src/service/browser_auth/qr_decode.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3933,14 +3933,14 @@
         "K_"
       ],
       "status": "reconstructed-browser-auth-qr-decode-orchestration",
-      "validation": "18 original scenario comparisons cover cached initialization failure, asset fallback, byte view ownership, QR cardinality/null/undefined semantics, BarcodeDetector points/box and bitmap finally cleanup. Concurrent initialization and composed screenshot-to-decoder tests pass. Reader/BarcodeDetector are fixtures; underlying ZXing binding and production WASM assets remain explicit dependencies."
+      "validation": "18 original scenario comparisons cover cached initialization failure, asset fallback, byte view ownership, QR cardinality/null/undefined semantics, BarcodeDetector points/box and bitmap finally cleanup. Concurrent initialization and composed screenshot-to-decoder tests pass. Reader/BarcodeDetector are fixtures; underlying ZXing binding and production WASM assets remain explicit dependencies. Real WASM integration now verified using installed original UD factory (not reconstructed) and hash-pinned installed WASM: synthetic PNG and actual Chromium JPEG screenshot recognition, blank-page null and three-absence monitor completion. Runtime asset packaging and UD TS reconstruction still pending."
     },
     "packages/browser/src/service/browser_auth/qr.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
       "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
       "symbols": [],
       "status": "reconstructed-browser-auth-qr-assembly",
-      "validation": "Composes restored decoder and monitor with one reader initialization per flow. Synthetic screenshot bytes reach supplied reader; no actual QR recognition claim. Restored qD/jD-equivalent factory binding now composes actual reader wrapper; synthetic module heap integration verified."
+      "validation": "Composes restored decoder and monitor with one reader initialization per flow. Synthetic screenshot bytes reach supplied reader; no actual QR recognition claim. Restored qD/jD-equivalent factory binding now composes actual reader wrapper; synthetic module heap integration verified. Real WASM integration now verified using installed original UD factory (not reconstructed) and hash-pinned installed WASM: synthetic PNG and actual Chromium JPEG screenshot recognition, blank-page null and three-absence monitor completion. Runtime asset packaging and UD TS reconstruction still pending."
     },
     "packages/browser/src/service/browser_auth/zxing_reader.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3970,7 +3970,7 @@
         "LD"
       ],
       "status": "reconstructed-zxing-reader-wrapper",
-      "validation": "Original option/alias/enum and grayscale comparisons, 28 input/failure traces, lazy override/promise identity checks and assembled screenshot-to-heap-to-result test. Preserves allocation/free and original result projection. Underlying Emscripten UD factory remains required; no real WASM barcode recognition claim."
+      "validation": "Original option/alias/enum and grayscale comparisons, 28 input/failure traces, lazy override/promise identity checks and assembled screenshot-to-heap-to-result test. Preserves allocation/free and original result projection. Underlying Emscripten UD factory remains required; no real WASM barcode recognition claim. Real WASM integration now verified using installed original UD factory (not reconstructed) and hash-pinned installed WASM: synthetic PNG and actual Chromium JPEG screenshot recognition, blank-page null and three-absence monitor completion. Runtime asset packaging and UD TS reconstruction still pending."
     }
   },
   "embeddedPackages": {
