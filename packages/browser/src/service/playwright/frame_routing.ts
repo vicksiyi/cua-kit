@@ -30,7 +30,13 @@ export interface FrameMetadata {
   size: { height: number; width: number };
 }
 export interface FrameTree {
-  frame: { id?: string; url?: string; name?: string };
+  frame: {
+    id?: string;
+    url?: string;
+    name?: string;
+    loaderId?: string;
+    domainAndRegistry?: string;
+  };
   childFrames?: FrameTree[];
 }
 export interface FrameRoutingCdp extends ExecutionCdp {

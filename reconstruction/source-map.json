@@ -2764,7 +2764,18 @@
         "Bne"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Original-class comparisons across 18 routing branches, exact generated expressions and remote cleanup; real Chromium sandbox frame discovery/metadata with explicit same-target fallback. Full attached OOPIF integration, resolveSelectorTarget orchestration and hF readable reconstruction remain pending."
+      "validation": "Original-class comparisons across 18 routing branches, exact generated expressions and remote cleanup; real Chromium sandbox frame discovery/metadata with explicit same-target fallback. resolveSelectorTarget is assembled in selector_execution.ts. Full attached OOPIF integration and hF readable reconstruction remain pending."
+    },
+    "packages/browser/src/service/playwright/selector_execution.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-selector-execution",
+      "symbols": [
+        "ig",
+        "tS"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original class comparisons: six orchestration scenarios, ten execution/error traces, real Chromium single/all/node/frame identity queries across root/missing/same-origin iframe, page evaluation in main/isolated worlds and document-only restriction. Readable callback stack names/positions differ intentionally. Full locator action service, attached OOPIF integration and readable hF remain pending."
     }
   },
   "embeddedPackages": {

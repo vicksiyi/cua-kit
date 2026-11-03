@@ -2764,6 +2764,11 @@
       "end": 1213576,
       "kind": "TemplateLiteral"
     },
+    "tS": {
+      "start": 1213577,
+      "end": 1213630,
+      "kind": "FunctionDeclaration"
+    },
     "SF": {
       "start": 1213630,
       "end": 1213797,
