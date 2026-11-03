@@ -160,7 +160,7 @@ export function elementRoot(this: any) {
 export function hostRoot(this: any) {
   return this.host.getRootNode();
 }
-async function assertOpenRoots(
+export async function assertOpenRoots(
   cdp: Cdp,
   target: CdpTarget,
   nodeId: number,

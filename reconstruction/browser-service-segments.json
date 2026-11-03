@@ -2289,6 +2289,11 @@
       "end": 955079,
       "kind": "FunctionDeclaration"
     },
+    "$v": {
+      "start": 955079,
+      "end": 956522,
+      "kind": "FunctionDeclaration"
+    },
     "Are": {
       "start": 956522,
       "end": 956892,
@@ -2297,6 +2302,11 @@
     "Pre": {
       "start": 956892,
       "end": 957323,
+      "kind": "FunctionDeclaration"
+    },
+    "Rre": {
+      "start": 957323,
+      "end": 957651,
       "kind": "FunctionDeclaration"
     },
     "Ire": {

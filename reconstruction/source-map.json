@@ -2476,6 +2476,18 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential validation and CDP traces: finite/fractional coordinate bounds, node versus coordinate target, direction aliases, page multipliers and 100px floor; explicit CDP fixtures over reconstructed positioning. Full action dispatcher remains pending."
+    },
+    "packages/browser/src/service/accessibility/click_action.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-click-assembly",
+      "symbols": [
+        "$v",
+        "Rre",
+        "Ire"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Full click helper assembly; original $v compared over restored dependencies in real isolated Chromium for normal/coordinate/right/modifier/fallback/protected/aborted paths. Option dispatch uses explicit Playwright fixture. Real multi-frame context and full dispatcher still pending."
     }
   },
   "embeddedPackages": {
