@@ -2845,6 +2845,16 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Twelve physical/synthetic routing scenarios; six real Chromium synthetic event/focus/cancellation/document/hit/shadow cases; assembled document-scoped clickLocator triggers page handler. Physical backend remains explicit, installed hF required for browser tests. Full service production assembly and native reconstruction remain pending."
+    },
+    "packages/browser/src/service/playwright/service.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-service-assembly",
+      "symbols": [
+        "ig"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Method surface audit covers all 52 original instance methods and both static members; inherited readable modules are assembled in PlaywrightService. Exact readonly/identity source and option comparisons plus real Chromium selectors pass. Surface coverage does not prove full behavioral parity; hF, readonly sandbox service and production/native integration remain pending."
     }
   },
   "embeddedPackages": {

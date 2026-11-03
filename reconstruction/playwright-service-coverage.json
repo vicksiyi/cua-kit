@@ -1,0 +1,219 @@
+{
+  "originalClass": "ig",
+  "reconstructedClass": "PlaywrightService",
+  "scope": "Method surface audit only; does not prove complete behavior, helper reconstruction or production wiring.",
+  "methods": [
+    {
+      "name": "forDocument",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "getReadonlyExecutionContext",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "invalidateReadonlyExecutionContext",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "resolvePlaywrightSelector",
+      "owner": "PlaywrightLocatorBinding"
+    },
+    {
+      "name": "resolvePlaywrightSelectorNode",
+      "owner": "PlaywrightLocatorBinding"
+    },
+    {
+      "name": "withBoundPlaywrightSelector",
+      "owner": "PlaywrightLocatorBinding"
+    },
+    {
+      "name": "evaluateOnPlaywrightNode",
+      "owner": "PlaywrightNodeExecution"
+    },
+    {
+      "name": "prepareReadonlyLocatorAll",
+      "owner": "PlaywrightService"
+    },
+    {
+      "name": "evaluateOnPlaywrightSelector",
+      "owner": "PlaywrightLocatorEvaluation"
+    },
+    {
+      "name": "evaluateOnPlaywrightSelectorWithTarget",
+      "owner": "PlaywrightLocatorEvaluation"
+    },
+    {
+      "name": "evaluateOnPlaywrightSelectorAll",
+      "owner": "PlaywrightLocatorEvaluation"
+    },
+    {
+      "name": "evaluateOnPlaywrightPage",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "selectorsResolveToDistinctElements",
+      "owner": "PlaywrightService"
+    },
+    {
+      "name": "clickLocator",
+      "owner": "PlaywrightClick"
+    },
+    {
+      "name": "focusLocator",
+      "owner": "PlaywrightInputPreparation"
+    },
+    {
+      "name": "focusNode",
+      "owner": "PlaywrightFocus"
+    },
+    {
+      "name": "prepareLocatorFill",
+      "owner": "PlaywrightInputPreparation"
+    },
+    {
+      "name": "prepareSequentialInput",
+      "owner": "PlaywrightInputPreparation"
+    },
+    {
+      "name": "readCheckedState",
+      "owner": "PlaywrightInputPreparation"
+    },
+    {
+      "name": "countLocator",
+      "owner": "PlaywrightInputPreparation"
+    },
+    {
+      "name": "readElementState",
+      "owner": "PlaywrightInputPreparation"
+    },
+    {
+      "name": "performPointerAction",
+      "owner": "PlaywrightPointerActions"
+    },
+    {
+      "name": "resolvePointerActionTarget",
+      "owner": "PlaywrightPointerActions"
+    },
+    {
+      "name": "currentTopLevelPointForAction",
+      "owner": "PlaywrightPointerFrames"
+    },
+    {
+      "name": "currentPointInParentFrame",
+      "owner": "PlaywrightPointerFrames"
+    },
+    {
+      "name": "obstructingFrameHitTarget",
+      "owner": "PlaywrightPointerFrames"
+    },
+    {
+      "name": "obstructingFrameBoundaryHitTarget",
+      "owner": "PlaywrightPointerFrames"
+    },
+    {
+      "name": "describeBackendNodeForHitTarget",
+      "owner": "PlaywrightPointerFrames"
+    },
+    {
+      "name": "nodeForResolvedSelectorTarget",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "frameIdForElementObject",
+      "owner": "PlaywrightNodeExecution"
+    },
+    {
+      "name": "withPlaywrightNode",
+      "owner": "PlaywrightNodeExecution"
+    },
+    {
+      "name": "releaseRuntimeObjects",
+      "owner": "PlaywrightNodeExecution"
+    },
+    {
+      "name": "evaluateSingleSelectorWithTarget",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "frameIdentityForResolvedSelectorTarget",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "evaluateSingleSelectorInResolvedTarget",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "evaluateSelectorAllInTarget",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "resolveSelectorTarget",
+      "owner": "PlaywrightSelectorExecution"
+    },
+    {
+      "name": "frameRouteForFirstOopif",
+      "owner": "PlaywrightFrameRouting"
+    },
+    {
+      "name": "frameIdForFrameMatch",
+      "owner": "PlaywrightFrameRouting"
+    },
+    {
+      "name": "targetForFrame",
+      "owner": "PlaywrightFrameRouting"
+    },
+    {
+      "name": "evaluateWithPlaywrightInjected",
+      "owner": "PlaywrightInjection"
+    },
+    {
+      "name": "evaluateWithPlaywrightInjectedInTarget",
+      "owner": "PlaywrightInjection"
+    },
+    {
+      "name": "callRuntimeEvaluateWithPlaywrightInjectedInTarget",
+      "owner": "PlaywrightInjection"
+    },
+    {
+      "name": "ensurePlaywrightInjected",
+      "owner": "PlaywrightInjection"
+    },
+    {
+      "name": "ensurePlaywrightInjectedInTarget",
+      "owner": "PlaywrightInjection"
+    },
+    {
+      "name": "callRuntimeEvaluateInExecutionTarget",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "playwrightFrameWorld",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "clearReadonlyExecutionContexts",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "deletePlaywrightFrameWorld",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "clearPlaywrightFrameWorldsForTarget",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "clearPlaywrightStateForTarget",
+      "owner": "PlaywrightExecutionState"
+    },
+    {
+      "name": "callCdpTarget",
+      "owner": "PlaywrightExecutionState"
+    }
+  ],
+  "staticMembers": [
+    "selectorScopeFunctions",
+    "injectedConstant"
+  ]
+}
