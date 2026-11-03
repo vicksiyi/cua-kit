@@ -808,14 +808,14 @@ export function createBrowserAuthHandoff(
         elicitationResult: any;
       try {
         if (request.otpHandle != null) {
-          let ee: any = false;
+          let alwaysAllowed: any = false;
           try {
-            ee = await context.preferences.isEmailOtpAlwaysAllowed();
+            alwaysAllowed = await context.preferences.isEmailOtpAlwaysAllowed();
           } catch {}
-          let fe: any;
+          let otpApproval: any;
           try {
-            if (ee) {
-              let Fe: any = await backendFetch(
+            if (alwaysAllowed) {
+              let redemptionResponse: any = await backendFetch(
                   context.runtime,
                   `${backendApiUrl(context.runtime)}/flora/browser/redeem-otp`,
                   {
@@ -829,25 +829,31 @@ export function createBrowserAuthHandoff(
                     }),
                   },
                 ),
-                Ye: any = Fe.ok || Fe.status === 403 ? await Fe.json() : null;
-              Fe.status === 403 &&
-              Ye != null &&
-              typeof Ye == "object" &&
-              "detail" in Ye &&
-              Ye.detail === "email_otp_approval_required"
-                ? (ee = false)
-                : Fe.ok &&
-                  Ye != null &&
-                  typeof Ye == "object" &&
-                  "status" in Ye &&
-                  typeof Ye.status == "string" &&
-                  (fe = {
+                redemptionBody: any =
+                  redemptionResponse.ok || redemptionResponse.status === 403
+                    ? await redemptionResponse.json()
+                    : null;
+              redemptionResponse.status === 403 &&
+              redemptionBody != null &&
+              typeof redemptionBody == "object" &&
+              "detail" in redemptionBody &&
+              redemptionBody.detail === "email_otp_approval_required"
+                ? (alwaysAllowed = false)
+                : redemptionResponse.ok &&
+                  redemptionBody != null &&
+                  typeof redemptionBody == "object" &&
+                  "status" in redemptionBody &&
+                  typeof redemptionBody.status == "string" &&
+                  (otpApproval = {
                     action: "accept",
-                    content: { approved: true, email_otp_status: Ye.status },
+                    content: {
+                      approved: true,
+                      email_otp_status: redemptionBody.status,
+                    },
                   });
             }
-            ee ||
-              (fe = await elicit({
+            alwaysAllowed ||
+              (otpApproval = await elicit({
                 message: `Allow ChatGPT to fill this verification code? A verification code from your connected email will be sent privately to ${origin}. ChatGPT cannot see the code. You can also enter it yourself.`,
                 requestedSchema: {
                   type: "object",
@@ -870,31 +876,35 @@ export function createBrowserAuthHandoff(
               }));
           } catch {}
           if (challenge.hasSubmission) {
-            let Fe: any = await submissionTask;
-            return (challenge.close(), { status: Fe });
+            let completedStatus: any = await submissionTask;
+            return (challenge.close(), { status: completedStatus });
           }
-          let rt: any =
-            fe?.content != null &&
-            typeof fe.content == "object" &&
-            !Array.isArray(fe.content)
-              ? fe.content
+          let approvalContent: any =
+            otpApproval?.content != null &&
+            typeof otpApproval.content == "object" &&
+            !Array.isArray(otpApproval.content)
+              ? otpApproval.content
               : undefined;
           if (
-            fe?.action !== "decline" &&
+            otpApproval?.action !== "decline" &&
             !(
-              fe?.action === "accept" &&
-              rt?.approved === true &&
-              rt.email_otp_status === "unavailable" &&
-              rt.retire_challenge === undefined
+              otpApproval?.action === "accept" &&
+              approvalContent?.approved === true &&
+              approvalContent.email_otp_status === "unavailable" &&
+              approvalContent.retire_challenge === undefined
             )
           ) {
-            let Fe: any = await completeChallenge(
+            let completedStatus: any = await completeChallenge(
               challenge,
-              fe?.action === "cancel" ? "cancelled" : "unavailable",
+              otpApproval?.action === "cancel" ? "cancelled" : "unavailable",
             );
-            return (await submissionTask, challenge.close(), { status: Fe });
+            return (
+              await submissionTask,
+              challenge.close(),
+              { status: completedStatus }
+            );
           }
-          if (fe?.action === "accept")
+          if (otpApproval?.action === "accept")
             throw new Error("Email OTP autofill failed.");
         }
         elicitationResult = await elicit({

@@ -660,3 +660,9 @@ Validation: 25 original command outcome/trace comparisons plus assembled QR flow
 Refined handoff submission-task identifiers for delivery, lease, ordinary/private protection, completion, rejection and attempt diagnostics. Dependencies now distinguish callables, capability identity, checkpoint constructors, telemetry and boolean observation-predecessor validation.
 
 Validation: eight additional original protected-mode traces cover private/ordinary/native delivery, rejection race, lease-start failure, failed ordinary result, session mismatch and predecessor failure. Explicit assertions verify ordinary cleanup/restoration, private rejection result and no private interaction restoration after session mismatch. A fixture initially declined protected-mode prompts; corrected its dispatch and added outcome assertions before acceptance. Type checks and all 512 tests pass. Lease/gate services are fixtures in these main-command tests; email OTP and full production credential/provider integration remain outstanding.
+
+### 16.165 Email OTP redemption and approval lifecycle
+
+Refined email OTP locals in BrowserAuthHandoff to describe persistent permission, redemption response/body, approval content and completion status while retaining the original branch and cleanup order.
+
+Validation: 12 original-versus-restored traces cover automatic submission, approval-required fallback, unavailable and broker-unconfirmed submitted status, prompted submission, cancellation, decline, retirement, malformed approval content, preference failure, network failure and HTTP failure. Assertions confirm private email interaction restoration, fallback prompt count, exact autofill error and challenge closure. Type checks and all 513 tests pass. Backend, broker and permission services are synthetic fixtures; real email connectors, production runtime/provider integration and the broader reconstruction gaps remain incomplete.

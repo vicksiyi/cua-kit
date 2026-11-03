@@ -63,6 +63,7 @@ async function run(source: boolean, mode: string) {
     "predecessor-error",
   ];
   const protectedMode = protectedModes.includes(mode);
+  const emailMode = mode.startsWith("email-");
   const fields: any[] = [
     {
       id: "user",
@@ -102,6 +103,22 @@ async function run(source: boolean, mode: string) {
     request.qr_code = true;
   }
   if (mode === "otp-invalid") request.otpHandle = "synthetic-handle";
+  if (emailMode) {
+    request.otpHandle = "synthetic-handle";
+    fields.splice(0, fields.length, {
+      id: "code",
+      selector: "#code",
+      type: "text",
+      required: true,
+      labelMetadata: {
+        accessible_name: "Code",
+        autocomplete: "one-time-code",
+        input_type: "text",
+        input_name: "code",
+      },
+    });
+  }
+
   if (mode === "options")
     request.options = [
       { id: "option", label: "Login", field_ids: ["user", "pass"] },
@@ -137,6 +154,32 @@ async function run(source: boolean, mode: string) {
       requestMeta: {},
       async createElicitation(input: any) {
         trace.push(["elicit", input]);
+        if (
+          emailMode &&
+          input.meta.codex_approval_kind === "browser_email_otp"
+        ) {
+          if (mode === "email-prompt-submit") {
+            challenge.hasSubmission = true;
+            submit({ fields: { code: "123456" }, email_otp_delivery: true });
+            return {
+              action: "accept",
+              content: { approved: true, email_otp_status: "submitted" },
+            };
+          }
+          if (mode === "email-cancel") return { action: "cancel" };
+          if (mode === "email-retire")
+            return {
+              action: "accept",
+              content: {
+                approved: true,
+                email_otp_status: "unavailable",
+                retire_challenge: true,
+              },
+            };
+          if (mode === "email-array") return { action: "accept", content: [] };
+          return { action: "decline" };
+        }
+
         if (mode === "elicit-error") {
           throw new Error("elicitation failure");
         }
@@ -399,6 +442,59 @@ async function run(source: boolean, mode: string) {
     };
     if (mode === "session-change") deps.metadataSession = () => "other";
   }
+
+  if (emailMode) {
+    context.preferences = {
+      async isEmailOtpAlwaysAllowed() {
+        trace.push("otp-preference");
+        if (mode === "email-pref-error") throw new Error("preferences");
+        return (
+          mode.startsWith("email-auto") ||
+          mode === "email-network-error" ||
+          mode === "email-http-error"
+        );
+      },
+    };
+    context.credentialObservationGate = {
+      async protect(tab: number) {
+        trace.push(["email-protect", tab]);
+        return "email-token";
+      },
+      allowPrivateInteraction(...args: any[]) {
+        trace.push(["email-allow", ...args]);
+      },
+    };
+    context.cdp.protectBrowserAuthCredentialDiagnostics = (tab: number) =>
+      trace.push(["email-diagnostics", tab]);
+    deps.backendFetch = async (_runtime: any, url: string, options: any) => {
+      trace.push(["redeem", url, options]);
+      if (mode === "email-network-error") throw new Error("network");
+      if (mode === "email-auto-submit") {
+        challenge.hasSubmission = true;
+        submit({ fields: { code: "123456" }, email_otp_delivery: true });
+      }
+      return {
+        ok: mode !== "email-auto-required" && mode !== "email-http-error",
+        status:
+          mode === "email-auto-required"
+            ? 403
+            : mode === "email-http-error"
+              ? 500
+              : 200,
+        async json() {
+          trace.push("redeem-json");
+          return mode === "email-auto-required"
+            ? { detail: "email_otp_approval_required" }
+            : {
+                status:
+                  mode === "email-auto-unavailable"
+                    ? "unavailable"
+                    : "submitted",
+              };
+        },
+      };
+    };
+  }
   const external: any = {
     F: defineCommand,
     mr: TabBrowserAuthCommands,
@@ -642,4 +738,42 @@ test("auth handoff matches original protected credential leases and cleanup", as
       (entry: any) => Array.isArray(entry) && entry[0] === "allow-private",
     ),
   );
+});
+
+test("email OTP handoff matches original redemption, approval fallback and challenge cleanup", async () => {
+  for (const mode of [
+    "email-auto-submit",
+    "email-auto-required",
+    "email-auto-unavailable",
+    "email-auto-status",
+    "email-prompt-submit",
+    "email-cancel",
+    "email-decline",
+    "email-retire",
+    "email-array",
+    "email-pref-error",
+    "email-network-error",
+    "email-http-error",
+  ])
+    assert.deepEqual(await run(false, mode), await run(true, mode), mode);
+  const auto = await run(false, "email-auto-submit");
+  assert.equal(auto.result.status, "submitted");
+  assert.ok(auto.trace.some((entry: any) => entry[0] === "email-allow"));
+  assert.ok(!auto.trace.some((entry: any) => entry[0] === "elicit"));
+  const fallback = await run(false, "email-auto-required");
+  assert.equal(fallback.result.status, "declined");
+  assert.equal(
+    fallback.trace.filter((entry: any) => entry[0] === "elicit").length,
+    2,
+  );
+  assert.equal((await run(false, "email-cancel")).result.status, "cancelled");
+  assert.equal(
+    (await run(false, "email-auto-unavailable")).result.error,
+    "Email OTP autofill failed.",
+  );
+  assert.equal(
+    (await run(false, "email-auto-status")).result.status,
+    "unavailable",
+  );
+  assert.ok((await run(false, "email-prompt-submit")).trace.includes("close"));
 });
