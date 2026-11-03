@@ -4037,6 +4037,25 @@
       ],
       "status": "reconstructed-browser-auth-handoff-assembly",
       "validation": "Connects restored binding/inspection/checkpoint/review/broker/submission/screenshot/lease/observation modules. Assembled QR decline test exercises actual binding, capture, prompt and completion with fixture CDP/decoder. Host review, QR factory/assets and telemetry remain supplied. Reviewed SB mapping uses credentialObservationState.resume."
+    },
+    "packages/browser/src/service/context/browser_context.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ob"
+      ],
+      "status": "reconstructed-browser-context-lifecycle",
+      "validation": "27 original-versus-restored constructor/event/delegate/lifecycle traces across IAB, extension and CDP cover policy callback, AX observation selection, locale caching, turn detach, transport closure, repeated disposal and cleanup failures. Constructor dependencies are explicit."
+    },
+    "packages/browser/src/service/context/browser_context_assembly.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ob",
+        "Je"
+      ],
+      "status": "assembled-restored-browser-context",
+      "validation": "Binds restored CDP, preferences, input, Playwright, security, AX, clipboard, document responses, downloads, site instructions, assets and WebMCP catalog. Adapts explicit Playwright injected-source constructor argument/order. Integration test instantiates actual restored services with synthetic transport; verifies dependency identities, metadata/delegates, global credential observation gating and idempotent disposal. Full injected helper, localization, telemetry, host/runtime bootstrap and production native providers remain inputs or incomplete."
     }
   },
   "embeddedPackages": {

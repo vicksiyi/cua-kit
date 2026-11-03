@@ -5864,6 +5864,11 @@
       "end": 1354373,
       "kind": "ClassExpression"
     },
+    "Je": {
+      "start": 1373820,
+      "end": 1373942,
+      "kind": "FunctionDeclaration"
+    },
     "q3": {
       "start": 1374026,
       "end": 1376734,
