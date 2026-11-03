@@ -2872,6 +2872,40 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Complete original generated page-source equality after substituting the readable credential predicate; import-pattern parity and nineteen independent Chromium isolated-world scenarios covering DOM/CSS/credentials/mutation/global/serialization behavior. No hF needed. Host readonly runtime, command authority integration and broader production/native reconstruction remain pending."
+    },
+    "packages/browser/src/service/readonly/runtime.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-readonly-host-runtime",
+      "symbols": [
+        "Hne",
+        "Wne",
+        "sS",
+        "aS",
+        "$ne",
+        "PF",
+        "RF",
+        "ag",
+        "CF",
+        "$n",
+        "IF",
+        "Gne",
+        "BF",
+        "DF",
+        "zne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Twelve original runtime trace scenarios including recovery/cleanup; runtime primitive conversion; real Chromium page/node/collection/error execution and binding cleanup. Playwright helper remains required for selector/collection paths."
+    },
+    "packages/browser/src/service/commands/readonly_evaluate.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-readonly-command",
+      "symbols": [
+        "AF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Authorization precedes script/selector validation; success and script exception both release remote result objects. Production registry/context integration remains pending."
     }
   },
   "embeddedPackages": {
