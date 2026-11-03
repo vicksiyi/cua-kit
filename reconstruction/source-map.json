@@ -2833,6 +2833,18 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Six original orchestration scenarios and ten page stability/state scenarios; real Chromium same-origin iframe pointer preparation and CDP click with matching coordinates and observed click handler. Installed hF remains a browser-test dependency; full action callers and OOPIF/production/native integration remain pending."
+    },
+    "packages/browser/src/service/playwright/click.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-click-locator",
+      "symbols": [
+        "ig",
+        "bF",
+        "yF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Twelve physical/synthetic routing scenarios; six real Chromium synthetic event/focus/cancellation/document/hit/shadow cases; assembled document-scoped clickLocator triggers page handler. Physical backend remains explicit, installed hF required for browser tests. Full service production assembly and native reconstruction remain pending."
     }
   },
   "embeddedPackages": {

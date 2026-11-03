@@ -2659,9 +2659,19 @@
       "end": 1167164,
       "kind": "ObjectExpression"
     },
+    "bF": {
+      "start": 1167169,
+      "end": 1167226,
+      "kind": "FunctionDeclaration"
+    },
     "Zv": {
       "start": 1167226,
       "end": 1167315,
+      "kind": "FunctionDeclaration"
+    },
+    "yF": {
+      "start": 1167319,
+      "end": 1168875,
       "kind": "FunctionDeclaration"
     },
     "rS": {
