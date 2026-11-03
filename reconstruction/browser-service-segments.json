@@ -2279,6 +2279,11 @@
       "end": 951320,
       "kind": "ClassExpression"
     },
+    "Tre": {
+      "start": 951321,
+      "end": 952881,
+      "kind": "FunctionDeclaration"
+    },
     "Hv": {
       "start": 952881,
       "end": 953293,
