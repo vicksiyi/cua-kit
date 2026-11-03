@@ -30,7 +30,11 @@ export interface Observation {
 }
 export interface StateOptions { disableDiffing?: boolean; screenshot?: boolean; signal?: AbortSignal }
 export interface ActionOptions { signal?: AbortSignal }
+export interface SelectTextOptions extends ActionOptions { prefix?: string; suffix?: string }
+export interface DragOptions extends ActionOptions { steps?: number; durationMs?: number }
+export interface PressKeyOptions extends ActionOptions { durationMs?: number }
 export interface ClickOptions extends ActionOptions {
+  key?: string;
   mouseButton?: 'left' | 'right' | 'middle';
   clickCount?: number;
   durationMs?: number;

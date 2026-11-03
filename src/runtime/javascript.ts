@@ -46,6 +46,8 @@ const bootstrap = `(() => {
     setValue: (...args) => invoke(id,'setValue',args),
     pressKey: (...args) => invoke(id,'pressKey',args),
     scroll: (...args) => invoke(id,'scroll',args),
+    drag: (...args) => invoke(id,'drag',args),
+    selectText: (...args) => invoke(id,'selectText',args),
     goto: (...args) => invoke(id,'goto',args),
     close: (...args) => invoke(id,'close',args)
   });
@@ -188,7 +190,9 @@ export class JavascriptSession {
       case 'click': return tab.click(args[0], { ...args[1], ...options });
       case 'typeText': return tab.typeText(args[0], args[1], options);
       case 'setValue': return tab.setValue(args[0], args[1], options);
-      case 'pressKey': return tab.pressKey(args[0], args[1], options);
+      case 'pressKey': return tab.pressKey(args[0], args[1], { ...args[2], ...options });
+      case 'selectText': return tab.selectText(args[0], args[1], { ...args[2], ...options });
+      case 'drag': return tab.drag(args[0], args[1], { ...args[2], ...options });
       case 'scroll': return tab.scroll(args[0], args[1], args[2], options);
       case 'goto': return tab.goto(args[0]);
       case 'close': return tab.close();

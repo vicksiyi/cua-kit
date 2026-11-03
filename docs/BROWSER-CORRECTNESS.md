@@ -27,3 +27,11 @@ AX 读取之前，为每个可访问 frame 创建 CDP isolated world，安装 Mu
 `tests/frames.test.ts` 使用 127.0.0.1 → localhost 的跨站 iframe，再嵌套子 frame；覆盖偏移、边框、1.2 倍缩放的实际点击以及父页面 overlay 拒绝。结合 `tests/browser.test.ts` 的普通 frame 测试，仅证明这些明确场景，不是任意 iframe 兼容性证明。
 
 当前完整测试结果：7 passed、1 skipped（原生 AX 操作 fixture 尚无权限）。
+
+## 高级输入增量
+
+新增 `selectText(element,text,{prefix?,suffix?})`：在 input/textarea 的 value 或 DOM 文本内匹配精确子串；重名必须用前后文消歧，不擅自选择第一个。普通文本通过 Range，表单通过 setSelectionRange；选择后需重新观察或用 null 表示当前焦点输入。尚未实现 selectionType 扩展或闭合 Shadow DOM 文本跨节点选择。
+
+`click` 支持 key 修饰键组合（Alt/Control/Meta/Shift，super 映射本机平台）；`pressKey` 支持 durationMs 和组合键，释放路径尝试清理全部按键。`drag(from,to,{steps?,durationMs?})` 基于新截图坐标，发出 mouse-down、插值 mouse-move、mouse-up。默认 20 步/300ms；取消后释放鼠标，结果不确定。这里只验证 pointer 拖动场景，HTML5 DataTransfer 的拖放协议尚未验收。
+
+`tests/input.test.ts` 在真实 Chromium 验证重复文本消歧与替换、Shift 点击事件、按键保持和加号键、实际 pointer 拖动以及无截图时拒绝拖动。当前全套为 8 passed、1 native fixture skipped。粘贴仍未实现；insertText 不等价于剪贴板 paste，不能靠方法改名满足兼容要求。

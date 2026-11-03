@@ -3,7 +3,7 @@ import type { CDPSession, Page } from 'playwright';
 import { AccessibilityCollector, onElement, renderAX, type ElementBinding } from './accessibility.js';
 import { assert, checkAbort, CuaError } from '../core/errors.js';
 import { SerialQueue } from '../core/serial.js';
-import type { ActionOptions, Authorize, AuditEvent, ClickOptions, ElementRef, Observation, Point, StateOptions } from '../core/types.js';
+import type { ActionOptions, Authorize, AuditEvent, ClickOptions, DragOptions, SelectTextOptions, PressKeyOptions, ElementRef, Observation, Point, StateOptions } from '../core/types.js';
 
 import type { FrameStamp } from './stamp.js';
 
@@ -38,7 +38,7 @@ export class CuaTab {
   }
   get url(): string { return this.page.url(); }
   get capabilities(): readonly string[] {
-    return ['ax', 'screenshot', 'click', 'typeText', 'pressKey', 'scroll', 'setValue', 'navigation'];
+    return ['ax', 'screenshot', 'click', 'typeText', 'pressKey', 'scroll', 'setValue', 'navigation', 'selectText', 'drag'];
   }
   invalidate(): void { this.epoch++; this.snapshot = undefined; this.bindings.clear(); this.stamps = []; }
 
@@ -138,19 +138,40 @@ export class CuaTab {
     }`);
     return binding;
   }
+  private normalizeKey(key: string): string {
+    assert(typeof key === 'string' && key.length > 0, 'INVALID_ARGUMENT', 'key must be a nonempty string.');
+    return key.replace(/^super\+/i, process.platform === 'darwin' ? 'Meta+' : 'Control+').replace(/Return/g, 'Enter');
+  }
+  private async releaseKeys(keys: string[]): Promise<void> {
+    let failed = false;
+    for (const key of keys.reverse()) { try { await this.page.keyboard.up(key); } catch { failed = true; } }
+    if (failed) throw new CuaError('ACTION_OUTCOME_UNKNOWN', 'One or more key releases could not be confirmed.');
+  }
+  private async hold(ms: number, signal?: AbortSignal): Promise<void> {
+    if (!ms) { if (signal?.aborted) throw new CuaError('ACTION_OUTCOME_UNKNOWN', 'Input was cancelled after dispatch; observe before retrying.'); return; }
+    await new Promise<void>((resolve, reject) => {
+      const cancel = () => { clearTimeout(timer); reject(new CuaError('ACTION_OUTCOME_UNKNOWN', 'Input interrupted after dispatch; release attempted, observe before retrying.')); };
+      const timer = setTimeout(() => { signal?.removeEventListener('abort', cancel); resolve(); }, ms);
+      signal?.addEventListener('abort', cancel, { once: true });
+      if (signal?.aborted) cancel();
+    });
+  }
+  private async coordinateCheck(points: Point[]): Promise<void> {
+    assert(this.snapshot?.screenshot, 'STALE_OBSERVATION', 'Coordinate input requires a fresh screenshot.');
+    await this.collector.revisions.verify(this.stamps);
+    const fresh = await this.cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true });
+    assert(Buffer.from(fresh.data, 'base64').equals(Buffer.from(this.snapshot.screenshot.bytes)), 'STALE_OBSERVATION', 'Visible pixels changed since screenshot; observe again.');
+    const metrics = await this.cdp.send('Page.getLayoutMetrics');
+    for (const point of points) assert(Array.isArray(point) && point.length === 2 && point.every(Number.isFinite) && point[0] >= 0 && point[1] >= 0 && point[0] < metrics.cssVisualViewport.clientWidth && point[1] < metrics.cssVisualViewport.clientHeight, 'INVALID_ARGUMENT', 'Point is outside viewport.');
+  }
   click(target: number | ElementRef | Point, options: ClickOptions = {}): Promise<void> {
     return this.run('click', 'write', options, async () => {
       assert(Number.isInteger(options.clickCount ?? 1) && (options.clickCount ?? 1) > 0 && (options.clickCount ?? 1) <= 3, 'INVALID_ARGUMENT', 'clickCount must be 1, 2 or 3.');
       assert(Number.isFinite(options.durationMs ?? 0) && (options.durationMs ?? 0) >= 0 && (options.durationMs ?? 0) <= 30000, 'INVALID_ARGUMENT', 'durationMs must be between 0 and 30000.');
       let cdp = this.cdp, x: number, y: number;
       if (Array.isArray(target)) {
-        assert(this.snapshot?.screenshot, 'STALE_OBSERVATION', 'Coordinate input requires a fresh screenshot.');
-        await this.collector.revisions.verify(this.stamps);
-        const fresh = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true });
-        assert(Buffer.from(fresh.data, 'base64').equals(Buffer.from(this.snapshot.screenshot.bytes)), 'STALE_OBSERVATION', 'Visible pixels changed since screenshot; observe again.');
+        await this.coordinateCheck([target as unknown as Point]);
         [x, y] = target as unknown as Point;
-        const metrics = await cdp.send('Page.getLayoutMetrics');
-        assert(Number.isFinite(x) && Number.isFinite(y) && x >= 0 && y >= 0 && x < metrics.cssVisualViewport.clientWidth && y < metrics.cssVisualViewport.clientHeight, 'INVALID_ARGUMENT', 'Point is outside viewport.');
       } else {
         const binding = await this.resolve(target as number | ElementRef);
         cdp = this.cdp;
@@ -174,23 +195,25 @@ export class CuaTab {
       const button = options.mouseButton ?? 'left';
       assert(['left', 'right', 'middle'].includes(button), 'INVALID_ARGUMENT', 'Unknown mouse button.');
       const buttonMask = button === 'left' ? 1 : button === 'right' ? 2 : 4;
+      const keys = options.key ? this.normalizeKey(options.key).split('+') : [];
+      assert(keys.every(key => ['Alt','Control','Meta','Shift'].includes(key)), 'INVALID_ARGUMENT', 'Click key accepts modifier chords only.');
+      const held: string[] = [];
+      const modifiers = keys.reduce((mask, key) => mask | ({ Alt:1, Control:2, Meta:4, Shift:8 }[key] ?? 0), 0);
       try {
-        await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+        for (const key of keys) { held.push(key); await this.page.keyboard.down(key); }
+        await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, modifiers });
         for (let clickCount = 1; clickCount <= (options.clickCount ?? 1); clickCount++) {
           checkAbort(options.signal);
           try {
-            await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button, buttons: buttonMask, clickCount });
-            if (options.durationMs) await new Promise<void>((resolve, reject) => {
-              const cancel = () => { clearTimeout(timer); reject(new CuaError('ACTION_OUTCOME_UNKNOWN', 'Click interrupted after mouse-down; release sent, observe before retrying.')); };
-              const timer = setTimeout(() => { options.signal?.removeEventListener('abort', cancel); resolve(); }, options.durationMs);
-              options.signal?.addEventListener('abort', cancel, { once: true });
-              if (options.signal?.aborted) cancel();
-            });
+            await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button, buttons: buttonMask, clickCount, modifiers });
+            await this.hold(options.durationMs ?? 0, options.signal);
           } finally {
-            await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button, buttons: 0, clickCount });
+            await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button, buttons: 0, clickCount, modifiers });
           }
         }
-      } finally { this.invalidate(); }
+      } finally {
+        try { await this.releaseKeys(held); } finally { this.invalidate(); }
+      }
     });
   }
   typeText(target: number | ElementRef | null, text: string, options: ActionOptions = {}): Promise<void> {
@@ -217,12 +240,76 @@ export class CuaTab {
       } finally { this.invalidate(); }
     });
   }
-  pressKey(target: number | ElementRef | null, key: string, options: ActionOptions = {}): Promise<void> {
+  pressKey(target: number | ElementRef | null, key: string, options: PressKeyOptions = {}): Promise<void> {
     return this.run('pressKey', 'write', options, async () => {
-      await this.focus(target);
-      checkAbort(options.signal);
-      const normalized = key.replace(/^super\+/i, process.platform === 'darwin' ? 'Meta+' : 'Control+').replace(/Return/g, 'Enter');
-      try { await this.page.keyboard.press(normalized); } finally { this.invalidate(); }
+      const ms = options.durationMs ?? 0;
+      assert(Number.isSafeInteger(ms) && ms >= 0 && ms <= 30000, 'INVALID_ARGUMENT', 'durationMs must be 0..30000 integer milliseconds.');
+      const normalized = this.normalizeKey(key);
+      await this.focus(target); checkAbort(options.signal);
+      const keys: string[] = [], held: string[] = [];
+      let remainder = normalized, match: RegExpMatchArray | null;
+      while ((match = remainder.match(/^(Alt|Control|Meta|Shift)\+/))) { keys.push(match[1]!); remainder = remainder.slice(match[0].length); }
+      assert(remainder.length > 0, 'INVALID_ARGUMENT', 'Key chord needs a final key.'); keys.push(remainder);
+      try {
+        for (const part of keys) { held.push(part); await this.page.keyboard.down(part); }
+        await this.hold(ms, options.signal);
+      } finally {
+        try { await this.releaseKeys(held); } finally { this.invalidate(); }
+      }
+    });
+  }
+  selectText(target: number | ElementRef, text: string, options: SelectTextOptions = {}): Promise<void> {
+    return this.run('selectText', 'write', options, async () => {
+      assert(typeof text === 'string' && text.length > 0, 'INVALID_ARGUMENT', 'Text selection requires a nonempty exact string.');
+      const binding = await this.resolve(target); checkAbort(options.signal);
+      try {
+        await onElement(binding, `function (text, prefix, suffix) {
+          const field = this instanceof HTMLInputElement || this instanceof HTMLTextAreaElement;
+          const content = field ? this.value : this.textContent;
+          const matches = [];
+          for (let from = 0; from <= content.length - text.length;) {
+            const index = content.indexOf(text, from); if (index < 0) break;
+            if ((!prefix || content.slice(0,index).endsWith(prefix)) && (!suffix || content.slice(index+text.length).startsWith(suffix))) matches.push(index);
+            from = index + 1;
+          }
+          if (!matches.length) throw new Error('Selection text not found');
+          if (matches.length > 1) throw new Error('Selection is ambiguous; provide prefix or suffix');
+          const start = matches[0], end = start + text.length;
+          if (field) { this.focus(); this.setSelectionRange(start,end); return; }
+          const walker = document.createTreeWalker(this, NodeFilter.SHOW_TEXT);
+          let node, offset = 0, first, last;
+          while ((node = walker.nextNode())) {
+            const next = offset + node.textContent.length;
+            if (!first && start >= offset && start < next) first = [node,start-offset];
+            if (end > offset && end <= next) { last = [node,end-offset]; break; }
+            offset = next;
+          }
+          if (!first || !last) throw new Error('Cannot resolve text range');
+          const range = document.createRange(); range.setStart(...first); range.setEnd(...last);
+          const selection = this.ownerDocument.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+        }`, [text, options.prefix ?? '', options.suffix ?? '']);
+      } finally { this.invalidate(); }
+    });
+  }
+  drag(from: Point, to: Point, options: DragOptions = {}): Promise<void> {
+    return this.run('drag', 'write', options, async () => {
+      const steps = options.steps ?? 20, duration = options.durationMs ?? 300;
+      assert(Number.isSafeInteger(steps) && steps >= 1 && steps <= 200 && Number.isSafeInteger(duration) && duration >= 0 && duration <= 30000, 'INVALID_ARGUMENT', 'Drag steps must be 1..200 and durationMs 0..30000.');
+      await this.coordinateCheck([from, to]); checkAbort(options.signal);
+      let x = from[0], y = from[1], pressed = false;
+      try {
+        await this.cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+        pressed = true;
+        await this.cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button:'left', buttons:1, clickCount:1 });
+        for (let step = 1; step <= steps; step++) {
+          await this.hold(duration / steps, options.signal);
+          x = from[0] + (to[0]-from[0])*step/steps; y = from[1] + (to[1]-from[1])*step/steps;
+          await this.cdp.send('Input.dispatchMouseEvent', { type:'mouseMoved', x, y, button:'left', buttons:1 });
+        }
+      } finally {
+        try { if (pressed) await this.cdp.send('Input.dispatchMouseEvent', { type:'mouseReleased', x, y, button:'left', buttons:0, clickCount:1 }); }
+        finally { this.invalidate(); }
+      }
     });
   }
   scroll(target: number | ElementRef, direction: 'up' | 'down' | 'left' | 'right', pages = 1, options: ActionOptions = {}): Promise<void> {
