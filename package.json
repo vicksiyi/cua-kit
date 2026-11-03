@@ -1,0 +1,35 @@
+{
+  "name": "@vicksiyi/cua-kit",
+  "version": "0.1.0-dev.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./agent/contracts": "./dist/agent/contracts.js",
+    "./agent/loop": "./dist/agent/loop.js",
+    "./agent/mcp-client": "./dist/agent/mcp-client.js"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && tsx --test tests/*.test.ts",
+    "demo": "npm run build && node dist/agent/demo.js",
+    "mcp": "node dist/mcp/stdio.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "acorn": "8.19.0",
+    "playwright": "1.64.1",
+    "quickjs-emscripten": "0.32.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}
