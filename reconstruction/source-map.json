@@ -2511,6 +2511,19 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Exact embedded expression match and original AST differential target/context traversal, retained initial identity, frame cycle detection, exceptions and remote-object release. Explicit CDP fixtures; full clipboard operation/page protocol remains pending."
+    },
+    "packages/browser/src/service/clipboard/page_execution.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-clipboard-page-execution",
+      "symbols": [
+        "yl",
+        "U5",
+        "no",
+        "Ms"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential expression/payload/result/error protocol and credential policy; isolated JS execution validates serialized async wrapper, with structured-clone transport simulation. Clipboard page operation Cp and cut commit remain pending."
     }
   },
   "embeddedPackages": {
