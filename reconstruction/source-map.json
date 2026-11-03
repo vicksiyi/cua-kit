@@ -3889,6 +3889,19 @@
       ],
       "status": "reconstructed-browser-auth-broker-binding-preflight",
       "validation": "52 original private/ordinary preflight traces and 12 credential binding scenarios use restored turn metadata, classifier, option policy, inspection, submission origin and containment. Covers session/subagent identity, password-only, field names/mapping, native probe failures and async telemetry rejection. CDP and selector evaluation are fixtures; telemetry loader remains required host dependency."
+    },
+    "packages/browser/src/service/browser_auth/safety_review.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ID",
+        "EY",
+        "$_",
+        "TY",
+        "_a"
+      ],
+      "status": "reconstructed-browser-auth-safety-review",
+      "validation": "15 original trace/audit/error comparisons cover instructions, missing auth frame, empty snapshot, prompt changes, payload projection and rejection precedence. Explicit deferred screenshot test verifies allSettled completion before precheck rejection. Defaults to actual reviewer visible DOM; tests inject capture and precheck, documentation loader remains required."
     }
   },
   "embeddedPackages": {

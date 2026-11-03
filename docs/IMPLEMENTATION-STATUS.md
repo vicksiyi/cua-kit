@@ -606,3 +606,9 @@ Validation: 27 original-versus-restored Chromium cases cover form overrides, uns
 Restored Zee/Jee in `browser_auth/broker_binding.ts`, using actual turn/session metadata, credential classification, option policy, field inspection, HTTPS submission origin and document containment. Preserves private versus ordinary version gates, password-only conditions, field/challenge mapping, private field-name constraints, native dry-run and asynchronous telemetry rejection reporting. Exported the existing metadataSession helper for shared use; telemetry module loading remains a required dependency.
 
 Validation: 52 original private/ordinary preflight traces plus 12 credential-binding cases cover subagent sessions, size limits, optional fields, options, mappings, reinspection, containment and native callback failure. CDP and selector evaluation use fixtures. Type checks and all 490 tests pass. Full BrowserAuthHandoff command, safety review, runtime/context assembly and native providers remain incomplete.
+
+### 16.156 Browser-auth automated safety review
+
+Restored ID/EY/$_/TY/_a in `browser_auth/safety_review.ts`. Uses the restored approval audit/failure runtime and defaults to actual reviewer visible DOM capture. Preserves required authentication-frame presence, empty-snapshot revalidation, prompt-change failure, projected review metadata, concurrent precheck/screenshot settlement and precheck-first rejection precedence. Host documentation loading remains a required dependency.
+
+Validation: 15 original trace/audit/error scenarios and an explicit deferred screenshot test proving that precheck rejection waits for both operations to settle. Type checks and all 492 tests pass. Capture and automated precheck are fixtures in these orchestration tests; no live safety-review service claim. Full BrowserAuthHandoff, QR handling and production runtime/provider assembly remain incomplete.

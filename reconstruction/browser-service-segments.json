@@ -1619,6 +1619,11 @@
       "end": 712522,
       "kind": "FunctionDeclaration"
     },
+    "_a": {
+      "start": 713954,
+      "end": 714215,
+      "kind": "FunctionDeclaration"
+    },
     "tD": {
       "start": 714215,
       "end": 714734,
@@ -1922,6 +1927,26 @@
     "vf": {
       "start": 735777,
       "end": 736618,
+      "kind": "FunctionDeclaration"
+    },
+    "ID": {
+      "start": 736618,
+      "end": 737977,
+      "kind": "FunctionDeclaration"
+    },
+    "EY": {
+      "start": 737977,
+      "end": 738536,
+      "kind": "FunctionDeclaration"
+    },
+    "$_": {
+      "start": 738536,
+      "end": 738664,
+      "kind": "FunctionDeclaration"
+    },
+    "TY": {
+      "start": 738664,
+      "end": 738915,
       "kind": "FunctionDeclaration"
     },
     "an": {
