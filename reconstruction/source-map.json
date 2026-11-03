@@ -3491,6 +3491,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "32 original command traces and 21 history-query cases; actual ServiceBrowserUser/TabLifecycle assembly verifies returned-ID acquisition, per-turn reclaim, session isolation and authorized-page mismatch rejection. Provider and authority remain fixtures; no personal browser/history accessed or production host claim."
+    },
+    "packages/browser/src/service/commands/handoff.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-manual-handoff-and-mark-command",
+      "symbols": [
+        "Ic",
+        "ON"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "26 original-vs-readable traces preserve authority before gates, filtered browserAuth capability, exact string client flag, get-before-mark, tab validation and extension error cause. Uses reconstructed capability filtering/turn metadata and client capability ID. Mark command family metadata is explicit pending full ks/sl assembly. No real user handoff performed."
     }
   },
   "embeddedPackages": {

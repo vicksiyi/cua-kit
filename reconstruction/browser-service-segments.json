@@ -1929,6 +1929,11 @@
       "end": 811323,
       "kind": "FunctionDeclaration"
     },
+    "Ic": {
+      "start": 849604,
+      "end": 850332,
+      "kind": "CallExpression"
+    },
     "Nh": {
       "start": 870563,
       "end": 870650,
@@ -1987,6 +1992,11 @@
     "Fh": {
       "start": 873058,
       "end": 873399,
+      "kind": "CallExpression"
+    },
+    "ON": {
+      "start": 873416,
+      "end": 873683,
       "kind": "CallExpression"
     },
     "MN": {
