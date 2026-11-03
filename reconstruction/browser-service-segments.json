@@ -1619,6 +1619,16 @@
       "end": 787249,
       "kind": "FunctionDeclaration"
     },
+    "Cf": {
+      "start": 787249,
+      "end": 787979,
+      "kind": "FunctionDeclaration"
+    },
+    "sJ": {
+      "start": 787979,
+      "end": 788540,
+      "kind": "FunctionDeclaration"
+    },
     "VD": {
       "start": 788540,
       "end": 788979,

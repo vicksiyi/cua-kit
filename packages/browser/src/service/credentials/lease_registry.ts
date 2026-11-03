@@ -7,9 +7,9 @@ export interface CredentialLease {
   close(): Promise<void>;
   navigateToBrowserBlank(): Promise<unknown>;
 }
-export interface CredentialLeaseInput<Cdp> {
+export interface CredentialLeaseInput<Cdp, Requests extends object = object> {
   cdp: Cdp;
-  requests: object;
+  requests: Requests;
   tabId: number;
   frameId: string;
   target: { origin: string; url: string };
@@ -19,11 +19,12 @@ export interface CredentialLeaseInput<Cdp> {
 /** Original Tf/VD/$D/GD. The original Z_ constructor is required; no substitute lease is installed. */
 export function createCredentialLeaseRegistry<
   Cdp,
+  Requests extends object,
   Lease extends CredentialLease,
 >(
   LeaseClass: new (
     cdp: Cdp,
-    requests: object,
+    requests: Requests,
     tabId: number,
     frameId: string,
     target: { origin: string; url: string },
@@ -45,7 +46,7 @@ export function createCredentialLeaseRegistry<
         await lease.close();
       }
     },
-    async start(input: CredentialLeaseInput<Cdp>) {
+    async start(input: CredentialLeaseInput<Cdp, Requests>) {
       const { cdp, requests, tabId, frameId } = input;
       const active = owners.get(requests) ?? new Map<number, Lease>();
       owners.set(requests, active);

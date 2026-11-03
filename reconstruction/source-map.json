@@ -3086,7 +3086,8 @@
         "Iv"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "20 original command traces plus stateful completion predicate comparisons; verifies credential epoch/loader checks, races, detach/session changes, error sanitization and cleanup. GD document response lease reset remains required injected dependency, no silent no-op default. Real browser command integration and production registry pending."
+      "validation": "20 original command traces plus stateful completion predicate comparisons; verifies credential epoch/loader checks, races, detach/session changes, error sanitization and cleanup. GD document response lease reset remains required injected dependency, no silent no-op default. Real browser command integration and production registry pending.",
+      "assemblyUpdate": "Now assembled through CredentialSubmissionLease, credentialLeases singleton and NavigateTabUrlCommand. Earlier pending-constructor/start dependency notes are historical; live credential submission and production provider integration remain unverified."
     },
     "packages/browser/src/service/credentials/request_matching.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3110,7 +3111,8 @@
         "GD"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Differential HMAC form/password request matching including multipart, duplicate fields, URL/referrer decoding and caps; five original lease ownership/replacement/rollback traces. Registry requires original Z_ lease class, still unreconstructed. No credential submission or end-to-end claim."
+      "validation": "Differential HMAC form/password request matching including multipart, duplicate fields, URL/referrer decoding and caps; five original lease ownership/replacement/rollback traces. Registry requires original Z_ lease class, still unreconstructed. No credential submission or end-to-end claim.",
+      "assemblyUpdate": "Now assembled through CredentialSubmissionLease, credentialLeases singleton and NavigateTabUrlCommand. Earlier pending-constructor/start dependency notes are historical; live credential submission and production provider integration remain unverified."
     },
     "packages/browser/src/service/credentials/lease_cleanup.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3126,7 +3128,8 @@
         "Z_.stopPausedTargets"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "17 original method trace scenarios covering frame/loader verification, cached promise identity and reset on failure, target drain, ordered teardown and ordinary rejection cleanup. Abstract lifecycle portion requires remaining original policy/event/start implementation; no complete lease or real CDP integration claim."
+      "validation": "17 original method trace scenarios covering frame/loader verification, cached promise identity and reset on failure, target drain, ordered teardown and ordinary rejection cleanup. Abstract lifecycle portion requires remaining original policy/event/start implementation; no complete lease or real CDP integration claim.",
+      "assemblyUpdate": "Now assembled through CredentialSubmissionLease, credentialLeases singleton and NavigateTabUrlCommand. Earlier pending-constructor/start dependency notes are historical; live credential submission and production provider integration remain unverified."
     },
     "packages/browser/src/service/credentials/lease_results.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3150,7 +3153,8 @@
         "Z_.setOutcome"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "22 original state/result scenarios: first outcome and rejection promises, background versus terminal failures, phase/event saturation, copied diagnostics, verification/timeouts and ordinary cleanup. Extends cleanup base; start and event/request policy remain pending."
+      "validation": "22 original state/result scenarios: first outcome and rejection promises, background versus terminal failures, phase/event saturation, copied diagnostics, verification/timeouts and ordinary cleanup. Extends cleanup base; start and event/request policy remain pending.",
+      "assemblyUpdate": "Now assembled through CredentialSubmissionLease, credentialLeases singleton and NavigateTabUrlCommand. Earlier pending-constructor/start dependency notes are historical; live credential submission and production provider integration remain unverified."
     },
     "packages/browser/src/service/credentials/lease_events.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3164,7 +3168,64 @@
         "wo"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "48 original event/release sequence comparisons plus 18 protection-event and two cap/detach scenarios; verifies URL hash removal, POST/loader/frame correlation and ordinary/private results. No actual credential submission or complete lease assembly claim."
+      "validation": "48 original event/release sequence comparisons plus 18 protection-event and two cap/detach scenarios; verifies URL hash removal, POST/loader/frame correlation and ordinary/private results. No actual credential submission or complete lease assembly claim.",
+      "assemblyUpdate": "Now assembled through CredentialSubmissionLease, credentialLeases singleton and NavigateTabUrlCommand. Earlier pending-constructor/start dependency notes are historical; live credential submission and production provider integration remain unverified."
+    },
+    "packages/browser/src/service/credentials/lease_requests.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-assembled-credential-lease-chain",
+      "symbols": [
+        "Z_.onRequest"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "50 original startup/containment/request comparisons and synthetic private POST through assembled admission/event/result/cleanup. Real Chromium URL navigation validates new-loader permission and listener cleanup with no active credential lease; live credential submission and production registry/context still unverified."
+    },
+    "packages/browser/src/service/credentials/containment.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-assembled-credential-lease-chain",
+      "symbols": [
+        "Cf",
+        "sJ"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "50 original startup/containment/request comparisons and synthetic private POST through assembled admission/event/result/cleanup. Real Chromium URL navigation validates new-loader permission and listener cleanup with no active credential lease; live credential submission and production registry/context still unverified."
+    },
+    "packages/browser/src/service/credentials/lease.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-assembled-credential-lease-chain",
+      "symbols": [
+        "Z_.constructor",
+        "Z_.start"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "50 original startup/containment/request comparisons and synthetic private POST through assembled admission/event/result/cleanup. Real Chromium URL navigation validates new-loader permission and listener cleanup with no active credential lease; live credential submission and production registry/context still unverified."
+    },
+    "packages/browser/src/service/credentials/index.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-assembled-credential-lease-chain",
+      "symbols": [
+        "Tf",
+        "VD",
+        "$D",
+        "GD"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "50 original startup/containment/request comparisons and synthetic private POST through assembled admission/event/result/cleanup. Real Chromium URL navigation validates new-loader permission and listener cleanup with no active credential lease; live credential submission and production registry/context still unverified."
+    },
+    "packages/browser/src/service/commands/navigate_url.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-assembled-credential-lease-chain",
+      "symbols": [
+        "YN",
+        "GD"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "50 original startup/containment/request comparisons and synthetic private POST through assembled admission/event/result/cleanup. Real Chromium URL navigation validates new-loader permission and listener cleanup with no active credential lease; live credential submission and production registry/context still unverified."
     }
   },
   "embeddedPackages": {
