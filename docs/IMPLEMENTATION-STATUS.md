@@ -642,3 +642,9 @@ Validation: decodes the synthetic PNG and an actual Chromium JPEG screenshot, ve
 Restored YX/wf/oD/iD/M_/JX/N_/ZX and associated state in `service/context/documentation.ts`. Preserves environment-specific/default bundle selection, explicit root precedence, relative extensionless name validation, ordered directory probes, ENOENT-only fallback, shared failed discovery and JSON manifest parsing/reference identity. createPackagedAuthSafetyReview now connects this loader to the restored review pipeline.
 
 Validation: 13 original lookup/error traces, failed-promise sharing and packaged identity checks, plus real temporary filesystem discovery/read and traversal rejection. Type checks and all 506 tests pass. Host module URL and packaged documentation content remain assembly inputs; production packaging and full BrowserAuthHandoff/runtime/native integration remain incomplete.
+
+### 16.162 Automated review host and auth screenshot integration
+
+Restored Uy/ci/bp/qy/QB/eD in `browser_auth/automated_review.ts`: first-host registration/disposal, captured environment identity, feature gates, tracked elicitation, strict guardian-reviewed acceptance and exact denial/cancel/fail-closed audit routing. Rechecks host binding at invocation. Restored ZM in `screenshot.ts` using actual device-scale capture and observation gating.
+
+Validation: original registry ownership/env/disposal traces, 17 approval/audit/error comparisons and screenshot success/failure traces with actual restored capture and fixture CDP. Type checks and all 509 tests pass. Elicitation is synthetic; no live automated-review service integration claim. Full BrowserAuthHandoff, production runtime/resource/native assembly and readable Emscripten factory remain incomplete.

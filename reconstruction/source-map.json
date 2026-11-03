@@ -3990,6 +3990,31 @@
       ],
       "status": "reconstructed-browser-documentation-loading",
       "validation": "13 original lookup/error traces, shared failed-discovery promise and packaged identity checks, plus real temporary filesystem discovery/read. Host supplies module URL and optional bundled resources; production resource packaging remains pending."
+    },
+    "packages/browser/src/service/browser_auth/automated_review.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Uy",
+        "ci",
+        "bp",
+        "qy",
+        "QB",
+        "eD",
+        "cl",
+        "As"
+      ],
+      "status": "reconstructed-automated-auth-review-host",
+      "validation": "Original registry ownership/env identity/disposal traces and 17 strict approval/audit/error cases with restored elicitation runtime and guardian classification. Invocation rechecks host binding; tests use synthetic elicitation, no live approval service."
+    },
+    "packages/browser/src/service/browser_auth/screenshot.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ZM"
+      ],
+      "status": "reconstructed-auth-screenshot",
+      "validation": "Original success/failure traces use actual restored device screenshot pipeline and observation gate with fixture CDP; catches capture failures and preserves screenshot metadata."
     }
   },
   "embeddedPackages": {
