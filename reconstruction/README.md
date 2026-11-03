@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。150 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。152 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -337,3 +337,11 @@ Reconstructed waitForPageLoadEvent and navigation helpers, plus the original Za 
 The original emitter uses a plain object, removes the last duplicate listener, snapshots listeners for dispatch and binds callbacks to the emitter. It must not be silently replaced with Node EventEmitter during full manager assembly.
 
 150 differential tests pass with type checking, including deterministic timer-transition traces. All qh methods now have reconstruction entries, but full class field/prototype assembly and provider integration are still required. Method inventory is not proof of a runnable complete backend.
+
+### Complete CDP manager class assembly
+
+createCdpManagerClass now assembles all reconstructed qh methods on the original Za-derived prototype with the original field initialization order and four constructor arguments. The lexical telemetry reporter is supplied to the class factory; provider operations are required dependencies, with no fallback backend. Method property order, descriptors, names and arities match the original qh prototype (the readable constructor name differs).
+
+152 tests pass with type checking. New differential tests instantiate the exact original class and the reconstructed class, compare own field order/types and prototype descriptors, then exercise attachment, dispatch, document state, dialog blocking/mutation, raw events and detach through the complete manager. All underlying browser I/O remains an explicit fixture in these tests.
+
+This completes the manager assembly milestone, not the overall service: p6 runtime/context/command handlers, privileged provider, native/Sky/cua-repl integration and independent MCP/AgentLoop demo remain pending. Current tests demonstrate exercised behavior, not exhaustive equivalence of every runtime interaction.

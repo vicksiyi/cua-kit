@@ -22,7 +22,7 @@ export interface WaitForCdpEventOptions {
   action?: () => unknown | Promise<unknown>;
 }
 /** Original qh.waitForEvent. Method body extracted with an explicit owner; not a replacement CDP manager. */
-export async function waitForCdpEvent(
+async function waitForEvent(
   this: CdpEventSource,
   tabId: unknown,
   predicate: (event: CdpSourceEvent) => unknown,
@@ -78,3 +78,5 @@ export async function waitForCdpEvent(
     options.signal?.removeEventListener("abort", abort);
   }
 }
+
+export { waitForEvent as waitForCdpEvent };
