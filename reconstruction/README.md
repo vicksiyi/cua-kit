@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。109 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。118 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -257,3 +257,15 @@ screencast 按 tab 维护 Promise 队列：同 tab 串行、不同 tab 独立，
 **109 项验证通过，类型检查通过。** 新增事件等待、并发锁、失败清理、会话隔离、过期/容量与组合截图测试。组合测试使用真实还原的 wait/ownership 方法，只有底层 CDP call 和事件输入仍为 fixture；直接对照原 qh 对应方法与原截图函数。没有真实浏览器截图或传输验收。
 
 来源索引现在包含 qh 类及各方法的精确 UTF-16 位置。下一步仍需 executeTargetCdp、attach/事件桥、权限和凭据内部边界、完整 qh/p6 装配，以及剩余浏览器命令、Sky/cua-repl 和独立 demo。
+
+## CDP 发送、deadline 与 attach 状态机
+
+新增 deadline/telemetry 辅助、execute 方法组和 attach 方法组。发送路径保留 JS dialog 前置检查、attachment 等待、prepareDispatch、beforeDispatch、document target 覆盖、缓存表达式分支、原始参数和超时字段。Debugger 未附着只在原条件下重试一次；nested target 与 attach setup 不重复重试。只在附着 Promise 仍是同一实例时清理旧状态，避免误删新的 attachment。
+
+Deadline 保留截止前检查、剩余时间下限 1ms、Promise.race 与超时 timer 清理；race 不取消底层操作。raw CDP 限定 session/target 属于当前 tab，强制 preserveDebuggerOnTimeout，并在 start/stop screencast 成功后更新 raw 所有权；没有另加未授权直连通道。
+
+attach 共享每 tab Promise，按 network policy → provider.attach → focus emulation → tabAttached → attach handlers 执行。setup Symbol 贯穿回调，允许内部 Page.enable 等初始化命令重入而不等待自身。回调使用 allSettled，仅重新抛出首个 deadline 类失败；普通失败按原行为忽略。OOPIF 自动附着先带 iframe filter，非 deadline 错误才尝试无 filter 回退。
+
+**118 项差分测试、类型与来源哈希检查通过。** 新增 dispatch 重试/错误/telemetry、target/cache、deadline、并发 attach、失效 Promise、focus 与 handler 错误、OOPIF 回退，并组合真实重建的 dispatch/attach 方法验证初始化重入。provider.api 仍为 fixture；完整 qh 构造、事件桥、forget/detach、安全依赖及真实服务尚待装配。
+
+下一步继续 qh 生命周期与事件入口，随后将截图和命令执行接到完整 manager；仍需完成 p6、其余服务命令、Sky/cua-repl、类型/exports 和独立 demo，不能将这些方法组视为独立可运行后端。
