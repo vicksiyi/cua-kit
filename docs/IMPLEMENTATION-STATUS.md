@@ -110,3 +110,7 @@ Added independent `@core/agent-loop` demo with DeepSeek model adapter and config
 ## Source reconstruction: guardian origin cache
 
 Restored guardian-v2 approval/review caching, revocation and cleanup scheduling. 204 tests pass with type checks. Guardian decision execution and full preferences orchestration remain incomplete; live DeepSeek verification still awaits credential location.
+
+## Source reconstruction: prompt results
+
+Restored user/guardian prompt outcome handling and connected policy, persisted storage and caches. 206 tests pass with type checks. Full Preferences and live approval backend are still incomplete.

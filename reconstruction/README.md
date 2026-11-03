@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。204 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。206 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -463,3 +463,9 @@ Added independently authored `@core/agent-loop` with model-neutral and MCP-neutr
 Restored fr/BB/R_/DB/RX in `guardian_cache.ts`, including per-thread/origin entries, approval identity retry, shared pending review promises, revocation tokens, old-promise cleanup identity guards, five-minute expiry/sweeps and timer unref. The exported singleton matches module-level sharing; a factory isolates tests.
 
 204 total tests pass with type checks. New differential tests execute the original object and helpers to compare concurrent sharing, revoke/replacement races, rejected review retry and exact timer behavior. This is the guardian review cache, not the guardian service or completed approval orchestration.
+
+## Approval prompt-result orchestration
+
+Restored gS/Yoe and policy/guardian-review helpers in `prompt_results.ts`, assembled with reconstructed permission storage, policy resolver and shared guardian/turn caches. Preserves guardian timeout handling, review-request/revocation flags, user-only persistence, global→conversation policy downgrade, turn-only approvals, all-sites approval mode and ConfigReadError-only propagation inside the original storage catch. Policy-read failures remain outside that catch.
+
+206 tests pass with type checking. Differential tests execute original helper graphs against matching config stores and cache probes for user/guardian branches, resource types, scopes, managed policy, cancellation, revocation/timeout and storage failures. Full Preferences auto-answer/class assembly and production approval service remain pending.
