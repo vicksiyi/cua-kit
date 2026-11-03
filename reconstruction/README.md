@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。118 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。121 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -269,3 +269,9 @@ attach 共享每 tab Promise，按 network policy → provider.attach → focus 
 **118 项差分测试、类型与来源哈希检查通过。** 新增 dispatch 重试/错误/telemetry、target/cache、deadline、并发 attach、失效 Promise、focus 与 handler 错误、OOPIF 回退，并组合真实重建的 dispatch/attach 方法验证初始化重入。provider.api 仍为 fixture；完整 qh 构造、事件桥、forget/detach、安全依赖及真实服务尚待装配。
 
 下一步继续 qh 生命周期与事件入口，随后将截图和命令执行接到完整 manager；仍需完成 p6、其余服务命令、Sky/cua-repl、类型/exports 和独立 demo，不能将这些方法组视为独立可运行后端。
+
+### CDP detach and frame/session lifecycle
+
+Reconstructed nine original qh methods in service/cdp/lifecycle_methods.ts: event-source tab routing, detachTab, forgetAttachedTab, frame/target alias maintenance, and child-target cleanup. Numeric tabId takes precedence over session/target without fallback. During initialization, forget only clears the attached flag; remaining cleanup is deferred to attachment finalization. Child target sets are removed before allSettled cleanup. Source fields that are not cleared remain unchanged.
+
+121 tests pass, with type checking. New differential tests execute the exact original AST methods and cover routing precedence, alias migration, delayed/forced cleanup, detach reasons, provider failure, in-flight attachment and partially failing child cleanup. Full manager construction/event bridge, raw-event storage and native provider integration remain incomplete; these method groups are not a complete runnable service.
