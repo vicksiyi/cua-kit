@@ -1,3 +1,4 @@
+import { decodeBase64 } from "./runtime/base64";
 import { StateCommand, ActionCommand } from "./commands/ax";
 import type { ClientTransport } from "./runtime/function_agent_transport";
 export type Point = [number, number];
@@ -179,11 +180,4 @@ export class AxClient {
       }),
     });
   }
-}
-function decodeBase64(data: string): Uint8Array {
-  const decoded = atob(data),
-    bytes = new Uint8Array(decoded.length);
-  for (let index = 0; index < decoded.length; index++)
-    bytes[index] = decoded.charCodeAt(index);
-  return bytes;
 }
