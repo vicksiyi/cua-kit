@@ -979,9 +979,119 @@
       "end": 706813,
       "kind": "FunctionDeclaration"
     },
+    "yf.constructor": {
+      "start": 706831,
+      "end": 707028,
+      "kind": "MethodDefinition"
+    },
+    "yf.currentTabUrl": {
+      "start": 707176,
+      "end": 707234,
+      "kind": "MethodDefinition"
+    },
+    "yf.createAuthorityBuilder": {
+      "start": 709119,
+      "end": 709357,
+      "kind": "MethodDefinition"
+    },
+    "yf.prepareWebMcpApproval": {
+      "start": 709357,
+      "end": 709679,
+      "kind": "MethodDefinition"
+    },
+    "yf.currentTabFullCdpUrl": {
+      "start": 709679,
+      "end": 709982,
+      "kind": "MethodDefinition"
+    },
+    "yf.assertWebMcpEnabled": {
+      "start": 709982,
+      "end": 710229,
+      "kind": "MethodDefinition"
+    },
+    "yf.assertWebMcpOriginEnabled": {
+      "start": 710229,
+      "end": 710784,
+      "kind": "MethodDefinition"
+    },
+    "yf.ensureOriginFullCdpPolicyAllowed": {
+      "start": 710784,
+      "end": 711053,
+      "kind": "MethodDefinition"
+    },
+    "yf.checkOriginDownloadPolicy": {
+      "start": 711053,
+      "end": 711312,
+      "kind": "MethodDefinition"
+    },
+    "yf.currentUserTabUrl": {
+      "start": 711312,
+      "end": 711653,
+      "kind": "MethodDefinition"
+    },
+    "yf.currentTabFileTransferUrl": {
+      "start": 711653,
+      "end": 712045,
+      "kind": "MethodDefinition"
+    },
+    "yf.ensureOriginUploadPolicyAllowed": {
+      "start": 712045,
+      "end": 712306,
+      "kind": "MethodDefinition"
+    },
+    "yf.browserName": {
+      "start": 712306,
+      "end": 712351,
+      "kind": "MethodDefinition"
+    },
+    "yf": {
+      "start": 706825,
+      "end": 712352,
+      "kind": "ClassExpression"
+    },
+    "QB": {
+      "start": 712353,
+      "end": 712522,
+      "kind": "FunctionDeclaration"
+    },
+    "HX": {
+      "start": 714772,
+      "end": 714912,
+      "kind": "FunctionDeclaration"
+    },
+    "WX": {
+      "start": 714912,
+      "end": 715041,
+      "kind": "FunctionDeclaration"
+    },
+    "$X": {
+      "start": 715041,
+      "end": 715088,
+      "kind": "FunctionDeclaration"
+    },
+    "GX": {
+      "start": 715088,
+      "end": 715221,
+      "kind": "FunctionDeclaration"
+    },
+    "JB": {
+      "start": 715221,
+      "end": 715273,
+      "kind": "FunctionDeclaration"
+    },
+    "VX": {
+      "start": 715273,
+      "end": 715483,
+      "kind": "FunctionDeclaration"
+    },
     "zX": {
       "start": 715483,
       "end": 715698,
+      "kind": "FunctionDeclaration"
+    },
+    "rD": {
+      "start": 715698,
+      "end": 715748,
       "kind": "FunctionDeclaration"
     },
     "KX": {

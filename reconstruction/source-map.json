@@ -2130,6 +2130,24 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Differential original-AST tests for request construction, backend validation, cache/inflight background fetch semantics, expiry, failure boundaries and blocking audit; no live backend requests"
+    },
+    "packages/browser/src/service/security/browser_security.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-security-facade-assembly",
+      "symbols": [
+        "yf",
+        "QB",
+        "HX",
+        "WX",
+        "$X",
+        "GX",
+        "JB",
+        "VX",
+        "rD"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Exact original facade AST compared over restored dependency providers: full authority chains, failures, page-change invalidation, tab/settings/history projection and class shape. Each restored provider has separate differential tests; production host pending"
     }
   },
   "embeddedPackages": {

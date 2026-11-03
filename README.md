@@ -2,7 +2,7 @@
 
 **当前方向：源码还原。** 按用户最新要求，直接从本机 unified-computer-use 相关混淆 JS / .d.ts 还原可读 TypeScript，按原包边界组织 `@core/*` workspace，源码 import 不带 `.js`。首批源码、来源映射与差分验证见 [reconstruction](reconstruction/README.md)。完整还原仍在进行，不能把旧独立实现视为原代码。
 
-当前已接通 `@core/browser` 的 `setupBrowserRuntime` 客户端入口，覆盖原注册表、工厂、Browser/Tab、Playwright 与能力装配；235 项测试通过（含模型/MCP 接入验证）。该入口依赖宿主 `nodeRepl.rpc`，底层服务、Sky/cua-repl 和独立 MCP/AgentLoop demo 尚未完成。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
+当前已接通 `@core/browser` 的 `setupBrowserRuntime` 客户端入口，覆盖原注册表、工厂、Browser/Tab、Playwright 与能力装配；238 项测试通过（含模型/MCP 接入验证）。该入口依赖宿主 `nodeRepl.rpc`，底层服务、Sky/cua-repl 和独立 MCP/AgentLoop demo 尚未完成。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
 
 DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。模型协议/MCP 回环测试通过，真实 DeepSeek 调用仍待本机凭据定位；这不表示还原后端已接通。
 
@@ -56,3 +56,7 @@ Restored origin policy checks and approval orchestration over the shared guardia
 ## Source reconstruction: site status
 
 Restored site-status request construction, backend selection, cache/inflight behavior and blocking audits. 235 tests pass with type checks. Tests inject fetch responses; no live safety backend integration or complete security facade is claimed.
+
+## Source reconstruction: security facade assembly
+
+Restored complete yf facade over reconstructed authority, approval and site-status providers. Verifies WebMCP page-change invalidation, current/user-tab checks and history prompt projection. 238 tests pass with type checks. Production execution context, input/AX/Playwright service and native hosts remain incomplete.
