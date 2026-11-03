@@ -1088,6 +1088,68 @@
       ],
       "fileGrouping": "inferred from flattened bundle; original filenames unavailable",
       "validation": "original lexical exports/schema differential tests; fixture transport; not live service"
+    },
+    "packages/browser/src/service/rpc_dispatch.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "iy",
+        "hH",
+        "Gut"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/classify_error.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "rp",
+        "Qa",
+        "Vut"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/errors/locator_error.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Fr"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/errors/browser_security_error.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "St",
+        "JT",
+        "j8",
+        "el",
+        "F8",
+        "U8",
+        "L8",
+        "q8"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/errors/credential_recovery_error.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "xs",
+        "V8"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
     }
   },
   "embeddedPackages": {

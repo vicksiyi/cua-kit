@@ -1,0 +1,153 @@
+{
+  "source": "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+  "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+  "offsetUnit": "UTF-16 code units (Acorn offsets)",
+  "purpose": "Provenance and navigation only; no runtime dependency on installed vendor source",
+  "segments": {
+    "j8": {
+      "start": 91828,
+      "end": 92001,
+      "kind": "FunctionDeclaration"
+    },
+    "rp": {
+      "start": 92215,
+      "end": 92267,
+      "kind": "FunctionDeclaration"
+    },
+    "el": {
+      "start": 92267,
+      "end": 92306,
+      "kind": "FunctionDeclaration"
+    },
+    "F8": {
+      "start": 93832,
+      "end": 93906,
+      "kind": "Literal"
+    },
+    "L8": {
+      "start": 93910,
+      "end": 94012,
+      "kind": "Literal"
+    },
+    "U8": {
+      "start": 94016,
+      "end": 94336,
+      "kind": "Literal"
+    },
+    "q8": {
+      "start": 94340,
+      "end": 94420,
+      "kind": "Literal"
+    },
+    "JT": {
+      "start": 94447,
+      "end": 96725,
+      "kind": "ObjectExpression"
+    },
+    "St": {
+      "start": 96729,
+      "end": 96944,
+      "kind": "ClassExpression"
+    },
+    "V8": {
+      "start": 96947,
+      "end": 98875,
+      "kind": "FunctionDeclaration"
+    },
+    "xs": {
+      "start": 98918,
+      "end": 99173,
+      "kind": "ClassExpression"
+    },
+    "TA": {
+      "start": 359209,
+      "end": 359498,
+      "kind": "FunctionDeclaration"
+    },
+    "Fr": {
+      "start": 876283,
+      "end": 876350,
+      "kind": "ClassExpression"
+    },
+    "Qa": {
+      "start": 876351,
+      "end": 876722,
+      "kind": "FunctionDeclaration"
+    },
+    "q3": {
+      "start": 1374026,
+      "end": 1376734,
+      "kind": "FunctionDeclaration"
+    },
+    "ob": {
+      "start": 1376906,
+      "end": 1381250,
+      "kind": "ClassExpression"
+    },
+    "l6": {
+      "start": 1402195,
+      "end": 1402212,
+      "kind": "CallExpression"
+    },
+    "c6": {
+      "start": 1402216,
+      "end": 1402437,
+      "kind": "ObjectExpression"
+    },
+    "p6": {
+      "start": 1402480,
+      "end": 1408343,
+      "kind": "FunctionDeclaration"
+    },
+    "mn": {
+      "start": 1427013,
+      "end": 1427276,
+      "kind": "FunctionDeclaration"
+    },
+    "yb": {
+      "start": 1447267,
+      "end": 1450373,
+      "kind": "ClassExpression"
+    },
+    "W6": {
+      "start": 1451563,
+      "end": 1451635,
+      "kind": "FunctionDeclaration"
+    },
+    "mH": {
+      "start": 1575895,
+      "end": 1576371,
+      "kind": "FunctionDeclaration"
+    },
+    "nhe": {
+      "start": 1576577,
+      "end": 1576905,
+      "kind": "FunctionDeclaration"
+    },
+    "ohe": {
+      "start": 1576905,
+      "end": 1577326,
+      "kind": "FunctionDeclaration"
+    },
+    "hH": {
+      "start": 1577336,
+      "end": 1578094,
+      "kind": "ObjectExpression"
+    },
+    "iy": {
+      "start": 1577534,
+      "end": 1577684,
+      "kind": "CallExpression"
+    },
+    "Gut": {
+      "start": 1578095,
+      "end": 1578279,
+      "kind": "FunctionDeclaration"
+    },
+    "Vut": {
+      "start": 1578279,
+      "end": 1578346,
+      "kind": "FunctionDeclaration"
+    }
+  }
+}

@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。94 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。98 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -204,3 +204,15 @@ setupBrowserRuntime 检查可信 nodeRepl.rpc，提取方法后以原 receiver �
 **94 项差分测试与类型检查通过。** 新增注册表键/descriptor/构造类型可用性、ID 格式、工厂过滤与装饰、setup→Browser→Tab→AX→browserAuth 的组合调用、Locator proxy 解包、严格恢复分支、Orbit 错误映射、宿主失败及包根导出。组合测试中的宿主 RPC 是明确的 fixture，没有实际点击、认证或观察用户桌面。
 
 接下来进入 browser-service 的协议入口和命令分发，继续读取其实际实现；还需完成 CUA 初始化、Sky/cua-repl、完整类型/exports、独立调用 demo 与真实端到端验证。不会把旧独立后端接到这里冒充原实现。
+
+## browser-service RPC 与错误边界
+
+开始读取实际嵌入的 `browser-service.mjs`（1578397 字节，SHA-256 `bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0`）。新增 5 个还原模块：RPC dispatcher、内部/公开错误分类、服务端 security/recovery/locator 错误类。service 错误类保留独立身份，不复用 client 类；即使 name/details 相同，也不能改变原 instanceof 捕获范围。
+
+原 handleRpc 通过 own property descriptor 查找方法，拒绝继承方法；setup 仅允许四种环境，并立即替换共享 runtime Promise。并发 setup 各自返回已开始的初始化结果，后续 execute 使用最新 Promise。初始化失败不会自动恢复旧 runtime。executeWithRecovery 只捕获服务端 xs 类，其他错误按原身份抛出。
+
+dispatcher 的 createHostRuntime / initializeRuntime / withSpan 明确对应尚待还原的 mH / p6 / mn；这是实际分发状态机的依赖边界，不是已实现后端或生产 fallback。目前没有导出伪装可用的 `@core/browser/service` 入口。源码显示 p6 内部还包含 context/session 生命周期、文档门禁、按 browser API 缓存执行上下文、Tab reclaim、下载 setup 同步、认证边界、AX WASM 初始化及实际命令表分发；这些仍待逐项还原。
+
+**98 项验证通过。** 服务测试从原 bundle AST 提取指定表达式并执行，避免导入完整服务时启动无关原生/遥测依赖。覆盖四环境、拒绝非自身方法、初始化并发/失败、错误类别与身份、恢复 envelope；另将已还原客户端连到 dispatcher fixture，验证服务端错误经序列化后成为不同身份的客户端恢复错误。没有执行真实服务命令或网页操作。
+
+`node scripts/extract-browser-service-segments.mjs` 生成 `browser-service-segments.json`，记录源哈希与 UTF-16 位置（不是字节 offset），用于导航与溯源；生产代码不读取安装包。下一步进入 p6 调度和其具体依赖，完整 backend、Sky/cua-repl 与调用 demo 仍未交付。
