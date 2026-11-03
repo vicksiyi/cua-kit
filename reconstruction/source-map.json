@@ -3421,7 +3421,7 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "21 original frame/capture/find scenarios using actual shared reconstructed DomState and fixture CDP. Shape filters, deadline boundaries, serialized ordinary/reviewer references and release-on-error verified. cY/_Y renderer remains explicit dependency; ED/q_/TD orchestration pending. No real-browser visible DOM end-to-end claim.",
-      "assemblyUpdate": "ED/q_/TD/SD/xD now reconstructed in visible_dom_capture.ts. cY/_Y page renderer remains pending."
+      "assemblyUpdate": "cY/_Y now restored in visible_dom_page.ts; visible_dom.ts assembles actual reader/capture with shared domState. Real Chromium same-process iframe read and public-node click verified; production host/OOPIF integration still pending."
     },
     "packages/browser/src/service/input/visible_dom_capture.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -3436,7 +3436,37 @@
         "j_"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "19 original-vs-readable capture/reviewer/command scenarios with actual shared DomState and explicit fixture frame reader. Output limits, priority reserve/order, nested frames, expired budgets, errors, repeat node IDs and reviewer isolation verified. cY/_Y page renderer remains pending; no real-browser end-to-end claim."
+      "validation": "19 original-vs-readable capture/reviewer/command scenarios with actual shared DomState and explicit fixture frame reader. Output limits, priority reserve/order, nested frames, expired budgets, errors, repeat node IDs and reviewer isolation verified. cY/_Y page renderer remains pending; no real-browser end-to-end claim.",
+      "assemblyUpdate": "cY/_Y now restored in visible_dom_page.ts; visible_dom.ts assembles actual reader/capture with shared domState. Real Chromium same-process iframe read and public-node click verified; production host/OOPIF integration still pending."
+    },
+    "packages/browser/src/service/input/visible_dom_page.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-visible-dom-page-renderer",
+      "symbols": [
+        "oY",
+        "iY",
+        "sY",
+        "aY",
+        "_Y",
+        "cY"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Real headless Chromium differential output against original cY/_Y for 10 ordinary/reviewer, clipping and capacity cases, with actual Ms/no credential filtering. Assembled SD/ED/reader/page collector reads a same-process srcdoc frame and drives real guarded BrowserInput click using public node ID; node ID retained on recapture. Authority/UI/target routing are fixture adapters; no production OOPIF/host integration claim."
+    },
+    "packages/browser/src/service/input/visible_dom.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "assembled-visible-dom-input-shared-state",
+      "symbols": [
+        "SD",
+        "xD",
+        "ED",
+        "cY",
+        "_Y"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Real headless Chromium differential output against original cY/_Y for 10 ordinary/reviewer, clipping and capacity cases, with actual Ms/no credential filtering. Assembled SD/ED/reader/page collector reads a same-process srcdoc frame and drives real guarded BrowserInput click using public node ID; node ID retained on recapture. Authority/UI/target routing are fixture adapters; no production OOPIF/host integration claim."
     }
   },
   "embeddedPackages": {
