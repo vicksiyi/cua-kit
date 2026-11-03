@@ -22,6 +22,7 @@ const wanted = new Set([
   "Rte",
   "xte",
   "Ete",
+  "Ste",
   "Cv",
   "eu",
   "Lh",

@@ -674,6 +674,11 @@
       "end": 907352,
       "kind": "FunctionDeclaration"
     },
+    "Ste": {
+      "start": 907352,
+      "end": 907556,
+      "kind": "FunctionDeclaration"
+    },
     "Uh": {
       "start": 907556,
       "end": 907659,

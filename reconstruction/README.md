@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。142 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。146 项验证通过；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -321,3 +321,11 @@ Reconstructed targetForFrame, targetIdForFrame, targetForFrameOrAttach and attac
 Attachment preserves provider-created sessions or creates target-prefixed synthetic session IDs, updates frame/target aliases, records cleanup targets and initializes the session. Provider failures are converted to null only where the source does so, with explicit deadline checks preserved.
 
 142 differential tests pass with type checking. Tests compare original AST methods and reconstructed lifecycle indices for exact/URL/ambiguous matches, ownership checks, existing and provider-created sessions, cross-tab rejection, unsupported providers and failures. Complete manager assembly and real provider integration remain pending.
+
+### CDP document state and tab close operations
+
+Reconstructed seven remaining qh methods for JavaScript evaluation, document state, committed/current URL, closeTab, detachAllTabs and file chooser cleanup, plus Ste error formatting. Runtime.evaluate forwards only the original timeout/telemetry options; document state failures return undefined. Committed URL conversion intentionally permits nonfinite keys at the provider boundary, while currentTopLevelUrl requires finite input.
+
+closeTab selects the first strictly matching numeric tab target, runs cleanup and sends Target.closeTarget or Page.close; forget occurs in finally only after attachment succeeded. detachAllTabs snapshots attachment-promise keys and settles all detach operations.
+
+146 differential tests pass with type checking. Tests verify exception message precedence, option omission, URL cache behavior, cleanup/finally boundaries and partial detach failures. Source-method inventory now leaves waitForPageLoadEvent before full qh method coverage; method coverage alone is not proof of complete manager equivalence or provider integration.
