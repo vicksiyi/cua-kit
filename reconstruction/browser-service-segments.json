@@ -2274,9 +2274,19 @@
       "end": 951320,
       "kind": "ClassExpression"
     },
+    "Hv": {
+      "start": 952881,
+      "end": 953293,
+      "kind": "FunctionDeclaration"
+    },
     "Cre": {
       "start": 953293,
       "end": 955079,
+      "kind": "FunctionDeclaration"
+    },
+    "Are": {
+      "start": 956522,
+      "end": 956892,
       "kind": "FunctionDeclaration"
     },
     "Ire": {
