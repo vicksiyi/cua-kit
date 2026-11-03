@@ -2249,6 +2249,21 @@
       "end": 943209,
       "kind": "FunctionDeclaration"
     },
+    "Sre": {
+      "start": 950479,
+      "end": 950481,
+      "kind": "Literal"
+    },
+    "xre": {
+      "start": 950486,
+      "end": 950489,
+      "kind": "Literal"
+    },
+    "Ere": {
+      "start": 950494,
+      "end": 950496,
+      "kind": "Literal"
+    },
     "Do": {
       "start": 950500,
       "end": 950521,
@@ -2273,6 +2288,16 @@
       "start": 957978,
       "end": 959782,
       "kind": "FunctionDeclaration"
+    },
+    "V2": {
+      "start": 959782,
+      "end": 961062,
+      "kind": "FunctionDeclaration"
+    },
+    "ou": {
+      "start": 961069,
+      "end": 961090,
+      "kind": "ClassExpression"
     },
     "Oo": {
       "start": 961091,

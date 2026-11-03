@@ -2438,6 +2438,20 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential traces over restored page executor and geometry helpers: root/same-session/remote/nested targets, IAB box models, absent frames/owners/bounds, label fallback and occlusion. CDP/page results are explicit fixtures; real multi-frame end-to-end assembly remains pending."
+    },
+    "packages/browser/src/service/accessibility/position_target.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-position-stabilization",
+      "symbols": [
+        "V2",
+        "ou",
+        "Sre",
+        "xre",
+        "Ere"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential retry/stability/error traces with controlled time and explicit CDP fixtures; real isolated Chromium offscreen root target scrolls through restored Wv/Oo/Mre path to a visible point. Full multiframe and click dispatch remain pending."
     }
   },
   "embeddedPackages": {
