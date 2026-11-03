@@ -2607,38 +2607,51 @@
     "packages/browser/src/service/accessibility/state_store.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
       "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
-      "status": "partial-reconstruction-ax-state-store",
+      "status": "reconstructed-ax-state-store",
       "symbols": [
         "Kh",
         "iu",
         "zre"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Original Kh class differential tests for session state, CDP event sequences, navigation rollback, stale element/capture checks, commit mutation order and deferred error consumption. Kh tracking/waits/capture execution remain pending."
+      "validation": "Original Kh class differential tests for session state, CDP event sequences, navigation rollback, stale element/capture checks, commit mutation order and deferred error consumption. Kh tracking/waits/capture execution remain pending. Now assembled by capture_manager.ts with the remaining Kh capture methods; see its validation."
     },
     "packages/browser/src/service/accessibility/tracking.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
       "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
-      "status": "partial-reconstruction-ax-tracking",
+      "status": "reconstructed-ax-tracking",
       "symbols": [
         "Kh",
         "K2",
         "Ji"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Original Kh differential tests cover initialization/navigation/dialog races, actions, navigation/paint/AX-quiet polling with controlled clocks and document probing. Candidate building and capture loop remain pending."
+      "validation": "Original Kh differential tests cover initialization/navigation/dialog races, actions, navigation/paint/AX-quiet polling with controlled clocks and document probing. Candidate building and capture loop remain pending. Now assembled by capture_manager.ts with the remaining Kh capture methods; see its validation."
     },
     "packages/browser/src/service/accessibility/capture_documents.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
       "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
-      "status": "partial-reconstruction-ax-document-capture",
+      "status": "reconstructed-ax-document-capture",
       "symbols": [
         "Kh",
         "Kre",
         "Xre"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Original Kh.captureSessions/captureDocuments differential tests: 11 remote traversal and 7 document/failure fixtures; real Chromium same-origin iframe capture matches nodes, metadata, owner and size. Full candidate builder/capture loop pending."
+      "validation": "Original Kh.captureSessions/captureDocuments differential tests: 11 remote traversal and 7 document/failure fixtures; real Chromium same-origin iframe capture matches nodes, metadata, owner and size. Full candidate builder/capture loop pending. Now assembled by capture_manager.ts with the remaining Kh capture methods; see its validation."
+    },
+    "packages/browser/src/service/accessibility/capture_manager.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-capture-manager",
+      "symbols": [
+        "Kh",
+        "Z2",
+        "Q2",
+        "Vre"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Full original Kh comparison with real Chromium same-origin iframe and installed native WASM using explicit CDP adapter: initial/diff/full captures, target resolution and provenance. Controlled loop retries and dialog matrix; production context and native binary reconstruction remain pending."
     }
   },
   "embeddedPackages": {

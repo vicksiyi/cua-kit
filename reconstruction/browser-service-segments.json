@@ -2554,6 +2554,21 @@
       "end": 974070,
       "kind": "ObjectExpression"
     },
+    "Z2": {
+      "start": 974089,
+      "end": 974230,
+      "kind": "ObjectExpression"
+    },
+    "Q2": {
+      "start": 974231,
+      "end": 974364,
+      "kind": "FunctionDeclaration"
+    },
+    "Vre": {
+      "start": 974364,
+      "end": 974385,
+      "kind": "FunctionDeclaration"
+    },
     "zre": {
       "start": 974393,
       "end": 974480,
