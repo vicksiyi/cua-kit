@@ -2980,6 +2980,16 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Five original fill command scenarios and real Chromium replace/append/Unicode/date input through reconstructed clipboard bridge and page operation. Plain fill bypasses markdown renderer exactly as original. Full renderer and production registry/context remain pending."
+    },
+    "packages/browser/src/service/cdp/network_idle.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-network-idle-wait",
+      "symbols": [
+        "T2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Eight differential scenarios against original: immediate/buffered idle, changed loader, detachment, blocked navigation, ignored nested-session/stale-loader events, timeout; listener cleanup checked. Real CDP integration and command wiring remain pending."
     }
   },
   "embeddedPackages": {
