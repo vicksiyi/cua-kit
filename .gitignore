@@ -7,3 +7,5 @@ research/private/
 artifacts/
 dist/
 test-results/
+
+native/macos/.build/

@@ -1,14 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import { MacProvider, MacApp } from './native/provider.js';
 import { CuaTab } from './browser/tab.js';
 import { assert, CuaError } from './core/errors.js';
 import type { Authorize, AuditEvent } from './core/types.js';
-export { CuaTab, CuaError };
+export { CuaTab, CuaError, MacProvider, MacApp };
 export type * from './core/types.js';
 
 export interface CuaOptions {
   headless?: boolean;
   executablePath?: string;
+  nativeHelperPath?: string;
   /** Required: access decisions belong to the embedding application. */
   authorize: Authorize;
   audit?: (event: AuditEvent) => void;
@@ -20,6 +22,8 @@ export interface BrowserInfo { id: string; name: string; type: 'cdp' }
 export class Cua {
   readonly sessionId = randomUUID();
   private active = true;
+  private native?: MacProvider;
+  private apps = new Set<MacApp>();
   private pages = new Map<string, Page>();
   private ids = new WeakMap<Page, string>();
   private tabs = new Map<string, Promise<CuaTab>>();
@@ -33,7 +37,9 @@ export class Cua {
     try {
       const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
       context.setDefaultTimeout(5000);
-      return new Cua(browser, context, options);
+      const cua = new Cua(browser, context, options);
+      if (options.nativeHelperPath) cua.native = await MacProvider.connect({ helperPath: options.nativeHelperPath, authorize: options.authorize });
+      return cua;
     } catch (error) { await browser.close(); throw error; }
   }
   private assertActive(): void { assert(this.active, 'SESSION_CLOSED', 'Session ended.'); }
@@ -58,7 +64,14 @@ export class Cua {
     }
     return result;
   }
-  async getState() { return { apps: [], browsers: [{ ...(await this.listBrowsers())[0]!, tabs: await this.listTabs() }] }; }
+  async listApps() { this.assertActive(); return this.native ? this.native.listApps() : []; }
+  async getApp(reference: string | { pid: number }): Promise<MacApp> {
+    this.assertActive(); assert(this.native, 'UNSUPPORTED_CAPABILITY', 'Configure nativeHelperPath to connect the macOS provider.');
+    const app = await this.native.getApp(reference);
+    try { await app.observe(); this.apps.add(app); return app; }
+    catch (error) { await app.release(); throw error; }
+  }
+  async getState() { return { apps: await this.listApps(), browsers: [{ ...(await this.listBrowsers())[0]!, tabs: await this.listTabs() }] }; }
   async getBrowser(options: { id?: string } = {}) {
     this.assertActive(); this.validateBrowser(options.id);
     return { browserId: 'chromium', tabs: { list: () => this.listTabs(), get: (id: string) => this.getTab(id), new: () => this.createBrowserTab('chromium') } };
@@ -104,13 +117,13 @@ export class Cua {
     this.assertActive();
     await Promise.allSettled([...this.tabs.values()].map(async tab => (await tab).dispose()));
     this.tabs.clear();
+    await Promise.allSettled([...this.apps].map(app => app.release())); this.apps.clear();
   }
   async endSession(): Promise<void> {
     if (!this.active) return;
     this.active = false;
     await Promise.allSettled([...this.tabs.values()].map(async tab => (await tab).dispose()));
-    await this.context.close();
-    await this.browser.close();
+    try { await this.context.close(); } finally { await this.browser.close(); await this.native?.close(); }
   }
 }
 export const createCua = Cua.launch;

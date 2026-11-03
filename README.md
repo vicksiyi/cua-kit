@@ -1,9 +1,10 @@
 # Cua Kit
 
-独立 TypeScript Cua SDK、持久 JavaScript 运行时和 MCP 服务。已实现第一条受控 Chromium 链路；原生 macOS 与现有浏览器扩展仍在开发范围内，尚未实现。
+独立 TypeScript Cua SDK、持久 JavaScript 运行时和 MCP 服务。已实现第一条受控 Chromium 链路；原生 macOS helper 已有初步实现、尚待权限下的动作验收；现有浏览器扩展仍未实现。
 
 - [架构 RFC](docs/RFC-0001.md) · [源码行为分析](docs/SOURCE-DEEP-DIVE.md)
 - [Agent 调用架构、接口与 demo](docs/AGENT-INTEGRATION.md)
+- [原生 macOS 构建与验收](docs/NATIVE-MACOS.md)
 - [实现状态与完整目标](docs/IMPLEMENTATION-STATUS.md)
 - [飞书架构评审文档](https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b)
 

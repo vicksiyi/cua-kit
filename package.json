@@ -10,7 +10,8 @@
     ".": "./dist/index.js",
     "./agent/contracts": "./dist/agent/contracts.js",
     "./agent/loop": "./dist/agent/loop.js",
-    "./agent/mcp-client": "./dist/agent/mcp-client.js"
+    "./agent/mcp-client": "./dist/agent/mcp-client.js",
+    "./native": "./dist/native/provider.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -18,7 +19,9 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && tsx --test tests/*.test.ts",
     "demo": "npm run build && node dist/agent/demo.js",
-    "mcp": "node dist/mcp/stdio.js"
+    "mcp": "node dist/mcp/stdio.js",
+    "build:native": "swift build --package-path native/macos",
+    "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

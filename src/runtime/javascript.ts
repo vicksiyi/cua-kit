@@ -1,5 +1,6 @@
 import { parse } from 'acorn';
 import { getQuickJS, type QuickJSContext, type QuickJSDeferredPromise } from 'quickjs-emscripten';
+import type { MacApp } from '../native/provider.js';
 import type { Cua, CuaTab } from '../index.js';
 import { SerialQueue } from '../core/serial.js';
 import { CuaError } from '../core/errors.js';
@@ -48,7 +49,15 @@ const bootstrap = `(() => {
     goto: (...args) => invoke(id,'goto',args),
     close: (...args) => invoke(id,'close',args)
   });
+  const app = id => Object.freeze({ id,
+    observe: (...args) => invoke(id,'observe',args),
+    getAXState: (...args) => invoke(id,'getAXState',args),
+    click: (...args) => invoke(id,'click',args),
+    setValue: (...args) => invoke(id,'setValue',args)
+  });
   globalThis.cua = Object.freeze({
+    listApps: () => invoke(null,'listApps',[]),
+    getApp: async (...args) => app(await invoke(null,'getApp',args)),
     getState: () => invoke(null,'getState',[]),
     listBrowsers: () => invoke(null,'listBrowsers',[]),
     listTabs: (...args) => invoke(null,'listTabs',args),
@@ -65,6 +74,7 @@ export class JavascriptSession {
   private queue = new SerialQueue();
   private outputs: RuntimeOutput[] = [];
   private tabs = new Map<string, CuaTab>();
+  private apps = new Map<string, MacApp>();
   private pending = new Set<QuickJSDeferredPromise>();
   private alive = true;
   private needsReset = false;
@@ -124,6 +134,12 @@ export class JavascriptSession {
     const args = request.args;
     if (request.target === null) {
       switch (request.method) {
+        case 'listApps': return this.cua.listApps();
+        case 'getApp': {
+          const app = await this.cua.getApp(args[0]);
+          if (generation !== this.generation) { await app.release(); throw new CuaError('CANCELLED', 'Retired cell.'); }
+          this.apps.set(app.id, app); emit({ type: 'text', text: await app.getAXState() }); return app.id;
+        }
         case 'getState': return this.cua.getState();
         case 'listBrowsers': return this.cua.listBrowsers();
         case 'listTabs': return this.cua.listTabs(args[0]);
@@ -137,6 +153,17 @@ export class JavascriptSession {
           return target.id;
         }
         default: throw new CuaError('UNSUPPORTED_CAPABILITY', 'Unknown SDK method.');
+      }
+    }
+    const app = typeof request.target === 'string' ? this.apps.get(request.target) : undefined;
+    if (app) {
+      const options = { signal: this.currentAbort?.signal };
+      switch (request.method) {
+        case 'observe': return app.observe(options);
+        case 'getAXState': { const text = await app.getAXState(options); emit({ type: 'text', text }); return text; }
+        case 'click': return app.click(args[0], options);
+        case 'setValue': return app.setValue(args[0], args[1], options);
+        default: throw new CuaError('UNSUPPORTED_CAPABILITY', 'Native target does not support this method.');
       }
     }
     const tab = typeof request.target === 'string' ? this.tabs.get(request.target) : undefined;
@@ -202,7 +229,7 @@ export class JavascriptSession {
     return this.queue.run(async () => {
       this.currentAbort?.abort(); this.generation++;
       for (const promise of this.pending) promise.dispose(); this.pending.clear();
-      this.vm.dispose(); this.tabs.clear(); await this.cua.reset();
+      this.vm.dispose(); this.tabs.clear(); this.apps.clear(); await this.cua.reset();
       this.needsReset = false; await this.initialize();
     });
   }

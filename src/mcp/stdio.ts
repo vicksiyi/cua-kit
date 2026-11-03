@@ -5,8 +5,10 @@ import { createMcpServer } from './server.js';
 
 // Host configuration, not model-controlled arguments. No ambient authorization.
 const origins = new Set((process.env.CUA_ALLOWED_ORIGINS ?? '').split(',').filter(Boolean));
-if (!origins.size) throw new Error('Set CUA_ALLOWED_ORIGINS to comma-separated authorized origins (e.g. http://127.0.0.1:8080).');
-const cua = await createCua({ authorize: request => {
+const apps = new Set((process.env.CUA_ALLOWED_APPS ?? '').split(',').filter(Boolean));
+if (!origins.size && !apps.size) throw new Error('Set CUA_ALLOWED_ORIGINS and/or CUA_ALLOWED_APPS to authorize targets.');
+const cua = await createCua({ nativeHelperPath: process.env.CUA_NATIVE_HELPER_PATH, authorize: request => {
+  if (request.url.startsWith('app://')) return apps.has(decodeURIComponent(request.url.slice(6)));
   if (request.url === 'about:blank') return true;
   try { return origins.has(new URL(request.url).origin); } catch { return false; }
 } });
