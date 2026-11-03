@@ -2059,6 +2059,11 @@
       "end": 829132,
       "kind": "FunctionDeclaration"
     },
+    "yv": {
+      "start": 829531,
+      "end": 836424,
+      "kind": "ClassExpression"
+    },
     "Ka": {
       "start": 836425,
       "end": 836744,
