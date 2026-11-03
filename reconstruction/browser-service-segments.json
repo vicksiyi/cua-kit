@@ -2219,6 +2219,16 @@
       "end": 940780,
       "kind": "FunctionDeclaration"
     },
+    "nu": {
+      "start": 942666,
+      "end": 943209,
+      "kind": "FunctionDeclaration"
+    },
+    "Gh": {
+      "start": 950525,
+      "end": 951320,
+      "kind": "ClassExpression"
+    },
     "Ire": {
       "start": 957651,
       "end": 957978,

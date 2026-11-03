@@ -2379,6 +2379,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original AST differential remote calls, exception precedence and release; Ire compared over restored Oo/G2 with explicit click fixture; isolated Chromium CDP composes reconstructed executor, setter and text selection. Full $v click and AX target provider remain pending."
+    },
+    "packages/browser/src/service/accessibility/action_coordinator.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-action-coordinator",
+      "symbols": [
+        "nu",
+        "Gh"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential async traces: existing/new/beforeunload/foreign-tab dialogs, operation/handler errors, listener cleanup, per-tab input serialization, abort and queue ownership. Tre/Cre remain required dependencies supplied as explicit test fixtures."
     }
   },
   "embeddedPackages": {
