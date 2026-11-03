@@ -2269,6 +2269,11 @@
       "end": 957978,
       "kind": "FunctionDeclaration"
     },
+    "Wv": {
+      "start": 957978,
+      "end": 959782,
+      "kind": "FunctionDeclaration"
+    },
     "Oo": {
       "start": 961091,
       "end": 961854,
