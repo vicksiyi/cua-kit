@@ -3683,6 +3683,32 @@
         "TN"
       ],
       "validation": "13 original command traces with actual host/catalog dependencies. Real Chromium full list/approval/invoke chain uses fixture native modelContext, WebMCP domain and authority, modifies DOM and verifies resolved tool identity. Feature/config/telemetry bootstrap remains explicit; production runtime integration pending."
+    },
+    "packages/browser/src/service/webmcp/notifications.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "aA",
+        "Wue",
+        "_x",
+        "i6",
+        "s6",
+        "$ue"
+      ],
+      "status": "reconstructed-webmcp-notifications",
+      "validation": "15 original notification scenarios with restored directory/host/catalog dependencies and fixture CDP; event formatting checks; concurrent poll and late-completion tests. No production background host integration claimed."
+    },
+    "packages/browser/src/service/webmcp/notification_queue.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "vx",
+        "a6",
+        "u6",
+        "Gue"
+      ],
+      "status": "reconstructed-webmcp-notifications",
+      "validation": "Seven original queue scenarios cover event draining/session filtering, replacement, visibility before/after collection, final publish gate and throwing collector. Host visibility and publish checks remain required dependencies."
     }
   },
   "embeddedPackages": {
