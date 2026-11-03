@@ -3728,7 +3728,7 @@
         "l6"
       ],
       "status": "reconstructed-command-registry-with-required-host-dependencies",
-      "validation": "75 original names/order and getter descriptors; original literal command IDs; actual direct imports including AX/URL aliases; restored typing command dispatch via assembly. 69 direct handlers, five restored command factories, and mandatory BrowserAuthHandoff dependency. Registry membership does not establish production runtime or native backend completion."
+      "validation": "75 original names/order and getter descriptors; original literal command IDs; actual direct imports including AX/URL aliases; restored typing command dispatch via assembly. 69 direct handlers, five restored command factories, and mandatory BrowserAuthHandoff dependency. Registry membership does not establish production runtime or native backend completion. assembleServiceCommandsWithBrowserAuth now constructs restored handoff from host services rather than requiring an externally implemented command; full production context remains pending."
     },
     "packages/browser/src/service/browser_auth/field_plan.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4015,6 +4015,28 @@
       ],
       "status": "reconstructed-auth-screenshot",
       "validation": "Original success/failure traces use actual restored device screenshot pipeline and observation gate with fixture CDP; catches capture failures and preserves screenshot metadata."
+    },
+    "packages/browser/src/service/browser_auth/handoff.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "rN",
+        "bv",
+        "Xee"
+      ],
+      "status": "reconstructed-browser-auth-handoff-control-flow",
+      "validation": "25 original command traces cover authority/capability/layout/binding gates, broker prompt, ordinary submit status, decline/cancel/takeover/client errors and QR flows. Explicit dependency boundary retains full original email OTP/native/manual/ordinary lease control flow; those special modes still need deeper end-to-end coverage. Dynamic host types and some nested local names remain broad."
+    },
+    "packages/browser/src/service/browser_auth/handoff_assembly.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "ai",
+        "ete",
+        "Yee"
+      ],
+      "status": "reconstructed-browser-auth-handoff-assembly",
+      "validation": "Connects restored binding/inspection/checkpoint/review/broker/submission/screenshot/lease/observation modules. Assembled QR decline test exercises actual binding, capture, prompt and completion with fixture CDP/decoder. Host review, QR factory/assets and telemetry remain supplied. Reviewed SB mapping uses credentialObservationState.resume."
     }
   },
   "embeddedPackages": {
