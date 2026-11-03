@@ -2544,6 +2544,21 @@
       "end": 973417,
       "kind": "FunctionDeclaration"
     },
+    "zre": {
+      "start": 974393,
+      "end": 974480,
+      "kind": "NewExpression"
+    },
+    "iu": {
+      "start": 974500,
+      "end": 974593,
+      "kind": "ClassExpression"
+    },
+    "Kh": {
+      "start": 974597,
+      "end": 992531,
+      "kind": "ClassExpression"
+    },
     "Mc": {
       "start": 993286,
       "end": 993335,
