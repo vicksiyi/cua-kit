@@ -2,5 +2,10 @@
   "name": "@core/cua",
   "version": "0.2.6-reconstructed.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@core/core": "0.0.0-reconstructed.0",
+    "@core/browser": "0.0.0-reconstructed.0",
+    "@core/sky": "0.7.13-reconstructed.0"
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "@core/core",
+  "version": "0.0.0-reconstructed.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./UnreachableCaseError": {
+      "types": "./src/UnreachableCaseError.d.ts",
+      "import": "./dist/UnreachableCaseError.js"
+    }
+  }
+}

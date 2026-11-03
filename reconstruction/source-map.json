@@ -222,6 +222,30 @@
       "sha256": "61d568181a97aceb68beb7a5c0273f915febd75f4b2e61b8812bafc469f920c0",
       "status": "manually-reconstructed",
       "validation": "differential-tests; not exhaustive equivalence"
+    },
+    "packages/cua/src/get_apps.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/get_apps.js",
+      "sha256": "d209775c9aec14191413a4017ef0e070b8f2fe122806216c8fb85c664f51449a",
+      "status": "manually-reconstructed",
+      "validation": "inventory differential tests"
+    },
+    "packages/cua/src/get_state.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/get_state.js",
+      "sha256": "d6a44bdff38413cdcaea83c791267ad0bed0e1913bdc60a8c227b3c12d3cc372",
+      "status": "manually-reconstructed",
+      "validation": "inventory differential tests"
+    },
+    "packages/core/src/UnreachableCaseError.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_core/src/UnreachableCaseError.js",
+      "sha256": "0b4ce635bb19896c7dde334d0bba2c5f45194d347ada950b4302c585d7514390",
+      "status": "manually-reconstructed",
+      "validation": "inventory differential tests"
+    },
+    "packages/core/src/UnreachableCaseError.d.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_core/src/UnreachableCaseError.d.ts",
+      "sha256": "276b8af5ab99167e0a217186a39ffa44473beecd9a937057bcad2eb3e21c53b4",
+      "status": "original-declaration-copied",
+      "validation": "inventory differential tests"
     }
   },
   "embeddedPackages": {
@@ -231,6 +255,13 @@
       "workspace": "packages/browser",
       "versionNote": "Original version unavailable; 0.0.0-reconstructed.0 is a local placeholder, not a source version.",
       "workspaceName": "@core/browser"
+    },
+    "oai_js_core": {
+      "workspace": "packages/core",
+      "workspaceName": "@core/core",
+      "evidence": "Physical bundled directory oai_js_core, imported by original get_apps/create_tinysky_alt; original standalone package manifest not found",
+      "status": "partial-reconstruction",
+      "versionNote": "0.0.0-reconstructed.0 is local; @core/core is an explicit mapping of the observed directory, not a verified original npm package name"
     }
   },
   "namespaceMapping": {

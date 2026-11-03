@@ -6,6 +6,20 @@ execFileSync(
   "node_modules/.bin/tsc",
   [
     "-p",
+    "reconstruction/tsconfig.core.json",
+    "--noEmit",
+    "false",
+    "--rootDir",
+    "packages/core/src",
+    "--outDir",
+    "packages/core/dist",
+  ],
+  { stdio: "inherit" },
+);
+execFileSync(
+  "node_modules/.bin/tsc",
+  [
+    "-p",
     "reconstruction/tsconfig.json",
     "--noEmit",
     "false",
@@ -63,3 +77,5 @@ async function patchDirectory(dir) {
   }
 }
 await patchDirectory("packages/cua/dist");
+
+await patchDirectory("packages/core/dist");
