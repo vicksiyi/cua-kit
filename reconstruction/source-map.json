@@ -2906,6 +2906,26 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Authorization precedes script/selector validation; success and script exception both release remote result objects. Production registry/context integration remains pending."
+    },
+    "packages/browser/src/service/commands/locator.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-locator-command-handlers",
+      "symbols": [
+        "s2",
+        "u2",
+        "a2",
+        "c2",
+        "d2",
+        "p2",
+        "m2",
+        "f2",
+        "w2",
+        "_2",
+        "v2"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Eleven original commands across eight authority/validation/callback scenarios (88 comparisons), plus real Chromium observation handlers including protected attribute and relative-selector reads. ReadAll uses an equivalent object method to avoid tsx injecting an out-of-scope __name into serialized callback. Full command registry/context and remaining action handlers remain pending."
     }
   },
   "embeddedPackages": {
