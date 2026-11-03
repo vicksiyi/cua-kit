@@ -1,3 +1,4 @@
+import { parseOriginPattern } from "./origin_patterns";
 export interface EffectiveNetworkConfig {
   enabled: boolean | null;
   allowedDomains: string[];
@@ -132,7 +133,7 @@ function sandboxAllowsNetwork(policy: SandboxNetworkPolicy) {
       return policy.networkAccess === "enabled";
   }
 }
-/** Original gL/Uoe; Cs origin-pattern parsing remains an explicit dependency until restored. */
+/** Original gL/Uoe; Cs origin-pattern parsing is supplied by the reconstructed parser. */
 export function createNetworkPolicyBuilder(
   parseOriginPattern: (pattern: string) => { canonicalKey: string } | null,
 ) {
@@ -211,3 +212,6 @@ export function createNetworkPolicyBuilder(
     return { constraints };
   };
 }
+
+export const buildNetworkPolicy =
+  createNetworkPolicyBuilder(parseOriginPattern);

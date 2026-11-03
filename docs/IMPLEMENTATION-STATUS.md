@@ -86,3 +86,7 @@ Added and passed `reconstruction/page-assets-browser-smoke.ts`: actual DOM snaps
 ## Source reconstruction: network config composition
 
 Restored managed/local network merging and constraint construction. 186 tests pass with type checking. Origin parser remains an explicit dependency; this is configuration composition, not a completed policy engine or full preferences class.
+
+## Source reconstruction: origin patterns
+
+Restored origin/hostname pattern parsing and matching and connected the parser to network constraint construction. 189 tests pass with type checks, including real canonicalization collisions. Full preferences and backend policy execution remain incomplete.

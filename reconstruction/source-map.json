@@ -1776,7 +1776,7 @@
     "packages/browser/src/service/preferences/network_config.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
       "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
-      "status": "manually-reconstructed-functions-with-origin-parser-dependency",
+      "status": "manually-reconstructed-functions",
       "symbols": [
         "fS",
         "Doe",
@@ -1792,6 +1792,38 @@
         "dL",
         "gL",
         "Uoe"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
+    },
+    "packages/browser/src/service/preferences/origin_patterns.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "manually-reconstructed-functions",
+      "symbols": [
+        "rl",
+        "sp",
+        "nl",
+        "ap",
+        "tl",
+        "Y8",
+        "ip",
+        "FC",
+        "J8",
+        "Z8",
+        "MC",
+        "Py",
+        "Q8",
+        "NC",
+        "e5",
+        "Ry",
+        "t5",
+        "Cs",
+        "r5",
+        "n5",
+        "o5",
+        "i5",
+        "Iy"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "exact original source expressions extracted by AST and executed with explicit dependency fixtures; no service module initialization or live backend"
