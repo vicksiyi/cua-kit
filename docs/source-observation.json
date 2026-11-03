@@ -1,0 +1,51 @@
+{
+  "observed_at": "2026-11-03",
+  "purpose": "Reproducible source observation metadata; no vendor code copied",
+  "files": [
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+      "bytes": 5738,
+      "sha256": "fe00757868fc4dd01b00d2cd1b315d7442497a4b33d7cd030450da4d47a114f0"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_tab.js",
+      "bytes": 2309,
+      "sha256": "a693e078ecbaa34020cf0caa373edb9c525dad87fd3ada62706a07eadaa6dc2a"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/setup_browser.js",
+      "bytes": 540,
+      "sha256": "a1cf70b2ec89d51f9bc33b056dbe31af9cc6fd605c365e93f5d0649d12748216"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/browser-desktop/scripts/browser-client.mjs",
+      "bytes": 170131,
+      "sha256": "c1ca88410dab039d763e668ecc561b4cc1e041bfa289e318a9244c600c373c10"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/browser-desktop/scripts/browser-service.mjs",
+      "bytes": 2110036,
+      "sha256": "0c1cb5b13bbe6ae70cea751740e537885a12d53cd076c864cd9154ef6e86e3bb"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/browser-desktop/scripts/browser-accessibility.wasm.br",
+      "bytes": 4084148,
+      "sha256": "97d2773f1f0d3f890e2dc8bbf7da5745cfb9c2686d893579ffc35bb9608185ee"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/types.d.ts",
+      "bytes": 9591,
+      "sha256": "d9aa0d7cd7b2ebf4f765dac3ad00431a5733ab61435ba80bf8204b2239ca93cf"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.d.ts",
+      "bytes": 421,
+      "sha256": "db5c24c93bee752f6b6c6135ccaaabec218fad2f78c08ce9f89291a156a4dccf"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_tab.d.ts",
+      "bytes": 95,
+      "sha256": "ec5e233ef4d0044d8cd6914f8b91a8ea708177b5354455d978411bd1e77c2bde"
+    }
+  ]
+}
