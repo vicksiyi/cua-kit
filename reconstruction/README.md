@@ -6,7 +6,7 @@
 
 | 原始包 | 当前 workspace | 当前状态 |
 |---|---|---|
-| @oai/cua 0.2.6 | @core/cua | 21 个运行模块已还原 |
+| @oai/cua 0.2.6 | @core/cua | CUA 与 core 共 21 个运行模块已还原 |
 | @oai/cua-repl 0.1.2 | @core/cua-repl | 包边界已建立，尚未还原实现 |
 | @oai/sky 0.7.13 | @core/sky | 包边界已建立，尚未还原实现 |
 | @oai/browser-desktop 0.1.1 | @core/browser-desktop | 包边界已建立，尚未还原实现 |
@@ -58,3 +58,30 @@ npm run test:reconstruction
 原构建产物以相对目录引用独立的 `oai_js_core`，没有找到它的独立 package manifest。此目录显式映射为 workspace `@core/core`，并记录该命名是本项目映射而非已核实的原 npm 包名。CUA 通过 `@core/core/UnreachableCaseError` 引用，构建先生成 core，再生成 cua；不把跨模块 helper 复制回 CUA 包。
 
 当前 14 项验证通过；新增原生平台清单、未知平台错误、11 种联合清单配置/故障组合的差分验证。完整初始化入口和原浏览器/Sky 实现仍未接通。
+
+## 浏览器 AX 客户端与命令协议增量
+
+已下探实际导入的 `oai_js_browser/dist/skill/scripts/browser-client.js`，还原 bundle 内的 `Fl` 为 `@core/browser/ax` 的 AxClient，并还原 Command（原 `_`）和 AX state/action schema。新增 3 个业务模块，累计 24 个；第三方校验器不计入还原模块数量。
+
+```mermaid
+sequenceDiagram
+  participant C as @core/cua bind_tab
+  participant A as @core/browser AxClient (原 Fl)
+  participant S as AX command schema
+  participant T as Browser transport（待还原）
+  participant B as Browser service（待还原）
+  C->>A: get(state/screenshot/both) 或 click/paste/pressKey
+  A->>S: 创建 tab_ax_get_state / tab_ax_action
+  S-->>A: Command（保留原始 payload）
+  A->>T: send({command})
+  T->>S: parse()（校验并去除未知字段）
+  T->>B: 原协议命令
+  B-->>A: state / base64 data / screenshot_unavailable
+  A-->>C: 文本、Uint8Array 或组合结果
+```
+
+命令构造本身不提前 parse，toJSON 保留原 payload，校验时机由 transport 决定；AX get 不展示，write 才调用 display。截图使用原 atob 路径解码，保持缺图、非法 base64 与 both 分支的错误语义。
+
+校验库是原 bundle 内的第三方 Zod 实现。为避免用不同 npm 版本改变验证行为，以 `scripts/extract-bundled-validator.mjs` 提取原实现、仅格式化并添加导出，保留在 vendor；该文件使用 ts-nocheck，未冒称已完成其类型还原。业务 AxClient/schema/Command 是手工可读 TS。`browser-bundle-segments.json` 记录 Acorn UTF-16 位置及原符号，source-map 记录原 bundle SHA-256。
+
+当前 17 项验证通过。测试给原 bundle 增加仅用于测试的导出，直接调用原 Fl 及原 schema，与构建后代码比较 capture 模式、返回缺失、显示顺序、base64 错误、18 类动作/参数场景、验证错误及原始/已解析 payload。此处仍仅是客户端协议层；真实 AX 收集、几何命中、CDP 点击与截图服务端尚待还原，没有把 RPC 编码误称为底层功能完成。

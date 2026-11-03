@@ -25,7 +25,7 @@
     "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts",
     "build:extension": "node scripts/build-extension.mjs",
     "test:reconstruction": "npm run build:reconstruction && tsx --test reconstruction/*.test.ts",
-    "check:reconstruction": "tsc -p reconstruction/tsconfig.json",
+    "check:reconstruction": "tsc -p reconstruction/tsconfig.core.json && tsc -p reconstruction/tsconfig.browser.json && tsc -p reconstruction/tsconfig.json",
     "build:reconstruction": "node scripts/build-reconstruction.mjs"
   },
   "dependencies": {

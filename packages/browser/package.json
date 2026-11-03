@@ -2,5 +2,11 @@
   "name": "@core/browser",
   "version": "0.0.0-reconstructed.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": {
+    "./ax": {
+      "types": "./src/ax.ts",
+      "import": "./dist/ax.js"
+    }
+  }
 }

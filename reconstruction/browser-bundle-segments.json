@@ -1,0 +1,54 @@
+{
+  "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+  "offsetUnit": "UTF-16 code units (Acorn start/end)",
+  "segments": {
+    "bundledZod": {
+      "start": 11947,
+      "end": 71339
+    },
+    "Fl": {
+      "start": 127293,
+      "end": 129791
+    },
+    "_": {
+      "start": 11696,
+      "end": 11860
+    },
+    "Zs": {
+      "start": 83907,
+      "end": 84064
+    },
+    "Ns": {
+      "start": 84065,
+      "end": 84179
+    },
+    "Bs": {
+      "start": 84355,
+      "end": 84390
+    },
+    "Fs": {
+      "start": 84391,
+      "end": 84424
+    },
+    "Us": {
+      "start": 84425,
+      "end": 84444
+    },
+    "zs": {
+      "start": 84445,
+      "end": 85633
+    },
+    "Vs": {
+      "start": 85634,
+      "end": 85698
+    },
+    "Ws": {
+      "start": 85699,
+      "end": 85714
+    },
+    "dl": {
+      "start": 102339,
+      "end": 102445
+    }
+  }
+}
