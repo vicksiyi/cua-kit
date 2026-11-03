@@ -1,3 +1,4 @@
+import { isPlainObject } from "./object_utils";
 // Reconstructed from jm's constructor closure and pl in browser-client.js.
 // The original lexical dependencies p (runtime export registry) and jh (Tab)
 // are explicit internal dependencies until the full registry is reconstructed.
@@ -11,12 +12,6 @@ export interface ApiManifest {
 }
 export type RuntimeType = abstract new (...args: any[]) => object;
 export type ApiView = <T>(value: T, disabledMemberIds: Set<string>) => T;
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (value == null || typeof value !== "object") return false;
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === null || Object.getPrototypeOf(prototype) === null;
-}
 
 export function createApiView(
   manifest: ApiManifest,
