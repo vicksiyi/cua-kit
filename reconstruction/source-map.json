@@ -2807,6 +2807,20 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Eighteen original page-callback comparisons for fill/sequential state/retarget/focus/token/error order; eight real Chromium scenarios for fill/date/disabled/hidden/focus/label/sequential/state operations. Installed hF remains required; pointer actions and production/native assembly remain pending."
+    },
+    "packages/browser/src/service/playwright/pointer_frames.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-pointer-frames",
+      "symbols": [
+        "ig",
+        "li",
+        "b5",
+        "gp",
+        "xF"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original geometry differential cases, six frame mapping scenarios and seven obstruction scenarios. Real Chromium DOM verifies content quad/box mapping and overlay hit detection for both backend modes. No hF dependency for these frame operations. Full pointer action orchestration and production/native integration remain pending."
     }
   },
   "embeddedPackages": {

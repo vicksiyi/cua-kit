@@ -2814,6 +2814,11 @@
       "end": 1214534,
       "kind": "FunctionDeclaration"
     },
+    "xF": {
+      "start": 1214534,
+      "end": 1214605,
+      "kind": "FunctionDeclaration"
+    },
     "kne": {
       "start": 1214605,
       "end": 1214708,
