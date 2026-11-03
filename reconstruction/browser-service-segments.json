@@ -1604,6 +1604,36 @@
       "end": 778420,
       "kind": "Literal"
     },
+    "Tf": {
+      "start": 787074,
+      "end": 787085,
+      "kind": "NewExpression"
+    },
+    "$D": {
+      "start": 787086,
+      "end": 787142,
+      "kind": "FunctionDeclaration"
+    },
+    "GD": {
+      "start": 787142,
+      "end": 787249,
+      "kind": "FunctionDeclaration"
+    },
+    "VD": {
+      "start": 788540,
+      "end": 788979,
+      "kind": "FunctionDeclaration"
+    },
+    "aJ": {
+      "start": 788979,
+      "end": 789845,
+      "kind": "FunctionDeclaration"
+    },
+    "uJ": {
+      "start": 789845,
+      "end": 791006,
+      "kind": "FunctionDeclaration"
+    },
     "zD": {
       "start": 807012,
       "end": 807212,

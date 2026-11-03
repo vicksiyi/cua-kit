@@ -3087,6 +3087,30 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "20 original command traces plus stateful completion predicate comparisons; verifies credential epoch/loader checks, races, detach/session changes, error sanitization and cleanup. GD document response lease reset remains required injected dependency, no silent no-op default. Real browser command integration and production registry pending."
+    },
+    "packages/browser/src/service/credentials/request_matching.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-credential-request_matching",
+      "symbols": [
+        "uJ",
+        "aJ"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential HMAC form/password request matching including multipart, duplicate fields, URL/referrer decoding and caps; five original lease ownership/replacement/rollback traces. Registry requires original Z_ lease class, still unreconstructed. No credential submission or end-to-end claim."
+    },
+    "packages/browser/src/service/credentials/lease_registry.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-credential-lease_registry",
+      "symbols": [
+        "Tf",
+        "VD",
+        "$D",
+        "GD"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Differential HMAC form/password request matching including multipart, duplicate fields, URL/referrer decoding and caps; five original lease ownership/replacement/rollback traces. Registry requires original Z_ lease class, still unreconstructed. No credential submission or end-to-end claim."
     }
   },
   "embeddedPackages": {
