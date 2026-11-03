@@ -50,6 +50,32 @@ const selected = [
   "Vs",
   "Ws",
   "dl",
+  "xm",
+  "km",
+  "Sm",
+  "Tm",
+  "u",
+  "h",
+  "il",
+  "sl",
+  "nl",
+  "ol",
+  "Jt",
+  "Gt",
+  "Ht",
+  "Yt",
+  "Xt",
+  "Qt",
+  "y",
+  "ir",
+  "dr",
+  "pr",
+  "Sr",
+  "Rr",
+  "Or",
+  "ha",
+  "ya",
+  "xa",
 ];
 const segments = Object.fromEntries(
   selected.map((name) => {
@@ -57,6 +83,26 @@ const segments = Object.fromEntries(
     return [name, { start: declaration.start, end: declaration.end }];
   }),
 );
+for (const name of [
+  "m",
+  "ar",
+  "cr",
+  "mr",
+  "fr",
+  "Cr",
+  "Mr",
+  "qr",
+  "_a",
+  "va",
+  "Ia",
+]) {
+  const declaration = ast.body.find(
+    (node) => node.type === "FunctionDeclaration" && node.id.name === name,
+  );
+  if (!declaration)
+    throw new Error(`Bundle function missing: ${name}; re-review version`);
+  segments[name] = { start: declaration.start, end: declaration.end };
+}
 await writeFile(
   "reconstruction/browser-bundle-segments.json",
   JSON.stringify(

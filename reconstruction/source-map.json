@@ -286,6 +286,97 @@
       "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
       "status": "bundled-third-party-dependency-formatted-not-reconstructed",
       "generator": "scripts/extract-bundled-validator.mjs"
+    },
+    "packages/browser/src/runtime/function_agent_transport.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "xm",
+        "km",
+        "Sm",
+        "Tm"
+      ],
+      "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
+      "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
+    },
+    "packages/browser/src/runtime/display.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "u",
+        "h",
+        "m"
+      ],
+      "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
+      "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
+    },
+    "packages/browser/src/agent.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "il",
+        "sl",
+        "nl"
+      ],
+      "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
+      "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
+    },
+    "packages/browser/src/commands/browser_inventory.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Jt",
+        "Gt",
+        "Ht",
+        "Yt",
+        "Xt",
+        "Qt",
+        "y",
+        "ar",
+        "ir",
+        "cr",
+        "dr",
+        "mr",
+        "pr",
+        "fr",
+        "Sr",
+        "Cr"
+      ],
+      "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
+      "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
+    },
+    "packages/browser/src/tabs.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "ol"
+      ],
+      "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
+      "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
+    },
+    "packages/browser/src/commands/tabs.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
+      "status": "manually-reconstructed",
+      "symbols": [
+        "Rr",
+        "Mr",
+        "Or",
+        "qr",
+        "ha",
+        "_a",
+        "ya",
+        "va",
+        "xa",
+        "Ia"
+      ],
+      "validation": "original whole-bundle lexical exports differential tests; real service not yet connected",
+      "fileGrouping": "inferred from bundle classes/commands; original file paths unavailable"
     }
   },
   "embeddedPackages": {

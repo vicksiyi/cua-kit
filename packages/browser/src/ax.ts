@@ -1,11 +1,7 @@
 import { StateCommand, ActionCommand } from "./commands/ax";
-import type { Command } from "./commands/command";
+import type { ClientTransport } from "./runtime/function_agent_transport";
 export type Point = [number, number];
-// Transport boundary inferred from bundle Fl; later runtime restoration will supply its concrete type.
-export interface AxTransport {
-  send(args: { command: Command<Record<string, unknown>> }): Promise<any>;
-  display(value: string | Uint8Array): Promise<unknown>;
-}
+export type AxTransport = ClientTransport;
 type Mode = "state" | "screenshot" | "both";
 type Capture = { mode: Mode; state?: string; screenshot?: Uint8Array };
 export class AxClient {
