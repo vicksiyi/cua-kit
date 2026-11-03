@@ -17,6 +17,7 @@ const wanted = new Set([
   "ote", "Sv", "ite", "ate", "aN", "ste", "nN", "tN", "dte", "hte", "fte", "Th", "Ga", "Vee",
   "Ka", "Ch", "Va", "wv", "Qee", "_f", "RD", "Rh", "iN", "eN", "Ih", "_v", "sN",
   "Y_", "oN", "rte", "nte", "vv", "Ah", "Ph", "QM", "tte", "za",
+  "vf", "pte", "mte",
   "xv",
   "Ct", "uN",
   "Lc", "Uc", "mF", "bne", "fF", "yne", "wne", "_ne",

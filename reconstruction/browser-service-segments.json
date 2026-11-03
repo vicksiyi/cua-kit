@@ -1894,6 +1894,11 @@
       "end": 734270,
       "kind": "FunctionDeclaration"
     },
+    "vf": {
+      "start": 735777,
+      "end": 736618,
+      "kind": "FunctionDeclaration"
+    },
     "an": {
       "start": 778414,
       "end": 778420,
@@ -2187,6 +2192,16 @@
     "dte": {
       "start": 847234,
       "end": 847397,
+      "kind": "FunctionDeclaration"
+    },
+    "pte": {
+      "start": 847397,
+      "end": 848235,
+      "kind": "FunctionDeclaration"
+    },
+    "mte": {
+      "start": 848235,
+      "end": 849255,
       "kind": "FunctionDeclaration"
     },
     "fte": {

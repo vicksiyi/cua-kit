@@ -3798,6 +3798,25 @@
       ],
       "status": "reconstructed-browser-auth-field-inspection",
       "validation": "12 original host traces cover visibility tri-state, strict versus relaxed inspection, submit/options ordering, duplicate controls, metadata normalization/truncation and required field strengthening. Uses actual restored distinct-element helper."
+    },
+    "packages/browser/src/service/browser_auth/submission_origin.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "vf"
+      ],
+      "status": "reconstructed-browser-auth-field-delivery",
+      "validation": "20 original Chromium comparisons of form/submitter action and method, disabled fallback, HTTPS/HTTP/javascript, fragment removal and missing/error states."
+    },
+    "packages/browser/src/service/browser_auth/field_delivery.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "pte",
+        "mte"
+      ],
+      "status": "reconstructed-browser-auth-field-delivery",
+      "validation": "13 original traces cover OTP Unicode/digits, binding, retry, uncertain outcomes and verified site submission. Default plain-fill chain changes real Chromium DOM using restored field_page and fixture binding/injected helper. Real OTP key dispatch and broker/checkpoint integration remain unverified."
     }
   },
   "embeddedPackages": {
