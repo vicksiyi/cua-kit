@@ -2989,7 +2989,28 @@
         "T2"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Eight differential scenarios against original: immediate/buffered idle, changed loader, detachment, blocked navigation, ignored nested-session/stale-loader events, timeout; listener cleanup checked. Real CDP integration and command wiring remain pending."
+      "validation": "Eight differential scenarios against original: immediate/buffered idle, changed loader, detachment, blocked navigation, ignored nested-session/stale-loader events, timeout; listener cleanup checked. Real CDP integration and command wiring remain pending. Real Chromium lifecycle integration now verified by browser-service-wait.test.ts."
+    },
+    "packages/browser/src/service/commands/wait.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-wait-commands",
+      "symbols": [
+        "C2",
+        "Bv",
+        "nre",
+        "ore",
+        "A2",
+        "I2",
+        "P2",
+        "ire",
+        "R2",
+        "sre",
+        "Dc",
+        "Dv"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "48 original command trace comparisons, glob/frame edge cases, real Chromium URL navigation, load readiness and networkidle through reconstructed event waiter. Production registry/context assembly remains pending."
     }
   },
   "embeddedPackages": {
