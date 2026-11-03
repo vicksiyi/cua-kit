@@ -2162,6 +2162,51 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original cg AST and helpers compared with identical explicit Os/cS/ru fixtures; covers click/drag/scroll, nested load waits, abort/release errors and geometry fallback. Actual keyboard/DOM/shadow helpers pending"
+    },
+    "packages/browser/src/service/input/dom_state.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-dom-state-and-targeting",
+      "symbols": [
+        "lD",
+        "cD",
+        "dD",
+        "pD",
+        "mD",
+        "va",
+        "fD",
+        "hD",
+        "gD",
+        "aD",
+        "uD",
+        "rY",
+        "bD",
+        "F_",
+        "yD",
+        "nY",
+        "li",
+        "b5",
+        "gp",
+        "L_",
+        "U_"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original-AST differential tests for snapshot refs, cache/retry/cleanup, nested target transforms, injected node geometry expression and composed resolver; actual snapshot generation and production backend pending"
+    },
+    "packages/browser/src/service/input/dom_node.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-dom-state-and-targeting",
+      "symbols": [
+        "cS",
+        "Qne",
+        "eoe",
+        "toe",
+        "roe",
+        "Zne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original-AST differential tests for snapshot refs, cache/retry/cleanup, nested target transforms, injected node geometry expression and composed resolver; actual snapshot generation and production backend pending"
     }
   },
   "embeddedPackages": {
