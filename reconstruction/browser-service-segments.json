@@ -2824,6 +2824,11 @@
       "end": 1214775,
       "kind": "FunctionDeclaration"
     },
+    "Dne": {
+      "start": 1214775,
+      "end": 1214951,
+      "kind": "FunctionDeclaration"
+    },
     "lS": {
       "start": 1290218,
       "end": 1290282,

@@ -2796,6 +2796,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original-class comparisons across fourteen bound/ordinary/collection routing scenarios including exact serialized expressions, arguments and retry telemetry. Real Chromium root/iframe ordinary and bound callbacks, collections and disconnected-bound-node rejection. Installed hF remains required; full actions and production/native assembly remain pending."
+    },
+    "packages/browser/src/service/playwright/input_preparation.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-playwright-input-preparation",
+      "symbols": [
+        "ig",
+        "Dne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Eighteen original page-callback comparisons for fill/sequential state/retarget/focus/token/error order; eight real Chromium scenarios for fill/date/disabled/hidden/focus/label/sequential/state operations. Installed hF remains required; pointer actions and production/native assembly remain pending."
     }
   },
   "embeddedPackages": {
