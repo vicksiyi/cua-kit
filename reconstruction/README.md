@@ -14,7 +14,7 @@
 
 第一批还原：`create_browser_api`、`bind_tab`、`tab_reference`、`duration_seconds`、`get_browser_tabs`、`core/display`。原始对外 exports 已归档；未完成的 package entrypoint 不提前声明为可运行，当前并非完整可安装替代品。
 
-**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。208 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
+**最新状态：** `@core/browser` 根入口现在导出 `setupBrowserRuntime`，与安装包 browser-client.js 的实际导出一致。211 项验证通过（含 2 项调用侧接入验证）；需要可信宿主的 `nodeRepl.rpc`，不代表已经实现独立浏览器后端。以下增量章节记录各阶段历史状态，以末尾最新章节为准。
 
 ## 验证
 
@@ -475,3 +475,9 @@ Restored gS/Yoe and policy/guardian-review helpers in `prompt_results.ts`, assem
 Restored lu.maybeAutoAnswerBrowserUseRequest as an owner-bound method in `auto_answer.ts`, composing reconstructed table matching, snapshot reads, lifetime policy and shared caches. Preserves session-denial precedence, global denial, guardian-v1/v2, turn approval, conversation/global persisted permission and never-ask fallback order. Guardian-v2 cache is checked again after awaited policy reads to prevent reusing a revoked entry.
 
 208 tests pass with type checks. Differential tests compare the exact installed class method and reconstructed method across resource kinds, v1/v2 refresh modes, conflicting permissions, policy failures, invalid session IDs and guardian revocation. The complete Preferences class and production host remain to be assembled.
+
+## Full Preferences class assembly
+
+Restored the complete lu class in `preferences.ts` and Oe in `authority_gate_error.ts`, assembling reconstructed network/origin policies, metadata, stores, shared caches and prompt handling. Added WebMCP origin/file decisions, history modes, OTP mode, extension headers and full-CDP deployment/enterprise/local config gates. Runtime mode/flag predicates are inlined with the original comparison behavior. The auto-answer method is installed directly on the prototype, preserving method ordering without an extra async forwarding layer.
+
+211 tests and type checks pass. Full-class tests compare original instance fields, prototype method order/arity, configuration calls, history/CDP branches, malformed Site tools settings and assembled prompt→store→decision flows for v1/v2. This completes the Preferences class reconstruction, not the actual config backend, guardian service, execution context or full CUA runtime.

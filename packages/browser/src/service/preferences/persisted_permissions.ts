@@ -13,7 +13,7 @@ export interface PermissionResource {
   transferKind?: string;
 }
 export interface PermissionTableStore {
-  get(key: string): Promise<unknown>;
+  get(key: string, options?: { refresh: boolean }): Promise<unknown>;
   readSnapshot?(options: { refresh: boolean }): Promise<Record<string, any>>;
   update(
     transform: (snapshot: Record<string, any>) => Record<string, any>,
@@ -229,7 +229,7 @@ export interface PermissionTarget {
   raw: string;
   hostPort: string | null;
 }
-function storedOriginMatches(pattern: string, target: PermissionTarget) {
+export function storedOriginMatches(pattern: string, target: PermissionTarget) {
   const parsed = parseOriginPattern(pattern);
   let url: URL | null;
   try {

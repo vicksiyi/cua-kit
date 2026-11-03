@@ -118,3 +118,7 @@ Restored user/guardian prompt outcome handling and connected policy, persisted s
 ## Source reconstruction: automatic permission decisions
 
 Restored the Preferences automatic-answer method over existing policy/table/cache modules. 208 tests pass with type checks. Full class assembly and production backend remain outstanding.
+
+## Source reconstruction: Preferences assembly
+
+Complete lu class is assembled over restored helpers; class shape and prompt/decision flows match the installed source in differential tests. WebMCP/history/full-CDP/OTP checks restored. 211 tests pass with type checks. Real config/approval host and execution context remain pending.
