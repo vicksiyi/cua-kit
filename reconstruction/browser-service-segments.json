@@ -2559,6 +2559,16 @@
       "end": 974480,
       "kind": "NewExpression"
     },
+    "Kre": {
+      "start": 974485,
+      "end": 974488,
+      "kind": "Literal"
+    },
+    "Xre": {
+      "start": 974493,
+      "end": 974496,
+      "kind": "Literal"
+    },
     "iu": {
       "start": 974500,
       "end": 974593,
