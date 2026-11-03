@@ -2663,6 +2663,24 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original command differential traces for authority order, followSessionTab, stale retry limit/session changes, validation and screenshot callback, plus action error enrichment. Production command registry/context assembly remains pending."
+    },
+    "packages/browser/src/service/playwright/execution_state.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "partial-reconstruction-playwright-execution-state",
+      "symbols": [
+        "ig",
+        "Fo",
+        "ng",
+        "og",
+        "ot",
+        "Sne",
+        "Ene",
+        "xne",
+        "Tne"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original ig differential tests cover execution-context identity/concurrency/invalidation, cache eviction, events, forDocument inheritance and CDP fallback; real Chromium isolated-world evaluation compared. Full Playwright selector/injection/action service remains pending."
     }
   },
   "embeddedPackages": {
