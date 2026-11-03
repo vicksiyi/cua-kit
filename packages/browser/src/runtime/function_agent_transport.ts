@@ -43,8 +43,8 @@ async function consumeSideEffects(
 
 /** Original xm/km/Sm/Tm. Sends raw toJSON; it deliberately does NOT call parse(). */
 export class FunctionAgentTransport implements ClientTransport {
-  public executeAgentCommand: ExecuteAgentCommand;
-  public displaySideEffect: DisplaySideEffect;
+  declare public executeAgentCommand: ExecuteAgentCommand;
+  declare public displaySideEffect: DisplaySideEffect;
 
   constructor({
     executeAgentCommand,

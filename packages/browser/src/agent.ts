@@ -81,8 +81,8 @@ export class Documentation {
 }
 /** Original nl (the browser API Agent object, not an LLM decision loop). */
 export class Agent<Browser = unknown> {
-  documentation: Documentation;
-  browsers: Browsers<Browser>;
+  declare documentation: Documentation;
+  declare browsers: Browsers<Browser>;
   constructor({
     createBrowser,
     onBrowserUsed,

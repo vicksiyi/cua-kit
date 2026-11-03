@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { FunctionAgentTransport } from "../packages/browser/dist/runtime/function_agent_transport.js";
 import { createDisplaySideEffect } from "../packages/browser/dist/runtime/display.js";
+import { Agent } from "../packages/browser/dist/agent.js";
+import { Command } from "../packages/browser/dist/commands/command.js";
 import { AxClient } from "../packages/browser/dist/ax.js";
 const root =
   process.env.CUA_VENDOR_ROOT ??
@@ -12,7 +14,7 @@ const source = await readFile(
   "utf8",
 );
 const original = await import(
-  `data:text/javascript;base64,${Buffer.from(source + "\nexport {xm as FunctionAgentTransport,m as createDisplaySideEffect,Fl as AxClient};").toString("base64")}`
+  `data:text/javascript;base64,${Buffer.from(source + "\nexport {xm as FunctionAgentTransport,m as createDisplaySideEffect,Fl as AxClient,nl as Agent,_ as Command};").toString("base64")}`
 );
 
 async function outcome(fn: () => any) {
@@ -246,4 +248,48 @@ test("AX -> actual function transport -> display bridge preserves service effect
   assert.equal(actual[1][1].value, "service note");
   assert.equal(actual[2][1].value, "AX");
   assert.equal(actual[4][1].action.target, -1);
+});
+
+test("assignment-only constructors preserve inherited setter behavior without emitted TS field initializers", () => {
+  function run(Base: any, keys: string[], args: any[]) {
+    const log: unknown[] = [];
+    class Derived extends Base {}
+    for (const key of keys)
+      Object.defineProperty(Derived.prototype, key, {
+        set(value) {
+          log.push([key, typeof value]);
+          Object.defineProperty(this, key, {
+            value,
+            writable: true,
+            enumerable: true,
+            configurable: true,
+          });
+        },
+        configurable: true,
+      });
+    const instance = new Derived(...args);
+    return { log, keys: Object.keys(instance) };
+  }
+  const cases = [
+    [
+      Command,
+      original.Command,
+      ["type", "schema", "payload"],
+      ["command", { parse: (v: any) => v }, {}],
+    ],
+    [
+      FunctionAgentTransport,
+      original.FunctionAgentTransport,
+      ["executeAgentCommand", "displaySideEffect"],
+      [{ executeAgentCommand: () => ({}) }],
+    ],
+    [
+      Agent,
+      original.Agent,
+      ["documentation", "browsers"],
+      [{ transport: {}, createBrowser: () => ({}) }],
+    ],
+  ];
+  for (const [restored, vendor, keys, args] of cases as any)
+    assert.deepEqual(run(restored, keys, args), run(vendor, keys, args));
 });
