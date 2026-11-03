@@ -3817,6 +3817,18 @@
       ],
       "status": "reconstructed-browser-auth-field-delivery",
       "validation": "13 original traces cover OTP Unicode/digits, binding, retry, uncertain outcomes and verified site submission. Default plain-fill chain changes real Chromium DOM using restored field_page and fixture binding/injected helper. Real OTP key dispatch and broker/checkpoint integration remain unverified."
+    },
+    "packages/browser/src/service/browser_auth/submission_status.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "lte",
+        "cte",
+        "zee",
+        "Kee"
+      ],
+      "status": "reconstructed-browser-auth-submission-status",
+      "validation": "48 control probe combinations and 10 original polling traces with deterministic clock, plus real Chromium control removal. Actual default OTP delivery/pressLocator/keyboard dispatch emits eight real CDP key events and fills four synthetic inputs; binding/focus adapter and checkpoint remain fixtures."
     }
   },
   "embeddedPackages": {

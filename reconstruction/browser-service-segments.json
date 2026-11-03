@@ -2044,6 +2044,16 @@
       "end": 811347,
       "kind": "Literal"
     },
+    "zee": {
+      "start": 811352,
+      "end": 811355,
+      "kind": "Literal"
+    },
+    "Kee": {
+      "start": 811360,
+      "end": 811362,
+      "kind": "Literal"
+    },
     "nN": {
       "start": 828888,
       "end": 829132,
@@ -2182,6 +2192,16 @@
     "Th": {
       "start": 843719,
       "end": 843800,
+      "kind": "FunctionDeclaration"
+    },
+    "lte": {
+      "start": 846657,
+      "end": 846934,
+      "kind": "FunctionDeclaration"
+    },
+    "cte": {
+      "start": 846934,
+      "end": 847175,
       "kind": "FunctionDeclaration"
     },
     "tN": {
