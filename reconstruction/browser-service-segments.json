@@ -2219,6 +2219,16 @@
       "end": 940780,
       "kind": "FunctionDeclaration"
     },
+    "Ire": {
+      "start": 957651,
+      "end": 957978,
+      "kind": "FunctionDeclaration"
+    },
+    "Oo": {
+      "start": 961091,
+      "end": 961854,
+      "kind": "FunctionDeclaration"
+    },
     "Nre": {
       "start": 966940,
       "end": 968258,

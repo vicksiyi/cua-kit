@@ -2368,6 +2368,17 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Isolated Chromium differential comparison of DOM ranges/cursors, UTF-16 offsets, prefix/suffix disambiguation and errors; select routing and injected helper call order. Select injected helper is an explicit test fixture, not restored Playwright service."
+    },
+    "packages/browser/src/service/accessibility/element_execution.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-ax-element-execution",
+      "symbols": [
+        "Oo",
+        "Ire"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Original AST differential remote calls, exception precedence and release; Ire compared over restored Oo/G2 with explicit click fixture; isolated Chromium CDP composes reconstructed executor, setter and text selection. Full $v click and AX target provider remain pending."
     }
   },
   "embeddedPackages": {
