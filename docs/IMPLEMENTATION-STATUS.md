@@ -2738,3 +2738,32 @@ and installed/native/model end-to-end validation remain incomplete.
 
 Validation: eight package builds/type checks and all 901 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Browser plugin installation orchestration
+
+Restored rk as createBrowserPluginInstallation. Refresh cancels prior auth waiters and
+tracks account identity, active API, gate subscription and retry state. Account changes
+cancel outstanding setup/gate work and clear appropriate caches. Gate readiness requires
+the matching user; later enabling clears negative cache and either refreshes or schedules
+against the existing cooldown. Stale and stopped callbacks are ignored.
+
+The service directly composes restored ensureBrowserPlugin and cache implementations.
+Success resets retry state, records the result and invokes the completion callback with
+original exception suppression. Failure preserves the original HTTP allowlist, explicit
+nonretryability, retry-after floor, one automatic retry, jitter and maximum timer bound.
+Stop aborts auth/gate controllers, clears timers and disposes active API. Late request
+completion is ignored for state updates but still disposes its API.
+
+Foundation supplies the restored ChatApi, SIWC cached-reader factory, cache, clock and
+timers. Auth refresh and gate transport remain explicit pending their full restoration.
+A source-differential test composes original/restored caches and real request-chain logic
+with API/transport fixtures across sixteen modes: auth outcomes, gate failure/change,
+negative caching, HTTP/generic failures, retry-after, huge delay, pending account switch,
+pending stop and synchronous/asynchronous completion-callback failures. No real account
+installation, authentication or network operation was performed; no dependency was added.
+
+Auth/gate service implementation, full background startup, panel UI, native replacement
+and installed/native/model end-to-end validation remain incomplete.
+
+Validation: eight package builds/type checks and all 902 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

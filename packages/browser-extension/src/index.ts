@@ -70,3 +70,5 @@ export * from "./website_bridge";
 export * from "./extension_lifecycle";
 
 export * from "./plugin_installation";
+
+export * from "./plugin_installation_service";

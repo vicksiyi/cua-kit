@@ -1,3 +1,4 @@
+import { createBrowserPluginInstallation } from "./plugin_installation_service";
 import {
   createBrowserPluginCache,
   ensureBrowserPlugin,
@@ -217,6 +218,30 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    createBrowserPluginInstallation(
+      dependencies: Pick<
+        Parameters<typeof createBrowserPluginInstallation>[0],
+        "refreshAuth" | "subscribeGate" | "warn"
+      >,
+      onInstalled: () => Promise<unknown>,
+    ) {
+      return createBrowserPluginInstallation(
+        {
+          ...dependencies,
+          cache: createBrowserPluginCache({
+            storage: host.chrome.storage.session,
+            now: host.now,
+          }),
+          ChatApi,
+          createAuthReader: siwc.createCachedAuthReader,
+          now: host.now,
+          random: host.random ?? Math.random,
+          setTimeout: host.setTimeout,
+          clearTimeout: host.clearTimeout,
+        },
+        onInstalled,
+      );
+    },
     ensureBrowserPlugin,
     createBrowserPluginCache() {
       return createBrowserPluginCache({

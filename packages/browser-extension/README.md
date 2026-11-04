@@ -567,3 +567,8 @@ Browser-plugin setup now restores the canonical-app/ensure/link request chain an
 per-account positive/negative session cache. Cache loads are shared and retained after
 clear or read failure; negative outcomes expire after thirty minutes. Foundation exposes
 the installer function and bound cache factory. Gate/retry orchestration remains pending.
+
+Installation orchestration now composes the restored request/cache with account changes,
+auth cancellation, gate subscription, retry-after/jitter and stop cleanup. Foundation
+binds ChatApi, SIWC readers, storage and timers. Gate transport and auth-refresh service
+remain explicit dependencies; production startup and live account verification are pending.
