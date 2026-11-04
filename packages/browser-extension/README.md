@@ -331,3 +331,12 @@ explicit required factory; it is not replaced with a simplified effect.
 State validation and real Chromium top/iframe differential tests compare original
 message, animator-boundary, DOM and cleanup traces, including stale replies after
 new state/disposal. These tests use a tracing animator and do not verify animation.
+
+### Cursor spring integration
+
+`cursor_spring.ts` restores R/v/I/An/We and Ye/N. It preserves 1/240-second
+integration, original stiffness/damping limits, accumulated script/simulation time,
+long-frame catch-up, rest snapping and shortest-angle targets. The source's zero
+target rest behavior is retained rather than corrected speculatively. Tests compare
+every spring field over 9000 frame steps plus reset/retarget/rest/angle boundaries.
+The surrounding motion state machine and rn DOM animator remain to be integrated.

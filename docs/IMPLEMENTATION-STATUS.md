@@ -2061,3 +2061,26 @@ host, remaining auth/monitor components, real desktop/model integration and nati
 source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 829 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.273 Cursor spring integration
+
+Restored R/v/I/An/We/Ye/N as readable cursor_spring.ts. The module preserves field
+initialization/reset, 1/240-second integration order, stiffness cap, response and
+damping calculations, script/simulation clocks, long-frame catch-up, rest snapping
+and unwrapped shortest-angle targeting. The zero-target rest rule is deliberately
+retained, including its unusual acceptance of nonzero distance at zero velocity/force.
+No external package call appears in this inspected numerical closure.
+
+Two differential tests compare complete spring states at each of 9000 trajectory
+steps across six parameter sets and five start/target pairs, with dynamic targets,
+resets, zero/negative frame durations and long frames. Boundary comparisons cover
+rest velocity and +/-180-degree wrapping; an explicit convergence assertion prevents
+relying solely on equality with extracted source.
+
+This is the original animator's numerical component, not a completed animation
+engine. Motion state/geometry, DOM renderer, full content startup/framework reuse,
+production extension/native host, remaining auth/monitor components, real desktop/
+model integration and native source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 831 default regression tests passed. The separate native-supervisor suite was not rerun.
