@@ -1,3 +1,4 @@
+import { createTabGroupManagerClass } from "./tab_groups";
 import { createNetworkPolicyManagerClass } from "./network_policy";
 import { createNetworkPolicyEnforcer } from "./network_policy_enforcement";
 import { createExtensionInstanceIdReader } from "./instance_id";
@@ -17,6 +18,7 @@ export interface ExtensionBrowserHost {
   chrome: typeof chrome;
   crypto: Pick<Crypto, "randomUUID">;
   now(): number;
+  random?(): number;
   setTimeout: typeof globalThis.setTimeout;
   clearTimeout: typeof globalThis.clearTimeout;
   error(message: string, context: { operation: string }): void;
@@ -27,6 +29,10 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const tabLeases = createTabLeaseManagerClass({ ...host, instanceId });
   const debuggerRuntime = createDebuggerRuntime(host);
   const tabRuntime = createTabRuntime(host);
+  const tabGroups = createTabGroupManagerClass({
+    chrome: host.chrome,
+    random: host.random ?? Math.random,
+  });
   const networkPolicy = createNetworkPolicyManagerClass({
     chrome: host.chrome,
     now: host.now,
@@ -35,6 +41,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const sessionBase = {
     ...debuggerRuntime,
     ...tabRuntime,
+    tabGroups,
     chrome: host.chrome,
     tabLeases,
     networkPolicy,
@@ -75,6 +82,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
     debuggerRuntime,
     tabRuntime,
+    tabGroups,
     createHandlerClass,
   };
 }

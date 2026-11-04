@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level group/favicon/overlay/auth implementations, shared lease/debugger/full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level favicon/overlay/auth implementations, shared lease/debugger/full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -106,7 +106,7 @@ The session directly uses the shared original-derived header parser and resolver
 `createBrowserCommandHandlerWithSession` composes it with the restored dispatcher;
 a test exercises RPC getTabs/executeCdp/turnEnded through both real classes.
 
-The session factory still requires actual group/favicon/network/overlay
+The session factory still requires actual favicon/network/overlay
 implementations; the lease manager is now restored, and debugger methods/state can now come from `createDebuggerRuntime`. Those collaborators are explicit fixtures in differential
 tests, and the composition helper does not provide fake production defaults.
 `reconstruction/extension-session-dependencies.json` maps the original closure.
@@ -182,7 +182,7 @@ original. These details are compared against the installed artifact.
 A session composition test uses this real manager and real DNR coordinator over
 isolated Chrome/storage fixtures to claim a tab, install header rules and release
 both at turn end. Instance-ID sourcing and shared component assembly are provided
-by the foundation below; full startup and group/favicon/overlay/auth
+by the foundation below; full startup and favicon/overlay/auth
 components are still required.
 
 ### Shared browser foundation and extension identity
@@ -197,10 +197,10 @@ read or mutate storage.
 
 `createExtensionBrowserFoundation(host)` is project-authored assembly around the
 restored components. Its `createHandlerClass(handlerDependencies, sessionDependencies)`
-shares one identity reader, lease class/singleton, network-policy manager, debugger runtime and tab runtime
+shares one identity reader, lease class/singleton, tab-group singleton, network-policy manager, debugger runtime and tab runtime
 across dispatcher/sessions. Known restored dependencies override supplied residual
 fields, so accidental extra fields cannot replace them. Remaining capabilities,
-SIWC, group/favicon, overlay/monitor and application startup are still
+SIWC, favicon, overlay/monitor and application startup are still
 required. This is not an installable extension or a claim that original `dR` has
 been fully recovered.
 
@@ -241,3 +241,18 @@ changes, malformed responses, detach/attach failures and deadline races. Manager
 composition tests use all three restored components with fixture Chrome APIs,
 including rollback on an existing disallowed frame. Real installed-extension/DNR
 and browser startup integration remain unverified.
+
+### Managed tab groups
+
+`createTabGroupManagerClass` restores all original bS/yn methods and title/color
+helpers. The foundation supplies the same class/singleton to every session. It
+retains legacy/current TAB_GROUPS storage, cached initialization (including
+rejections), group reuse by related tabs, title updates, random original palette,
+removal events and best-effort ungrouping. Per-method error behavior is preserved,
+including state changes that precede failed persistence. It directly calls Chrome
+APIs; no third-party group manager is copied or reimplemented.
+
+Differential tests compare method inventory, traces, storage and in-memory state.
+The foundation RPC fixture now also checks group creation/persistence and empty
+group cleanup after closing tabs at turn end. Actual browser tab-group UI remains
+to validate alongside production extension startup.

@@ -4,7 +4,7 @@
   "implementation": "packages/browser-extension/src/browser_session.ts",
   "boundary": "All wd methods translated. Required lower-layer dependencies still need production implementations; injected test fixtures are not a production backend. Composition factory is project-authored.",
   "originalToReadable": {
-    "bS": "tabGroups",
+    "bS": "tabGroups; shared restored manager supplied by createExtensionBrowserFoundation",
     "st": "tabLeases",
     "Ma": "tabFavicons",
     "ar": "networkPolicy; shared restored manager supplied by createExtensionBrowserFoundation",

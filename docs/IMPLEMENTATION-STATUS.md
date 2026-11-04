@@ -1890,3 +1890,26 @@ Full extension packaging/native host, remaining group/favicon/overlay/SIWC/monit
 real desktop/model integration and native source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 814 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.266 Managed tab groups restored and composed
+
+Restored every original bS/yn method plus Da/vS/La title and color behavior as
+tab_groups.ts. The shared foundation now supplies this singleton to all sessions.
+Preserved legacy/current storage, lazy cached initialization/rejection, managed-group
+lookup/reuse, title defaults, palette selection, group removal listeners, stale
+cleanup and best-effort ungrouping. The inspected closure directly uses Chrome
+APIs and standard JS; no additional third-party library is needed.
+
+Three differential tests compare full method inventory, traces, storage and state
+across creation/reuse/release, title normalization, migration, cached failures,
+persistence failures, optional APIs, stale groups and removal notifications. The
+foundation RPC composition now exercises real restored groups with fixture Chrome,
+checking creation/persistence and empty-group cleanup at turnEnded. Its Chrome
+remove fixture now actually removes tabs, matching the intended API state change.
+
+Real tab-group UI/installed-extension validation, favicon/overlay/SIWC/monitor
+components, production startup/native host, desktop/model integration and native
+source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 817 default regression tests passed. The separate native-supervisor suite was not rerun.

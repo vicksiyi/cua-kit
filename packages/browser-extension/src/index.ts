@@ -16,3 +16,4 @@ export * from "./browser_foundation";
 export * from "./network_policy";
 export * from "./network_policy_compiler";
 export * from "./network_policy_enforcement";
+export * from "./tab_groups";

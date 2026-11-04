@@ -757,11 +757,35 @@ test("extension foundation shares identity, lease singleton and debugger state a
       ...deps.chrome.tabs,
       onRemoved: { addListener() {} },
       onReplaced: { addListener() {} },
-      async query() {
-        return [...tabs.values()];
+      async query(options: any = {}) {
+        return [...tabs.values()].filter(
+          (tab) =>
+            options.groupId === undefined || tab.groupId === options.groupId,
+        );
+      },
+      async group(options: any) {
+        const groupId = options.groupId ?? 40;
+        for (const id of [options.tabIds].flat())
+          tabs.get(id).groupId = groupId;
+        return groupId;
+      },
+      async ungroup(id: number) {
+        tabs.get(id).groupId = -1;
+      },
+      async remove(ids: number | number[]) {
+        for (const id of [ids].flat()) tabs.delete(id);
       },
       async create() {
         return tabs.get(4);
+      },
+    },
+    tabGroups: {
+      onRemoved: { addListener() {} },
+      async get(id: number) {
+        return { id };
+      },
+      async update(id: number, value: any) {
+        trace.push(["tabGroups.update", id, value]);
       },
     },
     windows: {
@@ -830,6 +854,7 @@ test("extension foundation shares identity, lease singleton and debugger state a
       },
     },
     now: () => 1,
+    random: () => 0,
     setTimeout,
     clearTimeout,
     error: () => {},
@@ -887,6 +912,12 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
   });
   assert.equal(sent[0].result.id, 4);
+  assert.equal(tabs.get(4).groupId, 40);
+  assert.deepEqual(local.TAB_GROUPS.groups, [{ chromeGroupId: 40 }]);
+  assert.deepEqual(
+    trace.find((entry) => entry[0] === "tabGroups.update"),
+    ["tabGroups.update", 40, { color: "grey", title: "ChatGPT" }],
+  );
   assert.equal(stored.leases[4].instanceId, info.metadata.extensionInstanceId);
   assert.equal(uuidCalls, 1);
   assert.equal(rules.length, 2);
@@ -957,6 +988,7 @@ test("extension foundation shares identity, lease singleton and debugger state a
     params: request,
   });
   assert.deepEqual(stored.leases, {});
+  assert.deepEqual(local.TAB_GROUPS.groups, []);
   assert.deepEqual(rules, []);
   assert.equal(foundation.debuggerRuntime.attachedTabs.size, 0);
 });
