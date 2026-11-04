@@ -4039,3 +4039,16 @@ The live-browser test passes. It uses a private temporary profile and local data
 then cleans up; no daily Chrome profile, account token or Library upload is used.
 This proves PDF byte capture in that browser environment, not full extension
 packaging, authenticated Library upload, daily Chrome or DeepSeek search acceptance.
+
+
+### 2026-11-05 — tunnel registration and authentication refresh setup
+
+Restored original `T_` and exposed `foundation.setupBrowserTunnel`, bound to
+actual restored `readAuthSession`, instance ID and configuration readers. Handles
+auth HTTP/decode/logout, account-scoped registration cache, explicit invalidation,
+creation, unchanged configuration and token refresh with original abort ordering.
+Fourteen scenarios compare actual installed T_; integration uses actual restored
+auth parsing and instance identity. Construction issues no requests. Network and
+storage responses are fixtures; no real account session/tunnel was created.
+The broader S_ timer/alarm/activity coordinator and complete production deployment
+remain incomplete; daily Chrome/DeepSeek search acceptance is unchanged.

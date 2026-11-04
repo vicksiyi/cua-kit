@@ -1,3 +1,4 @@
+import { createTunnelSetup } from "./tunnel_setup";
 import { createYoutubeTimestampHandler } from "./youtube_timestamp";
 import { createWebMcpGate, createWebMcpRegistration } from "./web_mcp_registration";
 import { createBrowserManagement } from "./browser_management";
@@ -289,6 +290,12 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       });
     },
     ChatApi,
+    setupBrowserTunnel: createTunnelSetup({
+      readAuthSession: siwc.readAuthSession,
+      instanceId,
+      storage: host.chrome.storage,
+      fetch: host.fetch ?? globalThis.fetch,
+    }),
     actionCallout,
     createFeatureService(
       dependencies: Pick<

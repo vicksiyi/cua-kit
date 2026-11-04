@@ -359,5 +359,12 @@
     "limit": "Real isolated browser PDF bytes verified; fixture-only extension, not the full deployed extension or daily Chrome. No Library upload or user files used. Production assembly remains incomplete.",
     "liveBrowserTest": "reconstruction/extension-tab-pdf-browser.test.ts",
     "liveBrowserEvidence": "Isolated real Chromium, actual MV3 extension and PDF document, ISOLATED script/Port capture, repeatable local GET, file larger than two 256 KiB chunks, byte length and SHA-256 equality"
+  },
+  "tunnelSetupVerification": {
+    "source": "T_ using restored Pr/Be/Hn",
+    "module": "packages/browser-extension/src/tunnel_setup.ts",
+    "test": "reconstruction/extension-tunnel-setup.test.ts",
+    "method": "14-scenario actual source differential plus restored auth parser/instance reader composition; foundation exposes setupBrowserTunnel",
+    "limit": "Auth/storage/session-creation responses are fixtures; no production tunnel created. Coordinator timers/alarms/activity and full deployment remain incomplete."
   }
 }
