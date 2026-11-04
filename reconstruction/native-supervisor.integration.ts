@@ -403,3 +403,224 @@ test("native MCP initializes the default restored browser service with isolated 
     await rm(root, { recursive: true, force: true });
   }
 });
+
+for (const allowFixtureOrigin of [false, true])
+  test(`native MCP isolated Chromium through actual native pipe bridge: ${allowFixtureOrigin ? "accept and act" : "decline"}`, async () => {
+    const { McpToolClient } =
+      await import("../packages/agent-loop/src/mcp-client");
+    const root = await realpath(await mkdtemp("/tmp/cua-native-pipe-"));
+    const runtime = await stageRuntimePackages(restoredPackageSources(), root);
+    const { createServer } = await import("node:net");
+    const { NativePipeTransport } =
+      await import("../packages/browser/src/service/runtime/native_pipe");
+    const { nativePipeMessage } =
+      await import("../packages/browser/src/service/runtime/native_pipe_bridge");
+    const { BrowserRpcPeer } =
+      await import("../packages/browser/src/service/runtime/rpc_peer");
+    const socketPath = path.join(root, "backend.sock");
+    const sockets = new Set<import("node:net").Socket>();
+    const methods: string[] = [];
+    const peers: InstanceType<typeof BrowserRpcPeer>[] = [];
+    const { chromium } = await import("playwright");
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.route("**/*", (route) =>
+      route.request().url() === "https://fixture.invalid/"
+        ? route.fulfill({
+            contentType: "text/html",
+            body: `<title>Isolated fixture tab</title><button onclick="this.textContent='Clicked through native MCP'">Native MCP action</button>`,
+          })
+        : route.abort(),
+    );
+    await page.goto("https://fixture.invalid/");
+    const cdp = await page.context().newCDPSession(page);
+    for (const method of [
+      "Fetch.requestPaused",
+      "Network.requestWillBeSent",
+      "Network.responseReceived",
+      "Network.loadingFinished",
+      "Network.loadingFailed",
+      "Page.frameNavigated",
+      "Page.frameStartedLoading",
+      "Page.frameStoppedLoading",
+      "Page.lifecycleEvent",
+      "Page.loadEventFired",
+      "Page.domContentEventFired",
+      "Page.screencastFrame",
+      "Page.javascriptDialogOpening",
+      "Page.javascriptDialogClosed",
+      "Runtime.bindingCalled",
+      "Runtime.executionContextCreated",
+      "Runtime.executionContextDestroyed",
+      "Runtime.executionContextsCleared",
+      "DOM.documentUpdated",
+    ]) {
+      cdp.on(method as any, (params: any) => {
+        for (const peer of peers)
+          if (!peer.closed)
+            peer.sendNotification("onCDPEvent", {
+              source: { tabId: 8 },
+              method,
+              params,
+            });
+      });
+    }
+    const elicitations: unknown[] = [];
+    const server = createServer((socket) => {
+      sockets.add(socket);
+      socket.on("close", () => sockets.delete(socket));
+      const peer = new BrowserRpcPeer(
+        new NativePipeTransport(socket, { decodeMessage: nativePipeMessage }),
+      );
+      peers.push(peer);
+      peer.registerRequestHandler("executeCdp", (params: any) => {
+        assert.equal(params.target.tabId, 8);
+        methods.push(params.method);
+        return cdp.send(params.method, params.commandParams);
+      });
+      for (const [method, value] of Object.entries({
+        getInfo: {
+          type: "extension",
+          family: "chrome",
+          name: "Isolated protocol fixture",
+          capabilities: { browser: [], tab: [] },
+        },
+        getTabs: [
+          {
+            id: 8,
+            title: "Isolated fixture tab",
+            url: "https://fixture.invalid/",
+          },
+        ],
+        getUserTabs: [],
+        attach: {},
+        detach: {},
+        getCommittedTabUrl: "https://fixture.invalid/",
+        turnEnded: {},
+      }))
+        peer.registerRequestHandler(method, () => {
+          methods.push(method);
+          return value;
+        });
+    });
+    await new Promise<void>((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(socketPath, resolve);
+    });
+    try {
+      const client = await McpToolClient.connect(
+        {
+          command: "/usr/bin/sandbox-exec",
+          args: [
+            "-p",
+            "(version 1)(allow default)(deny network*)(allow network-outbound (remote unix-socket))",
+            process.execPath,
+            "--import",
+            import.meta.resolve("tsx"),
+            path.resolve("packages/agent-loop/src/native-supervisor.ts"),
+          ],
+          env: create_launch_environment({
+            HOME: root,
+            CODEX_HOME: root,
+            TMPDIR: root,
+            CUA_NATIVE_SUPERVISOR_PATH: binary,
+            NODE_REPL_NODE_PATH: node,
+            NODE_REPL_DISABLE_ANALYTICS: "1",
+            NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+            NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
+            CUA_REPL_ENABLED_SURFACES: "browser",
+            CUA_REPL_BROWSER_ENV: "codex-app",
+            BROWSER_USE_BACKEND_PATHS: socketPath,
+            BROWSER_USE_TINYSKY_ENABLED: "1",
+            BROWSER_USE_DISABLE_TAB_CAPABILITIES: "webMcp",
+            BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH:
+              "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br",
+            BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
+            BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+          }),
+          stderr: "pipe",
+        },
+        {
+          elicit: (params) => {
+            elicitations.push(params);
+            assert.match(params.message, /fixture\.invalid/);
+            return {
+              action: allowFixtureOrigin ? "accept" : "decline",
+              content: {},
+            };
+          },
+          requestMeta: () => ({
+            "x-codex-turn-metadata": {
+              session_id: "browser-fixture",
+              turn_id: "turn-1",
+            },
+          }),
+        },
+      );
+      try {
+        const result = await client.callTool({
+          id: "browser",
+          name: "js",
+          arguments: {
+            code: "nodeRepl.write(typeof cua.getTab); nodeRepl.write(JSON.stringify(await cua.getState({emit:false})));",
+          },
+        });
+        assert.equal(result.isError, false, JSON.stringify(result));
+        const text = result.content
+          .map((c) => (c.type === "text" ? c.text : ""))
+          .join("");
+        assert.ok(text.includes("Isolated fixture tab"), text);
+        assert.ok(!text.includes('"errors":'), text);
+        assert.ok(methods.includes("getInfo"), JSON.stringify(methods));
+        assert.ok(methods.includes("getTabs"), JSON.stringify(methods));
+        if (!allowFixtureOrigin) {
+          const denied = await client.callTool({
+            id: "denied",
+            name: "js",
+            arguments: { code: 'await cua.getTab("8", {browser:"chrome"});' },
+          });
+          assert.equal(denied.isError, true);
+          assert.ok(elicitations.length > 0);
+          assert.ok(!methods.includes("Accessibility.getFullAXTree"));
+          return;
+        }
+        const action = await client.callTool({
+          id: "click",
+          name: "js",
+          arguments: {
+            code: 'var tab = await cua.getTab("8", {browser:"chrome"}); var state = await tab.getAXState({emit:false}); var match = state.match(/^\\s*(\\d+) button Native MCP action$/m); if(!match) throw Error(state); await tab.click(Number(match[1])); nodeRepl.write(await tab.getAXState({emit:false})); await tab.getScreenshot();',
+          },
+        });
+        assert.equal(action.isError, false, JSON.stringify(action));
+        assert.equal(
+          await page.locator("button").textContent(),
+          "Clicked through native MCP",
+        );
+        assert.ok(elicitations.length > 0);
+        assert.ok(methods.includes("Accessibility.getFullAXTree"));
+        assert.ok(
+          methods.includes("Page.captureScreenshot") ||
+            methods.includes("Page.startScreencast"),
+          JSON.stringify(methods),
+        );
+        const screenshot = action.content.find((c) => c.type === "image");
+        assert.ok(screenshot && screenshot.type === "image");
+        const bytes = Buffer.from(screenshot.data, "base64");
+        assert.ok(bytes.length > 100);
+        assert.ok(
+          bytes
+            .subarray(0, 8)
+            .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ||
+            bytes.subarray(0, 3).equals(Buffer.from([255, 216, 255])),
+        );
+      } finally {
+        await client.close();
+      }
+    } finally {
+      await browser.close();
+      for (const socket of sockets) socket.destroy();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await runtime.dispose();
+      await rm(root, { recursive: true, force: true });
+    }
+  });

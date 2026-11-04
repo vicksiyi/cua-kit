@@ -1422,3 +1422,15 @@ The final actual native MCP probe enables browser surfaces, uses the default ser
 Connected browser discovery, native-pipe backend actions, complete host resources, generic turn_ended lifecycle dispatch, real DeepSeek and readable native supervisor source remain outstanding. Empty discovery proves service startup and context propagation, not successful browser operation.
 
 Full default regression: 746 tests passed, zero failed. All three opt-in native integration tests passed in the targeted run.
+
+### 16.247 Native MCP reaches isolated Chromium through the actual native pipe
+
+Added two opt-in integration cases using the actual supervisor native-pipe bridge and the default restored browser trusted service. A temporary Unix-socket backend speaks the original framed browser RPC and forwards CDP to isolated Chromium. Real getInfo/getTabs discovery now precedes actual page observation/actions, rather than replacing the privileged bridge with a test JavaScript socket adapter. Native MCP retains IP-network denial with Unix-socket outbound allowance. Chromium serves only a local fixture response; other routed requests abort.
+
+McpToolClient now accepts an optional host elicit callback and advertises MCP form elicitation only when that callback exists. This keeps confirmations outside model arguments and provides a standard integration point for different agent UIs. The command-line demo still needs its own interactive approval UI; there is no default auto-accept.
+
+One case declines origin access and verifies no Accessibility.getFullAXTree is sent. A separate fresh-home case accepts fixture access, obtains an indexed AX state, clicks the identified button, confirms actual DOM text changes, and receives PNG/JPEG screenshot bytes over MCP. The initial attempt to decline then accept within one home correctly encountered persisted denial, so the tests use independent contexts rather than editing policy or weakening runtime gates. Enabling TinySky AX is required for indexed clicks; with it disabled the original fallback is a non-indexed DOM snapshot. Screenshot capture can use the original screencast cache; the test validates this supported path too.
+
+The supervisor, Node executable and AX WASM remain explicit installed resources. The socket backend is an integration fixture, not a reconstructed production extension. All permission flows, real extension installation, native app operations, turn_ended orchestration, model integration and readable supervisor source are not claimed complete. Validation results follow.
+
+Validation: AgentLoop type checking passes; all 746 default tests pass; all five explicit native integration tests pass. The new browser cases verify both decline and accept paths in separate isolated homes.

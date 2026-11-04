@@ -1,3 +1,8 @@
+import {
+  ElicitRequestSchema,
+  type ElicitRequestParams,
+  type ElicitResult,
+} from "@modelcontextprotocol/sdk/types.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   StdioClientTransport,
@@ -14,6 +19,10 @@ import type {
 export interface McpClientOptions {
   /** Host-supplied protocol context, never populated from model tool arguments. */
   requestMeta?: () => Record<string, unknown>;
+  /** Optional host UI for form elicitation. No implicit acceptance is provided. */
+  elicit?: (
+    params: ElicitRequestParams,
+  ) => ElicitResult | Promise<ElicitResult>;
 }
 export class McpToolClient implements ToolClient {
   private constructor(
@@ -24,7 +33,16 @@ export class McpToolClient implements ToolClient {
     parameters: StdioServerParameters,
     options: McpClientOptions = {},
   ): Promise<McpToolClient> {
-    const client = new Client({ name: "cua-kit-agent-demo", version: "0.1.0" });
+    const client = new Client(
+      { name: "cua-kit-agent-demo", version: "0.1.0" },
+      options.elicit
+        ? { capabilities: { elicitation: { form: {} } } }
+        : undefined,
+    );
+    if (options.elicit)
+      client.setRequestHandler(ElicitRequestSchema, (request) =>
+        options.elicit!(request.params),
+      );
     try {
       await client.connect(new StdioClientTransport(parameters));
       return new McpToolClient(client, options);

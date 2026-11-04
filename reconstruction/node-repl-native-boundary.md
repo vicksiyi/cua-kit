@@ -19,3 +19,35 @@ This probe requires macOS, sandbox-exec, the recorded native binary and its sibl
 The verified native tool sequence returns 40, then 42, resets, then returns `undefined`. A 100 ms timeout also discards cell state. Cancellation is sent only after an isolated TMPDIR marker proves the cell started; the next request succeeds with the cancelled variable absent. Four kernel launches and four trusted-worker launches prove both workers are recreated through reset, timeout and cancellation. Public response contents match the original kernel. The test is intentionally outside the default synthetic `*.test.ts` suite.
 
 Remaining native work includes supervisor source recovery or an explicitly identified independent implementation, permission/isolation parity, trusted-service launch/reset lifecycle, privileged host endpoints, cancellation/timeouts, desktop/browser/AX resource integration and real-model validation. Using the original supervisor externally establishes integration; it does not satisfy the requirement for the entire implementation's readable source.
+
+## Browser native-pipe integration
+
+The probe now additionally enables the default restored browser service and supplies host request metadata. Empty backend discovery verifies service initialization without hidden state errors. Two further cases use an isolated Unix-socket protocol fixture forwarding CDP to a real headless Chromium page. Their native MCP sandbox allows Unix-socket outbound connections while denying IP networking; Chromium fulfills the sole fixture URL locally and aborts other routed requests. These cases read no personal browser profile.
+
+The calling MCP client handles an actual form elicitation: the decline case ends before AX content reads; the accept case runs in a separate temporary home, obtains an indexed AX state, clicks its button and receives a real screenshot through MCP. It checks actual DOM text, CDP activity and PNG/JPEG bytes. AX screenshots may come from the restored screencast cache, so the assertion permits startScreencast rather than demanding captureScreenshot on every read. No host policy is modified to turn a denial into acceptance.
+
+```mermaid
+sequenceDiagram
+  participant C as Host MCP client
+  participant N as Installed native supervisor
+  participant K as Restored kernel
+  participant T as Restored trusted worker/browser service
+  participant B as Fixture Unix-socket backend
+  participant P as Isolated Chromium
+  C->>N: tools/call + host turn metadata
+  N->>K: execute JavaScript + CUA banner
+  K->>T: nodeRepl.rpc(browser)
+  T->>N: privileged nativePipe / elicitation
+  N->>C: elicitation/create
+  C-->>N: host accept or decline
+  N-->>T: decision
+  T->>N: nativePipe framed RPC
+  N->>B: Unix socket bytes
+  B->>P: CDP observation/action
+  P-->>B: AX / input result / screenshot
+  B-->>T: response via supervisor nativePipe
+  T-->>K: browser RPC result
+  K-->>C: text/image via native MCP
+```
+
+This exercises the original native bridge but does not recover its Rust implementation. The fixture backend is explicitly test code; real extension/desktop backend packaging and full independently runnable native source remain incomplete.
