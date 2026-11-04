@@ -4193,3 +4193,21 @@ function against restored helpers, seven serialized capture scenarios and ten
 orchestration scenarios. Type check, build and five related tests pass. DOM,
 Chrome injection and clipboard-event data are explicit fixtures; real Google
 Docs/Sheets/Slides interaction and complete sidebar deployment remain unverified.
+
+
+### Side-panel page routing and Edge window lifecycle (2026-11-05)
+
+Restored sidepanel `ne/D/it/rt` as persisted-conversation URL normalization,
+iframe construction, Edge window-scoped page management and page startup routing.
+The URL validator preserves the exact query-key allowlist and surface rules; the
+iframe retains the original explicit allow/sandbox attributes. Edge keeps one
+page per tab, hides/reactivates existing pages, suppresses stale tab queries,
+handles removed/detached/replaced tabs and disposes pending pages on pagehide.
+Startup retains root validation and no-API/no-tab/error fallback ordering.
+
+`SidePanelPageFactory` is an explicit dependency for the original `ge` per-tab
+auth/message/selection controller, which is not implemented yet. These modules
+are not presented as a working complete sidebar. Hash-checked installed-source
+differential tests cover URL/frame policy, four window lifecycle scenarios and
+seven startup scenarios with explicit DOM/Chrome/page fixtures. Type check, build
+and seven related tests pass. No live sidebar or authentication was exercised.

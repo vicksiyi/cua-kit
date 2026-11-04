@@ -191,3 +191,5 @@ export * from "./side_panel_selection";
 
 export * from "./google_workspace";
 export * from "./side_panel_selection_capture";
+
+export * from "./side_panel_page";

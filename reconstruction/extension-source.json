@@ -413,5 +413,17 @@
     "test": "reconstruction/extension-workspace-selection.test.ts",
     "composition": "sidepanel pe -> createSidePanelSelectionCapture -> foundation.captureSidePanelSelection; shared parser/name logic from @core/browser/tabReading",
     "boundary": "Hash-checked original helper and orchestration comparisons with explicit DOM/Chrome fixtures; no real Workspace or full sidebar deployment."
+  },
+  "sidePanelPageVerification": {
+    "file": "chunks/codex-work-sidepanel-Cy6MdlEo.js",
+    "sha256": "3c34166181949c77a2123425bb7dc95d913af693b319c5559cc02416e965ad7b",
+    "bindings": {
+      "ne": "normalizeSidePanelConversationUrl",
+      "D": "createSidePanelFrame",
+      "it": "startWindowSidePanelPage",
+      "rt": "startSidePanelPage"
+    },
+    "test": "reconstruction/extension-side-panel-page.test.ts",
+    "boundary": "Explicit DOM/Chrome/page fixtures. Original ge per-tab controller remains a required dependency; no complete sidebar deployment claim."
   }
 }
