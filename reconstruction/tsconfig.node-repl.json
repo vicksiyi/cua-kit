@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","include":["../packages/node-repl/src/**/*.ts"]}

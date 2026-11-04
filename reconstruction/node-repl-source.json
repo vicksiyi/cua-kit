@@ -1,0 +1,98 @@
+{
+  "binaryBytes": 19310480,
+  "binarySha256": "1bbff40474bfee676ca3c673d207175f4d135c1c627dc38a9d7a6fb7f3af2ae1",
+  "resources": [
+    {
+      "name": "kernel.js",
+      "offset": 10219102,
+      "occurrences": [
+        10219102,
+        10480025
+      ],
+      "bytes": 56711,
+      "sha256": "d8cc1d07dab419b63afab8c694c43c2e73b4f0393bc50f3ec0bb85d049397e3a"
+    },
+    {
+      "name": "diagnostics.js",
+      "offset": 10275827,
+      "occurrences": [
+        10275827,
+        10536750
+      ],
+      "bytes": 5195,
+      "sha256": "710362fe80dd9cd597690d20d6e0f32545fc72307ff0c28f7d410fe64742a464"
+    },
+    {
+      "name": "privileged-node-repl.js",
+      "offset": 10281045,
+      "occurrences": [
+        10281045,
+        10541968
+      ],
+      "bytes": 19539,
+      "sha256": "63cfa5fc673b97de1419e1ef0c6f35f40f1ee195d832a1528fa1bd4c00b22766"
+    },
+    {
+      "name": "privileged-node-repl-config.js",
+      "offset": 10300614,
+      "occurrences": [
+        10300614,
+        10561537
+      ],
+      "bytes": 7189,
+      "sha256": "44819284aa933b06002c01a3abd447a348346a4ad22ba5ebc62e4ee316a03f5e"
+    },
+    {
+      "name": "realmChecks.js",
+      "offset": 10307817,
+      "occurrences": [
+        10307817,
+        10568740
+      ],
+      "bytes": 640,
+      "sha256": "92592b5f8f0bba4b21970bf8f04fcaab4a0abe73a1606a066153648a6672cc2b"
+    },
+    {
+      "name": "meriyah.umd.min.js",
+      "offset": 10308475,
+      "occurrences": [
+        10308475,
+        10569398
+      ],
+      "bytes": 133892,
+      "sha256": "97d3c4e192c24ee88f1a2ab2d0fa6b9da44d777305618eb80f08317e6b46e8b7",
+      "upstream": "meriyah",
+      "version": "7.0.0"
+    },
+    {
+      "name": "tracing.js",
+      "offset": 10442377,
+      "occurrences": [
+        10442377,
+        10703300
+      ],
+      "bytes": 6987,
+      "sha256": "5fed2038cb90b4a5dbf160bf7ef6713fbd1ad553b883e0e75e4c920b9e8e2a86"
+    },
+    {
+      "name": "trusted-worker.js",
+      "offset": 10449364,
+      "occurrences": [
+        10449364,
+        10710287
+      ],
+      "bytes": 7856,
+      "sha256": "79e4b531950976c1924a43be245cdc38066a611876b3a27f2d5ff097fb76a2d8"
+    },
+    {
+      "name": "worker-runtime.js",
+      "offset": 10457237,
+      "occurrences": [
+        10457237,
+        10718160
+      ],
+      "bytes": 14783,
+      "sha256": "06c5b39daef459ca2c6e272a0d1c54af1cc9d2a59028661b6708b982ca83cb2a"
+    }
+  ]
+}
