@@ -859,3 +859,26 @@ six explicit DOM/timer/message fixture scenarios against serialized restored
 functions. Type check, reconstruction build and differential test pass. This is
 not yet integrated with the complete side-panel page, Google Workspace recovery
 helper, microphone permission page or production deployment.
+
+
+### Workspace selection recovery composition (2026-11-05)
+
+Restored the installed `google-workspace-B6IvXzEl.js` helper chunk. Identical
+URL parsing and export filename logic are reused from `@core/browser/tabReading`;
+export formats/URL and inline-data-reference stripping preserve source behavior.
+The self-contained MAIN-world capture uses native DataTransfer/ClipboardEvent
+to invoke the page's copy handler, with origin/URL checks, active iframe realm
+selection and length bounds. It does not access the system clipboard.
+
+Restored sidepanel `pe` as `createSidePanelSelectionCapture`, exposed through
+`foundation.captureSidePanelSelection`: observe in the selected tab, recover only
+when requested, pin the two subsequent injections to the observed documentId,
+recheck caller generation before/after recovery, and reconcile the original
+captureGeneration. The original lack of a final generation recheck is retained.
+
+Hash-checked differential tests compare the actual helper chunk (SHA256
+`a3fabfffeec68d0dceb204c9ad0efe244e93f3b99edcce0a8edb170266ff7dc0`) and sidepanel
+function against restored helpers, seven serialized capture scenarios and ten
+orchestration scenarios. Type check, build and five related tests pass. DOM,
+Chrome injection and clipboard-event data are explicit fixtures; real Google
+Docs/Sheets/Slides interaction and complete sidebar deployment remain unverified.

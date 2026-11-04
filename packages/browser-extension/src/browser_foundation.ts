@@ -1,3 +1,4 @@
+import { createSidePanelSelectionCapture } from "./side_panel_selection_capture";
 import { createTunnelActivity } from "./tunnel_activity";
 import { createTunnelSetup } from "./tunnel_setup";
 import { createYoutubeTimestampHandler } from "./youtube_timestamp";
@@ -329,6 +330,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
         onListening,
       );
     },
+    captureSidePanelSelection: createSidePanelSelectionCapture(host.chrome),
     setupBrowserTunnel: createTunnelSetup({
       readAuthSession: siwc.readAuthSession,
       instanceId,

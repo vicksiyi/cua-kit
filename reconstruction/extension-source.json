@@ -406,5 +406,12 @@
     },
     "test": "reconstruction/extension-side-panel-selection.test.ts",
     "boundary": "Six DOM/timer/message fixture differential scenarios, no full sidepanel entry or Google Workspace recovery deployment."
+  },
+  "workspaceSelectionVerification": {
+    "file": "chunks/google-workspace-B6IvXzEl.js",
+    "sha256": "a3fabfffeec68d0dceb204c9ad0efe244e93f3b99edcce0a8edb170266ff7dc0",
+    "test": "reconstruction/extension-workspace-selection.test.ts",
+    "composition": "sidepanel pe -> createSidePanelSelectionCapture -> foundation.captureSidePanelSelection; shared parser/name logic from @core/browser/tabReading",
+    "boundary": "Hash-checked original helper and orchestration comparisons with explicit DOM/Chrome fixtures; no real Workspace or full sidebar deployment."
   }
 }

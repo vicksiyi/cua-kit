@@ -188,3 +188,6 @@ export * from "./tunnel_assembly";
 export * from "./tunnel_kernel_bindings";
 
 export * from "./side_panel_selection";
+
+export * from "./google_workspace";
+export * from "./side_panel_selection_capture";
