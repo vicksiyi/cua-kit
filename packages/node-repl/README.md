@@ -10,5 +10,8 @@ Restored so far:
 
 - `src/realmChecks.ts`: cross-realm ArrayBuffer brand check through the native getter.
 - `src/diagnostics.ts`: binding-aware diagnostic identifier redaction, string/template/regex/comment masking and original truncation.
+- `src/worker_values.ts`: descriptor-only error properties, object freezing/log formatting, byte views and image URL/MIME normalization.
+- `src/background_operations.ts`: lazy rejected thenables and background-operation observation tracking.
+- `src/exec_context.ts`: AsyncLocalStorage context with separate originating-store and active-execution checks.
 
 The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The kernel/worker/privileged bridge restoration and supervisor integration remain outstanding.

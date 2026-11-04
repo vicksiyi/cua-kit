@@ -1198,3 +1198,13 @@ Created @core/node-repl as a separate worker reconstruction workspace, preservin
 Three tests verify extraction provenance and duplicated resources, realm/spoof cases, and original-vs-restored diagnostics using both the embedded and upstream parsers. Initial extraction assumed unique markers; the two copies disproved that assumption, so the extractor now checks identical ordered copies. The first diagnostic oracle omitted collectPatternNames; including that original helper fixed the fixture. Neither issue required changing restored runtime semantics.
 
 The binary supervisor remains native; embedded JavaScript recovery does not recover its Rust implementation or establish a running MCP/isolated execution server. Kernel, worker runtime, trusted bridge, process/isolation integration, native/AX resources and actual-model integration remain open. Seven-package build/type checks and all 696 reconstruction tests pass with concurrency 4.
+
+### 16.226 NodeREPL worker values, background tracking and execution context
+
+Restored worker-runtime helpers as readable TypeScript modules. worker_values preserves descriptor-only error-property lookup with proxy rejection, original broad non-array object predicate, cycle-safe freezing (including already-frozen early return), log formatting, byte-view offsets and PNG/JPEG/WebP inference. Image normalization retains exact data/file URL restrictions, explicit bytes/mimeType shape checks and errors; only temporary fixture files are read in tests.
+
+background_operations restores deferred rejected thenables and pending-task observation tracking: then/catch/finally mark an operation observed, while the internally tracked promise records success/failure without rejecting. exec_context uses Node AsyncLocalStorage with the original distinction between originating async state and current active ID. Late callbacks can still inspect their old store but cannot claim current-output authority; clearing an old ID cannot erase a newer active call.
+
+Four differential tests use the extracted original worker functions and original realm helper. They cover inherited/accessor/proxy error properties, frozen cycles, cross-realm views, media signatures and invalid inputs, thenable settlement/observation combinations, and overlapping asynchronous call contexts. The worker bridge, request settlement/JSONL listener, kernel and trusted capabilities are still pending; these helper tests do not prove a complete NodeREPL server.
+
+Validation: seven-package build/type checks and all 700 reconstruction tests pass with concurrency 4. Native supervisor/process isolation, full worker/kernel integration, native/AX resources and actual-model integration remain incomplete.
