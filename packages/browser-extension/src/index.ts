@@ -54,3 +54,5 @@ export * from "./side_panel_tabs";
 export * from "./side_panel_window";
 
 export * from "./side_panel_actions";
+
+export * from "./side_panel_entrypoints";

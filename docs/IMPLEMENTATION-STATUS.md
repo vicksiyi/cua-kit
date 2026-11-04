@@ -2565,3 +2565,21 @@ installed/native/model integration remain unfinished. No third-party library was
 
 Validation: all eight package builds/type checks and all 887 default regressions pass,
 zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### Side-panel toolbar and shortcut entrypoints
+
+Restored Ok/Ff/Pk as createSidePanelEntrypoints. Registration retains callout/event/
+icon/shortcut/menu ordering, or icon-only registration when sidePanel is absent.
+Icon clicks skip toggling an already-open panel; the keyboard shortcut invokes the
+toggle directly. Missing open API falls back to creating the extension panel page and
+reports opening only after success. Original failure suppression is retained.
+
+Foundation binds entrypoints to its shared window controller and restored context-menu
+handler; callout/telemetry remain explicit dependencies. A source-differential test
+covers seven modes including absent API, missing open, already-open, and callout/create/
+toggle failures. No real icon handler or shortcut was registered. Full startup ordering,
+callout implementation, panel UI, authentication and installed/native/model integration
+remain outstanding.
+
+Validation: all eight package builds/type checks and all 888 default regressions pass,
+zero failures/skips. The separate native-supervisor suite was not rerun.

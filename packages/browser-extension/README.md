@@ -532,3 +532,7 @@ installed panel integration remain pending.
 Side-panel website requests and context-menu selection routing are restored, including
 source checks, original prompt limits and post-open prefill persistence. Foundation
 binds them to its shared window controller; startup still must register the handlers.
+
+Toolbar/shortcut entrypoints now compose the shared side-panel window and menu handlers,
+including the original icon-only fallback and already-open icon behavior. They remain
+explicitly registered by the future complete startup path.

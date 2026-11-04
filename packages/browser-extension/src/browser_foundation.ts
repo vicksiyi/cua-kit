@@ -1,3 +1,4 @@
+import { createSidePanelEntrypoints } from "./side_panel_entrypoints";
 import { createSidePanelActions } from "./side_panel_actions";
 import { createSidePanelWindowController } from "./side_panel_window";
 import { createSidePanelTabController } from "./side_panel_tabs";
@@ -203,6 +204,35 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     ChatApi,
+    createSidePanelEntrypoints(
+      dependencies: Parameters<typeof getSidePanelWindowController>[0] & {
+        showCallout(): Promise<unknown>;
+      },
+    ) {
+      const controller = getSidePanelWindowController(dependencies);
+      const actions = createSidePanelActions({
+        chrome: host.chrome,
+        open: controller.open,
+        now: host.now,
+      });
+      return createSidePanelEntrypoints({
+        chrome: host.chrome,
+        showCallout: dependencies.showCallout,
+        registerWindowEvents: controller.register,
+        registerContextMenu: actions.registerContextMenu,
+        isOpen: controller.isOpen,
+        toggle: controller.toggle,
+        reportOpen: (source) => {
+          dependencies
+            .reportOpen(source)
+            .catch(() =>
+              dependencies.warn(
+                "Failed to report Chrome extension sidechat open.",
+              ),
+            );
+        },
+      });
+    },
     getSidePanelWindowController,
     createSidePanelActions(
       dependencies: Parameters<typeof getSidePanelWindowController>[0],
