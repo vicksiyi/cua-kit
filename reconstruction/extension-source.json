@@ -431,5 +431,12 @@
     "sha256": "2284e7e24f4fc756e5af9e00d652914415a238128e5dcf4ab02bb0388c130dd0",
     "test": "reconstruction/extension-side-panel-protocol.test.ts",
     "boundary": "Shared frame guards and sidepanel X/Je/ve prerequisites; ge controller origin/source checks and full deployment still required."
+  },
+  "sidePanelControllerVerification": {
+    "file": "chunks/codex-work-sidepanel-Cy6MdlEo.js",
+    "sha256": "3c34166181949c77a2123425bb7dc95d913af693b319c5559cc02416e965ad7b",
+    "binding": "ge -> createSidePanelPageController; rt/it/ge -> startAssembledSidePanelPage",
+    "test": "reconstruction/extension-side-panel-controller.test.ts",
+    "boundary": "Ten DOM/Chrome/timer/permission fixture differential scenarios, not live sidepanel/media/auth deployment."
   }
 }

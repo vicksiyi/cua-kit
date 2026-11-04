@@ -131,7 +131,10 @@ export function isSidePanelAuthRevalidate(value: unknown) {
 /** Original X. Observation suitability is separate from browser control permission. */
 export function canReadSidePanelTab(
   tab: Pick<chrome.tabs.Tab, "id" | "incognito" | "url">,
-) {
+): tab is Pick<chrome.tabs.Tab, "id" | "incognito" | "url"> & {
+  id: number;
+  url: string;
+} {
   if (
     tab.incognito ||
     !(

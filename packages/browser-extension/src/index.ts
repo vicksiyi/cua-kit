@@ -195,3 +195,5 @@ export * from "./side_panel_selection_capture";
 export * from "./side_panel_page";
 
 export * from "./side_panel_protocol";
+
+export * from "./side_panel_controller";

@@ -918,3 +918,25 @@ prompt/selection/request-id bounds, tab URL/id/incognito boundaries and instance
 request failures. Type check, build and six related tests pass. These are protocol
 prerequisites, not a completed `ge` controller or deployed sidebar. Message shape
 validation does not replace the controller's required origin/source checks.
+
+
+### Complete per-tab side-panel controller composition (2026-11-05)
+
+Restored original sidepanel `ge` as `createSidePanelPageController`, with named
+state/callbacks for frame lifetime, toolbar status, invocation delivery, selection
+generations/polling, owner-tab invalidation, context/capability messages, auth
+revalidation, load telemetry/retry UI, media permission helper tabs and disposal.
+The original origin plus frame-source admission checks, tab/window binding,
+async generation checks and message ordering remain intact.
+`startAssembledSidePanelPage` now composes rt/it with this actual per-tab controller
+and the restored browser-family detector; ge is no longer a missing factory
+dependency for callers using this entry. Browser environment/timers are explicit.
+
+A hash-checked original ge differential test compares ten scenarios: context,
+wrong origin/source, auth, prefill, timeout retry, revalidation, media callbacks,
+owner removal and detached root. It uses explicit DOM/Chrome/timer/permission
+fixtures and compares posted messages, storage, UI, script calls and cleanup.
+Type check, build and eleven related tests pass. No actual microphone/camera
+permission or production auth was requested. The permission page, packaged page
+resources/telemetry and complete extension deployment still need integration and
+live acceptance; daily Chrome/DeepSeek search status is unchanged.
