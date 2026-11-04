@@ -3422,3 +3422,24 @@ Validation: eight package builds/type checks and all 954 existing default regres
 including telemetry and error-reporter coverage, zero failures/skips. No new behavior-mirror
 tests were added for this dependency-only refactor. Full browser bundling remains failing
 with the seven recorded asset-loader imports. Independent native-supervisor was not rerun.
+
+### Build-time upstream Playwright asset
+
+Moved upstream injected-script resolution from runtime Node require/path calls into
+scripts/assemble-playwright-source.mjs, invoked before reconstruction compilation. It resolves
+from the browser workspace (not the different root Playwright), enforces playwright-core
+1.59.1, validates the asset and generates a TypeScript string with Apache-2.0 attribution
+and SHA-256 provenance. Shared upstreamPlaywrightSource now returns that generated string;
+its wrapper and upstream content are unchanged. Source imports remain extensionless.
+
+The generated wrapped source is 300482 bytes; upstream source SHA-256 is
+ ee122c6b89a54de5510a2399f525548b16418570a8959ae4068d7f311511707d.
+Existing real-Chromium differential coverage for selectors, snapshots, form actions and
+hit targets passes. Full command-runtime browser bundling now fails on five imports rather
+than seven: QR packaged WASM locator and AX WASM Node loader. This does not yet establish
+full browser-service runtime compatibility or end-to-end installation.
+
+Validation: generated emitted asset is byte-for-byte equal to the previous runtime wrapper;
+eight package builds/type checks and all 954 default regressions pass, zero failures/skips.
+Independent native-supervisor tests were not rerun. Full browser bundling still fails on
+the five recorded WASM-loader imports.
