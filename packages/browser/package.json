@@ -27,6 +27,10 @@
     "./kernelBrowserRuntime": {
       "types": "./src/kernel_browser_runtime.ts",
       "import": "./dist/kernel_browser_runtime.js"
+    },
+    "./browserFamily": {
+      "types": "./src/service/browser_family.ts",
+      "import": "./dist/service/browser_family.js"
     }
   },
   "dependencies": {

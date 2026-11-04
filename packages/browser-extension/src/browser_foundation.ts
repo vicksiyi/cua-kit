@@ -1,3 +1,4 @@
+import { browserFamilies, identifyBrowserFamily, isBrowserInternalTab, isBrowserNewTab, extensionBuildChannel } from "./browser_platform";
 import { createBrowserTabsReader, createBrowserHistoryReader, createCursorAvailability, validateBrowserTabId, validateBrowserMouse } from "./browser_queries";
 import { registerAssembledBackgroundKernel } from "./kernel_background_assembly";
 import { registerKernelConnections } from "./kernel_transport";
@@ -132,6 +133,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     enforceActivePage: createNetworkPolicyEnforcer(host),
   });
   const sessionBase = {
+    browserInfo: browserFamilies,
+    isInternalTab: isBrowserInternalTab,
+    isNewTab: isBrowserNewTab,
     overlay,
     muteBackgroundTab: tabAudio.muteBackgroundTab,
     trackPopupInterceptor: popupInterceptor.track,
@@ -146,6 +150,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    browserInfo: browserFamilies,
+    browserFamily: identifyBrowserFamily,
+    buildChannel: extensionBuildChannel,
     getUserTabs: createBrowserTabsReader(host.chrome),
     getUserHistory: createBrowserHistoryReader(host.chrome),
     canAnimateCursor: createCursorAvailability(host.chrome),
@@ -186,8 +193,8 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       tabLeases,
       contentRuntime,
       isInternalUrl: (url) =>
-        sessionDependencies.isInternalTab(
-          handlerDependencies.browserFamily(
+        isBrowserInternalTab(
+          identifyBrowserFamily(
             handlerDependencies.navigator.userAgent,
             false,
           ),

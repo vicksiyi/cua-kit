@@ -133,3 +133,5 @@ export * from "./kernel_background";
 export * from "./kernel_background_assembly";
 
 export * from "./browser_queries";
+
+export * from "./browser_platform";
