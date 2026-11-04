@@ -4288,3 +4288,28 @@ channel normalization/errors. Both tests, extension type check and reconstructio
 build pass. Tests inject the SDK boundary and make no external telemetry request.
 The SDK default is the real imported init; complete packaged page startup still
 needs assembly. This does not change daily Chrome/DeepSeek acceptance status.
+
+
+### Packaged page entries and real Chromium page boot (2026-11-05)
+
+Added side_panel_entry.ts and media_permission_entry.ts. The side-panel entry
+starts telemetry without awaiting it, then composes the actual rt/it/ge modules
+with browser globals and bound timers. The media entry composes its restored
+page with real SDK-backed telemetry. `npm run build:pages` hash-checks installed
+HTML/CSS, preserves DOM/CSP/styles and rewrites only asset/module references into
+self-contained TS bundles. Original modulepreloads are removed because dependencies
+are bundled. An empty deployment DSN disables delivery by default.
+
+Output is staged under packages/browser-extension/dist/pages: deploy HTML at the
+extension root and JS/CSS under /pages. This is not yet wired into the existing
+native background manifest. The build requires the installed source snapshot
+or CUA_EXTENSION_SOURCE_ROOT; original HTML/CSS are not vendored in GitHub.
+
+A temporary real Chromium extension test boots both built entries. It verifies
+iframe URL/sandbox/permission attributes, stylesheet loading, camera-only denial
+UI and retry/track-stop with an explicit same-extension media fixture. An initial
+Playwright init-script fixture did not replace the extension page's own media
+execution world and the run timed out; the final test installs its fixture script
+in the page before the entry module and passes. All HTTP(S) requests are aborted
+in this test. It does not prove production ChatGPT framing/authentication or daily
+Chrome/DeepSeek acceptance.

@@ -454,5 +454,11 @@
     "test": "reconstruction/extension-page-telemetry.test.ts",
     "intentionalDifference": "DSN is required deployment configuration rather than the vendor ingestion URL.",
     "boundary": "Injected SDK boundary; no external telemetry; packaged page startup pending."
+  },
+  "packagedPagesVerification": {
+    "build": "scripts/build-reconstructed-pages.mjs",
+    "test": "reconstruction/extension-pages-browser.test.ts",
+    "boundary": "Real temporary Chromium extension and DOM; all HTTP(S) aborted; same-page media fixture, no production frame/authentication or daily browser acceptance.",
+    "deployment": "Staged dist/pages output; root HTML plus /pages JS/CSS. Native manifest/background integration pending."
   }
 }
