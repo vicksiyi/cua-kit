@@ -1,3 +1,4 @@
+import { createNativeAuthBroker } from "./auth_broker";
 import { reportDiscoveryFailure } from "./discovery_telemetry";
 import { browserTelemetry } from "./browser_telemetry";
 import { browserErrorReporter } from "./error_reporter";
@@ -54,19 +55,20 @@ export interface BrowserHostAssemblyOptions {
   performanceSpan?: typeof browserPerformanceSpan;
   createErrorReporter?: BrowserHostDependencies["createErrorReporter"];
   loadClassicLevel?: BrowserProfileDependencies["loadClassicLevel"];
-  getNativeCredentialObservationStatus: BrowserHostDependencies["getNativeCredentialObservationStatus"];
-  createBrowserAuthBrokerChallenge: BrowserHostDependencies["createBrowserAuthBrokerChallenge"];
+  getNativeCredentialObservationStatus?: BrowserHostDependencies["getNativeCredentialObservationStatus"];
+  createBrowserAuthBrokerChallenge?: BrowserHostDependencies["createBrowserAuthBrokerChallenge"];
   getPrivilegedRepl?: () => any;
   getNativePipeBridge?: () => any;
 }
 /** Assembles restored mH dependencies. ClassicLevel uses the upstream default; Sentry uses the upstream light SDK; broker services remain host inputs. */
-export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
+export function assembleBrowserHost(options: BrowserHostAssemblyOptions = {}) {
   // Installed Po returns this literal. Keep it shared by handshake and bridge errors.
   const deploymentEnvironment = () => "production";
-  const { BrowserPipe } = createBrowserPipeClass(
+  const { BrowserPipe, connect: connectNativePipe } = createBrowserPipeClass(
     deploymentEnvironment,
     options.getNativePipeBridge ?? privilegedNativePipe,
   );
+  const broker = createNativeAuthBroker(connectNativePipe);
   const connect = (path: string) => BrowserPipe.create(path);
   const access = createBrowserAccessVerifier({ connect });
   const profiles = createBrowserProfileReader({
@@ -116,7 +118,10 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
     ),
     initializeCredentialObservation: credentialObservationState.initialize,
     getNativeCredentialObservationStatus:
-      options.getNativeCredentialObservationStatus,
-    createBrowserAuthBrokerChallenge: options.createBrowserAuthBrokerChallenge,
+      options.getNativeCredentialObservationStatus ??
+      broker.getNativeCredentialObservationStatus,
+    createBrowserAuthBrokerChallenge:
+      options.createBrowserAuthBrokerChallenge ??
+      broker.BrowserAuthChallenge.create,
   });
 }

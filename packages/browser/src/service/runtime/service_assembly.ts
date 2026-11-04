@@ -12,7 +12,7 @@ import {
   type ServiceDispatcherDependencies,
 } from "../rpc_dispatch";
 export interface BrowserServiceAssemblyOptions {
-  host: BrowserHostAssemblyOptions;
+  host?: BrowserHostAssemblyOptions;
   runtime: CommandRuntimeAssemblyOptions;
   withSpan?: ServiceDispatcherDependencies<any>["withSpan"];
 }

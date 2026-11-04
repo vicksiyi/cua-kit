@@ -164,8 +164,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
             }),
         }),
         loadClassicLevel: async () => null,
-        getNativeCredentialObservationStatus: unused,
-        createBrowserAuthBrokerChallenge: unused,
       },
       runtime: {
         commands: {
