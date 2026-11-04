@@ -91,6 +91,10 @@
     "types/window2/ActivateWindow.d.ts": "f0e9b316f2bfd4eac22d66c100af40533cd537d8996b0cfd27a23b3120436ddc",
     "types/window2/Drag.d.ts": "994cc79a582b94f2fe060c1b621690017bfa62fe67366dfdd7cd2d80e06bf565",
     "targets/windows/internal/computer_use_client_base.js": "5e54867417cb120477455e069c2eb53b6513b8e076a06143d4d207cc8a293d95",
-    "targets/windows/internal/computer_use_client_base.d.ts": "6afb8fbcd3f554e715f1b2d7d80b7237dcc6dfe48725deda730903da35e302eb"
+    "targets/windows/internal/computer_use_client_base.d.ts": "6afb8fbcd3f554e715f1b2d7d80b7237dcc6dfe48725deda730903da35e302eb",
+    "targets/windows/create_client.js": "43935a185c83827ea87e23295c7a44327f43e933da97da7cd1b8b7eb23aa6fab",
+    "targets/windows/create_client.d.ts": "aed4edd65c6e0cd92b949298d21b59ad978c07c48238c10dc7fb37d57e230069",
+    "targets/windows/internal/computer_use_client.js": "12f2952342ee3e3e4ae2cd509de48f59c935a925607aee24f41d7797510802f7",
+    "targets/windows/internal/computer_use_client.d.ts": "e057add5e0b0d1043a40b4655570a1b4467d0e765a8c44d913e5deb8c4dd4774"
   }
 }
