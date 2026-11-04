@@ -2334,3 +2334,28 @@ library dependency. Native/platform and installed-extension/model delivery gaps 
 
 Validation: all eight package builds/type checks and all 860 default regressions pass
 (zero failures/skips). Separate native-supervisor tests were not rerun.
+
+### Tab mention runtime/port message bridge
+
+Restored Nc/_s/cn/If, Tf/KC/ZC and hR into tab_mention_messages.ts.
+The bridge preserves extension/frame/lifecycle/origin checks, production versus
+non-production loopback rules, strict message parsing, current-tab exclusion and
+search overfetch/caps. A matching port accepts only its first message, streams
+favicon candidate updates after a successful search, and unsubscribes on disconnect
+or post failure. Disconnecting during a pending search suppresses its reply and
+prevents creating a candidate subscription. Invalidation notifies the peer then
+runtime, retaining the original asynchronous failure handling.
+
+Foundation exposes host-bound message-router and invalidation helpers. Four
+source-differential tests cover sender gates, search replies/errors, port lifecycle
+races and notifications. An additional integration test composes the actual restored
+provider with the port router, checks provider IDs and favicon updates, then checks
+subscription cleanup after disconnect. Chrome APIs remain explicit fixtures.
+
+Full dR registration/peer fanout and side-chat content scripts remain outstanding;
+this is not a complete installed-extension startup. No new third-party dependency
+was required by the inspected closures. Native and real model/desktop integration
+remain unfinished.
+
+Validation: all eight reconstructed packages build/typecheck successfully; all 865
+default regressions pass with zero failures/skips. Native-supervisor tests were not rerun.

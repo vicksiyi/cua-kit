@@ -315,3 +315,52 @@ test("mention invalidation observer preserves event ordering, coalescing and cle
   }
   assert.deepEqual(results[1], results[0]);
 });
+
+test("restored mention router searches actual provider and streams warmed favicon candidates", async () => {
+  const { createTabMentionMessageRouter } =
+    await import("../packages/browser-extension/src/tab_mention_messages");
+  const f = fixture(false);
+  f.state.tabs = [tab(1), tab(2), tab(3)];
+  const messages = new Set<Function>(),
+    disconnects = new Set<Function>(),
+    replies: any[] = [];
+  const port: any = {
+    name: "search_browser_tab_mentions",
+    sender: {
+      id: "extension",
+      frameId: 0,
+      origin: "https://chatgpt.com",
+      url: "https://chatgpt.com/work",
+      tab: { id: 3, windowId: 1 },
+    },
+    onMessage: {
+      addListener: (fn: Function) => messages.add(fn),
+      removeListener: (fn: Function) => messages.delete(fn),
+    },
+    onDisconnect: { addListener: (fn: Function) => disconnects.add(fn) },
+    postMessage: (reply: any) => replies.push(reply),
+    disconnect() {
+      throw Error("unexpected disconnect");
+    },
+  };
+  createTabMentionMessageRouter(f.provider, "prod", {
+    id: "extension",
+  }).handleConnect(port);
+  for (const listener of [...messages])
+    listener({ type: "search_browser_tab_mentions", query: "", limit: 2 });
+  await drain();
+  assert.deepEqual(
+    replies[0].candidates.map((candidate: any) => candidate.id),
+    [2, 1],
+  );
+  assert.equal(replies[0].candidates[0].providerTabId, '["generation","2"]');
+  f.state.reads.find((read) => read.id === 2)!.resolve(icon);
+  await drain();
+  assert.equal(replies[1].candidates[0].faviconUrl, icon);
+  for (const listener of disconnects) listener();
+  for (const read of f.state.reads.filter((read) => read.id !== 2))
+    read.resolve(icon);
+  await drain();
+  assert.equal(replies.length, 2);
+  assert.equal(f.provider.faviconListeners.size, 0);
+});

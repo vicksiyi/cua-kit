@@ -1,4 +1,8 @@
 import {
+  createTabMentionMessageRouter,
+  sendTabMentionsInvalidated,
+} from "./tab_mention_messages";
+import {
   createTabMentionProviderClass,
   observeMentionInvalidations,
 } from "./tab_mentions";
@@ -165,6 +169,13 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     TabMentionProvider,
+    createTabMentionMessageRouter: (
+      provider: InstanceType<typeof TabMentionProvider>,
+      channel: string,
+    ) => createTabMentionMessageRouter(provider, channel, host.chrome.runtime),
+    sendTabMentionsInvalidated: (
+      peer: Parameters<typeof sendTabMentionsInvalidated>[0],
+    ) => sendTabMentionsInvalidated(peer, host.chrome.runtime),
     observeMentionInvalidations: (notify: () => void) =>
       observeMentionInvalidations(host, notify),
     siwc,

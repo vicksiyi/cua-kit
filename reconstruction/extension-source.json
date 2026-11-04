@@ -120,7 +120,10 @@
     "mc/Op/_c/ds/vc/Lp": "tab_mentions.ts favicon and search query validation",
     "Ju/fi/yS/Na/SS/ES/TS/Rp": "searchBrowserTabs, tab eligibility, token search, recency sorting and deduplication",
     "Xu/RS/OS/Yu/Ua/IS/CS": "createTabMentionProviderClass: identity/generation, candidates, bounded favicon warmup, subscriptions",
-    "kS/AS": "observeMentionInvalidations: 50ms coalescing and event cleanup"
+    "kS/AS": "observeMentionInvalidations: 50ms coalescing and event cleanup",
+    "Nc/_s/cn/If": "tab_mention_messages.ts origin/build-channel and runtime sender checks",
+    "Tf/KC/ZC/xp/Mp": "createTabMentionMessageRouter: runtime search and port candidate streaming with original validation/error/cleanup behavior",
+    "hR/yp": "sendTabMentionsInvalidated: peer then runtime notification"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",

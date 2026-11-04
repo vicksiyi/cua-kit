@@ -487,3 +487,8 @@ Tab mentions now use the restored provider: validated search, stable generation 
 provider tab IDs, recency ordering, four-way favicon warmup and candidate updates.
 Foundation supplies it directly and exposes the original event invalidation observer.
 The full startup notification fanout and side-chat messaging are still pending.
+
+The tab mention runtime/port bridge now preserves sender authorization, strict search
+messages, current-tab exclusion, streamed favicon updates and disconnect cleanup.
+Foundation exposes host-bound router and invalidation helpers. Full startup listener
+registration, peer fanout and side-chat content scripts are still pending.

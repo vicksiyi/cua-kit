@@ -34,3 +34,5 @@ export * from "./siwc";
 export * from "./chat_api";
 
 export * from "./tab_mentions";
+
+export * from "./tab_mention_messages";
