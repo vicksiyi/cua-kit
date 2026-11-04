@@ -193,7 +193,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
           },
           browserAuth: {
             reviewSafety: unused,
-            qr: { decode: unused, start: unused },
             telemetry: {} as any,
           },
         },

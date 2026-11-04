@@ -4698,7 +4698,8 @@
       "entry": "zxing-wasm/reader",
       "adapter": "packages/browser/src/service/browser_auth/qr.ts#createAuthQrFlowFromZXing",
       "wasmSha256": "0e8d688d71932ebb6b8b33f700d43d3cb997f59ed9cab3c05102d7f10288a392",
-      "status": "upstream adapter implemented; production host selection remains explicit"
+      "status": "upstream packaged WASM default wired into auth handoff; host filesystem reads retained; explicit override supported",
+      "validation": "browser-service-packaged-qr.test.ts, real screenshot differential test, and assembled auth handoff with actual decode/prompt/decline cleanup"
     },
     "playwright": {
       "dependency": "playwright-core@1.59.1",

@@ -1,3 +1,4 @@
+import { createPackagedAuthQrFlow } from "./qr";
 import { createBrowserAuthHandoff } from "./handoff";
 import * as binding from "./bindings";
 import * as inspection from "./field_inspection";
@@ -25,12 +26,13 @@ import {
 } from "../preferences/request_context";
 import { browserDisplayName } from "../security/approval";
 import { browserAuthTabCapabilityDefinition } from "../../capabilities/tab_browser_auth";
-/** Host services and QR WASM packaging remain explicit; all restored auth helpers are connected here. */
+/** Host review/telemetry remain explicit; QR defaults to the upstream packaged reader. */
 export function assembleBrowserAuthHandoff(host: {
   reviewSafety: (input: any) => Promise<any>;
-  qr: { decode: (...args: any[]) => Promise<any>; start: (input: any) => any };
+  qr?: { decode: (...args: any[]) => Promise<any>; start: (input: any) => any };
   telemetry: AuthPreflightTelemetry;
 }) {
+  const qr = host.qr ?? createPackagedAuthQrFlow();
   return createBrowserAuthHandoff({
     closeCredentialLease: credentialLeases.close,
     revalidatePage: binding.revalidateAuthPage,
@@ -56,7 +58,7 @@ export function assembleBrowserAuthHandoff(host: {
     isQrOnly: plan.isQrOnlyAuth,
     completeChallenge: plan.completeAuthChallenge,
     startCredentialLease: credentialLeases.start,
-    startQrMonitor: host.qr.start,
+    startQrMonitor: qr.start,
     captureScreenshot: captureAuthScreenshot,
     createCredentialBinding: createAuthCredentialBinding,
     createFieldPlan: plan.createAuthFieldPlan,
@@ -87,7 +89,7 @@ export function assembleBrowserAuthHandoff(host: {
     mapOptions: plan.mapAuthOptions,
     submitValues: createAuthSubmission(),
     sameSite: binding.sameAuthSite,
-    decodeQr: host.qr.decode,
+    decodeQr: qr.decode,
     metadataSession,
     Checkpoint: createAuthCheckpointClass(),
     inspectFields: inspection.inspectAuthFields,

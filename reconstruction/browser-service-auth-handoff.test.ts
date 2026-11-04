@@ -558,6 +558,9 @@ test("assembled handoff uses restored binding, screenshot and challenge completi
     await import("../packages/browser/src/service/browser_auth/handoff_assembly");
   const { browserAuthTabCapabilityDefinition } =
     await import("../packages/browser/src/capabilities/tab_browser_auth");
+  const { readFile } = await import("node:fs/promises");
+  const { syntheticQrPayload, syntheticQrPngBase64 } =
+    await import("./synthetic-qr-fixture");
   const trace: any[] = [];
   let settle!: (result: any) => void;
   const waiting = new Promise((resolve) => {
@@ -579,6 +582,16 @@ test("assembled handoff uses restored binding, screenshot and challenge completi
     },
   };
   const context: any = {
+    filesystem: {
+      async readBytes(url: URL) {
+        assert.match(
+          url.pathname,
+          /node_modules\/zxing-wasm\/dist\/reader\/zxing_reader\.wasm$/,
+        );
+        trace.push("readPackagedWasm");
+        return readFile(url);
+      },
+    },
     browserId: "fixture",
     clientInfo: {
       name: "fixture",
@@ -650,25 +663,13 @@ test("assembled handoff uses restored binding, screenshot and challenge completi
               clientHeight: 80,
             },
           };
-        return { data: "synthetic" };
+        return { data: syntheticQrPngBase64 };
       },
     },
   };
   const command = assembleBrowserAuthHandoff({
     reviewSafety: async () => null,
     telemetry: { logStatsigEvent() {} },
-    qr: {
-      async decode(url: string) {
-        assert.equal(url, "data:image/jpeg;base64,synthetic");
-        return {
-          payload: "https://fixture.test/qr",
-          bounds: { x: 0, y: 0, width: 1, height: 1 },
-        };
-      },
-      start() {
-        throw new Error("unexpected monitor");
-      },
-    },
   });
   const result = await command(
     {
@@ -681,6 +682,7 @@ test("assembled handoff uses restored binding, screenshot and challenge completi
     context,
   );
   assert.equal(result.status, "declined");
+  assert.equal(trace.filter((item) => item === "readPackagedWasm").length, 1);
   assert.ok(trace.includes("Page.captureScreenshot"));
   assert.ok(trace.includes("closed"));
   assert.ok(
@@ -688,7 +690,7 @@ test("assembled handoff uses restored binding, screenshot and challenge completi
       (entry) =>
         Array.isArray(entry) &&
         entry[0] === "prompt" &&
-        entry[1] === "https://fixture.test/qr",
+        entry[1] === syntheticQrPayload,
     ),
   );
 });

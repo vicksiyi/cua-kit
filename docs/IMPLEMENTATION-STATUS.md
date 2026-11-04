@@ -936,3 +936,11 @@ assembleBrowserHost now provides this original command timing implementation by 
 Differential tests execute the actual selected original symbols under a deterministic clock and compare exact event payloads, rounding, failure identity, repeated finishes, no-context behavior, successful/time-out retries, concurrent commands and nested contexts. Explicit count/duration assertions complement equality. Telemetry export SDK and privileged runtime/backend dependencies remain separate outstanding integrations.
 
 Validation: three-package build passed; all 601 reconstruction tests pass with concurrency 4.
+
+### 16.200 Default authentication QR flow uses the upstream packaged WASM
+
+Added createPackagedAuthQrFlow, resolving zxing-wasm's exported reader WASM asset with Node package resolution and passing its file URL into the existing CUA asset loader. The actual bytes are still read through context.filesystem; the adapter does not bypass host filesystem permissions, fetch a CDN or read ChatGPT.app assets. assembleBrowserAuthHandoff now uses this flow unless an explicit QR implementation is provided. The service assembly integration fixture no longer has to supply placeholder QR methods.
+
+An isolated test decodes the synthetic QR using the actual npm asset, checks its file URL/package path, repeated result equality, nonempty geometry and single host read. The assembled auth-handoff test now removes its fake decoder too: its screenshot fixture supplies actual QR image bytes, the default library decodes them, the prompt receives the correct payload, and a synthetic user decline completes/closes the challenge. Existing real Chromium screenshot tests continue to cover capture/blank-page/disappearance-monitor behavior. No real credential or authentication submission is performed.
+
+This closes the explicit production QR selection gap recorded in 16.194; auth safety review, broker/privileged host, production extension/native providers and live-model integration remain outstanding. Three-package build and 602-test suite passed. After replacing the handoff test's decoder fixture, its four focused tests also passed.
