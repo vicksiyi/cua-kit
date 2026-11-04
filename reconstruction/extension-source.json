@@ -445,5 +445,14 @@
     "test": "reconstruction/extension-media-permission-page.test.ts",
     "bindings": "d/W/x -> initializeMediaPermissionTheme; startup/D -> startMediaPermissionPage",
     "boundary": "35 explicit fixture combinations; no actual media request, telemetry implementation or packaged page deployment."
+  },
+  "pageTelemetryVerification": {
+    "file": "chunks/sentry-CVTEo7Wt.js",
+    "sha256": "b46098f854176ef7be734deb6f8eb75ddb3e8297c2f295f46e24e534fd9826ae",
+    "dependency": "@sentry/browser@10.48.0",
+    "bindings": "ic -> createPageTelemetryInitializer; oc -> normalizeExtensionBuildChannel",
+    "test": "reconstruction/extension-page-telemetry.test.ts",
+    "intentionalDifference": "DSN is required deployment configuration rather than the vendor ingestion URL.",
+    "boundary": "Injected SDK boundary; no external telemetry; packaged page startup pending."
   }
 }

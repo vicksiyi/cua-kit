@@ -10,11 +10,12 @@
     }
   },
   "dependencies": {
+    "@core/browser": "0.0.0-reconstructed.0",
     "@core/core": "0.0.0-reconstructed.0",
+    "@sentry/browser": "10.48.0",
     "@statsig/client-core": "3.33.4",
     "@statsig/js-client": "3.33.4",
     "smol-toml": "1.5.2",
-    "wxt": "0.20.25",
-    "@core/browser": "0.0.0-reconstructed.0"
+    "wxt": "0.20.25"
   }
 }

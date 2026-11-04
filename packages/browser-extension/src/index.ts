@@ -199,3 +199,5 @@ export * from "./side_panel_protocol";
 export * from "./side_panel_controller";
 
 export * from "./media_permission_page";
+
+export * from "./page_telemetry";

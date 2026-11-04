@@ -4271,3 +4271,20 @@ No real camera or microphone was opened. HTML/CSS/entry/telemetry deployment and
 live side-panel acceptance remain outstanding. A fresh daily Chrome check still
 fails because no independent browser host is connected; DeepSeek search remains
 unaccepted.
+
+
+### Page telemetry third-party reuse (2026-11-05)
+
+Installed sentry-CVTEo7Wt.js embeds Sentry 10.48.0. The page initializer ic
+and channel normalizer oc are now readable TypeScript in page_telemetry.ts;
+@core/browser-extension directly depends on @sentry/browser 10.48.0 rather than
+reimplementing that third-party bundle. Manifest API/fetch fallback, release,
+context/component/build tags, extension initialization flag and swallowed errors
+match the inspected original. The DSN is intentionally required deployment
+configuration instead of the installed vendor destination.
+
+Hash-checked source differential tests cover six initialization scenarios and
+channel normalization/errors. Both tests, extension type check and reconstruction
+build pass. Tests inject the SDK boundary and make no external telemetry request.
+The SDK default is the real imported init; complete packaged page startup still
+needs assembly. This does not change daily Chrome/DeepSeek acceptance status.
