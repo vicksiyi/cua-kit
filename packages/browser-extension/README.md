@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level favicon/overlay/auth implementations, shared lease/debugger/full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+This is **not yet an installable extension**. The dispatcher and session classes are restored, but full content/overlay assembly, auth/monitors, production startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -300,7 +300,7 @@ deferred cleanup. SVG output preserves original shapes, colors, opacity and
 attribute escaping. Shared badge URL recognition is reused.
 
 `createContentMessageInitializer` restores Un/Fn/Gn/je with one listener and repeated
-overlay readiness calls. Overlay setup Q is restored below; its renderer Dn remains a required dependency.
+overlay readiness calls. Overlay setup Q is restored below; its restored renderer Dn must still be connected to the content startup.
 The artifact is separately hash-pinned in extension-content-source.ts; tests never
 execute the complete content startup. Real Chromium comparisons verify exact DOM
 and SVG data URLs after badge changes/clear, preservation of page changes and
@@ -311,7 +311,7 @@ message acknowledgements. This is not yet a packaged replacement content script.
 `createOverlayRoot` restores Q/T/Hn/ze: closed shadow root/style/container creation,
 owned stale-root replacement, foreign ID collision handling, observer retargeting,
 renderer disposal and suppression after site removal until documentElement changes.
-The Dn controller is restored below; its rn animation engine remains required. Chromium
+The Dn controller and rn animation engine are restored below. Chromium
 differential tests cover normal/stale/conflicting roots, reparenting, removal and
 document replacement with exact lifecycle and DOM comparisons.
 
@@ -325,8 +325,8 @@ renderer/content startup assembly and installed-extension validation remain pend
 `createOverlayController` restores Dn/Pn and qe/wn state validation. It creates the
 aria-hidden overlay element, animates only in the top frame, tracks state-request
 generations, sends cursor-arrival notifications, refreshes on pageshow/resize and
-removes listeners/DOM on disposal. The original rn animation engine is still an
-explicit required factory; it is not replaced with a simplified effect.
+removes listeners/DOM on disposal. It now defaults to the restored rn animation
+engine; a factory override remains available for host-boundary tests.
 
 State validation and real Chromium top/iframe differential tests compare original
 message, animator-boundary, DOM and cleanup traces, including stale replies after
@@ -339,4 +339,23 @@ integration, original stiffness/damping limits, accumulated script/simulation ti
 long-frame catch-up, rest snapping and shortest-angle targets. The source's zero
 target rest behavior is retained rather than corrected speculatively. Tests compare
 every spring field over 9000 frame steps plus reset/retarget/rest/angle boundaries.
-The surrounding motion state machine and rn DOM animator remain to be integrated.
+The surrounding motion state machine and rn DOM animator now consume this module.
+
+
+### Cursor paths, motion and rendering
+
+`cursor_path.ts` restores candidate construction/scoring, cubic path sampling and
+path-based progress response. `cursor_motion.ts` restores scoot/bezier movement
+(196px threshold), retargeting, arrival/reset, visual springs and thinking motion.
+`createCursorAnimator` restores cursor DOM/styles, viewport clamping, frame/timer
+scheduling, immediate movement/reveal, per-turn arrival deduplication and cleanup.
+`createOverlayController` uses it by default.
+
+Differential coverage includes 108 path cases, 4320 full motion frame states, and
+real Chromium DOM traces with deterministic animation-frame/timer clocks. A separate
+composition test uses the real default animator and checks exact controller DOM and
+AGENT_CURSOR_ARRIVED messages against the original. No third-party library calls
+were found in these inspected geometry/motion/rendering closures.
+
+Content entrypoint/WXT reuse, root/controller assembly, installed-extension startup
+and native-host packaging still remain; this is not an installed extension E2E.

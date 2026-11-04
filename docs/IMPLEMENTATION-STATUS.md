@@ -2084,3 +2084,35 @@ production extension/native host, remaining auth/monitor components, real deskto
 model integration and native source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 831 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.274 Cursor paths, motion state and DOM animator
+
+Restored the complete inspected geometry closure as cursor_path.ts: 20 candidates
+in original order, single/two-segment cubic paths, boundary preference, sampled
+curvature cost and path-dependent spring response. cursor_motion.ts consumes the
+restored spring module and preserves 196px scoot/bezier selection, dynamic targets,
+arrival/reset behavior, visibility/stretch/rotation integration and thinking motion.
+
+createCursorAnimator restores rn/sn and rendering/frame helpers: exact DOM/styles,
+viewport clamping, first-frame timing, requestAnimationFrame/timer fallback, turn/
+sequence arrival deduplication, hidden reveal, no-cursor thinking and destruction.
+The overlay controller now uses this restored animator by default; its optional
+injected factory remains available for host-boundary tests. No third-party calls
+appear in these inspected geometry/animation closures; WXT startup is still pending
+upstream verification rather than being independently reimplemented.
+
+Differential tests compare 108 path cases and samples, 4320 complete motion frame
+states with retarget/reset/arrival, and actual Chromium DOM/arrival/frame traces
+under both animation-frame and timer scheduling. The DOM test uses a deterministic
+clock/scheduler and covers interrupted movement, both modes, immediate/clamped
+positioning, hide/reveal, repeated sequence keys and destruction during motion.
+An additional real Chromium composition test uses the default restored animator,
+comparing controller DOM and exact AGENT_CURSOR_ARRIVED messages to the original.
+
+Full content startup/framework reuse, extension production assembly/install/native
+host, remaining auth/monitors/mentions, real desktop/model integration and native
+source reconstruction remain incomplete. These tests do not establish an installed
+extension end-to-end run.
+
+Validation: all eight reconstructed packages built and passed type checks; all 835 default regression tests passed. The separate native-supervisor suite was not rerun.

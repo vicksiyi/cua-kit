@@ -1,3 +1,4 @@
+import { createCursorAnimator } from "./cursor_animator";
 export interface CursorState {
   animateMovement?: boolean;
   moveSequence?: number;
@@ -62,12 +63,12 @@ export interface CursorAnimator {
   }): void;
   destroy(): void;
 }
-/** Original Dn/Pn orchestration. rn animation engine remains a required dependency. */
+/** Original Dn/Pn orchestration with the restored rn animator by default. */
 export function createOverlayController(host: {
   document: Document;
   window: Window;
   chrome: typeof chrome;
-  createAnimator(
+  createAnimator?(
     container: HTMLDivElement,
     options: {
       assetUrl: string;
@@ -78,6 +79,14 @@ export function createOverlayController(host: {
 }) {
   const { document, window, chrome } = host;
   const topFrame = window.top === window.self;
+  const createAnimator =
+    host.createAnimator ??
+    ((container, options) =>
+      createCursorAnimator(
+        { document, window, performance: window.performance },
+        container,
+        options,
+      ));
   return function render(container: HTMLElement): () => void {
     let state = emptyState,
       animator: CursorAnimator | null = null,
@@ -86,7 +95,7 @@ export function createOverlayController(host: {
     element.className = "codex-agent-overlay";
     element.setAttribute("aria-hidden", "true");
     if (topFrame)
-      animator = host.createAnimator(element, {
+      animator = createAnimator(element, {
         assetUrl: chrome.runtime.getURL("images/cursor-chat.png"),
         glowColor: "#339cff",
         onArrived(sequence) {

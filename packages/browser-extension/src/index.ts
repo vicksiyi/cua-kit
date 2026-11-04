@@ -21,3 +21,4 @@ export * from "./tab_favicons";
 export * from "./favicon_badge_dom";
 export * from "./overlay_root";
 export * from "./overlay_controller";
+export * from "./cursor_animator";
