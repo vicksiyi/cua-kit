@@ -3939,3 +3939,17 @@ restored JS and turn-ended handlers; integration verifies output and PDF cleanup
 The dispatcher is not the HTTP tunnel: polling, response delivery and elicitation
 transport still need composition, along with production services and deployment.
 Daily Chrome and external search acceptance remain incomplete.
+
+
+### 2026-11-05 — tunnel elicitation client restoration
+
+Restored original `r_`, `Rl`, `n_` as `TunnelElicitationClient`: form notification,
+delivery acknowledgement, polling lifetime, channel/session matching, response
+validation, pending cleanup, session termination and request cancellation.
+Actual original-class differential covers delivery/reply races, error/abort paths,
+late responses, duplicate session headers and pre-abort/dispose behavior.
+A composed MCP -> JS -> client test verifies acknowledged explicit acceptance
+before storing permission/executing; decline or unacknowledged reply never executes.
+Seven related tests, extension type checking and reconstruction build pass.
+HTTP post/poll are fixtures in these tests; production network transport,
+full deployment, daily Chrome and search acceptance remain incomplete.

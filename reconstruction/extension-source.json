@@ -304,5 +304,12 @@
     "test": "reconstruction/extension-tunnel-mcp-server.test.ts",
     "method": "Differential execution of actual installed dispatch/schema/context functions, plus actual restored dispatcher -> JS handler -> scope/turn cleanup integration with external kernel fixtures",
     "limit": "Local protocol dispatch only; HTTP polling, response delivery and elicitation transport not yet composed. Original $s is a limited custom validator, not a third-party SDK validator."
+  },
+  "tunnelElicitationVerification": {
+    "source": "r_, Rl, n_",
+    "module": "packages/browser-extension/src/tunnel_elicitation_client.ts",
+    "test": "reconstruction/extension-tunnel-elicitation.test.ts",
+    "method": "Actual original class differential for session headers, guards, delivery/reply races and cancellation; composed restored MCP/JS/scope/client verifies explicit consent gating",
+    "limit": "HTTP post/poll are explicit fixtures. No real user approval, hosted HTTP tunnel or browser-operation acceptance is claimed."
   }
 }
