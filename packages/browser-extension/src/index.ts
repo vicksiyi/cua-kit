@@ -178,3 +178,5 @@ export * from "./pdf_capture_page";
 export * from "./tab_pdf_capture";
 
 export * from "./tunnel_setup";
+
+export * from "./tunnel_activity";

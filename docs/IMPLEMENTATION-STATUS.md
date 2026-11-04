@@ -4052,3 +4052,16 @@ auth parsing and instance identity. Construction issues no requests. Network and
 storage responses are fixtures; no real account session/tunnel was created.
 The broader S_ timer/alarm/activity coordinator and complete production deployment
 remain incomplete; daily Chrome/DeepSeek search acceptance is unchanged.
+
+
+### 2026-11-05 — tunnel activity and persisted listening
+
+Restored `w_/xl/y_` and exposed `foundation.createTunnelActivity`: observes tabs,
+side-panel contexts/stored windows and active turns, persists state, suppresses
+stale observations, retains listening on uncertainty and applies the original
+10-minute post-turn idle condition. URL observation is not an authorization gate.
+Ten state scenarios compare original closure behavior, including storage/query
+failure, invalid persisted state, duplicate turn starts and stop cleanup; guard
+and hostname boundaries are also compared. Four related tests, extension types
+and reconstruction build pass. Chrome/storage remain fixtures. The S_ setup/alarm
+coordinator and production deployment remain incomplete; search acceptance unchanged.

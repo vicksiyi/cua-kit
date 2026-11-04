@@ -1,12 +1,28 @@
+import { createTunnelActivity } from "./tunnel_activity";
 import { createTunnelSetup } from "./tunnel_setup";
 import { createYoutubeTimestampHandler } from "./youtube_timestamp";
-import { createWebMcpGate, createWebMcpRegistration } from "./web_mcp_registration";
+import {
+  createWebMcpGate,
+  createWebMcpRegistration,
+} from "./web_mcp_registration";
 import { createBrowserManagement } from "./browser_management";
 import { extensionBrowserProtocol } from "./browser_protocol";
 import { createTabReader } from "./tab_read";
 import { captureTabContext } from "./tab_capture";
-import { browserFamilies, identifyBrowserFamily, isBrowserInternalTab, isBrowserNewTab, extensionBuildChannel } from "./browser_platform";
-import { createBrowserTabsReader, createBrowserHistoryReader, createCursorAvailability, validateBrowserTabId, validateBrowserMouse } from "./browser_queries";
+import {
+  browserFamilies,
+  identifyBrowserFamily,
+  isBrowserInternalTab,
+  isBrowserNewTab,
+  extensionBuildChannel,
+} from "./browser_platform";
+import {
+  createBrowserTabsReader,
+  createBrowserHistoryReader,
+  createCursorAvailability,
+  validateBrowserTabId,
+  validateBrowserMouse,
+} from "./browser_queries";
 import { registerAssembledBackgroundKernel } from "./kernel_background_assembly";
 import { registerKernelConnections } from "./kernel_transport";
 import { registerBackgroundRuntime } from "./background_runtime";
@@ -206,10 +222,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       contentRuntime,
       isInternalUrl: (url) =>
         isBrowserInternalTab(
-          identifyBrowserFamily(
-            handlerDependencies.navigator.userAgent,
-            false,
-          ),
+          identifyBrowserFamily(handlerDependencies.navigator.userAgent, false),
           url,
         ),
     });
@@ -247,15 +260,32 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     createYoutubeTimestampHandler() {
-      return createYoutubeTimestampHandler({ chrome: host.chrome, withTimeout: contentRuntime.withTimeout });
+      return createYoutubeTimestampHandler({
+        chrome: host.chrome,
+        withTimeout: contentRuntime.withTimeout,
+      });
     },
-    createWebMcpConfig(dependencies: Pick<Parameters<typeof createWebMcpGate>[0], "subscribeGate" | "warn">) {
-      return createWebMcpGate({ ...dependencies, apply: createWebMcpRegistration(host.chrome.scripting) });
+    createWebMcpConfig(
+      dependencies: Pick<
+        Parameters<typeof createWebMcpGate>[0],
+        "subscribeGate" | "warn"
+      >,
+    ) {
+      return createWebMcpGate({
+        ...dependencies,
+        apply: createWebMcpRegistration(host.chrome.scripting),
+      });
     },
     registerBackgroundKernel<Pdf>(
-      dependencies: Omit<Parameters<typeof registerAssembledBackgroundKernel<Pdf>>[0], "runtime">,
+      dependencies: Omit<
+        Parameters<typeof registerAssembledBackgroundKernel<Pdf>>[0],
+        "runtime"
+      >,
     ) {
-      return registerAssembledBackgroundKernel({ ...dependencies, runtime: host.chrome.runtime });
+      return registerAssembledBackgroundKernel({
+        ...dependencies,
+        runtime: host.chrome.runtime,
+      });
     },
     registerKernelConnections(
       connected: Parameters<typeof registerKernelConnections>[1],
@@ -290,6 +320,15 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       });
     },
     ChatApi,
+    createTunnelActivity(
+      onListening: (enabled: boolean) => void,
+      reportIdle: () => void,
+    ) {
+      return createTunnelActivity(
+        { chrome: host.chrome, now: host.now, reportIdle },
+        onListening,
+      );
+    },
     setupBrowserTunnel: createTunnelSetup({
       readAuthSession: siwc.readAuthSession,
       instanceId,

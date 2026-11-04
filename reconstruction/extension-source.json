@@ -366,5 +366,12 @@
     "test": "reconstruction/extension-tunnel-setup.test.ts",
     "method": "14-scenario actual source differential plus restored auth parser/instance reader composition; foundation exposes setupBrowserTunnel",
     "limit": "Auth/storage/session-creation responses are fixtures; no production tunnel created. Coordinator timers/alarms/activity and full deployment remain incomplete."
+  },
+  "tunnelActivityVerification": {
+    "source": "w_, xl, y_, Hs/v_/b_",
+    "module": "packages/browser-extension/src/tunnel_activity.ts",
+    "test": "reconstruction/extension-tunnel-activity.test.ts",
+    "method": "Actual original functions/class closure differential for 10 state scenarios, URL/guard boundaries, idle cutoff, events, queued writes, uncertainty and stop cleanup",
+    "limit": "Explicit Chrome/storage fixtures. Listening does not grant browser permissions. Full S_ coordinator and production deployment remain incomplete."
   }
 }
