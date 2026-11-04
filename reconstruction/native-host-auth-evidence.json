@@ -1,0 +1,14 @@
+{
+  "binarySha256": "bd707631640d6b818c2dd61466b83ed9c49612b1c9f176fe57fa26a0097db1ab",
+  "architecture": "arm64",
+  "authorizerAddress": "0x100029ea8",
+  "identityResolverAddress": "0x10002a27c",
+  "allowlistAddress": "0x1000b0e10",
+  "entryCount": 15,
+  "entryBytes": 40,
+  "nodeRepl": {"teamIdentifier": "2DC432GLL2", "identifier": "node_repl", "directClientFlag": false},
+  "demoParent": {"path": "/opt/homebrew/Cellar/node/23.11.0/bin/node", "signature": "adhoc", "teamIdentifier": null},
+  "evidenceKind": "static disassembly plus local executable signature inspection",
+  "runtimeRejectionCaptured": false,
+  "policyBypassAttempted": false
+}
