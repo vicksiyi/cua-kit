@@ -1913,3 +1913,24 @@ components, production startup/native host, desktop/model integration and native
 source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 817 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.267 Favicon resource loading
+
+Restored the complete pS/mS/gS/_S resource closure as favicon_resource.ts, retaining
+extension favicon URL construction, size=32, credentials omission, 2-second abort,
+MIME checks/fallback, 64 KiB declared and streamed limits, cancellation and chunked
+base64 output. The original closure uses fetch, Web Streams, AbortController and
+standard encoding; no third-party image library was found or reimplemented.
+
+Differential tests compare data URLs and exact read/cancel/timer/fetch traces with
+the pinned original across boundary lengths, missing/bad/case-sensitive MIME types,
+invalid length headers, absent streams, transport/read/cancel failures and deadline
+abort. These tests use synthetic responses and do not contact user pages.
+
+Ma's badge state/cache/publication manager and its consumer remain to restore and
+integrate; this helper alone does not display a favicon badge. Production extension
+startup/native host, remaining UI/auth/monitor components, real desktop/model
+integration and native source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 819 default regression tests passed. The separate native-supervisor suite was not rerun.

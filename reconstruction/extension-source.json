@@ -95,7 +95,9 @@
     "dd/tE/hd/Kr/fd/Zr": "inspection session/events/recursive removal/commands/detach/timeout",
     "rE/nE/Ha/iE/sE/pd/Ae": "frame validation/source URL/context origin/frame tree/record guards",
     "bS/yn": "createTabGroupManagerClass / TabGroupManager",
-    "Da/vS/La": "normalizedTitle / original palette and random color selection"
+    "Da/vS/La": "normalizedTitle / original palette and random color selection",
+    "pS/mS": "createFaviconResourceReader / readPageFavicon / readImage",
+    "gS/_S/dS/xa": "bounded favicon stream reader, base64 encoding, 2000ms and 64KiB limits"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",

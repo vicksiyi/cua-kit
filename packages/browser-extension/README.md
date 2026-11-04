@@ -256,3 +256,14 @@ Differential tests compare method inventory, traces, storage and in-memory state
 The foundation RPC fixture now also checks group creation/persistence and empty
 group cleanup after closing tabs at turn end. Actual browser tab-group UI remains
 to validate alongside production extension startup.
+
+### Favicon resource reader
+
+`favicon_resource.ts` restores original pS/mS/gS/_S. It builds the extension's
+`/_favicon/` URL, requests size 32, omits credentials, aborts at 2000 ms, accepts
+image MIME types (BMP fallback for the favicon endpoint), and caps both declared
+and streamed bytes at 64 KiB. It retains cancellation and error/null behavior and
+chunked base64 conversion. It uses fetch/Streams directly, without a third-party
+image decoder. The enclosing Ma badge/cache/publication manager and its page-side
+consumer still need reconstruction/integration; this helper alone does not render
+a badge. Tests compare the pinned original with isolated response/stream fixtures.
