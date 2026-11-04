@@ -10,3 +10,4 @@ export * from "./debugger_runtime";
 export * from "./tab_runtime";
 export * from "./request_header_rules";
 export * from "./lease_codec";
+export * from "./tab_leases";

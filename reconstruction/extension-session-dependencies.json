@@ -41,5 +41,6 @@
     "ls": "resolveRequestHeaders direct import"
   },
   "restoredDebuggerRuntime": "createDebuggerRuntime returns original-derived debugger methods/state. Share one runtime across all sessions and dispatcher initialization. Other lower layers remain required.",
-  "restoredTabRuntime": "createTabRuntime provides original-derived getTab/createTab/prepareNewTab/tabInfo over the supplied Chrome API; other lease/group/favicon/overlay dependencies remain required."
+  "restoredTabRuntime": "createTabRuntime provides original-derived getTab/createTab/prepareNewTab/tabInfo over the supplied Chrome API; other lease/group/favicon/overlay dependencies remain required.",
+  "restoredLeaseManager": "createTabLeaseManagerClass supplies singleton getInstance and the original st manager, directly using restored codecs and DNR coordinator. Its Chrome storage and extension-instance source still require production startup composition."
 }

@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level lease/overlay/auth implementations, shared debugger/full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level group/favicon/overlay/auth implementations, shared lease/debugger/full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -38,8 +38,8 @@ through `ExtensionBrowserPeer` into the handler.
 The factory is an explicit reconstruction boundary, not an installed extension
 entry point. Use `createBrowserCommandHandlerWithSession(handlerDependencies, sessionDependencies)`
 to bind the restored `wd` session; the lower-level handler factory also accepts a
-Session constructor. Remaining required dependencies include tab leases,
-SIWC, overlay and frame monitors. The original persistent request-header policy
+Session constructor. Use the restored tab lease manager for ownership; remaining required dependencies
+include SIWC, overlay and frame monitors. The original persistent request-header policy
 is constructed directly using the supplied Chrome API; CDP validation/filtering now
 imports the restored security module directly. No
 production defaults or permissive security substitutes are supplied. Parameter
@@ -93,8 +93,8 @@ storage. `AGENT_REQUEST_HEADER_ENABLED` becomes sticky once true: a false decisi
 does not revoke an enabled policy. Failed persistence does not set the in-memory
 flag. Header count/name/value/aggregate limits, reserved names, template substitution,
 case-insensitive collisions and exact validation errors are compared with the
-original extension. The restored session uses these headers during turn activation; lease/DNR reconciliation
-still requires restoration; this module alone does not install network rules.
+original extension. The restored session uses these headers during turn activation, and the restored
+lease manager performs DNR reconciliation. Production startup remains to be wired.
 
 ### Browser session lifecycle
 
@@ -106,8 +106,8 @@ The session directly uses the shared original-derived header parser and resolver
 `createBrowserCommandHandlerWithSession` composes it with the restored dispatcher;
 a test exercises RPC getTabs/executeCdp/turnEnded through both real classes.
 
-The session factory still requires actual lease/group/favicon/network/overlay
-implementations; debugger methods/state can now come from `createDebuggerRuntime`. Those collaborators are explicit fixtures in differential
+The session factory still requires actual group/favicon/network/overlay
+implementations; the lease manager is now restored, and debugger methods/state can now come from `createDebuggerRuntime`. Those collaborators are explicit fixtures in differential
 tests, and the composition helper does not provide fake production defaults.
 `reconstruction/extension-session-dependencies.json` maps the original closure.
 Broad protocol payload types remain temporary until those contracts are restored.
@@ -161,6 +161,26 @@ network-policy manager `ar`.
 `lease_codec.ts` restores viewport/lease/storage parsing and source-lease identity
 comparison. It uses the restored header parser and keeps the original permissive
 numeric checks and the distinction between missing and explicit-null viewport.
-These helpers are ready for the `st` lease manager, whose storage mutation and
-rollback wiring remains to be translated. Tests use isolated DNR/storage values;
+These helpers are used directly by the restored `st` lease manager, including
+its storage mutation and rollback flow. Tests use isolated DNR/storage values;
 no real browser rules are installed.
+
+### Tab lease manager
+
+`createTabLeaseManagerClass({chrome, instanceId, now, error})` restores all original
+`st/wn` methods and its singleton. Share the returned class across the dispatcher,
+sessions and other runtime components. It directly constructs the restored header
+rule coordinator and parses storage through the restored lease codecs.
+
+The manager preserves lazy/cached startup, claims and ownership, child-source
+identity checks, handoff/resume, pending viewports, marks, stale-tab release,
+replacement/removal listeners, serialized mutations, shallow rollback on mutation
+or storage errors, DNR synchronization and active-ID change notifications. DNR
+failure propagation remains method-specific, and DNR failure does not undo a
+successfully persisted mutation. Rejected initialization remains cached as in the
+original. These details are compared against the installed artifact.
+
+A session composition test uses this real manager and real DNR coordinator over
+isolated Chrome/storage fixtures to claim a tab, install header rules and release
+both at turn end. Production instance-ID sourcing, shared startup and the remaining
+group/favicon/overlay/network/auth components are still required.

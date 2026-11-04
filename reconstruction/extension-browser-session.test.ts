@@ -620,3 +620,78 @@ test("restored session creates and claims tabs through restored Chrome tab opera
     ),
   );
 });
+
+test("restored session uses restored lease storage and DNR coordination for claim and release", async () => {
+  const { createTabLeaseManagerClass } =
+    await import("../packages/browser-extension/src/tab_leases");
+  const { deps, trace } = fixture(false);
+  let stored: any = {},
+    rules: any[] = [];
+  const chrome: any = {
+    ...deps.chrome,
+    runtime: { id: "extension" },
+    storage: {
+      session: {
+        async get(key: string) {
+          return { [key]: stored };
+        },
+        async set(value: any) {
+          stored = structuredClone(value.TAB_LEASES);
+        },
+      },
+    },
+    tabs: {
+      ...deps.chrome.tabs,
+      onRemoved: { addListener() {} },
+      onReplaced: { addListener() {} },
+      async query() {
+        return [1, 2, 3, 4].map((id) => ({ id }));
+      },
+    },
+    declarativeNetRequest: {
+      ResourceType: {
+        MAIN_FRAME: "main_frame",
+        SUB_FRAME: "sub_frame",
+        OBJECT: "object",
+      },
+      RuleActionType: { MODIFY_HEADERS: "modifyHeaders" },
+      HeaderOperation: { SET: "set" },
+      async getSessionRules() {
+        return rules;
+      },
+      async updateSessionRules(value: any) {
+        rules = value.addRules;
+      },
+    },
+  };
+  const Leases = createTabLeaseManagerClass({
+    chrome,
+    instanceId: async () => "instance",
+    now: () => 1,
+    error: () => {},
+  });
+  const Session = createBrowserSessionClass({
+    ...deps,
+    chrome,
+    tabLeases: Leases,
+  });
+  const session = new Session("s", "chrome", false, {
+    applyDecision: async (enabled) => enabled,
+  });
+  await session.createTab({
+    ...request,
+    request_headers: [{ name: "x-session", value: "{{session_id}}" }],
+  });
+  assert.equal(stored.leases[4].state, "active");
+  assert.equal(rules.length, 2);
+  assert.deepEqual(rules[0].action.requestHeaders, [
+    { header: "x-session", value: "s", operation: "set" },
+  ]);
+  assert.equal((await session.getTabs())[0].id, 4);
+  await session.endTurn("t");
+  assert.deepEqual(stored.leases, {});
+  assert.deepEqual(rules, []);
+  assert.ok(
+    trace.some((entry) => entry[0] === "chrome.tabs.remove" && entry[1] === 4),
+  );
+});

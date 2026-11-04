@@ -1695,3 +1695,35 @@ still pending; this request-header coordinator does not replace it. Full product
 startup/install/native-host and real desktop/DeepSeek integration remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 792 default regression tests passed. The separate native-supervisor suite was not rerun for these components, and production DNR/lease integration is not yet established.
+
+
+## 16.259 Full tab lease manager and session/DNR composition
+
+Translated all original st/wn methods into `tab_leases.ts` and wired the restored
+lease codecs, shared header resolver and actual restored DNR coordinator directly.
+The factory owns the original singleton scope; startup must share the returned
+class across dispatcher/sessions. Chrome storage, clock and instance-ID source are
+explicit host dependencies, with no fixture defaults.
+
+Preserved lazy initialization and cached rejection, ownership/child-source checks,
+claims/active-turn updates, handoff/resume, header settings, viewport consumption,
+marks, stale-tab release, tab removal/replacement subscriptions, serialized mutation
+and shallow rollback on mutation/storage failures. DNR errors retain original
+method-specific propagation and do not roll back already-persisted state. Active
+lease notifications use the original changed-ID ordering and Promise rejection
+handling; synchronous listener throws are not newly swallowed.
+
+Four differential scenarios compare complete method/field inventories, dependency
+traces, outputs/errors, in-memory maps and persisted storage against the pinned st
+with its real original vy. They cover cached load, claims/collisions, headers,
+handoff, viewports, stale tabs, event callbacks, save rollback, DNR errors and
+recovery. A fifth test composes restored BrowserSession → TabLeaseManager →
+RequestHeaderRules over isolated Chrome fixtures, proving agent-tab claim creates
+header rules and turn end releases both persisted lease and rules.
+
+Remaining: production shared startup and instance-ID source, group/favicon,
+separate Browser Use network policy, overlay/monitor/SIWC, full extension install/
+native host and real desktop/DeepSeek integration. No user Chrome storage/rules
+were mutated in these tests.
+
+Validation: all eight reconstructed packages built and passed type checks; all 797 default regression tests passed. The separate native-supervisor suite was not rerun for this component composition; production extension startup remains unverified.
