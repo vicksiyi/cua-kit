@@ -1,0 +1,24 @@
+{
+  "package": "@statsig/client-core",
+  "version": "3.33.4",
+  "upstreamFiles": {
+    "src/NetworkCore.js": "8d2c118350fd03bd0127fce8c428d8bb2909931727f51fd5f457299dd14200f7",
+    "src/NetworkCore.d.ts": "530e8b9fb58acf517c4c90be0fed0a207f13dbdaf8075951ee669ab4e9f1b661"
+  },
+  "bundledBackgroundSha256": "3ccdc7a853700c9fdd8acf8356db33ef18615d17c8a6d2b0054cafe65eb6c7b9",
+  "bundledModule": "Bc",
+  "verifiedRuntimeDifferences": [
+    "Successful responses preserve headers, enabling 204 live cursor extraction.",
+    "skipInitTracking=true does not mutate last-used initialization URL.",
+    "skipInitTracking=true suppresses fallback information refresh after network failure.",
+    "skipInitTracking=true suppresses initialization error event and error-boundary attachment.",
+    "Ordinary requests retain initialization tracking and error propagation."
+  ],
+  "inspectedAdditionalDifferences": [
+    "Initialization network diagnostics start/end are skipped when skipInitTracking is true.",
+    "Bundled terminal error logging occurs before emitter/error-boundary calls."
+  ],
+  "reuseBoundary": "post/body serialization, encoding/compression, retry/backoff, rate limiting, URL/fallback support should remain upstream where behavior matches; customized request loop and diagnostic gates require restoration.",
+  "testBoundary": "Extract actual bundled Bc only, with official 3.33.4 support modules. Response and fallback resolver are fixtures; no HTTP request.",
+  "status": "Audit and executable compatibility evidence complete; production NetworkCore delta remains incomplete."
+}

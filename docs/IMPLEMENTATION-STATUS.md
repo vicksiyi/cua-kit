@@ -2821,3 +2821,25 @@ incomplete in addition to the explicitly identified SDK differences.
 
 Validation: eight package builds/type checks and all 906 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Executable NetworkCore compatibility audit
+
+Added an isolated extractor for the actual bundled Bc NetworkCore, reusing official
+3.33.4 support modules, and tested it against the actual public NetworkCore class.
+This is stronger evidence than method/type inspection: successful live responses retain
+headers and do not mutate the last initialization URL; live request failure suppresses
+fallback refresh, initialization error emission and error-boundary attachment. Public
+3.33.4 does not suppress these effects. Ordinary bundled requests retain those effects.
+
+Recorded exact upstream JS/type hashes, bundled source hash and reuse boundaries in
+extension-statsig-network-audit.json. Source inspection also identifies skipped diagnostic
+start/end markers and terminal logging order. These are obligations for the upcoming
+production network delta, not an implemented replacement or a runtime compatibility claim.
+
+Validation: two focused runtime comparison tests pass with response/fallback fixtures.
+No network traffic. No production code changed this round, so the full 906-test suite
+was not repeated; its most recent complete run remains the prior round. Default suite now
+includes these two new tests, but a combined 908-test pass has not yet been claimed.
+
+Production NetworkCore/store/client SDK deltas, full startup, panel UI, native replacement
+and installed/native/model end-to-end validation remain incomplete.
