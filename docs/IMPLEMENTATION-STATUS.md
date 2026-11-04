@@ -914,3 +914,15 @@ A real Chromium differential test installs both full sources into fresh pages an
 The precise historical version of CUA's embedded helper remains unproven, and this scenario does not exhaust all Playwright actions, accessibility edge cases or browser versions. Production extension/native host and real-model integration remain incomplete. The important implementation change is that the default browser context now has a real full injected implementation rather than requiring a missing source supplied by the caller.
 
 Validation: three-package build and full reconstruction suite passed: 599 tests, zero failures, explicit concurrency 4.
+
+### 16.198 Public Playwright actions through the assembled RPC/CDP stack
+
+Extended the existing service assembly integration scenario beyond AX actions to the public pageTab.playwright API. With no injectedSource override, domSnapshot, getByRole(...).click and getByLabel(...).fill now run through the public CUA binding, command transport/recovery RPC, actual Unix socket backend, original authority checks, assembled service and real Chromium CDP. Assertions verify DOM snapshots, a second physical button click counter and the actual date input value. The unchanged origin-rejection checks still precede approved page access.
+
+The same scenario navigates to a fresh synthetic document, confirms the old helper is absent, obtains a new public snapshot and verifies another installation happened. A public role locator then clicks successfully in the new document. This exercises automatic reinjection instead of relying on a preinstalled helper in each test page.
+
+Two fixture gaps were exposed and fixed: its ad-hoc telemetry stub omitted currentPlaywrightOperation and startLocatorRetry, so it now uses the restored default performance span and a traced retry recorder; its native backend event relay omitted Fetch.requestPaused/network events, causing the service-owned response interception to stall navigation. Those events are now forwarded and the test asserts Fetch.continueResponse. No production interception or authority checks were disabled. This records an important backend contract: enabling interception requires forwarding paused-request events through the native RPC bridge.
+
+Browser discovery, host approval, telemetry sink and documentation remain synthetic test dependencies. This is an end-to-end execution check of the restored public/browser service stack with a real browser, not proof of the installed production extension or native application bridge. No model credentials or personal browser profiles were used.
+
+Validation: expanded isolated integration scenario passed; complete suite remains 599 tests, all passing (concurrency 4). Production code is unchanged in this verification step.

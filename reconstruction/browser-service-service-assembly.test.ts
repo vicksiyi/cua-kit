@@ -1,3 +1,4 @@
+import { defaultAXPerformanceSpan } from "../packages/browser/src/service/accessibility/tracking";
 import { chromium } from "playwright";
 import { setupBrowserRuntime } from "../packages/browser/src/runtime/setup";
 import { setup_browser } from "../packages/cua/src/tinysky_alt/setup_browser";
@@ -44,6 +45,13 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       assert.equal(params.target.tabId, 8);
       assert.equal(params.target.sessionId, undefined);
       events.push(["cdp", params.method]);
+      if (
+        params.method === "Runtime.evaluate" &&
+        params.commandParams?.expression?.includes(
+          "window.__codexPlaywrightInjected = new",
+        )
+      )
+        events.push(["playwright.inject"]);
       return cdp.send(params.method, params.commandParams);
     });
     rpc.registerRequestHandler("browser/access", (request: any) => {
@@ -166,6 +174,16 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         span,
         commandTiming: {
           trackElicitation: (fn: any) => fn,
+          startLocatorRetry() {
+            return {
+              finish(status: string) {
+                events.push(["locator.finish", status]);
+              },
+              attemptFailed() {
+                events.push(["locator.retry"]);
+              },
+            };
+          },
           startCommand() {
             return {
               async run(fn: any) {
@@ -177,12 +195,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
             };
           },
         },
-        performanceSpan: {
-          currentCommandAttrs: () => ({}),
-          withSpan: span,
-          withCommandTelemetry: async (_type: any, _params: any, run: any) =>
-            run(),
-        },
+        performanceSpan: defaultAXPerformanceSpan,
         createErrorReporter: () => ({ captureException: unused }),
         loadClassicLevel: async () => null,
         getNativeCredentialObservationStatus: unused,
@@ -365,12 +378,17 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     await page.route("https://fixture.invalid/**", (route) =>
       route.fulfill({
         contentType: "text/html",
-        body: `<title>Public CUA fixture</title><button onclick="this.textContent='Clicked through CUA'">Public CUA action</button>`,
+        body: `<title>Public CUA fixture</title><button onclick="this.textContent='Clicked through CUA';this.dataset.clicks=String(Number(this.dataset.clicks||0)+1)">Public CUA action</button><label>Date<input id="fixture-date" type="date"></label>`,
       }),
     );
     await page.goto("https://fixture.invalid/cua-integration");
     cdp = await page.context().newCDPSession(page);
     for (const method of [
+      "Fetch.requestPaused",
+      "Network.requestWillBeSent",
+      "Network.responseReceived",
+      "Network.loadingFinished",
+      "Network.loadingFailed",
       "Page.frameNavigated",
       "Page.frameStartedLoading",
       "Page.frameStoppedLoading",
@@ -420,6 +438,21 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       await page.locator("button").textContent(),
       "Clicked through CUA",
     );
+    const domBefore = await pageTab.playwright.domSnapshot();
+    assert.match(domBefore, /Clicked through CUA/);
+    await pageTab.playwright
+      .getByRole("button", { name: "Clicked through CUA", exact: true })
+      .click();
+    assert.equal(await page.locator("button").getAttribute("data-clicks"), "2");
+    await pageTab.playwright
+      .getByLabel("Date", { exact: true })
+      .fill("2026-11-04");
+    assert.equal(
+      await page.locator("#fixture-date").inputValue(),
+      "2026-11-04",
+    );
+    const domAfter = await pageTab.playwright.domSnapshot();
+    assert.match(domAfter, /2026-11-04/);
     const changed = await pageTab.getAXState({ emit: false });
     assert.match(changed, /Clicked through CUA/);
     const screenshot = await pageTab.getScreenshot({ emit: false });
@@ -459,6 +492,32 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         (e) => e[0] === "cdp" && e[1] === "Accessibility.getFullAXTree",
       ),
     );
+    const injectionsBeforeNavigation = events.filter(
+      (e) => e[0] === "playwright.inject",
+    ).length;
+    assert.ok(injectionsBeforeNavigation > 0);
+    await page.goto("https://fixture.invalid/cua-next-document");
+    tabUrl = page.url();
+    assert.equal(
+      await page.evaluate(
+        () => typeof (window as any).__codexPlaywrightInjected,
+      ),
+      "undefined",
+    );
+    assert(
+      events.some((e) => e[0] === "cdp" && e[1] === "Fetch.continueResponse"),
+    );
+    const afterNavigation = await pageTab.playwright.domSnapshot();
+    assert.match(afterNavigation, /Public CUA action/);
+    assert.ok(
+      events.filter((e) => e[0] === "playwright.inject").length >
+        injectionsBeforeNavigation,
+    );
+    await pageTab.playwright
+      .getByRole("button", { name: "Public CUA action", exact: true })
+      .click();
+    assert.equal(await page.locator("button").getAttribute("data-clicks"), "1");
+    assert(events.some((e) => e[0] === "locator.finish" && e[1] === "success"));
     await hooks[0].run();
     await hooks[1].run();
     assert(

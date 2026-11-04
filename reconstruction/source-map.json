@@ -4693,7 +4693,7 @@
       "installedAppVersion": "1.57.0",
       "testBrowserVersion": "1.64.1",
       "status": "full upstream injected source loaded by default; CUA wrapper and credential policy retained; exact historical embedded version unproven",
-      "validation": "reconstruction/upstream-playwright.test.ts",
+      "validation": "reconstruction/upstream-playwright.test.ts (full-source differential) and browser-service-service-assembly.test.ts (public API via real socket/CDP: snapshot, role click, label fill, navigation reinjection)",
       "sourceSha256": "ee122c6b89a54de5510a2399f525548b16418570a8959ae4068d7f311511707d"
     },
     "classic-level": {
