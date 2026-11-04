@@ -4305,7 +4305,7 @@
         "d6"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output."
+      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output. Runtime now defaults to restored navigation/interaction/WebMCP recorders, aggregator and response metadata/screenshot implementation; actual after-code hook composition verifies one-shot WebMCP metadata."
     },
     "packages/browser/src/service/runtime/command_scheduler.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4343,6 +4343,53 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "72 original backend/override/global-disable/capability combinations, exact reachable-reference output and capability rendering, eight full controller read/failure traces, concurrent reads and rendering failure state. Twelve installed API-manifest comparisons across backend types/disabled members. Actual documentation commands compose with p6 and restored scheduler to enforce required reads before browser context creation. Type checks and all 558 tests pass. Packaged documentation assets and full runtime integration remain incomplete."
+    },
+    "packages/browser/src/service/runtime/command_recorders.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-command-response-recorders",
+      "symbols": [
+        "Z3",
+        "Oue",
+        "wx",
+        "Mue",
+        "Nue",
+        "Fue",
+        "Lue",
+        "Q3",
+        "Uue",
+        "t6",
+        "e6",
+        "que",
+        "n6",
+        "jue",
+        "Hue",
+        "o6",
+        "r6"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "27 individual recorder traces, 13 aggregator traces, shared-budget serialization matrices and 48 handoff metadata combinations match original. Protected handoff bypasses screenshots, contribution priority and same-browser merge match original. Composed runtime after-code hook emits actual metadata once. Type checks and all 565 tests pass. Production end-to-end assembly remains incomplete."
+    },
+    "packages/browser/src/service/runtime/response_metadata.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-response-metadata-and-screenshot",
+      "symbols": [
+        "xue",
+        "Eue",
+        "Tue",
+        "bu",
+        "$3",
+        "Cue",
+        "Aue",
+        "Pue",
+        "bx",
+        "yx",
+        "Rue",
+        "W3"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "52 original tab ownership, fallback, protection and failure traces plus field whitelist/URL redaction comparisons. Default capture calls restored Ui implementation; synthetic capture providers validate orchestration, not live production screenshots. Type checks and all 565 tests pass. Production end-to-end assembly remains incomplete."
     }
   },
   "embeddedPackages": {

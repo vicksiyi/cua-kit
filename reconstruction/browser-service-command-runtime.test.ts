@@ -327,11 +327,22 @@ function fixture(factory: any, flags: any = {}) {
     securityBlockReason: () => "blocked",
     UrlPolicyError,
     formatCommandError: (e: any) => new Error("formatted:" + e.message),
-    canRecordCommand: (c: any) => c.recordable,
+    canRecordCommand: (c: any) => c?.recordable !== false,
     trackRecordingContext: () => trace.push(["track"]),
     reportCommandRecovery: () => ({ serial: true }),
     closeTabCommand: { type: "close" },
   };
+  if (flags.realRecording) {
+    for (const key of [
+      "createCommandRecorder",
+      "createNavigationRecorder",
+      "createInteractionRecorder",
+      "createResponseRecorder",
+      "emitResponseMetadata",
+    ])
+      delete deps[key];
+    runtime.setResponseMeta = (meta: any) => trace.push(["actual.meta", meta]);
+  }
   if (flags.realDocumentation) {
     delete deps.Documentation;
     deps.loadApiManifest = async () => ({
@@ -679,5 +690,30 @@ test("runtime uses restored documentation controller and real documentation comm
     "file:intro",
   );
   assert.equal(f.trace.filter((x) => x[0] === "command").length, 1);
+  await f.factory.dispose();
+});
+
+test("runtime composes restored recorders and response metadata with after-code hook", async () => {
+  const f = fixture(createCommandRuntimeFactory, { realRecording: true });
+  const r = await f.factory.createRuntime({}, f.runtime);
+  await r.executeAgentCommand({
+    type: "webmcp_list_tools",
+    browser_id: "browser-1",
+    tab_id: 3,
+  });
+  assert.equal(f.hooks[0].timeoutMs, 10000);
+  await f.hooks[0].run();
+  const metas = f.trace.filter((x) => x[0] === "actual.meta").map((x) => x[1]);
+  const last = metas.at(-1);
+  assert.equal(last["codex/toolSurface"].browserId, "browser-1");
+  assert.equal(last["codex/toolSurface"].webMcpCalls[0].kind, "listTools");
+  assert.equal(
+    last["codex/toolSurface"].webMcpCalls[0].outputJson,
+    JSON.stringify({ fallback: true }),
+  );
+  assert.equal(last.browser_use.url, "https://synthetic.invalid/");
+  const count = metas.length;
+  await f.hooks[0].run();
+  assert.equal(f.trace.filter((x) => x[0] === "actual.meta").length, count);
   await f.factory.dispose();
 });

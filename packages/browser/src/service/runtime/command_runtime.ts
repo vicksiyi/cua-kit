@@ -1,3 +1,8 @@
+import { createCommandRecording } from "./command_recorders";
+import {
+  createResponseScreenshot,
+  emitResponseMetadata as emitBrowserResponseMetadata,
+} from "./response_metadata";
 import { DocumentationController } from "./documentation_controller";
 import { commandScheduling } from "./command_scheduler";
 /** Reconstructed p6 runtime. Each factory owns the original module-level state.
@@ -16,10 +21,10 @@ export interface CommandRuntimeDependencies {
   configureRuntimeTelemetry: (...args: any[]) => any;
   emitEvent: (...args: any[]) => any;
   release: string;
-  createCommandRecorder: (...args: any[]) => any;
-  createNavigationRecorder: (...args: any[]) => any;
-  createInteractionRecorder: (...args: any[]) => any;
-  createResponseRecorder: (...args: any[]) => any;
+  createCommandRecorder?: (...args: any[]) => any;
+  createNavigationRecorder?: (...args: any[]) => any;
+  createInteractionRecorder?: (...args: any[]) => any;
+  createResponseRecorder?: (...args: any[]) => any;
   collectNotifications: (...args: any[]) => any;
   reportNotificationError: (...args: any[]) => any;
   loadApiManifest: (...args: any[]) => any;
@@ -33,7 +38,7 @@ export interface CommandRuntimeDependencies {
   managementCommands: Record<string, any>;
   surfaceForBackend: (...args: any[]) => any;
   shouldEmitResponseMetadata?: (...args: any[]) => any;
-  emitResponseMetadata: (...args: any[]) => any;
+  emitResponseMetadata?: (...args: any[]) => any;
   isBrowserAlias: (...args: any[]) => any;
   assertSurfaceEnabled: (...args: any[]) => any;
   BrowserContext: new (...args: any[]) => any;
@@ -63,6 +68,16 @@ export interface CommandRuntimeDependencies {
 export function createCommandRuntimeFactory(
   dependencies: CommandRuntimeDependencies,
 ) {
+  const recording = createCommandRecording({
+    captureResponseScreenshot: createResponseScreenshot(
+      dependencies.emitEvent,
+      dependencies.canRecordCommand,
+    ),
+    emitResponseMetadata:
+      dependencies.emitResponseMetadata ?? emitBrowserResponseMetadata,
+    canObserve: dependencies.canRecordCommand,
+    shouldEmitResponseMetadata: dependencies.shouldEmitResponseMetadata,
+  });
   const {
     setExceptionReporter,
     setSecurityCheckReporter,
@@ -70,10 +85,10 @@ export function createCommandRuntimeFactory(
     configureRuntimeTelemetry,
     emitEvent,
     release,
-    createCommandRecorder,
-    createNavigationRecorder,
-    createInteractionRecorder,
-    createResponseRecorder,
+    createCommandRecorder = recording.createCommandRecorder,
+    createNavigationRecorder = recording.createNavigationRecorder,
+    createInteractionRecorder = recording.createInteractionRecorder,
+    createResponseRecorder = recording.createResponseRecorder,
     collectNotifications,
     reportNotificationError,
     loadApiManifest,
@@ -87,7 +102,7 @@ export function createCommandRuntimeFactory(
     managementCommands,
     surfaceForBackend,
     shouldEmitResponseMetadata = commandScheduling.shouldEmitResponseMetadata,
-    emitResponseMetadata,
+    emitResponseMetadata = emitBrowserResponseMetadata,
     isBrowserAlias,
     assertSurfaceEnabled,
     BrowserContext,
