@@ -4287,6 +4287,25 @@
       ],
       "status": "reconstructed-host-policy-assembly",
       "validation": "Connects restored privileged bridge, signed access, profile reader, handshake, discovery, directory, config, Preferences, credential observation and elicitation telemetry. Real Unix socket synthetic host test verifies signed access sharing, inventory/getTabs, managed headers, elicitation meta normalization and turn/disposal. Telemetry SDK/span/feature provider, ClassicLevel loader and auth broker remain supplied. Full p6 runtime/injected/native app stack remains incomplete."
+    },
+    "packages/browser/src/service/runtime/command_runtime.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-full-command-runtime-control-flow",
+      "symbols": [
+        "p6",
+        "Xue",
+        "Yue",
+        "Ix",
+        "Jue",
+        "Vue",
+        "Rx",
+        "zue",
+        "Kue",
+        "d6"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module."
     }
   },
   "embeddedPackages": {
