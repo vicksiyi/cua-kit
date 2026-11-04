@@ -10,9 +10,12 @@
     "qE": "NativeHostRequestError",
     "HE": "NativeHostRequestTimeoutError",
     "Ei": "NativeTransportConnectionError",
-    "zE": "nativeHostErrorType"
+    "zE": "nativeHostErrorType",
+    "fc": "createBrowserRpcPeerClass(false) in @core/core/browserRpcPeer",
+    "pc": "ExtensionBrowserPeer"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Extension dispatcher, browser operations, session/auth/security integration, manifest and build/install packaging; native messaging host executable remains external."
+  "remaining": "Extension browser command handler/session/auth/security integration, manifest and build/install packaging; native messaging host executable remains external.",
+  "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries."
 }

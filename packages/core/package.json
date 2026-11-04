@@ -7,6 +7,10 @@
     "./UnreachableCaseError": {
       "types": "./src/UnreachableCaseError.d.ts",
       "import": "./dist/UnreachableCaseError.js"
+    },
+    "./browserRpcPeer": {
+      "types": "./src/browser_rpc_peer.ts",
+      "import": "./dist/browser_rpc_peer.js"
     }
   }
 }
