@@ -1963,3 +1963,27 @@ Native host, remaining overlay/auth/monitor components, real desktop/model
 integration and native source reconstruction also remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 825 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.269 Favicon manager foundation wiring
+
+The foundation now creates a shared restored favicon manager using the same lease
+singleton as sessions. Handler favicons and session tabFavicons are supplied
+automatically; residual caller fields cannot replace this shared implementation.
+Resource fetching defaults to host fetch/global fetch and supports explicit host
+injection for tests. Original initialization still occurs when the singleton is
+first requested, not when merely constructing the foundation.
+
+The RPC composition fixture now uses restored manager/resource/readiness code and
+real restored lease subscriptions. After createTab it observes an active badge with
+the decoded fixture favicon. On turnEnded it verifies clear-badge messaging before
+Chrome tab removal and removal-event cleanup of the cache and closing-tab set.
+Fixture storage now keeps lease and badge keys independently, and tab-removal
+events propagate to registered listeners rather than silently mutating a map.
+
+The installed content-scripts/codex.js artifact exists and is the next page-consumer
+source to inspect. It is not yet reconstructed or assembled, so these tests do not
+prove rendered favicon UI. Production startup/native host, remaining overlay/auth/
+monitor components, real desktop/model integration and native source remain open.
+
+Validation: all eight reconstructed packages built and passed type checks; all 825 default regression tests passed. The separate native-supervisor suite was not rerun.

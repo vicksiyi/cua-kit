@@ -703,6 +703,10 @@ test("extension foundation shares identity, lease singleton and debugger state a
     await import("../packages/browser-extension/src/browser_peer");
   const { deps, tabs, trace } = fixture(false);
   tabs.get(4).status = "complete";
+  tabs.get(4).favIconUrl = "https://example.test/icon.png";
+  const badgeMessages: any[] = [];
+  const removedListeners = new Set<(id: number) => void>();
+  const sessionStorage: Record<string, any> = {};
   const inspectionCommands: string[] = [];
   const policyTypes = [
     "main_frame",
@@ -728,14 +732,18 @@ test("extension foundation shares identity, lease singleton and debugger state a
     detachListeners = 0;
   const chrome: any = {
     ...deps.chrome,
-    runtime: { id: "extension" },
+    runtime: {
+      id: "extension",
+      getURL: (path: string) => `chrome-extension://fixture${path}`,
+    },
     storage: {
       session: {
         async get(key: string) {
-          return { [key]: stored };
+          return { [key]: key === "TAB_LEASES" ? stored : sessionStorage[key] };
         },
         async set(value: any) {
-          stored = structuredClone(value.TAB_LEASES);
+          if ("TAB_LEASES" in value) stored = structuredClone(value.TAB_LEASES);
+          Object.assign(sessionStorage, structuredClone(value));
         },
         async remove(key: string) {
           trace.push(["session.remove", key]);
@@ -755,8 +763,20 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
     tabs: {
       ...deps.chrome.tabs,
-      onRemoved: { addListener() {} },
-      onReplaced: { addListener() {} },
+      onRemoved: {
+        addListener(fn: (id: number) => void) {
+          removedListeners.add(fn);
+        },
+        removeListener(fn: (id: number) => void) {
+          removedListeners.delete(fn);
+        },
+      },
+      onReplaced: { addListener() {}, removeListener() {} },
+      async sendMessage(id: number, message: any) {
+        trace.push(["tabs.sendMessage", id, message]);
+        badgeMessages.push({ id, ...message });
+        return { ok: true };
+      },
       async query(options: any = {}) {
         return [...tabs.values()].filter(
           (tab) =>
@@ -773,7 +793,11 @@ test("extension foundation shares identity, lease singleton and debugger state a
         tabs.get(id).groupId = -1;
       },
       async remove(ids: number | number[]) {
-        for (const id of [ids].flat()) tabs.delete(id);
+        trace.push(["tabs.remove", ids]);
+        for (const id of [ids].flat()) {
+          tabs.delete(id);
+          for (const listener of removedListeners) listener(id);
+        }
       },
       async create() {
         return tabs.get(4);
@@ -855,6 +879,10 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
     now: () => 1,
     random: () => 0,
+    fetch: async () =>
+      new Response(Uint8Array.of(1, 2, 3), {
+        headers: { "content-type": "image/png" },
+      }),
     setTimeout,
     clearTimeout,
     error: () => {},
@@ -865,7 +893,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
       browserFamily: () => "chrome",
       Siwc: class {} as any,
       buildChannel: () => "test",
-      favicons: deps.tabFavicons,
       TabMentionProvider: class {
         getProviderTabId(id: number) {
           return `tab:${id}`;
@@ -912,6 +939,18 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
   });
   assert.equal(sent[0].result.id, 4);
+  const favicons = foundation.tabFavicons.getInstance();
+  await new Promise((resolve) => setImmediate(resolve));
+  await favicons.stateOperationQueue;
+  await favicons.publicationQueue;
+  assert.ok(
+    badgeMessages.some(
+      (message) =>
+        message.id === 4 &&
+        message.badge === "active" &&
+        message.faviconDataUrl === "data:image/png;base64,AQID",
+    ),
+  );
   assert.equal(tabs.get(4).groupId, 40);
   assert.deepEqual(local.TAB_GROUPS.groups, [{ chromeGroupId: 40 }]);
   assert.deepEqual(
@@ -991,6 +1030,24 @@ test("extension foundation shares identity, lease singleton and debugger state a
   assert.deepEqual(local.TAB_GROUPS.groups, []);
   assert.deepEqual(rules, []);
   assert.equal(foundation.debuggerRuntime.attachedTabs.size, 0);
+  await new Promise((resolve) => setImmediate(resolve));
+  await favicons.stateOperationQueue;
+  await favicons.publicationQueue;
+  assert.equal(favicons.faviconDataUrls.has(4), false);
+  assert.equal(favicons.closingTabIds.has(4), false);
+  const closeIndex = trace.findIndex((entry) => entry[0] === "tabs.remove");
+  assert.ok(closeIndex > 0);
+  assert.ok(
+    trace
+      .slice(0, closeIndex)
+      .some(
+        (entry) =>
+          entry[0] === "tabs.sendMessage" &&
+          entry[2].type === "TAB_FAVICON_BADGE" &&
+          entry[2].badge === null,
+      ),
+  );
+  favicons.dispose();
 });
 
 test("restored session waits for network policy acknowledgement before attaching its debugger", async () => {

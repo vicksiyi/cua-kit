@@ -197,10 +197,10 @@ read or mutate storage.
 
 `createExtensionBrowserFoundation(host)` is project-authored assembly around the
 restored components. Its `createHandlerClass(handlerDependencies, sessionDependencies)`
-shares one identity reader, lease class/singleton, tab-group singleton, network-policy manager, debugger runtime and tab runtime
+shares one identity reader, lease class/singleton, tab-group and favicon singletons, network-policy manager, debugger runtime and tab runtime
 across dispatcher/sessions. Known restored dependencies override supplied residual
 fields, so accidental extra fields cannot replace them. Remaining capabilities,
-SIWC, favicon, overlay/monitor and application startup are still
+SIWC, overlay/monitor and application startup are still
 required. This is not an installable extension or a claim that original `dR` has
 been fully recovered.
 
@@ -265,7 +265,7 @@ image MIME types (BMP fallback for the favicon endpoint), and caps both declared
 and streamed bytes at 64 KiB. It retains cancellation and error/null behavior and
 chunked base64 conversion. It uses fetch/Streams directly, without a third-party
 image decoder. The Ma badge/cache/publication manager is restored below; its page-side
-consumer and foundation integration remain pending. This helper alone does not
+consumer remains pending. This helper alone does not
 render a badge. Tests compare the pinned original with isolated response/stream fixtures.
 
 ### Favicon badge manager and content readiness
@@ -282,5 +282,11 @@ tab, inject `content-scripts/codex.js`, then ping again. Its timeout resolves nu
 and does not cancel the underlying operation. No third-party implementation is
 needed in these inspected closures. Differential tests compare original method
 inventory, traces, state/cache/storage and lifecycle errors, including real restored
-resource/readiness orchestration over fixture Chrome/fetch. The actual page consumer
-and shared foundation wiring remain pending, so visible favicon UI is not verified.
+resource/readiness orchestration over fixture Chrome/fetch. The shared foundation now supplies this manager to handler and sessions, using the
+real restored lease-change subscription. The actual page consumer remains pending,
+so visible favicon UI is not verified.
+
+The foundation composition test observes active-badge messages after a real restored
+lease claim, then checks clear-badge publication before tab removal and cache/closing
+state cleanup on removal events. Browser APIs and favicon responses are fixtures;
+page-side message handling and DOM rendering are not inferred from these assertions.

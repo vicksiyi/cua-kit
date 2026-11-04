@@ -1,3 +1,4 @@
+import { createTabFaviconManagerClass } from "./tab_favicons";
 import { createTabGroupManagerClass } from "./tab_groups";
 import { createNetworkPolicyManagerClass } from "./network_policy";
 import { createNetworkPolicyEnforcer } from "./network_policy_enforcement";
@@ -19,6 +20,7 @@ export interface ExtensionBrowserHost {
   crypto: Pick<Crypto, "randomUUID">;
   now(): number;
   random?(): number;
+  fetch?: typeof globalThis.fetch;
   setTimeout: typeof globalThis.setTimeout;
   clearTimeout: typeof globalThis.clearTimeout;
   error(message: string, context: { operation: string }): void;
@@ -27,6 +29,11 @@ export interface ExtensionBrowserHost {
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const instanceId = createExtensionInstanceIdReader(host);
   const tabLeases = createTabLeaseManagerClass({ ...host, instanceId });
+  const tabFavicons = createTabFaviconManagerClass({
+    ...host,
+    tabLeases,
+    fetch: host.fetch ?? globalThis.fetch,
+  });
   const debuggerRuntime = createDebuggerRuntime(host);
   const tabRuntime = createTabRuntime(host);
   const tabGroups = createTabGroupManagerClass({
@@ -42,11 +49,13 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     ...debuggerRuntime,
     ...tabRuntime,
     tabGroups,
+    tabFavicons,
     chrome: host.chrome,
     tabLeases,
     networkPolicy,
   };
   const handlerBase = {
+    favicons: tabFavicons,
     chrome: host.chrome,
     instanceId,
     tabLeases,
@@ -83,6 +92,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     debuggerRuntime,
     tabRuntime,
     tabGroups,
+    tabFavicons,
     createHandlerClass,
   };
 }

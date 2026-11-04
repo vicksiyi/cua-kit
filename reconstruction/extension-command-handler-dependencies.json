@@ -9,7 +9,7 @@
     "uS": "createRequestHeaderPolicyClass(chrome) imported directly from ./request_headers",
     "py": "Siwc",
     "Rr": "buildChannel",
-    "Ma": "favicons",
+    "Ma": "shared restored tab favicon manager supplied by createExtensionBrowserFoundation",
     "Xu": "TabMentionProvider",
     "fE": "initializeDebugger",
     "qy": "initializeForeignExtensionFrameMonitor",

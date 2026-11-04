@@ -6,7 +6,7 @@
   "originalToReadable": {
     "bS": "tabGroups; shared restored manager supplied by createExtensionBrowserFoundation",
     "st": "tabLeases",
-    "Ma": "tabFavicons",
+    "Ma": "shared restored tab favicon manager supplied by createExtensionBrowserFoundation",
     "ar": "networkPolicy; shared restored manager supplied by createExtensionBrowserFoundation",
     "wt": "attachedTabs",
     "_i": "targetOwners",
