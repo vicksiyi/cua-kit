@@ -1,0 +1,149 @@
+{
+  "binarySha256": "1bbff40474bfee676ca3c673d207175f4d135c1c627dc38a9d7a6fb7f3af2ae1",
+  "probeDate": "2026-11-04",
+  "platform": "darwin-arm64",
+  "conditions": {
+    "network": "denied by outer sandbox-exec profile",
+    "home": "temporary isolated HOME and CODEX_HOME",
+    "submittedActions": "initialize/tools-list only for this schema snapshot"
+  },
+  "initialize": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {
+      "tools": {
+        "listChanged": true
+      }
+    },
+    "serverInfo": {
+      "name": "rmcp",
+      "version": "1.5.0"
+    },
+    "instructions": "Use `js` for `node_repl` execution with persistent, redeclarable top-level bindings, `js_reset` to clear bindings, and `js_add_node_module_dir` to add package directories."
+  },
+  "tools": [
+    {
+      "name": "js",
+      "description": "Execute JavaScript in a persistent `node_repl` with top-level await. Top-level bindings persist until `js_reset` and can be redeclared. Use `const` for stable values and `let` for changing values. Use dynamic imports such as `await import(\"playwright\")`; top-level static imports and `node:process` are unavailable. Use `nodeRepl.write(value)` for output and `await nodeRepl.emitImage(image)` for images. Execution context is available through `nodeRepl.cwd`, `nodeRepl.homeDir`, `nodeRepl.tmpDir`, and `nodeRepl.requestMeta`. The default timeout is 30000 ms (30 seconds); increase `timeout_ms` for longer operations. Use `js_add_node_module_dir` when an additional package directory is required.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "JavaScript code to execute with top-level await.",
+            "type": "string"
+          },
+          "timeout_ms": {
+            "description": "Optional execution timeout in milliseconds. Defaults to 30000 (30 seconds) when omitted.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": {
+            "description": "Short user-facing description of what the code does.",
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "js_add_node_module_dir",
+      "description": "Add an absolute `node_modules` directory for package imports. The directory remains available after `js_reset`.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "Absolute path to a node_modules directory to add to Node package resolution.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "js_reset",
+      "description": "Reset the JavaScript kernel and clear all bindings.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "turn_ended",
+      "description": "Notify trusted libraries that a Codex turn ended. Repeated notifications for the same session and turn are ignored.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "hook_event_name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "session_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "turn_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "hook_event_name",
+          "session_id",
+          "turn_id"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "idempotentHint": true
+      },
+      "_meta": {
+        "ui": {
+          "visibility": []
+        }
+      }
+    }
+  ],
+  "wrapperLaunchContract": [
+    "<worker-asset-directory>",
+    "<node-executable>",
+    "--experimental-vm-modules",
+    "<worker-asset-directory>/kernel.js",
+    "--session-id",
+    "<session-id>",
+    "--working-dir",
+    "<working-directory>"
+  ],
+  "publicSourceAudit": {
+    "repository": "https://github.com/openai/codex",
+    "treeSha": "93b4e5b4c6474cdbf12614c4ac3acbd006fbee89",
+    "truncated": false,
+    "entryCount": 11028,
+    "matchedPaths": [
+      "codex-rs/core/src/context/guardian_node_repl_policy.rs",
+      "codex-rs/core/src/context/node_repl_review_evidence.rs",
+      "codex-rs/ext/guardian-reviewer/src/node_repl_review_evidence.rs",
+      "codex-rs/ext/guardian-reviewer/src/node_repl_review_evidence_tests.rs",
+      "codex-rs/prompts/templates/guardian/node_repl_policy.md"
+    ],
+    "scope": "path search for node.?repl|js_repl; no standalone supervisor implementation found in this tree; not a claim about all public/private sources"
+  }
+}

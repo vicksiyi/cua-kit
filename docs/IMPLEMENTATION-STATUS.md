@@ -1356,3 +1356,11 @@ The end-to-end worker test verifies setup/list_windows, retained client state ac
 This proves two-worker JavaScript/Sky protocol integration, not native desktop actions or a production supervisor. The relay is test infrastructure, not reconstructed Rust supervisor code. Native supervisor permissions/isolation, MCP lifecycle, browser/native/AX resource provisioning and real-model end-to-end validation remain outstanding.
 
 Validation: seven-package build/type checks and all 741 reconstruction tests pass with concurrency 4.
+
+### 16.240 Native supervisor protocol and real MCP integration
+
+Audited the installed native boundary and a pinned, non-truncated openai/codex public tree. No standalone supervisor source was found in those bounded locations; binary Rust unit strings are not treated as recovered code. Recorded the native initialize/tools-list schemas and binary hash in reconstruction/node-repl-native-protocol.json, with scope and provenance in node-repl-native-boundary.md.
+
+Confirmed the existing NODE_REPL_WORKER_WRAPPER launch contract and used it in an explicit integration test to substitute the reconstructed kernel under the actual installed native supervisor. With temporary HOME/CODEX_HOME/TMPDIR and outer macOS network denial, actual MCP js calls produced 40 then 42, js_reset spawned a new restored kernel, and a subsequent call returned undefined. Public response contents match the original kernel. Installed files and user configuration were not modified; no disable-sandbox flag was used.
+
+Validation: the explicit native-supervisor.integration.ts test passes. The unchanged default reconstruction suite remains at its previous 741 passing tests; it was not rerun solely for this opt-in probe/documentation addition. This is real native-supervisor/MCP integration of the restored kernel, not a native supervisor source reconstruction. Full permissions/isolation, privileged host functions, native desktop/browser/AX and actual-model validation remain incomplete.
