@@ -264,6 +264,23 @@ to validate alongside production extension startup.
 image MIME types (BMP fallback for the favicon endpoint), and caps both declared
 and streamed bytes at 64 KiB. It retains cancellation and error/null behavior and
 chunked base64 conversion. It uses fetch/Streams directly, without a third-party
-image decoder. The enclosing Ma badge/cache/publication manager and its page-side
-consumer still need reconstruction/integration; this helper alone does not render
-a badge. Tests compare the pinned original with isolated response/stream fixtures.
+image decoder. The Ma badge/cache/publication manager is restored below; its page-side
+consumer and foundation integration remain pending. This helper alone does not
+render a badge. Tests compare the pinned original with isolated response/stream fixtures.
+
+### Favicon badge manager and content readiness
+
+`createTabFaviconManagerClass` restores all original Ma/Kt methods and event
+callbacks, using the restored resource reader and content readiness runtime. State
+operations and publications use separate serialized queues. Active leases override
+finalized badges; focused visible tabs clear finalized state. Cache identity and
+post-fetch navigation checks, closing-tab suppression, bounded restore before close,
+failed-close recovery, storage mutation/error ordering and disposal remain original.
+
+`createContentRuntime` restores Mu/Ta/_y/de: ping first, share in-flight injection per
+tab, inject `content-scripts/codex.js`, then ping again. Its timeout resolves null
+and does not cancel the underlying operation. No third-party implementation is
+needed in these inspected closures. Differential tests compare original method
+inventory, traces, state/cache/storage and lifecycle errors, including real restored
+resource/readiness orchestration over fixture Chrome/fetch. The actual page consumer
+and shared foundation wiring remain pending, so visible favicon UI is not verified.

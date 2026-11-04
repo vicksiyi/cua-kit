@@ -17,3 +17,4 @@ export * from "./network_policy";
 export * from "./network_policy_compiler";
 export * from "./network_policy_enforcement";
 export * from "./tab_groups";
+export * from "./tab_favicons";

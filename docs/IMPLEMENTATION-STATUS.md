@@ -1934,3 +1934,32 @@ startup/native host, remaining UI/auth/monitor components, real desktop/model
 integration and native source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 819 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.268 Favicon badge manager and content readiness
+
+Restored the complete Ma/Kt manager with original fields, methods and event callbacks
+as tab_favicons.ts. It directly composes the restored resource reader and new
+content_runtime.ts (Mu/Ta/_y/de/Ea/gy plus Gu/rS). Content readiness preserves
+ping-before-injection, per-tab in-flight deduplication, original script path, follow-up
+ping, null timeout and late work behavior. No third-party runtime is reconstructed.
+
+Manager state and publication queues remain distinct; active leases override
+finalized badges, visible tabs clear unseen state, cache reads verify URL/icon
+stability, events invalidate caches and migrate/remove badges, closing suppresses
+publication, and failed close clears closing state. Original eager initialization,
+storage validation, mutation-before-save failure, queue recovery and disposal are
+preserved. Timeouts do not silently become cancellation of underlying operations.
+
+Three content-runtime differential tests verify injection/timeout traces and badge
+URL recognition. Three manager tests compare all prototype methods plus full traces,
+state/cache/storage against the pinned original, using restored resource/readiness
+logic over fixture Chrome/fetch. They cover visibility, active leases, publication,
+navigation races, events, persistence failures, close/restore failure and recovery.
+
+Shared foundation wiring and the actual content-script badge consumer remain
+pending; this does not demonstrate visible badge UI or complete extension startup.
+Native host, remaining overlay/auth/monitor components, real desktop/model
+integration and native source reconstruction also remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 825 default regression tests passed. The separate native-supervisor suite was not rerun.
