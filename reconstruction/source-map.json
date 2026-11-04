@@ -4056,6 +4056,29 @@
       ],
       "status": "assembled-restored-browser-context",
       "validation": "Binds restored CDP, preferences, input, Playwright, security, AX, clipboard, document responses, downloads, site instructions, assets and WebMCP catalog. Adapts explicit Playwright injected-source constructor argument/order. Integration test instantiates actual restored services with synthetic transport; verifies dependency identities, metadata/delegates, global credential observation gating and idempotent disposal. Full injected helper, localization, telemetry, host/runtime bootstrap and production native providers remain inputs or incomplete."
+    },
+    "packages/browser/src/service/runtime/host.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "mH",
+        "nhe",
+        "ohe",
+        "fH",
+        "W6",
+        "rhe"
+      ],
+      "status": "reconstructed-runtime-host",
+      "validation": "16 original host traces cover privileged REPL rejection, GAAS selection, config read/parse fallback, broker presence, absolute WASM validation order, live request metadata, elicitation meta normalization including false/null, init/directory/elicitation failures and broker arguments. Real filesystem UTF-8/bytes and privilege gate tested. Directory/config/access verification/telemetry/broker dependencies remain explicit; no complete production host claim."
+    },
+    "packages/browser/src/service/runtime/elicitation_telemetry.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "G6"
+      ],
+      "status": "reconstructed-elicitation-telemetry",
+      "validation": "640 original span/result-attribute combinations cover authentication kinds, automatic review, reviewer identity, outcomes, unsupported/takeover precedence and guardian timeout. Uses restored guardian timeout classification and explicit span host."
     }
   },
   "embeddedPackages": {

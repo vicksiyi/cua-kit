@@ -674,3 +674,11 @@ Restored the full ob class as `context/browser_context.ts`: backend-specific net
 `browser_context_assembly.ts` connects actual restored preferences, CDP, clipboard, browser-user/UI/input, dev/tabs/lifecycle, Playwright, security, document responses, downloads, site instructions, assets and AX actions/capture. It adapts the explicit injected-source argument and changed constructor order of the restored Playwright class. Host still supplies injected source, localization and telemetry.
 
 Validation: 27 original class comparisons across IAB/extension/CDP cover normal, disabled AX, proxy, cloud, info failure, transport-close and cleanup/detach/disposal failures. An assembly test constructs actual restored services with synthetic transport, verifies dependency identities, metadata/delegates, global credential observation gating and idempotent disposal. Type checks and all 515 tests pass. No real browser execution through this new context is claimed yet; host/runtime bootstrap, full injected helper/native providers and resource packaging remain incomplete.
+
+### 16.167 Privileged host initialization and elicitation telemetry
+
+Restored mH/nhe/ohe/fH/W6/rhe in `runtime/host.ts`: privileged REPL gate, runtime spread with live request metadata getter, bound elicitation and nullish meta normalization, GAAS config/default path/read-parse fallback, optional broker delegates, credential-observation initialization, access assertion and absolute WASM-path validation order, and host-service assembly. Filesystem uses actual Node UTF-8/byte operations. Browser directory, config bridge, access verification, telemetry and broker implementations remain explicit dependencies.
+
+Restored G6 in `runtime/elicitation_telemetry.ts`, using the existing guardian timeout classifier and supplied span implementation. Preserves automatic-review/user-wait names, auth stage, unsupported-over-takeover precedence, reviewer projection and result classification.
+
+Validation: 16 original host traces, real temporary filesystem operations, original REPL-gate comparison and 640 original telemetry combinations. Type checks and all 518 tests pass. This does not establish a runnable privileged production host: directory/transport/config/access verification and runtime bootstrap are still incomplete; no real broker or model request is made.
