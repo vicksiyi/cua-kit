@@ -165,3 +165,7 @@ export * from "./tunnel_mcp_server";
 export * from "./tunnel_elicitation_client";
 
 export * from "./tunnel_response_delivery";
+
+export * from "./tunnel_http_server";
+
+export * from "./kernel_http_tunnel";

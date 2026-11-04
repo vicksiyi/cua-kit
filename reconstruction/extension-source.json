@@ -279,7 +279,8 @@
       "PDF deletion success and retained failures",
       "subagent cleanup metadata"
     ],
-    "limit": "Lifecycle now composed with restored JS handler and tool registration. Tunnel transport and production deployment still incomplete; fixture tests do not prove live Chrome attachment or hosted ChatGPT execution."
+    "limit": "Lifecycle now composed with restored JS handler and tool registration. Tunnel transport and production deployment still incomplete; fixture tests do not prove live Chrome attachment or hosted ChatGPT execution.",
+    "currentComposition": "Restored HTTP tunnel now composes dispatch, JS, lifecycle, elicitation and delivery; see tunnelHttpServerVerification for live-loopback evidence and production limits."
   },
   "kernelJsHandlerVerification": {
     "source": "p_.handleJsCall, constructor tool registration, shouldDeferCommand, Zg and pt",
@@ -296,27 +297,41 @@
       "abort after storage",
       "registered turn cleanup and PDF removal"
     ],
-    "limit": "No real user permission is granted by tests. Tunnel transport, production chat/PDF service and packaged standalone kernel deployment remain incomplete."
+    "limit": "No real user permission is granted by tests. Tunnel transport, production chat/PDF service and packaged standalone kernel deployment remain incomplete.",
+    "currentComposition": "Restored HTTP tunnel now composes dispatch, JS, lifecycle, elicitation and delivery; see tunnelHttpServerVerification for live-loopback evidence and production limits."
   },
   "tunnelMcpDispatchVerification": {
     "source": "e_, t_, Nr, $s",
     "module": "packages/browser-extension/src/tunnel_mcp_server.ts",
     "test": "reconstruction/extension-tunnel-mcp-server.test.ts",
     "method": "Differential execution of actual installed dispatch/schema/context functions, plus actual restored dispatcher -> JS handler -> scope/turn cleanup integration with external kernel fixtures",
-    "limit": "Local protocol dispatch only; HTTP polling, response delivery and elicitation transport not yet composed. Original $s is a limited custom validator, not a third-party SDK validator."
+    "limit": "Local protocol dispatch only; HTTP polling, response delivery and elicitation transport not yet composed. Original $s is a limited custom validator, not a third-party SDK validator.",
+    "currentComposition": "Restored HTTP tunnel now composes dispatch, JS, lifecycle, elicitation and delivery; see tunnelHttpServerVerification for live-loopback evidence and production limits."
   },
   "tunnelElicitationVerification": {
     "source": "r_, Rl, n_",
     "module": "packages/browser-extension/src/tunnel_elicitation_client.ts",
     "test": "reconstruction/extension-tunnel-elicitation.test.ts",
     "method": "Actual original class differential for session headers, guards, delivery/reply races and cancellation; composed restored MCP/JS/scope/client verifies explicit consent gating",
-    "limit": "HTTP post/poll are explicit fixtures. No real user approval, hosted HTTP tunnel or browser-operation acceptance is claimed."
+    "limit": "HTTP post/poll are explicit fixtures. No real user approval, hosted HTTP tunnel or browser-operation acceptance is claimed.",
+    "currentComposition": "Restored HTTP tunnel now composes dispatch, JS, lifecycle, elicitation and delivery; see tunnelHttpServerVerification for live-loopback evidence and production limits."
   },
   "tunnelResponseDeliveryVerification": {
     "source": "Bs, js, Cl, kl; Il/Al/Fs constants",
     "module": "packages/browser-extension/src/tunnel_response_delivery.ts",
     "test": "reconstruction/extension-tunnel-response-delivery.test.ts",
     "method": "13-scenario actual-source differential using deterministic clocks/timers/fetch; real local HTTP POST with default environment",
-    "limit": "Three attempts per delivery invocation; 401 recovery starts a new invocation without another recovery callback. Hosted polling/deployment remains incomplete."
+    "limit": "Three attempts per delivery invocation; 401 recovery starts a new invocation without another recovery callback. Hosted polling/deployment remains incomplete.",
+    "currentComposition": "Restored HTTP tunnel now composes dispatch, JS, lifecycle, elicitation and delivery; see tunnelHttpServerVerification for live-loopback evidence and production limits."
+  },
+  "tunnelHttpServerVerification": {
+    "source": "d_, h_, p_ transport/lifecycle composition",
+    "modules": [
+      "packages/browser-extension/src/tunnel_http_server.ts",
+      "packages/browser-extension/src/kernel_http_tunnel.ts"
+    ],
+    "test": "reconstruction/extension-tunnel-http-server.test.ts",
+    "method": "Actual-source poll/status/deadline/startup differential plus real loopback HTTP GET/POST through kernel tunnel, elicitation acknowledgement and final response",
+    "limit": "Loopback kernel, chat and storage services are fixtures. Production auth/telemetry/PDF bindings and packaged full extension deployment remain incomplete; no daily Chrome or external search acceptance."
   }
 }

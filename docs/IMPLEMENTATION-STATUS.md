@@ -3966,3 +3966,19 @@ Thirteen deterministic source-differential scenarios match actual installed
 functions; real loopback HTTP verifies the default POST/JSON path. These tests
 prove delivery behavior, not hosted tunnel connectivity, full poll composition,
 daily Chrome attachment or the two search tasks.
+
+
+### 2026-11-05 — complete local HTTP tunnel composition
+
+Restored original `d_` poll/command server and `h_` response deadline parsing.
+`KernelHttpTunnel` composes its transport with the restored `p_` lifecycle and JS
+tools. Poll GET, command deferral, response POST, session termination, response
+acknowledgement, cancellation, retry/invalid-tunnel handling and initialization
+restart/disposal now use the actual restored components. Browser fetch/clocks,
+version/online state and reporting are explicit environment dependencies.
+Differential tests execute original d_ for poll outcomes and startup lifecycle.
+A real loopback HTTP test drives GET command -> elicitation notification -> reply
+ack -> explicit consent -> kernel execution -> result POST. Its kernel/chat/storage
+are fixtures; this does not grant actual browser permission. Production account,
+telemetry/PDF/feature bindings and complete extension assets/entry deployment
+remain incomplete, as do daily Chrome and the two external search acceptances.
