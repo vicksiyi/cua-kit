@@ -4,8 +4,14 @@ import { desktopDocumentation } from "@core/browser-desktop/documentation";
 import { createBrowserServiceConnector } from "./browser_connector";
 import { parseEndpointFiles } from "./endpoint_configuration";
 
+const nativePipe = (globalThis as any).nodeRepl?.nativePipe;
+if (typeof nativePipe?.createConnection !== "function")
+  throw Error(
+    "Independent browser service requires the privileged Node REPL pipe bridge",
+  );
 const connector = await createBrowserServiceConnector(
   parseEndpointFiles(process.env.CORE_CUA_ENDPOINT_FILES),
+  (path) => nativePipe.createConnection(path),
 );
 // Discovery and the authenticated bridge must address the same explicit hosts.
 if (

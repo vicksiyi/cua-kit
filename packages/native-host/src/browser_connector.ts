@@ -1,3 +1,5 @@
+import { authenticateNativeHostPipe } from "./pipe_authentication";
+import type { NativePipeSocket } from "@core/browser/nativePipe";
 import { lstat, readFile } from "node:fs/promises";
 import { dirname, isAbsolute, delimiter } from "node:path";
 import { authenticateNativeHostSocket } from "./client";
@@ -42,6 +44,7 @@ async function readEndpoint(file: string): Promise<NativeHostEndpoint> {
  */
 export async function createBrowserServiceConnector(
   endpointFiles: readonly string[],
+  connectPipe?: (path: string) => Promise<NativePipeSocket>,
 ) {
   if (endpointFiles.length === 0)
     throw Error("At least one @core endpoint is required");
@@ -54,6 +57,7 @@ export async function createBrowserServiceConnector(
       const endpoint = allowed.get(path);
       if (!endpoint)
         throw Error("Socket is outside the configured @core host endpoints");
+      if (connectPipe) return authenticateNativeHostPipe(endpoint, connectPipe);
       const socket = await authenticateNativeHostSocket(endpoint);
       // BrowserPipe installs listeners in the await continuation before this resumes.
       setImmediate(() => socket.resume());

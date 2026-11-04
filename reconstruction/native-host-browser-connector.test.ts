@@ -1,3 +1,5 @@
+import { createConnection } from "node:net";
+import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { configureIndependentBrowser } from "../packages/agent-loop/src/independent-browser";
@@ -71,6 +73,13 @@ for (const deployment of ["assembly", "packaged"] as const)
       );
       let hook: any;
       const repl = {
+        nativePipe: {
+          async createConnection(path: string) {
+            const socket = createConnection(path);
+            await once(socket, "connect");
+            return socket;
+          },
+        },
         env: {
           ...connector.environment,
           CUA_REPL_ENABLED_SURFACES: "browser",

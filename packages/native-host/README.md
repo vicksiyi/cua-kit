@@ -85,3 +85,22 @@ profile still needs the independent extension/host installed. Real DeepSeek sear
 acceptance remains pending. The integration test additionally creates a real tab
 and ends its turn; browser timer callbacks in the test host are bound to globalThis
 to preserve the native receiver during cleanup.
+
+The packaged service requires `nodeRepl.nativePipe.createConnection`. It performs
+its capability handshake over that original privileged bridge so asynchronous CDP
+events inherit the current tool execution context. Using a raw Node socket here
+retains the setup call's context and causes later intercepted navigation to fail
+when reading requirements. Standalone connector callers can still use the direct
+socket implementation outside the privileged worker.
+
+The real Chromium integration now drives the complete demo MCP/supervisor/worker
+chain through `cua.getTab`, navigation, Playwright click, page-state reading and
+screenshot output. An opt-in live-model check is available after building:
+
+```sh
+CUA_LIVE_DEEPSEEK_TEST=1 npx tsx --test reconstruction/extension-native-controller.test.ts
+```
+
+It loads the ignored project `.env` in the model process, consumes DeepSeek API
+usage and operates only on its isolated local test page. This is a diagnostic,
+not an installation or acceptance command for the user's existing Chrome.

@@ -1,3 +1,4 @@
+import { verifyIndependentMcpBrowser } from "./independent-mcp-browser";
 import { createServer } from "node:http";
 import {
   createNativeHostInstallation,
@@ -23,7 +24,7 @@ import { chromium } from "playwright";
 
 test(
   "Chrome launches independent native host and serves restored handler over authenticated socket",
-  { timeout: 30000 },
+  { timeout: 120000 },
   async (t) => {
     const root = await mkdtemp(join(tmpdir(), "core-native-controller-"));
     t.after(() => rm(root, { recursive: true, force: true }));
@@ -62,6 +63,7 @@ test(
       stdin: {
         contents: `
 import {createNativeBrowserController} from './packages/browser-extension/src/native_browser_controller';
+import {registerBrowserEventListeners} from './packages/browser-extension/src/browser_events';
 const diagnostics=[];
 const controller=createNativeBrowserController({
   host:{chrome,crypto,now:Date.now,setTimeout:setTimeout.bind(globalThis),clearTimeout:clearTimeout.bind(globalThis),error:(...args)=>diagnostics.push(args)},
@@ -69,6 +71,7 @@ const controller=createNativeBrowserController({
   sessionDiagnostics:{metric:(...args)=>diagnostics.push(args),warn:(...args)=>diagnostics.push(args)},
   handlerOptions:{buildChannel:'dev'},
 });
+registerBrowserEventListeners(chrome,controller.handler,send=>send(controller.peer));
 globalThis.reconnectController=()=>controller.transport.reconnectNow();
 globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}),tabs:await controller.handler.getUserTabs({}),status:controller.transport.getStatus(),diagnostics});
 `,
@@ -80,10 +83,12 @@ globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}
       format: "iife",
       outfile: join(extension, "background.js"),
     });
-    const pageServer = createServer((_request, response) => {
+    const pageServer = createServer((request, response) => {
       response.setHeader("Content-Type", "text/html");
       response.end(
-        "<title>Core native page</title><h1>Actual browser capture</h1><p>native-roundtrip-marker</p>",
+        request.url === "/next"
+          ? `<title>Navigation target</title><h1>Navigation target</h1><button onclick="document.querySelector('p').textContent='action-completed-marker'">Run action</button><p>waiting</p>`
+          : "<title>Core native page</title><h1>Actual browser capture</h1><p>native-roundtrip-marker</p>",
       );
     });
     await new Promise<void>((resolve) =>
@@ -186,6 +191,7 @@ globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}
       } finally {
         await transport.close();
       }
+      await verifyIndependentMcpBrowser(endpointFile!, pageUrl);
     } finally {
       await context.close();
     }
