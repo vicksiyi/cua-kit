@@ -300,8 +300,22 @@ deferred cleanup. SVG output preserves original shapes, colors, opacity and
 attribute escaping. Shared badge URL recognition is reused.
 
 `createContentMessageInitializer` restores Un/Fn/Gn/je with one listener and repeated
-overlay readiness calls. Overlay setup Q remains a required explicit dependency.
+overlay readiness calls. Overlay setup Q is restored below; its renderer Dn remains a required dependency.
 The artifact is separately hash-pinned in extension-content-source.ts; tests never
 execute the complete content startup. Real Chromium comparisons verify exact DOM
 and SVG data URLs after badge changes/clear, preservation of page changes and
 message acknowledgements. This is not yet a packaged replacement content script.
+
+### Overlay root lifecycle
+
+`createOverlayRoot` restores Q/T/Hn/ze: closed shadow root/style/container creation,
+owned stale-root replacement, foreign ID collision handling, observer retargeting,
+renderer disposal and suppression after site removal until documentElement changes.
+The Dn renderer is a required dependency, never a silent placeholder. Chromium
+differential tests cover normal/stale/conflicting roots, reparenting, removal and
+document replacement with exact lifecycle and DOM comparisons.
+
+The content startup tail also contains `wxt:locationchange` and
+`wxt:content-script-started` runtime signatures. Its upstream package/version must
+be established before reuse; this milestone does not rebuild that framework. Full
+renderer/content startup assembly and installed-extension validation remain pending.

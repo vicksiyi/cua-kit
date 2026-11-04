@@ -2015,3 +2015,28 @@ reconstruction remain incomplete. This milestone verifies page DOM behavior, not
 full browser tab-strip rendering or the complete installed-extension workflow.
 
 Validation: all eight reconstructed packages built and passed type checks; all 826 default regression tests passed, including the real Chromium page-DOM comparison. The separate native-supervisor suite was not rerun.
+
+
+### 16.271 Overlay root lifecycle
+
+Restored content-script Q/T/Hn/ze as createOverlayRoot. Preserved closed shadow
+root/style/container creation, existing owned-root replacement, foreign root-ID
+collision handling, observer targets/retargeting, renderer cleanup, and suppression
+after the page removes the root until documentElement changes. The original Dn
+renderer remains required; no empty production renderer is substituted.
+
+A real Chromium differential test compares original and restored DOM/lifecycle
+traces across normal, stale, foreign div/non-div, reparented, removed and replaced
+document roots. Explicit assertions complement exact trace equality for removal
+suppression and document replacement recovery.
+
+Startup tail inspection also found wxt:locationchange and wxt:content-script-started
+signatures in its lifecycle wrapper. Upstream package/version compatibility needs
+verification before reuse; this framework wrapper is not being reconstructed from
+scratch. No third-party library was found inside the inspected root-DOM closure.
+
+Cursor renderer/content startup assembly, installed extension/native host, remaining
+auth/monitor components, real desktop/model integration and native source remain
+incomplete. Tests use the original renderer boundary with an explicit tracing fixture.
+
+Validation: all eight reconstructed packages built and passed type checks; all 827 default regression tests passed, including the real Chromium overlay-root comparison. The separate native-supervisor suite was not rerun.

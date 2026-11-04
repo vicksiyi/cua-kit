@@ -115,8 +115,10 @@
     "restored": {
       "Et/Rt/we/It/Ot/_t/At/Mt/De/Tt/Pe/bt/Nt/wt/Dt/ie": "createFaviconBadgeDom and SVG/restoration helpers",
       "Fn/Gn/je": "content ping and badge guards",
-      "Un": "createContentMessageInitializer; Q overlay initializer required"
+      "Un": "createContentMessageInitializer; Q overlay initializer required",
+      "Q/T/Hn/ze": "createOverlayRoot: ensure/observe/disconnect/remove; Dn renderer remains required"
     },
-    "boundary": "Only inspected top-level bindings are extracted for differential tests. Complete content entrypoint/overlay startup is not executed or claimed restored."
+    "boundary": "Only inspected top-level bindings are extracted for differential tests. Complete content entrypoint/overlay startup is not executed or claimed restored.",
+    "thirdPartyAudit": "Startup contains wxt:locationchange and wxt:content-script-started lifecycle signatures. Upstream/version compatibility remains to establish before reuse; that runtime is not reconstructed here."
   }
 }
