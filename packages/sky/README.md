@@ -9,6 +9,7 @@ Currently implemented:
 - `src/core/uint8.ts` and `src/types/window/`: byte helpers and installed window declarations.
 - `src/create_sky_proxy.ts`: trusted RPC proxy state, reflection, media restoration, Linux drag handles and explicit direct-client dependency.
 - `src/load_options.ts`: original config-file/platform selection.
+- Linux non-audio operation adapters: screenshots/window state, pointer/keyboard/text, clipboard, app/window listing and stateful drag handles; audio and factory assembly remain pending.
 - `src/targets/linux/element_ids.ts` and `action_settler.ts`: per-window compact IDs, filtered refresh retention and action deadlines.
 - `src/targets/linux/sky_linux_transport.ts`, `sky_linux.ts` and `src/core/package_bin.ts`: native helper process lifecycle, JSON line RPC, option-keyed caching and binary resolution.
 - `src/targets/linux/accessibility_tree.ts`: native/RPC accessibility presentation restoration and condensed tree rendering.

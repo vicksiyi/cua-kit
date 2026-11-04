@@ -1118,3 +1118,13 @@ Restored SkyLinuxTransport using Node child_process rather than a replacement RP
 Eight new tests compare the installed implementations for IDs/refreshes, deadlines/extensions/sleep failures, real synthetic helper subprocesses (fragments, unknown IDs, ordinary failures, malformed responses, exit/restart, missing executable), package resolution and actual wrapper reuse across mouse-size configurations. Temporary helper executables run only fixture Node code and exit explicitly; no original Linux desktop binary is run.
 
 Validation: six-package build/type checks and all 665 reconstruction tests pass with concurrency 4. Linux command adapters/factory, Windows client, top-level Sky routing, external NodeREPL, native binary validation, AX asset and real-model integration remain incomplete.
+
+### 16.218 Linux operation and observation adapters
+
+Restored all non-audio Linux operation modules using original declarations and module boundaries: activation, pointer/key/text operations, clipboard, app/window listing, screenshots/window state and drag handles. Preserved differences between wait/defer behavior (clipboard_release does neither), compact-ID resolution only for applicable commands, defer-before-JSON-parse ordering for clipboard_read/type_characters, and no deferred delay after pure observations. Window state loads screenshot bytes before updating element IDs, then restores AX presentation; filtered-query detection remains trimmed truthiness.
+
+Drag handles preserve idle/dragging/ended transitions only after successful native commands, exact repeated-start/move/end failures and original point-spread precedence. Screenshot files are loaded concurrently with Promise.all and converted using the original image/jpeg data-URL behavior. Full-desktop declarations and Point are restored; all their relative imports were checked for existing targets.
+
+Two new differential integration tests exercise every adapter and drag lifecycle against original modules through real synthetic helper subprocesses, capturing emitted requests and wait/resolve/assign/defer traces for success and native failure. They verify screenshot bytes, missing-file errors, window presentation and operation state after failures. An initial fixture object was missing a closing brace; fixed before tests ran, with no production change made to accommodate it.
+
+Validation: six-package build/type checks and all 667 tests pass with concurrency 4. Linux audio subprocess behavior and factory assembly are next; Windows, top-level Sky routing, external NodeREPL, native binary/AX assets and actual-model integration remain open.

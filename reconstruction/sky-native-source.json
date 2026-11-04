@@ -41,6 +41,27 @@
     "targets/linux/action_settler.js": "1341a4cc821347b9323800e597c0c754e2e6aa4e8d7c036b47163b6d43a57591",
     "targets/linux/sky_linux_transport.js": "c879f1b83dbc3cd5d0638c26ecffdd17c9cb6f39578b69bd653ee0c78a85664e",
     "targets/linux/sky_linux.js": "598bc7a0135a39a327399ae06d28ff15f2ed2bb994b66a78c0eff2c615c9b286",
-    "core/package_bin.js": "fdfb9aebfb8ffb496c8ddc673ed1b2e6eed536888ad52147d7d91b5486e24b34"
+    "core/package_bin.js": "fdfb9aebfb8ffb496c8ddc673ed1b2e6eed536888ad52147d7d91b5486e24b34",
+    "targets/linux/list_windows.js": "3d286c26f81d704fb09fe280e9b00bb2947c5a9d1c3bfe01b86fdc738d52bd71",
+    "targets/linux/key_up.js": "65ef0b73230de7960d680fb206228c0abf77c710bc667c370e9989e74ac9bd59",
+    "targets/linux/press_key.js": "08300a0ae53210dd7716adaaf3c2ae6a2ad685e6295506c6c05a51ebfc6cb752",
+    "targets/linux/clipboard_write.js": "5c6fa9abb5537b3f0264bd748efcb600a6293e1bc09dc0a1d573ca310af2a03b",
+    "targets/linux/clipboard_read.js": "f493bb081f594f948cf078ac934f70ede178f582af227d3b4d77150c39b3dd73",
+    "targets/linux/list_apps.js": "d4f7125e517b3355424b6ea8aca72191168f4c0094edd235dcd2fb9e500e34d0",
+    "targets/linux/perform_secondary_action.js": "ca6e63c0d6c38a03bac6d3349373f2c27bceb8b78a3ebeaef7f655d15d3260a5",
+    "targets/linux/move.js": "d30f63a3cbd8daba08b7767b5d3be88cbbc3ba10e679ede293b83fc7d717e018",
+    "targets/linux/get_screenshot.js": "3ad2d0174951908697a11962f0dbf95e01214d5bd922a44fdf93082a967a1c1c",
+    "targets/linux/clipboard_release.js": "3cf048de8234616041175e1e00422a30e63f2edadcc1ebfe64c3455052cf71c2",
+    "targets/linux/launch_app.js": "166b2309b8a2d5f3f5ef7691bd285d200a0ebce3831c7b491a8ba2090fb0ffc9",
+    "targets/linux/get_window_state.js": "4f7459f5bae26fd69411606d18affd9254ae7c36269673ef1774715d3297a851",
+    "targets/linux/drag.js": "3133bb9c6a287271da0c23d3fc2126e14ad8b793df4ed413bd779d7864f01944",
+    "targets/linux/drag_handle.js": "7c3034cb0a963d45420ef7a853a48d8bbe3ed0096732f18023e684757a5bb1e5",
+    "targets/linux/type_text.js": "6738ceef7366fd36fee26b5e5bed66b30c54836035a12702201758b880225100",
+    "targets/linux/key_down.js": "163d33f633d575ecc4277c227ed2236b23d28c35bbf24a85fae4e69543f57fac",
+    "targets/linux/scroll.js": "0a33b51a927f68eef125a4c92252acacc2fce7a15bf00d4faaafef613e6e38b8",
+    "targets/linux/move_relative.js": "dad1a2e8033492cec7ed1e3f3aa6b16e3755b5875048fd31ccb4970c93440af8",
+    "targets/linux/type_characters.js": "62262ac52baedefe48c80f6b44ee367a6f00c00590603c637257c989db59ff24",
+    "targets/linux/activate_window.js": "8fc14053190f5bbb4b7d628d591330392c4833984c75fc4776c88f192b39e803",
+    "targets/linux/click.js": "d4e4d2b4bf6048173f6752b0a1caf1c01a9abd2a93fa1aef61c1c273d2cc6ccf"
   }
 }
