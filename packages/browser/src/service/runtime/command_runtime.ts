@@ -1,3 +1,4 @@
+import { commandScheduling } from "./command_scheduler";
 /** Reconstructed p6 runtime. Each factory owns the original module-level state.
  * Dependencies are explicit service boundaries; production assembly is tracked separately.
  * Dynamic host/provider values retain explicit any until their full contracts are recovered. */
@@ -26,11 +27,11 @@ export interface CommandRuntimeDependencies {
   Documentation: new (...args: any[]) => any;
   readDocumentation: (...args: any[]) => any;
   createBackendSessionReporter: (...args: any[]) => any;
-  createCommandScheduler: (...args: any[]) => any;
+  createCommandScheduler?: (...args: any[]) => any;
   readRequestMetadata: (...args: any[]) => any;
   managementCommands: Record<string, any>;
   surfaceForBackend: (...args: any[]) => any;
-  shouldEmitResponseMetadata: (...args: any[]) => any;
+  shouldEmitResponseMetadata?: (...args: any[]) => any;
   emitResponseMetadata: (...args: any[]) => any;
   isBrowserAlias: (...args: any[]) => any;
   assertSurfaceEnabled: (...args: any[]) => any;
@@ -53,9 +54,9 @@ export interface CommandRuntimeDependencies {
   securityBlockReason: (...args: any[]) => any;
   UrlPolicyError: new (...args: any[]) => any;
   formatCommandError: (...args: any[]) => any;
-  canRecordCommand: (...args: any[]) => any;
+  canRecordCommand?: (...args: any[]) => any;
   trackRecordingContext: (...args: any[]) => any;
-  commandSchedulingOptions: (...args: any[]) => any;
+  reportCommandRecovery: (...args: any[]) => any;
   closeTabCommand: { type: string };
 }
 export function createCommandRuntimeFactory(
@@ -80,11 +81,11 @@ export function createCommandRuntimeFactory(
     Documentation,
     readDocumentation,
     createBackendSessionReporter,
-    createCommandScheduler,
+    createCommandScheduler = commandScheduling.createCommandScheduler,
     readRequestMetadata,
     managementCommands,
     surfaceForBackend,
-    shouldEmitResponseMetadata,
+    shouldEmitResponseMetadata = commandScheduling.shouldEmitResponseMetadata,
     emitResponseMetadata,
     isBrowserAlias,
     assertSurfaceEnabled,
@@ -107,9 +108,9 @@ export function createCommandRuntimeFactory(
     securityBlockReason,
     UrlPolicyError,
     formatCommandError,
-    canRecordCommand,
+    canRecordCommand = commandScheduling.canObserve,
     trackRecordingContext,
-    commandSchedulingOptions,
+    reportCommandRecovery,
     closeTabCommand,
   } = dependencies;
   const maxConfirmationPolicyBytes = 20_000;
@@ -516,7 +517,7 @@ export function createCommandRuntimeFactory(
           }
         },
         async (command: any) => (await browserDirectory.get(command)).id,
-        (command: any) => commandSchedulingOptions(runtime, command),
+        (command: any) => reportCommandRecovery(runtime, command),
       ),
       executeWithHandoffSpan: any = async (command: any) => {
         if (

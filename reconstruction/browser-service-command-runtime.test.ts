@@ -1,3 +1,5 @@
+import { createCommandScheduling } from "../packages/browser/src/service/runtime/command_scheduler";
+import { createCredentialObservationState } from "../packages/browser/src/service/security/credential_observation";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createCommandRuntimeFactory } from "../packages/browser/src/service/runtime/command_runtime";
@@ -50,7 +52,7 @@ const bindings = {
   OA: "formatCommandError",
   Je: "canRecordCommand",
   a6: "trackRecordingContext",
-  V3: "commandSchedulingOptions",
+  V3: "reportCommandRecovery",
   Fh: "closeTabCommand",
 };
 function original(deps: any) {
@@ -323,9 +325,15 @@ function fixture(factory: any, flags: any = {}) {
     formatCommandError: (e: any) => new Error("formatted:" + e.message),
     canRecordCommand: (c: any) => c.recordable,
     trackRecordingContext: () => trace.push(["track"]),
-    commandSchedulingOptions: () => ({ serial: true }),
+    reportCommandRecovery: () => ({ serial: true }),
     closeTabCommand: { type: "close" },
   };
+  if (flags.scheduling) {
+    deps.createCommandScheduler = flags.scheduling.createCommandScheduler;
+    deps.shouldEmitResponseMetadata =
+      flags.scheduling.shouldEmitResponseMetadata;
+    deps.canRecordCommand = flags.scheduling.canObserve;
+  }
   return {
     factory: factory(deps),
     runtime,
@@ -583,4 +591,37 @@ test("runtime disposal during lookup prevents context creation; disposal rejecti
     assert.equal(g.trace.filter((x) => x[0] === "context.dispose").length, 1);
     assert(!g.trace.some((x) => x[0] === "directory.dispose"));
   }
+});
+
+test("p6 runtime composes restored scheduler and actual credential gates", async () => {
+  const state = createCredentialObservationState();
+  const scheduling = createCommandScheduling(state);
+  const f = fixture(createCommandRuntimeFactory, { scheduling });
+  const r = await f.factory.createRuntime({}, f.runtime);
+  await r.executeAgentCommand({
+    type: "get_tab",
+    browser_id: "browser-1",
+    tab_id: 3,
+  });
+  assert.equal(f.trace.filter((x) => x[0] === "record").length, 1);
+  const gate = state.getGate("browser-1", {
+    on() {},
+    removeListener() {},
+    async call() {
+      return { frameTree: { frame: { id: "frame", loaderId: "protected" } } };
+    },
+  });
+  await gate.protect(3);
+  await assert.rejects(
+    r.executeAgentCommand({
+      type: "get_tab",
+      browser_id: "browser-1",
+      tab_id: 3,
+    }),
+    (error: any) =>
+      error.details.reason === "credential_observation_restricted",
+  );
+  assert.equal(f.trace.filter((x) => x[0] === "unhandled").length, 1);
+  assert.equal(f.trace.filter((x) => x[0] === "record").length, 1);
+  await f.factory.dispose();
 });
