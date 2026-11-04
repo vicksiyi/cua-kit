@@ -17,7 +17,7 @@ import {
   createAutomatedAuthPrecheck,
 } from "./automated_review";
 import { captureAuthScreenshot } from "./screenshot";
-import { credentialLeases } from "../credentials";
+import { credentialLeases } from "../credentials/index";
 import { credentialObservationState } from "../security/credential_observation";
 import { httpOrigin } from "../security/authority_builder";
 import { siteStatusBackend, fetchSiteStatus } from "../security/site_status";

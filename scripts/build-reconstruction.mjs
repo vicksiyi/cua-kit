@@ -59,6 +59,20 @@ execFileSync(
   ],
   { stdio: "inherit" },
 );
+execFileSync(
+  "node_modules/.bin/tsc",
+  [
+    "-p",
+    "reconstruction/tsconfig.desktop.json",
+    "--noEmit",
+    "false",
+    "--rootDir",
+    "packages/browser-desktop/src",
+    "--outDir",
+    "packages/browser-desktop/dist",
+  ],
+  { stdio: "inherit" },
+);
 // Source uses extensionless imports. Only emitted ESM gets Node-compatible .js suffixes.
 async function patchDirectory(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -111,6 +125,7 @@ await patchDirectory("packages/core/dist");
 await patchDirectory("packages/cua-repl/dist");
 
 await patchDirectory("packages/browser/dist");
+await patchDirectory("packages/browser-desktop/dist");
 
 const accessibilitySource =
   process.env.CUA_BROWSER_ACCESSIBILITY_WASM_SOURCE?.trim();

@@ -1,7 +1,7 @@
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
 import { inputTimeout } from "../input/input";
-import { keyboardDispatch } from "../input";
+import { keyboardDispatch } from "../input/index";
 import { dispatchClipboardKeypress } from "../clipboard/operations";
 import type { ClipboardContext } from "../clipboard/operations";
 import type { LocatorCommandContext, LocatorCommandPayload } from "./locator";

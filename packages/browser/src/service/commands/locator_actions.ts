@@ -3,7 +3,7 @@ import type { LocatorCommandContext, LocatorCommandPayload } from "./locator";
 import type { PlaywrightService } from "../playwright/service";
 import type { CdpTarget } from "../cdp/dispatch_helpers";
 import { inputTimeout } from "../input/input";
-import { keyboardDispatch } from "../input";
+import { keyboardDispatch } from "../input/index";
 export interface LocatorActionPayload extends LocatorCommandPayload {
   checked?: unknown;
   selections?: unknown;

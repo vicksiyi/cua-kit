@@ -11,6 +11,10 @@
     "./ax": {
       "types": "./src/ax.ts",
       "import": "./dist/ax.js"
+    },
+    "./service": {
+      "types": "./src/service.ts",
+      "import": "./dist/service.js"
     }
   },
   "dependencies": {

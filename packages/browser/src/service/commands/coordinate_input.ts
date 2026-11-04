@@ -5,7 +5,7 @@ import {
   dispatchClipboardKeypress,
   type ClipboardContext,
 } from "../clipboard/operations";
-import type { BrowserInput } from "../input";
+import type { BrowserInput } from "../input/index";
 import type { DomInputContext } from "./dom_input";
 import type {
   createTextPaste,
