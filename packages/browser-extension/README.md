@@ -506,3 +506,7 @@ The ChatGPT website entry now restores status-port refresh/reconnect, browserCon
 carry-forward, trusted click/custom actions, runtime ping/plugin notifications and
 WXT invalidation. The build emits all five inspected content-script entrypoints;
 this does not yet provide a fully installed extension or complete background wiring.
+
+Website background status now has the restored incremental port handler and installer
+state/show helpers. Foundation binds shared identity, overlay and installer status;
+telemetry remains explicit. Full startup registration and installed transport are pending.

@@ -123,7 +123,9 @@
     "kS/AS": "observeMentionInvalidations: 50ms coalescing and event cleanup",
     "Nc/_s/cn/If": "tab_mention_messages.ts origin/build-channel and runtime sender checks",
     "Tf/KC/ZC/xp/Mp": "createTabMentionMessageRouter: runtime search and port candidate streaming with original validation/error/cleanup behavior",
-    "hR/yp": "sendTabMentionsInvalidated: peer then runtime notification"
+    "hR/yp": "sendTabMentionsInvalidated: peer then runtime notification",
+    "vk": "createWebsiteStatusHandler: sender checks, incremental status, per-source single-flight/retry, refresh and disconnect cleanup",
+    "kf/sk/ak/ik": "createInstallerStatus: original download filter, state/progress projection and authorized show action"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",

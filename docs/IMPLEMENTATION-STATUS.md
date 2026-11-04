@@ -2433,3 +2433,26 @@ startup, status/side-panel backends, native host and model/desktop delivery rema
 
 Validation: all eight reconstructed package builds/type checks and all 871 default
 regressions pass, zero failures/skips. Native-supervisor tests were not rerun.
+
+### Website background status port and installer state
+
+Restored vk as createWebsiteStatusHandler, including sender validation, incremental
+identity/side-panel/window/update/toolbar/installer status, native transport snapshots,
+capability projection and browser-control activity. Each async status source retains
+its own single-flight guard and one retry. Disconnect suppresses later application
+and publication, and port write failure performs original listener cleanup.
+
+Restored kf/sk/ak/ik as createInstallerStatus: the exact original download URL regex,
+latest matching download lookup, state/progress projection and authorized show action.
+This module never initiates downloads. Foundation supplies shared instance identity,
+overlay activity and installer reader; telemetry is an explicit caller dependency.
+
+Two differential tests compare nine status-port scenarios and eight download states,
+including concurrent refreshes, first/second identity failures, disconnect while reads
+are pending, write failure, native connected installer suppression, malformed senders,
+side-panel absence and show authorization. Chrome/download APIs are fixtures. Full
+background registration and installed page-to-background transport still need validation;
+auth/side-panel backends and native/model delivery remain incomplete.
+
+Validation: eight package builds/type checks and all 873 default regressions pass,
+zero failures/skips. The separate native-supervisor suite was not rerun.

@@ -1,4 +1,8 @@
 import {
+  createInstallerStatus,
+  createWebsiteStatusHandler,
+} from "./website_status";
+import {
   createTabMentionMessageRouter,
   sendTabMentionsInvalidated,
 } from "./tab_mention_messages";
@@ -49,6 +53,7 @@ export interface ExtensionBrowserHost {
 }
 /** Project composition of restored closures; not a replacement for original full dR startup. */
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
+  const installerStatus = createInstallerStatus(host.chrome);
   const ChatApi = createChatApiClass({
     ...host,
     fetch: host.fetch ?? globalThis.fetch,
@@ -168,6 +173,19 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     ChatApi,
+    installerStatus,
+    createWebsiteStatusHandler: (
+      reportMetric: Parameters<
+        typeof createWebsiteStatusHandler
+      >[0]["reportMetric"],
+    ) =>
+      createWebsiteStatusHandler({
+        chrome: host.chrome,
+        instanceId,
+        isBrowserControlActive: () => overlay.isBrowserControlActive(),
+        readInstallerStatus: installerStatus.readStatus,
+        reportMetric,
+      }),
     TabMentionProvider,
     createTabMentionMessageRouter: (
       provider: InstanceType<typeof TabMentionProvider>,
