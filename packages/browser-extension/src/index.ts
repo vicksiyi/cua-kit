@@ -6,3 +6,4 @@ export * from "./cdp_security";
 export * from "./browser_events";
 export * from "./request_headers";
 export * from "./browser_session";
+export * from "./debugger_runtime";

@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level lease/debugger/overlay/auth implementations, full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level lease/overlay/auth implementations, shared debugger/full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -106,8 +106,27 @@ The session directly uses the shared original-derived header parser and resolver
 `createBrowserCommandHandlerWithSession` composes it with the restored dispatcher;
 a test exercises RPC getTabs/executeCdp/turnEnded through both real classes.
 
-The session factory still requires actual lease/group/favicon/debugger/network/
-overlay implementations. Those collaborators are explicit fixtures in differential
+The session factory still requires actual lease/group/favicon/network/overlay
+implementations; debugger methods/state can now come from `createDebuggerRuntime`. Those collaborators are explicit fixtures in differential
 tests, and the composition helper does not provide fake production defaults.
 `reconstruction/extension-session-dependencies.json` maps the original closure.
 Broad protocol payload types remain temporary until those contracts are restored.
+
+### Chrome debugger runtime
+
+`createDebuggerRuntime({chrome, setTimeout, clearTimeout})` restores the original
+debugger closure and its state. Share **one runtime** across all sessions and use
+its `initializeDebugger` in the dispatcher startup, matching the original global
+lifetime. The returned fields/functions can be spread into session dependencies;
+there are no fixture defaults. This factory does not connect a debugger until its
+methods are called.
+
+Restored behavior includes per-tab/per-target operation queues, idempotent attach,
+original handling of "Another debugger" errors, viewport set/clear, finally-based
+detach state removal, best-effort timeout detach, detach event bookkeeping,
+Target.getTargets adaptation, targetId-only routing and timed CDP requests. The
+request timeout is a Promise race; a late Chrome command is not canceled by this
+module, matching the source. Viewport setup uses the original raw, untimed send.
+The three differential tests cover state/error/queue behavior and timeouts; an
+additional session composition test uses the restored runtime over fake Chrome
+APIs. Actual installation and end-to-end production startup remain outstanding.

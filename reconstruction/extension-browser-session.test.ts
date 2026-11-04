@@ -516,3 +516,56 @@ test("restored RPC handler composes the original-derived session for tab reads, 
     ),
   );
 });
+
+test("restored browser session attaches and sends CDP through restored Chrome debugger runtime", async () => {
+  const { createDebuggerRuntime } =
+    await import("../packages/browser-extension/src/debugger_runtime");
+  const { deps, trace } = fixture(false);
+  const chrome: any = {
+    ...deps.chrome,
+    debugger: {
+      onDetach: { addListener() {} },
+      async attach(target: any, version: string) {
+        trace.push(["chrome.attach", target, version]);
+      },
+      async detach(target: any) {
+        trace.push(["chrome.detach", target]);
+      },
+      async sendCommand(target: any, method: string, params: any) {
+        trace.push(["chrome.command", target, method, params]);
+        return { result: "fixture" };
+      },
+    },
+  };
+  const runtime = createDebuggerRuntime({ chrome, setTimeout, clearTimeout });
+  const Session = createBrowserSessionClass({ ...deps, ...runtime, chrome });
+  const session = new Session("s", "chrome", false, {
+    applyDecision: async (enabled) => enabled,
+  });
+  await session.attach({ ...request, tabId: 1 });
+  assert.equal(runtime.attachedTabs.has(1), true);
+  assert.deepEqual(
+    await session.executeCdp({
+      target: { tabId: 1 },
+      method: "Runtime.evaluate",
+      commandParams: { expression: "1" },
+    }),
+    { result: "fixture" },
+  );
+  await session.detach({ ...request, tabId: 1 });
+  assert.equal(runtime.attachedTabs.has(1), false);
+  assert.deepEqual(
+    trace.filter((entry) => entry[0].startsWith("chrome.")),
+    [
+      ["chrome.attach", { tabId: 1 }, "1.3"],
+      [
+        "chrome.command",
+        { tabId: 1 },
+        "Emulation.setDeviceMetricsOverride",
+        { width: 800, height: 600, deviceScaleFactor: 1, mobile: false },
+      ],
+      ["chrome.command", { tabId: 1 }, "Runtime.evaluate", { expression: "1" }],
+      ["chrome.detach", { tabId: 1 }],
+    ],
+  );
+});

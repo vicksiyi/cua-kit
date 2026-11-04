@@ -1610,3 +1610,33 @@ native host and real desktop/DeepSeek integration. The production session class 
 now translated, but the injected lower-level fixtures are not production readiness.
 
 Validation: all eight reconstructed packages built and passed type checks; all 779 default regression tests and all 5 opt-in native-supervisor integration tests passed. Native integration remains fixture-backed; this does not prove complete production extension behavior.
+
+
+## 16.256 Chrome debugger execution runtime
+
+Restored the debugger state closure and original fE/yd/mE/Sd/Ed/Td/_E/yi/kd/Va/Pd
+plus timeout/error/viewport helpers into `debugger_runtime.ts`. It provides the
+actual Chrome debugger calls, separate tab/target serialization queues, attached
+state and target ownership, detach-event cleanup, viewport set/clear, timeout
+normalization and CdpCommandTimeoutError. It preserves exact conflict handling,
+raw-vs-timed command selection, Target.getTargets adaptation and targetId-only
+routing. Timed requests race rather than cancel underlying Chrome commands.
+
+The factory returns methods/state compatible with the session dependency boundary.
+Production composition must share one runtime across all sessions and dispatcher
+initialization, preserving the original globals' lifetime. There is no silent
+fallback backend. The two original queue functions share one generic implementation
+inside this project factory; their scheduling and rejection recovery are compared
+with the original functions.
+
+Three differential tests compare attachment failures and viewport handling,
+timeout/error/late completion, same-key queue serialization, cross-key parallelism
+and recovery. A fourth test composes the restored session and debugger runtime to
+verify attach → viewport → CDP → detach Chrome calls. Chrome itself is a fixture
+in this component test; this does not claim an installed extension has connected.
+
+Remaining: tab leases/groups/favicons, network policy, overlay/monitor/SIWC,
+full startup/manifest/native host and real desktop/DeepSeek integration. The
+debugger methods are now restored but production shared-lifetime wiring is pending.
+
+Validation: all eight reconstructed packages built and passed type checks, and all 783 default regression tests passed. The separate native-supervisor integration suite was not rerun in this turn; its last five-test pass remains the preceding milestone, not evidence of a production extension connection.

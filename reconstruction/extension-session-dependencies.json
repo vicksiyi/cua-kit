@@ -39,5 +39,6 @@
     "console.warn": "warn",
     "cs": "parseRequestHeaders direct import",
     "ls": "resolveRequestHeaders direct import"
-  }
+  },
+  "restoredDebuggerRuntime": "createDebuggerRuntime returns original-derived debugger methods/state. Share one runtime across all sessions and dispatcher initialization. Other lower layers remain required."
 }
