@@ -8,6 +8,7 @@ Resources: kernel, diagnostics, privileged host bridge, privileged config bridge
 
 Restored so far:
 
+- `src/tracing.ts`: execution-scoped response metadata spans, async parent propagation, bounded/sanitized attributes, result/error tagging and dropped-span accounting; uses Node built-ins.
 - `src/realmChecks.ts`: cross-realm ArrayBuffer brand check through the native getter.
 - `src/diagnostics.ts`: binding-aware diagnostic identifier redaction, string/template/regex/comment masking and original truncation.
 - `src/worker_values.ts`: descriptor-only error properties, object freezing/log formatting, byte views and image URL/MIME normalization.
@@ -18,4 +19,4 @@ Restored so far:
 
 Additional restored host components: `lifecycle_handlers.ts` preserves serial/concurrent best-effort hooks and timeouts; `privileged_host_operations.ts` implements elicitation and authenticated-fetch wire requests with their original context/observation differences. `native_pipe_bridge.ts` now restores host pipe requests, listener/context lifecycle and early-closure races; it is also tested beneath the restored Windows transport. `privileged_runtime.ts` now assembles the frozen privileged host API and its original descriptors, launch-services validation, response metadata, timeout suspension and lifecycle wiring. The trusted-worker entry and kernel/supervisor integration remain outstanding.
 
-The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The shared worker runtime is restored and tested in isolated Node subprocesses. Kernel/privileged bridge restoration and supervisor integration remain outstanding.
+The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The shared worker runtime is restored and tested in isolated Node subprocesses. Kernel/trusted-worker orchestration and supervisor integration remain outstanding.

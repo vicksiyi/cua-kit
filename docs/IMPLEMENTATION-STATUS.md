@@ -1266,3 +1266,13 @@ Three differential tests compare the complete original module and reconstructed 
 This completes the privileged API factory, not the trusted-worker executable entry or security supervisor. Kernel/module execution, trusted-worker orchestration/tracing, native supervisor/isolation, native/AX resources and real-model integration remain incomplete.
 
 Validation: seven-package build/type checks and all 718 reconstruction tests pass with concurrency 4.
+
+### 16.232 Response metadata tracing
+
+Restored embedded tracing.js as readable typed tracing.ts using Node AsyncLocalStorage and performance. Enablement retains explicit configuration or a string traceparent in current request metadata. Nested async operations retain parent span IDs; completed spans are sorted by start time, rounded to microsecond precision in milliseconds, and consumed on buildTrace.
+
+Preserved limits: 1024 completed spans, 32 supported primitive attributes, 128 Unicode code points for names/keys and 256 for string values. End attributes override start attributes; invalid values are omitted; overflow increments dropped_span_count. End is idempotent. Result-attribute callback failures are swallowed while operation errors retain identity and record error.kind. Detached ends after buildTrace do not recreate the deleted execution entry, matching original behavior.
+
+Three differential tests execute the original extracted module and restored implementation with the same deterministic clock. They cover nested async spans, error/result handling, enablement, Unicode/attribute limits, overflow, freeze/idempotency and trace cleanup. Seven-package build/type checks and all 721 reconstruction tests pass. No external telemetry backend is contacted.
+
+Trusted-worker entry/module enforcement, kernel/module execution and native supervisor/isolation remain incomplete. This is the original local trace collector, not a substitute telemetry SDK or a claim of complete runtime integration.
