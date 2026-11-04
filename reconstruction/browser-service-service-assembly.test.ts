@@ -190,7 +190,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       },
       runtime: {
         context: {
-          injectedSource: "/* synthetic unused helper */",
           reportError: unused,
           reportEvent() {},
           createLocalizer: () => () => "fixture",

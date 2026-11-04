@@ -65,7 +65,7 @@ export interface CommandRuntimeAssemblyOptions {
   >;
 }
 /** Connects restored command registry, context, notifications, metadata and policies.
- * Host still supplies injected source, localization, telemetry SDK, feature/config services and auth integrations. */
+ * Host supplies localization, telemetry SDK, feature/config services and auth integrations; injected source has a pinned upstream default. */
 export function assembleCommandRuntime(options: CommandRuntimeAssemblyOptions) {
   const commands = assembleServiceCommandsWithBrowserAuth(options.commands);
   const notices = createWebMcpNotifications(options.commands.webMcp);

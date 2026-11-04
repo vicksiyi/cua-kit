@@ -902,3 +902,15 @@ The installed browser-client bundle does not provide an exact historical version
 This removes the copied browser-client validator dependency. It does not claim byte-identical upstream source or full equivalence of every Zod API, nor does it complete the remaining service bundle/Playwright/native/runtime work.
 
 Validation: three-package build passed; full suite passes with 598 tests and zero failures (concurrency 4).
+
+### 16.197 Full upstream Playwright injection replaces the missing default helper
+
+Correcting the inference in 16.194: iframeDepths is also present in upstream Playwright 1.59–1.61, so its absence in the application's separately installed 1.57.0 does not prove a CUA-specific modification. Examined injected sources from 1.57.0, 1.58.2, 1.59.0, 1.59.1, 1.60.0 and 1.61.1. A minification/identifier-insensitive method-shape comparison points to 1.59.x as closer than the surrounding releases; this heuristic is not a proof of semantic equivalence or exact historical provenance. Several differing method shapes are ordinary minification differences (e.g. has-engine local variables and fill branching).
+
+Pinned playwright-core 1.59.1 in @core/browser, separately from the root test browser package. upstreamPlaywrightSource lazily loads the complete upstream generated injected asset and wraps its exported accessor exactly as the CUA wrapper expects. It checks the package version and fails explicitly if the internal asset layout changes. No browser launch or source extraction from ChatGPT.app is needed at runtime. assembleBrowserContext now defaults to this full source while permitting an explicit injected source. Existing CUA installation, credential-field protection, CDP contexts, retry logic and policy layers remain in place. The service assembly integration fixture no longer supplies a synthetic injected helper.
+
+A real Chromium differential test installs both full sources into fresh pages and compares selector resolution (including roles, text, has/has-not, nth and Shadow DOM), full/incremental ARIA snapshots, iframe refs/depths, form fill success/errors, hit-target results and installation of the CUA credential hook. Explicit expected values complement source equality. This demonstrates the covered behavior of the complete upstream helper, not a handcrafted replacement API. Previously reconstructed vendor helper modules remain reference/test material and are not assembled into the default injected source.
+
+The precise historical version of CUA's embedded helper remains unproven, and this scenario does not exhaust all Playwright actions, accessibility edge cases or browser versions. Production extension/native host and real-model integration remain incomplete. The important implementation change is that the default browser context now has a real full injected implementation rather than requiring a missing source supplied by the caller.
+
+Validation: three-package build and full reconstruction suite passed: 599 tests, zero failures, explicit concurrency 4.

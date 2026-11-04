@@ -1,3 +1,4 @@
+import { upstreamPlaywrightSource } from "../playwright/upstream_source";
 import { createBrowserContextClass } from "./browser_context";
 import { Preferences } from "../preferences/preferences";
 import { createCdpManagerClass } from "../cdp/manager";
@@ -30,12 +31,12 @@ export function canObserveBrowserContext(context?: any) {
   );
 }
 export interface BrowserContextHost {
-  injectedSource: string;
+  injectedSource?: string;
   reportError: Parameters<typeof createCdpManagerClass>[0];
   reportEvent: Parameters<typeof createPageAssetsClass>[0];
   createLocalizer(locale?: string): (...args: any[]) => any;
 }
-/** Connects restored services. Injected helper, localization and telemetry still come from the host. */
+/** Connects restored services. Full upstream injected helper is the default; localization and telemetry come from the host. */
 export function assembleBrowserContext(host: BrowserContextHost) {
   // Restored Playwright uses an explicit injected-source argument; adapt the original ig constructor order.
   class ContextPlaywright extends PlaywrightService {
@@ -49,7 +50,7 @@ export function assembleBrowserContext(host: BrowserContextHost) {
     ) {
       super(
         cdp,
-        host.injectedSource,
+        host.injectedSource ?? upstreamPlaywrightSource(),
         commandTiming,
         performanceSpan,
         cua,
