@@ -94,7 +94,10 @@ CUA_BROWSER_ACCESSIBILITY_WASM_SOURCE=/absolute/path/browser-accessibility.wasm.
 Uncompressed `.wasm` input is also accepted. The build validates its exports and places it in `packages/browser/dist/service/accessibility/`. The binary is not included in the repository. Without this build input, AX calls require a previously assembled asset or the original host runtime environment setting `BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH` pointing to an absolute local path. That runtime setting is also suitable when running TypeScript sources directly; it is read from the host runtime's environment, not implicitly from every caller's process environment.
 
 
-本机交互入口：`npm run demo:deepseek`，按提示输入 prompt 与隐藏 token。
-也可直接 `npm run demo:deepseek -- "请调用 js 计算 6 * 7"`。
+本机交互入口：`npm run demo:deepseek`，按提示输入 prompt。
+自动读取项目根目录 `.env` 中的 `DEEPSEEK_API_KEY`（已有环境变量优先）；没有配置时才隐藏输入 token。
+`.env` 被 Git 忽略，勿提交；新机器可复制 `.env.example` 后填写自己的 token。
+默认启用浏览器工具：`npm run demo:deepseek -- "访问百度 搜索 deepseek 给我返回第一条搜索结果"`。
+仅验证模型与 JS 工具：`npm run demo:deepseek -- --js "请调用 js 计算 6 * 7"`。
 终端显示工具参数、执行结果和最终回答；返回的截图保存为临时文件。
-`--browser` 模式仍依赖可用后端，目前真实浏览器操作尚未验收。
+当前本机真实浏览器发现仍返回空列表，因此搜索尚不能完成；启用浏览器工具不等于连接成功。

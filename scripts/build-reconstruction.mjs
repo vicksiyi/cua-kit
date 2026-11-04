@@ -160,3 +160,4 @@ if (accessibilitySource) {
 }
 
 await import("./build-reconstructed-content.mjs");
+await import("./build-reconstructed-kernel.mjs");

@@ -2,19 +2,18 @@
 
 ## Local interactive entry
 
-From the repository root, run `npm run demo:deepseek`. Enter your prompt, then the
-API key at the hidden terminal prompt if DEEPSEEK_API_KEY is not already set. The
+From the repository root, run `npm run demo:deepseek`. Enter your prompt. The project root `.env` is loaded automatically; existing environment variables take precedence. Set `DEEPSEEK_API_KEY` there (see `.env.example`); the key is requested at a hidden terminal prompt only when absent. `.env` is Git-ignored and must stay local. The
 script builds reconstructed packages and sets the installed macOS supervisor/Node
 paths, while respecting explicit path overrides. Requires dependencies already
 installed (`npm ci` on a fresh checkout) and the matching ChatGPT.app installation.
 
 ```sh
-npm run demo:deepseek -- "请调用 js 计算 6 * 7，并告诉我结果"
+npm run demo:deepseek -- --js "请调用 js 计算 6 * 7，并告诉我结果"
 # Browser tools; requires a usable connected host backend:
 npm run demo:deepseek -- --browser "列出当前可用浏览器；没有浏览器就明确说明"
 ```
 
-Default mode exposes JavaScript tools. `--browser` enables CUA browser setup, but
+Default mode enables CUA browser setup (`--browser` is an explicit alias); `--js` selects JavaScript-only tools. However,
 current live browser discovery is empty: this is not yet a working webpage/App
 operation demo. Explicit CUA_MCP_ENV takes precedence over mode defaults.
 

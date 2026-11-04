@@ -3658,3 +3658,27 @@ full Chrome extension background, manifest permissions or live browser backend.
 Validation: eight package builds/type checks and all 966 default regressions pass,
 zero failures/skips. Generated worker asset is 345707 bytes of TypeScript string
 representation. Live DeepSeek and native-supervisor probes were not repeated.
+
+### Built kernel pages and nested-frame execution chain
+
+Added the functional kernel frame-host entry with original navigator.platform
+projection and navigator.locks. build-reconstructed-kernel emits host/sandbox HTML
+and browser ESM bundles under packages/browser-extension/dist/kernel. This directory
+is a kernel asset set, not a complete installable extension; background/manifest and
+entry telemetry assembly remain separate work.
+
+A real Chromium test serves the built pages and runs parent -> host iframe -> sandbox
+iframe -> actual restored worker -> agent RPC -> default restored browser service.
+Only the Chrome background runtime port is a controlled responder. It verifies
+browser inventory output, persistent script variables across turns, typed script
+failure without forced reset, recovery, one cached getInfo, reset removing the sandbox
+and disconnecting the background port. No actual browser tab operation or installed
+extension permissions are implied. Validation results follow.
+
+Validation: all 967 reconstruction tests passed; package build and type checks passed. These nested-frame checks use a controlled background connection and are not live Chrome operation acceptance.
+
+### DeepSeek entry: local dotenv and browser defaults
+
+The root demo entry now loads `.env` with Node's dotenv parser, preserves existing environment variables, and starts browser tools by default. `--js` retains the JavaScript-only smoke test. Local credentials stay in an ignored mode-0600 file; only `.env.example` is published. Launcher checks cover environment precedence, literal (non-shell) parsing, mode defaults and prompt forwarding.
+
+Both user prompts (open local Chrome/search DeepSeek and visit Baidu/search DeepSeek) were run through the real provider/MCP entry without entering a key. Both exited normally and emitted actual tool traces, but `cua.getState()` reported an empty browser inventory. Neither search completed. This is a remaining host discovery/integration issue, not proof of working browser automation.

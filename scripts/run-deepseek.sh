@@ -2,11 +2,13 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo:deepseek -- [--browser] "your prompt"' 'Default: JavaScript tools. --browser enables CUA browser tools; a connected backend is required.'
+  printf '%s\n' 'Usage: npm run demo:deepseek -- [--browser|--js] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically.'
   exit 0
 fi
-if [[ "${1:-}" == "--browser" ]]; then
-  shift
+mode=browser
+if [[ "${1:-}" == "--js" ]]; then mode=js; shift;
+elif [[ "${1:-}" == "--browser" ]]; then shift; fi
+if [[ "$mode" == "browser" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"browser","CUA_REPL_BROWSER_ENV":"codex-app","BROWSER_USE_AVAILABLE_BACKENDS":"chrome"}'; fi
   printf '%s\n' 'Browser mode: uses a connected host backend; current installation has not yet passed browser-operation acceptance.' >&2
 else
