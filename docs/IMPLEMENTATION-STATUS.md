@@ -3346,3 +3346,21 @@ service factory; native/browser/real-model end-to-end work remains unfinished.
 
 Validation: eight package builds/type checks and all 950 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel configuration adapters
+
+Restored NU/FU/BU/Ps/UU/$U and bundled defaults/resource mapping. Session updates hold a
+named Web Lock across read, synchronous updater and write, preserving own-key lookups and
+snapshot semantics. Global writes force-read settings under the global lock, project the
+preferences/rules view and submit only revision-aware differences. No-op updates skip PATCH;
+rule removal emits null, denied duplicates override allowed, and source validation/errors
+are retained. Unknown projection decisions remain denied as in the original.
+
+Two hash-pinned differential tests cover preference/rule boundaries, patch ordering,
+concurrent session updates, refresh flags, no-op writes and read/updater/write failures.
+A test-fixture prototype identity mismatch was corrected by cloning observed snapshots;
+production behavior required no change. Actual navigator.locks and cloud services remain
+host integration work, along with complete browser bridge/startup/end-to-end validation.
+
+Validation: eight package builds/type checks and all 952 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

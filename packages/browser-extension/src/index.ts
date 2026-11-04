@@ -122,3 +122,5 @@ export * from "./kernel_frame_host";
 export * from "./kernel_control_client";
 
 export * from "./kernel_execution_runtime";
+
+export * from "./kernel_config";
