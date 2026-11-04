@@ -186,11 +186,6 @@ function fixture(original: boolean, options: any = {}) {
       trace.push(["getTab", id]);
       return { id, windowId: 9 };
     },
-    validateCdp: (method: string, params: any) => {
-      trace.push(["validateCdp", method, params]);
-      if (method === "forbidden") throw Error("forbidden");
-    },
-    filterCdp: record("filterCdp", "filtered"),
     getUserTabs: record("userTabs", [{ id: 3 }]),
     getUserHistory: record("history", []),
     validateTabId: (method: string, id: any) => {
@@ -262,6 +257,10 @@ function fixture(original: boolean, options: any = {}) {
       timers.delete(id);
     },
   };
+  const cdp = extensionBindings(
+    ["Qp", "Xp", "Qe", "ve", "On", "Pn", "xc", "Mc", "ps", "Rt", "fs"],
+    {},
+  );
   const external = {
     chrome,
     navigator: deps.navigator,
@@ -277,8 +276,8 @@ function fixture(original: boolean, options: any = {}) {
     Cy: deps.initializePopupInterceptor,
     ar: deps.networkPolicy,
     yt: deps.getTab,
-    Qp: deps.validateCdp,
-    Xp: deps.filterCdp,
+    Qp: cdp.Qp,
+    Xp: cdp.Xp,
     wE: deps.getUserTabs,
     yE: deps.getUserHistory,
     Xr: deps.validateTabId,
@@ -356,7 +355,9 @@ test("extension command handler preserves every original method and session/CDP 
     ])
       results.push(await outcome(() => h.resolveSession(input)));
     results.push(
-      await outcome(() => h.executeCdp({ ...request, method: "forbidden" })),
+      await outcome(() =>
+        h.executeCdp({ ...request, method: "Target.exposeDevToolsProtocol" }),
+      ),
     );
     results.push(
       await h.executeCdp({
@@ -605,4 +606,43 @@ test("extension RPC facade routes browser commands into restored handler and ser
     { jsonrpc: "2.0", id: 4, result: undefined },
   ]);
   assert.ok(trace.some((entry) => entry[0] === "endTurn" && entry[1] === "t"));
+});
+
+test("extension handler uses restored CDP security before session activation and before RPC replies", async () => {
+  const { handler, trace } = fixture(false);
+  await assert.rejects(
+    handler.executeCdp({ ...request, method: "Target.exposeDevToolsProtocol" }),
+    /cannot expose debugger access/,
+  );
+  assert.equal(handler.sessions.size, 0);
+  assert.equal(
+    trace.some((entry) => entry[0] === "activateTurn"),
+    false,
+  );
+  const session = handler.resolveSession(request);
+  session.executeCdp = async () => ({
+    cookies: [
+      { name: "__Host-siwc-browser-bootstrap", value: "fixture-secret" },
+      { name: "ordinary", value: "keep" },
+    ],
+  });
+  const { ExtensionBrowserPeer } =
+    await import("../packages/browser-extension/src/browser_peer");
+  const sent: any[] = [];
+  const peer = new ExtensionBrowserPeer(
+    { setMessageCallback() {}, sendMessage: (message) => sent.push(message) },
+    handler,
+  );
+  await peer.handleIncomingMessage({
+    id: 1,
+    method: "executeCdp",
+    params: { ...request, method: "Network.getCookies" },
+  });
+  assert.deepEqual(sent, [
+    {
+      jsonrpc: "2.0",
+      id: 1,
+      result: { cookies: [{ name: "ordinary", value: "keep" }] },
+    },
+  ]);
 });

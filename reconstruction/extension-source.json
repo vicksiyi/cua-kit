@@ -17,10 +17,23 @@
     "bd": "cursorKey",
     "Od": "validDownloadId",
     "PE": "downloadFilename",
-    "xE": "downloadStatus"
+    "xE": "downloadStatus",
+    "Qp": "validateCdpCommand",
+    "Xp": "filterCdpResult",
+    "Yp": "filterCdpEvent",
+    "Qe": "filterResource",
+    "ve": "mapFields",
+    "On": "filterCookies",
+    "Pn": "filterHeaders",
+    "xc": "filterHeaderValue",
+    "Mc": "isBootstrapCookieLine",
+    "ps": "filterRawHeaders",
+    "Rt": "isObject",
+    "fs": "headerFilters",
+    "dR selected debugger/download/navigation listeners": "registerBrowserEventListeners"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Production command-handler dependency wiring (session wd, tab leases, request-header and CDP security, SIWC, overlay, mentions, initializers), manifest and build/install packaging; native messaging host executable remains external.",
+  "remaining": "Production command-handler dependency wiring (session wd, tab leases, request-header policy, SIWC, overlay, mentions, initializers), manifest and build/install packaging; native messaging host executable remains external.",
   "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries."
 }

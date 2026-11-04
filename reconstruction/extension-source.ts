@@ -43,3 +43,47 @@ export function extensionBindings(
       `return {${names.join(",")}};`,
   )(...Object.values(external));
 }
+
+/** Execute only selected, inspected call expressions inside a named function, never its startup body. */
+export function extensionFunctionCalls(
+  name: string,
+  callPaths: string[],
+  external: Record<string, unknown>,
+) {
+  const definition = definitions.get(name);
+  if (!definition || definition.type !== "FunctionDeclaration")
+    throw Error(`Missing extension function ${name}`);
+  const pathOf = (node: any): string | undefined => {
+    if (node?.type === "Identifier") return node.name;
+    if (node?.type === "MemberExpression" && !node.computed) {
+      const owner = pathOf(node.object);
+      return owner == null ? undefined : `${owner}.${node.property.name}`;
+    }
+  };
+  const selected: any[] = [];
+  const visit = (node: any) => {
+    if (!node || typeof node !== "object") return;
+    if (
+      node.type === "CallExpression" &&
+      callPaths.includes(pathOf(node.callee) ?? "")
+    ) {
+      selected.push(node);
+      return;
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(visit);
+      else if (value && typeof value === "object") visit(value);
+    }
+  };
+  visit(definition.body);
+  for (const path of callPaths)
+    if (selected.filter((node) => pathOf(node.callee) === path).length !== 1)
+      throw Error(`Expected exactly one ${path} in ${name}`);
+  return new Function(
+    ...Object.keys(external),
+    '"use strict";' +
+      selected
+        .map((node) => source.slice(node.start, node.end) + ";")
+        .join("\n"),
+  )(...Object.values(external));
+}

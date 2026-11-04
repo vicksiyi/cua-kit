@@ -1514,3 +1514,35 @@ Fixture sessions and Chrome APIs isolate behavior without modifying the installe
 extension. These are dispatcher tests, not production security/session verification.
 
 Validation: all eight reconstructed packages built and passed type checks; all 766 default regression tests and all 5 opt-in native-supervisor integration tests passed. The new RPC composition test initially omitted JSON-RPC envelope fields in its expected value; corrected that test expectation to the existing protocol, without changing the implementation. Production extension/session integration remains incomplete.
+
+
+## 16.253 CDP security and extension event subscriptions
+
+Restored original Qp/Xp/Yp and the complete helper closure in `cdp_security.ts`,
+then replaced command-handler validation/filter dependency injection with direct
+imports. Disallowed debugger exposure fails before creating or activating a
+session. Reply filtering removes the SIWC bootstrap cookie from cookie collections
+and network resource headers; event filtering preserves each original CDP shape,
+filters nested resource/header/cookie issue data, and drops tunneled target-message
+events. Unknown methods retain original identity and behavior. The implementation
+preserves malformed-value handling, own-property dispatch, capitalization rules,
+whitespace/separators, raw-header removal and object-reference behavior. It is an
+application-specific rule set, not third-party code and not a universal scrubber.
+
+Extracted six original dR listener registrations into `registerBrowserEventListeners`:
+debugger detach/event, handler download change, Chrome download created/changed,
+and created navigation target. The filtered event reaches every supplied peer;
+failed navigation-target processing remains swallowed exactly as in the original.
+This is a startup component, not the complete startup function. Instance-ID setup,
+runtime subscriptions, kernel/native connection routing and lifetimes remain outside
+this component and must be composed later.
+
+Added differential tests for every original CDP filter branch with valid, malformed,
+nested and prototype-sensitive payloads, comparing outputs, mutations and identity.
+A source helper extracts exactly one instance of each inspected subscription from
+the pinned dR AST and executes only those calls for event-order comparison. A real
+RPC-facade/handler test proves the guard runs before activation and filtered cookie
+results reach the reply envelope. Production session/authorization implementations
+are still pending; these tests do not establish that whole-system completion.
+
+Validation: all eight reconstructed packages built and passed type checks; all 771 default regression tests and all 5 opt-in native-supervisor integration tests passed. The native tests still use an isolated fixture-backed browser backend and do not prove full production-extension integration.

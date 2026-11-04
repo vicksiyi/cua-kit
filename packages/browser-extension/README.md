@@ -37,7 +37,8 @@ through `ExtensionBrowserPeer` into the handler.
 
 The factory is an explicit reconstruction boundary, not an installed extension
 entry point. Its required dependencies include the real session (`wd`), tab leases,
-SIWC, request headers, CDP validation/filtering, overlay and frame monitors. No
+SIWC, request headers, overlay and frame monitors. CDP validation/filtering now
+imports the restored security module directly. No
 production defaults or permissive security substitutes are supplied. Parameter
 payloads remain broadly typed while those contracts are being recovered; this is
 readable TypeScript, not yet a fully specified public protocol. See
@@ -50,8 +51,27 @@ flowchart TD
   Transport --> Peer[ExtensionBrowserPeer — restored pc/fc]
   Peer --> Handler[BrowserCommandHandler — restored pE]
   Handler --> Chrome[Chrome APIs: tabs / windows / scripting / notifications]
-  Handler --> Guards[Required dependencies: CDP validation/filtering / SIWC / leases]
+  Handler --> Guards[Restored CDP filters + required SIWC / lease dependencies]
   Handler --> Session[Required Session implementation: original wd]
   Handler --> Overlay[Required overlay and frame-monitor implementations]
   Session --> Actual[Debugger / lifecycle / ownership — pending production wiring]
 ```
+
+### CDP security and event forwarding
+
+`cdp_security.ts` restores original `Qp`, `Xp`, `Yp` and their helpers. The handler
+uses validation before session activation and filters replies before returning to
+RPC. The rules reject page-exposed debugger access and require flattened automatic
+attachments (except when automatic attachment is explicitly disabled). Cookie and
+header transformations specifically protect `__Host-siwc-browser-bootstrap` across
+the original CDP result/event shapes. Unknown methods and arbitrary page values
+retain original behavior; this is not a blanket secret scrubber.
+
+`registerBrowserEventListeners` extracts six original `dR` subscriptions:
+debugger detach/events, handler download changes, Chrome download creation/changes,
+and navigation targets. CDP events are filtered before broadcasting, including
+dropping `Target.receivedMessageFromTarget`. The original per-peer routing,
+instance initialization, remaining runtime subscriptions, and startup lifetime
+still need production composition. No teardown or additional catches are invented.
+Differential tests execute only these six inspected original subscription calls,
+not the original extension startup.

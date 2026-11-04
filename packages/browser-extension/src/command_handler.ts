@@ -1,3 +1,4 @@
+import { validateCdpCommand, filterCdpResult } from "./cdp_security";
 /** Dependencies of original pE, kept explicit until their production implementations are restored.
  * No permissive fallback: callers must supply the original session/security/capability contracts.
  */
@@ -16,8 +17,6 @@ export interface BrowserCommandDependencies {
   initializePopupInterceptor(): void;
   networkPolicy: { getInstance(): any };
   getTab(tabId: number): Promise<any>;
-  validateCdp(method: string, params: any): void;
-  filterCdp(method: string, result: any): any;
   getUserTabs(): Promise<any[]>;
   getUserHistory(request: any): Promise<any>;
   validateTabId(method: string, tabId: any): void;
@@ -134,9 +133,9 @@ export function createBrowserCommandHandlerClass(
       return request.session_id == null ? undefined : true;
     }
     async executeCdp(request: any) {
-      deps.validateCdp(request.method, request.commandParams);
+      validateCdpCommand(request.method, request.commandParams);
       const session = await this.activateSession(request);
-      return deps.filterCdp(request.method, await session.executeCdp(request));
+      return filterCdpResult(request.method, await session.executeCdp(request));
     }
     async attach(request: any) {
       await this.resolveSession(request).attach(request);
