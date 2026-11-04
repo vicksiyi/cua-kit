@@ -3505,3 +3505,31 @@ A bounded credential-location check found no DeepSeek environment variable or
 matching entry in common shell/config locations. No key values were printed.
 Live DeepSeek remains unverified. Further browser service/extension assembly and
 backend discovery diagnosis remain required; the complete goal is unfinished.
+
+### Live discovery failure isolation
+
+The read-only probe now has opt-in `--diagnostics`, `--original-service`, and
+`--original-workers` controls. Diagnostics assembles the same restored service in
+its temporary staged package with error/discovery callbacks; it does not alter
+pipe transport, handshake, access checks, or session filtering. The diagnostic RPC
+exists only in that temporary service. It must reside under the staged desktop
+package so its nested @core/browser dependency resolves correctly.
+
+Actual host results on 2026-11-05: 24 candidates, 20 connection-refused errors,
+four backend-info requests whose pipe closed before a response. No backend reached
+successful discovery. lsof identified the four live sockets as owned by ChatGPT.
+The installed original browser service with restored workers also returned zero;
+the installed original service with original native workers likewise returned zero.
+These comparisons narrow the issue to the standalone launch/host connection path;
+they do not establish the precise reason the host closes the pipes or prove every
+reconstructed component correct. No session IDs or permission checks were forged,
+and no stale socket files were removed.
+
+Commands (after reconstruction build):
+- npx tsx reconstruction/live-browser-probe.ts --diagnostics
+- npx tsx reconstruction/live-browser-probe.ts --original-service
+- npx tsx reconstruction/live-browser-probe.ts --original-service --original-workers
+
+All three probes completed successfully with empty discovery. Original-service and
+original-workers are explicit diagnostic comparisons, not a fallback implementation.
+No production reconstructed runtime changed; the full regression suite was not rerun.
