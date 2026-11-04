@@ -182,5 +182,30 @@ original. These details are compared against the installed artifact.
 
 A session composition test uses this real manager and real DNR coordinator over
 isolated Chrome/storage fixtures to claim a tab, install header rules and release
-both at turn end. Production instance-ID sourcing, shared startup and the remaining
-group/favicon/overlay/network/auth components are still required.
+both at turn end. Instance-ID sourcing and shared component assembly are provided
+by the foundation below; full startup and group/favicon/overlay/network/auth
+components are still required.
+
+### Shared browser foundation and extension identity
+
+`createExtensionInstanceIdReader` restores original `Be/Kg/gc/us`: it returns a
+valid stored ID verbatim, shares a cached promise across callers and clears rejected
+promises for retry. On missing/invalid identity it removes `nodeReplTunnel` from
+session storage, removes `browserUseTunnels` from local storage, generates a UUID
+and persists it, in that order. Validation uses the original 128 UTF-16-unit limit
+and paired-surrogate checks, not UUID syntax. Merely creating the reader does not
+read or mutate storage.
+
+`createExtensionBrowserFoundation(host)` is project-authored assembly around the
+restored components. Its `createHandlerClass(handlerDependencies, sessionDependencies)`
+shares one identity reader, lease class/singleton, debugger runtime and tab runtime
+across dispatcher/sessions. Known restored dependencies override supplied residual
+fields, so accidental extra fields cannot replace them. Remaining capabilities,
+SIWC, group/favicon, network/overlay/monitor and application startup are still
+required. This is not an installable extension or a claim that original `dR` has
+been fully recovered.
+
+The composition test exercises RPC createTab/attach/executeCdp/turnEnded through
+these restored components with isolated Chrome APIs, asserting getInfo/lease ID
+agreement, one UUID, one debugger listener, and lease/rule/debugger cleanup. Identity
+cleanup tests mutate only fixture storage, never the user's installed extension.

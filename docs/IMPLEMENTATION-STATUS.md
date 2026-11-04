@@ -1727,3 +1727,35 @@ native host and real desktop/DeepSeek integration. No user Chrome storage/rules
 were mutated in these tests.
 
 Validation: all eight reconstructed packages built and passed type checks; all 797 default regression tests passed. The separate native-supervisor suite was not rerun for this component composition; production extension startup remains unverified.
+
+
+## 16.260 Shared browser foundation and extension instance identity
+
+Restored Be/Kg/gc/us/Pp into `instance_id.ts`. Valid stored IDs are returned verbatim
+with original nonblank/128-code-unit/well-formed-UTF16 checks, without requiring UUID
+syntax. Concurrent callers share the same Promise, successful reads remain cached,
+and rejected attempts clear the cache. Missing/invalid identity follows the original
+ordered cleanup of session nodeReplTunnel and local browserUseTunnels, then UUID
+generation and persistence. No real user storage was accessed by tests.
+
+Added project-authored `createExtensionBrowserFoundation` to compose the restored
+identity reader, lease singleton, debugger and tab runtimes with session/dispatcher.
+It fills these known dependencies after caller residual dependencies so extra fields
+do not accidentally override restored components. One foundation preserves the shared
+state scopes expected by the original application. It remains a composition helper,
+not a replacement for the full original dR startup or installable extension.
+
+Three differential identity tests cover stored value boundaries and malformed
+surrogates, concurrent Promise identity, cleanup order, cached success and retry at
+each storage failure boundary. A fourth test uses the foundation and restored RPC
+facade to run createTab/attach/executeCdp/turnEnded: getInfo and lease identity agree,
+UUID is generated once, debugger listener is registered once across handlers, and
+turn end removes lease/header rules/debugger state. Chrome and remaining peripheral
+services are fixtures; this is not a production-extension end-to-end claim.
+
+Remaining: group/favicon, Browser Use network policy, overlay/frame monitors, SIWC,
+capability/session messaging and full dR startup, manifest/install/native host,
+real desktop/DeepSeek integration. The original native supervisor binary is still
+external rather than recovered readable Rust source.
+
+Validation: all eight reconstructed packages built and passed type checks; all 801 default regression tests passed. The separate native-supervisor suite was not rerun for this assembly; production extension and live DeepSeek integration remain unverified.

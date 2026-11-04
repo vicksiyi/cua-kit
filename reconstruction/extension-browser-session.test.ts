@@ -695,3 +695,177 @@ test("restored session uses restored lease storage and DNR coordination for clai
     trace.some((entry) => entry[0] === "chrome.tabs.remove" && entry[1] === 4),
   );
 });
+
+test("extension foundation shares identity, lease singleton and debugger state across restored command sessions", async () => {
+  const { createExtensionBrowserFoundation } =
+    await import("../packages/browser-extension/src/browser_foundation");
+  const { ExtensionBrowserPeer } =
+    await import("../packages/browser-extension/src/browser_peer");
+  const { deps, tabs, trace } = fixture(false);
+  let stored: any = {},
+    local: any = {},
+    rules: any[] = [],
+    uuidCalls = 0,
+    detachListeners = 0;
+  const chrome: any = {
+    ...deps.chrome,
+    runtime: { id: "extension" },
+    storage: {
+      session: {
+        async get(key: string) {
+          return { [key]: stored };
+        },
+        async set(value: any) {
+          stored = structuredClone(value.TAB_LEASES);
+        },
+        async remove(key: string) {
+          trace.push(["session.remove", key]);
+        },
+      },
+      local: {
+        async get(key: string) {
+          return { [key]: local[key] };
+        },
+        async set(value: any) {
+          Object.assign(local, value);
+        },
+        async remove(key: string) {
+          trace.push(["local.remove", key]);
+        },
+      },
+    },
+    tabs: {
+      ...deps.chrome.tabs,
+      onRemoved: { addListener() {} },
+      onReplaced: { addListener() {} },
+      async query() {
+        return [...tabs.values()];
+      },
+      async create() {
+        return tabs.get(4);
+      },
+    },
+    windows: {
+      async getAll() {
+        return [{ id: 9, focused: true }];
+      },
+    },
+    debugger: {
+      onDetach: {
+        addListener() {
+          detachListeners++;
+        },
+      },
+      async attach() {},
+      async detach() {},
+      async sendCommand(_target: any, method: string) {
+        return { method };
+      },
+    },
+    declarativeNetRequest: {
+      ResourceType: {
+        MAIN_FRAME: "main_frame",
+        SUB_FRAME: "sub_frame",
+        OBJECT: "object",
+      },
+      RuleActionType: { MODIFY_HEADERS: "modifyHeaders" },
+      HeaderOperation: { SET: "set" },
+      async getSessionRules() {
+        return rules;
+      },
+      async updateSessionRules(value: any) {
+        rules = value.addRules;
+      },
+    },
+  };
+  const foundation = createExtensionBrowserFoundation({
+    chrome,
+    crypto: {
+      randomUUID: () => {
+        uuidCalls++;
+        return "11111111-1111-4111-8111-111111111111";
+      },
+    },
+    now: () => 1,
+    setTimeout,
+    clearTimeout,
+    error: () => {},
+  });
+  const Handler = foundation.createHandlerClass(
+    {
+      navigator: { userAgent: "fixture" },
+      browserFamily: () => "chrome",
+      Siwc: class {} as any,
+      buildChannel: () => "test",
+      favicons: deps.tabFavicons,
+      TabMentionProvider: class {
+        getProviderTabId(id: number) {
+          return `tab:${id}`;
+        }
+        getCapabilityInfo() {
+          return {};
+        }
+      } as any,
+      initializeForeignExtensionFrameMonitor() {},
+      initializePopupInterceptor() {},
+      networkPolicy: deps.networkPolicy,
+      getUserTabs: async () => [],
+      getUserHistory: async () => [],
+      validateTabId() {},
+      executeTabRead: async () => ({}),
+      getTabContext: async () => ({}),
+      browserInfo: deps.browserInfo,
+      dispatchCommand: async () => ({}),
+      commandSets: [null, null],
+      commandNames: {} as any,
+      schemas: {} as any,
+      validateMouse() {},
+      overlay: deps.overlay,
+      canAnimateCursor: async () => false,
+      capabilities: {} as any,
+    },
+    deps,
+  );
+  const handler = new Handler(),
+    other = new Handler(),
+    sent: any[] = [];
+  assert.equal(handler.tabLeases, other.tabLeases);
+  assert.equal(detachListeners, 1);
+  const peer = new ExtensionBrowserPeer(
+    { setMessageCallback() {}, sendMessage: (value) => sent.push(value) },
+    handler,
+  );
+  const info = await handler.getInfo({});
+  await peer.handleIncomingMessage({
+    id: 1,
+    method: "createTab",
+    params: {
+      ...request,
+      request_headers: [{ name: "x-session", value: "{{session_id}}" }],
+    },
+  });
+  assert.equal(sent[0].result.id, 4);
+  assert.equal(stored.leases[4].instanceId, info.metadata.extensionInstanceId);
+  assert.equal(uuidCalls, 1);
+  assert.equal(rules.length, 2);
+  await peer.handleIncomingMessage({
+    id: 2,
+    method: "attach",
+    params: { ...request, tabId: 4 },
+  });
+  assert.equal(foundation.debuggerRuntime.attachedTabs.has(4), true);
+  await peer.handleIncomingMessage({
+    id: 3,
+    method: "executeCdp",
+    params: { ...request, target: { tabId: 4 }, method: "Runtime.evaluate" },
+  });
+  assert.equal(sent[2].result.method, "Runtime.evaluate");
+  await peer.handleIncomingMessage({
+    id: 4,
+    method: "turnEnded",
+    params: request,
+  });
+  assert.deepEqual(stored.leases, {});
+  assert.deepEqual(rules, []);
+  assert.equal(foundation.debuggerRuntime.attachedTabs.size, 0);
+});

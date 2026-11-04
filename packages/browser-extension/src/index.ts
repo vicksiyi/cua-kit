@@ -11,3 +11,5 @@ export * from "./tab_runtime";
 export * from "./request_header_rules";
 export * from "./lease_codec";
 export * from "./tab_leases";
+export * from "./instance_id";
+export * from "./browser_foundation";
