@@ -3682,3 +3682,11 @@ Validation: all 967 reconstruction tests passed; package build and type checks p
 The root demo entry now loads `.env` with Node's dotenv parser, preserves existing environment variables, and starts browser tools by default. `--js` retains the JavaScript-only smoke test. Local credentials stay in an ignored mode-0600 file; only `.env.example` is published. Launcher checks cover environment precedence, literal (non-shell) parsing, mode defaults and prompt forwarding.
 
 Both user prompts (open local Chrome/search DeepSeek and visit Baidu/search DeepSeek) were run through the real provider/MCP entry without entering a key. Both exited normally and emitted actual tool traces, but `cua.getState()` reported an empty browser inventory. Neither search completed. This is a remaining host discovery/integration issue, not proof of working browser automation.
+
+### Background kernel activation and turn-end routing
+
+Restored the kernel-gate section of original extension `dR` as `kernel_background.ts`: single activation with subscription abort, connection peer registration/removal, turn-end delivery, fallback cleanup for a missing/rejecting control peer, and separate gate/registration error reporting. Dependencies are explicit; full background startup composition is still pending.
+
+A hash-pinned original-source differential test extracts only the inspected local declarations and gate subscription. It compares normal activation, repeated gate changes, control rejection, fallback rejection, gate failure and registration failure. All 968 reconstruction tests passed in a serial build/test run, plus type checking. An earlier run overlapped demo rebuilds and failed due to temporarily absent dist imports; the isolated rerun passed.
+
+Live verification of both original user prompts still failed: browser inventory empty; Chrome creation returned `Browser is not available: chrome`. The installed native messaging registration and executable exist, but no extension host process was observed; live browser-use sockets were owned by ChatGPT. This narrows investigation but does not establish why the extension host is absent. Browser operation remains unaccepted.

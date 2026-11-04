@@ -94,3 +94,20 @@ export function extensionFunctionCalls(
         .join("\n"),
   )(...Object.values(external));
 }
+
+/** Evaluate selected immediate local initializers, without executing the enclosing startup. */
+export function extensionFunctionLocals(name: string, names: string[], external: Record<string, unknown>) {
+  const definition = definitions.get(name);
+  if (definition?.type !== "FunctionDeclaration") throw Error(`Missing extension function ${name}`);
+  const locals = new Map<string, any>();
+  for (const statement of definition.body.body) {
+    if (statement.type !== "VariableDeclaration") continue;
+    for (const item of statement.declarations) if (item.id.type === "Identifier" && item.init) locals.set(item.id.name, item.init);
+  }
+  const declarations = names.map((name) => {
+    const node = locals.get(name);
+    if (!node) throw Error(`Missing local binding ${name}`);
+    return `const ${name} = ${source.slice(node.start, node.end)};`;
+  });
+  return new Function(...Object.keys(external), '"use strict";' + declarations.join("\n") + `return {${names.join(",")}};`)(...Object.values(external));
+}
