@@ -1,3 +1,4 @@
+import { KernelAgentPeer } from "./kernel_control_client";
 import { createKernelPortTransportClass, type KernelTransport } from "./kernel_transport";
 import { isScopedKernelMessage, serializeKernelError, type KernelMessage } from "./kernel_offscreen";
 import { isKernelHostResponse } from "./kernel_host";
@@ -66,7 +67,7 @@ export interface KernelFrameHostServices {
   runtime: Pick<typeof chrome.runtime, "getURL" | "connect" | "lastError">;
   MessageChannel: typeof MessageChannel;
   createBrowserBridge(transport: KernelTransport, metadata: unknown): KernelBrowserBridge;
-  registerAgentPeer(transport: KernelAgentTransport, handler: ReturnType<typeof createKernelAgentHandler>): void;
+  registerAgentPeer?(transport: KernelAgentTransport, handler: ReturnType<typeof createKernelAgentHandler>): void;
   cleanupBrowser(): Promise<unknown>;
 }
 /** Original GU. The actual browser bridge and shared service cleanup are required dependencies. */
@@ -107,7 +108,8 @@ export function registerKernelFrameHost(host: KernelFrameHostServices) {
     const agent = new KernelAgentTransport(port);
     try {
       const bridge = host.createBrowserBridge(browser, metadata);
-      host.registerAgentPeer(agent, createKernelAgentHandler(bridge));
+      if (host.registerAgentPeer) host.registerAgentPeer(agent, createKernelAgentHandler(bridge));
+      else new KernelAgentPeer(agent, createKernelAgentHandler(bridge));
       const current = {
         beginExecution: bridge.beginExecution, finishExecution: bridge.finishExecution,
         async dispose() {

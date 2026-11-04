@@ -118,3 +118,5 @@ export * from "./kernel_host";
 export * from "./kernel_offscreen";
 
 export * from "./kernel_frame_host";
+
+export * from "./kernel_control_client";

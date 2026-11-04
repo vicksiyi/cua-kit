@@ -3310,3 +3310,21 @@ and actual browser/model end-to-end validation remain unfinished.
 
 Validation: eight package builds/type checks and all 946 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel control client and default agent peer
+
+Restored OU as KernelControlClient: methods are bound for detached use; fetch serializes
+bodies with Response/base64, preserves inferred content headers, forwards abortFetch and
+reconstructs responses (including Response.error for status zero). Caller abort reasons
+win over remote results/errors; listeners are removed after completion. Restored HU as
+KernelAgentPeer after inspecting the shared src chunk's Mt/Ql implementation against the
+existing RPC peer. Iframe host now uses this peer by default, retaining optional injection
+for source differential tests.
+
+Two hash-pinned differential tests execute actual OU/HU/Mt and byte conversion helpers,
+covering ten fetch scenarios, detached control methods and inbound agent RPC. Real browser
+execution-context/bridge assembly, sandbox worker wiring, startup and complete end-to-end
+verification remain pending; a functioning RPC component does not establish those layers.
+
+Validation: eight package builds/type checks and all 948 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
