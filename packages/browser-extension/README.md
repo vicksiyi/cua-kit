@@ -623,3 +623,7 @@ the original race behavior. Remaining control methods and RPC assembly are pendi
 createKernelElicitation restores the control-side schema/default/metadata/signal bridge.
 Its guards match the bundled limited envelope checks; the Agent host owns UI and user
 decisions. Complete control RPC and actual kernel integration are still pending.
+
+Cloud requirements/settings clients now preserve original caching and queued request
+semantics. Requirements parsing remains explicitly injected until the bundled TOML
+dependency is identified and reused; complete control/startup assembly remains pending.

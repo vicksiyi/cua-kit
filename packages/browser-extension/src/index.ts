@@ -104,3 +104,5 @@ export * from "./kernel_scope";
 export * from "./kernel_fetch";
 
 export * from "./kernel_elicitation";
+
+export * from "./cloud_clients";

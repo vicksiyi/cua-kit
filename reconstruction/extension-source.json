@@ -158,7 +158,8 @@
     "Dr/Hg/Le": "createKernelScopeRegistry: execution admission, abort-reason propagation and identity-guarded disposal",
     "Ds displayValue/displayImage": "createKernelOutputWriter preserving serialization-before-scope lookup and shared content append",
     "Ds fetch/abortFetch/dispose + pg/ol/wl": "createKernelFetchController with scoped site-status ChatApi route, cancellation and binary response serialization",
-    "Ds createElicitation + Lt/yl/Sl": "createKernelElicitation and original object/property envelope guards; preserve host signal/meta/default schema and response boundaries"
+    "Ds createElicitation + Lt/yl/Sl": "createKernelElicitation and original object/property envelope guards; preserve host signal/meta/default schema and response boundaries",
+    "$g/jg": "Cloud requirements/settings clients with original cache, request coalescing/serialization and abort handling; requirements parser remains explicit"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",

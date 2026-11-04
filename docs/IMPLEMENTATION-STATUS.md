@@ -3171,3 +3171,23 @@ Remaining control operations and complete RPC/kernel/startup integration remain 
 
 Validation: eight package builds/type checks and all 934 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel cloud requirements and browser settings clients
+
+Restored $g requirements caching through createCloudRequirementsClientClass. Personal
+accounts return null requirements; enterprise requests coalesce, cache for one hour and
+retain the last good result on later failures, with original caller-abort checks. The
+requirements parser remains an explicit dependency pending identification/reuse of the
+bundled TOML library; this does not claim complete requirements parsing.
+
+CloudBrowserSettingsClient restores jg: non-forced reads share pending work or a fifteen-
+minute cache; forced reads and PATCH requests serialize after pending requests, including
+rejection recovery. Responses normalize missing webmcp to an empty object, clear cache
+on failure and clear pending only when still current. PATCH forwards its supplied signal.
+
+Two differential tests compare actual $g/jg over ten cache/failure/abort scenarios with
+controlled time and fixture ChatApi. No server requests. Remaining control assembly,
+requirements parser, kernel host, full startup and real end-to-end work remain incomplete.
+
+Validation: eight package builds/type checks and all 936 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
