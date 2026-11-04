@@ -2525,3 +2525,25 @@ No third-party package was required by this inspected closure.
 
 Validation: eight package builds/type checks and all 881 default regressions pass,
 zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### Side-panel window opening, toggling and state union
+
+Restored Dk/jf/qf/Hf/Nk/Ji/Uk/Gf as createSidePanelWindowController. Window-wide
+and per-tab open state remain distinct and contribute to the persisted open-window
+union. Open invokes temporary enable and sidePanel.open before awaiting either,
+retaining user activation. Failure rolls back the tab option; successful opening
+records state and reports telemetry. Closing records state in finally, retaining
+original error/cleanup ordering. Edge ignores the tab target as in the source.
+
+Foundation lazily shares the window controller and the existing tab controller.
+Callout clearing, browser identity and telemetry remain explicit dependencies for
+full startup wiring. Three differential tests compose actual original/restored tab
+controllers with their window controllers, checking pending enable versus open order,
+nine success/failure modes, global/tab union, event registration and persistence.
+Chrome side-panel calls remain fixtures; no real panel was opened or closed.
+
+Website/action/menu/shortcut entrypoints, panel UI, full startup/auth wiring and real
+installed/native/model integration remain unfinished. No dependency was added.
+
+Validation: all eight package builds/type checks and all 884 default regressions pass,
+zero failures/skips. The separate native-supervisor suite was not rerun.

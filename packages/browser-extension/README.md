@@ -523,3 +523,8 @@ RPC session integration verifies deferral until turn completion using a reload f
 A shared lazy side-panel tab controller now restores temporary/persistent enablement,
 Edge defaults, storage recovery, tab events and removal cleanup. Full side-panel opening
 and startup registration remain separate outstanding work.
+
+Window-level side-panel opening/toggling now composes with the tab controller,
+preserving concurrent enable/open, failure rollback, close-finally state updates,
+Edge targeting and the global/tab open-state union. Action entrypoints and real
+installed panel integration remain pending.
