@@ -163,7 +163,9 @@
     "Mg/fl/Lg/pl/Dg/Ng/ml + validators": "parseCloudRequirements: reverse layer precedence, per-layer validation, recursive plain-object merge and normalized browser/network/features",
     "dR full startup": "startExtensionBackground: complete startup ordering, shared native/kernel handler, lazy mention observation, runtime routing, lifecycle, telemetry barrier and dual heartbeat; actual production service binding remains required",
     "Wf/zk/Kf/Zf/Vk/Wk": "webMcpContentScripts/createWebMcpRegistration/createWebMcpGate: temporary MAIN/ISOLATED registration, serialized latest-state application, failure cleanup and stable enabled observation",
-    "tR/rR/nR/Yf/iR/sR": "createYoutubeTimestampHandler/isYoutubeTimestampRequest/seekYoutubeTimestampInPage: original timestamp validation, tab/window/video checks, revalidation inside injected page code and timeout reply semantics"
+    "tR/rR/nR/Yf/iR/sR": "createYoutubeTimestampHandler/isYoutubeTimestampRequest/seekYoutubeTimestampInPage: original timestamp validation, tab/window/video checks, revalidation inside injected page code and timeout reply semantics",
+    "S_": "startTunnelCoordinator",
+    "m_": "createTunnelSetupReporter"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
@@ -373,5 +375,11 @@
     "test": "reconstruction/extension-tunnel-activity.test.ts",
     "method": "Actual original functions/class closure differential for 10 state scenarios, URL/guard boundaries, idle cutoff, events, queued writes, uncertainty and stop cleanup",
     "limit": "Explicit Chrome/storage fixtures. Listening does not grant browser permissions. Full S_ coordinator and production deployment remain incomplete."
+  },
+  "tunnelCoordinatorVerification": {
+    "sourceDifferential": "reconstruction/extension-tunnel-coordinator.test.ts",
+    "assembly": "reconstruction/extension-tunnel-assembly.test.ts",
+    "coverage": "Ten coordinator scenarios; restored setup/activity/polling/kernel HTTP runtime composed with explicit Chrome/auth/network fixtures, MCP ping delivery and auth rejection, shutdown cancellation and listener/alarm cleanup.",
+    "limits": "No production authentication or daily Chrome acceptance; full feature-gated deployment remains incomplete."
   }
 }

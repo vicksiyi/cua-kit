@@ -4065,3 +4065,23 @@ failure, invalid persisted state, duplicate turn starts and stop cleanup; guard
 and hostname boundaries are also compared. Four related tests, extension types
 and reconstruction build pass. Chrome/storage remain fixtures. The S_ setup/alarm
 coordinator and production deployment remain incomplete; search acceptance unchanged.
+
+
+### Tunnel coordinator and assembled lifecycle (2026-11-05)
+
+Restored original `S_` and `m_` as `startTunnelCoordinator` and
+`createTunnelSetupReporter`: serialized refresh, stale-generation cancellation,
+60-second setup timeout, 30-second unauthorized cooldown, matching-account token
+recovery, retry/health alarms, navigation refresh and explicit cleanup.
+`startAssembledBrowserTunnel` now connects the real restored setup, activity,
+polling manager and kernel HTTP runtime. Invocation starts authentication/setup;
+the caller still owns the original feature-gated startup decision.
+
+Source-differential coordinator tests cover ten scenarios. Assembly tests exercise
+registration → session storage notification → polling → MCP ping response delivery,
+and auth-401 → no network polling, using explicit Chrome/auth/HTTP fixtures. They
+verify shutdown aborts the pending poll and removes alarms/listeners. These are not
+production authentication or daily-Chrome operation tests. Extension TypeScript
+check, reconstruction build and nine tests across five related test files pass.
+The native-only installer still does not deploy the full tunnel/sidebar stack;
+the daily Chrome connection check currently reports no running independent host.

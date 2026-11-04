@@ -180,3 +180,7 @@ export * from "./tab_pdf_capture";
 export * from "./tunnel_setup";
 
 export * from "./tunnel_activity";
+
+export * from "./tunnel_coordinator";
+
+export * from "./tunnel_assembly";
