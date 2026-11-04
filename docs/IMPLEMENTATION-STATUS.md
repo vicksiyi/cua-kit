@@ -1288,3 +1288,13 @@ Three differential subprocess tests run the original extracted JS and restored e
 Kernel execution/module machinery, native supervisor/isolation, native/AX resource provisioning and real-model integration remain outstanding.
 
 Validation: seven-package build/type checks and all 724 reconstruction tests pass with concurrency 4.
+
+### 16.234 Kernel binding analysis and commit instrumentation
+
+Restored kernel_bindings.ts and kernel_instrumentation.ts directly from the embedded kernel functions. Binding analysis handles destructuring, top-level declarations/var loops and prior-const reassignment with the original block/function/loop shadowing rules. The AST is supplied by upstream Meriyah 7.0.0; no parser is reimplemented.
+
+Instrumentation retains original generated source for declaration commit markers, function/class markers, one-time loop guards and direct top-level writes to future hoisted vars. Logical assignment rewrites preserve short circuit and result values. Its allocator is supplied by the kernel so a single salted counter can remain shared across cells. The original deliberately limited nested-write recovery and empty-loop failure behavior are preserved. Namespace reads distinguish inaccessible/TDZ bindings from accessible undefined values.
+
+Three differential tests compare original functions extracted from kernel.js and reconstructed functions. Tests compare binding results and generated text, then execute synthetic generated programs in disposable VM contexts to compare commit marker sequences and errors. Cases cover partial initialization, destructuring failures, empty/populated loops, logical assignments, failed writes, shadowing and unsupported nested recovery. Kernel module assembly, linking/evaluation and cell state integration are not yet complete.
+
+Validation: seven-package build/type checks and all 727 reconstruction tests pass with concurrency 4.
