@@ -3214,3 +3214,21 @@ verification remain unfinished.
 
 Validation: eight package builds/type checks and all 938 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel control and RPC assembly
+
+Restored Ds as createKernelControlClass and qg as KernelControlPeer. Control now composes
+existing fetch/output/elicitation and cloud clients, with original feature fallbacks,
+post-await caller cancellation, session storage validation and per-ChatApi client identity.
+PDF capture retains required turn cleanup, combined cancellation and deletion on callback
+or post-capture cancellation failure; actual capture/delete remain explicit host services,
+not implemented substitutes. RPC registers prototype methods, forwards turnEnded requests
+and aborts pending fetches on transport closure.
+
+Two differential tests execute actual Ds/qg/fc: twelve policy/storage/PDF scenarios,
+cloud cache identity replacement and refresh, inbound RPC, outbound completion and close.
+Full kernel host/execution/background startup, actual PDF capture and end-to-end installation
+remain unfinished. This assembles control behavior, not the complete production runtime.
+
+Validation: eight package builds/type checks and all 940 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
