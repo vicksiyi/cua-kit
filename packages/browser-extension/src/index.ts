@@ -186,3 +186,5 @@ export * from "./tunnel_coordinator";
 export * from "./tunnel_assembly";
 
 export * from "./tunnel_kernel_bindings";
+
+export * from "./side_panel_selection";

@@ -4151,3 +4151,22 @@ The live test and five related offscreen/assembly tests pass. This supersedes th
 previous limitation on kernel screenshot/click verification for this local page.
 It remains separate from daily-profile Chrome connectivity, DeepSeek model-driven
 search, production authentication, and full extension/sidebar deployment.
+
+
+### Side-panel selection observer source restoration (2026-11-05)
+
+Deployment audit found that `codex-work-sidepanel.html` references the distinct
+`codex-work-sidepanel-Cy6MdlEo.js` page entry, not the restored background side-panel
+handlers. That entry still needs reconstruction before full deployment can be
+claimed. Its actual `Ee`/`et` selection observer is now readable TypeScript in
+`side_panel_selection.ts`. The function remains self-contained for Chrome script
+serialization. It preserves exact-URL/observer identity checks, 80,000-character
+selection bounds, revision/capture generations, stale recovery rejection, event
+and polling recovery modes, iframe subscriptions, debounce and scoped cleanup.
+
+Source SHA256: `3c34166181949c77a2123425bb7dc95d913af693b319c5559cc02416e965ad7b`.
+A hash-checked test extracts the original two functions with Acorn and compares
+six explicit DOM/timer/message fixture scenarios against serialized restored
+functions. Type check, reconstruction build and differential test pass. This is
+not yet integrated with the complete side-panel page, Google Workspace recovery
+helper, microphone permission page or production deployment.

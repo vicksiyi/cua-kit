@@ -396,5 +396,15 @@
       "CUA click independently observed as changed button text"
     ],
     "boundaries": "Temporary real Chromium profile and local HTTP fixture. Auth/account/feature/consent and settings/site-status responses are explicit test inputs permitting the fixture origin; no external backend fetch. No daily Chrome/DeepSeek search/production authentication/full deployment acceptance."
+  },
+  "sidePanelSelectionVerification": {
+    "file": "chunks/codex-work-sidepanel-Cy6MdlEo.js",
+    "sha256": "3c34166181949c77a2123425bb7dc95d913af693b319c5559cc02416e965ad7b",
+    "bindings": {
+      "Ee": "observeSidePanelSelection",
+      "et": "removeSidePanelSelectionObserver"
+    },
+    "test": "reconstruction/extension-side-panel-selection.test.ts",
+    "boundary": "Six DOM/timer/message fixture differential scenarios, no full sidepanel entry or Google Workspace recovery deployment."
   }
 }
