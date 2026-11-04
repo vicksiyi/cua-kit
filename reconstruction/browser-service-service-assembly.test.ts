@@ -1,8 +1,4 @@
 import { chromium } from "playwright";
-import { setupBrowserRuntime } from "../packages/browser/src/runtime/setup";
-import { setup_browser } from "../packages/cua/src/tinysky_alt/setup_browser";
-import { create_browser_api } from "../packages/cua/src/tinysky_alt/create_browser_api";
-import { create_bootstrap_emitter } from "../packages/cua/src/tinysky_alt/create_bootstrap_emitter";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assembleBrowserService } from "../packages/browser/src/service/runtime/service_assembly";
@@ -27,6 +23,8 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     deny = false;
   let allowFixtureOrigin = false;
   const priorRepl = Object.getOwnPropertyDescriptor(globalThis, "nodeRepl");
+  const priorCua = Object.getOwnPropertyDescriptor(globalThis, "cua");
+  const priorAgent = Object.getOwnPropertyDescriptor(globalThis, "agent");
   let tabUrl = "https://fixture.invalid/";
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   let cdp: any;
@@ -107,6 +105,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         return { action: allowFixtureOrigin ? "accept" : "decline" };
       },
       env: {
+        CUA_REPL_ENABLED_SURFACES: "browser",
         BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH: `${process.env.CUA_VENDOR_ROOT ?? "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai"}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br`,
         BROWSER_USE_BACKEND_PATHS: path,
         BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
@@ -244,18 +243,12 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         emitImage: unused,
       },
     });
-    const agent: any = await setup_browser({
-      setupBrowserRuntime,
-      exclude_browser_confirmations: false,
-    });
-    const bootstrap = create_bootstrap_emitter({
-      documentation: {
-        read_core: async () => "Synthetic core",
-        read: async () => "Synthetic additional APIs",
-      } as any,
-      target: "browser" as any,
-    });
-    const cua = create_browser_api(agent.browsers, bootstrap);
+    await import("@core/cua/tinyskyAlt");
+    const cua = (globalThis as any).cua;
+    assert.equal(cua.initialize, cua.getState);
+    assert.equal(cua.computer, undefined);
+    assert.ok((globalThis as any).agent);
+    assert.equal(events.filter((e) => e[0] === "getTabs").length, 0);
     const inventory = await service.handleRpc({
       method: "execute",
       params: { type: "list_browsers" },
@@ -326,6 +319,11 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     const publicTabs = await cua.listTabs({ browser: id, emit: false });
     assert.equal(publicTabs[0].browserId, id);
     assert.equal(publicTabs[0].id, "8");
+    await import("@core/cua/tinyskyAlt");
+    assert.equal((globalThis as any).cua, cua);
+    const freshInventory = await cua.initialize({ emit: false });
+    assert.equal(freshInventory.apps.length, 0);
+    assert.ok(freshInventory.browsers.length > 0);
     await selected.nameSession("Public API session");
     assert.equal(
       events.filter((e) => e[0] === "nameSession").at(-1)[1].name,
@@ -555,6 +553,13 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     await service.dispose();
     assert(events.some((e) => e[0] === "unregister"));
   } finally {
+    for (const [name, descriptor] of [
+      ["cua", priorCua],
+      ["agent", priorAgent],
+    ] as const) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else Reflect.deleteProperty(globalThis, name);
+    }
     if (priorRepl) Object.defineProperty(globalThis, "nodeRepl", priorRepl);
     else delete (globalThis as any).nodeRepl;
     await service?.dispose();

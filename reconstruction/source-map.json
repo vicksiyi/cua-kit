@@ -20,7 +20,7 @@
         ".": "./dist/lib/js/oai_js_cua_repl/src/index.js"
       },
       "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl",
-      "status": "launcher-and-instructions-reconstructed; external NodeREPL and trusted-service/global entry wiring incomplete",
+      "status": "launcher-and-instructions-reconstructed; browser global entry wired; external NodeREPL/trusted services incomplete",
       "workspaceName": "@core/cua-repl"
     },
     "@oai/sky": {
@@ -4685,6 +4685,18 @@
       "sha256": "36acec6b10072e5f3730ca74be23de6b9a4707ebe996dea382f4c262a28d964c",
       "status": "manually-reconstructed",
       "validation": "cua-repl-launch.test.ts instruction matrix and actual child environment/termination differential"
+    },
+    "packages/cua/src/tinysky_alt/create_tinysky_alt.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_tinysky_alt.js",
+      "sha256": "d6940dd2fee85628fdff0d1bdbaeefaec358db20a5c6dfb00359ce9a1d364c0b",
+      "status": "manually-reconstructed",
+      "validation": "factory matrix differential across native targets/surface options/references and real global-import browser service integration"
+    },
+    "packages/cua/src/tinysky_alt/globals.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/globals.js",
+      "sha256": "18b8039f846a6e00206128530c5f59ff05bd361c655a858a4a27059ec0f63d23",
+      "status": "manually-reconstructed",
+      "validation": "factory matrix differential across native targets/surface options/references and real global-import browser service integration"
     }
   },
   "embeddedPackages": {

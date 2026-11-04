@@ -7,5 +7,11 @@
     "@core/core": "0.0.0-reconstructed.0",
     "@core/browser": "0.0.0-reconstructed.0",
     "@core/sky": "0.7.13-reconstructed.0"
+  },
+  "exports": {
+    "./tinyskyAlt": {
+      "types": "./src/tinysky_alt/globals.ts",
+      "import": "./dist/tinysky_alt/globals.js"
+    }
   }
 }
