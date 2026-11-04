@@ -1,3 +1,4 @@
+import { createBrowserTabsReader, createBrowserHistoryReader, createCursorAvailability, validateBrowserTabId, validateBrowserMouse } from "./browser_queries";
 import { registerAssembledBackgroundKernel } from "./kernel_background_assembly";
 import { registerKernelConnections } from "./kernel_transport";
 import { registerBackgroundRuntime } from "./background_runtime";
@@ -145,6 +146,11 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    getUserTabs: createBrowserTabsReader(host.chrome),
+    getUserHistory: createBrowserHistoryReader(host.chrome),
+    canAnimateCursor: createCursorAvailability(host.chrome),
+    validateTabId: validateBrowserTabId,
+    validateMouse: validateBrowserMouse,
     TabMentionProvider,
     Siwc: siwc.SiwcService,
     initializePopupInterceptor: popupInterceptor.initialize,
