@@ -127,7 +127,9 @@
     "vk": "createWebsiteStatusHandler: sender checks, incremental status, per-source single-flight/retry, refresh and disconnect cleanup",
     "kf/sk/ak/ik": "createInstallerStatus: original download filter, state/progress projection and authorized show action",
     "Gk/Ho": "registerClientHeartbeat: alarm installation, lease header reconciliation, first fulfilled ping/timeout, overlay/debugger/network cleanup",
-    "_k/fn": "createExtensionUpdateManagerClass: session-persisted pending version, active-control deferral, clear/reload ordering, registration and restoration"
+    "_k/fn": "createExtensionUpdateManagerClass: session-persisted pending version, active-control deferral, clear/reload ordering, registration and restoration",
+    "Sk/Df/Ek/Tk/Ik/Ak/$o/Fo/Ck/Nf/kk/Uo/br/Ki": "createSidePanelTabController: temporary/persisted tab state, lazy restore, Edge-specific defaults, options/event registration and cleanup",
+    "bk/Mf/_r": "sidePanelConversationKey / sidePanelInvocationKey / SIDE_PANEL_PATH"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",

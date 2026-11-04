@@ -519,3 +519,7 @@ tunnel peers still needs to be completed.
 The update manager now restores persisted pending-version and busy-control deferral.
 Foundation registration connects idle activity transitions to pending reload checks;
 RPC session integration verifies deferral until turn completion using a reload fixture.
+
+A shared lazy side-panel tab controller now restores temporary/persistent enablement,
+Edge defaults, storage recovery, tab events and removal cleanup. Full side-panel opening
+and startup registration remain separate outstanding work.

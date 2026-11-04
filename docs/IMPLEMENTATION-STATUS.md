@@ -2503,3 +2503,25 @@ closed by these tests. No third-party dependency was added for this source closu
 
 Validation: all eight package builds/type checks and all 878 default regressions pass,
 zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### Side-panel tab destination state
+
+Restored Sk/Df/Ek/Tk/Ik/Ak/$o/Fo/Ck/Nf/kk plus storage/path helpers as
+createSidePanelTabController. Temporary and persistent tab sets retain original
+mutation order, lazy/coalesced restoration and stored-ID validation. Edge retains its
+original global enabled setting and per-tab no-op paths. Other browsers restore and
+apply per-tab options. Tab removal clears conversation/invocation state; registration
+shares its disposer and can re-register after cleanup.
+
+Foundation exposes one lazy controller per runtime with explicit Edge detection and
+warning dependencies. Three differential tests cover initialization, persistence,
+temporary enablement, removal, Edge differences, events, registration lifecycle,
+read/write/options failures and concurrent restoration. Recovery behavior is preserved:
+a swallowed storage-read failure does not trigger an invented reload on later calls.
+
+Chrome side-panel/storage calls are fixtures. Actual side-panel opening, startup
+registration, panel UI, authentication, native and model integration remain incomplete.
+No third-party package was required by this inspected closure.
+
+Validation: eight package builds/type checks and all 881 default regressions pass,
+zero failures/skips. The separate native-supervisor suite was not rerun.

@@ -1,3 +1,4 @@
+import { createSidePanelTabController } from "./side_panel_tabs";
 import { createExtensionUpdateManagerClass } from "./extension_updates";
 import { registerClientHeartbeat } from "./client_heartbeat";
 import {
@@ -55,6 +56,8 @@ export interface ExtensionBrowserHost {
 }
 /** Project composition of restored closures; not a replacement for original full dR startup. */
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
+  let sidePanelTabs:
+    ReturnType<typeof createSidePanelTabController> | undefined;
   const installerStatus = createInstallerStatus(host.chrome);
   const ChatApi = createChatApiClass({
     ...host,
@@ -179,6 +182,16 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     ChatApi,
+    getSidePanelTabController(
+      isEdge: () => boolean,
+      warn: (message: string) => void,
+    ) {
+      return (sidePanelTabs ??= createSidePanelTabController({
+        chrome: host.chrome,
+        isEdge,
+        warn,
+      }));
+    },
     extensionUpdates,
     registerExtensionUpdates() {
       extensionUpdates.register();
