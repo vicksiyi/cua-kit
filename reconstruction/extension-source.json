@@ -438,5 +438,12 @@
     "binding": "ge -> createSidePanelPageController; rt/it/ge -> startAssembledSidePanelPage",
     "test": "reconstruction/extension-side-panel-controller.test.ts",
     "boundary": "Ten DOM/Chrome/timer/permission fixture differential scenarios, not live sidepanel/media/auth deployment."
+  },
+  "mediaPermissionPageVerification": {
+    "file": "chunks/microphone-permission-CfXjp0JX.js",
+    "sha256": "a0ecddd54e3c7643f3304b51440381a4b1c5ccc43a845ab3b1486403b1d02616",
+    "test": "reconstruction/extension-media-permission-page.test.ts",
+    "bindings": "d/W/x -> initializeMediaPermissionTheme; startup/D -> startMediaPermissionPage",
+    "boundary": "35 explicit fixture combinations; no actual media request, telemetry implementation or packaged page deployment."
   }
 }

@@ -4251,3 +4251,23 @@ Type check, build and eleven related tests pass. No actual microphone/camera
 permission or production auth was requested. The permission page, packaged page
 resources/telemetry and complete extension deployment still need integration and
 live acceptance; daily Chrome/DeepSeek search status is unchanged.
+
+
+### Media permission helper page (2026-11-05)
+
+Restored installed microphone-permission page startup, theme selection/subscription
+and request/retry handler as `startMediaPermissionPage` and
+`initializeMediaPermissionTheme`. Query parameters preserve the original camera
+and microphone constraints, including both false; browser-specific UI and
+immediate successful track shutdown match the installed implementation. Telemetry
+is an explicit required host dependency, not a silent placeholder.
+
+The hash-checked differential test evaluates the original page tail with explicit
+DOM/media/timer fixtures and compares five query configurations across seven
+scenarios (success, rejection/retry, track-stop failure, legacy theme listener,
+missing/throwing matchMedia, missing root). All 35 combinations pass. The related
+side-panel controller test, extension type check and reconstruction build pass.
+No real camera or microphone was opened. HTML/CSS/entry/telemetry deployment and
+live side-panel acceptance remain outstanding. A fresh daily Chrome check still
+fails because no independent browser host is connected; DeepSeek search remains
+unaccepted.
