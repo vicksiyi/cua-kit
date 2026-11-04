@@ -126,3 +126,5 @@ export * from "./kernel_execution_runtime";
 export * from "./kernel_config";
 
 export * from "./kernel_browser_bridge";
+
+export * from "./kernel_instrumentation";

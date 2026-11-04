@@ -3385,3 +3385,20 @@ full production assembly and installed-browser/model verification remain unfinis
 Validation: eight package builds/type checks and all 953 default regressions pass,
 zero failures/skips. Browser-platform esbuild bundling of the assembled bridge passes
 (35.4 kB unminified output). Independent native-supervisor tests were not rerun.
+
+### Extension-native instrumentation defaults
+
+Inspected kernel-host TS/vg/Pw and restored their intentionally inactive instrumentation
+as kernelErrorReporter, kernelCommandTiming and kernelPerformanceSpan. Callbacks still run
+and propagate results/rejections; trackElicitation/currentPlaywrightOperation retain exact
+input identity. These are source implementations, not substitutes for missing telemetry.
+Browser runtime assembly now defaults to them, removing three required injection points
+while preserving explicit overrides. They do not import Node AsyncLocalStorage. Entrypoint
+Sentry initialization remains a separate responsibility.
+
+A source differential test exercises these defaults through assembled runtime, including
+callback failures and reference identity. Complete browser service factory, sandbox worker,
+production startup and real end-to-end integration remain unfinished.
+
+Validation: eight package builds/type checks and all 954 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

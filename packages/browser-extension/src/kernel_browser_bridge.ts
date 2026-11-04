@@ -1,3 +1,4 @@
+import { kernelErrorReporter, kernelCommandTiming, kernelPerformanceSpan } from "./kernel_instrumentation";
 import { BrowserApi, codexTurnMetadata } from "@core/browser/kernelBrowserApi";
 import { KernelControlClient } from "./kernel_control_client";
 import { createKernelExecutionRuntime } from "./kernel_execution_runtime";
@@ -33,9 +34,9 @@ export class KernelBrowserContext {
 export interface KernelBrowserRuntimeServices {
   platform: "darwin" | "win32" | "linux";
   locks: KernelConfigLocks;
-  commandTiming: unknown;
-  errorReporter: unknown;
-  performanceSpan: unknown;
+  commandTiming?: unknown;
+  errorReporter?: unknown;
+  performanceSpan?: unknown;
 }
 /** Original qU. Filesystem behavior is intentionally the source's extension-only behavior. */
 export function createKernelBrowserRuntime(transport: KernelTransport, services: KernelBrowserRuntimeServices) {
@@ -45,7 +46,7 @@ export function createKernelBrowserRuntime(transport: KernelTransport, services:
   const browserContext = new KernelBrowserContext(browserTransport, runtime, control.readRequirements);
   return Object.assign(runtime, {
     browserContext,
-    commandTiming: services.commandTiming,
+    commandTiming: services.commandTiming ?? kernelCommandTiming,
     config: {
       readAll() { return Promise.resolve(null); },
       global: createKernelGlobalConfig(control, services.locks),
@@ -53,13 +54,13 @@ export function createKernelBrowserRuntime(transport: KernelTransport, services:
       session(sessionId: string) { return createKernelSessionConfig(control, sessionId, services.locks); },
     },
     displayBridge: { displayImage: (bytes: Uint8Array) => control.displayImage(encodeKernelBytes(bytes)), displayValue: control.displayValue },
-    errorReporter: services.errorReporter,
+    errorReporter: services.errorReporter ?? kernelErrorReporter,
     filesystem: {
       mkdir() { return Promise.resolve(); }, readFile() { return Promise.resolve(""); },
       readBytes() { return Promise.reject(new Error("Binary filesystem reads are unavailable in the extension")); },
       rm() { return Promise.resolve(); }, tmpDir: "", writeFile() { return Promise.resolve(); },
     },
-    performanceSpan: services.performanceSpan,
+    performanceSpan: services.performanceSpan ?? kernelPerformanceSpan,
   });
 }
 /** Original jU; initialize before creating the actual browser service. */
