@@ -2,7 +2,7 @@ import { StatsigClient, type StatsigUser } from "@statsig/js-client";
 import { environmentString } from "../capability_filter";
 import { securityMode } from "../security/gate_policy";
 import { siteStatusBackend } from "../security/site_status";
-import { errorReporterUserId } from "./error_reporter";
+import { errorReporterUserId } from "./telemetry_identity";
 
 interface TelemetryRuntime {
   env: Record<string, any>;

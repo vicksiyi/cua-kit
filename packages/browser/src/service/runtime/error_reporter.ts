@@ -1,3 +1,5 @@
+import { errorReporterUserId } from "./telemetry_identity";
+export { errorReporterUserId } from "./telemetry_identity";
 import * as sentry from "@sentry/node-core/light";
 import { createTransport } from "@sentry/core";
 
@@ -15,17 +17,6 @@ export interface ErrorReporterSdk {
   setUser: typeof sentry.setUser;
   setTag: typeof sentry.setTag;
   createTransport: typeof createTransport;
-}
-function trimmedEnvironment(runtime: ErrorReporterRuntime, name: string) {
-  const value = runtime.env[name];
-  return typeof value === "string" ? value.trim() || undefined : undefined;
-}
-/** Original _p: GAAS never falls back to the Node REPL user identifier. */
-export function errorReporterUserId(runtime: ErrorReporterRuntime) {
-  return trimmedEnvironment(runtime, "BROWSER_USE_SECURITY_MODE") ===
-    "gaas-browser-environment"
-    ? runtime.gaas?.browserConfig.user_id?.trim() || undefined
-    : trimmedEnvironment(runtime, "NODE_REPL_SENTRY_USER_ID");
 }
 /** Original cH/dH. The vendor SDK stays upstream; only CUA's host adapter is restored.
  * The original destination is retained for source fidelity. A standalone deployment

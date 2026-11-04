@@ -3402,3 +3402,23 @@ production startup and real end-to-end integration remain unfinished.
 
 Validation: eight package builds/type checks and all 954 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Browser service packaging: telemetry dependency boundary
+
+A browser-platform esbuild probe of command_runtime_assembly exposed 46 resolution errors.
+The telemetry module imported errorReporterUserId from the Node Sentry factory, pulling
+@sentry/node-core/light and its Node dependencies into an otherwise shared helper path.
+Moved the unchanged identity projection into telemetry_identity; browser telemetry imports
+it directly and the Node reporter re-exports it to preserve existing callers. No Node SDK
+was replaced with a dummy implementation and Node error reporting remains intact.
+
+The same probe now reports seven unresolved imports, all confined to three asset loaders:
+Playwright upstream_source (node:module/path), QR packaged WASM resolution (node:module/url),
+and AX WASM Node loading (node:fs/promises/wasi/zlib). Full browser service bundling still
+fails and must not be represented as runnable. These loaders need source-faithful browser
+asset paths before production assembly and actual end-to-end validation.
+
+Validation: eight package builds/type checks and all 954 existing default regressions pass,
+including telemetry and error-reporter coverage, zero failures/skips. No new behavior-mirror
+tests were added for this dependency-only refactor. Full browser bundling remains failing
+with the seven recorded asset-loader imports. Independent native-supervisor was not rerun.
