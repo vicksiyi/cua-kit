@@ -4198,6 +4198,35 @@
       ],
       "status": "reconstructed-browser-rpc-policy",
       "validation": "Original policy matrices cover templates, returned casing, duplicate/blocked names, schema/length/count/total-size limits and ASCII/brace rejection."
+    },
+    "packages/browser/src/service/runtime/native_pipe.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "cs",
+        "ab",
+        "sb",
+        "kx",
+        "Zue",
+        "Que",
+        "m6",
+        "ls"
+      ],
+      "status": "reconstructed-native-pipe-transport",
+      "validation": "Original frame byte/chunk/UTF-8/limit/single-response and compaction comparisons; 11 original transport traces cover deferred single response, JSON/decoder/callback/socket errors, explicit and custom closure, listener failure and late listeners. Real local Unix socket transports restored BrowserApi/RPC getInfo/getTabs/session data. No production browser bridge claim."
+    },
+    "packages/browser/src/service/runtime/native_pipe_bridge.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Vo",
+        "tle",
+        "rle",
+        "ub",
+        "h6"
+      ],
+      "status": "reconstructed-native-pipe-transport",
+      "validation": "Retains privileged nodeRepl.nativePipe createConnection requirement and production/development error text. Tests compare original bridge checks/messages and verify static factory returns base transport through a test-provided bridge using a real Unix socket; no unprivileged fallback is installed."
     }
   },
   "embeddedPackages": {

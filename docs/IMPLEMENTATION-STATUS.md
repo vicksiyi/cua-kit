@@ -716,3 +716,9 @@ Restored full id as `runtime/browser_api.ts`: provider method delegates, live/ca
 Validation: 19 original API traces plus explicit branch assertions, header policy matrix and original bidirectional RPC trace. Composed directory → discovery → handshake → BrowserApi → paired RPC test verifies getTabs, session/header payload, turn hook and closure. Transport is synthetic; production socket framing and complete bootstrap remain outstanding.
 
 Type checks and all 533 tests pass. The first full run exposed an existing history-navigation test reading Playwright's separate URL cache before it updated; isolated rerun passed. Changed that assertion to read the committed frame URL through the command's CDP session, retained the expected destination, then verified focused and full suites. No navigation implementation behavior was changed.
+
+### 16.173 Native pipe framing, transport and privileged bridge
+
+Restored cs/ab/sb/kx/Zue/Que/m6 and Vo/ub/rle/tle/h6 in `runtime/native_pipe.ts` and `native_pipe_bridge.ts`. Preserves native-endian 32-bit length framing, incremental chunk consumption/compaction, frame limits, exactly-one-response checks, delivery deferred until close, callback/error conversion, shared close task and listener settlement. Connection factory requires the privileged nodeRepl.nativePipe bridge; static create returns the base transport as in the source.
+
+Validation: original frame byte/chunk/UTF-8/limit/single-response/compaction comparisons and 11 transport lifecycle/error traces, original bridge absence/message checks, plus real local Unix socket carrying restored RPC/BrowserApi getInfo/getTabs and session parameters. Type checks and all 537 tests pass. The real-socket test supplies its own bridge adapter to a synthetic local server; production privileged bridge and full runtime bootstrap are not yet integrated.
