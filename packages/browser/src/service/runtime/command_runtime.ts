@@ -62,7 +62,7 @@ export interface CommandRuntimeDependencies {
   browserTelemetryAttributes: (...args: any[]) => any;
   downloadCommand: { type: string };
   claimTabCommand: { type: string };
-  releaseTabCommand: { type: string };
+  getUserTabContextCommand: { type: string };
   webMcpCallCommand: { type: string };
   lookupWebMcpTool: (...args: any[]) => any;
   initializeAccessibility: (...args: any[]) => any;
@@ -126,7 +126,7 @@ export function createCommandRuntimeFactory(
     browserTelemetryAttributes,
     downloadCommand,
     claimTabCommand,
-    releaseTabCommand,
+    getUserTabContextCommand,
     webMcpCallCommand,
     lookupWebMcpTool,
     initializeAccessibility,
@@ -427,7 +427,7 @@ export function createCommandRuntimeFactory(
                   (context.clientInfo.apiSupportOverrides?.["Browser.user"] ??
                     context.clientInfo.type === "extension") &&
                   commandType !== claimTabCommand.type &&
-                  commandType !== releaseTabCommand.type &&
+                  commandType !== getUserTabContextCommand.type &&
                   Number.isSafeInteger(tabId) &&
                   tabId > 0 &&
                   context.tabLifecycle.needsReclaim(tabId)

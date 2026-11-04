@@ -4305,7 +4305,7 @@
         "d6"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output. Runtime now defaults to restored navigation/interaction/WebMCP recorders, aggregator and response metadata/screenshot implementation; actual after-code hook composition verifies one-shot WebMCP metadata. Security attribute mapping, download compatibility checks, recovery reporting and release now default to restored G3/H3/V3/Vr. H3 dependency renamed assertCommandSupported to reflect actual semantics. Documented runtime factory connects restored asset loader and j3 policy with explicit asset module URL/bundle. Command execution now defaults to restored TA/MCP frame routing; error formatting/classification/security reason and URL-policy error identity default to restored modules."
+      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output. Runtime now defaults to restored navigation/interaction/WebMCP recorders, aggregator and response metadata/screenshot implementation; actual after-code hook composition verifies one-shot WebMCP metadata. Security attribute mapping, download compatibility checks, recovery reporting and release now default to restored G3/H3/V3/Vr. H3 dependency renamed assertCommandSupported to reflect actual semantics. Documented runtime factory connects restored asset loader and j3 policy with explicit asset module URL/bundle. Command execution now defaults to restored TA/MCP frame routing; error formatting/classification/security reason and URL-policy error identity default to restored modules. Vp dependency renamed getUserTabContextCommand (it is not a release command). Full runtime assembly now connects restored command registry/context/documentation/notification dependencies."
     },
     "packages/browser/src/service/runtime/command_scheduler.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4441,6 +4441,37 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Original comparisons across 11 error values and six browser-family inputs verify normalization, extension blocking guidance, identity/cause and accessor read counts. Type checks and all 575 tests pass. Native MCP Apps prepare/activate/release transport is fixture-tested; production native integration remains unverified."
+    },
+    "packages/browser/src/service/runtime/command_runtime_assembly.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "assembled-restored-command-runtime-services",
+      "symbols": [
+        "p6",
+        "ug",
+        "c6",
+        "ob",
+        "Gue",
+        "a6",
+        "u6",
+        "IB",
+        "wp",
+        "Me",
+        "mF",
+        "Uc",
+        "vh",
+        "Wy",
+        "Wh",
+        "Gp",
+        "Vp",
+        "Mh",
+        "Bc",
+        "Q2",
+        "Ic",
+        "Fh"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Actual restored RPC dispatcher, runtime, command registry, BrowserContext, documentation and notification queue compose through setup, required-read rejection, browser docs, list_tabs, context reuse, after-code hooks and disposal. Backend/provider and host telemetry/auth/localization inputs are synthetic. Original alias/telemetry projection comparisons pass. Type checks and all 577 tests pass; native production integration and host/bootstrap coupling remain incomplete."
     }
   },
   "embeddedPackages": {

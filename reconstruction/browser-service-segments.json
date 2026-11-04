@@ -574,6 +574,11 @@
       "end": 235552,
       "kind": "FunctionDeclaration"
     },
+    "vh": {
+      "start": 238521,
+      "end": 238632,
+      "kind": "FunctionDeclaration"
+    },
     "Hre": {
       "start": 239554,
       "end": 241767,
