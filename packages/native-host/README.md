@@ -40,3 +40,20 @@ Tests exercise real Unix sockets and the restored ExtensionBrowserPeer with
 controlled handlers: concurrent ID collisions, fragmented frames, notifications,
 invalid credentials, timeouts, errors and cleanup. They do not prove real Chrome
 navigation, clicking, screenshots or DeepSeek browser search.
+
+## Browser-service connector
+
+`createBrowserServiceConnector([endpointFile])` reads explicit private endpoint
+files and returns `host.getNativePipeBridge` plus an environment map containing
+only allowed socket paths. Merge the host property into `assembleBrowserService`
+and the environment map into its privileged runtime environment. This keeps the
+restored browser discovery, RPC and policy pipeline. Unknown socket paths are
+rejected; there is no raw-socket fallback. Files and sockets must belong to the
+current user, be private, and reside in the same private directory. Capability
+secrets remain captured in the bridge closure, never the environment or model
+messages. Existing access-verifier/broker configuration is not removed or waived;
+extra host endpoints are unsupported until explicitly implemented.
+
+A service-level test runs setup/list_browsers/turn cleanup through the restored
+service and real authenticated host with controlled extension handlers. This does
+not yet wire the connector into the DeepSeek launcher or prove real navigation.

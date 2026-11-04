@@ -1,0 +1,69 @@
+import { lstat, readFile } from "node:fs/promises";
+import { dirname, isAbsolute, delimiter } from "node:path";
+import { authenticateNativeHostSocket } from "./client";
+import type { NativeHostEndpoint } from "./server";
+/** Read a private capability file. Its contents must never enter model context. */
+async function readEndpoint(file: string): Promise<NativeHostEndpoint> {
+  if (!isAbsolute(file))
+    throw Error("Expected absolute @core endpoint file path");
+  const [stat, parent] = await Promise.all([lstat(file), lstat(dirname(file))]);
+  const uid = process.getuid?.();
+  if (
+    !stat.isFile() ||
+    !parent.isDirectory() ||
+    (stat.mode & 0o077) !== 0 ||
+    (parent.mode & 0o077) !== 0 ||
+    (uid !== undefined && (stat.uid !== uid || parent.uid !== uid))
+  )
+    throw Error("@core endpoint must be private and owned by the current user");
+  if (stat.size > 4096) throw Error("@core endpoint descriptor is too large");
+  const value = JSON.parse(await readFile(file, "utf8")) as NativeHostEndpoint;
+  if (
+    value.version !== 1 ||
+    typeof value.token !== "string" ||
+    !/^[a-f0-9]{64}$/.test(value.token) ||
+    typeof value.socketPath !== "string" ||
+    !isAbsolute(value.socketPath) ||
+    dirname(value.socketPath) !== dirname(file)
+  )
+    throw Error("Invalid @core endpoint descriptor");
+  const socket = await lstat(value.socketPath);
+  if (
+    !socket.isSocket() ||
+    (socket.mode & 0o077) !== 0 ||
+    (uid !== undefined && socket.uid !== uid)
+  )
+    throw Error("@core socket must be private and owned by the current user");
+  return value;
+}
+/** Explicit composition point for assembleBrowserService.host.getNativePipeBridge.
+ * Only registered @core socket paths are accepted; no arbitrary socket fallback.
+ * Existing browser policy, elicitation and access verification remain in the service.
+ */
+export async function createBrowserServiceConnector(
+  endpointFiles: readonly string[],
+) {
+  if (endpointFiles.length === 0)
+    throw Error("At least one @core endpoint is required");
+  const endpoints = await Promise.all(endpointFiles.map(readEndpoint));
+  const allowed = new Map(
+    endpoints.map((endpoint) => [endpoint.socketPath, endpoint]),
+  );
+  const bridge = Object.freeze({
+    async createConnection(path: string) {
+      const endpoint = allowed.get(path);
+      if (!endpoint)
+        throw Error("Socket is outside the configured @core host endpoints");
+      const socket = await authenticateNativeHostSocket(endpoint);
+      // BrowserPipe installs listeners in the await continuation before this resumes.
+      setImmediate(() => socket.resume());
+      return socket;
+    },
+  });
+  return {
+    host: { getNativePipeBridge: () => bridge },
+    environment: {
+      BROWSER_USE_BACKEND_PATHS: [...allowed.keys()].join(delimiter),
+    },
+  };
+}

@@ -8,9 +8,9 @@ import type { NativeHostEndpoint } from "./server";
 import { MAX_FRAME } from "./server";
 import { rpcMessage } from "./router";
 /** Authenticate before exposing the original BrowserRpcTransport contract. */
-export async function connectNativeHost(
+export async function authenticateNativeHostSocket(
   endpoint: NativeHostEndpoint,
-): Promise<NativePipeTransport> {
+) {
   if (endpoint.version !== 1 || !endpoint.socketPath || !endpoint.token)
     throw Error("Invalid @core host endpoint");
   const socket = createConnection(endpoint.socketPath);
@@ -67,15 +67,21 @@ export async function connectNativeHost(
         ),
       );
     });
-    const transport = new NativePipeTransport(socket, {
-      decodeMessage: rpcMessage,
-      maxFrameBytes: MAX_FRAME,
-    });
-    // Allow caller to register RPC handlers before queued data is delivered.
-    setImmediate(() => socket.resume());
-    return transport;
+    return socket;
   } catch (error) {
     socket.destroy();
     throw error;
   }
+}
+
+export async function connectNativeHost(
+  endpoint: NativeHostEndpoint,
+): Promise<NativePipeTransport> {
+  const socket = await authenticateNativeHostSocket(endpoint);
+  const transport = new NativePipeTransport(socket, {
+    decodeMessage: rpcMessage,
+    maxFrameBytes: MAX_FRAME,
+  });
+  setImmediate(() => socket.resume());
+  return transport;
 }
