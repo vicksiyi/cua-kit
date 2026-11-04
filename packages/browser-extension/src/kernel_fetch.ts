@@ -109,3 +109,8 @@ export function createKernelFetchController(
     },
   };
 }
+
+/** Original ol. */
+export function decodeKernelBytes(value: string) {
+  return Uint8Array.from(atob(value), char => char.charCodeAt(0));
+}

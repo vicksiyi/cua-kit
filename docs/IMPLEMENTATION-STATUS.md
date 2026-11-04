@@ -4011,3 +4011,17 @@ Nineteen upload scenarios and streaming edge cases compare actual installed
 functions with the readable implementation. No user files or production endpoint
 were used; API/blob responses are fixtures. Real page PDF capture and production
 binding remain incomplete, alongside full deployment and browser/search acceptance.
+
+
+### 2026-11-05 — PDF page capture and Library orchestration
+
+Restored `mg/gg/_g/Rs/ul/vg/ol`: exact tab/document/sender validation, isolated
+page GET, port backpressure, 256 KiB chunks, 128 MiB total cap, PDF signature,
+keepalive and timeout, navigation rechecks, Library upload and deletion if the
+page changes afterward. The injected function is self-contained; tests also
+serialize the esbuild-compiled function into an explicit browser environment.
+Actual original-function differentials cover background sender/chunk failures,
+page GET/content/size failures, filename behavior and capture/upload cleanup.
+Chrome and API responses remain fixtures. A real Chrome PDF page, production
+composition and full deployment have not been verified; daily Chrome/search
+acceptance remains incomplete.

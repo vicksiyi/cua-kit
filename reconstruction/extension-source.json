@@ -347,5 +347,15 @@
     "test": "reconstruction/extension-library-pdf-upload.test.ts",
     "method": "Actual installed function differential for 19 upload scenarios and bounded processing streams including split UTF-8, failure events and size limit",
     "limit": "API/blob responses are explicit fixtures; no user file uploaded. Real page PDF capture and production integration remain incomplete."
+  },
+  "tabPdfCaptureVerification": {
+    "source": "mg, gg, _g, Rs, ul, vg, ol and cl/ks/ll",
+    "modules": [
+      "packages/browser-extension/src/tab_pdf_capture.ts",
+      "packages/browser-extension/src/pdf_capture_page.ts"
+    ],
+    "test": "reconstruction/extension-tab-pdf-capture.test.ts",
+    "method": "Actual original background/page/orchestrator differential; esbuild-compiled serialized page function in explicit browser fixtures; actual restored upload/delete components",
+    "limit": "No live Chrome PDF page or user upload exercised. Full production assembly and deployment remain incomplete."
   }
 }
