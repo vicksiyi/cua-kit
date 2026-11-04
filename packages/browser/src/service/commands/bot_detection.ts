@@ -1,3 +1,4 @@
+import type { EnvironmentSource } from "../capability_filter";
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
 import { BotDetectionReport } from "../../commands/tab_developer";
@@ -85,7 +86,7 @@ export function botDetectionEvent({
   };
 }
 interface ReportContext {
-  runtime: PreferenceRuntime;
+  runtime: PreferenceRuntime & EnvironmentSource;
   clientInfo: { type: string; [key: string]: unknown };
   acquireAuthority(): {
     observeContent(url: unknown): { assert(): Promise<unknown> };
@@ -108,7 +109,7 @@ export async function botReportUrl(tabId: number, context: ReportContext) {
 /** Original fF. dt emission is required explicitly; runtime telemetry bootstrap remains separate. */
 export function createTabBotDetectionReportCommand(
   emit: (
-    runtime: PreferenceRuntime,
+    runtime: PreferenceRuntime & EnvironmentSource,
     name: string,
     value: string,
     metadata: ReturnType<typeof botDetectionEvent>["metadata"],

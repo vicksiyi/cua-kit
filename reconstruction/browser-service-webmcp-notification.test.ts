@@ -114,7 +114,7 @@ async function scenario(source: boolean, mode: string) {
     },
   };
   const dependencies: any = {
-    isLocalRuntime() {
+    ambientNetworkDisabled() {
       return true;
     },
     async featureFlag() {

@@ -152,7 +152,7 @@ test("RPC dispatcher connects assembled runtime, real context/registry, document
       typeText: unused,
       emitBotDetection: unused,
       webMcp: {
-        isLocalRuntime: () => true,
+        ambientNetworkDisabled: () => true,
         featureFlag: async () => false,
         config: () => ({}),
         emit: unused,

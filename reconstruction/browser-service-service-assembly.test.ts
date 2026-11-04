@@ -166,19 +166,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         loadClassicLevel: async () => null,
       },
       runtime: {
-        commands: {
-          emitBotDetection: unused,
-          webMcp: {
-            isLocalRuntime: () => true,
-            featureFlag: async () => false,
-            config: () => ({}),
-            emit: unused,
-          },
-          browserAuth: {
-            reviewSafety: unused,
-            telemetry: {} as any,
-          },
-        },
         documentation: {
           moduleUrl: "file:///synthetic/scripts/service.mjs",
           bundle: {

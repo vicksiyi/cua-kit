@@ -72,7 +72,7 @@ test("assembled registry dispatches restored commands and binds shared typing de
     },
     emitBotDetection() {},
     webMcp: {
-      isLocalRuntime() {
+      ambientNetworkDisabled() {
         return true;
       },
       async featureFlag() {

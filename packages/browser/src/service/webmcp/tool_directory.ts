@@ -33,7 +33,7 @@ export interface WebMcpDirectoryDependencies {
     command: string,
     context: WebMcpDirectoryContext,
   ): Promise<unknown>;
-  isLocalRuntime(runtime: WebMcpDirectoryContext["runtime"]): boolean;
+  ambientNetworkDisabled(runtime: WebMcpDirectoryContext["runtime"]): boolean;
   featureFlag(name: string, deadlineMs?: number): Promise<boolean>;
   config(name: string): Parameters<typeof webMcpLimits>[0];
   emit(
@@ -83,7 +83,7 @@ export function createWebMcpToolDirectory(
     if (
       context.clientInfo.type === "cdp" &&
       context.runtime.gaas != null &&
-      !dependencies.isLocalRuntime(context.runtime)
+      !dependencies.ambientNetworkDisabled(context.runtime)
     )
       workaround = await dependencies.featureFlag(
         "browser_use_cloud_webmcp_chromium_crash_workaround",

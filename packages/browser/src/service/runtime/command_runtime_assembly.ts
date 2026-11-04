@@ -1,3 +1,5 @@
+import { defaultWebMcpDependencies } from "../webmcp/defaults";
+import { createPackagedAuthSafetyReview } from "../browser_auth/safety_review";
 import { browserTelemetry } from "./browser_telemetry";
 import {
   createDocumentedCommandRuntimeFactory,
@@ -51,9 +53,18 @@ export function browserTelemetryAttributes(info: any) {
       info.type === "extension" ? (info.family ?? "unknown") : "not_applicable",
   };
 }
+type CommandAssembly = Parameters<
+  typeof assembleServiceCommandsWithBrowserAuth
+>[0];
+export interface RuntimeCommandOverrides extends Omit<
+  Partial<CommandAssembly>,
+  "browserAuth"
+> {
+  browserAuth?: Partial<CommandAssembly["browserAuth"]>;
+}
 export interface CommandRuntimeAssemblyOptions {
   context?: BrowserContextHost;
-  commands: Parameters<typeof assembleServiceCommandsWithBrowserAuth>[0];
+  commands?: RuntimeCommandOverrides;
   documentation: { moduleUrl: string; bundle?: DocumentationBundle };
   telemetry?: Partial<
     Pick<
@@ -68,10 +79,24 @@ export interface CommandRuntimeAssemblyOptions {
   >;
 }
 /** Connects restored command registry, context, notifications, metadata and policies.
- * Statsig telemetry and injected source have upstream defaults; localization, feature/config consumers and auth integrations remain host inputs. */
+ * Command safety uses the supplied documentation; other command and context services have restored defaults. */
 export function assembleCommandRuntime(options: CommandRuntimeAssemblyOptions) {
-  const commands = assembleServiceCommandsWithBrowserAuth(options.commands);
-  const notices = createWebMcpNotifications(options.commands.webMcp);
+  const supplied = options.commands;
+  const webMcp = supplied?.webMcp ?? defaultWebMcpDependencies;
+  const commands = assembleServiceCommandsWithBrowserAuth({
+    ...supplied,
+    webMcp,
+    browserAuth: {
+      ...supplied?.browserAuth,
+      reviewSafety:
+        supplied?.browserAuth?.reviewSafety ??
+        createPackagedAuthSafetyReview(
+          options.documentation.moduleUrl,
+          options.documentation.bundle,
+        ).reviewAuthSafety,
+    },
+  });
+  const notices = createWebMcpNotifications(webMcp);
   const queue = createBrowserNotificationQueue({
     collectors: [notices.collect],
     canObserve: commandScheduling.canObserve,

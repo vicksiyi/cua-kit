@@ -1,3 +1,4 @@
+import { browserTelemetry } from "../runtime/browser_telemetry";
 import { createPackagedAuthQrFlow } from "./qr";
 import { createBrowserAuthHandoff } from "./handoff";
 import * as binding from "./bindings";
@@ -26,18 +27,21 @@ import {
 } from "../preferences/request_context";
 import { browserDisplayName } from "../security/approval";
 import { browserAuthTabCapabilityDefinition } from "../../capabilities/tab_browser_auth";
-/** Host review/telemetry remain explicit; QR defaults to the upstream packaged reader. */
+/** Safety review needs documentation context; telemetry and QR have restored defaults. */
 export function assembleBrowserAuthHandoff(host: {
   reviewSafety: (input: any) => Promise<any>;
   qr?: { decode: (...args: any[]) => Promise<any>; start: (input: any) => any };
-  telemetry: AuthPreflightTelemetry;
+  telemetry?: AuthPreflightTelemetry;
 }) {
   const qr = host.qr ?? createPackagedAuthQrFlow();
+  const telemetry = host.telemetry ?? {
+    logStatsigEvent: browserTelemetry.emitEvent,
+  };
   return createBrowserAuthHandoff({
     closeCredentialLease: credentialLeases.close,
     revalidatePage: binding.revalidateAuthPage,
     reviewSafety: host.reviewSafety,
-    manualSavePreflight: createManualSavePreflight(() => host.telemetry),
+    manualSavePreflight: createManualSavePreflight(() => telemetry),
     readPageBinding: binding.readAuthPageBinding,
     parseUrl(value: string) {
       try {
@@ -94,7 +98,8 @@ export function assembleBrowserAuthHandoff(host: {
     Checkpoint: createAuthCheckpointClass(),
     inspectFields: inspection.inspectAuthFields,
     httpOrigin,
+    // Original jn initializes the telemetry module; the ESM import above already did so.
     initializeTelemetry() {},
-    telemetry: host.telemetry,
+    telemetry,
   });
 }

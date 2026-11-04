@@ -201,7 +201,7 @@ async function commandScenario(original: boolean, mode: string) {
   };
   const dependencies: any = {
     assertSupported: assertWebMcpSupported,
-    isLocalRuntime() {
+    ambientNetworkDisabled() {
       return true;
     },
     async featureFlag() {
@@ -367,7 +367,7 @@ test("assembled WebMCP list/approve/invoke chain changes Chromium DOM", async ()
       },
     };
     const list = createWebMcpListToolsCommand({
-      isLocalRuntime() {
+      ambientNetworkDisabled() {
         return true;
       },
       async featureFlag() {

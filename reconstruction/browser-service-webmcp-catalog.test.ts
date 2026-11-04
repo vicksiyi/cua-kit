@@ -270,7 +270,7 @@ async function directoryScenario(source: boolean, mode: string) {
     async assertSupported(command: string) {
       trace.push(["support", command]);
     },
-    isLocalRuntime() {
+    ambientNetworkDisabled() {
       trace.push(["local"]);
       return mode === "local";
     },
@@ -305,7 +305,7 @@ async function directoryScenario(source: boolean, mode: string) {
     oe: { WebMcpListTools },
     Oe: AuthorityGateError,
     qe: downloadSourceOrigin,
-    Ar: deps.isLocalRuntime,
+    Ar: deps.ambientNetworkDisabled,
     gh: deps.featureFlag,
     $M: deps.config,
     dt: deps.emit,

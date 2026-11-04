@@ -26,7 +26,7 @@ interface ClientState {
 }
 const timeoutMs = 10_000;
 const release = "1.0.0";
-const disabled = (runtime: TelemetryRuntime) =>
+const disabled = (runtime: Pick<TelemetryRuntime, "env">) =>
   environmentString(runtime, "BROWSER_USE_DISABLE_AMBIENT_NETWORK") === "1";
 const trimmed = (runtime: TelemetryRuntime, name: string) =>
   environmentString(runtime, name)?.trim() || undefined;
@@ -185,7 +185,7 @@ export function createBrowserTelemetry(
     return updateClientUser(client);
   }
   function logEvent(
-    runtime: TelemetryRuntime,
+    runtime: Pick<TelemetryRuntime, "env">,
     name: string,
     value?: string | number,
     metadata?: Record<string, any>,
@@ -271,7 +271,7 @@ export function createBrowserTelemetry(
     }
   }
   function emitEvent(
-    runtime: TelemetryRuntime,
+    runtime: Pick<TelemetryRuntime, "env">,
     name: string,
     value?: string | number,
     metadata?: Record<string, any>,

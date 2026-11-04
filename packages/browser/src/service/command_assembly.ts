@@ -1,3 +1,5 @@
+import { browserTelemetry } from "./runtime/browser_telemetry";
+import { defaultWebMcpDependencies } from "./webmcp/defaults";
 import { markdownTextPaste } from "./input/markdown_paste";
 import { assembleBrowserAuthHandoff } from "./browser_auth/handoff_assembly";
 import {
@@ -13,8 +15,8 @@ import { createWebMcpListToolsCommand } from "./commands/web_mcp";
 export function assembleServiceCommands(dependencies: {
   browserAuthHandoff: ServiceCommand;
   typeText?: Parameters<typeof createCuaTypeCommand>[0];
-  emitBotDetection: Parameters<typeof createTabBotDetectionReportCommand>[0];
-  webMcp: Parameters<typeof createWebMcpListToolsCommand>[0];
+  emitBotDetection?: Parameters<typeof createTabBotDetectionReportCommand>[0];
+  webMcp?: Parameters<typeof createWebMcpListToolsCommand>[0];
 }) {
   return createServiceCommandRegistry({
     BrowserAuthHandoffCommand: dependencies.browserAuthHandoff,
@@ -28,9 +30,11 @@ export function assembleServiceCommands(dependencies: {
       dependencies.typeText ?? markdownTextPaste.typeText,
     ),
     TabBotDetectionReportCommand: createTabBotDetectionReportCommand(
-      dependencies.emitBotDetection,
+      dependencies.emitBotDetection ?? browserTelemetry.emitEvent,
     ),
-    WebMcpListToolsCommand: createWebMcpListToolsCommand(dependencies.webMcp),
+    WebMcpListToolsCommand: createWebMcpListToolsCommand(
+      dependencies.webMcp ?? defaultWebMcpDependencies,
+    ),
   });
 }
 
