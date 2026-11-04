@@ -573,47 +573,28 @@ auth cancellation, gate subscription, retry-after/jitter and stop cleanup. Found
 binds ChatApi, SIWC readers, storage and timers. Gate transport and auth-refresh service
 remain explicit dependencies; production startup and live account verification are pending.
 
-Feature-service orchestration is restored: stable/auth identity, client refresh, gate/
-config access, subscriptions and serialized telemetry. Important SDK boundary: installed
-code reports Statsig 3.33.4 but adds refreshValuesAsync/live-value refresh absent from
-public npm 3.33.4. The service therefore requires an explicit extended Client constructor;
-there is no silent fallback to the incompatible public constructor. Public dependency
-provides shared types/LogLevel; restoring the bundled SDK delta remains outstanding.
+Feature-service orchestration is restored: stable/auth identity, refresh, gate/config
+access, subscriptions and serialized telemetry. It defaults to ExtensionStatsigClient;
+Client injection remains optional for explicit alternative implementations and tests.
+Foundation createFeatureService uses the same default. The installed SDK reports Statsig
+3.33.4 but adds live refresh absent from public npm 3.33.4, so the public constructor alone
+is not a compatible substitute.
 
-The live-overlay network delta now restores request fields and 200/204 response parsing,
-reusing @statsig/client-core 3.33.4 JSON parsing. Its post contract explicitly requires
-skipInitTracking and response headers, both absent from public NetworkCore. It is not
-wired to incompatible public post; network-core, store and client deltas remain pending.
+The restored SDK assembly reuses pinned upstream code where inspected behavior matches:
+- ExtensionStatsigNetworkCore retains upstream encoding/compression, limiting and fallback
+  support, restoring headers and initialization tracking boundaries.
+- ExtensionStatsigNetwork shares that transport for ordinary/delta and live-overlay calls.
+- ExtensionStatsigEvaluationStore reuses ordinary helpers and V1/V2 containers, restoring
+  live/retained lookup, config-list union, cursor handling and loadedAt details.
+- The live scheduler preserves response staleness, overlap suppression, replacement and
+  server behavior. Stop clears the interval but does not cancel in-flight responses.
+- ExtensionStatsigDiagnostics shares upstream marker storage and adds bundled syncType
+  and connectivity fields. statsigClientLifecycle restores initialization, user updates
+  and in-place refresh with their distinct status and error behavior.
+- ExtensionStatsigClient assembles these before plugin binding. ExtensionStatsigDataAdapter
+  preserves the shared extended network instead of silently constructing a public one.
 
-ExtensionStatsigNetworkCore now subclasses pinned upstream 3.33.4, restoring dispatch,
-response headers, initialization tracking gates and terminal failure ordering. Upstream
-body encoding, compression, limiter and fallback support remain reused. The live-overlay
-helper now has an end-to-end fixture test with this actual adapter. Store/client live
-refresh and default feature-service assembly remain incomplete.
-
-ExtensionStatsigEvaluationStore now reuses upstream ordinary helpers and V1/V2 containers
-while restoring live/retained value lookup, config-list union, cursor seeding/advancement,
-loadedAt details and reset semantics. Node ESM/CommonJS default interop is handled explicitly.
-The extended client refresh/scheduling and feature-service default remain unfinished.
-
-The live-refresh scheduler now preserves original response staleness checks, cursor/value
-application, configurable intervals, in-flight suppression, replaced-client shutdown and
-server differences. Stopping only clears the interval, retaining pending-request behavior.
-Client construction/init/update/diagnostics and default service assembly remain pending.
-
-ExtensionStatsigNetwork assembles ordinary evaluations and live-overlay requests on the
-same restored transport. Pinned upstream ordinary/delta methods are reused without
-mutating upstream prototypes. The complete extended SDK client is still not assembled.
-
-ExtensionStatsigDiagnostics restores bundled syncType and connectivity fields while
-sharing the pinned SDK marker store. Extended network requests use this facade; complete
-client lifecycle assembly remains pending.
-
-statsigClientLifecycle restores initialization, async user updates and in-place refresh,
-including distinct status/failure behavior and synchronization diagnostics. It is a method
-set for the final client; construction and default feature-service binding are still pending.
-
-ExtensionStatsigClient now assembles the restored network/store/lifecycle/live scheduler
-before plugin binding. ExtensionStatsigDataAdapter keeps the extended network rather than
-creating a second public SDK network. Constructed-client mock-fetch integration passes;
-default feature-service selection and production extension startup remain pending.
+Constructed-client and default-service tests use mock fetch and cover initialization,
+identity changes, evaluation, subscriptions, metric flush and shutdown. No external Statsig
+service is contacted. Production extension startup, installed browser/native integration
+and actual model end-to-end verification remain pending.

@@ -219,6 +219,6 @@
     "difference": "Bundled StatsigClient adds refreshValuesAsync, enableLiveValuesAutoRefresh and live-refresh store behavior absent from public npm 3.33.4. Required Client injection prevents treating npm as drop-in. SDK delta restoration remains incomplete.",
     "networkBoundary": "ExtensionStatsigNetworkCore restores inspected dispatch/URL/diagnostic changes and composes successfully with live-overlay helper. Extended store/client and production feature-service assembly remain incomplete.",
     "storeBoundary": "Live store delta restored and compared against actual bundled qm/Bm/jm; client refresh/timer/default service assembly still pending.",
-    "clientBoundary": "Client construction/lifecycle and ordinary evaluation integration verified with mock fetch; default feature-service binding and production startup remain pending."
+    "clientBoundary": "Restored extended client is now the feature-service default; constructor injection remains optional. Default-service identity/evaluation/subscription/metric integration verified with mock fetch; production startup still pending."
   }
 }

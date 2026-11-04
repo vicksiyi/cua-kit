@@ -3020,3 +3020,23 @@ panel UI, native replacement and actual browser/App/model end-to-end validation 
 
 Validation: eight package builds/type checks and all 922 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Default feature-service client binding
+
+createExtensionFeatureService now defaults to ExtensionStatsigClient. Client injection
+remains optional; its contract describes public methods rather than nominal SDK private
+fields. Foundation createFeatureService inherits the optional constructor through its
+existing dependency type. This removes the required external extended-client placeholder.
+The extension README's SDK section was consolidated to remove superseded pending claims.
+
+A new integration test omits Client, captures the actual initialized default instance,
+and verifies shared extended transport, stable identity persistence, gate/config access,
+identity updates, subscription publication, buffered/explicit metric flushing and host
+fetch options. The real SDK client executes against mocked network responses and is
+shut down in cleanup. No external Statsig/identity endpoint is contacted.
+
+Complete production startup, panel UI, native replacement and actual installed/browser/
+App/model end-to-end validation remain unfinished.
+
+Validation: eight package builds/type checks and all 923 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

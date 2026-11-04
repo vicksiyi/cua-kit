@@ -1,11 +1,15 @@
 import { type StatsigClient, LogLevel } from "@statsig/js-client";
+import { ExtensionStatsigClient } from "./statsig_client";
 import type { createSiwcServiceClass } from "./siwc";
 type AuthReader = ReturnType<
   ReturnType<typeof createSiwcServiceClass>["createCachedAuthReader"]
 >;
 type Tags = Record<string, string>;
 type Update = ReturnType<StatsigClient["initializeAsync"]>;
-export type ExtensionFeatureClient = StatsigClient & {
+export type ExtensionFeatureClient = Pick<
+  StatsigClient,
+  keyof StatsigClient
+> & {
   refreshValuesAsync(options?: { timeoutMs?: number }): Update;
 };
 export type ExtensionFeatureClientConstructor = new (
@@ -15,7 +19,7 @@ export type ExtensionFeatureClientConstructor = new (
     enableLiveValuesAutoRefresh: boolean;
   },
 ) => ExtensionFeatureClient;
-/** Original Un/Yt/Mr/Is/Qm/As/rl/nl/$n/Cs/eg/tg. Requires the inspected extended SDK contract; public 3.33.4 is not a drop-in replacement. */
+/** Original Un/Yt/Mr/Is/Qm/As/rl/nl/$n/Cs/eg/tg. Defaults to the restored extended SDK; public 3.33.4 is not a drop-in replacement. */
 export function createExtensionFeatureService(host: {
   chrome: Pick<typeof chrome, "runtime" | "storage">;
   crypto: Pick<Crypto, "randomUUID">;
@@ -26,9 +30,9 @@ export function createExtensionFeatureService(host: {
   api: string;
   fetch: typeof globalThis.fetch;
   warn(message: string): void;
-  Client: ExtensionFeatureClientConstructor;
+  Client?: ExtensionFeatureClientConstructor;
 }) {
-  const Client = host.Client;
+  const Client = host.Client ?? ExtensionStatsigClient;
   let stableId: string | undefined;
   let client: ExtensionFeatureClient | undefined;
   let update: Update | undefined;
