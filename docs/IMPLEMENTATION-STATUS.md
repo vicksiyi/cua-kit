@@ -3596,3 +3596,22 @@ Agent-loop type checking and four focused provider/trace tests pass. Shell synta
 both modes with/without explicit CUA_MCP_ENV were checked; a shell default-expression
 brace issue found by that check was corrected. No full-suite rerun for this demo-only
 change. Browser/App actions and visible machine control remain unverified.
+
+### Sandbox worker manager and parent message entry
+
+Restored original sandbox m/f/_/d as KernelSandbox/registerKernelSandbox, preserving
+lazy worker creation, agent MessagePort transfer, request numbering, pending requests,
+serialized execution errors, fatal reset identity, synchronous startup exceptions and
+parent-source filtering. Worker creation stays an explicit dependency; the actual
+worker evaluator/runtime and packaged entry are not yet connected. Cancel/reset are
+handled by outer layers, matching the source; this sandbox accepts execute only.
+
+Three hash-pinned original-source differential tests cover successful and failed
+concurrent executions, worker error/messageerror, execution send failure, constructor
+and initial port-send failure, unknown/invalid replies, reset reuse, message guards,
+ready/agent-port forwarding and response-port closure. No worker startup or real page
+operation claim follows from these manager-level tests.
+
+Validation: eight package builds/type checks and all 963 default regressions pass,
+zero failures/skips (including the terminal trace test from the preceding demo entry).
+No live model call or native-supervisor probe was repeated for this manager change.
