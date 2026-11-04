@@ -15,6 +15,10 @@
     "./service": {
       "types": "./src/service.ts",
       "import": "./dist/service.js"
+    },
+    "./kernelBrowserApi": {
+      "types": "./src/kernel_browser_api.ts",
+      "import": "./dist/kernel_browser_api.js"
     }
   },
   "dependencies": {

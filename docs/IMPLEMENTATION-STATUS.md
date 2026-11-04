@@ -3364,3 +3364,24 @@ host integration work, along with complete browser bridge/startup/end-to-end val
 
 Validation: eight package builds/type checks and all 952 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel browser bridge assembly
+
+Restored DU/qU/jU as KernelBrowserContext, createKernelBrowserRuntime and
+createKernelBrowserBridge. Browser/control traffic shares the restored split transport;
+control client, execution runtime and configuration adapters are now assembled. Context
+reuses the existing BrowserApi corresponding to xU/id through a browser-safe @core/browser
+subpath rather than duplicating it. It supplies original metadata/request-header providers,
+connection caching, browser descriptions and turn cleanup. Display bytes use base64;
+filesystem methods retain the original extension-only behavior. Service creation waits for
+runtime initialization and finish waits for service readiness.
+
+A hash-pinned differential test executes actual assembly plus original xU/Mt classes over
+success, initialization failure and service failure, comparing multiplexed requests,
+managed headers, session changes, config calls, output and disposal. The browser service
+factory, command timing, telemetry and performance spans remain required host dependencies;
+full production assembly and installed-browser/model verification remain unfinished.
+
+Validation: eight package builds/type checks and all 953 default regressions pass,
+zero failures/skips. Browser-platform esbuild bundling of the assembled bridge passes
+(35.4 kB unminified output). Independent native-supervisor tests were not rerun.
