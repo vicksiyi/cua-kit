@@ -1,5 +1,33 @@
 # @core/agent-loop — caller-side demo
 
+## Local interactive entry
+
+From the repository root, run `npm run demo:deepseek`. Enter your prompt, then the
+API key at the hidden terminal prompt if DEEPSEEK_API_KEY is not already set. The
+script builds reconstructed packages and sets the installed macOS supervisor/Node
+paths, while respecting explicit path overrides. Requires dependencies already
+installed (`npm ci` on a fresh checkout) and the matching ChatGPT.app installation.
+
+```sh
+npm run demo:deepseek -- "请调用 js 计算 6 * 7，并告诉我结果"
+# Browser tools; requires a usable connected host backend:
+npm run demo:deepseek -- --browser "列出当前可用浏览器；没有浏览器就明确说明"
+```
+
+Default mode exposes JavaScript tools. `--browser` enables CUA browser setup, but
+current live browser discovery is empty: this is not yet a working webpage/App
+operation demo. Explicit CUA_MCP_ENV takes precedence over mode defaults.
+
+The terminal shows timestamped TOOL REQUEST entries with arguments and TOOL RESULT
+entries with status and output, followed by the final model answer. Returned images
+are saved with private permissions in a temporary cua-demo-images directory and their
+paths printed. It does not fabricate screenshots or automatically open a browser.
+Set CUA_DEMO_VERBOSE=1 for full tool text (default truncates long text to 2000 chars).
+Known API-key/token/secret/password environment values are redacted from tool logs;
+review any other private page/tool content before sharing output. Ctrl-C requests
+cancellation. No model key is saved by this entry.
+
+
 This package is independently authored demo code, not reconstructed `@oai` source. It reuses the earlier agent-neutral contract/loop design and connects to an explicitly selected MCP server. It does not assert completion of the reconstructed CUA backend.
 
 `ModelAdapter` and `ToolClient` isolate model and tool transports. DeepSeek is the default demo provider, using the official OpenAI-compatible Chat Completions API, `deepseek-flash`, and non-thinking mode. Non-thinking mode avoids requiring reasoning-content replay in this initial adapter. Model calls remain outside MCP, and model credentials are not forwarded to its child server.

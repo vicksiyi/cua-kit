@@ -26,7 +26,8 @@
     "build:extension": "node scripts/build-extension.mjs",
     "test:reconstruction": "npm run build:reconstruction && tsx --test reconstruction/*.test.ts",
     "check:reconstruction": "tsc -p reconstruction/tsconfig.core.json && tsc -p reconstruction/tsconfig.browser.json && tsc -p reconstruction/tsconfig.json && tsc -p reconstruction/tsconfig.repl.json && tsc -p reconstruction/tsconfig.desktop.json && tsc -p reconstruction/tsconfig.sky.json && tsc -p reconstruction/tsconfig.node-repl.json && tsc -p reconstruction/tsconfig.extension.json",
-    "build:reconstruction": "node scripts/build-reconstruction.mjs"
+    "build:reconstruction": "node scripts/build-reconstruction.mjs",
+    "demo:deepseek": "bash scripts/run-deepseek.sh"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

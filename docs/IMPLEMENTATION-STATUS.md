@@ -3578,3 +3578,21 @@ Validation: eight package builds/type checks and all 959 default regressions pas
 zero failures/skips. Existing source-differential bridge/frame-host tests still pass
 with explicit overrides, and the new browser test exercises the real default service.
 Independent native-supervisor tests and live DeepSeek were not rerun this change.
+
+### Interactive DeepSeek entry and visible tool trace
+
+Added npm run demo:deepseek (scripts/run-deepseek.sh): prompt entry, hidden terminal
+key input when absent, macOS native path defaults, reconstruction build and existing
+AgentLoop launch. --browser opts into browser surfaces, which still require a usable
+backend. Explicit server environment and path overrides remain intact. No key saved.
+The CLI now prints timestamped tool requests/arguments and results/status; returned
+images are saved privately under a temporary directory with paths printed. Long text
+is truncated unless CUA_DEMO_VERBOSE=1. Known environment credentials and terminal
+control sequences are removed from tool text logs. This is caller presentation code.
+
+The exact npm entry was exercised with live DeepSeek/native MCP/restored workers:
+js request code nodeRepl.write(6 * 7), tool result 42, and the final Chinese answer.
+Agent-loop type checking and four focused provider/trace tests pass. Shell syntax and
+both modes with/without explicit CUA_MCP_ENV were checked; a shell default-expression
+brace issue found by that check was corrected. No full-suite rerun for this demo-only
+change. Browser/App actions and visible machine control remain unverified.

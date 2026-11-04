@@ -1,3 +1,4 @@
+import { createTerminalTrace } from "./terminal-trace";
 import { createTerminalElicitation } from "./terminal-elicitation";
 import { NodeReplTurnClient, parseNodeReplTurnEvent } from "./node-repl-turn";
 import { AgentLoop } from "./loop";
@@ -59,12 +60,7 @@ try {
     turnEvent ? new NodeReplTurnClient(client, turnEvent) : client,
   ).run(question, {
     signal: controller.signal,
-    onMessage: (message) => {
-      if (message.role === "assistant" && message.toolCalls)
-        console.error(
-          `Calling ${message.toolCalls.map((call) => call.name).join(", ")}`,
-        );
-    },
+    onMessage: createTerminalTrace(),
   });
   console.log(result.answer);
 } finally {
