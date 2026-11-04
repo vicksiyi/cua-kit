@@ -1,3 +1,4 @@
+import { reportDiscoveryFailure } from "./discovery_telemetry";
 import { browserTelemetry } from "./browser_telemetry";
 import { browserErrorReporter } from "./error_reporter";
 import { commandTiming } from "./command_timing";
@@ -44,7 +45,7 @@ import {
 } from "./elicitation_telemetry";
 export interface BrowserHostAssemblyOptions {
   reportError?(error: any): void;
-  reportDiscoveryFailure: BrowserDiscoveryDependencies["reportDiscoveryFailure"];
+  reportDiscoveryFailure?: BrowserDiscoveryDependencies["reportDiscoveryFailure"];
   featureEnabled?: HandshakeDependencies["featureEnabled"];
   span?: BrowserDiscoveryDependencies["span"] & ElicitationSpan;
   commandTiming?: ReturnType<
@@ -85,7 +86,8 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
     surfaceEnabled: browserSurfaceEnabled,
     surfaceForType: surfaceForBackend,
     reportError: options.reportError ?? browserTelemetry.reportError,
-    reportDiscoveryFailure: options.reportDiscoveryFailure,
+    reportDiscoveryFailure:
+      options.reportDiscoveryFailure ?? reportDiscoveryFailure,
     ignoredHandshakeError: "MCP Apps browser belongs to another task.",
   });
   const BrowserDirectory = createBrowserDirectoryClass({

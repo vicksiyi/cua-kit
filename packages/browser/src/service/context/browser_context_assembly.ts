@@ -1,3 +1,5 @@
+import { browserTelemetry } from "../runtime/browser_telemetry";
+import { createBrowserLocalizer } from "../localization/index";
 import { upstreamPlaywrightSource } from "../playwright/upstream_source";
 import { createBrowserContextClass } from "./browser_context";
 import { Preferences } from "../preferences/preferences";
@@ -32,12 +34,12 @@ export function canObserveBrowserContext(context?: any) {
 }
 export interface BrowserContextHost {
   injectedSource?: string;
-  reportError: Parameters<typeof createCdpManagerClass>[0];
-  reportEvent: Parameters<typeof createPageAssetsClass>[0];
-  createLocalizer(locale?: string): (...args: any[]) => any;
+  reportError?: Parameters<typeof createCdpManagerClass>[0];
+  reportEvent?: Parameters<typeof createPageAssetsClass>[0];
+  createLocalizer?(locale?: string): (...args: any[]) => any;
 }
-/** Connects restored services. Full upstream injected helper is the default; localization and telemetry come from the host. */
-export function assembleBrowserContext(host: BrowserContextHost) {
+/** Connects restored services. Upstream injection, localization and CUA telemetry have defaults; explicit host overrides remain supported. */
+export function assembleBrowserContext(host: BrowserContextHost = {}) {
   // Restored Playwright uses an explicit injected-source argument; adapt the original ig constructor order.
   class ContextPlaywright extends PlaywrightService {
     constructor(
@@ -61,7 +63,9 @@ export function assembleBrowserContext(host: BrowserContextHost) {
   }
   return createBrowserContextClass({
     Preferences,
-    Cdp: createCdpManagerClass(host.reportError),
+    Cdp: createCdpManagerClass(
+      host.reportError ?? browserTelemetry.reportError,
+    ),
     Clipboard: BrowserClipboard,
     BrowserUser: ServiceBrowserUser,
     Ui: BrowserUi,
@@ -74,13 +78,15 @@ export function assembleBrowserContext(host: BrowserContextHost) {
     DocumentResponses,
     Downloads,
     SiteInstructions,
-    PageAssets: createPageAssetsClass(host.reportEvent),
+    PageAssets: createPageAssetsClass(
+      host.reportEvent ?? browserTelemetry.emitEvent,
+    ),
     Accessibility: AccessibilityCaptureManager,
     AccessibilityActions: createAxActionService(),
     credentialObservationGate: credentialObservationState.getGate,
     canObserve: canObserveBrowserContext,
     disabledCapabilities: disabledApiMembers,
-    createLocalizer: host.createLocalizer,
+    createLocalizer: host.createLocalizer ?? createBrowserLocalizer,
     clearWebMcpSessions,
   });
 }

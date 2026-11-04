@@ -163,19 +163,11 @@ test("assembled host and command service run real Unix socket RPC with signed ac
               socket.once("error", reject);
             }),
         }),
-        reportDiscoveryFailure(_r, _d, reason) {
-          events.push(["discoveryFailure", reason]);
-        },
         loadClassicLevel: async () => null,
         getNativeCredentialObservationStatus: unused,
         createBrowserAuthBrokerChallenge: unused,
       },
       runtime: {
-        context: {
-          reportError: unused,
-          reportEvent() {},
-          createLocalizer: () => () => "fixture",
-        },
         commands: {
           emitBotDetection: unused,
           webMcp: {

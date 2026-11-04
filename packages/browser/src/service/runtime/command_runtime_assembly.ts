@@ -52,7 +52,7 @@ export function browserTelemetryAttributes(info: any) {
   };
 }
 export interface CommandRuntimeAssemblyOptions {
-  context: BrowserContextHost;
+  context?: BrowserContextHost;
   commands: Parameters<typeof assembleServiceCommandsWithBrowserAuth>[0];
   documentation: { moduleUrl: string; bundle?: DocumentationBundle };
   telemetry?: Partial<
