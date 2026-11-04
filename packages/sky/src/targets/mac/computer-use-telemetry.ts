@@ -1,21 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { platform } from "node:os";
 import { StatsigClient, StatsigMetadataProvider } from "@statsig/js-client";
-export type ComputerUseToolName =
-  | "target"
-  | "list_apps"
-  | "get_app_state"
-  | "click"
-  | "drag"
-  | "paste"
-  | "perform_secondary_action"
-  | "press_key"
-  | "scroll"
-  | "select_text"
-  | "set_value"
-  | "type_text"
-  | "start_audio_recording"
-  | "stop_audio_recording";
+import type { Client } from "../../types/window/index";
+export type ComputerUseToolName = keyof Client;
 type ApprovalResult = "accepted" | "canceled" | "declined";
 const SDK_KEY = "client-br04gwIKFntB05BUONtNnF3NhWQsvmSI8R97Pigr7A5";
 const API = "https://ab.chatgpt.com/v1";

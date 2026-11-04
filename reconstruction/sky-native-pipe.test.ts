@@ -1,3 +1,4 @@
+import { create_client } from "../packages/sky/src/targets/mac/create_client";
 import { MacComputerUseClient } from "../packages/sky/src/targets/mac/client";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -393,8 +394,28 @@ test("Mac restored transport uses a real isolated Unix socket for handshake and 
             jsonrpc: "2.0",
             result:
               request.method === "ping"
-                ? { serverApiVersion: "fixture-v1" }
-                : request.params.request,
+                ? { serverApiVersion: request.params.clientApiVersion }
+                : request.params.requestType ===
+                    "ComputerUseIPCAppPolicyRequest"
+                  ? {
+                      decision: "allowed",
+                      allowPersistentApproval: false,
+                      target: {
+                        appPath: "/approved/Fixture.app",
+                        bundleIdentifier: "com.public",
+                        displayName: "Fixture",
+                        risk: "low",
+                      },
+                    }
+                  : request.params.requestType ===
+                        "ComputerUseIPCAppGetSkyshotRequest" &&
+                      request.params.request.app === "/approved/Fixture.app"
+                    ? {
+                        app: { bundleIdentifier: "com.public" },
+                        skyshot: { text: "native state" },
+                        appSpecificInstructions: "guide",
+                      }
+                    : request.params.request,
           }),
         );
         socket.write(reply.subarray(0, 2));
@@ -406,7 +427,14 @@ test("Mac restored transport uses a real isolated Unix socket for handshake and 
   try {
     await host(
       {
-        env: { SKY_CUA_SERVICE_NATIVE_PIPE_PATH: socketPath },
+        env: {
+          SKY_CUA_SERVICE_NATIVE_PIPE_PATH: socketPath,
+          NODE_REPL_DISABLE_ANALYTICS: "1",
+        },
+        async createElicitation() {
+          return { action: "accept" };
+        },
+        setResponseMeta() {},
         nativePipe: {
           createConnection: (p: string) =>
             new Promise((resolve, reject) => {
@@ -459,6 +487,33 @@ test("Mac restored transport uses a real isolated Unix socket for handshake and 
             },
           },
         });
+        const publicClient = create_client({ target: "mac" });
+        const state = await publicClient.get_app_state({ app: "com.public" });
+        assert.equal(state.app, "/approved/Fixture.app");
+        assert.equal(
+          state.text,
+          "<app_specific_instructions>\nguide\n</app_specific_instructions>\nnative state",
+        );
+        await publicClient.click({ app: "com.public", element_index: 4 });
+        const publicRequests = requests.slice(6);
+        assert.deepEqual(
+          publicRequests.map((r) => r.params.requestType ?? r.method),
+          [
+            "ping",
+            "ComputerUseIPCAppPolicyRequest",
+            "ComputerUseIPCAppGetSkyshotRequest",
+            "ComputerUseIPCAppPolicyRequest",
+            "ComputerUseIPCAppPerformActionRequest",
+          ],
+        );
+        assert.equal(
+          publicRequests[4].params.request.app,
+          "/approved/Fixture.app",
+        );
+        assert.equal(
+          publicRequests[4].params.request.action.click.at.elementID._0,
+          "4",
+        );
         for (const socket of connections) socket.end();
       },
     );

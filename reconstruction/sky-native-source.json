@@ -14,7 +14,20 @@
     "computer-use-policy.d.ts": "3fecdea3868778b7c50fc8f67c3aab9b01b71a9daddaf61ac12fad3a2fef29c8",
     "computer-use-telemetry.js": "3645bebe7ff8badca86e57367e7961e1b4ac1fb0e743c65b3e1d3e308847208e",
     "computer-use-telemetry.d.ts": "c690cc9e4435ed9e2c4829b5b0e62e4907f0e77553654765235c1cabc38b3242",
-    "lazy-client.js": "e222ec4e31b96c06c79819ea23a4d69a7f564c9a11f640c9d4b48c11bc75365b"
+    "lazy-client.js": "e222ec4e31b96c06c79819ea23a4d69a7f564c9a11f640c9d4b48c11bc75365b",
+    "type_text.js": "29289fd08c109ff7f913ef92aea8f4df7d87f8ce59fb05172ee8c99d20b7e568",
+    "scroll.js": "f026bbeaca656bddb8212c535690d6acbb1a969b392657368ef964a0f015fe95",
+    "drag.js": "01df9da83423d1b600b162b71d382d0991fcb62779a969facfbb0b649ffe135e",
+    "click.js": "d122645123afdc7aeb1114681adb1bff0d2e6acc41d7a09e449835c80e3e7348",
+    "get_app_state.js": "7b7fe2af461c7cd348c07535b1deae9ea14837dbdac9985ba479eb2e53e5248d",
+    "audio_recording.js": "883e11ac21cb261572166319a4dd7a948713cc7aaffc7c9117029d7374d01081",
+    "press_key.js": "12b9a808ecd832943b57a5998d9879fd084067a67b1b0650b2f2743337be872d",
+    "paste.js": "7f829aab4e27038f5eba94262cc0a4dd0e874ece1d8a55dcbf8ecfb5101c9c40",
+    "list_apps.js": "77ec31ff376b5065b08ca1116484b3e69878c2a4a7ad6dac7f29170b965d91df",
+    "perform_secondary_action.js": "63e4509b86697a3db15c9f38d87715c27d7ba7ba027909ca7618c9341e3ec2ff",
+    "select_text.js": "44fa3fcd8e1366ebfa5237bc20d570b1e08d38bb99f27a48bf3ee6eaac225ac5",
+    "create_client.js": "901b7f850b7b4ceaecefe7727a7a4aecd3c22a05fb807ffed5cfcca000906217",
+    "set_value.js": "e4ac86f5b4d5ba8bd17ed7281148cd4f1ae1d4a493997fbfc10a3a8f328ed06a"
   },
   "note": "Installed errors.d.ts declares formatOSStatus but errors.js does not export it; runtime evidence takes precedence.",
   "statsigInstalledResolution": "3.33.3"

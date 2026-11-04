@@ -4,6 +4,9 @@ The installed @oai/sky 0.7.13 package has three native targets (mac, linux, wind
 
 Currently implemented:
 
+- `src/targets/mac/create_client.ts` and operation modules: complete Mac factory, policy-wrapped field mappings, per-factory window state and conditional audio methods.
+- `src/targets/mac/audio_recording.ts`: original duration/approval, local WAV read, suspended timeout and host attachment flow.
+- `src/core/uint8.ts` and `src/types/window/`: byte helpers and installed window declarations.
 - `src/create_service.ts`: service closure with lazy platform-client creation, own-method dispatch, media wire serialization, and Linux drag-handle state.
 - `src/targets/mac/computer-use-policy.ts`: immutable app approval inputs, canonical app-path binding, response metadata, audio approval and terminal telemetry.
 - `src/targets/mac/computer-use-telemetry.ts`: original structured-event wrapper around upstream Statsig 3.33.3, with host network/analytics gates and identity updates.
@@ -14,7 +17,7 @@ Currently implemented:
 - `src/targets/mac/errors.ts`: original native error codes and error types.
 - `src/require_audio_model_support.ts`: original per-recording model allowlist and trusted request metadata checks.
 
-These internal modules are built and type-checked with the other reconstruction packages. They do not yet expose the original root/service entry points: platform-client factories are still missing; the Mac native transport is restored but has not been connected to an installed native service. `createSkyService` requires an explicit platform-client constructor; no placeholder native implementation is selected automatically.
+These internal modules are built and type-checked with the other reconstruction packages. They do not yet expose the original root/service entry points: the Mac factory is restored and tested through an isolated socket, while other platform factories and top-level assembly remain missing; the Mac transport has not been connected to an installed native service. `createSkyService` requires an explicit platform-client constructor; no placeholder native implementation is selected automatically.
 
 The original Sky package declares @statsig/js-client ^3.32.6; its installed resolution is 3.33.3, which this package now pins independently of the browser bundle's 3.33.1. Platform code also uses native helper processes. Its native executables are not JavaScript dependencies and are not reconstructed by the dispatcher. The original `SKY_AUDIO_MODEL_ALLOWLIST` name and request metadata protocol are retained unchanged.
 
