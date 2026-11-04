@@ -684,3 +684,25 @@ The website status port is still not enabled by the independent native deploymen
 its original capability report includes website actions and sidebar features whose
 full assembly is unfinished. Its implementation remains available separately; it
 must not be advertised as a completed deployment capability.
+
+## Full original background orchestration
+
+`startExtensionBackground` restores the complete `dR` startup sequence as readable
+TypeScript, composing the existing kernel gate, lazy mention invalidation, message
+router and runtime registration. Native and kernel peers share the same browser
+handler. Updates precede native transport construction; side-panel registration
+preserves the original short-circuit order. Lifecycle registration precedes awaited
+telemetry initialization, then native and kernel heartbeat callbacks are installed.
+Kernel membership changes are observed dynamically, and turn-end fallback remains
+unchanged.
+
+`BackgroundStartupHost` requires real service implementations at the original
+boundaries; there are no fabricated auth/gate/kernel defaults. This entry is not
+yet selected by the independent native deployment. Binding all production services,
+website/side-panel assets and standalone kernel execution remains unfinished.
+
+The full installed `dR` function (from the hash-checked local bundle) is executed
+with explicit service fixtures and compared with this entry across normal startup,
+disabled side panel, missing side-panel API, lease recovery failure, gate failure,
+turn-end fallback failure and telemetry startup failure. These are orchestration
+differential tests, not live website/account acceptance.

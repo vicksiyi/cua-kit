@@ -147,3 +147,5 @@ export { createNativeBrowserController } from "./native_browser_controller";
 export { startNativeBrowserBackground } from "./native_background";
 
 export { createBackgroundMentionInvalidationStarter } from "./background_mentions";
+
+export { startExtensionBackground, type BackgroundStartupHost } from "./background_startup";
