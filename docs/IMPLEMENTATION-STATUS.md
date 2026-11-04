@@ -1232,3 +1232,13 @@ Four differential tests compare original and restored modules across TOML path/v
 Kernel, the remaining privileged host bridge/trusted worker, native supervisor/process isolation, native/AX resources and actual-model integration remain incomplete.
 
 Validation: seven-package build/type checks and all 707 reconstruction tests pass with concurrency 4.
+
+### 16.229 Privileged lifecycle hooks and host operations
+
+Restored lifecycle handler registration with exact run/positive-integer timeout validation, per-run hook snapshots, deletion callbacks, best-effort exceptions/timeouts and serial/concurrent execution. Timeout does not cancel the underlying handler, matching the embedded implementation.
+
+Restored host elicitation and authenticated-fetch adapters. Elicitation requires current active execution and MCP form capability, validates/clones the original request fields, emits the original IDs/messages and tracks background observation. Fetch uses the originating async context, Request/Response normalization and base64 bodies, preserves empty-body status handling, and deliberately does not join the current execution's drain set. Both adapters use supplied host message callbacks, not a new network or approval implementation.
+
+Four original-function differential tests cover hook validation/order/removal/snapshots/timeouts/concurrency; elicitation context/capability/input and response matrices; and fetch method/header/body serialization, stale active-ID behavior, statuses 200/204/205/304 and failure responses. Responses are synthesized in memory and no HTTP request or real approval prompt is sent. Full privileged-worker assembly, native-pipe host bridge, kernel, supervisor isolation, native/AX resources and actual-model integration remain incomplete.
+
+Validation: seven-package build/type checks and all 711 reconstruction tests pass with concurrency 4.

@@ -16,4 +16,6 @@ Restored so far:
 - `src/worker_runtime.ts`: original worker assembly, output/media bridge, execution metadata, error kinds, background draining, response settlement and JSONL stdin/stdout lifecycle.
 - `src/privileged_config.ts`: frozen configuration API, original validation/normalization, async argument handling and privileged-operation message construction. This module requires the host operation handler; it does not directly access configuration files.
 
+Additional restored host components: `lifecycle_handlers.ts` preserves serial/concurrent best-effort hooks and timeouts; `privileged_host_operations.ts` implements elicitation and authenticated-fetch wire requests with their original context/observation differences. These still await full privileged-worker assembly.
+
 The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The shared worker runtime is restored and tested in isolated Node subprocesses. Kernel/privileged bridge restoration and supervisor integration remain outstanding.
