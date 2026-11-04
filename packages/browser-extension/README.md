@@ -25,3 +25,33 @@ The original `fc` bidirectional peer and `pc` extension facade are now restored.
 The original bundles differ in transport field initialization order. The shared class factory preserves each variant and class-field descriptor/setter semantics. It retains method registration/binding, numeric request IDs, string rejection values, missing-handler errors, notification listeners and response suppression after closure. `ExtensionBrowserPeer` restores ping and the CDP/detach/download/page/tab-mention notifications, plus moveMouse/WebMCP event handling. Synchronous moveMouse throws remain synchronous failures; only rejected promises go to its error callback, matching the source.
 
 Differential tests compare both original peers and the extension facade. A composed transport/peer test verifies `native-host:*` host requests and numeric browser requests do not collide, and an inbound browser request reaches the supplied handler and returns through native messaging. The production command handler is still not restored/installed; this is protocol composition with a fixture handler.
+
+### Browser command handler
+
+`createBrowserCommandHandlerClass(dependencies)` translates original `pE` in full,
+including session resolution/activation, passive reads, CDP validation/filter calls,
+capability dispatch, cursor arrival waiters, download events and child popup cleanup.
+The original method list, field order, return/error values and dependency-call order
+are compared with the pinned artifact. An RPC composition test routes requests
+through `ExtensionBrowserPeer` into the handler.
+
+The factory is an explicit reconstruction boundary, not an installed extension
+entry point. Its required dependencies include the real session (`wd`), tab leases,
+SIWC, request headers, CDP validation/filtering, overlay and frame monitors. No
+production defaults or permissive security substitutes are supplied. Parameter
+payloads remain broadly typed while those contracts are being recovered; this is
+readable TypeScript, not yet a fully specified public protocol. See
+`reconstruction/extension-command-handler-dependencies.json` for every original
+binding's readable dependency name. The tests' fake sessions are test-only.
+
+```mermaid
+flowchart TD
+  Host[Native messaging host — external binary] --> Transport[NativeTransport — restored GE]
+  Transport --> Peer[ExtensionBrowserPeer — restored pc/fc]
+  Peer --> Handler[BrowserCommandHandler — restored pE]
+  Handler --> Chrome[Chrome APIs: tabs / windows / scripting / notifications]
+  Handler --> Guards[Required dependencies: CDP validation/filtering / SIWC / leases]
+  Handler --> Session[Required Session implementation: original wd]
+  Handler --> Overlay[Required overlay and frame-monitor implementations]
+  Session --> Actual[Debugger / lifecycle / ownership — pending production wiring]
+```

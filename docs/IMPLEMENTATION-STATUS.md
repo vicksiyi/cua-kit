@@ -1482,3 +1482,35 @@ A differential test caught a real distinction between artifacts: browser-service
 ExtensionBrowserPeer restores handler registration/binding, ping, CDP/detach/download/page notifications, tab-mention invalidation error suppression, and moveMouse/WebMCP event dispatch. It intentionally preserves the original difference between synchronous moveMouse throws and asynchronously rejected work. Shared peer tests also check string errors, unknown methods, in-flight responses after closure, pending rejection and failed sends.
 
 Four new tests compare original extension/service bindings and exercise restored NativeTransport + ExtensionBrowserPeer together. Host IDs native-host:* and numeric browser IDs resolve independently; inbound getInfo reaches a supplied handler and replies over the same port. This fixture does not substitute for the still-missing production command handler/session/auth/security implementation. Manifest/install packaging, native host and native supervisor readable source remain incomplete. Validation: reconstruction build and all eight package type checks passed; all 761 default regression tests and all 5 opt-in native-supervisor integration tests passed. Native integration remains an isolated fixture-backed Chromium flow, not a recovered production Chrome extension/session backend.
+
+
+## 16.252 Full extension browser-command dispatcher translation
+
+Translated every method of original extension `pE` into readable TypeScript in
+`packages/browser-extension/src/command_handler.ts`. This extends the restored
+native transport and browser RPC facade with the actual command-dispatch layer:
+focus/attach/detach/CDP, passive reads and tab context, tab creation/finalization,
+management capabilities and viewport commands, session resolution/activation/end,
+SIWC delegates, cursor movement/arrival/timeout, browser metadata, downloads and
+child-popup ownership/cleanup. It preserves validation before activation, cached
+session rejection, original empty-string ID behavior, readonly-operation ordering,
+and cleanup after failed or lost child claims.
+
+A required dependency factory keeps the production `wd` session and related
+security/authentication/lease/overlay implementations explicit. It does not supply
+allow-all replacements or claim that dependency injection alone completes the
+extension. Original bindings and readable names are recorded in
+`reconstruction/extension-command-handler-dependencies.json`. Inspected `qy` is the
+foreign-extension-frame monitor initializer and `Cy` the popup interceptor
+initializer; neither is mislabeled as a download initializer. Broad `any` payload
+types remain a documented limitation until protocol contracts are recovered.
+
+Four differential tests compare the pinned original class with the reconstruction:
+method inventory and field order; session/CDP validation and delegation; passive
+reads/capability gates; cursor arrival/cancel/timeout; download transitions and
+popup cleanup. A fifth test sends actual RPC envelopes through the restored
+ExtensionBrowserPeer into the handler and checks replies and validation errors.
+Fixture sessions and Chrome APIs isolate behavior without modifying the installed
+extension. These are dispatcher tests, not production security/session verification.
+
+Validation: all eight reconstructed packages built and passed type checks; all 766 default regression tests and all 5 opt-in native-supervisor integration tests passed. The new RPC composition test initially omitted JSON-RPC envelope fields in its expected value; corrected that test expectation to the existing protocol, without changing the implementation. Production extension/session integration remains incomplete.
