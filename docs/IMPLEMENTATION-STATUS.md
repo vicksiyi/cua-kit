@@ -848,3 +848,11 @@ Restored hF M/ve/ss as typed `attribute_selector.ts`: named/attribute selectors,
 Differential tests cover valid selector matrices, 2500 seeded malformed token sequences and both unquoted-string modes, plus attribute comparison matrices. Role tests compare source tables, outputs, exact errors and input mutations, and compose the restored parser with validation. Explicit checks preserve source quirks such as empty numeric input becoming zero, negative/infinite level acceptance by this validator, unsupported-role errors occurring before level coercion, and literal-tab strings not splitting into space-separated tokens. This restores parser/validation components, not the remaining role query engine or full InjectedScript assembly.
 
 Validation: standalone type checks, three-package rebuild and all 589 reconstruction tests pass. Native app support, production host, real-model Agent integration and full injected-helper assembly remain incomplete.
+
+### 16.192 Embedded injected helper: spatial selector scoring and query pipeline
+
+Restored Zi/es/ts/rs/ns/is/fn/Fe and InjectedScript._queryLayoutSelector as typed `layout_selector.ts`. Preserves directional gap/orthogonal penalties, near's summed rectangular gaps and default 50-pixel limit, inclusive thresholds, self exclusion, minimum score across reference elements, optional numeric final engine argument, evaluator score marking and stable sorted Set output. The enclosing selector resolver is an explicit dependency, corresponding to the original class method's querySelectorAll call; this is not a replacement resolver.
+
+Original-function geometry matrices and engine traces cover threshold/zero-size/NaN/Infinity cases, selector argument identity and repeated numeric property reads. Real Chromium compares both evaluator matching/score emission and the original class layout-query method over multiple anchors and equal-score candidates. Added an AST class-method extractor to test the actual original method without instantiating the full vendor helper. Full selector evaluator and InjectedScript assembly remain outstanding, as do native apps, production host and real-model Agent integration.
+
+Validation: three-package TypeScript rebuild and all 591 reconstruction tests pass.

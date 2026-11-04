@@ -45,3 +45,14 @@ export async function compiledInjectedDeclarations(path: string) {
     source = source.slice(0, edit.start) + source.slice(edit.end);
   return source;
 }
+
+export function injectedClassMethod(className: string, methodName: string) {
+  const source = injectedExpression(className);
+  const parsed = parse(`(${source})`, { ecmaVersion: "latest" }) as any;
+  const method = parsed.body[0].expression.body.body.find(
+    (entry: any) => entry.key?.name === methodName,
+  );
+  if (!method)
+    throw new Error(`Missing injected class method ${className}.${methodName}`);
+  return source.slice(method.start - 1, method.end - 1);
+}

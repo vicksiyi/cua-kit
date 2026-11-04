@@ -4580,6 +4580,26 @@
       "status": "readable-typed-component-not-yet-assembled-into-full-injected-helper",
       "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
       "validation": "Original role tables and validation matrices compare outputs, exact errors and input mutations, including validation precedence, level coercion, repeated options, infinities and unsupported roles. Parser-to-option composition tested. Full role query engine remains incomplete."
+    },
+    "packages/browser/src/service/playwright/injected/layout_selector.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "embeddedSource": "hF",
+      "embeddedSha256": "7970824c76e6bb9f77ad7617e2f3f86d9704bdcd4c2218c7a7bdf5f6a9499d23",
+      "symbols": [
+        "Zi",
+        "es",
+        "ts",
+        "rs",
+        "ns",
+        "is",
+        "fn",
+        "Fe",
+        "to._queryLayoutSelector"
+      ],
+      "status": "readable-typed-component-not-yet-assembled-into-full-injected-helper",
+      "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
+      "validation": "Original-function geometry matrix and engine traces preserve axis gap/penalty, inclusive thresholds, default near limit, NaN/Infinity, self exclusion, nearest reference and argument property reads. Real Chromium compares evaluator matching/score marking and InjectedScript layout-query stable ordering across multiple anchors. Full helper/evaluator assembly remains incomplete."
     }
   },
   "embeddedPackages": {
