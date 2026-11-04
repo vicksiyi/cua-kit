@@ -4401,3 +4401,26 @@ This is stronger than package startup but remains a temporary Chromium/local-pag
 acceptance. It is not the user's existing Chrome profile, Baidu/search-result
 acceptance, production authentication or App control. No original auth/feature
 gate was forced on. Credentials were neither printed nor included in artifacts.
+
+
+### Full-extension live Baidu attempt and failure evidence (2026-11-05)
+
+The full native-controller test now allows network DNS for explicitly enabled
+Baidu live/probe runs while retaining its default local-only DNS test rule.
+On live Baidu failure it saves public baidu.com page URL/title/visible body text
+and screenshots before the temporary profile is closed. It never collects host
+capability descriptors or model credentials.
+
+Two real DeepSeek runs of “访问百度 搜索 deepseek 给我返回第一条搜索结果”
+failed at the 90-second AgentLoop deadline (about 105 seconds including setup).
+Both opened Baidu and observed its search field; unsupported visibility/AX calls
+returned explicit errors. In the second run, creating the Baidu tab and a locator
+count each took about 31 seconds. The next fill/submit call had no successful
+result before cancellation. Retained screenshot/text show the Baidu homepage
+with an empty search box, not search results or a CAPTCHA. The latency cause
+remains unresolved; no claim is made that the search was submitted successfully.
+
+This is a failed acceptance with improved diagnostics, not a passing search
+verification. The earlier local-page DeepSeek success remains valid only for that
+local temporary-browser scenario. Daily Chrome and Baidu result acceptance remain
+open. Do not retry merely to seek a passing outcome without investigating timing.

@@ -94,8 +94,12 @@ for (const deployment of ["native", "full"] as const)
           args: [
             `--disable-extensions-except=${extension}`,
             `--load-extension=${extension}`,
-            ...(deployment === "full"
-              ? ["--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1"]
+            ...(deployment === "full" &&
+            process.env.CUA_LIVE_BAIDU_TEST !== "1" &&
+            process.env.CUA_BROWSER_BAIDU_PROBE !== "1"
+              ? [
+                  "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1",
+                ]
               : []),
           ],
         },
@@ -265,6 +269,43 @@ for (const deployment of ["native", "full"] as const)
           pageUrl,
           hostDirectory,
         );
+      } catch (error) {
+        if (process.env.CUA_LIVE_BAIDU_TEST === "1") {
+          // Preserve observed public-page evidence before deleting the temporary
+          // profile. Never collect endpoint descriptors or model credentials.
+          const artifacts = await mkdtemp(
+            join(tmpdir(), "core-baidu-failure-"),
+          );
+          const observations: unknown[] = [];
+          for (const [index, candidate] of context.pages().entries()) {
+            const url = candidate.url();
+            if (!/^https:\/\/(?:[a-z0-9-]+\.)?baidu\.com(?:\/|$)/i.test(url))
+              continue;
+            const screenshot = join(artifacts, `page-${index}.png`);
+            const observed = await Promise.allSettled([
+              candidate.title(),
+              candidate.locator("body").innerText({ timeout: 5000 }),
+              candidate.screenshot({ path: screenshot, timeout: 5000 }),
+            ]);
+            observations.push({
+              url,
+              title:
+                observed[0].status === "fulfilled" ? observed[0].value : null,
+              text:
+                observed[1].status === "fulfilled"
+                  ? observed[1].value.slice(0, 10000)
+                  : null,
+              screenshot:
+                observed[2].status === "fulfilled" ? screenshot : null,
+            });
+          }
+          await writeFile(
+            join(artifacts, "observations.json"),
+            JSON.stringify(observations, null, 2),
+          );
+          console.error("BAIDU FAILURE EVIDENCE", JSON.stringify(observations));
+        }
+        throw error;
       } finally {
         await context.close();
       }

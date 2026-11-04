@@ -491,5 +491,17 @@
     "modelFree": "Real native host, RPC, MCP, installed supervisor, restored CUA, existing tab/navigation/click/screenshot passed.",
     "deepseek": "Actual DeepSeek/AgentLoop with local .env; local page click/read/screenshot passed, recovered from two unsupported-capability calls.",
     "boundary": "Temporary Chromium profile/local HTTP test page, not daily Chrome, Baidu or production auth."
+  },
+  "fullExtensionBaiduVerification": {
+    "test": "reconstruction/extension-native-controller.test.ts",
+    "mode": "CUA_LIVE_BAIDU_TEST=1, deployment full",
+    "status": "failed: two runs reached AgentLoop 90-second timeout",
+    "observed": "Baidu homepage/search field; second run retained homepage screenshot and empty search box; create-tab and locator count each roughly 31 seconds.",
+    "unproven": [
+      "successful search submission",
+      "first search result",
+      "captcha as failure cause"
+    ],
+    "diagnostics": "On failure save only public baidu.com UI observations/screenshots outside temporary profile; no host descriptors or model credentials."
   }
 }
