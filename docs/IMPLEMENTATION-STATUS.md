@@ -1458,3 +1458,17 @@ Three new tests cover explicit choices/EOF/URL, JSON and schema retry without de
 The caller now has a working terminal confirmation flow. Remaining major gaps are production browser/desktop deployment, real-model validation and readable native supervisor source; the test socket backend and installed binary/WASM dependencies remain explicit.
 
 Validation: AgentLoop type check passed; all 754 default tests and all five native integration tests passed.
+
+### 16.250 Installed extension source and native messaging transport
+
+Located a previously unexamined production-side source artifact: installed Chrome extension hehggadaopoacecdllhhajmbjkdcmajg version 1.26.1102.11740, background.js (546422 bytes; SHA-256 3ccdc7a853700c9fdd8acf8356db33ef18615d17c8a6d2b0054cafe65eb6c7b9). The native messaging manifest points at the separately installed ChatGPT for Chrome executable. This inventory did not execute or modify the real extension, host or browser profile. The extension snapshot is newer than the recorded desktop artifacts; production cross-version compatibility is not assumed.
+
+Created @core/browser-extension as a distinct reconstruction package, not a claim of an original @oai package and not a relabeling of the old independent extensions/chrome implementation. Restored GE and its qE/HE/Ei/zE error/type helpers as readable NativeTransport TypeScript. It preserves immediate connection/alarm registration, host request IDs and response/error semantics, timeouts, post/disconnect failures, late replies, stale ports, explicit reconnect, missing-host-only candidate fallback, retry counters, five-second timers and half-minute alarms. It uses Chrome APIs and standard timers; no third-party transport is reimplemented. Separately bundled Sentry 10.48.0 was identified but not copied.
+
+Three differential tests extract the inspected original bindings without running extension startup and compare request outcomes, callbacks, ordered timer/alarm/port traces and status snapshots. Cases cover successful/error/invalid responses, timeout and late response, reconnect/disconnect pending rejection, fallback exhaustion/recovery, alarm failure, post failure and snapshot copying. Source hash/version and remaining work are recorded in extension-source.json. The new package is included in reconstruction builds and type checks, with extensionless TypeScript imports.
+
+DeepSeek credential check: no matching credential was found in the current environment, checked shell/config files or relevant local env/config search results. A prior deployment report refers to a successful DeepSeek run but contains no inline secret; it is not a usable credential. No unrelated provider credential was used or printed. This is a bounded search result, not a claim that no key exists anywhere on the Mac.
+
+Remaining extension work: dispatcher/browser operations, session/auth/security orchestration, manifest/build/install integration and the native messaging host implementation. This component is not an installable production extension. Native supervisor readable source, real desktop integration and live-model validation also remain incomplete. Validation results follow.
+
+Validation: all eight reconstruction package builds/type checks passed, and all 757 default tests passed. Native integration was not rerun because the new extension component is not yet connected to that runtime; the previous five-test native result remains scoped to its recorded implementation.

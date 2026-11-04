@@ -6,6 +6,8 @@
 
 DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。模型协议/MCP 回环测试通过，真实 DeepSeek 调用仍待本机凭据定位；这不表示还原后端已接通。
 
+新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分，尚不是可安装扩展。
+
 下面是此前独立实现的历史说明：
 
 独立 TypeScript Cua SDK、持久 JavaScript 运行时和 MCP 服务。已实现第一条受控 Chromium 链路；原生 macOS helper 已有初步实现、尚待权限下的动作验收；现有 Chrome 扩展已打通真实传输与共享 SDK，完整兼容仍在验证中。
