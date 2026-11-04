@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {".": "./src/index.ts"},
-  "scripts": {"check": "tsc -p tsconfig.json", "start": "tsx src/main.ts"},
-  "dependencies": {"@core/browser": "0.0.0-reconstructed.0", "@core/core": "0.0.0-reconstructed.0"}
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc -p tsconfig.json",
+    "start": "node dist/main.mjs",
+    "build": "node ../../scripts/build-native-host.mjs"
+  },
+  "dependencies": {
+    "@core/browser": "0.0.0-reconstructed.0",
+    "@core/core": "0.0.0-reconstructed.0"
+  }
 }

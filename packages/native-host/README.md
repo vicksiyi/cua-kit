@@ -19,12 +19,22 @@ in prompts, logs, Git or web responses. Only its file path is logged to stderr.
 No TCP listener is opened. Authentication is specific to this independent stack;
 it is not an alternative entry into the installed OpenAI host.
 
-Current entry: `npm run start -w @core/native-host`. It is a native-messaging
-process, not an interactive browser demo. Chrome manifest registration, a built
-launch artifact, installed-extension origin binding, complete extension startup,
-and browser-service/demo connector integration are still pending. Extension
-host service requests (e.g. Codex app-server methods) currently return method-not-
-implemented; do not advertise those features as supported.
+Build with `npm run build:native-host` (also included in `build:reconstruction`).
+`createNativeHostInstallation` writes a private config, a safely quoted executable
+launcher and the `com.core.cua` native-messaging manifest for explicitly supplied
+extension IDs. `registerChromeNativeHost` installs that manifest on macOS Chrome
+using exclusive creation; an existing manifest is never overwritten. The launcher
+runs the bundled `dist/main.mjs` with an absolute Node path and validates Chrome's
+origin argument against config before opening an endpoint. This argument check
+supplements Chrome's allowed_origins enforcement; it is not OS process attestation.
+The local user is the trust boundary for the independent capability-based host.
+
+No host has been registered into the user's real Chrome profile yet: the restored
+extension's complete background and stable extension ID are still pending. Tests
+register under a temporary home and simulate native-messaging stdin/stdout in a
+separate process. Browser-service/demo connector integration is also pending.
+Extension host service requests (e.g. Codex app-server methods) currently return
+method-not-implemented; do not advertise those features as supported.
 
 Tests exercise real Unix sockets and the restored ExtensionBrowserPeer with
 controlled handlers: concurrent ID collisions, fragmented frames, notifications,

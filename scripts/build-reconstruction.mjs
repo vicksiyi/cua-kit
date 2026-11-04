@@ -161,3 +161,5 @@ if (accessibilitySource) {
 
 await import("./build-reconstructed-content.mjs");
 await import("./build-reconstructed-kernel.mjs");
+// Independent host deployment artifact, bundled separately from restored modules.
+await import("./build-native-host.mjs");
