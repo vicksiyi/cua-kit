@@ -4,6 +4,8 @@ import { join, extname } from "node:path";
 import { parse } from "acorn";
 import { assembleAccessibilityAsset } from "./assemble-accessibility-asset.mjs";
 import { assemblePlaywrightSource } from "./assemble-playwright-source.mjs";
+import { assembleKernelWorker } from "./assemble-kernel-worker.mjs";
+await assembleKernelWorker();
 await assemblePlaywrightSource();
 execFileSync(
   "node_modules/.bin/tsc",

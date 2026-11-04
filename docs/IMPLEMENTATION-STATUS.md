@@ -3638,3 +3638,23 @@ Validation: eight package builds/type checks and all 964 default regressions pas
 zero failures/skips. The new differential test runs both original and restored code
 in actual Chromium Workers, with no replacement evaluator. Live DeepSeek and the
 independent native-supervisor suite were not repeated for this worker change.
+
+### Worker packaging and actual sandbox startup
+
+Added assemble-kernel-worker.mjs to generate the worker string from reconstructed
+TypeScript with browser esbuild, before tsc. Explicit source aliases avoid stale
+workspace dist during generation. The generated kernel_worker_source.ts is a build
+asset, not copied vendor runtime. Added original h/o worker creation behavior:
+Blob with self URL revocation prefix, error listener cleanup, and data-URL fallback
+when creation fails. kernel_sandbox_entry now connects the real manager and worker.
+
+Source differential tests cover Blob absence, URL creation/Worker/listener failure,
+webkit URL fallback and cleanup. A real Chromium iframe test runs original and
+restored complete sandbox scripts, each spawning its actual Worker. The controlled
+parent responds to agent RPC. Browser API setup/list, retained variables, typed
+execution failure and recovery match. This validates sandbox startup but not the
+full Chrome extension background, manifest permissions or live browser backend.
+
+Validation: eight package builds/type checks and all 966 default regressions pass,
+zero failures/skips. Generated worker asset is 345707 bytes of TypeScript string
+representation. Live DeepSeek and native-supervisor probes were not repeated.
