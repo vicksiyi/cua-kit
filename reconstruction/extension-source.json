@@ -356,6 +356,8 @@
     ],
     "test": "reconstruction/extension-tab-pdf-capture.test.ts",
     "method": "Actual original background/page/orchestrator differential; esbuild-compiled serialized page function in explicit browser fixtures; actual restored upload/delete components",
-    "limit": "No live Chrome PDF page or user upload exercised. Full production assembly and deployment remain incomplete."
+    "limit": "Real isolated browser PDF bytes verified; fixture-only extension, not the full deployed extension or daily Chrome. No Library upload or user files used. Production assembly remains incomplete.",
+    "liveBrowserTest": "reconstruction/extension-tab-pdf-browser.test.ts",
+    "liveBrowserEvidence": "Isolated real Chromium, actual MV3 extension and PDF document, ISOLATED script/Port capture, repeatable local GET, file larger than two 256 KiB chunks, byte length and SHA-256 equality"
   }
 }

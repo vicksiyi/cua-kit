@@ -4025,3 +4025,17 @@ page GET/content/size failures, filename behavior and capture/upload cleanup.
 Chrome and API responses remain fixtures. A real Chrome PDF page, production
 composition and full deployment have not been verified; daily Chrome/search
 acceptance remains incomplete.
+
+
+### 2026-11-05 — real Chromium PDF byte-capture verification
+
+Added `extension-tab-pdf-browser.test.ts`. It builds a minimal MV3 extension using
+the actual restored capture component, opens a locally generated PDF in isolated
+Chromium, obtains the real document ID, injects the self-contained page capture
+and transfers bytes over actual extension Ports. A deterministic image makes the
+PDF larger than two 256 KiB transport chunks. Captured size and SHA-256 match the
+served source, and server request count confirms a separate repeatable GET.
+The live-browser test passes. It uses a private temporary profile and local data,
+then cleans up; no daily Chrome profile, account token or Library upload is used.
+This proves PDF byte capture in that browser environment, not full extension
+packaging, authenticated Library upload, daily Chrome or DeepSeek search acceptance.
