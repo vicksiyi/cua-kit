@@ -1,3 +1,4 @@
+import { createBrowserConfig } from "./config_bridge";
 import { mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { tmpdir, platform } from "node:os";
 import { isAbsolute } from "node:path";
@@ -24,7 +25,7 @@ export interface BrowserHostDependencies {
   getPrivilegedRepl(): any;
   createAccessAssertion(runtime: any): () => Promise<void>;
   registerAutomatedReviewHost(runtime: any): unknown;
-  createConfig(repl: any): any;
+  createConfig?(repl: any): any;
   BrowserDirectory: new (...args: any[]) => any;
   extensionSelection(runtime: any): any;
   Preferences: new (...args: any[]) => any;
@@ -117,7 +118,7 @@ export function createBrowserHostFactory(deps: BrowserHostDependencies) {
     if (wasmPath && !(deps.isAbsolute ?? isAbsolute)(wasmPath))
       throw new Error("Accessibility core WebAssembly path must be absolute");
     deps.registerAutomatedReviewHost(runtime);
-    const config = deps.createConfig(repl);
+    const config = (deps.createConfig ?? createBrowserConfig)(repl);
     return Object.assign(runtime, {
       config,
       browserContext: new deps.BrowserDirectory(

@@ -4069,7 +4069,7 @@
         "rhe"
       ],
       "status": "reconstructed-runtime-host",
-      "validation": "16 original host traces cover privileged REPL rejection, GAAS selection, config read/parse fallback, broker presence, absolute WASM validation order, live request metadata, elicitation meta normalization including false/null, init/directory/elicitation failures and broker arguments. Real filesystem UTF-8/bytes and privilege gate tested. Directory/config/access verification/telemetry/broker dependencies remain explicit; no complete production host claim."
+      "validation": "16 original host traces cover privileged REPL rejection, GAAS selection, config read/parse fallback, broker presence, absolute WASM validation order, live request metadata, elicitation meta normalization including false/null, init/directory/elicitation failures and broker arguments. Real filesystem UTF-8/bytes and privilege gate tested. Directory/config/access verification/telemetry/broker dependencies remain explicit; no complete production host claim. Config defaults to the restored bridge; integration verifies actual Preferences through host assembly."
     },
     "packages/browser/src/service/runtime/elicitation_telemetry.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4227,6 +4227,23 @@
       ],
       "status": "reconstructed-native-pipe-transport",
       "validation": "Retains privileged nodeRepl.nativePipe createConnection requirement and production/development error text. Tests compare original bridge checks/messages and verify static factory returns base transport through a test-provided bridge using a real Unix socket; no unprivileged fallback is installed."
+    },
+    "packages/browser/src/service/runtime/config_bridge.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "_6",
+        "w6",
+        "yu",
+        "v6",
+        "lle",
+        "cle",
+        "dle",
+        "ule",
+        "y6"
+      ],
+      "status": "reconstructed-repl-config-bridge",
+      "validation": "Six original read/write/error/TTL/session traces and four controlled overlapping-refresh traces verify shared pending identity, cache expiry, newest-generation selection, stale failure retry and cross-bridge serialized updates. Actual Preferences and host-default bridge integration tested with synthetic REPL config. No live user configuration mutation."
     }
   },
   "embeddedPackages": {
