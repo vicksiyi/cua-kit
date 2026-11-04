@@ -106,6 +106,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       },
       env: {
         CUA_REPL_ENABLED_SURFACES: "browser",
+        BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
         BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH: `${process.env.CUA_VENDOR_ROOT ?? "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai"}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br`,
         BROWSER_USE_BACKEND_PATHS: path,
         BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
@@ -170,7 +171,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         },
         featureEnabled: () => false,
         span,
-        createErrorReporter: () => ({ captureException: unused }),
         loadClassicLevel: async () => null,
         getNativeCredentialObservationStatus: unused,
         createBrowserAuthBrokerChallenge: unused,

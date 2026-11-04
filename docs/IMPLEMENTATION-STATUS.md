@@ -976,3 +976,13 @@ An original-source/compiled-source differential matrix covers all three native t
 Browser global initialization is now executable against the supplied trusted browser RPC. This does not supply the external NodeREPL engine, browser-desktop/sky trusted service exports or standalone native provider. Package root/other alternate entry points also remain outside this newly completed subpath and require further reconstruction.
 
 Validation: four-package build passed; full suite passes 606 tests with concurrency 4.
+
+### 16.204 Reuse the bundled Sentry light SDK for the host error reporter
+
+Trusted-service entry inspection identified another bundled third-party dependency: the service's SDK version marker is 10.48.0, and its init implementation explicitly selects node-light/node-core with the light integration list. Pinned @sentry/node-core and @sentry/core 10.48.0 and use their public light/init and createTransport APIs. No Sentry internals are reconstructed.
+
+Restored the CUA cH/dH wrapper in runtime/error_reporter.ts: module-lifetime initialization, exact literal-1 ambient-network opt-out, retry after initialization failure, original production/release/PII options, GAAS versus Node REPL user selection, and exception/user/tag forwarding. The transport calls the privileged runtime's fetch, preserving headers/body/keepalive/referrer policy and mapping status/rate-limit response headers. Host assembly now defaults to this reporter while retaining explicit injection. The original destination is retained for source fidelity; standalone telemetry destination/policy remains a deployment concern, not implicitly replaced by an unrestricted network client.
+
+Differential tests compare the original selected functions against the restored wrapper, including disabled-then-enabled state, repeated calls, initialization failure, user matrix, transport options and fetch error identity. A real upstream SDK test serializes an exception envelope through a synthetic host fetch and verifies user/tag metadata; it sends no external requests. The real Chromium service integration removes its reporter stub and sets the original ambient-network disable flag. This closes the reporter dependency in mH, not the remaining runtime telemetry/configuration, trusted-service module export, external NodeREPL or native provider gaps.
+
+Validation: four-package build passed; all 609 reconstruction tests passed with concurrency 4.

@@ -1,3 +1,4 @@
+import { browserErrorReporter } from "./error_reporter";
 import { commandTiming } from "./command_timing";
 import { defaultAXPerformanceSpan } from "../accessibility/tracking";
 import {
@@ -49,14 +50,14 @@ export interface BrowserHostAssemblyOptions {
     typeof import("./command_timing").createCommandTiming
   >;
   performanceSpan?: typeof defaultAXPerformanceSpan;
-  createErrorReporter: BrowserHostDependencies["createErrorReporter"];
+  createErrorReporter?: BrowserHostDependencies["createErrorReporter"];
   loadClassicLevel?: BrowserProfileDependencies["loadClassicLevel"];
   getNativeCredentialObservationStatus: BrowserHostDependencies["getNativeCredentialObservationStatus"];
   createBrowserAuthBrokerChallenge: BrowserHostDependencies["createBrowserAuthBrokerChallenge"];
   getPrivilegedRepl?: () => any;
   getNativePipeBridge?: () => any;
 }
-/** Assembles restored mH dependencies. ClassicLevel uses the upstream default; telemetry SDK and broker service remain host inputs. */
+/** Assembles restored mH dependencies. ClassicLevel uses the upstream default; Sentry uses the upstream light SDK; broker services remain host inputs. */
 export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
   // Installed Po returns this literal. Keep it shared by handshake and bridge errors.
   const deploymentEnvironment = () => "production";
@@ -103,7 +104,7 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
     extensionSelection: preferredBrowserExtension,
     Preferences,
     commandTiming: options.commandTiming ?? commandTiming,
-    createErrorReporter: options.createErrorReporter,
+    createErrorReporter: options.createErrorReporter ?? browserErrorReporter,
     performanceSpan: options.performanceSpan ?? defaultAXPerformanceSpan,
     trackElicitation: createElicitationTelemetry(options.span),
     initializeCredentialObservation: credentialObservationState.initialize,
