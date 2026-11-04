@@ -39,6 +39,10 @@
     "./extensionProtocol": {
       "types": "./src/extension_protocol.ts",
       "import": "./dist/extension_protocol.js"
+    },
+    "./nativePipe": {
+      "types": "./src/service/runtime/native_pipe.ts",
+      "import": "./dist/service/runtime/native_pipe.js"
     }
   },
   "dependencies": {
