@@ -3909,3 +3909,18 @@ explicit service fixtures and compare order, output and retained state. Extensio
 type checking passes. This is a component restoration, not an integrated tunnel
 runtime: full `p_` JS execution/consent, transport wiring and real hosted execution
 remain incomplete. Daily Chrome attachment/search acceptance is unchanged.
+
+
+### 2026-11-05 — kernel JS execution and consent composition
+
+`KernelJsHandler` now composes the restored lifecycle with original
+`p_.handleJsCall`, `Zg`/`pt`, tool registration and command deferral predicate.
+Preserves first-control storage/elicitation, chat-mode instance-bound challenges,
+combined cancellation signals, post-queue abort, scope/PDF tracking, output and
+error metadata ordering, and final scope/controller cleanup. Protocol keys and
+registration schemas remain unchanged. No automatic consent is introduced.
+Differential test invokes registered tools of actual original p_ and restored
+handler, sharing the real scope registry with explicit external-service fixtures;
+it covers nine scenarios plus subsequent turn/PDF cleanup. Production tunnel
+transport, chat/PDF service binding and standalone packaged deployment remain
+incomplete; this does not establish daily Chrome or search acceptance.

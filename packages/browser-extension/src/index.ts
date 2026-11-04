@@ -157,3 +157,5 @@ export * from "./youtube_timestamp";
 export { createExtensionBackground, type BackgroundAssemblyOptions } from "./background_assembly";
 
 export * from "./kernel_session_lifecycle";
+
+export * from "./kernel_js_handler";

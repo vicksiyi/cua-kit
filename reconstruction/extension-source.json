@@ -279,6 +279,23 @@
       "PDF deletion success and retained failures",
       "subagent cleanup metadata"
     ],
-    "limit": "Lifecycle component only; full p_ JS consent/execution handler and tunnel transport integration remain incomplete. Fixture tests do not prove live Chrome attachment or hosted ChatGPT execution."
+    "limit": "Lifecycle now composed with restored JS handler and tool registration. Tunnel transport and production deployment still incomplete; fixture tests do not prove live Chrome attachment or hosted ChatGPT execution."
+  },
+  "kernelJsHandlerVerification": {
+    "source": "p_.handleJsCall, constructor tool registration, shouldDeferCommand, Zg and pt",
+    "module": "packages/browser-extension/src/kernel_js_handler.ts",
+    "test": "reconstruction/extension-kernel-js-handler.test.ts",
+    "method": "Invoke registered tools of the hash-verified installed p_ and readable composed handler, using the real restored scope registry and explicit storage/kernel/chat fixtures",
+    "cases": [
+      "invalid metadata",
+      "existing permission",
+      "elicitation accept/decline",
+      "chat challenge reuse, instance replacement and consent",
+      "execution error and reset classification",
+      "runtime throw",
+      "abort after storage",
+      "registered turn cleanup and PDF removal"
+    ],
+    "limit": "No real user permission is granted by tests. Tunnel transport, production chat/PDF service and packaged standalone kernel deployment remain incomplete."
   }
 }

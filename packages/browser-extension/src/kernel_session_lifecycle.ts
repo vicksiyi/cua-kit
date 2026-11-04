@@ -1,5 +1,5 @@
-/** Readable lifecycle portion of original p_/Pl. The tunnel transport and JS
- * consent/execution handler are separate dependencies, not implemented here. */
+/** Readable lifecycle portion of original p_/Pl. The tunnel transport is a host
+ * dependency; kernel_js_handler composes the original JS consent/execution path. */
 export interface KernelTurnMetadata {
   thread_source?: unknown;
   thread_id?: unknown;
