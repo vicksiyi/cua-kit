@@ -1128,3 +1128,13 @@ Drag handles preserve idle/dragging/ended transitions only after successful nati
 Two new differential integration tests exercise every adapter and drag lifecycle against original modules through real synthetic helper subprocesses, capturing emitted requests and wait/resolve/assign/defer traces for success and native failure. They verify screenshot bytes, missing-file errors, window presentation and operation state after failures. An initial fixture object was missing a closing brace; fixed before tests ran, with no production change made to accommodate it.
 
 Validation: six-package build/type checks and all 667 tests pass with concurrency 4. Linux audio subprocess behavior and factory assembly are next; Windows, top-level Sky routing, external NodeREPL, native binary/AX assets and actual-model integration remain open.
+
+### 16.219 Linux audio lifecycle and complete factory
+
+Restored core/cli using Node child_process with original environment merge, command logging, Windows .cmd selection, optional stdin, output trimming and exit-check behavior. Node's SpawnOptions expresses the original type-only spawn argument utility without reconstructing a third-party runtime. Restored Linux audio's starting/active state, duration validation, pactl default sink lookup, ffmpeg pulse-monitor arguments, progress=continue readiness, completion tracking, graceful q stop, error text and local WAV result. State clearing/wait order and original temporary-file lifetime are retained.
+
+Assembled the Linux factory with copied options, shared ActionSettler/ElementIds, all operation methods in original insertion order and literal SKY_ENABLE_AUDIO=1 optional audio methods. The real-helper adapter test now additionally invokes the factory's window-state/click/screenshot sequence and mutates caller options after construction to verify isolation.
+
+Three new tests compare original implementations with actual subprocesses: CLI input/env/output/exit handling; synthetic pactl/ffmpeg executables for concurrent starts, invalid durations, readiness, successful stop, early exit, failed stop and empty/failed sink discovery; and factory method order/audio flags. Only synthetic helper code is placed at the head of test PATH, recordings are fixed temporary bytes, and environment/temp files are restored afterward. No real audio or PulseAudio session is accessed.
+
+Validation: six-package build/type checks and full 670-test suite pass with concurrency 4. Linux and Mac JS factories are now assembled. Windows client, top-level Sky export/routing, external NodeREPL, native executable/AX resources and actual-model integration remain incomplete; native desktop behavior has not been proven by synthetic helper tests.

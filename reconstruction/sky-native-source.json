@@ -62,6 +62,9 @@
     "targets/linux/move_relative.js": "dad1a2e8033492cec7ed1e3f3aa6b16e3755b5875048fd31ccb4970c93440af8",
     "targets/linux/type_characters.js": "62262ac52baedefe48c80f6b44ee367a6f00c00590603c637257c989db59ff24",
     "targets/linux/activate_window.js": "8fc14053190f5bbb4b7d628d591330392c4833984c75fc4776c88f192b39e803",
-    "targets/linux/click.js": "d4e4d2b4bf6048173f6752b0a1caf1c01a9abd2a93fa1aef61c1c273d2cc6ccf"
+    "targets/linux/click.js": "d4e4d2b4bf6048173f6752b0a1caf1c01a9abd2a93fa1aef61c1c273d2cc6ccf",
+    "core/cli.js": "2c93f5b2abde4dbfb0e2ceb9fa724c883d30f61eb937cb9b51ba65f708e9c094",
+    "targets/linux/audio_recording.js": "2765d8b304ec21d1c76c8a43a56e169ab888160420f6a5fe14c577ca946cf544",
+    "targets/linux/create_client.js": "5ecbf120d4aa74e9b3672a8e1974220a18f2931bf8badb724ac56f13f0e0c0ec"
   }
 }

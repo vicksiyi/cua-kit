@@ -1,3 +1,4 @@
+import { create_client } from "../packages/sky/src/targets/linux/create_client";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
@@ -40,6 +41,9 @@ for (const name of names) {
     "../packages/sky/src/targets/linux/" + name + ".ts"
   );
 }
+const originalFactory = (
+  await import(pathToFileURL(base + "create_client.js").href)
+).create_client;
 const originalCommand = (
   await import(pathToFileURL(base + "sky_linux.js").href)
 ).sky_linux;
@@ -133,6 +137,25 @@ test("Linux adapters match original wait/resolve/defer order and actual helper p
           ["end", undefined],
         ] as any[])
           outputs.push(await outcome(() => handle[name](args)));
+        const factoryOptions = { target: "linux", post_action_sleep_ms: 0 };
+        const publicClient = (
+          modules === restored ? create_client : originalFactory
+        )(factoryOptions);
+        factoryOptions.post_action_sleep_ms = 10_000;
+        outputs.push(
+          await outcome(() =>
+            publicClient.get_window_state({ window: { id: 1 } }),
+          ),
+        );
+        outputs.push(
+          await outcome(() =>
+            publicClient.click({
+              window: { id: 1 },
+              element_id: fail ? "native:a" : "1",
+            }),
+          ),
+        );
+        outputs.push(await outcome(() => publicClient.get_screenshot()));
         await command("quit", { options });
         const requests = (await readFile(log, "utf8"))
           .trim()

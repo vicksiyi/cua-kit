@@ -9,7 +9,8 @@ Currently implemented:
 - `src/core/uint8.ts` and `src/types/window/`: byte helpers and installed window declarations.
 - `src/create_sky_proxy.ts`: trusted RPC proxy state, reflection, media restoration, Linux drag handles and explicit direct-client dependency.
 - `src/load_options.ts`: original config-file/platform selection.
-- Linux non-audio operation adapters: screenshots/window state, pointer/keyboard/text, clipboard, app/window listing and stateful drag handles; audio and factory assembly remain pending.
+- `src/targets/linux/audio_recording.ts`, `create_client.ts` and `src/core/cli.ts`: original pactl/ffmpeg recording lifecycle, subprocess helper and complete Linux factory.
+- Linux non-audio operation adapters: screenshots/window state, pointer/keyboard/text, clipboard, app/window listing and stateful drag handles; audio and factory assembly are also restored.
 - `src/targets/linux/element_ids.ts` and `action_settler.ts`: per-window compact IDs, filtered refresh retention and action deadlines.
 - `src/targets/linux/sky_linux_transport.ts`, `sky_linux.ts` and `src/core/package_bin.ts`: native helper process lifecycle, JSON line RPC, option-keyed caching and binary resolution.
 - `src/targets/linux/accessibility_tree.ts`: native/RPC accessibility presentation restoration and condensed tree rendering.
@@ -23,7 +24,7 @@ Currently implemented:
 - `src/targets/mac/errors.ts`: original native error codes and error types.
 - `src/require_audio_model_support.ts`: original per-recording model allowlist and trusted request metadata checks.
 
-These internal modules are built and type-checked with the other reconstruction packages. They do not yet expose the original root/service entry points: the Mac factory is restored and tested through an isolated socket, while other platform factories and top-level assembly remain missing; the Mac transport has not been connected to an installed native service. `createSkyService` requires an explicit platform-client constructor; no placeholder native implementation is selected automatically.
+These internal modules are built and type-checked with the other reconstruction packages. They do not yet expose the original root/service entry points: the Mac factory is restored and tested through an isolated socket, while the Windows factory and top-level assembly remain missing; the Mac transport has not been connected to an installed native service. `createSkyService` requires an explicit platform-client constructor; no placeholder native implementation is selected automatically.
 
 The original Sky package declares @statsig/js-client ^3.32.6; its installed resolution is 3.33.3, which this package now pins independently of the browser bundle's 3.33.1. Platform code also uses native helper processes. Its native executables are not JavaScript dependencies and are not reconstructed by the dispatcher. The original `SKY_AUDIO_MODEL_ALLOWLIST` name and request metadata protocol are retained unchanged.
 
