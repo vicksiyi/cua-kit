@@ -484,5 +484,12 @@
       "Chrome minimum 120",
       "explicit endpoint origins added to connect-src"
     ]
+  },
+  "fullExtensionNativeMcpVerification": {
+    "test": "reconstruction/extension-native-controller.test.ts",
+    "deployment": "full",
+    "modelFree": "Real native host, RPC, MCP, installed supervisor, restored CUA, existing tab/navigation/click/screenshot passed.",
+    "deepseek": "Actual DeepSeek/AgentLoop with local .env; local page click/read/screenshot passed, recovered from two unsupported-capability calls.",
+    "boundary": "Temporary Chromium profile/local HTTP test page, not daily Chrome, Baidu or production auth."
   }
 }

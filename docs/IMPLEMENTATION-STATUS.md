@@ -4375,3 +4375,29 @@ permissions. Agent-loop type check and reconstruction build pass. Re-running the
 actual user command --check-browser on this Mac now gives the readable diagnostic
 and still exits 1: no browser endpoint is currently connected. No model request
 or browser operation occurred. Daily Chrome + DeepSeek acceptance is not claimed.
+
+
+### Full extension native/MCP/DeepSeek operation acceptance (2026-11-05)
+
+The existing native-controller acceptance test now runs against either the
+independent native package or the actual full-extension builder. The full case
+uses the registered Core native host in a temporary profile, original background
+startup/feature gates, fixture feature service configuration and a local HTTP
+page. Native RPC verifies tab listing/context, tab mention invalidation and
+Chrome-generated sender identity. The real MCP/supervisor/CUA chain then obtains
+an existing tab, navigates, clicks, reads state and captures an image. Full case
+passes in about 15 seconds. Initial test DNS rules also blocked loopback; adding
+127.0.0.1 to the exclusions fixed that test-environment issue.
+
+A second run with CUA_LIVE_DEEPSEEK_TEST=1 and CUA_MODEL_PROVIDER=deepseek used
+the project's local .env credentials, actual DeepSeek model and AgentLoop. It
+opened the owned local page, clicked Run action, read action-completed-marker and
+captured screenshots; final answer contained that observed marker. Passed in
+about 23 seconds. The model initially supplied unsupported visibility and then
+AX input; both returned explicit errors and it recovered with supported tab
+creation and Playwright click. This proves recovery, not an error-free run.
+
+This is stronger than package startup but remains a temporary Chromium/local-page
+acceptance. It is not the user's existing Chrome profile, Baidu/search-result
+acceptance, production authentication or App control. No original auth/feature
+gate was forced on. Credentials were neither printed nor included in artifacts.
