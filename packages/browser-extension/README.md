@@ -940,3 +940,36 @@ Type check, build and eleven related tests pass. No actual microphone/camera
 permission or production auth was requested. The permission page, packaged page
 resources/telemetry and complete extension deployment still need integration and
 live acceptance; daily Chrome/DeepSeek search status is unchanged.
+
+
+## Full restored extension package
+
+`npm run build:full-extension -- /absolute/path/deployment.json` builds the
+actual full background, sidebar/media pages, content scripts and sandboxed
+offscreen kernel into `packages/browser-extension/dist/full-extension`. An
+optional second argument selects the output directory. It does not install or
+reload Chrome. Requires the hash-checked installed extension snapshot, optionally
+selected through `CUA_EXTENSION_SOURCE_ROOT`.
+
+Use `reconstruction/full-extension-config.example.json` as the field reference.
+The example feature endpoint/key are placeholders, not a working service. Supply
+your deployment's public feature SDK key/API, native host names, channel and
+policy endpoints. Configuration is embedded in public extension JavaScript:
+never put DeepSeek tokens or other private credentials here. Unknown fields are
+rejected. Empty `telemetryDsn` disables delivery. Authentication and feature gates
+are preserved; this builder does not make production backend access available.
+
+The manifest retains installed permissions, commands, content-script injection
+worlds, sandbox and resource declarations. Explicit endpoint origins are added
+to connect-src; Chrome minimum is 120 to match the build target. Name and key use
+the Core deployment identity, and the vendor update URL is removed. Images and
+page styles come from the installed snapshot; JS comes from reconstructed TS.
+The full and independent native builds use the same Core extension key, so treat
+them as alternative installations, not simultaneous independent extensions.
+
+`extension-full-package.test.ts` builds this exact entry and loads it in a fresh
+offline Chromium profile, verifies resource paths, heartbeat, real sidebar DOM
+and instance messaging, and confirms no offscreen kernel is created without
+authentication/gate activation. This is package/startup acceptance, not signed-in
+ChatGPT or daily Chrome + DeepSeek acceptance. Optional missing WebMCP assets and
+the independent native supervisor implementation remain separate open items.

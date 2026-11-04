@@ -1,0 +1,14 @@
+{
+  "channel": "dev",
+  "nativeHosts": [
+    "com.core.cua"
+  ],
+  "sidePanelEnabled": true,
+  "features": {
+    "sdkKey": "REPLACE_WITH_DEPLOYMENT_PUBLIC_SDK_KEY",
+    "api": "https://feature.example.invalid"
+  },
+  "telemetryDsn": "",
+  "siteStatusUrl": "https://chatgpt.com/backend-api/aura/site_status",
+  "defaultAllowedPages": []
+}

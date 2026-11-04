@@ -4339,3 +4339,22 @@ not the production page/content/iframe authentication flow.
 Complete deployable manifest/background entry packaging is still pending; this
 composition does not replace the current independent native demo installation.
 Daily Chrome and DeepSeek command acceptance remain outstanding.
+
+
+### Deployable full extension package (2026-11-05)
+
+Added full_background_entry.ts and build:full-extension. The builder validates
+explicit deployment configuration, hash-checks the installed manifest, assembles
+restored background/content/pages/kernel bundles, copies original image resources
+and preserves original permissions/commands/injection worlds/sandbox. Core key
+and name replace the vendor identity, vendor update_url is removed, minimum
+Chrome is 120 to match the bundle target and configured endpoint origins extend
+connect-src. No private model token is accepted by the configuration schema.
+
+The actual built package passes an isolated offline Chromium test: all declared
+resource paths exist, full startup registers heartbeat, the real sidebar entry
+creates its iframe and queries an instance id, and no offscreen kernel is created
+without authentication. This replaces earlier tests' probe-only sidebar with the
+actual packaged page. Production auth, ChatGPT frame content, optional missing
+WebMCP assets, native supervisor parity, daily Chrome and DeepSeek commands remain
+unaccepted. The package is built, not installed; current native demo is unchanged.

@@ -30,7 +30,8 @@
     "demo:deepseek": "node scripts/run-deepseek.mjs",
     "build:native-host": "node scripts/build-native-host.mjs",
     "install:chrome": "npm run build:reconstruction && node packages/native-host/dist/install.mjs",
-    "build:pages": "node scripts/build-reconstructed-pages.mjs"
+    "build:pages": "node scripts/build-reconstructed-pages.mjs",
+    "build:full-extension": "node scripts/build-full-extension.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

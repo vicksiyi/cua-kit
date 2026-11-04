@@ -471,5 +471,18 @@
       "offline unauthenticated does not create kernel"
     ],
     "boundary": "Real temporary Chrome APIs; offline fetch fixture, nonexistent native host, sidebar probe HTML. No production auth, full deployment or daily Chrome acceptance."
+  },
+  "fullExtensionPackageVerification": {
+    "manifestSha256": "c91430ccc93fec16c51e13db3d4e562eafc29749e7a65b8c6152c56dcea05b4a",
+    "builder": "scripts/build-full-extension.mjs",
+    "entry": "packages/browser-extension/src/full_background_entry.ts",
+    "test": "reconstruction/extension-full-package.test.ts",
+    "boundary": "Actual built package in fresh offline Chromium; original feature gates, no production auth or daily Chrome acceptance.",
+    "deploymentChanges": [
+      "Core name/key",
+      "removed vendor update URL",
+      "Chrome minimum 120",
+      "explicit endpoint origins added to connect-src"
+    ]
   }
 }
