@@ -3615,3 +3615,26 @@ operation claim follows from these manager-level tests.
 Validation: eight package builds/type checks and all 963 default regressions pass,
 zero failures/skips (including the terminal trace test from the preceding demo entry).
 No live model call or native-supervisor probe was repeated for this manager change.
+
+### Actual extension worker evaluator and agent runtime
+
+Restored the embedded worker pp/up flow as registerKernelWorker and
+KernelWorkerAgentClient, reusing the restored agent MessagePort transport and RPC
+peer. Added @core/browser/kernelBrowserRuntime for the original direct dp assembly
+(BrowserRuntimeFactory + display side effect), without Node RPC setup or credential
+recovery wrappers. A standalone worker entry registers the real implementation.
+The evaluator preserves successful async-function lexical scopes, does not commit
+new scopes on failure, and serializes submitted scripts through the original queue.
+
+A real Chromium Worker differential test extracts the original static worker string
+from the hash-pinned installed sandbox chunk and compares it with the bundled restored
+worker. Concurrent submissions cover persistent variables, mutation before a failed
+script, failed-scope rollback, typed errors, display bytes, setup RPC, browser API
+list calls and reuse in later scripts. The host is a controlled MessageChannel RPC
+responder, not a real browser backend. Blob/data worker packaging and full sandbox
+startup are still pending. Validation results follow.
+
+Validation: eight package builds/type checks and all 964 default regressions pass,
+zero failures/skips. The new differential test runs both original and restored code
+in actual Chromium Workers, with no replacement evaluator. Live DeepSeek and the
+independent native-supervisor suite were not repeated for this worker change.

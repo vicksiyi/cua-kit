@@ -23,6 +23,10 @@
     "./kernelBrowserService": {
       "types": "./src/kernel_browser_service.ts",
       "import": "./dist/kernel_browser_service.js"
+    },
+    "./kernelBrowserRuntime": {
+      "types": "./src/kernel_browser_runtime.ts",
+      "import": "./dist/kernel_browser_runtime.js"
     }
   },
   "dependencies": {
