@@ -460,5 +460,16 @@
     "test": "reconstruction/extension-pages-browser.test.ts",
     "boundary": "Real temporary Chromium extension and DOM; all HTTP(S) aborted; same-page media fixture, no production frame/authentication or daily browser acceptance.",
     "deployment": "Staged dist/pages output; root HTML plus /pages JS/CSS. Native manifest/background integration pending."
+  },
+  "fullBackgroundCompositionVerification": {
+    "module": "packages/browser-extension/src/full_background.ts",
+    "test": "reconstruction/extension-full-background-browser.test.ts",
+    "assertions": [
+      "full startup completion",
+      "exact sidebar sender path admission and unrelated path denial",
+      "heartbeat alarm",
+      "offline unauthenticated does not create kernel"
+    ],
+    "boundary": "Real temporary Chrome APIs; offline fetch fixture, nonexistent native host, sidebar probe HTML. No production auth, full deployment or daily Chrome acceptance."
   }
 }

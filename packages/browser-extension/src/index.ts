@@ -201,3 +201,5 @@ export * from "./side_panel_controller";
 export * from "./media_permission_page";
 
 export * from "./page_telemetry";
+
+export * from "./full_background";

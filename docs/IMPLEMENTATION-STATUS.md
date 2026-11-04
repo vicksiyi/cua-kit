@@ -4313,3 +4313,29 @@ execution world and the run timed out; the final test installs its fixture scrip
 in the page before the entry module and passes. All HTTP(S) requests are aborted
 in this test. It does not prove production ChatGPT framing/authentication or daily
 Chrome/DeepSeek acceptance.
+
+
+### Full background environment composition (2026-11-05)
+
+createFullBrowserBackground now connects createExtensionBackground with the
+actual tunnel/kernel bindings, shared foundation, native transport, offscreen
+registry, PDF capture, feature service and SDK-backed page telemetry. Deployment
+configuration supplies the feature SDK/API, native hosts, channel, telemetry DSN,
+site status endpoint and allowed pages. Browser environment bindings preserve
+API receivers and distinguish wall/monotonic clocks. Tunnel diagnostics currently
+go to local console; this is an explicit deployment telemetry choice. No fake
+authentication, forced feature gate or replacement kernel is supplied.
+
+A real temporary Chromium extension starts the complete background with an
+offline fetch fixture and nonexistent native host. The test verifies startup
+completion, denial of instance queries from an unrelated extension page, UUID
+response to the exact authorized sidebar path, heartbeat registration, and no
+offscreen kernel creation while unauthenticated/offline. The initial fixture
+manifest lacked commands, causing registration failure; adding the original
+open-codex-side-panel command resolved it. This test, extension type check and
+reconstruction build pass. The sidebar page here is explicitly a message probe,
+not the production page/content/iframe authentication flow.
+
+Complete deployable manifest/background entry packaging is still pending; this
+composition does not replace the current independent native demo installation.
+Daily Chrome and DeepSeek command acceptance remain outstanding.
