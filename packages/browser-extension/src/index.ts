@@ -135,3 +135,5 @@ export * from "./kernel_background_assembly";
 export * from "./browser_queries";
 
 export * from "./browser_platform";
+
+export * from "./tab_capture";

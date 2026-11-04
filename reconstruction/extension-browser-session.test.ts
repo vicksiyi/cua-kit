@@ -947,7 +947,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
     {
       navigator: { userAgent: "fixture" },
       executeTabRead: async () => ({}),
-      getTabContext: async () => ({}),
       dispatchCommand: async () => ({}),
       commandSets: [null, null],
       commandNames: {} as any,

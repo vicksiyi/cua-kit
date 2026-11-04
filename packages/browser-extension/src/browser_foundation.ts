@@ -1,3 +1,4 @@
+import { captureTabContext } from "./tab_capture";
 import { browserFamilies, identifyBrowserFamily, isBrowserInternalTab, isBrowserNewTab, extensionBuildChannel } from "./browser_platform";
 import { createBrowserTabsReader, createBrowserHistoryReader, createCursorAvailability, validateBrowserTabId, validateBrowserMouse } from "./browser_queries";
 import { registerAssembledBackgroundKernel } from "./kernel_background_assembly";
@@ -150,6 +151,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    getTabContext: captureTabContext,
     browserInfo: browserFamilies,
     browserFamily: identifyBrowserFamily,
     buildChannel: extensionBuildChannel,

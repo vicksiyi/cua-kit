@@ -22,7 +22,7 @@
     "yE": "getUserHistory; restored reader supplied by createExtensionBrowserFoundation",
     "Xr": "validateTabId; original integer validation supplied by foundation",
     "my": "executeTabRead",
-    "dg": "getTabContext",
+    "dg": "getTabContext; original isolated-world bounded capture supplied by foundation",
     "Ue": "browserInfo; shared @core/browser/browserFamily table, verified against extension original",
     "Np": "dispatchCommand",
     "oy": "commandSets[0]",
