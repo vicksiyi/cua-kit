@@ -4358,3 +4358,20 @@ without authentication. This replaces earlier tests' probe-only sidebar with the
 actual packaged page. Production auth, ChatGPT frame content, optional missing
 WebMCP assets, native supervisor parity, daily Chrome and DeepSeek commands remain
 unaccepted. The package is built, not installed; current native demo is unchanged.
+
+
+### DeepSeek missing-browser startup diagnostics (2026-11-05)
+
+Native host discovery now uses a typed error for missing configured directories
+and zero endpoint files. The demo CLI catches only those known prerequisites,
+prints the exact extension load path and repair/check commands, and exits 1
+without an unhandled JS stack. Runtime startup moved into a separate module;
+AgentLoop/provider contracts are unchanged. The shell launcher invokes the TS
+entry directly to avoid nested npm workspace failure noise.
+
+Four tests pass, including subprocess runs without a model key, missing/empty
+directory handling, real host discovery/shutdown and rejecting unsafe directory
+permissions. Agent-loop type check and reconstruction build pass. Re-running the
+actual user command --check-browser on this Mac now gives the readable diagnostic
+and still exits 1: no browser endpoint is currently connected. No model request
+or browser operation occurred. Daily Chrome + DeepSeek acceptance is not claimed.

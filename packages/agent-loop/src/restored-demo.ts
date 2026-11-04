@@ -1,74 +1,28 @@
-/** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
+/** CLI boundary: known connection prerequisites get actionable output. */
 import { fileURLToPath } from "node:url";
-import { delimiter } from "node:path";
-import { configureIndependentBrowser } from "./independent-browser";
-import { randomUUID } from "node:crypto";
-import { create_launch_environment } from "@core/cua-repl";
-import {
-  stageRuntimePackages,
-  restoredPackageSources,
-} from "./runtime-packages";
-const configured: unknown = JSON.parse(process.env.CUA_MCP_ENV ?? "{}");
-if (
-  !configured ||
-  typeof configured !== "object" ||
-  Array.isArray(configured) ||
-  !Object.values(configured).every((value) => typeof value === "string")
-)
-  throw new Error("CUA_MCP_ENV must be a JSON string map");
-let env = { ...configured } as Record<string, string>;
-for (const key of [
-  "CUA_NATIVE_SUPERVISOR_PATH",
-  "NODE_REPL_NODE_PATH",
-  "CORE_CUA_ENDPOINT_FILES",
-  "CORE_CUA_HOST_DIRECTORY",
-  "CORE_CUA_RUNTIME_DIAGNOSTICS",
-])
-  if (env[key] === undefined && process.env[key] !== undefined)
-    env[key] = process.env[key]!;
-if (!env.CUA_NATIVE_SUPERVISOR_PATH)
-  throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
-// Explicit surfaces opt into CUA initialization; absent retains generic JS mode.
-if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
-  env = create_launch_environment(env) as Record<string, string>;
-  process.env.CUA_MCP_REQUEST_META ??= JSON.stringify({
-    "x-codex-turn-metadata": {
-      session_id: randomUUID(),
-      turn_id: randomUUID(),
-    },
-  });
-  const metadata = JSON.parse(process.env.CUA_MCP_REQUEST_META);
-  const supplied = metadata?.["x-codex-turn-metadata"];
-  const turn = typeof supplied === "string" ? JSON.parse(supplied) : supplied;
-  process.env.CUA_MCP_TURN_EVENT = JSON.stringify({
-    hook_event_name: "turn_ended",
-    session_id: turn?.session_id,
-    turn_id: turn?.turn_id,
-  });
-}
-env = await configureIndependentBrowser(env);
-process.env.CUA_MCP_COMMAND = process.execPath;
-process.env.CUA_MCP_ARGS = JSON.stringify([
-  "--import",
-  import.meta.resolve("tsx"),
-  fileURLToPath(new URL("./native-supervisor.ts", import.meta.url)),
-]);
-const runtime = await stageRuntimePackages(restoredPackageSources());
+import { IndependentBrowserUnavailableError } from "@core/native-host/browserConnector";
+
 try {
-  env.NODE_REPL_NODE_MODULE_DIRS = [
-    runtime.root,
-    env.NODE_REPL_NODE_MODULE_DIRS,
-  ]
-    .filter(Boolean)
-    .join(delimiter);
-  env.NODE_REPL_TRUSTED_CODE_PATHS = [
-    runtime.root,
-    env.NODE_REPL_TRUSTED_CODE_PATHS,
-  ]
-    .filter(Boolean)
-    .join(delimiter);
-  process.env.CUA_MCP_ENV = JSON.stringify(env);
-  await import("./demo");
-} finally {
-  await runtime.dispose();
+  await import("./restored-demo-runtime");
+} catch (error) {
+  if (!(error instanceof IndependentBrowserUnavailableError)) throw error;
+  const root = fileURLToPath(new URL("../../../", import.meta.url));
+  const extension = fileURLToPath(
+    new URL("../../browser-extension/dist/native-extension", import.meta.url),
+  );
+  console.error(
+    [
+      "浏览器尚未连接；本次没有发送 DeepSeek 请求或执行页面操作。",
+      error.reason === "directory_missing"
+        ? "配置的本地 host 目录不存在，请先在项目中运行 npm run install:chrome。"
+        : "未发现 Core CUA 的浏览器连接。",
+      "在日常 Chrome 打开 chrome://extensions，开启开发者模式，加载已解压的扩展：",
+      extension,
+      "若扩展已加载，请检查扩展错误，并在项目中运行 npm run install:chrome 后重新加载扩展。",
+      `项目目录：${root}`,
+      "然后重试：npm run demo:deepseek -- --check-browser",
+      "连接检查通过后，再输入你的自然语言操作指令。",
+    ].join("\n"),
+  );
+  process.exitCode = 1;
 }

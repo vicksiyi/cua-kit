@@ -1,6 +1,17 @@
 import { lstat, readdir } from "node:fs/promises";
 import { isAbsolute, join } from "node:path";
 
+export class IndependentBrowserUnavailableError extends Error {
+  constructor(public readonly reason: "directory_missing" | "no_endpoints") {
+    super(
+      reason === "directory_missing"
+        ? "The configured independent browser host directory does not exist."
+        : "No independent browser host is running. Load the Core CUA extension in Chrome first.",
+    );
+    this.name = "IndependentBrowserUnavailableError";
+  }
+}
+
 export async function assertPrivateEndpointDirectory(directory: string) {
   if (!isAbsolute(directory))
     throw Error("Endpoint directory must be absolute");
@@ -17,7 +28,13 @@ export async function assertPrivateEndpointDirectory(directory: string) {
 
 /** Discover descriptors only inside the explicitly configured independent installation. */
 export async function discoverEndpointFiles(directory: string) {
-  await assertPrivateEndpointDirectory(directory);
+  try {
+    await assertPrivateEndpointDirectory(directory);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT")
+      throw new IndependentBrowserUnavailableError("directory_missing");
+    throw error;
+  }
   const files: string[] = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (!entry.isDirectory() || !entry.name.startsWith("core-cua-")) continue;
@@ -30,9 +47,7 @@ export async function discoverEndpointFiles(directory: string) {
     }
   }
   if (!files.length)
-    throw Error(
-      "No independent browser host is running. Load the Core CUA extension in Chrome first.",
-    );
+    throw new IndependentBrowserUnavailableError("no_endpoints");
   return files.sort();
 }
 

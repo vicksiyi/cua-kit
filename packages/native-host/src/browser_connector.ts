@@ -72,4 +72,8 @@ export async function createBrowserServiceConnector(
   };
 }
 
-export { parseEndpointFiles, discoverEndpointFiles } from "./endpoint_configuration";
+export {
+  parseEndpointFiles,
+  discoverEndpointFiles,
+  IndependentBrowserUnavailableError,
+} from "./endpoint_configuration";

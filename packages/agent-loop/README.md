@@ -178,3 +178,14 @@ clicks, screenshots or search results. It does not execute a page action.
 For the independent Chrome installation, load
 `packages/browser-extension/dist/native-extension` through Chrome's extensions
 page after `npm run install:chrome`. Keep Chrome running during the check.
+
+
+### Browser connection prerequisites
+
+The restored demo reports missing host directories and absent browser endpoints
+with actionable instructions (extension load path, native-host reinstall and
+`npm run demo:deepseek -- --check-browser`). These known startup failures exit 1
+before model/MCP startup without an unhandled stack trace. Private-directory
+permission violations and unexpected errors remain errors; they are not
+reclassified as a missing browser. This diagnostic does not establish browser
+connectivity or make a failed operation succeed.

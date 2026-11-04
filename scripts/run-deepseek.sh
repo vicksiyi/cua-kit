@@ -35,4 +35,4 @@ export CUA_MODEL_PROVIDER=deepseek
 export CUA_NATIVE_SUPERVISOR_PATH="${CUA_NATIVE_SUPERVISOR_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl}"
 export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 npm run build:reconstruction
-exec npm run demo:restored -w @core/agent-loop -- "$@"
+exec node --import tsx packages/agent-loop/src/restored-demo.ts "$@"
