@@ -283,8 +283,10 @@
     "packages/browser/src/vendor/bundled_zod.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
       "sha256": "821e2b689eba8d95f3ad0ff328d68ac8692baec955d993ecd21d2cdb9ba31760",
-      "status": "bundled-third-party-dependency-formatted-not-reconstructed",
-      "generator": "scripts/extract-bundled-validator.mjs"
+      "status": "upstream-zod-v3-adapter",
+      "generator": "scripts/extract-bundled-validator.mjs",
+      "dependency": "zod@3.25.76",
+      "validation": "original command schema tests plus upstream-zod differential parse/error/standard-schema/async matrix; exact historical version unproven"
     },
     "packages/browser/src/runtime/function_agent_transport.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
@@ -4699,7 +4701,10 @@
       "status": "direct import in sky telemetry confirmed"
     },
     "zod": {
-      "status": "bundled source identified; exact version not yet established"
+      "version": "3.25.76",
+      "workspace": "@core/browser",
+      "status": "upstream v3 used by browser command schemas and transport; original bundle exact version unknown; differential coverage verified",
+      "validation": "reconstruction/upstream-zod.test.ts and existing original command schema tests"
     }
   }
 }

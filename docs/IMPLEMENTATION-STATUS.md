@@ -892,3 +892,13 @@ Pinned classic-level 3.0.0 in @core/browser, matching @oai/browser-desktop's man
 A new integration test creates an isolated real LevelDB with the upstream native package, writes synthetic extensionInstanceId data and Local State, invokes the default reader through readProfiles, checks the returned profile/instance, verifies temporary database cleanup and reopens the source to verify the original data remains accessible. Numeric JSON, malformed JSON, empty and missing values exercise the original null/error semantics with real storage. It reads no personal browser profile. Existing differential lifecycle tests continue to cover injected import failures and operation order. This closes the ClassicLevel loader gap reported in 16.194; production browser host/extension integration as a whole remains incomplete.
 
 Validation: three-package build and complete reconstruction suite passed: 596 tests, zero failures (explicit test concurrency 4).
+
+### 16.196 Replace the extracted Zod runtime with upstream v3
+
+@core/browser now directly depends on zod 3.25.76. The 3,250-line formatted third-party runtime in vendor/bundled_zod.ts is replaced with a five-line upstream re-export, keeping existing application import paths stable. This also restores upstream TypeScript types instead of exporting any. The schema extraction script now emits the dependency adapter and cannot overwrite it with copied vendor implementation. Root/Agent Zod v4 remains separately resolved; browser validation uses its explicitly pinned v3 dependency.
+
+The installed browser-client bundle does not provide an exact historical version marker. 3.25.76 is the selected upstream version validated against the installed implementation, not a proven original version. Existing differential tests cover actual command payload/result schemas and transport; new tests compare 25 validator constructions over a shared valid/invalid value matrix, including parsed data, issue wire data, exact error messages, flatten/format, Standard Schema output and asynchronous nested refinement paths. The initial new test compared nested union ZodError objects across independent implementations and failed on constructors/stacks; it now compares their serializable issue data while still checking error names/messages and format/flatten results. No application behavior was changed to conceal that test-fixture mismatch.
+
+This removes the copied browser-client validator dependency. It does not claim byte-identical upstream source or full equivalence of every Zod API, nor does it complete the remaining service bundle/Playwright/native/runtime work.
+
+Validation: three-package build passed; full suite passes with 598 tests and zero failures (concurrency 4).

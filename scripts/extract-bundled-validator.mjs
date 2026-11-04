@@ -19,24 +19,12 @@ const find = (name) => {
     throw new Error(`Bundle symbol missing: ${name}; re-review version`);
   return result;
 };
-const start = find("v").statement.start,
-  end = find("Kt").declaration.end;
-const helper = ["e", "t"]
-  .map((name) => {
-    const { declaration } = find(name);
-    return source.slice(declaration.start, declaration.end);
-  })
-  .join(",");
-const code =
-  "// @ts-nocheck\n// Exact bundled third-party dependency, formatted only; NOT counted as reconstructed application code.\nvar " +
-  helper +
-  ";\n" +
-  source.slice(start, end) +
-  ";\nconst bundledZodNamespace: any = v;\nexport {bundledZodNamespace as z};\n";
+// The validator is upstream code. Preserve the verified dependency adapter rather
+// than copying its minified implementation back into the production tree.
 await mkdir("packages/browser/src/vendor", { recursive: true });
 await writeFile(
   "packages/browser/src/vendor/bundled_zod.ts",
-  await format(code, { parser: "typescript" }),
+  '/** Upstream Zod v3, pinned by @core/browser; validated against the installed CUA bundle. */\nexport { z } from "zod";\n',
 );
 const selected = [
   "Ju",
