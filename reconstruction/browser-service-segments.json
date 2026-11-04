@@ -139,6 +139,31 @@
       "end": 99874,
       "kind": "Literal"
     },
+    "EC": {
+      "start": 100334,
+      "end": 100364,
+      "kind": "Literal"
+    },
+    "TC": {
+      "start": 100368,
+      "end": 100400,
+      "kind": "Literal"
+    },
+    "CC": {
+      "start": 100404,
+      "end": 100443,
+      "kind": "Literal"
+    },
+    "AC": {
+      "start": 100447,
+      "end": 100463,
+      "kind": "Literal"
+    },
+    "PC": {
+      "start": 100467,
+      "end": 100491,
+      "kind": "Literal"
+    },
     "IC": {
       "start": 100494,
       "end": 100618,
@@ -6373,6 +6398,21 @@
       "start": 1447267,
       "end": 1450373,
       "kind": "ClassExpression"
+    },
+    "H6": {
+      "start": 1450469,
+      "end": 1450817,
+      "kind": "FunctionDeclaration"
+    },
+    "Gx": {
+      "start": 1450824,
+      "end": 1450904,
+      "kind": "ClassExpression"
+    },
+    "uce": {
+      "start": 1450905,
+      "end": 1451554,
+      "kind": "FunctionDeclaration"
     },
     "W6": {
       "start": 1451563,

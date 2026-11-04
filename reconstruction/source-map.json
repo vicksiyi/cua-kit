@@ -4244,6 +4244,22 @@
       ],
       "status": "reconstructed-repl-config-bridge",
       "validation": "Six original read/write/error/TTL/session traces and four controlled overlapping-refresh traces verify shared pending identity, cache expiry, newest-generation selection, stale failure retry and cross-bridge serialized updates. Actual Preferences and host-default bridge integration tested with synthetic REPL config. No live user configuration mutation."
+    },
+    "packages/browser/src/service/runtime/browser_access.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "H6",
+        "Gx",
+        "uce",
+        "TC",
+        "EC",
+        "CC",
+        "AC",
+        "PC"
+      ],
+      "status": "reconstructed-browser-access-verification",
+      "validation": "18 original traces compare executor capture, raw session/turn metadata, per-turn concurrent/failure cache, SPKI key handling, RPC/timeouts, exact serialized grant and signature failure/cleanup. Real framed Unix socket + synthetic Ed25519 key/grants verifies nonce size and one request per turn. No production key, access host or user settings are used; privileged connection wiring remains host supplied."
     }
   },
   "embeddedPackages": {
