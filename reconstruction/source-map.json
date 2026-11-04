@@ -4079,6 +4079,40 @@
       ],
       "status": "reconstructed-elicitation-telemetry",
       "validation": "640 original span/result-attribute combinations cover authentication kinds, automatic review, reviewer identity, outcomes, unsupported/takeover precedence and guardian timeout. Uses restored guardian timeout classification and explicit span host."
+    },
+    "packages/browser/src/service/runtime/browser_directory.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "yb",
+        "mb",
+        "fb"
+      ],
+      "status": "reconstructed-browser-directory",
+      "validation": "17 original directory traces cover shared refresh, Dot concurrent connection/reuse/replacement and capability rejection, transport/info/close failures, list suppression, browser close tracking and pending-refresh disposal. Original turn-ended tracker comparison verifies session/turn callback replacement, removal before awaiting, failure redaction and idempotent disposal. Uses restored default selection helpers. Discovery/transport/API adapters remain explicit."
+    },
+    "packages/browser/src/service/runtime/browser_selection.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "hb",
+        "NA",
+        "Wy",
+        "U6",
+        "q6",
+        "rce",
+        "bb",
+        "gb",
+        "nce",
+        "ds",
+        "oce",
+        "j6",
+        "jB",
+        "L6",
+        "Wx"
+      ],
+      "status": "reconstructed-browser-selection",
+      "validation": "Original ranking matrices cover exact/hashless, origin/path, hostname/hierarchy, local URLs, preferred extension and fallback order; alias/default identity and host hierarchy comparisons, provider failure dispatch, 30 async URL-selection traces, real deadline and default directory assembly. No live browser inventory claim."
     }
   },
   "embeddedPackages": {

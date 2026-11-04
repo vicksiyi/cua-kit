@@ -682,3 +682,11 @@ Restored mH/nhe/ohe/fH/W6/rhe in `runtime/host.ts`: privileged REPL gate, runtim
 Restored G6 in `runtime/elicitation_telemetry.ts`, using the existing guardian timeout classifier and supplied span implementation. Preserves automatic-review/user-wait names, auth stage, unsupported-over-takeover precedence, reviewer projection and result classification.
 
 Validation: 16 original host traces, real temporary filesystem operations, original REPL-gate comparison and 640 original telemetry combinations. Type checks and all 518 tests pass. This does not establish a runnable privileged production host: directory/transport/config/access verification and runtime bootstrap are still incomplete; no real broker or model request is made.
+
+### 16.168 Browser directory, URL selection and turn-ended lifecycle
+
+Restored yb/mb/fb in `runtime/browser_directory.ts`: shared browser refresh, public listing, default/URL lookup, preferred windows, Dot permission checks, connection sharing, pipe-change replacement, capability validation, close tracking and disposal. Turn-ended tracking removes matching callbacks before awaiting, isolates failures, supports per-session callback replacement and unregisters once.
+
+`browser_selection.ts` restores browser aliases, preference/default ranking, URL matching tiers, local URL preference, hostname hierarchy, tab enumeration and timeout behavior. Directory uses these as real defaults; discovery, transport and browser API adapters remain explicit dependencies.
+
+Validation: 17 original directory traces, original turn-ended lifecycle trace, URL ranking/alias/default/hierarchy comparisons, provider error paths, 30 asynchronous URL-selection traces, deadline and default-directory integration. Type checks and all 521 tests pass. Synthetic providers are used; real inventory/transport discovery, config/access verification and full runtime bootstrap remain incomplete.
