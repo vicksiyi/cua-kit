@@ -15,3 +15,20 @@ await build({
   footer: { js: "codex = codex.startup;" },
   legalComments: "eof",
 });
+
+await build({
+  entryPoints: ["packages/browser-extension/src/foreign_frame_entry.ts"],
+  outfile:
+    "packages/browser-extension/dist/content-scripts/foreign-frame-monitor.js",
+  bundle: true,
+  format: "iife",
+  globalName: "foreignFrameMonitor",
+  platform: "browser",
+  target: "chrome120",
+  define: {
+    "import.meta.env.ENTRYPOINT": '"foreign-frame-monitor"',
+    "import.meta.env.MODE": '"production"',
+  },
+  footer: { js: "foreignFrameMonitor = foreignFrameMonitor.startup;" },
+  legalComments: "eof",
+});

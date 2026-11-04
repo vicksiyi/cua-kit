@@ -422,3 +422,30 @@ create/child-claim paths. Differential tests compare ownership/active guards, er
 paths and deferred-mute races with the original closure. The RPC foundation fixture
 also verifies created tabs are muted then restored when observed. No new release-
 time unmute was added: the inspected source restores on observation changes.
+
+
+### Foreign-extension frame monitor
+
+`foreign_frame_dom.ts` restores the shared background jy/content R closure as a
+self-contained injectable function. It scans existing/added elements and open or
+Chrome-exposed closed shadow roots, handles src mutations, leaves own-extension and
+web frames intact, and blanks foreign-extension iframe content via srcdoc (legacy
+FRAME uses about:blank). Presence/removal helpers retain original state guards.
+
+`createForeignFrameMonitor` restores document-ID/lease caching, concurrent ensure
+deduplication, navigation/debugger invalidation, per-document injection, all-frame
+ping/file fallback, replacement/removal and waiting for bounded in-flight requests
+before cleanup. The timeout bounds the wait, not cancellation of Chrome execution.
+The build now also emits content-scripts/foreign-frame-monitor.js using the same
+upstream WXT runtime with its own original entrypoint namespace.
+
+Foundation creates one monitor when createHandlerClass supplies browser-family/
+internal-URL helpers; handlers initialize it and sessions share track/ensure/remove.
+The existing lease and content timeout runtime are reused. Differential tests cover
+cache/events/leases/fallback and removal/retracking races. Chromium compares both
+full content entries and serialized installers across shadow capabilities, dynamic
+frames, cleanup and reinjection; Chrome's closed-shadow API is explicitly simulated.
+The foundation RPC fixture checks injection on claim and removal at turn end.
+
+Complete startup, popup interception, authentication, mentions, other scripts and
+production manifest/assets/native-host installation remain pending.

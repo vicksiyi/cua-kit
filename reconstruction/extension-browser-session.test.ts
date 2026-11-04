@@ -814,6 +814,24 @@ test("extension foundation shares identity, lease singleton and debugger state a
         return tab;
       },
     },
+    webNavigation: {
+      onCommitted: { addListener() {} },
+      async getAllFrames({ tabId }: { tabId: number }) {
+        return [
+          {
+            frameId: 0,
+            documentId: `doc-${tabId}`,
+            documentLifecycle: "active",
+          },
+        ];
+      },
+    },
+    scripting: {
+      async executeScript(options: any) {
+        trace.push(["frame.execute", options.func?.name, options.target]);
+        return [{ documentId: `doc-${options.target.tabId}`, result: true }];
+      },
+    },
     tabGroups: {
       onRemoved: { addListener() {} },
       async get(id: number) {
@@ -912,7 +930,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
           return {};
         }
       } as any,
-      initializeForeignExtensionFrameMonitor() {},
       initializePopupInterceptor() {},
       getUserTabs: async () => [],
       getUserHistory: async () => [],
@@ -934,7 +951,7 @@ test("extension foundation shares identity, lease singleton and debugger state a
     other = new Handler(),
     sent: any[] = [];
   assert.equal(handler.tabLeases, other.tabLeases);
-  assert.equal(detachListeners, 1);
+  assert.equal(detachListeners, 2); // Shared debugger plus foreign-frame cache invalidation.
   const peer = new ExtensionBrowserPeer(
     { setMessageCallback() {}, sendMessage: (value) => sent.push(value) },
     handler,
@@ -949,6 +966,15 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
   });
   assert.equal(sent[0].result.id, 4);
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "frame.execute" &&
+        entry[1] === "installForeignFrameMonitor" &&
+        entry[2].documentIds[0] === "doc-4",
+    ),
+  );
+  assert.equal(await foundation.frameMonitor!.ensure(4), true);
   assert.equal(tabs.get(4).mutedInfo.muted, true);
   assert.equal(foundation.overlay.readCursorOverlayState(4).sessionId, "s");
   assert.equal(foundation.overlay.isBrowserControlActive(), true);
@@ -1075,6 +1101,15 @@ test("extension foundation shares identity, lease singleton and debugger state a
           entry[2].badge === null,
       ),
   );
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "frame.execute" &&
+        entry[1] === "removeForeignFrameMonitor" &&
+        entry[2].allFrames === true,
+    ),
+  );
+  assert.equal(await foundation.frameMonitor!.ensure(4), false);
   favicons.dispose();
 });
 

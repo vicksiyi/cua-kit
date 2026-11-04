@@ -1,3 +1,4 @@
+import { createForeignFrameMonitor } from "./foreign_frame_monitor";
 import { createTabAudioController } from "./tab_audio";
 import { createContentRuntime } from "./content_runtime";
 import { createObservedTabsClass } from "./observed_tabs";
@@ -83,28 +84,54 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     setTimeout: host.setTimeout,
     clearTimeout: host.clearTimeout,
   };
+  let frameMonitor: ReturnType<typeof createForeignFrameMonitor> | undefined;
   function createHandlerClass(
     handlerDependencies: Omit<
       BrowserCommandDependencies,
-      keyof typeof handlerBase | "Session"
+      | keyof typeof handlerBase
+      | "Session"
+      | "initializeForeignExtensionFrameMonitor"
     >,
     sessionDependencies: Omit<
       BrowserSessionDependencies,
-      keyof typeof sessionBase
+      | keyof typeof sessionBase
+      | "trackFrameMonitor"
+      | "ensureFrameMonitor"
+      | "removeFrameMonitor"
     >,
   ) {
+    frameMonitor ??= createForeignFrameMonitor({
+      chrome: host.chrome,
+      tabLeases,
+      contentRuntime,
+      isInternalUrl: (url) =>
+        sessionDependencies.isInternalTab(
+          handlerDependencies.browserFamily(
+            handlerDependencies.navigator.userAgent,
+            false,
+          ),
+          url,
+        ),
+    });
     const Session = createBrowserSessionClass({
       ...sessionDependencies,
       ...sessionBase,
+      trackFrameMonitor: frameMonitor.track,
+      ensureFrameMonitor: frameMonitor.ensure,
+      removeFrameMonitor: frameMonitor.remove,
     });
     return createBrowserCommandHandlerClass({
       ...handlerDependencies,
       ...handlerBase,
       Session,
+      initializeForeignExtensionFrameMonitor: frameMonitor.initialize,
     });
   }
   return {
     contentRuntime,
+    get frameMonitor() {
+      return frameMonitor;
+    },
     tabAudio,
     observedTabs,
     overlay,

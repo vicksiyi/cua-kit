@@ -2202,3 +2202,34 @@ manifest/native host and installed-extension validation, real desktop/model
 integration and native source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 843 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.278 Foreign-frame DOM, content entry and background lifecycle
+
+Restored shared background jy/content R as self-contained foreign_frame_dom.ts,
+including own/foreign URL filtering, iframe srcdoc/legacy frame handling, open/closed
+shadow traversal, mutation watching, state guards and cleanup. The new foreign-frame
+content entry preserves original options and Promise startup, directly reusing
+WXT 0.20.25 with ENTRYPOINT=foreign-frame-monitor. Its installed artifact is hash-
+pinned separately (5158 bytes; recorded in extension-source.json).
+
+createForeignFrameMonitor restores the background lifecycle: event registration,
+lease identity, document cache, direct injection, fallback ping/file injection,
+navigation/debugger invalidation, replacement/removal, concurrent preparation and
+cleanup waiting for bounded in-flight work. Timeout does not cancel Chrome execution.
+Foundation creates one monitor with the provided original-derived browser-family/
+internal-URL helpers when creating a handler class; handlers initialize it and
+sessions share track/ensure/remove using actual shared leases/content runtime.
+
+Differential tests cover complete lifecycle traces and injection/removal/retracking
+races. Isolated Chromium tests compare original and rebuilt full entry plus serialized
+installers for open/closed shadow capabilities, dynamic frames, mutation, removal
+and reinjection. The closed-shadow Chrome capability is an explicit fixture.
+Foundation RPC integration verifies document injection on claimed tabs and all-frame
+cleanup on turn end. No real installed-extension permission behavior is proven.
+
+Full background startup, popup interception, authentication/mentions/other content
+scripts, production manifest/assets/native host and installed-extension E2E, real
+desktop/model integration and native source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 846 default regression tests passed. The separate native-supervisor suite was not rerun.

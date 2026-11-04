@@ -30,7 +30,14 @@
   },
   "validation": [
     "upstream-wxt.test.ts: runtime selection, timers, invalidation, duplicate/self events, navigation API and polling",
-    "extension-content-entry.test.ts: full startup, top/child frame, shadow DOM, badge/cursor/ping messages, repeated injection and removal suppression"
+    "extension-content-entry.test.ts: full startup, top/child frame, shadow DOM, badge/cursor/ping messages, repeated injection and removal suppression",
+    "extension-frame-dom.test.ts: full foreign-frame-monitor entry with shared upstream context and serialized DOM injection"
   ],
-  "build": "scripts/build-reconstructed-content.mjs consumes upstream packages directly; no copied/reimplemented framework runtime."
+  "build": "scripts/build-reconstructed-content.mjs consumes upstream packages directly; no copied/reimplemented framework runtime.",
+  "additionalEntrypoints": {
+    "foreign-frame-monitor": {
+      "import.meta.env.ENTRYPOINT": "foreign-frame-monitor",
+      "import.meta.env.MODE": "production"
+    }
+  }
 }
