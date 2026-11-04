@@ -3853,3 +3853,7 @@ No workaround or Chrome preference-file editing was used. The user must load
 packages/browser-extension/dist/native-extension once via Chrome's developer UI.
 Both external search prompts remain unaccepted, and the complete original feature
 scope is still unfinished.
+
+### 2026-11-05: external search evidence, not acceptance
+
+A real DeepSeek → MCP → reconstructed CUA → packaged native extension run in isolated Chromium navigated to Baidu, filled `deepseek` and clicked search. Baidu redirected to a captcha origin outside the test's explicitly approved origin; observation was declined and no first result was obtained. The live acceptance test correctly fails. Earlier authority-stage timeouts remain intermittent and unresolved. Temporary dist/CDP instrumentation was removed. Added opt-in external homepage and real-model checks, plus demo instructions selecting observed backends and stopping denied actions. See `reconstruction/baidu-live-verification.md`. Daily Chrome connection and both user search commands remain unaccepted.

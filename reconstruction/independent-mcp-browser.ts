@@ -20,6 +20,9 @@ export async function verifyIndependentMcpBrowser(
   pageUrl: string,
   hostDirectory?: string,
 ) {
+  const baiduSearch =
+    process.env.CUA_LIVE_BAIDU_TEST === "1" ||
+    process.env.CUA_BROWSER_BAIDU_PROBE === "1";
   const runtime = await stageRuntimePackages(restoredPackageSources());
   try {
     const env = await configureIndependentBrowser(
@@ -54,12 +57,13 @@ export async function verifyIndependentMcpBrowser(
       {
         requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
         elicit: async (params) => {
-          // This test authorizes only its own ephemeral local HTTP page.
+          // Test-only authorization: own local page, or the explicitly requested Baidu search origin.
 
           if (
             params.mode === "url" ||
             params._meta?.tool_name !== "access_browser_origin" ||
-            params._meta?.origin !== new URL(pageUrl).origin
+            params._meta?.origin !==
+              (baiduSearch ? "https://www.baidu.com" : new URL(pageUrl).origin)
           )
             return { action: "decline" };
           return { action: "accept", content: {} };
@@ -72,6 +76,8 @@ export async function verifyIndependentMcpBrowser(
     });
     let index = 0;
     const execute = async (code: string, expectImage = false) => {
+      if (process.env.CUA_BROWSER_BAIDU_PROBE)
+        console.error("PROBE CALL", code);
       const result = await turn.callTool(
         {
           id: `live-${++index}`,
@@ -84,6 +90,8 @@ export async function verifyIndependentMcpBrowser(
         .filter((item) => item.type === "text")
         .map((item) => item.text)
         .join("\n");
+      if (process.env.CUA_BROWSER_BAIDU_PROBE)
+        console.error("PROBE RESULT", text.slice(-3000));
       assert.equal(result.isError, false, text);
       if (expectImage)
         assert.ok(
@@ -94,14 +102,36 @@ export async function verifyIndependentMcpBrowser(
       return text;
     };
     try {
-      if (process.env.CUA_LIVE_DEEPSEEK_TEST === "1") {
+      if (process.env.CUA_BROWSER_BAIDU_PROBE === "1") {
+        await execute("await cua.getState();");
+        await execute('var probeBrowser = await cua.getBrowser({id:"1"});');
+        await execute(
+          'await probeBrowser.nameSession("🔎 百度诊断"); var probeTab = await probeBrowser.tabs.new();',
+        );
+        await execute('await probeTab.goto("https://www.baidu.com/");');
+        const snapshot = await execute(
+          "nodeRepl.write(await probeTab.playwright.domSnapshot());",
+        );
+        assert.ok(
+          snapshot.includes("textbox"),
+          "Baidu homepage has no observed search field",
+        );
+        assert.ok(
+          snapshot.includes("百度一下"),
+          "Baidu homepage search action was not observed",
+        );
+        return;
+      }
+      if (process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch) {
         loadEnvFile(resolve(".env"));
         const trace = createTerminalTrace();
         const initialMessages = await browserPreflight(turn, {
           onMessage: trace,
         });
         const result = await new AgentLoop(createDemoModel(), turn).run(
-          `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
+          baiduSearch
+            ? "访问百度 搜索 deepseek 给我返回第一条搜索结果"
+            : `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
           {
             initialMessages,
             onMessage: trace,
@@ -109,7 +139,31 @@ export async function verifyIndependentMcpBrowser(
           },
         );
         console.error("DEEPSEEK ANSWER", result.answer);
-        assert.match(result.answer, /action-completed-marker/);
+        if (baiduSearch) {
+          const observed = result.messages
+            .filter(
+              (message) => message.role === "tool" && !message.result.isError,
+            )
+            .flatMap((message) =>
+              message.role === "tool"
+                ? message.result.content
+                    .filter((item) => item.type === "text")
+                    .map((item) => item.text)
+                : [],
+            )
+            .join("\n");
+          assert.match(
+            observed,
+            /heading[^\n]*deepseek/i,
+            "No observed DeepSeek search-result heading",
+          );
+          assert.match(result.answer, /deepseek/i);
+          assert.match(
+            result.answer,
+            /https?:\/\//,
+            "No result link in the final answer",
+          );
+        } else assert.match(result.answer, /action-completed-marker/);
         return;
       }
       await execute("await cua.getState();");
