@@ -602,3 +602,8 @@ and actual model end-to-end verification remain pending.
 createBackgroundMessageRouter restores dR runtime message precedence, settings refresh,
 popup replies and leased page-event forwarding. Foundation binds runtime identity and
 the lease manager. Full production listener registration/startup is still pending.
+
+registerBackgroundRuntime now registers runtime connections/messages and existing browser
+event listeners, including lease recovery reporting and the original instance-ID init
+position. Foundation supplies lease and identity resources; full dR startup still needs
+transport/session/handler composition and its remaining prerequisites.

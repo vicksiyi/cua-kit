@@ -3062,3 +3062,28 @@ callbacks are fixtures. Full connection/event wiring and startup remain incomple
 
 Validation: eight package builds/type checks and all 925 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Background runtime listener registration
+
+registerBackgroundRuntime now performs the dR registration phase: start lease recovery,
+report rejected recovery through the stage reporter then the exact original console message,
+register runtime connections/messages, then reuse CDP/download/navigation listeners.
+Connection handling calls tab mentions before native status and reads manifest version
+for each connection. Synchronous mention failures prevent subsequent status registration.
+
+registerBrowserEventListeners accepts the instance-ID initializer at the original position
+between download-created and download-changed registration; its rejected promise is ignored
+as in dR. Existing direct users can omit this hook. Foundation binds the actual lease
+manager and instance-ID reader; transport/handler/router callbacks remain startup inputs.
+
+A source-extracted registration test compares normal operation, lease/identity rejection,
+mention exceptions, repeated version reads and broadcasts against dR. Existing CDP security
+and listener differential tests also pass. The extraction helper now supports call-chain
+paths so original catch handlers are tested, rather than dropping their behavior.
+
+This registration phase is implemented but the complete dR entrypoint, kernel/native
+session setup and remaining startup prerequisites are not yet assembled. Panel UI,
+native replacement and installed/browser/App/model end-to-end verification remain pending.
+
+Validation: eight package builds/type checks and all 926 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

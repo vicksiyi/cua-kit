@@ -94,3 +94,5 @@ export * from "./statsig_client";
 export * from "./statsig_data_adapter";
 
 export * from "./background_messages";
+
+export * from "./background_runtime";

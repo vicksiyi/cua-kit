@@ -17,6 +17,7 @@ export function registerBrowserEventListeners(
   chromeApi: Pick<typeof chrome, "debugger" | "downloads" | "webNavigation">,
   handler: BrowserEventHandler,
   broadcast: (send: (peer: BrowserEventPeer) => void) => void,
+  initializeInstanceId?: () => Promise<unknown>,
 ): void {
   chromeApi.debugger.onDetach.addListener((source) => {
     broadcast((peer) => peer.sendCdpDetach(source));
@@ -31,6 +32,7 @@ export function registerBrowserEventListeners(
   chromeApi.downloads.onCreated.addListener((download) => {
     handler.handleDownloadCreated(download);
   });
+  initializeInstanceId?.().catch(() => {});
   chromeApi.downloads.onChanged.addListener((change) => {
     handler.handleDownloadChanged(change);
   });

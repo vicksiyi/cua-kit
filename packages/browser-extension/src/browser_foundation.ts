@@ -1,3 +1,4 @@
+import { registerBackgroundRuntime } from "./background_runtime";
 import { createBackgroundMessageRouter } from "./background_messages";
 import { createExtensionFeatureService } from "./feature_service";
 import { createBrowserPluginInstallation } from "./plugin_installation_service";
@@ -218,6 +219,19 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     }));
   }
   return {
+    registerBackgroundRuntime(
+      dependencies: Omit<
+        Parameters<typeof registerBackgroundRuntime>[0],
+        "chrome" | "ensureLeases" | "initializeInstanceId"
+      >,
+    ) {
+      registerBackgroundRuntime({
+        ...dependencies,
+        chrome: host.chrome,
+        ensureLeases: () => tabLeases.getInstance().ensureInit(),
+        initializeInstanceId: instanceId,
+      });
+    },
     createBackgroundMessageRouter<Control>(
       dependencies: Omit<
         Parameters<typeof createBackgroundMessageRouter<Control>>[0],

@@ -58,6 +58,10 @@ export function extensionFunctionCalls(
     throw Error(`Missing extension function ${name}`);
   const pathOf = (node: any): string | undefined => {
     if (node?.type === "Identifier") return node.name;
+    if (node?.type === "CallExpression") {
+      const callee = pathOf(node.callee);
+      return callee == null ? undefined : `${callee}()`;
+    }
     if (node?.type === "MemberExpression" && !node.computed) {
       const owner = pathOf(node.object);
       return owner == null ? undefined : `${owner}.${node.property.name}`;
