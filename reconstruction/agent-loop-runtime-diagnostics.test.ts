@@ -95,3 +95,38 @@ test("transport errors and unresolved work are distinguished without raw error t
   d.requests.destroy();
   d.responses.destroy();
 });
+
+test("slow site-status transport failures identify the upstream boundary without exposing raw errors", () => {
+  const logs: string[] = [];
+  let clock = 0;
+  const d = createRuntimeDiagnostics(
+    (text) => logs.push(text),
+    () => clock,
+  );
+  const outbound = record(d.requests),
+    inbound = record(d.responses);
+  const request = line({
+    type: "authenticated_fetch",
+    id: "hidden-id",
+    request: {
+      url: "https://chatgpt.com/backend-api/aura/site_status?secret=private",
+    },
+  });
+  const response = line({
+    type: "authenticated_fetch_result",
+    id: "hidden-id",
+    ok: false,
+    error: "private-error-secret",
+  });
+  d.requests.write(request);
+  clock = 30004;
+  d.responses.write(response);
+  assert.deepEqual(outbound(), request);
+  assert.deepEqual(inbound(), response);
+  assert.match(logs.join("\n"), /site-status transport error \(30004 ms\)/);
+  assert.match(logs.join("\n"), /authenticated-fetch host connection/);
+  assert.doesNotMatch(logs.join("\n"), /hidden-id|secret|private/);
+  d.close();
+  d.requests.destroy();
+  d.responses.destroy();
+});

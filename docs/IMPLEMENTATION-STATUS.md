@@ -4424,3 +4424,25 @@ This is a failed acceptance with improved diagnostics, not a passing search
 verification. The earlier local-page DeepSeek success remains valid only for that
 local temporary-browser scenario. Daily Chrome and Baidu result acceptance remain
 open. Do not retry merely to seek a passing outcome without investigating timing.
+
+
+### Baidu latency localized to authenticated-fetch site status (2026-11-05)
+
+A model-free Baidu probe with CORE_CUA_RUNTIME_DIAGNOSTICS=1 completed and
+recorded upstream authenticated-fetch timing. site-status request #11 returned
+a transport error after 30004 ms; several identity requests also returned
+transport errors at approximately 30004 ms. Other fetch categories returned
+HTTP 200 or 429. These observations locate the recurring delay at the host
+transport/status-check boundary, not evidence of a CAPTCHA or slow DOM locator.
+They do not yet establish whether the underlying cause is authentication,
+network access or another native-supervisor condition.
+
+Installed-source differential testing confirms failed site-status results are
+not cached and the next command starts and awaits a fresh request. Existing
+security semantics are retained: no bypass, fabricated approval, failure cache
+or arbitrary timeout change was introduced. Optional runtime diagnostics now
+explain slow site-status transport failures without logging raw errors, URLs,
+credentials or request bodies, and forward the exact protocol bytes unchanged.
+Nine focused tests and AgentLoop type checking pass. The Baidu probe proves
+homepage observation only, not search acceptance. Next investigation is the
+underlying authenticated-fetch host transport failure.

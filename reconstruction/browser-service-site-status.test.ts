@@ -66,7 +66,15 @@ const source = originalServiceBindings(ordered, {
   hf: (build: () => any) => audit.push(build()),
 });
 function view(error: any) {
-  return { name: error.name, message: error instanceof TypeError && error.message.endsWith("?.trim is not a function") ? "<renamed env access>?.trim is not a function" : error.message, reason: error.reason };
+  return {
+    name: error.name,
+    message:
+      error instanceof TypeError &&
+      error.message.endsWith("?.trim is not a function")
+        ? "<renamed env access>?.trim is not a function"
+        : error.message,
+    reason: error.reason,
+  };
 }
 async function outcome(fn: () => any) {
   try {
@@ -255,4 +263,30 @@ async function blocking(Constructor: any) {
 }
 test("site status block audits and testing-mode bypass match original", async () => {
   assert.deepEqual(await blocking(SiteStatus), await blocking(source.D_));
+});
+
+test("failed site-status requests are not cached and the next command awaits a fresh request, matching original", async () => {
+  const run = async (Constructor: any) => {
+    const service = new Constructor();
+    let requests = 0;
+    const runtime = {
+      env: {},
+      fetch: async () => {
+        requests++;
+        throw Error("transport timeout");
+      },
+    };
+    const outcomes = [];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      outcomes.push(
+        await service.checkUrl(runtime, "https://www.baidu.com/", "chrome"),
+      );
+      assert.equal(service.cache.size, 0);
+      assert.equal(service.inflightRequests.size, 0);
+    }
+    return { requests, outcomes };
+  };
+  const restored = await run(SiteStatus);
+  assert.deepEqual(restored, await run(source.D_));
+  assert.equal(restored.requests, 2);
 });

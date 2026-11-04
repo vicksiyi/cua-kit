@@ -60,9 +60,18 @@ export function createRuntimeDiagnostics(
             ? `HTTP ${status}`
             : "response"
           : "transport error";
+      const elapsedMs = Math.max(0, Math.round(now() - entry.started));
       emit(
-        `fetch #${entry.sequence} ${entry.label} ${outcome} (${Math.max(0, Math.round(now() - entry.started))} ms)`,
+        `fetch #${entry.sequence} ${entry.label} ${outcome} (${elapsedMs} ms)`,
       );
+      if (
+        entry.label === "site-status" &&
+        message.ok !== true &&
+        elapsedMs >= 25000
+      )
+        emit(
+          "Slow upstream site-status transport failure; inspect the authenticated-fetch host connection. This is not evidence of a page-load timeout or a CAPTCHA. No authorization or policy setting was changed.",
+        );
     }
   }
   function stream(direction: "request" | "response") {

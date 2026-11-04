@@ -503,5 +503,12 @@
       "captcha as failure cause"
     ],
     "diagnostics": "On failure save only public baidu.com UI observations/screenshots outside temporary profile; no host descriptors or model credentials."
+  },
+  "baiduLatencyDiagnosis": {
+    "observation": "Model-free full-extension Baidu probe completed; authenticated_fetch site-status transport error at 30004 ms, identity failures around 30004 ms.",
+    "sourceParityTest": "reconstruction/browser-service-site-status.test.ts",
+    "diagnosticTest": "reconstruction/agent-loop-runtime-diagnostics.test.ts",
+    "conclusion": "Failed status checks are not cached; later commands await a fresh request. Underlying host transport failure cause unresolved.",
+    "unchanged": "Security gates and original request/cache behavior; no fabricated allow response or bypass."
   }
 }
