@@ -147,7 +147,8 @@
     "qm live evaluation store": "ExtensionStatsigEvaluationStore: upstream base/container reuse with overlay/retained values, cursor seeding and loadedAt details",
     "Vm live refresh methods": "createStatsigLiveRefresh: live response stale checks, cursor/value application, interval config, overlap prevention and replacement/stop lifecycle",
     "Kc assembled network": "ExtensionStatsigNetwork: shared extended core for ordinary evaluations and live overlays; reuse pinned upstream ordinary/delta methods",
-    "vs diagnostics": "ExtensionStatsigDiagnostics: shared public marker storage, syncType marker/event metadata, hasInternet response diagnostics"
+    "vs diagnostics": "ExtensionStatsigDiagnostics: shared public marker storage, syncType marker/event metadata, hasInternet response diagnostics",
+    "Vm client lifecycle": "statsigClientLifecycle: sync/async initialize, updateUserAsync, refreshValuesAsync and async implementations with restored sync diagnostics"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
@@ -216,6 +217,6 @@
     "difference": "Bundled StatsigClient adds refreshValuesAsync, enableLiveValuesAutoRefresh and live-refresh store behavior absent from public npm 3.33.4. Required Client injection prevents treating npm as drop-in. SDK delta restoration remains incomplete.",
     "networkBoundary": "ExtensionStatsigNetworkCore restores inspected dispatch/URL/diagnostic changes and composes successfully with live-overlay helper. Extended store/client and production feature-service assembly remain incomplete.",
     "storeBoundary": "Live store delta restored and compared against actual bundled qm/Bm/jm; client refresh/timer/default service assembly still pending.",
-    "clientBoundary": "Live refresh/scheduler helper restored; constructor/init/update/diagnostics and production default client assembly still incomplete."
+    "clientBoundary": "Lifecycle methods, diagnostics, live store/network/scheduler restored; constructor assembly and production default client still incomplete."
   }
 }

@@ -2968,3 +2968,28 @@ panel UI, native replacement and installed/model end-to-end verification remain 
 
 Validation: eight package builds/type checks and all 918 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Statsig client lifecycle methods
+
+Restored Vm initializeSync/initializeAsync, async initialization, updateUserAsync and
+refreshValuesAsync entry points and implementations as statsigClientLifecycle. Methods
+retain dynamic dispatch through the host and share the restored diagnostics facade.
+Initialization coalesces its pending promise and starts live scheduling only if that
+promise remains current. Logger start/storage readiness keep original exception boundaries.
+
+User updates reset the user, apply cached data and enter Loading; in-place refresh does
+none of those. Both reject late results after user identity changes, retain receivedAt,
+finalize results and return source/warnings/network/error details. Only failed user updates
+emit initialization_failure; refresh failures attach the error without that event.
+Wrapper exceptions normalize non-Error throws through the existing error-detail method.
+
+Two tests compare actual Vm prototype methods across 21 operation/failure combinations,
+plus promise coalescing/replacement/rejection and synchronous initialization order. They
+use adapter/store/logger fixtures and actual bundled diagnostics; no constructor, external
+network, full SDK or installed production extension was started.
+
+Full client constructor assembly and default feature-service binding remain unfinished,
+as do complete startup, panel UI, native replacement and real end-to-end verification.
+
+Validation: eight package builds/type checks and all 920 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

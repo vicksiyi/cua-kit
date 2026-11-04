@@ -608,3 +608,7 @@ mutating upstream prototypes. The complete extended SDK client is still not asse
 ExtensionStatsigDiagnostics restores bundled syncType and connectivity fields while
 sharing the pinned SDK marker store. Extended network requests use this facade; complete
 client lifecycle assembly remains pending.
+
+statsigClientLifecycle restores initialization, async user updates and in-place refresh,
+including distinct status/failure behavior and synchronization diagnostics. It is a method
+set for the final client; construction and default feature-service binding are still pending.
