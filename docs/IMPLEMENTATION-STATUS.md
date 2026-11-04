@@ -2632,3 +2632,32 @@ replacement and installed/native/model integration remain incomplete.
 
 Validation: eight package builds/type checks and all 893 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Side-panel authentication operation lifecycle
+
+Restored Yk/Qk/Jf/Xf/Wt/eR in side_panel_auth.ts. Enabled construction registers tab
+update/removal listeners and returns the message handler; disabled construction returns
+false without listeners. Persisted operations are filtered by original validators and
+processed through a shared queue. Matching nonexpired operations reuse their auth tab;
+otherwise login/logout/open creates the original URL and a ten-minute operation.
+Owner-window checks, focus ordering, callback timing and sender rejection are preserved.
+
+Completed navigation can focus the owner and send revalidation, including the logout
+login-page exception. State completion checks owner window, expiry and expected sign-in
+state, persists deletion before closing the auth tab, and swallows close failure. Removed
+auth/owner tabs delete the first matching operation; only auth-tab removal revalidates.
+Expired navigation deletes the operation without inventing a timer or closing a tab.
+Foundation exposes the handler bound to shared Chrome APIs and clock, leaving the auth
+refresh callback explicit until full lifecycle wiring is restored.
+
+Two differential tests compare validators and seventeen lifecycle/failure modes against
+hash-pinned installed bindings, including queued duplicate opens, moved tabs, exact expiry,
+invalid storage, callback exceptions and read/write/create/focus/remove/send failures.
+Chrome APIs are fixtures: no real authentication page, login/logout or tab mutation was
+performed. No third-party dependency was required by these inspected closures.
+
+Complete lifecycle/auth refresh integration, background startup, panel UI, native
+replacement and installed/native/model end-to-end validation remain incomplete.
+
+Validation: eight package builds/type checks and all 895 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

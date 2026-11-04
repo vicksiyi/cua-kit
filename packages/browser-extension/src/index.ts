@@ -62,3 +62,5 @@ export * from "./action_callout";
 export * from "./toolbar_state";
 
 export * from "./side_panel_messages";
+
+export * from "./side_panel_auth";

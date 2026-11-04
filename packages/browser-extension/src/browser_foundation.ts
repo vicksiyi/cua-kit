@@ -1,3 +1,4 @@
+import { createSidePanelAuthHandler } from "./side_panel_auth";
 import { createSidePanelMessageHandlers } from "./side_panel_messages";
 import { createToolbarStateReporter } from "./toolbar_state";
 import { createActionCallout } from "./action_callout";
@@ -210,6 +211,12 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    createSidePanelAuthHandler(
+      workUrl: string | null | undefined,
+      onAuthState?: () => void,
+    ) {
+      return createSidePanelAuthHandler(host, workUrl, onAuthState);
+    },
     createSidePanelMessageHandlers(
       dependencies: Omit<
         Parameters<typeof createSidePanelMessageHandlers>[0],

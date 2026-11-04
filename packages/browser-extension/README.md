@@ -547,3 +547,8 @@ suppression, changed-state override and six-hour alarm registration. Side-panel 
 and load-event handlers preserve exact extension-page sender gates and reply behavior.
 Foundation binds these factories to shared Chrome APIs, clock and instance-ID reader;
 metric transport and full startup registration remain explicit integration work.
+
+Side-panel authentication now restores the original queued operation manager, login/
+logout/open tab reuse, exact sender gate, state completion, expiry and removal handling.
+Foundation binds Chrome and its clock; auth-refresh callback remains explicit. This is
+not a real sign-in verification or full background lifecycle integration.

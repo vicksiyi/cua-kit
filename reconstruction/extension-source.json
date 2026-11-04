@@ -135,7 +135,8 @@
     "Ok/Ff/Pk": "createSidePanelEntrypoints: startup order, icon/open-state behavior, shortcut toggle and no-sidePanel fallback",
     "uk/dk/hk/fk/pk/mk/gk/Pf/xf/No": "action_callout.ts: label normalization, badge hashing/initials, serialized callout show/clear and seen-version persistence",
     "jk/Xi/qk": "createToolbarStateReporter: queued toolbar pin telemetry, daily snapshots and alarm registration",
-    "wk/Kk/Zk": "createSidePanelMessageHandlers/isSidePanelLoadEvent: instance identity and load telemetry with exact sender gates"
+    "wk/Kk/Zk": "createSidePanelMessageHandlers/isSidePanelLoadEvent: instance identity and load telemetry with exact sender gates",
+    "Yk/Qk/Jf/Xf/Wt/eR": "side_panel_auth.ts: serialized auth operation storage, tab reuse/focus, completion, expiry and removal/revalidation"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
