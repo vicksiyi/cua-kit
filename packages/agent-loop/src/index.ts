@@ -8,3 +8,8 @@ export {
   parseNodeReplTurnEvent,
   type NodeReplTurnEvent,
 } from "./node-repl-turn";
+export {
+  createTerminalElicitation,
+  promptElicitation,
+  type ElicitationIO,
+} from "./terminal-elicitation";

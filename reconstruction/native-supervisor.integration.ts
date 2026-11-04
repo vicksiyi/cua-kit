@@ -543,13 +543,21 @@ for (const allowFixtureOrigin of [false, true])
           stderr: "pipe",
         },
         {
-          elicit: (params) => {
+          elicit: async (params) => {
             elicitations.push(params);
             assert.match(params.message, /fixture\.invalid/);
-            return {
-              action: allowFixtureOrigin ? "accept" : "decline",
-              content: {},
-            };
+            const { promptElicitation } =
+              await import("../packages/agent-loop/src/terminal-elicitation");
+            return promptElicitation(params, {
+              write() {},
+              async ask(prompt) {
+                return prompt.startsWith("Enter form")
+                  ? "{}"
+                  : allowFixtureOrigin
+                    ? "a"
+                    : "d";
+              },
+            });
           },
           requestMeta: () => ({
             "x-codex-turn-metadata": {

@@ -1,3 +1,4 @@
+import { createTerminalElicitation } from "./terminal-elicitation";
 import { NodeReplTurnClient, parseNodeReplTurnEvent } from "./node-repl-turn";
 import { AgentLoop } from "./loop";
 import { McpToolClient } from "./mcp-client";
@@ -37,6 +38,7 @@ const turnEvent =
   process.env.CUA_MCP_TURN_EVENT === undefined
     ? undefined
     : parseNodeReplTurnEvent(JSON.parse(process.env.CUA_MCP_TURN_EVENT));
+const controller = new AbortController();
 const client = await McpToolClient.connect(
   {
     command,
@@ -44,9 +46,11 @@ const client = await McpToolClient.connect(
     env: serverEnv as Record<string, string>,
     stderr: "inherit",
   },
-  { requestMeta: () => requestMeta as Record<string, unknown> },
+  {
+    requestMeta: () => requestMeta as Record<string, unknown>,
+    elicit: createTerminalElicitation({ signal: controller.signal }),
+  },
 );
-const controller = new AbortController();
 const interrupt = () => controller.abort();
 process.once("SIGINT", interrupt);
 try {

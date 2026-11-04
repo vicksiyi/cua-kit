@@ -1446,3 +1446,15 @@ Five new lifecycle tests cover success, failure, cancellation, cleanup failures 
 Remaining work includes real backend/extension deployment, native app integration, an actual caller approval UI, real-model end-to-end validation and the native supervisor's readable source. This completes the tested demo's host turn dispatch, not the entire requested system.
 
 Validation: AgentLoop type check passed. All 751 default tests and all five opt-in native integration tests passed.
+
+### 16.249 Interactive demo form elicitation with upstream validation
+
+Added independently authored promptElicitation and createTerminalElicitation. The generic demo automatically attaches the host callback only when stdin and stderr are TTYs. It presents the server message and schema, requires an explicit accept/decline/cancel choice, and collects field values as a JSON object. It reuses AjvJsonSchemaValidator from the already-installed MCP SDK, including JSON schema constraints and formats; no custom validator or vendored third-party implementation was introduced. Schema defaults are not auto-applied.
+
+The terminal adapter serializes requests, strips terminal control sequences from server-provided display text and cancels on EOF, prompt interrupt or caller cancellation. Non-interactive streams expose no terminal UI capability. URL elicitation is not advertised and the handler returns cancel if called with it. The injectable IO interface leaves model and transport contracts unchanged and lets embedding agents supply their own interaction layer.
+
+Three new tests cover explicit choices/EOF/URL, JSON and schema retry without defaults, terminal escape removal and non-TTY behavior. Native Chromium accept/decline scenarios now use this actual form logic with scripted fixture IO instead of returning fixed ElicitResult objects. A real PTY run detected the terminal, rejected count=0 for minimum=1, accepted count=2 and returned cancel on EOF during the next request; the process exited cleanly. The PTY probe used no model or browser action. Full regression results follow.
+
+The caller now has a working terminal confirmation flow. Remaining major gaps are production browser/desktop deployment, real-model validation and readable native supervisor source; the test socket backend and installed binary/WASM dependencies remain explicit.
+
+Validation: AgentLoop type check passed; all 754 default tests and all five native integration tests passed.
