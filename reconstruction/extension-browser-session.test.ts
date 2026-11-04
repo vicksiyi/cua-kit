@@ -702,6 +702,25 @@ test("extension foundation shares identity, lease singleton and debugger state a
   const { ExtensionBrowserPeer } =
     await import("../packages/browser-extension/src/browser_peer");
   const { deps, tabs, trace } = fixture(false);
+  tabs.get(4).status = "complete";
+  const inspectionCommands: string[] = [];
+  const policyTypes = [
+    "main_frame",
+    "sub_frame",
+    "stylesheet",
+    "script",
+    "image",
+    "font",
+    "object",
+    "xmlhttprequest",
+    "ping",
+    "csp_report",
+    "media",
+    "websocket",
+    "webtransport",
+    "webbundle",
+    "other",
+  ];
   let stored: any = {},
     local: any = {},
     rules: any[] = [],
@@ -750,31 +769,55 @@ test("extension foundation shares identity, lease singleton and debugger state a
         return [{ id: 9, focused: true }];
       },
     },
+    permissions: {
+      async contains() {
+        return true;
+      },
+    },
     debugger: {
+      onEvent: { addListener() {}, removeListener() {} },
       onDetach: {
         addListener() {
           detachListeners++;
         },
+        removeListener() {
+          detachListeners--;
+        },
       },
-      async attach() {},
-      async detach() {},
+      async attach() {
+        inspectionCommands.push("attach");
+      },
+      async detach() {
+        inspectionCommands.push("detach");
+      },
       async sendCommand(_target: any, method: string) {
+        inspectionCommands.push(method);
+        if (method === "Page.getFrameTree")
+          return {
+            frameTree: { frame: { id: "root", url: "https://example.test/" } },
+          };
         return { method };
       },
     },
     declarativeNetRequest: {
       ResourceType: {
+        ...Object.fromEntries(policyTypes.map((type) => [type, type])),
         MAIN_FRAME: "main_frame",
         SUB_FRAME: "sub_frame",
         OBJECT: "object",
       },
-      RuleActionType: { MODIFY_HEADERS: "modifyHeaders" },
+      RuleActionType: {
+        MODIFY_HEADERS: "modifyHeaders",
+        ALLOW: "allow",
+        BLOCK: "block",
+      },
       HeaderOperation: { SET: "set" },
       async getSessionRules() {
         return rules;
       },
       async updateSessionRules(value: any) {
-        rules = value.addRules;
+        rules = rules.filter((rule) => !value.removeRuleIds?.includes(rule.id));
+        rules.push(...(value.addRules ?? []));
       },
     },
   };
@@ -808,7 +851,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
       } as any,
       initializeForeignExtensionFrameMonitor() {},
       initializePopupInterceptor() {},
-      networkPolicy: deps.networkPolicy,
       getUserTabs: async () => [],
       getUserHistory: async () => [],
       validateTabId() {},
@@ -849,10 +891,59 @@ test("extension foundation shares identity, lease singleton and debugger state a
   assert.equal(uuidCalls, 1);
   assert.equal(rules.length, 2);
   await peer.handleIncomingMessage({
+    id: 20,
+    method: "attach",
+    params: {
+      ...request,
+      tabId: 4,
+      networkPolicy: {
+        constraints: [
+          { kind: "domains", mode: "allowlist", patterns: ["other.test"] },
+        ],
+      },
+    },
+  });
+  const rejected = sent.pop();
+  assert.match(rejected.error.message, /outside the current policy/);
+  assert.equal(foundation.networkPolicy.getInstance().attachedPolicies.size, 0);
+  assert.equal(foundation.debuggerRuntime.attachedTabs.size, 0);
+  assert.equal(rules.length, 2);
+  assert.ok(rules.every((rule) => rule.id >= 1000000 && rule.id < 2000000));
+  inspectionCommands.length = 0;
+  await peer.handleIncomingMessage({
     id: 2,
     method: "attach",
-    params: { ...request, tabId: 4 },
+    params: {
+      ...request,
+      tabId: 4,
+      networkPolicy: {
+        constraints: [
+          { kind: "domains", mode: "allowlist", patterns: ["example.test"] },
+        ],
+      },
+    },
   });
+  assert.equal(sent[1].error, undefined);
+  assert.equal(
+    foundation.networkPolicy.getInstance().attachedPolicies.has(4),
+    true,
+  );
+  assert.deepEqual(inspectionCommands.slice(0, 6), [
+    "attach",
+    "Page.enable",
+    "Target.setAutoAttach",
+    "Page.getFrameTree",
+    "detach",
+    "attach",
+  ]);
+  assert.equal(
+    rules.some((rule) => rule.id >= 2000000),
+    true,
+  );
+  assert.equal(
+    rules.some((rule) => rule.id >= 1000000 && rule.id < 2000000),
+    true,
+  );
   assert.equal(foundation.debuggerRuntime.attachedTabs.has(4), true);
   await peer.handleIncomingMessage({
     id: 3,

@@ -7,7 +7,7 @@
     "bS": "tabGroups",
     "st": "tabLeases",
     "Ma": "tabFavicons",
-    "ar": "networkPolicy",
+    "ar": "networkPolicy; shared restored manager supplied by createExtensionBrowserFoundation",
     "wt": "attachedTabs",
     "_i": "targetOwners",
     "Ie": "overlay",

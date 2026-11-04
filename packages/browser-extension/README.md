@@ -182,7 +182,7 @@ original. These details are compared against the installed artifact.
 A session composition test uses this real manager and real DNR coordinator over
 isolated Chrome/storage fixtures to claim a tab, install header rules and release
 both at turn end. Instance-ID sourcing and shared component assembly are provided
-by the foundation below; full startup and group/favicon/overlay/network/auth
+by the foundation below; full startup and group/favicon/overlay/auth
 components are still required.
 
 ### Shared browser foundation and extension identity
@@ -197,16 +197,19 @@ read or mutate storage.
 
 `createExtensionBrowserFoundation(host)` is project-authored assembly around the
 restored components. Its `createHandlerClass(handlerDependencies, sessionDependencies)`
-shares one identity reader, lease class/singleton, debugger runtime and tab runtime
+shares one identity reader, lease class/singleton, network-policy manager, debugger runtime and tab runtime
 across dispatcher/sessions. Known restored dependencies override supplied residual
 fields, so accidental extra fields cannot replace them. Remaining capabilities,
-SIWC, group/favicon, network/overlay/monitor and application startup are still
+SIWC, group/favicon, overlay/monitor and application startup are still
 required. This is not an installable extension or a claim that original `dR` has
 been fully recovered.
 
 The composition test exercises RPC createTab/attach/executeCdp/turnEnded through
 these restored components with isolated Chrome APIs, asserting getInfo/lease ID
-agreement, one UUID, one debugger listener, and lease/rule/debugger cleanup. Identity
+agreement, one UUID, one persistent debugger listener, policy rejection/rollback,
+inspection-before-session-attach, and lease/rule/debugger cleanup. Policy and header
+DNR ranges coexist and are cleaned independently. The policy compiler, predicate
+and inspector are restored code; Chrome APIs remain fixtures. Identity
 cleanup tests mutate only fixture storage, never the user's installed extension.
 
 ### Browser Use network policy manager

@@ -1,3 +1,5 @@
+import { createNetworkPolicyManagerClass } from "./network_policy";
+import { createNetworkPolicyEnforcer } from "./network_policy_enforcement";
 import { createExtensionInstanceIdReader } from "./instance_id";
 import { createTabLeaseManagerClass } from "./tab_leases";
 import { createDebuggerRuntime } from "./debugger_runtime";
@@ -25,16 +27,23 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const tabLeases = createTabLeaseManagerClass({ ...host, instanceId });
   const debuggerRuntime = createDebuggerRuntime(host);
   const tabRuntime = createTabRuntime(host);
+  const networkPolicy = createNetworkPolicyManagerClass({
+    chrome: host.chrome,
+    now: host.now,
+    enforceActivePage: createNetworkPolicyEnforcer(host),
+  });
   const sessionBase = {
     ...debuggerRuntime,
     ...tabRuntime,
     chrome: host.chrome,
     tabLeases,
+    networkPolicy,
   };
   const handlerBase = {
     chrome: host.chrome,
     instanceId,
     tabLeases,
+    networkPolicy,
     getTab: tabRuntime.getTab,
     initializeDebugger: debuggerRuntime.initializeDebugger,
     setTimeout: host.setTimeout,
@@ -63,6 +72,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     instanceId,
     tabLeases,
+    networkPolicy,
     debuggerRuntime,
     tabRuntime,
     createHandlerClass,

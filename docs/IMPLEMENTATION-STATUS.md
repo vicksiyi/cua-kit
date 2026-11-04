@@ -1867,3 +1867,26 @@ startup/native-host packaging, remaining group/overlay/SIWC/monitor components,
 real desktop/DeepSeek integration and native source reconstruction remain open.
 
 Validation: all eight reconstructed packages built and passed type checks; all 814 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.265 Shared foundation network-policy wiring
+
+The browser foundation now constructs a single restored network-policy manager
+and supplies it to both command handler and sessions. Compilation/predicate defaults
+and the restored inspector are used, with the foundation's host clock/timers.
+Residual dependency types no longer require networkPolicy; accidental extra injected
+fields cannot replace the shared instance. This closes the assembly gap between
+the individually restored policy components and the existing RPC/session path.
+
+Expanded the foundation RPC composition test to use all restored policy components.
+It first rejects attachment when the existing frame is outside policy, confirms
+policy rollback without losing request-header rules, then attaches under a matching
+policy. It checks the inspector's detach occurs before session debugger attachment,
+both DNR ownership ranges coexist, and turnEnded cleans leases/rules/debugger state.
+Chrome permission/debugger/DNR/storage APIs remain explicit fixtures; this is not
+a claim of live installed-extension enforcement or full original dR startup.
+
+Full extension packaging/native host, remaining group/favicon/overlay/SIWC/monitors,
+real desktop/model integration and native source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 814 default regression tests passed. The separate native-supervisor suite was not rerun.
