@@ -1,0 +1,2708 @@
+{
+  "scope": "Installed CUA, Sky and CUA-REPL JavaScript modules; excludes browser bundle, extension, native executables and declaration fidelity",
+  "limitation": "Matching paths and hashes establish inventory/provenance only, not behavior, readable-source completeness or real-device acceptance",
+  "vendorRoot": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai",
+  "packages": [
+    {
+      "name": "cua",
+      "modules": 27,
+      "missingTargets": [],
+      "missingBuilt": [],
+      "files": [
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/core/display.js",
+          "sha256": "f6b026dec5d590f6719edb857600a8515c95c593345e8bb06fe98edca35103b6",
+          "target": "packages/cua/src/core/display.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/core/positive_pixels.js",
+          "sha256": "e0e3a4cb0113b99ed4177acfe405afd1d538d70f955a299fab2155747f782a91",
+          "target": "packages/cua/src/core/positive_pixels.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/core/screenshot_bytes.js",
+          "sha256": "1898dbdcc479016a588ca1fcc6e58f0d62074266f4a7f80530603491fd483071",
+          "target": "packages/cua/src/core/screenshot_bytes.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:fs/promises",
+              "dynamic": true,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:url",
+              "dynamic": true,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/cua.js",
+          "sha256": "4723fddd6ab6ebea521b5bd9b1e1635ef57845fd26cd84140a5b16a26c1e7529",
+          "target": "packages/cua/src/cua.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../oai_js_browser/dist/skill/scripts/browser-client.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../../project/cua/sky_js/src/sky.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/project/cua/sky_js/src/sky.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_state.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_state.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/get_apps.js",
+          "sha256": "d209775c9aec14191413a4017ef0e070b8f2fe122806216c8fb85c664f51449a",
+          "target": "packages/cua/src/get_apps.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../oai_js_core/src/UnreachableCaseError.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_core/src/UnreachableCaseError.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/get_browser_tabs.js",
+          "sha256": "cb299a0313fbe8e049b4f25b70237d3d154b170fb297bf6ac57fdb20dc3ce657",
+          "target": "packages/cua/src/get_browser_tabs.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/get_browsers.js",
+          "sha256": "2b12305ac41a9446ecbc221bc3ff0ee8fdf9f39d553f07ffdce89ed40a2564df",
+          "target": "packages/cua/src/get_browsers.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_browser_tabs.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_browser_tabs.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/get_state.js",
+          "sha256": "d6a44bdff38413cdcaea83c791267ad0bed0e1913bdc60a8c227b3c12d3cc372",
+          "target": "packages/cua/src/get_state.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_apps.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_apps.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_browsers.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_browsers.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/index.js",
+          "sha256": "2a24424f33d4d049f4d96d73616ae5ca86fd9c4347887977b0804851d52b1957",
+          "target": "packages/cua/src/index.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./cua.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/cua.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_linux_app.js",
+          "sha256": "385b113cee3aad81f71762e92a33553c97ee0c434c50c4b94a54e9f67f18f4d8",
+          "target": "packages/cua/src/tinysky_alt/bind_linux_app.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/display.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/display.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/positive_pixels.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/positive_pixels.js",
+              "exists": true
+            },
+            {
+              "specifier": "./one_screenshot.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/one_screenshot.js",
+              "exists": true
+            },
+            {
+              "specifier": "./require_plain_text.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/require_plain_text.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_mac_app.js",
+          "sha256": "1c210ebf411e196622c6fa294fd255df10ddbb44038ab4523e68d2dcc351ea14",
+          "target": "packages/cua/src/tinysky_alt/bind_mac_app.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/display.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/display.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/screenshot_bytes.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/screenshot_bytes.js",
+              "exists": true
+            },
+            {
+              "specifier": "./duration_seconds.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/duration_seconds.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_tab.js",
+          "sha256": "a693e078ecbaa34020cf0caa373edb9c525dad87fd3ada62706a07eadaa6dc2a",
+          "target": "packages/cua/src/tinysky_alt/bind_tab.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/display.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/display.js",
+              "exists": true
+            },
+            {
+              "specifier": "./duration_seconds.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/duration_seconds.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_windows_app.js",
+          "sha256": "61d568181a97aceb68beb7a5c0273f915febd75f4b2e61b8812bafc469f920c0",
+          "target": "packages/cua/src/tinysky_alt/bind_windows_app.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/display.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/display.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/positive_pixels.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/positive_pixels.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/screenshot_bytes.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/screenshot_bytes.js",
+              "exists": true
+            },
+            {
+              "specifier": "./require_plain_text.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/require_plain_text.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_bootstrap_emitter.js",
+          "sha256": "1272257bc91109db07ffb1a823c6e07272649e4120c7065d83f35f12496e656f",
+          "target": "packages/cua/src/tinysky_alt/create_bootstrap_emitter.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+          "sha256": "fe00757868fc4dd01b00d2cd1b315d7442497a4b33d7cd030450da4d47a114f0",
+          "target": "packages/cua/src/tinysky_alt/create_browser_api.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../get_browser_tabs.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_browser_tabs.js",
+              "exists": true
+            },
+            {
+              "specifier": "./tab_reference.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/tab_reference.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_documentation.js",
+          "sha256": "f0c7d893521612e6a710e97954543dd84ba87a15047b40aa16ca84b9dde47be6",
+          "target": "packages/cua/src/tinysky_alt/create_documentation.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_tinysky_alt.js",
+          "sha256": "d6940dd2fee85628fdff0d1bdbaeefaec358db20a5c6dfb00359ce9a1d364c0b",
+          "target": "packages/cua/src/tinysky_alt/create_tinysky_alt.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../oai_js_core/src/UnreachableCaseError.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_core/src/UnreachableCaseError.js",
+              "exists": true
+            },
+            {
+              "specifier": "../get_apps.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_apps.js",
+              "exists": true
+            },
+            {
+              "specifier": "../get_state.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_state.js",
+              "exists": true
+            },
+            {
+              "specifier": "./bind_linux_app.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_linux_app.js",
+              "exists": true
+            },
+            {
+              "specifier": "./bind_mac_app.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_mac_app.js",
+              "exists": true
+            },
+            {
+              "specifier": "./bind_windows_app.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_windows_app.js",
+              "exists": true
+            },
+            {
+              "specifier": "./create_bootstrap_emitter.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_bootstrap_emitter.js",
+              "exists": true
+            },
+            {
+              "specifier": "./create_browser_api.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+              "exists": true
+            },
+            {
+              "specifier": "./create_documentation.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_documentation.js",
+              "exists": true
+            },
+            {
+              "specifier": "./read_documentation.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/read_documentation.js",
+              "exists": true
+            },
+            {
+              "specifier": "./setup_browser.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/setup_browser.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../oai_js_browser/dist/skill/scripts/browser-client.js",
+              "dynamic": true,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../../../project/cua/sky_js/src/index.js",
+              "dynamic": true,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/project/cua/sky_js/src/index.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/duration_seconds.js",
+          "sha256": "6d38d0a24c934f1141cf35236f1f423b398da2521d2c94b12387fe54f60df6c9",
+          "target": "packages/cua/src/tinysky_alt/duration_seconds.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/globals.js",
+          "sha256": "18b8039f846a6e00206128530c5f59ff05bd361c655a858a4a27059ec0f63d23",
+          "target": "packages/cua/src/tinysky_alt/globals.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./create_tinysky_alt.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_tinysky_alt.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/one_screenshot.js",
+          "sha256": "22745e46cb646393e95a4190d973ccfe8991dd65750e3ea72076a9e5e3851015",
+          "target": "packages/cua/src/tinysky_alt/one_screenshot.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/read_documentation.js",
+          "sha256": "452e0e8e25e3802ec815512d8b165126ca6a7a01f057bf8e53108a461bcb8d09",
+          "target": "packages/cua/src/tinysky_alt/read_documentation.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:fs/promises",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/require_plain_text.js",
+          "sha256": "0a279d667c0e10a1e5c330f5ab66d2a8822ba42cee836733e50171d42052c64e",
+          "target": "packages/cua/src/tinysky_alt/require_plain_text.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/setup_browser.js",
+          "sha256": "a1cf70b2ec89d51f9bc33b056dbe31af9cc6fd605c365e93f5d0649d12748216",
+          "target": "packages/cua/src/tinysky_alt/setup_browser.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./bind_tab.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_tab.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/tab_reference.js",
+          "sha256": "d08f46f12ba96fd4a2844eae737697ab4ed51cf9a2beb6c5034362ca17108949",
+          "target": "packages/cua/src/tinysky_alt/tab_reference.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_browser/create_tinysky_browser.js",
+          "sha256": "a8967b5f784e0568fe89697eeda24259a63d8960ef9576d3f5512838db778001",
+          "target": "packages/cua/src/tinysky_browser/create_tinysky_browser.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../get_browsers.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/get_browsers.js",
+              "exists": true
+            },
+            {
+              "specifier": "../tinysky_alt/create_bootstrap_emitter.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_bootstrap_emitter.js",
+              "exists": true
+            },
+            {
+              "specifier": "../tinysky_alt/create_browser_api.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+              "exists": true
+            },
+            {
+              "specifier": "../tinysky_alt/create_documentation.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_documentation.js",
+              "exists": true
+            },
+            {
+              "specifier": "../tinysky_alt/setup_browser.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/setup_browser.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_vision_only/create_tinysky_vision_only.js",
+          "sha256": "485c62509de45fc8ee7a0b678c050082b2222151a652621219f13bd73a9f4873",
+          "target": "packages/cua/src/tinysky_vision_only/create_tinysky_vision_only.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/display.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/display.js",
+              "exists": true
+            },
+            {
+              "specifier": "../core/positive_pixels.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/core/positive_pixels.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_vision_only/globals.js",
+          "sha256": "35a95ec3b269640d51b7d564418bb01ca54128b19a054e43f2c29fc0970378c2",
+          "target": "packages/cua/src/tinysky_vision_only/globals.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../project/cua/sky_js/src/sky.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua/dist/project/cua/sky_js/src/sky.js",
+              "exists": true
+            },
+            {
+              "specifier": "./create_tinysky_vision_only.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua/dist/lib/js/oai_js_cua/src/tinysky_vision_only/create_tinysky_vision_only.js",
+              "exists": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sky",
+      "modules": 62,
+      "missingTargets": [],
+      "missingBuilt": [],
+      "files": [
+        {
+          "source": "sky/dist/project/cua/sky_js/src/core/cli.js",
+          "sha256": "2c93f5b2abde4dbfb0e2ceb9fa724c883d30f61eb937cb9b51ba65f708e9c094",
+          "target": "packages/sky/src/core/cli.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:child_process",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/core/package_bin.js",
+          "sha256": "fdfb9aebfb8ffb496c8ddc673ed1b2e6eed536888ad52147d7d91b5486e24b34",
+          "target": "packages/sky/src/core/package_bin.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:path",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:url",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/core/uint8.js",
+          "sha256": "866164e4a4f919cf6af4921a0670372358f0d92d8f0bcd3e0534297c70b34b6a",
+          "target": "packages/sky/src/core/uint8.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:fs/promises",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/create_client.js",
+          "sha256": "5dc4a74434f382e318b596764054bf647fd13d3c9dea9ce5e8464a5c13fa2d81",
+          "target": "packages/sky/src/create_client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../../lib/js/oai_js_core/src/mirror_map.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js_core/src/mirror_map.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../../lib/js/oai_js_core/src/UnreachableCaseError.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js_core/src/UnreachableCaseError.js",
+              "exists": true
+            },
+            {
+              "specifier": "./targets/linux/create_client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/create_client.js",
+              "exists": true
+            },
+            {
+              "specifier": "./targets/mac/create_client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/create_client.js",
+              "exists": true
+            },
+            {
+              "specifier": "./targets/windows/create_client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/windows/create_client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/index.js",
+          "sha256": "895d7be648bef5b11b3e562fb1838161a162892b74792469488637665252bdfc",
+          "target": "packages/sky/src/index.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./sky.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/sky.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/load_options.js",
+          "sha256": "0ddd5df4674ae2696550cd2ac41583caef9dad9b58bd363559fda716c2ed8341",
+          "target": "packages/sky/src/load_options.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/require_audio_model_support.js",
+          "sha256": "0576698815f735e20d7b0a0d81d18a05bd5f55c362e67597ff816d0f669c19e5",
+          "target": "packages/sky/src/require_audio_model_support.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/service.js",
+          "sha256": "789e3daf847da27432a816f51493a0ad452f36b67b40b99713c87bf662adb07d",
+          "target": "packages/sky/src/service.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../../lib/js/oai_js_core/src/UnreachableCaseError.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js_core/src/UnreachableCaseError.js",
+              "exists": true
+            },
+            {
+              "specifier": "./create_client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/create_client.js",
+              "exists": true
+            },
+            {
+              "specifier": "./load_options.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/load_options.js",
+              "exists": true
+            },
+            {
+              "specifier": "./require_audio_model_support.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/require_audio_model_support.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/sky.js",
+          "sha256": "1a433cd5ffb9b91bdfa6fff003938b80dea0890cd8a80e7bca4132b381072c3a",
+          "target": "packages/sky/src/sky.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./create_client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/create_client.js",
+              "exists": true
+            },
+            {
+              "specifier": "./load_options.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/load_options.js",
+              "exists": true
+            },
+            {
+              "specifier": "./targets/linux/accessibility_tree.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/accessibility_tree.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/accessibility_tree.js",
+          "sha256": "13eb68c11a64b7126dc9e1346a4a00634656ae1a3b5f7201a503703d5d7a64ec",
+          "target": "packages/sky/src/targets/linux/accessibility_tree.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/action_settler.js",
+          "sha256": "1341a4cc821347b9323800e597c0c754e2e6aa4e8d7c036b47163b6d43a57591",
+          "target": "packages/sky/src/targets/linux/action_settler.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:timers/promises",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/activate_window.js",
+          "sha256": "8fc14053190f5bbb4b7d628d591330392c4833984c75fc4776c88f192b39e803",
+          "target": "packages/sky/src/targets/linux/activate_window.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/audio_recording.js",
+          "sha256": "2765d8b304ec21d1c76c8a43a56e169ab888160420f6a5fe14c577ca946cf544",
+          "target": "packages/sky/src/targets/linux/audio_recording.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:child_process",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:fs/promises",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:os",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:path",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "../../core/cli.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/cli.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../core/uint8.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/uint8.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/click.js",
+          "sha256": "d4e4d2b4bf6048173f6752b0a1caf1c01a9abd2a93fa1aef61c1c273d2cc6ccf",
+          "target": "packages/sky/src/targets/linux/click.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/clipboard_read.js",
+          "sha256": "f493bb081f594f948cf078ac934f70ede178f582af227d3b4d77150c39b3dd73",
+          "target": "packages/sky/src/targets/linux/clipboard_read.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/clipboard_release.js",
+          "sha256": "3cf048de8234616041175e1e00422a30e63f2edadcc1ebfe64c3455052cf71c2",
+          "target": "packages/sky/src/targets/linux/clipboard_release.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/clipboard_write.js",
+          "sha256": "5c6fa9abb5537b3f0264bd748efcb600a6293e1bc09dc0a1d573ca310af2a03b",
+          "target": "packages/sky/src/targets/linux/clipboard_write.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/create_client.js",
+          "sha256": "5ecbf120d4aa74e9b3672a8e1974220a18f2931bf8badb724ac56f13f0e0c0ec",
+          "target": "packages/sky/src/targets/linux/create_client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./action_settler.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/action_settler.js",
+              "exists": true
+            },
+            {
+              "specifier": "./activate_window.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/activate_window.js",
+              "exists": true
+            },
+            {
+              "specifier": "./audio_recording.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/audio_recording.js",
+              "exists": true
+            },
+            {
+              "specifier": "./click.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/click.js",
+              "exists": true
+            },
+            {
+              "specifier": "./clipboard_read.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/clipboard_read.js",
+              "exists": true
+            },
+            {
+              "specifier": "./clipboard_release.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/clipboard_release.js",
+              "exists": true
+            },
+            {
+              "specifier": "./clipboard_write.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/clipboard_write.js",
+              "exists": true
+            },
+            {
+              "specifier": "./drag.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/drag.js",
+              "exists": true
+            },
+            {
+              "specifier": "./drag_handle.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/drag_handle.js",
+              "exists": true
+            },
+            {
+              "specifier": "./element_ids.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/element_ids.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_screenshot.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/get_screenshot.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_window_state.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/get_window_state.js",
+              "exists": true
+            },
+            {
+              "specifier": "./key_down.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/key_down.js",
+              "exists": true
+            },
+            {
+              "specifier": "./key_up.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/key_up.js",
+              "exists": true
+            },
+            {
+              "specifier": "./launch_app.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/launch_app.js",
+              "exists": true
+            },
+            {
+              "specifier": "./list_apps.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/list_apps.js",
+              "exists": true
+            },
+            {
+              "specifier": "./list_windows.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/list_windows.js",
+              "exists": true
+            },
+            {
+              "specifier": "./move.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/move.js",
+              "exists": true
+            },
+            {
+              "specifier": "./move_relative.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/move_relative.js",
+              "exists": true
+            },
+            {
+              "specifier": "./perform_secondary_action.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/perform_secondary_action.js",
+              "exists": true
+            },
+            {
+              "specifier": "./press_key.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/press_key.js",
+              "exists": true
+            },
+            {
+              "specifier": "./scroll.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/scroll.js",
+              "exists": true
+            },
+            {
+              "specifier": "./type_characters.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/type_characters.js",
+              "exists": true
+            },
+            {
+              "specifier": "./type_text.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/type_text.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/drag.js",
+          "sha256": "3133bb9c6a287271da0c23d3fc2126e14ad8b793df4ed413bd779d7864f01944",
+          "target": "packages/sky/src/targets/linux/drag.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/drag_handle.js",
+          "sha256": "7c3034cb0a963d45420ef7a853a48d8bbe3ed0096732f18023e684757a5bb1e5",
+          "target": "packages/sky/src/targets/linux/drag_handle.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/element_ids.js",
+          "sha256": "cb69a5924a3655a56722d071d4224f79aec5aa37360fc87da031293c5fd51f35",
+          "target": "packages/sky/src/targets/linux/element_ids.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/get_screenshot.js",
+          "sha256": "3ad2d0174951908697a11962f0dbf95e01214d5bd922a44fdf93082a967a1c1c",
+          "target": "packages/sky/src/targets/linux/get_screenshot.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../core/uint8.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/uint8.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/get_window_state.js",
+          "sha256": "4f7459f5bae26fd69411606d18affd9254ae7c36269673ef1774715d3297a851",
+          "target": "packages/sky/src/targets/linux/get_window_state.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./accessibility_tree.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/accessibility_tree.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_screenshot.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/get_screenshot.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/key_down.js",
+          "sha256": "163d33f633d575ecc4277c227ed2236b23d28c35bbf24a85fae4e69543f57fac",
+          "target": "packages/sky/src/targets/linux/key_down.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/key_up.js",
+          "sha256": "65ef0b73230de7960d680fb206228c0abf77c710bc667c370e9989e74ac9bd59",
+          "target": "packages/sky/src/targets/linux/key_up.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/launch_app.js",
+          "sha256": "166b2309b8a2d5f3f5ef7691bd285d200a0ebce3831c7b491a8ba2090fb0ffc9",
+          "target": "packages/sky/src/targets/linux/launch_app.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/list_apps.js",
+          "sha256": "d4f7125e517b3355424b6ea8aca72191168f4c0094edd235dcd2fb9e500e34d0",
+          "target": "packages/sky/src/targets/linux/list_apps.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/list_windows.js",
+          "sha256": "3d286c26f81d704fb09fe280e9b00bb2947c5a9d1c3bfe01b86fdc738d52bd71",
+          "target": "packages/sky/src/targets/linux/list_windows.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/move.js",
+          "sha256": "d30f63a3cbd8daba08b7767b5d3be88cbbc3ba10e679ede293b83fc7d717e018",
+          "target": "packages/sky/src/targets/linux/move.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/move_relative.js",
+          "sha256": "dad1a2e8033492cec7ed1e3f3aa6b16e3755b5875048fd31ccb4970c93440af8",
+          "target": "packages/sky/src/targets/linux/move_relative.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/perform_secondary_action.js",
+          "sha256": "ca6e63c0d6c38a03bac6d3349373f2c27bceb8b78a3ebeaef7f655d15d3260a5",
+          "target": "packages/sky/src/targets/linux/perform_secondary_action.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/press_key.js",
+          "sha256": "08300a0ae53210dd7716adaaf3c2ae6a2ad685e6295506c6c05a51ebfc6cb752",
+          "target": "packages/sky/src/targets/linux/press_key.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/scroll.js",
+          "sha256": "0a33b51a927f68eef125a4c92252acacc2fce7a15bf00d4faaafef613e6e38b8",
+          "target": "packages/sky/src/targets/linux/scroll.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+          "sha256": "598bc7a0135a39a327399ae06d28ff15f2ed2bb994b66a78c0eff2c615c9b286",
+          "target": "packages/sky/src/targets/linux/sky_linux.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../core/package_bin.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/package_bin.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux_transport.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux_transport.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux_transport.js",
+          "sha256": "c879f1b83dbc3cd5d0638c26ecffdd17c9cb6f39578b69bd653ee0c78a85664e",
+          "target": "packages/sky/src/targets/linux/sky_linux_transport.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:child_process",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/type_characters.js",
+          "sha256": "62262ac52baedefe48c80f6b44ee367a6f00c00590603c637257c989db59ff24",
+          "target": "packages/sky/src/targets/linux/type_characters.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/linux/type_text.js",
+          "sha256": "6738ceef7366fd36fee26b5e5bed66b30c54836035a12702201758b880225100",
+          "target": "packages/sky/src/targets/linux/type_text.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./sky_linux.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/linux/sky_linux.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/audio_recording.js",
+          "sha256": "883e11ac21cb261572166319a4dd7a948713cc7aaffc7c9117029d7374d01081",
+          "target": "packages/sky/src/targets/mac/audio_recording.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:url",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "../../core/uint8.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/uint8.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../require_audio_model_support.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/require_audio_model_support.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            },
+            {
+              "specifier": "./native-pipe.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/native-pipe.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/click.js",
+          "sha256": "d122645123afdc7aeb1114681adb1bff0d2e6acc41d7a09e449835c80e3e7348",
+          "target": "packages/sky/src/targets/mac/click.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/client.js",
+          "sha256": "71134f10354fe9f7be23a62df52789908a8592151685286a7965b297a81cef8f",
+          "target": "packages/sky/src/targets/mac/client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./native-pipe.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/native-pipe.js",
+              "exists": true
+            },
+            {
+              "specifier": "./errors.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/errors.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+          "sha256": "a00024117e11f2d1e4151e140bede2c0ed7931625aa0f79a427457cb1103524e",
+          "target": "packages/sky/src/targets/mac/computer-use-policy.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-telemetry.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-telemetry.js",
+              "exists": true
+            },
+            {
+              "specifier": "./errors.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/errors.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-telemetry.js",
+          "sha256": "3645bebe7ff8badca86e57367e7961e1b4ac1fb0e743c65b3e1d3e308847208e",
+          "target": "packages/sky/src/targets/mac/computer-use-telemetry.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:crypto",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:os",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "@statsig/js-client",
+              "dynamic": false,
+              "kind": "package-or-import-map"
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/create_client.js",
+          "sha256": "901b7f850b7b4ceaecefe7727a7a4aecd3c22a05fb807ffed5cfcca000906217",
+          "target": "packages/sky/src/targets/mac/create_client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./audio_recording.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/audio_recording.js",
+              "exists": true
+            },
+            {
+              "specifier": "./click.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/click.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-telemetry.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-telemetry.js",
+              "exists": true
+            },
+            {
+              "specifier": "./drag.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/drag.js",
+              "exists": true
+            },
+            {
+              "specifier": "./get_app_state.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/get_app_state.js",
+              "exists": true
+            },
+            {
+              "specifier": "./list_apps.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/list_apps.js",
+              "exists": true
+            },
+            {
+              "specifier": "./paste.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/paste.js",
+              "exists": true
+            },
+            {
+              "specifier": "./perform_secondary_action.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/perform_secondary_action.js",
+              "exists": true
+            },
+            {
+              "specifier": "./press_key.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/press_key.js",
+              "exists": true
+            },
+            {
+              "specifier": "./scroll.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/scroll.js",
+              "exists": true
+            },
+            {
+              "specifier": "./select_text.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/select_text.js",
+              "exists": true
+            },
+            {
+              "specifier": "./set_value.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/set_value.js",
+              "exists": true
+            },
+            {
+              "specifier": "./type_text.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/type_text.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/drag.js",
+          "sha256": "01df9da83423d1b600b162b71d382d0991fcb62779a969facfbb0b649ffe135e",
+          "target": "packages/sky/src/targets/mac/drag.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/errors.js",
+          "sha256": "9dd27e4cf0ea4456b3ad472fab8cbbe093ad1184d0cb25a8c05e738ee00cfd43",
+          "target": "packages/sky/src/targets/mac/errors.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/get_app_state.js",
+          "sha256": "7b7fe2af461c7cd348c07535b1deae9ea14837dbdac9985ba479eb2e53e5248d",
+          "target": "packages/sky/src/targets/mac/get_app_state.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            },
+            {
+              "specifier": "./window_result.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/window_result.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+          "sha256": "e222ec4e31b96c06c79819ea23a4d69a7f564c9a11f640c9d4b48c11bc75365b",
+          "target": "packages/sky/src/targets/mac/lazy-client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./client.js",
+              "dynamic": true,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/list_apps.js",
+          "sha256": "77ec31ff376b5065b08ca1116484b3e69878c2a4a7ad6dac7f29170b965d91df",
+          "target": "packages/sky/src/targets/mac/list_apps.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/native-pipe.js",
+          "sha256": "51a1138a0f0d7f01fe5d4d0a4f0753c67b2c3f3ed55c7540c26d182274e116f4",
+          "target": "packages/sky/src/targets/mac/native-pipe.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:buffer",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:crypto",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:os",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:path",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "./errors.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/errors.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/paste.js",
+          "sha256": "7f829aab4e27038f5eba94262cc0a4dd0e874ece1d8a55dcbf8ecfb5101c9c40",
+          "target": "packages/sky/src/targets/mac/paste.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/perform_secondary_action.js",
+          "sha256": "63e4509b86697a3db15c9f38d87715c27d7ba7ba027909ca7618c9341e3ec2ff",
+          "target": "packages/sky/src/targets/mac/perform_secondary_action.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/press_key.js",
+          "sha256": "12b9a808ecd832943b57a5998d9879fd084067a67b1b0650b2f2743337be872d",
+          "target": "packages/sky/src/targets/mac/press_key.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/scroll.js",
+          "sha256": "f026bbeaca656bddb8212c535690d6acbb1a969b392657368ef964a0f015fe95",
+          "target": "packages/sky/src/targets/mac/scroll.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/select_text.js",
+          "sha256": "44fa3fcd8e1366ebfa5237bc20d570b1e08d38bb99f27a48bf3ee6eaac225ac5",
+          "target": "packages/sky/src/targets/mac/select_text.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/set_value.js",
+          "sha256": "e4ac86f5b4d5ba8bd17ed7281148cd4f1ae1d4a493997fbfc10a3a8f328ed06a",
+          "target": "packages/sky/src/targets/mac/set_value.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/type_text.js",
+          "sha256": "29289fd08c109ff7f913ef92aea8f4df7d87f8ce59fb05172ee8c99d20b7e568",
+          "target": "packages/sky/src/targets/mac/type_text.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer-use-policy.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+              "exists": true
+            },
+            {
+              "specifier": "./lazy-client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/mac/lazy-client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/mac/window_result.js",
+          "sha256": "9169daf53e7516eecd2ba8680e990bc6570d16d955f0ffed183572202c5d5448",
+          "target": "packages/sky/src/targets/mac/window_result.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/windows/create_client.js",
+          "sha256": "43935a185c83827ea87e23295c7a44327f43e933da97da7cd1b8b7eb23aa6fab",
+          "target": "packages/sky/src/targets/windows/create_client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./internal/computer_use_client.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/windows/internal/codex_turn_metadata.js",
+          "sha256": "284ca7197ed514ca272c728d6ab0eda116f4fc44b3485435c004adcf2d95f3fb",
+          "target": "packages/sky/src/targets/windows/internal/codex_turn_metadata.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": []
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client.js",
+          "sha256": "12f2952342ee3e3e4ae2cd509de48f59c935a925607aee24f41d7797510802f7",
+          "target": "packages/sky/src/targets/windows/internal/computer_use_client.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:async_hooks",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:buffer",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "../../../core/package_bin.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/package_bin.js",
+              "exists": true
+            },
+            {
+              "specifier": "./computer_use_client_base.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client_base.js",
+              "exists": true
+            },
+            {
+              "specifier": "./helper_transport.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/windows/internal/helper_transport.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client_base.js",
+          "sha256": "5e54867417cb120477455e069c2eb53b6513b8e076a06143d4d207cc8a293d95",
+          "target": "packages/sky/src/targets/windows/internal/computer_use_client_base.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "../../../core/uint8.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/core/uint8.js",
+              "exists": true
+            },
+            {
+              "specifier": "./codex_turn_metadata.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/windows/internal/codex_turn_metadata.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "sky/dist/project/cua/sky_js/src/targets/windows/internal/helper_transport.js",
+          "sha256": "ddade82306b88d3b4c35206567e16ef0fdf8999634e03380bdf12ca229dba4f1",
+          "target": "packages/sky/src/targets/windows/internal/helper_transport.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../../../../../../lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "sky/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:child_process",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:os",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:path",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "./codex_turn_metadata.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "sky/dist/project/cua/sky_js/src/targets/windows/internal/codex_turn_metadata.js",
+              "exists": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cua-repl",
+      "modules": 3,
+      "missingTargets": [],
+      "missingBuilt": [],
+      "files": [
+        {
+          "source": "cua-repl/dist/lib/js/oai_js_cua_repl/src/index.js",
+          "sha256": "bbc0c68a1520d72d1431233bf1c4fd9e3520776cde48542b20332f8ba9da3760",
+          "target": "packages/cua-repl/src/index.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "./launch.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua-repl/dist/lib/js/oai_js_cua_repl/src/launch.js",
+              "exists": true
+            }
+          ]
+        },
+        {
+          "source": "cua-repl/dist/lib/js/oai_js_cua_repl/src/instructions.js",
+          "sha256": "36acec6b10072e5f3730ca74be23de6b9a4707ebe996dea382f4c262a28d964c",
+          "target": "packages/cua-repl/src/instructions.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            }
+          ]
+        },
+        {
+          "source": "cua-repl/dist/lib/js/oai_js_cua_repl/src/launch.js",
+          "sha256": "97ce061a09cba0e701e83c2508c276ed573ce864d2478993f873c0650a84e316",
+          "target": "packages/cua-repl/src/launch.ts",
+          "targetExists": true,
+          "builtExists": true,
+          "imports": [
+            {
+              "specifier": "../../oai_js/node_modules/tslib/tslib.es6.js",
+              "dynamic": false,
+              "kind": "outside-package-source",
+              "resolved": "cua-repl/dist/lib/js/oai_js/node_modules/tslib/tslib.es6.js",
+              "exists": true
+            },
+            {
+              "specifier": "node:child_process",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:events",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:fs",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:path",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "node:process",
+              "dynamic": false,
+              "kind": "node-builtin"
+            },
+            {
+              "specifier": "./instructions.js",
+              "dynamic": false,
+              "kind": "inside-package-source",
+              "resolved": "cua-repl/dist/lib/js/oai_js_cua_repl/src/instructions.js",
+              "exists": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
