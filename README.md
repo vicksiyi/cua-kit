@@ -103,3 +103,5 @@ Uncompressed `.wasm` input is also accepted. The build validates its exports and
 首次安装请运行 `npm run install:chrome`，然后在 `chrome://extensions` 启用开发者模式，加载 `packages/browser-extension/dist/native-extension`。安装命令注册独立宿主并在被忽略的 `.env` 中写入连接目录；扩展加载后 demo 自动发现连接。目前两条外部搜索指令仍未验收。
 
 最新外部验证（2026-11-05）：隔离 Chromium 中，DeepSeek 已实际打开百度、填写搜索词并点击搜索；随后百度跳转验证码页面，尚未取得第一条结果。此前还出现过页面状态读取超时，未证明已修复。详见 [实际验证记录](reconstruction/baidu-live-verification.md)。这不代表日常 Chrome 已接通，也不代表两条搜索验收命令已通过。
+
+排查外部网页等待可使用 `CORE_CUA_RUNTIME_DIAGNOSTICS=1 npm run demo:deepseek -- "你的任务"`，额外显示站点检查等请求的耗时与返回状态。Demo 对未指定超时的 JS 调用使用 60 秒，避免与观察到的底层 30 秒请求等待同时到期；显式指定的超时不变。诊断不改变权限判断，也不代表搜索验收通过。

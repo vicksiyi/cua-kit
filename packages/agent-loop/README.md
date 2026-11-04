@@ -150,3 +150,15 @@ The live DeepSeek test now completes a local webpage navigation/button-click/rea
 workflow through the full MCP chain; the model observes a result marker absent
 from its prompt. Real Chrome search acceptance and native app acceptance remain
 outstanding. This supersedes the JavaScript-only validation status above.
+
+### Diagnosing external-page waits
+
+The restored demo supplies `timeout_ms: 60000` for JS calls that omit a timeout. This is caller policy using the original supervisor protocol, not a change to CUA security checks or native fetch behavior. Explicit tool timeouts remain unchanged. The MCP transport deadline is 65 seconds. This avoids giving a default 30-second JS cell exactly the same deadline as an observed 30-second authenticated-fetch failure; it does not make unavailable network services succeed.
+
+To see bounded local diagnostics for those requests:
+
+```sh
+CORE_CUA_RUNTIME_DIAGNOSTICS=1 npm run demo:deepseek -- "访问百度 搜索 deepseek 给我返回第一条搜索结果"
+```
+
+The worker wrapper observes JSONL while forwarding its bytes unchanged. It logs only request sequence, a fixed category (`site-status`, `identity`, `other-fetch`), elapsed time and HTTP/transport outcome to stderr. URLs, query strings, IDs, headers, bodies and raw errors are not emitted by this diagnostic observer. Normal tool logs still contain tool input and page output as before. Diagnostics are disabled by default, bounded to 64 KiB per observed line and 1024 pending requests, and best effort during abrupt process termination. They do not bypass approvals or captchas and do not establish that external search succeeded.

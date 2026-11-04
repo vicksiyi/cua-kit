@@ -34,6 +34,8 @@ export async function verifyIndependentMcpBrowser(
           ? { CORE_CUA_HOST_DIRECTORY: hostDirectory }
           : { CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]) }),
         NODE_REPL_DISABLE_ANALYTICS: "1",
+        CORE_CUA_RUNTIME_DIAGNOSTICS:
+          process.env.CORE_CUA_RUNTIME_DIAGNOSTICS ?? "0",
         NODE_REPL_NODE_MODULE_DIRS: runtime.root,
         NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
         CUA_NATIVE_SUPERVISOR_PATH:
@@ -70,10 +72,14 @@ export async function verifyIndependentMcpBrowser(
         },
       },
     );
-    const turn = new NodeReplTurnClient(client, {
-      ...metadata,
-      hook_event_name: "turn_ended",
-    });
+    const turn = new NodeReplTurnClient(
+      client,
+      {
+        ...metadata,
+        hook_event_name: "turn_ended",
+      },
+      { defaultJsTimeoutMs: 60000 },
+    );
     let index = 0;
     const execute = async (code: string, expectImage = false) => {
       if (process.env.CUA_BROWSER_BAIDU_PROBE)
@@ -84,7 +90,7 @@ export async function verifyIndependentMcpBrowser(
           name: "js",
           arguments: { code, title: "Independent browser integration" },
         },
-        AbortSignal.timeout(45000),
+        AbortSignal.timeout(70000),
       );
       const text = result.content
         .filter((item) => item.type === "text")

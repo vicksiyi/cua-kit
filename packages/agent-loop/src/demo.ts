@@ -56,7 +56,7 @@ const client = await McpToolClient.connect(
 const interrupt = () => controller.abort();
 process.once("SIGINT", interrupt);
 const turnClient: import("./contracts").ToolClient = turnEvent
-  ? new NodeReplTurnClient(client, turnEvent)
+  ? new NodeReplTurnClient(client, turnEvent, { defaultJsTimeoutMs: 60000 })
   : client;
 const trace = createTerminalTrace();
 let loopStarted = false;

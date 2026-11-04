@@ -1,5 +1,7 @@
 /** Independently authored demo adapter; the native supervisor remains external. */
+import { createRuntimeDiagnostics } from "./runtime-diagnostics";
 import { spawn } from "node:child_process";
+import { finished } from "node:stream/promises";
 import { access, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
@@ -44,8 +46,26 @@ async function runChild(
   command: string,
   args: string[],
   env: NodeJS.ProcessEnv,
+  diagnoseWorker = false,
 ) {
-  const child = spawn(command, args, { env, stdio: "inherit" });
+  const diagnostics = diagnoseWorker
+    ? createRuntimeDiagnostics((line) => console.error(line))
+    : undefined;
+  const child = spawn(command, args, {
+    env,
+    stdio: diagnostics ? ["pipe", "pipe", "inherit"] : "inherit",
+  });
+  const outputDrained = diagnostics
+    ? finished(diagnostics.requests).catch(() => {})
+    : undefined;
+  if (diagnostics) {
+    process.stdin.pipe(diagnostics.responses).pipe(child.stdin!);
+    child
+      .stdout!.pipe(diagnostics.requests)
+      .pipe(process.stdout, { end: false });
+    // A kernel reset can close the worker while the host still has input queued.
+    child.stdin!.on("error", () => {});
+  }
   const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGHUP"];
   const forward = (signal: NodeJS.Signals) => {
     child.kill(signal);
@@ -61,14 +81,22 @@ async function runChild(
       signal: NodeJS.Signals | null;
     }>((resolve, reject) => {
       child.once("error", reject);
-      child.once("exit", (code, signal) => resolve({ code, signal }));
+      child.once("close", (code, signal) => resolve({ code, signal }));
     });
+    await outputDrained;
     if (result.signal) {
       for (const { signal, handler } of handlers)
         process.removeListener(signal, handler);
       process.kill(process.pid, result.signal);
     } else process.exitCode = result.code ?? 1;
   } finally {
+    if (diagnostics) {
+      process.stdin.unpipe(diagnostics.responses);
+      process.stdin.pause();
+      diagnostics.responses.destroy();
+      diagnostics.requests.destroy();
+      diagnostics.close();
+    }
     for (const { signal, handler } of handlers)
       process.removeListener(signal, handler);
   }
@@ -117,7 +145,13 @@ async function main() {
     await access(
       launch.args.find((arg) => Object.values(workers).includes(arg))!,
     );
-    await runChild(launch.command, launch.args, process.env);
+    await runChild(
+      launch.command,
+      launch.args,
+      process.env,
+      process.env.CORE_CUA_RUNTIME_DIAGNOSTICS === "1" &&
+        launch.args.includes(workers["trusted-worker.js"]),
+    );
   } else {
     if (process.argv.length > 2)
       throw new Error(

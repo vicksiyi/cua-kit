@@ -29,3 +29,11 @@ CUA_LIVE_BAIDU_TEST=1 npx tsx --test reconstruction/extension-native-controller.
 ```
 
 The default test remains the deterministic local-page integration test. Do not count its success as external-search acceptance. Loading the Core CUA extension in daily Chrome remains a separate prerequisite for testing the user's normal browser session.
+
+## Follow-up: diagnostic boundary and deadline collision
+
+An opt-in caller-side worker observer (`CORE_CUA_RUNTIME_DIAGNOSTICS=1`) recorded several native authenticated identity requests ending in transport errors at 30,003–30,058 ms. The site-status request was still outstanding when the default 30-second JS invocation reset its kernel. This narrows the diagnosis to a deadline collision rather than a blanket browser-connection failure; it does not recover the native fetch internals or prove every timeout has this cause.
+
+The demo now defaults omitted JS `timeout_ms` to 60,000 through the existing supervisor protocol. Explicit timeouts and the reconstructed site-status logic are preserved. The observer emits fixed categories and timings, not URLs or credential-bearing payloads. Tests cover byte-for-byte forwarding of fragmented and oversize protocol input, non-disclosure of payloads, response/error/pending distinction, and preservation of explicit deadlines.
+
+The subsequent real external-page probe with the 60-second caller default passed: the observer recorded `site-status transport error (30003 ms)`, after which the existing upstream error handling completed and the real Baidu DOM snapshot contained its search field and search action. This directly verifies recovery from the observed 30-second network-wait case. It does not verify obtaining search results or eliminate other timeout causes.

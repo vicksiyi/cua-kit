@@ -22,6 +22,7 @@ for (const key of [
   "NODE_REPL_NODE_PATH",
   "CORE_CUA_ENDPOINT_FILES",
   "CORE_CUA_HOST_DIRECTORY",
+  "CORE_CUA_RUNTIME_DIAGNOSTICS",
 ])
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;

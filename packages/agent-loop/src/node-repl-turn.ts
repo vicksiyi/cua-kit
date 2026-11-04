@@ -32,7 +32,16 @@ export class NodeReplTurnClient implements ToolClient {
   constructor(
     private client: ToolClient,
     event: NodeReplTurnEvent,
+    private options: { defaultJsTimeoutMs?: number } = {},
   ) {
+    const timeout = options.defaultJsTimeoutMs;
+    if (
+      timeout !== undefined &&
+      (!Number.isInteger(timeout) || timeout < 1 || timeout > 60000)
+    )
+      throw new Error(
+        "Default JS timeout must be an integer from 1 to 60000 ms",
+      );
     this.event = Object.freeze(parseNodeReplTurnEvent(event));
   }
   async listTools(signal?: AbortSignal) {
@@ -47,6 +56,20 @@ export class NodeReplTurnClient implements ToolClient {
       );
     if (this.ending)
       return Promise.reject(new Error("NodeREPL turn has ended"));
+    // Caller policy only: use the original supervisor's documented timeout field.
+    // An explicit caller/model timeout (including invalid values) is never replaced.
+    if (
+      call.name === "js" &&
+      call.arguments.timeout_ms === undefined &&
+      this.options.defaultJsTimeoutMs !== undefined
+    )
+      call = {
+        ...call,
+        arguments: {
+          ...call.arguments,
+          timeout_ms: this.options.defaultJsTimeoutMs,
+        },
+      };
     return this.client.callTool(call, signal);
   }
   endTurn(): Promise<void> {

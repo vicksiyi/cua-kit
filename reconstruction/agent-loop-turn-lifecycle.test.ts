@@ -114,3 +114,32 @@ test("turn lifecycle cannot be invoked by model tools and rejects invalid host e
   ])
     assert.throws(() => parseNodeReplTurnEvent(value));
 });
+
+test("host JS deadline default preserves explicit timeouts and does not mutate model calls", async () => {
+  const calls: any[] = [];
+  const client = {
+    listTools: async () => [],
+    close: async () => {},
+    callTool: async (call: any) => {
+      calls.push(call);
+      return { content: [] };
+    },
+  };
+  const turn = new NodeReplTurnClient(
+    client,
+    { hook_event_name: "turn_ended", session_id: "s", turn_id: "t" },
+    { defaultJsTimeoutMs: 60000 },
+  );
+  const call = { id: "a", name: "js", arguments: { code: "42" } };
+  await turn.callTool(call);
+  await turn.callTool({
+    id: "b",
+    name: "js",
+    arguments: { code: "42", timeout_ms: 100 },
+  });
+  await turn.callTool({ id: "c", name: "js_reset", arguments: {} });
+  assert.deepEqual(call.arguments, { code: "42" });
+  assert.equal(calls[0].arguments.timeout_ms, 60000);
+  assert.equal(calls[1].arguments.timeout_ms, 100);
+  assert.deepEqual(calls[2].arguments, {});
+});
