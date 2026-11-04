@@ -155,8 +155,7 @@ paired main/sub/object-frame and other-resource rules, excludes extension initia
 for the latter, and only removes owned rule IDs 1000000–1004999. Forced sync queries
 existing tabs; cached identical rules avoid redundant updates. Failures return an
 Error to the caller, invalidate the cache and log only once until successful update.
-This is the request-header coordinator, distinct from the still-pending Browser Use
-network-policy manager `ar`.
+This is the request-header coordinator, distinct from the Browser Use network-policy manager `ar` restored below.
 
 `lease_codec.ts` restores viewport/lease/storage parsing and source-lease identity
 comparison. It uses the restored header parser and keeps the original permissive
@@ -209,3 +208,20 @@ The composition test exercises RPC createTab/attach/executeCdp/turnEnded through
 these restored components with isolated Chrome APIs, asserting getInfo/lease ID
 agreement, one UUID, one debugger listener, and lease/rule/debugger cleanup. Identity
 cleanup tests mutate only fixture storage, never the user's installed extension.
+
+### Browser Use network policy manager
+
+`createNetworkPolicyManagerClass` restores every original `ar/op` method. It owns
+rules 2000000–2999999, separate from request-header rule IDs. Attach validates the
+timeout/tab ID, checks all-sites permission and resource support, removes closed-tab
+rules, allocates IDs, installs priority-ordered rules, verifies Chrome's returned
+rules, then awaits active-page enforcement before recording the attached policy.
+Cancellation and rollback preserve the original AggregateError when cleanup cannot
+be verified. Detach removes only this manager's matching rules and checks removal.
+
+The original `Vp` compiler, `Wp` URL predicate and `JS` active-page enforcement
+closure are **required dependencies and not yet restored**. There are no permissive
+production substitutes. Differential tests use explicit compiler/enforcer fixtures
+to isolate the manager, and a session composition test verifies enforcement before
+debugger attachment. This does not prove real site enforcement or full production
+network-policy readiness.

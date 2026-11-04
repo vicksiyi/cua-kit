@@ -1759,3 +1759,34 @@ real desktop/DeepSeek integration. The original native supervisor binary is stil
 external rather than recovered readable Rust source.
 
 Validation: all eight reconstructed packages built and passed type checks; all 801 default regression tests passed. The separate native-supervisor suite was not rerun for this assembly; production extension and live DeepSeek integration remain unverified.
+
+
+## 16.261 Browser Use network-policy manager
+
+Translated every original ar/op method and _d/mi/oE helpers to `network_policy.ts`.
+It preserves the singleton, serialization queue, attaching cancellation flags and
+attached-policy cache; positive-safe tab IDs and 1..30000ms timeout checks; no-op
+allow-all policy; permission/resource availability checks; closed-tab cleanup;
+owned rule range 2000000–2999999; default/allow/block priorities; acknowledged
+install/removal; active-page enforcement before attached state; cancellation and
+rollback AggregateError including original cause ordering.
+
+The network policy's Vp compiler, Wp predicate and JS active-page enforcement remain
+required host dependencies. Inspection shows compilation includes pattern
+normalization/intersection and budgets, so no simpler allow/deny implementation is
+substituted. The manager is application code directly using Chrome DNR/permissions;
+this change does not assert that those pending closures are third-party or complete.
+
+Three differential tests compare full method inventory, traces, results/errors and
+state across validation/dedup, stale-rule removal, permissions/API/resource failures,
+acknowledgement failure, cancellation during enforcement and failed rollback. A
+fourth composition test verifies the restored BrowserSession awaits restored manager
+installation/enforcement before debugger attach, and detach removes its rules.
+Chrome/compiler/enforcer fixtures isolate these tests; real URL enforcement remains
+unverified until the pending original closures are restored and integrated.
+
+Remaining includes those compiler/enforcement closures, group/favicon, overlay/
+frame monitors, SIWC, full dR/capability messaging, manifest/install/native host,
+real desktop/DeepSeek integration and readable native supervisor source.
+
+Validation: all eight reconstructed packages built and passed type checks; all 805 default regression tests passed. The separate native-supervisor suite was not rerun; real network enforcement and production extension startup remain unverified.

@@ -869,3 +869,86 @@ test("extension foundation shares identity, lease singleton and debugger state a
   assert.deepEqual(rules, []);
   assert.equal(foundation.debuggerRuntime.attachedTabs.size, 0);
 });
+
+test("restored session waits for network policy acknowledgement before attaching its debugger", async () => {
+  const { createNetworkPolicyManagerClass } =
+    await import("../packages/browser-extension/src/network_policy");
+  const { deps, trace } = fixture(false);
+  let rules: any[] = [];
+  const types = [
+    "main_frame",
+    "sub_frame",
+    "stylesheet",
+    "script",
+    "image",
+    "font",
+    "object",
+    "xmlhttprequest",
+    "ping",
+    "csp_report",
+    "media",
+    "websocket",
+    "webtransport",
+    "webbundle",
+    "other",
+  ];
+  const chrome: any = {
+    ...deps.chrome,
+    tabs: {
+      ...deps.chrome.tabs,
+      onRemoved: { addListener() {} },
+      async query() {
+        return [{ id: 1 }];
+      },
+    },
+    permissions: {
+      async contains() {
+        return true;
+      },
+    },
+    declarativeNetRequest: {
+      ResourceType: Object.fromEntries(types.map((type) => [type, type])),
+      RuleActionType: { ALLOW: "allow", BLOCK: "block" },
+      async getSessionRules() {
+        return rules;
+      },
+      async updateSessionRules(update: any) {
+        rules = rules.filter(
+          (rule) => !update.removeRuleIds?.includes(rule.id),
+        );
+        rules.push(...(update.addRules ?? []));
+      },
+    },
+  };
+  const NetworkPolicy = createNetworkPolicyManagerClass({
+    chrome,
+    now: () => 1,
+    compile: () => ({ defaultAction: "block", rules: [] }),
+    predicate: () => () => false,
+    async enforceActivePage() {
+      trace.push(["policy.enforced"]);
+    },
+  });
+  const Session = createBrowserSessionClass({
+    ...deps,
+    chrome,
+    networkPolicy: NetworkPolicy,
+  });
+  const session = new Session("s", "chrome", false, {
+    applyDecision: async (enabled) => enabled,
+  });
+  await session.attach({
+    ...request,
+    tabId: 1,
+    networkPolicy: { constraints: [] },
+  });
+  assert.equal(rules.length, 1);
+  assert.equal(rules[0].action.type, "block");
+  assert.ok(
+    trace.findIndex((entry) => entry[0] === "policy.enforced") <
+      trace.findIndex((entry) => entry[0] === "debugger.attach"),
+  );
+  await session.detach({ ...request, tabId: 1 });
+  await NetworkPolicy.getInstance().queue;
+  assert.deepEqual(rules, []);
+});

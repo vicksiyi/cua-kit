@@ -77,11 +77,15 @@
     "st/wn": "createTabLeaseManagerClass / TabLeaseManager",
     "Ay": "changedTabIds",
     "Be/Kg": "createExtensionInstanceIdReader",
-    "gc/us/Pp": "parseExtensionInstanceId and UTF-16 validation, limit 128"
+    "gc/us/Pp": "parseExtensionInstanceId and UTF-16 validation, limit 128",
+    "ar/op": "createNetworkPolicyManagerClass / NetworkPolicyManager",
+    "_d": "requireTabId",
+    "mi": "owned network-rule range check",
+    "oE": "rulesMatch"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Production lower-layer wiring (shared lease startup wiring, tab groups/favicons, shared debugger startup wiring, network policies, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
+  "remaining": "Production lower-layer wiring (shared lease startup wiring, tab groups/favicons, shared debugger startup wiring, network-policy compiler/active-page enforcement, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
   "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries. Request-header template parsing and expansion are shared between browser VC/u5 and extension cs/ls via project-created @core/core/requestHeaders.",
   "composition": "createExtensionBrowserFoundation is project-authored assembly of restored identity, lease, debugger, tab, session and dispatcher components; it is not full original dR startup."
 }
