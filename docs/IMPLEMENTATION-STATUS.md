@@ -3250,3 +3250,22 @@ installed extension end-to-end validation remain unfinished.
 
 Validation: eight package builds/type checks and all 942 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Background-to-offscreen kernel bridge
+
+Restored Jg/Yg/El/Qg/Xg/Tl as createKernelHostRegistry and response/error helpers. Concurrent
+offscreen initialization shares one promise, which clears on either outcome. Existing
+contexts avoid creation; scope lookup checks cancellation before and after initialization.
+Execution/reset use original runtime message shapes and response ID validation. Execution
+cancellation sends a matching cancel message and awaits delivery (ignoring delivery rejection)
+before settling. Reset-required / initialization-timeout responses evict only the current
+scope instance, preserving replacement identity; reset removes the current instance even
+on failure. Error/output normalization retains source behavior.
+
+Two differential tests execute actual source functions/classes over twelve response/init/
+reset scenarios and four cancellation scenarios, including deferred cancel delivery. Tests
+use a runtime fixture; the offscreen page/worker implementation and real Chrome execution
+are not yet integrated. Full tunnel poller, startup and end-to-end work remain unfinished.
+
+Validation: eight package builds/type checks and all 944 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
