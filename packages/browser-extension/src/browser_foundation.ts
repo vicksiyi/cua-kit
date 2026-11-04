@@ -1,3 +1,5 @@
+import { createSidePanelMessageHandlers } from "./side_panel_messages";
+import { createToolbarStateReporter } from "./toolbar_state";
 import { createActionCallout } from "./action_callout";
 import { createSidePanelEntrypoints } from "./side_panel_entrypoints";
 import { createSidePanelActions } from "./side_panel_actions";
@@ -208,6 +210,30 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    createSidePanelMessageHandlers(
+      dependencies: Omit<
+        Parameters<typeof createSidePanelMessageHandlers>[0],
+        "runtime" | "getInstanceId"
+      >,
+    ) {
+      return createSidePanelMessageHandlers({
+        ...dependencies,
+        runtime: host.chrome.runtime,
+        getInstanceId: instanceId,
+      });
+    },
+    createToolbarStateReporter(
+      dependencies: Pick<
+        Parameters<typeof createToolbarStateReporter>[0],
+        "reportMetric" | "warn"
+      >,
+    ) {
+      return createToolbarStateReporter({
+        ...dependencies,
+        chrome: host.chrome,
+        now: host.now,
+      });
+    },
     createSidePanelEntrypoints(
       dependencies: Parameters<typeof getSidePanelWindowController>[0],
     ) {

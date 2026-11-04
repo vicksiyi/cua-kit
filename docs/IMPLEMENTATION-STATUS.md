@@ -2605,3 +2605,30 @@ installed/native/model end-to-end integration remain incomplete.
 
 Validation: all eight package builds/type checks and all 890 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Toolbar snapshots and side-panel runtime messages
+
+Restored jk/Xi/qk as createToolbarStateReporter. It registers toolbar settings and alarm
+listeners and creates the six-hour alarm only when absent. Reporting shares a recovery
+queue. Any numeric prior snapshot suppresses update-trigger reporting; startup/alarm
+suppression compares floored UTC-day values. Changed events use the supplied pin state
+and do not persist a snapshot. Metric success precedes persistence, preserving retries
+and warning behavior. Foundation exposes a factory bound to its clock and Chrome APIs.
+
+Restored wk/Kk/Zk as side_panel_messages.ts. Identity and load-event messages require
+the exact own extension ID and side-panel URL (query variants rejected). Identity failure
+replies with null before recording the setup-failure metric. Load reporting replies on
+both fulfillment and rejection, forwarding the original result/error. Validation retains
+safe nonnegative integer boundaries, inherited properties and extra-field acceptance.
+Foundation supplies its shared instance-ID reader; metric transport remains injected.
+
+Three source-differential tests cover eleven toolbar modes, held queued reads, daily
+rollover, alarm and storage/metric failures; load-event validation boundaries; and seven
+message success/error/sender modes. Chrome APIs and metrics use fixtures; no real alarm
+or telemetry was emitted. No third-party library appears in these inspected closures.
+
+Original startup registration, full lifecycle/auth orchestration, panel UI, native
+replacement and installed/native/model integration remain incomplete.
+
+Validation: eight package builds/type checks and all 893 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

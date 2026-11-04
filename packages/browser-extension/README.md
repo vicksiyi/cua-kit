@@ -541,3 +541,9 @@ Action callout and profile badges now use the restored serialized queue, normali
 color hash and initials logic. Foundation shares one callout across its side-panel
 entrypoints and window controller, replacing externally supplied show/clear callbacks.
 Complete startup registration and real toolbar behavior remain unverified.
+
+Toolbar-state reporting now preserves the original serial queue, UTC-day snapshot
+suppression, changed-state override and six-hour alarm registration. Side-panel identity
+and load-event handlers preserve exact extension-page sender gates and reply behavior.
+Foundation binds these factories to shared Chrome APIs, clock and instance-ID reader;
+metric transport and full startup registration remain explicit integration work.

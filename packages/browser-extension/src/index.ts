@@ -58,3 +58,7 @@ export * from "./side_panel_actions";
 export * from "./side_panel_entrypoints";
 
 export * from "./action_callout";
+
+export * from "./toolbar_state";
+
+export * from "./side_panel_messages";
