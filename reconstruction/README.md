@@ -4,7 +4,7 @@
 
 用户指定：TS 源码相对 import 不带 `.js`；保留分包关系，命名空间从 `@oai` 改为 `@core`。原始包名与路径记录在 `source-map.json`。
 
-**下表为首批还原时的历史基线，不是当前完成状态。** 当前 browser/Sky/desktop/REPL 入口已装配；最新证据与未完成项见 [实现状态](../docs/IMPLEMENTATION-STATUS.md)。`@core/cua/tinyskyBrowser` 现已补齐，根入口和 vision-only 入口仍需还原。
+**下表为首批还原时的历史基线，不是当前完成状态。** 当前 browser/Sky/desktop/REPL 入口已装配；最新证据与未完成项见 [实现状态](../docs/IMPLEMENTATION-STATUS.md)。`@core/cua` 原包的四个公开导出路径现已补齐；源码入口对齐不代表真实设备、生产认证或完整功能验收已通过。
 
 | 原始包 | 当前 workspace | 首批历史状态 |
 |---|---|---|
