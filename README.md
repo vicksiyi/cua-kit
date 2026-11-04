@@ -2,11 +2,11 @@
 
 **当前方向：源码还原。** 按用户最新要求，直接从本机 unified-computer-use 相关混淆 JS / .d.ts 还原可读 TypeScript，按原包边界组织 `@core/*` workspace，源码 import 不带 `.js`。首批源码、来源映射与差分验证见 [reconstruction](reconstruction/README.md)。完整还原仍在进行，不能把旧独立实现视为原代码。
 
-当前已接通浏览器客户端/服务、`@core/cua/tinyskyAlt`、`@core/sky` 与 `@core/sky/service` 的还原入口，Sky 使用 Mac/Linux/Windows 工厂。NodeREPL 嵌入 JavaScript 的 kernel 与 trusted-worker 入口也已还原，支持子进程中的多单元执行对照验证；原生 supervisor/MCP 生命周期尚未替代。已有真实 Chromium、临时子进程和模拟宿主集成验证；真实原生桌面服务、外部 NodeREPL/AX 资源与真实模型联调仍未完成。最新验证与边界见 [IMPLEMENTATION-STATUS](docs/IMPLEMENTATION-STATUS.md)，下方阶段记录保留其当时状态。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
+当前已接通浏览器客户端/服务、`@core/cua/tinyskyAlt`、`@core/sky` 与 `@core/sky/service` 的还原入口，Sky 使用 Mac/Linux/Windows 工厂。NodeREPL 嵌入 JavaScript 的 kernel 与 trusted-worker 入口也已还原，支持子进程中的多单元执行对照验证；原生 supervisor/MCP 生命周期尚未替代。已有真实 Chromium、临时子进程和模拟宿主集成验证；真实原生桌面服务、外部 NodeREPL/AX 资源的完整替代与全部任务验收仍未完成。最新验证与边界见 [IMPLEMENTATION-STATUS](docs/IMPLEMENTATION-STATUS.md)，下方阶段记录保留其当时状态。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
 
-DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。模型协议/MCP 回环测试通过；真实 DeepSeek → MCP → 还原 worker 已完成一次 js 计算并返回 42。网页/App 自主操作仍未跑通。
+DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。真实 DeepSeek → MCP → 还原 worker → 独立宿主 → 隔离 Chromium 已完成导航、点击与读取结果；确定性 MCP 测试另验证截图。日常 Chrome 的搜索验收与 App 自主操作仍待完成。
 
-新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分，尚不是可安装扩展。
+新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分；现在可以构建 Core CUA 原生控制扩展，但原版完整后台/UI/kernel 装配仍未完成。
 
 下面是此前独立实现的历史说明：
 
@@ -100,4 +100,4 @@ Uncompressed `.wasm` input is also accepted. The build validates its exports and
 默认启用浏览器工具：`npm run demo:deepseek -- "访问百度 搜索 deepseek 给我返回第一条搜索结果"`。
 仅验证模型与 JS 工具：`npm run demo:deepseek -- --js "请调用 js 计算 6 * 7"`。
 终端显示工具参数、执行结果和最终回答；返回的截图保存为临时文件。
-当前本机真实浏览器发现仍返回空列表，因此搜索尚不能完成；启用浏览器工具不等于连接成功。
+首次安装请运行 `npm run install:chrome`，然后在 `chrome://extensions` 启用开发者模式，加载 `packages/browser-extension/dist/native-extension`。安装命令注册独立宿主并在被忽略的 `.env` 中写入连接目录；扩展加载后 demo 自动发现连接。目前两条外部搜索指令仍未验收。

@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The dispatcher and session classes are restored, but background auth/monitors and production startup, manifest/install wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+A loadable **independent native-control deployment** now exists at `dist/native-extension`. Its built background entry composes restored sessions, CDP events, popup/cursor/page-event messages, update handling and heartbeat. The full original ChatGPT website/sidebar/kernel startup is still unfinished. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -631,3 +631,24 @@ the exact original package version is unproven. Complete control/startup remains
 Requirements parsing validates each enterprise layer before reverse-precedence merge,
 then normalizes browser/network/features rules. It reuses smol-toml and request-header
 validation; actual bundled-parser differential coverage is recorded in reconstruction.
+
+## Independent Chrome installation
+
+From the repository root on macOS, run `npm run install:chrome`. The command builds
+all reconstructed packages, registers `com.core.cua`, and sets the private host
+directory in the ignored project `.env`. In Chrome's extensions page enable
+Developer mode, choose Load unpacked and select
+`packages/browser-extension/dist/native-extension`. The manifest contains a fixed
+public key, giving the stable extension ID `pdgdbipblkgokfdkgapaleonbognbjhm`.
+No vendor extension ID, host registration or signing identity is reused.
+
+The complete MCP integration test now loads this exact built artifact and runs
+its real installer twice in an isolated profile to verify repeatability. It does
+not inject a test-only background script. For isolated installations the bundled
+installer accepts `--root /absolute/private/root --profile /absolute/user-data-dir`
+and leaves the project `.env` untouched. The installer keeps existing registrations
+unless they match this installation; incompatible ones fail instead of overwriting.
+
+The background deployment logs diagnostics to the extension console. It does not
+substitute fake ChatGPT auth, feature flags, sidebar services or standalone kernels;
+those broader startup integrations remain separate unfinished work.

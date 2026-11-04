@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Core CUA",
+  "description": "Independent native browser control using reconstructed CUA modules.",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA15KCcLl3MLe+TZVEQxvc9Lp79BSsx1DGTxErtMOFg3CvLjYTZmcLfFr1VpfGRTSihhstLubKp6/ffuNsjbWcI8JylGqOA3ADzwAGguUCYr4Vlkejzk3iz+gYz2WOO6lbrTyKnzpq6JAVUIx5hO9+6sgbT+guoUDKDff9DHeUUgfKiVRuUhzI/5TiAVGJAsm+z155zRqm8dWDVs1tkIw79/G5elyCE6hKgCSOaqcUIEFF1ChgabXcRA+TqqW2jwl64xC4K3tDxPQmoImC+5ekTukubRHJ9a3s5pvay7J65bzCoKPlPvROcvGDgHZVqOYlNDFJ5SSqxjqHt6zVHoLsPwIDAQAB",
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "storage",
+    "debugger",
+    "scripting",
+    "webNavigation",
+    "webRequest",
+    "declarativeNetRequest",
+    "alarms",
+    "nativeMessaging",
+    "history",
+    "downloads",
+    "bookmarks"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

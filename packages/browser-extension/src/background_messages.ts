@@ -19,6 +19,35 @@ export function isBrowserPageEvent(
     typeof value.type === "string"
   );
 }
+/** Original dR page-event branch, shared by full and native-host startup. */
+export function createPageEventHandler(host: {
+  getActiveLease(
+    tabId: number,
+  ): Promise<{ sessionId: string } | null | undefined>;
+  broadcastPageEvent(event: Record<string, unknown>): void;
+}) {
+  return (message: any, sender: chrome.runtime.MessageSender): boolean => {
+    if (
+      message?.type !== "codex:page-event" ||
+      !isBrowserPageEvent(message.event)
+    )
+      return false;
+    const tabId = sender.tab?.id;
+    if (typeof tabId === "number" && Number.isInteger(tabId))
+      host
+        .getActiveLease(tabId)
+        .then((lease) => {
+          if (lease != null)
+            host.broadcastPageEvent({
+              ...message.event,
+              session_id: lease.sessionId,
+              tabId,
+            });
+        })
+        .catch(() => {});
+    return true;
+  };
+}
 /** Original dR runtime listener: precedence and async reply lifetimes are significant. */
 export function createBackgroundMessageRouter<Control>(host: {
   runtimeId: string;
@@ -45,6 +74,7 @@ export function createBackgroundMessageRouter<Control>(host: {
   ): Promise<{ sessionId: string } | null | undefined>;
   broadcastPageEvent(event: Record<string, unknown>): void;
 }): MessageHandler {
+  const pageEvent = createPageEventHandler(host);
   return (message, sender, reply) => {
     if (host.sidePanelInstance(message, sender, reply)) return true;
     if (message?.type === "BROWSER_SETTINGS_UPDATED") {
@@ -69,26 +99,7 @@ export function createBackgroundMessageRouter<Control>(host: {
         .catch(() => reply({ ok: false }));
       return true;
     }
-    if (
-      message?.type === "codex:page-event" &&
-      isBrowserPageEvent(message.event)
-    ) {
-      const tabId = sender.tab?.id;
-      if (typeof tabId === "number" && Number.isInteger(tabId)) {
-        host
-          .getActiveLease(tabId)
-          .then((lease) => {
-            if (lease != null)
-              host.broadcastPageEvent({
-                ...message.event,
-                session_id: lease.sessionId,
-                tabId,
-              });
-          })
-          .catch(() => {});
-      }
-      return false;
-    }
+    if (pageEvent(message, sender)) return false;
     if (
       host.tabMentions(message, sender, reply) ||
       host.websiteStatus(message, reply)

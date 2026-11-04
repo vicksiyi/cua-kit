@@ -135,3 +135,18 @@ the actual native MCP with restored workers executed the calculation, and DeepSe
 returned 42. The key was not persisted or passed in MCP tool arguments/server config.
 This verifies model/tool integration for JavaScript, not browser or app operation.
 Live browser discovery still returned zero usable backends in the separate probe.
+
+## Current independent browser deployment
+
+`npm run install:chrome` registers the host and writes `CORE_CUA_HOST_DIRECTORY`
+to the ignored root `.env`. Load the built Core CUA extension from
+`packages/browser-extension/dist/native-extension` using Chrome's Load unpacked UI.
+Then run `npm run demo:deepseek -- "your prompt"`; the launcher discovers private
+endpoint descriptors within that configured directory. An explicit
+`CORE_CUA_ENDPOINT_FILES` JSON array takes precedence. API keys remain in the model
+process. Browser permissions still appear through terminal elicitation.
+
+The live DeepSeek test now completes a local webpage navigation/button-click/read
+workflow through the full MCP chain; the model observes a result marker absent
+from its prompt. Real Chrome search acceptance and native app acceptance remain
+outstanding. This supersedes the JavaScript-only validation status above.

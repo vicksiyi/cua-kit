@@ -29,3 +29,13 @@ await build({
   platform: "node",
   target: "node22",
 });
+
+await build({
+  absWorkingDir: root,
+  entryPoints: ["packages/native-host/src/install_cli.ts"],
+  outfile: "packages/native-host/dist/install.mjs",
+  bundle: true,
+  format: "esm",
+  platform: "node",
+  target: "node22",
+});

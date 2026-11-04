@@ -3820,3 +3820,36 @@ This uncovered a real integration defect that service-only tests missed: a direc
 Eleven focused host/connector/authentication/real-Chromium tests and both affected workspace type checks passed. A separate opt-in CUA_LIVE_DEEPSEEK_TEST=1 run used the configured DeepSeek model/key with the actual AgentLoop and MCP chain. The model opened the local page, navigated, attempted an unsupported accessibility click, recovered using its documented Playwright API, and returned action-completed-marker from the changed page. The marker was not supplied in the model prompt. The run passed. Model credentials were loaded only in the parent after MCP startup and were not forwarded to tool workers.
 
 This proves model-driven operations on the isolated Chromium deployment. It does not yet prove installation in daily Chrome, full original background lifecycle/UI/kernel startup, native app operations, or either user-specified external search acceptance command. Those requirements remain open.
+
+### Loadable native-control extension and installation/discovery entry
+
+The reconstruction build now emits dist/native-extension with a fixed public-key
+manifest and actual native_background_entry. It composes the restored controller,
+CDP/download/navigation forwarding, cursor/popup/page-event runtime messages,
+lease restoration, updates and heartbeat. The page-event branch was factored from
+the original-derived full router and still passes its differential tests. Full
+ChatGPT sidebar/website/kernel lifecycle remains open; this deployment does not
+replace that scope with inert callbacks.
+
+The real Chrome/MCP integration now copies the built extension artifact instead of
+compiling test-only startup. Its actual installer runs twice in an isolated profile,
+validates Chrome's real ID against the manifest public-key hash, launches the host
+through Chrome, discovers its configured private endpoint directory and completes
+navigation/click/screenshot operations. Five installation/router/real-Chrome tests
+and nine host/discovery/connector tests passed; affected type checks passed.
+
+Added npm run install:chrome. On macOS it creates or reuses matching com.core.cua
+registration, refuses incompatible existing registrations and sets
+CORE_CUA_HOST_DIRECTORY in the ignored .env without printing existing content.
+A custom --profile deployment leaves .env unchanged. Endpoint roots must be
+private current-user directories; symlink/shared roots are rejected. Host shutdown
+removes its session descriptors; no live host gives an actionable load-extension
+error rather than falling back to unrelated sockets.
+
+Installed the independent host on this machine and configured its ignored .env.
+The daily Chrome extension itself is still not loaded: native app control timed
+out, and the browser tool rejected chrome://extensions under its URL policy.
+No workaround or Chrome preference-file editing was used. The user must load
+packages/browser-extension/dist/native-extension once via Chrome's developer UI.
+Both external search prompts remain unaccepted, and the complete original feature
+scope is still unfinished.

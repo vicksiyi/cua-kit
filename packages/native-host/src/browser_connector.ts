@@ -72,4 +72,4 @@ export async function createBrowserServiceConnector(
   };
 }
 
-export { parseEndpointFiles } from "./endpoint_configuration";
+export { parseEndpointFiles, discoverEndpointFiles } from "./endpoint_configuration";

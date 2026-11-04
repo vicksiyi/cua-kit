@@ -18,6 +18,7 @@ import {
 export async function verifyIndependentMcpBrowser(
   endpointFile: string,
   pageUrl: string,
+  hostDirectory?: string,
 ) {
   const runtime = await stageRuntimePackages(restoredPackageSources());
   try {
@@ -26,7 +27,9 @@ export async function verifyIndependentMcpBrowser(
         CUA_REPL_ENABLED_SURFACES: "browser",
         CUA_REPL_BROWSER_ENV: "codex-app",
         BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
-        CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]),
+        ...(hostDirectory
+          ? { CORE_CUA_HOST_DIRECTORY: hostDirectory }
+          : { CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]) }),
         NODE_REPL_DISABLE_ANALYTICS: "1",
         NODE_REPL_NODE_MODULE_DIRS: runtime.root,
         NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,

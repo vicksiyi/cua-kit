@@ -2,19 +2,26 @@
 import {
   createBrowserServiceConnector,
   parseEndpointFiles,
+  discoverEndpointFiles,
 } from "@core/native-host/browserConnector";
 
 export async function configureIndependentBrowser(env: Record<string, string>) {
-  if (env.CORE_CUA_ENDPOINT_FILES === undefined) return env;
+  if (
+    env.CORE_CUA_ENDPOINT_FILES === undefined &&
+    env.CORE_CUA_HOST_DIRECTORY === undefined
+  )
+    return env;
   if (
     !env.CUA_REPL_ENABLED_SURFACES?.split(",")
       .map((value) => value.trim())
       .includes("browser")
   )
     throw Error("CORE_CUA_ENDPOINT_FILES requires the browser surface");
-  const connector = await createBrowserServiceConnector(
-    parseEndpointFiles(env.CORE_CUA_ENDPOINT_FILES),
-  );
+  const endpointFiles =
+    env.CORE_CUA_ENDPOINT_FILES === undefined
+      ? await discoverEndpointFiles(env.CORE_CUA_HOST_DIRECTORY!)
+      : parseEndpointFiles(env.CORE_CUA_ENDPOINT_FILES);
+  const connector = await createBrowserServiceConnector(endpointFiles);
   const services: unknown = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");
   if (
     !services ||
@@ -36,6 +43,7 @@ export async function configureIndependentBrowser(env: Record<string, string>) {
     );
   return {
     ...env,
+    CORE_CUA_ENDPOINT_FILES: JSON.stringify(endpointFiles),
     ...connector.environment,
     NODE_REPL_TRUSTED_SERVICES: JSON.stringify({
       ...configured,

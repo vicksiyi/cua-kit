@@ -1,88 +1,50 @@
+import { execFileSync } from "node:child_process";
+import { discoverEndpointFiles } from "../packages/native-host/src/endpoint_configuration";
 import { verifyIndependentMcpBrowser } from "./independent-mcp-browser";
 import { createServer } from "node:http";
-import {
-  createNativeHostInstallation,
-  registerNativeHostForProfile,
-} from "../packages/native-host/src/installation";
+import { chromeExtensionId } from "../packages/native-host/src/installation";
 import { connectNativeHost } from "../packages/native-host/src/client";
 import { BrowserRpcPeer } from "../packages/core/src/browser_rpc_peer";
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  mkdtemp,
-  mkdir,
-  writeFile,
-  rm,
-  readdir,
-  readFile,
-  cp,
-} from "node:fs/promises";
+import { mkdtemp, rm, readFile, cp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { build } from "esbuild";
 import { chromium } from "playwright";
 
 test(
-  "Chrome launches independent native host and serves restored handler over authenticated socket",
+  "packaged native extension serves real CUA operations through the full MCP chain",
   { timeout: 120000 },
   async (t) => {
     const root = await mkdtemp(join(tmpdir(), "core-native-controller-"));
     t.after(() => rm(root, { recursive: true, force: true }));
     const extension = join(root, "extension");
-    await mkdir(extension);
-    await cp(
-      "packages/browser-extension/dist/content-scripts",
-      join(extension, "content-scripts"),
-      { recursive: true },
-    );
-    await writeFile(
-      join(extension, "manifest.json"),
-      JSON.stringify({
-        manifest_version: 3,
-        name: "Core controller integration",
-        version: "1.0.0",
-        permissions: [
-          "tabs",
-          "tabGroups",
-          "storage",
-          "debugger",
-          "scripting",
-          "webNavigation",
-          "webRequest",
-          "declarativeNetRequest",
-          "alarms",
-          "nativeMessaging",
-          "history",
-          "downloads",
-        ],
-        host_permissions: ["<all_urls>"],
-        background: { service_worker: "background.js" },
-      }),
-    );
-    await build({
-      stdin: {
-        contents: `
-import {createNativeBrowserController} from './packages/browser-extension/src/native_browser_controller';
-import {registerBrowserEventListeners} from './packages/browser-extension/src/browser_events';
-const diagnostics=[];
-const controller=createNativeBrowserController({
-  host:{chrome,crypto,now:Date.now,setTimeout:setTimeout.bind(globalThis),clearTimeout:clearTimeout.bind(globalThis),error:(...args)=>diagnostics.push(args)},
-  navigator:{userAgent:navigator.userAgent},hostName:'com.core.cua',
-  sessionDiagnostics:{metric:(...args)=>diagnostics.push(args),warn:(...args)=>diagnostics.push(args)},
-  handlerOptions:{buildChannel:'dev'},
-});
-registerBrowserEventListeners(chrome,controller.handler,send=>send(controller.peer));
-globalThis.reconnectController=()=>controller.transport.reconnectNow();
-globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}),tabs:await controller.handler.getUserTabs({}),status:controller.transport.getStatus(),diagnostics});
-`,
-        resolveDir: resolve("."),
-        loader: "ts",
-      },
-      bundle: true,
-      platform: "browser",
-      format: "iife",
-      outfile: join(extension, "background.js"),
+    await cp("packages/browser-extension/dist/native-extension", extension, {
+      recursive: true,
     });
+    const manifest = JSON.parse(
+      await readFile(join(extension, "manifest.json"), "utf8"),
+    );
+    const extensionId = chromeExtensionId(manifest.key);
+    // Short explicit root avoids macOS Unix socket path length limits.
+    const installationRoot = await mkdtemp("/tmp/core-deployment-");
+    t.after(() => rm(installationRoot, { recursive: true, force: true }));
+    const hostDirectory = join(installationRoot, "endpoints");
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const installed = execFileSync(
+        process.execPath,
+        [
+          resolve("packages/native-host/dist/install.mjs"),
+          "--root",
+          installationRoot,
+          "--profile",
+          join(root, "profile"),
+        ],
+        { encoding: "utf8" },
+      );
+      assert.ok(installed.includes(extensionId));
+      assert.match(installed, /project .env was not changed/);
+    }
     const pageServer = createServer((request, response) => {
       response.setHeader("Content-Type", "text/html");
       response.end(
@@ -117,42 +79,22 @@ globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}
       const worker =
         context.serviceWorkers()[0] ??
         (await context.waitForEvent("serviceworker"));
-      const result = await worker.evaluate(
-        async () => await (globalThis as any).inspectController(),
-      );
-      assert.equal(result.info.type, "extension");
-      assert.equal(result.info.family, "chrome");
-      assert.ok(Array.isArray(result.tabs));
-      assert.equal(result.status.hostName, "com.core.cua");
-      assert.ok(result.info.metadata.extensionId.length === 32);
-      const installation = await createNativeHostInstallation({
-        parentDirectory: join(root, "host-installation"),
-        nodePath: process.execPath,
-        entryPath: resolve("packages/native-host/dist/main.mjs"),
-        extensionIds: [result.info.metadata.extensionId],
-      });
-      await registerNativeHostForProfile(installation, join(root, "profile"));
-      await worker.evaluate(() => (globalThis as any).reconnectController());
+      assert.equal(await worker.evaluate(() => chrome.runtime.id), extensionId);
       let endpointFile: string | undefined;
       for (let attempt = 0; attempt < 50; attempt++) {
-        const entries = await readdir(root);
-        for (const entry of entries.filter((name) =>
-          name.startsWith("core-cua-"),
-        )) {
-          const candidate = join(root, entry, "endpoint.json");
-          try {
-            await readFile(candidate);
-            endpointFile = candidate;
-            break;
-          } catch {}
+        try {
+          endpointFile = (await discoverEndpointFiles(hostDirectory))[0];
+        } catch (error) {
+          if (!String(error).includes("No independent browser host"))
+            throw error;
         }
         if (endpointFile) break;
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      const status = await worker.evaluate(
-        async () => (await (globalThis as any).inspectController()).status,
+      assert.ok(
+        endpointFile,
+        "Built extension did not launch its registered native host",
       );
-      assert.ok(endpointFile, JSON.stringify(status));
       const transport = await connectNativeHost(
         JSON.parse(await readFile(endpointFile!, "utf8")),
       );
@@ -160,10 +102,7 @@ globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}
         const peer = new BrowserRpcPeer(transport);
         peer.registerRequestHandler("ping", () => "pong");
         const info = await peer.sendRequest("getInfo", {});
-        assert.equal(
-          info.metadata.extensionId,
-          result.info.metadata.extensionId,
-        );
+        assert.equal(info.metadata.extensionId, extensionId);
         assert.equal(info.type, "extension");
         const tabs = await peer.sendRequest("getUserTabs", {});
         assert.ok(Array.isArray(tabs));
@@ -191,7 +130,7 @@ globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}
       } finally {
         await transport.close();
       }
-      await verifyIndependentMcpBrowser(endpointFile!, pageUrl);
+      await verifyIndependentMcpBrowser(endpointFile!, pageUrl, hostDirectory);
     } finally {
       await context.close();
     }

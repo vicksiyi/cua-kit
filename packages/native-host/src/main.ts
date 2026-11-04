@@ -5,8 +5,11 @@ async function main() {
   const [flag, configPath, origin, ...extra] = process.argv.slice(2);
   if (flag !== "--config" || !configPath || extra.length)
     throw Error("Expected --config <file> <chrome-extension origin>");
-  validateExtensionOrigin(await loadHostConfig(configPath), origin);
-  const host = await startNativeHost(process.stdin, process.stdout);
+  const config = await loadHostConfig(configPath);
+  validateExtensionOrigin(config, origin);
+  const host = await startNativeHost(process.stdin, process.stdout, {
+    parentDirectory: config.endpointParentDirectory,
+  });
   console.error(`@core native host endpoint: ${host.endpointFile}`);
   for (const signal of ["SIGINT", "SIGTERM"] as const)
     process.once(signal, () => {

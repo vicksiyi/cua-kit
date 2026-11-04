@@ -9,11 +9,27 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { constants } from "node:fs";
+import { createHash, createPublicKey } from "node:crypto";
 import { dirname, isAbsolute, join } from "node:path";
 export const HOST_NAME = "com.core.cua";
+/** Chrome's stable unpacked extension ID is derived from the manifest SPKI public key. */
+export function chromeExtensionId(manifestKey: string) {
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(manifestKey))
+    throw Error("Invalid extension public key");
+  const bytes = Buffer.from(manifestKey, "base64");
+  createPublicKey({ key: bytes, format: "der", type: "spki" });
+  return createHash("sha256")
+    .update(bytes)
+    .digest("hex")
+    .slice(0, 32)
+    .replace(/[0-9a-f]/g, (digit) =>
+      String.fromCharCode(97 + parseInt(digit, 16)),
+    );
+}
 export interface NativeHostConfig {
   version: 1;
   extensionIds: string[];
+  endpointParentDirectory?: string;
 }
 export function validateHostConfig(value: unknown): NativeHostConfig {
   const config = value as NativeHostConfig | null;
@@ -27,7 +43,19 @@ export function validateHostConfig(value: unknown): NativeHostConfig {
     )
   )
     throw Error("Invalid @core native host configuration");
-  return { version: 1, extensionIds: [...new Set(config.extensionIds)] };
+  if (
+    config.endpointParentDirectory !== undefined &&
+    (typeof config.endpointParentDirectory !== "string" ||
+      !isAbsolute(config.endpointParentDirectory))
+  )
+    throw Error("Native host endpoint parent must be absolute");
+  return {
+    version: 1,
+    extensionIds: [...new Set(config.extensionIds)],
+    ...(config.endpointParentDirectory === undefined
+      ? {}
+      : { endpointParentDirectory: config.endpointParentDirectory }),
+  };
 }
 export function validateExtensionOrigin(
   config: NativeHostConfig,
@@ -48,10 +76,12 @@ export async function createNativeHostInstallation(options: {
   nodePath: string;
   entryPath: string;
   extensionIds: string[];
+  endpointParentDirectory?: string;
 }) {
   const config = validateHostConfig({
     version: 1,
     extensionIds: options.extensionIds,
+    endpointParentDirectory: options.endpointParentDirectory,
   });
   if (
     ![options.parentDirectory, options.nodePath, options.entryPath].every(

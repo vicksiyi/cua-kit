@@ -3,6 +3,7 @@ export { connectNativeHost } from "./client";
 export { NativeHostRouter } from "./router";
 export {
   createNativeHostInstallation,
+  chromeExtensionId,
   registerChromeNativeHost,
   validateHostConfig,
   validateExtensionOrigin,

@@ -17,7 +17,12 @@ if (
 )
   throw new Error("CUA_MCP_ENV must be a JSON string map");
 let env = { ...configured } as Record<string, string>;
-for (const key of ["CUA_NATIVE_SUPERVISOR_PATH", "NODE_REPL_NODE_PATH", "CORE_CUA_ENDPOINT_FILES"])
+for (const key of [
+  "CUA_NATIVE_SUPERVISOR_PATH",
+  "NODE_REPL_NODE_PATH",
+  "CORE_CUA_ENDPOINT_FILES",
+  "CORE_CUA_HOST_DIRECTORY",
+])
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
 if (!env.CUA_NATIVE_SUPERVISOR_PATH)

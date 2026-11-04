@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type Socket } from "node:net";
-import { mkdtemp, chmod, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, chmod, writeFile, rm } from "node:fs/promises";
+import { assertPrivateEndpointDirectory } from "./endpoint_configuration";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import type { Readable, Writable } from "node:stream";
@@ -19,9 +20,15 @@ export interface NativeHostEndpoint {
 export async function startNativeHost(
   input: Readable,
   output: Writable,
-  options: { requestTimeoutMs?: number } = {},
+  options: { requestTimeoutMs?: number; parentDirectory?: string } = {},
 ) {
-  const directory = await mkdtemp(join(tmpdir(), "core-cua-"));
+  if (options.parentDirectory !== undefined) {
+    await mkdir(options.parentDirectory, { recursive: true, mode: 0o700 });
+    await assertPrivateEndpointDirectory(options.parentDirectory);
+  }
+  const directory = await mkdtemp(
+    join(options.parentDirectory ?? tmpdir(), "core-cua-"),
+  );
   await chmod(directory, 0o700);
   const endpoint: NativeHostEndpoint = {
     version: 1,
