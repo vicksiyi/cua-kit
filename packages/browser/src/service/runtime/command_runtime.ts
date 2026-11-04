@@ -75,7 +75,7 @@ export interface CommandRuntimeDependencies {
   canRecordCommand?: (...args: any[]) => any;
   trackRecordingContext: (...args: any[]) => any;
   reportCommandRecovery?: (...args: any[]) => any;
-  closeTabCommand: { type: string };
+  getTabCommand: { type: string };
 }
 export function createCommandRuntimeFactory(
   dependencies: CommandRuntimeDependencies,
@@ -139,7 +139,7 @@ export function createCommandRuntimeFactory(
     canRecordCommand = commandScheduling.canObserve,
     trackRecordingContext,
     reportCommandRecovery = emitCommandRecovery,
-    closeTabCommand,
+    getTabCommand,
   } = dependencies;
   const maxConfirmationPolicyBytes = 20_000;
   let disposeCurrentRuntime: (() => Promise<void>) | null = null;
@@ -604,7 +604,7 @@ export function createCommandRuntimeFactory(
     if (typeof tabId !== "string" && typeof tabId !== "number") return;
     const url = context.cdp.currentTopLevelUrl(tabId);
     return url != null ||
-      command.type === closeTabCommand.type ||
+      command.type === getTabCommand.type ||
       !context.cdp.isTabAttached(tabId)
       ? url
       : await context.cdp.readCommittedTabUrl(tabId);

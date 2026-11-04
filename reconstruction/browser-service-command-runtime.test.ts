@@ -57,7 +57,7 @@ const bindings = {
   Je: "canRecordCommand",
   a6: "trackRecordingContext",
   V3: "reportCommandRecovery",
-  Fh: "closeTabCommand",
+  Fh: "getTabCommand",
 };
 function original(deps: any) {
   const names = Object.keys(bindings);
@@ -330,7 +330,7 @@ function fixture(factory: any, flags: any = {}) {
     canRecordCommand: (c: any) => c?.recordable !== false,
     trackRecordingContext: () => trace.push(["track"]),
     reportCommandRecovery: () => ({ serial: true }),
-    closeTabCommand: { type: "close" },
+    getTabCommand: { type: "get_tab" },
   };
   if (flags.realPolicies) {
     for (const key of [
@@ -762,4 +762,20 @@ test("runtime defaults emit restored recovery metadata through credential schedu
   assert.equal(meta.credential_binding_version, "unknown");
   assert.equal(f.trace.filter((x) => x[0] === "context").length, 0);
   await f.factory.dispose();
+});
+test("get_tab skips committed URL fallback while close command retains original lookup decision", async () => {
+  for (const factory of [original, createCommandRuntimeFactory])
+    for (const type of ["get_tab", "close"]) {
+      const f = fixture(factory);
+      const r = await f.factory.createRuntime({}, f.runtime);
+      await r.executeAgentCommand({ type, browser_id: "browser-1", tab_id: 3 });
+      const reads = f.trace.filter((x) => x[0] === "committedUrl");
+      assert.equal(reads.length, type === "get_tab" ? 0 : 1);
+      const record = f.trace.find((x) => x[0] === "record");
+      assert.equal(
+        record[2].url,
+        type === "get_tab" ? undefined : "https://synthetic.invalid/",
+      );
+      await f.factory.dispose();
+    }
 });

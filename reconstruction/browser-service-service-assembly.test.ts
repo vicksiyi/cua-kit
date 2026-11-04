@@ -1,3 +1,7 @@
+import { setupBrowserRuntime } from "../packages/browser/src/runtime/setup";
+import { setup_browser } from "../packages/cua/src/tinysky_alt/setup_browser";
+import { create_browser_api } from "../packages/cua/src/tinysky_alt/create_browser_api";
+import { create_bootstrap_emitter } from "../packages/cua/src/tinysky_alt/create_bootstrap_emitter";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assembleBrowserService } from "../packages/browser/src/service/runtime/service_assembly";
@@ -20,6 +24,8 @@ test("assembled host and command service run real Unix socket RPC with signed ac
   let turnHook: any,
     service: any,
     deny = false;
+  const priorRepl = Object.getOwnPropertyDescriptor(globalThis, "nodeRepl");
+  let tabUrl = "https://fixture.invalid/";
   const server = createServer((socket) => {
     const transport = new NativePipeTransport(socket, {
       decodeMessage: nativePipeMessage,
@@ -49,7 +55,12 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     }));
     rpc.registerRequestHandler("getTabs", (params: any) => {
       events.push(["getTabs", params]);
-      return [{ id: 8, title: "Synthetic", url: "https://fixture.invalid/" }];
+      return [{ id: 8, title: "Synthetic", url: tabUrl }];
+    });
+    rpc.registerRequestHandler("getUserTabs", () => []);
+    rpc.registerRequestHandler("getCommittedTabUrl", (params: any) => {
+      events.push(["committedUrl", params]);
+      return tabUrl;
     });
     rpc.registerRequestHandler("nameSession", (params: any) => {
       events.push(["nameSession", params]);
@@ -183,7 +194,13 @@ test("assembled host and command service run real Unix socket RPC with signed ac
             default: {
               apiManifest: {
                 root: "Browser",
-                interfaces: { Browser: {} },
+                interfaces: {
+                  Browser: {},
+                  Agent: {},
+                  Browsers: {},
+                  Tabs: {},
+                  Tab: {},
+                },
                 types: {},
               },
               documentManifest: [
@@ -205,10 +222,33 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         },
       },
     });
-    await service.handleRpc({
-      method: "setup",
-      params: { environment: "codex-app" },
+    Object.defineProperty(globalThis, "nodeRepl", {
+      configurable: true,
+      value: {
+        ...repl,
+        rpc: async (name: string, request: any) => {
+          assert.equal(name, "browser");
+          events.push(["client.rpc", request.method, request.params?.type]);
+          return service.handleRpc(request);
+        },
+        write(value: any, tag: any) {
+          events.push(["write", tag, value]);
+        },
+        emitImage: unused,
+      },
     });
+    const agent: any = await setup_browser({
+      setupBrowserRuntime,
+      exclude_browser_confirmations: false,
+    });
+    const bootstrap = create_bootstrap_emitter({
+      documentation: {
+        read_core: async () => "Synthetic core",
+        read: async () => "Synthetic additional APIs",
+      } as any,
+      target: "browser" as any,
+    });
+    const cua = create_browser_api(agent.browsers, bootstrap);
     const inventory = await service.handleRpc({
       method: "execute",
       params: { type: "list_browsers" },
@@ -267,6 +307,38 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       { name: "X-Fixture", value: "synthetic" },
     ]);
     assert.equal(events.filter((e) => e[0] === "access").length, 1);
+    const selected = await cua.getBrowser({ id });
+    assert.equal(selected.browserId, id);
+    const publicTabs = await cua.listTabs({ browser: id, emit: false });
+    assert.equal(publicTabs[0].browserId, id);
+    assert.equal(publicTabs[0].id, "8");
+    await selected.nameSession("Public API session");
+    assert.equal(
+      events.filter((e) => e[0] === "nameSession").at(-1)[1].name,
+      "Public API session",
+    );
+    tabUrl = "chrome://newtab/";
+    const committedBefore = events.filter(
+      (e) => e[0] === "committedUrl",
+    ).length;
+    const publicTab = await cua.getTab("8", { browser: id });
+    assert.equal(publicTab.id, "8");
+    assert.equal(typeof publicTab.getScreenshot, "function");
+    assert.equal(typeof publicTab.click, "function");
+    assert.equal(
+      events.filter((e) => e[0] === "committedUrl").length,
+      committedBefore,
+    );
+    assert(events.some((e) => e[0] === "write" && e[1] === "cua.core"));
+    assert(events.some((e) => e[0] === "write" && e[1] === "cua.state"));
+    assert(
+      events.some(
+        (e) =>
+          e[0] === "client.rpc" &&
+          e[1] === "executeWithRecovery" &&
+          e[2] === "get_tab",
+      ),
+    );
     await hooks[0].run();
     await hooks[1].run();
     assert(
@@ -295,6 +367,8 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     await service.dispose();
     assert(events.some((e) => e[0] === "unregister"));
   } finally {
+    if (priorRepl) Object.defineProperty(globalThis, "nodeRepl", priorRepl);
+    else delete (globalThis as any).nodeRepl;
     await service?.dispose();
     await Promise.all(transports.map((t) => t.close()));
     await new Promise<void>((resolve) => server.close(() => resolve()));

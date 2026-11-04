@@ -21,7 +21,7 @@ import {
   BrowserUserGetTabContextCommand,
 } from "../commands/browser_user";
 import { ManualHandoffCommand } from "../commands/handoff";
-import { CloseTabCommand } from "../commands/tabs";
+import { GetTabCommand } from "../commands/tabs";
 import { WebMcpInvokeToolCommand } from "../commands/web_mcp";
 import { findSessionWebMcpTool } from "../webmcp/session_catalog";
 import { createWebMcpNotifications } from "../webmcp/notifications";
@@ -98,7 +98,7 @@ export function assembleCommandRuntime(options: CommandRuntimeAssemblyOptions) {
       lookupWebMcpTool: findSessionWebMcpTool,
       initializeAccessibility: initializeAccessibilityCore,
       manualHandoffCommand: ManualHandoffCommand,
-      closeTabCommand: CloseTabCommand,
+      getTabCommand: GetTabCommand,
     },
     options.documentation.moduleUrl,
     options.documentation.bundle,
