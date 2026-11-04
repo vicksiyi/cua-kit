@@ -163,3 +163,5 @@ export * from "./kernel_js_handler";
 export * from "./tunnel_mcp_server";
 
 export * from "./tunnel_elicitation_client";
+
+export * from "./tunnel_response_delivery";

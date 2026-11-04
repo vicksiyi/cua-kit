@@ -311,5 +311,12 @@
     "test": "reconstruction/extension-tunnel-elicitation.test.ts",
     "method": "Actual original class differential for session headers, guards, delivery/reply races and cancellation; composed restored MCP/JS/scope/client verifies explicit consent gating",
     "limit": "HTTP post/poll are explicit fixtures. No real user approval, hosted HTTP tunnel or browser-operation acceptance is claimed."
+  },
+  "tunnelResponseDeliveryVerification": {
+    "source": "Bs, js, Cl, kl; Il/Al/Fs constants",
+    "module": "packages/browser-extension/src/tunnel_response_delivery.ts",
+    "test": "reconstruction/extension-tunnel-response-delivery.test.ts",
+    "method": "13-scenario actual-source differential using deterministic clocks/timers/fetch; real local HTTP POST with default environment",
+    "limit": "Three attempts per delivery invocation; 401 recovery starts a new invocation without another recovery callback. Hosted polling/deployment remains incomplete."
   }
 }

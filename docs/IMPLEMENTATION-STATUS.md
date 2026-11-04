@@ -3953,3 +3953,16 @@ before storing permission/executing; decline or unacknowledged reply never execu
 Seven related tests, extension type checking and reconstruction build pass.
 HTTP post/poll are fixtures in these tests; production network transport,
 full deployment, daily Chrome and search acceptance remain incomplete.
+
+
+### 2026-11-05 — actual tunnel HTTP response delivery
+
+Restored `Bs/js/Cl/kl`: default real fetch, per-request deadline and overdue
+expiration, abortable backoff, Retry-After parsing/cap, notify timeout handling,
+status-specific failure reports and one-shot unauthorized recovery. Each delivery
+invocation has at most three attempts; 401 recovery invokes a fresh delivery
+without another recovery callback. No credentials are logged or implicitly set.
+Thirteen deterministic source-differential scenarios match actual installed
+functions; real loopback HTTP verifies the default POST/JSON path. These tests
+prove delivery behavior, not hosted tunnel connectivity, full poll composition,
+daily Chrome attachment or the two search tasks.
