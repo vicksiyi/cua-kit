@@ -390,8 +390,11 @@
       "persistent JS output",
       "session isolation",
       "failed new binding discarded; prior binding retained",
-      "session termination resets variables"
+      "session termination resets variables",
+      "actual browser discovery and existing local user-tab claim",
+      "JPEG screenshot signature and bytes",
+      "CUA click independently observed as changed button text"
     ],
-    "boundaries": "Explicit auth/account/feature/consent test inputs; external network rejected. No real browser operations, production authentication, daily Chrome or DeepSeek acceptance."
+    "boundaries": "Temporary real Chromium profile and local HTTP fixture. Auth/account/feature/consent and settings/site-status responses are explicit test inputs permitting the fixture origin; no external backend fetch. No daily Chrome/DeepSeek search/production authentication/full deployment acceptance."
   }
 }

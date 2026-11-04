@@ -819,3 +819,24 @@ This proves real JS execution and transport for the temporary kernel deployment.
 It does not prove browser getTab/click/screenshot operations through this kernel,
 production authentication/tunnel networking, the full sidebar deployment, or
 daily Chrome and DeepSeek search acceptance.
+
+
+### Real kernel browser operations (2026-11-05)
+
+The live Chromium test now binds the actual foundation's browser handler and
+ExtensionBrowserPeer alongside the real control RPC. Through MCP JS it lists the
+Chrome browser, enumerates user tabs, claims the exact local fixture tab via
+`browser.user.claimTab`, reads its URL, captures a JPEG (signature and nonempty
+bytes checked), and clicks its button through `tab.cua.click`. Playwright only
+launches the temporary browser, serves/opens the local fixture and independently
+checks that the button text changed to `Clicked`; it does not perform the tested
+click or screenshot. Original browser security stays enabled. Auth and browser
+settings/site-status responses are explicit fixtures permitting only the local
+page's origin; no real external backend fetch is made. Worker-global timers are
+bound to globalThis, as in the native production entry. Temporary diagnostic
+instrumentation was removed before the passing run.
+
+The live test and five related offscreen/assembly tests pass. This supersedes the
+previous limitation on kernel screenshot/click verification for this local page.
+It remains separate from daily-profile Chrome connectivity, DeepSeek model-driven
+search, production authentication, and full extension/sidebar deployment.
