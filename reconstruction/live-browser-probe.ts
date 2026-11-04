@@ -12,7 +12,9 @@ let client: Awaited<ReturnType<typeof McpToolClient.connect>> | undefined;
 try {
   const diagnostic = process.argv.includes("--diagnostics");
   const originalWorkers = process.argv.includes("--original-workers");
-  const originalService = process.argv.includes("--original-service");
+  const registeredService = process.argv.includes("--registered-service");
+  const originalService = process.argv.includes("--original-service") || registeredService;
+  const registeredServicePath = resolve(process.env.HOME!, ".codex/plugins/cache/openai-bundled/chrome/latest/scripts/browser-service.mjs");
   if (diagnostic && originalService) throw Error("Choose diagnostics or original-service, not both");
   const installedRoot = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules";
   const diagnosticService = join(staged.root, "node_modules/@core/browser-desktop/dist/discovery-diagnostic.mjs");
@@ -42,8 +44,8 @@ export function handleRpc(request) { return request.method === "diagnostic" ? ev
       NODE_REPL_NODE_PATH: "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
       NODE_REPL_DISABLE_ANALYTICS: "1",
       NODE_REPL_NODE_MODULE_DIRS: staged.root,
-      NODE_REPL_TRUSTED_CODE_PATHS: originalService ? [staged.root, installedRoot].join(delimiter) : staged.root,
-      ...(originalService ? { NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ browser: join(installedRoot, "@oai/browser-desktop/scripts/browser-service.mjs") }) } : {}),
+      NODE_REPL_TRUSTED_CODE_PATHS: originalService ? [staged.root, installedRoot, ...(registeredService ? [resolve(registeredServicePath, "..")] : [])].join(delimiter) : staged.root,
+      ...(originalService ? { NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ browser: registeredService ? registeredServicePath : join(installedRoot, "@oai/browser-desktop/scripts/browser-service.mjs") }) } : {}),
       CUA_REPL_ENABLED_SURFACES: "browser",
       CUA_REPL_BROWSER_ENV: "codex-app",
       BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
