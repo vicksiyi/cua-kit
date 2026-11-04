@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@core/core": "0.0.0-reconstructed.0"
+    "@core/core": "0.0.0-reconstructed.0",
+    "@statsig/js-client": "3.33.3"
   }
 }

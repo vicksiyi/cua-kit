@@ -9,7 +9,13 @@
     "client.js": "71134f10354fe9f7be23a62df52789908a8592151685286a7965b297a81cef8f",
     "client.d.ts": "ba1fdc06bab21bea6970be9d5f81c3f7d7fa7c7d36717030bce46416ec3c36d6",
     "window_result.js": "9169daf53e7516eecd2ba8680e990bc6570d16d955f0ffed183572202c5d5448",
-    "window_result.d.ts": "41920c377dc26959b2949536277cda7b8829541e28fb26e8c14c043bf9a36ec2"
+    "window_result.d.ts": "41920c377dc26959b2949536277cda7b8829541e28fb26e8c14c043bf9a36ec2",
+    "computer-use-policy.js": "a00024117e11f2d1e4151e140bede2c0ed7931625aa0f79a427457cb1103524e",
+    "computer-use-policy.d.ts": "3fecdea3868778b7c50fc8f67c3aab9b01b71a9daddaf61ac12fad3a2fef29c8",
+    "computer-use-telemetry.js": "3645bebe7ff8badca86e57367e7961e1b4ac1fb0e743c65b3e1d3e308847208e",
+    "computer-use-telemetry.d.ts": "c690cc9e4435ed9e2c4829b5b0e62e4907f0e77553654765235c1cabc38b3242",
+    "lazy-client.js": "e222ec4e31b96c06c79819ea23a4d69a7f564c9a11f640c9d4b48c11bc75365b"
   },
-  "note": "Installed errors.d.ts declares formatOSStatus but errors.js does not export it; runtime evidence takes precedence."
+  "note": "Installed errors.d.ts declares formatOSStatus but errors.js does not export it; runtime evidence takes precedence.",
+  "statsigInstalledResolution": "3.33.3"
 }

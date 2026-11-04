@@ -5,6 +5,9 @@ The installed @oai/sky 0.7.13 package has three native targets (mac, linux, wind
 Currently implemented:
 
 - `src/create_service.ts`: service closure with lazy platform-client creation, own-method dispatch, media wire serialization, and Linux drag-handle state.
+- `src/targets/mac/computer-use-policy.ts`: immutable app approval inputs, canonical app-path binding, response metadata, audio approval and terminal telemetry.
+- `src/targets/mac/computer-use-telemetry.ts`: original structured-event wrapper around upstream Statsig 3.33.3, with host network/analytics gates and identity updates.
+- `src/targets/mac/lazy-client.ts`: cached lazy client import.
 - `src/targets/mac/client.ts`: native operation envelopes, validation, per-version transport cache, metadata/default precedence and client singleton.
 - `src/targets/mac/window_result.ts`: window state validation and once-per-app instructions.
 - `src/targets/mac/native-pipe.ts`: original privileged native-pipe transport, framing, API handshake, request queue, startup and host-service exchanges.
@@ -13,7 +16,7 @@ Currently implemented:
 
 These internal modules are built and type-checked with the other reconstruction packages. They do not yet expose the original root/service entry points: platform-client factories are still missing; the Mac native transport is restored but has not been connected to an installed native service. `createSkyService` requires an explicit platform-client constructor; no placeholder native implementation is selected automatically.
 
-The original Sky package declares @statsig/js-client, and platform code uses native helper processes. Its native executables are not JavaScript dependencies and are not reconstructed by the dispatcher. The original `SKY_AUDIO_MODEL_ALLOWLIST` name and request metadata protocol are retained unchanged.
+The original Sky package declares @statsig/js-client ^3.32.6; its installed resolution is 3.33.3, which this package now pins independently of the browser bundle's 3.33.1. Platform code also uses native helper processes. Its native executables are not JavaScript dependencies and are not reconstructed by the dispatcher. The original `SKY_AUDIO_MODEL_ALLOWLIST` name and request metadata protocol are retained unchanged.
 
 Differential tests evaluate only inspected original service/policy code with synthetic platform clients. They cover construction retry, media field filtering, own properties vs getters/inherited methods, handle retention after failures, and live audio policy changes. No personal app state or native recording is accessed.
 
