@@ -145,3 +145,5 @@ export * from "./browser_protocol";
 export { createBrowserManagement, type BrowserManagementCall } from "./browser_management";
 export { createNativeBrowserController } from "./native_browser_controller";
 export { startNativeBrowserBackground } from "./native_background";
+
+export { createBackgroundMentionInvalidationStarter } from "./background_mentions";

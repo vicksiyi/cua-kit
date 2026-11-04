@@ -652,3 +652,21 @@ unless they match this installation; incompatible ones fail instead of overwriti
 The background deployment logs diagnostics to the extension console. It does not
 substitute fake ChatGPT auth, feature flags, sidebar services or standalone kernels;
 those broader startup integrations remain separate unfinished work.
+
+### Native tab-mention invalidation wiring
+
+The native controller now constructs the same lazy-observed tab-mention provider
+used by the original `dR` startup. On its first mention query, it subscribes to
+Chrome tab changes and provider invalidations. The restored fanout sends native
+peer notification and extension runtime message before current kernel-peer
+notifications. The standalone helper supports a changing kernel-peer collection;
+the native-only deployment currently has none. A caller-supplied provider is
+preserved rather than overwritten.
+
+`extension-background-mentions.test.ts` compares this closure directly with the
+installed `dR` initializer, including missing native peer, registration order and
+kernel membership changes. The real packaged-extension integration test queries
+mentions, changes an actual tab title, receives `onBrowserTabMentionsInvalidated`
+over Native Messaging, and verifies the updated query result before continuing
+the existing MCP navigation/click/screenshot test. This completes that notification
+path, not the full ChatGPT sidebar/website/kernel startup.

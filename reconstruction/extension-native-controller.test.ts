@@ -108,6 +108,50 @@ test(
         assert.ok(Array.isArray(tabs));
         const tab = tabs.find((item: any) => item.url === pageUrl);
         assert.ok(tab);
+        // First mention query installs the original lazy invalidation observers.
+        await peer.sendRequest("getUserTabs", {
+          query: "",
+          limit: 10,
+          includeFavicons: false,
+        });
+        let received!: () => void;
+        const invalidated = new Promise<void>((resolve) => {
+          received = resolve;
+        });
+        peer.addEventListener("onBrowserTabMentionsInvalidated", received);
+        await page.evaluate(() => {
+          document.title = "Updated native tab";
+        });
+        let deadline: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            invalidated,
+            new Promise((_, reject) => {
+              deadline = setTimeout(
+                () =>
+                  reject(Error("Real tab change did not notify native client")),
+                5000,
+              );
+            }),
+          ]);
+        } finally {
+          clearTimeout(deadline);
+          peer.removeEventListener("onBrowserTabMentionsInvalidated", received);
+        }
+        const updated = await peer.sendRequest("getUserTabs", {
+          query: "Updated native tab",
+          limit: 10,
+          includeFavicons: false,
+        });
+        assert.ok(
+          updated.some(
+            (item: any) =>
+              item.id === tab.id && item.title === "Updated native tab",
+          ),
+        );
+        await page.evaluate(() => {
+          document.title = "Core native page";
+        });
         const captured = await peer.sendRequest("getTabContext", {
           session_id: "native-live",
           turn_id: "read-1",

@@ -7,6 +7,8 @@ import {
   ExtensionBrowserPeer,
   type ExtensionBrowserPeerOptions,
 } from "./browser_peer";
+import { createBackgroundMentionInvalidationStarter } from "./background_mentions";
+import { extensionBuildChannel } from "./browser_platform";
 import type { BrowserCommandOptions } from "./command_handler";
 import type { BrowserSessionDependencies } from "./browser_session";
 
@@ -27,7 +29,26 @@ export function createNativeBrowserController(options: {
     { navigator: options.navigator },
     options.sessionDiagnostics,
   );
-  const handler = new Handler(options.handlerOptions);
+  let nativePeer: ExtensionBrowserPeer | null = null;
+  const startMentions = createBackgroundMentionInvalidationStarter({
+    nativePeer: () => nativePeer,
+    // Independent native deployment has no standalone kernel peers yet.
+    kernelPeers: () => [],
+    runtime: options.host.chrome.runtime,
+    observeTabs: foundation.observeMentionInvalidations,
+    subscribeProvider: (notify) => provider.subscribeInvalidations(notify),
+  });
+  const provider =
+    options.handlerOptions?.browserTabMentionProvider ??
+    new foundation.TabMentionProvider(
+      options.handlerOptions?.buildChannel ?? extensionBuildChannel("prod"),
+      foundation.tabFavicons.getInstance(),
+      startMentions,
+    );
+  const handler = new Handler({
+    ...options.handlerOptions,
+    browserTabMentionProvider: provider,
+  });
   const Transport = createNativeTransportClass(options.host);
   const transport = new Transport(options.hostName);
   const peer = new ExtensionBrowserPeer(
@@ -35,5 +56,6 @@ export function createNativeBrowserController(options: {
     handler,
     options.peerOptions,
   );
+  nativePeer = peer;
   return { foundation, handler, transport, peer };
 }
