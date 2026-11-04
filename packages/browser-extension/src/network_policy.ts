@@ -1,3 +1,4 @@
+import { createNetworkPolicyEnforcer } from "./network_policy_enforcement";
 import {
   compileNetworkPolicy,
   createNetworkPolicyPredicate,
@@ -36,18 +37,26 @@ function rulesMatch(actual: any, expected: any) {
       JSON.stringify(expected.condition.resourceTypes?.slice().sort())
   );
 }
-/** Original ar/op. Compiler/predicate default to restored implementations; active-page enforcement remains required. */
+/** Original ar/op. Compiler/predicate default to restored implementations; active-page enforcement also defaults to the restored inspection closure. */
 export function createNetworkPolicyManagerClass(host: {
   chrome: typeof chrome;
   now(): number;
   compile?(constraints: any[]): CompiledNetworkPolicy;
   predicate?(constraints: any[]): (url: string) => boolean;
-  enforceActivePage(
+  enforceActivePage?(
     tabId: number,
     deadline: number,
     allowed: (url: string) => boolean,
   ): Promise<void>;
 }) {
+  const enforceActivePage =
+    host.enforceActivePage ??
+    createNetworkPolicyEnforcer({
+      chrome: host.chrome,
+      now: host.now,
+      setTimeout,
+      clearTimeout,
+    });
   let instance: NetworkPolicyManager | undefined;
   class NetworkPolicyManager {
     queue: Promise<unknown> = Promise.resolve();
@@ -97,7 +106,7 @@ export function createNetworkPolicyManagerClass(host: {
           );
       };
       try {
-        await host.enforceActivePage(
+        await enforceActivePage(
           tabId,
           await this.run(async () => {
             const dnr = host.chrome.declarativeNetRequest;

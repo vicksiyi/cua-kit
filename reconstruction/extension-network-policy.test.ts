@@ -290,3 +290,66 @@ test("manager defaults to restored compiler and predicate before active-page enf
     [1000000],
   );
 });
+
+test("manager composes restored compiler, predicate and active-frame inspector without overrides", async () => {
+  for (const url of ["https://example.com/path", "https://outside.test/path"]) {
+    const f = fixture(false);
+    const events = new Set<Function>(),
+      detachEvents = new Set<Function>();
+    const commands: string[] = [];
+    f.chrome.debugger = {
+      onEvent: {
+        addListener: (fn: Function) => events.add(fn),
+        removeListener: (fn: Function) => events.delete(fn),
+      },
+      onDetach: {
+        addListener: (fn: Function) => detachEvents.add(fn),
+        removeListener: (fn: Function) => detachEvents.delete(fn),
+      },
+      async attach() {
+        commands.push("attach");
+      },
+      async detach() {
+        commands.push("detach");
+      },
+      async sendCommand(_target: unknown, method: string) {
+        commands.push(method);
+        return method === "Page.getFrameTree"
+          ? { frameTree: { frame: { id: "root", url } } }
+          : {};
+      },
+    };
+    f.chrome.tabs.get = async (id: number) => ({ id, status: "complete" });
+    const Manager = createNetworkPolicyManagerClass({
+      chrome: f.chrome,
+      now: Date.now,
+    });
+    const manager = new Manager();
+    const attached = manager.attach(1, {
+      constraints: [
+        { kind: "domains", mode: "allowlist", patterns: ["example.com"] },
+      ],
+    });
+    if (url.includes("outside.test")) {
+      await assert.rejects(attached, /outside the current policy/);
+      assert.equal(manager.attachedPolicies.size, 0);
+    } else {
+      await attached;
+      assert.equal(manager.attachedPolicies.has(1), true);
+      await manager.detach(1);
+    }
+    assert.deepEqual(commands, [
+      "attach",
+      "Page.enable",
+      "Target.setAutoAttach",
+      "Page.getFrameTree",
+      "detach",
+    ]);
+    assert.equal(events.size, 0);
+    assert.equal(detachEvents.size, 0);
+    assert.deepEqual(
+      f.rules.map((rule) => rule.id),
+      [1000000],
+    );
+  }
+});

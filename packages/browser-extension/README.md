@@ -225,7 +225,16 @@ document URLs, origin restrictions and all input/output/complexity budgets.
 Host/origin parsing is shared with browser-service through `@core/core/originPatterns`.
 Explicit compiler/predicate injection remains available for isolated tests.
 
-The `JS` active-page enforcement closure remains a required host dependency.
-Tests compare compiler/predicate behavior with the pinned original bundle and run
-manager installation with the real restored compiler/predicate and fixture Chrome.
-This does not prove real site enforcement or full production network-policy readiness.
+The original `JS` active-page inspector is now restored in
+`network_policy_enforcement.ts` and used by default. It temporarily attaches a
+debugger, observes iframe targets/loading/context events, waits for a stable frame
+tree, resolves HTTP(S) sources (including inherited blank/srcdoc and blob origins),
+checks the predicate and detaches. It does not automatically reload the page.
+Timeout cleanup preserves the original late-attachment behavior. Explicit injection
+remains available for isolated tests.
+
+Differential tests cover normal and rejected pages, iframe/navigation/context
+changes, malformed responses, detach/attach failures and deadline races. Manager
+composition tests use all three restored components with fixture Chrome APIs,
+including rollback on an existing disallowed frame. Real installed-extension/DNR
+and browser startup integration remain unverified.

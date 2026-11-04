@@ -89,11 +89,15 @@
     "Vp": "compileNetworkPolicy",
     "Wp": "createNetworkPolicyPredicate",
     "Ac/Cc/kc/Rc": "normalizePattern/escapeRegex/matches/documentUrl",
-    "ic/up/gp and helpers": "shared @core/core/originPatterns (browser-service re-export retained)"
+    "ic/up/gp and helpers": "shared @core/core/originPatterns (browser-service re-export retained)",
+    "JS": "createNetworkPolicyEnforcer / enforceActivePage",
+    "XS/YS/QS/eE": "inspect/observe/snapshot/resolveOrigins",
+    "dd/tE/hd/Kr/fd/Zr": "inspection session/events/recursive removal/commands/detach/timeout",
+    "rE/nE/Ha/iE/sE/pd/Ae": "frame validation/source URL/context origin/frame tree/record guards"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Production lower-layer wiring (shared lease startup wiring, tab groups/favicons, shared debugger startup wiring, network-policy active-page enforcement, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
+  "remaining": "Production lower-layer wiring (shared lease startup wiring, tab groups/favicons, shared debugger startup wiring, production network-policy wiring and real-browser validation, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
   "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries. Request-header template parsing and expansion are shared between browser VC/u5 and extension cs/ls via project-created @core/core/requestHeaders. Host/origin normalization and matching now share @core/core/originPatterns; differential tests compare the extension ic/up/gp closure.",
   "composition": "createExtensionBrowserFoundation is project-authored assembly of restored identity, lease, debugger, tab, session and dispatcher components; it is not full original dR startup."
 }

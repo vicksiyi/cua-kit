@@ -1837,3 +1837,33 @@ Production extension startup/native host and real desktop/model integration rema
 incomplete; this milestone does not establish real site enforcement.
 
 Validation: all eight reconstructed packages built and passed type checks; all 811 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.264 Active-page network policy inspection
+
+Restored the complete JS/XS inspection closure and YS/QS/eE/dd/tE/hd/Kr/fd/Zr/
+rE/nE/Ha/iE/sE/pd/Ae helpers as network_policy_enforcement.ts. The network manager
+now defaults to the restored enforcer, compiler and predicate. The enforcer uses
+Chrome debugger and standard timers directly; no additional third-party runtime
+was identified in this inspected closure.
+
+Preserves temporary debugger attachment, iframe auto-attach and recursive session
+removal, loading/context events, stable frame-tree sampling, blank/source/blob
+origin resolution, opaque standalone blank-page exception and exact rejection
+messages. It neither stops nor reloads the page automatically. Deadline races
+remove listeners immediately, while late debugger attachment is still detached;
+normal cleanup and detach failure semantics match the original.
+
+Public-entry differential scenarios compare full command/listener/timer traces,
+URL predicate inputs, errors and cleanup against the pinned bundle. They cover
+HTTP(S), rejected origins, srcdoc/cycles, blob/data, blank/inherited/ambiguous
+contexts, iframe sessions, navigation/loading events, malformed trees, API failures,
+detachment and an attachment that finishes after timeout. Manager composition
+uses the real restored compiler/predicate/enforcer with fixture Chrome, checks
+allow/reject decisions and DNR rollback/owned-range cleanup.
+
+These tests do not establish actual installed-extension DNR enforcement. Full
+startup/native-host packaging, remaining group/overlay/SIWC/monitor components,
+real desktop/DeepSeek integration and native source reconstruction remain open.
+
+Validation: all eight reconstructed packages built and passed type checks; all 814 default regression tests passed. The separate native-supervisor suite was not rerun.
