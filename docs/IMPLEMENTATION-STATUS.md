@@ -3998,3 +3998,16 @@ PDF deletion, shared offscreen creation and disposal resets. Chrome/offscreen an
 backend responses remain fixtures; PDF capture/upload, production coordinator and
 full extension packaging are not yet completed. Daily Chrome/search acceptance
 remains unproven.
+
+
+### 2026-11-05 — Library PDF upload and status processing
+
+Restored `rg/sl/ng/il`: authenticated file creation, original allowed destination
+suffixes, estuary form vs direct blob upload, forbidden account headers, process
+stream, readable Library lookup and best-effort failure cleanup. Processing is
+newline-delimited JSON with the original 1 MiB bound, completion/deferred-index
+conditions and failure/temporary-storage rejection. Reader cancellation is retained.
+Nineteen upload scenarios and streaming edge cases compare actual installed
+functions with the readable implementation. No user files or production endpoint
+were used; API/blob responses are fixtures. Real page PDF capture and production
+binding remain incomplete, alongside full deployment and browser/search acceptance.

@@ -340,5 +340,12 @@
     "test": "reconstruction/extension-kernel-tunnel-runtime.test.ts",
     "method": "Actual restored ChatApi, scope registry, KernelControl, kernel host and HTTP tool dispatch composition; original Fn differential",
     "limit": "Chrome offscreen/sendMessage and backend fetch responses are fixtures. PDF capture/upload, production feature/auth/telemetry coordinator and complete extension packaging remain incomplete."
+  },
+  "libraryPdfUploadVerification": {
+    "source": "rg, sl, ng, Lr, il; existing Fn deletion",
+    "module": "packages/browser-extension/src/library_pdf_upload.ts",
+    "test": "reconstruction/extension-library-pdf-upload.test.ts",
+    "method": "Actual installed function differential for 19 upload scenarios and bounded processing streams including split UTF-8, failure events and size limit",
+    "limit": "API/blob responses are explicit fixtures; no user file uploaded. Real page PDF capture and production integration remain incomplete."
   }
 }
