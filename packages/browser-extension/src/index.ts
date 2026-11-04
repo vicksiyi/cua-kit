@@ -84,3 +84,5 @@ export * from "./statsig_live_store";
 export * from "./statsig_live_refresh";
 
 export * from "./statsig_network";
+
+export * from "./statsig_diagnostics";

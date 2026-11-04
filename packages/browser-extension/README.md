@@ -604,3 +604,7 @@ Client construction/init/update/diagnostics and default service assembly remain 
 ExtensionStatsigNetwork assembles ordinary evaluations and live-overlay requests on the
 same restored transport. Pinned upstream ordinary/delta methods are reused without
 mutating upstream prototypes. The complete extended SDK client is still not assembled.
+
+ExtensionStatsigDiagnostics restores bundled syncType and connectivity fields while
+sharing the pinned SDK marker store. Extended network requests use this facade; complete
+client lifecycle assembly remains pending.

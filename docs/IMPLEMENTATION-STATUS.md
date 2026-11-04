@@ -2947,3 +2947,24 @@ unfinished; full startup, panel UI, native replacement and real end-to-end work 
 
 Validation: eight package builds/type checks and all 916 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Statsig synchronization diagnostics
+
+Restored bundled vs differences through ExtensionStatsigDiagnostics. It reuses the pinned
+public marker map, timestamp/duration calculation, error formatting and event construction,
+adding initialize/update_user/refresh_values syncType to overall/process markers and the
+enqueued event. Upstream methods are not patched. Sharing storage keeps markers generated
+by reused SDK code in the same event. Markers are cleared before enqueue, including when
+the logger throws; the event receives a copied marker array as upstream does.
+
+Response diagnostics now include navigator.onLine only when it is boolean. The extended
+NetworkCore uses this facade, while live requests still skip initialization tracking.
+Two tests compare the actual bundled vs module across four sync types and four online
+values, plus exercise actual network post with mocked fetch to verify combined markers
+and live-request exclusion. No external network or real SDK client initialization occurred.
+
+Full client constructor/init/update assembly remains unfinished. Complete extension startup,
+panel UI, native replacement and installed/model end-to-end verification remain pending.
+
+Validation: eight package builds/type checks and all 918 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

@@ -1,3 +1,4 @@
+import { ExtensionStatsigDiagnostics as Diagnostics } from "./statsig_diagnostics";
 /** NetworkCore delta derived from bundled Bc and public Statsig 3.33.4 (ISC).
  * Reuses upstream construction, encoding, compression, rate limits and fallback support.
  * Only request dispatch/URL tracking and their unexported diagnostic helpers are restored here.
@@ -13,7 +14,6 @@ import {
   SDKType,
   SDK_VERSION,
   SessionID,
-  Diagnostics,
 } from "@statsig/client-core";
 import { ErrorTag } from "@statsig/client-core/src/StatsigClientEventEmitter";
 import { _getWindowSafe } from "@statsig/client-core/src/SafeJs";

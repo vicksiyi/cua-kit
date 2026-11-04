@@ -146,7 +146,8 @@
     "Bc.NetworkCore request/URL/diagnostic delta": "ExtensionStatsigNetworkCore: subclass upstream 3.33.4, preserve headers and skipInitTracking gates, original failure order; reuse upstream encoding/compression/rate-limit/fallback support",
     "qm live evaluation store": "ExtensionStatsigEvaluationStore: upstream base/container reuse with overlay/retained values, cursor seeding and loadedAt details",
     "Vm live refresh methods": "createStatsigLiveRefresh: live response stale checks, cursor/value application, interval config, overlap prevention and replacement/stop lifecycle",
-    "Kc assembled network": "ExtensionStatsigNetwork: shared extended core for ordinary evaluations and live overlays; reuse pinned upstream ordinary/delta methods"
+    "Kc assembled network": "ExtensionStatsigNetwork: shared extended core for ordinary evaluations and live overlays; reuse pinned upstream ordinary/delta methods",
+    "vs diagnostics": "ExtensionStatsigDiagnostics: shared public marker storage, syncType marker/event metadata, hasInternet response diagnostics"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
