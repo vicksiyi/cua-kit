@@ -1,3 +1,7 @@
+import {
+  createPopupInterceptor,
+  createPopupMessageHandler,
+} from "./popup_interceptor";
 import { createForeignFrameMonitor } from "./foreign_frame_monitor";
 import { createTabAudioController } from "./tab_audio";
 import { createContentRuntime } from "./content_runtime";
@@ -50,6 +54,11 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     contentRuntime,
     fetch: host.fetch ?? globalThis.fetch,
   });
+  const popupInterceptor = createPopupInterceptor({
+    chrome: host.chrome,
+    tabLeases,
+    contentRuntime,
+  });
   const debuggerRuntime = createDebuggerRuntime(host);
   const tabRuntime = createTabRuntime(host);
   const tabGroups = createTabGroupManagerClass({
@@ -64,6 +73,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const sessionBase = {
     overlay,
     muteBackgroundTab: tabAudio.muteBackgroundTab,
+    trackPopupInterceptor: popupInterceptor.track,
+    ensurePopupInterceptor: popupInterceptor.ensure,
+    removePopupInterceptor: popupInterceptor.remove,
     ...debuggerRuntime,
     ...tabRuntime,
     tabGroups,
@@ -73,6 +85,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    initializePopupInterceptor: popupInterceptor.initialize,
     overlay,
     favicons: tabFavicons,
     chrome: host.chrome,
@@ -129,6 +142,8 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     contentRuntime,
+    popupInterceptor,
+    createPopupMessageHandler,
     get frameMonitor() {
       return frameMonitor;
     },

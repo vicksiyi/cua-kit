@@ -27,3 +27,4 @@ export * from "./observed_tabs";
 export * from "./overlay_manager";
 export * from "./tab_audio";
 export * from "./foreign_frame_monitor";
+export * from "./popup_interceptor";

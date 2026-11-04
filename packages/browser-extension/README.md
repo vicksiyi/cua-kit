@@ -449,3 +449,25 @@ The foundation RPC fixture checks injection on claim and removal at turn end.
 
 Complete startup, popup interception, authentication, mentions, other scripts and
 production manifest/assets/native-host installation remain pending.
+
+
+### Popup interception across MAIN and isolated worlds
+
+`popup_dom.ts` restores Ny/Uy/$y/Fy/By as self-contained Chrome-injected functions.
+The isolated bridge handles string request events with one request per trusted
+interaction; MAIN handles window.open, target/URL exclusions, noopener/noreferrer
+return values and anchor clicks. Removal restores window.open only if its own
+wrapper is still installed.
+
+`createPopupInterceptor` restores preparation deduplication, ordered MAIN presence
+check → isolated bridge → MAIN wrapper, navigation refresh and two-world cleanup
+after pending work. `createPopupMessageHandler` restores the guarded dR listener
+branch and delegates ownership/URL/tab creation to the existing restored command
+handler. Foundation shares this implementation with session lifecycle methods.
+
+Differential tests cover lifecycle, re-tracking races and the actual original
+listener branch. Real Chromium MAIN and CDP-created isolated contexts compare
+trusted clicks, request cancellation, targets, return values, anchor behavior and
+cleanup. Browser APIs are explicit fixtures; user tabs are not modified. Foundation
+RPC integration checks popup child creation/claim/navigation and turn cleanup.
+Full background listener startup and installed-extension validation remain pending.

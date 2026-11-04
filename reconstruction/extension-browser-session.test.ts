@@ -799,12 +799,24 @@ test("extension foundation shares identity, lease singleton and debugger state a
           for (const listener of removedListeners) listener(id);
         }
       },
-      async create() {
+      async create(properties: any) {
+        if (properties?.openerTabId != null) {
+          const tab = {
+            id: 5,
+            active: false,
+            windowId: properties.windowId,
+            url: properties.url,
+            openerTabId: properties.openerTabId,
+          };
+          tabs.set(5, tab);
+          return tab;
+        }
         return tabs.get(4);
       },
       async update(id: number, properties: any) {
         trace.push(["tabs.update", id, properties]);
         const tab = tabs.get(id);
+        if ("url" in properties) tab.url = properties.url;
         if ("muted" in properties)
           tab.mutedInfo = {
             muted: properties.muted,
@@ -828,8 +840,18 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
     scripting: {
       async executeScript(options: any) {
-        trace.push(["frame.execute", options.func?.name, options.target]);
-        return [{ documentId: `doc-${options.target.tabId}`, result: true }];
+        trace.push([
+          "frame.execute",
+          options.func?.name,
+          options.target,
+          options.world,
+        ]);
+        return [
+          {
+            documentId: `doc-${options.target.tabId}`,
+            result: options.func?.name !== "hasPopupInterceptor",
+          },
+        ];
       },
     },
     tabGroups: {
@@ -930,7 +952,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
           return {};
         }
       } as any,
-      initializePopupInterceptor() {},
       getUserTabs: async () => [],
       getUserHistory: async () => [],
       validateTabId() {},
@@ -1074,6 +1095,40 @@ test("extension foundation shares identity, lease singleton and debugger state a
     params: { ...request, target: { tabId: 4 }, method: "Runtime.evaluate" },
   });
   assert.equal(sent[2].result.method, "Runtime.evaluate");
+  const popupRoute = foundation.createPopupMessageHandler(handler);
+  const popupReply = await new Promise((resolve) => {
+    assert.equal(
+      popupRoute(
+        {
+          type: "CODEX_OPEN_AGENT_BACKGROUND_POPUP",
+          url: "https://popup.test/child",
+        },
+        { tab: { id: 4 } } as any,
+        resolve,
+      ),
+      true,
+    );
+  });
+  assert.deepEqual(popupReply, { ok: true });
+  assert.equal(tabs.get(5).url, "https://popup.test/child");
+  assert.equal(tabs.get(5).active, false);
+  assert.equal(stored.leases[5].sessionId, "s");
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "frame.execute" &&
+        entry[1] === "installPopupBridge" &&
+        entry[3] === undefined,
+    ),
+  );
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "frame.execute" &&
+        entry[1] === "installPopupInterceptor" &&
+        entry[3] === "MAIN",
+    ),
+  );
   await peer.handleIncomingMessage({
     id: 4,
     method: "turnEnded",
@@ -1110,6 +1165,23 @@ test("extension foundation shares identity, lease singleton and debugger state a
     ),
   );
   assert.equal(await foundation.frameMonitor!.ensure(4), false);
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "frame.execute" &&
+        entry[1] === "removePopupInterceptor" &&
+        entry[3] === "MAIN",
+    ),
+  );
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "frame.execute" &&
+        entry[1] === "removePopupBridge" &&
+        entry[3] === undefined,
+    ),
+  );
+  assert.equal(tabs.has(5), false);
   favicons.dispose();
 });
 

@@ -2233,3 +2233,33 @@ scripts, production manifest/assets/native host and installed-extension E2E, rea
 desktop/model integration and native source reconstruction remain incomplete.
 
 Validation: all eight reconstructed packages built and passed type checks; all 846 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.279 Popup MAIN/isolated bridge and session integration
+
+Restored Ny/Uy/$y/Fy/By as self-contained popup_dom.ts. MAIN world retains window.open
+and anchor interception, reserved/named-target and URL rules, cancellation and
+noopener/noreferrer return semantics. Isolated world retains userActivation checks,
+one-request allowance and trusted click/keydown reset. Removal preserves a site
+replacement of window.open instead of overwriting it.
+
+createPopupInterceptor restores Cy..Dy tracking, pending injection deduplication,
+ordered world preparation, navigation/replacement/removal and waiting for pending
+work before cleaning both worlds. createPopupMessageHandler restores Oy plus the
+original dR popup branch; the existing command handler performs lease/session/URL
+checks and child-tab creation/claim/navigation. Foundation now shares the interceptor
+with handlers and sessions and exposes the message route.
+
+Differential tests compare lifecycle traces, acknowledgement/failure conditions,
+removal/retracking races and the actual extracted dR listener branch. Real Chromium
+MAIN and CDP isolated contexts compare the DOM event bridge, trusted versus synthetic
+reset, duplicate requests, target/features return semantics, a real intercepted anchor
+click, additional direct anchor guards and cleanup/ownership preservation. Foundation
+RPC fixtures also verify child-tab claim/navigation and two-world turn cleanup.
+
+The full installed-extension listener/startup, authentication/mentions/other content
+scripts, manifest/assets/native host, real desktop/model integration and native
+source reconstruction remain incomplete. Browser runtime APIs in these tests are
+fixtures, not proof of installed-extension permissions or complete end-to-end delivery.
+
+Validation: all eight reconstructed packages built and passed type checks; all 850 default regression tests passed. The separate native-supervisor suite was not rerun.
