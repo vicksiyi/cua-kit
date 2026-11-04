@@ -63,3 +63,11 @@ correlated per client; the first successful response wins, with timeout and
 disconnect cleanup. The host never fabricates `pong` merely because a connection
 exists. This supports the restored extension's heartbeat cleanup behavior;
 Codex-specific native-host methods are still unsupported.
+
+`registerNativeHostForProfile(installation, userDataDirectory)` installs only in
+that Chromium user-data directory, preserving normal browser profiles. The real
+Chromium integration test now exercises Chrome-launched native messaging, socket
+authentication, restored getInfo/getUserTabs, actual page-context capture and turn
+cleanup. It uses a locally prepared page and does not yet exercise DeepSeek-driven
+navigation. The router accepts correlated void replies whose result field is
+omitted by JSON serialization, matching the restored BrowserRpcPeer wire behavior.

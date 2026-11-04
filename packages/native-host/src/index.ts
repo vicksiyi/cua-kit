@@ -8,3 +8,4 @@ export {
   validateExtensionOrigin,
 } from "./installation";
 export { createBrowserServiceConnector } from "./browser_connector";
+export { registerNativeHostForProfile } from "./installation";

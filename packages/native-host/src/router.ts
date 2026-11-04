@@ -68,10 +68,8 @@ export class NativeHostRouter {
           ? this.reverse.get(message.id)
           : undefined;
       if (!pending || !pending.waiting.has(client)) return;
-      if (!("result" in message) && !("error" in message))
-        throw Error("Invalid client response");
       pending.waiting.delete(client);
-      if ("result" in message || pending.waiting.size === 0)
+      if (!("error" in message) || pending.waiting.size === 0)
         this.finishReverse(message.id as string, message);
       return;
     }
@@ -151,8 +149,8 @@ export class NativeHostRouter {
     if (typeof message.id !== "string") return;
     const pending = this.pending.get(message.id);
     if (!pending) return;
-    if (!("result" in message) && !("error" in message))
-      throw Error("Invalid extension response");
+    // Restored BrowserRpcPeer emits result: undefined for void handlers; JSON
+    // serialization omits that field. A correlated id-only reply resolves void.
     clearTimeout(pending.timer);
     this.pending.delete(message.id);
     this.clients.get(pending.client)?.({ ...message, id: pending.id });

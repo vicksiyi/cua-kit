@@ -120,3 +120,25 @@ export async function registerChromeNativeHost(
   });
   return path;
 }
+
+/** Register in an explicit Chromium user-data directory (including isolated profiles).
+ * Chromium DIR_USER_NATIVE_MESSAGING is DIR_USER_DATA/NativeMessagingHosts.
+ */
+export async function registerNativeHostForProfile(
+  installation: Awaited<ReturnType<typeof createNativeHostInstallation>>,
+  userDataDirectory: string,
+) {
+  if (!isAbsolute(userDataDirectory))
+    throw Error("Expected absolute browser user-data directory");
+  const path = join(
+    userDataDirectory,
+    "NativeMessagingHosts",
+    `${HOST_NAME}.json`,
+  );
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify(installation.manifest, null, 2) + "\n", {
+    mode: 0o600,
+    flag: "wx",
+  });
+  return path;
+}

@@ -29,6 +29,7 @@ test("real Unix socket routes colliding RPC ids to two clients through restored 
     },
     {
       moveMouse() {},
+      turnEnded() {},
       async getInfo(params: any) {
         await new Promise((resolve) => setTimeout(resolve, params.delay));
         return { type: "extension", session: params.session_id };
@@ -63,6 +64,7 @@ test("real Unix socket routes colliding RPC ids to two clients through restored 
     { type: "extension", session: "s0" },
     { type: "extension", session: "s1" },
   ]);
+  assert.equal(await peers[0].sendRequest("turnEnded", {}), undefined);
   const events = peers.map(
     (peer) =>
       new Promise((resolve) => peer.addEventListener("onCDPEvent", resolve)),
