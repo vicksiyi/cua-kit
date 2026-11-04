@@ -137,13 +137,17 @@ test("history commands navigate backward, forward and reload in Chromium with re
       }),
       followSessionTab: async () => {},
     };
+    // Read the committed URL on the command's CDP session. Playwright's page.url()
+    // cache is updated on a separate session and may lag the load event.
+    const committedUrl = async () =>
+      (await session.send("Page.getFrameTree")).frameTree.frame.url;
     await back({ tab_id: 7, timeout_ms: 3000 }, context);
-    assert.equal(page.url(), origin + "/one");
+    assert.equal(await committedUrl(), origin + "/one");
     await forward({ tab_id: 7, timeout_ms: 3000 }, context);
-    assert.equal(page.url(), origin + "/two");
+    assert.equal(await committedUrl(), origin + "/two");
     const before = requests;
     await reload({ tab_id: 7, timeout_ms: 3000 }, context);
-    assert.equal(page.url(), origin + "/two");
+    assert.equal(await committedUrl(), origin + "/two");
     assert.ok(requests > before);
     assert.equal(cdp.listenerCount("event"), 0);
   } finally {

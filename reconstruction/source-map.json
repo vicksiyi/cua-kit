@@ -4089,7 +4089,7 @@
         "fb"
       ],
       "status": "reconstructed-browser-directory",
-      "validation": "17 original directory traces cover shared refresh, Dot concurrent connection/reuse/replacement and capability rejection, transport/info/close failures, list suppression, browser close tracking and pending-refresh disposal. Original turn-ended tracker comparison verifies session/turn callback replacement, removal before awaiting, failure redaction and idempotent disposal. Uses restored default selection helpers. Discovery/transport/API adapters remain explicit."
+      "validation": "17 original directory traces cover shared refresh, Dot concurrent connection/reuse/replacement and capability rejection, transport/info/close failures, list suppression, browser close tracking and pending-refresh disposal. Original turn-ended tracker comparison verifies session/turn callback replacement, removal before awaiting, failure redaction and idempotent disposal. Uses restored default selection helpers. Discovery/transport/API adapters remain explicit. BrowserApi and BrowserClientApi now default to reconstructed classes. Composed paired-RPC discovery/handshake/getTabs/turn-ended test verifies request headers and session payloads."
     },
     "packages/browser/src/service/runtime/browser_selection.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4165,6 +4165,39 @@
       ],
       "status": "reconstructed-browser-profile-reader",
       "validation": "Original platform/family/env path matrix, 15 database lifecycle/failure traces (only dynamic import boundary replaced), and profile metadata/per-profile error comparisons. Real temporary filesystem + installed ClassicLevel/native library creates and reads a synthetic database via restored copy/LOCK removal/open/get/close/cleanup and C6 enrichment. No personal browser profile reads. ClassicLevel loading remains host-supplied and its native implementation is not reconstructed."
+    },
+    "packages/browser/src/service/runtime/browser_api.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "id",
+        "$x",
+        "F6"
+      ],
+      "status": "reconstructed-browser-api-adapter",
+      "validation": "19 original API traces cover all provider delegates, live/cached/subagent metadata, request headers, Dot preparation/reuse/turn changes, turn cleanup failures, cached-expression fallback/refill and committed URL fallbacks. Branch assertions verify unsupported cache fallback, Dot reuse and headers-ended rejection. Entire original class control flow retained; dynamic types and some generic nested names remain."
+    },
+    "packages/browser/src/service/runtime/rpc_peer.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "to"
+      ],
+      "status": "reconstructed-browser-rpc-policy",
+      "validation": "Original bidirectional RPC trace covers request/response, unknown handler, thrown handler, event removal, synchronous send failure, pending rejection and closed-peer reply suppression. Composed real restored peer/API/discovery/directory test uses a synthetic paired transport."
+    },
+    "packages/browser/src/service/runtime/request_headers.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "VC",
+        "u5",
+        "al",
+        "GC",
+        "a5"
+      ],
+      "status": "reconstructed-browser-rpc-policy",
+      "validation": "Original policy matrices cover templates, returned casing, duplicate/blocked names, schema/length/count/total-size limits and ASCII/brace rejection."
     }
   },
   "embeddedPackages": {

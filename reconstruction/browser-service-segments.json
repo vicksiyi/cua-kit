@@ -334,6 +334,31 @@
       "end": 115034,
       "kind": "ObjectExpression"
     },
+    "VC": {
+      "start": 115037,
+      "end": 115329,
+      "kind": "FunctionDeclaration"
+    },
+    "u5": {
+      "start": 115329,
+      "end": 115742,
+      "kind": "FunctionDeclaration"
+    },
+    "al": {
+      "start": 115742,
+      "end": 115807,
+      "kind": "FunctionDeclaration"
+    },
+    "GC": {
+      "start": 115848,
+      "end": 115864,
+      "kind": "Literal"
+    },
+    "a5": {
+      "start": 115868,
+      "end": 116054,
+      "kind": "NewExpression"
+    },
     "QC": {
       "start": 116242,
       "end": 116512,
@@ -343,6 +368,11 @@
       "start": 116512,
       "end": 116634,
       "kind": "FunctionDeclaration"
+    },
+    "to": {
+      "start": 116711,
+      "end": 118864,
+      "kind": "ClassExpression"
     },
     "aA": {
       "start": 119120,
@@ -6143,6 +6173,21 @@
       "start": 1435701,
       "end": 1435801,
       "kind": "FunctionDeclaration"
+    },
+    "$x": {
+      "start": 1435817,
+      "end": 1435849,
+      "kind": "Literal"
+    },
+    "F6": {
+      "start": 1435853,
+      "end": 1435894,
+      "kind": "TemplateLiteral"
+    },
+    "id": {
+      "start": 1435898,
+      "end": 1444282,
+      "kind": "ClassExpression"
     },
     "mb": {
       "start": 1444294,

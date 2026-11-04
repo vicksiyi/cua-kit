@@ -1,3 +1,4 @@
+import { BrowserApi } from "./browser_api";
 import {
   findDirectoryBrowser,
   selectDefaultBrowser,
@@ -33,12 +34,19 @@ export class BrowserClientApi {
 }
 /** Original yb. Transport/discovery dependencies are explicit while production bootstrap is reconstructed. */
 type SelectionDependencies =
-  "findBrowser" | "selectDefault" | "selectForUrl" | "matchesPreference";
+  | "BrowserApi"
+  | "ClientApi"
+  | "findBrowser"
+  | "selectDefault"
+  | "selectForUrl"
+  | "matchesPreference";
 export function createBrowserDirectoryClass(
   supplied: Omit<DirectoryDependencies, SelectionDependencies> &
     Partial<Pick<DirectoryDependencies, SelectionDependencies>>,
 ) {
   const deps = {
+    BrowserApi,
+    ClientApi: BrowserClientApi,
     findBrowser: findDirectoryBrowser,
     selectDefault: selectDefaultBrowser,
     selectForUrl: selectBrowserForUrl,
