@@ -840,3 +840,11 @@ Real Chromium differential tests cover both Chromium and WebKit workaround selec
 This remains a component of the original helper; it is not a completed InjectedScript/selector engine. Full helper assembly, native apps, production host and real-model Agent integration remain outstanding.
 
 Validation: three-package TypeScript build and all 586 reconstruction tests pass.
+
+### 16.191 Embedded injected helper: attribute parser and role option validation
+
+Restored hF M/ve/ss as typed `attribute_selector.ts`: named/attribute selectors, dotted and quoted property paths, truthy/comparison operators, escaped strings, regular-expression character classes and flags, optional unquoted strings, primitive coercion and exact parser errors/positions. Matching retains original uppercase case folding, String.match regex behavior and literal-space token splitting. Added `role_options.ts` for source role tables and pn/Be/ce/ue/os validation, preserving role/value/operator check order, level mutation, name flags and repeated-attribute precedence.
+
+Differential tests cover valid selector matrices, 2500 seeded malformed token sequences and both unquoted-string modes, plus attribute comparison matrices. Role tests compare source tables, outputs, exact errors and input mutations, and compose the restored parser with validation. Explicit checks preserve source quirks such as empty numeric input becoming zero, negative/infinite level acceptance by this validator, unsupported-role errors occurring before level coercion, and literal-tab strings not splitting into space-separated tokens. This restores parser/validation components, not the remaining role query engine or full InjectedScript assembly.
+
+Validation: standalone type checks, three-package rebuild and all 589 reconstruction tests pass. Native app support, production host, real-model Agent integration and full injected-helper assembly remain incomplete.
