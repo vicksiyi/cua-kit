@@ -8,3 +8,5 @@ export * from "./request_headers";
 export * from "./browser_session";
 export * from "./debugger_runtime";
 export * from "./tab_runtime";
+export * from "./request_header_rules";
+export * from "./lease_codec";

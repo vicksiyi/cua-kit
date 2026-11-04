@@ -65,7 +65,15 @@
     "za": "createInWindow",
     "bE": "prepareNewTab",
     "wi": "hasTabId",
-    "Jr": "toBrowserTabInfo"
+    "Jr": "toBrowserTabInfo",
+    "vy": "createRequestHeaderRulesClass / RequestHeaderRules",
+    "ui/Lu": "request-header owned rule range 1000000..1004999",
+    "Du": "parseLeaseViewport",
+    "Sy": "parseTabLease",
+    "Ey": "parseStoredLeases",
+    "Ty": "parsePendingViewports",
+    "Iy": "matchesSourceLease",
+    "by/wy/yy": "inline lease origin/state/mark checks"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",

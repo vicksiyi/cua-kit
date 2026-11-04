@@ -146,3 +146,21 @@ Tab ID validation deliberately keeps the source's undefined-only check. Tests
 compare selection/retry/error and polling traces with the pinned artifact, then
 compose the restored session with this runtime over isolated Chrome fixtures.
 No user browser windows or tabs are opened by these tests.
+
+### Request-header rules and persisted lease codecs
+
+`createRequestHeaderRulesClass` restores original `vy` over Chrome
+`declarativeNetRequest`. It groups matching session/header configurations, creates
+paired main/sub/object-frame and other-resource rules, excludes extension initiators
+for the latter, and only removes owned rule IDs 1000000–1004999. Forced sync queries
+existing tabs; cached identical rules avoid redundant updates. Failures return an
+Error to the caller, invalidate the cache and log only once until successful update.
+This is the request-header coordinator, distinct from the still-pending Browser Use
+network-policy manager `ar`.
+
+`lease_codec.ts` restores viewport/lease/storage parsing and source-lease identity
+comparison. It uses the restored header parser and keeps the original permissive
+numeric checks and the distinction between missing and explicit-null viewport.
+These helpers are ready for the `st` lease manager, whose storage mutation and
+rollback wiring remains to be translated. Tests use isolated DNR/storage values;
+no real browser rules are installed.

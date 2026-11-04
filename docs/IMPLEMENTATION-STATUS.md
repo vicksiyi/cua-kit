@@ -1665,3 +1665,33 @@ lease/group/favicon, network policy, overlay/monitor/SIWC, full startup/install 
 native host plus real desktop/DeepSeek integration.
 
 Validation: all eight reconstructed packages built and passed type checks; all 787 default regression tests passed. The separate native-supervisor suite was not rerun for this component-only change, and no production-extension connection is claimed.
+
+
+## 16.258 Request-header DNR coordinator and lease codecs
+
+Restored original vy into `request_header_rules.ts`, including grouping by serialized
+session/header configuration, locale-sorted groups and numeric tab sorting, paired
+resource conditions, extension-initiator exclusion, priority/header operations,
+owned rule ID range 1000000–1004999, capacity check, forced live-tab filtering,
+serialized-rule cache and failure-report suppression/reset. Like the original,
+synchronize returns an Error rather than throwing for caught DNR failures; the
+lease manager decides when to propagate it. No unrelated rule IDs are removed.
+
+Restored Du/Sy/Ey/Ty/Iy and the origin/state/mark checks in `lease_codec.ts`. Persisted
+lease decoding uses the shared original-derived header parser, preserves null vs
+missing viewport, rejects malformed entries, matches numeric storage keys to tabId,
+and keeps the original source-lease identity fields (excluding mutable headers,
+viewport and marks). It does not introduce stricter positive/safe-ID semantics.
+
+Three differential coordinator tests cover grouping/cache/forced sync, missing
+permission/query/read/update failures, duplicate-log suppression and recovery,
+5000-rule boundary, malformed headers and cyclic configuration. Two codec tests
+cover persisted structure, sparse/malformed fields, numeric boundaries, inheritance,
+viewport decoding and lease identity. Tests never install actual user browser rules.
+
+The st mutation/storage/listener manager remains to be translated and connected
+with these components. The separate ar Browser Use network-policy manager is also
+still pending; this request-header coordinator does not replace it. Full production
+startup/install/native-host and real desktop/DeepSeek integration remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 792 default regression tests passed. The separate native-supervisor suite was not rerun for these components, and production DNR/lease integration is not yet established.
