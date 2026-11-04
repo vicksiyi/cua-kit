@@ -4152,6 +4152,19 @@
       ],
       "status": "reconstructed-browser-handshake",
       "validation": "360 original AX setting/backend/environment identity comparisons, 160 full-CDP capability permission cases, eight profile/handshake failure traces and composed discovery-to-handshake test with synthetic provider. Uses restored CDP capability info and security mode. Platform profile inventory, feature flags and reporting remain host supplied; real backend handshake is not claimed."
+    },
+    "packages/browser/src/service/runtime/browser_profiles.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "x6",
+        "T6",
+        "gle",
+        "wle",
+        "_le"
+      ],
+      "status": "reconstructed-browser-profile-reader",
+      "validation": "Original platform/family/env path matrix, 15 database lifecycle/failure traces (only dynamic import boundary replaced), and profile metadata/per-profile error comparisons. Real temporary filesystem + installed ClassicLevel/native library creates and reads a synthetic database via restored copy/LOCK removal/open/get/close/cleanup and C6 enrichment. No personal browser profile reads. ClassicLevel loading remains host-supplied and its native implementation is not reconstructed."
     }
   },
   "embeddedPackages": {
