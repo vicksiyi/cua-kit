@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { parse } from "acorn";
+import { assembleAccessibilityAsset } from "./assemble-accessibility-asset.mjs";
 execFileSync(
   "node_modules/.bin/tsc",
   [
@@ -95,3 +96,12 @@ await patchDirectory("packages/cua/dist");
 await patchDirectory("packages/core/dist");
 
 await patchDirectory("packages/browser/dist");
+
+const accessibilitySource =
+  process.env.CUA_BROWSER_ACCESSIBILITY_WASM_SOURCE?.trim();
+if (accessibilitySource) {
+  await assembleAccessibilityAsset(
+    accessibilitySource,
+    "packages/browser/dist/service/accessibility/browser-accessibility.wasm.br",
+  );
+}

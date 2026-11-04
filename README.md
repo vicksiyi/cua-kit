@@ -80,3 +80,13 @@ Restored key-event class, held-key cleanup, Unicode text dispatch and input-targ
 ## Source reconstruction: input protection and assembly
 
 Restored focus/closed-shadow/iframe pointer checks and assembled BrowserInput with real restored helpers. 256 tests pass with type checks. Isolated Chromium smoke confirms ordinary typing and protected keyboard/pointer rejection (`npx tsx reconstruction/input-browser-smoke.ts`); UI/page-load adapters in that smoke are fixtures. Full DOM snapshots and production execution context remain pending.
+
+#### Reconstructed AX runtime resource
+
+The readable TypeScript bridge still depends on the separate accessibility WASM binary. To assemble a locally available binary beside the compiled loader:
+
+```sh
+CUA_BROWSER_ACCESSIBILITY_WASM_SOURCE=/absolute/path/browser-accessibility.wasm.br npm run build:reconstruction
+```
+
+Uncompressed `.wasm` input is also accepted. The build validates its exports and places it in `packages/browser/dist/service/accessibility/`. The binary is not included in the repository. Without this build input, AX calls require a previously assembled asset or the original host runtime environment setting `BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH` pointing to an absolute local path. That runtime setting is also suitable when running TypeScript sources directly; it is read from the host runtime's environment, not implicitly from every caller's process environment.
