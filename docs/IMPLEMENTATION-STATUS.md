@@ -3289,3 +3289,24 @@ unfinished. Sentry initialization is still owned by the eventual page entrypoint
 
 Validation: eight package builds/type checks and all 945 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Iframe-internal kernel host
+
+Restored GU/KU/WU/VU from the hash-pinned kernel-host chunk as registerKernelFrameHost,
+executeKernelSandbox, createKernelAgentHandler and KernelAgentTransport. Reuses existing
+kernel Port transport for the byte-equivalent zU behavior. Host validates parent/sandbox
+message provenance and scope, relays readiness, connects the background browser channel,
+replaces agent sessions, forwards execution metadata and collects output. Worker-reset
+errors close sessions and request reset. Cancellation removes the sandbox and performs
+shared browser cleanup, suppressing late execution responses. Agent display distinguishes
+Uint8Array from ordinary values; MessageChannel ownership follows the original source.
+
+A differential test executes actual GU/KU/WU/zU/VU over twelve scenarios including normal
+execution, late agent connection, replacement, malformed/unreadable replies, postMessage
+failure, worker reset, finish failure, cancellation and cleanup failure. The browser bridge,
+agent RPC binding and shared browser cleanup remain explicit required host dependencies;
+no stub is presented as their implementation. Real sandbox/worker integration, full startup
+and actual browser/model end-to-end validation remain unfinished.
+
+Validation: eight package builds/type checks and all 946 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
