@@ -1310,3 +1310,13 @@ Three differential tests compare original extracted functions and restored funct
 Remaining: kernel module resolution/linking/evaluation orchestration, cell-state promotion/recovery, native supervisor/isolation and real-model integration.
 
 Validation: seven-package build/type checks and all 730 reconstruction tests pass with concurrency 4.
+
+### 16.236 Kernel module resolution
+
+Restored kernel_module_resolver.ts from the embedded kernel: configured search-base normalization/deduplication and cwd ordering; builtin normalization with the narrow process denylist; explicit file versus bare-package classification; canonical file checks; package-root containment; ESM/CommonJS classification; error-kind tagging and import.meta projection. Node fs/path/module/url provide the actual resolution behavior. The source's require.resolve conditions argument is preserved through a typed boundary, without substituting a new resolver.
+
+Package imports use the referring package directory while submitted code searches configured bases. Canonical paths prevent package dependencies escaping configured node_modules through symlinks. Direct local imports retain original .js/.mjs-only and no-directory rules. import.meta.resolve returns the original projection, including the bare specifier for packages; it is not silently changed to Node's usual URL result. Native loading, module caches and link/evaluation scheduling are still to be connected.
+
+Three differential tests compare original extracted functions against the restoration on temporary files/packages: builtin errors, unsupported specifiers and file validation, search precedence, ESM/CJS classification, missing/nonexported packages, package-context containment and symlink escape, and import.meta fields. A test assertion initially compared /var and /private/var spellings on macOS; fixture root canonicalization fixed that assertion without changing implementation behavior.
+
+Validation: seven-package build/type checks and all 733 reconstruction tests pass with concurrency 4.
