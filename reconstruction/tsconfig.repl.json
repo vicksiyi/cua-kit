@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "../packages/cua-repl/src/**/*.ts"
+  ]
+}

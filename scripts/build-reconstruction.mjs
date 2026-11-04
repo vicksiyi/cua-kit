@@ -45,6 +45,20 @@ execFileSync(
   ],
   { stdio: "inherit" },
 );
+execFileSync(
+  "node_modules/.bin/tsc",
+  [
+    "-p",
+    "reconstruction/tsconfig.repl.json",
+    "--noEmit",
+    "false",
+    "--rootDir",
+    "packages/cua-repl/src",
+    "--outDir",
+    "packages/cua-repl/dist",
+  ],
+  { stdio: "inherit" },
+);
 // Source uses extensionless imports. Only emitted ESM gets Node-compatible .js suffixes.
 async function patchDirectory(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -94,6 +108,7 @@ async function patchDirectory(dir) {
 await patchDirectory("packages/cua/dist");
 
 await patchDirectory("packages/core/dist");
+await patchDirectory("packages/cua-repl/dist");
 
 await patchDirectory("packages/browser/dist");
 

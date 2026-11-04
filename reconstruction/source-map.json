@@ -20,7 +20,7 @@
         ".": "./dist/lib/js/oai_js_cua_repl/src/index.js"
       },
       "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl",
-      "status": "not-yet-reconstructed",
+      "status": "launcher-and-instructions-reconstructed; external NodeREPL and trusted-service/global entry wiring incomplete",
       "workspaceName": "@core/cua-repl"
     },
     "@oai/sky": {
@@ -4667,6 +4667,24 @@
       ],
       "status": "manually-reconstructed-and-default-host-wired",
       "validation": "original bindings differential tests for retry/elicitation accounting and concurrent/nested AsyncLocalStorage contexts; full public API service scenario uses default"
+    },
+    "packages/cua-repl/src/index.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl/dist/lib/js/oai_js_cua_repl/src/index.js",
+      "sha256": "bbc0c68a1520d72d1431233bf1c4fd9e3520776cde48542b20332f8ba9da3760",
+      "status": "manually-reconstructed",
+      "validation": "cua-repl-launch.test.ts instruction matrix and actual child environment/termination differential"
+    },
+    "packages/cua-repl/src/launch.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl/dist/lib/js/oai_js_cua_repl/src/launch.js",
+      "sha256": "97ce061a09cba0e701e83c2508c276ed573ce864d2478993f873c0650a84e316",
+      "status": "manually-reconstructed",
+      "validation": "cua-repl-launch.test.ts instruction matrix and actual child environment/termination differential"
+    },
+    "packages/cua-repl/src/instructions.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl/dist/lib/js/oai_js_cua_repl/src/instructions.js",
+      "sha256": "36acec6b10072e5f3730ca74be23de6b9a4707ebe996dea382f4c262a28d964c",
+      "status": "manually-reconstructed",
+      "validation": "cua-repl-launch.test.ts instruction matrix and actual child environment/termination differential"
     }
   },
   "embeddedPackages": {
@@ -4730,6 +4748,39 @@
       "evidence": "ur configure error names markdown-it; t_=ur; N9 options breaks true, html/linkify/typographer false",
       "status": "default text paste wired into CUA/DOM/locator command assembly; historical exact version unproven",
       "validation": "original bundled renderer differential cases and public RPC/CDP plain/rich editor integration"
+    }
+  },
+  "replInstructionAssets": {
+    "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua-repl/instructions",
+    "scopeRemap": "@oai/ -> @core/",
+    "files": {
+      "browser-cloud-preference.md": "8363cae7942a9dac87997398e143b96bc4c3fc2435dccc3b2604391e4bc4bbf1",
+      "audio-attachments.md": "8a445752e54042dfb878884afbd3f7730cf4e9a9389af3b7774163b450c4759c",
+      "browser-disabled.md": "6d1be6d881b8b340dabb04d277bfc5c0690fb855031f023bc882284904dd6d9a",
+      "browser-orbit-preference.md": "6abbb76f30dc1c0829bc1965723a3245c9fce088ce29d340dc81f8f2f5e9332f",
+      "computer-disabled.md": "c34c37e1549a55281eaecf6e29b4878313cfecf5983559a98a6fca1f6d1cf53c",
+      "server.md": "6001fb94250c49c234d96cbe08913ad9340e71e48b1709d8c0d598b46a25ea9e",
+      "banner.js": "db4a56c4a1cb6f9ec2ca663694fbe8941846aaa83d0bf12d3a5699f92126105a",
+      "code.md": "c0cc551f6c6116c5276baecc68c1139d25c205570281e02b6ad483526e4bede9",
+      "reset.md": "8293a9ec45999391940bdfce1637fb5c4d708f89b5d726b4d03800df9cb795af",
+      "macos/browser-cloud-guidance.md": "5f04b3b743645bb7adfd91c1fcdf64ddb4a0594fbda60a07651da1ef3342dd84",
+      "macos/browser.md": "f30c20ba08636e959f0e044dd4101c0f8f60d2abb3b77d1bb322a41dfeae849b",
+      "macos/output.md": "e239db8a09d3fb3b2a626e19a64be96da0130374675acf709649bef99430d486",
+      "macos/description.md": "096e5cea5931c9c23adc839211bfe3764039a2e68dd47b627ae0d8bc22fdaed6",
+      "macos/browser-cloud.md": "7872a652b6911d7b380f64ff6bddc1120e8bc562a2e049aefbf7632904139572",
+      "macos/computer.md": "e8318bd16b9792b517d300802583961317d7e0cb3a3a4ed776a681ed20f16f7d",
+      "linux/browser-cloud-guidance.md": "5f04b3b743645bb7adfd91c1fcdf64ddb4a0594fbda60a07651da1ef3342dd84",
+      "linux/browser.md": "f30c20ba08636e959f0e044dd4101c0f8f60d2abb3b77d1bb322a41dfeae849b",
+      "linux/output.md": "e239db8a09d3fb3b2a626e19a64be96da0130374675acf709649bef99430d486",
+      "linux/description.md": "096e5cea5931c9c23adc839211bfe3764039a2e68dd47b627ae0d8bc22fdaed6",
+      "linux/browser-cloud.md": "7872a652b6911d7b380f64ff6bddc1120e8bc562a2e049aefbf7632904139572",
+      "linux/computer.md": "e8318bd16b9792b517d300802583961317d7e0cb3a3a4ed776a681ed20f16f7d",
+      "windows/browser-cloud-guidance.md": "5f04b3b743645bb7adfd91c1fcdf64ddb4a0594fbda60a07651da1ef3342dd84",
+      "windows/browser.md": "f30c20ba08636e959f0e044dd4101c0f8f60d2abb3b77d1bb322a41dfeae849b",
+      "windows/output.md": "e239db8a09d3fb3b2a626e19a64be96da0130374675acf709649bef99430d486",
+      "windows/description.md": "096e5cea5931c9c23adc839211bfe3764039a2e68dd47b627ae0d8bc22fdaed6",
+      "windows/browser-cloud.md": "7872a652b6911d7b380f64ff6bddc1120e8bc562a2e049aefbf7632904139572",
+      "windows/computer.md": "e8318bd16b9792b517d300802583961317d7e0cb3a3a4ed776a681ed20f16f7d"
     }
   }
 }

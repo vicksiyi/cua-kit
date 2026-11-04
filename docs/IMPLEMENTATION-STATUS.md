@@ -956,3 +956,13 @@ The full public API/socket/CDP test removes its placeholder typeText. It fills a
 This closes the default renderer/text-input assembly gap; it does not establish a different historical parser version as identical for every possible input. Production privileged host/extension/native backends and live-model integration remain incomplete.
 
 Validation: three-package build and 603 reconstruction tests pass (concurrency 4).
+
+### 16.202 Reconstruct the cua-repl package launcher and instruction loader
+
+Added readable index/launch/instructions TypeScript under @core/cua-repl, its original-style bin, exports, package instruction imports and 27 instruction/banner assets with @oai scopes remapped to @core. The reconstruction build/check now includes this fourth package. launch retains absolute-executable validation, surface normalization/deduplication, platform/cloud/orbit guidance, optional audio instructions, allowlist augmentation, trusted-service/banner override precedence, tool metadata, inherited stdio, signal forwarding/listener cleanup and child exit propagation. No model-specific protocol is introduced.
+
+Instruction differential tests compare all supported platforms plus an unsupported platform, environments and guidance modes. Real temporary executable fixtures compare the original and reconstructed launcher environment/tool payloads, missing/relative executable errors, missing/unknown/empty surfaces, deduplication, audio, overrides including empty strings, nonzero exits and signal termination. Only selected synthetic environment values are captured. The original source accepts empty surfaces despite its README claiming otherwise; the implementation behavior is retained.
+
+This restores the actual JavaScript launcher package rather than implementing a substitute MCP shell. The external NodeREPL engine is not contained in these three JS files and is not reconstructed by this step. Default @core/browser-desktop/service, @core/sky/service and @core/cua/tinyskyAlt entry wiring remain incomplete, so the package does not yet constitute a standalone working computer-use server. Existing browser service and AgentLoop work remains separate until those boundaries are connected.
+
+Validation: four-package build passed. Initial full run had one failure in the unchanged timer-sensitive WebMCP background-poll test (604/605); its four focused tests passed on retry, and the full suite then passed all 605 tests with concurrency 4. No WebMCP production/test logic was changed.
