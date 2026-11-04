@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { builtinModules, createRequire, findPackageJSON } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
-export type KernelModuleContext = { kind: string; isPackage: boolean };
+export type KernelModuleContext = { kind: string; isPackage?: boolean };
 export type ResolvedModule =
   | { kind: "builtin"; specifier: string }
   | { kind: "file"; path: string }
