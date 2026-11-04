@@ -20,5 +20,5 @@
   ],
   "reuseBoundary": "post/body serialization, encoding/compression, retry/backoff, rate limiting, URL/fallback support should remain upstream where behavior matches; customized request loop and diagnostic gates require restoration.",
   "testBoundary": "Extract actual bundled Bc only, with official 3.33.4 support modules. Response and fallback resolver are fixtures; no HTTP request.",
-  "status": "Audit and executable compatibility evidence complete; production NetworkCore delta remains incomplete."
+  "status": "Production request/URL/diagnostic delta implemented in ExtensionStatsigNetworkCore and compared to bundled class; store/client assembly still incomplete."
 }

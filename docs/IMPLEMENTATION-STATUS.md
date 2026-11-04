@@ -2843,3 +2843,29 @@ includes these two new tests, but a combined 908-test pass has not yet been clai
 
 Production NetworkCore/store/client SDK deltas, full startup, panel UI, native replacement
 and installed/native/model end-to-end validation remain incomplete.
+
+### Production NetworkCore request delta
+
+Added ExtensionStatsigNetworkCore as a subclass of pinned public 3.33.4. It restores
+request dispatch and populated-URL behavior from bundled Bc: headers survive successful
+responses; live requests skip initialization URL/diagnostic/error/fallback-refresh tracking;
+ordinary requests retain those effects and terminal log ordering matches the bundle.
+Timeout, retry/backoff, preserved HTTP status and no-response diagnostic behavior remain.
+
+Upstream constructor, request-body serialization, encoding, compression, limiter and
+fallback support are inherited. Unexported dispatch diagnostic helpers are readable TS
+adaptations of the inspected upstream/bundled code. The adapter explicitly accesses pinned
+runtime internals through a structural base type; upgrading the dependency requires
+revalidating this boundary. No global SDK prototype or shared logger is patched in production.
+
+Two differential/integration tests compare twenty ordinary/live response/failure modes,
+including reject, timeout, retry, blocked traffic, invalid key, limiter and fallback, and
+compose the live-overlay helper with the actual adapter to read a 204 cursor. Network
+responses/fallback services are fixtures; no external HTTP requests. Previous compatibility
+audit tests remain to guard the public-versus-bundled differences.
+
+The extended store/client scheduling and feature-service default assembly are still
+incomplete, alongside full startup, panel UI, native replacement and real end-to-end work.
+
+Validation: eight package builds/type checks and all 910 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

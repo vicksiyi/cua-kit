@@ -584,3 +584,9 @@ The live-overlay network delta now restores request fields and 200/204 response 
 reusing @statsig/client-core 3.33.4 JSON parsing. Its post contract explicitly requires
 skipInitTracking and response headers, both absent from public NetworkCore. It is not
 wired to incompatible public post; network-core, store and client deltas remain pending.
+
+ExtensionStatsigNetworkCore now subclasses pinned upstream 3.33.4, restoring dispatch,
+response headers, initialization tracking gates and terminal failure ordering. Upstream
+body encoding, compression, limiter and fallback support remain reused. The live-overlay
+helper now has an end-to-end fixture test with this actual adapter. Store/client live
+refresh and default feature-service assembly remain incomplete.
