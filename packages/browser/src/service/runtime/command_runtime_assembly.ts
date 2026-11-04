@@ -1,3 +1,4 @@
+import { browserTelemetry } from "./browser_telemetry";
 import {
   createDocumentedCommandRuntimeFactory,
   type CommandRuntimeDependencies,
@@ -54,18 +55,20 @@ export interface CommandRuntimeAssemblyOptions {
   context: BrowserContextHost;
   commands: Parameters<typeof assembleServiceCommandsWithBrowserAuth>[0];
   documentation: { moduleUrl: string; bundle?: DocumentationBundle };
-  telemetry: Pick<
-    CommandRuntimeDependencies,
-    | "setExceptionReporter"
-    | "configureRuntimeTelemetry"
-    | "emitEvent"
-    | "reportNotificationError"
-    | "configureBackendTelemetry"
-    | "configureTurnTelemetry"
+  telemetry?: Partial<
+    Pick<
+      CommandRuntimeDependencies,
+      | "setExceptionReporter"
+      | "configureRuntimeTelemetry"
+      | "emitEvent"
+      | "reportNotificationError"
+      | "configureBackendTelemetry"
+      | "configureTurnTelemetry"
+    >
   >;
 }
 /** Connects restored command registry, context, notifications, metadata and policies.
- * Host supplies localization, telemetry SDK, feature/config services and auth integrations; injected source has a pinned upstream default. */
+ * Statsig telemetry and injected source have upstream defaults; localization, feature/config consumers and auth integrations remain host inputs. */
 export function assembleCommandRuntime(options: CommandRuntimeAssemblyOptions) {
   const commands = assembleServiceCommandsWithBrowserAuth(options.commands);
   const notices = createWebMcpNotifications(options.commands.webMcp);
@@ -76,6 +79,7 @@ export function assembleCommandRuntime(options: CommandRuntimeAssemblyOptions) {
   });
   return createDocumentedCommandRuntimeFactory(
     {
+      ...browserTelemetry,
       ...options.telemetry,
       setSecurityCheckReporter: approvalRuntime.setAuditSink,
       collectNotifications: queue.flush,

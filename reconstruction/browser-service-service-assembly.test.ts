@@ -165,11 +165,9 @@ test("assembled host and command service run real Unix socket RPC with signed ac
               socket.once("error", reject);
             }),
         }),
-        reportError: unused,
         reportDiscoveryFailure(_r, _d, reason) {
           events.push(["discoveryFailure", reason]);
         },
-        featureEnabled: () => false,
         span,
         loadClassicLevel: async () => null,
         getNativeCredentialObservationStatus: unused,
@@ -217,14 +215,9 @@ test("assembled host and command service run real Unix socket RPC with signed ac
           },
         },
         telemetry: {
-          setExceptionReporter() {},
-          configureRuntimeTelemetry() {},
           emitEvent(_r: any, event: any, command: any, attrs: any) {
             events.push(["event", event, command, attrs]);
           },
-          reportNotificationError: unused,
-          configureBackendTelemetry() {},
-          configureTurnTelemetry() {},
         },
       },
     });

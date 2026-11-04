@@ -1,3 +1,4 @@
+import { browserTelemetry } from "./browser_telemetry";
 import { browserErrorReporter } from "./error_reporter";
 import { commandTiming } from "./command_timing";
 import { defaultAXPerformanceSpan } from "../accessibility/tracking";
@@ -42,9 +43,9 @@ import {
   type ElicitationSpan,
 } from "./elicitation_telemetry";
 export interface BrowserHostAssemblyOptions {
-  reportError(error: any): void;
+  reportError?(error: any): void;
   reportDiscoveryFailure: BrowserDiscoveryDependencies["reportDiscoveryFailure"];
-  featureEnabled: HandshakeDependencies["featureEnabled"];
+  featureEnabled?: HandshakeDependencies["featureEnabled"];
   span: BrowserDiscoveryDependencies["span"] & ElicitationSpan;
   commandTiming?: ReturnType<
     typeof import("./command_timing").createCommandTiming
@@ -69,12 +70,12 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
   const access = createBrowserAccessVerifier({ connect });
   const profiles = createBrowserProfileReader({
     loadClassicLevel: options.loadClassicLevel,
-    reportError: options.reportError,
+    reportError: options.reportError ?? browserTelemetry.reportError,
   });
   const handshake = createBrowserHandshake({
     enrichProfile: profiles.enrichProfile,
-    reportError: options.reportError,
-    featureEnabled: options.featureEnabled,
+    reportError: options.reportError ?? browserTelemetry.reportError,
+    featureEnabled: options.featureEnabled ?? browserTelemetry.featureEnabled,
     deploymentEnvironment,
   });
   const discovery = createBrowserDiscovery({
@@ -83,12 +84,14 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
     span: options.span,
     surfaceEnabled: browserSurfaceEnabled,
     surfaceForType: surfaceForBackend,
-    reportError: options.reportError,
+    reportError: options.reportError ?? browserTelemetry.reportError,
     reportDiscoveryFailure: options.reportDiscoveryFailure,
     ignoredHandshakeError: "MCP Apps browser belongs to another task.",
   });
   const BrowserDirectory = createBrowserDirectoryClass({
-    TurnEndedTracker: createTurnEndedTrackerClass(options.reportError),
+    TurnEndedTracker: createTurnEndedTrackerClass(
+      options.reportError ?? browserTelemetry.reportError,
+    ),
     discover: discovery.discover,
     turnMetadata: codexTurnMetadata,
     surfaceEnabled: browserSurfaceEnabled,
