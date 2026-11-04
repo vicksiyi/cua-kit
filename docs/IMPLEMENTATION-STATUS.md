@@ -3490,3 +3490,18 @@ zero failures/skips. The initial new browser test serialized the multi-megabyte 
 as a JS number array and stalled; serving binary bytes through an isolated local route
 removed that harness overhead. An invalid empty-node snapshot was replaced by the
 existing original dialog fixture. Independent native-supervisor tests were not rerun.
+
+### Live host discovery diagnostic (not a model task)
+
+Added reconstruction/live-browser-probe.ts, an independently authored read-only
+host diagnostic using the actual installed native supervisor, restored workers,
+staged packages and default browser discovery. No fixture backend is supplied.
+On this Mac the native MCP call succeeded but returned zero available browsers
+and zero apps (computer surfaces are disabled in this probe). Existing socket files
+alone do not prove that a usable, permitted browser backend is connected. This is
+not proof that no backend exists; discovery can exclude or fail candidate backends.
+
+A bounded credential-location check found no DeepSeek environment variable or
+matching entry in common shell/config locations. No key values were printed.
+Live DeepSeek remains unverified. Further browser service/extension assembly and
+backend discovery diagnosis remain required; the complete goal is unfinished.
