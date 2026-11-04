@@ -1,3 +1,4 @@
+import { registerClientHeartbeat } from "./client_heartbeat";
 import {
   createInstallerStatus,
   createWebsiteStatusHandler,
@@ -173,6 +174,26 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     ChatApi,
+    registerClientHeartbeat: (
+      diagnostics: Pick<
+        Parameters<typeof registerClientHeartbeat>[0],
+        "reportError" | "console" | "reportMetric"
+      >,
+      ...pings: (() => Promise<unknown>)[]
+    ) =>
+      registerClientHeartbeat(
+        {
+          ...diagnostics,
+          chrome: host.chrome,
+          setTimeout: host.setTimeout,
+          reconcileRequestHeaders: () =>
+            tabLeases.getInstance().reconcileRequestHeaders(),
+          stopActiveSessions: () => overlay.stopActiveSessions(),
+          detachAllNetworkPolicies: () =>
+            networkPolicy.getInstance().detachAll(),
+        },
+        ...pings,
+      ),
     installerStatus,
     createWebsiteStatusHandler: (
       reportMetric: Parameters<

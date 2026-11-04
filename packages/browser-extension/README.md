@@ -510,3 +510,8 @@ this does not yet provide a fully installed extension or complete background wir
 Website background status now has the restored incremental port handler and installer
 state/show helpers. Foundation binds shared identity, overlay and installer status;
 telemetry remains explicit. Full startup registration and installed transport are pending.
+
+Foundation now exposes the restored client heartbeat registration, binding lease-header
+reconciliation, overlay session stop and network-policy cleanup. Original ping/timeout
+and debugger-detach ordering are retained. Actual startup registration with native and
+tunnel peers still needs to be completed.

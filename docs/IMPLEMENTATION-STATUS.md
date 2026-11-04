@@ -2456,3 +2456,28 @@ auth/side-panel backends and native/model delivery remain incomplete.
 
 Validation: eight package builds/type checks and all 873 default regressions pass,
 zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### Client heartbeat and disconnected cleanup
+
+Restored Gk/Ho as registerClientHeartbeat and bound it through Foundation to the shared
+lease manager, overlay sessions and network policy manager. Registration preserves
+existing alarms or creates the original half-minute alarm. Each matching tick starts
+header reconciliation independently, then awaits Promise.any of the original 3-second
+false timeout and client pings. The first fulfilled false value triggers cleanup even
+if a different ping later returns true; this behavior is preserved rather than changed.
+
+Cleanup awaits session stop, target enumeration and all debugger detach attempts,
+then initiates network policy detach without awaiting its completion. Reconciliation
+and policy failures retain their separate diagnostics. Session-stop/target-enumeration
+failures retain original propagation. No extra listener disposal or timeout cancellation
+was invented, because the inspected startup registration does not implement either.
+
+Two source-differential tests cover eleven scenarios: existing alarm, healthy/absent/
+rejected/synchronous-failing pings, false-first race, reconciliation failure, stop/target
+failure, policy failure and pending policy completion. Fixtures validate ordering and
+error propagation without manipulating real alarms or debugger sessions. Full startup
+must still call the helper with actual native/tunnel peers; installed lifecycle and
+native/model delivery are not yet complete.
+
+Validation: all eight package builds/type checks and all 875 default regressions pass,
+zero failures/skips. Separate native-supervisor tests were not rerun.
