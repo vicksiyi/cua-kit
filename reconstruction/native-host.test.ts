@@ -112,3 +112,44 @@ test("unanswered extension request times out and later responses cannot be rerou
   );
   await transport.close();
 });
+
+test("reverse heartbeat waits for a live client response and rejects missing clients", async () => {
+  const { NativeHostRouter } =
+    await import("../packages/native-host/src/router");
+  const outgoing: any[] = [],
+    left: any[] = [],
+    right: any[] = [];
+  const router = new NativeHostRouter((message) => outgoing.push(message), 10);
+  router.fromExtension({ jsonrpc: "2.0", id: 1, method: "ping" });
+  assert.match(outgoing.pop().error.message, /No connected/);
+  router.addClient("left", (message) => left.push(message));
+  router.addClient("right", (message) => right.push(message));
+  router.fromExtension({ jsonrpc: "2.0", id: 2, method: "ping" });
+  assert.equal(outgoing.length, 0); // Socket presence alone never counts as pong.
+  router.fromClient("left", {
+    jsonrpc: "2.0",
+    id: left[0].id,
+    error: { message: "not alive" },
+  });
+  assert.equal(outgoing.length, 0);
+  router.fromClient("left", {
+    jsonrpc: "2.0",
+    id: left[0].id,
+    result: "spoofed second reply",
+  });
+  assert.equal(outgoing.length, 0);
+  router.fromClient("right", {
+    jsonrpc: "2.0",
+    id: right[0].id,
+    result: "pong",
+  });
+  assert.deepEqual(outgoing.pop(), { jsonrpc: "2.0", id: 2, result: "pong" });
+  router.fromExtension({ jsonrpc: "2.0", id: 3, method: "ping" });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.match(outgoing.pop().error.message, /timed out/);
+  router.fromExtension({ jsonrpc: "2.0", id: 4, method: "ping" });
+  router.removeClient("left");
+  router.removeClient("right");
+  assert.match(outgoing.pop().error.message, /No connected/);
+  router.close();
+});

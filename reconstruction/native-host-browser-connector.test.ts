@@ -19,7 +19,7 @@ test(
       output = new PassThrough();
     const frames = new NativePipeFrameDecoder();
     let receive: (value: any) => void = () => {};
-    new ExtensionBrowserPeer(
+    const extension = new ExtensionBrowserPeer(
       {
         setMessageCallback(callback) {
           receive = callback;
@@ -132,6 +132,7 @@ test(
     });
     assert.equal(browsers.length, 1);
     assert.equal(browsers[0].name, "Controlled core host");
+    assert.equal(await extension.ping(), "pong");
     await hook.run({ session_id: "independent-host-test", turn_id: "turn-1" });
     await chmod(host.endpointFile, 0o644);
     await assert.rejects(

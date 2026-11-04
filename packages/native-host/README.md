@@ -57,3 +57,9 @@ extra host endpoints are unsupported until explicitly implemented.
 A service-level test runs setup/list_browsers/turn cleanup through the restored
 service and real authenticated host with controlled extension handlers. This does
 not yet wire the connector into the DeepSeek launcher or prove real navigation.
+
+Extension-origin `ping` is routed to authenticated browser clients. Replies are
+correlated per client; the first successful response wins, with timeout and
+disconnect cleanup. The host never fabricates `pong` merely because a connection
+exists. This supports the restored extension's heartbeat cleanup behavior;
+Codex-specific native-host methods are still unsupported.

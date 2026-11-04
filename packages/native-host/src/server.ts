@@ -80,7 +80,11 @@ export async function startNativeHost(
     socket.on("error", () => {});
     socket.on("close", () => {
       clearTimeout(authTimeout);
-      router.removeClient(id);
+      try {
+        router.removeClient(id);
+      } catch {
+        void close();
+      }
       sockets.delete(socket);
     });
   });
