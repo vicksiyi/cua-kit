@@ -1,3 +1,7 @@
+import { executeWithCommandContext as executeInCommandContext } from "./command_execution";
+import { formatCommandError as normalizeCommandError } from "./command_errors";
+import { classifyCommandError, securityErrorReason } from "../classify_error";
+import { NavigationUrlPolicyError } from "../security/authority_builder";
 import {
   assertCommandSupported as checkCommandSupported,
   securityCheckAttributes as mapSecurityCheck,
@@ -62,12 +66,12 @@ export interface CommandRuntimeDependencies {
   webMcpCallCommand: { type: string };
   lookupWebMcpTool: (...args: any[]) => any;
   initializeAccessibility: (...args: any[]) => any;
-  executeWithCommandContext: (...args: any[]) => any;
+  executeWithCommandContext?: (...args: any[]) => any;
   manualHandoffCommand: { type: string };
-  classifyError: (...args: any[]) => any;
-  securityBlockReason: (...args: any[]) => any;
-  UrlPolicyError: new (...args: any[]) => any;
-  formatCommandError: (...args: any[]) => any;
+  classifyError?: (...args: any[]) => any;
+  securityBlockReason?: (...args: any[]) => any;
+  UrlPolicyError?: new (...args: any[]) => any;
+  formatCommandError?: (...args: any[]) => any;
   canRecordCommand?: (...args: any[]) => any;
   trackRecordingContext: (...args: any[]) => any;
   reportCommandRecovery?: (...args: any[]) => any;
@@ -126,12 +130,12 @@ export function createCommandRuntimeFactory(
     webMcpCallCommand,
     lookupWebMcpTool,
     initializeAccessibility,
-    executeWithCommandContext,
+    executeWithCommandContext = executeInCommandContext,
     manualHandoffCommand,
-    classifyError,
-    securityBlockReason,
-    UrlPolicyError,
-    formatCommandError,
+    classifyError = classifyCommandError,
+    securityBlockReason = securityErrorReason,
+    UrlPolicyError = NavigationUrlPolicyError,
+    formatCommandError = normalizeCommandError,
     canRecordCommand = commandScheduling.canObserve,
     trackRecordingContext,
     reportCommandRecovery = emitCommandRecovery,
