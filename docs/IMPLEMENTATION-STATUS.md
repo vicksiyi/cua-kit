@@ -2409,3 +2409,27 @@ background startup, auth orchestration and native/model integration are still op
 
 Validation: all eight package builds/type checks and all 870 default regressions pass
 with zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### ChatGPT website content entry and status/action bridge
+
+Restored re/oe/ie/se and ue from chatgpt-website.js into website_content.ts and the
+production website_entry.ts. Shared mention search code is reused. The fifth content
+script is built with upstream WXT ContentScriptContext/defineContentScript.
+
+Status connection preserves the available marker, DOM-ready observation, browserContext
+carry-forward, port identity checks, refresh posting, single permitted reconnect after
+a refresh, and 250ms retry timing. Trusted click actions retain composed-path lookup;
+custom action requests retain userActivation/cancelable/defaultPrevented and field
+checks. Runtime ping/plugin-change handling and settings events retain original gates.
+WXT invalidation removes runtime listeners, ports, timers and status attributes.
+
+A full-entry differential test in real Chromium covers status changes and context
+carry-forward, refresh/disconnect/post failure, connect failure and bounded retry,
+trusted versus synthetic actions, custom action validation, runtime sender checks,
+settings events and full WXT invalidation. Runtime/port APIs and retry timers are
+explicit fixtures; this is not installed-background integration. All five installed
+content-script entrypoints now have reconstructed build outputs, but full background
+startup, status/side-panel backends, native host and model/desktop delivery remain open.
+
+Validation: all eight reconstructed package builds/type checks and all 871 default
+regressions pass, zero failures/skips. Native-supervisor tests were not rerun.

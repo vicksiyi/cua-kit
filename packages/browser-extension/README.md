@@ -501,3 +501,8 @@ explicit host-fixture coverage; installed-extension integration is still pending
 The MAIN-world codex-work-preload entry is now built separately. It restores the
 extension-parent marker and media-permission bridge before invoking native getUserMedia.
 Full-script differential tests use explicit permission fixtures, not real media capture.
+
+The ChatGPT website entry now restores status-port refresh/reconnect, browserContext
+carry-forward, trusted click/custom actions, runtime ping/plugin notifications and
+WXT invalidation. The build emits all five inspected content-script entrypoints;
+this does not yet provide a fully installed extension or complete background wiring.

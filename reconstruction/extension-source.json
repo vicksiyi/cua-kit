@@ -127,7 +127,7 @@
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Full background startup and production lower-layer wiring, broader authentication orchestration, tab-mention startup/content-message wiring and other content scripts; production manifest/assets/install and native messaging host; installed-extension end-to-end validation.",
+  "remaining": "Full background startup and production lower-layer wiring, broader authentication orchestration, full startup/content-message registration and browser status/side-panel backends; production manifest/assets/install and native messaging host; installed-extension end-to-end validation.",
   "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries. Request-header template parsing and expansion are shared between browser VC/u5 and extension cs/ls via project-created @core/core/requestHeaders. Host/origin normalization and matching now share @core/core/originPatterns; differential tests compare the extension ic/up/gp closure.",
   "composition": "createExtensionBrowserFoundation shares identity, leases, groups, favicons/content readiness, observed-tabs/overlay, debugger, tab and network-policy state across restored handler/sessions. Overlay and favicons share one content runtime. Observed-tab initialization and runtime message listener registration remain caller responsibilities. Observed-tab audio muting/restore branches are now composed, and session background muting uses the same controller. Full dR startup is still incomplete. Foreign-frame monitor is created once when handler-class dependencies become available, using the supplied original-derived browser-family/internal-URL helpers (brave override false, matching Jt(userAgent)). Handler initializes it; sessions share track/ensure/remove with the lease/content runtime. Popup interceptor is now shared by handlers/sessions, with the original-derived lease/content runtime; foundation exposes its guarded message route. Full runtime listener chain remains startup work.",
   "contentScript": {
@@ -174,5 +174,16 @@
     "sha256": "bda10ae0882eeb01fe38e68c96a0f51785e71393609abf7764d087ff6a5de8e9",
     "restored": "work_preload.ts v.main and work_preload_entry.ts MAIN-world wrapper; defineContentScript directly reused, no ContentScriptContext in original",
     "validation": "Full original and rebuilt scripts evaluated in isolated VM with explicit window/navigator/permission fixtures; no real media permission requests."
+  },
+  "websiteContentScript": {
+    "path": "content-scripts/chatgpt-website.js",
+    "bytes": 17227,
+    "sha256": "e3a115ecb20aa24abe417688a43b2ec01db85acae7e5af8e0188b46cce65a318",
+    "restoredBindings": {
+      "re/oe/ie/se": "installWebsiteContent/createWebsiteStatusConnection/handleWebsiteActionClick/handleWebsiteActionRequest",
+      "ne/T": "shared installMentionSearchContent/publishMentionCandidates",
+      "ue": "website_entry.ts production definition and direct WXT startup"
+    },
+    "validation": "Full installed and built entrypoints compared in isolated Chromium; Chrome ports/runtime and retry timers are explicit fixtures."
   }
 }

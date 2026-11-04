@@ -62,3 +62,19 @@ await build({
   footer: { js: "codexWorkPreload = codexWorkPreload.startup;" },
   legalComments: "eof",
 });
+
+await build({
+  entryPoints: ["packages/browser-extension/src/website_entry.ts"],
+  outfile: "packages/browser-extension/dist/content-scripts/chatgpt-website.js",
+  bundle: true,
+  format: "iife",
+  globalName: "chatgptWebsite",
+  platform: "browser",
+  target: "chrome120",
+  define: {
+    "import.meta.env.ENTRYPOINT": '"chatgpt-website"',
+    "import.meta.env.MODE": '"production"',
+  },
+  footer: { js: "chatgptWebsite = chatgptWebsite.startup;" },
+  legalComments: "eof",
+});

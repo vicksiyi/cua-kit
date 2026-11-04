@@ -32,7 +32,8 @@
     "upstream-wxt.test.ts: runtime selection, timers, invalidation, duplicate/self events, navigation API and polling",
     "extension-content-entry.test.ts: full startup, top/child frame, shadow DOM, badge/cursor/ping messages, repeated injection and removal suppression",
     "extension-frame-dom.test.ts: full foreign-frame-monitor entry with shared upstream context and serialized DOM injection",
-    "extension-side-chat.test.ts: full entry outside extension ancestry and selected main/search closures"
+    "extension-side-chat.test.ts: full entry outside extension ancestry and selected main/search closures",
+    "extension-website.test.ts: full original/restored website startup, status ports, actions, retries and WXT invalidation"
   ],
   "build": "scripts/build-reconstructed-content.mjs consumes upstream packages directly; no copied/reimplemented framework runtime.",
   "additionalEntrypoints": {
@@ -42,6 +43,10 @@
     },
     "side-chat-tab-mentions": {
       "import.meta.env.ENTRYPOINT": "side-chat-tab-mentions",
+      "import.meta.env.MODE": "production"
+    },
+    "chatgpt-website": {
+      "import.meta.env.ENTRYPOINT": "chatgpt-website",
       "import.meta.env.MODE": "production"
     }
   }
