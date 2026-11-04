@@ -137,3 +137,5 @@ export * from "./browser_queries";
 export * from "./browser_platform";
 
 export * from "./tab_capture";
+
+export * from "./tab_read";

@@ -946,7 +946,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
   const Handler = foundation.createHandlerClass(
     {
       navigator: { userAgent: "fixture" },
-      executeTabRead: async () => ({}),
       dispatchCommand: async () => ({}),
       commandSets: [null, null],
       commandNames: {} as any,

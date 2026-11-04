@@ -1,3 +1,4 @@
+import { extensionBindings } from "./extension-source";
 import test from "node:test";
 import assert from "node:assert/strict";
 import vm from "node:vm";
@@ -10,6 +11,7 @@ import {
   captionEvent,
 } from "../packages/browser/src/service/content/youtube_transcript";
 import { TabContentExportYouTubeTranscriptCommand } from "../packages/browser/src/service/commands/youtube_export";
+const extensionOriginal = extensionBindings(["xn", "cm", "lm", "um", "om"], {});
 const original = originalServiceBindings(["hp", "c5", "d5", "p5", "Fy"]);
 const id = "abcdefghijk",
   url = `https://www.youtube.com/watch?v=${id}`;
@@ -23,6 +25,7 @@ function response(events: any[]) {
 }
 test("transcript formatter matches original limits, UTF-8 budgets and timestamp rules", async () => {
   assert.deepEqual(transcriptLimits, original.hp);
+  assert.deepEqual(transcriptLimits, extensionOriginal.xn);
   const cases: any[] = [
     null,
     {},
@@ -54,6 +57,10 @@ test("transcript formatter matches original limits, UTF-8 budgets and timestamp 
     assert.equal(isCaptionResponse(value), original.c5(value));
     assert.deepEqual(
       await readYoutubeTranscript(id, async () => value),
+      await extensionOriginal.om(id, async () => value),
+    );
+    assert.deepEqual(
+      await readYoutubeTranscript(id, async () => value),
       await original.Fy(id, async () => value),
     );
   }
@@ -72,7 +79,7 @@ test("transcript formatter matches original limits, UTF-8 budgets and timestamp 
   );
   assert.match(result!.text, /\[1:01:01\] 中文/);
 });
-async function pageRun(source: boolean, mode: string) {
+async function pageRun(source: boolean | "extension", mode: string) {
   const trace: any[] = [];
   let enabled = mode === "initial-on",
     observer: any,
@@ -182,7 +189,7 @@ async function pageRun(source: boolean, mode: string) {
   try {
     return {
       value: await vm.runInNewContext(
-        `(${(source ? original.p5 : captureYoutubeCaptions).toString()})(${JSON.stringify(id)},limits)`,
+        `(${(source === "extension" ? extensionOriginal.um : source ? original.p5 : captureYoutubeCaptions).toString()})(${JSON.stringify(id)},limits)`,
         {
           ...globals,
           limits: {
@@ -217,6 +224,25 @@ test("serialized caption capture matches original subtitle restoration, fetch an
     assert.deepEqual(
       JSON.parse(JSON.stringify(await pageRun(false, mode))),
       JSON.parse(JSON.stringify(await pageRun(true, mode))),
+      mode,
+    );
+  for (const mode of [
+    "normal",
+    "initial-on",
+    "wrong-video",
+    "missing-method",
+    "change-after-toggle",
+    "change-after-fetch",
+    "fetch-error",
+    "http-error",
+    "wrong-type",
+    "large-header",
+    "overflow",
+    "text-fallback",
+  ])
+    assert.deepEqual(
+      JSON.parse(JSON.stringify(await pageRun(false, mode))),
+      JSON.parse(JSON.stringify(await pageRun("extension", mode))),
       mode,
     );
   assert.equal((await pageRun(false, "normal")).enabled, false);

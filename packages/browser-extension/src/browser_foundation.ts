@@ -1,3 +1,4 @@
+import { createTabReader } from "./tab_read";
 import { captureTabContext } from "./tab_capture";
 import { browserFamilies, identifyBrowserFamily, isBrowserInternalTab, isBrowserNewTab, extensionBuildChannel } from "./browser_platform";
 import { createBrowserTabsReader, createBrowserHistoryReader, createCursorAvailability, validateBrowserTabId, validateBrowserMouse } from "./browser_queries";
@@ -151,6 +152,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    executeTabRead: createTabReader(host.chrome),
     getTabContext: captureTabContext,
     browserInfo: browserFamilies,
     browserFamily: identifyBrowserFamily,

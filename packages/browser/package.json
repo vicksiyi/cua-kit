@@ -31,6 +31,10 @@
     "./browserFamily": {
       "types": "./src/service/browser_family.ts",
       "import": "./dist/service/browser_family.js"
+    },
+    "./tabReading": {
+      "types": "./src/tab_reading.ts",
+      "import": "./dist/tab_reading.js"
     }
   },
   "dependencies": {

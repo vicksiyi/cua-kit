@@ -21,7 +21,7 @@
     "wE": "getUserTabs; original tab selection/group enrichment supplied by createExtensionBrowserFoundation",
     "yE": "getUserHistory; restored reader supplied by createExtensionBrowserFoundation",
     "Xr": "validateTabId; original integer validation supplied by foundation",
-    "my": "executeTabRead",
+    "my": "executeTabRead; complete original branch dispatcher and pre/post guards supplied by foundation",
     "dg": "getTabContext; original isolated-world bounded capture supplied by foundation",
     "Ue": "browserInfo; shared @core/browser/browserFamily table, verified against extension original",
     "Np": "dispatchCommand",
