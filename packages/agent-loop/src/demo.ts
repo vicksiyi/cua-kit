@@ -1,3 +1,4 @@
+import { browserPreflight } from "./browser-preflight";
 import { createTerminalTrace } from "./terminal-trace";
 import { createTerminalElicitation } from "./terminal-elicitation";
 import { NodeReplTurnClient, parseNodeReplTurnEvent } from "./node-repl-turn";
@@ -54,16 +55,32 @@ const client = await McpToolClient.connect(
 );
 const interrupt = () => controller.abort();
 process.once("SIGINT", interrupt);
+const turnClient: import("./contracts").ToolClient = turnEvent
+  ? new NodeReplTurnClient(client, turnEvent)
+  : client;
+const trace = createTerminalTrace();
+let loopStarted = false;
 try {
-  const result = await new AgentLoop(
-    model,
-    turnEvent ? new NodeReplTurnClient(client, turnEvent) : client,
-  ).run(question, {
+  const initialMessages =
+    (serverEnv as Record<string, string>).CUA_REPL_ENABLED_SURFACES ===
+    "browser"
+      ? await browserPreflight(turnClient, {
+          signal: controller.signal,
+          onMessage: trace,
+        })
+      : [];
+  loopStarted = true;
+  const result = await new AgentLoop(model, turnClient).run(question, {
     signal: controller.signal,
-    onMessage: createTerminalTrace(),
+    onMessage: trace,
+    initialMessages,
   });
   console.log(result.answer);
 } finally {
   process.removeListener("SIGINT", interrupt);
-  await client.close();
+  try {
+    if (!loopStarted) await turnClient.endTurn?.();
+  } finally {
+    await client.close();
+  }
 }
