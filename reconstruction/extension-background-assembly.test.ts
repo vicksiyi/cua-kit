@@ -46,6 +46,7 @@ test("full background factory binds real control, storage, scope and runtime ser
   const active = registry.begin("scope", {}, new AbortController().signal, {});
   let networkCalls = 0,
     initialized = 0;
+  let receivedFoundation: unknown;
   const assembled = createExtensionBackground({
     host: {
       chrome,
@@ -65,15 +66,18 @@ test("full background factory binds real control, storage, scope and runtime ser
     sidePanelEnabled: true,
     scope,
     features: { sdkKey: "fixture", api: "https://feature.invalid" },
-    kernel: {
-      getScope: registry.get,
-      siteStatusUrl: new URL(
-        "https://chatgpt.com/backend-api/aura/site_status",
-      ),
-      defaultAllowedPages: [],
-      capturePdf: async () => null,
-      deletePdf: async () => {},
-      registerTurnEnded: async () => {},
+    kernel: (foundation) => {
+      receivedFoundation = foundation;
+      return {
+        getScope: registry.get,
+        siteStatusUrl: new URL(
+          "https://chatgpt.com/backend-api/aura/site_status",
+        ),
+        defaultAllowedPages: [],
+        capturePdf: async () => null,
+        deletePdf: async () => {},
+        registerTurnEnded: async () => {},
+      };
     },
     telemetry: {
       initialize: async () => {
@@ -89,6 +93,7 @@ test("full background factory binds real control, storage, scope and runtime ser
     0,
     "Constructing bindings must not fabricate or request auth",
   );
+  assert.equal(receivedFoundation, assembled.foundation);
   const control: any = assembled.startup.createControl("scope");
   await control.writeSessionConfig({
     sessionId: "s",

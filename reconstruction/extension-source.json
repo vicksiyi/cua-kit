@@ -380,6 +380,7 @@
     "sourceDifferential": "reconstruction/extension-tunnel-coordinator.test.ts",
     "assembly": "reconstruction/extension-tunnel-assembly.test.ts",
     "coverage": "Ten coordinator scenarios; restored setup/activity/polling/kernel HTTP runtime composed with explicit Chrome/auth/network fixtures, MCP ping delivery and auth rejection, shutdown cancellation and listener/alarm cleanup.",
-    "limits": "No production authentication or daily Chrome acceptance; full feature-gated deployment remains incomplete."
+    "limits": "No production authentication or daily Chrome acceptance; full feature-gated deployment remains incomplete.",
+    "backgroundBindings": "createTunnelKernelBindings connects background foundation to shared runtime scopes, concrete PDF lifecycle and gate-triggered tunnel startup; fixture integration covers MCP JS delivery and one-time activation, not deployed production behavior."
   }
 }

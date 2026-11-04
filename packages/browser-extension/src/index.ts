@@ -184,3 +184,5 @@ export * from "./tunnel_activity";
 export * from "./tunnel_coordinator";
 
 export * from "./tunnel_assembly";
+
+export * from "./tunnel_kernel_bindings";

@@ -774,3 +774,25 @@ production authentication or daily-Chrome operation tests. Extension TypeScript
 check, reconstruction build and nine tests across five related test files pass.
 The native-only installer still does not deploy the full tunnel/sidebar stack;
 the daily Chrome connection check currently reports no running independent host.
+
+
+### Background-owned tunnel bindings (2026-11-05)
+
+`createExtensionBackground` now accepts a kernel-binding factory receiving its
+actual foundation. `createTunnelKernelBindings` uses that foundation's ChatApi
+and auth/activity services, shares a single kernel scope/offscreen registry with
+control RPC, and binds the restored PDF capture/upload/deletion lifecycle. Pass
+it as `kernel: foundation => createTunnelKernelBindings({ ...environment, foundation })`;
+the explicit options include Chrome APIs, kernel host, HTTP environment, telemetry,
+site-status URL, allowed-page defaults and interval functions. Construction does
+not authenticate or poll. The unchanged `chrome-standalone-js-kernel` observer
+activates tunnel registration once, when enabled.
+
+Integration tests now exercise both direct assembly and background bindings. The
+bound route delivers a real restored MCP tools/call through the runtime to an
+explicit offscreen execution fixture and returns both shared-scope and kernel
+output. Tests assert no network before gate activation, single activation, auth
+401 rejection, pending-poll cancellation and listener/alarm cleanup. Foundation
+identity is also checked at the background factory boundary. Type check, build
+and 12 related tests pass. This does not deploy the full extension, prove a real
+offscreen JS engine, or change daily-Chrome/search acceptance status.

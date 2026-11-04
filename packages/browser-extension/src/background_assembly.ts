@@ -23,6 +23,10 @@ type Foundation = ReturnType<typeof createExtensionBrowserFoundation>;
 /** Production environment boundaries remain explicit: credentials are obtained by
  * restored auth services; the caller supplies feature configuration and kernel/PDF runtime.
  */
+export type BackgroundKernelBindings<Pdf> = Omit<
+  KernelControlHost<Pdf>,
+  "storage" | "fetch" | "getConfig" | "isEnabled"
+> & { registerTurnEnded: BackgroundStartupHost["registerTurnEnded"] };
 export interface BackgroundAssemblyOptions<Pdf> {
   host: ExtensionBrowserHost;
   navigator: { userAgent: string; [key: string]: unknown };
@@ -34,12 +38,9 @@ export interface BackgroundAssemblyOptions<Pdf> {
     Parameters<Foundation["createFeatureService"]>[0],
     "buildChannel" | "browserFamily" | "warn"
   >;
-  kernel: Omit<
-    KernelControlHost<Pdf>,
-    "storage" | "fetch" | "getConfig" | "isEnabled"
-  > & {
-    registerTurnEnded: BackgroundStartupHost["registerTurnEnded"];
-  };
+  kernel:
+    | BackgroundKernelBindings<Pdf>
+    | ((foundation: Foundation) => BackgroundKernelBindings<Pdf>);
   telemetry: {
     initialize(): Promise<unknown>;
     reportError(error: unknown, stage: string): void;
@@ -54,6 +55,10 @@ export function createExtensionBackground<Pdf>(
   options: BackgroundAssemblyOptions<Pdf>,
 ) {
   const foundation = createExtensionBrowserFoundation(options.host);
+  const kernel =
+    typeof options.kernel === "function"
+      ? options.kernel(foundation)
+      : options.kernel;
   const family = identifyBrowserFamily(
     options.navigator.userAgent,
     "brave" in options.navigator,
@@ -96,7 +101,7 @@ export function createExtensionBackground<Pdf>(
   );
   const Transport = createNativeTransportClass(options.host);
   const Control = createKernelControlClass({
-    ...options.kernel,
+    ...kernel,
     storage: options.host.chrome.storage.session,
     fetch: options.host.fetch ?? globalThis.fetch,
     isEnabled: features.checkGate,
@@ -151,7 +156,7 @@ export function createExtensionBackground<Pdf>(
         transport,
         handler as InstanceType<typeof Handler>,
       ),
-    registerTurnEnded: options.kernel.registerTurnEnded,
+    registerTurnEnded: kernel.registerTurnEnded,
     reportTurnEndedError: options.telemetry.reportTurnEndedError,
     createNativeTransport: (hosts) => new Transport(hosts),
     registerToolbarState: toolbar.register,
