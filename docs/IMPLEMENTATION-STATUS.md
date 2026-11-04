@@ -3894,3 +3894,18 @@ real stdio MCP with fixture inventory, not a live Chrome success claim.
 The local entry was exercised with an empty model key: the build completed and
 host discovery rejected the absent independent host before any model request.
 Daily Chrome attachment and the two user search prompts remain unaccepted.
+
+
+### 2026-11-05 — kernel session lifecycle source restoration
+
+Restored the lifecycle portion of installed `p_` and cleanup metadata helper `Pl`
+as `KernelSessionLifecycle`: per-scope queue, session teardown, suspend/dispose,
+turn-specific abort, serialized turn-ended callback and PDF cleanup. Failed PDF
+removals stay tracked; callback failure still runs cleanup; a failed queue item
+does not poison later work. Queue abort is checked at enqueue, matching upstream;
+the future execution callback must retain its own post-wait abort check.
+Four differential tests instantiate the actual hash-verified original class with
+explicit service fixtures and compare order, output and retained state. Extension
+type checking passes. This is a component restoration, not an integrated tunnel
+runtime: full `p_` JS execution/consent, transport wiring and real hosted execution
+remain incomplete. Daily Chrome attachment/search acceptance is unchanged.

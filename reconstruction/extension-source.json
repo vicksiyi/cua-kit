@@ -264,5 +264,21 @@
     "installedBuildContainsFiles": false,
     "verification": "Read-only file inventory of the hash-recorded extension version found neither referenced content script; @oai inventory has WebMCP documentation, not these script assets",
     "consequence": "Registration/controller logic is restored; content-script execution and feature availability remain unproven. No substitute assets or forced feature enablement were added."
+  },
+  "kernelSessionLifecycleVerification": {
+    "source": "p_ lifecycle methods, constructor turn_ended handler, and Pl",
+    "module": "packages/browser-extension/src/kernel_session_lifecycle.ts",
+    "test": "reconstruction/extension-kernel-session-lifecycle.test.ts",
+    "method": "Instantiate hash-verified original p_ with explicit transport/chat/PDF fixtures and compare traces and state with readable lifecycle implementation",
+    "coverage": [
+      "same-scope serialization and failure recovery",
+      "independent scopes and enqueue-only abort check",
+      "session termination with single/multiple scopes and mixed-case MCP session header",
+      "suspend and dispose reset failure",
+      "turn cancellation and serialized cleanup",
+      "PDF deletion success and retained failures",
+      "subagent cleanup metadata"
+    ],
+    "limit": "Lifecycle component only; full p_ JS consent/execution handler and tunnel transport integration remain incomplete. Fixture tests do not prove live Chrome attachment or hosted ChatGPT execution."
   }
 }
