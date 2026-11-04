@@ -382,5 +382,16 @@
     "coverage": "Ten coordinator scenarios; restored setup/activity/polling/kernel HTTP runtime composed with explicit Chrome/auth/network fixtures, MCP ping delivery and auth rejection, shutdown cancellation and listener/alarm cleanup.",
     "limits": "No production authentication or daily Chrome acceptance; full feature-gated deployment remains incomplete.",
     "backgroundBindings": "createTunnelKernelBindings connects background foundation to shared runtime scopes, concrete PDF lifecycle and gate-triggered tunnel startup; fixture integration covers MCP JS delivery and one-time activation, not deployed production behavior."
+  },
+  "liveKernelExecutionVerification": {
+    "test": "reconstruction/extension-kernel-live-browser.test.ts",
+    "runtime": "Real headless Chromium temporary MV3 extension with original sandbox CSP; restored MCP, kernel control RPC, offscreen, frame host, sandbox, Blob Worker and Ports.",
+    "assertions": [
+      "persistent JS output",
+      "session isolation",
+      "failed new binding discarded; prior binding retained",
+      "session termination resets variables"
+    ],
+    "boundaries": "Explicit auth/account/feature/consent test inputs; external network rejected. No real browser operations, production authentication, daily Chrome or DeepSeek acceptance."
   }
 }

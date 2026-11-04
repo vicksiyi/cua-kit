@@ -796,3 +796,26 @@ output. Tests assert no network before gate activation, single activation, auth
 identity is also checked at the background factory boundary. Type check, build
 and 12 related tests pass. This does not deploy the full extension, prove a real
 offscreen JS engine, or change daily-Chrome/search acceptance status.
+
+
+### Real offscreen kernel execution (2026-11-05)
+
+`extension-kernel-live-browser.test.ts` builds and loads a temporary MV3 extension
+in real headless Chromium. The actual restored MCP dispatcher, kernel runtime,
+control RPC, offscreen document, frame host, sandbox iframe, Blob Worker and
+MessagePort transports execute JavaScript. Explicit test auth/account, feature
+configuration and local test consent are used; external network requests throw.
+The test verifies outputs 42/43 across calls, session-scope isolation, retention
+of prior successful variables after a thrown script, discarding failed new
+bindings, and clearing variables on session termination. No execution result
+is synthesized by an offscreen fixture. The manifest uses the installed source's
+sandbox CSP and a fresh temporary profile, which is removed after the test.
+
+Standalone `build-reconstructed-kernel.mjs` now regenerates the worker bundle
+from current TypeScript before bundling the frame entries, preventing a stale
+embedded worker when this build script is invoked independently.
+
+This proves real JS execution and transport for the temporary kernel deployment.
+It does not prove browser getTab/click/screenshot operations through this kernel,
+production authentication/tunnel networking, the full sidebar deployment, or
+daily Chrome and DeepSeek search acceptance.

@@ -1,5 +1,8 @@
 import { build } from "esbuild";
+import { assembleKernelWorker } from "./assemble-kernel-worker.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
+// Keep standalone kernel builds aligned with current reconstructed worker sources.
+await assembleKernelWorker();
 const outdir = "packages/browser-extension/dist/kernel";
 await mkdir(outdir, { recursive: true });
 await build({
