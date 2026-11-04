@@ -3328,3 +3328,21 @@ verification remain pending; a functioning RPC component does not establish thos
 
 Validation: eight package builds/type checks and all 948 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel execution runtime and page policy
+
+Restored AU/IU/EU/Df/kU: persistent metadata object with per-execution output/policy cache,
+feature-controlled security environment, structured-cloned response metadata, sequential
+snapshot of post-code hooks, swallowed ordinary hook errors and terminal timeout failure.
+Finish clears active execution, policy promise and enumerable metadata keys even on errors;
+late-added hooks run in later executions. The original ChatGPT page guard covers protected
+hosts/subdomains, trailing-dot normalization, blob origins, HTTPS/path allowlists and the
+localized installed-page path rule. Platform is supplied by the host factory.
+
+Two source differential tests cover seven runtime modes and twenty-eight URL/policy
+combinations, including rejection caching, metadata clone isolation, hook timeout and
+permanent poisoned-runtime behavior. This does not yet assemble qU/jU or the full browser
+service factory; native/browser/real-model end-to-end work remains unfinished.
+
+Validation: eight package builds/type checks and all 950 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
