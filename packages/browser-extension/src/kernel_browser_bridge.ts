@@ -1,3 +1,4 @@
+import { kernelBrowserService } from "./kernel_browser_service";
 import { kernelErrorReporter, kernelCommandTiming, kernelPerformanceSpan } from "./kernel_instrumentation";
 import { BrowserApi, codexTurnMetadata } from "@core/browser/kernelBrowserApi";
 import { KernelControlClient } from "./kernel_control_client";
@@ -68,12 +69,12 @@ export function createKernelBrowserBridge(
   transport: KernelTransport,
   metadata: unknown,
   services: KernelBrowserRuntimeServices & {
-    createBrowserService(runtime: ReturnType<typeof createKernelBrowserRuntime>): KernelBrowserBridge["browser"];
+    createBrowserService?(runtime: ReturnType<typeof createKernelBrowserRuntime>): KernelBrowserBridge["browser"];
   },
 ): KernelBrowserBridge {
   const runtime = createKernelBrowserRuntime(transport, services);
   runtime.beginExecution(metadata);
-  const browser = runtime.initialize().then(() => services.createBrowserService(runtime));
+  const browser = runtime.initialize().then(() => (services.createBrowserService ?? kernelBrowserService.createBrowserService)(runtime));
   return {
     browser, displayBridge: runtime.displayBridge, beginExecution: runtime.beginExecution,
     async finishExecution() { await browser; return await runtime.finishExecution(); },

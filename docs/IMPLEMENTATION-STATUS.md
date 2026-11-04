@@ -3556,3 +3556,25 @@ AgentLoop requesting js over real native MCP/restored workers and returning 42.
 This is the first verified live model/tool round trip, not a browser/App task. The
 separate live backend probe still finds zero usable browsers. No credentials are
 included in this repository, documentation or MCP server configuration.
+
+### Default kernel service wiring
+
+Kernel browser bridge now defaults to the real extension command-service factory;
+explicit createBrowserService overrides remain supported. The factory is shared per
+kernel-host module, matching the original service/cleanup lifetime. Added
+registerAssembledKernelFrameHost to connect the restored frame host, browser bridge
+and shared browser cleanup while keeping platform, locks and Chrome/DOM APIs explicit.
+No fake browser service is required by this assembled entry.
+
+A real Chromium integration bundles the default bridge and service and uses a real
+MessageChannel with a controlled backend responder. It verifies control initialization,
+BrowserApi getInfo, real service list_browsers, cached browser connection across turns,
+display forwarding, finish/begin execution and cleanup. The responder is still a test
+backend; this does not prove the actual Chrome extension background or sandbox worker
+startup. Production manifest/assets, the sandbox and remaining background assembly
+remain required. Validation results are recorded below.
+
+Validation: eight package builds/type checks and all 959 default regressions pass,
+zero failures/skips. Existing source-differential bridge/frame-host tests still pass
+with explicit overrides, and the new browser test exercises the real default service.
+Independent native-supervisor tests and live DeepSeek were not rerun this change.

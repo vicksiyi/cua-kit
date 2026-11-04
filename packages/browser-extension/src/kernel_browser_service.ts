@@ -13,3 +13,6 @@ export function createKernelBrowserServiceFactory() {
     dispose: runtime.dispose,
   };
 }
+
+// One service lifetime per kernel host module, matching the installed gU/Hb pair.
+export const kernelBrowserService = createKernelBrowserServiceFactory();
