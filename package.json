@@ -43,6 +43,7 @@
     "@types/markdown-it": "14.1.2",
     "@types/node": "26.6.6",
     "@types/sanitize-html": "2.16.2",
+    "esbuild": "0.28.2",
     "prettier": "3.9.10",
     "tslib": "2.9.1",
     "tsx": "4.23.15",

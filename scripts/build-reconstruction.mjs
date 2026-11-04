@@ -154,3 +154,5 @@ if (accessibilitySource) {
     "packages/browser/dist/service/accessibility/browser-accessibility.wasm.br",
   );
 }
+
+await import("./build-reconstructed-content.mjs");

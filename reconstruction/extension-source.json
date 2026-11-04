@@ -105,7 +105,7 @@
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Production lower-layer wiring (shared lease startup wiring, content entrypoint/overlay assembly, shared debugger startup wiring, production network-policy wiring and real-browser validation, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
+  "remaining": "Full background startup and production lower-layer wiring, SIWC, background overlay/monitors, tab mentions and other content scripts; production manifest/build/install and native messaging host; installed-extension end-to-end validation. The codex.js content entry is now bundled and fixture-tested.",
   "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries. Request-header template parsing and expansion are shared between browser VC/u5 and extension cs/ls via project-created @core/core/requestHeaders. Host/origin normalization and matching now share @core/core/originPatterns; differential tests compare the extension ic/up/gp closure.",
   "composition": "createExtensionBrowserFoundation is project-authored assembly of restored identity, lease, tab groups, favicon manager/resource/content readiness, debugger, tab, network-policy/compiler/predicate/inspector, session and dispatcher components. Handler and sessions share one network policy singleton and host timers. It is not full original dR startup.",
   "contentScript": {
@@ -121,9 +121,11 @@
       "R/v/I/An/We/Ye/N": "cursor_spring.ts: spring creation/reset/integration/rest and shortest-angle targeting",
       "rt/pe/me/it and st..Ee geometry closure": "cursor_path.ts: bounded candidate construction, scoring, cubic sampling and progress response",
       "an/cn/ln/un/dn/gn/pn/mn/fn/hn/vn/M/xn/En/Rn/In/Ge/He/Ve/ce/ke/$e/On/_n/J/w": "cursor_motion.ts: full scoot/bezier state, springs, arrival, reset and thinking oscillation",
-      "rn/sn/Z/Sn/yn/Cn/O/U/Mn/Tn": "createCursorAnimator: cursor DOM, transforms, frame scheduler, state transitions, arrival de-duplication and destruction"
+      "rn/sn/Z/Sn/yn/Cn/O/U/Mn/Tn": "createCursorAnimator: cursor DOM, transforms, frame scheduler, state transitions, arrival de-duplication and destruction",
+      "Un/Q/Dn/Et assembly": "createCodexContent: root/controller/default animator and favicon/message initialization",
+      "Vn/Kn": "codex_entry.ts: definition and startup, direct upstream WXT ContentScriptContext"
     },
-    "boundary": "Only inspected top-level bindings are extracted for differential tests. Complete content entrypoint/overlay startup is not executed or claimed restored.",
-    "thirdPartyAudit": "Startup contains wxt:locationchange and wxt:content-script-started lifecycle signatures. Upstream/version compatibility remains to establish before reuse; that runtime is not reconstructed here."
+    "boundary": "Selected bindings are extracted for unit differential tests; full hash-verified source is executed only in isolated Chromium fixture integration tests. Production build bundles restored TypeScript plus upstream WXT; no installed source bundle is shipped.",
+    "thirdPartyAudit": "WXT 0.20.25 ContentScriptContext/custom-events/location-watcher and @wxt-dev/browser 0.1.43 directly reused, verified against installed closure. Exact original package version is not proven. 0.20.11 has a different message lifecycle; 0.21.5 adds noScriptStartedPostMessage. See extension-wxt-provenance.json."
   }
 }

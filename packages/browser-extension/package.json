@@ -10,6 +10,7 @@
     }
   },
   "dependencies": {
-    "@core/core": "0.0.0-reconstructed.0"
+    "@core/core": "0.0.0-reconstructed.0",
+    "wxt": "0.20.25"
   }
 }

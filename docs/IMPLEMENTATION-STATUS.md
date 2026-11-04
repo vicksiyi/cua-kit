@@ -2116,3 +2116,33 @@ source reconstruction remain incomplete. These tests do not establish an install
 extension end-to-end run.
 
 Validation: all eight reconstructed packages built and passed type checks; all 835 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.275 Content entry assembly and direct upstream WXT reuse
+
+createCodexContent now composes the restored root/controller/default animator and
+favicon/message handlers. codex_entry.ts preserves Vn/Kn options and constructs a
+real upstream ContentScriptContext before main. The bundle exposes the original
+startup Promise shape; original production logging is a no-op. The build now emits
+dist/content-scripts/codex.js using esbuild and production/entrypoint defines.
+
+Audited upstream WXT releases: 0.20.11 uses a different postMessage lifecycle;
+0.20.25 matches the inspected context/location/event closure; 0.21.5 introduces an
+additional option. Directly reuse pinned WXT 0.20.25 (locked @wxt-dev/browser 0.1.43),
+not a rewritten framework. This does not prove the original historical version.
+File hashes, mapping and official source references are in extension-wxt-provenance.
+
+Full original hash-verified content startup and the reconstructed bundle are compared
+in isolated real Chromium top/child frames, including shadow content, favicon
+changes, cursor messages/arrival, repeated injection and removed-root suppression.
+Repeated injection retains the original old ping listener behavior; main does not
+register context cleanup. Separate upstream WXT differential coverage includes
+runtime selection, timers/frame/idle cancellation, invalidation, self/foreign events,
+Navigation API and polling location watchers.
+
+The complete installed-extension background/manifest/assets/native-host workflow,
+other content scripts, auth/monitors/mentions, real desktop/model integration and
+native source reconstruction remain incomplete. This is fixture integration of the
+complete codex content entry, not production installed-extension validation.
+
+Validation: all eight reconstructed packages built and passed type checks; all 837 default regression tests passed. The separate native-supervisor suite was not rerun.

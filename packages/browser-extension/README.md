@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The dispatcher and session classes are restored, but full content/overlay assembly, auth/monitors, production startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+This is **not yet an installable extension**. The dispatcher and session classes are restored, but background auth/monitors and production startup, manifest/install wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -300,9 +300,9 @@ deferred cleanup. SVG output preserves original shapes, colors, opacity and
 attribute escaping. Shared badge URL recognition is reused.
 
 `createContentMessageInitializer` restores Un/Fn/Gn/je with one listener and repeated
-overlay readiness calls. Overlay setup Q is restored below; its restored renderer Dn must still be connected to the content startup.
-The artifact is separately hash-pinned in extension-content-source.ts; tests never
-execute the complete content startup. Real Chromium comparisons verify exact DOM
+overlay readiness calls. Overlay setup Q is restored below; its renderer Dn is connected by createCodexContent.
+The artifact is separately hash-pinned in extension-content-source.ts; unit tests extract selected closures; the content-entry integration test also
+executes full startup in an isolated browser fixture. Real Chromium comparisons verify exact DOM
 and SVG data URLs after badge changes/clear, preservation of page changes and
 message acknowledgements. This is not yet a packaged replacement content script.
 
@@ -316,9 +316,9 @@ differential tests cover normal/stale/conflicting roots, reparenting, removal an
 document replacement with exact lifecycle and DOM comparisons.
 
 The content startup tail also contains `wxt:locationchange` and
-`wxt:content-script-started` runtime signatures. Its upstream package/version must
-be established before reuse; this milestone does not rebuild that framework. Full
-renderer/content startup assembly and installed-extension validation remain pending.
+`wxt:content-script-started` runtime signatures. The matching lifecycle is now reused from WXT 0.20.25, with the original historical
+version still unproven. Content startup is assembled below; installed-extension
+validation remains pending.
 
 ### Overlay state/message controller
 
@@ -357,5 +357,31 @@ composition test uses the real default animator and checks exact controller DOM 
 AGENT_CURSOR_ARRIVED messages against the original. No third-party library calls
 were found in these inspected geometry/motion/rendering closures.
 
-Content entrypoint/WXT reuse, root/controller assembly, installed-extension startup
-and native-host packaging still remain; this is not an installed extension E2E.
+Content entrypoint/WXT reuse and root/controller assembly are implemented below.
+Installed-extension startup and native-host packaging remain; this is not an
+installed extension E2E.
+
+
+### Bundled codex content entry and upstream WXT
+
+`createCodexContent` composes the actual restored root, controller, animator and
+favicon/message handlers. `codex_entry.ts` retains the original runtime registration,
+document_start, matchAboutBlank and all-URL definition. It creates upstream WXT's
+ContentScriptContext, then calls the original-style main which ignores that context.
+In particular, reinjection does not clean up the old ping listener; tests preserve
+this observed original behavior rather than introducing new cleanup semantics.
+
+`npm run build:reconstruction` now also bundles
+`packages/browser-extension/dist/content-scripts/codex.js` via esbuild, directly
+using WXT 0.20.25 and its locked @wxt-dev/browser 0.1.43 dependency. ENTRYPOINT=codex
+and MODE=production match the installed event namespace/logger behavior. This is
+a tested compatible upstream version, not a proven original lockfile version.
+See [provenance](../../reconstruction/extension-wxt-provenance.json) and
+[WXT context documentation](https://wxt.dev/api/reference/wxt/utils/content-script-context/classes/contentscriptcontext).
+
+The full hash-verified installed entry and the reconstructed bundle run in isolated
+Chromium fixtures, comparing top/child-frame startup, closed-shadow content, badges,
+cursor movement/arrival, runtime messages, repeated injection and root suppression.
+Separate upstream-runtime tests compare abort/timer/navigation/polling semantics.
+A real installed extension still needs its background entry, other content scripts,
+manifest/assets/native host and end-to-end installation validation.

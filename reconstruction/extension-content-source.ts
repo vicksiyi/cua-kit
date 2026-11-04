@@ -34,3 +34,6 @@ export function contentBindingsSource(names: string[]): string {
     })
     .join("\n");
 }
+
+/** Full hash-verified entrypoint, only for isolated browser fixture integration tests. */
+export const originalContentScriptSource = source;
