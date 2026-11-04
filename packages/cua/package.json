@@ -12,6 +12,10 @@
     "./tinyskyAlt": {
       "types": "./src/tinysky_alt/globals.ts",
       "import": "./dist/tinysky_alt/globals.js"
+    },
+    "./tinyskyBrowser": {
+      "types": "./src/tinysky_browser/create_tinysky_browser.ts",
+      "import": "./dist/tinysky_browser/create_tinysky_browser.js"
     }
   }
 }

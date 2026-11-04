@@ -4466,3 +4466,22 @@ No credentials were supplied in these cross-checks and no DNS/proxy/policy setti
 were changed. This supports a currently unavailable upstream network connection;
 it does not prove the original 30-second host failure has the identical cause,
 or establish login status. No Baidu search or production auth success is claimed.
+
+
+### Missing public browser-worker export restored (2026-11-05)
+
+A package-export audit found that @core/cua exposed only tinyskyAlt despite the
+installed package also exporting tinyskyBrowser, its root and vision-only entry.
+Restored create_tinysky_browser from the installed JS and declaration and added
+the original tinyskyBrowser subpath to the workspace. It composes existing
+documentation/bootstrap/browser modules, binds global agent after bootstrap,
+preserves initialize/getState alias identity, partial inventory errors and
+emission options, and requires the caller's browser runtime/docs as originally.
+
+Five original-versus-restored factory scenarios and package export resolution
+pass (two test cases); reconstruction build passes. No real browser is invoked
+by these fixture tests. Root and vision-only CUA exports remain unimplemented,
+so full public-package parity is explicitly not achieved. Corrected stale README
+headlines/table labels and source-map statuses that still described already-wired
+Sky/desktop entries as not reconstructed. Network/native and daily-browser
+acceptance gaps remain unchanged.

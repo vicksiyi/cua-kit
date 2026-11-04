@@ -4,7 +4,9 @@
 
 用户指定：TS 源码相对 import 不带 `.js`；保留分包关系，命名空间从 `@oai` 改为 `@core`。原始包名与路径记录在 `source-map.json`。
 
-| 原始包 | 当前 workspace | 当前状态 |
+**下表为首批还原时的历史基线，不是当前完成状态。** 当前 browser/Sky/desktop/REPL 入口已装配；最新证据与未完成项见 [实现状态](../docs/IMPLEMENTATION-STATUS.md)。`@core/cua/tinyskyBrowser` 现已补齐，根入口和 vision-only 入口仍需还原。
+
+| 原始包 | 当前 workspace | 首批历史状态 |
 |---|---|---|
 | @oai/cua 0.2.6 | @core/cua | CUA 与 core 共 21 个运行模块已还原 |
 | @oai/cua-repl 0.1.2 | @core/cua-repl | 包边界已建立，尚未还原实现 |

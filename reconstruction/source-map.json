@@ -30,7 +30,7 @@
         "./service": "./dist/project/cua/sky_js/src/service.js"
       },
       "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky",
-      "status": "not-yet-reconstructed",
+      "status": "client/service platform factories restored; native host parity and platform acceptance incomplete",
       "workspaceName": "@core/sky"
     },
     "@oai/browser-desktop": {
@@ -40,7 +40,7 @@
         "./service": "./scripts/browser-service.mjs"
       },
       "sourcePackage": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/browser-desktop",
-      "status": "not-yet-reconstructed",
+      "status": "runtime service assembled from restored browser package; signed native host integration incomplete",
       "workspaceName": "@core/browser-desktop"
     }
   },
@@ -4697,6 +4697,11 @@
       "sha256": "18b8039f846a6e00206128530c5f59ff05bd361c655a858a4a27059ec0f63d23",
       "status": "manually-reconstructed",
       "validation": "factory matrix differential across native targets/surface options/references and real global-import browser service integration"
+    },
+    "packages/cua/src/tinysky_browser/create_tinysky_browser.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_browser/create_tinysky_browser.js",
+      "sha256": "a8967b5f784e0568fe89697eeda24259a63d8960ef9576d3f5512838db778001",
+      "status": "readable-typescript-reconstruction"
     }
   },
   "embeddedPackages": {

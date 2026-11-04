@@ -6,7 +6,7 @@
 
 DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。真实 DeepSeek → MCP → 还原 worker → 独立宿主 → 隔离 Chromium 已完成导航、点击与读取结果；确定性 MCP 测试另验证截图。日常 Chrome 的搜索验收与 App 自主操作仍待完成。
 
-新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分；现在可以构建 Core CUA 原生控制扩展，但原版完整后台/UI/kernel 装配仍未完成。
+新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分；目前独立 native 版与完整 background/UI/kernel 版均可构建，完整版已通过临时 Chromium 的 MCP 操作与真实 DeepSeek 本地页面验证。生产认证、日常 Chrome 与百度搜索仍未验收。
 
 下面是此前独立实现的历史说明：
 
