@@ -145,5 +145,10 @@
       "codex-rs/prompts/templates/guardian/node_repl_policy.md"
     ],
     "scope": "path search for node.?repl|js_repl; no standalone supervisor implementation found in this tree; not a claim about all public/private sources"
-  }
+  },
+  "verifiedWorkerKinds": [
+    "kernel.js",
+    "trusted-worker.js"
+  ],
+  "workerVerification": "Native MCP integration substitutes both worker entries; four launches of each observed through reset/timeout/cancellation and a configured RPC service returns value 17 with privileged API present."
 }

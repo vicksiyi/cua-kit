@@ -1,6 +1,6 @@
 /** Explicit local integration probe; not included in the default synthetic suite.
  * Runs the installed supervisor under macOS network denial with isolated homes.
- * The wrapper substitutes only the kernel entry; it is not a supervisor port.
+ * The wrapper substitutes both worker entries; it is not a supervisor port.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -14,7 +14,7 @@ const binary =
   process.env.CUA_NODE_REPL_BINARY ??
   "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl";
 const node = path.join(path.dirname(binary), "node");
-test("installed native supervisor drives restored kernel over actual MCP and recovers after reset, timeout and cancellation", async () => {
+test("installed native supervisor drives restored kernel over actual MCP and routes trusted RPC after reset, timeout and cancellation", async () => {
   assert.equal(
     process.platform,
     "darwin",
@@ -40,12 +40,20 @@ test("installed native supervisor drives restored kernel over actual MCP and rec
       await import("node:fs/promises").then((fs) => fs.mkdir(home));
       const wrapper = path.join(home, "wrapper.cjs");
       const restored = path.resolve("packages/node-repl/dist/kernel.js");
+      const trustedRestored = path.resolve(
+        "packages/node-repl/dist/trusted_worker.js",
+      );
+      const service = path.join(home, "fixture.mjs");
+      await writeFile(
+        service,
+        'export function handleRpc(request){return {value:request.value,privileged:typeof nodeRepl.config.read === "function"};}',
+      );
       await writeFile(
         wrapper,
         `const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
-const [workerDir,node,...args]=process.argv.slice(2);const index=args.findIndex(arg=>path.basename(arg)==='kernel.js');
-if(index<0)throw Error('Unexpected worker launch');args[index]=${JSON.stringify(restored)};
-fs.appendFileSync(${JSON.stringify(path.join(home, "launches"))},'kernel\\n');
+const [workerDir,node,...args]=process.argv.slice(2);const index=args.findIndex(arg=>['kernel.js','trusted-worker.js'].includes(path.basename(arg)));
+if(index<0)throw Error('Unexpected worker launch');const kind=path.basename(args[index]);args[index]=kind==='kernel.js'?${JSON.stringify(restored)}:${JSON.stringify(trustedRestored)};
+fs.appendFileSync(${JSON.stringify(path.join(home, "worker-kinds"))},kind+'\\n');
 const child=spawn(node,args,{stdio:'inherit'});for(const signal of ['SIGINT','SIGTERM','SIGHUP'])process.on(signal,()=>child.kill(signal));
 child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exit',(code,signal)=>{if(signal)process.kill(process.pid,signal);else process.exitCode=code??1});`,
       );
@@ -56,6 +64,8 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
         PATH: "/usr/bin:/bin",
         NODE_REPL_DISABLE_ANALYTICS: "1",
         NODE_REPL_NODE_PATH: node,
+        NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ fixture: service }),
+        NODE_REPL_TRUSTED_CODE_PATHS: home,
       };
       if (variant === "restored")
         env.NODE_REPL_WORKER_WRAPPER = JSON.stringify([node, wrapper]);
@@ -170,6 +180,14 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
           JSON.stringify(recovered),
         );
         values.push(recovered.result);
+        const rpc = await request("tools/call", {
+          name: "js",
+          arguments: {
+            code: 'nodeRepl.write(await nodeRepl.rpc("fixture",{value:17}));',
+          },
+        });
+        assert.notEqual(rpc.result?.isError, true, JSON.stringify(rpc));
+        values.push(rpc.result);
         outputs.push(values);
       } finally {
         clearTimeout(timer);
@@ -178,15 +196,21 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
         await ended;
         clearTimeout(shutdown);
       }
-      if (variant === "restored")
+      if (variant === "restored") {
+        const kinds = (await readFile(path.join(home, "worker-kinds"), "utf8"))
+          .trim()
+          .split("\n");
+        assert.equal(kinds.filter((kind) => kind === "kernel.js").length, 4);
         assert.equal(
-          (await readFile(path.join(home, "launches"), "utf8"))
-            .trim()
-            .split("\n").length,
+          kinds.filter((kind) => kind === "trusted-worker.js").length,
           4,
-          "Reset, timeout and cancellation each require a new restored kernel",
         );
+      }
     }
+    assert.match(
+      outputs[1][7].content.map((c: any) => c.text).join(""),
+      /privileged: true, value: 17/,
+    );
     // Native response timing/telemetry metadata may vary; compare public contents.
     const publicValues = outputs.map((values) => values.map((v) => v.content));
     assert.deepEqual(publicValues[1], publicValues[0]);

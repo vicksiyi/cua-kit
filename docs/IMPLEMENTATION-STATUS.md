@@ -1372,3 +1372,11 @@ Extended the explicit native supervisor integration test beyond execution/reset.
 Original and restored kernels produce matching public responses. The wrapper records four kernel launches: initial, after reset, after timeout and after cancellation. The explicit native integration test passes; a scoped process check after completion found no remaining test supervisor/kernel workers. No runtime implementation was changed, so the unchanged default synthetic suite was not repeated (last full run: 741 passing tests).
 
 This validates these lifecycle paths with the original native supervisor. It does not reconstruct its Rust implementation or establish complete cancellation/permission/isolation parity across platforms, concurrent calls, native actions or arbitrary privileged operations. Those and actual model integration remain outstanding.
+
+### 16.242 Both restored workers under the native supervisor
+
+Extended the native integration probe to configure a temporary trusted service and route nodeRepl.rpc through the actual native supervisor. The existing worker-wrapper hook is invoked for both kernel.js and trusted-worker.js; both entries are now substituted with reconstructed JS in the probe. The configured service returns value 17 and confirms that the privileged config API is present, without accessing real configuration.
+
+The original and fully substituted worker pair produce identical public MCP responses. Reset, timeout and cancellation cause four launches of each worker across the sequence. Initial assertions expecting only four total launches exposed the previously unverified trusted-worker lifecycle; the assertion now verifies four per worker kind. Native JSON object ordering is reflected in the observed RPC result rather than assumed from the in-memory fixture.
+
+Validation: explicit native-supervisor.integration.ts passes with both reconstructed workers; the unchanged default suite was not repeated (last full run: 741 tests). The native supervisor remains an external binary and no claim is made that privileged operations, permissions, browser/native resources or actual model integration are complete. This establishes the worker-substitution path needed for a runnable demo launcher, which is not yet packaged.
