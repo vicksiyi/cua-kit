@@ -1,5 +1,6 @@
 import { createNativeBrowserController } from "./native_browser_controller";
 import { registerBrowserEventListeners } from "./browser_events";
+import { extensionBuildChannel } from "./browser_platform";
 import { createPageEventHandler } from "./background_messages";
 
 /** Independent deployment of the restored native-control runtime. ChatGPT side-panel,
@@ -16,6 +17,11 @@ export async function startNativeBrowserBackground(
 ) {
   const controller = createNativeBrowserController(options);
   const { foundation, handler, peer } = controller;
+  const mentions = foundation.createTabMentionMessageRouter(
+    handler.browserTabMentionProvider,
+    options.handlerOptions?.buildChannel ?? extensionBuildChannel("prod"),
+  );
+  options.host.chrome.runtime.onConnect.addListener(mentions.handleConnect);
   const popup = foundation.createPopupMessageHandler(handler);
   const cursor = foundation.createCursorMessageHandler(handler);
   const pageEvent = createPageEventHandler({
@@ -27,6 +33,7 @@ export async function startNativeBrowserBackground(
     (message, sender, reply) => {
       if (popup(message, sender, reply)) return true;
       if (pageEvent(message, sender)) return false;
+      if (mentions.handleMessage(message, sender, reply)) return true;
       return cursor(message, sender, reply);
     },
   );

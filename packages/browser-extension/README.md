@@ -670,3 +670,17 @@ mentions, changes an actual tab title, receives `onBrowserTabMentionsInvalidated
 over Native Messaging, and verifies the updated query result before continuing
 the existing MCP navigation/click/screenshot test. This completes that notification
 path, not the full ChatGPT sidebar/website/kernel startup.
+
+The native background now also registers the restored tab-mention `runtime.onMessage`
+and `runtime.onConnect` routes. They use the same provider as the native RPC handler,
+retain original sender validation, and exclude the requesting tab from candidates.
+The packaged-browser test uses an actual isolated-world content script on a local
+page accepted by the original `dev` channel policy: both one-shot messages and a
+Port query return the real second tab, excluding the sender. No sender fields are
+injected or mocked. Existing original/restored message tests cover denied senders,
+incognito, validation, streaming and disconnect handling.
+
+The website status port is still not enabled by the independent native deployment:
+its original capability report includes website actions and sidebar features whose
+full assembly is unfinished. Its implementation remains available separately; it
+must not be advertised as a completed deployment capability.

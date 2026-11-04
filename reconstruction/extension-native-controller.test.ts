@@ -152,6 +152,57 @@ test(
         await page.evaluate(() => {
           document.title = "Core native page";
         });
+        // Real isolated-world runtime messages retain Chrome-generated sender identity.
+        const candidate = await context.newPage();
+        try {
+          await candidate.goto(pageUrl + "mentions");
+          const [channels] = await worker.evaluate(`(async (senderTabId) => {
+            return chrome.scripting.executeScript({
+              target: { tabId: senderTabId },
+              func: async () => {
+                const request = {
+                  type: "search_browser_tab_mentions",
+                  query: "Core native page",
+                  limit: 10,
+                };
+                const single = await chrome.runtime.sendMessage(request);
+                const portReply = await new Promise((resolve, reject) => {
+                  const port = chrome.runtime.connect({
+                    name: "search_browser_tab_mentions",
+                  });
+                  const timer = setTimeout(() => {
+                    port.disconnect();
+                    reject(Error("Mention port timed out"));
+                  }, 5000);
+                  port.onMessage.addListener((value) => {
+                    clearTimeout(timer);
+                    port.disconnect();
+                    resolve(value);
+                  });
+                  port.postMessage(request);
+                });
+                return { single, portReply };
+              },
+            });
+          })(${tab.id})`);
+          for (const reply of [
+            channels.result.single,
+            channels.result.portReply,
+          ]) {
+            assert.equal(reply.ok, true);
+            assert.ok(
+              reply.candidates.some(
+                (item: any) => item.url === pageUrl + "mentions",
+              ),
+            );
+            assert.ok(
+              reply.candidates.every((item: any) => item.id !== tab.id),
+              "Mention results must exclude their sender tab",
+            );
+          }
+        } finally {
+          await candidate.close();
+        }
         const captured = await peer.sendRequest("getTabContext", {
           session_id: "native-live",
           turn_id: "read-1",
