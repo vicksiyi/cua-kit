@@ -4139,6 +4139,19 @@
       ],
       "status": "reconstructed-browser-discovery",
       "validation": "15 original discovery traces cover metadata order, pipe listing and exact filter, concurrent connect/handshake, existing connection reuse, stale/scoped/disabled closure, failures, ignored handshake sentinel and diagnostic truncation. Original pipe platform/path and accessor-sensitive error formatting comparisons. Transport, handshake, feature gates, tracing and diagnostic reporting remain explicit host dependencies; no live inventory/connection claim."
+    },
+    "packages/browser/src/service/runtime/browser_handshake.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Hx",
+        "Gle",
+        "Vle",
+        "Bs",
+        "C6"
+      ],
+      "status": "reconstructed-browser-handshake",
+      "validation": "360 original AX setting/backend/environment identity comparisons, 160 full-CDP capability permission cases, eight profile/handshake failure traces and composed discovery-to-handshake test with synthetic provider. Uses restored CDP capability info and security mode. Platform profile inventory, feature flags and reporting remain host supplied; real backend handshake is not claimed."
     }
   },
   "embeddedPackages": {
