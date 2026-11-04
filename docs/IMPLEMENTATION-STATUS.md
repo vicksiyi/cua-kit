@@ -2993,3 +2993,30 @@ as do complete startup, panel UI, native replacement and real end-to-end verific
 
 Validation: eight package builds/type checks and all 920 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Statsig client construction and adapter assembly
+
+ExtensionStatsigClient now constructs the extended network before StatsigClientBase so
+adapter and logger share it from the beginning. It binds memoized evaluation methods,
+restored live store, user normalization, context handle and live scheduler before plugins.
+The pinned SDK ordinary prototype descriptors are reused without modifying the upstream
+class; restored lifecycle methods replace the differing methods. Shutdown stops the live
+timer before invoking base shutdown. Static instance lookup uses the restored class.
+
+The public data adapter's instanceof Network check would silently create a second,
+unextended network. ExtensionStatsigDataAdapter restores the bundled attachment class
+identity while reusing DataAdapterCore.attach and other upstream adapter behavior.
+
+Two tests construct both actual bundled Vm/qm/Kc/zm and the restored client, using pinned
+core support and mock fetch. They verify plugin-time shared adapter/logger network,
+initialize/update/refresh, unchanged user identity on refresh, Gate result changes,
+configuration listing and shutdown. A separate timer fixture checks enabled live refresh
+and shutdown cleanup; adapter fallback construction is also checked. No external service
+was contacted. This advances beyond prototype-only fixtures, but does not prove every
+SDK path or production installed-extension behavior.
+
+Default feature-service binding is still explicit and pending. Complete extension startup,
+panel UI, native replacement and actual browser/App/model end-to-end validation remain.
+
+Validation: eight package builds/type checks and all 922 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

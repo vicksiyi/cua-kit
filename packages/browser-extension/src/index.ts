@@ -88,3 +88,7 @@ export * from "./statsig_network";
 export * from "./statsig_diagnostics";
 
 export * from "./statsig_client_lifecycle";
+
+export * from "./statsig_client";
+
+export * from "./statsig_data_adapter";

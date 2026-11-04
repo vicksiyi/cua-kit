@@ -612,3 +612,8 @@ client lifecycle assembly remains pending.
 statsigClientLifecycle restores initialization, async user updates and in-place refresh,
 including distinct status/failure behavior and synchronization diagnostics. It is a method
 set for the final client; construction and default feature-service binding are still pending.
+
+ExtensionStatsigClient now assembles the restored network/store/lifecycle/live scheduler
+before plugin binding. ExtensionStatsigDataAdapter keeps the extended network rather than
+creating a second public SDK network. Constructed-client mock-fetch integration passes;
+default feature-service selection and production extension startup remain pending.

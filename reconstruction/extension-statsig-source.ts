@@ -86,3 +86,28 @@ export function originalStatsigNetwork() {
     },
   }).Kc().default;
 }
+
+/** Run the bundled client/store/network/adapter definitions with pinned core support. */
+export function originalAssembledStatsigClient() {
+  const source = extensionBindings(
+    ["Bm", "jm", "qm", "Hm", "Kc", "Gm", "zm", "Vm", "vs"],
+    {
+      ze: () => ({
+        ...require("@statsig/client-core"),
+        NetworkCore: originalStatsigNetworkCore(),
+        Diagnostics: source.vs().Diagnostics,
+      }),
+      L: (factory: (exports: Record<string, unknown>) => void) => {
+        let cached: Record<string, unknown> | undefined;
+        return () => {
+          if (!cached) {
+            cached = {};
+            factory(cached);
+          }
+          return cached;
+        };
+      },
+    },
+  );
+  return source.Vm().default;
+}
