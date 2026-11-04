@@ -1,3 +1,4 @@
+import { chromium } from "playwright";
 import { setupBrowserRuntime } from "../packages/browser/src/runtime/setup";
 import { setup_browser } from "../packages/cua/src/tinysky_alt/setup_browser";
 import { create_browser_api } from "../packages/cua/src/tinysky_alt/create_browser_api";
@@ -24,14 +25,27 @@ test("assembled host and command service run real Unix socket RPC with signed ac
   let turnHook: any,
     service: any,
     deny = false;
+  let allowFixtureOrigin = false;
   const priorRepl = Object.getOwnPropertyDescriptor(globalThis, "nodeRepl");
   let tabUrl = "https://fixture.invalid/";
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  let cdp: any;
+  const peers: BrowserRpcPeer[] = [];
   const server = createServer((socket) => {
     const transport = new NativePipeTransport(socket, {
       decodeMessage: nativePipeMessage,
     });
     transports.push(transport);
     const rpc = new BrowserRpcPeer(transport);
+    peers.push(rpc);
+    rpc.registerRequestHandler("attach", () => ({}));
+    rpc.registerRequestHandler("detach", () => ({}));
+    rpc.registerRequestHandler("executeCdp", async (params: any) => {
+      assert.equal(params.target.tabId, 8);
+      assert.equal(params.target.sessionId, undefined);
+      events.push(["cdp", params.method]);
+      return cdp.send(params.method, params.commandParams);
+    });
     rpc.registerRequestHandler("browser/access", (request: any) => {
       events.push(["access", request.turnId]);
       const payload = JSON.stringify({
@@ -79,8 +93,14 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     };
     const repl: any = {
       cwd: root,
-      createElicitation: unused,
+      async createElicitation(request: any) {
+        assert.equal(request.meta.tool_name, "access_browser_origin");
+        assert.equal(request.meta.origin, "https://fixture.invalid");
+        events.push(["originApproval", allowFixtureOrigin]);
+        return { action: allowFixtureOrigin ? "accept" : "decline" };
+      },
       env: {
+        BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH: `${process.env.CUA_VENDOR_ROOT ?? "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai"}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br`,
         BROWSER_USE_BACKEND_PATHS: path,
         BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
         BROWSER_USE_TINYSKY_ENABLED: "0",
@@ -98,7 +118,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         },
       },
       config: {
-        read: async () => ({}),
+        read: async () => ({ config: {} }),
         readRequirements: async () => ({
           requirements: {
             browserUse: {
@@ -145,6 +165,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         featureEnabled: () => false,
         span,
         commandTiming: {
+          trackElicitation: (fn: any) => fn,
           startCommand() {
             return {
               async run(fn: any) {
@@ -157,6 +178,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
           },
         },
         performanceSpan: {
+          currentCommandAttrs: () => ({}),
           withSpan: span,
           withCommandTelemetry: async (_type: any, _params: any, run: any) =>
             run(),
@@ -339,6 +361,105 @@ test("assembled host and command service run real Unix socket RPC with signed ac
           e[2] === "get_tab",
       ),
     );
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.route("https://fixture.invalid/**", (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: `<title>Public CUA fixture</title><button onclick="this.textContent='Clicked through CUA'">Public CUA action</button>`,
+      }),
+    );
+    await page.goto("https://fixture.invalid/cua-integration");
+    cdp = await page.context().newCDPSession(page);
+    for (const method of [
+      "Page.frameNavigated",
+      "Page.frameStartedLoading",
+      "Page.frameStoppedLoading",
+      "Page.lifecycleEvent",
+      "Page.loadEventFired",
+      "Page.domContentEventFired",
+      "Page.screencastFrame",
+      "Page.javascriptDialogOpening",
+      "Page.javascriptDialogClosed",
+      "Runtime.executionContextCreated",
+      "Runtime.executionContextDestroyed",
+      "Runtime.executionContextsCleared",
+      "DOM.documentUpdated",
+    ]) {
+      cdp.on(method, (params: any) => {
+        for (const peer of peers)
+          if (!peer.closed)
+            peer.sendNotification("onCDPEvent", {
+              source: { tabId: 8 },
+              method,
+              params,
+            });
+      });
+    }
+    tabUrl = page.url();
+    await assert.rejects(cua.getTab("8", { browser: id }), {
+      reason: "user_declined",
+    });
+    assert(events.some((e) => e[0] === "originApproval" && e[1] === false));
+    assert(
+      !events.some(
+        (e) => e[0] === "cdp" && e[1] === "Accessibility.getFullAXTree",
+      ),
+    );
+    allowFixtureOrigin = true;
+    const pageTab = await cua.getTab("8", { browser: id });
+    assert(events.some((e) => e[0] === "originApproval" && e[1] === true));
+    const state = await pageTab.getAXState({
+      emit: false,
+      disableDiffing: true,
+    });
+    assert.match(state, /Public CUA action/);
+    const button = state.match(/^\s*(\d+) button Public CUA action$/m);
+    assert(button, "AX output must expose an actionable button index");
+    await pageTab.click(Number(button[1]));
+    assert.equal(
+      await page.locator("button").textContent(),
+      "Clicked through CUA",
+    );
+    const changed = await pageTab.getAXState({ emit: false });
+    assert.match(changed, /Clicked through CUA/);
+    const screenshot = await pageTab.getScreenshot({ emit: false });
+    assert(screenshot instanceof Uint8Array);
+    assert(screenshot.length > 100);
+    assert.equal(
+      Buffer.from(screenshot).subarray(0, 3).toString("hex"),
+      "ffd8ff",
+    );
+    const dimensions = await page.evaluate(async (base64) => {
+      const image = new Image();
+      image.src = `data:image/jpeg;base64,${base64}`;
+      await image.decode();
+      return [image.naturalWidth, image.naturalHeight];
+    }, Buffer.from(screenshot).toString("base64"));
+    assert.deepEqual(dimensions, [1280, 720]);
+    const combined = await pageTab.getAXStateAndScreenshot({
+      emit: false,
+      disableDiffing: true,
+    });
+    assert.match(combined.state, /Clicked through CUA/);
+    assert(combined.screenshot instanceof Uint8Array);
+    assert(
+      events.some((e) => e[0] === "cdp" && e[1] === "Input.dispatchMouseEvent"),
+    );
+    assert(
+      events.some((e) => e[0] === "cdp" && e[1] === "Page.startScreencast"),
+    );
+    assert.equal(
+      events.filter((e) => e[0] === "cdp" && e[1] === "Page.startScreencast")
+        .length,
+      events.filter((e) => e[0] === "cdp" && e[1] === "Page.stopScreencast")
+        .length,
+    );
+    assert(
+      events.some(
+        (e) => e[0] === "cdp" && e[1] === "Accessibility.getFullAXTree",
+      ),
+    );
     await hooks[0].run();
     await hooks[1].run();
     assert(
@@ -372,6 +493,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     await service?.dispose();
     await Promise.all(transports.map((t) => t.close()));
     await new Promise<void>((resolve) => server.close(() => resolve()));
+    await browser?.close();
     await rm(root, { recursive: true, force: true });
   }
 });
