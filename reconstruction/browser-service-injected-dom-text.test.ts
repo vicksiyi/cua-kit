@@ -1,24 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFile } from "node:fs/promises";
-import { parse } from "acorn";
 import { chromium } from "playwright";
-import { injectedExpression } from "./injected-source";
+import {
+  injectedExpression,
+  compiledInjectedDeclarations as declarations,
+} from "./injected-source";
 
-async function declarations(path: string) {
-  let source = await readFile(path, "utf8");
-  const ast = parse(source, { ecmaVersion: "latest", sourceType: "module" });
-  const edits: { start: number; end: number }[] = [];
-  for (const node of ast.body) {
-    if (node.type === "ImportDeclaration")
-      edits.push({ start: node.start, end: node.end });
-    if (node.type === "ExportNamedDeclaration" && node.declaration)
-      edits.push({ start: node.start, end: node.declaration.start });
-  }
-  for (const edit of edits.sort((a, b) => b.start - a.start))
-    source = source.slice(0, edit.start) + source.slice(edit.end);
-  return source;
-}
 const actual =
   (await declarations(
     "packages/browser/dist/service/playwright/injected/text_matcher.js",

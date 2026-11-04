@@ -830,3 +830,13 @@ Added readable typed reconstruction of hF qt/q/st/Ar/le/Wr/dn in `playwright/inj
 A real Chromium comparison runs selected original expressions and the compiled reconstructed modules against the same synthetic DOM, with explicit expected results for text chunks, shadow labels, form values, matching classification, reference order and cache clearing. No full vendor script is evaluated. The component remains unassembled into the complete injected helper; full selector engines, accessibility utilities and InjectedScript are still outstanding, along with native apps, production host and real-model Agent integration.
 
 Validation: all three reconstructed packages compile and all 584 reconstruction tests pass.
+
+### 16.190 Embedded injected helper: visibility, shadow traversal and style caches
+
+Restored hF xi/St/$/kr/ye/X/Cr/Ze/Q/Nr/_/_t/Tt in typed `playwright/injected/dom_visibility.ts`. Preserves nested shadow-host traversal, containment/scoped closest, computed-style lookup, native checkVisibility versus the browser-name workaround, details visibility, display:contents child ordering, text geometry and tagName handling for forms with a named property shadowing tagName. Style cache lifetime follows the original nested begin/end counter, with separate element/before/after maps and cached undefined values.
+
+Real Chromium differential tests cover both Chromium and WebKit workaround selection (the latter exercises the branch in Chromium, not the WebKit engine), hidden/zero-size/transparent/offscreen elements, text/element display:contents, collapsed details, two shadow levels, missing document views and form tagName shadowing. Explicit assertions establish these are not merely equal empty outputs. Cache tests count actual getComputedStyle calls and verify shared identities, final release/restart and undefined caching across node adoption. Shared test infrastructure now extracts emitted declarations through AST offsets for browser execution, retaining production functions and removing only ESM wrappers.
+
+This remains a component of the original helper; it is not a completed InjectedScript/selector engine. Full helper assembly, native apps, production host and real-model Agent integration remain outstanding.
+
+Validation: three-package TypeScript build and all 586 reconstruction tests pass.

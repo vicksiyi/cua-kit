@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { parse } from "acorn";
 import { serviceExpression } from "./service-source";
 
@@ -27,4 +28,20 @@ export function injectedExpression(name: string) {
   const node = definitions.get(name);
   if (!node) throw new Error(`Missing injected source binding ${name}`);
   return injectedSource.slice(node.start, node.end);
+}
+
+/** Use actual emitted declarations in browser differential tests; remove only ESM wrappers. */
+export async function compiledInjectedDeclarations(path: string) {
+  let source = await readFile(path, "utf8");
+  const ast = parse(source, { ecmaVersion: "latest", sourceType: "module" });
+  const edits: { start: number; end: number }[] = [];
+  for (const node of ast.body) {
+    if (node.type === "ImportDeclaration")
+      edits.push({ start: node.start, end: node.end });
+    if (node.type === "ExportNamedDeclaration" && node.declaration)
+      edits.push({ start: node.start, end: node.declaration.start });
+  }
+  for (const edit of edits.sort((a, b) => b.start - a.start))
+    source = source.slice(0, edit.start) + source.slice(edit.end);
+  return source;
 }
