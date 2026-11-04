@@ -30,7 +30,7 @@ export function bind_mac_app(computer: T.MacComputer, app: string): T.App {
     paste: (value, options) =>
       computer.paste({ app, text: value, format: options?.format ?? "text" }),
     click(target, options) {
-      const args: Record<string, unknown> = { app };
+      const args: Parameters<typeof computer.click>[0] = { app };
       if (Array.isArray(target)) {
         args.x = target[0];
         args.y = target[1];
@@ -50,7 +50,7 @@ export function bind_mac_app(computer: T.MacComputer, app: string): T.App {
       return computer.drag({ app, from_x, from_y, to_x, to_y });
     },
     pressKey(key, options) {
-      const args: Record<string, unknown> = { app, key };
+      const args: Parameters<typeof computer.press_key>[0] = { app, key };
       if (options?.durationMs !== undefined)
         args.duration = duration_seconds(options.durationMs);
       return computer.press_key(args);
@@ -58,7 +58,7 @@ export function bind_mac_app(computer: T.MacComputer, app: string): T.App {
     scroll(target, direction, pages) {
       if (typeof pages === "object")
         throw new Error("macOS scroll accepts pages, not pixels.");
-      const args: Record<string, unknown> = { app, direction };
+      const args: Parameters<typeof computer.scroll>[0] = { app, direction };
       if (Array.isArray(target)) {
         args.x = target[0];
         args.y = target[1];
@@ -67,7 +67,7 @@ export function bind_mac_app(computer: T.MacComputer, app: string): T.App {
       return computer.scroll(args);
     },
     selectText(index, value, options) {
-      const args: Record<string, unknown> = {
+      const args: Parameters<typeof computer.select_text>[0] = {
         app,
         element_index: index,
         text: value,

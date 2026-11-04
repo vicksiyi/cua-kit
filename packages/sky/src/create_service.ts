@@ -17,7 +17,7 @@ export interface ServiceClient {
   drag_handle?: () => DragHandle;
   [method: string]: unknown;
 }
-/** Restored service.js closure. Platform-client construction remains an explicit dependency. */
+/** Restored service.js closure; the public service supplies the platform factory. */
 export function createSkyService(createClient: () => ServiceClient) {
   let client: ServiceClient | undefined;
   const handles = new Map<string, DragHandle>();

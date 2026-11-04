@@ -6,5 +6,17 @@
   "dependencies": {
     "@core/core": "0.0.0-reconstructed.0",
     "@statsig/js-client": "3.33.3"
+  },
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./service": {
+      "types": "./src/service.ts",
+      "import": "./dist/service.js"
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { accessibility_tree } from "./targets/linux/accessibility_tree";
 import type { SkyServiceRequest } from "./create_service";
 type RuntimeClient = { target?: string; [name: string]: any };
-/** Original sky.js module state, with direct platform construction explicit until routing is assembled. */
+/** Original sky.js module state, with a supplied direct-platform factory. */
 export async function createSkyProxy(createDirectClient: () => RuntimeClient) {
   const runtime = (globalThis as any).nodeRepl;
   let setup: { target: string; methods: string[] } | undefined,

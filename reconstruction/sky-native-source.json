@@ -95,6 +95,12 @@
     "targets/windows/create_client.js": "43935a185c83827ea87e23295c7a44327f43e933da97da7cd1b8b7eb23aa6fab",
     "targets/windows/create_client.d.ts": "aed4edd65c6e0cd92b949298d21b59ad978c07c48238c10dc7fb37d57e230069",
     "targets/windows/internal/computer_use_client.js": "12f2952342ee3e3e4ae2cd509de48f59c935a925607aee24f41d7797510802f7",
-    "targets/windows/internal/computer_use_client.d.ts": "e057add5e0b0d1043a40b4655570a1b4467d0e765a8c44d913e5deb8c4dd4774"
+    "targets/windows/internal/computer_use_client.d.ts": "e057add5e0b0d1043a40b4655570a1b4467d0e765a8c44d913e5deb8c4dd4774",
+    "index.js": "895d7be648bef5b11b3e562fb1838161a162892b74792469488637665252bdfc",
+    "index.d.ts": "f918fe1ee3f7fff0cb88fa0243ae7b58b1f7bf2f5ea9edb6bea69fd58c83e93f",
+    "create_client.js": "5dc4a74434f382e318b596764054bf647fd13d3c9dea9ce5e8464a5c13fa2d81",
+    "create_client.d.ts": "a2d5462b30047576f4542b62816c7746a7434f03c9f7c6817867059a44f6d399",
+    "types/index.d.ts": "0983ad7650dc6d5472e65fa9c4fdc1b23db08c739c362d00ea6b32b6e597ec0f",
+    "types/SkyClient.d.ts": "dbe3d8669f2abb294e9c6ab19cb346b66722cd44279f8d002a32edcbb607baf2"
   }
 }

@@ -26,7 +26,9 @@ Currently implemented:
 - `src/targets/mac/errors.ts`: original native error codes and error types.
 - `src/require_audio_model_support.ts`: original per-recording model allowlist and trusted request metadata checks.
 
-These internal modules are built and type-checked with the other reconstruction packages. They do not yet expose the original root/service entry points: the Mac factory is restored and tested through an isolated socket, the Windows factory is restored against synthetic helpers, while top-level assembly remains missing; the Mac transport has not been connected to an installed native service. `createSkyService` requires an explicit platform-client constructor; no placeholder native implementation is selected automatically.
+The package now exposes `@core/sky` (`sky` and the `SkyClient` type) and `@core/sky/service` (`handleRpc`). The singleton proxy performs trusted RPC setup at import time; without a Node REPL global, direct platform construction remains lazy. The service selects the actual Mac/Linux/Windows factory from load_options. Package-entry differential tests cover RPC, direct construction, setup failure and untrusted hosts; an integration test traverses `@core/cua/tinyskyAlt` → `cua.getApp` → Sky → Windows service/native pipe for state, click and screenshot bytes using a synthetic host.
+
+These modules are built and type-checked with the other reconstruction packages. Real installed native-service interoperability remains unverified. External native binaries, NodeREPL and AX resources still require separate provisioning/implementation; no placeholder native implementation is selected automatically.
 
 The original Sky package declares @statsig/js-client ^3.32.6; its installed resolution is 3.33.3, which this package now pins independently of the browser bundle's 3.33.1. Platform code also uses native helper processes. Its native executables are not JavaScript dependencies and are not reconstructed by the dispatcher. The original `SKY_AUDIO_MODEL_ALLOWLIST` name and request metadata protocol are retained unchanged.
 

@@ -3,8 +3,11 @@ import { positive_pixels } from "../core/positive_pixels";
 import { one_screenshot } from "./one_screenshot";
 import { require_plain_text } from "./require_plain_text";
 import type * as T from "./types";
-// Window/state structure remains inferred until @core/sky declarations are restored.
-export function bind_linux_app(computer: T.LinuxComputer, window: any): T.App {
+type Window = Parameters<T.LinuxComputer["get_window_state"]>[0]["window"];
+export function bind_linux_app(
+  computer: T.LinuxComputer,
+  window: Window,
+): T.App {
   let currentWindow = window;
   async function observe(options: { include_screenshot: boolean }) {
     const state = await computer.get_window_state({
@@ -63,7 +66,9 @@ export function bind_linux_app(computer: T.LinuxComputer, window: any): T.App {
         throw new Error(
           "Linux clicks with key require window-relative coordinates.",
         );
-      const args: Record<string, unknown> = { window: currentWindow };
+      const args: Parameters<typeof computer.click>[0] = {
+        window: currentWindow,
+      };
       if (Array.isArray(target)) {
         args.x = target[0];
         args.y = target[1];
@@ -87,7 +92,7 @@ export function bind_linux_app(computer: T.LinuxComputer, window: any): T.App {
     scroll(target, direction, distance) {
       if (typeof distance === "number")
         throw new Error("Linux scroll accepts { pixels }, not pages.");
-      const args: Record<string, unknown> = {
+      const args: Parameters<typeof computer.scroll>[0] = {
         window: currentWindow,
         direction,
       };
@@ -112,7 +117,10 @@ export function bind_linux_app(computer: T.LinuxComputer, window: any): T.App {
       computer.type_text({ window: currentWindow, text: value })
     ),
     pressKey(key, options) {
-      const args: Record<string, unknown> = { window: currentWindow, key },
+      const args: Parameters<typeof computer.press_key>[0] = {
+          window: currentWindow,
+          key,
+        },
         duration = options?.durationMs;
       if (duration !== undefined) {
         if (!(Number.isSafeInteger(duration) && duration >= 0))

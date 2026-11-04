@@ -3,16 +3,12 @@ import { positive_pixels } from "../core/positive_pixels";
 import { screenshot_bytes } from "../core/screenshot_bytes";
 import { require_plain_text } from "./require_plain_text";
 import type * as T from "./types";
-// Wire structures are inferred from accesses in this module; full Sky types remain pending.
-type Region = {
-  id: string;
-  url: string;
-  zIndex: number;
-  [key: string]: unknown;
-};
+type WindowState = Awaited<ReturnType<T.WindowsComputer["get_window_state"]>>;
+type Region = WindowState["screenshots"][number];
+type Window = Parameters<T.WindowsComputer["get_window_state"]>[0]["window"];
 export function bind_windows_app(
   computer: T.WindowsComputer,
-  window: any,
+  window: Window,
 ): T.App {
   let screenshots: Region[] = [];
   async function observe(args: {
@@ -114,7 +110,7 @@ export function bind_windows_app(
     click(target, options) {
       if (options?.durationMs !== undefined || options?.key !== undefined)
         throw new Error("Held clicks are unavailable on Windows.");
-      const args: Record<string, unknown> = { window };
+      const args: Parameters<typeof computer.click>[0] = { window };
       if (Array.isArray(target)) {
         const id = screenshotId(options);
         args.x = target[0];
@@ -135,7 +131,7 @@ export function bind_windows_app(
       const id = screenshotId(options),
         [from_x, from_y] = from,
         [to_x, to_y] = to;
-      const args: Record<string, unknown> = {
+      const args: Parameters<typeof computer.drag>[0] = {
         window,
         from_x,
         from_y,
@@ -156,7 +152,13 @@ export function bind_windows_app(
         direction,
         positive_pixels(distance!.pixels),
       );
-      const args: Record<string, unknown> = { window, x, y, scrollX, scrollY };
+      const args: Parameters<typeof computer.scroll>[0] = {
+        window,
+        x,
+        y,
+        scrollX,
+        scrollY,
+      };
       if (id !== undefined) args.screenshotId = id;
       return computer.scroll(args);
     },
@@ -207,7 +209,7 @@ function scrollDelta(direction: string, pixels: number) {
       throw new Error(`Unknown scroll direction: ${direction}.`);
   }
 }
-function accessibilityText(state: any): string {
+function accessibilityText(state: WindowState): string {
   const ax = state.accessibility;
   if (ax === null)
     return `Accessibility state unavailable for window ${state.window.id}.`;
