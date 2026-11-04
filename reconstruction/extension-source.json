@@ -425,5 +425,11 @@
     },
     "test": "reconstruction/extension-side-panel-page.test.ts",
     "boundary": "Explicit DOM/Chrome/page fixtures. Original ge per-tab controller remains a required dependency; no complete sidebar deployment claim."
+  },
+  "sidePanelProtocolVerification": {
+    "file": "chunks/src-BsTzWBmo.js",
+    "sha256": "2284e7e24f4fc756e5af9e00d652914415a238128e5dcf4ab02bb0388c130dd0",
+    "test": "reconstruction/extension-side-panel-protocol.test.ts",
+    "boundary": "Shared frame guards and sidepanel X/Je/ve prerequisites; ge controller origin/source checks and full deployment still required."
   }
 }

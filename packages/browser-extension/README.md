@@ -900,3 +900,21 @@ are not presented as a working complete sidebar. Hash-checked installed-source
 differential tests cover URL/frame policy, four window lifecycle scenarios and
 seven startup scenarios with explicit DOM/Chrome/page fixtures. Type check, build
 and seven related tests pass. No live sidebar or authentication was exercised.
+
+
+### Side-panel frame protocol dependencies (2026-11-05)
+
+Restored the shared `src-BsTzWBmo.js` frame protocol guards for auth changes,
+open-in-browser, prompt prefill, context/tab-context requests, location changes,
+media-permission requests, browser context and capabilities requests, plus exact
+message/capability constants. The per-tab controller's auth-revalidation and
+readable-tab guards and GET_EXTENSION_INSTANCE_ID reader are also restored.
+Instance-id/UTF-16 validation reuses the existing restored implementation.
+
+Original shared chunk SHA256 is
+`2284e7e24f4fc756e5af9e00d652914415a238128e5dcf4ab02bb0388c130dd0`.
+Hash-checked differential tests cover valid/invalid and inherited/array fields,
+prompt/selection/request-id bounds, tab URL/id/incognito boundaries and instance
+request failures. Type check, build and six related tests pass. These are protocol
+prerequisites, not a completed `ge` controller or deployed sidebar. Message shape
+validation does not replace the controller's required origin/source checks.
