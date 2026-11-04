@@ -1810,3 +1810,30 @@ Vp normalization/rule assembly, Wp URL predicate and JS active-page enforcement
 still require integration. No claim of real browser network enforcement is made.
 
 Validation: all eight reconstructed packages built and passed type checks; all 807 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.263 Network policy compiler and URL predicate integrated
+
+Restored Vp/Wp and Ac/Cc/kc/Rc as readable network_policy_compiler.ts. The manager
+now defaults to these implementations instead of requiring compiler/predicate
+injection. Preserved normalized policy/pattern deduplication and ordering, conjunctive
+allowlist intersection, independent deny rules, exact document URL handling,
+protocol/port restrictions, regex generation and all policy/pattern/input/intersection/
+compiled-output budgets. The prior hostname-intersection implementation is used directly.
+
+Inspection established shared host/origin parsing with browser-service. Moved that
+existing implementation to @core/core/originPatterns and retained the old browser
+path as a re-export, avoiding a second parser implementation. A differential matrix
+checks ic/up/gp behavior on wildcards, IDN, whitespace, ports, IPv4/IPv6 and invalid
+patterns. Compiler tests compare exact rules/errors and URL decisions against pinned
+original Vp/Wp, including mixed domains/origins, document URLs, deduplication and
+budget failures. A manager composition test omits compiler/predicate overrides and
+verifies allowed/blocked decisions during enforcement and owned-rule cleanup.
+
+The inspected compiler closure uses standard JS and the already restored shared
+parser; no additional third-party library was identified or reimplemented. JS
+active-page enforcement remains required and is still a fixture in manager tests.
+Production extension startup/native host and real desktop/model integration remain
+incomplete; this milestone does not establish real site enforcement.
+
+Validation: all eight reconstructed packages built and passed type checks; all 811 default regression tests passed. The separate native-supervisor suite was not rerun.

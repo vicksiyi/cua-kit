@@ -14,3 +14,4 @@ export * from "./tab_leases";
 export * from "./instance_id";
 export * from "./browser_foundation";
 export * from "./network_policy";
+export * from "./network_policy_compiler";

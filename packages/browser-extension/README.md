@@ -219,9 +219,13 @@ rules, then awaits active-page enforcement before recording the attached policy.
 Cancellation and rollback preserve the original AggregateError when cleanup cannot
 be verified. Detach removes only this manager's matching rules and checks removal.
 
-The original `Vp` compiler, `Wp` URL predicate and `JS` active-page enforcement
-closure are **required dependencies and not yet restored**. There are no permissive
-production substitutes. Differential tests use explicit compiler/enforcer fixtures
-to isolate the manager, and a session composition test verifies enforcement before
-debugger attachment. This does not prove real site enforcement or full production
-network-policy readiness.
+The original `Vp` compiler and `Wp` URL predicate are restored and used by default.
+They retain normalization/deduplication, allowlist intersections, deny rules,
+document URLs, origin restrictions and all input/output/complexity budgets.
+Host/origin parsing is shared with browser-service through `@core/core/originPatterns`.
+Explicit compiler/predicate injection remains available for isolated tests.
+
+The `JS` active-page enforcement closure remains a required host dependency.
+Tests compare compiler/predicate behavior with the pinned original bundle and run
+manager installation with the real restored compiler/predicate and fixture Chrome.
+This does not prove real site enforcement or full production network-policy readiness.

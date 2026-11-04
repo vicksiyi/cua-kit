@@ -1,3 +1,7 @@
+import {
+  compileNetworkPolicy,
+  createNetworkPolicyPredicate,
+} from "./network_policy_compiler";
 export interface CompiledNetworkPolicy {
   defaultAction: "allow" | "block";
   rules: Array<{ action: "allow" | "block"; regex: string }>;
@@ -32,12 +36,12 @@ function rulesMatch(actual: any, expected: any) {
       JSON.stringify(expected.condition.resourceTypes?.slice().sort())
   );
 }
-/** Original ar/op. Compiler and active-page enforcement are required, with no permissive fallback. */
+/** Original ar/op. Compiler/predicate default to restored implementations; active-page enforcement remains required. */
 export function createNetworkPolicyManagerClass(host: {
   chrome: typeof chrome;
   now(): number;
-  compile(constraints: any[]): CompiledNetworkPolicy;
-  predicate(constraints: any[]): (url: string) => boolean;
+  compile?(constraints: any[]): CompiledNetworkPolicy;
+  predicate?(constraints: any[]): (url: string) => boolean;
   enforceActivePage(
     tabId: number,
     deadline: number,
@@ -68,7 +72,9 @@ export function createNetworkPolicyManagerClass(host: {
         throw new Error(
           "Browser Use network policy timeout must be 1..30000 milliseconds",
         );
-      const policy = host.compile(request.constraints);
+      const policy = (host.compile ?? compileNetworkPolicy)(
+        request.constraints,
+      );
       if (this.attaching.has(tabId))
         throw new Error("Browser Use network policy is already attaching");
       const previous = this.attachedPolicies.get(tabId);
@@ -79,7 +85,9 @@ export function createNetworkPolicyManagerClass(host: {
         );
       }
       if (policy.defaultAction === "allow" && policy.rules.length === 0) return;
-      const allowed = host.predicate(request.constraints),
+      const allowed = (host.predicate ?? createNetworkPolicyPredicate)(
+          request.constraints,
+        ),
         attempt = { cancelled: false, ruleIds: [] as number[] };
       this.attaching.set(tabId, attempt);
       const checkCancelled = () => {

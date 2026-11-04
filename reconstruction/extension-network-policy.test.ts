@@ -253,3 +253,40 @@ test("extension network policy cancels in-flight enforcement and aggregates fail
     return await outcome(() => f.manager.attach(1, { constraints: [policy] }));
   });
 });
+
+test("manager defaults to restored compiler and predicate before active-page enforcement", async () => {
+  const f = fixture(false);
+  let decisions: boolean[] = [];
+  const Manager = createNetworkPolicyManagerClass({
+    chrome: f.chrome,
+    now: () => 100,
+    async enforceActivePage(tabId, deadline, allowed) {
+      assert.equal(tabId, 1);
+      assert.equal(deadline, 5100);
+      decisions = [
+        "https://example.com/",
+        "https://a.example.com/",
+        "https://blocked.example.com/",
+        "https://unrelated.test/",
+      ].map(allowed);
+      assert.equal(
+        f.rules.filter((rule) => rule.action?.type === "allow").length > 0,
+        true,
+      );
+    },
+  });
+  const manager = new Manager();
+  await manager.attach(1, {
+    constraints: [
+      { kind: "domains", mode: "allowlist", patterns: ["**.example.com"] },
+      { kind: "domains", mode: "denylist", patterns: ["blocked.example.com"] },
+    ],
+  });
+  assert.deepEqual(decisions, [true, true, false, false]);
+  assert.equal(manager.attachedPolicies.has(1), true);
+  await manager.detach(1);
+  assert.deepEqual(
+    f.rules.map((rule) => rule.id),
+    [1000000],
+  );
+});

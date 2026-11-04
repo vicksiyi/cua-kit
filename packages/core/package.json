@@ -15,6 +15,10 @@
     "./requestHeaders": {
       "types": "./src/request_headers.ts",
       "import": "./dist/request_headers.js"
+    },
+    "./originPatterns": {
+      "types": "./src/origin_patterns.ts",
+      "import": "./dist/origin_patterns.js"
     }
   }
 }
