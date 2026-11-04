@@ -47,3 +47,27 @@ export function originalStatsigEvaluationStore() {
     },
   }).qm().default;
 }
+
+/** Class definition only; callers create a prototype fixture without running its constructor. */
+export function originalStatsigClientPrototype(
+  overrides: Record<string, unknown> = {},
+) {
+  return extensionBindings(["Vm"], {
+    ze: () => ({
+      ...require("@statsig/client-core"),
+      ...((overrides.core as object) ?? {}),
+    }),
+    qm: () => ({}),
+    Kc: () => ({}),
+    Gm: () => ({}),
+    zm: () => ({}),
+    L: (factory: (exports: Record<string, unknown>) => void) => () => {
+      const exports = {};
+      factory(exports);
+      return exports;
+    },
+    ...Object.fromEntries(
+      Object.entries(overrides).filter(([key]) => key !== "core"),
+    ),
+  }).Vm().default;
+}

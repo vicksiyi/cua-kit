@@ -144,7 +144,8 @@
     "Un/Yt/Mr/Is/Qm/As/rl/nl/$n/Cs/eg/tg": "createExtensionFeatureService: identity/client lifecycle, auth refresh, gate/config subscriptions, telemetry queue; requires extended SDK client contract",
     "Kc.fetchLiveEvaluations/a": "statsig_live_network.ts: live-overlay request envelope and response/cursor parsing; extended NetworkCore adapter still required",
     "Bc.NetworkCore request/URL/diagnostic delta": "ExtensionStatsigNetworkCore: subclass upstream 3.33.4, preserve headers and skipInitTracking gates, original failure order; reuse upstream encoding/compression/rate-limit/fallback support",
-    "qm live evaluation store": "ExtensionStatsigEvaluationStore: upstream base/container reuse with overlay/retained values, cursor seeding and loadedAt details"
+    "qm live evaluation store": "ExtensionStatsigEvaluationStore: upstream base/container reuse with overlay/retained values, cursor seeding and loadedAt details",
+    "Vm live refresh methods": "createStatsigLiveRefresh: live response stale checks, cursor/value application, interval config, overlap prevention and replacement/stop lifecycle"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
@@ -212,6 +213,7 @@
     "npmVersion": "3.33.4",
     "difference": "Bundled StatsigClient adds refreshValuesAsync, enableLiveValuesAutoRefresh and live-refresh store behavior absent from public npm 3.33.4. Required Client injection prevents treating npm as drop-in. SDK delta restoration remains incomplete.",
     "networkBoundary": "ExtensionStatsigNetworkCore restores inspected dispatch/URL/diagnostic changes and composes successfully with live-overlay helper. Extended store/client and production feature-service assembly remain incomplete.",
-    "storeBoundary": "Live store delta restored and compared against actual bundled qm/Bm/jm; client refresh/timer/default service assembly still pending."
+    "storeBoundary": "Live store delta restored and compared against actual bundled qm/Bm/jm; client refresh/timer/default service assembly still pending.",
+    "clientBoundary": "Live refresh/scheduler helper restored; constructor/init/update/diagnostics and production default client assembly still incomplete."
   }
 }

@@ -595,3 +595,8 @@ ExtensionStatsigEvaluationStore now reuses upstream ordinary helpers and V1/V2 c
 while restoring live/retained value lookup, config-list union, cursor seeding/advancement,
 loadedAt details and reset semantics. Node ESM/CommonJS default interop is handled explicitly.
 The extended client refresh/scheduling and feature-service default remain unfinished.
+
+The live-refresh scheduler now preserves original response staleness checks, cursor/value
+application, configurable intervals, in-flight suppression, replaced-client shutdown and
+server differences. Stopping only clears the interval, retaining pending-request behavior.
+Client construction/init/update/diagnostics and default service assembly remain pending.

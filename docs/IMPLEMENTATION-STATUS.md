@@ -2899,3 +2899,30 @@ The live request's sinceTime type now permits undefined, matching the store's em
 cursor result; runtime behavior is unchanged. Build/type checks were rerun after this
 type-only adjustment. All eight package builds/type checks and all 912 default regressions
 pass, zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Statsig live refresh and interval lifecycle
+
+Restored Vm live-refresh methods as createStatsigLiveRefresh. It captures user and base
+value identities before fetching, discards responses if either changed or loading status
+is no longer Ready, advances no-update cursors and publishes successful live-store changes.
+Interval configuration accepts only finite positive seconds, otherwise uses ten minutes;
+disabled clients do not start. A per-interval in-flight flag suppresses overlapping ticks.
+A different Ready client of the same class stops the old interval outside server mode.
+
+Stop clears only the interval: an already pending response can still apply, matching the
+source. Timing errors are logged and the in-flight flag is cleared in finally. The helper
+uses restored store/network contracts and official global/environment/logging primitives;
+constructor-specific instanceof testing remains an explicit client assembly dependency.
+The store cursor return type now states its optional properties without runtime changes.
+
+Two tests extract the actual Vm class definition without invoking its constructor and
+compare thirteen timer/response modes plus interval boundaries. They cover user/base-value
+changes, disabled/loading states, server/replacement behavior, pending stop, rejected/null
+responses, cursor updates, repeated starts/stops and overlap suppression. Timers/network
+are fixtures; no live SDK client or external traffic was started.
+
+Client constructor/init/update/diagnostics and default feature service are still unfinished,
+alongside complete startup, panel UI, native replacement and real end-to-end validation.
+
+Validation: all eight package builds/type checks and all 914 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

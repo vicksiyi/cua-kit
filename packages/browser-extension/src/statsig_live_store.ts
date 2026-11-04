@@ -191,7 +191,11 @@ export class ExtensionStatsigEvaluationStore extends StoreBase {
       .filter((name) => current.has(name));
     return [...new Set<string>([...base, ...overlay, ...retained])];
   }
-  getLiveCursor() {
+  getLiveCursor(): {
+    sinceTime?: number;
+    previousDerivedFields?: unknown;
+    fullChecksum?: string;
+  } {
     const live = this.live;
     return live?.cursor == null
       ? {}
