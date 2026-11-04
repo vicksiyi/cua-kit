@@ -1,3 +1,4 @@
+import { MacComputerUseClient } from "../packages/sky/src/targets/mac/client";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
@@ -434,6 +435,30 @@ test("Mac restored transport uses a real isolated Unix socket for handshake and 
           requests.map((r) => r.method),
           ["ping", "request", "request"],
         );
+        const client = new MacComputerUseClient({ apiVersion: "fixture-v1" });
+        assert.deepEqual(
+          await client.getAppState({ app: "com.synthetic", disableDiff: true }),
+          { app: "com.synthetic", disableDiff: true },
+        );
+        await client.click({ app: "com.synthetic", elementIndex: 3 });
+        assert.deepEqual(
+          requests.slice(3).map((r) => [r.method, r.params.requestType]),
+          [
+            ["ping", undefined],
+            ["request", "ComputerUseIPCAppGetSkyshotRequest"],
+            ["request", "ComputerUseIPCAppPerformActionRequest"],
+          ],
+        );
+        assert.deepEqual(requests[5].params.request, {
+          app: "com.synthetic",
+          action: {
+            click: {
+              at: { elementID: { _0: "3" } },
+              clickCount: 1,
+              mouseButton: 0,
+            },
+          },
+        });
         for (const socket of connections) socket.end();
       },
     );

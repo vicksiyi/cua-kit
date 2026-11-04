@@ -5,7 +5,11 @@
     "native-pipe.js": "51a1138a0f0d7f01fe5d4d0a4f0753c67b2c3f3ed55c7540c26d182274e116f4",
     "native-pipe.d.ts": "7d0f1d8e2e0e66448e3c31fb0f7cc88e78385b5fd79fe1fdc8e09a4390026a72",
     "errors.js": "9dd27e4cf0ea4456b3ad472fab8cbbe093ad1184d0cb25a8c05e738ee00cfd43",
-    "errors.d.ts": "276b1c1cdb9a92c6308065f3e4ae86e37cb5c6d5269f3e66b76f430e47cec491"
+    "errors.d.ts": "276b1c1cdb9a92c6308065f3e4ae86e37cb5c6d5269f3e66b76f430e47cec491",
+    "client.js": "71134f10354fe9f7be23a62df52789908a8592151685286a7965b297a81cef8f",
+    "client.d.ts": "ba1fdc06bab21bea6970be9d5f81c3f7d7fa7c7d36717030bce46416ec3c36d6",
+    "window_result.js": "9169daf53e7516eecd2ba8680e990bc6570d16d955f0ffed183572202c5d5448",
+    "window_result.d.ts": "41920c377dc26959b2949536277cda7b8829541e28fb26e8c14c043bf9a36ec2"
   },
   "note": "Installed errors.d.ts declares formatOSStatus but errors.js does not export it; runtime evidence takes precedence."
 }

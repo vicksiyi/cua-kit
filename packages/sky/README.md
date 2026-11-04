@@ -5,6 +5,8 @@ The installed @oai/sky 0.7.13 package has three native targets (mac, linux, wind
 Currently implemented:
 
 - `src/create_service.ts`: service closure with lazy platform-client creation, own-method dispatch, media wire serialization, and Linux drag-handle state.
+- `src/targets/mac/client.ts`: native operation envelopes, validation, per-version transport cache, metadata/default precedence and client singleton.
+- `src/targets/mac/window_result.ts`: window state validation and once-per-app instructions.
 - `src/targets/mac/native-pipe.ts`: original privileged native-pipe transport, framing, API handshake, request queue, startup and host-service exchanges.
 - `src/targets/mac/errors.ts`: original native error codes and error types.
 - `src/require_audio_model_support.ts`: original per-recording model allowlist and trusted request metadata checks.
