@@ -1,3 +1,11 @@
+import {
+  assertCommandSupported as checkCommandSupported,
+  securityCheckAttributes as mapSecurityCheck,
+  reportCommandRecovery as emitCommandRecovery,
+  browserClientRelease,
+  createRuntimeDocumentation,
+} from "./runtime_policies";
+import type { DocumentationBundle } from "../context/documentation";
 import { createCommandRecording } from "./command_recorders";
 import {
   createResponseScreenshot,
@@ -17,10 +25,10 @@ export interface CommandRuntimeOptions {
 export interface CommandRuntimeDependencies {
   setExceptionReporter: (...args: any[]) => any;
   setSecurityCheckReporter: (...args: any[]) => any;
-  securityCheckAttributes: (...args: any[]) => any;
+  securityCheckAttributes?: (...args: any[]) => any;
   configureRuntimeTelemetry: (...args: any[]) => any;
   emitEvent: (...args: any[]) => any;
-  release: string;
+  release?: string;
   createCommandRecorder?: (...args: any[]) => any;
   createNavigationRecorder?: (...args: any[]) => any;
   createInteractionRecorder?: (...args: any[]) => any;
@@ -44,7 +52,7 @@ export interface CommandRuntimeDependencies {
   BrowserContext: new (...args: any[]) => any;
   configureBackendTelemetry: (...args: any[]) => any;
   configureTurnTelemetry: (...args: any[]) => any;
-  recordCommandUsage: (...args: any[]) => any;
+  assertCommandSupported?: (...args: any[]) => any;
   browserCommands: Array<any>;
   telemetryTurnIds: (...args: any[]) => any;
   browserTelemetryAttributes: (...args: any[]) => any;
@@ -62,7 +70,7 @@ export interface CommandRuntimeDependencies {
   formatCommandError: (...args: any[]) => any;
   canRecordCommand?: (...args: any[]) => any;
   trackRecordingContext: (...args: any[]) => any;
-  reportCommandRecovery: (...args: any[]) => any;
+  reportCommandRecovery?: (...args: any[]) => any;
   closeTabCommand: { type: string };
 }
 export function createCommandRuntimeFactory(
@@ -81,10 +89,10 @@ export function createCommandRuntimeFactory(
   const {
     setExceptionReporter,
     setSecurityCheckReporter,
-    securityCheckAttributes,
+    securityCheckAttributes = mapSecurityCheck,
     configureRuntimeTelemetry,
     emitEvent,
-    release,
+    release = browserClientRelease,
     createCommandRecorder = recording.createCommandRecorder,
     createNavigationRecorder = recording.createNavigationRecorder,
     createInteractionRecorder = recording.createInteractionRecorder,
@@ -108,7 +116,7 @@ export function createCommandRuntimeFactory(
     BrowserContext,
     configureBackendTelemetry,
     configureTurnTelemetry,
-    recordCommandUsage,
+    assertCommandSupported = checkCommandSupported,
     browserCommands,
     telemetryTurnIds,
     browserTelemetryAttributes,
@@ -126,7 +134,7 @@ export function createCommandRuntimeFactory(
     formatCommandError,
     canRecordCommand = commandScheduling.canObserve,
     trackRecordingContext,
-    reportCommandRecovery,
+    reportCommandRecovery = emitCommandRecovery,
     closeTabCommand,
   } = dependencies;
   const maxConfirmationPolicyBytes = 20_000;
@@ -355,7 +363,7 @@ export function createCommandRuntimeFactory(
             configureTurnTelemetry(runtime, errorReporter));
           let backend: any = surfaceForBackend(context.clientInfo.type);
           (reportBackendSession(backend, requestMetadata, context.clientInfo),
-            recordCommandUsage({
+            assertCommandSupported({
               browserInfo: context.clientInfo,
               commandType,
             }));
@@ -607,4 +615,19 @@ function documentationAddendum(runtime: any) {
     return;
   const value = runtime.env.CUA_REPL_BROWSER_DOCUMENTATION_ADDENDUM;
   return value?.trim() ? value : undefined;
+}
+
+/** Connect original j3/wf/oD/iD without guessing a production asset location. */
+export function createDocumentedCommandRuntimeFactory(
+  dependencies: Omit<
+    CommandRuntimeDependencies,
+    "loadApiManifest" | "loadDocumentManifest" | "readDocumentation"
+  >,
+  moduleUrl: string,
+  bundle?: DocumentationBundle,
+) {
+  return createCommandRuntimeFactory({
+    ...dependencies,
+    ...createRuntimeDocumentation(moduleUrl, bundle),
+  });
 }

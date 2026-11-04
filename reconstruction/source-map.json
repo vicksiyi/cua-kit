@@ -4305,7 +4305,7 @@
         "d6"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output. Runtime now defaults to restored navigation/interaction/WebMCP recorders, aggregator and response metadata/screenshot implementation; actual after-code hook composition verifies one-shot WebMCP metadata."
+      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output. Runtime now defaults to restored navigation/interaction/WebMCP recorders, aggregator and response metadata/screenshot implementation; actual after-code hook composition verifies one-shot WebMCP metadata. Security attribute mapping, download compatibility checks, recovery reporting and release now default to restored G3/H3/V3/Vr. H3 dependency renamed assertCommandSupported to reflect actual semantics. Documented runtime factory connects restored asset loader and j3 policy with explicit asset module URL/bundle."
     },
     "packages/browser/src/service/runtime/command_scheduler.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4390,6 +4390,29 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "52 original tab ownership, fallback, protection and failure traces plus field whitelist/URL redaction comparisons. Default capture calls restored Ui implementation; synthetic capture providers validate orchestration, not live production screenshots. Type checks and all 565 tests pass. Production end-to-end assembly remains incomplete."
+    },
+    "packages/browser/src/service/runtime/runtime_policies.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-runtime-documentation-compatibility-and-reporting-policies",
+      "symbols": [
+        "j3",
+        "yue",
+        "zr",
+        "H3",
+        "Sue",
+        "wue",
+        "_ue",
+        "vue",
+        "V3",
+        "G3",
+        "Iue",
+        "kue",
+        "Bue",
+        "Vr"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "288 original documentation environment/flag/override comparisons, real temporary filesystem loader composition, 24 compatibility combinations, 150 recovery-version combinations and 500 security event comparisons. Runtime scheduler composition emits actual recovery metadata before provider context creation. Type checks and all 570 tests pass. Explicit asset location/bundle still required; no production asset packaging or telemetry SDK claimed."
     }
   },
   "embeddedPackages": {

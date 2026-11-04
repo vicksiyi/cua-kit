@@ -38,7 +38,7 @@ const bindings = {
   ob: "BrowserContext",
   Sh: "configureBackendTelemetry",
   xh: "configureTurnTelemetry",
-  H3: "recordCommandUsage",
+  H3: "assertCommandSupported",
   l6: "browserCommands",
   Uc: "telemetryTurnIds",
   vh: "browserTelemetryAttributes",
@@ -299,7 +299,7 @@ function fixture(factory: any, flags: any = {}) {
     BrowserContext: Context,
     configureBackendTelemetry: () => {},
     configureTurnTelemetry: () => {},
-    recordCommandUsage: (v: any) => trace.push(["usage", v]),
+    assertCommandSupported: (v: any) => trace.push(["usage", v]),
     browserCommands: [
       "known",
       "download",
@@ -332,6 +332,16 @@ function fixture(factory: any, flags: any = {}) {
     reportCommandRecovery: () => ({ serial: true }),
     closeTabCommand: { type: "close" },
   };
+  if (flags.realPolicies) {
+    for (const key of [
+      "securityCheckAttributes",
+      "assertCommandSupported",
+      "reportCommandRecovery",
+      "release",
+    ])
+      delete deps[key];
+    runtime.setResponseMeta = (meta: any) => trace.push(["policy.meta", meta]);
+  }
   if (flags.realRecording) {
     for (const key of [
       "createCommandRecorder",
@@ -715,5 +725,41 @@ test("runtime composes restored recorders and response metadata with after-code 
   const count = metas.length;
   await f.hooks[0].run();
   assert.equal(f.trace.filter((x) => x[0] === "actual.meta").length, count);
+  await f.factory.dispose();
+});
+
+test("runtime defaults emit restored recovery metadata through credential scheduler", async () => {
+  const state = createCredentialObservationState();
+  const gate = state.getGate("browser-1", {
+    on() {},
+    removeListener() {},
+    async call() {
+      return { frameTree: { frame: { id: "frame", loaderId: "protected" } } };
+    },
+  });
+  await gate.protect(3);
+  const f = fixture(createCommandRuntimeFactory, {
+    realPolicies: true,
+    scheduling: createCommandScheduling(state),
+  });
+  const r = await f.factory.createRuntime({}, f.runtime);
+  await assert.rejects(
+    r.executeAgentCommand({
+      type: "get_tab",
+      browser_id: "browser-1",
+      tab_id: 3,
+    }),
+    (error: any) =>
+      error.details.reason === "credential_observation_restricted",
+  );
+  const meta = f.trace.find((x) => x[0] === "policy.meta")[1][
+    "codex/browserCredentialRecovery"
+  ];
+  assert.equal(meta.next_action, "navigate_to_new_document");
+  assert.equal(meta.browser_client_version, "1.0.0");
+  assert.equal(meta.bundled_browser_version, "0.1.1");
+  assert.equal(meta.guard_state_before, "protected");
+  assert.equal(meta.credential_binding_version, "unknown");
+  assert.equal(f.trace.filter((x) => x[0] === "context").length, 0);
   await f.factory.dispose();
 });
