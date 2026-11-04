@@ -4503,6 +4503,24 @@
       "status": "readable-typed-component-not-yet-assembled-into-full-injected-helper",
       "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
       "validation": "Direct original-expression differential comparisons for whitespace cache/reset, escaping, internal JSON vs external quote parsing, immediate vs normalized strict text, lax and stateful regex matching, assertion flag/normalization/precedence and class-list errors. Full hF injection remains outstanding."
+    },
+    "packages/browser/src/service/playwright/injected/dom_text.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "embeddedSource": "hF",
+      "embeddedSha256": "7970824c76e6bb9f77ad7617e2f3f86d9704bdcd4c2218c7a7bdf5f6a9499d23",
+      "symbols": [
+        "qt",
+        "q",
+        "st",
+        "Ar",
+        "le",
+        "Wr",
+        "dn"
+      ],
+      "status": "readable-typed-component-not-yet-assembled-into-full-injected-helper",
+      "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
+      "validation": "Real Chromium comparison against selected original embedded functions: recursive and immediate DOM text, comments and skipped head/script/style/noscript, input button/submit values, shadow roots, label precedence, root-scoped ordered IDREF deduplication, exact space splitting, detached/fragment roots and cache identity/clear. Explicit output assertions complement differential checks. Full InjectedScript and helper assembly remain incomplete."
     }
   },
   "embeddedPackages": {

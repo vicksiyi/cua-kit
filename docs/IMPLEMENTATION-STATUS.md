@@ -822,3 +822,11 @@ Extracted the installed service's hF literal for local analysis (154469 characte
 Added an AST-only embedded-source reader and differential matrices against the actual selected original functions. The source reader decodes only the hF string literal and does not execute the service or full injected script. This component is not yet assembled into the full injected helper and does not replace the host's required injectedSource; selector engines, DOM/accessibility utilities and the InjectedScript class still need restoration and assembly. Updated source provenance to distinguish this component from full helper completion and record the previous real-page integration results.
 
 Validation: standalone reconstruction type checks and full rebuild/test pass, 583 tests total.
+
+### 16.189 Embedded injected helper: DOM text, root scope and labels
+
+Added readable typed reconstruction of hF qt/q/st/Ar/le/Wr/dn in `playwright/injected/dom_text.ts`, reusing the reconstructed whitespace/text matcher. Covers recursive versus immediate text, skipped head/script/style/noscript nodes, button/submit input values, shadow-root text, none/self/selfAndChildren classification, enclosing query roots, ordered deduplicated ID references, and aria-labelledby/aria-label/native-label precedence. Preserves node-identity caches and the original literal-space IDREF split rather than silently broadening it to all whitespace.
+
+A real Chromium comparison runs selected original expressions and the compiled reconstructed modules against the same synthetic DOM, with explicit expected results for text chunks, shadow labels, form values, matching classification, reference order and cache clearing. No full vendor script is evaluated. The component remains unassembled into the complete injected helper; full selector engines, accessibility utilities and InjectedScript are still outstanding, along with native apps, production host and real-model Agent integration.
+
+Validation: all three reconstructed packages compile and all 584 reconstruction tests pass.
