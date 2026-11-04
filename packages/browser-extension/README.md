@@ -706,3 +706,21 @@ with explicit service fixtures and compared with this entry across normal startu
 disabled side panel, missing side-panel API, lease recovery failure, gate failure,
 turn-end fallback failure and telemetry startup failure. These are orchestration
 differential tests, not live website/account acceptance.
+
+### WebMCP registration boundary
+
+`webMcpContentScripts`, `createWebMcpRegistration` and `createWebMcpGate` restore
+Wf/zk/Kf/Zf/Vk/Wk. Foundation now provides `createWebMcpConfig`, binding real Chrome
+scripting APIs to the caller's feature subscription. Registration adds only missing
+IDs, uses separate MAIN/ISOLATED document-start scripts and does not persist across
+browser sessions. The queue skips obsolete desired values, distinguishes requested
+from applied state, attempts disabling after an application failure, and waits for
+a stable queue before reporting enabled.
+
+Differential tests execute the installed definitions across empty/partial/complete
+registrations, rapid changes, changes during an in-flight apply, registration and
+cleanup failures, and subscription failure. The inspected extension build references
+`content-scripts/webmcp.js` and `content-scripts/webmcp-bridge.js`, but neither file is
+present in that installed build. Available @oai WebMCP documentation does not replace
+those assets. No substitute scripts were invented, and this capability remains
+unavailable/unverified in the independent deployment.

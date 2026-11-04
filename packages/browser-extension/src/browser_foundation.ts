@@ -1,3 +1,4 @@
+import { createWebMcpGate, createWebMcpRegistration } from "./web_mcp_registration";
 import { createBrowserManagement } from "./browser_management";
 import { extensionBrowserProtocol } from "./browser_protocol";
 import { createTabReader } from "./tab_read";
@@ -243,6 +244,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     }));
   }
   return {
+    createWebMcpConfig(dependencies: Pick<Parameters<typeof createWebMcpGate>[0], "subscribeGate" | "warn">) {
+      return createWebMcpGate({ ...dependencies, apply: createWebMcpRegistration(host.chrome.scripting) });
+    },
     registerBackgroundKernel<Pdf>(
       dependencies: Omit<Parameters<typeof registerAssembledBackgroundKernel<Pdf>>[0], "runtime">,
     ) {

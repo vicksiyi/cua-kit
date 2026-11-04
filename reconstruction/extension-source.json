@@ -161,7 +161,8 @@
     "Ds createElicitation + Lt/yl/Sl": "createKernelElicitation and original object/property envelope guards; preserve host signal/meta/default schema and response boundaries",
     "$g/jg": "CloudRequirementsClient uses actual parser by default; cloud settings and requirements cache/queue behavior restored",
     "Mg/fl/Lg/pl/Dg/Ng/ml + validators": "parseCloudRequirements: reverse layer precedence, per-layer validation, recursive plain-object merge and normalized browser/network/features",
-    "dR full startup": "startExtensionBackground: complete startup ordering, shared native/kernel handler, lazy mention observation, runtime routing, lifecycle, telemetry barrier and dual heartbeat; actual production service binding remains required"
+    "dR full startup": "startExtensionBackground: complete startup ordering, shared native/kernel handler, lazy mention observation, runtime routing, lifecycle, telemetry barrier and dual heartbeat; actual production service binding remains required",
+    "Wf/zk/Kf/Zf/Vk/Wk": "webMcpContentScripts/createWebMcpRegistration/createWebMcpGate: temporary MAIN/ISOLATED registration, serialized latest-state application, failure cleanup and stable enabled observation"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
@@ -252,5 +253,14 @@
       "telemetry-error"
     ],
     "limit": "This proves orchestration against the inspected build; fixtures do not establish actual ChatGPT auth, website, sidebar or standalone kernel deployment."
+  },
+  "webMcpAssetBoundary": {
+    "referencedFiles": [
+      "content-scripts/webmcp.js",
+      "content-scripts/webmcp-bridge.js"
+    ],
+    "installedBuildContainsFiles": false,
+    "verification": "Read-only file inventory of the hash-recorded extension version found neither referenced content script; @oai inventory has WebMCP documentation, not these script assets",
+    "consequence": "Registration/controller logic is restored; content-script execution and feature availability remain unproven. No substitute assets or forced feature enablement were added."
   }
 }

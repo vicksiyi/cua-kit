@@ -149,3 +149,5 @@ export { startNativeBrowserBackground } from "./native_background";
 export { createBackgroundMentionInvalidationStarter } from "./background_mentions";
 
 export { startExtensionBackground, type BackgroundStartupHost } from "./background_startup";
+
+export * from "./web_mcp_registration";
