@@ -8,7 +8,7 @@ Resources: kernel, diagnostics, privileged host bridge, privileged config bridge
 
 Restored so far:
 
-- `src/kernel_bindings.ts` and `src/kernel_instrumentation.ts`: original binding collection/reassignment analysis and commit-marker source rewrites; module assembly is in `src/kernel_module_builder.ts`; module resolution is in `src/kernel_module_resolver.ts`; complete kernel loading/linking/execution remains pending.
+- `src/kernel_bindings.ts` and `src/kernel_instrumentation.ts`: original binding collection/reassignment analysis and commit-marker source rewrites; module assembly is in `src/kernel_module_builder.ts`; module resolution is in `src/kernel_module_resolver.ts`; loading/linking/evaluation is in `src/kernel_module_loader.ts`; full kernel bootstrap/execution-loop assembly remains pending.
 
 - `src/tracing.ts`: execution-scoped response metadata spans, async parent propagation, bounded/sanitized attributes, result/error tagging and dropped-span accounting; uses Node built-ins.
 - `src/realmChecks.ts`: cross-realm ArrayBuffer brand check through the native getter.

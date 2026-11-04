@@ -1320,3 +1320,15 @@ Package imports use the referring package directory while submitted code searche
 Three differential tests compare original extracted functions against the restoration on temporary files/packages: builtin errors, unsupported specifiers and file validation, search precedence, ESM/CJS classification, missing/nonexported packages, package-context containment and symlink escape, and import.meta fields. A test assertion initially compared /var and /private/var spellings on macOS; fixture root canonicalization fixed that assertion without changing implementation behavior.
 
 Validation: seven-package build/type checks and all 733 reconstruction tests pass with concurrency 4.
+
+### 16.237 Kernel module loading/linking/evaluation
+
+Restored kernel_module_loader.ts and connected it to the original resolver. Node SourceTextModule handles file/ESM-package source, while SyntheticModule bridges native-import namespaces for static links. Builtins and CommonJS packages retain the original native dynamic-import path. Module contexts preserve the distinction between submitted-code files and persistent package files while sharing the runtime context.
+
+File module instances are cached before recursive linking, retaining cycle support. Per-context link tails serialize link work and recover after rejection; failed link attempts remove only newly created matching cache entries. Evaluation promises are cached, including failures. Local cache clear removes local file/evaluation entries while preserving package entries and native caches. Dynamic import returns namespaces as the original does; the TypeScript boundary accommodates Node's broader runtime return contract.
+
+Three differential subprocess tests execute original extracted functions and restored loader/resolver with real Node VM modules and temporary synthetic files/packages. Verified circular imports, concurrent evaluation identity/count, dynamic and builtin imports, CommonJS namespace handling, local cache invalidation versus package persistence, link-failure repair/retry and evaluation-failure persistence until cache clear. No installed native executable or personal app is used.
+
+The standalone loader is complete at this layer; kernel bootstrap, complete execution/response loop and failed-cell state promotion/recovery still require assembly. Native supervisor/isolation and real-model integration remain outstanding.
+
+Validation: seven-package build/type checks and all 736 reconstruction tests pass with concurrency 4.
