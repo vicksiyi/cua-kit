@@ -2,5 +2,8 @@
   "name": "@core/sky",
   "version": "0.7.13-reconstructed.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@core/core": "0.0.0-reconstructed.0"
+  }
 }
