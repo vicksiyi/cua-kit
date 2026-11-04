@@ -1,3 +1,4 @@
+import { createWebsiteBridge } from "./website_bridge";
 import { createSidePanelAuthHandler } from "./side_panel_auth";
 import { createSidePanelMessageHandlers } from "./side_panel_messages";
 import { createToolbarStateReporter } from "./toolbar_state";
@@ -211,6 +212,15 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    createWebsiteBridge(
+      reportFailure: Parameters<typeof createWebsiteBridge>[0]["reportFailure"],
+    ) {
+      return createWebsiteBridge({
+        chrome: host.chrome,
+        withTimeout: contentRuntime.withTimeout,
+        reportFailure,
+      });
+    },
     createSidePanelAuthHandler(
       workUrl: string | null | undefined,
       onAuthState?: () => void,

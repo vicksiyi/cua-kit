@@ -552,3 +552,8 @@ Side-panel authentication now restores the original queued operation manager, lo
 logout/open tab reuse, exact sender gate, state completion, expiry and removal handling.
 Foundation binds Chrome and its clock; auth-refresh callback remains explicit. This is
 not a real sign-in verification or full background lifecycle integration.
+
+Website bridge refresh now restores per-document handshake deduplication, timed version
+ping, injection and repeat handshake, active-document failure metrics and independent
+plugin-change notifications. Foundation reuses the restored content-runtime timeout;
+startup/lifecycle registration remains pending.

@@ -2661,3 +2661,29 @@ replacement and installed/native/model end-to-end validation remain incomplete.
 
 Validation: eight package builds/type checks and all 895 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Website content bridge injection and refresh
+
+Restored Cf/nk/Do/pm as createWebsiteBridge and websiteTabPatterns. Refresh queries the
+original channel-specific URL patterns, ignores discarded/missing-ID tabs and rejects
+inactive or disallowed main frames. Concurrent refreshes share one handshake promise
+per document; each notifying caller still sends its own plugins-changed message.
+Settled handshakes are removed so later refreshes verify the document again.
+
+The handshake reuses the restored content-runtime timeout: ping version, inject the
+website content bundle when needed, then ping again. Failed injection/handshake triggers
+an asynchronous diagnostic only while the same document remains active. Per-tab errors
+are allSettled while query failure propagates, retaining original boundary behavior.
+Foundation exposes a factory bound to shared Chrome and timeout components.
+
+Two source-differential tests cover channel patterns and eleven integration modes,
+including held concurrent pings, repeated refresh, timeouts, injection/version failure,
+navigation, inactive frames, query/frame/notification failure and development loopback.
+Chrome and timer APIs are fixtures; no real installed page was injected. No third-party
+library was required by this inspected closure.
+
+Complete startup/lifecycle/auth-refresh wiring, panel UI, native replacement and
+installed/native/model integration remain incomplete.
+
+Validation: eight package builds/type checks and all 897 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

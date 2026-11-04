@@ -64,3 +64,5 @@ export * from "./toolbar_state";
 export * from "./side_panel_messages";
 
 export * from "./side_panel_auth";
+
+export * from "./website_bridge";
