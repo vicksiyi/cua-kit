@@ -2384,3 +2384,28 @@ model/desktop integration remain outstanding.
 
 Validation: all eight package builds/type checks and all 868 default regressions pass
 with zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### MAIN-world work preload and media permission bridge
+
+Restored codex-work-preload.js v.main and the production MAIN-world entry. Valid
+extension ancestor origins set the non-writable/non-enumerable/non-configurable
+side-chat marker before the surface/media guards. Matching surfaces wrap getUserMedia,
+query requested microphone/camera permissions, register one-shot change listeners for
+prompt states before notifying the parent, and call the captured bound media method
+after permission changes. Denied changes retain the original NotAllowedError. An
+already-denied permission is passed through to the native method, as in the source.
+No new timeout, retry, cleanup or permission policy was invented.
+
+The build emits codex-work-preload.js as a fourth content script. The MAIN wrapper
+uses upstream defineContentScript directly and deliberately does not construct the
+ISOLATED-world ContentScriptContext, matching the installed artifact.
+
+Two tests compare full original and built scripts across fifteen host-fixture scenarios:
+ancestor/surface/media guards, property descriptor, audio/video/no-media constraints,
+receiver binding, reinjection, query/native failures, single/both prompt waits and denial.
+No camera/microphone permission prompt or real media capture occurs. Real installed
+extension parent routing remains unverified. Remaining website content script, full
+background startup, auth orchestration and native/model integration are still open.
+
+Validation: all eight package builds/type checks and all 870 default regressions pass
+with zero failures/skips. The separate native-supervisor suite was not rerun.

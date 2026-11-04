@@ -49,3 +49,16 @@ await build({
   footer: { js: "sideChatTabMentions = sideChatTabMentions.startup;" },
   legalComments: "eof",
 });
+
+await build({
+  entryPoints: ["packages/browser-extension/src/work_preload_entry.ts"],
+  outfile:
+    "packages/browser-extension/dist/content-scripts/codex-work-preload.js",
+  bundle: true,
+  format: "iife",
+  globalName: "codexWorkPreload",
+  platform: "browser",
+  target: "chrome120",
+  footer: { js: "codexWorkPreload = codexWorkPreload.startup;" },
+  legalComments: "eof",
+});

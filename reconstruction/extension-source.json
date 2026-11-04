@@ -167,5 +167,12 @@
       "J/se": "side_chat_mentions_entry.ts production definition/startup with direct WXT runtime"
     },
     "validation": "Trusted Chromium gesture/search/expiry/port/DOM tests; parent handshake under explicit host fixtures; full entry outside extension ancestry. Installed eligible extension iframe not yet tested."
+  },
+  "workPreloadContentScript": {
+    "path": "content-scripts/codex-work-preload.js",
+    "bytes": 1954,
+    "sha256": "bda10ae0882eeb01fe38e68c96a0f51785e71393609abf7764d087ff6a5de8e9",
+    "restored": "work_preload.ts v.main and work_preload_entry.ts MAIN-world wrapper; defineContentScript directly reused, no ContentScriptContext in original",
+    "validation": "Full original and rebuilt scripts evaluated in isolated VM with explicit window/navigator/permission fixtures; no real media permission requests."
   }
 }

@@ -497,3 +497,7 @@ The side-chat tab mention content script is now built with direct upstream WXT.
 It restores trusted-interaction search allowance, parent capability handshake, streamed
 candidate DOM events and cleanup. Eligible extension-parent handshake currently has
 explicit host-fixture coverage; installed-extension integration is still pending.
+
+The MAIN-world codex-work-preload entry is now built separately. It restores the
+extension-parent marker and media-permission bridge before invoking native getUserMedia.
+Full-script differential tests use explicit permission fixtures, not real media capture.
