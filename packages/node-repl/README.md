@@ -13,5 +13,6 @@ Restored so far:
 - `src/worker_values.ts`: descriptor-only error properties, object freezing/log formatting, byte views and image URL/MIME normalization.
 - `src/background_operations.ts`: lazy rejected thenables and background-operation observation tracking.
 - `src/exec_context.ts`: AsyncLocalStorage context with separate originating-store and active-execution checks.
+- `src/worker_runtime.ts`: original worker assembly, output/media bridge, execution metadata, error kinds, background draining, response settlement and JSONL stdin/stdout lifecycle.
 
-The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The kernel/worker/privileged bridge restoration and supervisor integration remain outstanding.
+The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The shared worker runtime is restored and tested in isolated Node subprocesses. Kernel/privileged bridge restoration and supervisor integration remain outstanding.

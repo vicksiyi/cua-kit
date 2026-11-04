@@ -1208,3 +1208,15 @@ background_operations restores deferred rejected thenables and pending-task obse
 Four differential tests use the extracted original worker functions and original realm helper. They cover inherited/accessor/proxy error properties, frozen cycles, cross-realm views, media signatures and invalid inputs, thenable settlement/observation combinations, and overlapping asynchronous call contexts. The worker bridge, request settlement/JSONL listener, kernel and trusted capabilities are still pending; these helper tests do not prove a complete NodeREPL server.
 
 Validation: seven-package build/type checks and all 700 reconstruction tests pass with concurrency 4. Native supervisor/process isolation, full worker/kernel integration, native/AX resources and actual-model integration remain incomplete.
+
+### 16.227 Shared NodeREPL worker runtime assembly
+
+Restored createWorkerRuntime and its nodeRepl bridge using the preceding value/context helpers. Includes write item validation/output events, image/audio request counters and response callbacks, optional audio method exposure, metadata cloning/freezing, original extra-field overrides, descriptor-safe error classification in a private WeakMap, console routing, and repeated background-task draining with unobserved rejection tagging.
+
+Preserved JSONL process behavior: stdin bytes are buffered until newline so split UTF-8 survives; CRLF and blank lines are handled; malformed JSON frames are ignored; pending response resolvers are removed before invocation. EOF exits even with user-created live handles. stdout EPIPE exits cleanly; other stream errors remain fatal. No substitute transport or parser protocol was introduced.
+
+Three tests run both extracted original and reconstructed runtime in disposable Node subprocesses, compare metadata/error/output/drain results, exchange fragmented real stdin/stdout media requests, verify request success/failure and pending cleanup, and check EOF/EPIPE/non-EPIPE termination. The tests do not run the installed supervisor, access a real app, or record actual audio.
+
+Shared worker assembly is now present, but kernel execution/module loading, privileged bridge, trusted-worker orchestration and the native supervisor/security boundary remain incomplete, as do native/AX resources and actual-model integration.
+
+Validation: seven-package build/type checks and all 703 reconstruction tests pass with concurrency 4.
