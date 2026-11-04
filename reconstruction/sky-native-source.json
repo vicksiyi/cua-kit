@@ -65,6 +65,8 @@
     "targets/linux/click.js": "d4e4d2b4bf6048173f6752b0a1caf1c01a9abd2a93fa1aef61c1c273d2cc6ccf",
     "core/cli.js": "2c93f5b2abde4dbfb0e2ceb9fa724c883d30f61eb937cb9b51ba65f708e9c094",
     "targets/linux/audio_recording.js": "2765d8b304ec21d1c76c8a43a56e169ab888160420f6a5fe14c577ca946cf544",
-    "targets/linux/create_client.js": "5ecbf120d4aa74e9b3672a8e1974220a18f2931bf8badb724ac56f13f0e0c0ec"
+    "targets/linux/create_client.js": "5ecbf120d4aa74e9b3672a8e1974220a18f2931bf8badb724ac56f13f0e0c0ec",
+    "targets/windows/internal/codex_turn_metadata.js": "284ca7197ed514ca272c728d6ab0eda116f4fc44b3485435c004adcf2d95f3fb",
+    "targets/windows/internal/helper_transport.js": "ddade82306b88d3b4c35206567e16ef0fdf8999634e03380bdf12ca229dba4f1"
   }
 }

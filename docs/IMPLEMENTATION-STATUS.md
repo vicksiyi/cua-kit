@@ -1138,3 +1138,13 @@ Assembled the Linux factory with copied options, shared ActionSettler/ElementIds
 Three new tests compare original implementations with actual subprocesses: CLI input/env/output/exit handling; synthetic pactl/ffmpeg executables for concurrent starts, invalid durations, readiness, successful stop, early exit, failed stop and empty/failed sink discovery; and factory method order/audio flags. Only synthetic helper code is placed at the head of test PATH, recordings are fixed temporary bytes, and environment/temp files are restored afterward. No real audio or PulseAudio session is accessed.
 
 Validation: six-package build/type checks and full 670-test suite pass with concurrency 4. Linux and Mac JS factories are now assembled. Windows client, top-level Sky export/routing, external NodeREPL, native executable/AX resources and actual-model integration remain incomplete; native desktop behavior has not been proven by synthetic helper tests.
+
+### 16.220 Windows approval and turn-scope protocol
+
+Restored Windows codex_turn_metadata merging: environment metadata then host request metadata, nested turn fields, removal of the wrapper key and preservation of a nonempty outer approved-app value. Restored helper protocol pieces for approved-app/request-budget metadata, approval parsing, app/audio elicitation, audio/no-persistence rejection of global/always approvals, and original caller-ID prompt behavior.
+
+Restored turn-scope/home helpers: Windows/UNC normalization, /mnt drive conversion, WSL path translation/fallback, USERPROFILE/home defaults, unchanged nonempty session/turn values, NUL-separated scope keys and sanitized interruption-marker paths. Marker access and swallowed write failures preserve the original semantics. The physical-Escape stop message and marker protocol are retained, but transport enforcement is still to be wired in the next stage. Tests inject filesystem/process capabilities, never touching personal interruption records or launching WSL.
+
+Four tests compare original selected functions for metadata precedence, app/audio approval matrices, request-budget insertion, home/path/WSL normalization, scope keys and marker helpers. Initial oracle selection accidentally chose an outer function containing the parser; selecting the smallest matching function fixed the fixture without changing production code. The strengthened budget oracle test also passes.
+
+Validation: six-package build/type checks and full 674-test suite pass; focused protocol tests pass after oracle strengthening. Windows helper transport/client/factory, top-level Sky exports, external NodeREPL, native/AX resources and actual-model integration remain incomplete.
