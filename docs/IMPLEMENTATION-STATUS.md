@@ -2040,3 +2040,24 @@ auth/monitor components, real desktop/model integration and native source remain
 incomplete. Tests use the original renderer boundary with an explicit tracing fixture.
 
 Validation: all eight reconstructed packages built and passed type checks; all 827 default regression tests passed, including the real Chromium overlay-root comparison. The separate native-supervisor suite was not rerun.
+
+
+### 16.272 Overlay state and message controller
+
+Restored Dn/Pn/qe/wn as overlay_controller.ts. It retains state normalization and
+finite-coordinate checks, top-frame-only animator creation, original asset URL and
+glow color, visibility/turn keys, viewport dimensions, arrival notifications,
+request generation checks, pageshow refresh, resize handlers and disposal ordering.
+The rn animation engine remains an explicit required factory; no simpler animation
+is substituted. The inspected controller uses DOM/Chrome APIs and standard JS.
+
+A guard matrix compares original normalization. A real Chromium differential test
+runs top and child frames, comparing exact DOM and message/animator traces, including
+stale initial responses, out-of-order pageshow responses, arrival identity and late
+responses after disposal. The animator itself is a tracing fixture in these tests.
+
+Animation, complete content startup/framework reuse, production extension/native
+host, remaining auth/monitor components, real desktop/model integration and native
+source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 829 default regression tests passed. The separate native-supervisor suite was not rerun.

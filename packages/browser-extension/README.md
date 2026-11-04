@@ -311,7 +311,7 @@ message acknowledgements. This is not yet a packaged replacement content script.
 `createOverlayRoot` restores Q/T/Hn/ze: closed shadow root/style/container creation,
 owned stale-root replacement, foreign ID collision handling, observer retargeting,
 renderer disposal and suppression after site removal until documentElement changes.
-The Dn renderer is a required dependency, never a silent placeholder. Chromium
+The Dn controller is restored below; its rn animation engine remains required. Chromium
 differential tests cover normal/stale/conflicting roots, reparenting, removal and
 document replacement with exact lifecycle and DOM comparisons.
 
@@ -319,3 +319,15 @@ The content startup tail also contains `wxt:locationchange` and
 `wxt:content-script-started` runtime signatures. Its upstream package/version must
 be established before reuse; this milestone does not rebuild that framework. Full
 renderer/content startup assembly and installed-extension validation remain pending.
+
+### Overlay state/message controller
+
+`createOverlayController` restores Dn/Pn and qe/wn state validation. It creates the
+aria-hidden overlay element, animates only in the top frame, tracks state-request
+generations, sends cursor-arrival notifications, refreshes on pageshow/resize and
+removes listeners/DOM on disposal. The original rn animation engine is still an
+explicit required factory; it is not replaced with a simplified effect.
+
+State validation and real Chromium top/iframe differential tests compare original
+message, animator-boundary, DOM and cleanup traces, including stale replies after
+new state/disposal. These tests use a tracing animator and do not verify animation.
