@@ -1298,3 +1298,15 @@ Instrumentation retains original generated source for declaration commit markers
 Three differential tests compare original functions extracted from kernel.js and reconstructed functions. Tests compare binding results and generated text, then execute synthetic generated programs in disposable VM contexts to compare commit marker sequences and errors. Cases cover partial initialization, destructuring failures, empty/populated loops, logical assignments, failed writes, shadowing and unsupported nested recovery. Kernel module assembly, linking/evaluation and cell state integration are not yet complete.
 
 Validation: seven-package build/type checks and all 727 reconstruction tests pass with concurrency 4.
+
+### 16.235 Kernel module source assembly and committed bindings
+
+Restored kernel_module_builder.ts from buildModuleSource/canReadCommittedBinding/collectCommittedBindings. It combines upstream Meriyah, restored binding analysis/instrumentation and diagnostic redaction. Previous state and the shared internal-name allocator remain owned by the kernel and are supplied to the builder. Generated source preserves the @prev prelude, const reassignment downgrade/warnings, current-binding overrides, merged exports, and import.meta marker aliasing/deletion before submitted code starts.
+
+Committed binding collection retains prior bindings, includes explicitly marked declarations/writes, and recovers readable lexical namespace values even when a later step in the same destructuring declaration throws. Unmarked hoisted var/function values do not count as initialized. Parser calls retain the original runtime options and token record handling; an explicit TypeScript boundary accounts for upstream declarations that describe tokens differently and omit the source's legacy disableWebCompat option.
+
+Three differential tests compare original extracted functions and restored functions, including generated source, diagnostic redaction, warning sets and salted allocator progression. Generated modules are also linked/evaluated with actual Node SourceTextModule/SyntheticModule in disposable subprocesses: prior x=4 becomes x=6/answer=12, private import.meta hooks disappear, partial destructuring leaves a readable while b remains in TDZ, and writes before future var declarations retain their markers. These tests do not implement or claim the complete kernel linker/execution loop.
+
+Remaining: kernel module resolution/linking/evaluation orchestration, cell-state promotion/recovery, native supervisor/isolation and real-model integration.
+
+Validation: seven-package build/type checks and all 730 reconstruction tests pass with concurrency 4.
