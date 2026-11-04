@@ -598,3 +598,7 @@ Constructed-client and default-service tests use mock fetch and cover initializa
 identity changes, evaluation, subscriptions, metric flush and shutdown. No external Statsig
 service is contacted. Production extension startup, installed browser/native integration
 and actual model end-to-end verification remain pending.
+
+createBackgroundMessageRouter restores dR runtime message precedence, settings refresh,
+popup replies and leased page-event forwarding. Foundation binds runtime identity and
+the lease manager. Full production listener registration/startup is still pending.

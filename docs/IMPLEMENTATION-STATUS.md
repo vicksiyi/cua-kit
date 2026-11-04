@@ -3040,3 +3040,25 @@ App/model end-to-end validation remain unfinished.
 
 Validation: eight package builds/type checks and all 923 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Background runtime message routing
+
+Restored the dR runtime listener as createBackgroundMessageRouter, preserving instance,
+settings, auth, popup, page-event, mentions/status, installer, load, open and cursor
+precedence. Settings replies await all control refreshes and report whether all fulfilled.
+Popup returns true for its async reply. Page events return false and asynchronously use
+the active lease to replace session_id/tabId before broadcasting; absent leases/errors
+produce no broadcast. Installer/open handlers reply immediately but return false.
+
+Dp is restored as isBrowserPageEvent; it validates only object/version/string type and
+preserves inherited fields/arrays accepted by source. Foundation binds runtime identity
+and the restored lease manager; remaining handler/control/broadcast dependencies are
+explicit until full startup assembly. This does not yet register the production listener.
+
+Two differential tests extract the actual listener registration from dR without running
+startup, covering twenty dispatch modes plus page-event guard boundaries. Existing
+validators and concrete lease manager are reused in production code; test control/network
+callbacks are fixtures. Full connection/event wiring and startup remain incomplete.
+
+Validation: eight package builds/type checks and all 925 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

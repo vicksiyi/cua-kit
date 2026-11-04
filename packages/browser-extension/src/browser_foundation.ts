@@ -1,3 +1,4 @@
+import { createBackgroundMessageRouter } from "./background_messages";
 import { createExtensionFeatureService } from "./feature_service";
 import { createBrowserPluginInstallation } from "./plugin_installation_service";
 import {
@@ -217,6 +218,19 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     }));
   }
   return {
+    createBackgroundMessageRouter<Control>(
+      dependencies: Omit<
+        Parameters<typeof createBackgroundMessageRouter<Control>>[0],
+        "runtimeId" | "getActiveLease"
+      >,
+    ) {
+      return createBackgroundMessageRouter({
+        ...dependencies,
+        runtimeId: host.chrome.runtime.id,
+        getActiveLease: (tabId) =>
+          tabLeases.getInstance().getActiveLease(tabId),
+      });
+    },
     ChatApi,
     actionCallout,
     createFeatureService(

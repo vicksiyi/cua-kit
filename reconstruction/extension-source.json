@@ -150,7 +150,9 @@
     "vs diagnostics": "ExtensionStatsigDiagnostics: shared public marker storage, syncType marker/event metadata, hasInternet response diagnostics",
     "Vm client lifecycle": "statsigClientLifecycle: sync/async initialize, updateUserAsync, refreshValuesAsync and async implementations with restored sync diagnostics",
     "Vm constructor assembly": "ExtensionStatsigClient constructs shared extended network, store, adapter and scheduler before plugin binding; reuses pinned SDK ordinary prototype methods",
-    "zm adapter attachment": "ExtensionStatsigDataAdapter preserves extended network class identity and avoids public adapter replacement network"
+    "zm adapter attachment": "ExtensionStatsigDataAdapter preserves extended network class identity and avoids public adapter replacement network",
+    "dR runtime message listener": "createBackgroundMessageRouter: handler precedence, settings allSettled, popup replies, leased page event broadcasting",
+    "Dp": "isBrowserPageEvent permissive version/type envelope guard"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
