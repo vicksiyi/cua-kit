@@ -4513,3 +4513,12 @@ This closes the earlier uncertainty about missing same-path JS files for these t
 Added explicit `--computer` and token-free `--check-computer` demo modes. The generic AgentLoop stays unchanged; the demo calls restored `cua.listApps({emit:false})` through MCP and requires a successful structured inventory marker before allowing model execution. Empty successful inventories are valid. Tool errors, missing/invalid markers and invalid counts reject startup; trace messages are retained as initial model context on success. Computer-only CLI mode does not forward default browser endpoint settings.
 
 Typecheck, shell syntax and four combined computer/browser preflight tests pass. Real `npm run demo:deepseek -- --check-computer` reached the restored Sky/native transport but failed `Sky Computer Use native pipe startup failed`; default socket exists. No model request or App operation succeeded. This narrows the outstanding native acceptance boundary to service connection/startup, without claiming the cause or bypassing native restrictions.
+
+
+### Native App failure narrowed to sender authentication
+
+Added optional native-pipe metadata diagnostics alongside authenticated-fetch timing. It observes connect/close and bounded framed handshake/error responses, logs only sequence numbers, fixed labels and numeric JSON-RPC codes, and leaves all worker bytes unchanged. It never logs socket paths, raw errors, frame bodies or server version strings. Seven diagnostic tests and AgentLoop typecheck pass.
+
+The real computer-only probe at 2026-11-04 22:11:27–22:11:32 UTC observed 40 connections followed by 40 closes, with no handshake response. Correlated SkyComputerUseService system logs repeatedly state `Sender process is not authenticated` (sample 2026-11-05 06:11:32.830 Asia/Shanghai). This supersedes the earlier unknown startup failure cause: the installed native service rejects sender authentication. The observed logs do not identify the rejected executable or establish a supported standalone authorization procedure. No authentication/signature/permission bypass was attempted.
+
+Evidence is recorded in reconstruction/native-computer-runtime-evidence.json. Repeatedly launching the same standalone command cannot establish App acceptance while this restriction remains. A supported authorized host integration or an independently implemented native backend is still required; the restored JS client alone does not provide the native implementation. Browser extension connection is a separate boundary.

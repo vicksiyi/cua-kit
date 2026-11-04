@@ -1,4 +1,5 @@
 /** Independently authored host diagnostics. Never changes worker protocol bytes. */
+import { createNativePipeDiagnostics } from "./native-pipe-diagnostics";
 import { Transform } from "node:stream";
 import { performance } from "node:perf_hooks";
 
@@ -49,7 +50,9 @@ export function createRuntimeDiagnostics(
       /* Diagnostics are best effort. */
     }
   };
+  const nativePipe = createNativePipeDiagnostics(emit);
   function observe(message: any, direction: "request" | "response") {
+    nativePipe.observe(message, direction);
     if (!message || typeof message.id !== "string") return;
     if (direction === "request" && message.type === "authenticated_fetch") {
       if (pending.size >= maxPending) return;
@@ -133,6 +136,7 @@ export function createRuntimeDiagnostics(
     requests: stream("request"),
     responses: stream("response"),
     close() {
+      nativePipe.close();
       for (const entry of pending.values())
         emit(
           `fetch #${entry.sequence} ${entry.label} unresolved at worker exit (${Math.max(0, Math.round(now() - entry.started))} ms); no response observed`,

@@ -1,0 +1,19 @@
+{
+  "command": "CORE_CUA_RUNTIME_DIAGNOSTICS=1 npm run demo:deepseek -- --check-computer",
+  "requestUtc": "2026-11-04T22:11:27.400Z",
+  "resultUtc": "2026-11-04T22:11:32.955Z",
+  "result": "Sky Computer Use native pipe startup failed",
+  "nativePipeConnectionsObserved": 40,
+  "nativePipeClosuresObserved": 40,
+  "handshakeResponsesObserved": 0,
+  "serviceProcess": "SkyComputerUseService",
+  "serviceLogEvidence": {
+    "localTimezone": "Asia/Shanghai",
+    "sampleTime": "2026-11-05 06:11:32.830",
+    "message": "Sender process is not authenticated"
+  },
+  "interpretation": "Native transport connects but service authentication rejects sender during the correlated probe window. A socket file alone does not establish usable native App access. Logs do not identify the rejected executable or establish a supported standalone authorization path.",
+  "policyBypassAttempted": false,
+  "modelRequestPerformed": false,
+  "appOperationAcceptance": false
+}
