@@ -1254,3 +1254,15 @@ Three differential tests cover path/result/context errors, bytes and listener/co
 Full privileged-worker assembly, kernel/trusted-worker execution, native supervisor/isolation, native/AX resources and actual-model integration remain incomplete.
 
 Validation: seven-package build/type checks and all 715 reconstruction tests pass with concurrency 4.
+
+### 16.231 Complete privileged host API assembly
+
+Restored createPrivilegedWorkerRuntime and the composed Node REPL bridge. It inherits the base worker bridge and freezes the original own-property descriptors for config, launchServices, environment, elicitation/fetch, nativePipe, response metadata, content items, timeout suspension, lifecycle hooks, telemetry and best-effort audit logging. Telemetry/config getters retain live lookup behavior; privileged operation IDs and exec_id are bound to the captured active execution.
+
+LaunchServices validation preserves the exactly-one-target rule and trimming. Config/application requests use the restored host operation protocol and original missing-value/error fallbacks. withSuspendedTimeout sends resume in finally, including callback rejection, and remains a tracked background operation. Response metadata is cloned/merged and exported while content items and lifecycle hooks retain their original state/ordering.
+
+Three differential tests compare the complete original module and reconstructed factory using an in-memory base host: frozen descriptors/prototype inheritance, live getters, metadata/content/audit projection, application/config payload and response matrices, failure-safe timeout resume, hook registration/removal and composed elicitation. No configuration, app, approval UI or external network is touched.
+
+This completes the privileged API factory, not the trusted-worker executable entry or security supervisor. Kernel/module execution, trusted-worker orchestration/tracing, native supervisor/isolation, native/AX resources and real-model integration remain incomplete.
+
+Validation: seven-package build/type checks and all 718 reconstruction tests pass with concurrency 4.
