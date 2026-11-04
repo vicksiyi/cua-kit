@@ -96,3 +96,5 @@ export * from "./statsig_data_adapter";
 export * from "./background_messages";
 
 export * from "./background_runtime";
+
+export * from "./kernel_transport";

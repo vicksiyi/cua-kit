@@ -607,3 +607,7 @@ registerBackgroundRuntime now registers runtime connections/messages and existin
 event listeners, including lease recovery reporting and the original instance-ID init
 position. Foundation supplies lease and identity resources; full dR startup still needs
 transport/session/handler composition and its remaining prerequisites.
+
+Kernel transport now restores scoped kernel-host Port admission, replacement, close
+semantics and browser/control multiplexing. Foundation exposes registerKernelConnections;
+actual host-page/control execution and full startup composition are still pending.

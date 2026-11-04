@@ -1,3 +1,4 @@
+import { registerKernelConnections } from "./kernel_transport";
 import { registerBackgroundRuntime } from "./background_runtime";
 import { createBackgroundMessageRouter } from "./background_messages";
 import { createExtensionFeatureService } from "./feature_service";
@@ -219,6 +220,12 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     }));
   }
   return {
+    registerKernelConnections(
+      connected: Parameters<typeof registerKernelConnections>[1],
+      disconnected?: Parameters<typeof registerKernelConnections>[2],
+    ) {
+      registerKernelConnections(host.chrome.runtime, connected, disconnected);
+    },
     registerBackgroundRuntime(
       dependencies: Omit<
         Parameters<typeof registerBackgroundRuntime>[0],

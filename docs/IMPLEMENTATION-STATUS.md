@@ -3087,3 +3087,25 @@ native replacement and installed/browser/App/model end-to-end verification remai
 
 Validation: eight package builds/type checks and all 926 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel scoped Port transport
+
+Restored Gg/zg/Wg as the kernel Port transport, browser/control multiplexer and connection
+registrar. Only matching browser-use-kernel names, own extension sender, non-tab exact
+kernel-host path and matching scopeId are accepted; malformed eligible ports disconnect.
+Foreign sender/prefix ports are ignored. Replacement closes the prior scoped transport,
+and stale disconnections cannot remove a newer registration.
+
+Control messages add type=control; all other incoming messages route to browser callbacks.
+Closed sends throw. Close preserves sync listener throws, suppresses async rejections,
+allows listener removal and forwards runtime.lastError. Handler-construction failure closes
+the port before rethrowing. Foundation supplies the actual Chrome runtime.
+
+Two differential tests execute original Gg/zg/Wg over twelve admission/session modes and
+three close-listener modes. No production Chrome Port was connected. The actual kernel
+host page, scoped execution/control implementation, gate subscription and complete dR
+startup composition remain unfinished, alongside panel UI, native replacement and real
+browser/App/model end-to-end verification.
+
+Validation: eight package builds/type checks and all 928 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
