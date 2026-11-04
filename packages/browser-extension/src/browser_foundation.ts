@@ -1,3 +1,4 @@
+import { createSiwcServiceClass } from "./siwc";
 import {
   createPopupInterceptor,
   createPopupMessageHandler,
@@ -29,7 +30,7 @@ import {
 
 export interface ExtensionBrowserHost {
   chrome: typeof chrome;
-  crypto: Pick<Crypto, "randomUUID">;
+  crypto: Pick<Crypto, "randomUUID"> & Partial<Pick<Crypto, "subtle">>;
   now(): number;
   random?(): number;
   fetch?: typeof globalThis.fetch;
@@ -39,6 +40,12 @@ export interface ExtensionBrowserHost {
 }
 /** Project composition of restored closures; not a replacement for original full dR startup. */
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
+  const siwc = createSiwcServiceClass({
+    chrome: host.chrome,
+    crypto: { subtle: host.crypto.subtle ?? globalThis.crypto.subtle },
+    fetch: host.fetch ?? globalThis.fetch,
+    now: host.now,
+  });
   const contentRuntime = createContentRuntime(host);
   const ObservedTabs = createObservedTabsClass(host.chrome);
   const observedTabs = new ObservedTabs();
@@ -85,6 +92,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    Siwc: siwc.SiwcService,
     initializePopupInterceptor: popupInterceptor.initialize,
     overlay,
     favicons: tabFavicons,
@@ -141,6 +149,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     });
   }
   return {
+    siwc,
     contentRuntime,
     popupInterceptor,
     createPopupMessageHandler,

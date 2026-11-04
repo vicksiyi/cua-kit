@@ -942,7 +942,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
     {
       navigator: { userAgent: "fixture" },
       browserFamily: () => "chrome",
-      Siwc: class {} as any,
       buildChannel: () => "test",
       TabMentionProvider: class {
         getProviderTabId(id: number) {

@@ -2263,3 +2263,27 @@ source reconstruction remain incomplete. Browser runtime APIs in these tests are
 fixtures, not proof of installed-extension permissions or complete end-to-end delivery.
 
 Validation: all eight reconstructed packages built and passed type checks; all 850 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+### SIWC account context, browser grants and cookie installation
+
+Restored background Kp/Oc/Zp/Jp/Pc, Qc/el/Pr and py/xu/Pu into
+`packages/browser-extension/src/siwc.ts`. The service reads the ChatGPT session,
+checks the committed origin and incognito state, hashes the original account identity,
+rechecks the page origin, issues a bounded browser grant, and installs its bootstrap
+cookie. Cookie installations share one queue across instances within a runtime
+factory. Account/page changes after installation delete the cookie; all service
+errors retain the original generic error. Foundation supplies this actual service
+instead of requiring an external SIWC stub. The original auth request counter is
+exposed as an instrumentation hook for the still-unrestored auth cache/lifecycle.
+
+Four differential tests exercise account/grant/cookie traces, origin/account changes,
+HTTP failure and body cancellation, auth decoding, expiry boundaries, and serialized
+cross-instance installation with failure recovery. All HTTP/CDP inputs are fixtures;
+no real account grants or cookies were created. This inspected closure uses browser
+platform APIs directly and introduces no third-party dependency.
+
+Validation: eight-package build/type checks and 854 default regression tests pass.
+After removing the obsolete Foundation test stub, targeted tests and extension type
+checks also pass. Full auth cache/lifecycle, mentions, startup/install, native host,
+real desktop and model integration remain incomplete; native-supervisor tests were
+not rerun.

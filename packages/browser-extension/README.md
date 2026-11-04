@@ -471,3 +471,9 @@ trusted clicks, request cancellation, targets, return values, anchor behavior an
 cleanup. Browser APIs are explicit fixtures; user tabs are not modified. Foundation
 RPC integration checks popup child creation/claim/navigation and turn cleanup.
 Full background listener startup and installed-extension validation remain pending.
+
+SIWC now includes the original-derived auth-session reader, account context hash and
+origin recheck, browser grant parsing/issue, and runtime-shared serialized bootstrap
+cookie installation with account-change rollback. Foundation wires the restored
+service directly. Tests use fixture HTTP and CDP responses, not real authorization;
+the broader authentication cache/lifecycle and installed-extension setup remain open.
