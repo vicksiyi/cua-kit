@@ -3443,3 +3443,24 @@ Validation: generated emitted asset is byte-for-byte equal to the previous runti
 eight package builds/type checks and all 954 default regressions pass, zero failures/skips.
 Independent native-supervisor tests were not rerun. Full browser bundling still fails on
 the five recorded WASM-loader imports.
+
+### Browser QR entrypoint and WASM lookup
+
+Split common QR assembly into qr_shared, retaining the Node packaged resolver/export
+surface in qr. Added qr_browser selected by browser mappings for both source and emitted
+paths. It reuses zxing-wasm 3.1.2 and restores original extension gR's relative-then-root
+WASM lookup through context.filesystem.readBytes. Decoder accepts this explicit loader;
+Node fallback behavior remains unchanged. No Node resolver or filesystem polyfill enters
+the browser QR bundle. Asset placement remains a packaging responsibility.
+
+Source differential coverage checks lookup order and failure identity. A real Chromium
+test bundles the browser entrypoint, supplies a controlled host reader, loads the upstream
+WASM (SHA-256 0e8d688d71932ebb6b8b33f700d43d3cb997f59ed9cab3c05102d7f10288a392)
+and decodes the synthetic QR twice with one initialization. This does not imply the current
+kernel filesystem supports binary reads: its original rejection behavior is retained.
+Full command-runtime browser bundling now has only three unresolved Node imports, all in
+the AX WASM loader. Production installation/full browser service integration is pending.
+
+Validation: eight package builds/type checks and all 956 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun. Full browser
+bundling still fails on the three AX WASM Node-loader imports.

@@ -33,5 +33,9 @@
     "zod": "3.25.76",
     "zxing-wasm": "3.1.2",
     "@core/core": "0.0.0-reconstructed.0"
+  },
+  "browser": {
+    "./src/service/browser_auth/qr.ts": "./src/service/browser_auth/qr_browser.ts",
+    "./dist/service/browser_auth/qr.js": "./dist/service/browser_auth/qr_browser.js"
   }
 }

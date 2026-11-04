@@ -2,6 +2,7 @@ import { authQrCode } from "./qr_monitor";
 export interface AuthQrDecoderDependencies {
   /** Original browser-service module URL; host assembly supplies its packaged asset location. */
   moduleUrl: string;
+  loadWasm?(context: any): Promise<Uint8Array>;
   configureReader(options: { overrides: { wasmBinary: ArrayBuffer } }): unknown;
   readBarcodes(
     bytes: Uint8Array,
@@ -12,6 +13,7 @@ export interface AuthQrDecoderDependencies {
 export function createAuthQrDecoder(dependencies: AuthQrDecoderDependencies) {
   let initialization: Promise<void> | undefined;
   async function loadWasm(context: any) {
+    if (dependencies.loadWasm) return dependencies.loadWasm(context);
     try {
       return await context.filesystem.readBytes(
         new URL("./zxing_reader.wasm", dependencies.moduleUrl),
