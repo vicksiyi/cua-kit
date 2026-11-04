@@ -32,3 +32,5 @@ export * from "./popup_interceptor";
 export * from "./siwc";
 
 export * from "./chat_api";
+
+export * from "./tab_mentions";

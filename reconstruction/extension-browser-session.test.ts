@@ -943,14 +943,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
       navigator: { userAgent: "fixture" },
       browserFamily: () => "chrome",
       buildChannel: () => "test",
-      TabMentionProvider: class {
-        getProviderTabId(id: number) {
-          return `tab:${id}`;
-        }
-        getCapabilityInfo() {
-          return {};
-        }
-      } as any,
       getUserTabs: async () => [],
       getUserHistory: async () => [],
       validateTabId() {},
@@ -1031,7 +1023,16 @@ test("extension foundation shares identity, lease singleton and debugger state a
     ["tabGroups.update", 40, { color: "grey", title: "ChatGPT" }],
   );
   assert.equal(stored.leases[4].instanceId, info.metadata.extensionInstanceId);
-  assert.equal(uuidCalls, 1);
+  assert.equal(uuidCalls, 2); // profile identity plus tab-mention generation
+  assert.equal(info.browserTabMentions.protocolVersion, 1);
+  assert.equal(
+    info.browserTabMentions.generation,
+    sessionStorage.browserTabMentionGeneration,
+  );
+  assert.equal(
+    await handler.browserTabMentionProvider.getProviderTabId(4),
+    JSON.stringify([info.browserTabMentions.generation, "4"]),
+  );
   assert.equal(rules.length, 2);
   await peer.handleIncomingMessage({
     id: 20,

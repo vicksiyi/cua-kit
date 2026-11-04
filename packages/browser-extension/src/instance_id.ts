@@ -1,5 +1,5 @@
 /** Original us: reject unpaired UTF-16 surrogates. */
-function wellFormed(value: string) {
+export function wellFormed(value: string) {
   for (let index = 0; index < value.length; index++) {
     const code = value.charCodeAt(index);
     if (code >= 55296 && code <= 56319) {

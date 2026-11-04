@@ -1,3 +1,7 @@
+import {
+  createTabMentionProviderClass,
+  observeMentionInvalidations,
+} from "./tab_mentions";
 import { createChatApiClass } from "./chat_api";
 import { createSiwcServiceClass } from "./siwc";
 import {
@@ -59,6 +63,10 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const tabAudio = createTabAudioController(host.chrome);
   tabAudio.installObservedChangeHandler(observedTabs, overlay);
   const instanceId = createExtensionInstanceIdReader(host);
+  const TabMentionProvider = createTabMentionProviderClass({
+    ...host,
+    instanceId,
+  });
   const tabLeases = createTabLeaseManagerClass({ ...host, instanceId });
   const tabFavicons = createTabFaviconManagerClass({
     ...host,
@@ -97,6 +105,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    TabMentionProvider,
     Siwc: siwc.SiwcService,
     initializePopupInterceptor: popupInterceptor.initialize,
     overlay,
@@ -155,6 +164,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     ChatApi,
+    TabMentionProvider,
+    observeMentionInvalidations: (notify: () => void) =>
+      observeMentionInvalidations(host, notify),
     siwc,
     contentRuntime,
     popupInterceptor,

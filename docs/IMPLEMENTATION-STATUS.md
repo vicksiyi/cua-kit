@@ -2310,3 +2310,27 @@ installation/native host and desktop/model integration remain open.
 
 Validation: eight reconstructed packages build/typecheck successfully; all 856 default
 regression tests pass, with zero failures or skips. Native-supervisor tests were not rerun.
+
+### Tab mention provider, search and favicon update lifecycle
+
+Restored Xu/RS/OS/Yu and Ju/fi/yS/Na/SS/ES/TS/Rp into tab_mentions.ts.
+The provider persists its generation, shares/retries identity reads, validates queries,
+filters private/unsupported/ChatGPT tabs, sorts by recency with original tie-breakers,
+and caps mention results at 100. Generic search retains original zero-limit behavior;
+the provider's zero-limit path returns before querying tabs. Existing UTF-16 and stored
+identity validators are reused rather than duplicated.
+
+Favicon warmups preserve four concurrent reads, per-tab/page deduplication, candidate
+updates, and one invalidation when a successful batch drains. kS event observation
+preserves first-event 50ms coalescing, registration order and cleanup. Foundation now
+uses the actual provider instead of requiring a stub, exposes its class/observer,
+and the integration fixture checks persisted generation and provider tab identity.
+Full dR notification fanout and side-chat content-message wiring remain unfinished.
+
+Four source-differential tests cover guards/search/caps, identity failure recovery,
+warmup scheduling/subscriptions and event coalescing. No real user tabs or browser
+profile are read; Chrome APIs are fixtures. These source closures have no external
+library dependency. Native/platform and installed-extension/model delivery gaps remain.
+
+Validation: all eight package builds/type checks and all 860 default regressions pass
+(zero failures/skips). Separate native-supervisor tests were not rerun.

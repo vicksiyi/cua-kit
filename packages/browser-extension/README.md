@@ -482,3 +482,8 @@ The shared auth runtime now restores the original generation-based cached sessio
 readers (independent waiter cancellation). Foundation also exposes the restored
 ChatApi class with original HTTP errors, response handling, timeout and disposal.
 These primitives do not yet constitute the complete authentication orchestrator.
+
+Tab mentions now use the restored provider: validated search, stable generation and
+provider tab IDs, recency ordering, four-way favicon warmup and candidate updates.
+Foundation supplies it directly and exposes the original event invalidation observer.
+The full startup notification fanout and side-chat messaging are still pending.
