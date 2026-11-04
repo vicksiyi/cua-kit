@@ -36,6 +36,11 @@
     "sky.d.ts": "055fb57ead0562e49935152dade680c035d988a7a554266c5f46da2f4ac295e5",
     "load_options.js": "0ddd5df4674ae2696550cd2ac41583caef9dad9b58bd363559fda716c2ed8341",
     "targets/linux/accessibility_tree.js": "13eb68c11a64b7126dc9e1346a4a00634656ae1a3b5f7201a503703d5d7a64ec",
-    "targets/linux/accessibility_tree.d.ts": "4acd3b927d8dfdf497629f3067fd850265a51896c24363d61ac72916ee01a820"
+    "targets/linux/accessibility_tree.d.ts": "4acd3b927d8dfdf497629f3067fd850265a51896c24363d61ac72916ee01a820",
+    "targets/linux/element_ids.js": "cb69a5924a3655a56722d071d4224f79aec5aa37360fc87da031293c5fd51f35",
+    "targets/linux/action_settler.js": "1341a4cc821347b9323800e597c0c754e2e6aa4e8d7c036b47163b6d43a57591",
+    "targets/linux/sky_linux_transport.js": "c879f1b83dbc3cd5d0638c26ecffdd17c9cb6f39578b69bd653ee0c78a85664e",
+    "targets/linux/sky_linux.js": "598bc7a0135a39a327399ae06d28ff15f2ed2bb994b66a78c0eff2c615c9b286",
+    "core/package_bin.js": "fdfb9aebfb8ffb496c8ddc673ed1b2e6eed536888ad52147d7d91b5486e24b34"
   }
 }
