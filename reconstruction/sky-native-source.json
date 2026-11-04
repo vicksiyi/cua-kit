@@ -1,0 +1,11 @@
+{
+  "package": "@oai/sky",
+  "version": "0.7.13",
+  "files": {
+    "native-pipe.js": "51a1138a0f0d7f01fe5d4d0a4f0753c67b2c3f3ed55c7540c26d182274e116f4",
+    "native-pipe.d.ts": "7d0f1d8e2e0e66448e3c31fb0f7cc88e78385b5fd79fe1fdc8e09a4390026a72",
+    "errors.js": "9dd27e4cf0ea4456b3ad472fab8cbbe093ad1184d0cb25a8c05e738ee00cfd43",
+    "errors.d.ts": "276b1c1cdb9a92c6308065f3e4ae86e37cb5c6d5269f3e66b76f430e47cec491"
+  },
+  "note": "Installed errors.d.ts declares formatOSStatus but errors.js does not export it; runtime evidence takes precedence."
+}
