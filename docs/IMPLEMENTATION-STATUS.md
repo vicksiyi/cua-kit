@@ -1344,3 +1344,15 @@ Three differential tests launch the complete original embedded kernel JS and the
 The embedded JavaScript kernel entry is now runnable. This does not replace the compiled Rust supervisor, its isolation/permissions or MCP lifecycle; trusted-worker routing in these kernel tests uses a synthetic host. Native supervisor implementation/integration, actual kernel-to-trusted-worker service routing, native/AX resources and real-model end-to-end validation remain outstanding.
 
 Validation: seven-package build/type checks and all 739 reconstruction tests pass with concurrency 4.
+
+### 16.239 Two-worker Sky integration and service export correction
+
+Connected actual kernel and trusted-worker subprocesses through a test-only JSONL relay, then loaded the restored @core/sky public client and @core/sky/service. The relay forwards real service requests/responses and hooks; only the native pipe peer is synthetic. Both original embedded workers and restored workers run against the same restored Sky packages, and their resulting outputs and native protocol requests are compared.
+
+This integration exposed a real package-export mismatch: the original Sky/browser-desktop manifests use unconditional runtime exports, while reconstructed import-only exports prevented the trusted worker's createRequire.resolve from locating services. Added default runtime targets alongside types/import for both packages. A regression test resolves both public service entries with createRequire. Workspace packages/dependencies are copied into temporary installed node_modules trees for the integration test; symlinked workspace sources are not incorrectly treated as installed package roots.
+
+The end-to-end worker test verifies setup/list_windows, retained client state across cells, rounded click coordinates, screenshot state and image acknowledgments, unavailable-method errors, and after-submitted-code hooks. The fixture sends fragmented native frames. During fixture development, missing image acknowledgment caused a timeout; the relay now acknowledges the actual trusted worker media event instead of bypassing it.
+
+This proves two-worker JavaScript/Sky protocol integration, not native desktop actions or a production supervisor. The relay is test infrastructure, not reconstructed Rust supervisor code. Native supervisor permissions/isolation, MCP lifecycle, browser/native/AX resource provisioning and real-model end-to-end validation remain outstanding.
+
+Validation: seven-package build/type checks and all 741 reconstruction tests pass with concurrency 4.
