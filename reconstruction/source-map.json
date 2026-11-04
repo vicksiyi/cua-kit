@@ -4472,6 +4472,20 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "Actual restored RPC dispatcher, runtime, command registry, BrowserContext, documentation and notification queue compose through setup, required-read rejection, browser docs, list_tabs, context reuse, after-code hooks and disposal. Backend/provider and host telemetry/auth/localization inputs are synthetic. Original alias/telemetry projection comparisons pass. Type checks and all 577 tests pass; native production integration and host/bootstrap coupling remain incomplete."
+    },
+    "packages/browser/src/service/runtime/service_assembly.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "assembled-host-command-runtime-and-rpc-service",
+      "symbols": [
+        "mH",
+        "p6",
+        "iy",
+        "hH",
+        "Gut"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "Actual assembled host, signed access verifier, native pipe framing/RPC, discovery/directory/API, command runtime/context/registry and dispatcher run over a real temporary Unix socket to a synthetic backend. Covers required-read rejection, inventory/docs/list_tabs/name_session, backend-error normalization, managed headers, access caching, turn hook, denied next-turn access without backend request and disposal. Type checks and all 578 tests pass. Privileged bridge, backend and telemetry/auth integrations are fixtures; installed native production integration and public CUA/agent end-to-end remain incomplete."
     }
   },
   "embeddedPackages": {

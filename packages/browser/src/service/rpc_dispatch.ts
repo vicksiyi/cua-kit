@@ -10,8 +10,8 @@ export interface BrowserServiceRuntime {
   disabledMemberIds: Iterable<string>;
   executeAgentCommand(command: unknown): unknown | Promise<unknown>;
 }
-/** Original dependencies mH / p6 / mn, kept explicit until their implementations are restored.
- * This is the real dispatcher logic; it does not supply a replacement backend.
+/** Original mH / p6 / mn boundaries, supplied by service assembly.
+ * The dispatcher preserves the host protocol and does not create a replacement backend.
  */
 export interface ServiceDispatcherDependencies<Host> {
   createHostRuntime(): Host | Promise<Host>;
