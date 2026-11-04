@@ -333,5 +333,12 @@
     "test": "reconstruction/extension-tunnel-http-server.test.ts",
     "method": "Actual-source poll/status/deadline/startup differential plus real loopback HTTP GET/POST through kernel tunnel, elicitation acknowledgement and final response",
     "limit": "Loopback kernel, chat and storage services are fixtures. Production auth/telemetry/PDF bindings and packaged full extension deployment remain incomplete; no daily Chrome or external search acceptance."
+  },
+  "kernelTunnelRuntimeVerification": {
+    "source": "p_ composition of Yc, Dr/Hg/Le, Yg/El and Fn",
+    "module": "packages/browser-extension/src/kernel_tunnel_runtime.ts",
+    "test": "reconstruction/extension-kernel-tunnel-runtime.test.ts",
+    "method": "Actual restored ChatApi, scope registry, KernelControl, kernel host and HTTP tool dispatch composition; original Fn differential",
+    "limit": "Chrome offscreen/sendMessage and backend fetch responses are fixtures. PDF capture/upload, production feature/auth/telemetry coordinator and complete extension packaging remain incomplete."
   }
 }

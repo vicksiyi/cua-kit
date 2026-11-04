@@ -3982,3 +3982,19 @@ ack -> explicit consent -> kernel execution -> result POST. Its kernel/chat/stor
 are fixtures; this does not grant actual browser permission. Production account,
 telemetry/PDF/feature bindings and complete extension assets/entry deployment
 remain incomplete, as do daily Chrome and the two external search acceptances.
+
+
+### 2026-11-05 — real restored service binding for kernel tunnels
+
+Added `createKernelTunnelRuntime`, binding the actual restored ChatApi class,
+shared scope registry, offscreen host registry and kernel HTTP tunnel. A provided
+validated tunnel configuration creates its own account-scoped ChatApi; controls
+consume the same active scope via `getScope`. Restored original `Fn` Library
+DELETE with URL encoding and response-body cancellation. Tunnel account typing
+now uses the existing parser return type instead of widening structure to string.
+Original Fn differential and composition tests verify account isolation with the
+same session ID, actual ChatApi request construction, control output, turn-scoped
+PDF deletion, shared offscreen creation and disposal resets. Chrome/offscreen and
+backend responses remain fixtures; PDF capture/upload, production coordinator and
+full extension packaging are not yet completed. Daily Chrome/search acceptance
+remains unproven.

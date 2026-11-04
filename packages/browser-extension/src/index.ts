@@ -169,3 +169,5 @@ export * from "./tunnel_response_delivery";
 export * from "./tunnel_http_server";
 
 export * from "./kernel_http_tunnel";
+
+export * from "./kernel_tunnel_runtime";

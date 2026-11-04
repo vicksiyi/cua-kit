@@ -1,6 +1,6 @@
 import { parseChatAccount } from "./siwc";
 export interface TunnelConfiguration {
-  account: { userId: string; id: string; structure: string };
+  account: ReturnType<typeof parseChatAccount>;
   apiKey: string;
   baseUrl: string;
   tunnelId: string;
