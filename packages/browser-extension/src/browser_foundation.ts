@@ -1,3 +1,4 @@
+import { createBrowserManagement } from "./browser_management";
 import { extensionBrowserProtocol } from "./browser_protocol";
 import { createTabReader } from "./tab_read";
 import { captureTabContext } from "./tab_capture";
@@ -135,7 +136,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     now: host.now,
     enforceActivePage: createNetworkPolicyEnforcer(host),
   });
+  const management = createBrowserManagement(host.chrome, host.now);
   const sessionBase = {
+    ...management,
     browserInfo: browserFamilies,
     isInternalTab: isBrowserInternalTab,
     isNewTab: isBrowserNewTab,

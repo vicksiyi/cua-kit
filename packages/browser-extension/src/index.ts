@@ -141,3 +141,5 @@ export * from "./tab_capture";
 export * from "./tab_read";
 
 export * from "./browser_protocol";
+
+export { createBrowserManagement, type BrowserManagementCall } from "./browser_management";

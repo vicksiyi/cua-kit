@@ -29,6 +29,7 @@ for (const statement of body) {
 export function extensionBindings(
   names: string[],
   external: Record<string, unknown>,
+  mutable: string[] = [],
 ) {
   return new Function(
     ...Object.keys(external),
@@ -37,7 +38,7 @@ export function extensionBindings(
         .map((name) => {
           const node = definitions.get(name);
           if (!node) throw Error(`Missing extension binding ${name}`);
-          return `const ${name}=${source.slice(node.start, node.end)};`;
+          return `${mutable.includes(name) ? "let" : "const"} ${name}=${source.slice(node.start, node.end)};`;
         })
         .join("\n") +
       `return {${names.join(",")}};`,
