@@ -128,3 +128,6 @@ export * from "./kernel_config";
 export * from "./kernel_browser_bridge";
 
 export * from "./kernel_instrumentation";
+
+export * from "./kernel_background";
+export * from "./kernel_background_assembly";

@@ -1,3 +1,4 @@
+import { registerAssembledBackgroundKernel } from "./kernel_background_assembly";
 import { registerKernelConnections } from "./kernel_transport";
 import { registerBackgroundRuntime } from "./background_runtime";
 import { createBackgroundMessageRouter } from "./background_messages";
@@ -220,6 +221,11 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     }));
   }
   return {
+    registerBackgroundKernel<Pdf>(
+      dependencies: Omit<Parameters<typeof registerAssembledBackgroundKernel<Pdf>>[0], "runtime">,
+    ) {
+      return registerAssembledBackgroundKernel({ ...dependencies, runtime: host.chrome.runtime });
+    },
     registerKernelConnections(
       connected: Parameters<typeof registerKernelConnections>[1],
       disconnected?: Parameters<typeof registerKernelConnections>[2],
