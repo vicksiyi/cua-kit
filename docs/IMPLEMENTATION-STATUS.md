@@ -2687,3 +2687,29 @@ installed/native/model integration remain incomplete.
 
 Validation: eight package builds/type checks and all 897 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Extension lifecycle registration and onboarding
+
+Restored Hk/yk as registerExtensionLifecycle. It registers activation, installation,
+startup and completed-navigation handlers in original order, then refreshes website
+bridges without notifications. Installation opens the onboarding page except in Opera,
+reports installation and conditionally refreshes toolbar/menu state. Startup and worker
+activation refresh the installation service. Only production ChatGPT main-frame
+navigation creates one auth reader shared by installation refresh and auth refresh.
+Disposal removes the exact listener references before stopping the installation service.
+
+Foundation binds its Chrome APIs, restored website bridge/timeout and SIWC cached-reader
+factory. The installation service, auth refresh, browser-family classification, toolbar/
+menu hooks and metrics remain explicit dependencies pending complete startup assembly.
+These lifecycle listeners are installed only by the explicit registration method.
+
+A source-differential test covers seven modes including disabled side panel, Opera and
+onboarding/metric/website/auth failures; all install reasons, navigation filtering, invalid
+URL behavior, ordering and cleanup. Chrome and service dependencies use fixtures; no
+real onboarding page, auth refresh or telemetry was triggered. No library was added.
+
+Complete installation/auth services, background startup, panel UI, native replacement
+and installed/native/model end-to-end validation remain incomplete.
+
+Validation: eight package builds/type checks and all 898 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

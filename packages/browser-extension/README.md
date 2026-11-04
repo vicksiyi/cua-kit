@@ -557,3 +557,8 @@ Website bridge refresh now restores per-document handshake deduplication, timed 
 ping, injection and repeat handshake, active-document failure metrics and independent
 plugin-change notifications. Foundation reuses the restored content-runtime timeout;
 startup/lifecycle registration remains pending.
+
+Extension lifecycle registration restores install/startup/activation/navigation ordering,
+onboarding-page behavior, toolbar/menu hooks and listener cleanup. Foundation connects
+website bridging and the shared cached-auth reader. Browser-family detection, auth
+refresh, installation service and metric transport remain explicit startup dependencies.

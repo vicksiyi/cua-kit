@@ -1,3 +1,4 @@
+import { registerExtensionLifecycle } from "./extension_lifecycle";
 import { createWebsiteBridge } from "./website_bridge";
 import { createSidePanelAuthHandler } from "./side_panel_auth";
 import { createSidePanelMessageHandlers } from "./side_panel_messages";
@@ -212,6 +213,32 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    registerExtensionLifecycle(
+      dependencies: Omit<
+        Parameters<typeof registerExtensionLifecycle>[0],
+        "chrome" | "createAuthReader" | "refreshWebsite"
+      > & {
+        reportFailure: Parameters<
+          typeof createWebsiteBridge
+        >[0]["reportFailure"];
+      },
+      options: Parameters<typeof registerExtensionLifecycle>[1],
+    ) {
+      const bridge = createWebsiteBridge({
+        chrome: host.chrome,
+        withTimeout: contentRuntime.withTimeout,
+        reportFailure: dependencies.reportFailure,
+      });
+      return registerExtensionLifecycle(
+        {
+          ...dependencies,
+          chrome: host.chrome,
+          createAuthReader: siwc.createCachedAuthReader,
+          refreshWebsite: bridge.refresh,
+        },
+        options,
+      );
+    },
     createWebsiteBridge(
       reportFailure: Parameters<typeof createWebsiteBridge>[0]["reportFailure"],
     ) {
