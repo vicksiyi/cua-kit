@@ -398,10 +398,27 @@ read and arrival validation/dispatch.
 Foundation supplies the same overlay to handler/sessions, and shares a content
 readiness runtime with favicons to retain injection deduplication. Startup must call
 `foundation.observedTabs.initialize()` and install the bound message router among
-its handlers; full startup and observed-tab audio mute/restore remain pending.
+its handlers; full startup remains pending. Observed-tab audio handling is now
+composed as described below.
 
 Differential tests verify state/method/event behavior. A Chromium integration test
 connects the manager to the actual content bundle and routes its arrival messages
 back to real command waiters, verifying resolution before timeout, hiding on
 observation loss and request abort on stop. The transport is an explicit fixture;
 full installed-extension RPC/permissions/manifest/native-host validation is pending.
+
+
+### Background-tab audio ownership and activation races
+
+`createTabAudioController` restores Vu/lS/Wu/Ku and Ra/Oa. It mutes only inactive,
+not-already-muted tabs, restores only muting owned by this extension, and preserves
+best-effort handling for disappeared tabs or failed updates. The original observed
+change handler republishes all changed overlays and restores newly observed audio
+in parallel. If activation races a pending mute, restoration is repeated after
+that mute completes; both tracking sets clear in finally.
+
+Foundation installs this handler and supplies the same mute operation to session
+create/child-claim paths. Differential tests compare ownership/active guards, error
+paths and deferred-mute races with the original closure. The RPC foundation fixture
+also verifies created tabs are muted then restored when observed. No new release-
+time unmute was added: the inspected source restores on observation changes.

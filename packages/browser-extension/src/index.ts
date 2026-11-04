@@ -25,3 +25,4 @@ export * from "./cursor_animator";
 export * from "./codex_content";
 export * from "./observed_tabs";
 export * from "./overlay_manager";
+export * from "./tab_audio";

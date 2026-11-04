@@ -1,3 +1,4 @@
+import { createTabAudioController } from "./tab_audio";
 import { createContentRuntime } from "./content_runtime";
 import { createObservedTabsClass } from "./observed_tabs";
 import {
@@ -38,7 +39,8 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const observedTabs = new ObservedTabs();
   const OverlayManager = createOverlayManagerClass({ ...host, contentRuntime });
   const overlay = new OverlayManager({ observedTabs });
-  observedTabs.setChangeHandler((ids) => overlay.republishTabStates(ids));
+  const tabAudio = createTabAudioController(host.chrome);
+  tabAudio.installObservedChangeHandler(observedTabs, overlay);
   const instanceId = createExtensionInstanceIdReader(host);
   const tabLeases = createTabLeaseManagerClass({ ...host, instanceId });
   const tabFavicons = createTabFaviconManagerClass({
@@ -60,6 +62,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   });
   const sessionBase = {
     overlay,
+    muteBackgroundTab: tabAudio.muteBackgroundTab,
     ...debuggerRuntime,
     ...tabRuntime,
     tabGroups,
@@ -102,6 +105,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     contentRuntime,
+    tabAudio,
     observedTabs,
     overlay,
     createCursorMessageHandler: (

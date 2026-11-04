@@ -2178,3 +2178,27 @@ reconstruction remain incomplete. The browser host transport is a fixture, not a
 installed production extension.
 
 Validation: all eight reconstructed packages built and passed type checks; all 841 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.277 Background-tab audio and observation race handling
+
+Restored Vu/lS/Wu/Ku and Ra/Oa in createTabAudioController, including active/already-
+muted guards, extension-ID/reason ownership checks, best-effort tab errors, parallel
+restoration and pending-mute cleanup. The original hi.setChangeHandler callback is
+now composed: newly observed tabs mark any pending mute for subsequent restoration,
+while overlay publication and audio restoration run concurrently. Foundation passes
+the same mute operation into session create/child-claim paths.
+
+Differential tests extract the original audio functions and the actual top-level
+change-handler registration, comparing active/muted ownership cases and failed tab
+access/updates. Deferred updates verify activation during muting restores audio
+after completion and clears tracking state on both success and failure. Foundation
+RPC integration verifies mute on tab creation and restoration on observation.
+No release-time unmute is invented; the inspected source uses observation changes.
+These tests use explicit Chrome API fixtures rather than actual user audio tabs.
+
+Full background startup, frame monitors, auth/mentions/other content scripts,
+manifest/native host and installed-extension validation, real desktop/model
+integration and native source reconstruction remain incomplete.
+
+Validation: all eight reconstructed packages built and passed type checks; all 843 default regression tests passed. The separate native-supervisor suite was not rerun.

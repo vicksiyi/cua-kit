@@ -802,6 +802,17 @@ test("extension foundation shares identity, lease singleton and debugger state a
       async create() {
         return tabs.get(4);
       },
+      async update(id: number, properties: any) {
+        trace.push(["tabs.update", id, properties]);
+        const tab = tabs.get(id);
+        if ("muted" in properties)
+          tab.mutedInfo = {
+            muted: properties.muted,
+            reason: "extension",
+            extensionId: "extension",
+          };
+        return tab;
+      },
     },
     tabGroups: {
       onRemoved: { addListener() {} },
@@ -938,11 +949,13 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
   });
   assert.equal(sent[0].result.id, 4);
+  assert.equal(tabs.get(4).mutedInfo.muted, true);
   assert.equal(foundation.overlay.readCursorOverlayState(4).sessionId, "s");
   assert.equal(foundation.overlay.isBrowserControlActive(), true);
   foundation.observedTabs.setActiveTabs([{ tabId: 4, windowId: 1 }]);
   await foundation.overlay.republishTabState(4);
   assert.equal(foundation.overlay.readCursorOverlayState(4).isVisible, true);
+  assert.equal(tabs.get(4).mutedInfo.muted, false);
   const cursorReplies: any[] = [];
   assert.equal(
     foundation.createCursorMessageHandler(handler)(

@@ -44,13 +44,16 @@ export function extensionBindings(
   )(...Object.values(external));
 }
 
-/** Execute only selected, inspected call expressions inside a named function, never its startup body. */
+/** Execute only selected, inspected call expressions inside a named function (or the outer IIFE for null), never the full startup body. */
 export function extensionFunctionCalls(
-  name: string,
+  name: string | null,
   callPaths: string[],
   external: Record<string, unknown>,
 ) {
-  const definition = definitions.get(name);
+  const definition =
+    name === null
+      ? { type: "FunctionDeclaration", body }
+      : definitions.get(name);
   if (!definition || definition.type !== "FunctionDeclaration")
     throw Error(`Missing extension function ${name}`);
   const pathOf = (node: any): string | undefined => {
