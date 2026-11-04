@@ -102,3 +102,5 @@ export * from "./kernel_transport";
 export * from "./kernel_scope";
 
 export * from "./kernel_fetch";
+
+export * from "./kernel_elicitation";

@@ -3151,3 +3151,23 @@ are unfinished, alongside full startup, panel UI, native replacement and end-to-
 
 Validation: eight package builds/type checks and all 932 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel control elicitation
+
+Restored Ds.createElicitation and Lt/yl/Sl envelope guards. Scope lookup precedes schema
+validation. Missing/null schema uses the original empty object form; metadata is forwarded
+only when non-null. The host client receives the exact caller signal and owns UI/decisions.
+Responses reject non-null non-object content/meta, retain null fields, omit undefined
+fields and preserve the source's action pass-through and lack of post-await abort check.
+
+These are the source's restricted structural guards, not general JSON Schema validation:
+integer enums use typeof number, missing required-property definitions remain accepted,
+and object/array property recursion matches source. No third-party schema engine was
+substituted because doing so would change the inspected acceptance behavior.
+
+Two differential tests compare actual Ds/Lt/yl/Sl for schema boundaries and thirteen
+request/response/error scenarios. No real user prompt, model or kernel was invoked.
+Remaining control operations and complete RPC/kernel/startup integration remain pending.
+
+Validation: eight package builds/type checks and all 934 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

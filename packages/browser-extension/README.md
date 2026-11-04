@@ -619,3 +619,7 @@ with the remaining control RPC methods and actual kernel execution entrypoint.
 createKernelFetchController restores scoped site-status routing, ordinary fetch,
 request cancellation/disposal and binary response encoding. Duplicate-ID cleanup follows
 the original race behavior. Remaining control methods and RPC assembly are pending.
+
+createKernelElicitation restores the control-side schema/default/metadata/signal bridge.
+Its guards match the bundled limited envelope checks; the Agent host owns UI and user
+decisions. Complete control RPC and actual kernel integration are still pending.
