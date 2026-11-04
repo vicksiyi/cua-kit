@@ -4654,6 +4654,19 @@
       "status": "readable-evaluator-components-assembled-full-injected-helper-incomplete",
       "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
       "validation": "Complete evaluator class and registry restored. Original-class real Chromium comparisons cover query/matches, selector ASTs, all combinators, scope expansion, all engines, shadow piercing, stable spatial scores, nested cache identities/invalidation, query-vs-matches ordering and preserved score-map state on failure. Full InjectedScript and CSS source parser remain incomplete."
+    },
+    "packages/browser/src/service/runtime/command_timing.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "Vx",
+        "$6",
+        "cce",
+        "dce",
+        "pce"
+      ],
+      "status": "manually-reconstructed-and-default-host-wired",
+      "validation": "original bindings differential tests for retry/elicitation accounting and concurrent/nested AsyncLocalStorage contexts; full public API service scenario uses default"
     }
   },
   "embeddedPackages": {

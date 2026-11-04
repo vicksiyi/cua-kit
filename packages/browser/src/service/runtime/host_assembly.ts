@@ -1,3 +1,5 @@
+import { commandTiming } from "./command_timing";
+import { defaultAXPerformanceSpan } from "../accessibility/tracking";
 import {
   createBrowserHostFactory,
   privilegedNodeRepl,
@@ -43,8 +45,10 @@ export interface BrowserHostAssemblyOptions {
   reportDiscoveryFailure: BrowserDiscoveryDependencies["reportDiscoveryFailure"];
   featureEnabled: HandshakeDependencies["featureEnabled"];
   span: BrowserDiscoveryDependencies["span"] & ElicitationSpan;
-  commandTiming: any;
-  performanceSpan: any;
+  commandTiming?: ReturnType<
+    typeof import("./command_timing").createCommandTiming
+  >;
+  performanceSpan?: typeof defaultAXPerformanceSpan;
   createErrorReporter: BrowserHostDependencies["createErrorReporter"];
   loadClassicLevel?: BrowserProfileDependencies["loadClassicLevel"];
   getNativeCredentialObservationStatus: BrowserHostDependencies["getNativeCredentialObservationStatus"];
@@ -98,9 +102,9 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
     BrowserDirectory,
     extensionSelection: preferredBrowserExtension,
     Preferences,
-    commandTiming: options.commandTiming,
+    commandTiming: options.commandTiming ?? commandTiming,
     createErrorReporter: options.createErrorReporter,
-    performanceSpan: options.performanceSpan,
+    performanceSpan: options.performanceSpan ?? defaultAXPerformanceSpan,
     trackElicitation: createElicitationTelemetry(options.span),
     initializeCredentialObservation: credentialObservationState.initialize,
     getNativeCredentialObservationStatus:

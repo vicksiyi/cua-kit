@@ -926,3 +926,13 @@ Two fixture gaps were exposed and fixed: its ad-hoc telemetry stub omitted curre
 Browser discovery, host approval, telemetry sink and documentation remain synthetic test dependencies. This is an end-to-end execution check of the restored public/browser service stack with a real browser, not proof of the installed production extension or native application bridge. No model credentials or personal browser profiles were used.
 
 Validation: expanded isolated integration scenario passed; complete suite remains 599 tests, all passing (concurrency 4). Production code is unchanged in this verification step.
+
+### 16.199 Default host command timing and performance assembly
+
+Restored Vx/$6/cce/dce/pce in runtime/command_timing.ts using Node's AsyncLocalStorage. Commands track their start time, subtract elicitation wait time in finally (including rejected requests), clamp/round the resulting duration and emit browser_use_agent_command with the original shape. Locator retry tracking begins only at the first failed attempt; finish is idempotent per retry tracker and aggregates success/timeout counts and elapsed time. Command finish itself remains non-idempotent, matching source. Concurrent and nested command contexts are isolated, and wrappers outside a command still execute normally.
+
+assembleBrowserHost now provides this original command timing implementation by default and the existing original K2 pass-through performance implementation when no custom performance span is supplied. Overrides remain available. The public Unix socket/Chromium integration test removes its temporary timing/performance substitutes and checks emitted real command outcome events instead; snapshot, role click, label fill and navigation reinjection still pass using the defaults. This reduces required caller wiring without replacing privileged host capabilities or auth services.
+
+Differential tests execute the actual selected original symbols under a deterministic clock and compare exact event payloads, rounding, failure identity, repeated finishes, no-context behavior, successful/time-out retries, concurrent commands and nested contexts. Explicit count/duration assertions complement equality. Telemetry export SDK and privileged runtime/backend dependencies remain separate outstanding integrations.
+
+Validation: three-package build passed; all 601 reconstruction tests pass with concurrency 4.

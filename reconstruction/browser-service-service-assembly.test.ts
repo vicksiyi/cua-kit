@@ -1,4 +1,3 @@
-import { defaultAXPerformanceSpan } from "../packages/browser/src/service/accessibility/tracking";
 import { chromium } from "playwright";
 import { setupBrowserRuntime } from "../packages/browser/src/runtime/setup";
 import { setup_browser } from "../packages/cua/src/tinysky_alt/setup_browser";
@@ -172,30 +171,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         },
         featureEnabled: () => false,
         span,
-        commandTiming: {
-          trackElicitation: (fn: any) => fn,
-          startLocatorRetry() {
-            return {
-              finish(status: string) {
-                events.push(["locator.finish", status]);
-              },
-              attemptFailed() {
-                events.push(["locator.retry"]);
-              },
-            };
-          },
-          startCommand() {
-            return {
-              async run(fn: any) {
-                return fn();
-              },
-              finish(status: any) {
-                events.push(["command.finish", status]);
-              },
-            };
-          },
-        },
-        performanceSpan: defaultAXPerformanceSpan,
         createErrorReporter: () => ({ captureException: unused }),
         loadClassicLevel: async () => null,
         getNativeCredentialObservationStatus: unused,
@@ -247,8 +222,8 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         telemetry: {
           setExceptionReporter() {},
           configureRuntimeTelemetry() {},
-          emitEvent(_r: any, event: any) {
-            events.push(["event", event]);
+          emitEvent(_r: any, event: any, command: any, attrs: any) {
+            events.push(["event", event, command, attrs]);
           },
           reportNotificationError: unused,
           configureBackendTelemetry() {},
@@ -333,7 +308,14 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       }),
       /synthetic backend failure/,
     );
-    assert(events.some((e) => e[0] === "command.finish" && e[1] === "failure"));
+    assert(
+      events.some(
+        (e) =>
+          e[0] === "event" &&
+          e[1] === "browser_use_agent_command" &&
+          e[3]?.outcome === "failure",
+      ),
+    );
     const request = events.find((e) => e[0] === "getTabs")[1];
     assert.equal(request.session_id, "service-session");
     assert.equal(request.turn_id, "turn-1");
@@ -517,7 +499,14 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       .getByRole("button", { name: "Public CUA action", exact: true })
       .click();
     assert.equal(await page.locator("button").getAttribute("data-clicks"), "1");
-    assert(events.some((e) => e[0] === "locator.finish" && e[1] === "success"));
+    assert(
+      events.some(
+        (e) =>
+          e[0] === "event" &&
+          e[1] === "browser_use_agent_command" &&
+          e[3]?.outcome === "success",
+      ),
+    );
     await hooks[0].run();
     await hooks[1].run();
     assert(
