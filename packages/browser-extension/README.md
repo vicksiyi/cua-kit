@@ -615,3 +615,7 @@ actual host-page/control execution and full startup composition are still pendin
 createKernelScopeRegistry and createKernelOutputWriter restore execution admission,
 cancellation/disposal and shared text/image output semantics. They are not yet assembled
 with the remaining control RPC methods and actual kernel execution entrypoint.
+
+createKernelFetchController restores scoped site-status routing, ordinary fetch,
+request cancellation/disposal and binary response encoding. Duplicate-ID cleanup follows
+the original race behavior. Remaining control methods and RPC assembly are pending.

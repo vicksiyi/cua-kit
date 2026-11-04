@@ -3130,3 +3130,24 @@ methods and kernel execution entrypoint; full startup and end-to-end work remain
 
 Validation: eight package builds/type checks and all 930 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel control fetch and cancellation
+
+Restored Ds fetch/abortFetch/dispose through createKernelFetchController. Matching
+site-status origin/path without URL credentials uses scoped ChatApi and combines request,
+caller and disposal signals. Other URLs use the supplied ordinary fetch with the request
+signal only, matching source. Bodies decode via standard atob; responses serialize bytes
+using chunked btoa, preserving headers/status/statusText and null-body responses.
+
+Per-request controllers are removed in finally. Dispose aborts tracked controllers then
+clears them. The original duplicate-ID race is retained: an earlier completion can delete
+a newer controller with the same ID; this is documented and tested rather than silently
+changing original semantics. Scope lookup is only required for the authenticated route.
+
+Two differential tests execute actual Ds/dm/pg/ol/wl over fourteen routing/error/cancel
+modes, plus duplicate IDs and large byte subviews. Network/ChatApi are fixtures, no remote
+requests. Remaining control methods, control RPC assembly and real kernel-host execution
+are unfinished, alongside full startup, panel UI, native replacement and end-to-end work.
+
+Validation: eight package builds/type checks and all 932 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

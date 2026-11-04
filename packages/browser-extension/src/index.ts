@@ -100,3 +100,5 @@ export * from "./background_runtime";
 export * from "./kernel_transport";
 
 export * from "./kernel_scope";
+
+export * from "./kernel_fetch";
