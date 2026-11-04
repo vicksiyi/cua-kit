@@ -2359,3 +2359,28 @@ remain unfinished.
 
 Validation: all eight reconstructed packages build/typecheck successfully; all 865
 default regressions pass with zero failures/skips. Native-supervisor tests were not rerun.
+
+### Side-chat tab mention content script
+
+Restored content-scripts/side-chat-tab-mentions.js W/u/U/L/J.main as readable
+side_chat_mentions.ts and its production entry. The entry directly uses upstream
+WXT ContentScriptContext and defineContentScript, with original allFrames, matches,
+includeGlobs, document_start and ISOLATED settings. Build now emits a third standalone
+content script. Query validation reuses the shared restored helper.
+
+Search requires a trusted interaction within five seconds and consumes that allowance.
+The active port owns candidate publication; old/disconnected results are ignored.
+Candidate attributes exist only during synchronous DOM event dispatch. Parent capability
+handshake, extension ancestry/private-context guards, status publication and invalidation
+are preserved. No copied framework runtime or new dependency was introduced.
+
+Three tests compare inspected source with reconstruction: real Chromium trusted
+clicks, synthetic-event rejection, expiry, single-use allowance, old-port suppression,
+failure and DOM cleanup; parent capability handshake under explicit host fixtures;
+and full original/built WXT startup outside extension ancestry. The eligible parent
+handshake is not yet tested in an actually installed extension iframe. Full background
+startup/fanout, remaining content scripts, auth orchestration, native host and real
+model/desktop integration remain outstanding.
+
+Validation: all eight package builds/type checks and all 868 default regressions pass
+with zero failures/skips. The separate native-supervisor suite was not rerun.

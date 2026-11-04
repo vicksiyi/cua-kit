@@ -156,5 +156,16 @@
     "sha256": "337ad4ff3ec7846134e5d39528936b1cbb68107de3c4da0e0641c712bda66129",
     "restored": "R DOM closure shared with background jy; N/x definition/startup in foreign_frame_entry.ts; direct upstream WXT 0.20.25 reuse with ENTRYPOINT=foreign-frame-monitor",
     "validation": "Full original and restored entry and serialized install function compared in isolated Chromium with shadow-root capability fixtures."
+  },
+  "sideChatContentScript": {
+    "path": "content-scripts/side-chat-tab-mentions.js",
+    "bytes": 16046,
+    "sha256": "94718278ed82a5e7d5cd6b02761802f4719b5d7eb06f984404004eac8735f867",
+    "restoredBindings": {
+      "W/u": "installMentionSearchContent/publishMentionCandidates; reuse shared query validator",
+      "U/L/J.main": "isSideChatCapabilities/installSideChatMentions",
+      "J/se": "side_chat_mentions_entry.ts production definition/startup with direct WXT runtime"
+    },
+    "validation": "Trusted Chromium gesture/search/expiry/port/DOM tests; parent handshake under explicit host fixtures; full entry outside extension ancestry. Installed eligible extension iframe not yet tested."
   }
 }

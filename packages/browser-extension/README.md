@@ -492,3 +492,8 @@ The tab mention runtime/port bridge now preserves sender authorization, strict s
 messages, current-tab exclusion, streamed favicon updates and disconnect cleanup.
 Foundation exposes host-bound router and invalidation helpers. Full startup listener
 registration, peer fanout and side-chat content scripts are still pending.
+
+The side-chat tab mention content script is now built with direct upstream WXT.
+It restores trusted-interaction search allowance, parent capability handshake, streamed
+candidate DOM events and cleanup. Eligible extension-parent handshake currently has
+explicit host-fixture coverage; installed-extension integration is still pending.

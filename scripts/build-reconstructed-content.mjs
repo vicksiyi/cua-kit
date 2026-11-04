@@ -32,3 +32,20 @@ await build({
   footer: { js: "foreignFrameMonitor = foreignFrameMonitor.startup;" },
   legalComments: "eof",
 });
+
+await build({
+  entryPoints: ["packages/browser-extension/src/side_chat_mentions_entry.ts"],
+  outfile:
+    "packages/browser-extension/dist/content-scripts/side-chat-tab-mentions.js",
+  bundle: true,
+  format: "iife",
+  globalName: "sideChatTabMentions",
+  platform: "browser",
+  target: "chrome120",
+  define: {
+    "import.meta.env.ENTRYPOINT": '"side-chat-tab-mentions"',
+    "import.meta.env.MODE": '"production"',
+  },
+  footer: { js: "sideChatTabMentions = sideChatTabMentions.startup;" },
+  legalComments: "eof",
+});
