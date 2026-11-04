@@ -3924,3 +3924,18 @@ handler, sharing the real scope registry with explicit external-service fixtures
 it covers nine scenarios plus subsequent turn/PDF cleanup. Production tunnel
 transport, chat/PDF service binding and standalone packaged deployment remain
 incomplete; this does not establish daily Chrome or search acceptance.
+
+
+### 2026-11-05 — original tunnel MCP dispatcher composition
+
+Restored `e_`, `t_`, `Nr`, `$s` as `TunnelMcpServer`, metadata normalization and
+its original limited schema validator. The inspected validator is local code,
+not a third-party schema package; its supported types and inherited-key behavior
+are preserved rather than substituted with Zod. Initialize/ping/tools/list/call,
+duplicate registration, missing methods, argument-level metadata stripping,
+context fallback, tool failure sanitization and aborted-call null response match
+the actual original bindings. `createKernelTunnelMcpServer` registers the real
+restored JS and turn-ended handlers; integration verifies output and PDF cleanup.
+The dispatcher is not the HTTP tunnel: polling, response delivery and elicitation
+transport still need composition, along with production services and deployment.
+Daily Chrome and external search acceptance remain incomplete.

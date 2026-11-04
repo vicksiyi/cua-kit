@@ -297,5 +297,12 @@
       "registered turn cleanup and PDF removal"
     ],
     "limit": "No real user permission is granted by tests. Tunnel transport, production chat/PDF service and packaged standalone kernel deployment remain incomplete."
+  },
+  "tunnelMcpDispatchVerification": {
+    "source": "e_, t_, Nr, $s",
+    "module": "packages/browser-extension/src/tunnel_mcp_server.ts",
+    "test": "reconstruction/extension-tunnel-mcp-server.test.ts",
+    "method": "Differential execution of actual installed dispatch/schema/context functions, plus actual restored dispatcher -> JS handler -> scope/turn cleanup integration with external kernel fixtures",
+    "limit": "Local protocol dispatch only; HTTP polling, response delivery and elicitation transport not yet composed. Original $s is a limited custom validator, not a third-party SDK validator."
   }
 }
