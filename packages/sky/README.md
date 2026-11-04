@@ -7,6 +7,9 @@ Currently implemented:
 - `src/targets/mac/create_client.ts` and operation modules: complete Mac factory, policy-wrapped field mappings, per-factory window state and conditional audio methods.
 - `src/targets/mac/audio_recording.ts`: original duration/approval, local WAV read, suspended timeout and host attachment flow.
 - `src/core/uint8.ts` and `src/types/window/`: byte helpers and installed window declarations.
+- `src/create_sky_proxy.ts`: trusted RPC proxy state, reflection, media restoration, Linux drag handles and explicit direct-client dependency.
+- `src/load_options.ts`: original config-file/platform selection.
+- `src/targets/linux/accessibility_tree.ts`: native/RPC accessibility presentation restoration and condensed tree rendering.
 - `src/create_service.ts`: service closure with lazy platform-client creation, own-method dispatch, media wire serialization, and Linux drag-handle state.
 - `src/targets/mac/computer-use-policy.ts`: immutable app approval inputs, canonical app-path binding, response metadata, audio approval and terminal telemetry.
 - `src/targets/mac/computer-use-telemetry.ts`: original structured-event wrapper around upstream Statsig 3.33.3, with host network/analytics gates and identity updates.

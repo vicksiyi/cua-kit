@@ -30,5 +30,12 @@
     "set_value.js": "e4ac86f5b4d5ba8bd17ed7281148cd4f1ae1d4a493997fbfc10a3a8f328ed06a"
   },
   "note": "Installed errors.d.ts declares formatOSStatus but errors.js does not export it; runtime evidence takes precedence.",
-  "statsigInstalledResolution": "3.33.3"
+  "statsigInstalledResolution": "3.33.3",
+  "additionalFiles": {
+    "sky.js": "1a433cd5ffb9b91bdfa6fff003938b80dea0890cd8a80e7bca4132b381072c3a",
+    "sky.d.ts": "055fb57ead0562e49935152dade680c035d988a7a554266c5f46da2f4ac295e5",
+    "load_options.js": "0ddd5df4674ae2696550cd2ac41583caef9dad9b58bd363559fda716c2ed8341",
+    "targets/linux/accessibility_tree.js": "13eb68c11a64b7126dc9e1346a4a00634656ae1a3b5f7201a503703d5d7a64ec",
+    "targets/linux/accessibility_tree.d.ts": "4acd3b927d8dfdf497629f3067fd850265a51896c24363d61ac72916ee01a820"
+  }
 }

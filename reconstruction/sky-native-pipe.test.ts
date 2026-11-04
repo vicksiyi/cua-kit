@@ -1,3 +1,5 @@
+import { createSkyProxy } from "../packages/sky/src/create_sky_proxy";
+import { createSkyService } from "../packages/sky/src/create_service";
 import { create_client } from "../packages/sky/src/targets/mac/create_client";
 import { MacComputerUseClient } from "../packages/sky/src/targets/mac/client";
 import test from "node:test";
@@ -513,6 +515,29 @@ test("Mac restored transport uses a real isolated Unix socket for handshake and 
         assert.equal(
           publicRequests[4].params.request.action.click.at.elementID._0,
           "4",
+        );
+        const service = createSkyService(() =>
+          create_client({ target: "mac" }),
+        );
+        (globalThis as any).nodeRepl.rpc = async (
+          name: string,
+          request: any,
+        ) => {
+          assert.equal(name, "sky");
+          return service.handleRpc(request);
+        };
+        const { sky } = await createSkyProxy(() => {
+          throw Error("trusted RPC must not construct direct client");
+        });
+        assert.equal(sky.target, "mac");
+        assert.equal(
+          (await sky.get_app_state({ app: "com.public" })).app,
+          "/approved/Fixture.app",
+        );
+        await sky.click({ app: "com.public", element_index: 5 });
+        assert.equal(
+          requests.at(-1).params.request.action.click.at.elementID._0,
+          "5",
         );
         for (const socket of connections) socket.end();
       },
