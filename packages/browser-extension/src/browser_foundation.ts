@@ -1,3 +1,4 @@
+import { createActionCallout } from "./action_callout";
 import { createSidePanelEntrypoints } from "./side_panel_entrypoints";
 import { createSidePanelActions } from "./side_panel_actions";
 import { createSidePanelWindowController } from "./side_panel_window";
@@ -59,6 +60,7 @@ export interface ExtensionBrowserHost {
 }
 /** Project composition of restored closures; not a replacement for original full dR startup. */
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
+  const actionCallout = createActionCallout(host.chrome);
   let sidePanelWindow:
     ReturnType<typeof createSidePanelWindowController> | undefined;
   let sidePanelTabs:
@@ -188,7 +190,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   function getSidePanelWindowController(
     dependencies: Omit<
       Parameters<typeof createSidePanelWindowController>[0],
-      "chrome" | "tabs"
+      "chrome" | "tabs" | "clearActionCallout"
     >,
   ) {
     sidePanelTabs ??= createSidePanelTabController({
@@ -200,14 +202,14 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       ...dependencies,
       chrome: host.chrome,
       tabs: sidePanelTabs,
+      clearActionCallout: actionCallout.clear,
     }));
   }
   return {
     ChatApi,
+    actionCallout,
     createSidePanelEntrypoints(
-      dependencies: Parameters<typeof getSidePanelWindowController>[0] & {
-        showCallout(): Promise<unknown>;
-      },
+      dependencies: Parameters<typeof getSidePanelWindowController>[0],
     ) {
       const controller = getSidePanelWindowController(dependencies);
       const actions = createSidePanelActions({
@@ -217,7 +219,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       });
       return createSidePanelEntrypoints({
         chrome: host.chrome,
-        showCallout: dependencies.showCallout,
+        showCallout: actionCallout.show,
         registerWindowEvents: controller.register,
         registerContextMenu: actions.registerContextMenu,
         isOpen: controller.isOpen,

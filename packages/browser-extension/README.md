@@ -536,3 +536,8 @@ binds them to its shared window controller; startup still must register the hand
 Toolbar/shortcut entrypoints now compose the shared side-panel window and menu handlers,
 including the original icon-only fallback and already-open icon behavior. They remain
 explicitly registered by the future complete startup path.
+
+Action callout and profile badges now use the restored serialized queue, normalization,
+color hash and initials logic. Foundation shares one callout across its side-panel
+entrypoints and window controller, replacing externally supplied show/clear callbacks.
+Complete startup registration and real toolbar behavior remain unverified.

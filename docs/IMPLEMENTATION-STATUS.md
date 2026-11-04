@@ -2583,3 +2583,25 @@ remain outstanding.
 
 Validation: all eight package builds/type checks and all 888 default regressions pass,
 zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### Action callout and profile badge queue
+
+Restored uk/dk/hk/fk/pk/mk/gk/Pf/xf/No as action_callout.ts. Label trimming, whitespace
+collapse, 24-code-unit slicing, eight-color unsigned hash and four-code-unit initials
+retain original Unicode behavior. Badge/show/clear operations share a promise queue;
+failed operations reject their caller while allowing later operations to proceed.
+Clear restores the manifest title and badge before persisting the seen version. Already
+seen versions skip both showing and clearing, including badge changes in clear.
+
+Foundation shares the restored callout between side-panel entrypoints and the window
+controller, removing their external show/clear dependencies. Two source-differential
+tests cover label boundaries and nine queued success/failure/version modes, including
+held initial reads, rejected reads/title/badge/storage writes and recovery. Chrome action
+and storage APIs are fixtures: no installed extension badge was changed. No third-party
+library is used by this inspected closure; no dependency was added.
+
+Full startup/telemetry, panel UI, authentication orchestration, native replacement and
+installed/native/model end-to-end integration remain incomplete.
+
+Validation: all eight package builds/type checks and all 890 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

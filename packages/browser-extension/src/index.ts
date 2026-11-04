@@ -56,3 +56,5 @@ export * from "./side_panel_window";
 export * from "./side_panel_actions";
 
 export * from "./side_panel_entrypoints";
+
+export * from "./action_callout";
