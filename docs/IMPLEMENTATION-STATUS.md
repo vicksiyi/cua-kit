@@ -2926,3 +2926,24 @@ alongside complete startup, panel UI, native replacement and real end-to-end val
 
 Validation: all eight package builds/type checks and all 914 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Statsig network assembly
+
+ExtensionStatsigNetwork now constructs a single extended NetworkCore with the original
+initialize URL configuration and caller-owned options. Ordinary fetchEvaluations and
+recursive delta handling reuse pinned public 3.33.4 prototype methods; live evaluations
+use the restored helper and the same transport. No upstream prototype is changed and no
+second network is constructed. Live calls read mutable option values at invocation time.
+The CommonJS default export is unwrapped for Node ESM/bundler interoperability.
+
+Two tests compare actual bundled Kc/Hm on eleven ordinary/delta/cache modes followed by
+live requests, including successful delta merge/deletion and bad-checksum full-response
+retry. An integration case invokes inherited post and the extended transport with a mock
+fetch, confirming ordinary response and live header cursor parsing on one instance.
+No external requests or complete SDK client initialization occurred.
+
+Constructor/init/update/diagnostics and default feature-service client assembly remain
+unfinished; full startup, panel UI, native replacement and real end-to-end work remain.
+
+Validation: eight package builds/type checks and all 916 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

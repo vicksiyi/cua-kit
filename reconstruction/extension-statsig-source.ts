@@ -71,3 +71,18 @@ export function originalStatsigClientPrototype(
     ),
   }).Vm().default;
 }
+
+/** Actual bundled Kc and its delta resolver, on the inspected bundled core. */
+export function originalStatsigNetwork() {
+  return extensionBindings(["Hm", "Kc"], {
+    ze: () => ({
+      ...require("@statsig/client-core"),
+      NetworkCore: originalStatsigNetworkCore(),
+    }),
+    L: (factory: (exports: Record<string, unknown>) => void) => () => {
+      const exports = {};
+      factory(exports);
+      return exports;
+    },
+  }).Kc().default;
+}

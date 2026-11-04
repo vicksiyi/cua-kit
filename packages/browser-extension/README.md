@@ -600,3 +600,7 @@ The live-refresh scheduler now preserves original response staleness checks, cur
 application, configurable intervals, in-flight suppression, replaced-client shutdown and
 server differences. Stopping only clears the interval, retaining pending-request behavior.
 Client construction/init/update/diagnostics and default service assembly remain pending.
+
+ExtensionStatsigNetwork assembles ordinary evaluations and live-overlay requests on the
+same restored transport. Pinned upstream ordinary/delta methods are reused without
+mutating upstream prototypes. The complete extended SDK client is still not assembled.
