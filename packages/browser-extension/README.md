@@ -528,3 +528,7 @@ Window-level side-panel opening/toggling now composes with the tab controller,
 preserving concurrent enable/open, failure rollback, close-finally state updates,
 Edge targeting and the global/tab open-state union. Action entrypoints and real
 installed panel integration remain pending.
+
+Side-panel website requests and context-menu selection routing are restored, including
+source checks, original prompt limits and post-open prefill persistence. Foundation
+binds them to its shared window controller; startup still must register the handlers.

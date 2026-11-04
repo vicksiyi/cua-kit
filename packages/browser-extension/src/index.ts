@@ -52,3 +52,5 @@ export * from "./extension_updates";
 export * from "./side_panel_tabs";
 
 export * from "./side_panel_window";
+
+export * from "./side_panel_actions";

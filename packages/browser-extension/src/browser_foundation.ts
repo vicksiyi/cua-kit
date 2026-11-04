@@ -1,3 +1,4 @@
+import { createSidePanelActions } from "./side_panel_actions";
 import { createSidePanelWindowController } from "./side_panel_window";
 import { createSidePanelTabController } from "./side_panel_tabs";
 import { createExtensionUpdateManagerClass } from "./extension_updates";
@@ -183,24 +184,35 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
       initializeForeignExtensionFrameMonitor: frameMonitor.initialize,
     });
   }
+  function getSidePanelWindowController(
+    dependencies: Omit<
+      Parameters<typeof createSidePanelWindowController>[0],
+      "chrome" | "tabs"
+    >,
+  ) {
+    sidePanelTabs ??= createSidePanelTabController({
+      chrome: host.chrome,
+      isEdge: dependencies.isEdge,
+      warn: dependencies.warn,
+    });
+    return (sidePanelWindow ??= createSidePanelWindowController({
+      ...dependencies,
+      chrome: host.chrome,
+      tabs: sidePanelTabs,
+    }));
+  }
   return {
     ChatApi,
-    getSidePanelWindowController(
-      dependencies: Omit<
-        Parameters<typeof createSidePanelWindowController>[0],
-        "chrome" | "tabs"
-      >,
+    getSidePanelWindowController,
+    createSidePanelActions(
+      dependencies: Parameters<typeof getSidePanelWindowController>[0],
     ) {
-      sidePanelTabs ??= createSidePanelTabController({
+      const controller = getSidePanelWindowController(dependencies);
+      return createSidePanelActions({
         chrome: host.chrome,
-        isEdge: dependencies.isEdge,
-        warn: dependencies.warn,
+        open: controller.open,
+        now: host.now,
       });
-      return (sidePanelWindow ??= createSidePanelWindowController({
-        ...dependencies,
-        chrome: host.chrome,
-        tabs: sidePanelTabs,
-      }));
     },
     getSidePanelTabController(
       isEdge: () => boolean,

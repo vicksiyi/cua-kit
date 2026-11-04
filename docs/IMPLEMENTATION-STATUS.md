@@ -2547,3 +2547,21 @@ installed/native/model integration remain unfinished. No dependency was added.
 
 Validation: all eight package builds/type checks and all 884 default regressions pass,
 zero failures/skips. The separate native-supervisor suite was not rerun.
+
+### Side-panel website requests and context-menu invocation
+
+Restored xk/Bf/Mk/Lk as createSidePanelActions. Website requests retain exact sender
+checks, default source, work-mode validation and 8192-character nonblank prompt rule.
+Invalid/oversized prompts are ignored while the panel still opens, matching the source.
+Opening starts immediately; only successful opening persists the original prefill
+shape. Selection prefills retain the 80000-character slice and blank-selection skip.
+Context-menu URL fallback and missing-tab guards are preserved.
+
+Foundation binds the actions to its shared window controller. Three differential tests
+cover payload and origin/frame gates, prompt boundaries, deferred successful persistence,
+open/storage failures, context-menu routing, blank selection and truncation. No real
+panel or context menu was created. Toolbar/shortcut setup, UI, complete startup and
+installed/native/model integration remain unfinished. No third-party library was added.
+
+Validation: all eight package builds/type checks and all 887 default regressions pass,
+zero failures/skips. The separate native-supervisor suite was not rerun.
