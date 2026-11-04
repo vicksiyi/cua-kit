@@ -1380,3 +1380,13 @@ Extended the native integration probe to configure a temporary trusted service a
 The original and fully substituted worker pair produce identical public MCP responses. Reset, timeout and cancellation cause four launches of each worker across the sequence. Initial assertions expecting only four total launches exposed the previously unverified trusted-worker lifecycle; the assertion now verifies four per worker kind. Native JSON object ordering is reflected in the observed RPC result rather than assumed from the in-memory fixture.
 
 Validation: explicit native-supervisor.integration.ts passes with both reconstructed workers; the unchanged default suite was not repeated (last full run: 741 tests). The native supervisor remains an external binary and no claim is made that privileged operations, permissions, browser/native resources or actual model integration are complete. This establishes the worker-substitution path needed for a runnable demo launcher, which is not yet packaged.
+
+### 16.243 Reusable restored-worker demo adapter
+
+Added independently authored @core/agent-loop native-supervisor.ts integration glue and restored-demo.ts. The adapter requires an absolute, hash-verified native supervisor, checks built worker entries, rejects wrapper conflicts, substitutes both worker paths while preserving native flags/bootstrap arguments, and forwards process signals/exit status. It keeps protocol stdout untouched and strips DeepSeek/CUA_MODEL configuration from the native child. The provider-neutral AgentLoop and MCP client remain unchanged.
+
+Added mcp:restored and demo:restored commands with explicit environment wiring. The latter selects the adapter for the existing generic demo; it does not bundle or reimplement the Rust supervisor. CUA banner/services/installed-package roots and actual backend resources remain explicit separate requirements, so the basic runnable example is a JavaScript tool task rather than an unverified page/app analysis claim.
+
+Two default tests cover native argument preservation and refusal of ambiguous launches, conflicts and unverified executables. The opt-in native suite now also connects the actual McpToolClient to the packaged adapter under network denial with isolated homes: both workers execute trusted RPC, reset succeeds, and fake model credential/config values are absent from the worker environment. This complements the original/restored lifecycle comparison; it does not perform a live model call.
+
+Validation: agent-loop type check, all 743 default reconstruction tests and both opt-in native integration tests pass. The source-restoration package build was unchanged in this adapter-only change.

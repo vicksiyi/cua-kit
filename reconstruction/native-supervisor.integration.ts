@@ -224,3 +224,69 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("agent-neutral MCP client reaches both restored workers through the packaged demo adapter", async () => {
+  const { McpToolClient } =
+    await import("../packages/agent-loop/src/mcp-client");
+  const root = await realpath(
+    await mkdtemp(path.join(os.tmpdir(), "cua-native-adapter-mcp-")),
+  );
+  try {
+    const service = path.join(root, "fixture.mjs");
+    await writeFile(
+      service,
+      'export function handleRpc(value){return {value,privileged:typeof nodeRepl.config.read === "function"};}',
+    );
+    const client = await McpToolClient.connect({
+      command: "/usr/bin/sandbox-exec",
+      args: [
+        "-p",
+        "(version 1)(allow default)(deny network*)",
+        process.execPath,
+        "--import",
+        import.meta.resolve("tsx"),
+        path.resolve("packages/agent-loop/src/native-supervisor.ts"),
+      ],
+      env: {
+        HOME: root,
+        CODEX_HOME: root,
+        TMPDIR: root,
+        CUA_NATIVE_SUPERVISOR_PATH: binary,
+        NODE_REPL_NODE_PATH: node,
+        NODE_REPL_DISABLE_ANALYTICS: "1",
+        NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ fixture: service }),
+        NODE_REPL_TRUSTED_CODE_PATHS: root,
+        NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:
+          "DEEPSEEK_API_KEY,CUA_MODEL_ENDPOINT",
+        DEEPSEEK_API_KEY: "fixture-not-a-real-key",
+        CUA_MODEL_ENDPOINT: "fixture-not-a-real-endpoint",
+      },
+      stderr: "pipe",
+    });
+    try {
+      assert.ok((await client.listTools()).some((t) => t.name === "js"));
+      const result = await client.callTool({
+        id: "rpc",
+        name: "js",
+        arguments: {
+          code: 'nodeRepl.write(await nodeRepl.rpc("fixture",17)); nodeRepl.write(Object.keys(nodeRepl.env));',
+        },
+      });
+      assert.equal(result.isError, false, JSON.stringify(result));
+      assert.equal(
+        result.content.map((c) => (c.type === "text" ? c.text : "")).join(""),
+        "{ privileged: true, value: 17 }[]",
+      );
+      const reset = await client.callTool({
+        id: "reset",
+        name: "js_reset",
+        arguments: {},
+      });
+      assert.equal(reset.isError, false);
+    } finally {
+      await client.close();
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "demo": "tsx src/demo.ts",
-    "check": "tsc -p tsconfig.json"
+    "check": "tsc -p tsconfig.json",
+    "mcp:restored": "tsx src/native-supervisor.ts",
+    "demo:restored": "tsx src/restored-demo.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
