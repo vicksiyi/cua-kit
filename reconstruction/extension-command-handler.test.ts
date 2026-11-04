@@ -31,7 +31,7 @@ function fixture(original: boolean, options: any = {}) {
         args[0],
         args[1],
         args[2],
-        args[3].constructor.name,
+        { enabled: args[3].enabled },
       ]);
     }
     async activateTurn(request: any) {
@@ -80,12 +80,6 @@ function fixture(original: boolean, options: any = {}) {
       return `${name}:result`;
     };
   }
-  class RequestHeaderPolicy {
-    async isEnabled() {
-      trace.push(["headers.enabled"]);
-      return true;
-    }
-  }
   class Siwc {
     constructor(_activate: any) {}
     getSiwcAccountContext = record("siwc.context", "context");
@@ -107,6 +101,17 @@ function fixture(original: boolean, options: any = {}) {
     getInstance: record(name, value),
   });
   const chrome = {
+    storage: {
+      local: {
+        get: async (key: string) => {
+          trace.push(["storage.get", key]);
+          return { [key]: true };
+        },
+        set: async (value: any) => {
+          trace.push(["storage.set", value]);
+        },
+      },
+    },
     tabs: {
       update: record("tabs.update", {}),
       query: async (...args: any[]) => {
@@ -159,6 +164,9 @@ function fixture(original: boolean, options: any = {}) {
       trace.push([`schema.${name}`, input]);
       return input;
     };
+  const { uS: RequestHeaderPolicy } = extensionBindings(["Pa", "uS"], {
+    chrome,
+  });
   const deps: any = {
     chrome,
     navigator: { userAgent: "test", brave: undefined },

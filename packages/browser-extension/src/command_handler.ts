@@ -1,3 +1,4 @@
+import { createRequestHeaderPolicyClass } from "./request_headers";
 import { validateCdpCommand, filterCdpResult } from "./cdp_security";
 /** Dependencies of original pE, kept explicit until their production implementations are restored.
  * No permissive fallback: callers must supply the original session/security/capability contracts.
@@ -7,7 +8,6 @@ export interface BrowserCommandDependencies {
   navigator: { userAgent: string; [name: string]: unknown };
   browserFamily(userAgent: string, brave: boolean): string;
   tabLeases: { getInstance(): any };
-  RequestHeaderPolicy: new () => any;
   Siwc: new (activate: (request: any) => Promise<any>) => any;
   buildChannel(value: string): any;
   favicons: { getInstance(): any };
@@ -76,6 +76,7 @@ export function createBrowserCommandHandlerClass(
   deps: BrowserCommandDependencies,
 ) {
   const { chrome } = deps;
+  const RequestHeaderPolicy = createRequestHeaderPolicyClass(chrome);
   return class BrowserCommandHandler {
     browserFamily = deps.browserFamily(
       deps.navigator.userAgent,
@@ -83,7 +84,7 @@ export function createBrowserCommandHandlerClass(
     );
     sessions = new Map<string, any>();
     tabLeases = deps.tabLeases.getInstance();
-    requestHeaderPolicy = new deps.RequestHeaderPolicy();
+    requestHeaderPolicy = new RequestHeaderPolicy();
     agentPopupInterceptorEnabled: any;
     browserManagementEnabled: Promise<boolean>;
     webMcpConfig: BrowserCommandOptions["webMcpConfig"];

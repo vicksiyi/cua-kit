@@ -1546,3 +1546,34 @@ results reach the reply envelope. Production session/authorization implementatio
 are still pending; these tests do not establish that whole-system completion.
 
 Validation: all eight reconstructed packages built and passed type checks; all 771 default regression tests and all 5 opt-in native-supervisor integration tests passed. The native tests still use an isolated fixture-backed browser backend and do not prove full production-extension integration.
+
+
+## 16.254 Shared request-header validation and persisted extension policy
+
+Inspected the original extension's `cs/ls` template parser/resolver and found the
+same behavior already restored from browser-service `VC/u5`. Moved the common
+implementation to `@core/core/requestHeaders`, retaining the browser's existing
+re-export and adding the extension alias `parseRequestHeaders`. This avoids two
+copies of application logic; the shared package export is a project refactoring,
+not a claimed original package boundary. These functions use built-in primitives,
+not a third-party header parser.
+
+Restored original `uS` into `createRequestHeaderPolicyClass`, and replaced the
+handler's injected RequestHeaderPolicy constructor with this direct implementation.
+Chrome storage access remains lazy at method execution. The exact persisted key
+and monotonic enable/cache behavior are preserved: false does not revoke a true
+policy; a failed write leaves the in-memory flag false. No local Chrome storage
+or user configuration was modified during tests.
+
+Three new differential tests cover input structure, inherited fields/symbols/sparse
+arrays, reserved headers, count and name/value/total limits, session placeholders,
+post-expansion collisions, literal replacement metacharacters, storage errors,
+restart reads and sticky cached decisions. Existing handler differential tests now
+use the actual original and restored policies rather than a fake constructor.
+
+Remaining: session `wd` must use the restored parser/resolver and policy in its
+turn activation flow; tab leases and request-header DNR reconciliation remain
+unrestored production dependencies. This change does not claim network-rule setup
+or full production-extension readiness.
+
+Full regression initially exposed a pre-existing wall-clock-dependent WebMCP deadline test: the original and restored runs observed different support traces around a 30ms cutoff. Replaced real Date/setTimeout timing in that test with the test runner controlled clock and explicit expiry, preserving implementation code. Targeted tests passed, followed by all 774 default regression tests. All eight reconstructed packages built and passed type checks, and all 5 native-supervisor integration tests passed. Native tests remain fixture-backed and do not prove production extension completion.

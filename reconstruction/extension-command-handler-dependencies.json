@@ -6,7 +6,7 @@
   "originalToReadable": {
     "Jt": "browserFamily",
     "st": "tabLeases",
-    "uS": "RequestHeaderPolicy",
+    "uS": "createRequestHeaderPolicyClass(chrome) imported directly from ./request_headers",
     "py": "Siwc",
     "Rr": "buildChannel",
     "Ma": "favicons",

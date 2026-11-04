@@ -197,7 +197,8 @@ test("WebMCP notification event validation and callable-name formatting match so
   assert.equal(formatWebMcpToolsNotification(7, [tool]), old.$ue(7, [tool]));
 });
 
-test("WebMCP background polls are shared and late completion does not leak notifications", async () => {
+test("WebMCP background polls are shared and late completion does not leak notifications", async (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 0 });
   async function run(source: boolean, expire: boolean) {
     let release!: () => void;
     const gate = new Promise<void>((resolve) => {
@@ -239,9 +240,10 @@ test("WebMCP background polls are shared and late completion does not leak notif
     assert.deepEqual(trace, ["poll"]);
     let output;
     if (expire) {
+      t.mock.timers.tick(30);
       output = await first;
       release();
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise<void>((resolve) => setImmediate(resolve));
     } else {
       release();
       output = await first;

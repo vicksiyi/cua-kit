@@ -37,7 +37,8 @@ through `ExtensionBrowserPeer` into the handler.
 
 The factory is an explicit reconstruction boundary, not an installed extension
 entry point. Its required dependencies include the real session (`wd`), tab leases,
-SIWC, request headers, overlay and frame monitors. CDP validation/filtering now
+SIWC, overlay and frame monitors. The original persistent request-header policy
+is constructed directly using the supplied Chrome API; CDP validation/filtering now
 imports the restored security module directly. No
 production defaults or permissive security substitutes are supplied. Parameter
 payloads remain broadly typed while those contracts are being recovered; this is
@@ -75,3 +76,20 @@ instance initialization, remaining runtime subscriptions, and startup lifetime
 still need production composition. No teardown or additional catches are invented.
 Differential tests execute only these six inspected original subscription calls,
 not the original extension startup.
+
+### Request-header templates and persisted policy
+
+The installed browser service's `VC/u5` and extension's `cs/ls` implement the same
+header-template parsing/expansion rules. Both now use `@core/core/requestHeaders`;
+the browser re-exports its existing function names and the extension exposes
+`parseRequestHeaders` and `resolveRequestHeaders`. This is a project-created shared
+export, not a claim that the original package had this path. No third-party header
+library appears in these inspected functions.
+
+The handler directly constructs the restored original `uS` policy over Chrome
+storage. `AGENT_REQUEST_HEADER_ENABLED` becomes sticky once true: a false decision
+does not revoke an enabled policy. Failed persistence does not set the in-memory
+flag. Header count/name/value/aggregate limits, reserved names, template substitution,
+case-insensitive collisions and exact validation errors are compared with the
+original extension. The session's use of these headers and lease/DNR reconciliation
+still require restoration; this module alone does not install network rules.

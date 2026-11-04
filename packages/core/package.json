@@ -11,6 +11,10 @@
     "./browserRpcPeer": {
       "types": "./src/browser_rpc_peer.ts",
       "import": "./dist/browser_rpc_peer.js"
+    },
+    "./requestHeaders": {
+      "types": "./src/request_headers.ts",
+      "import": "./dist/request_headers.js"
     }
   }
 }
