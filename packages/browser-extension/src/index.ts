@@ -143,3 +143,4 @@ export * from "./tab_read";
 export * from "./browser_protocol";
 
 export { createBrowserManagement, type BrowserManagementCall } from "./browser_management";
+export { createNativeBrowserController } from "./native_browser_controller";
