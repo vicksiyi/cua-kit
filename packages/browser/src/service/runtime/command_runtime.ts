@@ -1,3 +1,4 @@
+import { DocumentationController } from "./documentation_controller";
 import { commandScheduling } from "./command_scheduler";
 /** Reconstructed p6 runtime. Each factory owns the original module-level state.
  * Dependencies are explicit service boundaries; production assembly is tracked separately.
@@ -24,7 +25,7 @@ export interface CommandRuntimeDependencies {
   loadApiManifest: (...args: any[]) => any;
   loadDocumentManifest: (...args: any[]) => any;
   disabledApiMembers: (...args: any[]) => any;
-  Documentation: new (...args: any[]) => any;
+  Documentation?: new (...args: any[]) => any;
   readDocumentation: (...args: any[]) => any;
   createBackendSessionReporter: (...args: any[]) => any;
   createCommandScheduler?: (...args: any[]) => any;
@@ -78,7 +79,7 @@ export function createCommandRuntimeFactory(
     loadApiManifest,
     loadDocumentManifest,
     disabledApiMembers,
-    Documentation,
+    Documentation = DocumentationController,
     readDocumentation,
     createBackendSessionReporter,
     createCommandScheduler = commandScheduling.createCommandScheduler,

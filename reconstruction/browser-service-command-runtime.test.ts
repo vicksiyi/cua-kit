@@ -1,3 +1,7 @@
+import {
+  getDocumentation,
+  getBrowserDocumentation,
+} from "../packages/browser/src/service/commands/browser_inventory";
 import { createCommandScheduling } from "../packages/browser/src/service/runtime/command_scheduler";
 import { createCredentialObservationState } from "../packages/browser/src/service/security/credential_observation";
 import assert from "node:assert/strict";
@@ -328,6 +332,23 @@ function fixture(factory: any, flags: any = {}) {
     reportCommandRecovery: () => ({ serial: true }),
     closeTabCommand: { type: "close" },
   };
+  if (flags.realDocumentation) {
+    delete deps.Documentation;
+    deps.loadApiManifest = async () => ({
+      root: "Browser",
+      interfaces: {
+        Browser: {
+          name: { declarations: [{ text: "name: string;", references: [] }] },
+        },
+      },
+      types: {},
+    });
+    deps.loadDocumentManifest = async () => [
+      { name: "confirmations", mode: "included", requiredFor: ["known"] },
+      { name: "intro", mode: "lookup", description: "Intro" },
+    ];
+    deps.managementCommands = { getDocumentation, getBrowserDocumentation };
+  }
   if (flags.scheduling) {
     deps.createCommandScheduler = flags.scheduling.createCommandScheduler;
     deps.shouldEmitResponseMetadata =
@@ -623,5 +644,40 @@ test("p6 runtime composes restored scheduler and actual credential gates", async
   );
   assert.equal(f.trace.filter((x) => x[0] === "unhandled").length, 1);
   assert.equal(f.trace.filter((x) => x[0] === "record").length, 1);
+  await f.factory.dispose();
+});
+
+test("runtime uses restored documentation controller and real documentation commands", async () => {
+  const f = fixture(createCommandRuntimeFactory, {
+    realDocumentation: true,
+    scheduling: createCommandScheduling(createCredentialObservationState()),
+  });
+  const r = await f.factory.createRuntime({}, f.runtime);
+  await assert.rejects(
+    r.executeAgentCommand({
+      type: "known",
+      browser_id: "browser-1",
+      tab_id: 3,
+    }),
+    /Required documentation has not been read/,
+  );
+  assert.equal(f.trace.filter((x) => x[0] === "context").length, 0);
+  const content = await r.executeAgentCommand({
+    type: "get_browser_documentation",
+    browser_id: "browser-1",
+  });
+  assert(content.includes(" custom policy "));
+  assert(content.includes("interface Browser {"));
+  assert(content.includes("name: string;"));
+  await r.executeAgentCommand({
+    type: "known",
+    browser_id: "browser-1",
+    tab_id: 3,
+  });
+  assert.equal(
+    await r.executeAgentCommand({ type: "get_documentation", name: "intro" }),
+    "file:intro",
+  );
+  assert.equal(f.trace.filter((x) => x[0] === "command").length, 1);
   await f.factory.dispose();
 });

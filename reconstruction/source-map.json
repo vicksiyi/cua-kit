@@ -4305,7 +4305,7 @@
         "d6"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics."
+      "validation": "18 original-vs-readable runtime traces cover setup, metadata/doc policy, management dispatch, context reuse/close, reclaim, accessibility, WebMCP, handoff, recording and errors. Controlled concurrency verifies download barriers on success/failure and disposal during browser lookup; disposal rejection remains cached. All 548 tests pass. Service boundaries are explicit dependencies with synthetic providers in these tests; q3 scheduler, documentation controller, recording/telemetry and complete production assembly are not claimed restored by this module. Scheduler/response-metadata/recording guards now default to restored q3/$o/Je and shared credential observation state. Composed runtime/scheduler/actual-gate test blocks protected observations before provider execution. V3 dependency is named reportCommandRecovery to reflect its callback semantics. Documentation now defaults to restored ib controller; composed actual documentation commands verify required-read gating and policy-text/API reference output."
     },
     "packages/browser/src/service/runtime/command_scheduler.ts": {
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
@@ -4327,6 +4327,22 @@
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
       "validation": "280 original-vs-readable command/category/protection/error traces plus 20 initial-state, recheck, reason and invalid-tab cases. Auth handoffs share queue across wrappers and release on failure. Actual restored credential state/gates verify blocked protected documents, sanitized navigation, permitted new-document observation, epoch changes withholding returned data and runtime integration. Type checks and all 553 tests pass; final callback rename and epoch-assertion enhancement pass focused tests. No real credential/user session accessed; full production assembly remains incomplete."
+    },
+    "packages/browser/src/service/runtime/documentation_controller.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "status": "reconstructed-documentation-controller-and-api-renderer",
+      "symbols": [
+        "ib",
+        "z3",
+        "K3",
+        "X3",
+        "Due",
+        "Y3",
+        "J3"
+      ],
+      "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
+      "validation": "72 original backend/override/global-disable/capability combinations, exact reachable-reference output and capability rendering, eight full controller read/failure traces, concurrent reads and rendering failure state. Twelve installed API-manifest comparisons across backend types/disabled members. Actual documentation commands compose with p6 and restored scheduler to enforce required reads before browser context creation. Type checks and all 558 tests pass. Packaged documentation assets and full runtime integration remain incomplete."
     }
   },
   "embeddedPackages": {
