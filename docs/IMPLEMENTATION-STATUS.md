@@ -2767,3 +2767,31 @@ and installed/native/model end-to-end validation remain incomplete.
 
 Validation: eight package builds/type checks and all 902 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Feature service and verified Statsig fork boundary
+
+Restored Un/Yt/Mr/Is/Qm/As/rl/nl/$n/Cs/eg/tg as createExtensionFeatureService. It preserves
+stable-ID persistence, bounded auth identity lookup, synchronous/asynchronous identity
+updates, initialization retry, latest-update waiting, gate/config evaluation and abortable
+subscriptions. Metrics are serialized and confirm the exact event metadata reference in
+logs_flushed, retrying flush once before failure. Exposure flushes are coalesced through
+the same queue; buffering is limited to Ready state. Foundation binds Chrome, SIWC auth
+reader, crypto and fetch; SDK key/API/channel/browser identity remain explicit.
+
+Dependency audit found an important mismatch: bundled metadata declares Statsig 3.33.4,
+but public @statsig/js-client 3.33.4 lacks refreshValuesAsync and enableLiveValuesAutoRefresh.
+The bundled class also changes live-refresh/store behavior. Public package is installed
+for shared types/LogLevel, not claimed as an equivalent runtime. The service requires an
+extended Client constructor; Foundation exposes this requirement rather than silently
+using updateUserAsync or omitting refresh. Restoring the SDK delta is still required.
+
+Two tests compare eleven orchestration scenarios against original bindings and verify
+the actual npm version/missing method. Differential cases cover identity changes, auth/
+storage/init/update failures, flush confirmation, subscription abort and exposure queue.
+Client is an explicit fixture: no real Statsig client was initialized or telemetry sent.
+
+Bundled SDK delta, complete background startup, panel UI, native replacement and real
+installed/native/model integration remain incomplete.
+
+Validation: eight package builds/type checks and all 904 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

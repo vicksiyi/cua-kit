@@ -1,3 +1,4 @@
+import { createExtensionFeatureService } from "./feature_service";
 import { createBrowserPluginInstallation } from "./plugin_installation_service";
 import {
   createBrowserPluginCache,
@@ -218,6 +219,20 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    createFeatureService(
+      dependencies: Pick<
+        Parameters<typeof createExtensionFeatureService>[0],
+        "buildChannel" | "browserFamily" | "sdkKey" | "api" | "warn" | "Client"
+      >,
+    ) {
+      return createExtensionFeatureService({
+        ...dependencies,
+        chrome: host.chrome,
+        crypto: host.crypto,
+        readAuth: siwc.readAuthSession,
+        fetch: host.fetch ?? globalThis.fetch,
+      });
+    },
     createBrowserPluginInstallation(
       dependencies: Pick<
         Parameters<typeof createBrowserPluginInstallation>[0],

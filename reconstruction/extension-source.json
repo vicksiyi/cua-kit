@@ -140,7 +140,8 @@
     "Cf/nk/Do/pm": "createWebsiteBridge/websiteTabPatterns: per-document handshake dedupe, timed ping/injection, failure diagnostics and plugin-change notification",
     "Hk/yk": "registerExtensionLifecycle: install/startup/activation/navigation handlers, onboarding page and cleanup",
     "JC/YC/un/QC": "plugin_installation.ts: canonical-plugin ensure/link request chain, identity and negative-result cache",
-    "rk": "createBrowserPluginInstallation: account/auth cancellation, gate subscription, original request/cache composition, retry and stop lifecycle"
+    "rk": "createBrowserPluginInstallation: account/auth cancellation, gate subscription, original request/cache composition, retry and stop lifecycle",
+    "Un/Yt/Mr/Is/Qm/As/rl/nl/$n/Cs/eg/tg": "createExtensionFeatureService: identity/client lifecycle, auth refresh, gate/config subscriptions, telemetry queue; requires extended SDK client contract"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
@@ -202,5 +203,10 @@
       "ue": "website_entry.ts production definition and direct WXT startup"
     },
     "validation": "Full installed and built entrypoints compared in isolated Chromium; Chrome ports/runtime and retry timers are explicit fixtures."
+  },
+  "statsigCompatibility": {
+    "bundledVersion": "3.33.4",
+    "npmVersion": "3.33.4",
+    "difference": "Bundled StatsigClient adds refreshValuesAsync, enableLiveValuesAutoRefresh and live-refresh store behavior absent from public npm 3.33.4. Required Client injection prevents treating npm as drop-in. SDK delta restoration remains incomplete."
   }
 }

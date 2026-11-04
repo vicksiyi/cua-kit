@@ -572,3 +572,10 @@ Installation orchestration now composes the restored request/cache with account 
 auth cancellation, gate subscription, retry-after/jitter and stop cleanup. Foundation
 binds ChatApi, SIWC readers, storage and timers. Gate transport and auth-refresh service
 remain explicit dependencies; production startup and live account verification are pending.
+
+Feature-service orchestration is restored: stable/auth identity, client refresh, gate/
+config access, subscriptions and serialized telemetry. Important SDK boundary: installed
+code reports Statsig 3.33.4 but adds refreshValuesAsync/live-value refresh absent from
+public npm 3.33.4. The service therefore requires an explicit extended Client constructor;
+there is no silent fallback to the incompatible public constructor. Public dependency
+provides shared types/LogLevel; restoring the bundled SDK delta remains outstanding.
