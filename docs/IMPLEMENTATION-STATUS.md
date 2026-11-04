@@ -4446,3 +4446,23 @@ credentials or request bodies, and forward the exact protocol bytes unchanged.
 Nine focused tests and AgentLoop type checking pass. The Baidu probe proves
 homepage observation only, not search acceptance. Next investigation is the
 underlying authenticated-fetch host transport failure.
+
+
+### Classified host failures and direct transport cross-check (2026-11-05)
+
+Optional runtime diagnostics now classify native failure text into fixed labels
+(timeout/TLS/authentication/DNS/connection/request-send/response/unspecified),
+without emitting raw error text. Five diagnostic tests and AgentLoop type check
+pass; fragmented protocol bytes remain unchanged. A first diagnostic probe had
+already loaded the earlier module; a subsequent fresh probe used the new version.
+
+The fresh model-free full-extension Baidu probe passes homepage observation, but
+its site-status host fetch fails in 49 ms rather than the prior 30004 ms and is
+classified unspecified. Therefore the underlying native error does not currently
+provide a recognized cause through this classifier. A separate unauthenticated
+request to the same known site-status endpoint fails before HTTP: curl exit 7
+(status 000, ~49 ms); Node fetch TypeError with cause ECONNREFUSED (~92 ms).
+No credentials were supplied in these cross-checks and no DNS/proxy/policy settings
+were changed. This supports a currently unavailable upstream network connection;
+it does not prove the original 30-second host failure has the identical cause,
+or establish login status. No Baidu search or production auth success is claimed.

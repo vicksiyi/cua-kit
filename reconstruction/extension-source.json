@@ -510,5 +510,14 @@
     "diagnosticTest": "reconstruction/agent-loop-runtime-diagnostics.test.ts",
     "conclusion": "Failed status checks are not cached; later commands await a fresh request. Underlying host transport failure cause unresolved.",
     "unchanged": "Security gates and original request/cache behavior; no fabricated allow response or bypass."
+  },
+  "authenticatedFetchTransportCrossCheck": {
+    "diagnostics": "Fixed-label native error classification; no raw messages or protocol changes.",
+    "latestProbe": "Full-extension model-free Baidu homepage observation passed; site-status transport error at 49 ms, category unspecified.",
+    "unauthenticatedChecks": {
+      "curl": "exit 7 / HTTP 000 / approximately 49 ms",
+      "node": "TypeError, cause ECONNREFUSED, approximately 92 ms"
+    },
+    "boundary": "No credentials or network settings modified; does not establish authentication status or prove identical cause for earlier 30-second failures."
   }
 }

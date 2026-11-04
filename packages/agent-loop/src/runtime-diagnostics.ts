@@ -19,6 +19,20 @@ function fetchCategory(value: unknown): string {
   } catch {}
   return "other-fetch";
 }
+/** Fixed categories only: the raw native error may contain credentials or URLs. */
+export function fetchFailureCategory(error: unknown): string {
+  if (typeof error !== "string") return "unspecified";
+  if (/timed?[- ]?out|timeout|deadline/i.test(error)) return "timeout";
+  if (/certificate|TLS|SSL/i.test(error)) return "tls";
+  if (/unauthorized|forbidden|authentication|credentials/i.test(error))
+    return "authentication";
+  if (/resolve|DNS|name lookup/i.test(error)) return "dns";
+  if (/connect|connection/i.test(error)) return "connection";
+  if (/send(?:ing)? (?:a )?request/i.test(error)) return "request-send";
+  if (/response|body|decode/i.test(error)) return "response";
+  return "unspecified";
+}
+
 export function createRuntimeDiagnostics(
   write: (line: string) => void,
   now = () => performance.now(),
@@ -64,6 +78,10 @@ export function createRuntimeDiagnostics(
       emit(
         `fetch #${entry.sequence} ${entry.label} ${outcome} (${elapsedMs} ms)`,
       );
+      if (message.ok !== true)
+        emit(
+          `fetch #${entry.sequence} failure category: ${fetchFailureCategory(message.error)}`,
+        );
       if (
         entry.label === "site-status" &&
         message.ok !== true &&

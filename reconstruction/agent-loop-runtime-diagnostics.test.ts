@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRuntimeDiagnostics } from "../packages/agent-loop/src/runtime-diagnostics";
+import {
+  createRuntimeDiagnostics,
+  fetchFailureCategory,
+} from "../packages/agent-loop/src/runtime-diagnostics";
 
 function record(stream: NodeJS.ReadWriteStream) {
   const chunks: Buffer[] = [];
@@ -88,9 +91,9 @@ test("transport errors and unresolved work are distinguished without raw error t
   );
   d.close();
   d.close();
-  assert.equal(logs.length, 4);
+  assert.equal(logs.length, 5);
   assert.match(logs[2], /transport error/);
-  assert.match(logs[3], /unresolved/);
+  assert.match(logs[4], /unresolved/);
   assert.ok(!logs.join().includes("credential-secret"));
   d.requests.destroy();
   d.responses.destroy();
@@ -129,4 +132,19 @@ test("slow site-status transport failures identify the upstream boundary without
   d.close();
   d.requests.destroy();
   d.responses.destroy();
+});
+
+test("native error categorization emits only fixed labels", () => {
+  for (const [input, expected] of [
+    ["request timed out: secret-url", "timeout"],
+    ["TLS certificate failed: secret-token", "tls"],
+    ["authentication denied secret", "authentication"],
+    ["DNS lookup failed private", "dns"],
+    ["connection refused private", "connection"],
+    ["error sending request private", "request-send"],
+    ["response body decoding private", "response"],
+    ["secret-token-only", "unspecified"],
+    [null, "unspecified"],
+  ])
+    assert.equal(fetchFailureCategory(input), expected);
 });
