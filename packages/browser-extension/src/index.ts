@@ -151,3 +151,7 @@ export { createBackgroundMentionInvalidationStarter } from "./background_mention
 export { startExtensionBackground, type BackgroundStartupHost } from "./background_startup";
 
 export * from "./web_mcp_registration";
+
+export * from "./youtube_timestamp";
+
+export { createExtensionBackground, type BackgroundAssemblyOptions } from "./background_assembly";

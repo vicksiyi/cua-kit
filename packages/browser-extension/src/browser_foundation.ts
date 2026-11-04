@@ -1,3 +1,4 @@
+import { createYoutubeTimestampHandler } from "./youtube_timestamp";
 import { createWebMcpGate, createWebMcpRegistration } from "./web_mcp_registration";
 import { createBrowserManagement } from "./browser_management";
 import { extensionBrowserProtocol } from "./browser_protocol";
@@ -244,6 +245,9 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     }));
   }
   return {
+    createYoutubeTimestampHandler() {
+      return createYoutubeTimestampHandler({ chrome: host.chrome, withTimeout: contentRuntime.withTimeout });
+    },
     createWebMcpConfig(dependencies: Pick<Parameters<typeof createWebMcpGate>[0], "subscribeGate" | "warn">) {
       return createWebMcpGate({ ...dependencies, apply: createWebMcpRegistration(host.chrome.scripting) });
     },

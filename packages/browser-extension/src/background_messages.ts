@@ -55,7 +55,7 @@ export function createBackgroundMessageRouter<Control>(host: {
   sidePanelInstance: MessageHandler;
   sidePanelAuth: MessageHandler;
   tabMentions: MessageHandler;
-  websiteStatus: (message: any, reply: Reply) => boolean;
+  youtubeTimestamp: (message: any, reply: Reply) => boolean;
   showInstaller: (
     message: any,
     sender: chrome.runtime.MessageSender,
@@ -102,7 +102,7 @@ export function createBackgroundMessageRouter<Control>(host: {
     if (pageEvent(message, sender)) return false;
     if (
       host.tabMentions(message, sender, reply) ||
-      host.websiteStatus(message, reply)
+      host.youtubeTimestamp(message, reply)
     )
       return true;
     if (host.showInstaller(message, sender)) {

@@ -105,7 +105,7 @@ export interface BackgroundStartupHost {
     sender: chrome.runtime.MessageSender,
     reply: (value?: any) => void,
   ): boolean;
-  websiteStatus(message: any, reply: (value?: any) => void): boolean;
+  youtubeTimestamp(message: any, reply: (value?: any) => void): boolean;
   showInstaller(
     message: any,
     sender: chrome.runtime.MessageSender,
@@ -225,7 +225,7 @@ export async function startExtensionBackground(
       broadcast((target) => target.sendPageEvent(event)),
     tabMentions: (...args) =>
       host.tabMentionMessage(provider, channel, ...args),
-    websiteStatus: host.websiteStatus,
+    youtubeTimestamp: host.youtubeTimestamp,
     showInstaller: (message, sender) =>
       host.showInstaller(message, sender, channel),
     sidePanelLoad: host.sidePanelLoad,

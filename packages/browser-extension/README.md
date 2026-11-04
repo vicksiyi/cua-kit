@@ -724,3 +724,33 @@ cleanup failures, and subscription failure. The inspected extension build refere
 present in that installed build. Available @oai WebMCP documentation does not replace
 those assets. No substitute scripts were invented, and this capability remains
 unavailable/unverified in the independent deployment.
+
+## Binding full startup to restored services
+
+`createExtensionBackground(options)` now constructs the foundation, real feature/auth
+service, browser handler, native transport, kernel control and peer implementations,
+then supplies `startExtensionBackground` with concrete message, side-panel, website,
+lease, update, lifecycle and heartbeat bindings. `start()` runs that orchestration;
+construction alone does not claim authentication or start a browser connection.
+The lifecycle's install handler creates the context-menu item rather than registering
+its click listener again.
+
+The environment still must provide Chrome APIs, channel/native-host identity, feature
+SDK configuration, an active kernel scope/PDF runtime, turn-end registration, and
+telemetry initialization/error reporting. These are explicit requirements rather than
+success stubs. The full manifest/entry/resource deployment is not selected by the
+native-only installer yet, and the missing WebMCP assets remain unresolved.
+
+The original `tR` route was identified as YouTube timestamp seeking, not website
+status (`vk`). Its restored handler validates the five-field request, tab/window/video
+ownership, and then rechecks the actual page URL and video element inside the injected
+function. It reuses the restored timeout helper and URL parser; timeout yields the
+original `ok: true, didSeek: false` result. The router dependency is now correctly named
+`youtubeTimestamp`. Original-code differential tests cover URL variants, duplicate
+query parameters, invalid numbers, ownership mismatch, missing video, setter errors,
+script failure and timeout. No live YouTube playback was performed.
+
+The full-factory test uses actual restored control RPC, scope registry and storage
+logic with explicit Chrome fixtures. It verifies output delivery, session config,
+disconnect cancellation, lifecycle registration/cleanup and context-menu creation.
+It is not evidence of live ChatGPT authentication or deployed sidebar functionality.

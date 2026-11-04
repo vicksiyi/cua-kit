@@ -162,7 +162,8 @@
     "$g/jg": "CloudRequirementsClient uses actual parser by default; cloud settings and requirements cache/queue behavior restored",
     "Mg/fl/Lg/pl/Dg/Ng/ml + validators": "parseCloudRequirements: reverse layer precedence, per-layer validation, recursive plain-object merge and normalized browser/network/features",
     "dR full startup": "startExtensionBackground: complete startup ordering, shared native/kernel handler, lazy mention observation, runtime routing, lifecycle, telemetry barrier and dual heartbeat; actual production service binding remains required",
-    "Wf/zk/Kf/Zf/Vk/Wk": "webMcpContentScripts/createWebMcpRegistration/createWebMcpGate: temporary MAIN/ISOLATED registration, serialized latest-state application, failure cleanup and stable enabled observation"
+    "Wf/zk/Kf/Zf/Vk/Wk": "webMcpContentScripts/createWebMcpRegistration/createWebMcpGate: temporary MAIN/ISOLATED registration, serialized latest-state application, failure cleanup and stable enabled observation",
+    "tR/rR/nR/Yf/iR/sR": "createYoutubeTimestampHandler/isYoutubeTimestampRequest/seekYoutubeTimestampInPage: original timestamp validation, tab/window/video checks, revalidation inside injected page code and timeout reply semantics"
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
@@ -252,7 +253,8 @@
       "turn-error",
       "telemetry-error"
     ],
-    "limit": "This proves orchestration against the inspected build; fixtures do not establish actual ChatGPT auth, website, sidebar or standalone kernel deployment."
+    "limit": "This proves orchestration against the inspected build; fixtures do not establish actual ChatGPT auth, website, sidebar or standalone kernel deployment.",
+    "assembly": "createExtensionBackground binds actual restored foundation, feature/auth, browser/native/kernel, side-panel and lifecycle implementations; Chrome environment, kernel/PDF runtime and telemetry are still explicit host requirements"
   },
   "webMcpAssetBoundary": {
     "referencedFiles": [

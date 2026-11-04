@@ -182,7 +182,7 @@ async function run(restored: boolean, mode: string) {
     refreshBrowserSettings: async (control) =>
       trace.push(["settings", control]),
     tabMentionMessage: () => false,
-    websiteStatus: () => false,
+    youtubeTimestamp: () => false,
     showInstaller: () => false,
     sidePanelLoad: () => false,
     openSidePanel: () => false,
@@ -288,7 +288,7 @@ async function run(restored: boolean, mode: string) {
       Oy: isAgentPopupRequest,
       Dp: isBrowserPageEvent,
       Tf: host.tabMentionMessage,
-      tR: host.websiteStatus,
+      tR: host.youtubeTimestamp,
       sk: host.showInstaller,
       Zk: host.sidePanelLoad,
       xk: host.openSidePanel,
