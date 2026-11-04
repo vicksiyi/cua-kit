@@ -16,7 +16,7 @@ npm run check:reconstruction
 npx tsx --test reconstruction/extension-native-transport.test.ts
 ```
 
-This is **not yet an installable extension**. The real extension dispatcher, browser operations, session/auth/security integration, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
+This is **not yet an installable extension**. The dispatcher and session classes are restored, but lower-level lease/debugger/overlay/auth implementations, full startup, manifest/build wiring and native messaging host remain outstanding. The original extension snapshot is newer than the recorded desktop application artifacts; cross-version production compatibility is not established by component differential tests.
 
 ## Browser RPC facade
 
@@ -24,7 +24,7 @@ The original `fc` bidirectional peer and `pc` extension facade are now restored.
 
 The original bundles differ in transport field initialization order. The shared class factory preserves each variant and class-field descriptor/setter semantics. It retains method registration/binding, numeric request IDs, string rejection values, missing-handler errors, notification listeners and response suppression after closure. `ExtensionBrowserPeer` restores ping and the CDP/detach/download/page/tab-mention notifications, plus moveMouse/WebMCP event handling. Synchronous moveMouse throws remain synchronous failures; only rejected promises go to its error callback, matching the source.
 
-Differential tests compare both original peers and the extension facade. A composed transport/peer test verifies `native-host:*` host requests and numeric browser requests do not collide, and an inbound browser request reaches the supplied handler and returns through native messaging. The production command handler is still not restored/installed; this is protocol composition with a fixture handler.
+Differential tests compare both original peers and the extension facade. A composed transport/peer test verifies `native-host:*` host requests and numeric browser requests do not collide, and an inbound browser request reaches the supplied handler and returns through native messaging. That transport test uses a fixture handler; later tests below also compose the restored dispatcher and session. Full production startup is not installed.
 
 ### Browser command handler
 
@@ -36,7 +36,9 @@ are compared with the pinned artifact. An RPC composition test routes requests
 through `ExtensionBrowserPeer` into the handler.
 
 The factory is an explicit reconstruction boundary, not an installed extension
-entry point. Its required dependencies include the real session (`wd`), tab leases,
+entry point. Use `createBrowserCommandHandlerWithSession(handlerDependencies, sessionDependencies)`
+to bind the restored `wd` session; the lower-level handler factory also accepts a
+Session constructor. Remaining required dependencies include tab leases,
 SIWC, overlay and frame monitors. The original persistent request-header policy
 is constructed directly using the supplied Chrome API; CDP validation/filtering now
 imports the restored security module directly. No
@@ -53,9 +55,9 @@ flowchart TD
   Peer --> Handler[BrowserCommandHandler — restored pE]
   Handler --> Chrome[Chrome APIs: tabs / windows / scripting / notifications]
   Handler --> Guards[Restored CDP filters + required SIWC / lease dependencies]
-  Handler --> Session[Required Session implementation: original wd]
+  Handler --> Session[BrowserSession — restored wd]
   Handler --> Overlay[Required overlay and frame-monitor implementations]
-  Session --> Actual[Debugger / lifecycle / ownership — pending production wiring]
+  Session --> Actual[Debugger / lease / overlay dependencies — pending production wiring]
 ```
 
 ### CDP security and event forwarding
@@ -91,5 +93,21 @@ storage. `AGENT_REQUEST_HEADER_ENABLED` becomes sticky once true: a false decisi
 does not revoke an enabled policy. Failed persistence does not set the in-memory
 flag. Header count/name/value/aggregate limits, reserved names, template substitution,
 case-insensitive collisions and exact validation errors are compared with the
-original extension. The session's use of these headers and lease/DNR reconciliation
-still require restoration; this module alone does not install network rules.
+original extension. The restored session uses these headers during turn activation; lease/DNR reconciliation
+still requires restoration; this module alone does not install network rules.
+
+### Browser session lifecycle
+
+`createBrowserSessionClass` translates every original `wd` method. It retains the
+serialized lifecycle queue, cached-context checks, header inheritance and explicit
+clearing, handoff recovery, logical active tab, user/child/agent tab claiming,
+CDP timeout cleanup, popup/header preparation and end-of-turn finalization order.
+The session directly uses the shared original-derived header parser and resolver.
+`createBrowserCommandHandlerWithSession` composes it with the restored dispatcher;
+a test exercises RPC getTabs/executeCdp/turnEnded through both real classes.
+
+The session factory still requires actual lease/group/favicon/debugger/network/
+overlay implementations. Those collaborators are explicit fixtures in differential
+tests, and the composition helper does not provide fake production defaults.
+`reconstruction/extension-session-dependencies.json` maps the original closure.
+Broad protocol payload types remain temporary until those contracts are restored.

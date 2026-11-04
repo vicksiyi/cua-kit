@@ -1,3 +1,7 @@
+import {
+  createBrowserSessionClass,
+  type BrowserSessionDependencies,
+} from "./browser_session";
 import { createRequestHeaderPolicyClass } from "./request_headers";
 import { validateCdpCommand, filterCdpResult } from "./cdp_security";
 /** Dependencies of original pE, kept explicit until their production implementations are restored.
@@ -596,4 +600,15 @@ function downloadStatus(change: any) {
     case undefined:
       return;
   }
+}
+
+/** Production composition seam: use the restored session, with its required lower-level dependencies. */
+export function createBrowserCommandHandlerWithSession(
+  handlerDependencies: Omit<BrowserCommandDependencies, "Session">,
+  sessionDependencies: BrowserSessionDependencies,
+) {
+  return createBrowserCommandHandlerClass({
+    ...handlerDependencies,
+    Session: createBrowserSessionClass(sessionDependencies),
+  });
 }

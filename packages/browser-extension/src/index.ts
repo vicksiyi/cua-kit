@@ -5,3 +5,4 @@ export * from "./command_handler";
 export * from "./cdp_security";
 export * from "./browser_events";
 export * from "./request_headers";
+export * from "./browser_session";

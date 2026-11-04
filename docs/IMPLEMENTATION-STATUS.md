@@ -1577,3 +1577,36 @@ unrestored production dependencies. This change does not claim network-rule setu
 or full production-extension readiness.
 
 Full regression initially exposed a pre-existing wall-clock-dependent WebMCP deadline test: the original and restored runs observed different support traces around a 30ms cutoff. Replaced real Date/setTimeout timing in that test with the test runner controlled clock and explicit expiry, preserving implementation code. Targeted tests passed, followed by all 774 default regression tests. All eight reconstructed packages built and passed type checks, and all 5 native-supervisor integration tests passed. Native tests remain fixture-backed and do not prove production extension completion.
+
+
+## 16.255 Full browser-session lifecycle translation
+
+Translated every method of original extension `wd` to readable TypeScript in
+`browser_session.ts`, including its original fields and constructor initialization
+order. The restored session implements lifecycle serialization and recovery after
+rejection, active/cached/ended turn checks, request-header parsing/inheritance/
+clearing, handoff resumption, logical active-tab handling, agent/user/child tab
+claiming, ownership guards, CDP attach/detach/timeout cleanup, network-policy
+ordering, popup/header readiness, viewport changes and turn finalization.
+
+Turn finalization preserves handoff/deliverable/close/release partitioning and
+parallel-vs-sequential cleanup, best-effort error handling, resource release and
+request-header reconciliation ordering. The session calls the restored shared
+header parser/resolver directly; it does not bypass validation or invent a new
+ended-turn policy. Runtime dependencies remain explicit and mapped in
+`extension-session-dependencies.json`.
+
+Added `createBrowserCommandHandlerWithSession` to compose the real restored session
+with the dispatcher. Four differential scenarios compare the complete method
+inventory, field order, results, errors, dependency traces and final state against
+the pinned original wd, including malformed marks/headers, denied ownership,
+debugger timeout, popup preparation failure, handoff stale tabs and queue rejection.
+A fifth test sends getTabs/executeCdp/turnEnded RPC through the restored facade,
+dispatcher and session, while using fixture lower-level browser/lease dependencies.
+
+Not complete: production lease/group/favicon, debugger transport/network policy,
+overlay/monitor and SIWC implementations, full startup and extension installation,
+native host and real desktop/DeepSeek integration. The production session class is
+now translated, but the injected lower-level fixtures are not production readiness.
+
+Validation: all eight reconstructed packages built and passed type checks; all 779 default regression tests and all 5 opt-in native-supervisor integration tests passed. Native integration remains fixture-backed; this does not prove complete production extension behavior.
