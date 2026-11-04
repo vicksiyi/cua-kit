@@ -3191,3 +3191,26 @@ requirements parser, kernel host, full startup and real end-to-end work remain i
 
 Validation: eight package builds/type checks and all 936 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Requirements parser and TOML dependency
+
+Identified the bundled parser as smol-toml by inspected implementation structure/options
+and reused pinned 1.5.2 (BSD-3-Clause). Inspected 1.4.2 and 1.5.2 parser modules are byte-
+identical; only serializer/bundle files differ, so the original exact version is not proven.
+Upstream reference: https://github.com/squirrelchat/smol-toml . No custom TOML parser was
+implemented. integersAsBigInt=true preserves source parsing semantics.
+
+parseCloudRequirements restores Mg and normalization helpers: reverse enterprise layers,
+validate each layer before recursive plain-object merge, then normalize browser/network/
+feature rules and detect empty requirements. Conflicting feature aliases/domain policies
+and invalid field types produce the original generic error. Request headers reuse the
+already restored validator. CloudRequirementsClient now binds this parser by default.
+
+Two differential tests execute actual bundled xg and Mg, covering 21 TOML cases plus
+empty/malformed bundles, policy normalization, aliases, per-layer failures, precedence,
+prototype-named keys and unknown fields. The focused corpus supports compatibility but
+is not a proof of every TOML input. Full control/kernel/startup and actual end-to-end
+verification remain unfinished.
+
+Validation: eight package builds/type checks and all 938 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

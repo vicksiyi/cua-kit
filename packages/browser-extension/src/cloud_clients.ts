@@ -1,9 +1,10 @@
+import { parseCloudRequirements } from "./cloud_requirements";
 export interface KernelCloudApi {
   signal: AbortSignal;
   account: { structure: string };
   request(path: string, init?: RequestInit): Promise<any>;
 }
-/** Original $g; parser remains explicit until its bundled TOML dependency is identified. */
+/** Original $g; parser injection also supports source-differential testing. */
 export function createCloudRequirementsClientClass<Result>(
   parse: (value: unknown) => Result,
 ) {
@@ -90,3 +91,7 @@ export class CloudBrowserSettingsClient {
     return pending;
   }
 }
+
+export const CloudRequirementsClient = createCloudRequirementsClientClass(
+  parseCloudRequirements,
+);

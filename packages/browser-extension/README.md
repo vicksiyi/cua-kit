@@ -625,5 +625,9 @@ Its guards match the bundled limited envelope checks; the Agent host owns UI and
 decisions. Complete control RPC and actual kernel integration are still pending.
 
 Cloud requirements/settings clients now preserve original caching and queued request
-semantics. Requirements parsing remains explicitly injected until the bundled TOML
-dependency is identified and reused; complete control/startup assembly remains pending.
+semantics. CloudRequirementsClient now uses parseCloudRequirements with pinned smol-toml 1.5.2;
+the exact original package version is unproven. Complete control/startup remains pending.
+
+Requirements parsing validates each enterprise layer before reverse-precedence merge,
+then normalizes browser/network/features rules. It reuses smol-toml and request-header
+validation; actual bundled-parser differential coverage is recorded in reconstruction.
