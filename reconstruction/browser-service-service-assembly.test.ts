@@ -183,7 +183,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
           createLocalizer: () => () => "fixture",
         },
         commands: {
-          typeText: unused,
           emitBotDetection: unused,
           webMcp: {
             isLocalRuntime: () => true,
@@ -359,7 +358,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
     await page.route("https://fixture.invalid/**", (route) =>
       route.fulfill({
         contentType: "text/html",
-        body: `<title>Public CUA fixture</title><button onclick="this.textContent='Clicked through CUA';this.dataset.clicks=String(Number(this.dataset.clicks||0)+1)">Public CUA action</button><label>Date<input id="fixture-date" type="date"></label>`,
+        body: `<title>Public CUA fixture</title><button onclick="this.textContent='Clicked through CUA';this.dataset.clicks=String(Number(this.dataset.clicks||0)+1)">Public CUA action</button><label>Date<input id="fixture-date" type="date"></label><label>Message<input id="fixture-message"></label><div id="rich-editor" contenteditable="true"></div>`,
       }),
     );
     await page.goto("https://fixture.invalid/cua-integration");
@@ -379,6 +378,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       "Page.screencastFrame",
       "Page.javascriptDialogOpening",
       "Page.javascriptDialogClosed",
+      "Runtime.bindingCalled",
       "Runtime.executionContextCreated",
       "Runtime.executionContextDestroyed",
       "Runtime.executionContextsCleared",
@@ -432,6 +432,27 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       await page.locator("#fixture-date").inputValue(),
       "2026-11-04",
     );
+    await pageTab.playwright
+      .getByLabel("Message", { exact: true })
+      .fill("中文 😀 plain");
+    assert.equal(
+      await page.locator("#fixture-message").inputValue(),
+      "中文 😀 plain",
+    );
+    await pageTab.playwright
+      .locator("#rich-editor")
+      .fill("**Bold** and *italic*");
+    assert.equal(
+      await page.locator("#rich-editor").textContent(),
+      "**Bold** and *italic*",
+    );
+    await pageTab.playwright.locator("#rich-editor").fill("");
+    await pageTab.cua.type({ text: "**Bold** and *italic*" });
+    assert.equal(
+      await page.locator("#rich-editor strong").textContent(),
+      "Bold",
+    );
+    assert.equal(await page.locator("#rich-editor em").textContent(), "italic");
     const domAfter = await pageTab.playwright.domSnapshot();
     assert.match(domAfter, /2026-11-04/);
     const changed = await pageTab.getAXState({ emit: false });

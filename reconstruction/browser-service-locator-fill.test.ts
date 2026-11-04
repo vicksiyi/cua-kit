@@ -13,7 +13,7 @@ import { executeClipboardPage } from "../packages/browser/src/service/clipboard/
 import { pageClipboardOperation } from "../packages/browser/src/service/clipboard/page_operations";
 import { BrowserClipboard } from "../packages/browser/src/service/context/browser_clipboard";
 import { PlaywrightService } from "../packages/browser/src/service/playwright/service";
-// Renderer fixture isolates the original text/whitespace plumbing; bundled renderer fidelity remains pending.
+// Renderer fixture isolates text/whitespace plumbing; upstream renderer fidelity is covered by browser-service-markdown.test.ts.
 const renderer = {
   render(text: string) {
     return `<p>${text.trim()}</p>\n`;

@@ -4723,6 +4723,13 @@
       "workspace": "@core/browser",
       "status": "upstream v3 used by browser command schemas and transport; original bundle exact version unknown; differential coverage verified",
       "validation": "reconstruction/upstream-zod.test.ts and existing original command schema tests"
+    },
+    "markdown-it": {
+      "version": "14.1.0",
+      "workspace": "@core/browser",
+      "evidence": "ur configure error names markdown-it; t_=ur; N9 options breaks true, html/linkify/typographer false",
+      "status": "default text paste wired into CUA/DOM/locator command assembly; historical exact version unproven",
+      "validation": "original bundled renderer differential cases and public RPC/CDP plain/rich editor integration"
     }
   }
 }
