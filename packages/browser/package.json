@@ -35,6 +35,10 @@
     "./tabReading": {
       "types": "./src/tab_reading.ts",
       "import": "./dist/tab_reading.js"
+    },
+    "./extensionProtocol": {
+      "types": "./src/extension_protocol.ts",
+      "import": "./dist/extension_protocol.js"
     }
   },
   "dependencies": {

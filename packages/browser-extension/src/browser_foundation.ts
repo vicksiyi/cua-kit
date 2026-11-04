@@ -1,3 +1,4 @@
+import { extensionBrowserProtocol } from "./browser_protocol";
 import { createTabReader } from "./tab_read";
 import { captureTabContext } from "./tab_capture";
 import { browserFamilies, identifyBrowserFamily, isBrowserInternalTab, isBrowserNewTab, extensionBuildChannel } from "./browser_platform";
@@ -152,6 +153,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    ...extensionBrowserProtocol,
     executeTabRead: createTabReader(host.chrome),
     getTabContext: captureTabContext,
     browserInfo: browserFamilies,
