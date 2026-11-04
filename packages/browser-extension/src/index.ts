@@ -98,3 +98,5 @@ export * from "./background_messages";
 export * from "./background_runtime";
 
 export * from "./kernel_transport";
+
+export * from "./kernel_scope";

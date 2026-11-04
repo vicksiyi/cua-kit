@@ -3109,3 +3109,24 @@ browser/App/model end-to-end verification.
 
 Validation: eight package builds/type checks and all 928 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Kernel execution scope and output
+
+Restored Dr/Hg/Le as createKernelScopeRegistry. Each scope retains client, ChatApi,
+caller signal, disposal signal, optional PDF cleanup callback and the shared content
+array. Duplicate execution throws; lookup propagates the caller's exact abort reason.
+Disposal aborts before deleting the matching scope, and repeated disposal of an old
+execution cannot delete a replacement execution. Beginning with an already-aborted
+caller signal remains allowed, while subsequent lookup throws, matching the source.
+
+createKernelOutputWriter restores Ds displayValue/displayImage. Non-string values use
+JSON.stringify with String fallback; serialization precedes scope lookup, including
+serialization errors. Images append the original PNG output envelope without decoding.
+
+Two source-differential tests cover lifecycle/reentrancy/reuse, reference identity,
+cancellation and output serialization/error order. No kernel host or control RPC was
+executed. Registry and writer still require assembly with the remaining Ds control
+methods and kernel execution entrypoint; full startup and end-to-end work remain pending.
+
+Validation: eight package builds/type checks and all 930 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.
