@@ -8,7 +8,8 @@ import { createDemoModel } from "./provider";
 const question = process.argv.slice(2).join(" ").trim();
 if (!question)
   throw new Error('Usage: npm run demo -w @core/agent-loop -- "question"');
-const model = createDemoModel();
+const checkBrowser =
+  process.argv.length === 3 && process.argv[2] === "--check-browser";
 const command = process.env.CUA_MCP_COMMAND;
 if (!command)
   throw new Error("Set CUA_MCP_COMMAND to the MCP server executable.");
@@ -27,6 +28,16 @@ if (Object.keys(serverEnv).some((key) => /(?:DEEPSEEK|CUA_MODEL)/i.test(key)))
   throw new Error(
     "Model credentials/configuration must not be forwarded to the MCP server.",
   );
+const browserEnabled = (
+  serverEnv as Record<string, string>
+).CUA_REPL_ENABLED_SURFACES?.split(",").some(
+  (surface) => surface.trim() === "browser",
+);
+if (checkBrowser && !browserEnabled)
+  throw new Error(
+    "--check-browser requires the browser surface in CUA_MCP_ENV.",
+  );
+const model = checkBrowser ? undefined : createDemoModel();
 const requestMeta: unknown = JSON.parse(
   process.env.CUA_MCP_REQUEST_META ?? "{}",
 );
@@ -61,21 +72,25 @@ const turnClient: import("./contracts").ToolClient = turnEvent
 const trace = createTerminalTrace();
 let loopStarted = false;
 try {
-  const initialMessages =
-    (serverEnv as Record<string, string>).CUA_REPL_ENABLED_SURFACES ===
-    "browser"
-      ? await browserPreflight(turnClient, {
-          signal: controller.signal,
-          onMessage: trace,
-        })
-      : [];
-  loopStarted = true;
-  const result = await new AgentLoop(model, turnClient).run(question, {
-    signal: controller.signal,
-    onMessage: trace,
-    initialMessages,
-  });
-  console.log(result.answer);
+  const initialMessages = browserEnabled
+    ? await browserPreflight(turnClient, {
+        signal: controller.signal,
+        onMessage: trace,
+      })
+    : [];
+  if (checkBrowser) {
+    console.log(
+      "Browser connection verified by CUA inventory. No model request or page action was performed; navigation/click acceptance is still separate.",
+    );
+  } else {
+    loopStarted = true;
+    const result = await new AgentLoop(model!, turnClient).run(question, {
+      signal: controller.signal,
+      onMessage: trace,
+      initialMessages,
+    });
+    console.log(result.answer);
+  }
 } finally {
   process.removeListener("SIGINT", interrupt);
   try {

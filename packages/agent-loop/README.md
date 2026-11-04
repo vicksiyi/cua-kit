@@ -162,3 +162,19 @@ CORE_CUA_RUNTIME_DIAGNOSTICS=1 npm run demo:deepseek -- "访问百度 搜索 dee
 ```
 
 The worker wrapper observes JSONL while forwarding its bytes unchanged. It logs only request sequence, a fixed category (`site-status`, `identity`, `other-fetch`), elapsed time and HTTP/transport outcome to stderr. URLs, query strings, IDs, headers, bodies and raw errors are not emitted by this diagnostic observer. Normal tool logs still contain tool input and page output as before. Diagnostics are disabled by default, bounded to 64 KiB per observed line and 1024 pending requests, and best effort during abrupt process termination. They do not bypass approvals or captchas and do not establish that external search succeeded.
+
+
+### Check the installed Chrome connection without DeepSeek
+
+```sh
+npm run demo:deepseek -- --check-browser
+```
+
+This mode does not require a model token or prompt and does not create a model client.
+It uses the same restored runtime, host discovery and CUA inventory as the demo,
+prints tool logs when connected, and exits nonzero if no browser is available.
+A successful inventory check proves discovery only; it does not certify navigation,
+clicks, screenshots or search results. It does not execute a page action.
+For the independent Chrome installation, load
+`packages/browser-extension/dist/native-extension` through Chrome's extensions
+page after `npm run install:chrome`. Keep Chrome running during the check.

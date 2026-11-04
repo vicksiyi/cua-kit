@@ -3881,3 +3881,16 @@ Restored Wf/zk/Kf/Zf/Vk/Wk as typed script registration and serialized feature-g
 ### 2026-11-05: full background service factory and corrected tR route
 
 Added createExtensionBackground to bind the full startup to concrete restored foundation/feature/auth/native/browser/kernel/sidebar/website/lifecycle services. Required environment configuration and active kernel/PDF/telemetry runtime remain explicit; the native-only deployment is still selected. Corrected original tR's semantic name from websiteStatus to youtubeTimestamp and restored its guard, timeout, ownership check and self-contained page execution using the existing URL/timeout helpers. Differential tests cover original timestamp behavior. Factory integration verifies real control RPC, scope output, storage, disconnect cancellation and lifecycle cleanup using explicit Chrome fixtures. No live YouTube/account/sidebar verification is claimed. Full deployment, missing WebMCP resources, daily Chrome and external search acceptance remain unfinished.
+
+
+### 2026-11-05 — explicit browser connection check
+
+Added `npm run demo:deepseek -- --check-browser` as caller-side diagnostics,
+not reconstructed upstream code. The flag skips prompt/key input and model
+construction, uses the existing CUA preflight, and preserves turn cleanup.
+The inventory check now also recognizes browser among comma-separated surfaces.
+Validation: agent-loop type check and 4 preflight/CLI tests pass; CLI tests use
+real stdio MCP with fixture inventory, not a live Chrome success claim.
+The local entry was exercised with an empty model key: the build completed and
+host discovery rejected the absent independent host before any model request.
+Daily Chrome attachment and the two user search prompts remain unaccepted.
