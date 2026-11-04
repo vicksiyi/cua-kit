@@ -3533,3 +3533,26 @@ Commands (after reconstruction build):
 All three probes completed successfully with empty discovery. Original-service and
 original-workers are explicit diagnostic comparisons, not a fallback implementation.
 No production reconstructed runtime changed; the full regression suite was not rerun.
+
+### Extension browser service factory and live DeepSeek tool call
+
+Extracted the extension's own static `us` documentation bundle with a hash-pinned,
+AST-only extractor: 31 default documents, no environment bundles. Added a browser-safe
+@core/browser/kernelBrowserService export and an extension service factory using
+that documentation and the restored command runtime. Each factory retains shared
+hook/recorder and disposal state. It is available for bridge assembly; production
+bridge defaults and the full sandbox/background startup remain unconnected.
+
+A real Chromium test bundles the actual factory and executes initialization,
+list_browsers, repeated initialization and disposal against a controlled host.
+It verifies zero filesystem documentation reads, both shared hooks, cleanup and
+API manifest. It does not exercise the full original gU command matrix, real backend
+or AX default asset URL, so full extension fidelity and installation remain pending.
+Eight package builds/type checks and all 958 default tests pass, zero failures/skips.
+
+User-supplied DeepSeek credentials were used without persisting the key. The official
+endpoint returned HTTP 200 (deepseek-flash), followed by the existing demo:restored
+AgentLoop requesting js over real native MCP/restored workers and returning 42.
+This is the first verified live model/tool round trip, not a browser/App task. The
+separate live backend probe still finds zero usable browsers. No credentials are
+included in this repository, documentation or MCP server configuration.

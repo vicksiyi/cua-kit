@@ -23,7 +23,7 @@ npm run check -w @core/agent-loop
 npx tsx --test reconstruction/agent-loop-deepseek.test.ts
 ```
 
-The integration test starts a real MCP stdio server and a local mock model HTTP endpoint, verifies the tool-call/result round trip, and uses no real model key. A live DeepSeek call is still pending a located credential. The package currently runs from TypeScript with tsx; published JS packaging is not claimed.
+The integration test starts a real MCP stdio server and a local mock model HTTP endpoint, verifies the tool-call/result round trip, and uses no real model key. A live DeepSeek call and a real MCP JavaScript task have now passed; see the live validation note below. The package currently runs from TypeScript with tsx; published JS packaging is not claimed.
 
 Official API references (checked 2026-11-04):
 - https://api-docs.deepseek.com/
@@ -44,7 +44,7 @@ npm run demo:restored -w @core/agent-loop -- "Use js to compute 6 * 7"
 
 For a generic MCP caller, the executable is Node with `--import <absolute tsx loader URL>` and `packages/agent-loop/src/native-supervisor.ts` as arguments; `demo:restored` constructs these paths. A shell-level stdio entry is `npm run --silent mcp:restored -w @core/agent-loop`; `--silent` avoids npm banners on the protocol stream. Supply the native path and tool-server configuration explicitly.
 
-This entry exposes the native NodeREPL tools with restored workers. CUA browser/app globals additionally require the cua-repl banner, configured trusted services, installed package roots and actual browser/native backend resources. `demo:restored` now stages installed runtime packages into a temporary node_modules tree and supplies its search root. It retains distinct dependency versions and copies actual package files; internal links stay within that deployment. The staging helper runs no install scripts or network requests and cleans up after the MCP client closes. When CUA_REPL_ENABLED_SURFACES is explicitly present in CUA_MCP_ENV, the demo now uses @core/cua-repl to assemble the banner, service defaults, tool descriptions and environment allowlist. Actual backend resources still require explicit host configuration. The current real MCP test uses a temporary configured service; it does not claim a live DeepSeek or desktop/browser task has run.
+This entry exposes the native NodeREPL tools with restored workers. CUA browser/app globals additionally require the cua-repl banner, configured trusted services, installed package roots and actual browser/native backend resources. `demo:restored` now stages installed runtime packages into a temporary node_modules tree and supplies its search root. It retains distinct dependency versions and copies actual package files; internal links stay within that deployment. The staging helper runs no install scripts or network requests and cleans up after the MCP client closes. When CUA_REPL_ENABLED_SURFACES is explicitly present in CUA_MCP_ENV, the demo now uses @core/cua-repl to assemble the banner, service defaults, tool descriptions and environment allowlist. Actual backend resources still require explicit host configuration. The browser integration test uses a temporary configured service. A live DeepSeek JavaScript task has passed separately; no desktop/browser task completion is claimed.
 
 Validation now includes `reconstruction/agent-loop-native-adapter.test.ts` and the opt-in macOS `reconstruction/native-supervisor.integration.ts`. The latter tests the generic McpToolClient against this adapter, actual native MCP, both restored workers, trusted RPC and reset; fake model-key environment values are confirmed absent in the worker.
 
@@ -98,3 +98,13 @@ When both stdin and stderr are terminals, `demo` (including `demo:restored`) adv
 EOF, prompt interrupt or cancellation of the caller's signal cancels the request. Requests are serialized so concurrent forms cannot share an input prompt. Terminal control sequences are removed from displayed server messages/schema text. URL-mode elicitation is unsupported and returns cancel without opening a URL. A non-interactive stdin or stderr provides no terminal callback or elicitation capability; embedding agents should supply their own UI through McpClientOptions.elicit.
 
 `promptElicitation(params, io)` exposes the same decision/validation flow with an injectable IO interface for other frontends and tests; `createTerminalElicitation` supplies Node readline and TTY detection. Both are independently authored demo code, not recovered application UI. Native Chromium acceptance/decline tests now use this form handler with scripted test-only IO. A real PTY probe also verified invalid integer retry, accepted values and EOF cancellation. This does not imply a real model call or production desktop backend installation.
+
+## Live model validation (2026-11-05)
+
+Using a user-supplied credential held only in the launching process environment,
+the official DeepSeek endpoint returned HTTP 200 for deepseek-flash. Then the
+existing `demo:restored` entry completed a real AgentLoop: DeepSeek requested `js`,
+the actual native MCP with restored workers executed the calculation, and DeepSeek
+returned 42. The key was not persisted or passed in MCP tool arguments/server config.
+This verifies model/tool integration for JavaScript, not browser or app operation.
+Live browser discovery still returned zero usable backends in the separate probe.

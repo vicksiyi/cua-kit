@@ -19,6 +19,10 @@
     "./kernelBrowserApi": {
       "types": "./src/kernel_browser_api.ts",
       "import": "./dist/kernel_browser_api.js"
+    },
+    "./kernelBrowserService": {
+      "types": "./src/kernel_browser_service.ts",
+      "import": "./dist/kernel_browser_service.js"
     }
   },
   "dependencies": {
