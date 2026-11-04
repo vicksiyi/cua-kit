@@ -4,7 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./browserService": "./dist/browser-service.mjs",
+    "./browserConnector": {
+      "types": "./src/browser_connector.ts",
+      "import": "./dist/browser-connector.mjs",
+      "default": "./dist/browser-connector.mjs"
+    }
   },
   "scripts": {
     "check": "tsc -p tsconfig.json",
@@ -13,6 +19,7 @@
   },
   "dependencies": {
     "@core/browser": "0.0.0-reconstructed.0",
-    "@core/core": "0.0.0-reconstructed.0"
+    "@core/core": "0.0.0-reconstructed.0",
+    "@core/browser-desktop": "0.1.1-reconstructed.0"
   }
 }

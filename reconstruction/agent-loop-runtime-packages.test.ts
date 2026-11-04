@@ -108,6 +108,8 @@ test("actual restored CUA runtime packages resolve wholly inside deployment and 
     for (const specifier of [
       "@core/sky/service",
       "@core/browser-desktop/service",
+      "@core/native-host/browserService",
+      "@core/native-host/browserConnector",
     ]) {
       const resolved = await realpath(require.resolve(specifier));
       assert.ok(resolved.startsWith(runtime.root + path.sep));

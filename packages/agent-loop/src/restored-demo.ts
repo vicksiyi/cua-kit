@@ -1,6 +1,7 @@
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
 import { fileURLToPath } from "node:url";
 import { delimiter } from "node:path";
+import { configureIndependentBrowser } from "./independent-browser";
 import { randomUUID } from "node:crypto";
 import { create_launch_environment } from "@core/cua-repl";
 import {
@@ -16,7 +17,7 @@ if (
 )
   throw new Error("CUA_MCP_ENV must be a JSON string map");
 let env = { ...configured } as Record<string, string>;
-for (const key of ["CUA_NATIVE_SUPERVISOR_PATH", "NODE_REPL_NODE_PATH"])
+for (const key of ["CUA_NATIVE_SUPERVISOR_PATH", "NODE_REPL_NODE_PATH", "CORE_CUA_ENDPOINT_FILES"])
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
 if (!env.CUA_NATIVE_SUPERVISOR_PATH)
@@ -39,6 +40,7 @@ if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
     turn_id: turn?.turn_id,
   });
 }
+env = await configureIndependentBrowser(env);
 process.env.CUA_MCP_COMMAND = process.execPath;
 process.env.CUA_MCP_ARGS = JSON.stringify([
   "--import",

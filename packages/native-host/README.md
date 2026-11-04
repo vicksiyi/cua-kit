@@ -56,7 +56,7 @@ extra host endpoints are unsupported until explicitly implemented.
 
 A service-level test runs setup/list_browsers/turn cleanup through the restored
 service and real authenticated host with controlled extension handlers. This does
-not yet wire the connector into the DeepSeek launcher or prove real navigation.
+not itself prove real navigation or model-driven operation.
 
 Extension-origin `ping` is routed to authenticated browser clients. Replies are
 correlated per client; the first successful response wins, with timeout and
@@ -71,3 +71,17 @@ authentication, restored getInfo/getUserTabs, actual page-context capture and tu
 cleanup. It uses a locally prepared page and does not yet exercise DeepSeek-driven
 navigation. The router accepts correlated void replies whose result field is
 omitted by JSON serialization, matching the restored BrowserRpcPeer wire behavior.
+
+The demo now accepts `CORE_CUA_ENDPOINT_FILES` as a JSON array of explicit private
+endpoint paths, including via the project's ignored `.env`. It validates the files
+and selects `@core/native-host/browserService` in the trusted worker. This service
+uses the restored desktop documentation/commands and authenticated bridge. The
+runtime stager includes this package; untrusted environment allowlists are not
+expanded. Existing custom trusted browser services cause a configuration error
+rather than silent replacement. With no endpoint setting, original behavior stays.
+
+This is connection selection, not extension installation. The regular Chrome
+profile still needs the independent extension/host installed. Real DeepSeek search
+acceptance remains pending. The integration test additionally creates a real tab
+and ends its turn; browser timer callbacks in the test host are bound to globalThis
+to preserve the native receiver during cleanup.

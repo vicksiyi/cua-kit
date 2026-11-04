@@ -13,3 +13,19 @@ await build({
     "@core/browser/nativePipe": `${root}packages/browser/src/service/runtime/native_pipe.ts`,
   },
 });
+
+// Trusted service composition is independently authored; restored browser commands stay external.
+await build({
+  absWorkingDir: root,
+  entryPoints: {
+    "browser-service": "packages/native-host/src/browser_service.ts",
+    "browser-connector": "packages/native-host/src/browser_connector.ts",
+  },
+  outdir: "packages/native-host/dist",
+  outExtension: { ".js": ".mjs" },
+  bundle: true,
+  packages: "external",
+  format: "esm",
+  platform: "node",
+  target: "node22",
+});

@@ -1,0 +1,45 @@
+/** Demo deployment selection, independent of the model/provider and AgentLoop. */
+import {
+  createBrowserServiceConnector,
+  parseEndpointFiles,
+} from "@core/native-host/browserConnector";
+
+export async function configureIndependentBrowser(env: Record<string, string>) {
+  if (env.CORE_CUA_ENDPOINT_FILES === undefined) return env;
+  if (
+    !env.CUA_REPL_ENABLED_SURFACES?.split(",")
+      .map((value) => value.trim())
+      .includes("browser")
+  )
+    throw Error("CORE_CUA_ENDPOINT_FILES requires the browser surface");
+  const connector = await createBrowserServiceConnector(
+    parseEndpointFiles(env.CORE_CUA_ENDPOINT_FILES),
+  );
+  const services: unknown = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");
+  if (
+    !services ||
+    typeof services !== "object" ||
+    Array.isArray(services) ||
+    !Object.values(services).every((value) => typeof value === "string")
+  )
+    throw Error("NODE_REPL_TRUSTED_SERVICES must be a string map");
+  const configured = services as Record<string, string>;
+  if (
+    configured.browser &&
+    ![
+      "@core/browser-desktop/service",
+      "@core/native-host/browserService",
+    ].includes(configured.browser)
+  )
+    throw Error(
+      "Independent browser conflicts with a custom trusted browser service",
+    );
+  return {
+    ...env,
+    ...connector.environment,
+    NODE_REPL_TRUSTED_SERVICES: JSON.stringify({
+      ...configured,
+      browser: "@core/native-host/browserService",
+    }),
+  };
+}

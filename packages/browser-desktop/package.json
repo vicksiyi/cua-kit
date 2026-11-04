@@ -13,6 +13,11 @@
       "types": "./src/service.ts",
       "import": "./dist/service.js",
       "default": "./dist/service.js"
+    },
+    "./documentation": {
+      "types": "./src/documentation_bundle.ts",
+      "import": "./dist/documentation_bundle.js",
+      "default": "./dist/documentation_bundle.js"
     }
   },
   "dependencies": {

@@ -14,6 +14,7 @@ import {
   rm,
   readdir,
   readFile,
+  cp,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -28,6 +29,11 @@ test(
     t.after(() => rm(root, { recursive: true, force: true }));
     const extension = join(root, "extension");
     await mkdir(extension);
+    await cp(
+      "packages/browser-extension/dist/content-scripts",
+      join(extension, "content-scripts"),
+      { recursive: true },
+    );
     await writeFile(
       join(extension, "manifest.json"),
       JSON.stringify({
@@ -58,7 +64,7 @@ test(
 import {createNativeBrowserController} from './packages/browser-extension/src/native_browser_controller';
 const diagnostics=[];
 const controller=createNativeBrowserController({
-  host:{chrome,crypto,now:Date.now,setTimeout,clearTimeout,error:(...args)=>diagnostics.push(args)},
+  host:{chrome,crypto,now:Date.now,setTimeout:setTimeout.bind(globalThis),clearTimeout:clearTimeout.bind(globalThis),error:(...args)=>diagnostics.push(args)},
   navigator:{userAgent:navigator.userAgent},hostName:'com.core.cua',
   sessionDiagnostics:{metric:(...args)=>diagnostics.push(args),warn:(...args)=>diagnostics.push(args)},
   handlerOptions:{buildChannel:'dev'},
@@ -167,6 +173,12 @@ globalThis.inspectController=async()=>({info:await controller.handler.getInfo({}
         assert.equal(captured.title, "Core native page");
         assert.match(captured.text, /native-roundtrip-marker/);
         assert.equal(captured.truncated, false);
+        const created = await peer.sendRequest("createTab", {
+          session_id: "native-live",
+          turn_id: "read-1",
+        });
+        assert.ok(Number.isInteger(created.id));
+        assert.notEqual(created.id, tab.id);
         await peer.sendRequest("turnEnded", {
           session_id: "native-live",
           turn_id: "read-1",
