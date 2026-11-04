@@ -2,7 +2,7 @@
 
 **当前方向：源码还原。** 按用户最新要求，直接从本机 unified-computer-use 相关混淆 JS / .d.ts 还原可读 TypeScript，按原包边界组织 `@core/*` workspace，源码 import 不带 `.js`。首批源码、来源映射与差分验证见 [reconstruction](reconstruction/README.md)。完整还原仍在进行，不能把旧独立实现视为原代码。
 
-当前已接通浏览器客户端/服务、`@core/cua/tinyskyAlt`、`@core/sky` 与 `@core/sky/service` 的还原入口，Sky 使用 Mac/Linux/Windows 工厂。已有真实 Chromium、临时子进程和模拟宿主集成验证；真实原生桌面服务、外部 NodeREPL/AX 资源与真实模型联调仍未完成。最新验证与边界见 [IMPLEMENTATION-STATUS](docs/IMPLEMENTATION-STATUS.md)，下方阶段记录保留其当时状态。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
+当前已接通浏览器客户端/服务、`@core/cua/tinyskyAlt`、`@core/sky` 与 `@core/sky/service` 的还原入口，Sky 使用 Mac/Linux/Windows 工厂。NodeREPL 嵌入 JavaScript 的 kernel 与 trusted-worker 入口也已还原，支持子进程中的多单元执行对照验证；原生 supervisor/MCP 生命周期尚未替代。已有真实 Chromium、临时子进程和模拟宿主集成验证；真实原生桌面服务、外部 NodeREPL/AX 资源与真实模型联调仍未完成。最新验证与边界见 [IMPLEMENTATION-STATUS](docs/IMPLEMENTATION-STATUS.md)，下方阶段记录保留其当时状态。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
 
 DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。模型协议/MCP 回环测试通过，真实 DeepSeek 调用仍待本机凭据定位；这不表示还原后端已接通。
 

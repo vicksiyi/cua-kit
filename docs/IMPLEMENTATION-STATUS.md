@@ -1332,3 +1332,15 @@ Three differential subprocess tests execute original extracted functions and res
 The standalone loader is complete at this layer; kernel bootstrap, complete execution/response loop and failed-cell state promotion/recovery still require assembly. Native supervisor/isolation and real-model integration remain outstanding.
 
 Validation: seven-package build/type checks and all 736 reconstruction tests pass with concurrency 4.
+
+### 16.238 Complete embedded JavaScript kernel entry
+
+Restored kernel.ts and assembled the previously restored builder, resolver, loader and worker runtime. The process entry preserves bootstrap argument validation/cwd switching, runtime globals and code-generation settings, filtered environment snapshots, banner execution, locked nodeRepl/tmpDir globals, serialized exec queue, named/default output rendering, trusted-service request/hook routing, media settlement, source redaction and fatal asynchronous-error reporting/exit.
+
+Each cell imports a synthetic snapshot of prior bindings. Successful cells promote their namespace; failed cells retain initialized bindings and recover shadowed-but-uncommitted prior values through a synthetic module. Link failures keep the last usable module, and a failed cell that updated carried values after its prelude can still promote state. Original per-cell local-module cache clearing and package persistence are retained.
+
+Three differential tests launch the complete original embedded kernel JS and the reconstructed entry in separate Node processes. Multi-cell scenarios verify const reassignment/warnings, failed shadow recovery, partial destructuring, static-import failure followed by valid state, dynamic local imports and future-var recovery without ghost functions. Host fixtures exercise banner-once behavior, environment allowlisting, RPC output/content, hook responses, named output and media acknowledgments. Bootstrap failures and a fatal asynchronous exception are also compared through process exit and JSONL output.
+
+The embedded JavaScript kernel entry is now runnable. This does not replace the compiled Rust supervisor, its isolation/permissions or MCP lifecycle; trusted-worker routing in these kernel tests uses a synthetic host. Native supervisor implementation/integration, actual kernel-to-trusted-worker service routing, native/AX resources and real-model end-to-end validation remain outstanding.
+
+Validation: seven-package build/type checks and all 739 reconstruction tests pass with concurrency 4.
