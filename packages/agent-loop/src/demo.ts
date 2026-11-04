@@ -1,3 +1,4 @@
+import { NodeReplTurnClient, parseNodeReplTurnEvent } from "./node-repl-turn";
 import { AgentLoop } from "./loop";
 import { McpToolClient } from "./mcp-client";
 import { createDemoModel } from "./provider";
@@ -32,6 +33,10 @@ if (
   Array.isArray(requestMeta)
 )
   throw new Error("CUA_MCP_REQUEST_META must be a JSON object.");
+const turnEvent =
+  process.env.CUA_MCP_TURN_EVENT === undefined
+    ? undefined
+    : parseNodeReplTurnEvent(JSON.parse(process.env.CUA_MCP_TURN_EVENT));
 const client = await McpToolClient.connect(
   {
     command,
@@ -45,7 +50,10 @@ const controller = new AbortController();
 const interrupt = () => controller.abort();
 process.once("SIGINT", interrupt);
 try {
-  const result = await new AgentLoop(model, client).run(question, {
+  const result = await new AgentLoop(
+    model,
+    turnEvent ? new NodeReplTurnClient(client, turnEvent) : client,
+  ).run(question, {
     signal: controller.signal,
     onMessage: (message) => {
       if (message.role === "assistant" && message.toolCalls)

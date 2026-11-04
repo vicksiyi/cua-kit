@@ -1,18 +1,39 @@
 import type { AgentMessage, ModelAdapter, ToolClient } from "./contracts";
 
+export interface AgentRunOptions {
+  signal?: AbortSignal;
+  maxSteps?: number;
+  onMessage?: (message: AgentMessage) => void;
+}
 export class AgentLoop {
   constructor(
     private model: ModelAdapter,
     private tools: ToolClient,
   ) {}
-  async run(
-    question: string,
-    options: {
-      signal?: AbortSignal;
-      maxSteps?: number;
-      onMessage?: (message: AgentMessage) => void;
-    } = {},
-  ) {
+  async run(question: string, options: AgentRunOptions = {}) {
+    let result: Awaited<ReturnType<AgentLoop["runTurn"]>> | undefined;
+    let failed = false;
+    let failure: unknown;
+    try {
+      result = await this.runTurn(question, options);
+    } catch (error) {
+      failed = true;
+      failure = error;
+    }
+    try {
+      await this.tools.endTurn?.();
+    } catch (cleanupError) {
+      if (failed)
+        throw new AggregateError(
+          [failure, cleanupError],
+          "Agent execution and turn cleanup both failed",
+        );
+      throw cleanupError;
+    }
+    if (failed) throw failure;
+    return result!;
+  }
+  private async runTurn(question: string, options: AgentRunOptions) {
     const maxSteps = options.maxSteps ?? 12;
     if (!Number.isInteger(maxSteps) || maxSteps < 1 || maxSteps > 100)
       throw new Error("maxSteps must be 1..100.");

@@ -1434,3 +1434,15 @@ One case declines origin access and verifies no Accessibility.getFullAXTree is s
 The supervisor, Node executable and AX WASM remain explicit installed resources. The socket backend is an integration fixture, not a reconstructed production extension. All permission flows, real extension installation, native app operations, turn_ended orchestration, model integration and readable supervisor source are not claimed complete. Validation results follow.
 
 Validation: AgentLoop type checking passes; all 746 default tests pass; all five explicit native integration tests pass. The new browser cases verify both decline and accept paths in separate isolated homes.
+
+### 16.248 Host-controlled turn completion
+
+Added an optional endTurn lifecycle capability to the agent-neutral ToolClient interface. AgentLoop now completes the host turn after successful execution or any rejected execution path (including cancellation and budget exhaustion). It uses no cancelled model/tool signal for cleanup. Original failures remain visible; simultaneous execution and cleanup errors are preserved in AggregateError rather than masking one another.
+
+Added independently authored NodeReplTurnClient, wrapping a generic client for one turn. It hides turn_ended from model tool discovery, rejects direct model calls to that lifecycle operation, snapshots/validates the exact three-field native event schema, and deduplicates completion via a cached promise. CUA demo configuration derives the event session/turn from the same request metadata and uses the demo label turn_ended, verified against the actual native server. This does not claim to recover Codex's exact internal hook label. Generic demo can accept an explicit CUA_MCP_TURN_EVENT; long-lived agents can construct a fresh wrapper per turn around a shared connection.
+
+Five new lifecycle tests cover success, failure, cancellation, cleanup failures and invalid/model-controlled events. The existing native Chromium accept/decline cases now run the actual AgentLoop completion path and verify exactly one browser backend turnEnded event with matching session_id/turn_id, including repeated host endTurn calls. No native worker/runtime behavior or original gate is changed. Full validation follows.
+
+Remaining work includes real backend/extension deployment, native app integration, an actual caller approval UI, real-model end-to-end validation and the native supervisor's readable source. This completes the tested demo's host turn dispatch, not the entire requested system.
+
+Validation: AgentLoop type check passed. All 751 default tests and all five opt-in native integration tests passed.

@@ -30,6 +30,14 @@ if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
       turn_id: randomUUID(),
     },
   });
+  const metadata = JSON.parse(process.env.CUA_MCP_REQUEST_META);
+  const supplied = metadata?.["x-codex-turn-metadata"];
+  const turn = typeof supplied === "string" ? JSON.parse(supplied) : supplied;
+  process.env.CUA_MCP_TURN_EVENT = JSON.stringify({
+    hook_event_name: "turn_ended",
+    session_id: turn?.session_id,
+    turn_id: turn?.turn_id,
+  });
 }
 process.env.CUA_MCP_COMMAND = process.execPath;
 process.env.CUA_MCP_ARGS = JSON.stringify([

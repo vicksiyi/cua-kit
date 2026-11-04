@@ -23,6 +23,8 @@ export type AgentMessage =
 export interface ToolClient {
   listTools(signal?: AbortSignal): Promise<ToolDefinition[]>;
   callTool(call: ToolCall, signal?: AbortSignal): Promise<ToolResult>;
+  /** Optional host lifecycle cleanup, independent of the model cancellation signal. */
+  endTurn?(): Promise<void>;
   close(): Promise<void>;
 }
 export interface ModelAdapter {

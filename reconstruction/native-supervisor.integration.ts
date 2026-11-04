@@ -420,6 +420,7 @@ for (const allowFixtureOrigin of [false, true])
     const socketPath = path.join(root, "backend.sock");
     const sockets = new Set<import("node:net").Socket>();
     const methods: string[] = [];
+    const endedTurns: any[] = [];
     const peers: InstanceType<typeof BrowserRpcPeer>[] = [];
     const { chromium } = await import("playwright");
     const browser = await chromium.launch({ headless: true });
@@ -498,7 +499,8 @@ for (const allowFixtureOrigin of [false, true])
         getCommittedTabUrl: "https://fixture.invalid/",
         turnEnded: {},
       }))
-        peer.registerRequestHandler(method, () => {
+        peer.registerRequestHandler(method, (params: any) => {
+          if (method === "turnEnded") endedTurns.push(params);
           methods.push(method);
           return value;
         });
@@ -557,6 +559,28 @@ for (const allowFixtureOrigin of [false, true])
           }),
         },
       );
+      const { AgentLoop, NodeReplTurnClient } =
+        await import("../packages/agent-loop/src/index");
+      const turnClient = new NodeReplTurnClient(client, {
+        hook_event_name: "turn_ended",
+        session_id: "browser-fixture",
+        turn_id: "turn-1",
+      });
+      async function finishTurn() {
+        await new AgentLoop(
+          {
+            async decide({ tools }) {
+              assert.ok(!tools.some((t) => t.name === "turn_ended"));
+              return { text: "fixture finished" };
+            },
+          },
+          turnClient,
+        ).run("Finish fixture");
+        await turnClient.endTurn();
+        assert.equal(endedTurns.length, 1, JSON.stringify(endedTurns));
+        assert.equal(endedTurns[0].session_id, "browser-fixture");
+        assert.equal(endedTurns[0].turn_id, "turn-1");
+      }
       try {
         const result = await client.callTool({
           id: "browser",
@@ -582,6 +606,7 @@ for (const allowFixtureOrigin of [false, true])
           assert.equal(denied.isError, true);
           assert.ok(elicitations.length > 0);
           assert.ok(!methods.includes("Accessibility.getFullAXTree"));
+          await finishTurn();
           return;
         }
         const action = await client.callTool({
@@ -613,6 +638,7 @@ for (const allowFixtureOrigin of [false, true])
             .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ||
             bytes.subarray(0, 3).equals(Buffer.from([255, 216, 255])),
         );
+        await finishTurn();
       } finally {
         await client.close();
       }
