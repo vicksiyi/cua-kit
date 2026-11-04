@@ -46,3 +46,5 @@ export * from "./website_content";
 export * from "./website_status";
 
 export * from "./client_heartbeat";
+
+export * from "./extension_updates";

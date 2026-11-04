@@ -734,6 +734,11 @@ test("extension foundation shares identity, lease singleton and debugger state a
     ...deps.chrome,
     runtime: {
       id: "extension",
+      getManifest: () => ({ version: "installed" }),
+      onUpdateAvailable: {
+        addListener: (fn: Function) => trace.push(["update-listener", fn]),
+      },
+      reload: () => trace.push(["reload"]),
       getURL: (path: string) => `chrome-extension://fixture${path}`,
     },
     storage: {
@@ -1129,11 +1134,22 @@ test("extension foundation shares identity, lease singleton and debugger state a
         entry[3] === "MAIN",
     ),
   );
+  foundation.registerExtensionUpdates();
+  await foundation.extensionUpdates.handleUpdateAvailable({ version: "next" });
+  assert.equal(foundation.extensionUpdates.pendingUpdateVersion, "next");
+  assert.equal(
+    trace.some((entry) => entry[0] === "reload"),
+    false,
+  );
   await peer.handleIncomingMessage({
     id: 4,
     method: "turnEnded",
     params: request,
   });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(trace.filter((entry) => entry[0] === "reload").length, 1);
+  assert.equal(foundation.extensionUpdates.pendingUpdateVersion, null);
+
   assert.deepEqual(stored.leases, {});
   assert.deepEqual(local.TAB_GROUPS.groups, []);
   assert.equal(foundation.overlay.isBrowserControlActive(), false);

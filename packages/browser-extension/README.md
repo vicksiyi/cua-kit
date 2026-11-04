@@ -515,3 +515,7 @@ Foundation now exposes the restored client heartbeat registration, binding lease
 reconciliation, overlay session stop and network-policy cleanup. Original ping/timeout
 and debugger-detach ordering are retained. Actual startup registration with native and
 tunnel peers still needs to be completed.
+
+The update manager now restores persisted pending-version and busy-control deferral.
+Foundation registration connects idle activity transitions to pending reload checks;
+RPC session integration verifies deferral until turn completion using a reload fixture.

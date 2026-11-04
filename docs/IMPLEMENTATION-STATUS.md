@@ -2481,3 +2481,25 @@ native/model delivery are not yet complete.
 
 Validation: all eight package builds/type checks and all 875 default regressions pass,
 zero failures/skips. Separate native-supervisor tests were not rerun.
+
+### Extension update lifecycle and active-control deferral
+
+Restored _k/fn as createExtensionUpdateManagerClass. It retains session-persisted
+pending versions, installed-version checks, runtime listener registration, busy-state
+deferral, clear-before-reload ordering and failure state. Concurrent restoration keeps
+the original guard placement rather than introducing different locking semantics.
+Foundation exposes a shared manager and registration helper that wires overlay
+activity changes to retry pending updates when control becomes idle.
+
+Three differential tests cover stored value variants, active deferral, storage/reload
+failures, registration suppression, concurrent restore and constructor overrides.
+The Foundation RPC integration fixture now creates a pending update while its restored
+session is active and verifies exactly one reload after turnEnded clears activity.
+Reload is a fixture callback; the real extension/runtime was not reloaded.
+
+Full startup must still invoke registration in the original ordering. Other remaining
+startup, side-panel/auth backend and installed/native/model integration gaps are not
+closed by these tests. No third-party dependency was added for this source closure.
+
+Validation: all eight package builds/type checks and all 878 default regressions pass,
+zero failures/skips. The separate native-supervisor suite was not rerun.

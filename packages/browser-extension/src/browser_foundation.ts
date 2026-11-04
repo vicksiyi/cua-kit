@@ -1,3 +1,4 @@
+import { createExtensionUpdateManagerClass } from "./extension_updates";
 import { registerClientHeartbeat } from "./client_heartbeat";
 import {
   createInstallerStatus,
@@ -70,6 +71,10 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   const observedTabs = new ObservedTabs();
   const OverlayManager = createOverlayManagerClass({ ...host, contentRuntime });
   const overlay = new OverlayManager({ observedTabs });
+  const ExtensionUpdateManager = createExtensionUpdateManagerClass(host.chrome);
+  const extensionUpdates = new ExtensionUpdateManager(() =>
+    overlay.isBrowserControlActive(),
+  );
   const tabAudio = createTabAudioController(host.chrome);
   tabAudio.installObservedChangeHandler(observedTabs, overlay);
   const instanceId = createExtensionInstanceIdReader(host);
@@ -174,6 +179,14 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   }
   return {
     ChatApi,
+    extensionUpdates,
+    registerExtensionUpdates() {
+      extensionUpdates.register();
+      overlay.setBrowserControlActivityChangeHandler((active) => {
+        if (!active)
+          extensionUpdates.maybeReloadForPendingUpdate().catch(() => {});
+      });
+    },
     registerClientHeartbeat: (
       diagnostics: Pick<
         Parameters<typeof registerClientHeartbeat>[0],
