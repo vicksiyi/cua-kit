@@ -1276,3 +1276,15 @@ Preserved limits: 1024 completed spans, 32 supported primitive attributes, 128 U
 Three differential tests execute the original extracted module and restored implementation with the same deterministic clock. They cover nested async spans, error/result handling, enablement, Unicode/attribute limits, overflow, freeze/idempotency and trace cleanup. Seven-package build/type checks and all 721 reconstruction tests pass. No external telemetry backend is contacted.
 
 Trusted-worker entry/module enforcement, kernel/module execution and native supervisor/isolation remain incomplete. This is the original local trace collector, not a substitute telemetry SDK or a claim of complete runtime integration.
+
+### 16.233 Trusted worker process entry
+
+Restored trusted-worker.js as typed trusted_worker.ts, retaining its process entry and initialization order: cwd, canonical trusted roots, synchronous module resolve hook, environment snapshot, worker/privileged API assembly and immutable globals, service promise cache, JSONL dispatch and lifecycle handlers. Source imports remain extensionless; emitted imports are produced by the existing reconstruction build.
+
+Service names resolve through explicitly configured module directories; file URLs and absolute paths still pass the global canonical-path resolver. Symlink escapes are rejected. Node built-ins pass through exactly as in the original. This is module-location enforcement, not a claim that trusted service code is sandboxed. Loaded service failures remain cached; classifyError failures preserve the original exception. Service requests retain active execution until hook/turn processing, background operations drain except for run_hooks, and traces are exported during run_hooks.
+
+Three differential subprocess tests run the original extracted JS and restored entry with disposable synthetic services: cached handlers, execution metadata/console/write/content, image acknowledgments, hooks, trace export, missing/invalid services, error classification, symlink escape rejection, configured package resolution and allowed transitive/builtin imports. No installed native executable, personal app or external model is used. Integration exposed two original type allowances now represented explicitly: homeDir may be null and lifecycle run may omit its event.
+
+Kernel execution/module machinery, native supervisor/isolation, native/AX resource provisioning and real-model integration remain outstanding.
+
+Validation: seven-package build/type checks and all 724 reconstruction tests pass with concurrency 4.

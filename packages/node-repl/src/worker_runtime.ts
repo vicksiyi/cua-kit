@@ -34,7 +34,7 @@ export type WorkerOptions = {
   audioEnabled?: boolean;
   cwd: string;
   env: Record<string, string | undefined>;
-  homeDir: string;
+  homeDir: string | null;
   tmpDir: string;
 };
 type Response = {
@@ -52,7 +52,7 @@ type BridgeOptions = WorkerOptions & {
 type NodeReplBridge = {
   cwd: string;
   env: Record<string, string | undefined>;
-  homeDir: string;
+  homeDir: string | null;
   tmpDir: string;
   readonly requestMeta: unknown;
   write(value: unknown, itemId?: unknown): void;

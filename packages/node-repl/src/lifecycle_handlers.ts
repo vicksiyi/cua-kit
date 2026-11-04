@@ -21,7 +21,7 @@ export function createLifecycleHandlers(name: string, concurrent = false) {
       hooks.add(hook);
       return () => hooks.delete(hook);
     },
-    async run(event: unknown) {
+    async run(event?: unknown) {
       const runHandler = async ({ run, timeoutMs }: Hook) => {
         let timer: ReturnType<typeof setTimeout> | undefined;
         try {
