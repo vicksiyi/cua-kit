@@ -3464,3 +3464,29 @@ the AX WASM loader. Production installation/full browser service integration is 
 Validation: eight package builds/type checks and all 956 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun. Full browser
 bundling still fails on the three AX WASM Node-loader imports.
+
+### Browser AX WASM deferred Node imports
+
+Restored the original computed `node:${name}` import helper instead of literal
+Node imports in the AX loader. Both the installed Node service and extension defer
+these modules until a URL/path input is supplied. Browser byte inputs use the existing
+minimal WASI implementation; URL inputs still reject in Chromium. No fetch/Brotli
+polyfill or fake WASI was added. The shared loader retains its Node import.meta URL
+default; extension-specific default URL selection remains a host assembly concern.
+
+The complete command_runtime_assembly browser esbuild probe now succeeds (2.2 MB ESM),
+previously blocked by three Node built-ins. This proves bundling only, not production
+extension installation, resource provisioning or complete browser-service execution.
+
+A new real-Chromium differential test imports the installed extension AX chunk
+(SHA-256 3fdefb91c0f12bf86a26de735e6eda4651df4cbf28a515d2174f7f336aa09265),
+replacing only Vite's preload helper. It compares real installed WASM revisions,
+Unicode output, identity/settable lookups and URL rejection with the restored module.
+The WASM binary remains an installed external resource. Existing Node compressed-file
+loading and byte-path tests also pass. Full validation results recorded below.
+
+Validation: eight package builds/type checks and all 957 default regressions pass,
+zero failures/skips. The initial new browser test serialized the multi-megabyte WASM
+as a JS number array and stalled; serving binary bytes through an isolated local route
+removed that harness overhead. An invalid empty-node snapshot was replaced by the
+existing original dialog fixture. Independent native-supervisor tests were not rerun.

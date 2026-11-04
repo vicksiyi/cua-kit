@@ -275,6 +275,18 @@ export async function instantiateAccessibilityBytes(
   instance.exports._initialize();
   return instance;
 }
+// The original loader defers Node built-ins through a computed specifier.
+// Browser callers must supply bytes; URL/path loading remains a Node-only branch.
+type AccessibilityNodeModules = {
+  "fs/promises": typeof import("node:fs/promises");
+  wasi: typeof import("node:wasi");
+  zlib: typeof import("node:zlib");
+};
+function importAccessibilityNodeModule<Name extends keyof AccessibilityNodeModules>(
+  name: Name,
+): Promise<AccessibilityNodeModules[Name]> {
+  return import(`node:${name}`);
+}
 export async function loadBrowserAccessibilityWasm(
   source: URL | string | ArrayBuffer | Uint8Array = new URL(
     "./browser-accessibility.wasm.br",
@@ -298,9 +310,9 @@ export async function loadBrowserAccessibilityWasm(
   else {
     const [{ readFile }, { WASI }, { brotliDecompressSync }] =
       await Promise.all([
-        import("node:fs/promises"),
-        import("node:wasi"),
-        import("node:zlib"),
+        importAccessibilityNodeModule("fs/promises"),
+        importAccessibilityNodeModule("wasi"),
+        importAccessibilityNodeModule("zlib"),
       ]);
     const content = await readFile(source),
       bytes = String(source).endsWith(".br")
