@@ -1364,3 +1364,11 @@ Audited the installed native boundary and a pinned, non-truncated openai/codex p
 Confirmed the existing NODE_REPL_WORKER_WRAPPER launch contract and used it in an explicit integration test to substitute the reconstructed kernel under the actual installed native supervisor. With temporary HOME/CODEX_HOME/TMPDIR and outer macOS network denial, actual MCP js calls produced 40 then 42, js_reset spawned a new restored kernel, and a subsequent call returned undefined. Public response contents match the original kernel. Installed files and user configuration were not modified; no disable-sandbox flag was used.
 
 Validation: the explicit native-supervisor.integration.ts test passes. The unchanged default reconstruction suite remains at its previous 741 passing tests; it was not rerun solely for this opt-in probe/documentation addition. This is real native-supervisor/MCP integration of the restored kernel, not a native supervisor source reconstruction. Full permissions/isolation, privileged host functions, native desktop/browser/AX and actual-model validation remain incomplete.
+
+### 16.241 Native timeout and cancellation recovery
+
+Extended the explicit native supervisor integration test beyond execution/reset. The actual MCP js tool times out a suspended cell at 100 ms; the next call succeeds and the timed-out variable is absent. The cancellation case writes a start marker inside isolated TMPDIR before notifications/cancelled is sent, proving it cancels an executing cell rather than a request that never started. The following request succeeds with the cancelled binding absent.
+
+Original and restored kernels produce matching public responses. The wrapper records four kernel launches: initial, after reset, after timeout and after cancellation. The explicit native integration test passes; a scoped process check after completion found no remaining test supervisor/kernel workers. No runtime implementation was changed, so the unchanged default synthetic suite was not repeated (last full run: 741 passing tests).
+
+This validates these lifecycle paths with the original native supervisor. It does not reconstruct its Rust implementation or establish complete cancellation/permission/isolation parity across platforms, concurrent calls, native actions or arbitrary privileged operations. Those and actual model integration remain outstanding.

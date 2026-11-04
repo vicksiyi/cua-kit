@@ -14,7 +14,7 @@ const binary =
   process.env.CUA_NODE_REPL_BINARY ??
   "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl";
 const node = path.join(path.dirname(binary), "node");
-test("installed native supervisor drives restored kernel over actual MCP and resets its state", async () => {
+test("installed native supervisor drives restored kernel over actual MCP and recovers after reset, timeout and cancellation", async () => {
   assert.equal(
     process.platform,
     "darwin",
@@ -115,12 +115,61 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
           ["js", { code: "counter+=2; nodeRepl.write(counter);" }],
           ["js_reset", {}],
           ["js", { code: "nodeRepl.write(typeof counter);" }],
+          [
+            "js",
+            {
+              code: "var timedOut=1; await new Promise(()=>{});",
+              timeout_ms: 100,
+            },
+          ],
+          ["js", { code: "nodeRepl.write(typeof timedOut);" }],
         ] as const) {
           const r = await request("tools/call", { name, arguments: args });
           assert.equal(r.error, undefined);
-          assert.notEqual(r.result.isError, true, JSON.stringify(r));
+          if ("timeout_ms" in args)
+            assert.equal(r.result.isError, true, JSON.stringify(r));
+          else assert.notEqual(r.result.isError, true, JSON.stringify(r));
           values.push(r.result);
         }
+        // Cancellation may intentionally suppress the cancelled call's response.
+        // Wait for a file in this isolated TMPDIR to prove the cell started.
+        const cancelId = ++id;
+        send({
+          id: cancelId,
+          method: "tools/call",
+          params: {
+            name: "js",
+            arguments: {
+              code: 'var cancelled=1; await (await import("node:fs/promises")).writeFile(tmpDir+"/cancel-started", "ready"); await new Promise(()=>{});',
+              timeout_ms: 5000,
+            },
+          },
+        });
+        const startDeadline = Date.now() + 3000;
+        while (true) {
+          try {
+            await readFile(path.join(home, "cancel-started"));
+            break;
+          } catch (error) {
+            if (Date.now() > startDeadline)
+              throw Error("Cancelled cell never started");
+            await new Promise((resolve) => setTimeout(resolve, 10));
+          }
+        }
+        send({
+          method: "notifications/cancelled",
+          params: { requestId: cancelId, reason: "fixture cancellation" },
+        });
+        const recovered = await request("tools/call", {
+          name: "js",
+          arguments: { code: "nodeRepl.write(typeof cancelled);" },
+        });
+        assert.notEqual(
+          recovered.result?.isError,
+          true,
+          JSON.stringify(recovered),
+        );
+        values.push(recovered.result);
         outputs.push(values);
       } finally {
         clearTimeout(timer);
@@ -134,8 +183,8 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
           (await readFile(path.join(home, "launches"), "utf8"))
             .trim()
             .split("\n").length,
-          2,
-          "Reset must spawn a second restored kernel",
+          4,
+          "Reset, timeout and cancellation each require a new restored kernel",
         );
     }
     // Native response timing/telemetry metadata may vary; compare public contents.
@@ -143,9 +192,9 @@ child.on('error',error=>{console.error(error);process.exitCode=1});child.on('exi
     assert.deepEqual(publicValues[1], publicValues[0]);
     assert.deepEqual(
       publicValues[1]
-        .filter((_: any, i: number) => i !== 2)
+        .filter((_: any, i: number) => [0, 1, 3, 5, 6].includes(i))
         .map((content: any) => content.map((c: any) => c.text).join("")),
-      ["40", "42", "undefined"],
+      ["40", "42", "undefined", "undefined", "undefined"],
     );
   } finally {
     await rm(root, { recursive: true, force: true });
