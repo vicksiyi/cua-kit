@@ -590,3 +590,8 @@ response headers, initialization tracking gates and terminal failure ordering. U
 body encoding, compression, limiter and fallback support remain reused. The live-overlay
 helper now has an end-to-end fixture test with this actual adapter. Store/client live
 refresh and default feature-service assembly remain incomplete.
+
+ExtensionStatsigEvaluationStore now reuses upstream ordinary helpers and V1/V2 containers
+while restoring live/retained value lookup, config-list union, cursor seeding/advancement,
+loadedAt details and reset semantics. Node ESM/CommonJS default interop is handled explicitly.
+The extended client refresh/scheduling and feature-service default remain unfinished.

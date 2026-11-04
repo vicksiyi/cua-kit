@@ -36,3 +36,14 @@ export function originalStatsigNetworkCore() {
     },
   }).Bc().NetworkCore;
 }
+
+export function originalStatsigEvaluationStore() {
+  return extensionBindings(["Bm", "jm", "qm"], {
+    ze: () => require("@statsig/client-core"),
+    L: (factory: (exports: Record<string, unknown>) => void) => () => {
+      const exports = {};
+      factory(exports);
+      return exports;
+    },
+  }).qm().default;
+}

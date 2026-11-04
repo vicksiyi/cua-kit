@@ -78,3 +78,5 @@ export * from "./feature_service";
 export * from "./statsig_live_network";
 
 export * from "./statsig_network_core";
+
+export * from "./statsig_live_store";

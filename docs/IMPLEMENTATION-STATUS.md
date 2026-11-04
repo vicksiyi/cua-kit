@@ -2869,3 +2869,33 @@ incomplete, alongside full startup, panel UI, native replacement and real end-to
 
 Validation: eight package builds/type checks and all 910 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Statsig live evaluation store
+
+Restored qm live-store behavior as ExtensionStatsigEvaluationStore, inheriting public
+3.33.4 ordinary helpers and reusing V1/V2 containers. Added per-category live name sets,
+DJB2 alias matching, retained values for dropped names and config-list union. A recognized
+live name overrides base data even when no result exists; dropped values retain original
+result/details until reintroduced or the live state resets. Returned retained warning
+arrays are copied as in the source.
+
+Initialization seeds a live cursor only for a matching full-user hash. Older live updates
+are rejected only with an existing cursor; newer overlays survive older base updates.
+V2/missing-live metadata reset the overlay; cursor advancement accepts finite monotonic
+values. loadedAt is preserved in base/live details and reset explicitly. External values
+remain detached from evaluation containers. CommonJS default constructor interop is
+handled for both native Node ESM and bundlers.
+
+Two source-differential tests extract actual bundled qm/Bm/jm and compare seven state
+modes plus V2, malformed metadata and external mutation. They exercise gate/config/layer
+lookup, retained missing values, config lists, hash aliases, warnings, user mismatch,
+bootstrap, disabled mode, base/live ordering, cursors and reset. No network/SDK client is
+initialized. No dependency was added; pinned SDK runtime internals remain an upgrade boundary.
+
+Extended client refresh/timers, default feature-service assembly, full startup, panel UI,
+native replacement and installed/native/model end-to-end validation remain incomplete.
+
+The live request's sinceTime type now permits undefined, matching the store's empty
+cursor result; runtime behavior is unchanged. Build/type checks were rerun after this
+type-only adjustment. All eight package builds/type checks and all 912 default regressions
+pass, zero failures/skips. The independent native-supervisor suite was not rerun.

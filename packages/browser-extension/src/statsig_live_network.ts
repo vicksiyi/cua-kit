@@ -29,7 +29,7 @@ export function createStatsigLiveNetwork(host: StatsigLiveNetworkHost) {
   return async function fetchLiveEvaluations(
     sdkKey: string,
     user: StatsigUser,
-    sinceTime: number,
+    sinceTime: number | undefined,
     previousDerivedFields: unknown,
     priority?: "high" | "low",
     fullChecksum?: string | null,
