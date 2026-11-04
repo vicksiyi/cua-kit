@@ -68,3 +68,5 @@ export * from "./side_panel_auth";
 export * from "./website_bridge";
 
 export * from "./extension_lifecycle";
+
+export * from "./plugin_installation";

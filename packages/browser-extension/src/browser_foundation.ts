@@ -1,3 +1,7 @@
+import {
+  createBrowserPluginCache,
+  ensureBrowserPlugin,
+} from "./plugin_installation";
 import { registerExtensionLifecycle } from "./extension_lifecycle";
 import { createWebsiteBridge } from "./website_bridge";
 import { createSidePanelAuthHandler } from "./side_panel_auth";
@@ -213,6 +217,13 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
   return {
     ChatApi,
     actionCallout,
+    ensureBrowserPlugin,
+    createBrowserPluginCache() {
+      return createBrowserPluginCache({
+        storage: host.chrome.storage.session,
+        now: host.now,
+      });
+    },
     registerExtensionLifecycle(
       dependencies: Omit<
         Parameters<typeof registerExtensionLifecycle>[0],

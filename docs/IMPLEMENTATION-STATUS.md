@@ -2713,3 +2713,28 @@ and installed/native/model end-to-end validation remain incomplete.
 
 Validation: eight package builds/type checks and all 898 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Browser plugin request chain and account cache
+
+Restored JC/YC/un/QC in plugin_installation.ts. Setup checks canonical plugin identity,
+status and installation policy, POSTs ensure with the encoded plugin ID, and creates the
+original noauth connector link only after a truthy enabled result. Original headers,
+body and short-circuit/error behavior are retained. This function uses the restored
+ChatApi request contract; no third-party implementation was duplicated.
+
+Cache identity is the JSON pair of user/account IDs. Positive and negative entries remain
+independent; negative results expire after thirty minutes. A single load promise is reused
+even after read failure or clear. Writes/deletes update memory synchronously and suppress
+async storage rejection. Pending load can overwrite intervening memory mutations exactly
+as the original does; no extra synchronization or retry behavior was invented.
+
+Foundation exposes the request function and bound cache factory. Three source-differential
+tests cover eleven request-chain scenarios, ten cache persistence/failure/race modes and
+structural validator boundaries. Network and storage are fixtures; no real account plugin
+was installed, enabled or linked. Gate subscription and retry orchestration are unfinished.
+
+Complete installation/auth services, background startup, panel UI, native replacement
+and installed/native/model end-to-end validation remain incomplete.
+
+Validation: eight package builds/type checks and all 901 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

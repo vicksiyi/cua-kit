@@ -562,3 +562,8 @@ Extension lifecycle registration restores install/startup/activation/navigation 
 onboarding-page behavior, toolbar/menu hooks and listener cleanup. Foundation connects
 website bridging and the shared cached-auth reader. Browser-family detection, auth
 refresh, installation service and metric transport remain explicit startup dependencies.
+
+Browser-plugin setup now restores the canonical-app/ensure/link request chain and the
+per-account positive/negative session cache. Cache loads are shared and retained after
+clear or read failure; negative outcomes expire after thirty minutes. Foundation exposes
+the installer function and bound cache factory. Gate/retry orchestration remains pending.
