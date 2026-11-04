@@ -4702,6 +4702,16 @@
       "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_browser/create_tinysky_browser.js",
       "sha256": "a8967b5f784e0568fe89697eeda24259a63d8960ef9576d3f5512838db778001",
       "status": "readable-typescript-reconstruction"
+    },
+    "packages/cua/src/tinysky_vision_only/create_tinysky_vision_only.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_vision_only/create_tinysky_vision_only.js",
+      "sha256": "485c62509de45fc8ee7a0b678c050082b2222151a652621219f13bd73a9f4873",
+      "status": "readable-typescript-reconstruction"
+    },
+    "packages/cua/src/tinysky_vision_only/globals.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_vision_only/globals.js",
+      "sha256": "35a95ec3b269640d51b7d564418bb01ca54128b19a054e43f2c29fc0970378c2",
+      "status": "readable-typescript-reconstruction"
     }
   },
   "embeddedPackages": {

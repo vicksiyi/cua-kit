@@ -16,6 +16,10 @@
     "./tinyskyBrowser": {
       "types": "./src/tinysky_browser/create_tinysky_browser.ts",
       "import": "./dist/tinysky_browser/create_tinysky_browser.js"
+    },
+    "./tinysky_vision_only": {
+      "types": "./src/tinysky_vision_only/globals.ts",
+      "import": "./dist/tinysky_vision_only/globals.js"
     }
   }
 }

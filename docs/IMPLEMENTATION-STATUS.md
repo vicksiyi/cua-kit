@@ -4485,3 +4485,10 @@ so full public-package parity is explicitly not achieved. Corrected stale README
 headlines/table labels and source-map statuses that still described already-wired
 Sky/desktop entries as not reconstructed. Network/native and daily-browser
 acceptance gaps remain unchanged.
+
+
+### Vision-only public entry reconstruction
+
+Restored `@core/cua/tinysky_vision_only` from the installed factory and global entry, with extensionless TypeScript imports and the original Linux-only guard. Screenshot emission, click/drag/scroll translation, positive pixel validation, printable-ASCII keyboard mapping, sequential key dispatch and error propagation retain original behavior. Source hashes are recorded in `reconstruction/source-map.json`.
+
+Validation: `npm run build:reconstruction` passed; `npx tsx --test reconstruction/tinysky-vision-only.test.ts` passed four differential scenarios against the installed JavaScript (normal, missing screenshot, image emission failure, key dispatch failure). These use a fixture computer, not a real Linux desktop. Global entry native initialization and Linux device acceptance remain unverified. The root CUA export, daily Chrome connection, and requested DeepSeek web searches remain incomplete.
