@@ -1242,3 +1242,15 @@ Restored host elicitation and authenticated-fetch adapters. Elicitation requires
 Four original-function differential tests cover hook validation/order/removal/snapshots/timeouts/concurrency; elicitation context/capability/input and response matrices; and fetch method/header/body serialization, stale active-ID behavior, statuses 200/204/205/304 and failure responses. Responses are synthesized in memory and no HTTP request or real approval prompt is sent. Full privileged-worker assembly, native-pipe host bridge, kernel, supervisor isolation, native/AX resources and actual-model integration remain incomplete.
 
 Validation: seven-package build/type checks and all 711 reconstruction tests pass with concurrency 4.
+
+### 16.230 NodeREPL native-pipe host bridge
+
+Restored createNativePipeBridge: connect/write/close host messages, request IDs and settlement, per-connection listener sets and execution state, base64 byte transport, and pendingClosures for peers that close before connect resumes. The returned APIs are frozen; writes capture the latest optional async context before byte validation. Data callbacks run synchronously in connection context, while terminal listeners are queued with swallowed failures and remain observable when attached late.
+
+Preserved original edge cases instead of silently redesigning them: duplicate listeners are ignored, end still sends a close request after terminal state, write rejection marks the connection closed but leaves its map entry until a host close event, and data arriving during that interval still dispatches. Connect response validation precedes the required async-context lookup, exactly as in source.
+
+Three differential tests cover path/result/context errors, bytes and listener/context ordering, removal, early close, late terminal listeners, write rejection, synchronous data exceptions and unrelated messages. A fourth integration test places this bridge beneath restored WindowsNativePipeTransport and exchanges fragmented framed RPC through synthetic host messages. No OS pipe or real application is opened.
+
+Full privileged-worker assembly, kernel/trusted-worker execution, native supervisor/isolation, native/AX resources and actual-model integration remain incomplete.
+
+Validation: seven-package build/type checks and all 715 reconstruction tests pass with concurrency 4.
