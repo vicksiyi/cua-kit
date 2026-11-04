@@ -14,5 +14,6 @@ Restored so far:
 - `src/background_operations.ts`: lazy rejected thenables and background-operation observation tracking.
 - `src/exec_context.ts`: AsyncLocalStorage context with separate originating-store and active-execution checks.
 - `src/worker_runtime.ts`: original worker assembly, output/media bridge, execution metadata, error kinds, background draining, response settlement and JSONL stdin/stdout lifecycle.
+- `src/privileged_config.ts`: frozen configuration API, original validation/normalization, async argument handling and privileged-operation message construction. This module requires the host operation handler; it does not directly access configuration files.
 
 The supervisor's execution/process isolation, permission and MCP lifecycle are still compiled native code. Discovering embedded workers does not establish full source recovery or full standalone-server behavior. The shared worker runtime is restored and tested in isolated Node subprocesses. Kernel/privileged bridge restoration and supervisor integration remain outstanding.

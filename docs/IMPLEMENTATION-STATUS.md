@@ -1220,3 +1220,15 @@ Three tests run both extracted original and reconstructed runtime in disposable 
 Shared worker assembly is now present, but kernel execution/module loading, privileged bridge, trusted-worker orchestration and the native supervisor/security boundary remain incomplete, as do native/AX resources and actual-model integration.
 
 Validation: seven-package build/type checks and all 703 reconstruction tests pass with concurrency 4.
+
+### 16.228 Privileged NodeREPL configuration bridge
+
+Restored createPrivilegedNodeReplConfig as readable TypeScript with the original frozen method surface: readToml/writeToml/read/readRequirements/writeValue/batchWrite. Preserves operation names, async argument awaiting, exact TOML path guard, cloning, recursive JSON compatibility checks, key-path retention, upsert/replace defaults, expected-version handling, reload flag and snake_case host request payloads. The existing broad isPlainObject semantics and sparse-array behavior are preserved rather than silently tightened.
+
+The bridge only constructs requests through an injected privileged-operation handler; it does not itself read or write configuration files. The remaining privileged runtime must still supply context, authorization and response handling. Restoring this API does not create an unguarded direct filesystem configuration writer.
+
+Four differential tests compare original and restored modules across TOML path/value cases, read/requirements option matrices, JSON/merge/version validation, getter access order, batch ordering, sparse edits, cloned payload isolation and deferred arguments. All requests use in-memory fixture handlers; no personal configuration is accessed or changed.
+
+Kernel, the remaining privileged host bridge/trusted worker, native supervisor/process isolation, native/AX resources and actual-model integration remain incomplete.
+
+Validation: seven-package build/type checks and all 707 reconstruction tests pass with concurrency 4.
