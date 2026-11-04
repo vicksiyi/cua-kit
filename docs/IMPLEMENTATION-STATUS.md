@@ -3269,3 +3269,23 @@ are not yet integrated. Full tunnel poller, startup and end-to-end work remain u
 
 Validation: eight package builds/type checks and all 944 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Offscreen iframe router
+
+Restored the full offscreen chunk's x/h/u/k/w routing functions as registerKernelOffscreen,
+plus scoped message guards and error serialization from its protocol chunk. Sender extension
+ID/tab/URL admission precedes handling. Each scope owns a hidden kernel-host iframe; readiness
+requires matching source and scope and has the original five-second timeout. MessageChannel
+execution rejects malformed/unreadable replies and closes both ports. Cancel/reset coalesce
+teardown, forward cleanup only after execution dispatch, dispose the frame and reject pending
+execution. Busy-scope and stale-instance identity checks preserve original behavior.
+
+A hash-pinned differential test executes actual offscreen/protocol functions across eleven
+scenarios: admission, readiness, success, invalid/unreadable responses, reset-required,
+initialization timeout, cancellation before/after dispatch, cleanup timeout/failure, idle
+reset and concurrent execution rejection. The test uses controlled DOM/MessageChannel
+fixtures; iframe-internal host code, actual Chrome page wiring and full startup remain
+unfinished. Sentry initialization is still owned by the eventual page entrypoint.
+
+Validation: eight package builds/type checks and all 945 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

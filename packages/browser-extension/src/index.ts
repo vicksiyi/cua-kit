@@ -114,3 +114,5 @@ export * from "./kernel_control";
 export * from "./tunnel_polling";
 
 export * from "./kernel_host";
+
+export * from "./kernel_offscreen";
