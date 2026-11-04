@@ -265,7 +265,7 @@ image MIME types (BMP fallback for the favicon endpoint), and caps both declared
 and streamed bytes at 64 KiB. It retains cancellation and error/null behavior and
 chunked base64 conversion. It uses fetch/Streams directly, without a third-party
 image decoder. The Ma badge/cache/publication manager is restored below; its page-side
-consumer remains pending. This helper alone does not
+consumer is restored below; full content entrypoint remains pending. This helper alone does not
 render a badge. Tests compare the pinned original with isolated response/stream fixtures.
 
 ### Favicon badge manager and content readiness
@@ -283,10 +283,25 @@ and does not cancel the underlying operation. No third-party implementation is
 needed in these inspected closures. Differential tests compare original method
 inventory, traces, state/cache/storage and lifecycle errors, including real restored
 resource/readiness orchestration over fixture Chrome/fetch. The shared foundation now supplies this manager to handler and sessions, using the
-real restored lease-change subscription. The actual page consumer remains pending,
-so visible favicon UI is not verified.
+real restored lease-change subscription. The page consumer is restored below and tested against real Chromium DOM;
+full installed-extension assembly remains pending.
 
 The foundation composition test observes active-badge messages after a real restored
 lease claim, then checks clear-badge publication before tab removal and cache/closing
 state cleanup on removal events. Browser APIs and favicon responses are fixtures;
-page-side message handling and DOM rendering are not inferred from these assertions.
+page-side message handling and DOM restoration have separate Chromium tests below.
+
+### Page-side favicon DOM and message handling
+
+`favicon_badge_dom.ts` restores the installed content script's Et/Rt and complete
+SVG/DOM restoration closure, including tracked and pre-existing marked links,
+page-authored changes, created-link removal, temporary apple-touch-icon rel and
+deferred cleanup. SVG output preserves original shapes, colors, opacity and
+attribute escaping. Shared badge URL recognition is reused.
+
+`createContentMessageInitializer` restores Un/Fn/Gn/je with one listener and repeated
+overlay readiness calls. Overlay setup Q remains a required explicit dependency.
+The artifact is separately hash-pinned in extension-content-source.ts; tests never
+execute the complete content startup. Real Chromium comparisons verify exact DOM
+and SVG data URLs after badge changes/clear, preservation of page changes and
+message acknowledgements. This is not yet a packaged replacement content script.

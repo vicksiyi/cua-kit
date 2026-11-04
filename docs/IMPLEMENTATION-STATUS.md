@@ -1987,3 +1987,31 @@ prove rendered favicon UI. Production startup/native host, remaining overlay/aut
 monitor components, real desktop/model integration and native source remain open.
 
 Validation: all eight reconstructed packages built and passed type checks; all 825 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.270 Page-side favicon rendering and messages
+
+Inspected and hash-pinned installed content-scripts/codex.js (35191 bytes, SHA256
+168b307ff1e936bcfdc9344f4e668b4767cf91b6ac8d7dd868e927c9474c9221).
+Restored Et/Rt and the complete DOM/SVG helper closure as favicon_badge_dom.ts,
+sharing existing badge-URL recognition. It preserves tracked/stale links, original
+href metadata, site-authored icon changes, created-link deletion, temporary rel
+changes and deferred cleanup, plus exact SVG shapes/colors/opacity/escaping.
+
+Un/Fn/Gn/je message initialization/guards are restored with the original one-listener
+and repeated-overlay-setup behavior. Q overlay initialization remains an explicit
+required dependency; the full content script entrypoint is not replaced. These
+closures use DOM and standard JS without a third-party renderer.
+
+A real Chromium differential test compares exact link DOM/SVG URLs with original
+inspected bindings for existing/missing icons, all three badges, page changes,
+clear/reapply races and message return/acknowledgement behavior. It caught and
+resolved a browser timer receiver issue: the injected timer is called unbound,
+matching the original global setTimeout rather than as a host-object method.
+
+Full overlay/content entrypoint assembly, installed-extension packaging/native host,
+remaining auth/monitor components, real desktop/model integration and native source
+reconstruction remain incomplete. This milestone verifies page DOM behavior, not
+full browser tab-strip rendering or the complete installed-extension workflow.
+
+Validation: all eight reconstructed packages built and passed type checks; all 826 default regression tests passed, including the real Chromium page-DOM comparison. The separate native-supervisor suite was not rerun.

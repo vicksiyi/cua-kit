@@ -105,7 +105,18 @@
   },
   "boundary": "Installed Chrome extension artifact, distinct from @oai npm packages. @core/browser-extension is this project's package name; no claim of an original @oai/browser-extension package.",
   "thirdParty": "This inspected transport uses Chrome nativeMessaging/alarms and standard timers. Sentry 10.48.0 is separately bundled; not copied into the transport. Broader dependency audit remains pending.",
-  "remaining": "Production lower-layer wiring (shared lease startup wiring, favicon page consumer, shared debugger startup wiring, production network-policy wiring and real-browser validation, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
+  "remaining": "Production lower-layer wiring (shared lease startup wiring, content entrypoint/overlay assembly, shared debugger startup wiring, production network-policy wiring and real-browser validation, SIWC, overlay/monitors, mentions, startup), manifest and build/install packaging; native messaging host executable remains external.",
   "sharedImplementation": "Browser-service to and extension fc share protocol methods but preserve their distinct transport-field initialization order. Core extraction and factory are project refactoring boundaries. Request-header template parsing and expansion are shared between browser VC/u5 and extension cs/ls via project-created @core/core/requestHeaders. Host/origin normalization and matching now share @core/core/originPatterns; differential tests compare the extension ic/up/gp closure.",
-  "composition": "createExtensionBrowserFoundation is project-authored assembly of restored identity, lease, tab groups, favicon manager/resource/content readiness, debugger, tab, network-policy/compiler/predicate/inspector, session and dispatcher components. Handler and sessions share one network policy singleton and host timers. It is not full original dR startup."
+  "composition": "createExtensionBrowserFoundation is project-authored assembly of restored identity, lease, tab groups, favicon manager/resource/content readiness, debugger, tab, network-policy/compiler/predicate/inspector, session and dispatcher components. Handler and sessions share one network policy singleton and host timers. It is not full original dR startup.",
+  "contentScript": {
+    "path": "content-scripts/codex.js",
+    "bytes": 35191,
+    "sha256": "168b307ff1e936bcfdc9344f4e668b4767cf91b6ac8d7dd868e927c9474c9221",
+    "restored": {
+      "Et/Rt/we/It/Ot/_t/At/Mt/De/Tt/Pe/bt/Nt/wt/Dt/ie": "createFaviconBadgeDom and SVG/restoration helpers",
+      "Fn/Gn/je": "content ping and badge guards",
+      "Un": "createContentMessageInitializer; Q overlay initializer required"
+    },
+    "boundary": "Only inspected top-level bindings are extracted for differential tests. Complete content entrypoint/overlay startup is not executed or claimed restored."
+  }
 }
