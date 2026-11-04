@@ -46,13 +46,13 @@ export interface BrowserHostAssemblyOptions {
   commandTiming: any;
   performanceSpan: any;
   createErrorReporter: BrowserHostDependencies["createErrorReporter"];
-  loadClassicLevel: BrowserProfileDependencies["loadClassicLevel"];
+  loadClassicLevel?: BrowserProfileDependencies["loadClassicLevel"];
   getNativeCredentialObservationStatus: BrowserHostDependencies["getNativeCredentialObservationStatus"];
   createBrowserAuthBrokerChallenge: BrowserHostDependencies["createBrowserAuthBrokerChallenge"];
   getPrivilegedRepl?: () => any;
   getNativePipeBridge?: () => any;
 }
-/** Assembles restored mH dependencies. Telemetry SDK, ClassicLevel loader and broker service remain host inputs. */
+/** Assembles restored mH dependencies. ClassicLevel uses the upstream default; telemetry SDK and broker service remain host inputs. */
 export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
   // Installed Po returns this literal. Keep it shared by handshake and bridge errors.
   const deploymentEnvironment = () => "production";

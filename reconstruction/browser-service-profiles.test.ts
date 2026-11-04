@@ -277,3 +277,94 @@ test("restored profile reader copies and reads a real synthetic ClassicLevel sto
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("default upstream ClassicLevel reads a copied real database and preserves the source", async () => {
+  const { ClassicLevel } = await import("classic-level");
+  const root = await mkdtemp(path.join(tmpdir(), "cua-real-profile-"));
+  const temporary = path.join(root, "temporary");
+  const source = path.join(
+    root,
+    "Default",
+    "Local Extension Settings",
+    "synthetic-extension",
+  );
+  await mkdir(temporary, { recursive: true });
+  await mkdir(source, { recursive: true });
+  const database = new ClassicLevel<string, string>(source, {
+    keyEncoding: "utf8",
+    valueEncoding: "utf8",
+  });
+  const errors: unknown[] = [];
+  const reader = createBrowserProfileReader({
+    reportError: (error) => errors.push(error),
+    directory: () => root,
+    temporaryDirectory: () => temporary,
+  });
+  try {
+    await database.open();
+    await database.put(
+      "extensionInstanceId",
+      JSON.stringify("synthetic-instance"),
+    );
+    await database.close();
+    await writeFile(
+      path.join(root, "Local State"),
+      JSON.stringify({
+        profile: {
+          profiles_order: ["Default"],
+          last_used: "Default",
+          info_cache: {
+            Default: { name: "Synthetic profile", avatar_icon: "fixture" },
+          },
+        },
+      }),
+    );
+    const profiles = await reader.readProfiles(
+      "chrome",
+      "synthetic-extension",
+      "darwin",
+    );
+    assert.equal(profiles[0].instanceId, "synthetic-instance");
+    assert.deepEqual(errors, []);
+    assert.deepEqual(await readdir(temporary), []);
+    // Reopening the original proves the copied database was used and cleaned up.
+    const original = new ClassicLevel<string, string>(source, {
+      createIfMissing: false,
+      keyEncoding: "utf8",
+      valueEncoding: "utf8",
+    });
+    try {
+      await original.open();
+      assert.equal(
+        await original.get("extensionInstanceId"),
+        JSON.stringify("synthetic-instance"),
+      );
+      for (const raw of ["42", "{broken", ""]) {
+        await original.put("extensionInstanceId", raw);
+        await original.close();
+        const result = await reader.readProfiles(
+          "chrome",
+          "synthetic-extension",
+          "darwin",
+        );
+        assert.equal(result[0].instanceId, null);
+        assert.deepEqual(await readdir(temporary), []);
+        await original.open();
+      }
+      await original.del("extensionInstanceId");
+      await original.close();
+      assert.equal(
+        await reader.readInstanceId(root, "Default", "synthetic-extension"),
+        null,
+      );
+      assert.deepEqual(await readdir(temporary), []);
+      assert.equal(errors.length, 1);
+      assert.ok(errors[0] instanceof SyntaxError);
+    } finally {
+      await original.close();
+    }
+  } finally {
+    await database.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});

@@ -41,7 +41,7 @@ export interface ProfileDatabase {
   close(): Promise<unknown>;
 }
 export interface BrowserProfileDependencies {
-  loadClassicLevel(): Promise<{
+  loadClassicLevel?(): Promise<{
     ClassicLevel?: new (path: string, options: any) => ProfileDatabase;
   } | null>;
   reportError(error: any): void;
@@ -59,7 +59,13 @@ export function profileTemporaryDirectory() {
     ? (globalThis as any).nodeRepl.tmpDir
     : tmpdir();
 }
-/** Original T6/wle/_le, composed with restored C6. Optional LevelDB module loading stays host supplied. */
+/** Load the upstream dependency lazily, matching the original optional dynamic import.
+ * The reader catches import failures and preserves the original null result.
+ */
+export function loadClassicLevel() {
+  return import("classic-level");
+}
+/** Original T6/wle/_le, composed with restored C6 and upstream ClassicLevel. */
 export function createBrowserProfileReader(deps: BrowserProfileDependencies) {
   const directory = deps.directory ?? browserProfileDirectory,
     readText = deps.readText ?? ((path: string) => readFile(path, "utf8")),
@@ -79,8 +85,9 @@ export function createBrowserProfileReader(deps: BrowserProfileDependencies) {
       extensionId,
     );
     if (!exists(source)) return null;
-    const Database = (await deps.loadClassicLevel().catch(() => null))
-      ?.ClassicLevel;
+    const Database = (
+      await (deps.loadClassicLevel ?? loadClassicLevel)().catch(() => null)
+    )?.ClassicLevel;
     if (Database == null) return null;
     const temporary = await makeTemporary(
       resolve(

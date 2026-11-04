@@ -4692,7 +4692,7 @@
     },
     "classic-level": {
       "declaredVersion": "3.0.0",
-      "status": "original dynamic import confirmed; production host loader outstanding"
+      "status": "pinned upstream 3.0.0; lazy default loader wired through browser profile reader and host assembly; injectable override retained"
     },
     "@statsig/js-client": {
       "declaredRange": "^3.32.6",

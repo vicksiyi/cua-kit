@@ -884,3 +884,11 @@ The application also ships other packages, but they are not automatically counte
 The upstream QR path and retained original-factory path run the same real Chromium screenshot, successful QR decode, blank-page decode and disappearance-monitor scenario. A separate test compares the actual WASM bytes. These tests establish the covered QR behavior, not blanket equivalence of every barcode format or all upstream APIs.
 
 Validation: three-package build passed. The first unconstrained full test run stalled in the unchanged AX asset test and was terminated; that test passed alone. The complete suite then passed with explicit concurrency 4: 595 tests, zero failures. The three real QR/asset tests also passed independently.
+
+### 16.195 Upstream ClassicLevel integrated into host profile loading
+
+Pinned classic-level 3.0.0 in @core/browser, matching @oai/browser-desktop's manifest. Added a lazy import of the real library as the default in createBrowserProfileReader; assembleBrowserHost no longer requires a caller-supplied loader. Explicit injection remains available, including deliberate null/failure outcomes. Import failures still return null at the original boundary, and the source profile-copy, LOCK removal, UTF-8 encoding, JSON interpretation, error reporting and cleanup sequence is unchanged. No LevelDB runtime is reconstructed.
+
+A new integration test creates an isolated real LevelDB with the upstream native package, writes synthetic extensionInstanceId data and Local State, invokes the default reader through readProfiles, checks the returned profile/instance, verifies temporary database cleanup and reopens the source to verify the original data remains accessible. Numeric JSON, malformed JSON, empty and missing values exercise the original null/error semantics with real storage. It reads no personal browser profile. Existing differential lifecycle tests continue to cover injected import failures and operation order. This closes the ClassicLevel loader gap reported in 16.194; production browser host/extension integration as a whole remains incomplete.
+
+Validation: three-package build and complete reconstruction suite passed: 596 tests, zero failures (explicit test concurrency 4).
