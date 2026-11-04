@@ -152,9 +152,7 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         events.push(["content", item]);
       },
     };
-    const span: any = async (_name: any, _attrs: any, run: any) => run();
     service = assembleBrowserService({
-      withSpan: span,
       host: {
         getPrivilegedRepl: () => repl,
         getNativePipeBridge: () => ({
@@ -168,7 +166,6 @@ test("assembled host and command service run real Unix socket RPC with signed ac
         reportDiscoveryFailure(_r, _d, reason) {
           events.push(["discoveryFailure", reason]);
         },
-        span,
         loadClassicLevel: async () => null,
         getNativeCredentialObservationStatus: unused,
         createBrowserAuthBrokerChallenge: unused,
@@ -225,6 +222,16 @@ test("assembled host and command service run real Unix socket RPC with signed ac
       configurable: true,
       value: {
         ...repl,
+        telemetry: {
+          startSpan(name: string, attrs: any) {
+            events.push(["span.start", name, attrs]);
+            return {
+              end(result: any) {
+                events.push(["span.end", name, result]);
+              },
+            };
+          },
+        },
         rpc: async (name: string, request: any) => {
           assert.equal(name, "browser");
           events.push(["client.rpc", request.method, request.params?.type]);
@@ -516,6 +523,27 @@ test("assembled host and command service run real Unix socket RPC with signed ac
           e[0] === "event" &&
           e[1] === "browser_use_agent_command" &&
           e[3]?.outcome === "success",
+      ),
+    );
+    assert(
+      events.some(
+        (e) => e[0] === "span.start" && e[1] === "browser_use.runtime.setup",
+      ),
+    );
+    assert(
+      events.some(
+        (e) =>
+          e[0] === "span.start" &&
+          e[1] === "browser_use.tab.click" &&
+          e[2]["browser_use.command.type"] === "playwright_locator_click",
+      ),
+    );
+    assert(
+      events.some(
+        (e) =>
+          e[0] === "span.end" &&
+          e[1] === "browser_use.playwright.dom_snapshot" &&
+          e[2].attrs["browser_use.playwright.snapshot.length"] > 0,
       ),
     );
     await hooks[0].run();

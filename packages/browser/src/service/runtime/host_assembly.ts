@@ -1,7 +1,7 @@
 import { browserTelemetry } from "./browser_telemetry";
 import { browserErrorReporter } from "./error_reporter";
 import { commandTiming } from "./command_timing";
-import { defaultAXPerformanceSpan } from "../accessibility/tracking";
+import { browserPerformanceSpan } from "./performance_span";
 import {
   createBrowserHostFactory,
   privilegedNodeRepl,
@@ -46,11 +46,11 @@ export interface BrowserHostAssemblyOptions {
   reportError?(error: any): void;
   reportDiscoveryFailure: BrowserDiscoveryDependencies["reportDiscoveryFailure"];
   featureEnabled?: HandshakeDependencies["featureEnabled"];
-  span: BrowserDiscoveryDependencies["span"] & ElicitationSpan;
+  span?: BrowserDiscoveryDependencies["span"] & ElicitationSpan;
   commandTiming?: ReturnType<
     typeof import("./command_timing").createCommandTiming
   >;
-  performanceSpan?: typeof defaultAXPerformanceSpan;
+  performanceSpan?: typeof browserPerformanceSpan;
   createErrorReporter?: BrowserHostDependencies["createErrorReporter"];
   loadClassicLevel?: BrowserProfileDependencies["loadClassicLevel"];
   getNativeCredentialObservationStatus: BrowserHostDependencies["getNativeCredentialObservationStatus"];
@@ -81,7 +81,7 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
   const discovery = createBrowserDiscovery({
     connect,
     readInfo: handshake.readInfo,
-    span: options.span,
+    span: options.span ?? browserPerformanceSpan.withSpan,
     surfaceEnabled: browserSurfaceEnabled,
     surfaceForType: surfaceForBackend,
     reportError: options.reportError ?? browserTelemetry.reportError,
@@ -108,8 +108,10 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions) {
     Preferences,
     commandTiming: options.commandTiming ?? commandTiming,
     createErrorReporter: options.createErrorReporter ?? browserErrorReporter,
-    performanceSpan: options.performanceSpan ?? defaultAXPerformanceSpan,
-    trackElicitation: createElicitationTelemetry(options.span),
+    performanceSpan: options.performanceSpan ?? browserPerformanceSpan,
+    trackElicitation: createElicitationTelemetry(
+      options.span ?? browserPerformanceSpan.withSpan,
+    ),
     initializeCredentialObservation: credentialObservationState.initialize,
     getNativeCredentialObservationStatus:
       options.getNativeCredentialObservationStatus,
