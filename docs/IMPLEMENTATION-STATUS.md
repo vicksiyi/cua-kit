@@ -814,3 +814,11 @@ The test first declines the synthetic origin prompt and verifies `user_declined`
 This verifies one real page across the reconstructed public API and service chain. Browser discovery/access identity, native-pipe endpoint, host policy UI, documentation and telemetry remain synthetic; it is not installed extension/production-host compatibility or Agent/model end-to-end. No personal browser profile or real model credential is used. The supplied Playwright injected helper remains unused in these AX paths; its restoration and the native app stack are still outstanding. WASM remains an external binary dependency.
 
 Validation: `npm run test:reconstruction` rebuilt all three packages with TypeScript checks and passed all 580 tests.
+
+### 16.188 Embedded injected helper: readable text matching component
+
+Extracted the installed service's hF literal for local analysis (154469 characters; raw source stays under ignored research/private). Added `playwright/injected/text_matcher.ts`, a typed reconstruction of O/li/ro/ht/ut/pe with descriptive names and extensionless imports. Preserves optional whitespace caching, quote unescaping, internal JSON parsing, immediate-node versus normalized strict matching, lax text search, regex state, assertion flags/normalization and class-list matching. Original quirks remain: empty regex sources are ignored, string precedence survives simultaneous regex input, repeated global/sticky regex calls retain lastIndex, and invalid partial-class configurations still throw rather than silently succeeding.
+
+Added an AST-only embedded-source reader and differential matrices against the actual selected original functions. The source reader decodes only the hF string literal and does not execute the service or full injected script. This component is not yet assembled into the full injected helper and does not replace the host's required injectedSource; selector engines, DOM/accessibility utilities and the InjectedScript class still need restoration and assembly. Updated source provenance to distinguish this component from full helper completion and record the previous real-page integration results.
+
+Validation: standalone reconstruction type checks and full rebuild/test pass, 583 tests total.

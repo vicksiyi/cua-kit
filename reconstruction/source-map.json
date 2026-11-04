@@ -4485,7 +4485,24 @@
         "Gut"
       ],
       "fileGrouping": "inferred from flattened service bundle; original filenames unavailable",
-      "validation": "Actual assembled host, signed access verifier, native pipe framing/RPC, discovery/directory/API, command runtime/context/registry and dispatcher run over a real temporary Unix socket to a synthetic backend. Covers required-read rejection, inventory/docs/list_tabs/name_session, backend-error normalization, managed headers, access caching, turn hook, denied next-turn access without backend request and disposal. Type checks and all 578 tests pass. Privileged bridge, backend and telemetry/auth integrations are fixtures; installed native production integration and public CUA/agent end-to-end remain incomplete. Public setup_browser/setupBrowserRuntime/create_browser_api/bootstrap/bind_tab now compose through the same real Unix socket service: getBrowser, listTabs, nameSession and new-tab getTab. AX/DOM capture is deliberately outside this new-tab branch; ordinary-page AX fails without packaged WASM and remains incomplete. Type checks and all 579 tests pass."
+      "validation": "Actual assembled host, signed access verifier, native pipe framing/RPC, discovery/directory/API, command runtime/context/registry and dispatcher run over a real temporary Unix socket to a synthetic backend. Covers required-read rejection, inventory/docs/list_tabs/name_session, backend-error normalization, managed headers, access caching, turn hook, denied next-turn access without backend request and disposal. Type checks and all 578 tests pass. Privileged bridge, backend and telemetry/auth integrations are fixtures; installed native production integration and public CUA/agent end-to-end remain incomplete. Public setup_browser/setupBrowserRuntime/create_browser_api/bootstrap/bind_tab now compose through the same real Unix socket service: getBrowser, listTabs, nameSession and new-tab getTab. AX/DOM capture is deliberately outside this new-tab branch; ordinary-page AX fails without packaged WASM and remains incomplete. Type checks and all 579 tests pass. Subsequent integration supplies the explicit installed WASM path and forwards CDP to isolated Chromium over Unix socket. A synthetic HTTPS page now verifies public getTab/getAXState/click/getScreenshot/getAXStateAndScreenshot, origin decline/accept, real DOM mutation, AX update, decoded 1280x720 JPEG and screencast cleanup. Full 580 tests pass; installed host/extension and model Agent end-to-end remain unverified."
+    },
+    "packages/browser/src/service/playwright/injected/text_matcher.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "embeddedSource": "hF",
+      "embeddedSha256": "7970824c76e6bb9f77ad7617e2f3f86d9704bdcd4c2218c7a7bdf5f6a9499d23",
+      "symbols": [
+        "O",
+        "li",
+        "ro",
+        "ht",
+        "ut",
+        "pe"
+      ],
+      "status": "readable-typed-component-not-yet-assembled-into-full-injected-helper",
+      "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
+      "validation": "Direct original-expression differential comparisons for whitespace cache/reset, escaping, internal JSON vs external quote parsing, immediate vs normalized strict text, lax and stateful regex matching, assertion flag/normalization/precedence and class-list errors. Full hF injection remains outstanding."
     }
   },
   "embeddedPackages": {
