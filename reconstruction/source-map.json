@@ -4113,6 +4113,32 @@
       ],
       "status": "reconstructed-browser-selection",
       "validation": "Original ranking matrices cover exact/hashless, origin/path, hostname/hierarchy, local URLs, preferred extension and fallback order; alias/default identity and host hierarchy comparisons, provider failure dispatch, 30 async URL-selection traces, real deadline and default directory assembly. No live browser inventory claim."
+    },
+    "packages/browser/src/service/runtime/browser_discovery.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "M6",
+        "qle",
+        "Fle",
+        "Lle",
+        "Ule",
+        "jle",
+        "Hle",
+        "Wle",
+        "$le",
+        "N6",
+        "zle",
+        "Kle",
+        "Xle",
+        "Yle",
+        "Jle",
+        "jx",
+        "Qle",
+        "ul"
+      ],
+      "status": "reconstructed-browser-discovery",
+      "validation": "15 original discovery traces cover metadata order, pipe listing and exact filter, concurrent connect/handshake, existing connection reuse, stale/scoped/disabled closure, failures, ignored handshake sentinel and diagnostic truncation. Original pipe platform/path and accessor-sensitive error formatting comparisons. Transport, handshake, feature gates, tracing and diagnostic reporting remain explicit host dependencies; no live inventory/connection claim."
     }
   },
   "embeddedPackages": {
