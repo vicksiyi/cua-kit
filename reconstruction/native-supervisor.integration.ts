@@ -336,3 +336,70 @@ test("agent-neutral MCP client reaches both restored workers through the package
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("native MCP initializes the default restored browser service with isolated empty discovery", async () => {
+  const { McpToolClient } =
+    await import("../packages/agent-loop/src/mcp-client");
+  const root = await realpath(
+    await mkdtemp(path.join(os.tmpdir(), "cua-native-browser-")),
+  );
+  const runtime = await stageRuntimePackages(restoredPackageSources(), root);
+  try {
+    const client = await McpToolClient.connect(
+      {
+        command: "/usr/bin/sandbox-exec",
+        args: [
+          "-p",
+          "(version 1)(allow default)(deny network*)",
+          process.execPath,
+          "--import",
+          import.meta.resolve("tsx"),
+          path.resolve("packages/agent-loop/src/native-supervisor.ts"),
+        ],
+        env: create_launch_environment({
+          HOME: root,
+          CODEX_HOME: root,
+          TMPDIR: root,
+          CUA_NATIVE_SUPERVISOR_PATH: binary,
+          NODE_REPL_NODE_PATH: node,
+          NODE_REPL_DISABLE_ANALYTICS: "1",
+          NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+          NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
+          CUA_REPL_ENABLED_SURFACES: "browser",
+          CUA_REPL_BROWSER_ENV: "codex-app",
+          BROWSER_USE_BACKEND_PATHS: "",
+          BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
+          BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+        }),
+        stderr: "pipe",
+      },
+      {
+        requestMeta: () => ({
+          "x-codex-turn-metadata": {
+            session_id: "browser-fixture",
+            turn_id: "turn-1",
+          },
+        }),
+      },
+    );
+    try {
+      const result = await client.callTool({
+        id: "browser",
+        name: "js",
+        arguments: {
+          code: "nodeRepl.write(typeof cua.getTab); nodeRepl.write(JSON.stringify(await cua.getState({emit:false})));",
+        },
+      });
+      assert.equal(result.isError, false, JSON.stringify(result));
+      const text = result.content
+        .map((c) => (c.type === "text" ? c.text : ""))
+        .join("");
+      assert.ok(text.endsWith('function{"apps":[],"browsers":[]}'), text);
+    } finally {
+      await client.close();
+    }
+  } finally {
+    await runtime.dispose();
+    await rm(root, { recursive: true, force: true });
+  }
+});

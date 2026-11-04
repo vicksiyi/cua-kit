@@ -62,3 +62,13 @@ npm run demo:restored -w @core/agent-loop -- "Report typeof cua.getState using j
 For a configured real host, use `"browser"`, `"computer"`, or `"browser,computer"`. The same restored configuration used by the original launcher supplies `@core/browser-desktop/service` and/or `@core/sky/service`, the import banner, platform/environment-specific tool descriptions and the untrusted-environment allowlist. Explicit `NODE_REPL_TRUSTED_SERVICES` and `NODE_REPL_JS_BANNER` overrides retain the original nullish-default behavior, including empty-string overrides. Enabling surfaces does not install or configure the underlying browser bridge/native backend. Model credentials remain outside CUA_MCP_ENV.
 
 The opt-in native integration test verifies actual MCP descriptions, automatic first-call banner, no duplicate banner on the next call, and initialization again after js_reset. It uses empty surfaces and no real model credential; it does not establish browser/app task completion.
+
+## Host context for browser services
+
+The deployed runtime root is added to **both** `NODE_REPL_NODE_MODULE_DIRS` and `NODE_REPL_TRUSTED_CODE_PATHS`. Module lookup alone is insufficient: the trusted worker also checks canonical service/dependency paths. Only the staged package tree is added automatically; existing explicit roots remain intact.
+
+`McpToolClient.connect(parameters, { requestMeta: () => metadata })` supplies standard MCP `tools/call` `_meta` from the host on each call. The callback allows a long-lived client to follow changing turns without putting protocol metadata into model-generated tool arguments. This connector is generic; it does not hardcode Codex fields. Other agents can supply their own context through the same option.
+
+The restored browser service requires `x-codex-turn-metadata` with `session_id` and `turn_id`. For its one-question CUA run, `demo:restored` generates fresh UUIDs unless `CUA_MCP_REQUEST_META` is explicitly supplied. A persistent agent should provide its own stable session ID and current turn ID. `demo.ts` validates CUA_MCP_REQUEST_META as a JSON object and passes it on the caller side, not as a server environment setting. This is context propagation, not an access grant; original access checks remain in place. Native `turn_ended` lifecycle dispatch is not yet integrated into the generic demo loop.
+
+A third opt-in native integration test now enables the actual default browser trusted service. With backend discovery explicitly set to an empty list, `cua.getState()` returns empty apps/browsers **without errors**. This covers real service startup and metadata propagation, but not a connected browser, click, screenshot or a real model call.

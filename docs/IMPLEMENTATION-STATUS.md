@@ -1410,3 +1410,15 @@ AgentLoop now declares @core/cua-repl as a workspace dependency and imports the 
 The actual native MCP integration now verifies exact js/js_reset descriptions from the launcher, automatic documentation/global setup on the first call, no repeated documentation on the next call and reinitialization after js_reset. The custom trusted RPC and model-key isolation assertions remain active. This probe uses network denial, isolated homes, restored workers, staged packages and empty surfaces; it does not claim a real webpage/app action or model run. Build and all seven reconstruction type checks pass, as does the AgentLoop type check. Original-launcher differential checks and both native MCP tests pass; full default regression results are recorded below.
 
 Full default regression: 745 tests passed, zero failed. The two native integration tests passed separately.
+
+### 16.246 Real browser-service startup exposes deployment and request-context gaps
+
+Enabled the original default @core/browser-desktop/service through actual native MCP rather than the temporary fixture or disabled surfaces. The first probe failed with trusted package resolution: the demo supplied module search paths but omitted trusted code roots. demo:restored now adds the staged package tree to NODE_REPL_TRUSTED_CODE_PATHS, retaining explicit existing roots. The worker's original canonical-path checks are unchanged.
+
+The next probe exposed a second gap: getState catches browser discovery errors, so merely checking isError=false or the presence of getTab was insufficient. Its returned state contained "Missing required Codex turn metadata: session_id, turn_id". McpToolClient now accepts a generic host-provided requestMeta callback and transmits its result as MCP tools/call _meta. Metadata never comes from model tool arguments. demo.ts reads optional caller-side CUA_MCP_REQUEST_META; restored CUA demo mode generates a fresh session/turn pair for its one-question run unless explicit metadata is supplied. Other agents retain control of session and turn lifetimes through the callback. This is protocol context, not permission or policy bypass.
+
+The final actual native MCP probe enables browser surfaces, uses the default service, isolated homes, network denial and explicitly empty backend paths. It requires the complete returned state to contain empty apps/browsers with no errors. This now passes. A separate real MCP stdio test verifies host metadata changes across calls while tool arguments remain empty. Existing native worker lifecycle, default-banner/reset, trusted RPC and model isolation tests still pass. AgentLoop type checking and six targeted tests pass. Full regression results follow.
+
+Connected browser discovery, native-pipe backend actions, complete host resources, generic turn_ended lifecycle dispatch, real DeepSeek and readable native supervisor source remain outstanding. Empty discovery proves service startup and context propagation, not successful browser operation.
+
+Full default regression: 746 tests passed, zero failed. All three opt-in native integration tests passed in the targeted run.

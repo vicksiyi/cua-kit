@@ -23,12 +23,24 @@ if (Object.keys(serverEnv).some((key) => /(?:DEEPSEEK|CUA_MODEL)/i.test(key)))
   throw new Error(
     "Model credentials/configuration must not be forwarded to the MCP server.",
   );
-const client = await McpToolClient.connect({
-  command,
-  args,
-  env: serverEnv as Record<string, string>,
-  stderr: "inherit",
-});
+const requestMeta: unknown = JSON.parse(
+  process.env.CUA_MCP_REQUEST_META ?? "{}",
+);
+if (
+  !requestMeta ||
+  typeof requestMeta !== "object" ||
+  Array.isArray(requestMeta)
+)
+  throw new Error("CUA_MCP_REQUEST_META must be a JSON object.");
+const client = await McpToolClient.connect(
+  {
+    command,
+    args,
+    env: serverEnv as Record<string, string>,
+    stderr: "inherit",
+  },
+  { requestMeta: () => requestMeta as Record<string, unknown> },
+);
 const controller = new AbortController();
 const interrupt = () => controller.abort();
 process.once("SIGINT", interrupt);

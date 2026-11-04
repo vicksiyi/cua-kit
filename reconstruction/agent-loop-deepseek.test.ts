@@ -110,3 +110,44 @@ test("model configuration requires explicit credentials and keeps alternate prov
     }),
   );
 });
+
+test("MCP request metadata follows host turn context independently of model tool arguments", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "agent-mcp-meta-"));
+  let client: McpToolClient | undefined;
+  try {
+    const fixture = join(directory, "fixture.mjs");
+    await writeFile(
+      fixture,
+      `import { McpServer } from ${JSON.stringify(pathToFileURL(require.resolve("@modelcontextprotocol/sdk/server/mcp.js")).href)};
+import { StdioServerTransport } from ${JSON.stringify(pathToFileURL(require.resolve("@modelcontextprotocol/sdk/server/stdio.js")).href)};
+const server = new McpServer({name:'metadata-fixture',version:'1'});
+server.registerTool('observe',{inputSchema:{}},async(args,extra)=>({content:[{type:'text',text:JSON.stringify({args,meta:extra._meta})}]}));
+await server.connect(new StdioServerTransport());`,
+    );
+    let turn = "one";
+    client = await McpToolClient.connect(
+      { command: process.execPath, args: [fixture], env: {} },
+      {
+        requestMeta: () => ({ "fixture-context": { session: "same", turn } }),
+      },
+    );
+    for (const current of ["one", "two"]) {
+      turn = current;
+      const result = await client.callTool({
+        id: current,
+        name: "observe",
+        arguments: {},
+      });
+      const content = result.content[0];
+      assert.equal(content.type, "text");
+      if (content.type !== "text") throw Error("Expected text");
+      assert.deepEqual(JSON.parse(content.text), {
+        args: {},
+        meta: { "fixture-context": { session: "same", turn: current } },
+      });
+    }
+  } finally {
+    await client?.close();
+    await rm(directory, { recursive: true, force: true });
+  }
+});

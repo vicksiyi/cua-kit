@@ -1,6 +1,7 @@
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
 import { fileURLToPath } from "node:url";
 import { delimiter } from "node:path";
+import { randomUUID } from "node:crypto";
 import { create_launch_environment } from "@core/cua-repl";
 import {
   stageRuntimePackages,
@@ -21,8 +22,15 @@ for (const key of ["CUA_NATIVE_SUPERVISOR_PATH", "NODE_REPL_NODE_PATH"])
 if (!env.CUA_NATIVE_SUPERVISOR_PATH)
   throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
 // Explicit surfaces opt into CUA initialization; absent retains generic JS mode.
-if (env.CUA_REPL_ENABLED_SURFACES !== undefined)
+if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
   env = create_launch_environment(env) as Record<string, string>;
+  process.env.CUA_MCP_REQUEST_META ??= JSON.stringify({
+    "x-codex-turn-metadata": {
+      session_id: randomUUID(),
+      turn_id: randomUUID(),
+    },
+  });
+}
 process.env.CUA_MCP_COMMAND = process.execPath;
 process.env.CUA_MCP_ARGS = JSON.stringify([
   "--import",
@@ -34,6 +42,12 @@ try {
   env.NODE_REPL_NODE_MODULE_DIRS = [
     runtime.root,
     env.NODE_REPL_NODE_MODULE_DIRS,
+  ]
+    .filter(Boolean)
+    .join(delimiter);
+  env.NODE_REPL_TRUSTED_CODE_PATHS = [
+    runtime.root,
+    env.NODE_REPL_TRUSTED_CODE_PATHS,
   ]
     .filter(Boolean)
     .join(delimiter);

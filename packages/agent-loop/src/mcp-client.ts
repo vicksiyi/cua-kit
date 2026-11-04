@@ -11,15 +11,23 @@ import type {
   ToolResult,
 } from "./contracts";
 
+export interface McpClientOptions {
+  /** Host-supplied protocol context, never populated from model tool arguments. */
+  requestMeta?: () => Record<string, unknown>;
+}
 export class McpToolClient implements ToolClient {
-  private constructor(private client: Client) {}
+  private constructor(
+    private client: Client,
+    private options: McpClientOptions,
+  ) {}
   static async connect(
     parameters: StdioServerParameters,
+    options: McpClientOptions = {},
   ): Promise<McpToolClient> {
     const client = new Client({ name: "cua-kit-agent-demo", version: "0.1.0" });
     try {
       await client.connect(new StdioClientTransport(parameters));
-      return new McpToolClient(client);
+      return new McpToolClient(client, options);
     } catch (error) {
       await client.close();
       throw error;
@@ -43,7 +51,11 @@ export class McpToolClient implements ToolClient {
   }
   async callTool(call: ToolCall, signal?: AbortSignal): Promise<ToolResult> {
     const result = await this.client.callTool(
-      { name: call.name, arguments: call.arguments },
+      {
+        name: call.name,
+        arguments: call.arguments,
+        _meta: this.options.requestMeta?.(),
+      },
       undefined,
       { signal, timeout: 65000 },
     );
