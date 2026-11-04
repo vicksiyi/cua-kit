@@ -4260,6 +4260,33 @@
       ],
       "status": "reconstructed-browser-access-verification",
       "validation": "18 original traces compare executor capture, raw session/turn metadata, per-turn concurrent/failure cache, SPKI key handling, RPC/timeouts, exact serialized grant and signature failure/cleanup. Real framed Unix socket + synthetic Ed25519 key/grants verifies nonce size and one request per turn. No production key, access host or user settings are used; privileged connection wiring remains host supplied."
+    },
+    "packages/browser/src/service/runtime/surface_policy.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "PA",
+        "pl",
+        "Is",
+        "x5",
+        "S5",
+        "ro",
+        "C5",
+        "kA"
+      ],
+      "status": "reconstructed-host-policy-assembly",
+      "validation": "126 original surface/metadata combinations, backend mapping and 42 primary/legacy extension/window preference cases. Preserves unset versus empty allowlist and aeon_child-only Dot gating."
+    },
+    "packages/browser/src/service/runtime/host_assembly.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "symbols": [
+        "mH",
+        "Po",
+        "BC"
+      ],
+      "status": "reconstructed-host-policy-assembly",
+      "validation": "Connects restored privileged bridge, signed access, profile reader, handshake, discovery, directory, config, Preferences, credential observation and elicitation telemetry. Real Unix socket synthetic host test verifies signed access sharing, inventory/getTabs, managed headers, elicitation meta normalization and turn/disposal. Telemetry SDK/span/feature provider, ClassicLevel loader and auth broker remain supplied. Full p6 runtime/injected/native app stack remains incomplete."
     }
   },
   "embeddedPackages": {
