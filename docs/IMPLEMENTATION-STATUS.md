@@ -3232,3 +3232,21 @@ remain unfinished. This assembles control behavior, not the complete production 
 
 Validation: eight package builds/type checks and all 940 default regressions pass,
 zero failures/skips. Independent native-supervisor tests were not rerun.
+
+### Tunnel polling lifecycle manager
+
+Restored E_ as createTunnelPollingManager and Hn as readTunnelConfiguration. The manager
+tracks current/applied generations, suspends during configuration reads, reinitializes an
+unchanged poller and replaces/disposes it when configuration changes. It gates stale
+unauthorized recovery, retains listening state across replacement, subscribes only to
+session tunnel changes, and removes its subscription on stop. Account validation reuses
+existing parseChatAccount; malformed stored values return null while storage failures
+propagate, matching the original catch boundary.
+
+Two differential tests execute actual E_/Hn/Qc for seven lifecycle/race scenarios and
+stored-value boundaries. The actual p_ network poller remains an explicit factory dependency;
+this is not a network tunnel implementation. Full S_ startup, kernel host and real model /
+installed extension end-to-end validation remain unfinished.
+
+Validation: eight package builds/type checks and all 942 default regressions pass,
+zero failures/skips. Independent native-supervisor tests were not rerun.

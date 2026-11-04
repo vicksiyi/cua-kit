@@ -110,3 +110,5 @@ export * from "./cloud_clients";
 export * from "./cloud_requirements";
 
 export * from "./kernel_control";
+
+export * from "./tunnel_polling";
