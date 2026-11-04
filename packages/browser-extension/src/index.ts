@@ -74,3 +74,5 @@ export * from "./plugin_installation";
 export * from "./plugin_installation_service";
 
 export * from "./feature_service";
+
+export * from "./statsig_live_network";

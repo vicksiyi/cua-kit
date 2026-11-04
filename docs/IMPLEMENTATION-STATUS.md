@@ -2795,3 +2795,29 @@ installed/native/model integration remain incomplete.
 
 Validation: eight package builds/type checks and all 904 default regressions pass,
 zero failures/skips. The independent native-supervisor suite was not rerun.
+
+### Statsig live-overlay request/response delta
+
+Inspected bundled Kc and restored fetchLiveEvaluations plus cursor parsing in
+statsig_live_network.ts. Requests retain responseMode, user/hash/cursor/derived fields,
+optional checksum, priority, two retries and skipInitTracking. HTTP 204 optionally
+advances the cursor from x-statsig-live-overlay-lcut; HTTP 200 requires the original
+response_mode JSON property and live_overlay value. Other responses return null and
+transport rejection propagates. Finite nonnegative numeric header parsing retains the
+original Number conversion, including fractional and hexadecimal values.
+
+Directly reuse @statsig/client-core 3.33.4 _typedJsonParse. Further audit proves the
+bundled NetworkCore differs too: public post lacks skipInitTracking handling and response
+headers. The helper requires an explicit extended post contract and is not wired to public
+post. NetworkCore changes, live-value store and client scheduling are still outstanding.
+
+Two tests compare the extracted original network class against the helper across response
+and checksum combinations, rejection and cursor boundaries. Only post is a fixture;
+no HTTP request is sent. Tests intentionally exercise upstream parser diagnostics for
+missing discriminator fields. Full extended SDK runtime is not yet available.
+
+Full startup, panel UI, native replacement and installed/native/model integration remain
+incomplete in addition to the explicitly identified SDK differences.
+
+Validation: eight package builds/type checks and all 906 default regressions pass,
+zero failures/skips. The independent native-supervisor suite was not rerun.

@@ -579,3 +579,8 @@ code reports Statsig 3.33.4 but adds refreshValuesAsync/live-value refresh absen
 public npm 3.33.4. The service therefore requires an explicit extended Client constructor;
 there is no silent fallback to the incompatible public constructor. Public dependency
 provides shared types/LogLevel; restoring the bundled SDK delta remains outstanding.
+
+The live-overlay network delta now restores request fields and 200/204 response parsing,
+reusing @statsig/client-core 3.33.4 JSON parsing. Its post contract explicitly requires
+skipInitTracking and response headers, both absent from public NetworkCore. It is not
+wired to incompatible public post; network-core, store and client deltas remain pending.
