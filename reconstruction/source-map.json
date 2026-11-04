@@ -4600,6 +4600,58 @@
       "status": "readable-typed-component-not-yet-assembled-into-full-injected-helper",
       "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
       "validation": "Original-function geometry matrix and engine traces preserve axis gap/penalty, inclusive thresholds, default near limit, NaN/Infinity, self exclusion, nearest reference and argument property reads. Real Chromium compares evaluator matching/score marking and InjectedScript layout-query stable ordering across multiple anchors. Full helper/evaluator assembly remains incomplete."
+    },
+    "packages/browser/src/service/playwright/injected/selector_types.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "embeddedSource": "hF",
+      "embeddedSha256": "7970824c76e6bb9f77ad7617e2f3f86d9704bdcd4c2218c7a7bdf5f6a9499d23",
+      "symbols": [
+        "ls",
+        "He",
+        "Fe"
+      ],
+      "status": "readable-evaluator-components-assembled-full-injected-helper-incomplete",
+      "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
+      "validation": "Types inferred from original evaluator, engine, selector AST and context contracts."
+    },
+    "packages/browser/src/service/playwright/injected/selector_engines.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "embeddedSource": "hF",
+      "embeddedSha256": "7970824c76e6bb9f77ad7617e2f3f86d9704bdcd4c2218c7a7bdf5f6a9499d23",
+      "symbols": [
+        "He",
+        "cs",
+        "us",
+        "hs",
+        "fs",
+        "ds",
+        "ps",
+        "gs",
+        "ms",
+        "bs",
+        "vs",
+        "ot",
+        "Dt",
+        "mn"
+      ],
+      "status": "readable-evaluator-components-assembled-full-injected-helper-incomplete",
+      "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
+      "validation": "Actual engines compose with reconstructed text/visibility and evaluator; real Chromium original comparisons cover text variants, scope, shadow traversal, nth matching, boolean engines and DOM ordering."
+    },
+    "packages/browser/src/service/playwright/injected/selector_evaluator.ts": {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs",
+      "sha256": "bc9f10f913da912bd0cd17a22432a605526c5d3a01d6be43eea0ac2e0284bfb0",
+      "embeddedSource": "hF",
+      "embeddedSha256": "7970824c76e6bb9f77ad7617e2f3f86d9704bdcd4c2218c7a7bdf5f6a9499d23",
+      "symbols": [
+        "ls",
+        "xr"
+      ],
+      "status": "readable-evaluator-components-assembled-full-injected-helper-incomplete",
+      "fileGrouping": "Inferred grouping inside flattened embedded script; original module filenames unavailable.",
+      "validation": "Complete evaluator class and registry restored. Original-class real Chromium comparisons cover query/matches, selector ASTs, all combinators, scope expansion, all engines, shadow piercing, stable spatial scores, nested cache identities/invalidation, query-vs-matches ordering and preserved score-map state on failure. Full InjectedScript and CSS source parser remain incomplete."
     }
   },
   "embeddedPackages": {
@@ -4622,5 +4674,32 @@
     "source": "@oai",
     "reconstructed": "@core",
     "reason": "explicit user instruction"
+  },
+  "thirdPartyReuse": {
+    "policy": "Reuse verified upstream libraries; preserve CUA-specific differences and validate behavior before replacement.",
+    "zxing-wasm": {
+      "version": "3.1.2",
+      "workspace": "@core/browser",
+      "entry": "zxing-wasm/reader",
+      "adapter": "packages/browser/src/service/browser_auth/qr.ts#createAuthQrFlowFromZXing",
+      "wasmSha256": "0e8d688d71932ebb6b8b33f700d43d3cb997f59ed9cab3c05102d7f10288a392",
+      "status": "upstream adapter implemented; production host selection remains explicit"
+    },
+    "playwright": {
+      "installedVersion": "1.57.0",
+      "testVersion": "1.64.1",
+      "status": "bundled CUA snapshot differences verified; exact upstream base unresolved"
+    },
+    "classic-level": {
+      "declaredVersion": "3.0.0",
+      "status": "original dynamic import confirmed; production host loader outstanding"
+    },
+    "@statsig/js-client": {
+      "declaredRange": "^3.32.6",
+      "status": "direct import in sky telemetry confirmed"
+    },
+    "zod": {
+      "status": "bundled source identified; exact version not yet established"
+    }
   }
 }

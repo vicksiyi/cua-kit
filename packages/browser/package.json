@@ -12,5 +12,8 @@
       "types": "./src/ax.ts",
       "import": "./dist/ax.js"
     }
+  },
+  "dependencies": {
+    "zxing-wasm": "3.1.2"
   }
 }

@@ -1,4 +1,9 @@
 import {
+  prepareZXingModule,
+  readBarcodes,
+  type ReaderOptions,
+} from "zxing-wasm/reader";
+import {
   createAuthQrDecoder,
   type AuthQrDecoderDependencies,
 } from "./qr_decode";
@@ -23,5 +28,18 @@ export function createAuthQrFlowFromWasmFactory(
     moduleUrl,
     configureReader: (options) => reader.configure(factory, options),
     readBarcodes: (bytes, options) => reader.read(factory, bytes, options),
+  });
+}
+
+/** Reuse the exact bundled upstream version instead of reconstructing its Emscripten runtime.
+ * The library shares its module cache, as the original qD/jD bindings do.
+ * moduleUrl and filesystem access retain the original host-controlled asset lookup.
+ */
+export function createAuthQrFlowFromZXing(moduleUrl: string) {
+  return createAuthQrFlow({
+    moduleUrl,
+    configureReader: (options) => prepareZXingModule(options),
+    readBarcodes: (bytes, options) =>
+      readBarcodes(bytes, options as ReaderOptions),
   });
 }
