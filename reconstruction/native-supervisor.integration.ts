@@ -10,6 +10,10 @@ import { mkdtemp, writeFile, readFile, rm, realpath } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import os from "node:os";
+import {
+  stageRuntimePackages,
+  restoredPackageSources,
+} from "../packages/agent-loop/src/runtime-packages";
 const binary =
   process.env.CUA_NODE_REPL_BINARY ??
   "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl";
@@ -231,6 +235,7 @@ test("agent-neutral MCP client reaches both restored workers through the package
   const root = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "cua-native-adapter-mcp-")),
   );
+  const runtime = await stageRuntimePackages(restoredPackageSources(), root);
   try {
     const service = path.join(root, "fixture.mjs");
     await writeFile(
@@ -254,10 +259,12 @@ test("agent-neutral MCP client reaches both restored workers through the package
         CUA_NATIVE_SUPERVISOR_PATH: binary,
         NODE_REPL_NODE_PATH: node,
         NODE_REPL_DISABLE_ANALYTICS: "1",
+        NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+        CUA_REPL_ENABLED_SURFACES: "",
         NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ fixture: service }),
         NODE_REPL_TRUSTED_CODE_PATHS: root,
         NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:
-          "DEEPSEEK_API_KEY,CUA_MODEL_ENDPOINT",
+          "DEEPSEEK_API_KEY,CUA_MODEL_ENDPOINT,CUA_REPL_ENABLED_SURFACES",
         DEEPSEEK_API_KEY: "fixture-not-a-real-key",
         CUA_MODEL_ENDPOINT: "fixture-not-a-real-endpoint",
       },
@@ -269,7 +276,7 @@ test("agent-neutral MCP client reaches both restored workers through the package
         id: "rpc",
         name: "js",
         arguments: {
-          code: 'nodeRepl.write(await nodeRepl.rpc("fixture",17)); nodeRepl.write(Object.keys(nodeRepl.env));',
+          code: 'nodeRepl.write(await nodeRepl.rpc("fixture",17)); nodeRepl.write(Object.keys(nodeRepl.env).filter(key => /DEEPSEEK|CUA_MODEL/.test(key)));',
         },
       });
       assert.equal(result.isError, false, JSON.stringify(result));
@@ -277,6 +284,19 @@ test("agent-neutral MCP client reaches both restored workers through the package
         result.content.map((c) => (c.type === "text" ? c.text : "")).join(""),
         "{ privileged: true, value: 17 }[]",
       );
+      const loaded = await client.callTool({
+        id: "packages",
+        name: "js",
+        arguments: {
+          code: 'await import("@core/cua/tinyskyAlt"); nodeRepl.write(typeof cua.getState); nodeRepl.write(typeof cua.getTab); nodeRepl.write(typeof cua.getApp);',
+        },
+      });
+      assert.equal(loaded.isError, false, JSON.stringify(loaded));
+      const loadedText = loaded.content
+        .map((c) => (c.type === "text" ? c.text : ""))
+        .join("");
+      assert.ok(loadedText.includes("## Computer Use"));
+      assert.ok(loadedText.endsWith("functionundefinedundefined"));
       const reset = await client.callTool({
         id: "reset",
         name: "js_reset",
@@ -287,6 +307,7 @@ test("agent-neutral MCP client reaches both restored workers through the package
       await client.close();
     }
   } finally {
+    await runtime.dispose();
     await rm(root, { recursive: true, force: true });
   }
 });

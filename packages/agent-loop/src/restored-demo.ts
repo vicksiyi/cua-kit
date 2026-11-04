@@ -1,5 +1,10 @@
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
 import { fileURLToPath } from "node:url";
+import { delimiter } from "node:path";
+import {
+  stageRuntimePackages,
+  restoredPackageSources,
+} from "./runtime-packages";
 const configured: unknown = JSON.parse(process.env.CUA_MCP_ENV ?? "{}");
 if (
   !configured ||
@@ -20,5 +25,16 @@ process.env.CUA_MCP_ARGS = JSON.stringify([
   import.meta.resolve("tsx"),
   fileURLToPath(new URL("./native-supervisor.ts", import.meta.url)),
 ]);
-process.env.CUA_MCP_ENV = JSON.stringify(env);
-await import("./demo");
+const runtime = await stageRuntimePackages(restoredPackageSources());
+try {
+  env.NODE_REPL_NODE_MODULE_DIRS = [
+    runtime.root,
+    env.NODE_REPL_NODE_MODULE_DIRS,
+  ]
+    .filter(Boolean)
+    .join(delimiter);
+  process.env.CUA_MCP_ENV = JSON.stringify(env);
+  await import("./demo");
+} finally {
+  await runtime.dispose();
+}
