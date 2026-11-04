@@ -189,3 +189,10 @@ before model/MCP startup without an unhandled stack trace. Private-directory
 permission violations and unexpected errors remain errors; they are not
 reclassified as a missing browser. This diagnostic does not establish browser
 connectivity or make a failed operation succeed.
+
+
+### Native App mode (not yet accepted on this machine)
+
+`npm run demo:deepseek -- --check-computer` checks the restored native Sky service via MCP without constructing a model or requiring a DeepSeek token. It requests app inventory and reports only a verified connection/count, not a screenshot/click success. `npm run demo:deepseek -- --computer "your prompt"` selects computer-only tools and runs the same preflight before the AgentLoop. Default browser mode and `--check-browser` remain separate. In computer mode the browser endpoint environment defaults are not forwarded; explicitly supplied CUA_MCP_ENV remains authoritative.
+
+Current real-machine check fails with `Sky Computer Use native pipe startup failed`, despite the default socket path existing. This does not establish a specific permission, authentication or process-liveness cause. The CLI exits with a diagnostic before any model request. Native operations remain unaccepted.

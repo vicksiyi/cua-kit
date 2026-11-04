@@ -1,3 +1,4 @@
+import { computerPreflight } from "./computer-preflight";
 import { browserPreflight } from "./browser-preflight";
 import { createTerminalTrace } from "./terminal-trace";
 import { createTerminalElicitation } from "./terminal-elicitation";
@@ -10,6 +11,7 @@ if (!question)
   throw new Error('Usage: npm run demo -w @core/agent-loop -- "question"');
 const checkBrowser =
   process.argv.length === 3 && process.argv[2] === "--check-browser";
+const checkComputer = process.argv.length === 3 && process.argv[2] === "--check-computer";
 const command = process.env.CUA_MCP_COMMAND;
 if (!command)
   throw new Error("Set CUA_MCP_COMMAND to the MCP server executable.");
@@ -37,7 +39,9 @@ if (checkBrowser && !browserEnabled)
   throw new Error(
     "--check-browser requires the browser surface in CUA_MCP_ENV.",
   );
-const model = checkBrowser ? undefined : createDemoModel();
+const computerEnabled = (serverEnv as Record<string, string>).CUA_REPL_ENABLED_SURFACES?.split(",").some(surface => surface.trim() === "computer");
+if (checkComputer && !computerEnabled) throw new Error("--check-computer requires the computer surface in CUA_MCP_ENV.");
+const model = checkBrowser || checkComputer ? undefined : createDemoModel();
 const requestMeta: unknown = JSON.parse(
   process.env.CUA_MCP_REQUEST_META ?? "{}",
 );
@@ -78,7 +82,10 @@ try {
         onMessage: trace,
       })
     : [];
-  if (checkBrowser) {
+  if (computerEnabled) initialMessages.push(...await computerPreflight(turnClient, { signal: controller.signal, onMessage: trace }));
+  if (checkComputer) {
+    console.log("Native computer service verified by app inventory. No model request or app action was performed; screenshot/click acceptance remains separate.");
+  } else if (checkBrowser) {
     console.log(
       "Browser connection verified by CUA inventory. No model request or page action was performed; navigation/click acceptance is still separate.",
     );
