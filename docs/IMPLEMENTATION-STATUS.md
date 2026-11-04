@@ -1148,3 +1148,13 @@ Restored turn-scope/home helpers: Windows/UNC normalization, /mnt drive conversi
 Four tests compare original selected functions for metadata precedence, app/audio approval matrices, request-budget insertion, home/path/WSL normalization, scope keys and marker helpers. Initial oracle selection accidentally chose an outer function containing the parser; selecting the smallest matching function fixed the fixture without changing production code. The strengthened budget oracle test also passes.
 
 Validation: six-package build/type checks and full 674-test suite pass; focused protocol tests pass after oracle strengthening. Windows helper transport/client/factory, top-level Sky exports, external NodeREPL, native/AX resources and actual-model integration remain incomplete.
+
+### 16.221 Windows helper transport lifecycle
+
+Restored WindowsHelperTransport with original lazy subprocess creation, JSON-line request IDs and metadata budgets, request/event/exit dispatch, helper unref and parent-exit cleanup, stderr error details, and scoped pending-request cleanup. Approval replies invoke the existing restored approval protocol and replay only after acceptance with approved-app metadata. Turn changes send end_turn with the previous metadata; unrelated end_turn requests are ignored. Both explicit stop responses and exit code 130 persist the scoped interruption marker, blocking subsequent instances in the same turn while allowing another turn.
+
+Timeout behavior preserves the original option: normally kill/reset the helper and reject its pending siblings; preserveHelperOnTimeout only rejects the timed-out request. Malformed JSON rejects pending requests without replacing the helper. No new third-party implementation is introduced; the transport uses Node child_process and the reconstructed protocol helpers.
+
+Four differential tests execute both the installed original class and reconstructed class against real synthetic Node helper processes. They compare approval/request traces, budgets, turn transitions and events; verify approval denial without replay, malformed-JSON reuse, both timeout policies, sibling rejection, synthetic stop responses and exit-130 persistence across instances. CODEX_HOME points to a disposable relative directory, avoiding personal markers and WSL conversion. These tests prove the covered JavaScript transport semantics, not actual Windows native-helper interoperability.
+
+Validation: six-package build/type checks and all 678 reconstruction tests pass. Windows computer-use base/client/factory, Sky public entry routing, external NodeREPL, native executables/AX resources and actual-model integration remain incomplete.

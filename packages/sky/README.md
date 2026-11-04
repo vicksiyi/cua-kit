@@ -4,7 +4,7 @@ The installed @oai/sky 0.7.13 package has three native targets (mac, linux, wind
 
 Currently implemented:
 
-- `src/targets/windows/internal/codex_turn_metadata.ts` and `helper_protocol.ts`: metadata precedence, app/audio approval and scoped interrupt-marker path helpers; Windows transport/client assembly remains pending.
+- `src/targets/windows/internal/codex_turn_metadata.ts` and `helper_protocol.ts`: metadata precedence, app/audio approval and scoped interrupt-marker path helpers; `helper_transport.ts` wires approval replay, turn transitions, interruption enforcement, subprocess framing and timeout lifecycle; Windows client assembly remains pending.
 
 - `src/targets/mac/create_client.ts` and operation modules: complete Mac factory, policy-wrapped field mappings, per-factory window state and conditional audio methods.
 - `src/targets/mac/audio_recording.ts`: original duration/approval, local WAV read, suspended timeout and host attachment flow.
