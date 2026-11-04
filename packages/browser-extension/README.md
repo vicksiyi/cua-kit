@@ -130,3 +130,19 @@ module, matching the source. Viewport setup uses the original raw, untimed send.
 The three differential tests cover state/error/queue behavior and timeouts; an
 additional session composition test uses the restored runtime over fake Chrome
 APIs. Actual installation and end-to-end production startup remain outstanding.
+
+### Chrome tab/window operations
+
+`createTabRuntime({chrome, now, setTimeout})` restores the direct `vE/yt/Id/Ad/za/bE`
+tab/window helpers; `toBrowserTabInfo` restores `Jr`. The returned methods compose
+with `BrowserSession` dependencies. Window selection prefers the requested window,
+then a focused normal window, then the first normal window. A failed creation is
+retried only when the selected preferred window changed on re-query. An empty
+window list creates an unfocused normal window; tabs are created inactive.
+
+Preparing a new-tab page uses the original `about:blank` update and polling path:
+25ms polling, a 5000ms deadline, and the original order of read/timeout checks.
+Tab ID validation deliberately keeps the source's undefined-only check. Tests
+compare selection/retry/error and polling traces with the pinned artifact, then
+compose the restored session with this runtime over isolated Chrome fixtures.
+No user browser windows or tabs are opened by these tests.

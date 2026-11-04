@@ -1640,3 +1640,28 @@ full startup/manifest/native host and real desktop/DeepSeek integration. The
 debugger methods are now restored but production shared-lifetime wiring is pending.
 
 Validation: all eight reconstructed packages built and passed type checks, and all 783 default regression tests passed. The separate native-supervisor integration suite was not rerun in this turn; its last five-test pass remains the preceding milestone, not evidence of a production extension connection.
+
+
+## 16.257 Chrome tab/window creation and new-tab preparation
+
+Restored original vE/yt/Id/Ad/za/bE/wi/Jr into `tab_runtime.ts`. The runtime uses
+Chrome tabs/windows directly and retains the original preferred/focused/fallback
+window selection, narrow retry on a changed preferred window, unfocused window
+creation, inactive tab creation, undefined-only ID checks and tab metadata shape.
+New-tab preparation updates to about:blank and preserves the original 25ms polling,
+5000ms deadline and read/check ordering (including a blank result at the deadline).
+
+Three differential tests cover window disappearance, fallback/no-retry cases,
+created window/tab errors, immediate/polled/failed navigation, null/undefined/zero
+IDs and metadata fields. A fourth test composes the restored session with the
+restored tab runtime to create an agent tab and claim a new-tab user tab via the
+actual translated helpers. The Chrome and lease collaborators remain isolated
+fixtures; no real user tabs/windows are mutated.
+
+No third-party tab library is present in this inspected closure: it directly uses
+Chrome APIs, Promise/timers and Date. The project factory exposes that host boundary
+without inventing different browser behavior. Remaining production work includes
+lease/group/favicon, network policy, overlay/monitor/SIWC, full startup/install and
+native host plus real desktop/DeepSeek integration.
+
+Validation: all eight reconstructed packages built and passed type checks; all 787 default regression tests passed. The separate native-supervisor suite was not rerun for this component-only change, and no production-extension connection is claimed.

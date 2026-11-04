@@ -40,5 +40,6 @@
     "cs": "parseRequestHeaders direct import",
     "ls": "resolveRequestHeaders direct import"
   },
-  "restoredDebuggerRuntime": "createDebuggerRuntime returns original-derived debugger methods/state. Share one runtime across all sessions and dispatcher initialization. Other lower layers remain required."
+  "restoredDebuggerRuntime": "createDebuggerRuntime returns original-derived debugger methods/state. Share one runtime across all sessions and dispatcher initialization. Other lower layers remain required.",
+  "restoredTabRuntime": "createTabRuntime provides original-derived getTab/createTab/prepareNewTab/tabInfo over the supplied Chrome API; other lease/group/favicon/overlay dependencies remain required."
 }

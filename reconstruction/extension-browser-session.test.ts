@@ -569,3 +569,54 @@ test("restored browser session attaches and sends CDP through restored Chrome de
     ],
   );
 });
+
+test("restored session creates and claims tabs through restored Chrome tab operations", async () => {
+  const { createTabRuntime } =
+    await import("../packages/browser-extension/src/tab_runtime");
+  const { deps, trace, tabs } = fixture(false);
+  const chrome: any = {
+    ...deps.chrome,
+    windows: {
+      async getAll(options: any) {
+        trace.push(["chrome.windows", options]);
+        return [{ id: 9, focused: true }];
+      },
+    },
+    tabs: {
+      ...deps.chrome.tabs,
+      async create(options: any) {
+        trace.push(["chrome.create", options]);
+        return tabs.get(4);
+      },
+      async update(id: number, options: any) {
+        trace.push(["chrome.update", id, options]);
+        Object.assign(tabs.get(id), options);
+        return tabs.get(id);
+      },
+    },
+  };
+  const runtime = createTabRuntime({ chrome, now: Date.now, setTimeout });
+  const Session = createBrowserSessionClass({ ...deps, ...runtime, chrome });
+  const session = new Session("s", "chrome", false, {
+    applyDecision: async (enabled) => enabled,
+  });
+  assert.equal((await session.createTab(request, 9)).id, 4);
+  tabs.get(3).url = "chrome://newtab/";
+  const claimed = await session.claimUserTab(request, 3);
+  assert.equal(claimed.url, "about:blank");
+  assert.equal(claimed.active, true);
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "chrome.create" &&
+        entry[1].windowId === 9 &&
+        entry[1].active === false,
+    ),
+  );
+  assert.ok(
+    trace.some(
+      (entry) =>
+        entry[0] === "leases.claim" && entry[3] === 3 && entry[4] === "user",
+    ),
+  );
+});
