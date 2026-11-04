@@ -1,3 +1,4 @@
+import { createChatApiClass } from "./chat_api";
 import { createSiwcServiceClass } from "./siwc";
 import {
   createPopupInterceptor,
@@ -40,6 +41,10 @@ export interface ExtensionBrowserHost {
 }
 /** Project composition of restored closures; not a replacement for original full dR startup. */
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
+  const ChatApi = createChatApiClass({
+    ...host,
+    fetch: host.fetch ?? globalThis.fetch,
+  });
   const siwc = createSiwcServiceClass({
     chrome: host.chrome,
     crypto: { subtle: host.crypto.subtle ?? globalThis.crypto.subtle },
@@ -149,6 +154,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     });
   }
   return {
+    ChatApi,
     siwc,
     contentRuntime,
     popupInterceptor,

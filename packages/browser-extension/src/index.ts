@@ -30,3 +30,5 @@ export * from "./foreign_frame_monitor";
 export * from "./popup_interceptor";
 
 export * from "./siwc";
+
+export * from "./chat_api";

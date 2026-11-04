@@ -2287,3 +2287,26 @@ After removing the obsolete Foundation test stub, targeted tests and extension t
 checks also pass. Full auth cache/lifecycle, mentions, startup/install, native host,
 real desktop and model integration remain incomplete; native-supervisor tests were
 not rerun.
+
+### Shared authentication cache and Chat API request lifecycle
+
+Restored Xc/Ss as a cached-reader factory and shared request generation in the SIWC
+runtime. Direct session reads invalidate existing reader caches, origin changes cause
+new reads, and a cached rejection persists until invalidation. Aborting a waiter does
+not abort the shared fetch. The actual generation now replaces the prior standalone
+instrumentation placeholder; the optional observer remains available.
+
+Restored Dn/Yc/Zm as ChatApiHttpError, createChatApiClass and readChatRetryability.
+Requests preserve account/header overrides, composed cancellation, timer cleanup,
+HTTP retry metadata, JSON/custom response parsing, and disposal. Foundation exposes
+the host-bound ChatApi class; full authentication orchestration is still not wired.
+No additional third-party library is used by these inspected source closures.
+
+Two differential tests compare cache generation/cancellation/rejection behavior and
+13 client scenarios, including caller cancellation, disposal, timeout during transport
+or response processing, HTTP body formats and custom readers. Fixtures never contact
+real authentication endpoints. Full startup/auth orchestration, tab mentions, extension
+installation/native host and desktop/model integration remain open.
+
+Validation: eight reconstructed packages build/typecheck successfully; all 856 default
+regression tests pass, with zero failures or skips. Native-supervisor tests were not rerun.

@@ -108,8 +108,10 @@ export function createSiwcServiceClass(host: {
   const timeout = host.timeout ?? AbortSignal.timeout.bind(AbortSignal);
   const chatOrigin = "https://chatgpt.com";
   let cookieQueue: Promise<unknown> = Promise.resolve();
+  let authRequestCount = 0;
   async function readAuthSession(signal?: AbortSignal, origin = chatOrigin) {
-    host.onAuthRequest?.(); // original Ss request counter, retained as an instrumentation hook
+    authRequestCount++;
+    host.onAuthRequest?.();
     const bounded = timeout(15000);
     const response = await host.fetch(`${origin}/api/auth/session`, {
       cache: "no-store",
@@ -153,6 +155,38 @@ export function createSiwcServiceClass(host: {
     } catch {
       return { status, error: "decode" };
     }
+  }
+  /** Original Xc: cancellation only stops this waiter, never the shared fetch. */
+  function createCachedAuthReader() {
+    let pending: ReturnType<typeof readAuthSession> | undefined;
+    let generation: number | undefined;
+    let cachedOrigin: string | undefined;
+    return async (signal?: AbortSignal, origin = chatOrigin) => {
+      signal?.throwIfAborted();
+      if (
+        pending == null ||
+        generation !== authRequestCount ||
+        cachedOrigin !== origin
+      ) {
+        pending = readAuthSession(undefined, origin);
+        generation = authRequestCount;
+        cachedOrigin = origin;
+      }
+      const current = pending;
+      if (signal == null) return current;
+      let onAbort = () => {};
+      try {
+        return await Promise.race([
+          current,
+          new Promise<never>((_, reject) => {
+            onAbort = () => reject(signal.reason);
+            signal.addEventListener("abort", onAbort, { once: true });
+          }),
+        ]);
+      } finally {
+        signal.removeEventListener("abort", onAbort);
+      }
+    };
   }
   async function readContext(
     session: SiwcSession,
@@ -291,5 +325,5 @@ export function createSiwcServiceClass(host: {
       }
     }
   }
-  return { SiwcService, readAuthSession };
+  return { SiwcService, readAuthSession, createCachedAuthReader };
 }

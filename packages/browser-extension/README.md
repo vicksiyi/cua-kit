@@ -477,3 +477,8 @@ origin recheck, browser grant parsing/issue, and runtime-shared serialized boots
 cookie installation with account-change rollback. Foundation wires the restored
 service directly. Tests use fixture HTTP and CDP responses, not real authorization;
 the broader authentication cache/lifecycle and installed-extension setup remain open.
+
+The shared auth runtime now restores the original generation-based cached session
+readers (independent waiter cancellation). Foundation also exposes the restored
+ChatApi class with original HTTP errors, response handling, timeout and disposal.
+These primitives do not yet constitute the complete authentication orchestrator.
