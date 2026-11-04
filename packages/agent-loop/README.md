@@ -44,8 +44,21 @@ npm run demo:restored -w @core/agent-loop -- "Use js to compute 6 * 7"
 
 For a generic MCP caller, the executable is Node with `--import <absolute tsx loader URL>` and `packages/agent-loop/src/native-supervisor.ts` as arguments; `demo:restored` constructs these paths. A shell-level stdio entry is `npm run --silent mcp:restored -w @core/agent-loop`; `--silent` avoids npm banners on the protocol stream. Supply the native path and tool-server configuration explicitly.
 
-This entry exposes the native NodeREPL tools with restored workers. CUA browser/app globals additionally require the cua-repl banner, configured trusted services, installed package roots and actual browser/native backend resources. `demo:restored` now stages installed runtime packages into a temporary node_modules tree and supplies its search root. It retains distinct dependency versions and copies actual package files; internal links stay within that deployment. The staging helper runs no install scripts or network requests and cleans up after the MCP client closes. Banner, service configuration and backend resources are still not automatically provisioned by this adapter. The current real MCP test uses a temporary configured service; it does not claim a live DeepSeek or desktop/browser task has run.
+This entry exposes the native NodeREPL tools with restored workers. CUA browser/app globals additionally require the cua-repl banner, configured trusted services, installed package roots and actual browser/native backend resources. `demo:restored` now stages installed runtime packages into a temporary node_modules tree and supplies its search root. It retains distinct dependency versions and copies actual package files; internal links stay within that deployment. The staging helper runs no install scripts or network requests and cleans up after the MCP client closes. When CUA_REPL_ENABLED_SURFACES is explicitly present in CUA_MCP_ENV, the demo now uses @core/cua-repl to assemble the banner, service defaults, tool descriptions and environment allowlist. Actual backend resources still require explicit host configuration. The current real MCP test uses a temporary configured service; it does not claim a live DeepSeek or desktop/browser task has run.
 
 Validation now includes `reconstruction/agent-loop-native-adapter.test.ts` and the opt-in macOS `reconstruction/native-supervisor.integration.ts`. The latter tests the generic McpToolClient against this adapter, actual native MCP, both restored workers, trusted RPC and reset; fake model-key environment values are confirmed absent in the worker.
 
 Package staging is independently authored demo deployment code, not recovered supervisor logic. It follows runtime dependencies, installed optional dependencies and required peers, handles cycles, and deliberately excludes development dependencies. The original build must exist before staging. Runtime package files include third-party native/WASM assets already installed locally; staging does not rebuild native addons for another Node ABI or platform.
+
+## CUA initialization in the demo
+
+Set `CUA_REPL_ENABLED_SURFACES` inside `CUA_MCP_ENV` to opt into the restored launcher configuration. An absent setting keeps generic JavaScript mode. An empty string initializes CUA documentation and common APIs with no browser/computer surfaces; it is useful to verify bootstrap without contacting a desktop backend:
+
+```sh
+export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":""}'
+npm run demo:restored -w @core/agent-loop -- "Report typeof cua.getState using js"
+```
+
+For a configured real host, use `"browser"`, `"computer"`, or `"browser,computer"`. The same restored configuration used by the original launcher supplies `@core/browser-desktop/service` and/or `@core/sky/service`, the import banner, platform/environment-specific tool descriptions and the untrusted-environment allowlist. Explicit `NODE_REPL_TRUSTED_SERVICES` and `NODE_REPL_JS_BANNER` overrides retain the original nullish-default behavior, including empty-string overrides. Enabling surfaces does not install or configure the underlying browser bridge/native backend. Model credentials remain outside CUA_MCP_ENV.
+
+The opt-in native integration test verifies actual MCP descriptions, automatic first-call banner, no duplicate banner on the next call, and initialization again after js_reset. It uses empty surfaces and no real model credential; it does not establish browser/app task completion.

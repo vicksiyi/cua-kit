@@ -8,6 +8,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdtemp, writeFile, readFile, rm, realpath } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { create_launch_environment } from "../packages/cua-repl/src/launch_environment";
 import path from "node:path";
 import os from "node:os";
 import {
@@ -252,7 +253,7 @@ test("agent-neutral MCP client reaches both restored workers through the package
         import.meta.resolve("tsx"),
         path.resolve("packages/agent-loop/src/native-supervisor.ts"),
       ],
-      env: {
+      env: create_launch_environment({
         HOME: root,
         CODEX_HOME: root,
         TMPDIR: root,
@@ -267,11 +268,23 @@ test("agent-neutral MCP client reaches both restored workers through the package
           "DEEPSEEK_API_KEY,CUA_MODEL_ENDPOINT,CUA_REPL_ENABLED_SURFACES",
         DEEPSEEK_API_KEY: "fixture-not-a-real-key",
         CUA_MODEL_ENDPOINT: "fixture-not-a-real-endpoint",
-      },
+      }),
       stderr: "pipe",
     });
     try {
-      assert.ok((await client.listTools()).some((t) => t.name === "js"));
+      const tools = await client.listTools();
+      const expectedTools = JSON.parse(
+        create_launch_environment({ CUA_REPL_ENABLED_SURFACES: "" })
+          .NODE_REPL_TOOL_OVERRIDES!,
+      ).tools;
+      assert.equal(
+        tools.find((t) => t.name === "js")?.description,
+        expectedTools.js.description,
+      );
+      assert.equal(
+        tools.find((t) => t.name === "js_reset")?.description,
+        expectedTools.js_reset.description,
+      );
       const result = await client.callTool({
         id: "rpc",
         name: "js",
@@ -280,22 +293,23 @@ test("agent-neutral MCP client reaches both restored workers through the package
         },
       });
       assert.equal(result.isError, false, JSON.stringify(result));
-      assert.equal(
-        result.content.map((c) => (c.type === "text" ? c.text : "")).join(""),
-        "{ privileged: true, value: 17 }[]",
-      );
+      const initialText = result.content
+        .map((c) => (c.type === "text" ? c.text : ""))
+        .join("");
+      assert.ok(initialText.includes("## Computer Use"));
+      assert.ok(initialText.endsWith("{ privileged: true, value: 17 }[]"));
       const loaded = await client.callTool({
         id: "packages",
         name: "js",
         arguments: {
-          code: 'await import("@core/cua/tinyskyAlt"); nodeRepl.write(typeof cua.getState); nodeRepl.write(typeof cua.getTab); nodeRepl.write(typeof cua.getApp);',
+          code: "nodeRepl.write(typeof cua.getState); nodeRepl.write(typeof cua.getTab); nodeRepl.write(typeof cua.getApp);",
         },
       });
       assert.equal(loaded.isError, false, JSON.stringify(loaded));
       const loadedText = loaded.content
         .map((c) => (c.type === "text" ? c.text : ""))
         .join("");
-      assert.ok(loadedText.includes("## Computer Use"));
+      assert.ok(!loadedText.includes("## Computer Use"));
       assert.ok(loadedText.endsWith("functionundefinedundefined"));
       const reset = await client.callTool({
         id: "reset",
@@ -303,6 +317,17 @@ test("agent-neutral MCP client reaches both restored workers through the package
         arguments: {},
       });
       assert.equal(reset.isError, false);
+      const afterReset = await client.callTool({
+        id: "after-reset",
+        name: "js",
+        arguments: { code: "nodeRepl.write(typeof cua.getState);" },
+      });
+      assert.equal(afterReset.isError, false, JSON.stringify(afterReset));
+      const resetText = afterReset.content
+        .map((c) => (c.type === "text" ? c.text : ""))
+        .join("");
+      assert.ok(resetText.includes("## Computer Use"));
+      assert.ok(resetText.endsWith("function"));
     } finally {
       await client.close();
     }

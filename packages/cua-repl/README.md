@@ -11,3 +11,5 @@ Build from repository root with `npm run build:reconstruction`. The bin is `node
 Validation compares installed and restored instruction output across platforms, environments and guidance modes; real disposable child processes compare selected environment, description payloads, overrides, exit codes and signal termination. The fixture does not execute user code or call a model.
 
 The native supervisor contains embedded worker JavaScript; extraction/provenance and initial readable helpers are tracked in `packages/node-repl`. This does not remove the external executable requirement of this original launcher.
+
+`create_launch_environment(environment, platform?)` exposes the restored environment assembly without spawning a process. Both `launch()` and the independently authored AgentLoop demo use this function, so surface validation, instruction selection, banner/service overrides and allowlist construction share one implementation. The helper is a refactoring boundary introduced by this project, not a claim that the installed package exports an identically named function.
