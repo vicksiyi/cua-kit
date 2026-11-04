@@ -1,3 +1,9 @@
+import { createContentRuntime } from "./content_runtime";
+import { createObservedTabsClass } from "./observed_tabs";
+import {
+  createOverlayManagerClass,
+  createCursorMessageHandler,
+} from "./overlay_manager";
 import { createTabFaviconManagerClass } from "./tab_favicons";
 import { createTabGroupManagerClass } from "./tab_groups";
 import { createNetworkPolicyManagerClass } from "./network_policy";
@@ -27,11 +33,18 @@ export interface ExtensionBrowserHost {
 }
 /** Project composition of restored closures; not a replacement for original full dR startup. */
 export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
+  const contentRuntime = createContentRuntime(host);
+  const ObservedTabs = createObservedTabsClass(host.chrome);
+  const observedTabs = new ObservedTabs();
+  const OverlayManager = createOverlayManagerClass({ ...host, contentRuntime });
+  const overlay = new OverlayManager({ observedTabs });
+  observedTabs.setChangeHandler((ids) => overlay.republishTabStates(ids));
   const instanceId = createExtensionInstanceIdReader(host);
   const tabLeases = createTabLeaseManagerClass({ ...host, instanceId });
   const tabFavicons = createTabFaviconManagerClass({
     ...host,
     tabLeases,
+    contentRuntime,
     fetch: host.fetch ?? globalThis.fetch,
   });
   const debuggerRuntime = createDebuggerRuntime(host);
@@ -46,6 +59,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     enforceActivePage: createNetworkPolicyEnforcer(host),
   });
   const sessionBase = {
+    overlay,
     ...debuggerRuntime,
     ...tabRuntime,
     tabGroups,
@@ -55,6 +69,7 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     networkPolicy,
   };
   const handlerBase = {
+    overlay,
     favicons: tabFavicons,
     chrome: host.chrome,
     instanceId,
@@ -86,6 +101,12 @@ export function createExtensionBrowserFoundation(host: ExtensionBrowserHost) {
     });
   }
   return {
+    contentRuntime,
+    observedTabs,
+    overlay,
+    createCursorMessageHandler: (
+      handler: Parameters<typeof createCursorMessageHandler>[1],
+    ) => createCursorMessageHandler(overlay, handler),
     instanceId,
     tabLeases,
     networkPolicy,

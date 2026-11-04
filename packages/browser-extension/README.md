@@ -385,3 +385,23 @@ cursor movement/arrival, runtime messages, repeated injection and root suppressi
 Separate upstream-runtime tests compare abort/timer/navigation/polling semantics.
 A real installed extension still needs its background entry, other content scripts,
 manifest/assets/native host and end-to-end installation validation.
+
+
+### Background overlay and observed tabs
+
+`createOverlayManagerClass` restores aS's sessions, linked-tab priority, request
+counts/abort, cursor state, control-activity notifications and bounded publication.
+`createObservedTabsClass` restores oS: all windows' active tabs are observed, not
+only tabs in the focused window. `createCursorMessageHandler` restores fR's state
+read and arrival validation/dispatch.
+
+Foundation supplies the same overlay to handler/sessions, and shares a content
+readiness runtime with favicons to retain injection deduplication. Startup must call
+`foundation.observedTabs.initialize()` and install the bound message router among
+its handlers; full startup and observed-tab audio mute/restore remain pending.
+
+Differential tests verify state/method/event behavior. A Chromium integration test
+connects the manager to the actual content bundle and routes its arrival messages
+back to real command waiters, verifying resolution before timeout, hiding on
+observation loss and request abort on stop. The transport is an explicit fixture;
+full installed-extension RPC/permissions/manifest/native-host validation is pending.

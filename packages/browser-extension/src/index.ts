@@ -23,3 +23,5 @@ export * from "./overlay_root";
 export * from "./overlay_controller";
 export * from "./cursor_animator";
 export * from "./codex_content";
+export * from "./observed_tabs";
+export * from "./overlay_manager";

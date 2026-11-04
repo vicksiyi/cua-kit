@@ -18,13 +18,14 @@ const clearBadge = {
 /** Original Ma/Kt: state and publication queues intentionally have separate lifetimes. */
 export function createTabFaviconManagerClass(host: {
   chrome: typeof chrome;
+  contentRuntime?: ReturnType<typeof createContentRuntime>;
   tabLeases: { getInstance(): LeaseSource };
   fetch: typeof globalThis.fetch;
   setTimeout: typeof globalThis.setTimeout;
   clearTimeout: typeof globalThis.clearTimeout;
 }) {
   const chrome = host.chrome;
-  const content = createContentRuntime(host),
+  const content = host.contentRuntime ?? createContentRuntime(host),
     resources = createFaviconResourceReader(host);
   class TabFaviconManager {
     static instance: TabFaviconManager | null = null;

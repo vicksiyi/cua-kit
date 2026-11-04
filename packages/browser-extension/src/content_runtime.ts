@@ -61,7 +61,7 @@ export function createContentRuntime(host: {
     }
     return await pending;
   }
-  return { ensureContentScript, withTimeout };
+  return { ensureContentScript, ping, withTimeout };
 }
 /** Original Gu/rS: identify our percent-encoded SVG badge, not arbitrary data URLs. */
 export function isFaviconBadgeUrl(value: string | null | undefined): boolean {

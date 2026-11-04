@@ -914,7 +914,6 @@ test("extension foundation shares identity, lease singleton and debugger state a
       commandNames: {} as any,
       schemas: {} as any,
       validateMouse() {},
-      overlay: deps.overlay,
       canAnimateCursor: async () => false,
       capabilities: {} as any,
     },
@@ -939,6 +938,21 @@ test("extension foundation shares identity, lease singleton and debugger state a
     },
   });
   assert.equal(sent[0].result.id, 4);
+  assert.equal(foundation.overlay.readCursorOverlayState(4).sessionId, "s");
+  assert.equal(foundation.overlay.isBrowserControlActive(), true);
+  foundation.observedTabs.setActiveTabs([{ tabId: 4, windowId: 1 }]);
+  await foundation.overlay.republishTabState(4);
+  assert.equal(foundation.overlay.readCursorOverlayState(4).isVisible, true);
+  const cursorReplies: any[] = [];
+  assert.equal(
+    foundation.createCursorMessageHandler(handler)(
+      { type: "GET_AGENT_CURSOR_STATE" },
+      { tab: { id: 4 } } as any,
+      (value) => cursorReplies.push(value),
+    ),
+    true,
+  );
+  assert.equal(cursorReplies[0].state.sessionId, "s");
   const favicons = foundation.tabFavicons.getInstance();
   await new Promise((resolve) => setImmediate(resolve));
   await favicons.stateOperationQueue;
@@ -1028,6 +1042,7 @@ test("extension foundation shares identity, lease singleton and debugger state a
   });
   assert.deepEqual(stored.leases, {});
   assert.deepEqual(local.TAB_GROUPS.groups, []);
+  assert.equal(foundation.overlay.isBrowserControlActive(), false);
   assert.deepEqual(rules, []);
   assert.equal(foundation.debuggerRuntime.attachedTabs.size, 0);
   await new Promise((resolve) => setImmediate(resolve));

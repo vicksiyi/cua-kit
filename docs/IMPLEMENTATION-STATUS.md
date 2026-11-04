@@ -2146,3 +2146,35 @@ native source reconstruction remain incomplete. This is fixture integration of t
 complete codex content entry, not production installed-extension validation.
 
 Validation: all eight reconstructed packages built and passed type checks; all 837 default regression tests passed. The separate native-supervisor suite was not rerun.
+
+
+### 16.276 Background overlay management and cursor roundtrip
+
+Restored aS/Hu/nS/sS as OverlayManager, preserving session insertion priority,
+per-turn cursor clearing, linked tabs, request counts/AbortSignal, stop/finish
+distinctions, activity edge notifications, hidden cursor projection and bounded
+publication. Restored oS/zu/cS as ObservedTabs: active tabs in every window count
+as observed, independently of focused-window status; event registration/disposal
+and changed-tab order are retained. fR is the cursor state/arrival message router.
+
+Foundation now shares one observed-tabs/overlay instance between handler and
+sessions and one content readiness/injection runtime between overlay and favicons.
+It exposes the bound message router; initialization/listener installation remain
+startup responsibilities. Observed-tab audio muting/restoration from the original
+change callback is still outstanding, so this is not full dR startup wiring.
+
+Differential tests compare every manager prototype method, state/publication traces,
+priority across overlapping sessions, aborted requests, turn resets, missing tabs,
+failed/non-boolean acknowledgements, message validation, multi-window changes and
+listener disposal. A real Chromium roundtrip uses the restored background manager,
+actual bundled content script, animator and original-derived command arrival waiter:
+notifications resolve the waiter before timeout, while observation loss hides the
+cursor and stopping aborts the request. This test does not exercise full RPC/session
+activation; the separate foundation RPC test verifies actual shared overlay state.
+
+Production background startup/manifest/native host, frame monitors, audio handling,
+auth/mentions/other content scripts, real desktop/model integration and native source
+reconstruction remain incomplete. The browser host transport is a fixture, not an
+installed production extension.
+
+Validation: all eight reconstructed packages built and passed type checks; all 841 default regression tests passed. The separate native-supervisor suite was not rerun.
