@@ -1790,3 +1790,23 @@ frame monitors, SIWC, full dR/capability messaging, manifest/install/native host
 real desktop/DeepSeek integration and readable native supervisor source.
 
 Validation: all eight reconstructed packages built and passed type checks; all 805 default regression tests passed. The separate native-supervisor suite was not rerun; real network enforcement and production extension startup remain unverified.
+
+
+### 16.262 Network policy hostname intersection
+
+Restored the complete original Fp/Bp/jp closure and alphabet, escaping, repetition
+and budget helpers as readable hostname_intersection.ts. This is the compiler's
+UTF-8 wildcard intersection algorithm, including apex/subdomain expansion, literal
+fast paths, memoized product-state traversal, DNS/IPv6 alphabets, branch ordering
+and shared state/output budgets. The inspected closure uses standard JavaScript;
+no third-party implementation or additional dependency was identified here.
+
+Differential tests compare exact generated regex arrays, errors and remaining
+budget counters against the hash-pinned installed extension. The matrix covers
+22 patterns in pairwise combinations for both hostname kinds (968 comparisons),
+plus multi-pattern and exhausted-budget cases. Explicit disjoint/literal assertions
+complement the source comparisons. This restores an internal compiler component;
+Vp normalization/rule assembly, Wp URL predicate and JS active-page enforcement
+still require integration. No claim of real browser network enforcement is made.
+
+Validation: all eight reconstructed packages built and passed type checks; all 807 default regression tests passed. The separate native-supervisor suite was not rerun.
