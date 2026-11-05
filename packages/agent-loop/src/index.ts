@@ -1,5 +1,5 @@
 export * from "./contracts";
-export { AgentLoop, type AgentRunOptions } from "./loop";
+export { AgentLoop, AgentStepBudgetError, type AgentRunOptions } from "./loop";
 export { McpToolClient, type McpClientOptions } from "./mcp-client";
 export { ChatCompletionsModel } from "./chat-model";
 export { createDemoModel } from "./provider";

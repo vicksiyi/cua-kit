@@ -82,6 +82,7 @@ debug?.write("run.start", {
   provider: process.env.CUA_MODEL_PROVIDER ?? "deepseek",
   model: process.env.CUA_MODEL ?? "deepseek-flash",
   maxSteps: 12,
+  summarizeOnExhaustion: true,
   browserEnabled,
   computerEnabled,
   node: process.version,
@@ -153,6 +154,7 @@ try {
       signal: controller.signal,
       onMessage: trace,
       initialMessages,
+      summarizeOnExhaustion: true,
       runtimeContext:
         process.env.CUA_DEMO_ATTACHED_BROWSER === "1"
           ? "The connected browser belongs to the user and was attached through an explicitly supplied local CDP endpoint. Only operate tabs relevant to the request. Do not claim a fresh temporary profile. This client disconnects when the run ends; it does not close the existing browser."
@@ -169,6 +171,14 @@ try {
   console.error(
     `任务已用完 ${error.maxSteps} 轮模型决策，尚未生成最终答案；这不代表任务成功。`,
   );
+  if (error.partialSummary) {
+    console.error(`已观察到的进展（任务未完成）：\n${error.partialSummary}`);
+    debug?.write("run.incomplete", { summary: error.partialSummary });
+  }
+  if (error.cause) {
+    console.error("进展摘要生成失败，原始工具轨迹仍保留在诊断日志中。");
+    debug?.write("run.summary.error", { error: error.cause });
+  }
   if (debug) console.error(`诊断日志：${debug.file}`);
   console.error("请提供该日志路径，以便分析重复调用、页面内容和工具错误。");
   process.exitCode = 1;

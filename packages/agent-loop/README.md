@@ -236,3 +236,23 @@ path and exits nonzero without the raw budget-exception stack. The step limit
 remains 12; enabling diagnostics does not increase actions or fabricate a final
 answer. Logs start before MCP connection; earlier shell/build/configuration
 failures can still precede creation of a run log.
+
+### Budget exhaustion progress summary
+
+The demo enables `summarizeOnExhaustion`. After the existing 12 decision rounds,
+it makes at most one extra model request with no tool definitions and
+`tool_choice: none`. The last tool result is included. No actions are executed
+from this request, even if an adapter returns tool calls anyway. The loop still
+throws `AgentStepBudgetError`; its optional `partialSummary` is model-generated
+progress text, not a success verdict. The demo prints it under an explicit
+incomplete label, logs it locally, and exits nonzero. A failed or empty summary
+preserves the budget error and records the summary failure. Cancellation skips
+or interrupts summarization and cleanup still runs.
+
+Generic AgentLoop users must opt in; the default retains the original hard
+budget behavior. This adds at most one model request (with the adapter's normal
+timeout/cost), not more browser action rounds. Every ordinary decision also
+receives its remaining decision budget. Summaries can be mistaken; the host's
+incomplete status is independent of their wording. This does not establish that
+the original twelve-step search failure or all navigation inefficiencies are
+resolved.

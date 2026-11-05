@@ -4887,3 +4887,19 @@ only when available, and records/reports its availability without granting any
 approval automatically. A real MCP child-process regression checks that a
 non-interactive demo does not advertise an approval UI. This fixes capability
 reporting, not the earlier twelve-step convergence issue or site authorization.
+
+### 2026-11-06 — bounded progress report after action budget exhaustion
+
+The demo now opts into one tools-disabled model request after its existing 12
+rounds are exhausted. It includes the final observation, never executes returned
+tool calls, and retains typed budget failure plus nonzero demo exit. Generic
+AgentLoop behavior stays opt-in. Model wording is not a trusted completion
+verdict. Cancellation, empty/invalid summaries and provider errors retain
+cleanup and failure semantics. Normal decisions now receive budget information.
+
+Seventeen targeted tests pass, including an actual HTTP adapter exchange proving
+no tools are offered in summarization, last evidence survives, and no extra
+actions run. Agent-loop typecheck passes. A real DeepSeek fixture run returned
+the independently supplied marker after exactly one observation, one summary
+request and one endTurn; the host still rejected the run as budget-exhausted.
+This is provider/loop validation, not browser or native App acceptance.

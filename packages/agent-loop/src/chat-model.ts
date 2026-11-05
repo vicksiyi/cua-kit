@@ -110,14 +110,18 @@ export class ChatCompletionsModel implements ModelAdapter {
         ...(this.config.thinking
           ? { thinking: { type: this.config.thinking } }
           : {}),
-        tools: input.tools.map((tool) => ({
-          type: "function",
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.inputSchema,
-          },
-        })),
+        ...(input.tools.length
+          ? {
+              tools: input.tools.map((tool) => ({
+                type: "function",
+                function: {
+                  name: tool.name,
+                  description: tool.description,
+                  parameters: tool.inputSchema,
+                },
+              })),
+            }
+          : { tool_choice: "none" }),
       }),
     });
     // Never log response bodies/headers on HTTP errors: providers may echo credentials or content.
