@@ -69,3 +69,27 @@ The unchanged original Sky JS-derived service now reaches the Swift inventory
 endpoint through Rust native pipes in an integration fixture, bypassing the
 independent TS helper-spawn adapter. Production service ownership and the remaining
 policy/state/action protocol still need migration before retiring that adapter.
+
+
+## Existing repository audit follow-up (2026-11-06)
+
+`native/runtime-supervisor/src/native_service.rs` now owns Swift service launch,
+readiness and retirement through the MCP harness; the original JS-derived Sky
+client remains TS. This replaces the test-side service spawn for the Rust inventory
+path, but does not yet retire `packages/native-macos/src/helper.ts` or
+`src/native/helper.ts`. Both still implement independently authored NDJSON helper
+process ownership in TS, and must migrate their consumers to the native service
+once the corresponding operations are supported.
+
+The legacy root is not dead code: package.json still exports dist/index and
+agent/native/extension entries compiled from src, and the default demo/mcp scripts
+point there. tests/native-transport.test.ts directly imports src/native/helper;
+tests/native.test.ts imports src/native/provider; browser/runtime/input/extension
+and other tests also consume src/index. Deleting these files now would break active
+entry points. Retirement requires switching those callers and their acceptance
+coverage, not merely rewriting or deleting the source directory.
+
+Audit status remains per-responsibility and incomplete per-file. Source-evidenced
+JS clients stay TS. Rust supervisor and Swift desktop responsibilities migrate to
+the corresponding native layers. Unknown native-host/WASM implementation languages
+remain explicitly unresolved rather than assigned a speculative language.

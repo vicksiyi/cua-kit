@@ -4,6 +4,7 @@ use core_runtime_supervisor::{
     config_manager::{ConfigManager, ConfigSources},
     deployment_host::deployment_host,
     mcp_server::SupervisorMcp,
+    native_service::NativeServiceOptions,
     process_port::ProcessSpec,
     repl_manager::ReplManager,
     sandbox_launcher::{worker_spec, SandboxedWorkerOptions},
@@ -69,6 +70,8 @@ struct Options {
     writable_paths: HashSet<String>,
     #[serde(default)]
     module_directories: Vec<PathBuf>,
+    #[serde(default)]
+    native_service: Option<NativeServiceOptions>,
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -91,6 +94,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         options.trusted.process()?,
         options.services,
     )
+    .with_native_service(options.native_service)
     .with_pipe_paths(options.pipe_paths)?
     .with_module_directories(options.module_directories)?;
     let server = SupervisorMcp::new(session, deployment_host(config));

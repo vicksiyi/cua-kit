@@ -97,6 +97,8 @@ func serveSkySocket(_ path: String) throws {
     guard bound == 0 else { throw rpcFailure(-32600, "Cannot bind native socket; existing paths are never replaced") }
     defer { unlink(canonical) }
     guard chmod(canonical, 0o600) == 0, listen(listener, 1) == 0 else { throw rpcFailure(-32600, "Cannot initialize private native socket") }
+    let ready = try JSONSerialization.data(withJSONObject: ["type":"sky_service_ready", "socketPath":canonical], options: [.sortedKeys])
+    FileHandle.standardOutput.write(ready + Data([10]))
     let connection = accept(listener, nil, nil)
     guard connection >= 0 else { throw rpcFailure(-32600, "Cannot accept native connection") }
     defer { Darwin.close(connection) }

@@ -162,3 +162,22 @@ still need native implementation; unsupported requests explicitly fail. The test
 harness currently owns service launch. Production Rust service supervision,
 launch-services integration, native sender/approval policy and replacing the old
 TS helper-spawn adapter remain open. The default demo route is unchanged.
+
+
+## Rust-owned Swift service lifecycle (2026-11-06)
+
+The standalone Rust MCP configuration now accepts `native_service: {helper,
+directory}`. Rust creates a private socket directory, starts the Swift helper,
+awaits its readiness frame, injects the socket path into only the trusted worker
+and adds that path to the native-pipe allowlist. `js_reset` and MCP shutdown retire
+the workers and service and remove the owned directory; the next call starts a
+fresh service. No test-side prelaunch is required. Foundation can normalize
+/private/tmp to /tmp, so readiness compares canonical socket paths.
+
+The four native IPC cases pass, including the installed original JS client. The
+Rust-path case verifies three owned child PIDs, reset retirement, fresh replacement
+PIDs and final cleanup. All 29 Rust regression tests also pass. This verifies app
+inventory and lifecycle only: app policy/start/state/action dispatch, vendor sender
+authentication and production launch-services integration remain open. The default
+demo selection is unchanged. This is independent native reconstruction using
+observed contracts, not recovery of unavailable original native function bodies.

@@ -25,3 +25,6 @@ pub mod background_host;
 
 #[cfg(unix)]
 pub mod sandbox_launcher;
+
+#[cfg(unix)]
+pub mod native_service;

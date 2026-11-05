@@ -3,6 +3,7 @@
 use crate::background_host::BackgroundHost;
 use crate::host::{HostHandler, HostReply, HostRequest};
 use crate::native_pipe::NativePipeHost;
+use crate::native_service::{NativeService, NativeServiceOptions};
 use crate::process_port::{ProcessSpec, ProcessWorker};
 use serde_json::{json, Value};
 use std::{
@@ -35,6 +36,8 @@ pub struct ReplManager {
     host_handler: Option<HostHandler>,
     form_elicitation: bool,
     pair: Option<Pair>,
+    native_options: Option<NativeServiceOptions>,
+    native_service: Option<NativeService>,
     /// Set before dispatch; a dropped execution future must not reuse its state.
     dirty: bool,
     closed: bool,
@@ -52,10 +55,16 @@ impl ReplManager {
             host_handler: None,
             form_elicitation: false,
             pair: None,
+            native_options: None,
+            native_service: None,
             dirty: false,
             closed: false,
             ended_turns: HashMap::new(),
         }
+    }
+    pub fn with_native_service(mut self, options: Option<NativeServiceOptions>) -> Self {
+        self.native_options = options;
+        self
     }
     pub fn with_module_directories(mut self, paths: Vec<PathBuf>) -> Result<Self, String> {
         for path in paths {
@@ -180,12 +189,20 @@ impl ReplManager {
     }
     pub async fn reset(&mut self) -> Result<(), String> {
         self.dirty = true;
-        if let Some(mut pair) = self.pair.take() {
+        let workers = if let Some(mut pair) = self.pair.take() {
             pair.background.close().await;
             pair.pipes.close().await;
             let (kernel, trusted) = tokio::join!(pair.kernel.close(), pair.trusted.close());
-            kernel.and(trusted)?;
-        }
+            kernel.and(trusted)
+        } else {
+            Ok(())
+        };
+        let service = if let Some(mut service) = self.native_service.take() {
+            service.close().await
+        } else {
+            Ok(())
+        };
+        workers.and(service)?;
         self.dirty = false;
         Ok(())
     }
@@ -201,11 +218,35 @@ impl ReplManager {
             self.reset().await?;
         }
         if self.pair.is_none() {
-            let mut kernel = ProcessWorker::start(self.kernel.clone()).await?;
-            let trusted = match ProcessWorker::start(self.trusted.clone()).await {
+            self.dirty = true;
+            if let Some(options) = self.native_options.as_ref() {
+                self.native_service = Some(NativeService::spawn(options).await?);
+                if let Err(error) = self.native_service.as_mut().unwrap().wait_ready().await {
+                    let _ = self.reset().await;
+                    return Err(error);
+                }
+            }
+            let mut trusted_spec = self.trusted.clone();
+            let mut pipe_paths = self.pipe_paths.clone();
+            if let Some(service) = self.native_service.as_ref() {
+                trusted_spec.env.insert(
+                    "SKY_CUA_SERVICE_NATIVE_PIPE_PATH".into(),
+                    service.socket_path.to_string_lossy().into_owned(),
+                );
+                pipe_paths.push(service.socket_path.clone());
+            }
+            let mut kernel = match ProcessWorker::start(self.kernel.clone()).await {
+                Ok(worker) => worker,
+                Err(error) => {
+                    let _ = self.reset().await;
+                    return Err(error);
+                }
+            };
+            let trusted = match ProcessWorker::start(trusted_spec).await {
                 Ok(worker) => worker,
                 Err(error) => {
                     let _ = kernel.close().await;
+                    let _ = self.reset().await;
                     return Err(error);
                 }
             };
@@ -216,11 +257,12 @@ impl ReplManager {
                 {
                     let mut trusted = trusted;
                     let _ = tokio::join!(kernel.close(), trusted.close());
+                    let _ = self.reset().await;
                     return Err(error);
                 }
             }
             let (events, pipe_events) = mpsc::channel(64);
-            let pipes = NativePipeHost::new(self.pipe_paths.clone(), events)?;
+            let pipes = NativePipeHost::new(pipe_paths, events)?;
             self.pair = Some(Pair {
                 kernel,
                 trusted,
@@ -229,6 +271,7 @@ impl ReplManager {
                 pipe_seen: HashSet::new(),
                 background: BackgroundHost::default(),
             });
+            self.dirty = false;
         }
         Ok(())
     }

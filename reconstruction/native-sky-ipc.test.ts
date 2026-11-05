@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {spawn} from 'node:child_process';
+import {spawn,execFileSync} from 'node:child_process';
 import {connect, type Socket} from 'node:net';
 import {once} from 'node:events';
-import {mkdtemp,realpath,access,rm,chmod,mkdir,writeFile} from 'node:fs/promises';
+import {mkdtemp,realpath,access,rm,chmod,mkdir,writeFile,readdir} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {MacComputerUseClient} from '../packages/sky/src/targets/mac/client';
@@ -47,21 +47,35 @@ test('Swift IPC enforces negotiation, deadlines, frame limits and unknown-operat
  const [code]=await f.exited;assert.equal(code,1);
 });
 
-test('restored CUA app inventory traverses Rust sandbox and original Sky service into Swift IPC',{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:15000},async t=>{
- const f=await fixture(t);
+test('restored CUA app inventory traverses Rust sandbox and original Sky service into Swift IPC',{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:30000},async t=>{
+ const root=await realpath(await mkdtemp('/tmp/core-owned-sky-'));await chmod(root,0o700);
+ t.after(()=>rm(root,{recursive:true,force:true}));
+ const f={root};
  const {stageRuntimePackages}=await import('../packages/agent-loop/src/runtime-packages');
- const {McpToolClient}=await import('../packages/agent-loop/src/mcp-client');
+ const {Client}=await import('@modelcontextprotocol/sdk/client/index.js');
+ const {StdioClientTransport}=await import('@modelcontextprotocol/sdk/client/stdio.js');
  const staged=await stageRuntimePackages([resolve('packages/sky'),resolve('packages/cua')]);t.after(()=>staged.dispose());
  const kernel=join(f.root,'kernel'),trusted=join(f.root,'trusted');await Promise.all([mkdir(kernel),mkdir(trusted)]);
- const worker=(isTrusted:boolean)=>({sandbox:{node:process.execPath,bootstrap:resolve('packages/runtime-supervisor/dist/sandbox-bootstrap.js'),addon:resolve('native/macos-sandbox/dist/sandbox.node'),entry:resolve('packages/node-repl/dist/'+(isTrusted?'trusted_worker.js':'kernel.js')),args:isTrusted?[trusted]:['--session-id','sky-ipc','--working-dir',kernel],directory:isTrusted?trusted:kernel,read_directories:[resolve('packages/node-repl'),resolve('node_modules'),staged.root],worker_environment:{NODE_REPL_TRUSTED_RPC_ENABLED:'1',NODE_REPL_TRUSTED_SERVICES:JSON.stringify({sky:'@core/sky/service'}),NODE_REPL_TRUSTED_CODE_PATHS:staged.root,NODE_REPL_NODE_MODULE_DIRS:staged.root,NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:'CUA_REPL_ENABLED_SURFACES',CUA_REPL_ENABLED_SURFACES:'computer',...(isTrusted?{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path}:{})}}});
+ const worker=(isTrusted:boolean)=>({sandbox:{node:process.execPath,bootstrap:resolve('packages/runtime-supervisor/dist/sandbox-bootstrap.js'),addon:resolve('native/macos-sandbox/dist/sandbox.node'),entry:resolve('packages/node-repl/dist/'+(isTrusted?'trusted_worker.js':'kernel.js')),args:isTrusted?[trusted]:['--session-id','sky-ipc','--working-dir',kernel],directory:isTrusted?trusted:kernel,read_directories:[resolve('packages/node-repl'),resolve('node_modules'),staged.root],worker_environment:{NODE_REPL_TRUSTED_RPC_ENABLED:'1',NODE_REPL_TRUSTED_SERVICES:JSON.stringify({sky:'@core/sky/service'}),NODE_REPL_TRUSTED_CODE_PATHS:staged.root,NODE_REPL_NODE_MODULE_DIRS:staged.root,NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:'CUA_REPL_ENABLED_SURFACES',CUA_REPL_ENABLED_SURFACES:'computer'}}});
  const config=join(f.root,'config.toml'),requirements=join(f.root,'requirements.toml');await Promise.all([writeFile(config,''),writeFile(requirements,'')]);
- const spec=join(f.root,'runtime.json');await writeFile(spec,JSON.stringify({kernel:worker(false),trusted:worker(true),services:['sky'],pipe_paths:[f.path],config:{config,requirements,working_directories:[trusted],toml_files:{}}}),{mode:0o600});
- const mcp=await McpToolClient.connect({command:resolve('native/runtime-supervisor/dist/core-runtime-supervisor'),args:[spec],env:{HOME:f.root,TMPDIR:f.root},stderr:'pipe'},{requestMeta:()=>({'x-codex-turn-metadata':{session_id:'sky-ipc',turn_id:'one'}})});
+ const spec=join(f.root,'runtime.json');await writeFile(spec,JSON.stringify({kernel:worker(false),trusted:worker(true),services:['sky'],pipe_paths:[],native_service:{helper,directory:root},config:{config,requirements,working_directories:[trusted],toml_files:{}}}),{mode:0o600});
+ const transport=new StdioClientTransport({command:resolve('native/runtime-supervisor/dist/core-runtime-supervisor'),args:[spec],env:{HOME:f.root,TMPDIR:f.root},stderr:'pipe'});
+ const mcp=new Client({name:'native-owner-test',version:'1.0'});await mcp.connect(transport);
+ const children=()=>execFileSync('/bin/ps',['-axo','pid=,ppid='],{encoding:'utf8'}).trim().split('\n').map(line=>line.trim().split(/\s+/).map(Number)).filter(([,parent])=>parent===transport.pid).map(([pid])=>pid);
+ const gone=(pids:number[])=>{for(const pid of pids)assert.throws(()=>process.kill(pid,0),(error:any)=>error.code==='ESRCH');};
+ const inventory=async()=>{
+  const setup=await mcp.callTool({name:'js',arguments:{code:'await import("@core/cua/tinyskyAlt");'}});assert.equal(setup.isError,false,JSON.stringify(setup));
+  const result=await mcp.callTool({name:'js',arguments:{code:'{const state=await cua.getState({emit:false});nodeRepl.write(JSON.stringify({appCount:state.apps.length,browserCount:state.browsers.length}));}'}});assert.equal(result.isError,false,JSON.stringify(result));
+  const body=(result.content as any[]).filter(item=>item.type==='text').map(item=>item.text).join('\n');assert.match(body,/"appCount":\d+/);assert.match(body,/"browserCount":0/);
+ };
+ let active:number[]=[];
  try {
-  const setup=await mcp.callTool({id:'setup',name:'js',arguments:{code:'await import("@core/cua/tinyskyAlt");'}});assert.equal(setup.isError,false,JSON.stringify(setup));
-  const result=await mcp.callTool({id:'inventory',name:'js',arguments:{code:'{const state=await cua.getState({emit:false});nodeRepl.write(JSON.stringify({appCount:state.apps.length,browserCount:state.browsers.length}));}'}});assert.equal(result.isError,false,JSON.stringify(result));
-  const body=result.content.filter(item=>item.type==='text').map(item=>item.text).join('\n');assert.match(body,/"appCount":\d+/);assert.match(body,/"browserCount":0/);
+  await inventory();const first=children();assert.equal(first.length,3,'Rust owns kernel, trusted worker and Swift service');
+  assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,1);
+  const reset=await mcp.callTool({name:'js_reset',arguments:{}});assert.equal(Boolean(reset.isError),false);gone(first);
+  assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,0);
+  await inventory();active=children();assert.equal(active.length,3);assert.ok(active.every(pid=>!first.includes(pid)));
  } finally {await mcp.close();}
- const [status]=await f.exited;assert.equal(status,0,'Closing Rust workers must close the owned Swift connection');
- await assert.rejects(access(f.path),'Owned socket must be removed on normal EOF');
+ gone(active);
+ assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,0,'Closing MCP removes the owned service socket directory');
 });
