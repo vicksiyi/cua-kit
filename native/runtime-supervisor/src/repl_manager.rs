@@ -110,6 +110,65 @@ impl ReplManager {
         self.pipe_paths = paths;
         Ok(self)
     }
+    /// Process transport events between tool calls. Incoming work interrupts only
+    /// the observation wait, never a half-completed write. Shutdown can retire it.
+    pub async fn idle_once(
+        &mut self,
+        wake: &tokio::sync::Notify,
+        shutdown: &tokio_util::sync::CancellationToken,
+    ) -> Result<(), String> {
+        if self.closed || self.dirty || self.pair.is_none() {
+            return Ok(());
+        }
+        let pair = self.pair.as_mut().unwrap();
+        let event = tokio::select! {
+            biased;
+            _=shutdown.cancelled()=>return Ok(()),
+            _=wake.notified()=>return Ok(()),
+            _=tokio::time::sleep(Duration::from_secs(1))=>return Ok(()),
+            message=pair.kernel.next_message()=>(0,message?),
+            message=pair.trusted.next_message()=>(1,message?),
+            message=pair.pipe_events.recv()=>(2,message),
+        };
+        self.dirty = true;
+        let dispatch = async {
+            let (side, message) = event;
+            let message = message.ok_or("Worker transport ended between calls")?;
+            match (side, message["type"].as_str()) {
+                (2, _) => pair.trusted.send(&message).await,
+                (1, Some("native_pipe_request")) => {
+                    let id = message["id"]
+                        .as_str()
+                        .filter(|id| !id.is_empty())
+                        .ok_or("Invalid native pipe request identity")?;
+                    if pair.pipe_seen.len() >= 65536 || !pair.pipe_seen.insert(id.to_string()) {
+                        return Err("Duplicate or excessive native pipe request identities".into());
+                    }
+                    let response = match pair.pipes.request(&message).await {
+                        Ok(result) => {
+                            json!({"type":"native_pipe_response","id":id,"ok":true,"result":result})
+                        }
+                        Err(error) => {
+                            json!({"type":"native_pipe_response","id":id,"ok":false,"error":error})
+                        }
+                    };
+                    pair.trusted.send(&response).await
+                }
+                (0, Some("submitted_code_complete" | "exec_redacted_source"))
+                | (1, Some("response_meta_trace" | "otel_log")) => Ok(()),
+                _ => Err("Unsupported worker message between calls".into()),
+            }
+        };
+        let result = tokio::select! {
+            biased;
+            _=shutdown.cancelled()=>Err("Background operation cancelled".into()),
+            result=tokio::time::timeout(Duration::from_secs(30),dispatch)=>result.map_err(|_|"Background transport operation timed out".to_string())?,
+        };
+        if result.is_ok() {
+            self.dirty = false;
+        }
+        result
+    }
     pub async fn reset(&mut self) -> Result<(), String> {
         self.dirty = true;
         if let Some(mut pair) = self.pair.take() {

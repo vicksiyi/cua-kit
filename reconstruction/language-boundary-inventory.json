@@ -3973,7 +3973,7 @@
     {
       "path": "native/runtime-supervisor/src/mcp_server.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "3860ff6c0e54c6844ef8dd414ceacd2fe8616f983d7c7305db4dce2577cbc790"
+      "sha256": "638d5fd09c92f53ac256c2784628178813055cf94b5768f58dd212b12b651af2"
     },
     {
       "path": "native/runtime-supervisor/src/media.rs",
@@ -3993,7 +3993,7 @@
     {
       "path": "native/runtime-supervisor/src/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "05db621ba688412b165e7167c0da9d4c8e8a226b5eb1636761bc05c06c41c791"
+      "sha256": "0d09ceec69518396ffb83e5ac859e2c0470c25c3d7935d370a2627a54df7cd4a"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",

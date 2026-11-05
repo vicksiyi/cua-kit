@@ -1,4 +1,6 @@
 import test from 'node:test';
+import {createServer, type Socket} from 'node:net';
+import {once} from 'node:events';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import assert from 'node:assert/strict';
@@ -13,12 +15,16 @@ for(const closure of ['eof','sigterm'] as const) test(`Rust rmcp stdio drives re
  const moduleDir=join(root,'node_modules');await mkdir(join(moduleDir,'fixture'),{recursive:true});
  await writeFile(join(moduleDir,'fixture','package.json'),JSON.stringify({name:'fixture',type:'module',exports:'./index.js'}));await writeFile(join(moduleDir,'fixture','index.js'),'export const value=73;');
  const marker=join(root,'started');
+ const socketPath=join(root,'pipe');
+ let peer:Socket|undefined;
+ const server=createServer(socket=>{peer=socket;});
+ server.listen(socketPath);await once(server,'listening');
  let workerPids:number[]=[];
- await writeFile(join(root,'service.mjs'),`let count=0;nodeRepl.addTurnEndedHandler({timeoutMs:1000,run:async()=>{count++;}});export async function handleRpc(x){if(x.ask)return await nodeRepl.createElicitation({message:'fixture approval',requestedSchema:{type:'object',properties:{}}});if(x.hang){await (await import('node:fs/promises')).writeFile(${JSON.stringify(marker)},'started');await new Promise(()=>{});}nodeRepl.setResponseMeta({fixture:true});return {count,meta:nodeRepl.requestMeta};}`);
+ await writeFile(join(root,'service.mjs'),`let count=0;nodeRepl.addTurnEndedHandler({timeoutMs:1000,run:async()=>{count++;}});export async function handleRpc(x){if(x.listen){const socket=await nodeRepl.nativePipe.createConnection(x.path);socket.on('error',()=>{});socket.on('data',bytes=>socket.write(Buffer.from('pong:'+Buffer.from(bytes).toString())));return 'listening';}if(x.ask)return await nodeRepl.createElicitation({message:'fixture approval',requestedSchema:{type:'object',properties:{}}});if(x.hang){await (await import('node:fs/promises')).writeFile(${JSON.stringify(marker)},'started');await new Promise(()=>{});}nodeRepl.setResponseMeta({fixture:true});return {count,meta:nodeRepl.requestMeta};}`);
  for(const name of ['config','requirements','browser'])await writeFile(join(root,name+'.toml'),'');
  const env={HOME:root,TMPDIR:root,NODE_REPL_TRUSTED_RPC_ENABLED:'1',NODE_REPL_TRUSTED_SERVICES:JSON.stringify({fixture:join(root,'service.mjs')}),NODE_REPL_TRUSTED_CODE_PATHS:root,NODE_REPL_ENABLE_AUDIO:'1'};
  const worker=(entry:string,args:string[])=>({command:'/usr/bin/sandbox-exec',args:['-p','(version 1)(allow default)(deny network*)',process.execPath,'--experimental-vm-modules',resolve('packages/node-repl/dist/'+entry),...args],cwd:root,env});
- const spec=join(root,'spec.json');await writeFile(spec,JSON.stringify({kernel:worker('kernel.js',['--session-id','fixture','--working-dir',root]),trusted:worker('trusted_worker.js',[root]),services:['fixture'],module_directories:[moduleDir],config:{config:join(root,'config.toml'),requirements:join(root,'requirements.toml'),working_directories:[root],toml_files:{'browser/config.toml':join(root,'browser.toml')}},writable_paths:['browser/config.toml']}),{mode:0o600});
+ const spec=join(root,'spec.json');await writeFile(spec,JSON.stringify({kernel:worker('kernel.js',['--session-id','fixture','--working-dir',root]),trusted:worker('trusted_worker.js',[root]),services:['fixture'],pipe_paths:[socketPath],module_directories:[moduleDir],config:{config:join(root,'config.toml'),requirements:join(root,'requirements.toml'),working_directories:[root],toml_files:{'browser/config.toml':join(root,'browser.toml')}},writable_paths:['browser/config.toml']}),{mode:0o600});
  const transport=new StdioClientTransport({command:resolve('native/runtime-supervisor/target/debug/examples/mcp_stdio'),args:[spec],env:{HOME:root,TMPDIR:root},stderr:'pipe'});
  const client=new Client({name:'rust-acceptance',version:'1'},{capabilities:{elicitation:{form:{}}}});
  let approvals=0;client.setRequestHandler(ElicitRequestSchema,()=>{approvals++;return {action:'decline' as const};});
@@ -39,6 +45,15 @@ for(const closure of ['eof','sigterm'] as const) test(`Rust rmcp stdio drives re
   const rpc=await js("nodeRepl.write(await nodeRepl.rpc('fixture',{}))");assert.match(JSON.stringify(rpc.content),/trusted-test/);assert.equal(rpc._meta?.fixture,true);
   assert.match(JSON.stringify((await js("nodeRepl.write(await nodeRepl.rpc('fixture',{ask:true}))")).content),/decline/);assert.equal(approvals,1);
   const image=await js("await nodeRepl.emitImage('data:image/png;base64,iVBORw0KGgo=')");assert.ok((image.content as any[]).some(item=>item.type==='image'&&item.data==='iVBORw0KGgo='));
+  await js(`nodeRepl.write(await nodeRepl.rpc('fixture',{listen:true,path:${JSON.stringify(socketPath)}}))`);
+  assert.ok(peer,'native pipe must connect before RPC returns');
+  // No MCP call is issued while waiting: a next-call-only pump cannot pass this.
+  const received=once(peer,'data',{signal:AbortSignal.timeout(2000)});
+  peer.write('ping');assert.equal(Buffer.from((await received)[0]).toString(),'pong:ping');
+  const pipeClosed=once(peer,'close',{signal:AbortSignal.timeout(2000)});
+  await call('js_reset',{});await pipeClosed;
+  assert.equal(peer.destroyed,true,'reset must retire the old pipe');
+  await js("await nodeRepl.rpc('fixture',{})");
   const event={hook_event_name:'turn_ended',session_id:'fixture',turn_id:'one'};
   await call('turn_ended',event);await call('turn_ended',event);assert.match(JSON.stringify((await js("nodeRepl.write((await nodeRepl.rpc('fixture',{})).count)")).content),/1/);
   await call('js_reset',{});assert.match(JSON.stringify((await js('nodeRepl.write(typeof value)')).content),/undefined/);assert.match(JSON.stringify((await js("nodeRepl.write((await import('fixture')).value)")).content),/73/);
@@ -57,7 +72,7 @@ for(const closure of ['eof','sigterm'] as const) test(`Rust rmcp stdio drives re
     for(let n=0;;n++){try{await readFile(marker);break;}catch{assert.ok(n<100);await new Promise(r=>setTimeout(r,20));}}
     const closed=new Promise<void>(resolve=>{client.onclose=resolve;});process.kill(transport.pid!,'SIGTERM');await closed;await active;
   }
- }finally{await client.close();await rm(root,{recursive:true,force:true});}
+ }finally{await client.close();peer?.destroy();await new Promise<void>(resolve=>server.close(()=>resolve()));await rm(root,{recursive:true,force:true});}
  assert.equal(stderr,'');
  for(const pid of workerPids)assert.throws(()=>process.kill(pid,0),{code:'ESRCH'});
 });

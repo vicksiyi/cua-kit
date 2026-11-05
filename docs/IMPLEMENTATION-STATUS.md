@@ -5148,3 +5148,21 @@ hit, and the credential is absent from the worker result. Six focused sandbox,
 real-browser and MCP tests pass alongside typecheck/build. This is the host
 integration boundary, not production vendor authentication or external-site
 acceptance; default demo deployment is unchanged.
+
+## Rust supervisor: between-call native pipe routing
+
+The Rust MCP owner now drains worker/native-pipe events between tool calls.
+Incoming calls wake the observation wait; an in-progress transport write finishes
+before the next caller takes the session lock. Shutdown cancels and retires the
+pair. An idle routing error resets the pair rather than reusing partial state.
+The 30-second background dispatch bound and one-second idle observation bound
+are independent adapter policies, not recovered vendor constants.
+
+The external MCP fixture now connects a real Unix socket through the restored
+trusted worker, returns from the initiating tool call, sends a peer message and
+receives the worker's reply without issuing another MCP call. Reset closes the
+old socket. Both EOF and SIGTERM cases pass, retaining cancellation and owned
+worker cleanup checks. The workers remain network-denied; Rust owns the allowed
+socket transport. This proves idle pipe delivery, not full browser acceptance or
+authenticated-fetch background routing. Production sandbox composition and
+replacement of the transitional TS supervisor remain open.

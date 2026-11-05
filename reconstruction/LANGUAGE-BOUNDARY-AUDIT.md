@@ -29,3 +29,27 @@ identification, then file-level review of each queue. Existing passing TS tests
 remain acceptance references, not justification to keep misplaced TS permanently.
 The Rust implementation is independently reconstructed from exposed protocols;
 embedded Rust module paths do not expose original function bodies.
+
+## Confirmed supervisor migration ledger (2026-11-06)
+
+These are responsibility mappings, not a claim that the installed native source
+has been recovered. The existing TS implementation remains a comparison baseline
+until the Rust deployment passes equivalent acceptance and replaces its callers.
+
+| Existing TS implementation | Rust destination / current gap |
+| --- | --- |
+| `native-pipe-host.ts` | `native_pipe.rs`; real socket transport tests exist. |
+| `process-port.ts` | `process_port.rs`; owned processes, frames and retirement tested. |
+| `session.ts`, `execution-deadline.ts` | `repl_manager.rs`; dual workers, deadlines, cancellation, reset and lifecycle tested; full deployment still pending. |
+| `config-host.ts`, `persistent-config-host.ts` | `config_manager.rs`, `deployment_host.rs`; explicit config sources and atomic writes tested, original layered configuration resolution remains unimplemented. |
+| `media.ts` | `media.rs`; data URL envelope handling tested, not native screenshot/codec parity. |
+| `mcp.ts`, `mcp-tools.ts`, `stdio.ts` | `mcp_server.rs` and `examples/mcp_stdio.rs`; actual SDK client integration tested; example is not the production launcher. |
+| `background-host.ts` | Pending authenticated-fetch migration, including retained execution context and cancellation. Idle native-pipe dispatch is a different responsibility and does not close this gap. |
+| `sandbox-runtime.ts`, `sandbox-launcher.ts`, `sandbox-bootstrap.ts` | Pending Rust sandbox policy/launch/composition. JS worker entry points may remain JS-derived TS; native policy ownership must move to Rust. |
+
+The 14 TS files above are a confirmed migration queue, not 14 completed rewrites.
+Retirement must include import/script consumer checks, a production entry-point
+switch and equivalent isolated browser acceptance. Native-host and desktop
+service language identification, plus the legacy root `src` review, remain open.
+A module calling native APIs from JS is not by itself evidence that its original
+implementation was native; retain JS-derived client/protocol wrappers in TS.

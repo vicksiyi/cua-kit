@@ -14,13 +14,34 @@ pub struct SupervisorMcp {
     session: Arc<Mutex<ReplManager>>,
     host: HostHandler,
     shutdown: tokio_util::sync::CancellationToken,
+    incoming: Arc<tokio::sync::Notify>,
 }
 impl SupervisorMcp {
     pub fn new(session: ReplManager, host: HostHandler) -> Self {
+        let session = Arc::new(Mutex::new(session));
+        let weak = Arc::downgrade(&session);
+        let shutdown = tokio_util::sync::CancellationToken::new();
+        let stop = shutdown.clone();
+        let incoming = Arc::new(tokio::sync::Notify::new());
+        let wake = incoming.clone();
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {_=stop.cancelled()=>break,_=tokio::time::sleep(Duration::from_millis(5))=>{}}
+                let Some(session) = weak.upgrade() else {
+                    break;
+                };
+                if let Ok(mut manager) = session.try_lock() {
+                    if manager.idle_once(&wake, &stop).await.is_err() {
+                        let _ = manager.reset().await;
+                    }
+                };
+            }
+        });
         Self {
-            session: Arc::new(Mutex::new(session)),
+            session,
             host,
-            shutdown: tokio_util::sync::CancellationToken::new(),
+            shutdown,
+            incoming,
         }
     }
     pub async fn close(&self) -> Result<(), String> {
@@ -102,6 +123,7 @@ impl ServerHandler for SupervisorMcp {
         context: RequestContext<RoleServer>,
     ) -> Result<CallToolResult, McpError> {
         let arguments = Value::Object(request.arguments.unwrap_or_default());
+        self.incoming.notify_one();
         let mut session = tokio::select! {biased;_=context.ct.cancelled()=>return Ok(error("Request cancelled before dispatch")),_=self.shutdown.cancelled()=>return Ok(error("Server is shutting down")),session=self.session.lock()=>session};
         let peer = context.peer.clone();
         let form = peer
