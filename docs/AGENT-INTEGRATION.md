@@ -169,3 +169,10 @@ Set `CUA_RUNTIME_SUPERVISOR=rust` for the independent native supervisor. The pre
 
 
 The turn lifecycle adapter adds a default JS timeout only to code-execution requests. It forwards completion reports unchanged; adding `timeout_ms`, `title` or `code` to that branch violates the native protocol.
+
+
+## Direct desktop deployment migration
+
+The direct restored-demo entry defaults the computer surface to `CORE_CUA_NATIVE_BACKEND=swift` and selects Rust when the supervisor is unspecified. The old native backend name `independent` aliases `swift`; it no longer replaces the original Sky service with the legacy TS adapter. Explicit `installed` plus Swift is rejected before any launch. For an installed-service comparison, explicitly choose backend `vendor` and supervisor `installed`. Browser-only and generic JS entries retain their installed default. Direct callers must build reconstruction, Swift and Rust first; the npm CLI handles these builds. These are independently authored deployment choices, not evidence that the original application exposes the same selectors.
+
+A real subprocess test sets an invalid installed supervisor path and successfully performs native inventory through the legacy backend alias, without model credentials or App actions. Run it with `CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/runtime-selection.test.ts` after building; it also participates in `npm run test:native-ipc`.

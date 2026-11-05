@@ -202,7 +202,7 @@ Current real-machine check fails with `Sky Computer Use native pipe startup fail
 
 ### Approved independent native route
 
-`--computer` and `--check-computer` select Rust + restored `@core/sky/service` + Swift IPC, build both native components, and override stale backend/surface fields. `--swift-computer` is an alias. The old `@core/native-macos/service` adapter remains available only to explicitly configured direct restored-demo callers; it is no longer the computer CLI default. No silent fallback occurs. The independent inventory preflight now passes on this machine; the earlier sender-authentication failure applies to the vendor route. Accessibility and screen-recording permissions still report false, and native UI operation acceptance is incomplete. See `packages/native-macos/README.md` for current adapter capabilities and remaining differences.
+`--computer` and `--check-computer` select Rust + restored `@core/sky/service` + Swift IPC, build both native components, and override stale backend/surface fields. `--swift-computer` is an alias. The direct restored-demo entry also retires the old TS service branch: native backend `independent` aliases `swift`, computer defaults to Rust, and an explicitly conflicting installed supervisor is rejected. Explicit vendor comparison requires backend `vendor` with the installed supervisor. No silent fallback occurs. The independent inventory preflight now passes on this machine; the earlier sender-authentication failure applies to the vendor route. Accessibility and screen-recording permissions still report false, and native UI operation acceptance is incomplete. See `packages/native-macos/README.md` for current adapter capabilities and remaining differences.
 
 ### Internal CDP deployment validation
 

@@ -1,3 +1,4 @@
+import { selectRuntime } from "./runtime-selection";
 import { verifyNativeSupervisor } from "./native-supervisor";
 import { prepareIndependentRuntime } from "./independent-runtime";
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
@@ -32,11 +33,9 @@ for (const key of [
 ])
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
-const requestedSupervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
-// Preserve the old deployment name while retiring its TS native implementation.
-const supervisor = requestedSupervisor === "independent" ? "rust" : requestedSupervisor;
-if (!["installed", "rust"].includes(supervisor))
-  throw Error("CUA_RUNTIME_SUPERVISOR must be installed, independent or rust");
+const selection = selectRuntime(env, process.env.CUA_RUNTIME_SUPERVISOR);
+env = selection.environment;
+const supervisor = selection.supervisor;
 if (supervisor === "installed") {
   if (!env.CUA_NATIVE_SUPERVISOR_PATH)
     throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
@@ -66,33 +65,6 @@ if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
     session_id: turn?.session_id,
     turn_id: turn?.turn_id,
   });
-}
-if (env.CORE_CUA_NATIVE_BACKEND === "independent") {
-  if (
-    !env.CUA_REPL_ENABLED_SURFACES?.split(",").some(
-      (surface) => surface.trim() === "computer",
-    )
-  )
-    throw new Error("Independent native backend requires computer surface");
-  const services = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");
-  if (services.sky && services.sky !== "@core/sky/service")
-    throw new Error(
-      "Independent native backend conflicts with configured Sky service",
-    );
-  services.sky = "@core/native-macos/service";
-  env.NODE_REPL_TRUSTED_SERVICES = JSON.stringify(services);
-} else if (env.CORE_CUA_NATIVE_BACKEND === "swift") {
-  if (supervisor !== "rust")
-    throw new Error(
-      "Swift native backend requires CUA_RUNTIME_SUPERVISOR=rust",
-    );
-} else if (
-  env.CORE_CUA_NATIVE_BACKEND !== undefined &&
-  env.CORE_CUA_NATIVE_BACKEND !== "vendor"
-) {
-  throw new Error(
-    "CORE_CUA_NATIVE_BACKEND must be independent, swift or vendor",
-  );
 }
 if (
   env.CUA_REPL_ENABLED_SURFACES?.split(",").some(
@@ -133,12 +105,10 @@ try {
     process.env.CUA_MCP_COMMAND = independent.command;
     process.env.CUA_MCP_ARGS = JSON.stringify(independent.args);
     process.env.CUA_MCP_ENV = JSON.stringify(independent.environment);
-    process.env.CUA_MCP_BOOTSTRAP = "core-cua";
     console.error(
       `Rust independent sandboxed runtime supervisor selected (${env.CUA_REPL_ENABLED_SURFACES} surface; no installed supervisor).`,
     );
   } else {
-    delete process.env.CUA_MCP_BOOTSTRAP;
     process.env.CUA_MCP_ENV = JSON.stringify(env);
   }
   await import("./demo");

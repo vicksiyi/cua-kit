@@ -5923,3 +5923,10 @@ The npm `test:native-app-start` entry was executed after its selection change: a
 `--computer` and token-free `--check-computer` now select the same Rust supervisor and restored original Sky service / Swift IPC backend as `--swift-computer`. Explicit CLI computer selection overrides stale backend/surface settings in `.env` and builds both native components. It no longer selects the legacy TS native-macos service by default. Browser routing is unchanged. Direct restored-demo users can still explicitly configure the legacy adapter; root public API retirement remains incomplete.
 
 Validation: CLI routing tests include normal computer commands, stale configuration, native build dispatch and contradictory flags. The actual `npm run demo:deepseek -- --check-computer` builds, connects to Rust MCP and succeeds on native inventory without a model request or App action. This does not establish UI action acceptance.
+
+
+### 2026-11-06: retire direct demo TS desktop-service branch
+
+The direct restored-demo entry now selects the original Sky binding and Swift backend for computer by default. Native backend `independent` aliases `swift`; the branch replacing Sky with `@core/native-macos/service` is removed. Explicit incompatible supervisor/backend or Sky service configurations fail before launching. Explicit vendor comparisons remain possible; browser/generic defaults remain installed. Root public APIs and direct legacy package consumers remain outside this completed entry migration.
+
+Validation: three selection tests and one real subprocess inventory test pass with no skips; the actual subprocess uses an intentionally nonexistent installed supervisor path and no model credentials. Agent-loop type checking passes. No UI action acceptance is claimed.
