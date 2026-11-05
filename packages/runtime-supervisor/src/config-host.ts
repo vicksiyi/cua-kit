@@ -14,7 +14,7 @@ export interface ReadonlyConfigSources {
   tomlFiles: Readonly<Record<string, string>>;
 }
 const limit = 1024 * 1024;
-function assertJsonValue(value: unknown): void {
+export function assertJsonValue(value: unknown): void {
   if (value === null || typeof value === "string" || typeof value === "boolean") return;
   if (typeof value === "number" && Number.isFinite(value)) return;
   if (Array.isArray(value)) { value.forEach(assertJsonValue); return; }

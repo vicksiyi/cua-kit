@@ -43,6 +43,11 @@
       "types": "./src/sandbox-runtime.ts",
       "import": "./dist/sandbox-runtime.js",
       "default": "./dist/sandbox-runtime.js"
+    },
+    "./persistent-config-host": {
+      "types": "./src/persistent-config-host.ts",
+      "import": "./dist/persistent-config-host.js",
+      "default": "./dist/persistent-config-host.js"
     }
   },
   "dependencies": {

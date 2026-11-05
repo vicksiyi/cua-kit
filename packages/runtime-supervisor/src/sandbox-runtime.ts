@@ -1,6 +1,7 @@
 /** Explicit composition for recovered workers; independently authored, no installed supervisor dependency. */
 import { realpath } from "node:fs/promises";
 import { isAbsolute, relative, sep } from "node:path";
+import { createPersistentConfigHost } from "./persistent-config-host";
 import { createReadonlyConfigHost, type ReadonlyConfigSources } from "./config-host";
 import { UnixNativePipeHost } from "./native-pipe-host";
 import { ProcessWorkerPort } from "./process-port";
@@ -14,6 +15,8 @@ export interface SandboxedRuntimeOptions {
   services: readonly string[];
   pipePaths: readonly string[];
   config: ReadonlyConfigSources;
+  /** Exact mapped preferences only; absent keeps all configuration read-only. */
+  writablePreferencePaths?: readonly string[];
 }
 const contains = (parent: string, child: string) => {
   const path = relative(parent, child);
@@ -45,7 +48,9 @@ export async function createSandboxedSessionOptions(options: SandboxedRuntimeOpt
     throw Error("Supervisor services must match trusted worker configuration");
   const paths = [...options.pipePaths];
   if (paths.some(path => !isAbsolute(path) || path.includes("\0"))) throw Error("Pipe endpoints must be explicit absolute paths");
-  const hostRequest = createReadonlyConfigHost(options.config);
+  const hostRequest = options.writablePreferencePaths?.length
+    ? await createPersistentConfigHost(options.config, options.writablePreferencePaths)
+    : createReadonlyConfigHost(options.config);
   return {
     services,
     hostRequest,

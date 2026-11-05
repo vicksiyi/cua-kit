@@ -12,7 +12,7 @@ import { stageRuntimePackages } from "../packages/agent-loop/src/runtime-package
 import { WorkerSession } from "../packages/runtime-supervisor/src/session";
 import { sandboxedWorkerSpec } from "../packages/runtime-supervisor/src/sandbox-launcher";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, rm, realpath } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServer, type AddressInfo } from "node:net";
@@ -115,7 +115,7 @@ test(
     await writeFile(join(codeDir, "package.json"), '{"type":"module"}');
     await writeFile(
       join(codeDir, "service.js"),
-      'export function handleRpc(){return "trusted fixture"}',
+      'export async function handleRpc(request){if(request?.save){await nodeRepl.config.writeToml("browser/config.toml",{full_cdp_access_enabled:false, marker:"persisted by RPC"});return "saved";}return "trusted fixture"}',
     );
     const workers = await realpath(resolve("packages/node-repl"));
     const dependencies = await realpath(resolve("node_modules"));
@@ -191,6 +191,7 @@ test(
       kernel: worker(join(workers, "dist/kernel.js"), ["--session-id", "fixture", "--working-dir", kernelDir], kernelDir),
       trusted: worker(join(workers, "dist/trusted_worker.js"), [trustedDir], trustedDir),
       services: ["fixture", "browser"],
+      writablePreferencePaths: ["browser/config.toml"],
       pipePaths: [host.endpoint.socketPath],
       config: { configFile, requirementsFile, workingDirectories: [trustedDir],
         tomlFiles: { "browser/config.toml": browserConfigFile } },
@@ -221,6 +222,9 @@ test(
       );
       assert.equal(trusted.ok, true, JSON.stringify(trusted));
       assert.equal(trusted.output, "trusted fixture");
+      const persisted = await session.execute('nodeRepl.write(await nodeRepl.rpc("fixture",{save:true}))');
+      assert.equal(persisted.output, "saved", JSON.stringify(persisted));
+      assert.match(await readFile(browserConfigFile, "utf8"), /persisted by RPC/);
       const browser = await session.execute(
         'const setup = await nodeRepl.rpc("browser",{method:"setup",params:{environment:"codex-app"}});nodeRepl.write(JSON.stringify({version:setup.credentialRecoveryErrorVersion, manifest:typeof setup.apiManifest}))',
       );

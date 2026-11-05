@@ -1,0 +1,37 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtemp, writeFile, readFile, readdir, stat, rm, symlink, link } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { createPersistentConfigHost } from "../packages/runtime-supervisor/src/persistent-config-host";
+
+test("explicit preference persistence survives reopen, serializes writes and honors restrictions/cancellation", async t => {
+  const root = await mkdtemp(join(tmpdir(), "core-preferences-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const configFile = join(root, "config.toml"), requirementsFile = join(root, "requirements.toml"), preferences = join(root, "browser.toml");
+  await Promise.all([configFile, requirementsFile, preferences].map(file => writeFile(file, "enabled = false\n")));
+  const sources = { configFile, requirementsFile, workingDirectories: [root], tomlFiles: { "browser/config.toml": preferences, "protected": configFile } };
+  await assert.rejects(createPersistentConfigHost(sources, ["protected"]), /config or requirements/);
+  const host = await createPersistentConfigHost(sources, ["browser/config.toml"]);
+  const write = (value: unknown, signal?: AbortSignal) => host({ type: "config_action", action: "write_toml", path: "browser/config.toml", value }, { signal });
+  await Promise.all([write({ marker: "first", enabled: false }), write({ marker: "second", enabled: false })]);
+  const reopened = await createPersistentConfigHost(sources, ["browser/config.toml"]);
+  const snapshot = await reopened({ type: "config_action", action: "read_toml", path: "browser/config.toml" });
+  assert.deepEqual(snapshot.value, { marker: "second", enabled: false });
+  assert.equal((await stat(preferences)).mode & 0o777, 0o600);
+  const controller = new AbortController(); controller.abort();
+  await assert.rejects(write({ marker: "cancelled" }, controller.signal));
+  assert.match(await readFile(preferences, "utf8"), /second/);
+  await assert.rejects(write({ value: Infinity }), /serialized/);
+  await assert.rejects(host({ type: "config_action", action: "write_toml", path: "protected", value: {} }), /not authorized/);
+  assert.equal(await readFile(configFile, "utf8"), "enabled = false\n");
+  await writeFile(preferences, "bad = [");
+  await assert.rejects(write({ enabled: true }), /invalid/);
+  assert.equal(await readFile(preferences, "utf8"), "bad = [");
+  await rm(preferences); await symlink(configFile, preferences);
+  await assert.rejects(write({ enabled: true }), /unavailable/);
+  await rm(preferences); await link(configFile, preferences);
+  await assert.rejects(write({ enabled: true }), /ordinary/);
+  assert.equal(await readFile(configFile, "utf8"), "enabled = false\n");
+  assert.ok((await readdir(root)).every(name => !name.startsWith(".core-config-")));
+});
