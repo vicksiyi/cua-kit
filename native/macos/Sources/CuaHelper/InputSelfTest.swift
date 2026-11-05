@@ -62,4 +62,19 @@ func runInputChecks() throws {
     }
     do { _ = try mouseModifiers("a"); throw fail("SELF_TEST_FAILED","Unsupported mouse key accepted.") }
     catch let error as Failure { guard error.code == "UNSUPPORTED_CAPABILITY" else { throw error } }
+    for (direction,vertical,sign) in [("up",true,1),("u",true,1),("down",true,-1),("d",true,-1),("left",false,1),("l",false,1),("right",false,-1),("r",false,-1)] {
+        let events = try scrollEvents(point:mapped,viewport:frameB,direction:direction,pages:0.5)
+        let axis: CGEventField = vertical ? .scrollWheelEventPointDeltaAxis1 : .scrollWheelEventPointDeltaAxis2
+        let other: CGEventField = vertical ? .scrollWheelEventPointDeltaAxis2 : .scrollWheelEventPointDeltaAxis1
+        let total = events.reduce(Int64(0)) { $0 + $1.getIntegerValueField(axis) }
+        guard total == Int64((vertical ? 200 : 300) * sign),
+              events.allSatisfy({$0.type == .scrollWheel && $0.location == mapped && $0.getIntegerValueField(other) == 0 && abs($0.getIntegerValueField(axis)) <= 10}) else {
+            throw fail("SELF_TEST_FAILED","Scroll axis, direction, page distance or event location differs.")
+        }
+    }
+    for (direction,pages) in [("invalid",1.0),("down",0.0),("down",-1.0),("down",Double.nan),("down",Double.infinity),("down",100000.0)] {
+        do { _ = try scrollEvents(point:mapped,viewport:frameB,direction:direction,pages:pages); throw fail("SELF_TEST_FAILED","Invalid scroll accepted.") }
+        catch let error as Failure { guard error.code == "INVALID_ARGUMENT" else { throw error } }
+    }
+
 }

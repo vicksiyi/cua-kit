@@ -124,3 +124,29 @@ test("restored AX state exposes hierarchy, available actions and state without s
  assert.ok(text.includes("draft"));
  assert.ok(!text.includes("must-not-leak"));
 });
+
+test("restored app scroll exposes the service method and preserves direction/page target",async()=>{
+ const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
+ const {createSkyService}=await import("../packages/sky/src/create_service");
+ const {client,calls}=fixture();
+ const service=createSkyService(()=>client);
+ const setup=await service.handleRpc({type:"setup"}) as {methods:string[]};
+ assert.ok(setup.methods.includes("scroll"));
+ const computer=Object.fromEntries(setup.methods.map(method=>[method,(...args:unknown[])=>service.handleRpc({type:"execute",method,args})]));
+ const app=bind_mac_app(computer as any,"Fixture");
+ await app.getAXState({emit:false});
+ assert.equal(await app.scroll(1,"down",0.5),undefined);
+ assert.deepEqual(calls.find(c=>c[0]==="scrollInput")?.[1],{targetId:"target",snapshotId:"snapshot",elementId:1,x:undefined,y:undefined,direction:"down",pages:0.5});
+ await assert.rejects(app.scroll(1,"down"),/Observe/);
+});
+test("scroll rejects unobserved coordinates and malformed targets or pages before dispatch",async()=>{
+ const {client,calls}=fixture();
+ await client.get_app_state({app:"Fixture"});
+ await assert.rejects(client.scroll({app:"Fixture",x:1,y:2,direction:"down"}),/current screenshot/);
+ for(const input of [
+  {element_index:1,x:1,y:2,direction:"down"},
+  {element_index:1,direction:"invalid"},
+  ...[0,-1,NaN,Infinity].map(pages=>({element_index:1,direction:"down",pages})),
+ ]) await assert.rejects(client.scroll({app:"Fixture",...input}),/either|direction|pages/);
+ assert.equal(calls.some(c=>c[0]==="scrollInput"),false);
+});

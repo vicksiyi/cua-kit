@@ -57,9 +57,8 @@ func mouseClickEvents(point: CGPoint, button: String, count: Int, flags: CGEvent
     return events
 }
 extension Target {
-    func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
+    func observedInputPoint(_ params: [String: Any]) async throws -> CGPoint {
         try validateSnapshot(params)
-        guard (params["duration"] as? Double ?? 0) == 0 else { throw fail("UNSUPPORTED_CAPABILITY","Held mouse buttons require cancellable input scheduling.") }
         let point: CGPoint
         if let id = params["elementId"] as? Int {
             guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count,
@@ -77,6 +76,11 @@ extension Target {
             }
             point = try screenshotPoint(CGPoint(x:x,y:y),capture:capture)
         }
+        return point
+    }
+    func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
+        guard (params["duration"] as? Double ?? 0) == 0 else { throw fail("UNSUPPORTED_CAPABILITY","Held mouse buttons require cancellable input scheduling.") }
+        let point = try await observedInputPoint(params)
         let events = try mouseClickEvents(point:point,button:params["mouseButton"] as? String ?? "left",count:params["clickCount"] as? Int ?? 1,flags:mouseModifiers(params["key"] as? String))
         // Recheck after async window enumeration and before the first event.
         try validateSnapshot(params)

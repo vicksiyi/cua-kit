@@ -45,7 +45,7 @@ export class NativeHelper {
       const id = randomUUID();
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new CuaError(['action','mouseInput','keyboardInput','pasteInput','clipboardBegin','clipboardRestore'].includes(method) ? 'ACTION_OUTCOME_UNKNOWN' : 'CANCELLED', 'Native operation timed out. Helper retired; reconnect before further operations.'));
+        reject(new CuaError(['action','mouseInput','scrollInput','keyboardInput','pasteInput','clipboardBegin','clipboardRestore'].includes(method) ? 'ACTION_OUTCOME_UNKNOWN' : 'CANCELLED', 'Native operation timed out. Helper retired; reconnect before further operations.'));
         this.fail(new CuaError('PROVIDER_DISCONNECTED', 'Helper retired after timeout.')); this.child.kill();
       }, timeoutMs);
       this.pending.set(id, { resolve, reject, timer });
