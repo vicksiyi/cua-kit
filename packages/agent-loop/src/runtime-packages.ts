@@ -51,7 +51,9 @@ async function dependencyRoot(source: string, name: string) {
 export async function stageRuntimePackages(
   sources: string[],
   parent = tmpdir(),
+  signal?: AbortSignal,
 ) {
+  signal?.throwIfAborted();
   const root = await realpath(await mkdtemp(path.join(parent, "cua-runtime-")));
   const staged = new Map<string, string>();
   const packages: Array<{
@@ -61,6 +63,7 @@ export async function stageRuntimePackages(
     directory: string;
   }> = [];
   async function stage(input: string): Promise<string> {
+    signal?.throwIfAborted();
     const source = await realpath(input);
     const existing = staged.get(source);
     if (existing) return existing;
@@ -86,11 +89,13 @@ export async function stageRuntimePackages(
     await cp(source, destination, {
       recursive: true,
       dereference: true,
-      filter: (entry) =>
-        !path
+      filter: (entry) => {
+        signal?.throwIfAborted();
+        return !path
           .relative(source, entry)
           .split(path.sep)
-          .some((part) => part === "node_modules" || part === ".git"),
+          .some((part) => part === "node_modules" || part === ".git");
+      },
     });
     const required = new Set(Object.keys(pkg.dependencies ?? {}));
     const names = new Set([
@@ -99,6 +104,7 @@ export async function stageRuntimePackages(
       ...Object.keys(pkg.peerDependencies ?? {}),
     ]);
     for (const name of names) {
+      signal?.throwIfAborted();
       const optional =
         name in (pkg.optionalDependencies ?? {}) ||
         (!required.has(name) && pkg.peerDependenciesMeta?.[name]?.optional);
@@ -124,6 +130,7 @@ export async function stageRuntimePackages(
   try {
     const names = new Set<string>();
     for (const source of sources) {
+      signal?.throwIfAborted();
       const pkg = await manifest(source);
       if (names.has(pkg.name))
         throw new Error(`Duplicate runtime root: ${pkg.name}`);
@@ -137,6 +144,7 @@ export async function stageRuntimePackages(
         "dir",
       );
     }
+    signal?.throwIfAborted();
     return {
       root,
       packages,

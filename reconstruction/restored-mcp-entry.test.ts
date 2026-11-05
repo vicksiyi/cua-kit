@@ -108,3 +108,96 @@ for (const entry of ["node", "npm"] as const)
       }
     },
   );
+
+for (const signal of ["SIGTERM", "SIGINT"] as const)
+  test(
+    `MCP ${signal} during package preparation cleans staging before native launch`,
+    {
+      skip:
+        process.platform !== "darwin" ||
+        process.env.CUA_TEST_NATIVE_SKY_IPC !== "1",
+      timeout: 20000,
+    },
+    async () => {
+      const { spawn, execFileSync } = await import("node:child_process");
+      const parent = await mkdtemp(join(tmpdir(), "cua-interrupt-entry-"));
+      const child = spawn(
+        process.execPath,
+        ["--import", "tsx", "packages/agent-loop/src/restored-mcp.ts"],
+        {
+          env: {
+            PATH: process.env.PATH,
+            HOME: process.env.HOME,
+            TMPDIR: parent,
+            CUA_MCP_ENV:
+              '{"CUA_REPL_ENABLED_SURFACES":"computer","NODE_REPL_DISABLE_ANALYTICS":"1"}',
+          },
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
+      let stdout = "",
+        stderr = "";
+      child.stdout.on("data", (chunk) => (stdout += chunk));
+      child.stderr.on("data", (chunk) => (stderr += chunk));
+      const closed = new Promise<{
+        code: number | null;
+        signal: NodeJS.Signals | null;
+      }>((resolve, reject) => {
+        child.once("error", reject);
+        child.once("close", (code, signal) => resolve({ code, signal }));
+      });
+      try {
+        const staged = async () =>
+          (await readdir(parent)).filter((name) =>
+            name.startsWith("cua-runtime-"),
+          );
+        const deadline = Date.now() + 10000;
+        while (
+          !(await staged()).length &&
+          child.exitCode === null &&
+          Date.now() < deadline
+        )
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        assert.ok(
+          (await staged()).length,
+          "Expected a live staging directory before interrupt",
+        );
+        // Query only this owned process's direct children, not the user's process inventory.
+        let pids = "";
+        try {
+          pids = execFileSync("/usr/bin/pgrep", ["-P", String(child.pid)], {
+            encoding: "utf8",
+          }).trim();
+        } catch (error: any) {
+          if (error.status !== 1) throw error;
+        }
+        if (pids) {
+          const commands = execFileSync(
+            "/bin/ps",
+            ["-p", pids.split(/\s+/).join(","), "-o", "comm="],
+            { encoding: "utf8" },
+          )
+            .trim()
+            .split("\n");
+          // tsx may already own its esbuild service; the native supervisor must not exist yet.
+          assert.ok(
+            commands.every((command) =>
+              /(?:^|\/)esbuild$/.test(command.trim()),
+            ),
+            commands.join("\n"),
+          );
+        }
+        assert.equal(child.kill(signal), true);
+        const result = await closed;
+        assert.equal(result.signal, null);
+        assert.equal(result.code, signal === "SIGTERM" ? 143 : 130, stderr);
+        assert.equal(stdout, "");
+        assert.deepEqual(await staged(), []);
+      } finally {
+        if (child.exitCode === null && child.signalCode === null)
+          child.kill("SIGKILL");
+        await closed.catch(() => {});
+        await rm(parent, { recursive: true, force: true });
+      }
+    },
+  );

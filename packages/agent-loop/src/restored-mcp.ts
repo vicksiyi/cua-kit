@@ -1,5 +1,5 @@
 /** Agent-neutral stdio entry: stdout belongs exclusively to the native MCP server. */
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import {
   prepareRestoredRuntime,
   readRuntimeEnvironment,
@@ -8,42 +8,58 @@ if (process.argv.length > 2)
   throw new Error(
     "Configure this MCP server through CUA_MCP_ENV, not command arguments",
   );
-const runtime = await prepareRestoredRuntime(
-  await readRuntimeEnvironment(),
-  process.env.CUA_RUNTIME_SUPERVISOR,
-);
-try {
-  const child = spawn(runtime.command, runtime.args, {
-    env: runtime.environment,
-    stdio: "inherit",
-  });
-  const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGHUP"];
-  const handlers = signals.map((signal) => {
+const controller = new AbortController();
+let child: ChildProcess | undefined;
+let runtime: Awaited<ReturnType<typeof prepareRestoredRuntime>> | undefined;
+let interrupted: NodeJS.Signals | undefined;
+const exitCode = (signal: NodeJS.Signals | null) =>
+  signal === "SIGINT"
+    ? 130
+    : signal === "SIGTERM"
+      ? 143
+      : signal === "SIGHUP"
+        ? 129
+        : 1;
+const handlers = (["SIGINT", "SIGTERM", "SIGHUP"] as NodeJS.Signals[]).map(
+  (signal) => {
     const handler = () => {
-      child.kill(signal);
+      interrupted ??= signal;
+      controller.abort(new Error(`Runtime startup interrupted by ${signal}`));
+      child?.kill(signal);
     };
     process.on(signal, handler);
     return { signal, handler };
+  },
+);
+try {
+  runtime = await prepareRestoredRuntime(
+    await readRuntimeEnvironment(),
+    process.env.CUA_RUNTIME_SUPERVISOR,
+    undefined,
+    controller.signal,
+  );
+  controller.signal.throwIfAborted();
+  child = spawn(runtime.command, runtime.args, {
+    env: runtime.environment,
+    stdio: "inherit",
   });
+  const result = await new Promise<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
+  }>((resolve, reject) => {
+    child!.once("error", reject);
+    child!.once("close", (code, signal) => resolve({ code, signal }));
+  });
+  process.exitCode = result.code ?? exitCode(result.signal);
+} catch (error) {
+  if (interrupted && error === controller.signal.reason)
+    process.exitCode = exitCode(interrupted);
+  else throw error;
+} finally {
   try {
-    const result = await new Promise<{
-      code: number | null;
-      signal: NodeJS.Signals | null;
-    }>((resolve, reject) => {
-      child.once("error", reject);
-      child.once("close", (code, signal) => resolve({ code, signal }));
-    });
-    process.exitCode =
-      result.code ??
-      (result.signal === "SIGINT"
-        ? 130
-        : result.signal === "SIGTERM"
-          ? 143
-          : 1);
+    await runtime?.dispose();
   } finally {
     for (const { signal, handler } of handlers)
       process.removeListener(signal, handler);
   }
-} finally {
-  await runtime.dispose();
 }

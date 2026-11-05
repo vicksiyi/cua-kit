@@ -114,7 +114,9 @@ test("actual restored CUA runtime packages resolve wholly inside deployment and 
       const resolved = await realpath(require.resolve(specifier));
       assert.ok(resolved.startsWith(runtime.root + path.sep));
     }
-    assert.ok(!runtime.packages.some((pkg) => pkg.name === "@core/native-macos"));
+    assert.ok(
+      !runtime.packages.some((pkg) => pkg.name === "@core/native-macos"),
+    );
     assert.throws(() => require.resolve("@core/native-macos/service"), {
       code: "MODULE_NOT_FOUND",
     });
@@ -125,5 +127,21 @@ test("actual restored CUA runtime packages resolve wholly inside deployment and 
     }
   } finally {
     await runtime.dispose();
+  }
+});
+
+test("cancelled staging creates no runtime directory", async () => {
+  const parent = await mkdtemp(path.join(os.tmpdir(), "cua-cancel-stage-"));
+  const controller = new AbortController();
+  const reason = new Error("fixture cancellation");
+  controller.abort(reason);
+  try {
+    await assert.rejects(
+      stageRuntimePackages(restoredPackageSources(), parent, controller.signal),
+      (error) => error === reason,
+    );
+    assert.deepEqual(await readdir(parent), []);
+  } finally {
+    await rm(parent, { recursive: true, force: true });
   }
 });

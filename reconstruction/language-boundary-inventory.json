@@ -134,12 +134,12 @@
     {
       "path": "packages/agent-loop/src/restored-mcp.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "4be3ae9c64ed13baedcc0500175ac30dbff4a50520d5bb727dd62f7be363da88"
+      "sha256": "d3149854ac5f1a39021693ec3d273cbed770115b5eaa5be059847c4bb6c08e1b"
     },
     {
       "path": "packages/agent-loop/src/restored-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "af344cfb7c0718ec7895b16434a1a11f79e234fe47a63c808a7ed4419eda0043"
+      "sha256": "181797b9a48563b38f34e5dcd160a41c65800840095ae2618aeb8a3540c3afda"
     },
     {
       "path": "packages/agent-loop/src/runtime-diagnostics.ts",
@@ -149,7 +149,7 @@
     {
       "path": "packages/agent-loop/src/runtime-packages.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "525a8e9347ffba00799635bf55a0af3ceb3ddccfa9171b97689ca30bebd4ed10"
+      "sha256": "8ce4884130fb36207ea3d5791b8be07e1591b8480feabbe7d273cd33bee611f1"
     },
     {
       "path": "packages/agent-loop/src/runtime-selection.ts",

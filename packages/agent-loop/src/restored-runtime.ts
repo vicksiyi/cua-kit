@@ -53,7 +53,9 @@ export async function prepareRestoredRuntime(
   environment: Record<string, string>,
   requestedSupervisor?: string,
   sessionId: string = randomUUID(),
+  signal?: AbortSignal,
 ) {
+  signal?.throwIfAborted();
   const selection = selectRuntime(environment, requestedSupervisor);
   let env = selection.environment;
   if (selection.supervisor === "installed") {
@@ -63,6 +65,7 @@ export async function prepareRestoredRuntime(
       );
     await verifyNativeSupervisor(env.CUA_NATIVE_SUPERVISOR_PATH);
   }
+  signal?.throwIfAborted();
   if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
     const built = create_launch_environment({
       env,
@@ -84,7 +87,12 @@ export async function prepareRestoredRuntime(
     )
   )
     env = await configureIndependentBrowser(env);
-  const staged = await stageRuntimePackages(restoredPackageSources());
+  signal?.throwIfAborted();
+  const staged = await stageRuntimePackages(
+    restoredPackageSources(),
+    undefined,
+    signal,
+  );
   let independent:
     Awaited<ReturnType<typeof prepareIndependentRuntime>> | undefined;
   const dispose = async () => {
@@ -95,6 +103,7 @@ export async function prepareRestoredRuntime(
     }
   };
   try {
+    signal?.throwIfAborted();
     env.NODE_REPL_NODE_MODULE_DIRS = [
       staged.root,
       env.NODE_REPL_NODE_MODULE_DIRS,
@@ -114,6 +123,7 @@ export async function prepareRestoredRuntime(
         sessionId,
         "rust",
       );
+    signal?.throwIfAborted();
     return {
       supervisor: selection.supervisor,
       surfaces: env.CUA_REPL_ENABLED_SURFACES,
