@@ -653,3 +653,10 @@ The runtime factory now serializes the source-generated `NODE_REPL_TOOL_OVERRIDE
 Two Rust tests verify exact description changes and unchanged tool contracts, as well as invalid/oversized overrides. A real Rust MCP test compares initialize instructions and tools/list descriptions against the original-shape environment output, and checks required arguments, types, title bounds, tool names and runtime rejection of unknown execution arguments. Both banner integration tests still pass. The metadata integration is included in `npm run test:native-ipc`.
 
 The demo receives updated tool descriptions through its normal listTools path. Consumption of initialize-level server instructions by AgentLoop and native completion-summary execution still require separate work; wire publication alone does not prove those paths.
+
+
+## macOS getApp cold-start alignment (2026-11-06)
+
+The earlier “read-state requires a running app” checkpoint in earlier sections is superseded. Original installed CUA documentation promises background launch on macOS `getApp`; original JS sends only GetSkyshot. `SkyAppState.get` now owns that startup in Swift, using resolved identity and native policy before `NSWorkspace.openApplication` with activation disabled. Existing running instances are reused. Explicit AppStart retains its prior activation behavior.
+
+Two original/restored-client cold-start tests verify real owned App launch, non-frontmost state and PID reuse, with cleanup. They do not certify screenshot/input: this runtime still lacks Accessibility and Screen Recording permissions. Permission-error ordering is independently implemented (startup, then observation permission check), not recovered original native source. See `reconstruction/mac-app-background-launch-evidence.json` for source evidence and its limits.

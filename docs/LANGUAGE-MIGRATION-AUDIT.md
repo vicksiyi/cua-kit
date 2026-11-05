@@ -28,7 +28,7 @@ Root `package.json` exports still point at `dist/*` from legacy `src`, and `demo
 4. Switch callers and public entry points; remove obsolete branches only after compatibility checks.
 5. Re-run the file inventory and review remaining TS native responsibilities. A file count is review scope, not completion percentage.
 
-Current acceptance: Rust/Swift MCP inventory, explicit owned-app launch and IPC/lifecycle checks have evidence. Actual UI screenshot/input acceptance remains incomplete because the current execution context has neither Accessibility nor Screen Recording permission. Native audio and additional original service behavior also remain incomplete. Native bodies are independently reconstructed; binary language evidence does not prove original algorithm parity.
+Current acceptance: Rust/Swift MCP inventory, explicit and GetSkyshot background owned-app launch/reuse plus IPC/lifecycle checks have evidence. Actual UI screenshot/input acceptance remains incomplete because the current execution context has neither Accessibility nor Screen Recording permission. Native audio and additional original service behavior also remain incomplete. Native bodies are independently reconstructed; binary language evidence does not prove original algorithm parity.
 
 Reproduce the inventory:
 
@@ -45,3 +45,6 @@ The existing repository is explicitly in scope for the user's language-alignment
 The initial recheck found `independent` and `rust` mapped to TS and Rust respectively. That production routing has now been corrected: both select Rust, and the factory TS branch is removed. Full removal of the legacy supervisor package and its direct test/reference consumers is still pending. Both `src/native/provider.ts` and `packages/native-macos/src/client.ts` now delegate paste to `pasteFormatted`; that responsibility has already moved to Swift and must not be reintroduced in TS.
 
 For each remaining candidate, record the original artifact and language evidence, caller/server boundary, destination, reachable consumers, and acceptance result before retiring it. Original JS clients remain readable TS. Native source bodies unavailable in the installation must be described as independently implemented from observed contracts; matching a binary's language alone does not establish matching behavior.
+
+
+The background launch required by macOS `getApp` is implemented in Swift `SkyAppState`/`Launch`, matching the original JS-to-native responsibility boundary. It was not added as a TS wrapper around a missing native behavior. Original documentation establishes the expected behavior; original native function bodies remain unavailable.

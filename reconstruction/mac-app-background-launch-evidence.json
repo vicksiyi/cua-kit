@@ -1,0 +1,21 @@
+{
+  "sourceRoot": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai",
+  "files": [
+    {
+      "path": "cua/docs/tinysky-alt-core-cua-repl-mac.md",
+      "sha256": "b936a61951eeb1c6c9bd4557a263bac268f890dbe4f85a8dd0aaffc6b5c23e75"
+    },
+    {
+      "path": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_tinysky_alt.js",
+      "sha256": "d6940dd2fee85628fdff0d1bdbaeefaec358db20a5c6dfb00359ce9a1d364c0b"
+    },
+    {
+      "path": "sky/dist/project/cua/sky_js/src/targets/mac/get_app_state.js",
+      "sha256": "7b7fe2af461c7cd348c07535b1deae9ea14837dbdac9985ba479eb2e53e5248d"
+    }
+  ],
+  "documentedContract": "- On macOS, `cua.getApp(...)` accepts an app's display name, full app path, or bundle identifier and launches the app in the background if needed. If display-name resolution fails, retry with the app's bundle identifier from `cua.listApps()`.",
+  "observedJsBoundary": "create_tinysky_alt.getApp -> computer.get_app_state -> MacComputerUseClient.getAppState; no separate startApp call in these JS bodies",
+  "nativeImplementation": "Independent Swift LaunchServices background launch in GetSkyshot. Original native bodies not recovered; native permission-error ordering not established.",
+  "acceptanceScope": "Owned fixture cold launch/reuse and non-activation via installed and restored JS clients against reconstructed Swift. This is not original native binary differential acceptance."
+}

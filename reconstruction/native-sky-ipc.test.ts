@@ -69,7 +69,8 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   await assert.rejects(client.startApp('/nonexistent/core-start.app'),(error:any)=>error.code===-10010);
   await assert.rejects(client.startApp(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
   await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10010);
-  await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.allowed.app')),(error:any)=>error.code===-10007);
+  // Resolvable bundle without an executable now reaches the native launch failure.
+  await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.allowed.app')),(error:any)=>error.code===-10005);
   await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
  }finally{(globalThis as any).nodeRepl=before;}
 });
@@ -135,7 +136,7 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
   }
   approvalAction='accept';
   const accepted=await mcp.callTool({name:'js',arguments:{code:`await cua.getApp(${JSON.stringify(policyApp)});`}});
-  assert.equal(accepted.isError,true);assert.match(JSON.stringify(accepted),/Application is not running/);assert.equal(approvalCount,2);
+  assert.equal(accepted.isError,true);assert.match(JSON.stringify(accepted),/Native request failed/);assert.equal(approvalCount,2);
   const first=children();assert.equal(first.length,3,'Rust owns kernel, trusted worker and Swift service');
   assert.equal((await readdir(nativeRoot)).filter(name=>name.startsWith('sky-')).length,1);
   const reset=await mcp.callTool({name:'js_reset',arguments:{}});assert.equal(Boolean(reset.isError),false);gone(first);
@@ -214,28 +215,46 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
  }finally{(globalThis as any).nodeRepl=before;}
 });
 
-for(const source of ['restored','installed'] as const) test(`explicit owned App launch through ${source} Sky client`,{skip:process.env.CUA_TEST_NATIVE_APP_START!=='1',timeout:30000},async t=>{
+for(const launchMode of ['explicit','skyshot'] as const) for(const source of ['restored','installed'] as const) test(`${launchMode} owned App launch through ${source} Sky client`,{skip:process.env.CUA_TEST_NATIVE_APP_START!=='1',timeout:30000},async t=>{
  assert.equal(process.platform,'darwin');
- const identifier=`com.core.fixture.start.t${Date.now()}${source}`;
+ const identifier=`com.core.fixture.start.t${Date.now()}${source}${launchMode}`;
  const f=await fixture(t,{[identifier]:{decision:'allowed',risk:'low',allowPersistentApproval:false}});
  const app=await appFixture(f.root,identifier);
  await mkdir(join(app,'Contents','MacOS'));
  await copyFile(resolve('native/macos/.build/debug/CuaFixture'),join(app,'Contents','MacOS','CuaFixture'));
  await chmod(join(app,'Contents','MacOS','CuaFixture'),0o700);
- await writeFile(join(app,'Contents','Info.plist'),`<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${identifier}</string><key>CFBundleExecutable</key><string>CuaFixture</string><key>CFBundleName</key><string>Owned Launch Fixture</string><key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
+ await writeFile(join(app,'Contents','Info.plist'),`<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${identifier}</string><key>CFBundleExecutable</key><string>CuaFixture</string><key>CFBundleName</key><string>Owned Launch Fixture</string>${launchMode==='skyshot'?'<key>CoreFixtureBackground</key><true/>':''}<key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
  const before=(globalThis as any).nodeRepl;
  (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open}};
  try {
   const Client=source==='restored'?MacComputerUseClient:(await import(pathToFileURL('/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/targets/mac/client.js').href)).MacComputerUseClient;
   const client=new Client();
-  const started=await client.startApp(app);assert.equal(started.app.bundleIdentifier,identifier);assert.ok(started.app.pid>0);
-  process.kill(started.app.pid,0);
-  const apps=await client.listApps();const actual=apps.filter((entry:any)=>entry.bundleIdentifier===identifier);
-  assert.equal(actual.length,1);assert.equal(await realpath(actual[0].appPath),await realpath(app));assert.equal(actual[0].isRunning,true);
   const checked=spawnSync(helper,['--permissions'],{encoding:'utf8'});assert.ifError(checked.error);
   const permissions=JSON.parse(checked.stdout);
-  if(!permissions.accessibility||!permissions.screenRecording)await assert.rejects(client.getAppState(app),(error:any)=>error.code===-10009);
-  const again=await client.startApp({app});assert.equal(again.app.pid,started.app.pid,'Explicit start should reuse the same running app');
+  const observe=async()=>{
+   if(!permissions.accessibility||!permissions.screenRecording){
+    await assert.rejects(client.getAppState(app),(error:any)=>error.code===-10009);
+    return undefined;
+   }
+   const state=await client.getAppState(app);assert.equal(state.app.bundleIdentifier,identifier);return state;
+  };
+  assert.equal((await client.listApps()).filter((entry:any)=>entry.bundleIdentifier===identifier).length,0);
+  const started=launchMode==='explicit'?await client.startApp(app):await observe();
+  if(started){assert.equal(started.app.bundleIdentifier,identifier);assert.ok(started.app.pid>0);process.kill(started.app.pid,0);}
+  const apps=await client.listApps();const actual=apps.filter((entry:any)=>entry.bundleIdentifier===identifier);
+  assert.equal(actual.length,1);assert.equal(await realpath(actual[0].appPath),await realpath(app));assert.equal(actual[0].isRunning,true);
+  if(launchMode==='skyshot')assert.equal(actual[0].isFrontmost,false,'Background getApp launch must not activate the fixture');
+  // PID is omitted from original listApps; use our helper inventory for owned PID only.
+  const ownedPid=()=>{
+   const result=spawnSync(helper,[],{input:JSON.stringify({id:'owned-pid',method:'listApps',params:{}})+'\n',encoding:'utf8'});
+   assert.equal(result.status,0);const entries=JSON.parse(result.stdout).result.apps.filter((entry:any)=>entry.bundleId===identifier);
+   assert.equal(entries.length,1);return entries[0].pid;
+  };
+  const pid=ownedPid();
+  await observe();assert.equal(ownedPid(),pid,'Repeated skyshot must reuse the running fixture');
+  if(launchMode==='explicit')assert.equal((await client.startApp({app})).app.pid,pid);
+  else assert.equal((await client.listApps()).find((entry:any)=>entry.bundleIdentifier===identifier).isFrontmost,false);
+
  } finally {
   (globalThis as any).nodeRepl=before;
   // Only terminate our uniquely identified temporary fixture, even if launch timed out.

@@ -18,7 +18,7 @@ DeepSeek-issued tool call; screenshot/input and mixed surfaces remain unaccepted
 | --- | --- | --- |
 | Inventory, version negotiation | Swift service supervised by Rust | Original/restored client and real MCP worker paths pass. |
 | App policy and approval | Swift explicit rules; original Sky TS approval flow | Decline and policy denial verified; vendor native rules/authentication not recovered. |
-| Explicit AppStart | Swift LaunchServices | Both clients launch/reuse/retire an owned fixture; no proof of implicit GetSkyshot startup behavior. |
+| AppStart and GetSkyshot cold start | Swift LaunchServices | Installed/restored JS clients launch and reuse owned fixtures. GetSkyshot cold start requests background launch and fixture stays non-frontmost; full skyshot remains permission-blocked. Original native body/permission ordering not recovered. |
 | App skyshot | Shared Swift AX + window PNG capture | Protocol/permission errors pass; real screenshot gate blocked by host permissions in last explicit run. |
 | setValue, selectText, secondary action | Shared Swift AX engine | Envelopes/guards and mapping tests pass; real input effect not accepted. |
 | type, pressKey, click, scroll, drag, paste | Shared Swift keyboard/mouse engines | Protocol/mapping/release tests pass; actual UI and screenshot-coordinate effects not accepted. |
@@ -5886,3 +5886,12 @@ Validation: the actual demo subprocess, using the old selector and deliberately 
 
 
 The full AgentLoop run also exposed and fixed a caller-side protocol violation: `NodeReplTurnClient` previously injected `timeout_ms` into every `js` request, including summary-only requests. Defaults now apply only to code calls without `completion_summary`; summary and malformed mixed calls are forwarded unchanged for native validation. The final regression follows five local-model decisions: open fixture, submit, observe marker, report completion, return marker. Six turn-lifecycle tests and that full demo test pass after the fix; Rust browser input/screenshot and CLI routing checks also pass.
+
+
+## 2026-11-06 — macOS getApp background cold start
+
+Installed CUA documentation explicitly states that macOS `getApp` launches an app in the background if necessary. Inspected original JS calls `computer.get_app_state` and then `MacComputerUseClient.getAppState`, without a separate JS launch call. This establishes the native responsibility and contradicts our former GetSkyshot “Application is not running” behavior. Source file hashes and the contract are recorded in `reconstruction/mac-app-background-launch-evidence.json`.
+
+The Swift GetSkyshot path now resolves and checks app policy, reuses an existing unique matching process, or opens the resolved app through LaunchServices with `activates=false`. It checks cancellation/deadline around launch and verifies identity. Explicit AppStart retains its existing foreground behavior. No launch logic was added to restored TS. Launch occurs before the observation permission gate in this independent implementation; exact original native ordering and internals remain unproven.
+
+Validation: Swift build passes. Native IPC suite with launch acceptance enabled passes 15 tests; two full live-skyshot tests remain skipped. Both installed and restored JS clients launch an initially stopped owned fixture through GetSkyshot, keep it non-frontmost, reuse its PID on repeated state reads and clean it up. Existing explicit launch, native policy rejection, Rust MCP inventory/reset ownership, signal and socket cancellation tests pass. The non-executable fake-bundle case now correctly reaches a native launch failure instead of claiming the app simply is not running. Current read-only permission check still reports Accessibility=false and ScreenRecording=false: getting a complete state/screenshot or operating the app is not accepted by these cold-start tests.

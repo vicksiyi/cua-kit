@@ -51,7 +51,7 @@ final class SkyAppState {
             throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")
         }
     }
-    /// Explicit AppStart request only. State reads never implicitly launch apps.
+    /// Explicit AppStart request. State reads also launch missing apps in background.
     /// Response uses the original optional-skyshot MacWindowAppState envelope.
     func start(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
         let evaluated: [String: Any]
@@ -87,10 +87,25 @@ final class SkyAppState {
         guard evaluated["decision"] as? String == "allowed" else {
             throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
         }
-        let running = NSWorkspace.shared.runningApplications.filter {
+        var running = NSWorkspace.shared.runningApplications.filter {
             !$0.isTerminated && $0.bundleIdentifier == identifier && $0.bundleURL?.resolvingSymlinksInPath().path == path
         }
-        guard !running.isEmpty else { throw SkyRPCFailure(code: -10007, message: "Application is not running") }
+        if running.isEmpty {
+            // Original macOS CUA docs promise background launch on getApp. The JS
+            // binding sends only GetSkyshot, so preserve that native responsibility.
+            // Ordering relative to permission errors is our independent implementation.
+            try Task.checkCancellation()
+            guard Date().timeIntervalSince1970 * 1000 < deadline else {
+                throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before background launch")
+            }
+            let app = try await launchResolvedApplication(["path": path, "bundleId": identifier], activates: false)
+            try Task.checkCancellation()
+            guard Date().timeIntervalSince1970 * 1000 < deadline else {
+                throw SkyRPCFailure(code: -10005, message: "Background launch completed after the request deadline; application may be running")
+            }
+            guard !app.isTerminated else { throw SkyRPCFailure(code: -10007, message: "Application terminated after launch") }
+            running = [app]
+        }
         guard running.count == 1 else { throw SkyRPCFailure(code: -10018, message: "Multiple running applications match the target") }
         guard AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() else {
             throw SkyRPCFailure(code: -10009, message: "Accessibility and Screen Recording permissions are required; no permission prompt was requested")

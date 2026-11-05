@@ -46,8 +46,12 @@ final class Delegate: NSObject, NSApplicationDelegate {
             }
             window.contentView?.addSubview(scroll)
         }
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        if Bundle.main.object(forInfoDictionaryKey: "CoreFixtureBackground") as? Bool == true {
+            window.orderBack(nil)
+        } else {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
         print("READY"); fflush(stdout)
     }
     @objc func save() { result.stringValue = "Saved \(field.stringValue)" }

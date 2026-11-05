@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 
 // Independent LaunchServices adapter. Resolving does not start an application;
-// the TypeScript host obtains authorization before calling launchApp.
+// the Sky policy/approval path or legacy caller authorizes before launch.
 @MainActor
 func resolveInstalledApp(_ reference: String) throws -> [String: Any] {
     guard !reference.isEmpty else { throw fail("INVALID_ARGUMENT", "App reference is empty.") }
@@ -21,7 +21,7 @@ func resolveInstalledApp(_ reference: String) throws -> [String: Any] {
     return ["pid": 0, "name": name, "bundleId": identifier, "path": location.path, "launchTime": 0]
 }
 @MainActor
-func launchInstalledApp(_ params: [String: Any]) async throws -> [String: Any] {
+func launchResolvedApplication(_ params: [String: Any], activates: Bool = true) async throws -> NSRunningApplication {
     guard let path = params["path"] as? String, path.hasPrefix("/"),
           let identifier = params["bundleId"] as? String else {
         throw fail("INVALID_ARGUMENT", "Launch requires resolved path and bundle identifier.")
@@ -31,11 +31,15 @@ func launchInstalledApp(_ params: [String: Any]) async throws -> [String: Any] {
         throw fail("TARGET_NOT_FOUND", "Application identity changed before launch.")
     }
     let configuration = NSWorkspace.OpenConfiguration()
-    configuration.activates = true
+    configuration.activates = activates
     configuration.createsNewApplicationInstance = false
     let app = try await NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: path), configuration: configuration)
     guard app.bundleIdentifier == identifier, app.bundleURL?.resolvingSymlinksInPath().path == path else {
         throw fail("ACTION_OUTCOME_UNKNOWN", "Launched application identity differs from approved target.")
     }
-    return ["app": info(app)]
+    return app
+}
+@MainActor
+func launchInstalledApp(_ params: [String: Any]) async throws -> [String: Any] {
+    return ["app": info(try await launchResolvedApplication(params))]
 }

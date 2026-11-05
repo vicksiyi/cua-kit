@@ -3859,7 +3859,7 @@
     {
       "path": "native/macos/Sources/CuaFixture/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "72bc317f9cf2ecfd7bc26118161e64cac78edfaa7017d8dbb2ce3667758b3406"
+      "sha256": "2901018bf47e0d4f7fdf451ee399809e108de77556d1657028a58df6f025f353"
     },
     {
       "path": "native/macos/Sources/CuaHelper/AudioCapture.swift",
@@ -3924,7 +3924,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/Launch.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "968b1ac34e184d614ce90ea760bdaec1cdbbb45276cc1359cf0d5378046d414e"
+      "sha256": "3f6e18d54ec92f8309e11637b2b4b30bcb1f2d229ffffe9968e7773a93b7ddfd"
     },
     {
       "path": "native/macos/Sources/CuaHelper/Mouse.swift",
@@ -3974,7 +3974,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyAppState.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "51f154c3a69184e98fd93c873286654fc7a284b1a169c54e5ac5278e85f5ccbf"
+      "sha256": "63739ededc2c5bc6d412b152b2811f4eb1cc00bbeefeafce2005ade7e47976f2"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyElementAction.swift",
