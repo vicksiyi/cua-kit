@@ -4863,3 +4863,15 @@ failure. Actual DeepSeek through the attached browser deployment also completed
 the owned local click/read task and returned the independently observed
 `action-completed-marker`. These runs used test-owned Chromium as the external
 browser, not the user's daily profile.
+
+### 2026-11-06 — architecture review document refreshed
+
+Updated the original Lark architecture document's opening section to the current
+implementation and acceptance status, preserving the historical chapters. It
+now separates extension, owned CDP, attached CDP and native macOS paths, states
+the remaining installed-supervisor dependency, explains local debug logs, and
+lists uncompleted acceptance gates. Added runtime-loading and AgentLoop sequence
+boards. Remote fetch verifies revision 443 with two boards and the four-path
+status table; previews were exported for visual inspection.
+
+Current section: https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs

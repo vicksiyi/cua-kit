@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant U as 用户命令
+    participant D as Demo 启动器
+    participant M as MCP 客户端
+    participant S as 已安装 supervisor
+    participant W as 还原后的 workers
+    participant C as CUA 与服务
+    U->>D: prompt + backend 参数
+    D->>D: 加载本地 .env / 选择 backend
+    D->>D: 校验 supervisor 指纹 / 装配 @core 包
+    D->>M: stdio connect + initialize
+    M->>S: MCP tools/list
+    S-->>M: 工具定义（尚未执行代码）
+    M->>S: tools/call js：await cua.getState()
+    S->>W: worker wrapper 替换启动入口
+    W->>C: 加载 CUA / browser 或 sky 服务
+    C-->>M: API 文档与真实浏览器或 App 清单
+    Note over M,C: 此处只证明连接；不等于点击和截图已验收

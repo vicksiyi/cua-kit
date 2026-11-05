@@ -4,9 +4,22 @@
 
 当前已接通浏览器客户端/服务、`@core/cua/tinyskyAlt`、`@core/sky` 与 `@core/sky/service` 的还原入口，Sky 使用 Mac/Linux/Windows 工厂。NodeREPL 嵌入 JavaScript 的 kernel 与 trusted-worker 入口也已还原，支持子进程中的多单元执行对照验证；原生 supervisor/MCP 生命周期尚未替代。已有真实 Chromium、临时子进程和模拟宿主集成验证；真实原生桌面服务、外部 NodeREPL/AX 资源的完整替代与全部任务验收仍未完成。最新验证与边界见 [IMPLEMENTATION-STATUS](docs/IMPLEMENTATION-STATUS.md)，下方阶段记录保留其当时状态。源码还原验证使用 `npm run check:reconstruction` 与 `npm run test:reconstruction`。
 
-DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。真实 DeepSeek → MCP → 还原 worker → 独立宿主 → 隔离 Chromium 已完成导航、点击与读取结果；确定性 MCP 测试另验证截图。日常 Chrome 的搜索验收与 App 自主操作仍待完成。
+DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 MCP 服务，见 [运行说明](packages/agent-loop/README.md)。真实 DeepSeek → MCP → 还原 worker → 独立宿主 → 隔离 Chromium 已完成导航、点击与读取结果；确定性 MCP 测试另验证截图。当前已在 Chrome 扩展链路实测百度搜索并返回首条链接；App 自主操作仍待系统授权后的完整验收。
 
-新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分；目前独立 native 版与完整 background/UI/kernel 版均可构建，完整版已通过临时 Chromium 的 MCP 操作与真实 DeepSeek 本地页面验证。生产认证、日常 Chrome 与百度搜索仍未验收。
+新增原安装版 Chrome 扩展源码入口：[`@core/browser-extension`](packages/browser-extension/README.md) 已还原 nativeMessaging 传输、重连及宿主请求处理。它与旧独立实现 `extensions/chrome` 区分；目前独立 native 版与完整 background/UI/kernel 版均可构建，完整版已通过临时 Chromium 的 MCP 操作与真实 DeepSeek 本地页面验证。完整生产认证仍未验收；不要将浏览器操作测试等同于账号、生产部署和全部 API 兼容验收。
+
+## 当前运行路径（2026-11-06）
+
+| 入口 | 后端与已验证范围 | 主要限制 |
+| --- | --- | --- |
+| `npm run demo:deepseek -- "prompt"` | 已连接 Chrome 扩展；真实 DeepSeek 百度搜索已返回结果 | 要求扩展连接，网站验证和页面差异仍可能阻止任务 |
+| `--cdp-browser "prompt"` | 无扩展临时 Chromium；真实点击、截图、读取与外网导航 | 本轮结束即关闭；百度搜索可能遇到人工验证码 |
+| `--cdp-endpoint 'ws://127.0.0.1:PORT/devtools/browser/ID' "prompt"` | 连接已开启调试的浏览器；测试环境 MCP/DeepSeek 及已有标签页隔离通过 | 必须提供真实本地地址；不自动重启日常 Chrome |
+| `--computer "prompt"` | 独立 macOS helper；发现/协议/fixture 测试已有 | 当前 agent 的辅助功能与录屏权限未通过，完整真实 App 验收未完成 |
+
+参数放在 `npm run demo:deepseek --` 之后。启动从项目 `.env` 读模型凭证；本地 debug 默认写入 `artifacts/debug/`，不提交 Git。终端会打印日志路径，关闭可设 `CUA_DEBUG=0`。详情见 [CDP 接入说明](packages/cdp-host/README.md) 和 [Agent demo](packages/agent-loop/README.md)。
+
+[飞书当前架构与验收状态](https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs) 已包含加载与调用时序图。默认仍依赖安装版原生 supervisor，独立替代尚未完成。下面的阶段记录描述当时进展，当前状态以上表与 IMPLEMENTATION-STATUS 为准。
 
 下面是此前独立实现的历史说明：
 

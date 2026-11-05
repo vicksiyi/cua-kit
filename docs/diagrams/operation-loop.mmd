@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant U as 用户
+    participant L as AgentLoop
+    participant D as DeepSeek
+    participant M as MCP / CUA
+    participant P as 浏览器或 App 后端
+    U->>L: 自然语言 prompt
+    loop 观察 / 决策 / 操作，最多 12 轮
+        L->>D: system + 已观测消息 + tools
+        D-->>L: 工具调用或最终回答
+        L->>M: js：getTab / getApp / 读状态 / 操作
+        opt 网站或 App 需要宿主确认
+            M-->>U: 终端授权请求
+            U-->>M: 接受 / 拒绝 / 取消
+        end
+        M->>P: CDP / Native RPC
+        P-->>M: AX 或 DOM / 图片 / 动作结果 / 错误
+        M-->>L: tool result
+        Note over L,M: 本地 JSONL 保存调用及完整文本，凭证脱敏
+    end
+    L->>M: tools.endTurn（run 返回前）
+    L-->>U: 已观测答案，或失败与日志路径（demo 输出）
+    L->>M: client.close（demo finally）
+    Note over M,P: demo 结束后宿主清理<br/>临时浏览器关闭；外部浏览器仅断连<br/>桌面仍待授权验收
