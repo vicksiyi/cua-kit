@@ -5220,3 +5220,17 @@ path grants are canonicalized, not inode-pinned against concurrent replacement.
 Remaining: native bridge/bootstrap ownership, production browser runtime assembly
 and authenticated host composition, full browser/App acceptance, and removal of
 the transitional TS path after entry-point migration. The default demo is unchanged.
+
+## Rust sandbox bridge replaces C (2026-11-06)
+
+The native Seatbelt bridge is now Rust (`native/macos-sandbox/src/lib.rs`), with
+stable N-API exports and direct bindings to the existing macOS sandbox API. The
+old C file is removed; `npm run build:sandbox` now builds the locked Rust crate
+and stages the same sandbox.node path. This needs Cargo, not matching Node
+headers. No new third-party implementation of Node or Seatbelt is introduced.
+
+29 Rust supervisor tests, two sandboxed external MCP tests and two direct bridge
+integration cases pass. Invalid policy/argument rejection and actual outside-file,
+spawn and network denial were exercised with the Rust-produced binary. These are
+local controlled fixtures. The loader bootstrap remains TS; production browser
+composition and original policy/initialization-order fidelity remain outstanding.

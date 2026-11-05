@@ -12,3 +12,4 @@ native/macos/.build/
 
 # Rust build products
 native/runtime-supervisor/target/
+native/macos-sandbox/target/

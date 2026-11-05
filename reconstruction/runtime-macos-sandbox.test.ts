@@ -318,3 +318,14 @@ test(
     }
   },
 );
+
+test('macOS sandbox bridge rejects malformed N-API inputs before policy application', {
+  skip: process.platform !== 'darwin' || process.env.CUA_TEST_MACOS_SANDBOX !== '1', timeout: 10000,
+}, async () => {
+  const addon=resolve('native/macos-sandbox/dist/sandbox.node');
+  const code=`const assert=require('node:assert/strict');const bridge=require(${JSON.stringify(addon)});
+  for(const args of [[],[null],[42],[{}],[''],['x'.repeat(1048577)],['a\\0b'],['(version 1)', 'extra'],['invalid policy']]) assert.throws(()=>bridge.apply(...args));
+  console.log('rejected');`;
+  const result=await exec(process.execPath,['-e',code],{env:{},timeout:8000});
+  assert.equal(result.stdout.trim(),'rejected');
+});
