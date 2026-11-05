@@ -2,9 +2,12 @@ import { execFileSync } from "node:child_process";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { parse } from "acorn";
+import { build } from "esbuild";
 import { assembleAccessibilityAsset } from "./assemble-accessibility-asset.mjs";
 import { assemblePlaywrightSource } from "./assemble-playwright-source.mjs";
 import { assembleKernelWorker } from "./assemble-kernel-worker.mjs";
+// Node-to-NAPI binding belongs to the native deployment; it is not a TS supervisor.
+await build({ entryPoints: ["native/runtime-supervisor/bindings/sandbox-bootstrap.ts"], outfile: "native/runtime-supervisor/dist/sandbox-bootstrap.js", platform: "node", target: "node22", format: "esm" });
 await assembleKernelWorker();
 await assemblePlaywrightSource();
 execFileSync(

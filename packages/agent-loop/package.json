@@ -22,7 +22,6 @@
     "@core/cua-repl": "0.1.2-reconstructed.0",
     "@core/native-host": "0.1.0",
     "playwright": "1.64.1",
-    "@core/cdp-host": "0.1.0",
-    "@core/runtime-supervisor": "0.1.0"
+    "@core/cdp-host": "0.1.0"
   }
 }

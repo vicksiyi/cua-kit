@@ -4,11 +4,13 @@
     "build-or-deployment-script-review": 27,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
+    "legacy-node-binding-forwarder": 1,
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
     "native-implementation-language-not-yet-parity-proof": 47,
-    "native-responsibility-migrate-to-rust": 14
+    "native-responsibility-migrate-to-rust": 13,
+    "node-to-native-binding-not-native-service": 1
   },
   "files": [
     {
@@ -74,7 +76,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "3cbc0d2788880e813d736d9aa68b6576a8b860b9cf82e7ac4fa8db245a15c235"
+      "sha256": "41e7fc6931cdad3ecc0295949a7bc1b77b0696a6b70714773755b22628f9969b"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -2993,8 +2995,8 @@
     },
     {
       "path": "packages/runtime-supervisor/src/sandbox-bootstrap.ts",
-      "category": "native-responsibility-migrate-to-rust",
-      "sha256": "ca53c520009830645fa95d27e3f1fd189dad7dfa07d73c292efcf5019d51b913"
+      "category": "legacy-node-binding-forwarder",
+      "sha256": "dc86e6790c7b06c0fab635aa3be9642523d2bd32dbe62c868a66d25a2bc46d22"
     },
     {
       "path": "packages/runtime-supervisor/src/sandbox-launcher.ts",
@@ -4022,6 +4024,11 @@
       "sha256": "3d4fac2d9b4546695b46a9c86149727bdb4f420779e7789cd16fcf64d11a9bdb"
     },
     {
+      "path": "native/runtime-supervisor/bindings/sandbox-bootstrap.ts",
+      "category": "node-to-native-binding-not-native-service",
+      "sha256": "ca53c520009830645fa95d27e3f1fd189dad7dfa07d73c292efcf5019d51b913"
+    },
+    {
       "path": "native/runtime-supervisor/examples/mcp_stdio.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "e9d3cfa3a8b1217775eb6cbd2b9e2fdce055e4b3119a795dffd0a26d13c43166"
@@ -4124,7 +4131,7 @@
     {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "6f05e5ef33d2479553ccc3ee97fcc5944a7c3271400dec53b985957d9c276a83"
+      "sha256": "4946adace64c07225e94e8c605e86d1e3f5322b9fd560e3713d19f8779916b2b"
     },
     {
       "path": "scripts/audit-native-language.py",
@@ -4179,7 +4186,7 @@
     {
       "path": "scripts/build-reconstruction.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "de86afc24d90d4e56e4b7c4642db4e4b8c4f2c05dea1aa2be679c871f7384d6b"
+      "sha256": "30120319e3976cef60e727f17f4899c660d4cd801c7e80da6f92769eaf24b626"
     },
     {
       "path": "scripts/build-rust-runtime.mjs",

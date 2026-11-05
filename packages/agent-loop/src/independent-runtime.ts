@@ -21,7 +21,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
   const appPolicy:unknown=computer?JSON.parse(env.CORE_CUA_APP_POLICY??'{}'):{};
   if(computer&&(!appPolicy||typeof appPolicy!=='object'||Array.isArray(appPolicy))) throw Error('CORE_CUA_APP_POLICY must be a native app rule map');
   const project = fileURLToPath(new URL('../../../',import.meta.url));
-  const supervisor = join(project,'packages/runtime-supervisor/dist');
+  const supervisor = join(project,'native/runtime-supervisor/dist');
   const addon = join(project,'native/macos-sandbox/dist/sandbox.node');
   await access(addon).catch(()=>{throw Error('Build the independent sandbox first: npm run build:sandbox');});
   const helper=computer?await realpath(env.CORE_CUA_NATIVE_HELPER_PATH??join(project,'native/macos/.build/debug/cua-helper')).catch(()=>{throw Error('Build the Swift helper first: npm run build:native');}):undefined;
