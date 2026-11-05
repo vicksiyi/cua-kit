@@ -17,3 +17,6 @@ pub mod config_manager;
 #[cfg(unix)]
 pub mod deployment_host;
 pub mod media;
+
+#[cfg(unix)]
+pub mod mcp_server;

@@ -1,5 +1,21 @@
 # Implementation status
 
+## Rust MCP checkpoint (2026-11-06)
+
+Rust MCP now uses rmcp 1.5.0 and the observed four-tool schema snapshot. An
+external TypeScript MCP client passes real stdio execution, reset, module
+registration/replay, metadata/named outputs, elicitation refusal, media, turn
+lifecycle, timeout and in-flight cancellation. Two cases verify owned worker
+cleanup on EOF and SIGTERM; the latter interrupts a running trusted RPC.
+All 23 Rust tests and both external MCP cases pass.
+
+SIGTERM cleanup ordering and Tokio blocking-stdin shutdown were corrected from
+failing integration tests. The integration example accepts explicit worker
+specifications and uses network-denied test workers; it does not construct the
+full native sandbox policy. Production demo selection, continuous between-cell
+routing, authenticated fetch and full original-language/native App fidelity
+remain incomplete. No installed supervisor is used by this MCP harness.
+
 ## Rust media composition checkpoint (2026-11-06)
 
 Actual data-URL image/audio envelope decoding and a config/media deployment

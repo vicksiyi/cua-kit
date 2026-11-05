@@ -1,0 +1,92 @@
+//! Integration harness: caller supplies explicit worker launch policies.
+//! This example does not construct a native sandbox and is not the demo default.
+use core_runtime_supervisor::{
+    config_manager::{ConfigManager, ConfigSources},
+    deployment_host::deployment_host,
+    mcp_server::SupervisorMcp,
+    process_port::ProcessSpec,
+    repl_manager::ReplManager,
+};
+use rmcp::ServiceExt;
+use serde::Deserialize;
+use std::{
+    collections::{BTreeMap, HashSet},
+    path::PathBuf,
+    sync::Arc,
+    time::Duration,
+};
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Worker {
+    command: PathBuf,
+    args: Vec<String>,
+    cwd: PathBuf,
+    env: BTreeMap<String, String>,
+}
+impl Worker {
+    fn process(self) -> ProcessSpec {
+        ProcessSpec {
+            command: self.command,
+            args: self.args,
+            cwd: self.cwd,
+            env: self.env,
+            max_frame_bytes: 8 * 1024 * 1024,
+            max_queued_bytes: 16 * 1024 * 1024,
+            terminate_grace: Duration::from_millis(100),
+        }
+    }
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Options {
+    kernel: Worker,
+    trusted: Worker,
+    services: HashSet<String>,
+    config: ConfigSources,
+    #[serde(default)]
+    pipe_paths: Vec<PathBuf>,
+    #[serde(default)]
+    writable_paths: HashSet<String>,
+    #[serde(default)]
+    module_directories: Vec<PathBuf>,
+}
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+    let result = runtime.block_on(run());
+    // rmcp's stdio uses a blocking stdin reader. All service/worker cleanup is
+    // awaited in run(); do not wait for the peer to close stdin again on SIGTERM.
+    runtime.shutdown_background();
+    result
+}
+async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    let path = std::env::args()
+        .nth(1)
+        .ok_or("Supply an explicit integration worker-spec file")?;
+    let options: Options = serde_json::from_slice(&std::fs::read(path)?)?;
+    let config = Arc::new(ConfigManager::new(options.config, options.writable_paths)?);
+    let session = ReplManager::new(
+        options.kernel.process(),
+        options.trusted.process(),
+        options.services,
+    )
+    .with_pipe_paths(options.pipe_paths)?
+    .with_module_directories(options.module_directories)?;
+    let server = SupervisorMcp::new(session, deployment_host(config));
+    let running = server.clone().serve(rmcp::transport::stdio()).await?;
+    let cancellation = running.cancellation_token();
+    let shutdown = server.clone();
+    let mut termination =
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
+    let signals = tokio::spawn(async move {
+        tokio::select! {_=termination.recv()=>{},_=tokio::signal::ctrl_c()=>{}}
+        let _ = shutdown.close().await;
+        cancellation.cancel();
+    });
+    let result = running.waiting().await;
+    signals.abort();
+    server.close().await?;
+    result?;
+    Ok(())
+}

@@ -28,6 +28,8 @@ pub struct ReplManager {
     trusted: ProcessSpec,
     services: HashSet<String>,
     pipe_paths: Vec<PathBuf>,
+    allowed_module_dirs: HashSet<PathBuf>,
+    module_dirs: HashSet<PathBuf>,
     host_handler: Option<HostHandler>,
     form_elicitation: bool,
     pair: Option<Pair>,
@@ -43,6 +45,8 @@ impl ReplManager {
             trusted,
             services,
             pipe_paths: Vec::new(),
+            allowed_module_dirs: HashSet::new(),
+            module_dirs: HashSet::new(),
             host_handler: None,
             form_elicitation: false,
             pair: None,
@@ -50,6 +54,49 @@ impl ReplManager {
             closed: false,
             ended_turns: HashMap::new(),
         }
+    }
+    pub fn with_module_directories(mut self, paths: Vec<PathBuf>) -> Result<Self, String> {
+        for path in paths {
+            if !path.is_absolute() {
+                return Err("Module directory must be absolute".into());
+            }
+            let path = path
+                .canonicalize()
+                .map_err(|_| "Module directory unavailable")?;
+            if !path.is_dir() || path.file_name().is_none_or(|name| name != "node_modules") {
+                return Err("Expected an absolute node_modules directory".into());
+            }
+            self.allowed_module_dirs.insert(path);
+        }
+        Ok(self)
+    }
+    pub fn set_host_handler(&mut self, handler: HostHandler, form: bool) {
+        self.host_handler = Some(handler);
+        self.form_elicitation = form;
+    }
+    pub async fn add_node_module_directory(&mut self, path: &str) -> Result<(), String> {
+        if self.closed {
+            return Err("Supervisor session is closed".into());
+        }
+        if !PathBuf::from(path).is_absolute() {
+            return Err("Expected an absolute node_modules directory".into());
+        }
+        let path = PathBuf::from(path)
+            .canonicalize()
+            .map_err(|_| "Module directory unavailable")?;
+        if !path.is_dir() || !self.allowed_module_dirs.contains(&path) {
+            return Err("Module directory is not authorized".into());
+        }
+        if self.dirty {
+            self.reset().await?;
+        }
+        if let Some(pair) = self.pair.as_mut() {
+            pair.kernel
+                .send(&json!({"type":"add_node_module_dir","path":path}))
+                .await?;
+        }
+        self.module_dirs.insert(path);
+        Ok(())
     }
     pub fn with_host_handler(mut self, handler: HostHandler, form_elicitation: bool) -> Self {
         self.host_handler = Some(handler);
@@ -93,6 +140,16 @@ impl ReplManager {
                     return Err(error);
                 }
             };
+            for path in &self.module_dirs {
+                if let Err(error) = kernel
+                    .send(&json!({"type":"add_node_module_dir","path":path}))
+                    .await
+                {
+                    let mut trusted = trusted;
+                    let _ = tokio::join!(kernel.close(), trusted.close());
+                    return Err(error);
+                }
+            }
             let (events, pipe_events) = mpsc::channel(64);
             let pipes = NativePipeHost::new(self.pipe_paths.clone(), events)?;
             self.pair = Some(Pair {

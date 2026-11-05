@@ -20,6 +20,8 @@ const LIMIT: u64 = 1024 * 1024;
 const READ_ERROR: &str =
     "Configured TOML source is unavailable, invalid, or exceeds its size limit";
 
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ConfigSources {
     pub config: PathBuf,
     pub requirements: PathBuf,

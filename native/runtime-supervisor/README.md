@@ -154,3 +154,36 @@ limits/type tests and actual kernel image/audio emission return encoded content
 through the deployment handler. Those payloads are protocol fixtures, not real
 screenshots/recordings. All twenty-three Rust tests pass. The host composition
 is still a library; MCP/sandbox integration and background routing remain open.
+
+## Rust MCP integration
+
+`mcp_server.rs` uses rmcp 1.5.0, the SDK/version evidenced in the original binary.
+The four tool definitions come from the versioned observed protocol snapshot.
+Arguments are validated; output preserves named text, media and response metadata.
+Elicitation is sent to an MCP client only when it advertises form support, and
+its decision is returned unchanged. Cancellation retires cell state. Explicitly
+allowed module directories can be registered and are replayed after reset.
+
+Build/run the integration harness (not the production demo default):
+
+```sh
+cargo build --locked --manifest-path native/runtime-supervisor/Cargo.toml --example mcp_stdio
+node --import tsx --test reconstruction/rust-supervisor-mcp.test.ts
+```
+
+The external TypeScript MCP client exercises persistent cells, named outputs,
+module registration/reset replay, invalid args and unapproved module rejection,
+request/response metadata, actual elicitation refusal, image output, turn-ended
+deduplication, execution timeout and cancellation after a worker start marker.
+Two cases verify EOF and SIGTERM teardown; SIGTERM is sent while a trusted RPC
+is pending and both recorded worker PIDs must be gone when the client closes.
+The test launches workers inside an explicit network-deny sandbox-exec fixture.
+This is not the full native sandbox policy or browser/App acceptance.
+
+The harness takes a private caller-provided JSON worker specification and does
+not construct production sandbox grants. SIGTERM first cancels active execution
+and cleans workers, then closes MCP. After awaited cleanup it shuts down Tokio
+without waiting indefinitely for rmcp's blocking stdin reader. The default demo
+is still unchanged. Native sandbox composition and continuous between-cell
+routing remain required. Current validation: 23 Rust tests plus 2 external MCP
+integration cases, with no installed supervisor used on this harness path.

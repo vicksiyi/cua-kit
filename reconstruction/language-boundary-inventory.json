@@ -6,7 +6,7 @@
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 21,
-    "native-implementation-language-not-yet-parity-proof": 31,
+    "native-implementation-language-not-yet-parity-proof": 29,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3946,9 +3946,14 @@
       "sha256": "de69e40fd94dddbd43bd06ef3ed6d830900d09723d01a1a5b4f6d3c92b06996e"
     },
     {
+      "path": "native/runtime-supervisor/examples/mcp_stdio.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "30757fe917e31ab5fa0bf572b2f6ec546bdbd9e8a9ea7fc95000bbe93f9dd707"
+    },
+    {
       "path": "native/runtime-supervisor/src/config_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "bb9830360dc2f5185066ff01daf8b26b198fd34d13beb938309cc6d02742c830"
+      "sha256": "09db7baebecd8c9b699cf6b3b137274a628db0c51aee8b44a30e6b232ce14458"
     },
     {
       "path": "native/runtime-supervisor/src/deployment_host.rs",
@@ -3963,7 +3968,12 @@
     {
       "path": "native/runtime-supervisor/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "e39534b4ead327bdd3cf3f3d732095e2a6b70496c2135d01847bd59b3318a6b9"
+      "sha256": "e8d8c5965a07583007548d52b44b75909a872b5f98f1aa37f166e47908a8e4fc"
+    },
+    {
+      "path": "native/runtime-supervisor/src/mcp_server.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "3860ff6c0e54c6844ef8dd414ceacd2fe8616f983d7c7305db4dce2577cbc790"
     },
     {
       "path": "native/runtime-supervisor/src/media.rs",
@@ -3983,27 +3993,7 @@
     {
       "path": "native/runtime-supervisor/src/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "33ce6db38668dfa53ddf6ce44f123492f0c251634c3b8f9ebb2d747a7ad3a2b2"
-    },
-    {
-      "path": "native/runtime-supervisor/tests/config_manager.rs",
-      "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "d09526e52aa621526c7348538963653cb991d16780d8b01fdf8f36e5dca9fc01"
-    },
-    {
-      "path": "native/runtime-supervisor/tests/media.rs",
-      "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "efa71c77b22923b460f7fd7590e7cf6207c1743f635efdd087d535500942d9f6"
-    },
-    {
-      "path": "native/runtime-supervisor/tests/process_port.rs",
-      "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "25b2df434c5b0867ca8577472a488964ce85dd3c026917a273db7ad3ae35fe07"
-    },
-    {
-      "path": "native/runtime-supervisor/tests/repl_manager.rs",
-      "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "79a98a35958c4188d51fb1f488f83287d27439977823a70d61354340b11839db"
+      "sha256": "05db621ba688412b165e7167c0da9d4c8e8a226b5eb1636761bc05c06c41c791"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",
@@ -4023,7 +4013,7 @@
     {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "5935d7ef94cb07f908768b7ad960426bfc0b7b8ea33885ed9ee7d0696caa7fe2"
+      "sha256": "9b06367241844463c98d8f6853486ea3e386768f6c7037066d4f16a8bea91d1f"
     },
     {
       "path": "scripts/audit-native-language.py",
