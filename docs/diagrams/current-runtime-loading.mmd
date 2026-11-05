@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant A as AgentLoop（TS）
+    participant M as MCP 客户端
+    participant S as Supervisor
+    participant K as Kernel / CUA API
+    participant T as Trusted 服务
+    participant H as 浏览器 / macOS
+    Note over A,M: 调用端独立编写；DeepSeek 为可选模型适配
+    A->>M: 配置并连接 stdio MCP
+    alt installed（默认）
+        M->>S: 已安装原生 node_repl（校验指纹）
+        Note over S,K: 配置 worker wrapper：换入还原后的 workers
+    else CUA_RUNTIME_SUPERVISOR=rust
+        M->>S: 独立 Rust supervisor
+        Note over S,K: 配置相同的还原后 workers
+        Note over S,T: Rust 管理进程、生命周期、native pipe 与 sandbox spec
+    end
+    Note over M,S: 旧 independent 选项也指向 Rust
+    M->>S: tools/list（不启动 workers）
+    M->>S: 首次 tools/call js（含 code）
+    S->>K: 首次代码执行时懒启动 workers
+    Note over S,K: installed 经 wrapper；Rust 直接启动
+    K->>K: banner / CUA 初始化，然后执行 js
+    Note over K,T: 原始 JS 源码还原为 TS：kernel + trusted workers
+    K->>T: 按 surface 路由至 browser / Sky 服务
+    alt browser
+        T->>H: 扩展 + native host
+        Note over T,H: CDP 仅显式选用；不是原版自动回退
+    else computer（选用 Swift backend）
+        T->>H: Swift Sky → AX / ScreenCaptureKit / LaunchServices
+    end
+    H-->>A: 结果经服务、worker、MCP 返回
+    Note over S,H: Rust / Swift 原生实现为协议与证据驱动的独立实现，非原生源码还原

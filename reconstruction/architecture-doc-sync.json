@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-06",
+  "codeCheckpoint": "20227ba84cfa4b7e9f5ebfb57fc7c78e1938adc1",
+  "document": "https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b",
+  "section": "doxcn2cOz8MuLZR6O0hN43UuNCs",
+  "documentTextRevision": 457,
+  "preservedWhiteboards": [
+    "QBH6wtEbLhmlDVbOZMjcF4rnnnb",
+    "XuFjwpZtmhFPbwbmaGQcUVpenfd"
+  ],
+  "diagramSources": [
+    {
+      "path": "docs/diagrams/current-runtime-loading.mmd",
+      "sha256": "ee674772ce989499448ece8706769088550a4fc75874ca2fbb23a9450d9d31bb"
+    },
+    {
+      "path": "docs/diagrams/current-operation-sequence.mmd",
+      "sha256": "2c580076be7c751ac4a1e8c26a87f1651a62044866a06ad20f0f3e9d45dc9c10"
+    }
+  ],
+  "validation": "Targeted document updates read back; original whiteboard tokens retained; local and remote diagram renders visually reviewed. Historical sections preserved. Documentation-only change; no new runtime acceptance claimed.",
+  "newFinding": "native-deepseek-live.test.ts still exercises installed supervisor and legacy native-macos service; migrate this gate to Rust/original Sky/Swift IPC before treating it as acceptance for that route."
+}

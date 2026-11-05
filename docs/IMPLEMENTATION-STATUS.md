@@ -5895,3 +5895,12 @@ Installed CUA documentation explicitly states that macOS `getApp` launches an ap
 The Swift GetSkyshot path now resolves and checks app policy, reuses an existing unique matching process, or opens the resolved app through LaunchServices with `activates=false`. It checks cancellation/deadline around launch and verifies identity. Explicit AppStart retains its existing foreground behavior. No launch logic was added to restored TS. Launch occurs before the observation permission gate in this independent implementation; exact original native ordering and internals remain unproven.
 
 Validation: Swift build passes. Native IPC suite with launch acceptance enabled passes 15 tests; two full live-skyshot tests remain skipped. Both installed and restored JS clients launch an initially stopped owned fixture through GetSkyshot, keep it non-frontmost, reuse its PID on repeated state reads and clean it up. Existing explicit launch, native policy rejection, Rust MCP inventory/reset ownership, signal and socket cancellation tests pass. The non-executable fake-bundle case now correctly reaches a native launch failure instead of claiming the app simply is not running. Current read-only permission check still reports Accessibility=false and ScreenRecording=false: getting a complete state/screenshot or operating the app is not accepted by these cold-start tests.
+
+
+## 2026-11-06 — Architecture review synchronized
+
+The existing Lark architecture document's current-summary section now reflects code checkpoint `20227ba`: installed versus Rust supervisor selection, retired TS demo route, Swift background App cold start, source JS-to-TS versus independent native responsibilities, completion-summary versus turn-ended lifecycle, synthetic audio limits and remaining acceptance. The two existing whiteboard tokens were preserved and updated; local diagram source and remote rendered previews were checked. Historical proposal/incremental sections remain intact, and the repository RFC is explicitly marked historical.
+
+Document audit also confirmed that `test:native-deepseek` still uses installed supervisor + `@core/native-macos/service`; it is not an end-to-end gate for the new Rust + original Sky binding + Swift IPC route. Migrating that gate is a remaining task, independently of obtaining OS UI permissions. The updated document labels this accurately rather than treating its existence as acceptance of the new route.
+
+Review: https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs
