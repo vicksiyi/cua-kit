@@ -2,12 +2,22 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser] [--browser|--computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically.'
+  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically.'
   exit 0
 fi
 managed_browser=false
 cdp_browser=false
-if [[ "${1:-}" == "--cdp-browser" ]]; then cdp_browser=true; shift; fi
+unset CUA_CDP_ENDPOINT
+if [[ "${1:-}" == "--cdp-endpoint" ]]; then
+  if [[ -z "${2:-}" || "${2:-}" == --* ]]; then printf '%s\n' '--cdp-endpoint requires an explicit local browser WebSocket URL.' >&2; exit 2; fi
+  export CUA_CDP_ENDPOINT="$2"
+  cdp_browser=true
+  shift 2
+fi
+if [[ "${1:-}" == "--cdp-browser" ]]; then
+  if [[ "$cdp_browser" == true ]]; then printf '%s\n' 'Choose only one CDP deployment option.' >&2; exit 2; fi
+  cdp_browser=true; shift
+fi
 if [[ "${1:-}" == "--managed-browser" ]]; then managed_browser=true; shift; fi
 if [[ "$managed_browser" == true && "$cdp_browser" == true ]]; then
   printf '%s\n' 'Choose only one managed browser backend.' >&2; exit 2

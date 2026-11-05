@@ -17,3 +17,37 @@ Cross-site iframe read/detach, tab finalization and an actual DeepSeek external 
 Remaining: broader frame/popup lifecycle coverage, scoped WebSocket support, explicit existing-Chrome CDP attachment and the user-facing CLI selector. Unsupported methods fail explicitly. This backend is not ready for the requested handoff; native desktop permission/action acceptance also remains outstanding. Do not emulate extension identity or disable restored policy to get a passing demo.
 
 The `attachCdpBrowser(endpoint)` transport helper now accepts an explicitly supplied loopback WebSocket debugging endpoint and uses Playwright `connectOverCDP(..., { noDefaults: true })`. It does not launch or own the browser. A real second-client test verifies that closing/disconnecting it preserves the original browser's target IDs and page state. This helper is not yet wired into the user-facing MCP deployment: the owned-browser provider currently installs context-wide routing, which must be scoped correctly before attaching to a daily browser. No automatic restart or debugging flag change is performed on existing Chrome.
+
+## Explicit existing-browser attachment
+
+The demo accepts `--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID` in
+place of `--cdp-browser`. Supply the actual browser-level endpoint from a Chrome
+instance already started with remote debugging. The program does not scan ports,
+restart daily Chrome, enable debugging on an already-running instance, or change
+its profile. Only local uncredentialed `ws://` endpoints are accepted.
+
+```bash
+npm run demo:deepseek -- --cdp-endpoint 'ws://127.0.0.1:PORT/devtools/browser/ID' --check-browser
+npm run demo:deepseek -- --cdp-endpoint 'ws://127.0.0.1:PORT/devtools/browser/ID' '在新标签页打开百度并搜索 deepseek'
+```
+
+Attachment uses upstream Playwright `connectOverCDP` with `noDefaults:true`.
+It installs HTTP routing only on pages actually attached by CUA, retains CDP
+Fetch enforcement for redirects, and bypasses service-worker fetch on that
+page's enabled Network session. Page commands cannot disable this lease.
+WebSocket creation is blocked on controlled pages while the lease is active.
+Detach removes our HTTP handler, releases the CDP session, and makes our socket
+handler transparent; client disconnect releases its instrumentation. Unclaimed
+pages receive no context-wide routing changes. This does not claim containment
+of unrelated existing background workers or browser extensions.
+
+Exit disconnects the client, not the external browser. Restored turn-finalization
+rules still close unmarked tabs created by the agent; claimed preexisting user
+tabs remain open. Existing connections are not terminated merely by claiming a
+page; this is not a fresh isolated profile or a full browser network sandbox.
+
+Live tests cover existing-tab operations, unrelated-page access, actual restored
+MCP actions/screenshots, service-worker bypass/recovery, WebSocket block/release,
+and browser survival after the real CLI disconnects. A real daily profile still
+requires an explicitly available debugging endpoint; passing these tests does
+not demonstrate that an arbitrary already-running Chrome has debugging enabled.

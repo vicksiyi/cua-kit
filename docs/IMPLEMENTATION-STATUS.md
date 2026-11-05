@@ -4836,3 +4836,30 @@ failure isolation, image error codes, actual rebuilt workers and private-key
 bootstrap. Reconstruction build and node-repl typecheck pass. This narrows the
 observed installed-JS version gap; it does not finish native supervisor source
 restoration or resolve the independent desktop permission acceptance gate.
+
+### 2026-11-06 — explicit external CDP deployment
+
+Wired `attachCdpBrowser` into the actual authenticated host and demo through
+`--cdp-endpoint`. Attached deployments use page leases instead of context-wide
+routing, preserve existing tabs/browser on disconnect, and label the backend as
+an attached browser. Owned temporary browser behavior is retained. The runtime
+prompt now accurately says temporary browsers close after the run.
+
+A real service-worker fixture exposed that `Network.setBypassServiceWorker`
+requires enabling the Network domain first; this is fixed and verified. The
+controlled page uses network fetch while unrelated pages still use their worker;
+detach restores the worker path and WebSocket access. Disabling this network
+lease through page commands is rejected. Background user workers, preexisting
+connections, and extensions are not claimed to be contained by this page lease.
+
+The CLI requires an explicit existing local browser WebSocket endpoint. It does
+not silently restart or reconfigure the user's daily Chrome. Desktop permission
+acceptance remains separate and unresolved.
+
+Validation: both CDP and agent-loop typechecks pass. Nine targeted integration
+cases pass when run serially; CLI tests rebuild shared dist, so running them
+concurrently with runtime-staging tests can race and produce a missing-module
+failure. Actual DeepSeek through the attached browser deployment also completed
+the owned local click/read task and returned the independently observed
+`action-completed-marker`. These runs used test-owned Chromium as the external
+browser, not the user's daily profile.

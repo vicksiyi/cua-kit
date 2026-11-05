@@ -148,9 +148,11 @@ try {
       onMessage: trace,
       initialMessages,
       runtimeContext:
-        process.env.CUA_DEMO_MANAGED_BROWSER === "1"
-          ? "The connected chrome-family backend is a visible temporary Chromium launched by this demo. It is not the user's daily Chrome profile. Use this browser for the requested task and accurately identify it in your answer."
-          : undefined,
+        process.env.CUA_DEMO_ATTACHED_BROWSER === "1"
+          ? "The connected browser belongs to the user and was attached through an explicitly supplied local CDP endpoint. Only operate tabs relevant to the request. Do not claim a fresh temporary profile. This client disconnects when the run ends; it does not close the existing browser."
+          : process.env.CUA_DEMO_MANAGED_BROWSER === "1"
+            ? "The connected chrome-family backend is a visible temporary Chromium launched by this demo. It is not the user's daily Chrome profile. Use this browser for the requested task and accurately identify it in your answer. It closes when this run ends, so do not tell the user to complete a verification in that tab after the final answer."
+            : undefined,
     });
     debug?.write("run.answer", { answer: result.answer });
     console.log(result.answer);

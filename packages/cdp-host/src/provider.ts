@@ -1,3 +1,4 @@
+import { createPageNetworkLease } from "./page-network-lease";
 import { prepareCdpEvent } from "./event-forwarding";
 import {
   validateFinalizedTabs,
@@ -45,11 +46,16 @@ export class CdpProvider {
     string,
     { sessionId: string; tab: Tab; parentSessionId: string }
   >();
+  private networkLeases = new Map<
+    Tab,
+    Awaited<ReturnType<typeof createPageNetworkLease>>
+  >();
   private pageTargets = new WeakMap<Page, Promise<string>>();
   constructor(
     private cdp: CdpConnection,
     private notify: (method: string, params: unknown) => void,
     private context: BrowserContext,
+    private ownership: "owned" | "attached" = "owned",
   ) {
     this.stop = cdp.onEvent((event) => {
       void this.event(event).catch((error) => {
@@ -63,6 +69,7 @@ export class CdpProvider {
     });
   }
   async installNetworkRouting() {
+    if (this.ownership === "attached") return;
     // Context-level interception covers child frames and newly opened pages too.
     // Unclaimed pages have no policy and cannot send network requests.
     await this.context.route("**/*", async (route) => {
@@ -266,11 +273,14 @@ export class CdpProvider {
     return {
       type: "cdp",
       family: "chrome",
-      name: "Core CDP Chromium",
+      name:
+        this.ownership === "attached"
+          ? "Connected Chrome (CDP)"
+          : "Core CDP Chromium",
       version: (await this.cdp.send("Browser.getVersion")).product,
       capabilities: { browser: [], tab: [] },
       apiSupportOverrides: { "Tab.ax": false },
-      metadata: { provider: "core-cdp-host" },
+      metadata: { provider: "core-cdp-host", ownership: this.ownership },
     };
   }
   async getTabs() {
@@ -330,6 +340,28 @@ export class CdpProvider {
       tab.sessionId = sessionId;
       this.sessionTabs.set(sessionId, tab);
     }
+    if (this.ownership === "attached") {
+      let lease = this.networkLeases.get(tab);
+      if (!lease) {
+        let page: Page | undefined;
+        for (const candidate of this.context.pages()) {
+          if ((await this.pageTarget(candidate)) === tab.targetId) {
+            page = candidate;
+            break;
+          }
+        }
+        if (!page) throw Error("Controlled CDP page is no longer available");
+        lease = await createPageNetworkLease(page);
+        this.networkLeases.set(tab, lease);
+      }
+      lease.setPolicy(allowed);
+      await this.cdp.send("Network.enable", {}, tab.sessionId);
+      await this.cdp.send(
+        "Network.setBypassServiceWorker",
+        { bypass: true },
+        tab.sessionId,
+      );
+    }
     tab.allowed = allowed;
     await this.cdp.send(
       "Fetch.enable",
@@ -369,6 +401,15 @@ export class CdpProvider {
     )
       throw Error(
         "CDP provider lifecycle method is not exposed to page commands",
+      );
+    if (
+      this.ownership === "attached" &&
+      (request.method === "Network.disable" ||
+        (request.method === "Network.setBypassServiceWorker" &&
+          request.commandParams?.bypass !== true))
+    )
+      throw Error(
+        "Attached page network lease cannot be disabled by page commands",
       );
     validateCdpCommand(request.method, request.commandParams);
     return filterCdpResult(
@@ -435,8 +476,21 @@ export class CdpProvider {
       tab.sessionId = undefined;
     }
     tab.allowed = undefined;
+    const lease = this.networkLeases.get(tab);
+    this.networkLeases.delete(tab);
+    await lease?.close();
   }
-  close() {
+  async close() {
     this.stop();
+    const leases = [...this.networkLeases.values()];
+    this.networkLeases.clear();
+    const results = await Promise.allSettled(
+      leases.map((lease) => lease.close()),
+    );
+    const errors = results.flatMap((result) =>
+      result.status === "rejected" ? [result.reason] : [],
+    );
+    if (errors.length)
+      throw new AggregateError(errors, "Page network lease cleanup failed");
   }
 }

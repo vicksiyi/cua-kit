@@ -1,3 +1,4 @@
+import { attachCdpBrowser } from "./attached-browser";
 /** Reuse @core authenticated local host framing, with a CDP provider instead of an extension. */
 import { mkdtemp, rm } from "node:fs/promises";
 import { PassThrough } from "node:stream";
@@ -9,8 +10,12 @@ import {
 } from "@core/browser/nativePipe";
 import { startOwnedCdpBrowser } from "./owned-browser";
 import { CdpProvider } from "./provider";
-export async function startCdpHost(options: { headless?: boolean } = {}) {
-  const browser = await startOwnedCdpBrowser(options);
+export async function startCdpHost(
+  options: { headless?: boolean; endpoint?: string } = {},
+) {
+  const browser = options.endpoint
+    ? await attachCdpBrowser(options.endpoint)
+    : await startOwnedCdpBrowser(options);
   const directory = await mkdtemp("/tmp/core-cdp-host-");
   const incoming = new PassThrough(),
     outgoing = new PassThrough();
@@ -30,6 +35,7 @@ export async function startCdpHost(options: { headless?: boolean } = {}) {
     browser.connection,
     (method, params) => peer.sendNotification(method, params),
     browser.context,
+    browser.ownership,
   );
   // Explicit table: private provider methods are not remotely callable.
   for (const method of [
@@ -65,7 +71,7 @@ export async function startCdpHost(options: { headless?: boolean } = {}) {
       parentDirectory: directory,
     });
   } catch (error) {
-    provider.close();
+    await provider.close().catch(() => {});
     await browser.close();
     await rm(directory, { recursive: true, force: true });
     throw error;
@@ -76,14 +82,17 @@ export async function startCdpHost(options: { headless?: boolean } = {}) {
     endpointFile: host.endpointFile,
     close: () =>
       (closing ??= (async () => {
-        provider.close();
         try {
-          await host.close();
+          await provider.close();
         } finally {
-          incoming.destroy();
-          outgoing.destroy();
-          await browser.close();
-          await rm(directory, { recursive: true, force: true });
+          try {
+            await host.close();
+          } finally {
+            incoming.destroy();
+            outgoing.destroy();
+            await browser.close();
+            await rm(directory, { recursive: true, force: true });
+          }
         }
       })()),
   };

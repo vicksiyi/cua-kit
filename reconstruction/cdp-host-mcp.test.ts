@@ -37,3 +37,48 @@ test(
     }
   },
 );
+
+test(
+  "explicit existing-browser CLI endpoint discovers inventory and leaves the external browser alive",
+  { timeout: 60000 },
+  async () => {
+    const { startOwnedCdpBrowser } =
+      await import("../packages/cdp-host/src/owned-browser");
+    const browser = await startOwnedCdpBrowser({ headless: true });
+    try {
+      const { stdout, stderr } = await exec(
+        "npm",
+        [
+          "run",
+          "demo:deepseek",
+          "--",
+          "--cdp-endpoint",
+          browser.endpoint,
+          "--check-browser",
+        ],
+        {
+          cwd: process.cwd(),
+          timeout: 50000,
+          maxBuffer: 1024 * 1024,
+          env: {
+            ...process.env,
+            CUA_MCP_ENV: JSON.stringify({
+              NODE_REPL_DISABLE_ANALYTICS: "1",
+              CUA_REPL_ENABLED_SURFACES: "browser",
+              CUA_REPL_BROWSER_ENV: "codex-app",
+              BROWSER_USE_AVAILABLE_BACKENDS: "cdp",
+            }),
+          },
+        },
+      );
+      assert.match(stdout + stderr, /Connected Chrome \(CDP\)/);
+      assert.match(stdout + stderr, /Browser connection verified/);
+      assert.ok(
+        (await browser.connection.send("Target.getTargets")).targetInfos
+          .length > 0,
+      );
+    } finally {
+      await browser.close();
+    }
+  },
+);
