@@ -104,3 +104,20 @@ CUA_LIVE_DEEPSEEK_TEST=1 npx tsx --test reconstruction/extension-native-controll
 It loads the ignored project `.env` in the model process, consumes DeepSeek API
 usage and operates only on its isolated local test page. This is a diagnostic,
 not an installation or acceptance command for the user's existing Chrome.
+
+## Local lifecycle diagnostics
+
+New native host processes write `lifecycle.jsonl` beside their registered
+`config.json` (normally `~/.core-cua/host-*/lifecycle.jsonl`). The log records
+only timestamp, PID and event code: starting, ready, input EOF/error, output
+error, invalid extension message, server error, client cleanup error, explicit
+close, or SIGINT/SIGTERM. It never contains RPC bodies, page contents, URLs,
+endpoint authentication tokens or model keys. The file is private (0600),
+rejects symlinks and clears old entries once it reaches 1 MiB. It is outside the
+repository and is not uploaded. Existing running hosts pick up this change on
+their next startup; rebuilding alone does not replace an active process.
+
+An `input-ended` event means Chrome closed the native input stream; it does not
+by itself prove whether the user quit Chrome, disabled the extension or the
+worker restarted. SIGKILL/process crashes can leave no final event. This log
+narrows the failure stage; it does not claim to repair every disconnect.

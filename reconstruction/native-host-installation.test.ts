@@ -115,5 +115,11 @@ test(
     child.stdin.end();
     assert.equal((await exit)[0], 0);
     await assert.rejects(readFile(endpointFile), { code: "ENOENT" });
+    const lifecycle = await readFile(join(installation.directory, "lifecycle.jsonl"), "utf8");
+    const events = lifecycle.trim().split("\n").map(line => JSON.parse(line));
+    assert.deepEqual(events.map(row => row.event), ["starting", "ready", "input-ended"]);
+    assert.ok(events.every(row => row.pid === child.pid));
+    assert.ok(!lifecycle.includes(endpoint.token));
+    assert.ok(!lifecycle.includes("getInfo"));
   },
 );

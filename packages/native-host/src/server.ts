@@ -10,6 +10,7 @@ import {
   encodeNativePipeFrame,
 } from "@core/browser/nativePipe";
 import { NativeHostRouter } from "./router";
+import type { NativeHostLifecycleEvent } from "./lifecycle_log";
 export const MAX_FRAME = 1024 * 1024;
 export interface NativeHostEndpoint {
   version: 1;
@@ -20,8 +21,11 @@ export interface NativeHostEndpoint {
 export async function startNativeHost(
   input: Readable,
   output: Writable,
-  options: { requestTimeoutMs?: number; parentDirectory?: string } = {},
+  options: { requestTimeoutMs?: number; parentDirectory?: string; onLifecycle?: (event: NativeHostLifecycleEvent) => void } = {},
 ) {
+  const report = (event: NativeHostLifecycleEvent) => {
+    try { options.onLifecycle?.(event); } catch { /* Diagnostics cannot interrupt transport cleanup. */ }
+  };
   if (options.parentDirectory !== undefined) {
     await mkdir(options.parentDirectory, { recursive: true, mode: 0o700 });
     await assertPrivateEndpointDirectory(options.parentDirectory);
@@ -90,33 +94,36 @@ export async function startNativeHost(
       try {
         router.removeClient(id);
       } catch {
-        void close();
+        void close("client-cleanup-error");
       }
       sockets.delete(socket);
     });
   });
   let closing: Promise<void> | undefined;
-  const close = () =>
+  const close = (reason: NativeHostLifecycleEvent = "explicit-close") =>
     (closing ??= (async () => {
+      report(reason);
       input.removeListener("data", onData);
       input.removeListener("end", onEnd);
-      input.removeListener("error", onEnd);
-      output.removeListener("error", onEnd);
+      input.removeListener("error", onInputError);
+      output.removeListener("error", onOutputError);
       router.close();
       for (const socket of sockets) socket.destroy();
       await new Promise<void>((resolve) => server.close(() => resolve()));
       await rm(directory, { recursive: true, force: true });
     })());
   const onEnd = () => {
-    void close();
+    void close("input-ended");
   };
+  const onInputError = () => { void close("input-error"); };
+  const onOutputError = () => { void close("output-error"); };
   const decoder = new NativePipeFrameDecoder(MAX_FRAME);
   const onData = (bytes: Buffer) => {
     try {
       for (const frame of decoder.push(bytes))
         router.fromExtension(JSON.parse(frame));
     } catch {
-      void close();
+      void close("invalid-extension-message");
     }
   };
   try {
@@ -133,11 +140,12 @@ export async function startNativeHost(
       JSON.stringify(endpoint),
       { mode: 0o600 },
     );
-    server.on("error", onEnd);
+    server.on("error", () => { void close("server-error"); });
     input.on("data", onData);
     input.once("end", onEnd);
-    input.once("error", onEnd);
-    output.once("error", onEnd);
+    input.once("error", onInputError);
+    output.once("error", onOutputError);
+    report("ready");
     return { endpoint, endpointFile: join(directory, "endpoint.json"), close };
   } catch (error) {
     await close();
