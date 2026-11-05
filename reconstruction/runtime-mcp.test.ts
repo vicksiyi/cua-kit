@@ -36,7 +36,7 @@ test(
     });
     await writeFile(
       join(root, "service.mjs"),
-      'let pipe;let received=[];let waiting;export async function handleRpc(x){if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
+      'let pipe;let received=[];let waiting;export async function handleRpc(x){if(x?.image){await nodeRepl.emitImage(x.image);return "image emitted";}if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
     );
     const moduleDir = join(root, "external", "node_modules");
     await mkdir(join(moduleDir, "fixture-module"), { recursive: true });
@@ -77,6 +77,7 @@ test(
           HOME: root,
           TMPDIR: root,
           NODE_REPL_TRUSTED_RPC_ENABLED: "1",
+          NODE_REPL_ENABLE_AUDIO: "1",
           NODE_REPL_TRUSTED_CODE_PATHS: root,
           NODE_REPL_TRUSTED_SERVICES: JSON.stringify({
             fixture: join(root, "service.mjs"),
@@ -161,6 +162,44 @@ test(
         ),
         /42/,
       );
+      const png =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1cAAAAASUVORK5CYII=";
+      const media = await client.callTool({
+        name: "js",
+        arguments: {
+          code: `nodeRepl.emitImage("data:image/png;base64,${png}");await nodeRepl.emitAudio("data:audio/wav;base64,UklGRg==");nodeRepl.write("media done")`,
+        },
+      });
+      assert.equal(media.isError, false);
+      assert.deepEqual(media.content, [
+        { type: "text", text: "media done" },
+        { type: "image", data: png, mimeType: "image/png" },
+        { type: "audio", data: "UklGRg==", mimeType: "audio/wav" },
+      ]);
+      const trustedMedia = await client.callTool({
+        name: "js",
+        arguments: {
+          code: `await nodeRepl.rpc("fixture",{image:"data:image/png;base64,${png}"});throw Error("after-media")`,
+        },
+      });
+      assert.equal(trustedMedia.isError, true);
+      assert.ok(Array.isArray(trustedMedia.content));
+      assert.deepEqual(
+        trustedMedia.content.find((item) => item.type === "image"),
+        { type: "image", data: png, mimeType: "image/png" },
+      );
+      const badMedia = await client.callTool({
+        name: "js",
+        arguments: {
+          code: 'await nodeRepl.emitImage("data:text/plain,not-an-image")',
+        },
+      });
+      assert.equal(badMedia.isError, true);
+      const nextMedia = await client.callTool({
+        name: "js",
+        arguments: { code: 'nodeRepl.write("clean")' },
+      });
+      assert.deepEqual(nextMedia.content, [{ type: "text", text: "clean" }]);
       const importCode =
         'nodeRepl.write((await import("fixture-module")).value)';
       assert.equal(

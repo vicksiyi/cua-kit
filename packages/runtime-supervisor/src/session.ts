@@ -19,6 +19,7 @@ export interface HostContext {
   execId: string;
   requestMeta: unknown;
   signal: AbortSignal;
+  appendContent(item: Message): void;
 }
 export interface SessionOptions {
   /** Launcher owns OS isolation, bounded JSONL transport and secret filtering. */
@@ -54,6 +55,8 @@ interface Pending {
   rpc: Set<string>;
   hostActive: Set<string>;
   hostSeen: Set<string>;
+  content: Message[];
+  contentBytes: number;
   deadline: ExecutionDeadline;
   removeAbort(): void;
   resolve(result: Message): void;
@@ -248,6 +251,8 @@ export class WorkerSession {
         rpc: new Set(),
         hostActive: new Set(),
         hostSeen: new Set(),
+        content: [],
+        contentBytes: 0,
         deadline,
         removeAbort: () => options.signal?.removeEventListener("abort", abort),
         resolve,
@@ -289,8 +294,17 @@ export class WorkerSession {
           throw Error(
             "Operation completed with outstanding host requests; outcome unknown",
           );
+        if (
+          message.content_items !== undefined &&
+          !Array.isArray(message.content_items)
+        )
+          throw Error("Invalid worker content items");
+        const result = {
+          ...message,
+          content_items: [...(message.content_items ?? []), ...pending.content],
+        };
         this.finish();
-        pending.resolve(message);
+        pending.resolve(result);
         return;
       }
       if (side === "kernel" && pending.kind !== "exec")
@@ -304,8 +318,17 @@ export class WorkerSession {
           throw Error(
             "Operation completed with outstanding host requests; outcome unknown",
           );
+        if (
+          message.content_items !== undefined &&
+          !Array.isArray(message.content_items)
+        )
+          throw Error("Invalid worker content items");
+        const result = {
+          ...message,
+          content_items: [...(message.content_items ?? []), ...pending.content],
+        };
         this.finish();
-        pending.resolve(message);
+        pending.resolve(result);
         return;
       }
       if (
@@ -453,6 +476,23 @@ export class WorkerSession {
         execId: pending.id,
         requestMeta: pending.meta,
         signal: pending.controller.signal,
+        appendContent: (item) => {
+          if (
+            this.pending !== pending ||
+            this.pair !== pair ||
+            pending.controller.signal.aborted
+          )
+            throw Error("Cannot append content after execution ended");
+          const serialized = JSON.stringify(item);
+          const bytes = Buffer.byteLength(serialized);
+          if (
+            pending.content.length >= 64 ||
+            pending.contentBytes + bytes > 16 * 1024 * 1024
+          )
+            throw Error("Execution content budget exceeded");
+          pending.content.push(JSON.parse(serialized));
+          pending.contentBytes += bytes;
+        },
       });
     } catch (error) {
       result = {

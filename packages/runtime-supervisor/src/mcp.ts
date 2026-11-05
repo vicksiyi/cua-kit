@@ -10,6 +10,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { WorkerSession, type SessionOptions, type Message } from "./session";
+import { decodeMediaMessage } from "./media";
 import { supervisorTools } from "./mcp-tools";
 
 const jsInput = z
@@ -78,6 +79,11 @@ export function createSupervisorMcpServer(options: SessionOptions) {
   const session = new WorkerSession({
     ...options,
     hostRequest: async (message, context) => {
+      if (message.type === "emit_image" || message.type === "emit_audio") {
+        const content = await decodeMediaMessage(message);
+        context.appendContent(content);
+        return { ok: true };
+      }
       if (message.type === "elicit") {
         const params = ElicitRequestFormParamsSchema.parse({
           mode: "form",
@@ -139,8 +145,9 @@ export function createSupervisorMcpServer(options: SessionOptions) {
         return { content: [{ type: "text", text: "Session reset." }] };
       }
       if (name === "turn_ended") {
-        await session.turnEnded(turnInput.parse(args), common);
-        return { content: [] };
+        return workerResultToMcp(
+          await session.turnEnded(turnInput.parse(args), common),
+        );
       }
       throw Error(`Unsupported tool: ${name}`);
     } catch (error) {

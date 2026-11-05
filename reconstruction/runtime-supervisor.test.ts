@@ -655,3 +655,32 @@ test("native pipe requests and events are generation-scoped, including between c
   assert.equal(trusted.sent.length, count);
   await session.close();
 });
+
+test("late host content cannot enter a later execution", async () => {
+  const kernel = fakePort(),
+    trusted = fakePort();
+  let append!: (item: Message) => void;
+  let release!: (m: Message) => void;
+  const session = new WorkerSession({
+    services: [],
+    launch: async () => ({ kernel, trusted }),
+    hostRequest: (_message, context) => {
+      append = context.appendContent;
+      return new Promise((resolve) => {
+        release = resolve;
+      });
+    },
+  });
+  const running = session.execute("ignored");
+  const rejected = assert.rejects(running, /reset/);
+  await new Promise((resolve) => setImmediate(resolve));
+  kernel.emit({ type: "emit_image", id: "image", exec_id: kernel.sent[0].id });
+  await session.reset();
+  await rejected;
+  assert.throws(
+    () => append({ type: "text", text: "late" }),
+    /after execution ended/,
+  );
+  release({ ok: true });
+  await session.close();
+});
