@@ -201,3 +201,7 @@ Current real-machine check fails with `Sky Computer Use native pipe startup fail
 ### Approved independent native route
 
 Route A is now authorized. `--computer` and `--check-computer` default to `@core/native-macos/service`, build the local Swift helper, and use the restored Sky RPC. `CORE_CUA_NATIVE_BACKEND=vendor` explicitly selects the older installed-service route described above. No silent fallback occurs. The independent inventory preflight now passes on this machine; the earlier sender-authentication failure applies to the vendor route. Accessibility and screen-recording permissions still report false, and native UI operation acceptance is incomplete. See `packages/native-macos/README.md` for current adapter capabilities and remaining differences.
+
+### Internal CDP deployment validation
+
+`--cdp-browser` selects the extension-free owned Chromium deployment using the same demo/MCP stack. It can precede `--check-browser` or the natural-language prompt. Project `.env` is still loaded automatically; browser/MCP children do not inherit model credentials. The terminal shows tool logs, origin confirmations, screenshot file paths and final text. This launches a temporary visible browser and closes it at process exit; it does not attach the daily Chrome profile. The project-wide experience handoff remains pending desktop acceptance.
