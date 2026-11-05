@@ -1,0 +1,1 @@
+{"name":"@core/runtime-supervisor","version":"0.1.0","private":true,"type":"module","exports":{".":{"types":"./src/session.ts","import":"./dist/session.js","default":"./dist/session.js"}}}
