@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-11-05T12:23:33.849107+00:00",
+  "prompt": "访问百度 搜索 deepseek 给我返回第一条搜索结果",
+  "browser": "isolated Chromium with full reconstructed extension",
+  "model": "real configured DeepSeek",
+  "defaultUserChromeConnected": false,
+  "before": {
+    "siteStatus": "transport errors near 30000ms",
+    "directProbe": "12-second timeout"
+  },
+  "after": {
+    "siteStatus": "HTTP 200, observed 374–648ms samples",
+    "observedSteps": [
+      "browser inventory",
+      "navigate to Baidu",
+      "fill deepseek",
+      "submit search",
+      "redirect to human verification"
+    ],
+    "result": "blocked by human verification/access policy; no first result returned",
+    "testExitCode": 1,
+    "elapsedMs": 31355
+  },
+  "policyChanged": false,
+  "evidenceLog": "/tmp/cua-baidu-system-proxy.log"
+}

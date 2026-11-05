@@ -121,3 +121,5 @@ clicks, screenshots or search results. It does not execute a page action.
 For the independent Chrome installation, load
 `packages/browser-extension/dist/native-extension` through Chrome's extensions
 page after `npm run install:chrome`. Keep Chrome running during the check.
+
+The restored DeepSeek demo now forwards explicit HTTP(S)/ALL_PROXY/NO_PROXY settings to its MCP child. If none is explicitly set, it reads enabled macOS static HTTP/HTTPS system proxy settings; it does not approximate PAC rules. This fixed repeated 30-second site-status transport failures on the development machine without changing browser access policy. A real isolated-browser Baidu run then navigated, filled and submitted the query, but reached human verification, so returning the first search result remains unverified. A connected daily Chrome extension is still required; see `reconstruction/deepseek-browser-acceptance.json` for the bounded evidence.

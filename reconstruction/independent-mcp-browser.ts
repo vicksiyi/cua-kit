@@ -1,3 +1,4 @@
+import { withHostProxy } from "../packages/agent-loop/src/system-proxy";
 import { loadEnvFile } from "node:process";
 import { AgentLoop } from "../packages/agent-loop/src/loop";
 import { createDemoModel } from "../packages/agent-loop/src/provider";
@@ -26,7 +27,7 @@ export async function verifyIndependentMcpBrowser(
   const runtime = await stageRuntimePackages(restoredPackageSources());
   try {
     const env = await configureIndependentBrowser(
-      create_launch_environment({
+      await withHostProxy(create_launch_environment({
         CUA_REPL_ENABLED_SURFACES: "browser",
         CUA_REPL_BROWSER_ENV: "codex-app",
         BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
@@ -42,7 +43,7 @@ export async function verifyIndependentMcpBrowser(
           "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
         NODE_REPL_NODE_PATH:
           "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
-      }) as Record<string, string>,
+      }) as Record<string, string>),
     );
     const metadata = { session_id: "mcp-browser-live", turn_id: "mcp-live-1" };
     const client = await McpToolClient.connect(
@@ -141,7 +142,9 @@ export async function verifyIndependentMcpBrowser(
           {
             initialMessages,
             onMessage: trace,
-            signal: AbortSignal.timeout(90000),
+            // Live search includes repeated upstream site-status checks. Keep enough
+            // observation time to distinguish transport delay from page failure.
+            signal: AbortSignal.timeout(baiduSearch ? 180000 : 90000),
           },
         );
         console.error("DEEPSEEK ANSWER", result.answer);

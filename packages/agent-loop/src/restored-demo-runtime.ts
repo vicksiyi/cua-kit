@@ -1,4 +1,5 @@
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
+import { withHostProxy } from "./system-proxy";
 import { fileURLToPath } from "node:url";
 import { delimiter } from "node:path";
 import { configureIndependentBrowser } from "./independent-browser";
@@ -16,7 +17,7 @@ if (
   !Object.values(configured).every((value) => typeof value === "string")
 )
   throw new Error("CUA_MCP_ENV must be a JSON string map");
-let env = { ...configured } as Record<string, string>;
+let env = await withHostProxy({ ...configured } as Record<string, string>);
 for (const key of [
   "CUA_NATIVE_SUPERVISOR_PATH",
   "NODE_REPL_NODE_PATH",
