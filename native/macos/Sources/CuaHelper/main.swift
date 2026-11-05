@@ -168,6 +168,11 @@ if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.cont
     if let data = try? JSONSerialization.data(withJSONObject: status, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text) }
     exit(AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() ? 0 : 2)
 }
+if CommandLine.arguments.contains("--paste-termination-fixture") {
+    do { try await runNativeService { try await runPasteTerminationFixture() }; exit(1) }
+    catch is CancellationError { exit(0) }
+    catch { fputs("Paste termination fixture failed: \(error)\n",stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--paste-content-self-test") {
     do { try runPasteContentChecks(); print("{\"nativePasteFormats\":true}"); exit(0) }
     catch { fputs("Paste format self-test failed: \(error)\n",stderr); exit(1) }
@@ -208,7 +213,8 @@ if CommandLine.arguments.contains("--sky-socket") {
     guard CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--sky-socket" else {
         fputs("Usage: cua-helper --sky-socket ABSOLUTE_PATH\n",stderr); exit(2)
     }
-    do { try await serveSkySocket(CommandLine.arguments[2]); exit(0) }
+    do { try await runNativeService { try await serveSkySocket(CommandLine.arguments[2]) }; exit(0) }
+    catch is CancellationError { exit(0) }
     catch { fputs("Independent Sky IPC service failed: \(error)\n",stderr); exit(1) }
 }
 while let line = readLine() {

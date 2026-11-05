@@ -44,3 +44,22 @@ func runPasteTransactionChecks() async throws {
     let next = try await withNativeClipboard(store,params:["text":"next"]) { ["outcome":"observed"] }
     guard next["clipboardRestored"] as? Bool == true, board.string(forType:.string) == "external" else { throw fail("SELF_TEST_FAILED","Clipboard lease leaked.") }
 }
+
+@MainActor
+func runPasteTerminationFixture() async throws {
+    let board = NSPasteboard.withUniqueName(); defer { board.releaseGlobally() }
+    board.setString("original",forType:.string)
+    let store = ClipboardStore(board)
+    do {
+        _ = try await withNativeClipboard(store,params:["text":"temporary"]) {
+            print("{\"pasteTerminationReady\":true}"); fflush(stdout)
+            try await Task.sleep(nanoseconds:60_000_000_000)
+            throw fail("SELF_TEST_FAILED","Termination signal was not received")
+        }
+        throw fail("SELF_TEST_FAILED","Cancellation was lost")
+    } catch is CancellationError {
+        guard board.string(forType:.string) == "original" else { throw fail("SELF_TEST_FAILED","Signal cancellation did not restore clipboard") }
+        print("{\"pasteTerminationRestored\":true}"); fflush(stdout)
+        throw CancellationError()
+    }
+}

@@ -97,7 +97,7 @@ impl NativeService {
             ]),
             max_frame_bytes: 4096,
             max_queued_bytes: 8192,
-            terminate_grace: Duration::from_millis(100),
+            terminate_grace: Duration::from_secs(2),
         };
         match ProcessWorker::start(spec).await {
             Ok(process) => Ok(Self {

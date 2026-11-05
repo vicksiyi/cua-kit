@@ -162,3 +162,10 @@ legacy native-responsibility migration/retirement item, not evidence of vendor J
 formatting. The new Swift renderer is independent and not output-parity-proven.
 Named-board restoration passes; real editor effects and forced-exit cleanup remain
 unaccepted. Native dependency versions/revisions are pinned in Package.resolved.
+
+
+Native signal cancellation and socket wake-up now live in Swift NativeTermination;
+Rust owns bounded service termination grace. Real subprocess signal tests verify
+named-pasteboard restoration and socket cleanup. No TS signal/clipboard cleanup
+layer was added. Cooperative cleanup is independently verified; original native
+shutdown semantics and forced-exit recovery remain unproven.

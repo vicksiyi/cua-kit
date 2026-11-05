@@ -429,3 +429,30 @@ Forbidden/unconfigured fixtures fail before elicitation. Fixtures are temporary
 .app metadata bundles: no application is launched and no UI permission requested.
 The four IPC tests and 29 Rust regression tests pass. App start/skyshot/action
 requests remain explicitly unsupported on this original-protocol service route.
+
+
+## Cooperative native termination cleanup (2026-11-06)
+
+Swift Sky service launch now uses runNativeService: SIGTERM/SIGINT cancel the
+service task instead of bypassing native defers. Signal dispatch does not itself
+mutate the clipboard. Cancellation propagates through async paste/input and lets
+withNativeClipboard restore its lease before exit. Socket accept/read/write waits
+poll cancellation; accepted sockets are nonblocking so a partial frame or stalled
+peer does not indefinitely prevent cooperative shutdown. Normal EOF also keeps
+existing socket cleanup. Rust permits a 2-second service termination grace before
+its existing process-group kill fallback (worker grace remains unchanged).
+
+Nine IPC/lifecycle cases pass. Two actual subprocess cases send SIGTERM/SIGINT
+while a transaction owns a **named** pasteboard, then require restored-content
+evidence and exit code 0 (not signal death). Three other cases interrupt accept,
+partial header and partial body waits and require normal exit/socket removal.
+The original/restored client cases and actual Rust-worker reset/restart/close case
+also pass. Swift and Rust release builds pass. No general clipboard was changed.
+
+These prove cooperative signal cleanup for the tested transaction and I/O states,
+not a real app paste under cancellation, forced SIGKILL recovery, crash recovery,
+or completion of unresponsive native APIs. The 2-second fallback can still kill
+an uncooperative service before cleanup; that limitation is not hidden by the
+successful signal tests. Native App UI acceptance and production demo migration
+remain open. The timeout and signal strategy are independently implemented rather
+than recovered original supervisor/native function bodies.

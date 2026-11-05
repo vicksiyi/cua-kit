@@ -237,3 +237,16 @@ for(const source of ['restored','installed'] as const) test(`explicit owned App 
   for(const entry of owned){for(let attempt=0;;attempt++){try{process.kill(entry.pid,0);}catch(error:any){assert.equal(error.code,'ESRCH');break;}assert.ok(attempt<200,'Owned fixture did not retire');await new Promise(r=>setTimeout(r,25));}}
  }
 });
+
+for(const signal of ['SIGTERM','SIGINT'] as const)test(`native ${signal} restores an active named clipboard transaction`,{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:5000},async t=>{
+ const child=spawn(helper,['--paste-termination-fixture'],{stdio:['ignore','pipe','pipe']});
+ let stdout='',stderr='';child.stdout.on('data',data=>stdout+=data);child.stderr.on('data',data=>stderr+=data);
+ const exited=once(child,'exit');t.after(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');await exited;});
+ for(let n=0;!stdout.includes('pasteTerminationReady');n++){assert.ok(n<200&&child.exitCode===null,stderr||'No readiness');await new Promise(r=>setTimeout(r,10));}
+ child.kill(signal);const [code,bySignal]=await exited;assert.equal(code,0,stderr);assert.equal(bySignal,null);assert.match(stdout,/"pasteTerminationRestored":true/);
+});
+for(const phase of ['accept','partial-header','partial-body'] as const)test(`native SIGTERM retires socket blocked in ${phase}`,{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:5000},async t=>{
+ const f=await fixture(t);
+ if(phase!=='accept'){const socket=await f.open();socket.write(phase==='partial-header'?Buffer.from([1]):Buffer.from([10,0,0,0,123]));}
+ f.child.kill('SIGTERM');const [code,signal]=await f.exited;assert.equal(code,0);assert.equal(signal,null);await assert.rejects(access(f.path));
+});

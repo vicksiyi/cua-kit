@@ -103,8 +103,9 @@ private func readExact(_ fd: Int32, _ count: Int, allowEOF: Bool = false) throws
     var bytes = [UInt8](repeating: 0, count: count)
     var offset = 0
     while offset < count {
+        try waitForNativeIO(fd,events:Int16(POLLIN))
         let amount = bytes.withUnsafeMutableBytes { Darwin.read(fd, $0.baseAddress!.advanced(by: offset), count-offset) }
-        if amount < 0 && errno == EINTR { continue }
+        if amount < 0 && [EINTR,EAGAIN,EWOULDBLOCK].contains(errno) { continue }
         if amount == 0 && offset == 0 && allowEOF { return nil }
         guard amount > 0 else { throw rpcFailure(-32600, "Native pipe ended during frame") }
         offset += amount
@@ -114,8 +115,9 @@ private func readExact(_ fd: Int32, _ count: Int, allowEOF: Bool = false) throws
 private func writeAll(_ fd: Int32, _ data: Data) throws {
     var offset = 0
     while offset < data.count {
+        try waitForNativeIO(fd,events:Int16(POLLOUT))
         let amount = data.withUnsafeBytes { Darwin.write(fd, $0.baseAddress!.advanced(by: offset), data.count-offset) }
-        if amount < 0 && errno == EINTR { continue }
+        if amount < 0 && [EINTR,EAGAIN,EWOULDBLOCK].contains(errno) { continue }
         guard amount > 0 else { throw rpcFailure(-32600, "Native pipe write failed") }
         offset += amount
     }
@@ -146,9 +148,12 @@ func serveSkySocket(_ path: String) async throws {
     guard chmod(canonical, 0o600) == 0, listen(listener, 1) == 0 else { throw rpcFailure(-32600, "Cannot initialize private native socket") }
     let ready = try JSONSerialization.data(withJSONObject: ["type":"sky_service_ready", "socketPath":canonical], options: [.sortedKeys])
     FileHandle.standardOutput.write(ready + Data([10]))
+    try waitForNativeIO(listener,events:Int16(POLLIN))
     let connection = accept(listener, nil, nil)
     guard connection >= 0 else { throw rpcFailure(-32600, "Cannot accept native connection") }
     defer { Darwin.close(connection) }
+    let flags = fcntl(connection,F_GETFL)
+    guard flags >= 0, fcntl(connection,F_SETFL,flags | O_NONBLOCK) == 0 else { throw rpcFailure(-32600,"Cannot configure cancellable native socket") }
     var uid = uid_t(), gid = gid_t()
     guard getpeereid(connection, &uid, &gid) == 0, uid == getuid() else { throw rpcFailure(-10000, "Native peer must belong to the service user") }
     var noSigpipe: Int32 = 1

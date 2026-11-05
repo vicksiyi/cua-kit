@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 7,
-    "native-implementation-language-not-yet-parity-proof": 39,
+    "native-implementation-language-not-yet-parity-proof": 40,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3922,6 +3922,11 @@
       "sha256": "e49bafc842913d80bd8cf6a86a27417289db318f53ca485d01546bbb19930c39"
     },
     {
+      "path": "native/macos/Sources/CuaHelper/NativeTermination.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "d4fec66f1826a532078c4b73608fc340679f159b2ebd2bbb59d995fd794e8c24"
+    },
+    {
       "path": "native/macos/Sources/CuaHelper/ObservationText.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "1975aa234a172ccf862504eb6425a7ddd260af15c5cfb2882620bfd830c35c3b"
@@ -3939,7 +3944,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/PasteTransactionSelfTest.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "7919d8565f4febdb9d211ace6eaa4c573212e2db30a6eb6f0f85d1656c64b020"
+      "sha256": "55c7f0f5cfbe8af78bda20eff0fa89dc19b2f5c5a3e10fdda3fd19fdb7415888"
     },
     {
       "path": "native/macos/Sources/CuaHelper/Scroll.swift",
@@ -3964,7 +3969,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "3576112f818d41e270c73898338e948e857813403c7d43af440460eaca4c7dfc"
+      "sha256": "a54e41a2682054f9f6549e73d7fe9a08de90acf9caf9a03e6a202ccf518fddaa"
     },
     {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
@@ -3974,7 +3979,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "dae56378cb339114b51680aff6abde948ce25e98531fe09c8bf661a757153672"
+      "sha256": "9c6819dd1e9b1ef4806c1ecf19f5ba09bbc25446125c85ee834a1b1eb85ec54f"
     },
     {
       "path": "native/macos-sandbox/build.rs",
@@ -4034,7 +4039,7 @@
     {
       "path": "native/runtime-supervisor/src/native_service.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "591264bf8e82ab00278be2a7f36c180b99a01a80b27bcca9a3514bbef6df8b89"
+      "sha256": "330620dde33918881a1e80d372732fc1703ffb666c736a7109cb2984a6107a71"
     },
     {
       "path": "native/runtime-supervisor/src/process_port.rs",
