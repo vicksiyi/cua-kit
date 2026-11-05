@@ -96,3 +96,6 @@ The separate `native/browser-extension-host` crate now implements and tests the 
 
 
 Native host transport/writer progress: framed JSON and bounded Unix client writers now run in Rust and pass real Unix-socket plus JS/Rust stdio checks. These are executable native components, but the listener/authentication/event loop and production consumer switch are still pending. Tests now total 15 Rust cases plus 3 cross-language cases; no full host parity or browser acceptance claim follows from this.
+
+
+The Rust private listener/descriptor and Core-token handshake now pass six endpoint tests and an existing-TS-client integration probe. Native cleanup rejects replacement-directory deletion; authentication has an absolute deadline. The gate totals 21 Rust cases and 4 cross-language checks. This is not original code-identity authorization, nor a production host switch; native event-loop composition and consumer migration remain open.

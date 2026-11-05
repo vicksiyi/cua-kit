@@ -9,7 +9,7 @@
     "native-boundary-needs-original-language-evidence": 10,
     "native-browser-host-role-migrate-to-rust": 3,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 53,
+    "native-implementation-language-not-yet-parity-proof": 55,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
     "original-js-browser-discovery-retain-typescript": 2
@@ -3876,6 +3876,11 @@
       "sha256": "98931407da95ad2ad29545ee896b5654cfeda2a8a9dd2552f91854fed46779b9"
     },
     {
+      "path": "native/browser-extension-host/examples/endpoint_probe.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "1ec8118944194f7e4c0512eec404e68c802bee098400719bd4da349a55c02cd4"
+    },
+    {
       "path": "native/browser-extension-host/examples/framed_echo.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "ea0e362ac899571c7aa77f543ae08a8d1f5d1e1fbf79e01642d4bc694ede8f37"
@@ -3891,9 +3896,14 @@
       "sha256": "a5673f451d6e18443fdcf87c32c61abaff1f03425d29cf596bbabe6e8632619d"
     },
     {
+      "path": "native/browser-extension-host/src/endpoint.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "96b225da9f1b4c5d11af26c7917ab28c2f28880d7e2f9ddcb3fca39c2072f066"
+    },
+    {
       "path": "native/browser-extension-host/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "7c7951b87f3d34cb7f981109e75e27510db41bad513855094f006abce60de750"
+      "sha256": "6b3bdd29760528ad52a7f33b6f439d128b8b771e846a4ee61dac92b20de70029"
     },
     {
       "path": "native/browser-extension-host/src/rpc_router.rs",
@@ -4288,7 +4298,7 @@
     {
       "path": "scripts/test-native-host-router.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "0b0a020524db0398d9784ab818cd84c2574fdd1722eacd69ba12135fb93ebeba"
+      "sha256": "5582255be0ae488612995591d362b48c7999e43d6dbc9e30b7b4b74956bb59a2"
     }
   ]
 }

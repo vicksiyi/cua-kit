@@ -3,5 +3,7 @@
 //! The socket/stdio executable and original authorization/app-server behavior remain pending.
 #[cfg(unix)]
 pub mod client_writer;
+#[cfg(unix)]
+pub mod endpoint;
 pub mod rpc_router;
 pub mod transport;
