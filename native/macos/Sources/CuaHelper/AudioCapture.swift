@@ -47,20 +47,71 @@ private final class NativeAudioSink: NSObject, SCStreamOutput, SCStreamDelegate 
 }
 
 @MainActor
+protocol NativeAudioCaptureBackend: AnyObject {
+    func finish() async throws -> URL
+    func discard()
+}
+
+@MainActor
+private final class ScreenAudioCapture: NativeAudioCaptureBackend {
+    let stream: SCStream
+    let sink: NativeAudioSink
+    init(stream: SCStream, sink: NativeAudioSink) { self.stream = stream; self.sink = sink }
+    func finish() async throws -> URL {
+        var stoppedError: Error?
+        do { try await stream.stopCapture() } catch { stoppedError = error }
+        return try sink.finish(captureError:stoppedError)
+    }
+    func discard() { sink.discard() }
+}
+
+@MainActor
+private func startScreenAudioCapture(url: URL, duration: Int, deadline: Double) async throws -> NativeAudioCaptureBackend {
+    guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED","Screen Recording permission is required for loopback audio") }
+    let content = try await SCShareableContent.excludingDesktopWindows(false,onScreenWindowsOnly:true)
+    guard let display = content.displays.first else { throw fail("TARGET_NOT_FOUND","No display is available for loopback audio") }
+    try Task.checkCancellation()
+    guard Date().timeIntervalSince1970*1000 < deadline else { throw fail("INVALID_ARGUMENT","Audio start request expired") }
+    let sink = NativeAudioSink(writer:try NativeAudioWriter(url:url,maxDurationMilliseconds:duration))
+    let configuration = SCStreamConfiguration()
+    configuration.capturesAudio = true
+    configuration.sampleRate = 48000
+    configuration.channelCount = 2
+    configuration.excludesCurrentProcessAudio = false
+    // Only register an audio output; no microphone or video samples are consumed.
+    configuration.width = 2; configuration.height = 2
+    configuration.minimumFrameInterval = CMTime(value:1,timescale:1)
+    let stream = SCStream(filter:SCContentFilter(display:display,excludingWindows:[]),configuration:configuration,delegate:sink)
+    do {
+        try stream.addStreamOutput(sink,type:.audio,sampleHandlerQueue:sink.queue)
+        try await stream.startCapture()
+        try Task.checkCancellation()
+        guard Date().timeIntervalSince1970*1000 < deadline else { throw fail("INVALID_ARGUMENT","Audio start request expired") }
+    } catch {
+        try? await stream.stopCapture()
+        sink.discard()
+        throw error
+    }
+    return ScreenAudioCapture(stream:stream,sink:sink)
+}
+
+@MainActor
 final class NativeAudioSession {
+    typealias CaptureFactory = @MainActor (URL,Int,Double) async throws -> NativeAudioCaptureBackend
     private final class Recording {
-        let stream: SCStream
-        let sink: NativeAudioSink
+        let capture: NativeAudioCaptureBackend
         var timer: Task<Void,Never>?
         var finishing: Task<URL,Error>?
-        init(stream: SCStream, sink: NativeAudioSink) { self.stream = stream; self.sink = sink }
+        init(capture: NativeAudioCaptureBackend) { self.capture = capture }
     }
     private let directory: URL
+    private let captureFactory: CaptureFactory
     private var recording: Recording?
     private var starting = false
     private var closed = false
-    init(parent: String) {
+    init(parent: String, captureFactory: CaptureFactory? = nil) {
         directory = URL(fileURLWithPath:parent).appendingPathComponent("audio-"+UUID().uuidString,isDirectory:true)
+        self.captureFactory = captureFactory ?? startScreenAudioCapture
     }
     nonisolated static func duration(_ payload: [String:Any]) throws -> Int {
         guard let raw = payload["maxDurationMilliseconds"] else { return 60000 }
@@ -74,38 +125,22 @@ final class NativeAudioSession {
     func start(_ payload: [String:Any], deadline: Double) async throws {
         let duration = try Self.duration(payload)
         guard !closed, !starting, recording == nil else { throw fail("INVALID_ARGUMENT","Audio recording is already active or awaiting stop") }
-        guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED","Screen Recording permission is required for loopback audio") }
+        guard deadline.isFinite, Date().timeIntervalSince1970*1000 < deadline else { throw fail("INVALID_ARGUMENT","Audio start request expired") }
         starting = true; defer { starting = false }
-        try Task.checkCancellation()
-        let content = try await SCShareableContent.excludingDesktopWindows(false,onScreenWindowsOnly:true)
-        guard let display = content.displays.first else { throw fail("TARGET_NOT_FOUND","No display is available for loopback audio") }
-        guard !closed, Date().timeIntervalSince1970*1000 < deadline else { throw fail("INVALID_ARGUMENT","Audio start request expired") }
         try Task.checkCancellation()
         if !FileManager.default.fileExists(atPath:directory.path) {
             try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:false,attributes:[.posixPermissions:0o700])
         }
-        let writer = try NativeAudioWriter(url:directory.appendingPathComponent(UUID().uuidString+".wav"),maxDurationMilliseconds:duration)
-        let sink = NativeAudioSink(writer:writer)
-        let configuration = SCStreamConfiguration()
-        configuration.capturesAudio = true
-        configuration.sampleRate = 48000
-        configuration.channelCount = 2
-        configuration.excludesCurrentProcessAudio = false
-        // Only register an audio output; no microphone or video samples are consumed.
-        configuration.width = 2; configuration.height = 2
-        configuration.minimumFrameInterval = CMTime(value:1,timescale:1)
-        let stream = SCStream(filter:SCContentFilter(display:display,excludingWindows:[]),configuration:configuration,delegate:sink)
+        let capture = try await captureFactory(directory.appendingPathComponent(UUID().uuidString+".wav"),duration,deadline)
         do {
-            try stream.addStreamOutput(sink,type:.audio,sampleHandlerQueue:sink.queue)
-            try await stream.startCapture()
             try Task.checkCancellation()
-            guard !closed, Date().timeIntervalSince1970*1000 < deadline else { throw fail("INVALID_ARGUMENT","Audio start request expired") }
+            guard !closed, Date().timeIntervalSince1970*1000 < deadline else { throw fail("INVALID_ARGUMENT","Audio start request expired or session closed") }
         } catch {
-            try? await stream.stopCapture()
-            sink.discard()
+            _ = try? await capture.finish()
+            capture.discard()
             throw error
         }
-        let active = Recording(stream:stream,sink:sink)
+        let active = Recording(capture:capture)
         recording = active
         active.timer = Task { [weak self, weak active] in
             do { try await Task.sleep(nanoseconds:UInt64(duration)*1_000_000) } catch { return }
@@ -118,9 +153,8 @@ final class NativeAudioSession {
         if let task = active.finishing { return try await task.value }
         active.timer?.cancel(); active.timer = nil
         let task = Task<URL,Error> {
-            var stoppedError: Error?
-            do { try await active.stream.stopCapture() } catch { stoppedError = error }
-            return try active.sink.finish(captureError:stoppedError)
+            do { return try await active.capture.finish() }
+            catch { active.capture.discard(); throw error }
         }
         active.finishing = task
         return try await task.value
@@ -135,7 +169,7 @@ final class NativeAudioSession {
         closed = true
         if let active = recording {
             _ = try? await finish(active)
-            active.sink.discard()
+            active.capture.discard()
             recording = nil
         }
         try? FileManager.default.removeItem(at:directory)

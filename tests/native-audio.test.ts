@@ -11,3 +11,11 @@ test('native synthetic audio encodes private bounded 24 kHz stereo WAV without c
   const {stdout} = await promisify(execFile)(helper,['--audio-writer-self-test'],{env:{PATH:'/usr/bin:/bin',LANG:'en_US.UTF-8'}});
   assert.deepEqual(JSON.parse(stdout),{syntheticWav:true,sampleRate:24000,channels:2});
 });
+
+
+test('native synthetic lifecycle handles automatic stop, concurrent stop, errors and close/cancel races', {
+  skip:process.platform !== 'darwin' || !existsSync(helper),timeout:10000,
+}, async () => {
+  const {stdout} = await promisify(execFile)(helper,['--audio-lifecycle-self-test'],{env:{PATH:'/usr/bin:/bin',LANG:'en_US.UTF-8'}});
+  assert.deepEqual(JSON.parse(stdout),{audioLifecycle:true,syntheticOnly:true});
+});
