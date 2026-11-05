@@ -45,6 +45,8 @@ interface Pending {
   form: boolean;
   controller: AbortController;
   rpc: Set<string>;
+  hostActive: Set<string>;
+  hostSeen: Set<string>;
   deadline: ExecutionDeadline;
   removeAbort(): void;
   resolve(result: Message): void;
@@ -161,6 +163,8 @@ export class WorkerSession {
         form: options.formElicitationSupported ?? false,
         controller: new AbortController(),
         rpc: new Set(),
+        hostActive: new Set(),
+        hostSeen: new Set(),
         deadline,
         removeAbort: () => options.signal?.removeEventListener("abort", abort),
         resolve,
@@ -193,6 +197,10 @@ export class WorkerSession {
           throw Error("Turn-ended response identity mismatch");
         if (pending.deadline.suspended)
           throw Error("Turn-ended completed with timeout still suspended");
+        if (pending.hostActive.size)
+          throw Error(
+            "Operation completed with outstanding host requests; outcome unknown",
+          );
         this.finish();
         pending.resolve(message);
         return;
@@ -204,6 +212,10 @@ export class WorkerSession {
           throw Error("Execution response identity mismatch");
         if (pending.rpc.size)
           throw Error("Execution completed with outstanding trusted RPC");
+        if (pending.hostActive.size)
+          throw Error(
+            "Operation completed with outstanding host requests; outcome unknown",
+          );
         this.finish();
         pending.resolve(message);
         return;
@@ -285,7 +297,12 @@ export class WorkerSession {
             pending.rpc.size === 0)
         )
           throw Error("Uncorrelated host operation");
-        void this.host(side, message, pending, pair);
+        const key = JSON.stringify([side, message.id]);
+        if (pending.hostSeen.has(key))
+          throw Error("Duplicate host request identity");
+        pending.hostSeen.add(key);
+        pending.hostActive.add(key);
+        void this.host(side, message, pending, pair, key);
         return;
       }
       const notifications =
@@ -304,6 +321,7 @@ export class WorkerSession {
     message: Message,
     pending: Pending,
     pair: WorkerPair,
+    key: string,
   ) {
     let result: Message;
     try {
@@ -322,6 +340,7 @@ export class WorkerSession {
     }
     if (this.pending !== pending || this.pair !== pair) return;
     try {
+      pending.hostActive.delete(key);
       pair[side].send({
         ...result,
         id: message.id,

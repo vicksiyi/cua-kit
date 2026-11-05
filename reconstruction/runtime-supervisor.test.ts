@@ -44,6 +44,7 @@ test(
     let launches = 0,
       decision = "decline";
     const requests: Message[] = [];
+    let imageAccepted = false;
     const session = new WorkerSession({
       services: ["fixture"],
       launch: async () => {
@@ -79,6 +80,11 @@ test(
         }
       },
       hostRequest: async (message, context) => {
+        if (message.type === "emit_image") {
+          await new Promise((resolve) => setTimeout(resolve, 20));
+          imageAccepted = true;
+          return { ok: true };
+        }
         assert.equal(message.type, "elicit");
         requests.push({ ...message, hostMeta: context.requestMeta });
         return { ok: true, action: decision, content: {} };
@@ -92,6 +98,15 @@ test(
       assert.equal(
         (await session.execute("value+=2;nodeRepl.write(value)")).output,
         "42",
+      );
+      const imageResult = await session.execute(
+        'nodeRepl.emitImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1cAAAAASUVORK5CYII=");nodeRepl.write("emitted")',
+      );
+      assert.equal(imageResult.ok, true);
+      assert.equal(
+        imageAccepted,
+        true,
+        "Unawaited tracked media must settle before completion",
       );
       const rpc = await session.execute(
         'nodeRepl.write(JSON.stringify(await nodeRepl.rpc("fixture",{n:7})))',
@@ -391,6 +406,96 @@ test("turn-ended rejects forged acknowledgements and retires on missing acknowle
         id: side === "trusted" ? "stale" : trusted.sent[0].id,
       });
     await rejection;
+    await session.close();
+    assert.equal(kernel.closed, true);
+    assert.equal(trusted.closed, true);
+  }
+});
+
+test("host requests reject duplicate IDs without replaying side effects", async () => {
+  for (const completed of [false, true]) {
+    const kernel = fakePort(),
+      trusted = fakePort();
+    let calls = 0;
+    let signal: AbortSignal | undefined;
+    const session = new WorkerSession({
+      services: [],
+      launch: async () => ({ kernel, trusted }),
+      hostRequest: async (_message, context) => {
+        calls++;
+        signal = context.signal;
+        return completed ? { ok: true } : new Promise(() => {});
+      },
+    });
+    const operation = session.execute("ignored");
+    const rejected = assert.rejects(operation, /Duplicate host request/);
+    await new Promise((resolve) => setImmediate(resolve));
+    const message = {
+      type: "emit_image",
+      id: "image",
+      exec_id: kernel.sent[0].id,
+      image_url: "data:image/png;base64,AA==",
+    };
+    kernel.emit(message);
+    await new Promise((resolve) => setImmediate(resolve));
+    kernel.emit(message);
+    await rejected;
+    assert.equal(calls, 1);
+    assert.equal(signal?.aborted, true);
+    await session.close();
+  }
+});
+
+test("completion with unfinished host effects rejects and discards late response", async () => {
+  for (const kind of ["exec", "turn_ended"] as const) {
+    const kernel = fakePort(),
+      trusted = fakePort();
+    let resolveHost!: (result: Message) => void;
+    let signal: AbortSignal | undefined;
+    const session = new WorkerSession({
+      services: [],
+      launch: async () => ({ kernel, trusted }),
+      hostRequest: async (_message, context) => {
+        signal = context.signal;
+        return new Promise((resolve) => {
+          resolveHost = resolve;
+        });
+      },
+    });
+    const operation =
+      kind === "exec"
+        ? session.execute("ignored")
+        : session.turnEnded({
+            hook_event_name: "turn_ended",
+            session_id: "s",
+            turn_id: "t",
+          });
+    const rejected = assert.rejects(
+      operation,
+      /outstanding host requests; outcome unknown/,
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    const worker = kind === "exec" ? kernel : trusted;
+    const id = worker.sent[0].id;
+    worker.emit({
+      type: "emit_image",
+      id: "image",
+      exec_id: id,
+      image_url: "data:image/png;base64,AA==",
+    });
+    worker.emit({
+      type: kind === "exec" ? "exec_result" : "turn_ended_result",
+      id,
+      ok: true,
+    });
+    await rejected;
+    assert.equal(signal?.aborted, true);
+    resolveHost({ ok: true });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(
+      worker.sent.some((m) => m.id === "image"),
+      false,
+    );
     await session.close();
     assert.equal(kernel.closed, true);
     assert.equal(trusted.closed, true);
