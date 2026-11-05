@@ -1,4 +1,5 @@
 import { SupervisorCompatibilityError } from "./native-supervisor";
+import { BrowserStartupError } from "./browser-startup";
 /** CLI boundary: known connection prerequisites get actionable output. */
 import { ComputerUnavailableError } from "./computer-preflight";
 import { fileURLToPath } from "node:url";
@@ -7,7 +8,7 @@ import { IndependentBrowserUnavailableError } from "@core/native-host/browserCon
 try {
   await import("./restored-demo-runtime");
 } catch (error) {
-  if (error instanceof SupervisorCompatibilityError) {
+  if (error instanceof SupervisorCompatibilityError || error instanceof BrowserStartupError) {
     console.error(error.message);
     process.exitCode = 1;
   } else if (error instanceof ComputerUnavailableError) {

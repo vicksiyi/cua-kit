@@ -76,4 +76,9 @@ fi
 if [[ "$managed_browser" == true ]]; then
   exec node --import tsx packages/agent-loop/src/managed-demo.ts "$@"
 fi
+if [[ "$mode" == browser && "$check_only" == false ]]; then
+  export CUA_DEMO_START_CHROME=1
+else
+  unset CUA_DEMO_START_CHROME
+fi
 exec node --import tsx packages/agent-loop/src/restored-demo.ts "$@"

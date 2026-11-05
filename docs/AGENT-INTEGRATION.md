@@ -85,6 +85,8 @@ content。不要丢掉带标签的文本：CUA 的文档和页面状态使用这
 npm run demo:deepseek -- --cdp-browser '打开 https://example.com 并概括页面'
 ```
 
+扩展模式的普通 prompt 入口在连接目录存在但为空时，会请求 macOS 打开 Google Chrome，并最多等待 15 秒以发现扩展宿主；超时后给出明确诊断，不自动换用另一浏览器的登录环境。`--check-browser` 仍仅检查，不启动浏览器。发现描述文件只是第一步，后续仍需 MCP 浏览器预检通过。
+
 扩展模式省略 `--cdp-browser`；接管已暴露调试端口的现有浏览器使用
 `--cdp-endpoint <本地浏览器WebSocket地址>`。这些模式默认仍使用安装包 supervisor，
 不是独立 supervisor 的部署入口。完整后端边界见 [README](../README.md)。

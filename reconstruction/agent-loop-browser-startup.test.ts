@@ -25,7 +25,8 @@ test("missing or empty browser host produces actionable CLI diagnostics before m
     const env = { ...process.env };
     delete env.DEEPSEEK_API_KEY;
     delete env.CORE_CUA_ENDPOINT_FILES;
-    env.CUA_NATIVE_SUPERVISOR_PATH = "/not-invoked-before-browser-discovery";
+    env.CUA_NATIVE_SUPERVISOR_PATH = process.env.CUA_NATIVE_SUPERVISOR_PATH ?? "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl";
+    delete env.CUA_DEMO_START_CHROME;
     env.CORE_CUA_HOST_DIRECTORY = directory;
     env.CUA_MCP_ENV = JSON.stringify({
       CUA_REPL_ENABLED_SURFACES: "browser",

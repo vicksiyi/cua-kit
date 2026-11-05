@@ -1,5 +1,13 @@
 # Implementation status
 
+## Latest browser startup checkpoint (2026-11-06)
+
+The default DeepSeek prompt entry now requests macOS to open Google Chrome when the configured extension endpoint directory exists but is empty, then waits up to 15 seconds for a descriptor before the existing MCP browser preflight. Check-only mode remains read-only. Missing installation, invalid permissions and explicit endpoint configurations do not trigger this startup path. Timeout explains extension/profile diagnosis and the explicit `--cdp-browser` alternative; there is no automatic profile/backend switch.
+
+Validation: seven startup/diagnostic tests and agent-loop type checking pass. A real default-entry DeepSeek run started from no discovered connection, opened Chrome, passed MCP browser preflight, accessed Google search for 米可世界, and returned a sourced summary with exit 0. The answer used search-result snippets; linked-page verification and comprehensive company research were not established. A separate check-only invocation before this run still observed no connection, so persistent connection availability and the original disconnect cause are not yet proven fixed. The change fixes startup orchestration, not every extension lifecycle failure. Raw logs remain local and ignored.
+
+The sections below include historical checkpoints and are not a current aggregate completion report.
+
 **Direction corrected by explicit user request:** the acceptance target is source-faithful readable TypeScript reconstructed from installed JS, original package boundaries renamed to `@core/*`, and extensionless source imports. See [reconstruction status](../reconstruction/README.md). The independent implementation and milestones below are historical evidence, not proof of this new acceptance target.
 
 User authorized implementation on 2026-11-03. The design documents remain a historical baseline, not a claim of implemented features.
