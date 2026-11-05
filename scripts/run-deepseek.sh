@@ -7,40 +7,52 @@ if [[ "${1:-}" == "--help" ]]; then
 fi
 managed_browser=false
 cdp_browser=false
-unset CUA_CDP_ENDPOINT
-if [[ "${1:-}" == "--cdp-endpoint" ]]; then
-  if [[ -z "${2:-}" || "${2:-}" == --* ]]; then printf '%s\n' '--cdp-endpoint requires an explicit local browser WebSocket URL.' >&2; exit 2; fi
-  export CUA_CDP_ENDPOINT="$2"
-  cdp_browser=true
-  shift 2
-fi
-if [[ "${1:-}" == "--cdp-browser" ]]; then
-  if [[ "$cdp_browser" == true ]]; then printf '%s\n' 'Choose only one CDP deployment option.' >&2; exit 2; fi
-  cdp_browser=true; shift
-fi
-if [[ "${1:-}" == "--managed-browser" ]]; then managed_browser=true; shift; fi
-if [[ "$managed_browser" == true && "$cdp_browser" == true ]]; then
-  printf '%s\n' 'Choose only one managed browser backend.' >&2; exit 2
-fi
-mode=browser
-if [[ "${1:-}" == "--js" ]]; then mode=js; shift;
-elif [[ "${1:-}" == "--computer" ]]; then mode=computer; shift;
-elif [[ "${1:-}" == "--check-computer" ]]; then mode=computer;
-elif [[ "${1:-}" == "--browser" ]]; then shift; fi
-if [[ ( "$managed_browser" == true || "$cdp_browser" == true ) && "$mode" != browser ]]; then
-  printf '%s\n' 'Managed browser options require browser mode.' >&2; exit 2
-fi
+backend=""
+mode=""
+check_option=""
 check_only=false
-if [[ "${1:-}" == "--check-browser" ]]; then
-  if [[ "$mode" != browser || $# -ne 1 ]]; then
-    printf '%s\n' '--check-browser must be used alone in browser mode.' >&2; exit 2
+unset CUA_CDP_ENDPOINT CUA_DEMO_START_CHROME
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cdp-browser|--managed-browser|--cdp-endpoint)
+      if [[ -n "$backend" ]]; then printf '%s\n' 'Choose only one browser deployment option.' >&2; exit 2; fi
+      backend="$1"
+      if [[ "$1" == --cdp-endpoint ]]; then
+        if [[ -z "${2:-}" || "${2:-}" == --* ]]; then printf '%s\n' '--cdp-endpoint requires an explicit local browser WebSocket URL.' >&2; exit 2; fi
+        export CUA_CDP_ENDPOINT="$2"
+        shift
+      fi
+      shift
+      ;;
+    --browser|--computer|--js)
+      requested_mode="${1#--}"
+      if [[ -n "$mode" && "$mode" != "$requested_mode" ]]; then printf '%s\n' 'Choose only one surface mode.' >&2; exit 2; fi
+      mode="$requested_mode"; shift
+      ;;
+    --check-browser|--check-computer)
+      if [[ -n "$check_option" ]]; then printf '%s\n' 'Choose only one check mode.' >&2; exit 2; fi
+      check_option="$1"; shift
+      ;;
+    --) shift; break ;;
+    --*) printf 'Unknown option: %s\n' "$1" >&2; exit 2 ;;
+    *) break ;;
+  esac
+done
+if [[ -n "$check_option" ]]; then
+  requested_mode="${check_option#--check-}"
+  if [[ $# -ne 0 || ( -n "$mode" && "$mode" != "$requested_mode" ) ]]; then
+    printf '%s\n' 'Check mode requires the matching surface and no prompt.' >&2; exit 2
   fi
+  mode="$requested_mode"
   check_only=true
+  set -- "$check_option"
 fi
-if [[ "${1:-}" == "--check-computer" ]]; then
-  if [[ "$mode" != computer || $# -ne 1 ]]; then printf '%s\n' '--check-computer must be used alone in computer mode.' >&2; exit 2; fi
-  check_only=true
+mode="${mode:-browser}"
+if [[ -n "$backend" && "$mode" != browser ]]; then
+  printf '%s\n' 'Browser deployment options require browser mode.' >&2; exit 2
 fi
+if [[ "$backend" == --managed-browser ]]; then managed_browser=true;
+elif [[ -n "$backend" ]]; then cdp_browser=true; fi
 if [[ "$mode" == "browser" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"browser","CUA_REPL_BROWSER_ENV":"codex-app","BROWSER_USE_AVAILABLE_BACKENDS":"chrome"}'; fi
   printf '%s\n' 'Browser mode: checks the selected backend before model requests. Search results depend on live page access.' >&2

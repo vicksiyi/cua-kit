@@ -312,3 +312,13 @@ MCP client. Navigation, clicks and typing are never replayed by this mechanism.
 The demo records `browser.preflight.retry` in its local debug log. A second
 failure still stops before model execution. This does not implement reconnection
 of a dead MCP process or recovery in the middle of a browser action.
+
+Browser deployment flags (`--cdp-browser`, `--cdp-endpoint`, `--managed-browser`)
+and surface/check flags can appear in either order before the prompt. Conflicting
+backends, incompatible surfaces and unknown leading flags fail before build or
+browser startup. For example, `--browser --cdp-browser 'prompt'` and
+`--cdp-browser --browser 'prompt'` both select only the CDP demo. The runner clears
+inherited `CUA_DEMO_START_CHROME` before selecting a deployment; only the default
+extension prompt path enables it. Use `--` to start a prompt beginning with `--`.
+This routing fix does not establish that a previously observed second browser
+window came from one process; overlapping independent runs remain possible.
