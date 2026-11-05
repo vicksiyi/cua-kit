@@ -118,3 +118,11 @@ restored TS clients launched and reused an isolated fixture app successfully.
 The original hidden GetSkyshot auto-launch behavior is still unknown; no policy
 was inferred from the absence of a visible JS startApp caller. Existing TS launch
 adapters have not yet been retired or replaced in production demo routing.
+
+
+Original enum-shaped element-action payloads now decode in Swift
+SkyElementAction.swift and execute through the shared native Target engine.
+setValue/selectText/secondary-action protocol guards pass with original and
+restored clients; UI effects remain unverified due to host permissions. No
+original native snapshot/ID allocator parity is claimed. Existing TS adapters
+remain pending retirement after equivalent production acceptance.

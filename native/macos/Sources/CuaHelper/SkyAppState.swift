@@ -7,6 +7,33 @@ import ApplicationServices
 @MainActor
 final class SkyAppState {
     private var targets: [String: Target] = [:]
+    func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) throws {
+        let evaluated: [String: Any]
+        do { evaluated = try policy.evaluate(reference) }
+        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
+        let identity = evaluated["target"] as! [String: Any]
+        let path = identity["appPath"] as! String
+        guard evaluated["decision"] as? String == "allowed" else {
+            targets[path]?.invalidateInputState()
+            throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
+        }
+        var params = try decodeSkyElementAction(action)
+        guard let target = targets[path], let snapshot = target.snapshot else {
+            throw SkyRPCFailure(code: -10011, message: "A fresh native app observation is required before input")
+        }
+        defer { target.invalidateInputState() }
+        guard target.app.bundleIdentifier == identity["bundleIdentifier"] as? String else {
+            throw SkyRPCFailure(code: -10010, message: "Application identity changed since observation")
+        }
+        guard Date().timeIntervalSince1970 * 1000 < deadline else {
+            throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before input")
+        }
+        params["snapshotId"] = snapshot
+        _ = try target.action(params)
+        guard Date().timeIntervalSince1970 * 1000 < deadline else {
+            throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")
+        }
+    }
     /// Explicit AppStart request only. State reads never implicitly launch apps.
     /// Response uses the original optional-skyshot MacWindowAppState envelope.
     func start(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {

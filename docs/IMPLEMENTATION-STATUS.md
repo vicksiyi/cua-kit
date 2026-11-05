@@ -5488,3 +5488,30 @@ Native error handling now distinguishes malformed JSON (-32700) from unexpected
 native errors (-10005), instead of labeling LaunchServices failures as invalid
 JSON. Failed state refresh after identity resolution invalidates only the resolved
 app's observation, and terminated app handles are pruned.
+
+
+## Native element action dispatch (2026-11-06)
+
+ComputerUseIPCAppPerformActionRequest now decodes the original client enum-shaped
+setValue, selectText and performSecondaryAction payloads in Swift. The native
+adapter maps elementID strings and text-selection fields to the shared Target AX
+implementation. Native policy is rechecked; execution requires the resolved app's
+current native snapshot and matching identity. Target.validateSnapshot rereads
+and compares the AX tree before input. A completed or failed attempted operation
+invalidates the snapshot; another action requires a fresh observation. A late
+reply reports potential execution rather than silently retrying.
+
+Four IPC tests pass with both original installed JS and restored TS clients,
+including all three action envelopes, missing-observation errors, policy denial
+and invalid selection mode. These cases verify protocol/guard behavior, not actual
+input. The opt-in test:native-skyshot gate now additionally sets fixture text,
+checks a second stale action is rejected, observes the actual new text, selects
+a two-UTF16-unit emoji, and checks focus. Running it currently fails its two cases
+at the permission precheck, before UI work. Actual input is therefore **unverified**.
+
+The native ID allocator, snapshot-expiry policy and missing-observation mapping
+to -10011 are independent implementation choices using the observed error/schema
+vocabulary; original native semantics are not proven. Click, keyboard, scroll,
+drag, paste and audio original-protocol dispatch remain unsupported. The existing
+native engines for those operations remain available for subsequent migration;
+no duplicate TS event implementation was introduced.

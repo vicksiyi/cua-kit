@@ -47,6 +47,13 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
    if(decision==='forbidden')assert.equal(policy.target.warningSubtitle,'Fixture rule');
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
+  for(const [method,args] of [
+   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],
+  ] as const){
+   await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
+   await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
+  }
+  await assert.rejects(client.selectText({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,text:'hello',selection:'invalid'}),(error:any)=>error.code===-32602);
   await assert.rejects(client.startApp('/nonexistent/core-start.app'),(error:any)=>error.code===-10010);
   await assert.rejects(client.startApp(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
   await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10010);
@@ -150,6 +157,16 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
    assert.match(state.skyshot.screenshot.url,/^data:image\/png;base64,/);
    const bytes=Buffer.from(state.skyshot.screenshot.url.split(',')[1],'base64');assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);assert.ok(bytes.length>100);
   }
+  const refresh=async()=>await client.getAppState({app,disableDiff:true});
+  const field=(state:any)=>{const line=state.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.ok(line,'Native field missing');return Number(/^\[(\d+)\]/.exec(line)![1]);};
+  const initial=await refresh();const elementIndex=field(initial);
+  await client.setValue({app,elementIndex,value:'native 🌍 selection'});
+  await assert.rejects(client.setValue({app,elementIndex,value:'stale'}),(error:any)=>error.code===-10011);
+  const changed=await refresh();assert.match(changed.skyshot.text,/native 🌍 selection/);
+  await client.selectText({app,elementIndex:field(changed),text:'🌍',selection:'text'});
+  const selected=await refresh();const selectedLine=selected.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(selectedLine,/"selectionLength":2/);
+  await client.performSecondaryAction({app,elementIndex:field(selected),action:'focus'});
+  const focused=await refresh();const focusedLine=focused.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(focusedLine,/"AXFocused":true/);
  }finally{(globalThis as any).nodeRepl=before;}
 });
 

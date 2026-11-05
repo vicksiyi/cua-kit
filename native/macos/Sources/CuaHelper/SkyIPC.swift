@@ -44,6 +44,14 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                     if let path = app.bundleURL?.path { value["appPath"] = path }
                     return value
                 }
+            case "ComputerUseIPCAppPerformActionRequest":
+                let payload = params["request"] as! [String: Any]
+                guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                      let action = payload["action"] as? [String: Any] else {
+                    throw rpcFailure(-32602, "App action requires app and action fields")
+                }
+                try appState.perform(app, action: action, policy: appPolicy, deadline: deadline.doubleValue)
+                result = NSNull()
             case "ComputerUseIPCAppStartRequest":
                 let payload = params["request"] as! [String: Any]
                 guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
