@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {spawn,execFileSync,spawnSync} from 'node:child_process';
 import {connect, type Socket} from 'node:net';
 import {once} from 'node:events';
-import {mkdtemp,realpath,access,rm,chmod,mkdir,writeFile,readdir,copyFile} from 'node:fs/promises';
+import {mkdtemp,realpath,access,rm,chmod,mkdir,writeFile,readdir,copyFile,readFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {MacComputerUseClient} from '../packages/sky/src/targets/mac/client';
@@ -96,11 +96,11 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
  const {Client}=await import('@modelcontextprotocol/sdk/client/index.js');
  const {StdioClientTransport}=await import('@modelcontextprotocol/sdk/client/stdio.js');
  const staged=await stageRuntimePackages([resolve('packages/sky'),resolve('packages/cua')]);t.after(()=>staged.dispose());
- const kernel=join(f.root,'kernel'),trusted=join(f.root,'trusted');await Promise.all([mkdir(kernel),mkdir(trusted)]);
- const worker=(isTrusted:boolean)=>({sandbox:{node:process.execPath,bootstrap:resolve('packages/runtime-supervisor/dist/sandbox-bootstrap.js'),addon:resolve('native/macos-sandbox/dist/sandbox.node'),entry:resolve('packages/node-repl/dist/'+(isTrusted?'trusted_worker.js':'kernel.js')),args:isTrusted?[trusted]:['--session-id','sky-ipc','--working-dir',kernel],directory:isTrusted?trusted:kernel,read_directories:[resolve('packages/node-repl'),resolve('node_modules'),staged.root],worker_environment:{NODE_REPL_TRUSTED_RPC_ENABLED:'1',NODE_REPL_TRUSTED_SERVICES:JSON.stringify({sky:'@core/sky/service'}),NODE_REPL_TRUSTED_CODE_PATHS:staged.root,NODE_REPL_NODE_MODULE_DIRS:staged.root,NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:'CUA_REPL_ENABLED_SURFACES',CUA_REPL_ENABLED_SURFACES:'computer'}}});
- const config=join(f.root,'config.toml'),requirements=join(f.root,'requirements.toml');await Promise.all([writeFile(config,''),writeFile(requirements,'')]);
- const spec=join(f.root,'runtime.json');await writeFile(spec,JSON.stringify({kernel:worker(false),trusted:worker(true),services:['sky'],pipe_paths:[],native_service:{helper,directory:root,app_policy:policyRules},config:{config,requirements,working_directories:[trusted],toml_files:{}}}),{mode:0o600});
- const transport=new StdioClientTransport({command:resolve('native/runtime-supervisor/dist/core-runtime-supervisor'),args:[spec],env:{HOME:f.root,TMPDIR:f.root},stderr:'pipe'});
+ const {prepareIndependentRuntime}=await import('../packages/agent-loop/src/independent-runtime');
+ const runtime=await prepareIndependentRuntime({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift',CORE_CUA_APP_POLICY:JSON.stringify(policyRules)},staged.root,'sky-ipc','rust');
+ t.after(()=>runtime.dispose());
+ const runtimeSpec=JSON.parse(await readFile(runtime.args[0],'utf8'));const nativeRoot=runtimeSpec.native_service.directory;
+ const transport=new StdioClientTransport({command:runtime.command,args:runtime.args,env:runtime.environment,stderr:'pipe'});
  const {ElicitRequestSchema}=await import('@modelcontextprotocol/sdk/types.js');
  const mcp=new Client({name:'native-owner-test',version:'1.0'},{capabilities:{elicitation:{form:{}}}});
  let approvalCount=0;let approvalAction:'accept'|'decline'='decline';
@@ -128,13 +128,13 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
   const accepted=await mcp.callTool({name:'js',arguments:{code:`await cua.getApp(${JSON.stringify(policyApp)});`}});
   assert.equal(accepted.isError,true);assert.match(JSON.stringify(accepted),/Application is not running/);assert.equal(approvalCount,2);
   const first=children();assert.equal(first.length,3,'Rust owns kernel, trusted worker and Swift service');
-  assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,1);
+  assert.equal((await readdir(nativeRoot)).filter(name=>name.startsWith('sky-')).length,1);
   const reset=await mcp.callTool({name:'js_reset',arguments:{}});assert.equal(Boolean(reset.isError),false);gone(first);
-  assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,0);
+  assert.equal((await readdir(nativeRoot)).filter(name=>name.startsWith('sky-')).length,0);
   await inventory();active=children();assert.equal(active.length,3);assert.ok(active.every(pid=>!first.includes(pid)));
  } finally {await mcp.close();}
  gone(active);
- assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,0,'Closing MCP removes the owned service socket directory');
+ assert.equal((await readdir(nativeRoot)).filter(name=>name.startsWith('sky-')).length,0,'Closing MCP removes the owned service socket directory');
 });
 
 for(const source of ['restored','installed'] as const) test(`live owned App skyshot through ${source} Sky client`,{skip:process.env.CUA_TEST_NATIVE_SKYSHOT!=='1',timeout:30000},async t=>{
@@ -249,4 +249,12 @@ for(const phase of ['accept','partial-header','partial-body'] as const)test(`nat
  const f=await fixture(t);
  if(phase!=='accept'){const socket=await f.open();socket.write(phase==='partial-header'?Buffer.from([1]):Buffer.from([10,0,0,0,123]));}
  f.child.kill('SIGTERM');const [code,signal]=await f.exited;assert.equal(code,0);assert.equal(signal,null);await assert.rejects(access(f.path));
+});
+
+for(const signal of ['SIGTERM','SIGINT'] as const)test(`native ${signal} cancels a proven backpressured socket writer`,{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:5000},async t=>{
+ const child=spawn(helper,['--socket-backpressure-fixture'],{stdio:['ignore','pipe','pipe']});
+ let stdout='',stderr='';child.stdout.on('data',data=>stdout+=data);child.stderr.on('data',data=>stderr+=data);
+ const exited=once(child,'exit');t.after(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');await exited;});
+ for(let n=0;!stdout.includes('socketBackpressureReady');n++){assert.ok(n<200&&child.exitCode===null,stderr||'No backpressure readiness');await new Promise(r=>setTimeout(r,10));}
+ child.kill(signal);const [code,bySignal]=await exited;assert.equal(code,0,stderr);assert.equal(bySignal,null);assert.match(stdout,/"socketBackpressureCancelled":true/);
 });

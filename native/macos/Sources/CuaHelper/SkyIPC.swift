@@ -171,3 +171,34 @@ func serveSkySocket(_ path: String) async throws {
         try writeAll(connection, prefix + response)
     }
 }
+
+// Integration fixture: saturate a private socketpair, then exercise the same
+// production writer while the receiving endpoint deliberately does not read.
+func runSocketBackpressureFixture() throws {
+    var pair: [Int32] = [0,0]
+    guard socketpair(AF_UNIX,SOCK_STREAM,0,&pair) == 0 else { throw fail("SELF_TEST_FAILED","Cannot create fixture socketpair") }
+    defer { for fd in pair { Darwin.close(fd) } }
+    let sender = pair[0]
+    var capacity: Int32 = 4096
+    guard setsockopt(sender,SOL_SOCKET,SO_SNDBUF,&capacity,socklen_t(MemoryLayout<Int32>.size)) == 0,
+          fcntl(sender,F_SETFL,fcntl(sender,F_GETFL) | O_NONBLOCK) == 0 else {
+        throw fail("SELF_TEST_FAILED","Cannot configure fixture socket")
+    }
+    let block = Data(repeating:65,count:4096)
+    var total = 0
+    while true {
+        let amount = block.withUnsafeBytes { Darwin.write(sender,$0.baseAddress!,block.count) }
+        if amount < 0 && [EAGAIN,EWOULDBLOCK].contains(errno) { break }
+        if amount < 0 && errno == EINTR { continue }
+        guard amount > 0, total < 1_048_576 else { throw fail("SELF_TEST_FAILED","Socket did not reach backpressure") }
+        total += amount
+    }
+    print("{\"socketBackpressureReady\":true}"); fflush(stdout)
+    do {
+        try writeAll(sender,block)
+        throw fail("SELF_TEST_FAILED","Backpressured write unexpectedly completed")
+    } catch is CancellationError {
+        print("{\"socketBackpressureCancelled\":true}"); fflush(stdout)
+        throw CancellationError()
+    }
+}

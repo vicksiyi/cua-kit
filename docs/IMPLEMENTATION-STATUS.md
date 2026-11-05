@@ -4,6 +4,8 @@
 
 Older dated sections below are development history, not the current completion
 claim. The default demo has not been switched to a fully independent App runtime.
+An opt-in Rust + Swift demo route now passes native inventory through a real
+DeepSeek-issued tool call; screenshot/input and mixed surfaces remain unaccepted.
 
 | Original Sky request area | Current independent native route | Actual evidence / remaining gap |
 | --- | --- | --- |
@@ -5690,3 +5692,49 @@ an uncooperative service before cleanup; that limitation is not hidden by the
 successful signal tests. Native App UI acceptance and production demo migration
 remain open. The timeout and signal strategy are independently implemented rather
 than recovered original supervisor/native function bodies.
+
+
+## Opt-in Rust/Swift demo runtime and write-backpressure acceptance (2026-11-06)
+
+The shared demo runtime factory now supports explicit computer surfaces through
+Rust + the Swift native service, keeping the original @core/sky/service. Set
+CORE_CUA_NATIVE_BACKEND=swift and CUA_RUNTIME_SUPERVISOR=rust. The factory owns
+private runtime configuration, forwards explicit native policy only to the native
+service, and keeps model credentials out of worker environments. Browser-only
+callers retain the compatibility export. Mixed browser/computer assembly exists,
+but the combined surface has not received full acceptance. The old TS native
+adapter and installed default have not been retired.
+
+A tested read-only entry (after build:reconstruction, build:native and
+build:rust-runtime) is:
+
+```bash
+CUA_RUNTIME_SUPERVISOR=rust CORE_CUA_NATIVE_BACKEND=swift \
+CUA_MCP_ENV='{"CUA_REPL_ENABLED_SURFACES":"computer"}' \
+node --env-file=.env --import tsx packages/agent-loop/src/restored-demo.ts --check-computer
+```
+
+For a real model loop, add CUA_MODEL_PROVIDER=deepseek and replace --check-computer
+with a prompt. One live DeepSeek run explicitly called js -> cua.listApps -> the
+original Sky client -> Rust native pipe -> Swift, returned a fresh timestamp/count,
+and produced a final answer. It used /nonexistent/vendor as the installed supervisor
+path to verify that executable was unnecessary. No app names/window contents were
+sent as tool output, and no application was started or operated. An earlier model
+run answered from the host preflight count; that alone was not counted as proof of
+a model-issued tool call. The model's extra prose on the second run inaccurately
+suggested cua was absent, despite successful use; tool evidence is authoritative.
+
+CORE_CUA_APP_POLICY is an explicit JSON bundle-ID rule map as documented above;
+empty defaults deny app operations but permit inventory. App operations still
+require original Sky elicitation and OS permissions. Computer-only mode ignores
+unrelated browser endpoints inherited from .env, correcting a real CLI failure.
+No .env or session logs are committed. The new route is opt-in and is not proof
+that arbitrary natural-language app operations, screenshot/input, or audio work.
+
+The native IPC acceptance now uses this production factory instead of a duplicate
+hand-written runtime spec. Eleven IPC/lifecycle cases pass, including two added
+real SIGTERM/SIGINT writer tests: a private socketpair is filled until EAGAIN,
+the production writer waits against the unread receiver, then cancellation must
+complete with exit code 0. The existing isolated Rust/CDP browser regression and
+AgentLoop TypeScript check also pass. The CLI --check-computer and the real
+DeepSeek loop exited successfully. Full UI acceptance and native parity remain open.

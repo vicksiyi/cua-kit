@@ -168,6 +168,11 @@ if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.cont
     if let data = try? JSONSerialization.data(withJSONObject: status, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text) }
     exit(AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() ? 0 : 2)
 }
+if CommandLine.arguments.contains("--socket-backpressure-fixture") {
+    do { try await runNativeService { try runSocketBackpressureFixture() }; exit(1) }
+    catch is CancellationError { exit(0) }
+    catch { fputs("Socket fixture failed: \(error)\n",stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--paste-termination-fixture") {
     do { try await runNativeService { try await runPasteTerminationFixture() }; exit(1) }
     catch is CancellationError { exit(0) }

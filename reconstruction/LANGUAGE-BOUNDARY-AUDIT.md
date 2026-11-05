@@ -169,3 +169,12 @@ Rust owns bounded service termination grace. Real subprocess signal tests verify
 named-pasteboard restoration and socket cleanup. No TS signal/clipboard cleanup
 layer was added. Cooperative cleanup is independently verified; original native
 shutdown semantics and forced-exit recovery remain unproven.
+
+
+The production demo factory can now select Rust + Swift with original Sky TS
+forwarding, bypassing the legacy TS native service adapter. Its actual inventory
+path was exercised through the real DeepSeek tool loop, and the native IPC test
+now uses the same factory. This is opt-in; existing TS adapters/exports have not
+been removed. Model-side app operation acceptance and per-file retirement audits
+remain required. Signal cancellation against a proven saturated native socket
+also has real subprocess evidence rather than only read-side tests.

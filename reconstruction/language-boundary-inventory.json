@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "1342360e39e2d7d3ad61113fa58fd7626437e8ed1b838a3eabbec7f6729cd559"
+      "sha256": "cea0a489eb2e30a3ca39e22b23a2e2652adc5dd156a2325818e25a41881cc047"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -124,7 +124,7 @@
     {
       "path": "packages/agent-loop/src/restored-demo-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "9f54d4044b0a4a31244bd9a1f61378aba65a935f7c32ba4daa94569174d3810f"
+      "sha256": "68dff802764fb41aa52ab05c79cd9b3e4b3bc5294ff3751b662168e0484aac2f"
     },
     {
       "path": "packages/agent-loop/src/restored-demo.ts",
@@ -3969,7 +3969,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "a54e41a2682054f9f6549e73d7fe9a08de90acf9caf9a03e6a202ccf518fddaa"
+      "sha256": "b3b846088e4e2a62e793e1aafe30eebc0e27728da359361823260231462e059e"
     },
     {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
@@ -3979,7 +3979,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "9c6819dd1e9b1ef4806c1ecf19f5ba09bbc25446125c85ee834a1b1eb85ec54f"
+      "sha256": "7a637b19e40d4a04aa4c220efb4d3d4fb5b571890ae5f46ae43969a5383caac0"
     },
     {
       "path": "native/macos-sandbox/build.rs",
