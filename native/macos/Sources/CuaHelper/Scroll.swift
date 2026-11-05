@@ -81,7 +81,14 @@ extension Target {
         let events = try scrollEvents(point:point,viewport:viewport,direction:params["direction"] as? String ?? "",pages:params["pages"] as? Double ?? 1)
         try validateSnapshot(params)
         defer { invalidateInputState() }
-        for event in events { event.postToPid(app.processIdentifier) }
+        for event in events {
+            try validateIdentity()
+            if let deadline = params["deadlineUnixMilliseconds"] as? Double,
+               Date().timeIntervalSince1970 * 1000 >= deadline {
+                throw fail("INVALID_ARGUMENT", "Scroll deadline expired; earlier wheel events may have been dispatched.")
+            }
+            event.postToPid(app.processIdentifier)
+        }
         return ["outcome":"dispatched","eventCount":events.count]
     }
 }

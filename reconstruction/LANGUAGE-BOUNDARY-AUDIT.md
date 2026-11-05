@@ -140,3 +140,9 @@ capture-identity engine. Original coordinate declarations identify app-window
 screenshot space; actual pixel-to-screen behavior still needs live acceptance.
 Numeric button/count/hold conversion is exercised with original/restored clients
 and native event construction, not treated as original native implementation proof.
+
+
+Scroll enum decoding now shares native pointer-target parsing and routes to the
+existing Swift viewport/event engine. No duplicate TS wheel generator was added.
+Page-distance policy remains explicitly independent; the actual NSScrollView
+acceptance is pending, despite passing envelope and pixel-delta construction tests.

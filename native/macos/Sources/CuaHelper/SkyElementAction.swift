@@ -7,22 +7,31 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
           let value = action[name] as? [String: Any] else {
         throw SkyRPCFailure(code: -32602, message: "Expected one Computer Use action")
     }
-    if name == "click" {
+    if name == "click" || name == "scroll" {
         func number(_ raw: Any?, _ label: String) throws -> Double {
             guard let n = raw as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID(), n.doubleValue.isFinite else {
-                throw SkyRPCFailure(code: -32602, message: "Click requires finite numeric \(label)")
+                throw SkyRPCFailure(code: -32602, message: "Pointer action requires finite numeric \(label)")
             }
             return n.doubleValue
         }
         guard let at = value["at"] as? [String: Any], at.count == 1 else {
-            throw SkyRPCFailure(code: -32602, message: "Click requires one element or coordinate target")
+            throw SkyRPCFailure(code: -32602, message: "Pointer action requires one element or coordinate target")
         }
-        var params: [String: Any] = ["operation": "click"]
+        var params: [String: Any] = ["operation": name]
         if let target = at["elementID"] as? [String: Any], let text = target["_0"] as? String,
            let id = Int(text), id > 0, String(id) == text { params["elementId"] = id }
         else if let target = at["coordinate"] as? [String: Any], let point = target["_0"] as? [Any], point.count == 2 {
             params["x"] = try number(point[0], "x"); params["y"] = try number(point[1], "y")
-        } else { throw SkyRPCFailure(code: -32602, message: "Invalid click target") }
+        } else { throw SkyRPCFailure(code: -32602, message: "Invalid pointer action target") }
+        if name == "scroll" {
+            guard let direction = value["direction"] as? String, ["up","down","left","right"].contains(direction) else {
+                throw SkyRPCFailure(code: -32602, message: "Invalid scroll direction")
+            }
+            let pages = try number(value["pages"], "pages")
+            guard pages > 0 else { throw SkyRPCFailure(code: -32602, message: "Scroll pages must be positive") }
+            params["direction"] = direction; params["pages"] = pages
+            return params
+        }
         let button = try number(value["mouseButton"], "mouseButton")
         guard [0.0,1.0,2.0].contains(button) else { throw SkyRPCFailure(code: -32602, message: "Unknown mouse button") }
         params["mouseButton"] = ["left","right","middle"][Int(button)]
@@ -88,6 +97,12 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
 }
 
 func runSkyActionChecks() throws {
+    let scroll = try decodeSkyElementAction(["scroll": ["at": ["elementID": ["_0": "3"]], "direction": "right", "pages": 0.5]])
+    guard scroll["elementId"] as? Int == 3, scroll["pages"] as? Double == 0.5 else { throw fail("SELF_TEST_FAILED", "Scroll target/page mapping differs") }
+    let wheel = try scrollEvents(point:CGPoint(x:10,y:20),viewport:CGRect(x:0,y:0,width:200,height:100),direction:scroll["direction"] as! String,pages:scroll["pages"] as! Double)
+    guard wheel.reduce(Int64(0),{$0 + $1.getIntegerValueField(.scrollWheelEventPointDeltaAxis2)}) == -100,
+          wheel.allSatisfy({$0.getIntegerValueField(.scrollWheelEventPointDeltaAxis1) == 0}) else { throw fail("SELF_TEST_FAILED", "Scroll mapping used wrong axis/distance") }
+
     let click = try decodeSkyElementAction(["click": ["at": ["coordinate": ["_0": [12.5,24.0]]], "mouseButton": 2, "clickCount": 2, "duration": 0.125, "key": "Shift"]])
     guard click["x"] as? Double == 12.5, click["y"] as? Double == 24, click["mouseButton"] as? String == "middle", click["clickCount"] as? Int == 2, click["duration"] as? Double == 0.125 else { throw fail("SELF_TEST_FAILED", "Click payload mapping differs") }
     let events = try mouseClickEvents(point: CGPoint(x: click["x"] as! Double,y:click["y"] as! Double),button:click["mouseButton"] as! String,count:click["clickCount"] as! Int,flags:mouseModifiers(click["key"] as? String))

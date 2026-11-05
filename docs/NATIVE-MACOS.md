@@ -371,3 +371,27 @@ The opt-in UI gate now clicks the fixture Save button and checks its visible sav
 text after keyboard entry. That gate remains unaccepted; neither synthetic events
 nor protocol guards prove real coordinate accuracy or real UI click effects.
 Scroll/drag/paste/audio and production adapter retirement remain outstanding.
+
+
+## Native scroll dispatch (2026-11-06)
+
+The original scroll action's at.elementID/coordinate, direction and pages now
+share pointer-target decoding with click and dispatch to Swift Target.scrollInput.
+Both original and restored clients pass normalized direction/fractional page and
+coordinate-envelope checks. Numeric booleans and nonpositive pages are rejected;
+policy denial remains enforced. The native loop checks identity and deadline
+before each wheel event and invalidates the snapshot after attempted input.
+
+The existing viewport selection and page-distance engine is reused. One page is
+an observed viewport extent in this independent implementation; the original
+hidden native distance/acceleration policy is **not** known. A native self-test
+passes a decoded half-page right scroll into real CGEvent construction and checks
+pixel-delta axis/distance (point-delta fields, not line-delta fields). Swift build,
+the action mapping/input self-tests, and all four IPC cases pass.
+
+The owned live fixture now runs its scroll-area layout, and the skyshot gate asks
+for a downward half-page scroll then checks the fixture's actual NSScrollView
+bounds-change event. That UI case has not passed acceptance; it remains gated with
+the screenshot/input tests that previously failed host permission prerequisites.
+Protocol/self-test results are not proof of on-screen scrolling or native source
+parity. Drag/paste/audio and production integration remain outstanding.

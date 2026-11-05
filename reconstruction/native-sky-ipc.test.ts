@@ -48,11 +48,12 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
   for(const [method,args] of [
-   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],
+   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],['scroll',{direction:' R ',pages:0.5}],
   ] as const){
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
   }
+  await assert.rejects(client.scroll({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,direction:'down',pages:1}),(error:any)=>error.code===-10011);
   await assert.rejects(client.click({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,mouseButton:'right'}),(error:any)=>error.code===-10011);
   await assert.rejects(client.click({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,clickCount:1.5}),(error:any)=>error.code===-32602);
   await assert.rejects(client.pressKey({app:join(f.root,'com.core.fixture.allowed.app'),key:'a',duration:-1}),(error:any)=>error.code===-32602);
@@ -78,6 +79,10 @@ test('Swift IPC enforces negotiation, deadlines, frame limits and unknown-operat
  const malformed={...request,id:6,params:{...request.params,requestType:'ComputerUseIPCAppGetSkyshotRequest',request:{app:'fixture',disableDiff:1}}};
  assert.equal((await send(malformed)).error.code,-32602);
  assert.equal((await send({...malformed,id:7,params:{...malformed.params,requestType:'ComputerUseIPCAppStartRequest',request:{app:''}}})).error.code,-32602);
+ const scrollApp=await appFixture(f.root,'com.core.fixture.allowed');
+ // Default-denied fixture must reject actions even when their target is syntactically valid.
+ const scrollRequest={...request,id:8,params:{...request.params,requestType:'ComputerUseIPCAppPerformActionRequest',request:{app:scrollApp,action:{scroll:{at:{elementID:{_0:'1'}},direction:'down',pages:1}}}}};
+ assert.equal((await send(scrollRequest)).error.code,-10006);
  const closed=once(socket,'close');const oversized=Buffer.alloc(4);oversized.writeUInt32LE(8388609);socket.write(oversized);await closed;
  const [code]=await f.exited;assert.equal(code,1);
 });
@@ -144,7 +149,7 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
  const executable=join(app,'Contents','MacOS','CuaFixture');
  await copyFile(resolve('native/macos/.build/debug/CuaFixture'),executable);await chmod(executable,0o700);
  await writeFile(join(app,'Contents','Info.plist'),`<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${identifier}</string><key>CFBundleExecutable</key><string>CuaFixture</string><key>CFBundleName</key><string>Skyshot Fixture</string><key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
- const child=spawn(executable,[],{stdio:['ignore','pipe','pipe']});child.stderr.resume();
+ const child=spawn(executable,['--acceptance'],{stdio:['ignore','pipe','pipe']});child.stderr.resume();
  const exited=once(child,'exit');t.after(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGTERM');await exited;});
  let output='';child.stdout.on('data',chunk=>output+=chunk);
  for(let attempt=0;!output.includes('READY');attempt++){assert.ok(attempt<200&&child.exitCode===null,'Owned fixture did not become ready');await new Promise(r=>setTimeout(r,25));}
@@ -179,6 +184,11 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
   await client.click({app,elementIndex:Number(/^\[(\d+)\]/.exec(buttonLine)![1])});
   let saved:any;for(let attempt=0;attempt<20;attempt++){saved=await refresh();if(saved.skyshot.text.includes('Saved keyboard 🌍 result'))break;await new Promise(r=>setTimeout(r,25));}
   assert.match(saved.skyshot.text,/Saved keyboard 🌍 result/);
+  const scrollLine=saved.skyshot.text.split('\n').find((line:string)=>line.includes('AXScrollArea')&&line.includes('Fixture scroll area'));assert.ok(scrollLine);
+  const offsets=()=>output.split('\n').flatMap(line=>{try{const event=JSON.parse(line);return event.event==='scroll'?[event.offsetY]:[];}catch{return [];}});
+  const beforeScroll=offsets().at(-1)??0;
+  await client.scroll({app,elementIndex:Number(/^\[(\d+)\]/.exec(scrollLine)![1]),direction:'down',pages:0.5});
+  for(let attempt=0;!offsets().some(value=>value>beforeScroll);attempt++){assert.ok(attempt<100,'Owned NSScrollView did not scroll');await new Promise(r=>setTimeout(r,25));}
  }finally{(globalThis as any).nodeRepl=before;}
 });
 
