@@ -1,24 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { once } from "node:events";
-import { createInterface } from "node:readline";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
 import { WorkerSession, type WorkerPort, type Message } from "../packages/runtime-supervisor/src/session";
-function port(entry:string,args:string[],cwd:string,env:Record<string,string>):WorkerPort {
- // This test-only launcher denies networking; it is not the production isolation profile.
- const child=spawn("/usr/bin/sandbox-exec",["-p","(version 1)(allow default)(deny network*)",process.execPath,"--experimental-vm-modules",entry,...args],{cwd,env,stdio:["pipe","pipe","pipe"]});
- const listeners=new Set<(m:Message)=>void>(), exits=new Set<()=>void>();
- child.stderr.resume();child.stdin.on("error",()=>{});
- const lines=createInterface({input:child.stdout});
- lines.on("line",line=>{for(const listener of listeners)listener(JSON.parse(line));});
- let ended=false;child.on("exit",()=>{ended=true;for(const listener of exits)listener();});
- child.on("error",()=>{ended=true;for(const listener of exits)listener();});
- return {send:m=>{if(ended)throw Error("Worker ended");child.stdin.write(JSON.stringify(m)+"\n");},onMessage:f=>{listeners.add(f);return()=>listeners.delete(f);},onExit:f=>{exits.add(f);return()=>exits.delete(f);},close:async()=>{
-  if(ended)return;const exit=once(child,"close");child.kill();const timer=setTimeout(()=>child.kill("SIGKILL"),1000);try{await exit;}finally{clearTimeout(timer);lines.close();}
- }};
+import { ProcessWorkerPort } from "../packages/runtime-supervisor/src/process-port";
+function port(entry:string,args:string[],cwd:string,env:Record<string,string>):Promise<WorkerPort> {
+ // Network-deny remains test-only; the transport is now the package implementation.
+ return ProcessWorkerPort.start({command:"/usr/bin/sandbox-exec",args:["-p","(version 1)(allow default)(deny network*)",process.execPath,"--experimental-vm-modules",entry,...args],cwd,env,terminateGraceMs:20});
 }
 test("independent supervisor drives actual restored workers, RPC, approval, reset and timeout",{skip:process.platform!=="darwin",timeout:20000},async()=>{
  const root=await mkdtemp(join(tmpdir(),"core-supervisor-"));
@@ -27,7 +16,8 @@ test("independent supervisor drives actual restored workers, RPC, approval, rese
  let launches=0,decision="decline";const requests:Message[]=[];
  const session=new WorkerSession({services:["fixture"],launch:async()=>{
   launches++;const env={NODE_REPL_TRUSTED_RPC_ENABLED:"1",NODE_REPL_TRUSTED_SERVICES:JSON.stringify({fixture:join(root,"service.mjs")}),NODE_REPL_TRUSTED_CODE_PATHS:root,HOME:root,TMPDIR:root};
-  return {kernel:port(resolve("packages/node-repl/dist/kernel.js"),["--session-id","fixture","--working-dir",root],root,env),trusted:port(resolve("packages/node-repl/dist/trusted_worker.js"),[root],root,env)};
+  const kernel=await port(resolve("packages/node-repl/dist/kernel.js"),["--session-id","fixture","--working-dir",root],root,env);
+  try{return {kernel,trusted:await port(resolve("packages/node-repl/dist/trusted_worker.js"),[root],root,env)};}catch(error){await kernel.close();throw error;}
  },hostRequest:async(message,context)=>{
   assert.equal(message.type,"elicit");requests.push({...message,hostMeta:context.requestMeta});return {ok:true,action:decision,content:{}};
  }});
