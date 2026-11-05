@@ -39,6 +39,7 @@ final class SkyAppState {
             _ = try await target.keyboardInput(params)
         } else if params["operation"] as? String == "click" { _ = try await target.mouseInput(params) }
         else if params["operation"] as? String == "scroll" { _ = try await target.scrollInput(params) }
+        else if params["operation"] as? String == "drag" { _ = try await target.dragInput(params) }
         else { _ = try target.action(params) }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")

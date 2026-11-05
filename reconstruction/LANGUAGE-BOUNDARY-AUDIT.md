@@ -146,3 +146,9 @@ Scroll enum decoding now shares native pointer-target parsing and routes to the
 existing Swift viewport/event engine. No duplicate TS wheel generator was added.
 Page-distance policy remains explicitly independent; the actual NSScrollView
 acceptance is pending, despite passing envelope and pixel-delta construction tests.
+
+
+Original drag endpoint arrays now decode in Swift and route through the existing
+native capture/drag engine. Mapping and interruption-release self-tests pass;
+actual gesture-pad acceptance remains pending. Interpolation and pacing are still
+explicit independent native choices, not original source bodies recovered into TS.

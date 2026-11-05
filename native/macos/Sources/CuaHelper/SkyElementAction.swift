@@ -7,6 +7,21 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
           let value = action[name] as? [String: Any] else {
         throw SkyRPCFailure(code: -32602, message: "Expected one Computer Use action")
     }
+    if name == "drag" {
+        func point(_ key: String) throws -> [Double] {
+            guard let pair = value[key] as? [Any], pair.count == 2 else {
+                throw SkyRPCFailure(code: -32602, message: "Drag requires two-coordinate \(key)")
+            }
+            return try pair.map { raw in
+                guard let n = raw as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID(), n.doubleValue.isFinite else {
+                    throw SkyRPCFailure(code: -32602, message: "Drag coordinates must be finite numbers")
+                }
+                return n.doubleValue
+            }
+        }
+        let from = try point("from"), to = try point("to")
+        return ["operation":"drag", "fromX":from[0], "fromY":from[1], "toX":to[0], "toY":to[1]]
+    }
     if name == "click" || name == "scroll" {
         func number(_ raw: Any?, _ label: String) throws -> Double {
             guard let n = raw as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID(), n.doubleValue.isFinite else {
@@ -97,6 +112,14 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
 }
 
 func runSkyActionChecks() throws {
+    let drag = try decodeSkyElementAction(["drag":["from":[10.5,20.0],"to":[100.0,200.5]]])
+    let path = try dragEvents(from:CGPoint(x:drag["fromX"] as! Double,y:drag["fromY"] as! Double),to:CGPoint(x:drag["toX"] as! Double,y:drag["toY"] as! Double))
+    guard path.down.location == CGPoint(x:10.5,y:20), path.up.location == CGPoint(x:100,y:200.5) else { throw fail("SELF_TEST_FAILED", "Drag endpoint mapping differs") }
+    for invalid: [Any] in [[true,1],[1,"2"],[1],[1,2,3]] {
+        do { _ = try decodeSkyElementAction(["drag":["from":invalid,"to":[1,2]]]); throw fail("SELF_TEST_FAILED", "Invalid drag target accepted") }
+        catch is SkyRPCFailure {}
+    }
+
     let scroll = try decodeSkyElementAction(["scroll": ["at": ["elementID": ["_0": "3"]], "direction": "right", "pages": 0.5]])
     guard scroll["elementId"] as? Int == 3, scroll["pages"] as? Double == 0.5 else { throw fail("SELF_TEST_FAILED", "Scroll target/page mapping differs") }
     let wheel = try scrollEvents(point:CGPoint(x:10,y:20),viewport:CGRect(x:0,y:0,width:200,height:100),direction:scroll["direction"] as! String,pages:scroll["pages"] as! Double)

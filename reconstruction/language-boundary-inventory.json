@@ -3879,7 +3879,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/Drag.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "43bde9168b2410a943fad1abb5f2c3d5d1c96e8dd09bec33218dbcaf1d0a27e4"
+      "sha256": "f8ad5b1f98a89be886757d6c4c2896c9b0cc9d09818418f3b635a4d2f776f277"
     },
     {
       "path": "native/macos/Sources/CuaHelper/DragSelfTest.swift",
@@ -3949,12 +3949,12 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyAppState.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "cffad998198a350cfd067adc9a7b0b9db8c00d4534c55db5330dab028133801f"
+      "sha256": "3f5498ed3c8cabf735be181a4b400636fef6e53f363ee14ced5c941a930ee610"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyElementAction.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "f28ad999cb783da63ec6b979c52b606e4477ed3e1789d1a96b42ee24204f139f"
+      "sha256": "7fa4eac685fae99fdb3aab16eab29437db17ef3d1cef2f4770a668eba93da7d2"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",

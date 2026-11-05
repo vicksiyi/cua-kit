@@ -62,7 +62,18 @@ extension Target {
         let events = try dragEvents(from:from,to:to)
         try validateSnapshot(params)
         defer { invalidateInputState() }
-        try await dispatchDrag(events,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{try await Task.sleep(nanoseconds:10_000_000)})
+        func checkDeadline() throws {
+            if let deadline = params["deadlineUnixMilliseconds"] as? Double,
+               Date().timeIntervalSince1970 * 1000 >= deadline {
+                throw fail("INVALID_ARGUMENT", "Drag request deadline expired.")
+            }
+        }
+        try checkDeadline()
+        try await dispatchDrag(events,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{
+            try checkDeadline()
+            try await Task.sleep(nanoseconds:10_000_000)
+            try checkDeadline()
+        })
         return ["outcome":"dispatched","eventCount":events.moves.count+2]
     }
 }

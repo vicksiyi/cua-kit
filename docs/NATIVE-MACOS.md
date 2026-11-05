@@ -395,3 +395,24 @@ bounds-change event. That UI case has not passed acceptance; it remains gated wi
 the screenshot/input tests that previously failed host permission prerequisites.
 Protocol/self-test results are not proof of on-screen scrolling or native source
 parity. Drag/paste/audio and production integration remain outstanding.
+
+
+## Native drag dispatch (2026-11-06)
+
+The original Drag.d.ts identifies both endpoints as app-window screenshot
+coordinates. The original client emits drag.from/to arrays; Swift now validates
+exactly two finite non-boolean coordinates per endpoint and maps them to the
+existing Target.dragInput engine. Both endpoints are checked against the current
+capture before mouse-down. The engine retains captured-window and snapshot checks,
+PID identity checks and release at the last dispatched position on cooperative
+interruption. Deadline checks happen before mouse-down and around each interpolation
+wait; cleanup still uses identity-only validation so expiry does not suppress release.
+
+Swift build, native payload mapping and drag/interrupted-release self-tests pass,
+as do four IPC cases including both original and restored client drag envelopes.
+The expanded owned live fixture gate computes points on its fixed gesture-pad
+layout from PNG dimensions and waits for actual pad-up with drag movements. This
+UI case has not passed acceptance and is not counted as verified coordinate input.
+The existing 20-step interpolation/10ms pacing remains independently authored,
+not recovered original native timing. Forced process termination cannot guarantee
+cooperative release. Paste/audio and production demo migration remain open.

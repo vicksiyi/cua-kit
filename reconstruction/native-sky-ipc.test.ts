@@ -48,7 +48,7 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
   for(const [method,args] of [
-   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],['scroll',{direction:' R ',pages:0.5}],
+   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],['scroll',{direction:' R ',pages:0.5}],['drag',{fromX:1.5,fromY:2,toX:30,toY:40.5}],
   ] as const){
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
@@ -189,6 +189,14 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
   const beforeScroll=offsets().at(-1)??0;
   await client.scroll({app,elementIndex:Number(/^\[(\d+)\]/.exec(scrollLine)![1]),direction:'down',pages:0.5});
   for(let attempt=0;!offsets().some(value=>value>beforeScroll);attempt++){assert.ok(attempt<100,'Owned NSScrollView did not scroll');await new Promise(r=>setTimeout(r,25));}
+  const dragState=await refresh();
+  const png=Buffer.from(dragState.skyshot.screenshot.url.split(',')[1],'base64');
+  // CuaFixture acceptance layout: 600-point content width; pad center is 350 points above bottom.
+  const scale=png.readUInt32BE(16)/600, padY=png.readUInt32BE(20)-350*scale;
+  await client.drag({app,fromX:50*scale,fromY:padY,toX:150*scale,toY:padY});
+  const dragFinished=()=>output.split('\n').some(line=>{try{const event=JSON.parse(line);return event.event==='pad-up'&&event.moves>0;}catch{return false;}});
+  for(let attempt=0;!dragFinished();attempt++){assert.ok(attempt<100,'Owned gesture pad did not receive drag and release');await new Promise(r=>setTimeout(r,25));}
+
  }finally{(globalThis as any).nodeRepl=before;}
 });
 
