@@ -273,3 +273,26 @@ integration cases pass. Invalid policy/argument rejection and actual outside-fil
 spawn and network denial were exercised with the Rust-produced binary. These are
 local controlled fixtures. The loader bootstrap remains TS; production browser
 composition and original policy/initialization-order fidelity remain outstanding.
+
+## Rust supervisor browser entry (2026-11-06)
+
+Build the native runtime with `npm run build:rust-runtime`, then select it with
+`CUA_RUNTIME_SUPERVISOR=rust`. The existing default remains installed; the
+`independent` option still selects the transitional TypeScript supervisor for
+comparison. Rust mode writes a private explicit runtime spec and launches the
+built native executable, preserving the same restored JS workers/package staging,
+configured endpoints, host callbacks and Rust-owned sandbox policy. Runtime
+assembly is still caller-side TS; this is not a claim of recovered native source.
+
+The isolated real Chromium fixture now supports `CUA_TEST_RUST_RUNTIME=1`.
+The Rust path passes fill/click/AX-read/screenshot with independently checked
+server submission. With `CUA_LIVE_DEEPSEEK_TEST=1`, actual DeepSeek also passes the
+same randomized task in five model decisions with zero tool errors and an image
+result. The actual CLI `--cdp-browser --check-browser` succeeds with Rust selected
+and an intentionally nonexistent installed-supervisor path. Agent-loop typecheck
+passes. No daily Chrome, login profile or real desktop app was manipulated.
+
+This verifies the controlled CDP deployment, not original Codex fallback policy.
+Original-style extension and native App acceptance, source parity, production
+credential composition, complete language audit and retirement of old TS native
+implementations remain outstanding. Default selection is not switched yet.

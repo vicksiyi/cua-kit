@@ -32,7 +32,7 @@ for (const key of [
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
 const supervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
-if (!["installed", "independent"].includes(supervisor)) throw Error("CUA_RUNTIME_SUPERVISOR must be installed or independent");
+if (!["installed", "independent", "rust"].includes(supervisor)) throw Error("CUA_RUNTIME_SUPERVISOR must be installed, independent or rust");
 if (supervisor === "installed") {
   if (!env.CUA_NATIVE_SUPERVISOR_PATH)
     throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
@@ -87,14 +87,14 @@ try {
   ]
     .filter(Boolean)
     .join(delimiter);
-  if (supervisor === "independent") {
+  if (supervisor === "independent" || supervisor === "rust") {
     const turn = JSON.parse(process.env.CUA_MCP_TURN_EVENT ?? "{}");
-    independent = await prepareIndependentBrowserRuntime(env, runtime.root, turn.session_id);
+    independent = await prepareIndependentBrowserRuntime(env, runtime.root, turn.session_id, supervisor === "rust" ? "rust" : "typescript");
     process.env.CUA_MCP_COMMAND = independent.command;
     process.env.CUA_MCP_ARGS = JSON.stringify(independent.args);
     process.env.CUA_MCP_ENV = JSON.stringify(independent.environment);
     process.env.CUA_MCP_BOOTSTRAP = "core-cua";
-    console.error("Independent sandboxed runtime supervisor selected (browser surface; no installed supervisor).");
+    console.error(`${supervisor === "rust" ? "Rust" : "TypeScript"} independent sandboxed runtime supervisor selected (browser surface; no installed supervisor).`);
   } else {
     delete process.env.CUA_MCP_BOOTSTRAP;
     process.env.CUA_MCP_ENV = JSON.stringify(env);

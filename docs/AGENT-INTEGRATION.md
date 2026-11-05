@@ -107,3 +107,25 @@ CUA_TEST_MACOS_SANDBOX=1 CUA_LIVE_DEEPSEEK_TEST=1 node --import tsx --test recon
 日志留在本地 `artifacts/debug/`，凭证脱敏、图片不写入 base64，文件和 `.env`
 均被 Git 忽略。日志可能包含页面内容，不自动上传。替换 Agent 时仍需自行制定
 上下文/图片预算、结果验收和人工确认界面。
+
+
+## 选择 Rust supervisor（浏览器实验入口）
+
+```sh
+npm run build:rust-runtime
+CUA_RUNTIME_SUPERVISOR=rust npm run demo:deepseek -- --cdp-browser --check-browser
+CUA_RUNTIME_SUPERVISOR=rust npm run demo:deepseek -- --cdp-browser '打开 https://example.com 并概括页面'
+```
+
+本地 `.env` 继续提供 DeepSeek 凭证。Rust 选项绕过安装包 supervisor；未设置时默认
+仍为 installed。CDP 模式启动独立浏览器，不共享日常 Chrome 登录态，也不是原厂
+缺扩展时的自动回退方案。来源授权仍通过已有确认流程处理。
+
+受控 Rust + DeepSeek 端到端验收：
+
+```sh
+CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 CUA_LIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/runtime-cdp-sandbox.test.ts
+```
+
+此测试使用隔离 Chromium 和本地随机表单，验证输入、提交、结果及截图。本次通过
+为 5 轮、0 工具错误。任意外部网站、日常 Chrome 扩展和原生 App 尚未由此验收。

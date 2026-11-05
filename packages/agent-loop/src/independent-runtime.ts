@@ -4,7 +4,7 @@ import {dirname,join,delimiter} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import type {SandboxedRuntimeOptions} from '@core/runtime-supervisor/sandbox-runtime';
 
-export async function prepareIndependentBrowserRuntime(env: Record<string,string>, stagedRoot: string, sessionId: string) {
+export async function prepareIndependentBrowserRuntime(env: Record<string,string>, stagedRoot: string, sessionId: string, implementation: "typescript" | "rust" = "typescript") {
   if (process.platform !== 'darwin') throw Error('Independent sandbox demo currently requires macOS');
   if (typeof sessionId !== 'string' || !/^[A-Za-z0-9_-]+$/.test(sessionId)) throw Error('Invalid independent runtime session ID');
   if (env.CUA_REPL_ENABLED_SURFACES !== 'browser') throw Error('Independent demo currently supports the browser surface only');
@@ -51,6 +51,14 @@ export async function prepareIndependentBrowserRuntime(env: Record<string,string
     const options:SandboxedRuntimeOptions={kernel:worker(false),trusted:worker(true),services:['browser'],pipePaths:pipes,
       writablePreferencePaths:['browser/config.toml',sessionPreference],
       config:{configFile,requirementsFile,workingDirectories:[trustedDir],tomlFiles:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}};
+    if (implementation === 'rust') {
+      const command=join(project,'native/runtime-supervisor/dist/core-runtime-supervisor');
+      await access(command).catch(()=>{throw Error('Build the Rust runtime first: npm run build:rust-runtime');});
+      const rustWorker=(value:ReturnType<typeof worker>)=>({sandbox:{node:value.node,bootstrap:value.bootstrap,addon:value.addon,entry:value.entry,args:value.args,directory:value.directory,read_directories:value.readDirectories,worker_environment:value.workerEnvironment}});
+      const spec=join(root,'rust-runtime.json');
+      await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:options.services,pipe_paths:pipes,writable_paths:options.writablePreferencePaths,config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:options.config.tomlFiles}}),{mode:0o600});
+      return {command,args:[spec],environment:{HOME:root,TMPDIR:root,CUA_REPL_ENABLED_SURFACES:'browser',BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'},dispose:()=>rm(root,{recursive:true,force:true})};
+    }
     const entry=join(codeDir,'stdio.mjs');
     await writeFile(entry,`import {serveSandboxedStdio} from ${JSON.stringify(pathToFileURL(join(supervisor,'sandbox-runtime.js')).href)};const server=await serveSandboxedStdio(${JSON.stringify(options)});await server.closed;`,{mode:0o600});
     return {command:process.execPath,args:[entry],environment:{HOME:root,TMPDIR:root,CUA_REPL_ENABLED_SURFACES:'browser',BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'},dispose:()=>rm(root,{recursive:true,force:true})};

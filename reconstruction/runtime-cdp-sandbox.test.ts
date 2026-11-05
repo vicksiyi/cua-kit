@@ -1,3 +1,4 @@
+import { prepareIndependentBrowserRuntime } from "../packages/agent-loop/src/independent-runtime";
 import { randomUUID } from "node:crypto";
 import { loadEnvFile } from "node:process";
 import { AgentLoop } from "../packages/agent-loop/src/loop";
@@ -21,6 +22,7 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   skip: process.platform !== "darwin" || process.env.CUA_TEST_MACOS_SANDBOX !== "1",
   timeout: 120000,
 }, async () => {
+  const rustRuntime = process.env.CUA_TEST_RUST_RUNTIME === "1";
   const liveModel = process.env.CUA_LIVE_DEEPSEEK_TEST === "1";
   const query = `independent-query-${randomUUID()}`;
   const marker = `observed-${randomUUID()}`;
@@ -41,6 +43,7 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   let host: Awaited<ReturnType<typeof startCdpHost>> | undefined;
   let staged: Awaited<ReturnType<typeof stageRuntimePackages>> | undefined;
   let turn: NodeReplTurnClient | undefined;
+  let rust: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
   try {
     const kernelDir = join(root, "kernel"), trustedDir = join(root, "trusted"), codeDir = join(root, "code");
     await Promise.all([mkdir(kernelDir), mkdir(trustedDir), mkdir(codeDir)]);
@@ -90,7 +93,8 @@ test("independent sandboxed supervisor executes real browser input, click, read 
     const entry = join(codeDir, "stdio.mjs");
     await writeFile(entry, `import {serveSandboxedStdio} from ${JSON.stringify(pathToFileURL(resolve("packages/runtime-supervisor/dist/sandbox-runtime.js")).href)};const server=await serveSandboxedStdio(${JSON.stringify(options)});await server.closed;`);
     const metadata = { session_id: "independent-browser", turn_id: "one" };
-    const client = await McpToolClient.connect({command:process.execPath,args:[entry],cwd:root,env:{HOME:root,TMPDIR:root},stderr:"inherit"}, {
+    if(rustRuntime) rust=await prepareIndependentBrowserRuntime({CUA_REPL_ENABLED_SURFACES:'browser',CORE_CUA_ENDPOINT_FILES:JSON.stringify([endpointFile]),BROWSER_USE_BACKEND_PATHS:host.endpoint.socketPath,BROWSER_USE_AVAILABLE_BACKENDS:'cdp'},staged.root,'independent-browser','rust');
+    const client = await McpToolClient.connect(rust ? {command:rust.command,args:rust.args,cwd:root,env:rust.environment,stderr:'inherit'} : {command:process.execPath,args:[entry],cwd:root,env:{HOME:root,TMPDIR:root},stderr:"inherit"}, {
       requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
       elicit: async params => params.mode !== "url" && params._meta?.tool_name === "access_browser_origin" && params._meta?.origin === origin
         ? { action: "accept", content: {} } : { action: "decline" },
@@ -136,6 +140,7 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   } finally {
     try { await turn?.endTurn(); } finally {
       await turn?.close();
+      await rust?.dispose();
       await host?.close();
       await staged?.dispose();
       await new Promise<void>(resolve => server.close(() => resolve()));

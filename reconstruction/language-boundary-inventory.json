@@ -1,7 +1,7 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 22,
+    "build-or-deployment-script-review": 23,
     "caller-or-deployment-code-review-for-native-responsibility": 37,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
@@ -68,7 +68,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "4f7e4d8350cbd770fbd16e0ea5402fde4adcb5dbd3923eab318e91cedd8d82ad"
+      "sha256": "1342360e39e2d7d3ad61113fa58fd7626437e8ed1b838a3eabbec7f6729cd559"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -118,7 +118,7 @@
     {
       "path": "packages/agent-loop/src/restored-demo-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "8e67f51931d9ef2939847a8530302d7d3dc9fb06507fd25fa7c87181df789bf1"
+      "sha256": "9f54d4044b0a4a31244bd9a1f61378aba65a935f7c32ba4daa94569174d3810f"
     },
     {
       "path": "packages/agent-loop/src/restored-demo.ts",
@@ -4079,6 +4079,11 @@
       "path": "scripts/build-reconstruction.mjs",
       "category": "build-or-deployment-script-review",
       "sha256": "6c5ac623a74d5f05c6ddee417e12710077c95dc178a54258648f88646e8d849d"
+    },
+    {
+      "path": "scripts/build-rust-runtime.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "297fd45a3fce6b284727bc802f2aaccf96b69bc35a744f206a250429827f947d"
     },
     {
       "path": "scripts/extract-browser-service-segments.mjs",
