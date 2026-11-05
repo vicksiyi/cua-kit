@@ -38,6 +38,11 @@
       "types": "./src/config-host.ts",
       "import": "./dist/config-host.js",
       "default": "./dist/config-host.js"
+    },
+    "./sandbox-runtime": {
+      "types": "./src/sandbox-runtime.ts",
+      "import": "./dist/sandbox-runtime.js",
+      "default": "./dist/sandbox-runtime.js"
     }
   },
   "dependencies": {

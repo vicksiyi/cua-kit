@@ -1,14 +1,16 @@
-import { createReadonlyConfigHost } from "../packages/runtime-supervisor/src/config-host";
+import { Client } from "@modelcontextprotocol/sdk/client";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { pathToFileURL } from "node:url";
+import { createSandboxedSessionOptions } from "../packages/runtime-supervisor/src/sandbox-runtime";
 import { PassThrough } from "node:stream";
 import { dirname } from "node:path";
-import { UnixNativePipeHost } from "../packages/runtime-supervisor/src/native-pipe-host";
 import { startNativeHost } from "../packages/native-host/src/server";
 import { NativePipeFrameDecoder, encodeNativePipeFrame } from "../packages/browser/src/service/runtime/native_pipe";
 import { ExtensionBrowserPeer } from "../packages/browser-extension/src/browser_peer";
 import test from "node:test";
 import { stageRuntimePackages } from "../packages/agent-loop/src/runtime-packages";
 import { WorkerSession } from "../packages/runtime-supervisor/src/session";
-import { launchSandboxedWorker, sandboxedWorkerSpec } from "../packages/runtime-supervisor/src/sandbox-launcher";
+import { sandboxedWorkerSpec } from "../packages/runtime-supervisor/src/sandbox-launcher";
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, writeFile, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -160,24 +162,8 @@ test(
     await writeFile(configFile, "[browser_use]\nallow_history_access = false\n");
     await writeFile(requirementsFile, "[featureRequirements]\nbrowser_use_full_cdp_access = false\n");
     await writeFile(browserConfigFile, "full_cdp_access_enabled = false\n");
-    const pipeEvents: string[] = [];
-    const session = new WorkerSession({
-      services: ["fixture", "browser"],
-      hostRequest: createReadonlyConfigHost({
-        configFile, requirementsFile, workingDirectories: [trustedDir],
-        tomlFiles: { "browser/config.toml": browserConfigFile },
-      }),
-      nativePipeHost: emit => {
-        const pipe = new UnixNativePipeHost([host.endpoint.socketPath], emit);
-        return { close: () => pipe.close(), async request(message) {
-          pipeEvents.push(String(message.op));
-          try { return await pipe.request(message); }
-          catch (error) { pipeEvents.push(String(error)); throw error; }
-        } };
-      },
-      launch: async () => {
-        const start = (entry: string, args: string[], directory: string) => {
-          return launchSandboxedWorker({
+        const worker = (entry: string, args: string[], directory: string) => {
+          return {
             node: process.execPath, bootstrap, addon, entry, args,
             directory, readDirectories: [workers, dependencies, codeDir, staged.root, ...(directory === trustedDir ? [dirname(host.endpointFile)] : [])],
             workerEnvironment: {
@@ -199,28 +185,24 @@ test(
               } : {}),
             },
             terminateGraceMs: 20,
-          });
-        };
-        const kernel = await start(
-          join(workers, "dist/kernel.js"),
-          ["--session-id", "fixture", "--working-dir", kernelDir],
-          kernelDir,
-        );
-        try {
-          return {
-            kernel,
-            trusted: await start(
-              join(workers, "dist/trusted_worker.js"),
-              [trustedDir],
-              trustedDir,
-            ),
           };
-        } catch (error) {
-          await kernel.close();
-          throw error;
-        }
-      },
-    });
+        };
+    const runtimeOptions = {
+      kernel: worker(join(workers, "dist/kernel.js"), ["--session-id", "fixture", "--working-dir", kernelDir], kernelDir),
+      trusted: worker(join(workers, "dist/trusted_worker.js"), [trustedDir], trustedDir),
+      services: ["fixture", "browser"],
+      pipePaths: [host.endpoint.socketPath],
+      config: { configFile, requirementsFile, workingDirectories: [trustedDir],
+        tomlFiles: { "browser/config.toml": browserConfigFile } },
+    };
+    await assert.rejects(createSandboxedSessionOptions({ ...runtimeOptions, services: ["browser"] }), /must match/);
+    await assert.rejects(createSandboxedSessionOptions({ ...runtimeOptions,
+      trusted: { ...runtimeOptions.trusted, directory: kernelDir },
+    }), /disjoint/);
+    await assert.rejects(createSandboxedSessionOptions({ ...runtimeOptions,
+      kernel: { ...runtimeOptions.kernel, readDirectories: [...runtimeOptions.kernel.readDirectories, trustedDir] },
+    }), /other worker/);
+    const session = new WorkerSession(await createSandboxedSessionOptions(runtimeOptions));
     try {
       const basic = await session.execute("let x=40;nodeRepl.write(x+2)");
       assert.equal(basic.ok, true);
@@ -255,7 +237,7 @@ test(
       );
       assert.equal(discovered.ok, true, JSON.stringify(discovered));
       const browsers = JSON.parse(discovered.output!);
-      assert.equal(browsers.length, 1, JSON.stringify({discovered, pipeEvents}));
+      assert.equal(browsers.length, 1, JSON.stringify(discovered));
       assert.equal(browsers[0].name, "Sandbox fixture browser");
       assert.equal(await extension.ping(), "pong");
       const capabilityRead = await session.execute(
@@ -266,6 +248,21 @@ test(
         "nodeRepl.write(nodeRepl.env.CORE_CUA_SANDBOX_PROFILE===undefined && nodeRepl.env.CORE_CUA_SANDBOX_ADDON===undefined)",
       );
       assert.equal(environment.output, "true");
+      await session.close();
+      const serverEntry = join(codeDir, "stdio.mjs");
+      await writeFile(serverEntry, `import {serveSandboxedStdio} from ${JSON.stringify(pathToFileURL(resolve("packages/runtime-supervisor/dist/sandbox-runtime.js")).href)};const server=await serveSandboxedStdio(${JSON.stringify(runtimeOptions)});await server.closed;`);
+      const transport = new StdioClientTransport({ command: process.execPath, args: [serverEntry], cwd: root, env: { HOME: root, TMPDIR: root }, stderr: "pipe" });
+      transport.stderr?.resume();
+      const client = new Client({ name: "sandbox-browser-fixture", version: "1" });
+      try {
+        await client.connect(transport);
+        const result = await client.callTool({ name: "js", arguments: {
+          code: 'await import("@core/cua/tinyskyAlt");nodeRepl.write(JSON.stringify(await nodeRepl.rpc("browser",{method:"execute",params:{type:"list_browsers"}})))',
+        }, _meta: { "x-codex-turn-metadata": { session_id: "stdio-browser", turn_id: "turn-1" } } });
+        assert.equal(result.isError, false, JSON.stringify(result));
+        assert.match(JSON.stringify(result.content), /Sandbox fixture browser/);
+      } finally { await client.close(); await transport.close(); }
+
     } finally {
       await session.close();
       await host.close();

@@ -130,3 +130,17 @@ Discovery also requires host configuration reads for the full-CDP preference. Th
 `@core/runtime-supervisor/config-host` exports createReadonlyConfigHost. It reads caller-specified TOML files for the config snapshot, enterprise requirements and exact logical readToml paths, using existing third-party smol-toml 1.5.2. No home-directory discovery, implicit empty config or permissive policy fallback occurs. Config cwd must be explicitly listed; layered reads and all writes fail. Each call rereads its source (the recovered browser bridge retains its own cache). Files are bounded to 1 MiB, opened without following the final symlink and checked as regular files; invalid UTF-8/TOML and non-JSON values fail with redacted diagnostics. Parent directories must remain trusted: this does not pin ancestry or implement atomic multi-file snapshots.
 
 The sandboxed browser discovery integration now uses this adapter against explicit fixture TOML files, including featureRequirements.browser_use_full_cdp_access=false, instead of canned host responses. Production deployments must supply appropriate scoped files; passing a general secret-bearing config would expose its parsed contents to trusted services. Session preference writes/persistent approval, workspace layering, schema/version parity with Rust and a full production launcher remain unfinished. No user config files were read or changed by these tests.
+
+### Composed sandboxed MCP entry
+
+`@core/runtime-supervisor/sandbox-runtime` exposes `createSandboxedSessionOptions(options)` and `serveSandboxedStdio(options, io?)`. Options explicitly provide kernel/trusted SandboxedWorkerOptions, service names, allowed Unix pipe paths and read-only config sources. The composition validates both worker policies before spawning either, rejects overlapping writable directories and read grants exposing the peer's scratch, keeps endpoint settings out of the kernel environment, and requires the supervisor service names to match the trusted service map. A failed second spawn closes the first worker. Both workers receive exact captured environments; the installed Rust supervisor is not involved.
+
+```ts
+import { serveSandboxedStdio } from '@core/runtime-supervisor/sandbox-runtime';
+const server = await serveSandboxedStdio(runtimeOptions);
+await server.closed;
+```
+
+The caller must stage immutable code/dependencies, create private scratch/config files, supply deliberate path policies and retain those resources until `closed`. This entry does not auto-select endpoints, inherit user config, supply network authentication, implement configuration writes, or grant extra module roots. Media and MCP form elicitation continue through the existing adapter. Read-path breadth/replacement races and deprecated macOS sandbox portability remain deployment responsibilities/gaps.
+
+The explicit OS gate now also launches this compiled entry as a separate process with the standard MCP SDK StdioClientTransport. An MCP js call imports real CUA and discovers the authenticated controlled extension peer through the sandboxed workers, config host and native-pipe bridge. Invalid service maps and cross-worker directory grants are rejected. This validates the composed MCP path with a fixture peer, not daily Chrome/page actions or DeepSeek acceptance. Default demo remains on the installed supervisor.
