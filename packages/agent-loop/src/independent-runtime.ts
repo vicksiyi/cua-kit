@@ -51,6 +51,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
         NODE_REPL_TRUSTED_CODE_PATHS:stagedRoot,NODE_REPL_NODE_MODULE_DIRS:stagedRoot,
         NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:'CUA_REPL_ENABLED_SURFACES,CUA_REPL_BROWSER_ENV',
         CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{CUA_REPL_BROWSER_ENV:'codex-app'}:{}),
+        ...(!trusted&&env.NODE_REPL_JS_BANNER!==undefined?{NODE_REPL_JS_BANNER:env.NODE_REPL_JS_BANNER}:{}),
         ...(!trusted&&env.NODE_REPL_ENABLE_AUDIO==='1'?{NODE_REPL_ENABLE_AUDIO:'1'}:{}),
         ...(trusted&&computer&&env.SKY_ENABLE_AUDIO==='1'?{SKY_ENABLE_AUDIO:'1',...(env.SKY_AUDIO_MODEL_ALLOWLIST!==undefined?{SKY_AUDIO_MODEL_ALLOWLIST:env.SKY_AUDIO_MODEL_ALLOWLIST}:{})}:{}),
         ...(trusted&&browser?{CORE_CUA_ENDPOINT_FILES:JSON.stringify(endpoints),BROWSER_USE_BACKEND_PATHS:pipes.join(delimiter),

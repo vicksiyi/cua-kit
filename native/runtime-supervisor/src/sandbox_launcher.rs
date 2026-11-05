@@ -99,6 +99,7 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
                 | "SKY_CUA_SERVICE_NATIVE_PIPE_PATH"
                 | "SKY_ENABLE_AUDIO"
                 | "NODE_REPL_ENABLE_AUDIO"
+                | "NODE_REPL_JS_BANNER"
                 | "SKY_AUDIO_MODEL_ALLOWLIST"
         ) || value.contains('\0')
         {

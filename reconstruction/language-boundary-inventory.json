@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "d957bca49ee97dddfc5b4a4e5a14f34f62c58729787306dda68ae813ab31522f"
+      "sha256": "47aa44fda38e9466e9fe0e89db18613c76915452eb83ae6b698468c8e642c221"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -4074,7 +4074,7 @@
     {
       "path": "native/runtime-supervisor/src/sandbox_launcher.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "faeeaf9ba9e5815b69d784ce59930ad915b8dceae389e175f9de3f392b0eb371"
+      "sha256": "9a32189204551e067975e95df152a22ff3fde47a2b1fe63d8838a3a046d49a43"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",
