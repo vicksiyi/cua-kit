@@ -25,13 +25,8 @@ func mouseModifiers(_ chord: String?) throws -> CGEventFlags {
     var flags = CGEventFlags()
     guard let chord = chord, !chord.isEmpty else { return flags }
     for key in chord.lowercased().split(separator:"+",omittingEmptySubsequences:false) {
-        switch key {
-        case "super","command","meta": flags.insert(.maskCommand)
-        case "control","ctrl": flags.insert(.maskControl)
-        case "option","alt": flags.insert(.maskAlternate)
-        case "shift": flags.insert(.maskShift)
-        default: throw fail("UNSUPPORTED_CAPABILITY","Mouse key chords currently support modifiers only.")
-        }
+        guard let modifier = modifierFlag(String(key)) else { throw fail("UNSUPPORTED_CAPABILITY","Mouse key chords currently support modifiers only.") }
+        flags.formUnion(modifier)
     }
     return flags
 }

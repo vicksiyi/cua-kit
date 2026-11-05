@@ -4,6 +4,7 @@ import Carbon.HIToolbox
 
 // CLI-only checks keep the helper testable with Apple's Command Line Tools (no XCTest module required).
 func runInputChecks() throws {
+    try runKeyMappingChecks()
     let text = String(repeating:"a",count:19)+"🌍你好"+String(repeating:"🙂",count:31)
     let chunks = unicodeChunks(text)
     guard String(decoding:chunks.flatMap{$0},as:UTF16.self) == text else { throw fail("SELF_TEST_FAILED","Unicode reconstruction differs.") }
