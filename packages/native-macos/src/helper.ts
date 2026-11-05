@@ -6,6 +6,16 @@ import { CuaError, type ErrorCode } from './errors';
 
 export interface NativeAppInfo { pid: number; name: string; bundleId: string; path: string; launchTime: number }
 export interface HelperHello { protocolVersion: 1; platform: 'macos'; capabilities: string[]; permissions: { accessibility: boolean; screenRecording: boolean } }
+/** Include declared hold time in the helper deadline; never retire a valid 30-second hold at 15 seconds. */
+export function nativeRequestTimeout(method: string, params: Record<string, unknown>): number {
+  let holdMs = 0;
+  if (method === "keyboardInput" && params.operation === "pressKey" && typeof params.durationMs === "number" && Number.isFinite(params.durationMs) && params.durationMs >= 0 && params.durationMs <= 30000) holdMs = params.durationMs;
+  if (method === "mouseInput" && typeof params.duration === "number" && Number.isFinite(params.duration) && params.duration >= 0 && params.duration <= 30) {
+    const count = params.clickCount ?? 1;
+    if (typeof count === "number" && Number.isSafeInteger(count) && count >= 1 && count <= 10) holdMs = params.duration * 1000 * count;
+  }
+  return 15000 + Math.ceil(holdMs);
+}
 /** Owned helper process, versioned NDJSON RPC, bounded pending work, no inherited model secrets. */
 export class NativeHelper {
   private child: ChildProcessWithoutNullStreams;
@@ -38,7 +48,7 @@ export class NativeHelper {
       return { helper, hello };
     } catch (error) { await helper.close(); throw error; }
   }
-  request<T>(method: string, params: Record<string, unknown> = {}, timeoutMs = 15000): Promise<T> {
+  request<T>(method: string, params: Record<string, unknown> = {}, timeoutMs = nativeRequestTimeout(method, params)): Promise<T> {
     if (this.ended) return Promise.reject(new CuaError('PROVIDER_DISCONNECTED', 'Native helper is closed.'));
     if (this.pending.size >= 32) return Promise.reject(new CuaError('INVALID_ARGUMENT', 'Native request queue full.'));
     return new Promise((resolve, reject) => {

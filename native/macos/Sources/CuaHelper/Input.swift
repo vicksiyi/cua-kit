@@ -62,7 +62,7 @@ extension Target {
             guard CFEqual(a.element,b.element), NSDictionary(dictionary:a.data).isEqual(to:b.data) else { throw fail("STALE_OBSERVATION", "Application state changed; observe again.") }
         }
     }
-    func keyboardInput(_ params: [String: Any]) throws -> [String: Any] {
+    func keyboardInput(_ params: [String: Any]) async throws -> [String: Any] {
         try validateSnapshot(params)
         guard let focused = attribute(root,kAXFocusedUIElementAttribute), CFGetTypeID(focused) == AXUIElementGetTypeID() else { throw fail("ELEMENT_NOT_INTERACTABLE", "Application has no focused accessibility element.") }
         var pid: pid_t = 0
@@ -70,6 +70,7 @@ extension Target {
         guard let source = CGEventSource(stateID:.privateState) else { throw fail("PROVIDER_DISCONNECTED", "Cannot create keyboard event source.") }
         let operation = params["operation"] as? String ?? ""
         var pairs: [(CGEvent,CGEvent)] = []
+        var held: UInt64 = 0
         switch operation {
         case "typeText":
             guard let text = params["text"] as? String, text.utf16.count <= 100000 else { throw fail("INVALID_ARGUMENT", "typeText requires at most 100000 UTF-16 units.") }
@@ -83,14 +84,16 @@ extension Target {
             }
         case "pressKey":
             guard let key = params["key"] as? String else { throw fail("INVALID_ARGUMENT", "pressKey requires a key chord.") }
-            guard (params["durationMs"] as? Int ?? 0) == 0 else { throw fail("UNSUPPORTED_CAPABILITY", "Native held keys require the future cancellable input scheduler.") }
+            held = try heldNanoseconds((params["durationMs"] as? Double ?? 0)/1000)
             let stroke = try parseKey(key)
             guard let down = CGEvent(keyboardEventSource:source,virtualKey:stroke.code,keyDown:true), let up = CGEvent(keyboardEventSource:source,virtualKey:stroke.code,keyDown:false) else { throw fail("PROVIDER_DISCONNECTED", "Cannot allocate key events.") }
             down.flags = stroke.flags; up.flags = stroke.flags; pairs.append((down,up))
         default: throw fail("UNSUPPORTED_CAPABILITY", "Unknown keyboard operation.")
         }
         defer { invalidateInputState() }
-        for (down,up) in pairs { down.postToPid(app.processIdentifier); up.postToPid(app.processIdentifier) }
+        for (down,up) in pairs {
+            try await dispatchHeldPair(down,up,nanoseconds:held,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{try await Task.sleep(nanoseconds:$0)})
+        }
         return ["outcome":"dispatched", "eventPairs":pairs.count]
     }
     func selectText(_ element: AXUIElement, _ params: [String: Any]) throws -> AXError {

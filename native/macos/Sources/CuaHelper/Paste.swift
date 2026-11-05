@@ -41,7 +41,7 @@ extension Target {
         guard timeout >= 50 && timeout <= 5000 else { throw fail("INVALID_ARGUMENT","Paste verification timeout must be 50..5000ms.") }
         // Call the same snapshot/focus-checked keyboard path; it invalidates input state.
         var input = params; input["operation"] = "pressKey"; input["key"] = "super+v"
-        _ = try keyboardInput(input)
+        _ = try await keyboardInput(input)
         let deadline = Date().addingTimeInterval(Double(timeout)/1000)
         while Date() < deadline {
             try await Task.sleep(nanoseconds:20_000_000)

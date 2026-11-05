@@ -82,7 +82,7 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
     click: (input: {app:string;element_index?:number;x?:number;y?:number;mouse_button?:string;click_count?:number;key?:string;duration?:number}) => serial(async () => {
       const indexed = input.element_index !== undefined;
       if (indexed ? (!Number.isSafeInteger(input.element_index) || input.element_index! <= 0 || input.x !== undefined || input.y !== undefined) : (!Number.isFinite(input.x) || !Number.isFinite(input.y))) throw new CuaError("INVALID_ARGUMENT","Click requires either an element index or finite screenshot coordinates");
-      if (input.duration !== undefined && input.duration !== 0) throw new CuaError("UNSUPPORTED_CAPABILITY","Held mouse buttons are not yet implemented");
+      if (input.duration !== undefined && (!Number.isFinite(input.duration) || input.duration < 0 || input.duration > 30)) throw new CuaError("INVALID_ARGUMENT","Input duration must be 0..30 seconds");
       if (input.click_count !== undefined && (!Number.isSafeInteger(input.click_count) || input.click_count < 1 || input.click_count > 10)) throw new CuaError("INVALID_ARGUMENT","Click count must be 1..10");
       await write(input.app,"mouseInput",{elementId:input.element_index,x:input.x,y:input.y,mouseButton:input.mouse_button,clickCount:input.click_count,key:input.key,duration:input.duration});
     }),
@@ -104,11 +104,11 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
     perform_secondary_action: (input: {app:string;element_index:number;action:string}) => serial(async () => {
       await write(input.app,"action",{operation:"secondary",elementId:input.element_index,value:input.action});
     }),
-    set_value: (input:{app:string;element_index:number;value:string}) => serial(() => write(input.app,"action",{operation:"setValue",elementId:input.element_index,value:input.value})),
-    type_text: (input:{app:string;text:string}) => serial(() => write(input.app,"keyboardInput",{operation:"typeText",text:input.text})),
+    set_value: (input:{app:string;element_index:number;value:string}) => serial(async () => { await write(input.app,"action",{operation:"setValue",elementId:input.element_index,value:input.value}); }),
+    type_text: (input:{app:string;text:string}) => serial(async () => { await write(input.app,"keyboardInput",{operation:"typeText",text:input.text}); }),
     press_key: (input:{app:string;key:string;duration?:number}) => serial(async () => {
-      if (input.duration !== undefined && input.duration !== 0) throw new CuaError("UNSUPPORTED_CAPABILITY","Held-key duration is not yet implemented by this native backend");
-      return write(input.app,"keyboardInput",{operation:"pressKey",key:input.key});
+      if (input.duration !== undefined && (!Number.isFinite(input.duration) || input.duration < 0 || input.duration > 30)) throw new CuaError("INVALID_ARGUMENT","Input duration must be 0..30 seconds");
+      await write(input.app,"keyboardInput",{operation:"pressKey",key:input.key,durationMs:(input.duration ?? 0)*1000});
     }),
   };
 }

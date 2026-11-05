@@ -43,7 +43,7 @@ test("failed observation cannot leave prior snapshot actionable",async()=>{
  await client.get_app_state({app:"Fixture"});
  await assert.rejects(client.get_app_state({app:"Fixture"}),/read failed/);
  await assert.rejects(client.set_value({app:"Fixture",element_index:1,value:"x"}),/Observe/);
- await assert.rejects(client.press_key({app:"Fixture",key:"a",duration:1}),/not yet implemented/);
+ await assert.rejects(client.press_key({app:"Fixture",key:"a",duration:31}),/0..30/);
 });
 test("selection modes preserve Sky options and consume observation once",async()=>{
  for(const selection_type of ["text","cursor_before","cursor_after"] as const){
@@ -89,13 +89,13 @@ test("indexed clicks use native mouse events and require fresh observations",asy
  assert.equal(calls.some(c=>c[0]==="action"),false);
  await assert.rejects(app.click(1),/Observe/);
 });
-test("click rejects missing screenshot, mixed targets, counts and unsupported holds",async()=>{
+test("click rejects missing screenshot, mixed targets, counts and invalid holds",async()=>{
  const {client,calls}=fixture();
  await client.get_app_state({app:"Fixture"});
  await assert.rejects(client.click({app:"Fixture",x:1,y:2}),/current screenshot/);
  await assert.rejects(client.click({app:"Fixture",x:1,y:2,element_index:1}),/either/);
  await assert.rejects(client.click({app:"Fixture",element_index:1,click_count:0}),/count/);
- await assert.rejects(client.click({app:"Fixture",element_index:1,duration:1}),/not yet implemented/);
+ await assert.rejects(client.click({app:"Fixture",element_index:1,duration:31}),/0..30/);
  assert.equal(calls.some(c=>c[0]==="mouseInput"),false);
 });
 
@@ -149,4 +149,34 @@ test("scroll rejects unobserved coordinates and malformed targets or pages befor
   ...[0,-1,NaN,Infinity].map(pages=>({element_index:1,direction:"down",pages})),
  ]) await assert.rejects(client.scroll({app:"Fixture",...input}),/either|direction|pages/);
  assert.equal(calls.some(c=>c[0]==="scrollInput"),false);
+});
+
+test("restored CUA durationMs maps to native key and mouse holds with void results",async()=>{
+ const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
+ const {client,calls}=fixture();const app=bind_mac_app(client as any,"Fixture");
+ await app.getAXState({emit:false});
+ assert.equal(await app.pressKey("a",{durationMs:30000}),undefined);
+ assert.deepEqual(calls.find(c=>c[0]==="keyboardInput")?.[1],{targetId:"target",snapshotId:"snapshot",operation:"pressKey",key:"a",durationMs:30000});
+ await app.getAXState({emit:false});
+ assert.equal(await app.click(1,{durationMs:125,clickCount:2}),undefined);
+ assert.equal(calls.find(c=>c[0]==="mouseInput")?.[1].duration,0.125);
+ await app.getAXState({emit:false});assert.equal(await app.setValue(1,"x"),undefined);
+ await app.getAXState({emit:false});assert.equal(await app.typeText("x"),undefined);
+});
+test("held input rejects invalid duration before native dispatch",async()=>{
+ const {client,calls}=fixture();await client.get_app_state({app:"Fixture"});
+ for(const duration of [-1,30.001,NaN,Infinity]){
+  await assert.rejects(client.press_key({app:"Fixture",key:"a",duration}),/0..30/);
+  await assert.rejects(client.click({app:"Fixture",element_index:1,duration}),/0..30/);
+ }
+ assert.equal(calls.some(([method])=>method==="keyboardInput"||method==="mouseInput"),false);
+});
+test("native helper timeout covers legal hold duration and repetition",async()=>{
+ const {nativeRequestTimeout}=await import("../packages/native-macos/src/helper");
+ assert.equal(nativeRequestTimeout("keyboardInput",{operation:"pressKey",durationMs:30000}),45000);
+ assert.equal(nativeRequestTimeout("mouseInput",{duration:30,clickCount:10}),315000);
+ assert.equal(nativeRequestTimeout("mouseInput",{duration:0.125,clickCount:2}),15250);
+ assert.equal(nativeRequestTimeout("observe",{}),15000);
+ assert.equal(nativeRequestTimeout("mouseInput",{duration:Infinity}),15000);
+ assert.equal(nativeRequestTimeout("mouseInput",{duration:30,clickCount:100000}),15000);
 });

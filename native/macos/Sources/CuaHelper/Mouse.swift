@@ -79,13 +79,15 @@ extension Target {
         return point
     }
     func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
-        guard (params["duration"] as? Double ?? 0) == 0 else { throw fail("UNSUPPORTED_CAPABILITY","Held mouse buttons require cancellable input scheduling.") }
+        let held = try heldNanoseconds(params["duration"] as? Double ?? 0)
         let point = try await observedInputPoint(params)
         let events = try mouseClickEvents(point:point,button:params["mouseButton"] as? String ?? "left",count:params["clickCount"] as? Int ?? 1,flags:mouseModifiers(params["key"] as? String))
         // Recheck after async window enumeration and before the first event.
         try validateSnapshot(params)
         defer { invalidateInputState() }
-        for event in events { event.postToPid(app.processIdentifier) }
+        for index in stride(from:0,to:events.count,by:2) {
+            try await dispatchHeldPair(events[index],events[index+1],nanoseconds:held,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{try await Task.sleep(nanoseconds:$0)})
+        }
         return ["outcome":"dispatched","eventCount":events.count]
     }
 }
