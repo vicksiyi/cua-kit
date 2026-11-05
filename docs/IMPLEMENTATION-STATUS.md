@@ -1,5 +1,18 @@
 # Implementation status
 
+## Rust host callback checkpoint (2026-11-06)
+
+Explicit execution-scoped host handlers now route media, elicitation, config and
+launch-service messages. Side/execution/request identity is checked; form support
+is explicit, replies preserve refusal/errors, content is bounded, and callback
+futures are aborted on retirement. Three added real-worker tests verify refusal,
+config/media transport and callback cancellation; all seventeen Rust tests pass.
+
+This provides the host protocol boundary, not actual Rust TOML storage, media
+encoding/validation, MCP approval UI, authenticated fetch or native app actions.
+Those adapters and continuous between-cell routing/MCP/sandbox composition
+remain required before replacing the transitional TS runtime.
+
 ## Rust turn-ended checkpoint (2026-11-06)
 
 Rust host lifecycle routing now dispatches `turn_ended` to the actual restored

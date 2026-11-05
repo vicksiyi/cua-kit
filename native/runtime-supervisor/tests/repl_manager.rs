@@ -338,3 +338,179 @@ export async function handleRpc(){return 'ready';}
     );
     session.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn host_callbacks_preserve_denial_metadata_config_and_media() {
+    use core_runtime_supervisor::host::HostReply;
+    use std::sync::{Arc, Mutex};
+    let (fixture, session) = fixture();
+    std::fs::write(fixture.root.join("service.mjs"),r#"
+export async function handleRpc(x){
+ if(x.ask)return await nodeRepl.withSuspendedTimeout(()=>nodeRepl.createElicitation({message:'fixture decision'}));
+ if(x.config)return await nodeRepl.config.read();
+ return 'ready';
+}"#).unwrap();
+    let calls = Arc::new(Mutex::new(Vec::new()));
+    let observed = calls.clone();
+    let mut session = session.with_host_handler(
+        Arc::new(move |request| {
+            let calls = calls.clone();
+            Box::pin(async move {
+                calls.lock().unwrap().push((
+                    request.message.clone(),
+                    request.request_meta.clone(),
+                    request.execution_id,
+                ));
+                match request.message["type"].as_str().unwrap() {
+                    "elicit" => {
+                        tokio::time::sleep(Duration::from_millis(200)).await;
+                        Ok(HostReply::message(
+                            json!({"ok":true,"action":"decline","content":null}),
+                        ))
+                    }
+                    "config_action" => Ok(HostReply::message(
+                        json!({"ok":true,"value":{"config":{"fixture":true}}}),
+                    )),
+                    "emit_image" => Ok(HostReply {
+                        message: json!({"ok":true}),
+                        content: vec![json!({"type":"text","text":"fixture host processed media"})],
+                    }),
+                    _ => Err("unsupported fixture request".into()),
+                }
+            })
+        }),
+        true,
+    );
+    run(&mut session, "await nodeRepl.rpc('fixture',{})").await;
+    let result = session
+        .execute(
+            "nodeRepl.write(await nodeRepl.rpc('fixture',{ask:true}))",
+            Duration::from_millis(150),
+            json!({"trusted_host":42}),
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(result["ok"], true, "{result}");
+    assert!(result["output"].as_str().unwrap().contains("decline"));
+    let config = run(
+        &mut session,
+        "nodeRepl.write(await nodeRepl.rpc('fixture',{config:true}))",
+    )
+    .await;
+    assert!(
+        config["output"].as_str().unwrap().contains("fixture: true"),
+        "{config}"
+    );
+    let media=run(&mut session,"nodeRepl.emitImage('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1cAAAAASUVORK5CYII=');nodeRepl.write('finished')").await;
+    assert!(media["content_items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|item| item["text"] == "fixture host processed media"));
+    let calls = observed.lock().unwrap();
+    assert_eq!(calls.len(), 3);
+    assert_eq!(calls[0].1, json!({"trusted_host":42}));
+    assert_eq!(calls[0].0["exec_id"], calls[0].2);
+    drop(calls);
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn missing_host_and_missing_form_capability_never_approve() {
+    let (fixture, mut session) = fixture();
+    std::fs::write(fixture.root.join("service.mjs"),"export async function handleRpc(x){return x.ask?await nodeRepl.createElicitation({message:'fixture'}):await nodeRepl.config.read();}").unwrap();
+    let config = session
+        .execute(
+            "await nodeRepl.rpc('fixture',{})",
+            Duration::from_secs(5),
+            Value::Null,
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(config["ok"], false);
+    assert!(config["error"].as_str().unwrap().contains("not configured"));
+    let form = session
+        .execute(
+            "await nodeRepl.rpc('fixture',{ask:true})",
+            Duration::from_secs(5),
+            Value::Null,
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(form["ok"], false);
+    assert!(form["error"]
+        .as_str()
+        .unwrap()
+        .contains("does not support form"));
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn cancelled_host_callback_is_dropped_and_state_is_retired() {
+    use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    };
+    struct Guard(Arc<AtomicBool>);
+    impl Drop for Guard {
+        fn drop(&mut self) {
+            self.0.store(true, Ordering::SeqCst);
+        }
+    }
+    let (fixture, session) = fixture();
+    std::fs::write(
+        fixture.root.join("service.mjs"),
+        "export async function handleRpc(){return await nodeRepl.config.read();}",
+    )
+    .unwrap();
+    let dropped = Arc::new(AtomicBool::new(false));
+    let flag = dropped.clone();
+    let entered = Arc::new(tokio::sync::Notify::new());
+    let started = entered.clone();
+    let mut session = session.with_host_handler(
+        Arc::new(move |_request| {
+            let guard = Guard(flag.clone());
+            let started = started.clone();
+            Box::pin(async move {
+                let _guard = guard;
+                started.notify_one();
+                std::future::pending().await
+            })
+        }),
+        false,
+    );
+    run(&mut session, "let stale=1").await;
+    let (send, recv) = oneshot::channel();
+    tokio::spawn(async move {
+        entered.notified().await;
+        let _ = send.send(());
+    });
+    let error = timeout(
+        Duration::from_secs(5),
+        session.execute(
+            "await nodeRepl.rpc('fixture',{})",
+            Duration::from_secs(4),
+            Value::Null,
+            Some(recv),
+        ),
+    )
+    .await
+    .unwrap()
+    .unwrap_err();
+    assert!(error.contains("cancelled"));
+    timeout(Duration::from_secs(1), async {
+        while !dropped.load(Ordering::SeqCst) {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(
+        run(&mut session, "nodeRepl.write(typeof stale)").await["output"],
+        "undefined"
+    );
+    session.close().await.unwrap();
+}

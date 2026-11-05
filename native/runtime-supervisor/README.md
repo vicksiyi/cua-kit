@@ -85,3 +85,26 @@ metadata merging, repeated delivery, reset scope, malformed events and timeout
 followed by a successful retry. All fourteen Rust tests pass. This closes the
 basic turn-ended/metadata gap, not the outstanding approval/media/config, module
 registration, continuous background routing, MCP or sandbox-composition gaps.
+
+## Explicit host callback routing
+
+`host.rs` defines execution-scoped host requests/replies. The manager accepts an
+explicit handler and independent form-elicitation capability flag; neither is
+implicitly enabled. Kernel media and trusted media/elicitation/config/launch
+requests are correlated by execution, side and request identity. Concurrent host
+futures allow timeout-suspension/control messages to continue flowing. Retirement
+aborts callback futures; adapter implementations must propagate cancellation and
+must not detach their own side-effect work.
+
+Host content is bounded to 64 items / 16 MiB and appended only after the associated
+callback completes. Correlation IDs are host-controlled on return. Host errors
+become failed worker replies; absent handlers/capabilities do not auto-approve.
+Actual TOML policy, media validation/encoding and MCP elicitation adapters are
+still separate pending implementations, not supplied by this generic interface.
+
+Three real-worker tests cover delayed refusal under suspended timeout, config
+reply transport, unawaited media completion with host-added fixture content,
+missing capabilities/handler rejection, host metadata identity and cancellation
+that drops a pending callback and discards cell state. All seventeen Rust tests
+pass. The media case is a fixture callback receipt, not image decoder or screenshot
+acceptance. Authenticated fetch and between-cell background routing remain open.

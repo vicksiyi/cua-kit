@@ -1,5 +1,6 @@
 //! Execution routing between the recovered kernel and trusted worker.
 //! This migration slice deliberately rejects host operations not yet composed.
+use crate::host::{HostHandler, HostReply, HostRequest};
 use crate::native_pipe::NativePipeHost;
 use crate::process_port::{ProcessSpec, ProcessWorker};
 use serde_json::{json, Value};
@@ -10,6 +11,7 @@ use std::{
 };
 use tokio::{
     sync::{mpsc, oneshot},
+    task::JoinSet,
     time::Instant,
 };
 use uuid::Uuid;
@@ -26,6 +28,8 @@ pub struct ReplManager {
     trusted: ProcessSpec,
     services: HashSet<String>,
     pipe_paths: Vec<PathBuf>,
+    host_handler: Option<HostHandler>,
+    form_elicitation: bool,
     pair: Option<Pair>,
     /// Set before dispatch; a dropped execution future must not reuse its state.
     dirty: bool,
@@ -39,11 +43,18 @@ impl ReplManager {
             trusted,
             services,
             pipe_paths: Vec::new(),
+            host_handler: None,
+            form_elicitation: false,
             pair: None,
             dirty: false,
             closed: false,
             ended_turns: HashMap::new(),
         }
+    }
+    pub fn with_host_handler(mut self, handler: HostHandler, form_elicitation: bool) -> Self {
+        self.host_handler = Some(handler);
+        self.form_elicitation = form_elicitation;
+        self
     }
     pub fn with_pipe_paths(mut self, paths: Vec<PathBuf>) -> Result<Self, String> {
         if paths.iter().any(|path| !path.is_absolute()) {
@@ -170,7 +181,17 @@ impl ReplManager {
         self.dirty = true;
         let services = &self.services;
         let pair = self.pair.as_mut().unwrap();
-        let execution = route(pair, services, operation, timeout, request_meta, cancel).await;
+        let execution = route(
+            pair,
+            services,
+            self.host_handler.as_ref(),
+            self.form_elicitation,
+            operation,
+            timeout,
+            request_meta,
+            cancel,
+        )
+        .await;
         match execution {
             Ok(result) => {
                 self.dirty = false;
@@ -197,6 +218,8 @@ async fn cancelled(receiver: Option<oneshot::Receiver<()>>) {
 async fn route(
     pair: &mut Pair,
     services: &HashSet<String>,
+    host_handler: Option<&HostHandler>,
+    form_elicitation: bool,
     mut request: Value,
     timeout: Duration,
     request_meta: Value,
@@ -214,7 +237,7 @@ async fn route(
     let lifecycle = request["type"] == "turn_ended";
     request["id"] = json!(id);
     request["request_meta"] = request_meta.clone();
-    request["form_elicitation_supported"] = json!(false);
+    request["form_elicitation_supported"] = json!(form_elicitation);
     let destination = if lifecycle {
         &mut pair.trusted
     } else {
@@ -227,6 +250,10 @@ async fn route(
         sent=destination.send(&request)=>sent?,
     }
     let mut response_meta: Option<serde_json::Map<String, Value>> = None;
+    let mut host_tasks: JoinSet<(bool, String, Result<HostReply, String>)> = JoinSet::new();
+    let mut host_seen = HashSet::new();
+    let mut content = Vec::<Value>::new();
+    let mut content_bytes = 0usize;
     let mut rpc = HashSet::new();
     let mut depth = 0usize;
     loop {
@@ -240,6 +267,25 @@ async fn route(
             biased;
             _=&mut cancellation=>return Err("Execution cancelled; worker state discarded".into()),
             _=expiry=>return Err("Execution timed out; worker state discarded".into()),
+            completed=host_tasks.join_next(), if !host_tasks.is_empty()=>{
+                let (trusted,request_id,result)=completed.ok_or("Missing host task")?.map_err(|e|e.to_string())?;
+                let mut response=match result {
+                    Ok(reply)=>{
+                        if !reply.message.is_object(){return Err("Host reply must be an object".into());}
+                        for item in reply.content {
+                            let bytes=serde_json::to_vec(&item).map_err(|e|e.to_string())?.len();
+                            if content.len()>=64 || content_bytes.saturating_add(bytes)>16*1024*1024{return Err("Execution content budget exceeded".into());}
+                            content_bytes+=bytes;content.push(item);
+                        }
+                        reply.message
+                    },
+                    Err(error)=>json!({"ok":false,"error":error}),
+                };
+                response["id"]=json!(request_id);
+                let destination=if trusted{&mut pair.trusted}else{&mut pair.kernel};
+                destination.send(&response).await?;
+                continue;
+            },
             message=pair.kernel.next_message()=>(false,message?),
             message=pair.trusted.next_message()=>(true,message?),
             event=pair.pipe_events.recv()=>{
@@ -256,6 +302,37 @@ async fn route(
             return Err("Kernel message during host lifecycle operation".into());
         }
         match (trusted, kind) {
+            (false, "emit_image" | "emit_audio")
+            | (
+                true,
+                "emit_image" | "emit_audio" | "elicit" | "config_action" | "launch_services_action",
+            ) => {
+                let request_id = message["id"]
+                    .as_str()
+                    .filter(|value| !value.is_empty())
+                    .ok_or("Invalid host request identity")?;
+                if message["exec_id"] != id || (trusted && !lifecycle && rpc.is_empty()) {
+                    return Err("Uncorrelated host operation".into());
+                }
+                if host_seen.len() >= 65536 || !host_seen.insert((trusted, request_id.to_string()))
+                {
+                    return Err("Duplicate or excessive host request identities".into());
+                }
+                let request_id = request_id.to_string();
+                let handler = host_handler.cloned();
+                let context = HostRequest {
+                    message,
+                    execution_id: id.clone(),
+                    request_meta: request_meta.clone(),
+                };
+                host_tasks.spawn(async move {
+                    let result = match handler {
+                        Some(handler) => handler(context).await,
+                        None => Err("Host operation is not configured".into()),
+                    };
+                    (trusted, request_id, result)
+                });
+            }
             (true, "turn_ended_result") => {
                 if !lifecycle || message["id"] != id || depth != 0 || !rpc.is_empty() {
                     return Err("Turn-ended response identity mismatch".into());
@@ -263,6 +340,21 @@ async fn route(
                 if let Some(meta) = response_meta {
                     message["response_meta"] = Value::Object(meta);
                 }
+                if !host_tasks.is_empty() {
+                    return Err(
+                        "Operation completed with outstanding host requests; outcome unknown"
+                            .into(),
+                    );
+                }
+                let items = message
+                    .as_object_mut()
+                    .unwrap()
+                    .entry("content_items")
+                    .or_insert_with(|| json!([]));
+                items
+                    .as_array_mut()
+                    .ok_or("Invalid worker content items")?
+                    .append(&mut content);
                 return Ok(message);
             }
             (true, "native_pipe_request") => {
@@ -296,6 +388,21 @@ async fn route(
                 if let Some(meta) = response_meta {
                     message["response_meta"] = Value::Object(meta);
                 }
+                if !host_tasks.is_empty() {
+                    return Err(
+                        "Operation completed with outstanding host requests; outcome unknown"
+                            .into(),
+                    );
+                }
+                let items = message
+                    .as_object_mut()
+                    .unwrap()
+                    .entry("content_items")
+                    .or_insert_with(|| json!([]));
+                items
+                    .as_array_mut()
+                    .ok_or("Invalid worker content items")?
+                    .append(&mut content);
                 return Ok(message);
             }
             (false, "trusted_service_request" | "trusted_service_hooks") => {
@@ -319,7 +426,7 @@ async fn route(
                     "run_hooks"
                 });
                 forward["request_meta"] = request_meta.clone();
-                forward["form_elicitation_supported"] = json!(false);
+                forward["form_elicitation_supported"] = json!(form_elicitation);
                 pair.trusted.send(&forward).await?;
             }
             (true, "trusted_service_response") => {

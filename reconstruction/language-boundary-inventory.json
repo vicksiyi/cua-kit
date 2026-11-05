@@ -6,7 +6,7 @@
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 21,
-    "native-implementation-language-not-yet-parity-proof": 25,
+    "native-implementation-language-not-yet-parity-proof": 26,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3946,9 +3946,14 @@
       "sha256": "de69e40fd94dddbd43bd06ef3ed6d830900d09723d01a1a5b4f6d3c92b06996e"
     },
     {
+      "path": "native/runtime-supervisor/src/host.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "32539af5545d2be41b17b087b64cbf30e56ff3042bbedbcf2cf2ff9ccd81e5df"
+    },
+    {
       "path": "native/runtime-supervisor/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "9c4c19997d31c30200ed4331743abde9e13dd12fd632e7c8950d1f840a506015"
+      "sha256": "4ca42d30abf8271df32c40f80abaacd3b810618f09083aaca4c1539f2f90670e"
     },
     {
       "path": "native/runtime-supervisor/src/native_pipe.rs",
@@ -3963,7 +3968,7 @@
     {
       "path": "native/runtime-supervisor/src/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "6c34140c520ebb4f1e382edfe5c1efa3a72980016b5b2c145871d6584c0677d9"
+      "sha256": "33ce6db38668dfa53ddf6ce44f123492f0c251634c3b8f9ebb2d747a7ad3a2b2"
     },
     {
       "path": "native/runtime-supervisor/tests/process_port.rs",
@@ -3973,7 +3978,7 @@
     {
       "path": "native/runtime-supervisor/tests/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "3cc0202f07c49f23ef1bba028c38dec556b4c1f3e91951c9cd95932701d9d5b5"
+      "sha256": "3e8470280913d6a63d5fa457440434ce3a06b10fa11c43b0b0316d1192a32d76"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",

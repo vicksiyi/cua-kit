@@ -8,3 +8,5 @@ pub mod process_port;
 
 #[cfg(unix)]
 pub mod repl_manager;
+
+pub mod host;
