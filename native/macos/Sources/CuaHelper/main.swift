@@ -86,6 +86,10 @@ final class Target {
     }
     func action(_ params: [String: Any]) throws -> [String: Any] {
         try validateSnapshot(params)
+        if let deadline = params["deadlineUnixMilliseconds"] as? Double,
+           Date().timeIntervalSince1970 * 1000 >= deadline {
+            throw fail("INVALID_ARGUMENT", "Input deadline expired during snapshot validation; no action was dispatched.")
+        }
         guard let id = params["elementId"] as? Int, id > 0, id <= nodes.count else { throw fail("STALE_OBSERVATION", "Element is absent from current snapshot.") }
         let element = nodes[id-1].element
         let operation = params["operation"] as? String ?? ""
@@ -163,6 +167,10 @@ if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.cont
     let status: [String: Any] = ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess(), "helper": Bundle.main.executablePath ?? CommandLine.arguments[0], "requested": request]
     if let data = try? JSONSerialization.data(withJSONObject: status, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text) }
     exit(AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() ? 0 : 2)
+}
+if CommandLine.arguments.contains("--sky-action-self-test") {
+    do { try runSkyActionChecks(); print("{\"skyActionMapping\":true}"); exit(0) }
+    catch { fputs("Sky action self-test failed: \(error)\n",stderr); exit(1) }
 }
 if CommandLine.arguments.contains("--observation-text-self-test") {
     do { try runObservationTextChecks(); print("{\"nativeObservationText\":true}"); exit(0) }

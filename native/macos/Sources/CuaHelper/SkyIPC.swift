@@ -50,7 +50,7 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                       let action = payload["action"] as? [String: Any] else {
                     throw rpcFailure(-32602, "App action requires app and action fields")
                 }
-                try appState.perform(app, action: action, policy: appPolicy, deadline: deadline.doubleValue)
+                try await appState.perform(app, action: action, policy: appPolicy, deadline: deadline.doubleValue)
                 result = NSNull()
             case "ComputerUseIPCAppStartRequest":
                 let payload = params["request"] as! [String: Any]

@@ -126,3 +126,10 @@ setValue/selectText/secondary-action protocol guards pass with original and
 restored clients; UI effects remain unverified due to host permissions. No
 original native snapshot/ID allocator parity is claimed. Existing TS adapters
 remain pending retirement after equivalent production acceptance.
+
+
+Original keyboard enum payloads now route to Swift keyboardInput, including native
+hold conversion/release and deadline checks. The selectText parameter bridge was
+corrected to match the existing Swift engine's value field. Native mapping and
+release self-tests pass; live input acceptance and original native semantics are
+still unproven. No TS key-event implementation was introduced.

@@ -76,6 +76,10 @@ extension Target {
         }
         defer { invalidateInputState() }
         for (down,up) in pairs {
+            if let deadline = params["deadlineUnixMilliseconds"] as? Double,
+               Date().timeIntervalSince1970 * 1000 + Double(held) / 1_000_000 >= deadline {
+                throw fail("INVALID_ARGUMENT", "Input deadline expired before the next key-down; earlier input may have been dispatched.")
+            }
             try await dispatchHeldPair(down,up,nanoseconds:held,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{try await Task.sleep(nanoseconds:$0)})
         }
         return ["outcome":"dispatched", "eventPairs":pairs.count]

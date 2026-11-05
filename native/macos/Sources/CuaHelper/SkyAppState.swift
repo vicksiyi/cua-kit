@@ -7,7 +7,7 @@ import ApplicationServices
 @MainActor
 final class SkyAppState {
     private var targets: [String: Target] = [:]
-    func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) throws {
+    func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) async throws {
         let evaluated: [String: Any]
         do { evaluated = try policy.evaluate(reference) }
         catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
@@ -29,7 +29,15 @@ final class SkyAppState {
             throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before input")
         }
         params["snapshotId"] = snapshot
-        _ = try target.action(params)
+        params["deadlineUnixMilliseconds"] = deadline
+        if ["typeText", "pressKey"].contains(params["operation"] as? String ?? "") {
+            // Reject a hold that already cannot fit; never begin a knowingly expired input.
+            let duration = params["durationMs"] as? Double ?? 0
+            guard Date().timeIntervalSince1970 * 1000 + duration < deadline else {
+                throw SkyRPCFailure(code: -32602, message: "Key hold exceeds remaining request deadline")
+            }
+            _ = try await target.keyboardInput(params)
+        } else { _ = try target.action(params) }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")
         }

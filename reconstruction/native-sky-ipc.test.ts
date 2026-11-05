@@ -48,11 +48,12 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
   for(const [method,args] of [
-   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],
+   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],
   ] as const){
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
   }
+  await assert.rejects(client.pressKey({app:join(f.root,'com.core.fixture.allowed.app'),key:'a',duration:-1}),(error:any)=>error.code===-32602);
   await assert.rejects(client.selectText({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,text:'hello',selection:'invalid'}),(error:any)=>error.code===-32602);
   await assert.rejects(client.startApp('/nonexistent/core-start.app'),(error:any)=>error.code===-10010);
   await assert.rejects(client.startApp(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
@@ -167,6 +168,11 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
   const selected=await refresh();const selectedLine=selected.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(selectedLine,/"selectionLength":2/);
   await client.performSecondaryAction({app,elementIndex:field(selected),action:'focus'});
   const focused=await refresh();const focusedLine=focused.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(focusedLine,/"AXFocused":true/);
+  await client.pressKey({app,key:'Super+a',duration:0.01});await refresh();
+  await client.typeText({app,text:'keyboard 🌍 result'});
+  let typed:any;
+  for(let attempt=0;attempt<20;attempt++){typed=await refresh();if(typed.skyshot.text.includes('keyboard 🌍 result'))break;await new Promise(r=>setTimeout(r,25));}
+  const typedLine=typed.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(typedLine,/keyboard 🌍 result/);
  }finally{(globalThis as any).nodeRepl=before;}
 });
 

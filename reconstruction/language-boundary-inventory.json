@@ -3894,7 +3894,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/Input.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "2f8fcafd0cafd0214381e1430789cc4a9bc22a02f5c7a2f3c8fd607c13931684"
+      "sha256": "525cde2eb60651f4d1bf8807ff2fe22002f56203188a03efb84f62782ea1a2b1"
     },
     {
       "path": "native/macos/Sources/CuaHelper/InputSelfTest.swift",
@@ -3949,17 +3949,17 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyAppState.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "07b4ba891294482780c3cf2cc3a0262eef2eee61e8316cf9029bf4a1a37364bf"
+      "sha256": "0e49379b2c63d97567656cfc80103504b53818812da7aad536bab0b9df95e389"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyElementAction.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "21abf9a5aa2ebba8db24e816f8deec546d76a7eae20fd3c46c3531acf4ed9ed9"
+      "sha256": "35c529aebc0817b6ac90c42ce7ce7cd09b28a6591d51b7625a3ccdebbedd6c75"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "f60ca6dbadec23a09a814a17169fb9defa9a6d277e9139d805c5d30fef2134ff"
+      "sha256": "3576112f818d41e270c73898338e948e857813403c7d43af440460eaca4c7dfc"
     },
     {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
@@ -3969,7 +3969,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "0474e77dfb8116d17cc9fc7fd20492c093af4dc8a69c83fa0b5342a055c5d4d2"
+      "sha256": "0be9a8375ebe4e3dfd41452cf3085d39aaa3506cb840d3b6ef9b09cff64719f7"
     },
     {
       "path": "native/macos-sandbox/build.rs",

@@ -319,3 +319,33 @@ vocabulary; original native semantics are not proven. Click, keyboard, scroll,
 drag, paste and audio original-protocol dispatch remain unsupported. The existing
 native engines for those operations remain available for subsequent migration;
 no duplicate TS event implementation was introduced.
+
+
+## Native keyboard request dispatch and selection correction (2026-11-06)
+
+The original `type: {_0: text}` and `pressKey: {_0: chord, duration: seconds}`
+action envelopes now dispatch through Swift Target.keyboardInput. The native
+adapter converts seconds to the existing millisecond parameter and retains the
+existing 0..30 second independent hold limit, Unicode chunking and held-key release
+logic. Original PressKey.d.ts documents X keysym-style chords (e.g. Super_L+d),
+not a guaranteed cmd alias; tests use Super+a. Keyboard requests require a current
+observation and invalidate it after execution. Deadlines are checked after AX
+validation and before each key-down; an already posted key is still released to
+the original process on interruption. This is not a claim of hard real-time timing
+or original native keyboard implementation parity.
+
+Also fixed an actual mapping defect from the preceding element-dispatch change:
+original selectText.text must populate the existing Swift helper's `value` field,
+not `text`. `--sky-action-self-test` now exercises that mapping against the real
+UTF-16 selection-range helper, verifies emoji length, Unicode payload preservation,
+seconds-to-milliseconds conversion, and rejects bool/string/invalid durations.
+The existing held-input self-test verifies release on interruption. Both pass;
+Swift builds and all four IPC cases pass with original/restored keyboard request
+envelopes, policy denial, missing observation and negative duration handling.
+
+The live skyshot gate additionally selects all and types Unicode into its owned
+fixture field, then checks actual observed text. That expanded UI case has not
+been accepted: host TCC permissions blocked prior live runs. No passing protocol
+or pure native self-test is counted as evidence of actual keyboard events.
+Mouse/click/scroll/drag/paste/audio original-protocol dispatch, full native parity
+and production demo replacement remain outstanding.
