@@ -117,3 +117,9 @@ func runNativeAudioLifecycleChecks() async throws {
     }
 
 }
+
+// Explicit operator fixture only; the normal Sky socket always selects real capture.
+@MainActor
+func startSyntheticAudioCapture(url: URL, duration: Int, deadline: Double) async throws -> NativeAudioCaptureBackend {
+    try SyntheticAudioCapture(url:url,duration:duration)
+}

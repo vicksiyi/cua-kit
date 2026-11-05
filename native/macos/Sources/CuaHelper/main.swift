@@ -226,6 +226,12 @@ if CommandLine.arguments.contains("--self-test") {
     do { try runInputChecks(); print("{\"unicodeBoundaries\":true,\"keyChordFlags\":true}"); exit(0) }
     catch { fputs("Native input self-test failed: \(error)\n",stderr); exit(1) }
 }
+if CommandLine.arguments.contains("--synthetic-audio-socket") {
+    guard CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--synthetic-audio-socket" else { exit(2) }
+    do { try await runNativeService { try await serveSkySocket(CommandLine.arguments[2],audioFactory:startSyntheticAudioCapture) }; exit(0) }
+    catch is CancellationError { exit(0) }
+    catch { fputs("Synthetic audio socket fixture failed: \(error)\n",stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--sky-socket") {
     guard CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--sky-socket" else {
         fputs("Usage: cua-helper --sky-socket ABSOLUTE_PATH\n",stderr); exit(2)

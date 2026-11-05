@@ -598,7 +598,7 @@ Current installed `audio_recording.js` has no automatic `attachComputerAudio` ca
 
 Verification: Swift build, synthetic WAV test, Sky and AgentLoop typechecks, 11 existing native IPC/lifecycle tests (4 real-App tests explicitly skipped). Installed and restored Sky clients both exercise stop-without-recording and invalid-duration failures without audio capture or files. The Rust sandbox integration also verifies trusted-only artifact directory configuration. No real system audio was recorded.
 
-Synthetic lifecycle coverage has since been added as detailed below. Still required: real permission denial and explicitly authorized capture acceptance, actual trusted-worker reading of produced recordings, and large-recording transport against runtime response/frame limits. Native code is wired but those outcomes are not yet proved; do not describe audio as fully working.
+Synthetic lifecycle coverage has since been added as detailed below. Still required: real permission denial and explicitly authorized capture acceptance, large-recording transport against runtime response/frame limits. Native code is wired but those outcomes are not yet proved; do not describe audio as fully working.
 
 ### Native audio lifecycle evidence
 
@@ -606,4 +606,14 @@ The production `NativeAudioSession` now separates its native capture backend fro
 
 `AudioLifecycleSelfTest.swift` runs the real session/timer/task implementation with a synthetic PCM backend and real native WAV encoder. It verifies: no recording/expired-start rejection, overlapping start rejection, automatic stop followed by explicit result retrieval, one finalization shared by concurrent stops, error propagation with subsequent restart, close stopping/discarding active capture and removing all files, late-start cleanup after close, and cancellation during startup. The resulting file is opened as 24 kHz stereo WAV. The test does not acquire system audio or invoke OS permission prompts.
 
-Swift build and both native audio tests pass; installed/restored Sky client handshake and invalid-audio protocol regressions also pass. This demonstrates the independent native lifecycle, not vendor-native state-machine identity or real ScreenCaptureKit behavior. Real capture, output read-through from the sandbox and long-recording transport remain outstanding.
+Swift build and both native audio tests pass; installed/restored Sky client handshake and invalid-audio protocol regressions also pass. This demonstrates the independent native lifecycle, not vendor-native state-machine identity or real ScreenCaptureKit behavior. Real capture and long-recording transport remain outstanding; the subsequent synthetic integration below verifies output read-through.
+
+### Synthetic audio through Rust, trusted Sky and sandbox
+
+A real MCP integration now launches the Rust supervisor, sandboxed kernel/trusted workers, and the Swift service with an explicit synthetic-audio test helper. It calls the restored Sky start/stop methods, exercises model allowlist rejection and declined approval before native capture, then approves synthetic capture and reads the resulting native WAV through the trusted Sky worker. It verifies returned bytes/RIFF/WAVE against the on-disk file, confirms a direct kernel filesystem read fails with EPERM/EACCES, and checks that service closure removes the file. No system sound is captured.
+
+This uncovered two runtime defects: the demo worker environment dropped `SKY_ENABLE_AUDIO`/`SKY_AUDIO_MODEL_ALLOWLIST`, and Foundation returned `/tmp/...` URLs while Seatbelt granted canonical `/private/tmp/...` paths. The factory now forwards the audio settings only to the trusted computer worker; Rust accepts these explicit environment keys. Native stop now returns a POSIX-realpath file URL. Read grants remain limited to the native artifact directory; the kernel does not receive this grant.
+
+The normal `--sky-socket` entry still uses ScreenCaptureKit. `--synthetic-audio-socket` is an explicit operator-only test entry selected by a temporary helper wrapper; neither a wire request nor an environment flag changes the normal service's capture backend. Added the integration file to `npm run test:native-ipc` so this path remains covered.
+
+Verification: native/Rust/reconstruction builds, AgentLoop typecheck, two native synthetic audio tests and the real Rust MCP synthetic-audio integration pass. Long recordings still exceed currently configured runtime/media frame budgets and require separate work; short synthetic transfer does not prove the full 300000 ms contract or live capture.

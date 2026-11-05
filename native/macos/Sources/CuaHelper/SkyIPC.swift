@@ -129,7 +129,7 @@ private func writeAll(_ fd: Int32, _ data: Data) throws {
 }
 /// One private connection per owned process; caller owns service launch/retirement.
 /// No vendor endpoint, entitlement or authentication identity is impersonated.
-func serveSkySocket(_ path: String) async throws {
+func serveSkySocket(_ path: String, audioFactory: NativeAudioSession.CaptureFactory? = nil) async throws {
     let appPolicy = try SkyAppPolicy()
     let appState = await SkyAppState()
     guard path.hasPrefix("/"), !path.utf8.contains(0) else { throw rpcFailure(-32602, "Expected an absolute socket path") }
@@ -163,7 +163,7 @@ func serveSkySocket(_ path: String) async throws {
     guard getpeereid(connection, &uid, &gid) == 0, uid == getuid() else { throw rpcFailure(-10000, "Native peer must belong to the service user") }
     var noSigpipe: Int32 = 1
     guard setsockopt(connection, SOL_SOCKET, SO_NOSIGPIPE, &noSigpipe, socklen_t(MemoryLayout<Int32>.size)) == 0 else { throw rpcFailure(-32600, "Cannot configure native connection") }
-    let audio = await NativeAudioSession(parent:parent)
+    let audio = await NativeAudioSession(parent:parent,captureFactory:audioFactory)
     do {
     var negotiated = false
     while let header = try readExact(connection, 4, allowEOF: true) {

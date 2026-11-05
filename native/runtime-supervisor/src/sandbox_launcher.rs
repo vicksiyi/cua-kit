@@ -97,6 +97,8 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
                 | "NODE_REPL_TRUSTED_SERVICES"
                 | "NODE_REPL_TRUSTED_CODE_PATHS"
                 | "SKY_CUA_SERVICE_NATIVE_PIPE_PATH"
+                | "SKY_ENABLE_AUDIO"
+                | "SKY_AUDIO_MODEL_ALLOWLIST"
         ) || value.contains('\0')
         {
             return Err("Unsupported worker environment key or value".into());

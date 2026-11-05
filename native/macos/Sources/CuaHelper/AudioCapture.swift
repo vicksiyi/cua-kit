@@ -163,7 +163,11 @@ final class NativeAudioSession {
         guard let active = recording else { throw fail("INVALID_ARGUMENT","No audio recording is active") }
         defer { if recording === active { recording = nil } }
         let url = try await finish(active)
-        return ["url":url.absoluteString]
+        // Foundation resolvingSymlinksInPath rewrites /private/tmp to /tmp on macOS.
+        // Return the POSIX canonical path covered by the trusted worker sandbox grant.
+        guard let resolved = realpath(url.path,nil) else { throw fail("PROVIDER_DISCONNECTED","Recorded audio file is unavailable") }
+        defer { free(resolved) }
+        return ["url":URL(fileURLWithPath:String(cString:resolved)).absoluteString]
     }
     func close() async {
         closed = true

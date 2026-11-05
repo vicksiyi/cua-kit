@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "6535ced3c83b7be637ce6f76e2cc953ac8bfebd4b566be7925a176b7463e6f8b"
+      "sha256": "a692d7e64337576f4d07424379abe883ddf7f446477eba627a4b92fc2b6232a9"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -3864,12 +3864,12 @@
     {
       "path": "native/macos/Sources/CuaHelper/AudioCapture.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "011086c73fd65f9bb4ecd7ba5e9a5ec0819f3088703b2464c86af249435c7abb"
+      "sha256": "79908dff430de8c51a63918ca13aea2be5c33f6d92d238a7ce374d61642a5f07"
     },
     {
       "path": "native/macos/Sources/CuaHelper/AudioLifecycleSelfTest.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "287f929dfd510af30ad7c94a2a7d2f5aaeaa4646bd056158f40a29266b770f4f"
+      "sha256": "5d68cbf05380080e4501525f8ae30f2ce1b072af28275d7a56a860260ae670d0"
     },
     {
       "path": "native/macos/Sources/CuaHelper/AudioWriter.swift",
@@ -3984,7 +3984,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "742018ba13e2049e7425a698208a852db3c5940d1bb6cd6fa1ec50deeea7c4ca"
+      "sha256": "373d42476c0dba9fd718cf0c8ce997437507e8209ca0ad3b649817835bb88e0e"
     },
     {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
@@ -3994,7 +3994,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "63485f1f52b3f579180eabc5dd0b8c946231f113ab8005c61e8d875d70528d5e"
+      "sha256": "97be68e82c0b9244b6371979fbd978783f43881f0a5118a1dd368b7f323d8417"
     },
     {
       "path": "native/macos-sandbox/build.rs",
@@ -4069,7 +4069,7 @@
     {
       "path": "native/runtime-supervisor/src/sandbox_launcher.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "6159bf2a795061aabced6425fdbababddae295192e06b267c7ee309483257398"
+      "sha256": "9d73ea6c24cf02728971b95f8284c78422dd45bc199d0d420547c1a6a0b59e6f"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",
