@@ -168,3 +168,6 @@ await import("./build-reconstructed-kernel.mjs");
 // Independent host deployment artifact, bundled separately from restored modules.
 await import("./build-native-host.mjs");
 await import("./build-native-extension.mjs");
+
+// Build the shared agent library used by root compatibility exports.
+execFileSync(process.execPath, ["scripts/build-agent-library.mjs"], { stdio: "inherit" });

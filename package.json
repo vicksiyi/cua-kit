@@ -16,8 +16,8 @@
   },
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run build:extension",
-    "check": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run build:agent && tsc -p tsconfig.json && npm run build:extension",
+    "check": "npm run build:agent && tsc -p tsconfig.json --noEmit",
     "test": "npm run build && tsx --test tests/*.test.ts",
     "demo": "npm run build && node dist/agent/demo.js",
     "mcp": "node dist/mcp/stdio.js",
@@ -42,7 +42,8 @@
     "test:rust-browser": "npm run build:reconstruction && npm run build:rust-runtime && CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-concurrency=1 reconstruction/runtime-cdp-sandbox.test.ts reconstruction/extension-native-controller.test.ts",
     "test:native-ipc": "npm run build:reconstruction && npm run build:native && npm run build:rust-runtime && CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/native-sky-ipc.test.ts reconstruction/native-deepseek-runtime.test.ts reconstruction/runtime-selection.test.ts reconstruction/native-audio-runtime.test.ts reconstruction/runtime-banner.test.ts reconstruction/runtime-tool-overrides.test.ts",
     "test:native-skyshot": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern=\"live owned App skyshot\" reconstruction/native-sky-ipc.test.ts",
-    "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"owned App launch\" reconstruction/native-sky-ipc.test.ts"
+    "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"owned App launch\" reconstruction/native-sky-ipc.test.ts",
+    "build:agent": "node scripts/build-agent-library.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
@@ -52,7 +53,8 @@
     "playwright": "1.64.1",
     "quickjs-emscripten": "0.32.0",
     "sanitize-html": "2.18.1",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "@core/agent-loop": "0.1.0"
   },
   "devDependencies": {
     "@types/chrome": "0.3.7",

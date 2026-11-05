@@ -51,3 +51,6 @@ The background launch required by macOS `getApp` is implemented in Swift `SkyApp
 
 
 The normal runtime staging roots no longer include `@core/native-macos`. A deployment test verifies it is absent from the staged dependency graph and its service cannot resolve there, while original Sky/browser service exports and distinct dependency versions remain available. Legacy source packages and root public APIs remain in the repository for consumer migration; removing a staged root is not full package retirement.
+
+
+Root agent compatibility exports (`src/agent/{contracts,loop,mcp-client,chat-model}.ts`) now delegate to the shared `@core/agent-loop` package instead of retaining duplicate implementations. This is caller-code consolidation, not a claim that AgentLoop is an original native component. The root CUA/desktop SDK and QuickJS MCP server remain legacy and still require migration.

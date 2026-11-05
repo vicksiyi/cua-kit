@@ -179,3 +179,10 @@ A real subprocess test sets an invalid installed supervisor path and successfull
 
 
 Runtime staging now excludes the retired `@core/native-macos` adapter. The original Sky binding remains in the deployed package graph. Explicitly staging custom sources is still a caller capability; the normal deployment no longer installs the old service as a hidden alternative.
+
+
+## Public agent library and root compatibility exports
+
+`@core/agent-loop` now exports built ESM plus declarations, usable by plain Node without a TS loader. Run `npm run build:agent` (also part of root build/check and reconstruction build). Source imports remain extensionless; generated declarations use Node-compatible suffixes. `npm run build -w @core/agent-loop` is also supported.
+
+Existing root `@vicksiyi/cua-kit/agent/loop`, `/agent/mcp-client`, and `/agent/contracts` paths delegate to this package. Their consumers now receive current server initialization guidance, optional endTurn cleanup, MCP metadata/elicitation/media support and the same agent-neutral contracts. The old internal chat-model path also delegates to the shared provider. Root demo and MCP still use the legacy CUA/QuickJS server; sharing the caller does not turn that server into the restored Rust runtime.

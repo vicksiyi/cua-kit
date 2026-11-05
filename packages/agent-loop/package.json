@@ -4,13 +4,17 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "scripts": {
     "demo": "tsx src/demo.ts",
     "check": "tsc -p tsconfig.json",
     "mcp:restored": "tsx src/native-supervisor.ts",
-    "demo:restored": "tsx src/restored-demo.ts"
+    "demo:restored": "tsx src/restored-demo.ts",
+    "build": "node ../../scripts/build-agent-library.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

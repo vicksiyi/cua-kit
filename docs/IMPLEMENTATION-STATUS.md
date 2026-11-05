@@ -5937,3 +5937,10 @@ Validation: three selection tests and one real subprocess inventory test pass wi
 `restoredPackageSources()` no longer stages `@core/native-macos`. The deployment graph test verifies the legacy service cannot resolve inside the runtime while original Sky/browser services and both Statsig versions remain available. The old source package remains for existing direct consumers and reference tests.
 
 Validation: two staging tests, four runtime-selection tests (including real Rust/Swift inventory), and the real isolated browser demo test all pass without skips; agent-loop type checking passes. The browser test uses a deterministic local model fixture and actual Chromium open/click/read/completion, not a paid DeepSeek request or the daily Chrome profile. Desktop input/screenshot acceptance remains incomplete.
+
+
+### 2026-11-06: consolidate root public agent implementations
+
+Removed duplicate root AgentLoop, MCP client, contract and chat-model implementations in favor of compatibility exports from `@core/agent-loop`. Added a public ESM/declaration build for that workspace; normal root build/check and reconstruction build produce it. Original source imports stay extensionless. The root loop now receives configured provider guidance and invokes optional turn cleanup on success/failure through the shared implementation. This is agent-neutral caller consolidation, not native source reconstruction.
+
+Validation: root type check/build and workspace library build pass. Three tests pass: plain Node public import/identity, provider-guidance plus success/failure cleanup, and the existing actual HTTP model fixture → stdio MCP → QuickJS → owned Chromium test (including cancellation/reset). No paid model request or daily Chrome action occurred. Root CUA SDK/native provider and QuickJS MCP server still require replacement; the legacy integration passing is a compatibility check, not native-runtime acceptance.
