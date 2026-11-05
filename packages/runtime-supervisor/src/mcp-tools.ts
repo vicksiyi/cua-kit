@@ -1,0 +1,78 @@
+/** Tool schemas observed from the installed supervisor; only implemented endpoints are advertised. */
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
+export const supervisorTools: Tool[] = [
+  {
+    name: "js",
+    description:
+      'Execute JavaScript in a persistent `node_repl` with top-level await. Top-level bindings persist until `js_reset` and can be redeclared. Use `const` for stable values and `let` for changing values. Use dynamic imports such as `await import("playwright")`; top-level static imports and `node:process` are unavailable. Use `nodeRepl.write(value)` for output and `await nodeRepl.emitImage(image)` for images. Execution context is available through `nodeRepl.cwd`, `nodeRepl.homeDir`, `nodeRepl.tmpDir`, and `nodeRepl.requestMeta`. The default timeout is 30000 ms (30 seconds); increase `timeout_ms` for longer operations.',
+    inputSchema: {
+      additionalProperties: false,
+      properties: {
+        code: {
+          description: "JavaScript code to execute with top-level await.",
+          type: "string",
+        },
+        timeout_ms: {
+          description:
+            "Optional execution timeout in milliseconds. Defaults to 30000 (30 seconds) when omitted.",
+          minimum: 1,
+          type: "integer",
+        },
+        title: {
+          description: "Short user-facing description of what the code does.",
+          maxLength: 80,
+          minLength: 1,
+          type: "string",
+        },
+      },
+      required: ["code"],
+      type: "object",
+    },
+  },
+  {
+    name: "js_reset",
+    description: "Reset the JavaScript kernel and clear all bindings.",
+    inputSchema: {
+      additionalProperties: false,
+      properties: {},
+      type: "object",
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
+    },
+  },
+  {
+    name: "turn_ended",
+    description:
+      "Notify trusted libraries that a Codex turn ended. Repeated notifications for the same session and turn are ignored.",
+    inputSchema: {
+      additionalProperties: false,
+      properties: {
+        hook_event_name: {
+          minLength: 1,
+          type: "string",
+        },
+        session_id: {
+          minLength: 1,
+          type: "string",
+        },
+        turn_id: {
+          minLength: 1,
+          type: "string",
+        },
+      },
+      required: ["hook_event_name", "session_id", "turn_id"],
+      type: "object",
+    },
+    annotations: {
+      idempotentHint: true,
+    },
+    _meta: {
+      ui: {
+        visibility: [],
+      },
+    },
+  },
+];

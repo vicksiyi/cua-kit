@@ -13,6 +13,15 @@
       "types": "./src/process-port.ts",
       "import": "./dist/process-port.js",
       "default": "./dist/process-port.js"
+    },
+    "./mcp": {
+      "types": "./src/mcp.ts",
+      "import": "./dist/mcp.js",
+      "default": "./dist/mcp.js"
     }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
   }
 }
