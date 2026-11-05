@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 7,
-    "native-implementation-language-not-yet-parity-proof": 33,
+    "native-implementation-language-not-yet-parity-proof": 34,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3942,6 +3942,11 @@
       "sha256": "b64271f3ede321b0e7dc585ade22ce307c2430625d5b0a7400800b70144c07a9"
     },
     {
+      "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "a563c9998ea37c848c783a5b815f74e6ccfd7075a685ce6b7ffa9ba245e1c596"
+    },
+    {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "430c3f82b87bbf825cc7e04c09672b964b68a429ed2f0e82a1df33913bea1a55"
@@ -3949,7 +3954,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "4537058ca3302758d9fc9d1bba33b09960a3b2f1aa5a8ef45a4cd023ecaec66d"
+      "sha256": "62df45485b61792772d3356815997b7ba71f76c2e0ed2c998f15bdf837df0657"
     },
     {
       "path": "native/macos-sandbox/build.rs",
@@ -4019,7 +4024,7 @@
     {
       "path": "native/runtime-supervisor/src/sandbox_launcher.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "1b574bdc3fa3c23fea51519a9e037b86b4690f3f18e6965f96180e4c1b6418ff"
+      "sha256": "6159bf2a795061aabced6425fdbababddae295192e06b267c7ee309483257398"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",

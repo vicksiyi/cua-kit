@@ -96,6 +96,7 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
                 | "BROWSER_USE_DISABLE_AMBIENT_NETWORK"
                 | "NODE_REPL_TRUSTED_SERVICES"
                 | "NODE_REPL_TRUSTED_CODE_PATHS"
+                | "SKY_CUA_SERVICE_NATIVE_PIPE_PATH"
         ) || value.contains('\0')
         {
             return Err("Unsupported worker environment key or value".into());

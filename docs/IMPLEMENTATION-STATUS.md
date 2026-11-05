@@ -5327,3 +5327,34 @@ and native-macos typecheck. Rebuilding reconstructed packages passes. Read-only
 permission status for this host remains accessibility=false, screenRecording=false;
 no real App UI acceptance or TCC change is claimed. Native process ownership,
 Swift service IPC alignment and Rust/App runtime composition remain open.
+
+## Swift service using the original Sky wire contract (2026-11-06)
+
+`SkyIPC.swift` adds an explicitly selected `--sky-socket <absolute path>` mode to
+the independent Swift helper. It implements the observed four-byte little-endian
+8 MiB-bounded JSON-RPC frames, CodexComputerUseIPC-5 ping/version exchange and
+request envelope. It validates negotiation/deadline, rejects unknown operations,
+and serves ComputerUseIPCListAppsRequest through NSWorkspace. No vendor service
+is launched or impersonated. A private user-owned socket parent and same-user
+peer are required. This is not the vendor's sender authentication/session policy.
+
+Four live protocol cases pass: both the installed JS MacComputerUseClient and
+restored TS client can ping/list apps; malformed ordering/version/deadline and
+oversized frames fail; and actual restored CUA inventory traverses MCP, Rust's
+sandboxed workers, the unchanged @core/sky/service, Rust native-pipe routing and
+the Swift endpoint. Closing the Rust workers closes the connection, the owned
+one-connection Swift process exits normally, and its socket is removed. App names
+and machine inventory are not published in the acceptance report. 29 Rust tests,
+28 adapter tests and the Swift text self-test also pass.
+
+Run `npm run test:native-ipc` on this Mac to build prerequisites and enable these
+otherwise skipped integration cases. The original-JS comparison requires the
+installed ChatGPT app artifact. No model request, app launch, input, screenshot
+or permission prompt is performed by this gate.
+
+This is a protocol/ownership migration checkpoint, not full native App support.
+Policy requests, app startup/state/action/audio dispatch and original formatting
+still need native implementation; unsupported requests explicitly fail. The test
+harness currently owns service launch. Production Rust service supervision,
+launch-services integration, native sender/approval policy and replacing the old
+TS helper-spawn adapter remain open. The default demo route is unchanged.

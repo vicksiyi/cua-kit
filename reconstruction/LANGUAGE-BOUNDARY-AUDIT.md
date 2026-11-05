@@ -62,3 +62,10 @@ source-path literals and linked framework names. No original service is launched
 native Swift participation, not every function's implementation or recovered bodies.
 The native text formatter remains independently authored; exact original formatting,
 diff logic and IPC/schema compatibility are still pending.
+
+
+Swift IPC migration has begun in `native/macos/Sources/CuaHelper/SkyIPC.swift`.
+The unchanged original Sky JS-derived service now reaches the Swift inventory
+endpoint through Rust native pipes in an integration fixture, bypassing the
+independent TS helper-spawn adapter. Production service ownership and the remaining
+policy/state/action protocol still need migration before retiring that adapter.

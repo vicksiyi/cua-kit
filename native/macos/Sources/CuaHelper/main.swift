@@ -203,6 +203,10 @@ if CommandLine.arguments.contains("--self-test") {
     do { try runInputChecks(); print("{\"unicodeBoundaries\":true,\"keyChordFlags\":true}"); exit(0) }
     catch { fputs("Native input self-test failed: \(error)\n",stderr); exit(1) }
 }
+if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--sky-socket" {
+    do { try serveSkySocket(CommandLine.arguments[2]); exit(0) }
+    catch { fputs("Independent Sky IPC service failed: \(error)\n",stderr); exit(1) }
+}
 while let line = readLine() {
     var id: Any = NSNull()
     var response: [String: Any]
