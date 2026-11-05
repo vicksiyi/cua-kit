@@ -299,3 +299,16 @@ confirmation, or cancel in non-interactive mode. It does not override server
 policy denials or automatically complete URL-mode or data-entry forms. Each
 automatic approval is printed and recorded in the local debug log. This policy
 is demo configuration; embedding agents retain their own `elicit` callback.
+
+## Read-only browser preflight retry
+
+Before the model turn, `browserPreflight` obtains CUA documentation/state and a
+machine-readable browser inventory. If those tool results report failure or no
+browser, it waits two seconds and retries this read-only sequence once. Both
+attempts retain their tool responses and unique call IDs so initial API
+documentation is not lost when CUA emits it only once. Cancellation stops the
+wait; a thrown transport exception is propagated instead of retrying a closed
+MCP client. Navigation, clicks and typing are never replayed by this mechanism.
+The demo records `browser.preflight.retry` in its local debug log. A second
+failure still stops before model execution. This does not implement reconnection
+of a dead MCP process or recovery in the middle of a browser action.

@@ -138,6 +138,10 @@ try {
     ? await browserPreflight(turnClient, {
         signal: controller.signal,
         onMessage: trace,
+        onRetry: error => {
+          console.error("Browser inventory unavailable; retrying read-only preflight once in 2 seconds.");
+          debug?.write("browser.preflight.retry", { error });
+        },
       })
     : [];
   if (computerEnabled)
