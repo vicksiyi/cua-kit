@@ -142,3 +142,9 @@ CUA_LIVE_DEEPSEEK_TEST=1 npm run test:rust-browser
 包含隔离 CDP、Native Messaging 扩展、完整打包扩展三种部署。扩展场景用随机
 结果和本地服务端点击记录双重核验；最近真实模型测试曾先误用 accessibility
 点击，收到不支持提示后改用 Playwright 完成。任务成功不代表没有工具调用错误。
+
+
+浏览器输入能力：原版 `bind_tab` 会保留 `click` 等包装方法，即使底层 `tab.ax`
+不可用。因此方法存在不代表支持 AX 输入，`getAXState()` 也可能仅返回 DOM
+快照。调用侧现在明确提示检查能力与真实索引、缺少 AX 时使用 Playwright。
+这是 demo 提示，不修改还原 API；实际模型仍可能选错方法并从错误中恢复。

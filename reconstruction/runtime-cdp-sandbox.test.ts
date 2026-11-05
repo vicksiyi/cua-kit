@@ -5,6 +5,7 @@ import { AgentLoop } from "../packages/agent-loop/src/loop";
 import { createDemoModel } from "../packages/agent-loop/src/provider";
 import { browserPreflight } from "../packages/agent-loop/src/browser-preflight";
 import { createTerminalTrace } from "../packages/agent-loop/src/terminal-trace";
+import { BROWSER_INPUT_CONTEXT } from "../packages/agent-loop/src/browser-guidance";
 import { CDP_OPERATION_CONTEXT } from "../packages/agent-loop/src/cdp-guidance";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -118,7 +119,7 @@ test("independent sandboxed supervisor executes real browser input, click, read 
             { role: "assistant", toolCalls: [{ id: "1", name: "js", arguments: { code: bootstrapCode } }] },
             { role: "tool", callId: "1", name: "js", result: bootstrapResult },
             ...initialMessages,
-          ], runtimeContext: CDP_OPERATION_CONTEXT, onMessage: trace, signal: AbortSignal.timeout(90000) },
+          ], runtimeContext: `${BROWSER_INPUT_CONTEXT}\n${CDP_OPERATION_CONTEXT}`, onMessage: trace, signal: AbortSignal.timeout(90000) },
       );
       assert(result.answer.includes(marker));
       assert.deepEqual(submissions, [query]);

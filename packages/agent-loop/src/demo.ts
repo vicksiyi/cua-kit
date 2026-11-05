@@ -1,3 +1,4 @@
+import { BROWSER_INPUT_CONTEXT } from "./browser-guidance";
 import { CDP_OPERATION_CONTEXT } from "./cdp-guidance";
 import { createDebugLog } from "./debug-log";
 import { fileURLToPath } from "node:url";
@@ -181,6 +182,7 @@ try {
       initialMessages,
       summarizeOnExhaustion: true,
       runtimeContext: [
+        browserEnabled ? BROWSER_INPUT_CONTEXT : undefined,
         (serverEnv as Record<string, string>).BROWSER_USE_AVAILABLE_BACKENDS === "cdp"
           ? CDP_OPERATION_CONTEXT : undefined,
         process.env.CUA_DEMO_ATTACHED_BROWSER === "1"

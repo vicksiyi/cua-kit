@@ -1,0 +1,3 @@
+/** Caller guidance for original bind_tab behavior; not a change to restored APIs. */
+export const BROWSER_INPUT_CONTEXT =
+  "For browser tabs, getAXState() can return a DOM snapshot when the underlying tab.ax API is unavailable. The presence of tab.click, tab.typeText or tab.pressKey wrapper methods does not prove accessibility input is supported. Before using these wrappers, verify that tab.ax is available and that the latest state supplies actual numeric accessibility indices. Never derive indices from the order of lines in a DOM snapshot. When tab.ax is absent, use the documented tab.playwright locator APIs with roles/names observed on the page. This browser distinction does not change native app input APIs.";

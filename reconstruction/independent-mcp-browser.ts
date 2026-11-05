@@ -1,5 +1,6 @@
 import { prepareIndependentBrowserRuntime } from "../packages/agent-loop/src/independent-runtime";
 import type { AgentMessage } from "../packages/agent-loop/src/contracts";
+import { BROWSER_INPUT_CONTEXT } from "../packages/agent-loop/src/browser-guidance";
 import { CDP_OPERATION_CONTEXT } from "../packages/agent-loop/src/cdp-guidance";
 import { observedSearchLinks } from "./search-result-evidence";
 import { mkdtemp, writeFile } from "node:fs/promises";
@@ -29,7 +30,7 @@ export async function verifyIndependentMcpBrowser(
   hostDirectory?: string,
   backend: "chrome" | "cdp" = "chrome",
   scenario?: { question: string; expectedAnswer: RegExp },
-  verifyBeforeTurnEnd?: () => Promise<void>,
+  verifyEvidence?: () => Promise<void>,
 ) {
   const baiduSearch =
     process.env.CUA_LIVE_BAIDU_TEST === "1" ||
@@ -170,7 +171,7 @@ export async function verifyIndependentMcpBrowser(
             : `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
           {
             initialMessages,
-            runtimeContext: backend === "cdp" ? CDP_OPERATION_CONTEXT : undefined,
+            runtimeContext: [BROWSER_INPUT_CONTEXT, backend === "cdp" ? CDP_OPERATION_CONTEXT : undefined].filter(Boolean).join("\n"),
             onMessage: trace,
             // Live search includes repeated upstream site-status checks. Keep enough
             // observation time to distinguish transport delay from page failure.
@@ -180,7 +181,7 @@ export async function verifyIndependentMcpBrowser(
         console.error("DEEPSEEK ANSWER", result.answer);
         if (scenario) {
           assert.match(result.answer, scenario.expectedAnswer);
-          await verifyBeforeTurnEnd?.();
+          await verifyEvidence?.();
           return result;
         }
         if (baiduSearch || genericSearch) {
@@ -205,7 +206,7 @@ export async function verifyIndependentMcpBrowser(
           assert.ok(observedLinks.some(link => result.answer.includes(link)),
             "Final answer must preserve an observed result link or its decoded destination, including the full path");
         } else assert.match(result.answer, /action-completed-marker/);
-        await verifyBeforeTurnEnd?.();
+        await verifyEvidence?.();
         return;
       }
       await execute("await cua.getState();");
@@ -228,7 +229,7 @@ export async function verifyIndependentMcpBrowser(
       const clicked = await execute("await liveTab.getAXState();");
       assert.match(clicked, /action-completed-marker/);
       await execute("await liveTab.getScreenshot();", true);
-      await verifyBeforeTurnEnd?.();
+      await verifyEvidence?.();
     } finally {
       try {
         await turn.endTurn();

@@ -5272,8 +5272,7 @@ The controlled page now generates a random action marker and its button reports
 that marker to the local HTTP server. Live-model answers must contain the exact
 random marker, and the server must independently observe the click. This avoids
 relying on a fixed model answer or external Playwright page enumeration: newly
-created session pages were not visible to that enumeration. Verification runs
-before endTurn cleanup. Two deterministic and two actual DeepSeek extension
+created session pages were not visible to that enumeration. The HTTP evidence remains available after AgentLoop performs endTurn cleanup. Two deterministic and two actual DeepSeek extension
 cases pass. The latest live run recovered from two unsupported accessibility-input
 calls by using the exposed Playwright API; it is not a zero-tool-error result.
 
@@ -5281,3 +5280,25 @@ calls by using the exposed Playwright API; it is not a zero-tool-error result.
 both extension fixtures. Set CUA_LIVE_DEEPSEEK_TEST=1 for model-driven cases (uses
 local .env and API quota). Native App, daily Chrome startup, production host
 language provenance and full source-behavior parity remain separate open gates.
+
+## Browser input capability guidance (2026-11-06)
+
+Direct comparison with the installed `cua/.../tinysky_alt/bind_tab.js` confirms
+that original top-level click/type wrappers remain present even when tab.ax is
+absent; they reject accessibility input, while getAXState falls back to a DOM
+snapshot. The restored implementation matches this behavior. Do not manufacture
+numeric indices or add a fallback input implementation to hide the distinction.
+
+Added caller-only BROWSER_INPUT_CONTEXT to the demo and browser model fixtures:
+wrappers do not prove capability, DOM snapshot line order is not an AX index,
+and absent AX requires documented Playwright input. Restored CUA APIs/docs and
+native App input semantics are unchanged. Two original-source differential
+browser binding tests and agent-loop typecheck pass. Both real DeepSeek extension
+fixtures still pass randomized answer plus server-click verification; one tool
+capability mistake still occurred and was recovered. Guidance is a mitigation,
+not proof that the model will never choose the wrong API.
+
+Also corrected the acceptance callback name to verifyEvidence. AgentLoop.run
+itself calls endTurn before returning, so a callback after it cannot be called
+before-turn-end verification. Persistent local HTTP click evidence remains valid
+across that lifecycle; live browser-tab enumeration after run is not equivalent.
