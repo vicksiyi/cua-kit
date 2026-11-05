@@ -11,7 +11,7 @@ if (!process.env.CUA_CARGO) {
 }
 const manifest = join(root, 'native/browser-extension-host/Cargo.toml');
 execFileSync(cargo, ['test', '--locked', '--manifest-path', manifest], { cwd: root, stdio: 'inherit' });
-execFileSync(cargo, ['build', '--locked', '--manifest-path', manifest, '--examples'], { cwd: root, stdio: 'inherit' });
-execFileSync(process.execPath, ['--import', 'tsx', '--test', 'reconstruction/native-host-rust-router.test.ts', 'reconstruction/native-host-rust-transport.test.ts', 'reconstruction/native-host-rust-endpoint.test.ts'], {
+execFileSync(cargo, ['build', '--locked', '--manifest-path', manifest, '--bins', '--examples'], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, ['--import', 'tsx', '--test', 'reconstruction/native-host-rust-router.test.ts', 'reconstruction/native-host-rust-transport.test.ts', 'reconstruction/native-host-rust-endpoint.test.ts', 'reconstruction/native-host-rust-runtime.test.ts'], {
   cwd: root, stdio: 'inherit', env: { ...process.env, CUA_TEST_RUST_HOST_ROUTER: '1' },
 });

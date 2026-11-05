@@ -99,3 +99,6 @@ Native host transport/writer progress: framed JSON and bounded Unix client write
 
 
 The Rust private listener/descriptor and Core-token handshake now pass six endpoint tests and an existing-TS-client integration probe. Native cleanup rejects replacement-directory deletion; authentication has an absolute deadline. The gate totals 21 Rust cases and 4 cross-language checks. This is not original code-identity authorization, nor a production host switch; native event-loop composition and consumer migration remain open.
+
+
+The native host modules are now composed into a real Rust stdio/Unix executable with Core configuration/origin validation, bounded cross-thread events and shutdown cleanup. Restored client/extension peers exercise it in process-level tests. Production installation/CDP remain on TS, and original signature/app-server behavior remains open; this is a completed composition step rather than completed host migration.

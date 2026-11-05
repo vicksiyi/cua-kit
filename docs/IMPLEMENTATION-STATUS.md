@@ -2,7 +2,7 @@
 
 ## Browser extension host remains a native migration gap
 
-The installed extension-host executable is independently confirmed as Rust, distinct from the Rust REPL supervisor. Current `packages/native-host/src/{main,server,router}.ts` still implements those native roles, including the server embedded by the independent CDP adapter. Native writer queues, peer identity authorization, app-server/proxy and tab asset management also remain open. Rust routing, framed transport, bounded Unix writers, private endpoint lifecycle and Core-token handshake now pass 21 native tests and four cross-language checks. The existing TS client connects to the owned Rust endpoint in a fixture. These modules are not integrated into the production host executable yet. See `NATIVE-HOST-LANGUAGE-AUDIT.md`; Rust supervisor acceptance does not certify this host as migrated.
+The installed extension-host executable is independently confirmed as Rust, distinct from the Rust REPL supervisor. Current `packages/native-host/src/{main,server,router}.ts` still implements those native roles, including the server embedded by the independent CDP adapter. Native writer queues, peer identity authorization, app-server/proxy and tab asset management also remain open. A Core Rust host executable now composes routing, bounded stdio/client I/O, private endpoints and token authentication. Process tests use restored browser/extension peers and verify shutdown cleanup. Installation and CDP consumers still select the TS server; the Rust executable is not their default yet. See `NATIVE-HOST-LANGUAGE-AUDIT.md`; Rust supervisor acceptance does not certify this host as migrated.
 
 ## Default runtime build boundary
 

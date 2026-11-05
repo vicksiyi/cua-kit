@@ -9,7 +9,7 @@
     "native-boundary-needs-original-language-evidence": 10,
     "native-browser-host-role-migrate-to-rust": 3,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 55,
+    "native-implementation-language-not-yet-parity-proof": 57,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
     "original-js-browser-discovery-retain-typescript": 2
@@ -3903,7 +3903,12 @@
     {
       "path": "native/browser-extension-host/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "6b3bdd29760528ad52a7f33b6f439d128b8b771e846a4ee61dac92b20de70029"
+      "sha256": "8403077b6dbad2fa4223fbb2f459a6bb48bc41ea30561a53b5939e989f325cb7"
+    },
+    {
+      "path": "native/browser-extension-host/src/main.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "c098a035696fe29a35401320caf0e1c74c8879aa046945b54f151824d9a3f973"
     },
     {
       "path": "native/browser-extension-host/src/rpc_router.rs",
@@ -3911,9 +3916,14 @@
       "sha256": "c5d917ec28a7329558b02dafa56f9ff8bde7d7cacdfec5e0a6cea6b560e19cf9"
     },
     {
+      "path": "native/browser-extension-host/src/runtime.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "02d49954d772a9570267a1a3a3a8068a8f14418c302034ae3e8e56b008b769ea"
+    },
+    {
       "path": "native/browser-extension-host/src/transport.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "127c7f7ddbf2e4159b6802962b1ad23b923a848cc84678aa75aca5d7e628146f"
+      "sha256": "190d6192403b59273dd231efc63426021d0c77f31654d3c8dee9f586f3de30f9"
     },
     {
       "path": "native/macos/Package.swift",
@@ -4298,7 +4308,7 @@
     {
       "path": "scripts/test-native-host-router.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "5582255be0ae488612995591d362b48c7999e43d6dbc9e30b7b4b74956bb59a2"
+      "sha256": "ed82cc89e0a519f6f4527af0fbeba8bbed9ebb039cb6dda2d6d27d7065390173"
     }
   ]
 }

@@ -59,3 +59,14 @@ The Core capability handshake uses OS random bytes and `subtle 2.6.1` for consta
 Six endpoint tests pass, including denied tokens/version/type, slowly arriving authentication bytes, private permissions, replaced-directory protection, pipelined frames, long-path rollback and cleanup. The existing TS discovery/authentication/BrowserRpcPeer client successfully connects to a Rust-owned Unix listener, rejects a bad token, performs an owned fixture RPC and verifies endpoint removal after exit.
 
 The combined `npm run test:native-host-router` gate now passes 21 native tests and 4 cross-language checks. `endpoint_probe` is a single-request test fixture, not the production host. Connecting the native router, listener, workers and stdio in a supervised event loop, then switching installation and CDP consumers, remains required. No daily Chrome instance or installed original host was launched in these tests.
+
+
+## Composed Rust host executable checkpoint
+
+`native/browser-extension-host/src/main.rs` and `runtime.rs` now compose the listener, Core handshake, bounded client writers, router and framed stdio into a real native host executable. The command is `core-browser-extension-host --config <config.json> <chrome-extension origin>`; version-1 Core configuration must explicitly provide a private endpoint parent and registered extension IDs. This entry has not yet replaced the installed Node launcher or the CDP adapter's TS server.
+
+The event loop bounds accepted connections, cross-thread message traffic and extension-output buffering. Authentication and client reads run independently so an unauthenticated stalled connection does not stop healthy clients. EOF, SIGINT/SIGTERM, truncated input and output failure cancel pending requests, shut down connections, join client workers and remove the owned descriptor/socket. Stdout contains framed RPC only; the endpoint path is reported to stderr. Original code-identity authorization, app-server/proxy behavior and equivalent lifecycle logging remain open.
+
+Two macOS integration failures were corrected: accepted sockets inherit the nonblocking listener flag and must be reset for bounded blocking authentication; libuv socketpair stdout signals idle peer closure via readable EOF rather than necessarily POLLHUP. Tests exercise both actual behaviors.
+
+Seven new process-level cases use restored `ExtensionBrowserPeer`, `BrowserRpcPeer` and Core client code against the native executable: colliding request IDs, void replies, notifications, extension errors, wrong-token rejection, a stalled unauthenticated peer, three shutdown paths, invalid origin, truncated input and closed output. They use owned fake-extension streams, not daily Chrome or the original native host. Together with the existing tests, the gate covers 23 Rust cases and 11 cross-language/process cases. This establishes Core-host composition; real extension installation/CDP migration and original behavior parity are still unproven.

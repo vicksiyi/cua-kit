@@ -230,3 +230,34 @@ mod unix {
         writer.disconnect();
     }
 }
+
+#[test]
+fn event_loop_decoder_handles_one_byte_reads_and_clean_boundary_eof() {
+    use core_browser_extension_host::transport::Decoder;
+    let expected = vec![json!({"id":1,"text":"一"}), json!({"id":2})];
+    let bytes: Vec<u8> = expected
+        .iter()
+        .flat_map(|value| encode(value, 1024).unwrap())
+        .collect();
+    let mut decoder = Decoder::new(1024);
+    let mut actual = Vec::new();
+    for byte in bytes {
+        actual.extend(decoder.feed(&[byte]).unwrap());
+    }
+    decoder.finish().unwrap();
+    assert_eq!(actual, expected);
+}
+#[test]
+fn event_loop_decoder_rejects_oversize_headers_and_partial_eof() {
+    use core_browser_extension_host::transport::Decoder;
+    let mut decoder = Decoder::new(1024);
+    assert!(decoder.feed(&u32::MAX.to_ne_bytes()).is_err());
+    let mut decoder = Decoder::new(1024);
+    decoder.feed(&[1]).unwrap();
+    assert_eq!(
+        decoder.finish().unwrap_err().kind(),
+        io::ErrorKind::UnexpectedEof
+    );
+    let mut decoder = Decoder::new(1024);
+    assert!(decoder.feed(&vec![0; 65537]).is_err());
+}

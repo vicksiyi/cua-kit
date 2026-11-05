@@ -44,3 +44,62 @@ pub fn receive(reader: &mut impl Read, max_frame_bytes: usize) -> io::Result<Opt
         io::Error::new(io::ErrorKind::InvalidData, "invalid native host JSON frame")
     })
 }
+
+/// Incremental decoder for the nonblocking stdio event loop. Callers feed bounded
+/// read chunks; complete messages are emitted without waiting for stream closure.
+pub struct Decoder {
+    bytes: Vec<u8>,
+    limit: usize,
+}
+impl Decoder {
+    pub fn new(limit: usize) -> Self {
+        Self {
+            bytes: Vec::new(),
+            limit,
+        }
+    }
+    pub fn feed(&mut self, input: &[u8]) -> io::Result<Vec<Value>> {
+        if input.len() > 65536 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "transport read chunk exceeds limit",
+            ));
+        }
+        self.bytes.extend_from_slice(input);
+        let mut offset = 0;
+        let mut messages = Vec::new();
+        while self.bytes.len() - offset >= 4 {
+            let length =
+                u32::from_ne_bytes(self.bytes[offset..offset + 4].try_into().unwrap()) as usize;
+            if length > self.limit {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "native host frame exceeds limit",
+                ));
+            }
+            if self.bytes.len() - offset < 4 + length {
+                break;
+            }
+            messages.push(
+                serde_json::from_slice(&self.bytes[offset + 4..offset + 4 + length]).map_err(
+                    |_| {
+                        io::Error::new(io::ErrorKind::InvalidData, "invalid native host JSON frame")
+                    },
+                )?,
+            );
+            offset += 4 + length;
+        }
+        self.bytes.drain(..offset);
+        Ok(messages)
+    }
+    pub fn finish(&self) -> io::Result<()> {
+        if self.bytes.is_empty() {
+            Ok(())
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "truncated native host frame",
+            ))
+        }
+    }
+}
