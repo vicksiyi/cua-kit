@@ -93,3 +93,6 @@ The current installed browser extension host is a separate Rust executable from 
 
 
 The separate `native/browser-extension-host` crate now implements and tests the Core-compatible routing state machine in Rust. Seven native tests and thirty TS/Rust contract transitions pass. The production server and CDP consumers are still TS until native transport/writer/lifecycle integration is accepted; router role migration is in progress, not complete.
+
+
+Native host transport/writer progress: framed JSON and bounded Unix client writers now run in Rust and pass real Unix-socket plus JS/Rust stdio checks. These are executable native components, but the listener/authentication/event loop and production consumer switch are still pending. Tests now total 15 Rust cases plus 3 cross-language cases; no full host parity or browser acceptance claim follows from this.

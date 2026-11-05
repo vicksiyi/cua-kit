@@ -39,3 +39,12 @@ This audit is static evidence, not a passed browser acceptance test. It does not
 Run `npm run test:native-host-router`: seven Rust contract tests and a 30-transition differential against the **current Core TS router** pass. The latter is a compatibility check, not a differential against the installed original Rust host. The NDJSON `router_contract` example is exclusively a test harness and must not be registered as a browser Native Messaging host.
 
 Production `startNativeHost` and CDP still use the TS implementation. Native transport, writer queues, cleanup/authentication, installation/consumer switch, and original app-server/proxy capabilities remain required. The routing implementation alone does not retire the TS package or establish vendor algorithm parity.
+
+
+## Native transport and client-writer checkpoint
+
+The Rust crate now has native-endian framed JSON read/write helpers, with size checks before payload allocation and explicit rejection of truncated headers/bodies. Invalid JSON diagnostics omit payloads. Restored JS framing exchanges actual stdio messages with the Rust test executable, including Unicode, coalesced frames and fragmented response decoding.
+
+`client_writer` owns one bounded writer thread per Unix client. Both queued and in-flight frames count toward message/byte limits. Queue overflow, frame rejection, write failure and explicit disconnect close the socket, wake the writer and emit one terminal event. Real Unix socket tests connect the routing core to writers, verify colliding-ID replies and notifications, and show a non-reading client is disconnected without blocking another client's messages. The native event loop must still consume terminal events and remove routing state. Queue sizes remain explicit Core policy, not recovered original constants.
+
+`npm run test:native-host-router` now passes 15 Rust tests plus 3 cross-language checks (the 30-transition routing compatibility test and two framed-stdio tests). `framed_echo` and `router_contract` remain test-only executables, not production hosts. The Unix listener, authentication/endpoint lifecycle, host supervisor loop and installation/consumer switch are not implemented by these helpers; production still reaches TS.

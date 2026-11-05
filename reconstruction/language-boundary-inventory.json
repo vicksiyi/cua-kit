@@ -9,7 +9,7 @@
     "native-boundary-needs-original-language-evidence": 10,
     "native-browser-host-role-migrate-to-rust": 3,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 50,
+    "native-implementation-language-not-yet-parity-proof": 53,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
     "original-js-browser-discovery-retain-typescript": 2
@@ -3876,19 +3876,34 @@
       "sha256": "98931407da95ad2ad29545ee896b5654cfeda2a8a9dd2552f91854fed46779b9"
     },
     {
+      "path": "native/browser-extension-host/examples/framed_echo.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "ea0e362ac899571c7aa77f543ae08a8d1f5d1e1fbf79e01642d4bc694ede8f37"
+    },
+    {
       "path": "native/browser-extension-host/examples/router_contract.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "9b3ea1677bd53238b4827f9d5ee4b5223d59cc38c78d6d7fa1689a2e81a639c4"
     },
     {
+      "path": "native/browser-extension-host/src/client_writer.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "a5673f451d6e18443fdcf87c32c61abaff1f03425d29cf596bbabe6e8632619d"
+    },
+    {
       "path": "native/browser-extension-host/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "45fe56f88cc559526c25f0513641c4bfc6871508f1f75289f2ca699ef4d999f8"
+      "sha256": "7c7951b87f3d34cb7f981109e75e27510db41bad513855094f006abce60de750"
     },
     {
       "path": "native/browser-extension-host/src/rpc_router.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "c5d917ec28a7329558b02dafa56f9ff8bde7d7cacdfec5e0a6cea6b560e19cf9"
+    },
+    {
+      "path": "native/browser-extension-host/src/transport.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "127c7f7ddbf2e4159b6802962b1ad23b923a848cc84678aa75aca5d7e628146f"
     },
     {
       "path": "native/macos/Package.swift",
@@ -4273,7 +4288,7 @@
     {
       "path": "scripts/test-native-host-router.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "8007bc5f49ceb326a56aea1a2c2873ea28b6fca9c946a91fa16c440a9ad37f39"
+      "sha256": "0b0a020524db0398d9784ab818cd84c2574fdd1722eacd69ba12135fb93ebeba"
     }
   ]
 }
