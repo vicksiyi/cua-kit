@@ -93,3 +93,13 @@ Audit status remains per-responsibility and incomplete per-file. Source-evidence
 JS clients stay TS. Rust supervisor and Swift desktop responsibilities migrate to
 the corresponding native layers. Unknown native-host/WASM implementation languages
 remain explicitly unresolved rather than assigned a speculative language.
+
+
+Native app policy result construction/resolution is now implemented in Swift
+SkyAppPolicy.swift; Rust owns the standalone policy configuration passed to that
+service. The source-derived JS `computer-use-policy` continues as TS because its
+elicitation, metadata and approved-path logic are present in the original JS.
+This division was exercised through real MCP workers and the Swift endpoint.
+Original native rule contents/defaults remain unknown; explicit standalone rules
+must not be labeled original policy parity. App start/state/action and legacy
+adapter retirement remain open.

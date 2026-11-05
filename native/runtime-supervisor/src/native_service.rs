@@ -13,6 +13,31 @@ use std::{
 pub struct NativeServiceOptions {
     pub helper: PathBuf,
     pub directory: PathBuf,
+    /// Explicit standalone native policy; absent bundle IDs are denied.
+    #[serde(default)]
+    pub app_policy: BTreeMap<String, AppPolicyRule>,
+}
+#[derive(Clone, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct AppPolicyRule {
+    pub decision: AppDecision,
+    pub risk: AppRisk,
+    pub allow_persistent_approval: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub warning_subtitle: Option<String>,
+}
+#[derive(Clone, Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AppDecision {
+    Allowed,
+    Denied,
+    Forbidden,
+}
+#[derive(Clone, Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AppRisk {
+    High,
+    Low,
 }
 pub struct NativeService {
     process: ProcessWorker,
@@ -44,6 +69,10 @@ impl NativeService {
                 "Native service requires a private owned directory and executable file".into(),
             );
         }
+        let policy = serde_json::to_string(&options.app_policy).map_err(|e| e.to_string())?;
+        if policy.len() > 65_536 || options.app_policy.keys().any(|key| key.is_empty()) {
+            return Err("Invalid or oversized native app policy".into());
+        }
         let root = directory.join(format!("sky-{}", uuid::Uuid::new_v4().simple()));
         let socket_path = root.join("ipc.sock");
         if socket_path.as_os_str().as_encoded_bytes().len() >= 104 {
@@ -64,6 +93,7 @@ impl NativeService {
             env: BTreeMap::from([
                 ("PATH".into(), "/usr/bin:/bin".into()),
                 ("LANG".into(), "en_US.UTF-8".into()),
+                ("CORE_CUA_APP_POLICY".into(), policy),
             ]),
             max_frame_bytes: 4096,
             max_queued_bytes: 8192,

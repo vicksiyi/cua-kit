@@ -9,10 +9,10 @@ import {pathToFileURL} from 'node:url';
 import {MacComputerUseClient} from '../packages/sky/src/targets/mac/client';
 import {encodeMessageFrame,decodeMessageFrames} from '../packages/sky/src/targets/mac/native-pipe';
 const helper=resolve('native/macos/.build/debug/cua-helper');
-async function fixture(t:any) {
+async function fixture(t:any, policy:Record<string,unknown> = {}) {
  const root=await realpath(await mkdtemp('/tmp/core-sky-ipc-'));await chmod(root,0o700);
  const path=join(root,'ipc.sock');
- const child=spawn(helper,['--sky-socket',path],{env:{PATH:'/usr/bin:/bin',LANG:'en_US.UTF-8'},stdio:['ignore','ignore','pipe']});
+ const child=spawn(helper,['--sky-socket',path],{env:{PATH:'/usr/bin:/bin',LANG:'en_US.UTF-8',CORE_CUA_APP_POLICY:JSON.stringify(policy)},stdio:['ignore','ignore','pipe']});
  let stderr='';child.stderr.on('data',chunk=>stderr+=chunk);
  const exited=once(child,'exit');
  const sockets:Socket[]=[];
@@ -21,14 +21,32 @@ async function fixture(t:any) {
  const open=async()=>{const socket=connect(path);sockets.push(socket);await once(socket,'connect');return socket;};
  return {root,path,child,exited,open};
 }
+async function appFixture(root:string, identifier:string) {
+ const path=join(root,identifier+'.app');await mkdir(join(path,'Contents'),{recursive:true});
+ await writeFile(join(path,'Contents','Info.plist'),`<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${identifier}</string><key>CFBundleName</key><string>Policy Fixture</string><key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
+ return path;
+}
+const policyRules={
+ 'com.core.fixture.allowed':{decision:'allowed',risk:'low',allowPersistentApproval:true},
+ 'com.core.fixture.forbidden':{decision:'forbidden',risk:'high',allowPersistentApproval:false,warningSubtitle:'Fixture rule'},
+};
 for(const source of ['restored','installed'] as const) test(`Swift IPC accepts ${source} Sky client handshake and app inventory`,{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:10000},async t=>{
- const f=await fixture(t);
+ const f=await fixture(t,policyRules);
  const before=(globalThis as any).nodeRepl;
  (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open},requestMeta:{'x-codex-turn-metadata':{session_id:'fixture',turn_id:'one'}}};
  try{
   const Client=source==='restored'?MacComputerUseClient:(await import(pathToFileURL('/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/targets/mac/client.js').href)).MacComputerUseClient;
   const client=new Client();const apps=await client.listApps();
   assert.ok(Array.isArray(apps));for(const app of apps){assert.equal(typeof app.isRunning,'boolean');assert.ok(app.displayName===undefined||typeof app.displayName==='string');}
+  for(const [identifier,decision] of [['com.core.fixture.allowed','allowed'],['com.core.fixture.forbidden','forbidden'],['com.core.fixture.unconfigured','denied']]) {
+   const path=await appFixture(f.root,identifier);const policy=await client.getAppPolicy(path);
+   assert.equal(policy.decision,decision);assert.equal(policy.target.bundleIdentifier,identifier);
+   assert.equal(await realpath(policy.target.appPath),await realpath(path));
+   assert.equal(policy.allowPersistentApproval,decision==='allowed');
+   assert.equal(policy.target.risk,decision==='allowed'?'low':'high');
+   if(decision==='forbidden')assert.equal(policy.target.warningSubtitle,'Fixture rule');
+  }
+  await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
   await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10003);
  }finally{(globalThis as any).nodeRepl=before;}
 });
@@ -58,9 +76,14 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
  const kernel=join(f.root,'kernel'),trusted=join(f.root,'trusted');await Promise.all([mkdir(kernel),mkdir(trusted)]);
  const worker=(isTrusted:boolean)=>({sandbox:{node:process.execPath,bootstrap:resolve('packages/runtime-supervisor/dist/sandbox-bootstrap.js'),addon:resolve('native/macos-sandbox/dist/sandbox.node'),entry:resolve('packages/node-repl/dist/'+(isTrusted?'trusted_worker.js':'kernel.js')),args:isTrusted?[trusted]:['--session-id','sky-ipc','--working-dir',kernel],directory:isTrusted?trusted:kernel,read_directories:[resolve('packages/node-repl'),resolve('node_modules'),staged.root],worker_environment:{NODE_REPL_TRUSTED_RPC_ENABLED:'1',NODE_REPL_TRUSTED_SERVICES:JSON.stringify({sky:'@core/sky/service'}),NODE_REPL_TRUSTED_CODE_PATHS:staged.root,NODE_REPL_NODE_MODULE_DIRS:staged.root,NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:'CUA_REPL_ENABLED_SURFACES',CUA_REPL_ENABLED_SURFACES:'computer'}}});
  const config=join(f.root,'config.toml'),requirements=join(f.root,'requirements.toml');await Promise.all([writeFile(config,''),writeFile(requirements,'')]);
- const spec=join(f.root,'runtime.json');await writeFile(spec,JSON.stringify({kernel:worker(false),trusted:worker(true),services:['sky'],pipe_paths:[],native_service:{helper,directory:root},config:{config,requirements,working_directories:[trusted],toml_files:{}}}),{mode:0o600});
+ const spec=join(f.root,'runtime.json');await writeFile(spec,JSON.stringify({kernel:worker(false),trusted:worker(true),services:['sky'],pipe_paths:[],native_service:{helper,directory:root,app_policy:policyRules},config:{config,requirements,working_directories:[trusted],toml_files:{}}}),{mode:0o600});
  const transport=new StdioClientTransport({command:resolve('native/runtime-supervisor/dist/core-runtime-supervisor'),args:[spec],env:{HOME:f.root,TMPDIR:f.root},stderr:'pipe'});
- const mcp=new Client({name:'native-owner-test',version:'1.0'});await mcp.connect(transport);
+ const {ElicitRequestSchema}=await import('@modelcontextprotocol/sdk/types.js');
+ const mcp=new Client({name:'native-owner-test',version:'1.0'},{capabilities:{elicitation:{form:{}}}});
+ let approvalCount=0;
+ mcp.setRequestHandler(ElicitRequestSchema,request=>{approvalCount++;assert.match(request.params.message,/Policy Fixture/);assert.equal(request.params._meta?.riskLevel,'low');assert.deepEqual(request.params._meta?.persist,['session','always']);assert.deepEqual(request.params._meta?.tool_params,{app:'com.core.fixture.allowed'});return {action:'decline' as const};});
+ await mcp.connect(transport);
+ const policyApp=await appFixture(root,'com.core.fixture.allowed');
  const children=()=>execFileSync('/bin/ps',['-axo','pid=,ppid='],{encoding:'utf8'}).trim().split('\n').map(line=>line.trim().split(/\s+/).map(Number)).filter(([,parent])=>parent===transport.pid).map(([pid])=>pid);
  const gone=(pids:number[])=>{for(const pid of pids)assert.throws(()=>process.kill(pid,0),(error:any)=>error.code==='ESRCH');};
  const inventory=async()=>{
@@ -70,7 +93,15 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
  };
  let active:number[]=[];
  try {
-  await inventory();const first=children();assert.equal(first.length,3,'Rust owns kernel, trusted worker and Swift service');
+  await inventory();
+  const denied=await mcp.callTool({name:'js',arguments:{code:`await cua.getApp(${JSON.stringify(policyApp)});`}});
+  assert.equal(denied.isError,true);assert.match(JSON.stringify(denied),/not approved/);assert.equal(approvalCount,1);
+  for(const [identifier,reason] of [['com.core.fixture.forbidden','safety reasons'],['com.core.fixture.unconfigured',"organization's policy"]]) {
+   const path=await appFixture(root,identifier);
+   const blocked=await mcp.callTool({name:'js',arguments:{code:`await cua.getApp(${JSON.stringify(path)});`}});
+   assert.equal(blocked.isError,true);assert.ok(JSON.stringify(blocked).includes(reason));assert.equal(approvalCount,1,'Blocked policies must not request approval');
+  }
+  const first=children();assert.equal(first.length,3,'Rust owns kernel, trusted worker and Swift service');
   assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,1);
   const reset=await mcp.callTool({name:'js_reset',arguments:{}});assert.equal(Boolean(reset.isError),false);gone(first);
   assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,0);

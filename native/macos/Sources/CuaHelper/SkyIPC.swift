@@ -9,7 +9,7 @@ private struct SkyRPCFailure: Error { let code: Int; let message: String }
 private func rpcFailure(_ code: Int, _ message: String) -> SkyRPCFailure { SkyRPCFailure(code: code, message: message) }
 
 @MainActor
-private func skyReply(_ data: Data, negotiated: inout Bool) -> [String: Any] {
+private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPolicy) -> [String: Any] {
     var id: Any = NSNull()
     do {
         guard let request = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -41,6 +41,13 @@ private func skyReply(_ data: Data, negotiated: inout Bool) -> [String: Any] {
                     if let path = app.bundleURL?.path { value["appPath"] = path }
                     return value
                 }
+            case "ComputerUseIPCAppPolicyRequest":
+                let payload = params["request"] as! [String: Any]
+                guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw rpcFailure(-32602, "App policy requires a non-empty app reference")
+                }
+                do { result = try appPolicy.evaluate(app) }
+                catch { throw rpcFailure(-10010, "Installed application could not be resolved") }
             default:
                 throw rpcFailure(-10003, "Computer Use request type is not implemented by this independent service")
             }
@@ -78,6 +85,7 @@ private func writeAll(_ fd: Int32, _ data: Data) throws {
 /// No vendor endpoint, entitlement or authentication identity is impersonated.
 @MainActor
 func serveSkySocket(_ path: String) throws {
+    let appPolicy = try SkyAppPolicy()
     guard path.hasPrefix("/"), !path.utf8.contains(0) else { throw rpcFailure(-32602, "Expected an absolute socket path") }
     let parent = URL(fileURLWithPath: path).deletingLastPathComponent().resolvingSymlinksInPath().path
     var metadata = stat()
@@ -111,7 +119,7 @@ func serveSkySocket(_ path: String) throws {
         let size = header.enumerated().reduce(0) { $0 | Int($1.element) << (8 * $1.offset) }
         guard size > 0 && size <= skyFrameLimit else { throw rpcFailure(-32600, "Invalid native frame length") }
         let body = try readExact(connection, size)!
-        let response = try JSONSerialization.data(withJSONObject: skyReply(body, negotiated: &negotiated), options: [.sortedKeys])
+        let response = try JSONSerialization.data(withJSONObject: skyReply(body, negotiated: &negotiated, appPolicy: appPolicy), options: [.sortedKeys])
         guard response.count <= skyFrameLimit else { throw rpcFailure(-32600, "Native reply exceeds frame limit") }
         let length = UInt32(response.count)
         let prefix = Data((0..<4).map { UInt8(truncatingIfNeeded: length >> (8 * $0)) })

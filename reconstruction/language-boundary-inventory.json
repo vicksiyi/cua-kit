@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 7,
-    "native-implementation-language-not-yet-parity-proof": 35,
+    "native-implementation-language-not-yet-parity-proof": 36,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3942,9 +3942,14 @@
       "sha256": "b64271f3ede321b0e7dc585ade22ce307c2430625d5b0a7400800b70144c07a9"
     },
     {
+      "path": "native/macos/Sources/CuaHelper/SkyAppPolicy.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "da80e1a348ebf94fccdf78d03186e5da4ba87b7326d0ae5e08d8b6e05ca7aa05"
+    },
+    {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "6fffd143af3af9472b3fcc2be0a1b36bb2b5fdf726f802c16d9e6c4fb74cece5"
+      "sha256": "aca65e5b1067d10d4c7c1da16c7a49bee33d564f6cfc7d964d3bf8e8cf9fcb95"
     },
     {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
@@ -4014,7 +4019,7 @@
     {
       "path": "native/runtime-supervisor/src/native_service.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "7bdb5ea01fad60c97f543bf5557e6acc8f0ae7f0296faebe7b6c58365b739f37"
+      "sha256": "591264bf8e82ab00278be2a7f36c180b99a01a80b27bcca9a3514bbef6df8b89"
     },
     {
       "path": "native/runtime-supervisor/src/process_port.rs",

@@ -391,3 +391,41 @@ inventory and lifecycle only: app policy/start/state/action dispatch, vendor sen
 authentication and production launch-services integration remain open. The default
 demo selection is unchanged. This is independent native reconstruction using
 observed contracts, not recovery of unavailable original native function bodies.
+
+
+## Native App policy dispatch (2026-11-06)
+
+`ComputerUseIPCAppPolicyRequest` now dispatches to Swift `SkyAppPolicy`, resolving
+an installed app name, bundle ID or path through the native LaunchServices adapter.
+It returns the observed `decision`, `allowPersistentApproval` and target
+`appPath/bundleIdentifier/displayName/risk/warningSubtitle` schema. Invalid app
+references produce -10010; malformed request arguments produce -32602.
+
+The source-derived policy boundary is preserved: native policy is evaluated first;
+the restored Sky JS/TS `computer-use-policy` then performs MCP elicitation, rejects
+decline/cancel, and substitutes the resolved app path before an operation. An
+`allowed` policy is **not** approval. Denied/forbidden policies never elicit.
+
+The original native policy database/default rules are unavailable. Standalone
+rules are therefore explicit Rust-owned configuration, serialized to the Swift
+service in CORE_CUA_APP_POLICY, not injected into the kernel or inferred from
+model output. Example field inside `native_service`:
+
+```json
+{"app_policy":{"com.example.Target":{"decision":"allowed","risk":"high","allowPersistentApproval":false}}}
+```
+
+Supported decisions are allowed/denied/forbidden; risk is high/low; optional
+warningSubtitle is preserved. Missing bundle IDs default to denied. This default
+and storage mechanism are independent deployment choices, not claims about Codex
+policy defaults. No vendor safety catalog, enterprise policy inheritance or sender
+authentication has been reconstructed by this change.
+
+Both the installed original JS client and the restored TS client pass native
+policy tests for allowed/forbidden/unconfigured apps and invalid app paths. The
+actual MCP/Rust/sandboxed-worker/Sky/Swift chain checks policy response metadata,
+asks approval for an allowed fixture app, and verifies decline stops execution.
+Forbidden/unconfigured fixtures fail before elicitation. Fixtures are temporary
+.app metadata bundles: no application is launched and no UI permission requested.
+The four IPC tests and 29 Rust regression tests pass. App start/skyshot/action
+requests remain explicitly unsupported on this original-protocol service route.
