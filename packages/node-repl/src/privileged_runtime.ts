@@ -1,3 +1,4 @@
+import type { KeyObject } from "node:crypto";
 import { createPrivilegedNodeReplConfig } from "./privileged_config";
 import { createLifecycleHandlers } from "./lifecycle_handlers";
 import { createNativePipeBridge } from "./native_pipe_bridge";
@@ -8,6 +9,7 @@ import {
   trackExecBackgroundOperation,
 } from "./background_operations";
 import type { createWorkerRuntime, ExecState } from "./worker_runtime";
+type PrivateKeys = Readonly<{ get(name: string): KeyObject | undefined }>;
 type Runtime = ReturnType<typeof createWorkerRuntime>;
 type HostOperations = ReturnType<typeof createPrivilegedHostOperations>;
 type BridgeOptions = HostOperations & {
@@ -17,12 +19,14 @@ type BridgeOptions = HostOperations & {
   getCurrentExecState: () => ExecState;
   nativePipe: ReturnType<typeof createNativePipeBridge>["nativePipe"];
   nodeRepl: Runtime["nodeRepl"];
+  privateKeys?: PrivateKeys;
   pendingRequests: Runtime["pendingRequests"];
   send: Runtime["send"];
   getTelemetryBridge: () => unknown;
 };
 export type PrivilegedNodeRepl = Runtime["nodeRepl"] &
   Readonly<{
+    privateKeys: PrivateKeys | undefined;
     addAfterSubmittedCodeHook: BridgeOptions["addAfterSubmittedCodeHook"];
     addTurnEndedHandler: BridgeOptions["addTurnEndedHandler"];
     gaasBrowserConfig: ExecState["gaasBrowserConfig"];
@@ -54,6 +58,7 @@ function createPrivilegedNodeReplBridge({
   nativePipe,
   nodeRepl,
   pendingRequests,
+  privateKeys,
   send,
   getTelemetryBridge,
 }: BridgeOptions): PrivilegedNodeRepl {
@@ -153,6 +158,12 @@ function createPrivilegedNodeReplBridge({
   });
 
   const privilegedNodeReplProperties: PropertyDescriptorMap = {
+    privateKeys: {
+      configurable: false,
+      enumerable: true,
+      value: privateKeys,
+      writable: false,
+    },
     addTurnEndedHandler: {
       configurable: false,
       enumerable: true,
@@ -319,10 +330,12 @@ function nonEmptyString(value: unknown) {
 export function createPrivilegedWorkerRuntime({
   env,
   runtime,
+  privateKeys,
   getTelemetryBridge = () => undefined,
 }: {
   env: Record<string, string | undefined>;
   runtime: Runtime;
+  privateKeys?: PrivateKeys;
   getTelemetryBridge?: () => unknown;
 }) {
   const { execContext, pendingRequests, send } = runtime;
@@ -353,6 +366,7 @@ export function createPrivilegedWorkerRuntime({
       getCurrentExecState: execContext.getCurrent,
       nativePipe: nativePipeBridge.nativePipe,
       nodeRepl: runtime.nodeRepl,
+      privateKeys,
       pendingRequests,
       send,
       getTelemetryBridge,

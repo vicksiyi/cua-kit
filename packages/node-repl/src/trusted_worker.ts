@@ -1,3 +1,4 @@
+import { createPrivateKey, type KeyObject } from "node:crypto";
 // Trusted service host. JSONL stdout belongs to the supervisor.
 import { Console } from "node:console";
 import { realpathSync } from "node:fs";
@@ -93,7 +94,10 @@ globalThis.console = runtime.createConsole(
   stderrConsole as unknown as Record<string, (...args: unknown[]) => unknown>,
 ) as unknown as typeof console;
 Object.freeze(runtime.nodeRepl);
+const privateKeys = new Map<string, KeyObject>();
+let privateInitializationClosed = false;
 const privilegedRuntime = createPrivilegedWorkerRuntime({
+  privateKeys: Object.freeze({ get: (name: string) => privateKeys.get(name) }),
   env,
   runtime,
   getTelemetryBridge: () =>
@@ -154,7 +158,7 @@ async function loadHandler(service: string) {
     }
     handler = responseMetaTracer.bridge.withSpan(
       "node_repl.service.load",
-      { "node_repl.service": service },
+      { "node_repl.service": traceService(service) },
       async () => {
         const module = await import(resolveTrustedService(configured));
         if (typeof module.handleRpc !== "function") {
@@ -173,7 +177,27 @@ async function loadHandler(service: string) {
   return await handler;
 }
 
-async function runInExecContext(message: HostMessage, operation: (setErrorKind: SetErrorKind) => unknown | Promise<unknown>) {
+function traceService(service: unknown) {
+  return service === "browser" || service === "sky" ? service : "other";
+}
+function traceOperation(request: any) {
+  const operation = request?.type ?? request?.method;
+  switch (operation) {
+    case "setup":
+    case "execute":
+    case "drag_start":
+    case "drag_move":
+    case "drag_end":
+      return operation;
+    default:
+      return "other";
+  }
+}
+
+async function runInExecContext(
+  message: HostMessage,
+  operation: (setErrorKind: SetErrorKind) => unknown | Promise<unknown>,
+) {
   const execState = runtime.createExecState(message);
   let errorKind: string | undefined;
   execContext.activate(execState.id);
@@ -213,24 +237,50 @@ async function runInExecContext(message: HostMessage, operation: (setErrorKind: 
 }
 
 async function handleServiceRequest(message: HostMessage) {
-  await runInExecContext(message, async (setErrorKind) => {
-    const { handleRpc, classifyError } = await loadHandler(message.service);
-    try {
-      return await handleRpc(message.request);
-    } catch (error) {
-      try {
-        if (typeof classifyError === "function") {
-          setErrorKind(await classifyError(error));
+  await runInExecContext(message, async (setErrorKind) =>
+    responseMetaTracer.bridge.withSpan(
+      "node_repl.service.request",
+      {
+        "node_repl.operation": traceOperation(message.request),
+        "node_repl.service": traceService(message.service),
+      },
+      async () => {
+        const { handleRpc, classifyError } = await loadHandler(message.service);
+        try {
+          return await handleRpc(message.request);
+        } catch (error) {
+          try {
+            if (typeof classifyError === "function")
+              setErrorKind(await classifyError(error));
+          } catch {
+            /* Classification must not replace the original failure. */
+          }
+          throw error;
         }
-      } catch {
-        // Diagnostic classification must not replace the original failure.
-      }
-      throw error;
-    }
-  });
+      },
+    ),
+  );
 }
 
 function handleNodeReplMessage(message: HostMessage) {
+  if (message.type === "private_keys") {
+    try {
+      if (privateInitializationClosed) throw new Error();
+      privateInitializationClosed = true;
+      for (const [name, pem] of Object.entries(message.keys)) {
+        privateKeys.set(name, createPrivateKey(pem as string));
+      }
+    } catch {
+      stderrConsole.error("Private key initialization failed");
+      process.exit(1);
+    }
+    return;
+  }
+  privateInitializationClosed = true;
+  if (message.type === "service") {
+    void handleServiceRequest(message);
+    return;
+  }
   if (message.type === "turn_ended") {
     const execState = runtime.createExecState(message);
     execContext.activate(execState.id);
@@ -257,10 +307,4 @@ function handleNodeReplMessage(message: HostMessage) {
   }
 }
 
-runtime.listen((message) => {
-  if (message.type === "service") {
-    void handleServiceRequest(message);
-    return;
-  }
-  handleNodeReplMessage(message);
-});
+runtime.listen(handleNodeReplMessage);

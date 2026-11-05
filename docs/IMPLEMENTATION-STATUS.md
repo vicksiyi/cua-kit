@@ -4801,3 +4801,23 @@ human verification and stopped. No CDP disconnect occurred. This verifies the
 previous disconnect fix, NOT a successful retrieval of Baidu's first result;
 that run remains blocked by the site's human verification. Local debug traces
 remain ignored and are not committed.
+
+### 2026-11-05 — updated trusted-worker protocol restoration
+
+Restored the installed worker's `private_keys` initialization message into
+readable TypeScript: crypto KeyObjects are held by the trusted worker, exposed
+only through a frozen get-only privateKeys bridge on the trusted nodeRepl.
+Initialization is accepted once before other messages; duplicate, late or
+malformed initialization exits with a fixed diagnostic that omits key material.
+No key is copied to the untrusted kernel nodeRepl. Also aligned trusted-service
+request spans and the upstream service/operation telemetry allowlists.
+
+A differential test runs original extracted and restored workers with an
+in-memory generated fixture key, verifies actual signing, absent-key behavior,
+repeated/late/malformed initialization and secret-free failures. It and three
+existing trusted-worker differential tests pass; TypeScript check passes.
+This closes these particular source deltas, not all new tracing features or the
+native supervisor implementation gap. No production keys or debug logs are
+committed.
+
+All five actual native-supervisor MCP integration cases also pass after this change, including reset/cancellation, trusted RPC and allowed/denied browser operations.
