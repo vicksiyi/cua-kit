@@ -1,4 +1,5 @@
 import test from "node:test";
+import { stageRuntimePackages } from "../packages/agent-loop/src/runtime-packages";
 import { WorkerSession } from "../packages/runtime-supervisor/src/session";
 import { launchSandboxedWorker, sandboxedWorkerSpec } from "../packages/runtime-supervisor/src/sandbox-launcher";
 import assert from "node:assert/strict";
@@ -84,7 +85,7 @@ test(
 );
 
 test(
-  "restored workers execute only after the strict bootstrap applies filesystem policy",
+  "restored CUA and browser service initialize under the strict sandbox launcher",
   {
     skip:
       process.platform !== "darwin" ||
@@ -130,19 +131,25 @@ test(
     assert.equal(spec.env.PATH, undefined);
     assert.equal(spec.env.NODE_OPTIONS, undefined);
     await writeFile(join(trustedDir, "private.txt"), "trusted scratch");
+    const staged = await stageRuntimePackages([resolve("packages/browser-desktop"), resolve("packages/cua")]);
     const session = new WorkerSession({
-      services: ["fixture"],
+      services: ["fixture", "browser"],
       launch: async () => {
         const start = (entry: string, args: string[], directory: string) => {
           return launchSandboxedWorker({
             node: process.execPath, bootstrap, addon, entry, args,
-            directory, readDirectories: [workers, dependencies, codeDir],
+            directory, readDirectories: [workers, dependencies, codeDir, staged.root],
             workerEnvironment: {
               NODE_REPL_TRUSTED_RPC_ENABLED: "1",
               NODE_REPL_TRUSTED_SERVICES: JSON.stringify({
                 fixture: join(codeDir, "service.js"),
+                browser: "@core/browser-desktop/service",
               }),
-              NODE_REPL_TRUSTED_CODE_PATHS: codeDir,
+              NODE_REPL_TRUSTED_CODE_PATHS: [codeDir, staged.root].join(":"),
+              NODE_REPL_NODE_MODULE_DIRS: staged.root,
+              NODE_REPL_UNTRUSTED_ENV_ALLOWLIST: "CUA_REPL_ENABLED_SURFACES,CUA_REPL_BROWSER_ENV",
+              CUA_REPL_ENABLED_SURFACES: "browser",
+              CUA_REPL_BROWSER_ENV: "codex-app",
             },
             terminateGraceMs: 20,
           });
@@ -185,12 +192,23 @@ test(
       );
       assert.equal(trusted.ok, true, JSON.stringify(trusted));
       assert.equal(trusted.output, "trusted fixture");
+      const browser = await session.execute(
+        'const setup = await nodeRepl.rpc("browser",{method:"setup",params:{environment:"codex-app"}});nodeRepl.write(JSON.stringify({version:setup.credentialRecoveryErrorVersion, manifest:typeof setup.apiManifest}))',
+      );
+      assert.equal(browser.ok, true, JSON.stringify(browser));
+      assert.deepEqual(JSON.parse(browser.output!), { version: 1, manifest: "object" });
+      const cua = await session.execute(
+        'await import("@core/cua/tinyskyAlt");nodeRepl.write("CUA_READY:"+typeof globalThis.cua.getTab+":"+typeof globalThis.cua.createBrowserTab)',
+      );
+      assert.equal(cua.ok, true, JSON.stringify(cua));
+      assert.match(cua.output ?? "", /CUA_READY:function:function/);
       const environment = await session.execute(
         "nodeRepl.write(nodeRepl.env.CORE_CUA_SANDBOX_PROFILE===undefined && nodeRepl.env.CORE_CUA_SANDBOX_ADDON===undefined)",
       );
       assert.equal(environment.output, "true");
     } finally {
       await session.close();
+      await staged.dispose();
       await rm(root, { recursive: true, force: true });
     }
   },

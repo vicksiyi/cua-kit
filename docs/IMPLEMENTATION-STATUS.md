@@ -4696,3 +4696,7 @@ The explicit npm run test:sandbox gate built the native addon and reconstruction
 ### 2026-11-05: explicit sandbox launcher configuration
 
 Added exported sandbox-launcher API with canonical existing path validation, read/write separation, fixed Node startup flags and exact allowlisted worker environment. Replaced hand-built OS integration launcher with this reusable entry. Runtime supervisor type check and both explicit OS tests pass (no skips), including rejected NODE_OPTIONS/root/overlap configuration and EPERM on kernel reads of trusted-worker scratch. Earlier full reconstruction build passed after the launcher implementation. Trusted code path replacement races, overly broad caller-chosen read roots, production service configuration and deprecated sandbox API portability remain unresolved; this is not daily Chrome acceptance or a default demo switch.
+
+### 2026-11-05: restored CUA/browser service sandbox startup
+
+Extended the explicit sandbox integration from fixture-only service routing to staged real @core/cua and @core/browser-desktop packages and dependencies. Actual browser setup returns its API manifest; importing tinyskyAlt initializes the public getTab/createBrowserTab functions through the recovered RPC path. Explicit launcher environment supports module directories and CUA surface selection without ambient inheritance. Two OS tests pass, including existing denial probes. This is real service initialization only; no browser connection or UI action is claimed. Default demo remains unchanged.
