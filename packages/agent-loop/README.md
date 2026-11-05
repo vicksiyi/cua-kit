@@ -256,3 +256,27 @@ receives its remaining decision budget. Summaries can be mistaken; the host's
 incomplete status is independent of their wording. This does not establish that
 the original twelve-step search failure or all navigation inefficiencies are
 resolved.
+
+### CDP input guidance and live form acceptance
+
+For the explicitly selected CDP backend, the demo supplies host guidance separate
+from the restored API documentation: omit unsupported tab visibility options,
+use Playwright controls for DOM-only tabs rather than numeric AX inputs, and
+prefer observed accessible roles/names over hidden legacy CSS fields. This is
+model guidance, not a new backend capability or a guarantee against mistakes.
+
+An opt-in real DeepSeek/MCP/CDP acceptance test presents a hidden legacy input
+and a visible textarea, submits a fresh random query, independently checks the
+server received that query, and verifies the final answer includes a random
+marker revealed only after submission:
+
+```sh
+CUA_LIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/cdp-deepseek-visible-form.test.ts
+```
+
+It uses the local `.env` and live model billing, and otherwise skips by default.
+The current run completed in five decisions with zero tool errors. The external
+Baidu reproduction also improved from the preceding run's twelve decisions and
+three errors to four decisions with zero errors, but still encountered Baidu's
+CAPTCHA and returned no result URL. These are observed individual runs, not a
+statistical reliability claim or a CAPTCHA workaround.

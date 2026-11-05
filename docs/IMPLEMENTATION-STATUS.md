@@ -4903,3 +4903,20 @@ actions run. Agent-loop typecheck passes. A real DeepSeek fixture run returned
 the independently supplied marker after exactly one observation, one summary
 request and one endTurn; the host still rejected the run as budget-exhausted.
 This is provider/loop validation, not browser or native App acceptance.
+
+### 2026-11-06 — CDP action selection verified with visible/hidden fields
+
+Added demo-host CDP guidance for unsupported visibility options, DOM-only input,
+and role-based visible control selection. Restored CUA semantics/docs are not
+modified. A new opt-in live DeepSeek fixture traverses real restored MCP and CDP,
+submits a random value through a visible textarea alongside a hidden legacy
+input, and reads a result-only random marker. Independent HTTP submission checks
+pass; this run used five decisions and had zero tool errors.
+
+The exact external Baidu search was rerun through the interactive CLI. It used
+four model decisions with zero tool errors, compared with twelve decisions and
+three errors in the immediately preceding reproduction. Navigation and search
+submission succeeded; Baidu returned CAPTCHA and the model stopped accurately.
+No first-result URL was obtained. This is a single-run comparison, not proof of
+general convergence. Three related actual-MCP/attached-provider regression cases
+and the agent-loop typecheck pass. Private traces remain local and ignored.

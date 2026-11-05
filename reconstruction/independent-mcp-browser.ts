@@ -1,3 +1,4 @@
+import { CDP_OPERATION_CONTEXT } from "../packages/agent-loop/src/cdp-guidance";
 import { observedSearchLinks } from "./search-result-evidence";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -19,12 +20,13 @@ import {
   restoredPackageSources,
 } from "../packages/agent-loop/src/runtime-packages";
 
-/** Actual demo MCP/supervisor/workers; no model or business-operation fixture. */
+/** Actual MCP/supervisor/workers; optional live-model scenarios use controlled pages. */
 export async function verifyIndependentMcpBrowser(
   endpointFile: string,
   pageUrl: string,
   hostDirectory?: string,
   backend: "chrome" | "cdp" = "chrome",
+  scenario?: { question: string; expectedAnswer: RegExp },
 ) {
   const baiduSearch =
     process.env.CUA_LIVE_BAIDU_TEST === "1" ||
@@ -137,20 +139,21 @@ export async function verifyIndependentMcpBrowser(
         );
         return;
       }
-      if (process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch || genericSearch) {
+      if (scenario || process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch || genericSearch) {
         loadEnvFile(resolve(".env"));
         const trace = createTerminalTrace();
         const initialMessages = await browserPreflight(turn, {
           onMessage: trace,
         });
         const result = await new AgentLoop(createDemoModel(), turn).run(
-          genericSearch
+          scenario ? scenario.question : genericSearch
             ? "打开本地Chrome 搜索 deepseek 给我返回第一条搜索结果"
             : baiduSearch
             ? "访问百度 搜索 deepseek 给我返回第一条搜索结果"
             : `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
           {
             initialMessages,
+            runtimeContext: backend === "cdp" ? CDP_OPERATION_CONTEXT : undefined,
             onMessage: trace,
             // Live search includes repeated upstream site-status checks. Keep enough
             // observation time to distinguish transport delay from page failure.
@@ -158,6 +161,10 @@ export async function verifyIndependentMcpBrowser(
           },
         );
         console.error("DEEPSEEK ANSWER", result.answer);
+        if (scenario) {
+          assert.match(result.answer, scenario.expectedAnswer);
+          return result;
+        }
         if (baiduSearch || genericSearch) {
           const observed = result.messages
             .filter(
