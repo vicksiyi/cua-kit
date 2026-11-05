@@ -27,10 +27,21 @@ test('existing connection does not launch Chrome', async () => {
   assert.equal(f.state().launched, 0);
 });
 test('cold startup launches once and waits for the extension descriptor', async () => {
-  const f = fixture([absent(), absent(), ['endpoint']]);
+  const f = fixture([absent(), absent(), absent(), ['endpoint']]);
   assert.deepEqual(await discoverOrStartChrome('/private', f.dependencies), ['endpoint']);
   assert.equal(f.state().launched, 1);
-  assert.equal(f.state().clock, 250);
+  assert.equal(f.state().clock, 2250);
+});
+test('transient disconnection recovers after one retry without opening another window', async () => {
+  const f = fixture([absent(), ['endpoint']]);
+  assert.deepEqual(await discoverOrStartChrome('/private', f.dependencies), ['endpoint']);
+  assert.deepEqual(f.state(), {clock:2000, launched:0, discovered:2});
+});
+test('an invalid configuration discovered during retry is not masked by startup', async () => {
+  const failure = new Error('unsafe permissions');
+  const f = fixture([absent(), failure]);
+  await assert.rejects(discoverOrStartChrome('/private', f.dependencies), e => e === failure);
+  assert.equal(f.state().launched, 0);
 });
 test('missing installation and unsafe permissions do not trigger Chrome startup', async () => {
   for (const failure of [new IndependentBrowserUnavailableError('directory_missing'), new Error('unsafe permissions')]) {
@@ -42,12 +53,12 @@ test('missing installation and unsafe permissions do not trigger Chrome startup'
 test('timeout is bounded and offers explicit CDP deployment without switching profiles', async () => {
   const f = fixture([absent()]);
   await assert.rejects(discoverOrStartChrome('/private', f.dependencies, 500), e => e instanceof BrowserStartupError && /--cdp-browser/.test(e.message));
-  assert.deepEqual(f.state(), {clock:500, launched:1, discovered:4});
+  assert.deepEqual(f.state(), {clock:2500, launched:1, discovered:5});
 });
 test('launch failures retain cause and do not wait for a nonexistent startup', async () => {
   const f = fixture([absent()]);
   const cause = new Error('application missing');
   f.dependencies.launch = async () => { throw cause; };
   await assert.rejects(discoverOrStartChrome('/private', f.dependencies), e => e instanceof BrowserStartupError && e.cause === cause);
-  assert.equal(f.state().clock, 0);
+  assert.equal(f.state().clock, 2000);
 });

@@ -151,3 +151,13 @@ of the profile/status subset, not a claim to have reconstructed the complete
 vendor cross-platform installer or diagnostic flow. Unit fixtures compare seven
 status/selection scenarios directly with the locally installed original script
 when that version is available. No user profile is modified by these tests.
+
+Before cold startup, the demo now waits two seconds and retries live host discovery
+once. A recovered connection avoids opening a window. If startup is still needed,
+it checks the Core native manifest name/type/origin, executable launcher, adjacent
+host configuration and exact endpoint directory before launching the selected
+profile. These checks never rewrite registration or enable extensions. They
+verify deployment prerequisites, not that the launcher dependencies or browser
+worker can run; MCP readiness and real UI acceptance remain separate. The retry
+here is transport discovery, while the vendor troubleshooting guide describes a
+browser-client call. Full command-level recovery is not claimed by this change.
