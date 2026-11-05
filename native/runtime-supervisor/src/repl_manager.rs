@@ -1,5 +1,6 @@
 //! Execution routing between the recovered kernel and trusted worker.
 //! This migration slice deliberately rejects host operations not yet composed.
+use crate::background_host::BackgroundHost;
 use crate::host::{HostHandler, HostReply, HostRequest};
 use crate::native_pipe::NativePipeHost;
 use crate::process_port::{ProcessSpec, ProcessWorker};
@@ -22,6 +23,7 @@ struct Pair {
     pipes: NativePipeHost,
     pipe_events: mpsc::Receiver<Value>,
     pipe_seen: HashSet<String>,
+    background: BackgroundHost,
 }
 pub struct ReplManager {
     kernel: ProcessSpec,
@@ -129,13 +131,20 @@ impl ReplManager {
             message=pair.kernel.next_message()=>(0,message?),
             message=pair.trusted.next_message()=>(1,message?),
             message=pair.pipe_events.recv()=>(2,message),
+            message=pair.background.next(), if pair.background.pending()=>(3,Some(message?)),
         };
         self.dirty = true;
         let dispatch = async {
             let (side, message) = event;
             let message = message.ok_or("Worker transport ended between calls")?;
             match (side, message["type"].as_str()) {
-                (2, _) => pair.trusted.send(&message).await,
+                (2 | 3, _) => pair.trusted.send(&message).await,
+                (1, Some("authenticated_fetch")) => {
+                    if let Some(response) = pair.background.start(message) {
+                        pair.trusted.send(&response).await?;
+                    }
+                    Ok(())
+                }
                 (1, Some("native_pipe_request")) => {
                     let id = message["id"]
                         .as_str()
@@ -172,6 +181,7 @@ impl ReplManager {
     pub async fn reset(&mut self) -> Result<(), String> {
         self.dirty = true;
         if let Some(mut pair) = self.pair.take() {
+            pair.background.close().await;
             pair.pipes.close().await;
             let (kernel, trusted) = tokio::join!(pair.kernel.close(), pair.trusted.close());
             kernel.and(trusted)?;
@@ -217,6 +227,7 @@ impl ReplManager {
                 pipes,
                 pipe_events,
                 pipe_seen: HashSet::new(),
+                background: BackgroundHost::default(),
             });
         }
         Ok(())
@@ -351,6 +362,12 @@ async fn route(
             .ok_or("Execution timeout is too large")?,
     );
     let lifecycle = request["type"] == "turn_ended";
+    pair.background.register(
+        id.clone(),
+        request_meta.clone(),
+        lifecycle,
+        host_handler.cloned(),
+    );
     request["id"] = json!(id);
     request["request_meta"] = request_meta.clone();
     request["form_elicitation_supported"] = json!(form_elicitation);
@@ -402,6 +419,10 @@ async fn route(
                 destination.send(&response).await?;
                 continue;
             },
+            response=pair.background.next(), if pair.background.pending()=>{
+                pair.trusted.send(&response?).await?;
+                continue;
+            },
             message=pair.kernel.next_message()=>(false,message?),
             message=pair.trusted.next_message()=>(true,message?),
             event=pair.pipe_events.recv()=>{
@@ -418,6 +439,11 @@ async fn route(
             return Err("Kernel message during host lifecycle operation".into());
         }
         match (trusted, kind) {
+            (true, "authenticated_fetch") => {
+                if let Some(response) = pair.background.start(message) {
+                    pair.trusted.send(&response).await?;
+                }
+            }
             (false, "emit_image" | "emit_audio")
             | (
                 true,
@@ -534,6 +560,7 @@ async fn route(
                     pair.kernel.send(&json!({"id":rpc_id,"ok":false,"error":"Trusted service is not configured"})).await?;
                     continue;
                 }
+                pair.background.allow(&id);
                 rpc.insert(rpc_id.to_string());
                 let mut forward = message.clone();
                 forward["type"] = json!(if kind == "trusted_service_request" {

@@ -44,7 +44,7 @@ until the Rust deployment passes equivalent acceptance and replaces its callers.
 | `config-host.ts`, `persistent-config-host.ts` | `config_manager.rs`, `deployment_host.rs`; explicit config sources and atomic writes tested, original layered configuration resolution remains unimplemented. |
 | `media.ts` | `media.rs`; data URL envelope handling tested, not native screenshot/codec parity. |
 | `mcp.ts`, `mcp-tools.ts`, `stdio.ts` | `mcp_server.rs` and `examples/mcp_stdio.rs`; actual SDK client integration tested; example is not the production launcher. |
-| `background-host.ts` | Pending authenticated-fetch migration, including retained execution context and cancellation. Idle native-pipe dispatch is a different responsibility and does not close this gap. |
+| `background-host.ts` | `background_host.rs`; retained execution context, callback routing between cells and cancellation tested. Production authenticated HTTP host composition remains open. |
 | `sandbox-runtime.ts`, `sandbox-launcher.ts`, `sandbox-bootstrap.ts` | Pending Rust sandbox policy/launch/composition. JS worker entry points may remain JS-derived TS; native policy ownership must move to Rust. |
 
 The 14 TS files above are a confirmed migration queue, not 14 completed rewrites.

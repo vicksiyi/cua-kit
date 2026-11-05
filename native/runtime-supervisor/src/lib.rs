@@ -20,3 +20,5 @@ pub mod media;
 
 #[cfg(unix)]
 pub mod mcp_server;
+
+pub mod background_host;

@@ -606,3 +606,88 @@ export async function handleRpc(x){
     assert_eq!(rejected["ok"], false);
     session.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn authenticated_fetch_uses_originating_host_context() {
+    use core_runtime_supervisor::host::{HostHandler, HostReply};
+    use std::sync::Arc;
+    let (fixture, session) = fixture();
+    std::fs::write(fixture.root.join("service.mjs"), r#"
+export async function handleRpc(x) { return await (await nodeRepl.fetch('https://fixture.invalid/'+x.path)).text(); }
+"#).unwrap();
+    let handler: HostHandler = Arc::new(|request| {
+        Box::pin(async move {
+            assert_eq!(request.message["type"], "authenticated_fetch");
+            assert_eq!(request.request_meta, json!({"test":"rust"}));
+            assert_eq!(request.message["exec_id"], request.execution_id);
+            if request.message["request"]["url"] != "https://fixture.invalid/allowed" {
+                return Err("URL denied".into());
+            }
+            Ok(HostReply::message(
+                json!({"ok":true,"response":{"status":200,"headers":[],"body_base64":"b2s="}}),
+            ))
+        })
+    });
+    let mut session = session.with_host_handler(handler, false);
+    assert_eq!(
+        run(
+            &mut session,
+            "nodeRepl.write(await nodeRepl.rpc('fixture',{path:'allowed'}))"
+        )
+        .await["output"],
+        "ok"
+    );
+    let denied = run(
+        &mut session,
+        "try{await nodeRepl.rpc('fixture',{path:'denied'})}catch(e){nodeRepl.write(e.message)}",
+    )
+    .await;
+    assert!(denied["output"].as_str().unwrap().contains("URL denied"));
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn authenticated_fetch_finishes_between_cells_with_original_metadata() {
+    use core_runtime_supervisor::host::{HostHandler, HostReply};
+    use std::sync::Arc;
+    let (fixture, session) = fixture();
+    let marker = fixture.root.join("fetch-result");
+    std::fs::write(fixture.root.join("service.mjs"), format!(r#"
+export async function handleRpc() {{
+ setTimeout(async()=>{{try {{ const result=await (await nodeRepl.fetch('https://fixture.invalid/late')).text(); await (await import('node:fs/promises')).writeFile({},result); }} catch(e) {{ await (await import('node:fs/promises')).writeFile({},'ERROR:'+e.message); }} }},200);
+ return 'scheduled';
+}}
+"#,json!(marker),json!(marker))).unwrap();
+    let handler: HostHandler = Arc::new(|r| {
+        Box::pin(async move {
+            assert_eq!(r.request_meta, json!({"test":"rust"}));
+            Ok(HostReply::message(
+                json!({"ok":true,"response":{"status":200,"headers":[],"body_base64":"bGF0ZQ=="}}),
+            ))
+        })
+    });
+    let mut session = session.with_host_handler(handler, false);
+    assert_eq!(
+        run(
+            &mut session,
+            "nodeRepl.write(await nodeRepl.rpc('fixture',{}))"
+        )
+        .await["output"],
+        "scheduled"
+    );
+    session
+        .execute("1", Duration::from_secs(3), json!({"later":true}), None)
+        .await
+        .unwrap();
+    let wake = tokio::sync::Notify::new();
+    let shutdown = tokio_util::sync::CancellationToken::new();
+    timeout(Duration::from_secs(5), async {
+        while !marker.exists() {
+            session.idle_once(&wake, &shutdown).await.unwrap();
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(std::fs::read_to_string(marker).unwrap(), "late");
+    session.close().await.unwrap();
+}

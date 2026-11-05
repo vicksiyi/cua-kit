@@ -5166,3 +5166,27 @@ worker cleanup checks. The workers remain network-denied; Rust owns the allowed
 socket transport. This proves idle pipe delivery, not full browser acceptance or
 authenticated-fetch background routing. Production sandbox composition and
 replacement of the transitional TS supervisor remain open.
+
+## Rust authenticated-fetch routing (2026-11-06)
+
+Re-extracted the current installed supervisor's embedded JS into a local temporary
+directory and confirmed `privileged-node-repl.js` emits authenticated_fetch with
+id, exec_id and request (method/url/header pairs/optional base64 body), then waits
+for the correlated response. This verifies the JS boundary, not native source.
+
+`background_host.rs` now retains originating host metadata and callback per
+execution, authorizes a context only after trusted dispatch (or host lifecycle),
+rejects duplicate request identities, routes callback completion during active
+execution or between cells, and cancels/awaits callbacks on pair reset. Background
+callbacks cannot append MCP content. Context/task/request limits reproduce the
+independent TS adapter's bounds, not proven original Rust constants. No HTTP
+client, ambient credential lookup or approval bypass is introduced: the explicit
+host callback still owns authentication, endpoint and redirect policy.
+
+27 Rust tests and the 2 external MCP tests pass. New real restored-worker cases
+cover allowed/denied fetch and a timer-triggered fetch after the initiating cell
+returns and a later cell runs; idle routing writes the expected response while
+retaining the original metadata. Unit cases cover replay rejection and cancellation
+of an in-flight callback. These fixture responses are not live authenticated HTTP
+acceptance. Production host authentication composition and Rust sandbox/launcher
+integration are still outstanding; the default demo entry point is unchanged.
