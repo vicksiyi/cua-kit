@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type Socket } from "node:net";
-import { mkdtemp, mkdir, chmod, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, chmod, writeFile, rm, realpath } from "node:fs/promises";
 import { assertPrivateEndpointDirectory } from "./endpoint_configuration";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -30,9 +30,9 @@ export async function startNativeHost(
     await mkdir(options.parentDirectory, { recursive: true, mode: 0o700 });
     await assertPrivateEndpointDirectory(options.parentDirectory);
   }
-  const directory = await mkdtemp(
+  const directory = await realpath(await mkdtemp(
     join(options.parentDirectory ?? tmpdir(), "core-cua-"),
-  );
+  ));
   await chmod(directory, 0o700);
   const endpoint: NativeHostEndpoint = {
     version: 1,

@@ -14,13 +14,15 @@ npm run demo:deepseek -- --browser "列出当前可用浏览器；没有浏览�
 ```
 
 Default mode enables CUA browser setup (`--browser` is an explicit alias); `--js` selects JavaScript-only tools. However,
-current live browser discovery is empty: this is not yet a working webpage/App
-operation demo. Explicit CUA_MCP_ENV takes precedence over mode defaults.
+browser availability depends on the configured backend. The default extension
+route checks the selected Chrome profile and can launch it when needed; explicit
+CDP mode uses an isolated browser. Native App operation acceptance remains
+incomplete. Explicit CUA_MCP_ENV takes precedence over mode defaults.
 
 The terminal shows timestamped TOOL REQUEST entries with arguments and TOOL RESULT
 entries with status and output, followed by the final model answer. Returned images
 are saved with private permissions in a temporary cua-demo-images directory and their
-paths printed. It does not fabricate screenshots or automatically open a browser.
+paths printed. Screenshots come from actual tool results.
 Set CUA_DEMO_VERBOSE=1 for full tool text (default truncates long text to 2000 chars).
 Known API-key/token/secret/password environment values are redacted from tool logs;
 review any other private page/tool content before sharing output. Ctrl-C requests
@@ -346,8 +348,9 @@ source. It currently accepts only the browser surface and uses separate ephemera
 configuration with history/full raw CDP disabled. It does not load Codex user
 preferences, configure authenticated backend-service fetch, or support desktop
 Sky in this demo composition. Default runtime migration and full source parity
-remain unfinished. The accepted path is independent CDP with an isolated profile;
-this change does not establish live acceptance against daily Chrome extensions.
+remain unfinished. Accepted paths include isolated CDP and both packaged native/full
+extensions in isolated Chromium profiles. This does not establish cold startup or
+recovery against the user’s daily Chrome profile.
 
 Verification deliberately sets installed supervisor and bundled Node paths to
 nonexistent files. A real MCP demo with a local model-protocol fixture submits a
@@ -358,3 +361,16 @@ same user task. Neither test operates the daily browser:
 CUA_TEST_MACOS_SANDBOX=1 node --import tsx --test reconstruction/independent-demo-runtime.test.ts
 CUA_TEST_MACOS_SANDBOX=1 CUA_LIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/independent-demo-runtime.test.ts
 ```
+
+
+Independent extension acceptance (macOS, after reconstruction and sandbox builds):
+
+```bash
+CUA_RUNTIME_SUPERVISOR=independent node --import tsx --test --test-concurrency=1 reconstruction/extension-native-controller.test.ts
+```
+
+This exercises extension/native messaging, sandbox workers, MCP, CUA inventory,
+page capture/navigation/click and screenshot, with installed runtime executable
+paths deliberately invalid. It uses local pages and deterministic tool calls,
+not a live model or the user's existing Chrome. Omit the environment selector to
+run the same acceptance with the installed supervisor.

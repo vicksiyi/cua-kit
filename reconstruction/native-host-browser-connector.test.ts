@@ -1,12 +1,12 @@
 import { createConnection } from "node:net";
 import { once } from "node:events";
 import { pathToFileURL } from "node:url";
-import { resolve } from "node:path";
+import { resolve, join, basename, dirname } from "node:path";
 import { configureIndependentBrowser } from "../packages/agent-loop/src/independent-browser";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PassThrough } from "node:stream";
-import { chmod } from "node:fs/promises";
+import { chmod, mkdtemp, mkdir, symlink, rm, writeFile, realpath } from "node:fs/promises";
 import { startNativeHost } from "../packages/native-host/src/server";
 import { createBrowserServiceConnector } from "../packages/native-host/src/browser_connector";
 import {
@@ -232,4 +232,25 @@ test("independent deployment requires explicit valid configuration", async () =>
     }),
     /absolute/,
   );
+});
+
+
+test("endpoint paths accept ancestor aliases but reject a socket in another directory", async (t) => {
+  const root = await mkdtemp("/tmp/core-alias-");
+  t.after(() => rm(root, {recursive:true,force:true}));
+  const physical = join(root,"physical"), alias = join(root,"alias");
+  await mkdir(physical,{mode:0o700});
+  await symlink(physical,alias);
+  const host = await startNativeHost(new PassThrough(),new PassThrough(),{parentDirectory:physical});
+  t.after(() => host.close());
+  const aliasedFile = join(alias,basename(dirname(host.endpointFile)),"endpoint.json");
+  const connector = await createBrowserServiceConnector([aliasedFile]);
+  assert.equal(connector.environment.BROWSER_USE_BACKEND_PATHS,await realpath(host.endpoint.socketPath));
+  // Old descriptors may contain an ancestor alias too; preserve compatibility.
+  await writeFile(host.endpointFile,JSON.stringify({...host.endpoint,socketPath:join(dirname(aliasedFile),"host.sock")}));
+  await createBrowserServiceConnector([host.endpointFile]);
+  const other = await startNativeHost(new PassThrough(),new PassThrough(),{parentDirectory:physical});
+  t.after(() => other.close());
+  await writeFile(host.endpointFile,JSON.stringify({...host.endpoint,socketPath:other.endpoint.socketPath}));
+  await assert.rejects(createBrowserServiceConnector([host.endpointFile]),/Invalid @core endpoint/);
 });

@@ -1,5 +1,22 @@
 # Implementation status
 
+## Independent extension transport checkpoint (2026-11-06)
+
+Both packaged native/full extensions now pass the complete MCP/CUA operation
+acceptance with the independent sandbox supervisor and deliberately nonexistent
+installed executable paths. Local-page capture, navigation, click results and
+screenshot media are verified in isolated Chromium profiles. This exposed and
+fixed an endpoint path bug: macOS `/tmp` and `/private/tmp` aliases previously
+failed textual parent-directory comparison after sandbox canonicalization. The
+host now emits canonical paths; the connector compares canonical parent paths
+and still checks private ownership, file/socket types and same-directory scope.
+Old descriptors with ancestor aliases remain supported. Twelve endpoint/host
+regressions cover this and rejection of a socket in another directory.
+
+This is not daily Chrome cold-start/recovery or native App acceptance. The
+independent extension scenario uses deterministic MCP calls, not DeepSeek; the
+separate real-DeepSeek acceptance remains the isolated CDP form scenario.
+
 ## Independent demo runtime checkpoint (2026-11-06)
 
 The real demo entry now supports opt-in `CUA_RUNTIME_SUPERVISOR=independent` on

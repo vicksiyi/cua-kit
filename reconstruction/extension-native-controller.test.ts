@@ -14,8 +14,8 @@ import { chromium } from "playwright";
 
 for (const deployment of ["native", "full"] as const)
   test(
-    `packaged ${deployment} extension serves real CUA operations through the full MCP chain`,
-    { timeout: process.env.CUA_LIVE_BAIDU_TEST === "1" ? 240000 : 120000 },
+    `packaged ${deployment} extension serves real CUA operations through the full MCP chain (${process.env.CUA_RUNTIME_SUPERVISOR ?? "installed"} supervisor)`,
+    { timeout: (process.env.CUA_LIVE_BAIDU_TEST === "1" || process.env.CUA_LIVE_SEARCH_TEST === "1") ? 240000 : 120000 },
     async (t) => {
       const root = await mkdtemp(join(tmpdir(), "core-native-controller-"));
       t.after(() => rm(root, { recursive: true, force: true }));
@@ -96,6 +96,7 @@ for (const deployment of ["native", "full"] as const)
             `--load-extension=${extension}`,
             ...(deployment === "full" &&
             process.env.CUA_LIVE_BAIDU_TEST !== "1" &&
+            process.env.CUA_LIVE_SEARCH_TEST !== "1" &&
             process.env.CUA_BROWSER_BAIDU_PROBE !== "1"
               ? [
                   "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1",

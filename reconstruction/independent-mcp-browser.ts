@@ -1,3 +1,5 @@
+import { prepareIndependentBrowserRuntime } from "../packages/agent-loop/src/independent-runtime";
+import type { AgentMessage } from "../packages/agent-loop/src/contracts";
 import { CDP_OPERATION_CONTEXT } from "../packages/agent-loop/src/cdp-guidance";
 import { observedSearchLinks } from "./search-result-evidence";
 import { mkdtemp, writeFile } from "node:fs/promises";
@@ -33,6 +35,8 @@ export async function verifyIndependentMcpBrowser(
     process.env.CUA_BROWSER_BAIDU_PROBE === "1";
   const genericSearch = process.env.CUA_LIVE_SEARCH_TEST === "1";
   const runtime = await stageRuntimePackages(restoredPackageSources());
+  let independent: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
+  const independentSelected = process.env.CUA_RUNTIME_SUPERVISOR === "independent";
   try {
     const env = await configureIndependentBrowser(
       await withHostProxy(create_launch_environment({
@@ -48,21 +52,22 @@ export async function verifyIndependentMcpBrowser(
         NODE_REPL_NODE_MODULE_DIRS: runtime.root,
         NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
         CUA_NATIVE_SUPERVISOR_PATH:
-          "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
+          independentSelected ? "/intentionally-not-installed" : "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
         NODE_REPL_NODE_PATH:
-          "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
+          independentSelected ? "/intentionally-not-installed" : "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
       }) as Record<string, string>),
     );
     const metadata = { session_id: "mcp-browser-live", turn_id: "mcp-live-1" };
+    if (independentSelected) independent = await prepareIndependentBrowserRuntime(env, runtime.root, metadata.session_id);
     const client = await McpToolClient.connect(
       {
-        command: process.execPath,
-        args: [
+        command: independent?.command ?? process.execPath,
+        args: independent?.args ?? [
           "--import",
           import.meta.resolve("tsx"),
           resolve("packages/agent-loop/src/native-supervisor.ts"),
         ],
-        env,
+        env: independent?.environment ?? env,
         stderr: "inherit",
       },
       {
@@ -119,6 +124,15 @@ export async function verifyIndependentMcpBrowser(
       return text;
     };
     try {
+      const bootstrapMessages: AgentMessage[] = [];
+      if (independent) {
+        const call = { id: "bootstrap", name: "js", arguments: {
+          code: 'await import("@core/cua/tinyskyAlt");', title: "Initialize independent CUA",
+        } };
+        const result = await turn.callTool(call, AbortSignal.timeout(70000));
+        assert.equal(result.isError, false, JSON.stringify(result));
+        bootstrapMessages.push({role:"assistant",toolCalls:[call]}, {role:"tool",callId:call.id,name:call.name,result});
+      }
       if (process.env.CUA_BROWSER_BAIDU_PROBE === "1") {
         await execute("await cua.getState();");
         await execute('var probeBrowser = await cua.getBrowser({id:"1"});');
@@ -142,9 +156,9 @@ export async function verifyIndependentMcpBrowser(
       if (scenario || process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch || genericSearch) {
         loadEnvFile(resolve(".env"));
         const trace = createTerminalTrace();
-        const initialMessages = await browserPreflight(turn, {
+        const initialMessages = [...bootstrapMessages, ...await browserPreflight(turn, {
           onMessage: trace,
-        });
+        })];
         const result = await new AgentLoop(createDemoModel(), turn).run(
           scenario ? scenario.question : genericSearch
             ? "打开本地Chrome 搜索 deepseek 给我返回第一条搜索结果"
@@ -217,6 +231,6 @@ export async function verifyIndependentMcpBrowser(
       }
     }
   } finally {
-    await runtime.dispose();
+    try { await independent?.dispose(); } finally { await runtime.dispose(); }
   }
 }

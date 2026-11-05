@@ -1,6 +1,6 @@
 import { authenticateNativeHostPipe } from "./pipe_authentication";
 import type { NativePipeSocket } from "@core/browser/nativePipe";
-import { lstat, readFile } from "node:fs/promises";
+import { lstat, readFile, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, delimiter } from "node:path";
 import { authenticateNativeHostSocket } from "./client";
 import type { NativeHostEndpoint } from "./server";
@@ -27,7 +27,7 @@ async function readEndpoint(file: string): Promise<NativeHostEndpoint> {
     !/^[a-f0-9]{64}$/.test(value.token) ||
     typeof value.socketPath !== "string" ||
     !isAbsolute(value.socketPath) ||
-    dirname(value.socketPath) !== dirname(file)
+    await realpath(dirname(value.socketPath)) !== await realpath(dirname(file))
   )
     throw Error("Invalid @core endpoint descriptor");
   const socket = await lstat(value.socketPath);
@@ -37,7 +37,7 @@ async function readEndpoint(file: string): Promise<NativeHostEndpoint> {
     (uid !== undefined && socket.uid !== uid)
   )
     throw Error("@core socket must be private and owned by the current user");
-  return value;
+  return { ...value, socketPath: await realpath(value.socketPath) };
 }
 
 /** A crashed host can leave a valid private descriptor and a dead socket behind.
@@ -51,7 +51,7 @@ export async function discoverLiveEndpointFiles(directory: string): Promise<stri
       const socket = await authenticateNativeHostSocket(endpoint);
       socket.on("error", () => {});
       socket.destroy();
-      live.push(file);
+      live.push(await realpath(file));
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
       if (code !== "ENOENT" && code !== "ECONNREFUSED") throw error;
