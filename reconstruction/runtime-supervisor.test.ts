@@ -39,7 +39,7 @@ test(
     await writeFile(join(root, "package.json"), '{"type":"module"}');
     await writeFile(
       join(root, "service.mjs"),
-      'export async function handleRpc(x){if(x.suspend)return await nodeRepl.withSuspendedTimeout(()=>nodeRepl.withSuspendedTimeout(async()=>{await new Promise(r=>setTimeout(r,x.suspend));return "waited";}));if(x.ask)return await nodeRepl.createElicitation({message:"fixture approval"});return {echo:x,meta:nodeRepl.requestMeta};}',
+      'const ended=[];nodeRepl.addTurnEndedHandler({timeoutMs:1000,run:async(event)=>{await nodeRepl.createElicitation({message:"turn cleanup"});ended.push({event,meta:nodeRepl.requestMeta});}});export async function handleRpc(x){if(x.ended)return ended;if(x.suspend)return await nodeRepl.withSuspendedTimeout(()=>nodeRepl.withSuspendedTimeout(async()=>{await new Promise(r=>setTimeout(r,x.suspend));return "waited";}));if(x.ask)return await nodeRepl.createElicitation({message:"fixture approval"});return {echo:x,meta:nodeRepl.requestMeta};}',
     );
     let launches = 0,
       decision = "decline";
@@ -111,6 +111,42 @@ test(
       assert.deepEqual(
         requests.map((r) => r.hostMeta),
         [{ turn: "decline" }, { turn: "accept" }],
+      );
+      const event = {
+        hook_event_name: "turn_ended",
+        session_id: "fixture",
+        turn_id: "one",
+      };
+      const ending = session.turnEnded(event, {
+        formElicitationSupported: true,
+        requestMeta: { cleanup: true },
+      });
+      assert.equal(
+        session.turnEnded({ ...event }),
+        ending,
+        "Duplicate turn must share completion",
+      );
+      const afterTurn = session.execute(
+        'nodeRepl.write(await nodeRepl.rpc("fixture",{ended:true}))',
+      );
+      await ending;
+      const observed = await afterTurn;
+      assert.equal(observed.ok, true);
+      assert.match(observed.output, /cleanup/);
+      assert.match(observed.output, /turn_ended/);
+      assert.equal(
+        requests.filter((r) => r.message === "turn cleanup").length,
+        1,
+      );
+      await session.turnEnded({ ...event, hook_event_name: "different" });
+      assert.equal(
+        requests.filter((r) => r.message === "turn cleanup").length,
+        1,
+      );
+      assert.equal(
+        (await session.execute("nodeRepl.write(value)")).output,
+        "42",
+        "Lifecycle preserves kernel bindings",
       );
       const suspended = await session.execute(
         'nodeRepl.write(await nodeRepl.rpc("fixture",{suspend:300}))',
@@ -328,5 +364,35 @@ test("timeout controls require trusted current RPC and balanced resume", async (
     }
     await rejected;
     await session.close();
+  }
+});
+
+test("turn-ended rejects forged acknowledgements and retires on missing acknowledgement", async () => {
+  for (const side of ["kernel", "trusted", "timeout"] as const) {
+    const kernel = fakePort(),
+      trusted = fakePort();
+    const session = new WorkerSession({
+      services: [],
+      launch: async () => ({ kernel, trusted }),
+    });
+    const operation = session.turnEnded(
+      { hook_event_name: "turn_ended", session_id: "s", turn_id: "t" },
+      { timeoutMs: 30 },
+    );
+    const rejection = assert.rejects(
+      operation,
+      /Kernel message|identity mismatch|timed out/,
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(kernel.sent.length, 0);
+    if (side !== "timeout")
+      ({ kernel, trusted })[side].emit({
+        type: "turn_ended_result",
+        id: side === "trusted" ? "stale" : trusted.sent[0].id,
+      });
+    await rejection;
+    await session.close();
+    assert.equal(kernel.closed, true);
+    assert.equal(trusted.closed, true);
   }
 });

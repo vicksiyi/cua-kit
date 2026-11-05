@@ -27,7 +27,19 @@ export interface SessionOptions {
     context: HostContext,
   ): Promise<Message>;
 }
+export interface TurnEvent {
+  hook_event_name: string;
+  session_id: string;
+  turn_id: string;
+}
+interface RunOptions {
+  timeoutMs?: number;
+  signal?: AbortSignal;
+  requestMeta?: unknown;
+  formElicitationSupported?: boolean;
+}
 interface Pending {
+  kind: "exec" | "turn_ended";
   id: string;
   meta: unknown;
   form: boolean;
@@ -40,6 +52,7 @@ interface Pending {
 }
 export class WorkerSession {
   private pair?: WorkerPair;
+  private endedTurns = new Map<string, Promise<Message>>();
   private launching?: Promise<WorkerPair>;
   private closings = new WeakMap<WorkerPair, Promise<void>>();
   private detach: Array<() => void> = [];
@@ -49,32 +62,52 @@ export class WorkerSession {
   private queue: Promise<unknown> = Promise.resolve();
   private retirement: Promise<void> = Promise.resolve();
   constructor(private readonly options: SessionOptions) {}
-  execute(
-    code: string,
-    options: {
-      timeoutMs?: number;
-      signal?: AbortSignal;
-      requestMeta?: unknown;
-      formElicitationSupported?: boolean;
-    } = {},
-  ): Promise<Message> {
-    const next = this.queue.then(() => this.run(code, options));
+  execute(code: string, options: RunOptions = {}): Promise<Message> {
+    const next = this.queue.then(() =>
+      this.run({ type: "exec", code }, options),
+    );
     this.queue = next.catch(() => {});
     return next;
   }
+  /** Host lifecycle boundary; never exposed to submitted JavaScript. */
+  turnEnded(event: TurnEvent, options: RunOptions = {}): Promise<Message> {
+    const keys = ["hook_event_name", "session_id", "turn_id"];
+    if (
+      !event ||
+      typeof event !== "object" ||
+      Array.isArray(event) ||
+      Object.keys(event).some((key) => !keys.includes(key)) ||
+      keys.some(
+        (key) =>
+          typeof (event as any)[key] !== "string" ||
+          !(event as any)[key].length,
+      )
+    )
+      return Promise.reject(Error("Invalid turn-ended event"));
+    if (this.closed)
+      return Promise.reject(Error("Supervisor session is closed"));
+    const snapshot = Object.freeze({ ...event });
+    const key = JSON.stringify([snapshot.session_id, snapshot.turn_id]);
+    const existing = this.endedTurns.get(key);
+    if (existing) return existing;
+    const next = this.queue.then(() =>
+      this.run({ type: "turn_ended", event: snapshot }, options),
+    );
+    this.endedTurns.set(key, next);
+    this.queue = next.catch(() => {
+      this.endedTurns.delete(key);
+    });
+    return next;
+  }
   private async run(
-    code: string,
-    options: {
-      timeoutMs?: number;
-      signal?: AbortSignal;
-      requestMeta?: unknown;
-      formElicitationSupported?: boolean;
-    },
+    operation:
+      { type: "exec"; code: string } | { type: "turn_ended"; event: TurnEvent },
+    options: RunOptions,
   ) {
     if (this.closed) throw Error("Supervisor session is closed");
     const timeout = options.timeoutMs ?? 30000;
     if (
-      typeof code !== "string" ||
+      (operation.type === "exec" && typeof operation.code !== "string") ||
       !Number.isSafeInteger(timeout) ||
       timeout < 1
     )
@@ -122,6 +155,7 @@ export class WorkerSession {
         void this.retire(Error("Execution timed out; worker state discarded"));
       });
       this.pending = {
+        kind: operation.type,
         id,
         meta: options.requestMeta,
         form: options.formElicitationSupported ?? false,
@@ -134,10 +168,9 @@ export class WorkerSession {
       };
       options.signal?.addEventListener("abort", abort, { once: true });
       try {
-        this.pair!.kernel.send({
-          type: "exec",
+        this.pair![operation.type === "exec" ? "kernel" : "trusted"].send({
+          ...operation,
           id,
-          code,
           request_meta: options.requestMeta,
           form_elicitation_supported: options.formElicitationSupported ?? false,
         });
@@ -155,6 +188,17 @@ export class WorkerSession {
       return;
     }
     try {
+      if (side === "trusted" && message.type === "turn_ended_result") {
+        if (pending.kind !== "turn_ended" || message.id !== pending.id)
+          throw Error("Turn-ended response identity mismatch");
+        if (pending.deadline.suspended)
+          throw Error("Turn-ended completed with timeout still suspended");
+        this.finish();
+        pending.resolve(message);
+        return;
+      }
+      if (side === "kernel" && pending.kind !== "exec")
+        throw Error("Kernel message during host lifecycle operation");
       if (side === "kernel" && message.type === "exec_result") {
         if (message.id !== pending.id)
           throw Error("Execution response identity mismatch");
@@ -211,7 +255,10 @@ export class WorkerSession {
         side === "trusted" &&
         ["suspend_timeout", "resume_timeout"].includes(message.type)
       ) {
-        if (message.exec_id !== pending.id || !pending.rpc.size)
+        if (
+          message.exec_id !== pending.id ||
+          (pending.kind !== "turn_ended" && !pending.rpc.size)
+        )
           throw Error("Uncorrelated timeout control");
         if (message.type === "suspend_timeout") pending.deadline.suspend();
         else pending.deadline.resume();
@@ -233,7 +280,9 @@ export class WorkerSession {
         if (
           typeof message.id !== "string" ||
           message.exec_id !== pending.id ||
-          (side === "trusted" && pending.rpc.size === 0)
+          (side === "trusted" &&
+            pending.kind !== "turn_ended" &&
+            pending.rpc.size === 0)
         )
           throw Error("Uncorrelated host operation");
         void this.host(side, message, pending, pair);
