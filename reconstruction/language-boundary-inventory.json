@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 41,
+    "native-implementation-language-not-yet-parity-proof": 42,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3862,6 +3862,11 @@
       "sha256": "72bc317f9cf2ecfd7bc26118161e64cac78edfaa7017d8dbb2ce3667758b3406"
     },
     {
+      "path": "native/macos/Sources/CuaHelper/AudioWriter.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "80dad2ba424a3af6a40721aa888b360ae159e9980db509c8ca03d320c4224b37"
+    },
+    {
       "path": "native/macos/Sources/CuaHelper/Capture.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "85e80f91821cf644c3caf2c9108635035fd7248a05bc7ca0372bd4e3fb4d8232"
@@ -3979,7 +3984,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "5aac31cb7819400134c1b43f0e9e5fa90215cf631ca8c689c907f646d131cd5b"
+      "sha256": "9f94931e87be36b43bcb4b8ac705dd667246f343d1eae347c4e8fe8e487ff641"
     },
     {
       "path": "native/macos-sandbox/build.rs",

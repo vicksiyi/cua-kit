@@ -161,6 +161,10 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
     }
 }
 // Explicit operator-only entry: request system dialogs, never change TCC settings.
+if CommandLine.arguments.contains("--audio-writer-self-test") {
+    do { try runNativeAudioWriterChecks(); print("{\"syntheticWav\":true,\"sampleRate\":24000,\"channels\":2}"); exit(0) }
+    catch { fputs("Native audio writer self-test failed: \(error)\n",stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.contains("--request-permissions") {
     let request = CommandLine.arguments.contains("--request-permissions")
     if request {
