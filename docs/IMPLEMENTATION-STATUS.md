@@ -4780,3 +4780,24 @@ Added a separate `attachCdpBrowser` helper using upstream Playwright's `connectO
 ### 2026-11-05 — page-scoped HTTP interception primitive
 
 Added `installPageHttpRouting`, a reversible per-page HTTP routing lease that chains allowed requests through existing Playwright handlers and removes only its own handler on release. A real two-client/two-tab test proves a denied request on the controlled page is blocked, an unrelated page still reaches the server, preexisting handlers still execute, release restores requests, and disconnect preserves both tabs. Type check and the live test pass. This primitive is not yet wired into external-browser MCP deployment; it does not claim redirect, WebSocket, service-worker or popup enforcement by itself. The restored CDP policy layer must remain part of the composed backend.
+
+### 2026-11-05 — oversized CDP console event disconnect fixed
+
+A real DeepSeek/Baidu reproduction identified `Runtime.consoleAPICalled` exceeding
+the native-pipe 1 MiB frame limit. The notification exception previously closed
+the entire CDP connection. Console events above 256 KiB are now replaced with an
+explicit omission warning, leaving the shared transport limit unchanged. Event
+forwarding also reuses the restored extension event-security filter. Event
+handler errors now report their method and reason before closing.
+
+Five targeted real-browser/provider tests pass, including a 1.8 MB Unicode
+console event followed by actual input, button activation, PNG capture and a
+working provider connection; cross-site iframe and denied-network regressions
+also pass. CDP package typecheck passes.
+
+The exact external DeepSeek/Baidu path was rerun after the fix: homepage opened,
+search submitted, redirected captcha page read successfully, model reported
+human verification and stopped. No CDP disconnect occurred. This verifies the
+previous disconnect fix, NOT a successful retrieval of Baidu's first result;
+that run remains blocked by the site's human verification. Local debug traces
+remain ignored and are not committed.

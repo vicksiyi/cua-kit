@@ -1,3 +1,4 @@
+import { prepareCdpEvent } from "./event-forwarding";
 import {
   validateFinalizedTabs,
   partitionFinalizedTabs,
@@ -51,7 +52,12 @@ export class CdpProvider {
     private context: BrowserContext,
   ) {
     this.stop = cdp.onEvent((event) => {
-      void this.event(event).catch(() => {
+      void this.event(event).catch((error) => {
+        console.error(
+          "CDP event handler failed:",
+          event.method,
+          error instanceof Error ? error.message : "unknown error",
+        );
         cdp.close();
       });
     });
@@ -175,6 +181,8 @@ export class CdpProvider {
         if (entry.sessionId === event.params.sessionId)
           this.nestedTargets.delete(target);
     }
+    const forwarded = prepareCdpEvent(event);
+    if (!forwarded) return;
     this.notify("onCDPEvent", {
       source: {
         tabId: tab.id,
@@ -182,8 +190,8 @@ export class CdpProvider {
           ? { sessionId: event.sessionId }
           : {}),
       },
-      method: event.method,
-      params: event.params,
+      method: forwarded.method,
+      params: forwarded.params,
     });
   }
   private names = new Map<string, string>();
