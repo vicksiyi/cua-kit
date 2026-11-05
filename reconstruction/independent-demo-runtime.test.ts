@@ -7,7 +7,7 @@ import {randomUUID} from 'node:crypto';
 import {loadEnvFile} from 'node:process';
 import {startCdpHost} from '../packages/cdp-host/src/host';
 
-test('demo uses independent sandbox runtime, preserves bootstrap docs and executes real browser action without installed supervisor',{
+test('demo independent selector uses Rust sandbox runtime, preserves bootstrap docs and executes real browser action without installed supervisor',{
  skip:process.platform!=='darwin'||process.env.CUA_TEST_MACOS_SANDBOX!=='1',timeout:90000,
 },async t=>{
  const liveModel=process.env.CUA_LIVE_DEEPSEEK_TEST==='1';
@@ -25,10 +25,16 @@ test('demo uses independent sandbox runtime, preserves bootstrap docs and execut
     message={content:null,tool_calls:[{id:'submit-action',type:'function',function:{name:'js',arguments:JSON.stringify({code:'await tab.playwright.getByRole("button",{name:"Submit"}).click();',title:'Submit fixture form'})}}]};
    }else if(modelCalls===3){
     message={content:null,tool_calls:[{id:'read-result',type:'function',function:{name:'js',arguments:JSON.stringify({code:'await tab.getAXState();',title:'Read result after navigation'})}}]};
-   }else{
-    assert.equal(modelCalls,4);
+   }else if(modelCalls===4){
     const last=request.messages.filter((m:any)=>m.role==='tool').at(-1);
     assert.match(JSON.stringify(last),new RegExp(marker));
+    const js=request.tools.find((tool:any)=>tool.function.name==='js');
+    assert.ok(js.function.parameters.oneOf.some((branch:any)=>branch.required?.includes('completion_summary')));
+    message={content:null,tool_calls:[{id:'report-completion',type:'function',function:{name:'js',arguments:JSON.stringify({completion_summary:'Read fixture result'})}}]};
+   }else{
+    assert.equal(modelCalls,5);
+    const last=request.messages.filter((m:any)=>m.role==='tool').at(-1);
+    assert.match(JSON.stringify(last),/Completion summary received/);
     message={content:marker};
    }
    res.setHeader('Content-Type','application/json');res.end(JSON.stringify({choices:[{message}]}));return;
@@ -53,6 +59,6 @@ test('demo uses independent sandbox runtime, preserves bootstrap docs and execut
  t.after(()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');});
  let output='';child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>output+=b);
  const status=await new Promise<number|null>((resolve,reject)=>{child.on('error',reject);child.on('exit',resolve);});
- assert.equal(status,0,output);assert.equal(submitted,true);if(!liveModel)assert.equal(modelCalls,4);assert.match(output,new RegExp(marker));
- assert.match(output,/Independent sandboxed runtime supervisor selected/);
+ assert.equal(status,0,output);assert.equal(submitted,true);if(!liveModel)assert.equal(modelCalls,5);assert.match(output,new RegExp(marker));
+ assert.match(output,/Rust independent sandboxed runtime supervisor selected/);
 });

@@ -161,3 +161,11 @@ The native `NODE_REPL_JS_COMPLETION_SUMMARY` contract remains unfinished. Its so
 ### Completion reports on the Rust runtime
 
 When the source launcher supplies `NODE_REPL_JS_COMPLETION_SUMMARY`, the Rust tool schema exposes a summary-only branch of `js`. After observing the final task outcome, follow the advertised guidance and submit `{ "completion_summary": "Reviewed search results" }` as a separate call with no code/title/timeout. It reports completion without executing JavaScript or clearing bindings. The field is non-blank, at most 80 Unicode characters. Do not confuse this with `turn_ended` or the demo's budget-exhaustion handling. The server accepts repeated reports; the caller must follow the source instruction to report once. Without the configuration, the field is not advertised.
+
+
+### Independent supervisor deployment
+
+Set `CUA_RUNTIME_SUPERVISOR=rust` for the independent native supervisor. The previous `independent` value is retained as an alias for Rust; it no longer launches a TypeScript supervisor. `npm run demo:deepseek` builds the Rust runtime for either value. Direct programmatic/demo entry users must build with `npm run build:rust-runtime` first. A missing Rust build fails with that instruction and does not fall back to TS. The default `installed` selection still uses the verified installed native supervisor. `--swift-computer` continues to select Rust plus the Swift service explicitly; browser and desktop backend selection remains separate from supervisor selection.
+
+
+The turn lifecycle adapter adds a default JS timeout only to code-execution requests. It forwards completion reports unchanged; adding `timeout_ms`, `title` or `code` to that branch violates the native protocol.

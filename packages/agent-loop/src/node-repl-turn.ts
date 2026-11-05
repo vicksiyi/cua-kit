@@ -58,9 +58,12 @@ export class NodeReplTurnClient implements ToolClient {
     if (this.ending)
       return Promise.reject(new Error("NodeREPL turn has ended"));
     // Caller policy only: use the original supervisor's documented timeout field.
+    // Summary-only calls are a distinct native branch: never add execution fields.
     // An explicit caller/model timeout (including invalid values) is never replaced.
     if (
       call.name === "js" &&
+      Object.hasOwn(call.arguments, "code") &&
+      !Object.hasOwn(call.arguments, "completion_summary") &&
       call.arguments.timeout_ms === undefined &&
       this.options.defaultJsTimeoutMs !== undefined
     )

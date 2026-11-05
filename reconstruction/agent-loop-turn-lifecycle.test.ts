@@ -142,4 +142,10 @@ test("host JS deadline default preserves explicit timeouts and does not mutate m
   assert.equal(calls[0].arguments.timeout_ms, 60000);
   assert.equal(calls[1].arguments.timeout_ms, 100);
   assert.deepEqual(calls[2].arguments, {});
+  for (const args of [{completion_summary:'Read fixture result'}, {completion_summary:null}, {completion_summary:'Invalid mixed call',code:'42'}, {}]) {
+    const summary = {id:'summary',name:'js',arguments:args};
+    await turn.callTool(summary);
+    assert.strictEqual(calls.at(-1),summary);
+    assert.ok(!Object.hasOwn(calls.at(-1).arguments,'timeout_ms'));
+  }
 });

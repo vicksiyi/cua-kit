@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "e41a647e527474c856913fe55b1d9a3f3755eb60c32b48ee481cadce3ade8cf4"
+      "sha256": "3cbc0d2788880e813d736d9aa68b6576a8b860b9cf82e7ac4fa8db245a15c235"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -114,7 +114,7 @@
     {
       "path": "packages/agent-loop/src/node-repl-turn.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "bdc0ec95af132b3effabf7e1848504c4420fb7a482174b6e4b20c397ae9e692a"
+      "sha256": "12357fc6853fcbf83a6d65b5b541ee6df54eaef3d7b4f6ec42776eb6f3edf249"
     },
     {
       "path": "packages/agent-loop/src/provider.ts",
@@ -124,7 +124,7 @@
     {
       "path": "packages/agent-loop/src/restored-demo-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "ae6578631a55ac2bab20c82b59ec2857e4857c126f9692fadc9f1f8532a492b0"
+      "sha256": "eb97517fbd081243ec07c76f0182f5094273888ec1e2c1f55575a6952bd1bdca"
     },
     {
       "path": "packages/agent-loop/src/restored-demo.ts",
@@ -4209,7 +4209,7 @@
     {
       "path": "scripts/run-deepseek.sh",
       "category": "build-or-deployment-script-review",
-      "sha256": "b4a1250cfaaa6a8eadb3b68ad38ea30f0a99bd7eec310b3b20f6ad56e7d4e709"
+      "sha256": "0fba8b459643d4abac2414d4fcda2326df6ab0a13fee6bb1f5bba25dfef9930e"
     }
   ]
 }

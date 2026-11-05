@@ -32,8 +32,10 @@ for (const key of [
 ])
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
-const supervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
-if (!["installed", "independent", "rust"].includes(supervisor))
+const requestedSupervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
+// Preserve the old deployment name while retiring its TS native implementation.
+const supervisor = requestedSupervisor === "independent" ? "rust" : requestedSupervisor;
+if (!["installed", "rust"].includes(supervisor))
   throw Error("CUA_RUNTIME_SUPERVISOR must be installed, independent or rust");
 if (supervisor === "installed") {
   if (!env.CUA_NATIVE_SUPERVISOR_PATH)
@@ -120,20 +122,20 @@ try {
   ]
     .filter(Boolean)
     .join(delimiter);
-  if (supervisor === "independent" || supervisor === "rust") {
+  if (supervisor === "rust") {
     const turn = JSON.parse(process.env.CUA_MCP_TURN_EVENT ?? "{}");
     independent = await prepareIndependentRuntime(
       env,
       runtime.root,
       turn.session_id,
-      supervisor === "rust" ? "rust" : "typescript",
+      "rust",
     );
     process.env.CUA_MCP_COMMAND = independent.command;
     process.env.CUA_MCP_ARGS = JSON.stringify(independent.args);
     process.env.CUA_MCP_ENV = JSON.stringify(independent.environment);
     process.env.CUA_MCP_BOOTSTRAP = "core-cua";
     console.error(
-      `${supervisor === "rust" ? "Rust" : "TypeScript"} independent sandboxed runtime supervisor selected (${env.CUA_REPL_ENABLED_SURFACES} surface; no installed supervisor).`,
+      `Rust independent sandboxed runtime supervisor selected (${env.CUA_REPL_ENABLED_SURFACES} surface; no installed supervisor).`,
     );
   } else {
     delete process.env.CUA_MCP_BOOTSTRAP;

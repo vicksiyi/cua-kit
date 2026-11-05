@@ -80,7 +80,7 @@ export async function verifyIndependentMcpBrowser(
         env,
         runtime.root,
         metadata.session_id,
-        supervisor === "rust" ? "rust" : "typescript",
+        "rust",
       );
     const client = await McpToolClient.connect(
       {

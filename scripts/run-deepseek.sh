@@ -98,7 +98,7 @@ export CUA_MODEL_PROVIDER=deepseek
 export CUA_NATIVE_SUPERVISOR_PATH="${CUA_NATIVE_SUPERVISOR_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl}"
 export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 npm run build:reconstruction
-if [[ "${CORE_CUA_NATIVE_BACKEND:-}" == swift && "$mode" == computer ]]; then npm run build:rust-runtime; fi
+if [[ "${CUA_RUNTIME_SUPERVISOR:-}" == rust || "${CUA_RUNTIME_SUPERVISOR:-}" == independent ]]; then npm run build:rust-runtime; fi
 if [[ "$cdp_browser" == true ]]; then
   exec node --import tsx packages/agent-loop/src/cdp-demo.ts "$@"
 fi
