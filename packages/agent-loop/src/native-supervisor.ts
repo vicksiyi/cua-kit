@@ -101,6 +101,22 @@ async function runChild(
       process.removeListener(signal, handler);
   }
 }
+export class SupervisorCompatibilityError extends Error {}
+export async function verifyNativeSupervisor(binary: string) {
+  const manifest = JSON.parse(
+    await readFile(
+      new URL("../../../reconstruction/node-repl-source.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const digest = createHash("sha256")
+    .update(await readFile(binary))
+    .digest("hex");
+  if (digest !== manifest.binarySha256 && !manifest.compatibleSupervisors?.some((item: { binarySha256: string }) => item.binarySha256 === digest))
+    throw new SupervisorCompatibilityError(
+      `Native supervisor differs from the verified build (${digest.slice(0, 12)}). 本机 ChatGPT runtime 已更新，需先验证新版本 worker 协议；本次未启动 MCP 或请求模型。`,
+    );
+}
 export async function launchRestoredSupervisor(
   env: NodeJS.ProcessEnv = process.env,
 ) {
@@ -113,19 +129,7 @@ export async function launchRestoredSupervisor(
     throw new Error(
       "NODE_REPL_WORKER_WRAPPER is already configured; this adapter owns the worker substitution hook",
     );
-  const manifest = JSON.parse(
-    await readFile(
-      new URL("../../../reconstruction/node-repl-source.json", import.meta.url),
-      "utf8",
-    ),
-  );
-  const digest = createHash("sha256")
-    .update(await readFile(binary))
-    .digest("hex");
-  if (digest !== manifest.binarySha256)
-    throw new Error(
-      "Native supervisor differs from the verified build; audit its worker protocol before using this adapter",
-    );
+  await verifyNativeSupervisor(binary);
   await Promise.all(Object.values(workers).map((worker) => access(worker)));
   const toolEnv = Object.fromEntries(
     Object.entries(env).filter(([key]) => !/(?:DEEPSEEK|CUA_MODEL)/i.test(key)),

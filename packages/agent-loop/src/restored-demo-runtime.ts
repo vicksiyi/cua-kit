@@ -1,3 +1,4 @@
+import { verifyNativeSupervisor } from "./native-supervisor";
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
 import { withHostProxy } from "./system-proxy";
 import { fileURLToPath } from "node:url";
@@ -31,6 +32,7 @@ for (const key of [
     env[key] = process.env[key]!;
 if (!env.CUA_NATIVE_SUPERVISOR_PATH)
   throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
+await verifyNativeSupervisor(env.CUA_NATIVE_SUPERVISOR_PATH);
 // Explicit surfaces opt into CUA initialization; absent retains generic JS mode.
 if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
   env = create_launch_environment(env) as Record<string, string>;

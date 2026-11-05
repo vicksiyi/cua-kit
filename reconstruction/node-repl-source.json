@@ -94,5 +94,12 @@
       "bytes": 14783,
       "sha256": "06c5b39daef459ca2c6e272a0d1c54af1cc9d2a59028661b6708b982ca83cb2a"
     }
+  ],
+  "compatibleSupervisors": [
+    {
+      "binarySha256": "44d08fb5c7346c53c869a9853c93090b3c10457950c2861ce8bdc4baabab5632",
+      "verifiedOn": "2026-11-05",
+      "evidence": "Native original/restored MCP comparison: execution, persistent bindings, reset, timeout, cancellation, trusted RPC; see supervisor-compatibility-2026-11-05.md"
+    }
   ]
 }

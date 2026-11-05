@@ -1,3 +1,4 @@
+import { SupervisorCompatibilityError } from "./native-supervisor";
 /** CLI boundary: known connection prerequisites get actionable output. */
 import { ComputerUnavailableError } from "./computer-preflight";
 import { fileURLToPath } from "node:url";
@@ -6,7 +7,10 @@ import { IndependentBrowserUnavailableError } from "@core/native-host/browserCon
 try {
   await import("./restored-demo-runtime");
 } catch (error) {
-  if (error instanceof ComputerUnavailableError) {
+  if (error instanceof SupervisorCompatibilityError) {
+    console.error(error.message);
+    process.exitCode = 1;
+  } else if (error instanceof ComputerUnavailableError) {
     console.error("原生 App 服务检查未通过；本次未发送 DeepSeek 请求或执行 App 操作。具体宿主错误见上方 tool 日志。浏览器扩展连接与原生 App 服务是两条不同链路。");
     process.exitCode = 1;
   } else {

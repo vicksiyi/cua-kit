@@ -1,3 +1,4 @@
+import { verifyNativeSupervisor } from "../packages/agent-loop/src/native-supervisor";
 /** Explicit local integration probe; not included in the default synthetic suite.
  * Runs the installed supervisor under macOS network denial with isolated homes.
  * The wrapper substitutes both worker entries; it is not a supervisor port.
@@ -25,16 +26,7 @@ test("installed native supervisor drives restored kernel over actual MCP and rou
     "darwin",
     "This probe requires macOS sandbox-exec",
   );
-  const manifest = JSON.parse(
-    await readFile("reconstruction/node-repl-source.json", "utf8"),
-  );
-  assert.equal(
-    createHash("sha256")
-      .update(await readFile(binary))
-      .digest("hex"),
-    manifest.binarySha256,
-    "Native probe requires the recorded supervisor build",
-  );
+  await verifyNativeSupervisor(binary);
   const root = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "cua-native-supervisor-")),
   );
