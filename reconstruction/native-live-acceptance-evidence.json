@@ -1,0 +1,10 @@
+{
+  "status": "blocked",
+  "passed": [],
+  "at": "2026-11-05T09:49:35.593Z",
+  "permissions": {
+    "accessibility": false,
+    "screenRecording": false
+  },
+  "error": "Grant Accessibility and Screen Recording to the responsible terminal/agent host, then rerun. No UI operation was attempted."
+}
