@@ -4547,3 +4547,12 @@ Real model tool-call acceptance: a subsequent DeepSeek prompt requested the sum 
 Added Sky-shaped select_text and perform_secondary_action to @core/native-macos, reusing the helper's AX operations. Selection now supports text/cursor_before/cursor_after, matching the original public selection_type contract, with prefix/suffix disambiguation and UTF-16 positions. Factored the existing range search into a testable Swift function; unknown modes/types, missing text and overlapping ambiguity fail explicitly. Both adapter operations return void after successful dispatch, require host authorization and a complete current observation, and invalidate it before action.
 
 Native build and pure Swift self-test pass (Unicode text/cursor offsets, context selection and failures), reconstruction build and native package typecheck pass. Seven adapter tests pass, including actual restored bind_mac_app → createSkyService → independent client routing for selection and secondary actions. No real UI action was performed; Accessibility/screen-recording acceptance and the remaining native/backend/browser requirements remain outstanding.
+
+
+### Independent native screenshot path connected to restored CUA
+
+get_app_state now refreshes helper permission status and uses the existing observeWithScreenshot operation when Screen Recording is granted. The helper already verifies app identity, window geometry and AX stability across capture. PNG envelopes are checked for canonical base64, signature/IHDR, dimension consistency and existing byte/pixel limits, then exposed as the original Sky screenshot data URL. The original CUA getScreenshot decoder returns those image bytes unchanged. This is envelope validation, not a complete PNG decoder.
+
+Without screen recording, AX-only observation returns screenshot:null and explicit warning; getScreenshot reports unavailable. Capture failures and malformed images propagate without retaining an actionable old snapshot. Multiple capturable windows still trigger the helper's ambiguity error because original app references do not yet supply a window selector; full multiwindow selection parity remains incomplete.
+
+Eleven native adapter/screenshot tests pass, including restored CUA image-byte roundtrip with a fixture PNG, permission absence, malformed images and failed-capture snapshot invalidation. Native package typecheck and reconstruction build pass. No real window screenshot or UI action was performed; OS permissions and full native/browser acceptance remain outstanding.

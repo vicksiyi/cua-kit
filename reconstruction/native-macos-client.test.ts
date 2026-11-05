@@ -7,6 +7,7 @@ function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFai
  let reads=0;
  const helper: NativeTransport = {request: async <T>(method:string,params?:Record<string,unknown>) => {
   calls.push([method,params]);
+  if(method==="hello") return {permissions:{screenRecording:false}} as T;
   if(method==="listApps") return {apps:[app]} as T;
   if(method==="bind") return {targetId:"target",app:{...app,launchTime:options.changeIdentity?2:1}} as T;
   if(method==="observe") {if(options.observeFailure && ++reads>1) throw Error("read failed"); return {snapshotId:"snapshot",elements:[{id:1,role:"AXTextField",name:"Name"}],warnings:[]} as T;}

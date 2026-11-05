@@ -1,13 +1,14 @@
 /** Independent Sky-shaped adapter. Not a reconstruction of the native service. */
+import { screenshotDataUrl } from "./screenshot";
 import { CuaError } from "./errors";
-import type { NativeAppInfo } from "./helper";
+import type { NativeAppInfo, HelperHello } from "./helper";
 export interface NativeTransport {
   request<T>(method: string, params?: Record<string, unknown>): Promise<T>;
 }
 export type NativeAuthorization = (request: {
   app: NativeAppInfo; operation: string; effect: "read" | "write";
 }) => Promise<void>;
-type Observation = { snapshotId: string; elements: Array<{id: number; role: string; name: string; value?: string}>; warnings: string[] };
+type Observation = { snapshotId: string; elements: Array<{id: number; role: string; name: string; value?: string}>; warnings: string[]; screenshot?: unknown };
 type Bound = { targetId: string; app: NativeAppInfo; observation?: Observation };
 export function createNativeMacClient(helper: NativeTransport, authorize: NativeAuthorization) {
   if (typeof authorize !== "function") throw new Error("Native adapter requires an authorization callback");
@@ -53,10 +54,14 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       const binding = await target(input.app,"get_app_state","read");
       // Invalidate before observation so a failed read cannot leave stale inputs enabled.
       binding.observation = undefined;
-      const state = await helper.request<Observation>("observe",{targetId:binding.targetId});
+      const hello = await helper.request<HelperHello>("hello");
+      if (typeof hello.permissions?.screenRecording !== "boolean") throw new CuaError("PROVIDER_DISCONNECTED","Missing native screen-recording permission status");
+      const capture = hello.permissions.screenRecording;
+      const state = await helper.request<Observation>(capture ? "observeWithScreenshot" : "observe",{targetId:binding.targetId});
+      const screenshot = capture ? {url:screenshotDataUrl(state.screenshot)} : null;
       binding.observation = state;
       const text = state.elements.map(element => `[${element.id}] ${element.role} ${JSON.stringify(element.name)}${element.value === undefined ? "" : ` value=${JSON.stringify(element.value)}`}`).join("\n");
-      return {app:input.app,screenshot:null,text:[text,...state.warnings.map(warning => `Warning: ${warning}`)].join("\n")};
+      return {app:input.app,screenshot,text:[text,...state.warnings.map(warning => `Warning: ${warning}`),...(!capture ? ["Screenshot unavailable: Screen Recording permission is not granted."] : [])].join("\n")};
     }),
     select_text: (input: {app:string;element_index:number;text:string;prefix?:string;suffix?:string;selection_type?:"text"|"cursor_before"|"cursor_after"}) => serial(async () => {
       if (input.selection_type !== undefined && !["text","cursor_before","cursor_after"].includes(input.selection_type)) throw new CuaError("INVALID_ARGUMENT","Unknown selection type");
