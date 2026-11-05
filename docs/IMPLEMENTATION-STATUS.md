@@ -5849,3 +5849,13 @@ This proves the environment builder and tested entry behavior. Independent runti
 The runtime factory previously discarded `NODE_REPL_JS_BANNER` even though the environment builder produced it. It now forwards an explicitly supplied banner only to the kernel worker, and the Rust sandbox launcher accepts that host-controlled setting. It is not placed in the trusted worker or the untrusted environment allowlist. The restored kernel's existing source logic still owns banner execution and retry semantics; no TS substitute for native supervisor execution was added.
 
 Two real Rust MCP tests verify behavior: the installed-source CUA banner makes `cua.getApp` available in the very first user cell without a manual bootstrap call; a synthetic banner that fails once is retried, then runs only once for that kernel, and runs fresh after `js_reset`. These tests are included in `npm run test:native-ipc`. Rust build and both tests pass. Tool/server instruction overrides and native completion-summary consumption remain separate outstanding work.
+
+### Native MCP description override consumption
+
+The runtime factory now serializes the source-generated `NODE_REPL_TOOL_OVERRIDES` object into the explicit Rust configuration. Rust applies server instructions to MCP initialize and tool/parameter descriptions to tools/list. The override shape matches the current CUA builder (`server_instructions`, `tools.*.description`, `field_descriptions`); execution validators and non-description schema fields are unchanged.
+
+`tool_overrides.rs` owns parsing/application in the native supervisor. Unknown tool/field names, schema mutation fields and more than 1 MiB of description text are rejected; these validation choices are independently authored, not recovered original native behavior. Absent configuration preserves default descriptors; explicitly empty strings remain empty.
+
+Two Rust tests verify exact description changes and unchanged tool contracts, as well as invalid/oversized overrides. A real Rust MCP test compares initialize instructions and tools/list descriptions against the original-shape environment output, and checks required arguments, types, title bounds, tool names and runtime rejection of unknown execution arguments. Both banner integration tests still pass. The metadata integration is included in `npm run test:native-ipc`.
+
+The demo receives updated tool descriptions through its normal listTools path. Consumption of initialize-level server instructions by AgentLoop and native completion-summary execution still require separate work; wire publication alone does not prove those paths.

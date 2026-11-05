@@ -15,6 +15,8 @@ pub struct SupervisorMcp {
     host: HostHandler,
     shutdown: tokio_util::sync::CancellationToken,
     incoming: Arc<tokio::sync::Notify>,
+    tool_definitions: Arc<Vec<Tool>>,
+    instructions: Option<String>,
 }
 impl SupervisorMcp {
     pub fn new(session: ReplManager, host: HostHandler) -> Self {
@@ -42,7 +44,15 @@ impl SupervisorMcp {
             host,
             shutdown,
             incoming,
+            tool_definitions: Arc::new(tools()),
+            instructions: None,
         }
+    }
+    pub fn with_tool_overrides(mut self, overrides: crate::tool_overrides::ToolOverrides) -> Result<Self,String> {
+        let (tools,instructions) = overrides.apply(self.tool_definitions.as_ref().clone())?;
+        self.tool_definitions = Arc::new(tools);
+        self.instructions = instructions;
+        Ok(self)
     }
     pub async fn close(&self) -> Result<(), String> {
         self.shutdown.cancel();
@@ -108,14 +118,14 @@ fn result_to_mcp(result: Value) -> Result<CallToolResult, String> {
 }
 impl ServerHandler for SupervisorMcp {
     fn get_info(&self) -> ServerInfo {
-        serde_json::from_value(json!({"protocolVersion":"2024-11-05","capabilities":{"tools":{}},"serverInfo":{"name":"core-runtime-supervisor","version":"0.1.0"},"instructions":"Use js for persistent JavaScript; js_reset clears bindings. Module registration requires host authorization; turn_ended is a host lifecycle operation."})).unwrap()
+        serde_json::from_value(json!({"protocolVersion":"2024-11-05","capabilities":{"tools":{}},"serverInfo":{"name":"core-runtime-supervisor","version":"0.1.0"},"instructions":self.instructions.as_deref().unwrap_or("Use js for persistent JavaScript; js_reset clears bindings. Module registration requires host authorization; turn_ended is a host lifecycle operation.")})).unwrap()
     }
     async fn list_tools(
         &self,
         _: Option<PaginatedRequestParams>,
         _: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, McpError> {
-        Ok(serde_json::from_value(json!({"tools":tools()})).unwrap())
+        Ok(serde_json::from_value(json!({"tools":self.tool_definitions.as_ref()})).unwrap())
     }
     async fn call_tool(
         &self,

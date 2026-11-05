@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 45,
+    "native-implementation-language-not-yet-parity-proof": 46,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "47aa44fda38e9466e9fe0e89db18613c76915452eb83ae6b698468c8e642c221"
+      "sha256": "1a5f8c2ed0e29a0482ce4a409e9e00f1eaa84c4ca2f3dd978397371a8c3ede12"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -4009,7 +4009,7 @@
     {
       "path": "native/runtime-supervisor/examples/mcp_stdio.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "72ca60483f5ac78626f3a95e72e0f60078d4443bec27e915b278da0707d18005"
+      "sha256": "b65f3bd1725a37dd745b1f51445a643fef2ec261b7c04c6ba8cee73aa8cfa7d6"
     },
     {
       "path": "native/runtime-supervisor/src/background_host.rs",
@@ -4034,7 +4034,7 @@
     {
       "path": "native/runtime-supervisor/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "13bb591afafff5db10287ad0f61b78c5b93331eaedcd0c5f0f8fcafe76bdc7f8"
+      "sha256": "4dc3e3299a908d20fb35bfc9a8e4975632417da92574ba52127c448b57cb94f8"
     },
     {
       "path": "native/runtime-supervisor/src/limits.rs",
@@ -4044,7 +4044,7 @@
     {
       "path": "native/runtime-supervisor/src/mcp_server.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "638d5fd09c92f53ac256c2784628178813055cf94b5768f58dd212b12b651af2"
+      "sha256": "073aaa02694707a69e3661cb2d9031c6008b2da991429f1a4d10a49d576f1e6d"
     },
     {
       "path": "native/runtime-supervisor/src/media.rs",
@@ -4075,6 +4075,11 @@
       "path": "native/runtime-supervisor/src/sandbox_launcher.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "9a32189204551e067975e95df152a22ff3fde47a2b1fe63d8838a3a046d49a43"
+    },
+    {
+      "path": "native/runtime-supervisor/src/tool_overrides.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "545f72670772ee99c648af72fe3e6e37855a974236ddda1d73a4f9c49daabef4"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",

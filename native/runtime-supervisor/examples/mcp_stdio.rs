@@ -72,6 +72,8 @@ struct Options {
     module_directories: Vec<PathBuf>,
     #[serde(default)]
     native_service: Option<NativeServiceOptions>,
+    #[serde(default)]
+    tool_overrides: Option<core_runtime_supervisor::tool_overrides::ToolOverrides>,
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -97,7 +99,8 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     .with_native_service(options.native_service)
     .with_pipe_paths(options.pipe_paths)?
     .with_module_directories(options.module_directories)?;
-    let server = SupervisorMcp::new(session, deployment_host(config));
+    let mut server = SupervisorMcp::new(session, deployment_host(config));
+    if let Some(overrides) = options.tool_overrides { server = server.with_tool_overrides(overrides)?; }
     let running = server.clone().serve(rmcp::transport::stdio()).await?;
     let cancellation = running.cancellation_token();
     let shutdown = server.clone();
