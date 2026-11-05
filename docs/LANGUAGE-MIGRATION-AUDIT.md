@@ -54,3 +54,6 @@ The normal runtime staging roots no longer include `@core/native-macos`. A deplo
 
 
 Root agent compatibility exports (`src/agent/{contracts,loop,mcp-client,chat-model}.ts`) now delegate to the shared `@core/agent-loop` package instead of retaining duplicate implementations. This is caller-code consolidation, not a claim that AgentLoop is an original native component. The root CUA/desktop SDK and QuickJS MCP server remain legacy and still require migration.
+
+
+The root `mcp` command now launches the restored runtime via the shared deployment factory; `mcp:legacy` names the retained QuickJS prototype explicitly. The standalone stdio entry is agent-neutral and does not instantiate a model. Root SDK exports and the old `demo` execution backend still need migration; this does not retire all QuickJS source consumers.

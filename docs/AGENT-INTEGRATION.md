@@ -1,8 +1,8 @@
 # 可替换的调用侧：MCP Client + AgentLoop
 
 当前入口使用 `packages/agent-loop`，公共类型见
-[`contracts.ts`](../packages/agent-loop/src/contracts.ts)。旧 `src/agent`、QuickJS
-和 `npm run demo` 是早期独立实现，不代表当前还原的 CUA 运行路径。
+[`contracts.ts`](../packages/agent-loop/src/contracts.ts)。根目录 Agent API 已转接共享实现；QuickJS
+和 `npm run demo` 的执行后端仍是早期原型。根目录 `mcp` 命令现已切换到还原运行时。
 
 模型、AgentLoop、MCP 客户端和浏览器执行层可以分别替换。模型凭证只交给
 ModelAdapter，不能传入 MCP 子进程、worker 环境或网页。
@@ -186,3 +186,32 @@ Runtime staging now excludes the retired `@core/native-macos` adapter. The origi
 `@core/agent-loop` now exports built ESM plus declarations, usable by plain Node without a TS loader. Run `npm run build:agent` (also part of root build/check and reconstruction build). Source imports remain extensionless; generated declarations use Node-compatible suffixes. `npm run build -w @core/agent-loop` is also supported.
 
 Existing root `@vicksiyi/cua-kit/agent/loop`, `/agent/mcp-client`, and `/agent/contracts` paths delegate to this package. Their consumers now receive current server initialization guidance, optional endTurn cleanup, MCP metadata/elicitation/media support and the same agent-neutral contracts. The old internal chat-model path also delegates to the shared provider. Root demo and MCP still use the legacy CUA/QuickJS server; sharing the caller does not turn that server into the restored Rust runtime.
+
+
+## Agent-neutral stdio MCP entry
+
+Build once before connecting (build output must not share the MCP protocol stream):
+
+```sh
+npm run build:reconstruction
+npm run build:native
+npm run build:rust-runtime
+```
+
+For the macOS computer surface, configure your MCP client with working directory set to this repository:
+
+```json
+{
+  "command": "node",
+  "args": ["--import", "tsx", "packages/agent-loop/src/restored-mcp.ts"],
+  "env": {
+    "CUA_MCP_ENV": "{\"CUA_REPL_ENABLED_SURFACES\":\"computer\",\"NODE_REPL_DISABLE_ANALYTICS\":\"1\"}"
+  }
+}
+```
+
+The equivalent process command is `npm run --silent mcp`; silent mode prevents npm banners from entering protocol stdout. No model token is needed; this server does not read project `.env`. Supply native app policy through `CORE_CUA_APP_POLICY` and handle original form elicitation in the host for App actions. Inventory alone does not authorize an App. Browser deployments require their explicit backend connection configuration; this entry does not invent an automatic CDP fallback.
+
+The server and demo share `prepareRestoredRuntime`: source launcher instructions/banner/completion configuration, runtime selection, dependency staging and disposal. Model clients provide request metadata and end turns through the observed `turn_ended` protocol (the provided `NodeReplTurnClient` hides this lifecycle tool from the model). The stdio entry forwards signals to the native supervisor and removes staged deployment files when it exits. Initialization interrupted before a supervisor is spawned is not yet covered by the shutdown gate.
+
+The old QuickJS entry is explicitly named `npm run --silent mcp:legacy`. Its `CUA_ALLOWED_ORIGINS` configuration is not the new native App policy.

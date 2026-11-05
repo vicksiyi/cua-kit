@@ -2,7 +2,7 @@
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
     "build-or-deployment-script-review": 26,
-    "caller-or-deployment-code-review-for-native-responsibility": 39,
+    "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
@@ -124,12 +124,22 @@
     {
       "path": "packages/agent-loop/src/restored-demo-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "6db54033951a61505040a83a0947bfd456eb16c6ee9b444ac2868a7410dcfe3d"
+      "sha256": "dd347ed90cbe7c9cd8ba4648e43b63cb7aa1778d1867dcfebc1d936226efa43e"
     },
     {
       "path": "packages/agent-loop/src/restored-demo.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
       "sha256": "a6ecb115ac7e96d13b0f96b5d9e7d3a64d86db73d3d1ecaed09e8c1d0ec4e6e3"
+    },
+    {
+      "path": "packages/agent-loop/src/restored-mcp.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "4be3ae9c64ed13baedcc0500175ac30dbff4a50520d5bb727dd62f7be363da88"
+    },
+    {
+      "path": "packages/agent-loop/src/restored-runtime.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "af344cfb7c0718ec7895b16434a1a11f79e234fe47a63c808a7ed4419eda0043"
     },
     {
       "path": "packages/agent-loop/src/runtime-diagnostics.ts",
