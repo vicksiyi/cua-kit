@@ -8,6 +8,14 @@ export interface AgentRunOptions {
   initialMessages?: readonly AgentMessage[];
   onMessage?: (message: AgentMessage) => void;
 }
+export class AgentStepBudgetError extends Error {
+  constructor(readonly maxSteps: number) {
+    super(
+      `Agent step budget exhausted (${maxSteps}); no final answer produced.`,
+    );
+    this.name = "AgentStepBudgetError";
+  }
+}
 export class AgentLoop {
   constructor(
     private model: ModelAdapter,
@@ -84,8 +92,6 @@ export class AgentLoop {
         add({ role: "tool", callId: call.id, name: call.name, result });
       }
     }
-    throw new Error(
-      `Agent step budget exhausted (${maxSteps}); no final answer produced.`,
-    );
+    throw new AgentStepBudgetError(maxSteps);
   }
 }

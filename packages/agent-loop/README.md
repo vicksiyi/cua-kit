@@ -205,3 +205,34 @@ Route A is now authorized. `--computer` and `--check-computer` default to `@core
 ### Internal CDP deployment validation
 
 `--cdp-browser` selects the extension-free owned Chromium deployment using the same demo/MCP stack. It can precede `--check-browser` or the natural-language prompt. Project `.env` is still loaded automatically; browser/MCP children do not inherit model credentials. The terminal shows tool logs, origin confirmations, screenshot file paths and final text. This launches a temporary visible browser and closes it at process exit; it does not attach the daily Chrome profile. The project-wide experience handoff remains pending desktop acceptance.
+
+### Local demo debug logs
+
+`npm run demo:deepseek -- "your prompt"` now enables local diagnostics by default.
+The CLI prints `Local debug log: <absolute path>`; each run has a unique JSONL
+file under the repository's `artifacts/debug/` directory. Set `CUA_DEBUG=0` to
+turn this off (or put that setting in local `.env`). Core `AgentLoop` remains
+independent of disk logging; this is wired only into the demo via model/tool
+wrappers.
+
+Events include run input and model name, model requests/responses with step
+numbers, full tool arguments and text results, per-call duration, tool errors,
+elicitation requests and chosen action, final answer, end-turn and close.
+Terminal truncation does not truncate JSONL text. Image base64 is omitted; the
+terminal trace continues to print screenshot paths. Logs describe decisions and
+tool calls returned by the model, not hidden model reasoning.
+
+Logs can contain page/app text and your prompt. They stay local: there is no
+upload/export transport, and `artifacts/` is excluded by `.gitignore`. Files are
+created with mode 0600, new directories with 0700. Known credential environment
+values, credential fields and common API-key/Bearer strings are redacted; this
+is not a guarantee of removing arbitrary sensitive prose from visited pages.
+Do not commit or attach raw logs publicly. Delete old runs manually as needed;
+there is no automatic retention limit yet.
+
+When reporting a failure, give the printed file path (or say "read the latest
+local debug log"). For example, a 12-step budget failure now reports the log
+path and exits nonzero without the raw budget-exception stack. The step limit
+remains 12; enabling diagnostics does not increase actions or fabricate a final
+answer. Logs start before MCP connection; earlier shell/build/configuration
+failures can still precede creation of a run log.
