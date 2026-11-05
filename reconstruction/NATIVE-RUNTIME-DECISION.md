@@ -5,7 +5,7 @@ implementation language and layer boundaries must follow the original CUA;
 TypeScript is not the universal target. Earlier authorization for an independent
 replacement does not make a TS replacement of native responsibilities final.
 
-Readable JS/TS recovery applies to installed JavaScript. Native responsibilities
+Installed JavaScript must be restored as readable TypeScript (user clarification, 2026-11-06). Native responsibilities
 must be implemented in their original language where evidenced, and migrations
 must preserve the existing protocol/acceptance tests. Missing native source is a
 provenance gap, not permission to label a guessed rewrite as recovered source.
@@ -21,7 +21,7 @@ under this corrected requirement.
 | `native/macos-sandbox/sandbox.c` plus TS sandbox launcher | Independent Seatbelt/N-API bridge. Audit the original native sandbox ownership; integrate into the native supervisor rather than treating this bridge as source-equivalent. |
 | `packages/native-host/src` | Independent browser native-messaging deployment, including capability authentication and endpoint discovery. Determine original host language and IPC ownership before choosing a migration language. Keep genuine recovered JS browser-service code separate from this adapter. |
 | `native/macos/Sources` and `packages/native-macos` | Swift OS helper plus TS service adapter. Verify original native service implementation language and protocol boundary; Swift currently expresses platform behavior but is not established as source-language parity. |
-| CUA/Sky/CUA-REPL and NodeREPL JS workers | Keep JS/TS restoration where installed JS and declarations prove the boundary. Do not migrate JavaScript worker logic merely because its parent process is native. |
+| CUA/Sky/CUA-REPL and NodeREPL JS workers | Keep TypeScript restoration of installed JS where declarations prove the boundary. Do not migrate JavaScript worker logic merely because its parent process is native. |
 | CDP host and caller-side AgentLoop | Independently authored demo/deployment components. Clearly identify their provenance; do not present the isolated-browser launch policy as recovered Codex behavior. |
 
 Migration sequence: establish per-component evidence → document native protocol
@@ -58,3 +58,8 @@ Keep the original executable/service as explicit runtime dependencies and integr
 The user approved route A. No further decision is needed to continue independently authored native work while preserving recovered public contracts and identifying provenance/gaps. This does not change the final feature scope or authorize weakening OS or installed-service protections.
 
 Browser extension loading, upstream site-status transport, real web search acceptance, and source/behavior auditing remain separate outstanding work under either route. Do not interpret either choice as completion.
+
+Native-language evidence is now reproducible in `native-language-evidence.json`.
+The Rust migration begins in `native/runtime-supervisor`; see its README for
+implemented scope and explicit missing integration gates. This does not yet
+replace the transitional TS runtime.

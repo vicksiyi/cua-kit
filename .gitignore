@@ -9,3 +9,6 @@ dist/
 test-results/
 
 native/macos/.build/
+
+# Rust build products
+native/runtime-supervisor/target/

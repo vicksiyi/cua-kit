@@ -1,5 +1,20 @@
 # Implementation status
 
+## Original-language migration checkpoint (2026-11-06)
+
+User clarification: installed JS must still be restored as readable TS; other
+languages must follow original CUA layers. A fresh static audit of the installed
+`node_repl` records Rust compiler/module paths and dependency versions in
+`reconstruction/native-language-evidence.json`. The older protocol snapshot has
+a different binary hash; its provenance must not be silently relabelled.
+
+`native/runtime-supervisor` starts the Rust migration with Unix native pipes,
+using observed direct dependency versions. Three real-socket tests pass, covering
+large payload round trips, ordered close events, explicit close/teardown, and
+rejection of unapproved paths/invalid or oversized payloads. This Rust library
+is not yet wired into the JS worker or MCP demo. TS supervisor remains a
+transitional runtime; no claim of completed migration or recovered Rust source.
+
 ## Independent extension transport checkpoint (2026-11-06)
 
 Both packaged native/full extensions now pass the complete MCP/CUA operation
