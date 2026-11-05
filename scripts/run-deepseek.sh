@@ -2,9 +2,10 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically.'
+  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically. --swift-computer selects the opt-in Rust + original Sky + Swift route.'
   exit 0
 fi
+swift_computer=false
 managed_browser=false
 cdp_browser=false
 backend=""
@@ -23,6 +24,10 @@ while [[ $# -gt 0 ]]; do
         shift
       fi
       shift
+      ;;
+    --swift-computer)
+      if [[ -n "$mode" && "$mode" != computer ]]; then printf '%s\n' 'Swift computer deployment requires computer mode.' >&2; exit 2; fi
+      mode=computer; swift_computer=true; shift
       ;;
     --browser|--computer|--js)
       requested_mode="${1#--}"
@@ -53,6 +58,17 @@ if [[ -n "$backend" && "$mode" != browser ]]; then
 fi
 if [[ "$backend" == --managed-browser ]]; then managed_browser=true;
 elif [[ -n "$backend" ]]; then cdp_browser=true; fi
+if [[ "$swift_computer" == true ]]; then
+  export CUA_RUNTIME_SUPERVISOR=rust CORE_CUA_NATIVE_BACKEND=swift
+  # An explicit CLI deployment wins over stale surface/backend fields in .env.
+  CUA_MCP_ENV="$(node --input-type=module -e '
+    const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");
+    if(!env || Array.isArray(env) || typeof env!=="object" || !Object.values(env).every(v=>typeof v==="string")) throw Error("CUA_MCP_ENV must be a JSON string map");
+    env.CUA_REPL_ENABLED_SURFACES="computer";env.CORE_CUA_NATIVE_BACKEND="swift";
+    process.stdout.write(JSON.stringify(env));
+  ')"
+  export CUA_MCP_ENV
+fi
 if [[ "$mode" == "browser" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"browser","CUA_REPL_BROWSER_ENV":"codex-app","BROWSER_USE_AVAILABLE_BACKENDS":"chrome"}'; fi
   printf '%s\n' 'Browser mode: checks the selected backend before model requests. Search results depend on live page access.' >&2
@@ -60,7 +76,7 @@ elif [[ "$mode" == "computer" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"computer"}'; fi
   unset CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
   export CORE_CUA_NATIVE_BACKEND="${CORE_CUA_NATIVE_BACKEND:-independent}"
-  if [[ "$CORE_CUA_NATIVE_BACKEND" == independent ]]; then
+  if [[ "$CORE_CUA_NATIVE_BACKEND" == independent || "$CORE_CUA_NATIVE_BACKEND" == swift ]]; then
     export CORE_CUA_NATIVE_HELPER_PATH="${CORE_CUA_NATIVE_HELPER_PATH:-$PWD/native/macos/.build/debug/cua-helper}"
     if [[ "$CORE_CUA_NATIVE_HELPER_PATH" == "$PWD/native/macos/.build/debug/cua-helper" ]]; then npm run build:native; fi
   fi
@@ -82,6 +98,7 @@ export CUA_MODEL_PROVIDER=deepseek
 export CUA_NATIVE_SUPERVISOR_PATH="${CUA_NATIVE_SUPERVISOR_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl}"
 export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 npm run build:reconstruction
+if [[ "${CORE_CUA_NATIVE_BACKEND:-}" == swift && "$mode" == computer ]]; then npm run build:rust-runtime; fi
 if [[ "$cdp_browser" == true ]]; then
   exec node --import tsx packages/agent-loop/src/cdp-demo.ts "$@"
 fi

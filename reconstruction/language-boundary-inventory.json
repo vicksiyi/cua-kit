@@ -4174,7 +4174,7 @@
     {
       "path": "scripts/run-deepseek.sh",
       "category": "build-or-deployment-script-review",
-      "sha256": "2488e5e6ec7a733e1d9558eb877349a7fb75ebcb0dc0bdfa47544fadb4d3fa84"
+      "sha256": "b4a1250cfaaa6a8eadb3b68ad38ea30f0a99bd7eec310b3b20f6ad56e7d4e709"
     }
   ]
 }

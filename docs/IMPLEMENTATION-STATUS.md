@@ -5738,3 +5738,29 @@ the production writer waits against the unread receiver, then cancellation must
 complete with exit code 0. The existing isolated Rust/CDP browser regression and
 AgentLoop TypeScript check also pass. The CLI --check-computer and the real
 DeepSeek loop exited successfully. Full UI acceptance and native parity remain open.
+
+
+## Standard npm entry for Rust/Swift (2026-11-06)
+
+The normal DeepSeek launcher now accepts `--swift-computer`:
+
+```bash
+npm run demo:deepseek -- --swift-computer --check-computer
+npm run demo:deepseek -- --swift-computer "Call cua.listApps({emit:false}) and return only the application count."
+```
+
+The flag selects the Rust runtime and Swift native backend, builds the relevant
+native/runtime prerequisites, and uses the original Sky service. Project .env is
+loaded by the existing launcher. Explicit Swift selection overrides stale browser
+surface/native-backend fields inside CUA_MCP_ENV while preserving other string
+configuration; conflicting browser deployment/surface flags fail before build.
+The existing --computer behavior is unchanged. Native app policy still defaults
+to denied unless configured, and OS permissions/elicitation are still required
+for app operations. This flag is not automatic approval or a browser fallback.
+
+The exact npm --swift-computer --check-computer command passed against the real
+Rust/Swift runtime and exited successfully with no model request or App action.
+The launcher routing test passes normal browser/CDP cases, Swift prompt/check flag
+orders, stale .env selection, and conflicts. The prior direct-entry DeepSeek tool
+round trip remains the model-path evidence; this turn did not spend another model
+request. Screenshot/input/audio and complete legacy retirement remain open.

@@ -2,6 +2,14 @@
 
 本文前半部分描述早期 TypeScript Provider + Swift helper 的 NDJSON 适配器，仍供现有调用方使用。后续新增了 Rust 托管 Swift 服务、接收原始 Sky 协议的迁移路径；当前能力与验收边界以 [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md) 顶部汇总为准。原生原始函数体尚未恢复，不能将协议兼容当作完整还原。两条路径均不执行 ChatGPT 内置服务。构建要求 macOS 14+ 与 Swift 工具链。
 
+当前 Rust/Swift 原生路径可直接选择：
+
+```bash
+npm run demo:deepseek -- --swift-computer --check-computer
+```
+
+该命令仅验收应用列表连接。截图、输入仍需单独验收，不能由预检成功推断。下方早期配置保留供旧适配器调用方参考。
+
 ```bash
 npm run build:native
 npm run build
@@ -524,3 +532,29 @@ the production writer waits against the unread receiver, then cancellation must
 complete with exit code 0. The existing isolated Rust/CDP browser regression and
 AgentLoop TypeScript check also pass. The CLI --check-computer and the real
 DeepSeek loop exited successfully. Full UI acceptance and native parity remain open.
+
+
+## Standard npm entry for Rust/Swift (2026-11-06)
+
+The normal DeepSeek launcher now accepts `--swift-computer`:
+
+```bash
+npm run demo:deepseek -- --swift-computer --check-computer
+npm run demo:deepseek -- --swift-computer "Call cua.listApps({emit:false}) and return only the application count."
+```
+
+The flag selects the Rust runtime and Swift native backend, builds the relevant
+native/runtime prerequisites, and uses the original Sky service. Project .env is
+loaded by the existing launcher. Explicit Swift selection overrides stale browser
+surface/native-backend fields inside CUA_MCP_ENV while preserving other string
+configuration; conflicting browser deployment/surface flags fail before build.
+The existing --computer behavior is unchanged. Native app policy still defaults
+to denied unless configured, and OS permissions/elicitation are still required
+for app operations. This flag is not automatic approval or a browser fallback.
+
+The exact npm --swift-computer --check-computer command passed against the real
+Rust/Swift runtime and exited successfully with no model request or App action.
+The launcher routing test passes normal browser/CDP cases, Swift prompt/check flag
+orders, stale .env selection, and conflicts. The prior direct-entry DeepSeek tool
+round trip remains the model-path evidence; this turn did not spend another model
+request. Screenshot/input/audio and complete legacy retirement remain open.
