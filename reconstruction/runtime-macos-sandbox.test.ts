@@ -1,3 +1,6 @@
+import { createServer as createHttpServer } from "node:http";
+import { randomUUID } from "node:crypto";
+import type { SessionOptions } from "../packages/runtime-supervisor/src/session";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { pathToFileURL } from "node:url";
@@ -115,7 +118,7 @@ test(
     await writeFile(join(codeDir, "package.json"), '{"type":"module"}');
     await writeFile(
       join(codeDir, "service.js"),
-      'export async function handleRpc(request){if(request?.save){await nodeRepl.config.writeToml("browser/config.toml",{full_cdp_access_enabled:false, marker:"persisted by RPC"});return "saved";}return "trusted fixture"}',
+      'export async function handleRpc(request){if(request?.fetch)return await (await nodeRepl.fetch(request.fetch)).text();if(request?.save){await nodeRepl.config.writeToml("browser/config.toml",{full_cdp_access_enabled:false, marker:"persisted by RPC"});return "saved";}return "trusted fixture"}',
     );
     const workers = await realpath(resolve("packages/node-repl"));
     const dependencies = await realpath(resolve("node_modules"));
@@ -187,10 +190,35 @@ test(
             terminateGraceMs: 20,
           };
         };
+    const credential = randomUUID();
+    let authenticatedHits = 0;
+    const backend = createHttpServer((request, response) => {
+      if (request.headers.authorization !== `Bearer ${credential}`) {
+        response.writeHead(401); response.end(); return;
+      }
+      authenticatedHits++;
+      response.end("authenticated-fixture-response");
+    });
+    await new Promise<void>(resolve => backend.listen(0, "127.0.0.1", resolve));
+    t.after(() => new Promise<void>(resolve => backend.close(() => resolve())));
+    const backendUrl = `http://127.0.0.1:${(backend.address() as AddressInfo).port}/fixture`;
+    const authenticatedFetch: NonNullable<SessionOptions["hostRequest"]> = async (message, context) => {
+      assert.equal(message.type, "authenticated_fetch");
+      if (message.request?.url !== backendUrl || message.request?.method !== "GET")
+        throw Error("Fixture fetch endpoint denied");
+      const response = await fetch(backendUrl, {
+        signal: AbortSignal.any([context.signal, AbortSignal.timeout(3000)]),
+        redirect: "error", headers: { authorization: `Bearer ${credential}` },
+      });
+      const text = await response.text();
+      assert.equal(text.length < 100, true);
+      return { ok:true, response:{status:response.status,headers:[],body_base64:Buffer.from(text).toString("base64")} };
+    };
     const runtimeOptions = {
       kernel: worker(join(workers, "dist/kernel.js"), ["--session-id", "fixture", "--working-dir", kernelDir], kernelDir),
       trusted: worker(join(workers, "dist/trusted_worker.js"), [trustedDir], trustedDir),
       services: ["fixture", "browser"],
+      authenticatedFetch,
       writablePreferencePaths: ["browser/config.toml"],
       pipePaths: [host.endpoint.socketPath],
       config: { configFile, requirementsFile, workingDirectories: [trustedDir],
@@ -203,6 +231,11 @@ test(
     await assert.rejects(createSandboxedSessionOptions({ ...runtimeOptions,
       kernel: { ...runtimeOptions.kernel, readDirectories: [...runtimeOptions.kernel.readDirectories, trustedDir] },
     }), /other worker/);
+    await assert.rejects(createSandboxedSessionOptions({ ...runtimeOptions, authenticatedFetch: "invalid" as any }), /must be a function/);
+    const noFetchOptions = await createSandboxedSessionOptions({ ...runtimeOptions, authenticatedFetch: undefined });
+    await assert.rejects(noFetchOptions.hostRequest!({type:"authenticated_fetch"}, {
+      execId:"fixture", requestMeta:{}, signal:new AbortController().signal, appendContent() {},
+    }), /not configured/);
     const session = new WorkerSession(await createSandboxedSessionOptions(runtimeOptions));
     try {
       const basic = await session.execute("let x=40;nodeRepl.write(x+2)");
@@ -222,6 +255,15 @@ test(
       );
       assert.equal(trusted.ok, true, JSON.stringify(trusted));
       assert.equal(trusted.output, "trusted fixture");
+      const fetched = await session.execute(`nodeRepl.write(await nodeRepl.rpc("fixture",{fetch:${JSON.stringify(backendUrl)}}))`);
+      assert.equal(fetched.ok, true, JSON.stringify(fetched));
+      assert.equal(fetched.output, "authenticated-fixture-response");
+      assert.equal(authenticatedHits, 1);
+      assert.equal(JSON.stringify(fetched).includes(credential), false);
+      const deniedFetch = await session.execute(`nodeRepl.write(await nodeRepl.rpc("fixture",{fetch:${JSON.stringify(backendUrl + "-denied")}}))`);
+      assert.equal(deniedFetch.ok, false);
+      assert.match(deniedFetch.error, /endpoint denied/);
+      assert.equal(authenticatedHits, 1);
       const persisted = await session.execute('nodeRepl.write(await nodeRepl.rpc("fixture",{save:true}))');
       assert.equal(persisted.output, "saved", JSON.stringify(persisted));
       assert.match(await readFile(browserConfigFile, "utf8"), /persisted by RPC/);

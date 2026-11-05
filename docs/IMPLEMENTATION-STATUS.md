@@ -4950,3 +4950,18 @@ bootstrap exchange in initialMessages fixes that integration error. Updated the
 agent integration guide from the legacy QuickJS path to current package/runtime
 contracts and acceptance limits. No default-supervisor replacement or external
 service/native App completion is claimed.
+
+### 2026-11-06 — authenticated fetch callback in sandbox composition
+
+Added an explicit optional authenticatedFetch host callback to SandboxedRuntimeOptions.
+Only authenticated_fetch messages route there; configuration stays separately
+scoped, and an absent/invalid callback fails rather than selecting a network
+fallback. Credential/endpoint/redirect/body policy remains host-owned.
+
+The real macOS sandbox integration now issues restored nodeRepl.fetch through
+the host to a local endpoint that checks a random host-only bearer credential.
+Approved request/response succeeds, a different URL is denied without a network
+hit, and the credential is absent from the worker result. Six focused sandbox,
+real-browser and MCP tests pass alongside typecheck/build. This is the host
+integration boundary, not production vendor authentication or external-site
+acceptance; default demo deployment is unchanged.

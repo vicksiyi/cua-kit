@@ -203,3 +203,34 @@ CUA emits core docs during import and caches them. Keeping that initial tool
 exchange in AgentLoop.initialMessages corrected the integration. This does not
 add inferred capabilities or change restored code. See docs/AGENT-INTEGRATION.md
 for current protocol, initialization and lifecycle requirements.
+
+### Explicit authenticated-fetch host in sandbox composition
+
+`SandboxedRuntimeOptions.authenticatedFetch` accepts a trusted host callback with
+the existing `SessionOptions.hostRequest(message, context)` signature. The
+composition routes only `authenticated_fetch` to it; configuration operations
+still use the separate explicit configuration adapter. Omitting the callback
+rejects authenticated fetch. This is a programmatic callback, not a serializable
+JSON configuration field or an automatic credential resolver.
+
+The restored request has `request: { method, url, headers: [{name,value}],
+body_base64? }`. Return `{ok:true,response:{status,status_text?,headers,
+body_base64?}}`, or throw a redacted failure. The host must validate the exact
+endpoint/method, bind credentials to it, enforce redirect and body-size policy,
+and honor `context.signal` plus its own timeout. Use an existing HTTP client;
+there is no default permissive transport. Do not reuse the model API key as a
+browser-service credential or put credentials in worker environment/config.
+Background responses cannot append execution content; generation retirement
+cancels their signal and discards stale responses.
+
+The macOS sandbox integration performs an actual request from restored trusted
+`nodeRepl.fetch` through this callback to a local HTTP endpoint. Only the host
+adds a random fixture bearer credential; the endpoint verifies it and returns
+a non-secret response. An unapproved URL is rejected without reaching the
+endpoint, a missing handler fails, and a non-function handler is rejected at
+composition. Existing sandbox denials and real-browser/MCP cases still pass
+(six focused cases, typecheck and reconstruction build).
+
+This closes the composition gap; production endpoint policy, real external
+service credentials and external-site acceptance are still deployment work.
+No vendor safety-service response is simulated or automatically approved.

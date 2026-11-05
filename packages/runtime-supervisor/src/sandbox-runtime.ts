@@ -17,6 +17,9 @@ export interface SandboxedRuntimeOptions {
   config: ReadonlyConfigSources;
   /** Exact mapped preferences only; absent keeps all configuration read-only. */
   writablePreferencePaths?: readonly string[];
+  /** Trusted host only. Owns endpoint/credential policy, bounded I/O and cancellation.
+   * No default network transport or ambient credential lookup is provided. */
+  authenticatedFetch?: NonNullable<SessionOptions["hostRequest"]>;
 }
 const contains = (parent: string, child: string) => {
   const path = relative(parent, child);
@@ -48,9 +51,20 @@ export async function createSandboxedSessionOptions(options: SandboxedRuntimeOpt
     throw Error("Supervisor services must match trusted worker configuration");
   const paths = [...options.pipePaths];
   if (paths.some(path => !isAbsolute(path) || path.includes("\0"))) throw Error("Pipe endpoints must be explicit absolute paths");
-  const hostRequest = options.writablePreferencePaths?.length
+  const configRequest = options.writablePreferencePaths?.length
     ? await createPersistentConfigHost(options.config, options.writablePreferencePaths)
     : createReadonlyConfigHost(options.config);
+  const authenticatedFetch = options.authenticatedFetch;
+  if (authenticatedFetch !== undefined && typeof authenticatedFetch !== "function")
+    throw Error("Authenticated fetch host must be a function");
+  const hostRequest: NonNullable<SessionOptions["hostRequest"]> = (message, context) => {
+    if (message.type === "authenticated_fetch") {
+      if (!authenticatedFetch)
+        return Promise.reject(Error("Authenticated fetch host is not configured"));
+      return authenticatedFetch(message, context);
+    }
+    return configRequest(message);
+  };
   return {
     services,
     hostRequest,
