@@ -131,3 +131,23 @@ remain strict and are not silently replaced. This probe verifies a live host
 transport, not extension/browser readiness; the MCP inventory preflight still
 runs afterward. A host can disconnect after any probe, so this does not remove
 all connection races.
+
+## Chrome profile startup checks
+
+The default macOS demo now inspects the selected existing Chrome profile before
+launching it. Selection follows the bundled diagnostic rules: usable `last_used`,
+then highest-numbered usable `last_active_profiles`, then the highest-numbered
+usable profile. `Secure Preferences` takes precedence over `Preferences`.
+Installation requires extension files (version directory or unpacked directory);
+enablement also requires registration, nonzero-or-absent state, and no disable
+reasons. An enabled extension in a different profile does not silently select
+that profile. Missing/disabled Core CUA extensions stop startup with a diagnostic.
+The launch command explicitly passes `--profile-directory`, `--new-window` and
+`about:blank`; it does not create a temporary profile or enable remote debugging.
+
+Source hashes and adaptation boundaries are in
+`reconstruction/chrome-profile-source.json`. This is the macOS Core deployment
+of the profile/status subset, not a claim to have reconstructed the complete
+vendor cross-platform installer or diagnostic flow. Unit fixtures compare seven
+status/selection scenarios directly with the locally installed original script
+when that version is available. No user profile is modified by these tests.

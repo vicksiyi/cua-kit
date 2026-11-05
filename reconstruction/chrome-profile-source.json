@@ -1,0 +1,29 @@
+{
+  "pluginVersion": "26.1027.30824",
+  "sources": [
+    {
+      "path": "scripts/check-extension-installed.js",
+      "sha256": "c25b45762ca649f33a52e690a1500ee7a6307f11b4ff79f9c14ff4f35fab5693"
+    },
+    {
+      "path": "scripts/open-chrome-window.js",
+      "sha256": "eae1b56942ec6262f650f3ed1242c7274fa131dc7013816f7dac4d42947c4ea7"
+    },
+    {
+      "path": "docs/chrome-troubleshooting.md",
+      "sha256": "70b27f1b1331e81653b0bcb0c84b91ee7e884304bb7a2c6d5df60133df482580"
+    }
+  ],
+  "implementation": "packages/native-host/src/chrome_profile.ts",
+  "scope": "Profile selection and extension status rules for macOS Core CUA deployment. Not the entire multi-platform diagnostics CLI.",
+  "adaptations": [
+    "Core CUA extension ID derived from project manifest, not OpenAI extension IDs.",
+    "One configured extension ID rather than vendor distribution list.",
+    "macOS launcher uses installed Google Chrome name rather than vendor cross-platform executable discovery.",
+    "No change to Chrome preferences, extension enablement, or native host registrations."
+  ],
+  "remaining": [
+    "Complete browser/native-host diagnostics and full documented retry sequence.",
+    "Live cold-start acceptance with selected profile; current turn uses fixtures and read-only profile inspection."
+  ]
+}

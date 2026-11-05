@@ -10,3 +10,4 @@ export {
 } from "./installation";
 export { createBrowserServiceConnector } from "./browser_connector";
 export { registerNativeHostForProfile } from "./installation";
+export { inspectChromeExtension, chromeProfileLaunchCommand } from "./chrome_profile";

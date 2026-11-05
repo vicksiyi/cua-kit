@@ -3,6 +3,10 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { setTimeout as delay } from "node:timers/promises";
 import { discoverLiveEndpointFiles, IndependentBrowserUnavailableError } from "@core/native-host/browserConnector";
+import { inspectChromeExtension, chromeProfileLaunchCommand, chromeExtensionId } from "@core/native-host";
+import { readFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 export class BrowserStartupError extends Error {}
 
@@ -10,7 +14,17 @@ export async function discoverOrStartChrome(directory: string, dependencies = {
   discover: discoverLiveEndpointFiles,
   launch: async () => {
     if (process.platform !== "darwin") throw new Error("Automatic Chrome startup currently requires macOS");
-    await promisify(execFile)("/usr/bin/open", ["-a", "Google Chrome"], { timeout: 10000 });
+    const manifest = JSON.parse(await readFile(new URL("../../browser-extension/native-manifest.json", import.meta.url), "utf8"));
+    const status = inspectChromeExtension({
+      userDataDirectory: join(homedir(), "Library/Application Support/Google/Chrome"),
+      extensionId: chromeExtensionId(manifest.key),
+    });
+    if (!status.enabled) throw new BrowserStartupError(
+      `Chrome profile ${status.selectedProfileDirectory} 中的 Core CUA 扩展${status.installed ? "未启用" : "未安装"}。请在该 profile 中加载并启用项目扩展；未启动浏览器，也未调用模型。`,
+    );
+    const command = chromeProfileLaunchCommand(status.selectedProfileDirectory);
+    console.error(`Chrome startup profile: ${status.selectedProfileDirectory}`);
+    await promisify(execFile)(command.command, command.args, { timeout: 10000 });
   },
   now: Date.now,
   wait: (ms: number) => delay(ms),
@@ -22,10 +36,11 @@ export async function discoverOrStartChrome(directory: string, dependencies = {
     // Missing installation and unsafe configuration are not transient startup failures.
     if (!(error instanceof IndependentBrowserUnavailableError) || error.reason !== "no_endpoints") throw error;
   }
-  dependencies.report("未发现扩展连接，正在打开 Google Chrome 并等待 Native Messaging 宿主（最多 15 秒）……");
+  dependencies.report("未发现扩展连接，正在检查 Chrome profile；扩展启用后将打开该 profile 并等待宿主连接（最多 15 秒）……");
   try {
     await dependencies.launch();
   } catch (cause) {
+    if (cause instanceof BrowserStartupError) throw cause;
     throw new BrowserStartupError("无法启动 Google Chrome；请确认应用已安装。尚未调用模型。", { cause });
   }
   const deadline = dependencies.now() + timeoutMs;
