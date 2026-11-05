@@ -27,7 +27,12 @@ if [[ "$mode" == "browser" ]]; then
 elif [[ "$mode" == "computer" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"computer"}'; fi
   unset CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
-  printf '%s\n' 'Computer mode: requires the native desktop service; device-operation acceptance is separate.' >&2
+  export CORE_CUA_NATIVE_BACKEND="${CORE_CUA_NATIVE_BACKEND:-independent}"
+  if [[ "$CORE_CUA_NATIVE_BACKEND" == independent ]]; then
+    export CORE_CUA_NATIVE_HELPER_PATH="${CORE_CUA_NATIVE_HELPER_PATH:-$PWD/native/macos/.build/debug/cua-helper}"
+    if [[ "$CORE_CUA_NATIVE_HELPER_PATH" == "$PWD/native/macos/.build/debug/cua-helper" ]]; then npm run build:native; fi
+  fi
+  printf '%s\n' "Computer mode: $CORE_CUA_NATIVE_BACKEND backend; app inventory does not verify UI permissions or actions." >&2
 else
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1"}'; fi
 fi

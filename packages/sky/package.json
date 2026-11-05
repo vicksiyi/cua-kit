@@ -19,6 +19,10 @@
       "types": "./src/service.ts",
       "import": "./dist/service.js",
       "default": "./dist/service.js"
+    },
+    "./serviceFactory": {
+      "types": "./src/create_service.ts",
+      "import": "./dist/create_service.js"
     }
   }
 }

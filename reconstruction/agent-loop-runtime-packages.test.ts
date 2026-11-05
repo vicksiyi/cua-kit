@@ -107,6 +107,7 @@ test("actual restored CUA runtime packages resolve wholly inside deployment and 
     const require = createRequire(path.join(runtime.root, "entry.cjs"));
     for (const specifier of [
       "@core/sky/service",
+      "@core/native-macos/service",
       "@core/browser-desktop/service",
       "@core/native-host/browserService",
       "@core/native-host/browserConnector",

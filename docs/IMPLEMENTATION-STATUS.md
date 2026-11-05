@@ -4527,3 +4527,16 @@ Evidence is recorded in reconstruction/native-computer-runtime-evidence.json. Re
 ### Native implementation provenance decision
 
 Reviewed the existing independent prototype (`src/native`, `native/macos`) as well as the reconstructed stack. They are separate implementations: the prototype's partial Swift helper is not currently the Sky service used by demo:deepseek. Reusing it silently would conflict with the requested original-source fidelity. `reconstruction/NATIVE-RUNTIME-DECISION.md` records two concrete routes: explicitly author the unavailable native boundary while preserving reconstructed public contracts, or retain installed native dependencies and require a supported authorized host. No backend switch has been made. The native provenance choice requires user clarification; feature scope and outstanding browser acceptance are unchanged.
+
+
+### Approved route A: independent macOS service reaches restored MCP
+
+User resumed with “按照你的建议进行”, authorizing independently authored native boundaries while retaining recovered @core interfaces and full feature scope. Added @core/native-macos, reusing the existing Swift helper transport and adding a Sky-shaped client/service. A public @core/sky/serviceFactory export reuses the existing dispatcher rather than copying it. Runtime staging includes the new package; computer demo mode explicitly selects the independent service by default and builds the helper. Vendor mode remains opt-in for comparison, with no automatic fallback.
+
+A real MCP probe through restored workers/CUA/Sky and the independent helper now passes inventory (41 running apps). Direct helper hello reports accessibility=false and screenRecording=false. A real DeepSeek prompt returned 41 from the supplied inventory. This resolves the old vendor-service sender rejection for this independently implemented App inventory path, not for all App features. Native supervisor remains the installed executable.
+
+Build, native-macos and AgentLoop typechecks pass. Six adapter/deployment tests pass, covering app identity race rejection, authorization rejection, observation invalidation, action snapshot requirements and trusted package resolution. Initial integration failed because the new package lacked the default export condition used by trusted require.resolve; adding it resolved the package-boundary error without weakening trusted-root checks.
+
+Implemented adapter slice is discovery/full AX text/setValue/focused typeText/unheld keys, with host approvals and helper snapshot validation. Screenshots, coordinate mouse operations, scroll/drag, audio, lifecycle/supervisor independence and exact policy/observation parity remain unfinished. UI read/write behavior is not yet accepted under real OS permissions. No vendor signing/authentication or TCC settings changed.
+
+Real model tool-call acceptance: a subsequent DeepSeek prompt requested the sum of app displayName lengths, which the preflight count cannot answer. DeepSeek emitted a fresh js call invoking cua.listApps({emit:false}), computed the sum and received 620 from the independent native service; final answer was 620. This establishes model-generated tool dispatch on the native discovery path only. No app names were emitted, and no windows or UI actions were accessed.

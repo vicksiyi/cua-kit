@@ -1,6 +1,6 @@
 # Native runtime integration decision
 
-Status: decision required for implementation provenance; no native backend switch has been made.
+Status: route A approved by the user: “resume 按照你的建议进行”. Independently authored native work is authorized; public-contract fidelity and full acceptance remain required.
 
 The requested final state combines readable TypeScript reconstructed from installed JavaScript, original package/API behavior, and a standalone DeepSeek-driven computer-use implementation. The installed JavaScript does not contain all native implementation code. The current reconstructed demo still delegates supervisor functions to the installed Rust executable and App control to SkyComputerUseService. The real App probe now confirms sender authentication rejection in the installed service.
 

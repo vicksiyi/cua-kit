@@ -1,0 +1,21 @@
+{
+  "backend": "independent-swift",
+  "entry": "npm run demo:deepseek -- --computer",
+  "sourceAuthorization": "User approved route A: resume \u6309\u7167\u4f60\u7684\u5efa\u8bae\u8fdb\u884c",
+  "preflight": "passed through actual restored MCP/CUA/Sky",
+  "permissions": {
+    "accessibility": false,
+    "screenRecording": false
+  },
+  "modelProbe": {
+    "provider": "deepseek",
+    "task": "sum app displayName lengths without window access or UI operations",
+    "toolCallObserved": true,
+    "toolRequestUtc": "2026-11-05T08:53:24.607Z",
+    "toolResultUtc": "2026-11-05T08:53:24.612Z",
+    "result": 620,
+    "finalAnswer": "620"
+  },
+  "installedSupervisorStillRequired": true,
+  "nativeUiAcceptance": false
+}

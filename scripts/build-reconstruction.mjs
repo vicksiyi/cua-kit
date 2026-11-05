@@ -139,6 +139,8 @@ async function patchDirectory(dir) {
     await writeFile(path, code);
   }
 }
+execFileSync("node_modules/.bin/tsc", ["-p", "reconstruction/tsconfig.native-macos.json", "--noEmit", "false", "--rootDir", "packages/native-macos/src", "--outDir", "packages/native-macos/dist"], { stdio: "inherit" });
+await patchDirectory("packages/native-macos/dist");
 await patchDirectory("packages/cua/dist");
 
 await patchDirectory("packages/core/dist");
