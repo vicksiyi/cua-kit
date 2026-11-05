@@ -142,10 +142,13 @@ async function patchDirectory(dir) {
     await writeFile(path, code);
   }
 }
-execFileSync("node_modules/.bin/tsc", ["-p", "reconstruction/tsconfig.native-macos.json", "--noEmit", "false", "--rootDir", "packages/native-macos/src", "--outDir", "packages/native-macos/dist"], { stdio: "inherit" });
-execFileSync("node_modules/.bin/tsc", ["-p", "reconstruction/tsconfig.runtime-supervisor.json", "--noEmit", "false", "--rootDir", "packages/runtime-supervisor/src", "--outDir", "packages/runtime-supervisor/dist"], { stdio: "inherit" });
-await patchDirectory("packages/runtime-supervisor/dist");
-await patchDirectory("packages/native-macos/dist");
+// Reference implementations are opt-in; normal runtime builds use Rust + Sky + Swift.
+if (process.argv.includes("--include-legacy")) {
+  execFileSync("node_modules/.bin/tsc", ["-p", "reconstruction/tsconfig.native-macos.json", "--noEmit", "false", "--rootDir", "packages/native-macos/src", "--outDir", "packages/native-macos/dist"], { stdio: "inherit" });
+  execFileSync("node_modules/.bin/tsc", ["-p", "reconstruction/tsconfig.runtime-supervisor.json", "--noEmit", "false", "--rootDir", "packages/runtime-supervisor/src", "--outDir", "packages/runtime-supervisor/dist"], { stdio: "inherit" });
+  await patchDirectory("packages/runtime-supervisor/dist");
+  await patchDirectory("packages/native-macos/dist");
+}
 await patchDirectory("packages/cua/dist");
 
 await patchDirectory("packages/core/dist");

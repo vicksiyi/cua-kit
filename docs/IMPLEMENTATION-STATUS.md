@@ -1,5 +1,9 @@
 # Implementation status
 
+## Default runtime build boundary
+
+`build:reconstruction` no longer compiles the legacy TS supervisor or desktop adapter. The independent runtime uses Rust and its own Node-to-NAPI bootstrap; computer mode keeps the original Sky binding and Swift service. `build:legacy-runtime` explicitly includes legacy reference outputs for comparison tests. The default build, isolated browser Loop and native inventory passed with both legacy `dist` directories absent. This retires a build dependency, not all legacy sources or missing real desktop acceptance.
+
 ## Existing adapter language migration
 
 The legacy `@core/native-macos` adapter now forwards raw `text`/`format` to the Swift helper's `pasteFormatted` method. The TypeScript Markdown/HTML renderer has been removed. Swift renders, validates the observed editor, owns the clipboard transaction, verifies insertion and restores the clipboard. The old `pasteWithClipboard` wire method remains compatible for existing callers. This NDJSON method is an independent compatibility bridge, not a claim that the original Sky protocol includes it.

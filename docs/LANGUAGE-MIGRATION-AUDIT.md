@@ -66,6 +66,13 @@ Public SDK audit found a separate contract gap: original `tinyskyAlt` installs g
 
 The independent runtime now reads both its executable and Node bootstrap from `native/runtime-supervisor/dist`. `@core/agent-loop` no longer depends on `@core/runtime-supervisor`. The canonical bootstrap remains TS because its job is Node `createRequire` / argv / dynamic import around the native sandbox addon; Rust still owns sandbox policy and process supervision. The old package contains 13 TS implementation review candidates and one compatibility forwarder, not 14 proven language mismatches.
 
-The reconstruction build still compiles legacy service files for direct reference tests. This change retires their production deployment dependency, not their source or test consumers. Native original function bodies remain unavailable; the native implementations are contract reconstructions, not recovered source.
+The default reconstruction build no longer compiles legacy service files. `npm run build:legacy-runtime` opts into them for direct reference tests. This change retires their production deployment dependency, not their source or test consumers. Native original function bodies remain unavailable; the native implementations are contract reconstructions, not recovered source.
 
 Validation for this cleanup: reconstruction build and agent-loop type check pass. The real isolated Chromium loop test passes through Rust, the relocated bootstrap, source CUA, page click/read, completion summary and final response (local deterministic model, not a new paid DeepSeek acceptance run). The legacy sandboxed CUA/native-host test also passes through the compatibility forwarder. This does not complete native desktop UI acceptance or retire all reference implementations.
+
+
+### Default build boundary
+
+`build:reconstruction` generates restored JS/TS packages and the native runtime's Node binding, without compiling `packages/runtime-supervisor` or `packages/native-macos`. `build:legacy-runtime` runs the same build with `--include-legacy`; `test:reconstruction` and the historical `test:sandbox` explicitly select it because they retain direct legacy comparison consumers. Native Rust MCP tests now reference the canonical native bootstrap directly. The normal CLI and native/browser acceptance commands continue using the default build.
+
+Validation removed both legacy `dist` directories temporarily (restored afterwards), ran the default reconstruction build, verified neither legacy output was recreated, and ran the real isolated browser Loop plus the Rust/Sky/Swift native-inventory test. All five selected tests passed with no installed supervisor dependency in those routes. This proves the selected runtime paths do not depend on stale legacy build artifacts; it does not prove all legacy source consumers are retired or native UI effects are accepted.

@@ -27,7 +27,7 @@
     "build:native": "swift build --package-path native/macos",
     "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts",
     "build:extension": "node scripts/build-extension.mjs",
-    "test:reconstruction": "npm run build:reconstruction && tsx --test reconstruction/*.test.ts",
+    "test:reconstruction": "npm run build:legacy-runtime && tsx --test reconstruction/*.test.ts",
     "check:reconstruction": "tsc -p reconstruction/tsconfig.core.json && tsc -p reconstruction/tsconfig.browser.json && tsc -p reconstruction/tsconfig.json && tsc -p reconstruction/tsconfig.repl.json && tsc -p reconstruction/tsconfig.desktop.json && tsc -p reconstruction/tsconfig.sky.json && tsc -p reconstruction/tsconfig.node-repl.json && tsc -p reconstruction/tsconfig.extension.json && npm run check -w @core/native-host && tsc -p reconstruction/tsconfig.native-macos.json && tsc -p reconstruction/tsconfig.runtime-supervisor.json",
     "build:reconstruction": "node scripts/build-reconstruction.mjs",
     "demo:deepseek": "node scripts/run-deepseek.mjs",
@@ -37,7 +37,7 @@
     "build:full-extension": "node scripts/build-full-extension.mjs",
     "test:native:restored": "npm run build:native && CUA_NATIVE_LIVE_TEST=1 tsx --test reconstruction/native-macos-live.test.ts",
     "build:sandbox": "node scripts/build-macos-sandbox.mjs",
-    "test:sandbox": "npm run build:sandbox && npm run build:reconstruction && CUA_TEST_MACOS_SANDBOX=1 tsx --test --test-concurrency=1 reconstruction/runtime-macos-sandbox.test.ts reconstruction/runtime-cdp-sandbox.test.ts",
+    "test:sandbox": "npm run build:sandbox && npm run build:legacy-runtime && CUA_TEST_MACOS_SANDBOX=1 tsx --test --test-concurrency=1 reconstruction/runtime-macos-sandbox.test.ts reconstruction/runtime-cdp-sandbox.test.ts",
     "permissions:computer": "npm run build:native && native/macos/.build/debug/cua-helper --request-permissions",
     "check:computer-permissions": "native/macos/.build/debug/cua-helper --permissions",
     "test:native-deepseek": "npm run build:native && npm run build:reconstruction && npm run build:rust-runtime && CUA_NATIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/native-deepseek-live.test.ts",
@@ -48,7 +48,8 @@
     "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"owned App launch\" reconstruction/native-sky-ipc.test.ts",
     "build:agent": "node scripts/build-agent-library.mjs",
     "mcp:legacy": "node dist/mcp/stdio.js",
-    "demo:legacy": "npm run build && node dist/agent/demo.js"
+    "demo:legacy": "npm run build && node dist/agent/demo.js",
+    "build:legacy-runtime": "node scripts/build-reconstruction.mjs --include-legacy"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
