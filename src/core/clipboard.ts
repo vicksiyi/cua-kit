@@ -5,8 +5,12 @@ export interface ClipboardBackend {
 }
 /** One process-wide critical section across browser/app sessions sharing a system clipboard. */
 const clipboardQueue = new SerialQueue();
+/** Caller scheduling only; native operations own their clipboard transaction. */
+export function runClipboardOperation<T>(operation: () => Promise<T>): Promise<T> {
+  return clipboardQueue.run(operation);
+}
 export function withClipboard<T>(backend: ClipboardBackend, content: ClipboardContent, fn: () => Promise<T>, beforeAcquire?: () => Promise<void>): Promise<{ result: T; restored: boolean }> {
-  return clipboardQueue.run(async () => {
+  return runClipboardOperation(async () => {
     await beforeAcquire?.();
     const lease = await backend.acquire(content);
     let result: T;

@@ -4,7 +4,7 @@
 
 The legacy `@core/native-macos` adapter now forwards raw `text`/`format` to the Swift helper's `pasteFormatted` method. The TypeScript Markdown/HTML renderer has been removed. Swift renders, validates the observed editor, owns the clipboard transaction, verifies insertion and restores the clipboard. The old `pasteWithClipboard` wire method remains compatible for existing callers. This NDJSON method is an independent compatibility bridge, not a claim that the original Sky protocol includes it.
 
-Validation: three restored-wrapper/adapter contract tests, native-macos TypeScript check, Swift build, native format bridge self-test and named-pasteboard transaction checks pass. Real App paste remains unaccepted pending OS permissions. Root `src/native/provider.ts` still has legacy TS orchestration; see `LANGUAGE-MIGRATION-AUDIT.md` for remaining migration scope.
+Validation: three restored-wrapper/adapter contract tests, native-macos TypeScript check, Swift build, native format bridge self-test and named-pasteboard transaction checks pass. Real App paste remains unaccepted pending OS permissions. Root `src/native/provider.ts` now also delegates paste formatting and transaction to Swift. The shared JS caller queue preserves browser/native ordering and rechecks abort before dispatch; it no longer acquires or restores native clipboard leases. See `LANGUAGE-MIGRATION-AUDIT.md` for remaining migration scope.
 
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
@@ -5771,3 +5771,9 @@ The launcher routing test passes normal browser/CDP cases, Swift prompt/check fl
 orders, stale .env selection, and conflicts. The prior direct-entry DeepSeek tool
 round trip remains the model-path evidence; this turn did not spend another model
 request. Screenshot/input/audio and complete legacy retirement remain open.
+
+### Root native paste migration validation
+
+Root `MacApp.paste` now calls `pasteFormatted` with raw text/format, checks the native insertion/restoration result and invalidates the observation before dispatch. It does not parse HTML/Markdown or acquire/restore clipboard leases. The public low-level `NativeClipboard` binding remains for compatibility. Writer timeouts for both native paste transaction methods report `ACTION_OUTCOME_UNKNOWN` and retire the helper.
+
+Root typecheck passes. Four mock-transport tests cover raw format forwarding, authorization/abort rejection, snapshot invalidation and incomplete restoration, plus browser/native queue ordering and cancellation while queued. Native timeout retirement tests and existing clipboard tests pass (including isolated browser paste). These do not prove real App insertion. Root imports/build remain the legacy NodeNext arrangement and need migration with public API retirement. Cross-process paste arbitration and legacy NDJSON signal cleanup remain separate gaps; same-process caller queue is not a native interprocess lock.

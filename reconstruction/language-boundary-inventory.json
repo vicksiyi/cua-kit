@@ -3774,7 +3774,7 @@
     {
       "path": "src/core/clipboard.ts",
       "category": "legacy-prototype-review-required",
-      "sha256": "08f13de05025959036c6a8c6684be97d3bffc7ff4359485cebd611575ef81f3f"
+      "sha256": "b46d93b5dc01564da672077632db289ddfd781feba1891fad7daa5624764d77f"
     },
     {
       "path": "src/core/errors.ts",
@@ -3839,12 +3839,12 @@
     {
       "path": "src/native/helper.ts",
       "category": "legacy-prototype-review-required",
-      "sha256": "aa9aa975f8fd585e912a126f93a79f9fa4526459d788b01c0aa66e4b6b8a0cc0"
+      "sha256": "835862499c369fff4f0da30f40f1e00631ac9aadcee4c911369ccfc6449221ae"
     },
     {
       "path": "src/native/provider.ts",
       "category": "legacy-prototype-review-required",
-      "sha256": "44c55557b220a40ee6f1e3fdf2f2c28dcb19cc15f21ff945f278c64672db3ba1"
+      "sha256": "62b407f722b6abbe33c15fad66d8de3a31962ccbe7df7a0e7c646d8e32184957"
     },
     {
       "path": "src/runtime/javascript.ts",
