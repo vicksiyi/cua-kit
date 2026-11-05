@@ -1,3 +1,7 @@
+import { observedSearchLinks } from "./search-result-evidence";
+import { mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { withHostProxy } from "../packages/agent-loop/src/system-proxy";
 import { loadEnvFile } from "node:process";
 import { AgentLoop } from "../packages/agent-loop/src/loop";
@@ -20,17 +24,19 @@ export async function verifyIndependentMcpBrowser(
   endpointFile: string,
   pageUrl: string,
   hostDirectory?: string,
+  backend: "chrome" | "cdp" = "chrome",
 ) {
   const baiduSearch =
     process.env.CUA_LIVE_BAIDU_TEST === "1" ||
     process.env.CUA_BROWSER_BAIDU_PROBE === "1";
+  const genericSearch = process.env.CUA_LIVE_SEARCH_TEST === "1";
   const runtime = await stageRuntimePackages(restoredPackageSources());
   try {
     const env = await configureIndependentBrowser(
       await withHostProxy(create_launch_environment({
         CUA_REPL_ENABLED_SURFACES: "browser",
         CUA_REPL_BROWSER_ENV: "codex-app",
-        BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
+        BROWSER_USE_AVAILABLE_BACKENDS: backend,
         ...(hostDirectory
           ? { CORE_CUA_HOST_DIRECTORY: hostDirectory }
           : { CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]) }),
@@ -60,13 +66,15 @@ export async function verifyIndependentMcpBrowser(
       {
         requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
         elicit: async (params) => {
-          // Test-only authorization: own local page, or the explicitly requested Baidu search origin.
+          // Test-only authorization for the requested search sites; verification/auth origins stay unapproved.
 
           if (
             params.mode === "url" ||
             params._meta?.tool_name !== "access_browser_origin" ||
-            params._meta?.origin !==
-              (baiduSearch ? "https://www.baidu.com" : new URL(pageUrl).origin)
+            !(genericSearch
+              ? ["https://www.google.com", "https://www.bing.com", "https://cn.bing.com"]
+              : [baiduSearch ? "https://www.baidu.com" : new URL(pageUrl).origin]
+            ).includes(params._meta?.origin)
           )
             return { action: "decline" };
           return { action: "accept", content: {} };
@@ -129,14 +137,16 @@ export async function verifyIndependentMcpBrowser(
         );
         return;
       }
-      if (process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch) {
+      if (process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch || genericSearch) {
         loadEnvFile(resolve(".env"));
         const trace = createTerminalTrace();
         const initialMessages = await browserPreflight(turn, {
           onMessage: trace,
         });
         const result = await new AgentLoop(createDemoModel(), turn).run(
-          baiduSearch
+          genericSearch
+            ? "打开本地Chrome 搜索 deepseek 给我返回第一条搜索结果"
+            : baiduSearch
             ? "访问百度 搜索 deepseek 给我返回第一条搜索结果"
             : `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
           {
@@ -144,11 +154,11 @@ export async function verifyIndependentMcpBrowser(
             onMessage: trace,
             // Live search includes repeated upstream site-status checks. Keep enough
             // observation time to distinguish transport delay from page failure.
-            signal: AbortSignal.timeout(baiduSearch ? 180000 : 90000),
+            signal: AbortSignal.timeout(baiduSearch || genericSearch ? 180000 : 90000),
           },
         );
         console.error("DEEPSEEK ANSWER", result.answer);
-        if (baiduSearch) {
+        if (baiduSearch || genericSearch) {
           const observed = result.messages
             .filter(
               (message) => message.role === "tool" && !message.result.isError,
@@ -161,17 +171,14 @@ export async function verifyIndependentMcpBrowser(
                 : [],
             )
             .join("\n");
-          assert.match(
-            observed,
-            /heading[^\n]*deepseek/i,
-            "No observed DeepSeek search-result heading",
-          );
+          const evidence = await mkdtemp(join(tmpdir(), "core-search-evidence-"));
+          await writeFile(join(evidence, "observed.txt"), observed);
+          await writeFile(join(evidence, "answer.txt"), result.answer);
+          console.error("SEARCH EVIDENCE DIRECTORY", evidence);
           assert.match(result.answer, /deepseek/i);
-          assert.match(
-            result.answer,
-            /https?:\/\//,
-            "No result link in the final answer",
-          );
+          const observedLinks = observedSearchLinks(observed);
+          assert.ok(observedLinks.some(link => result.answer.includes(link)),
+            "Final answer must preserve an observed result link or its decoded destination, including the full path");
         } else assert.match(result.answer, /action-completed-marker/);
         return;
       }
@@ -181,7 +188,9 @@ export async function verifyIndependentMcpBrowser(
       );
       assert.match(inventory, /"count":1/);
       const state = await execute(
-        `var liveTab = await cua.getTab({url:${JSON.stringify(pageUrl)}}, {browser:"chrome"});`,
+        backend === "cdp"
+          ? `var liveTab = await cua.createBrowserTab("1",${JSON.stringify(pageUrl)}, {sessionName:"CDP acceptance"});`
+          : `var liveTab = await cua.getTab({url:${JSON.stringify(pageUrl)}}, {browser:"chrome"});`,
       );
       assert.match(state, /Actual browser capture|native-roundtrip-marker/);
       await execute(`await liveTab.goto(${JSON.stringify(pageUrl + "next")});`);

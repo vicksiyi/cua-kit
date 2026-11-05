@@ -37,3 +37,14 @@ The PNG-coordinate test uses the AX window frame and PNG dimensions independentl
 Held keyboard/mouse input now accepts the restored 0..30000 ms duration range (Sky seconds; native keyboard milliseconds). Each mouse click in a multi-click sequence receives that hold duration; this repetition timing is an independent policy, not native-source equivalence. Cooperative interruption attempts release to the same live process and reports unknown outcome. Forced termination still cannot guarantee release. The helper deadline includes requested hold time, including click count; callers must also provide an outer JS/MCP timeout long enough for the whole operation. No OS key-repeat synthesis is added. set_value, type_text and press_key now return void in the adapter as declared by Sky. Self-tests inject event sinks and wait functions, so real held-input behavior remains unaccepted.
 
 Key parsing now accepts the original documented Control_L/Super_L examples, common left/right modifier suffixes as semantic flags, whitespace around '+', lowercase space and X-style navigation names. Added F1–F20, KP_Enter, ISO_Left_Tab and US ANSI punctuation/keysym names (including literal '+' chords). Mouse modifier parsing shares the alias normalization. Mappings use the installed Apple Carbon key constants; no third-party parser was reimplemented. Remaining gaps: side-specific physical modifier events, complete X keysym coverage and non-US layout translation are not implemented. Use typeText for Unicode text. Swift pure checks cover documented examples, shifted punctuation, aliases and malformed chords; real keyboard effects remain unverified.
+
+### Operator permission setup
+
+From the repository in the terminal that will run the desktop demo:
+
+```sh
+npm run permissions:computer
+npm run check:computer-permissions
+```
+
+The first command builds the helper and explicitly requests the standard macOS Accessibility/Screen Recording dialogs. The operator must grant the permissions in System Settings; this does not write TCC databases or grant access automatically. Use the application named by macOS, since permission attribution can differ between Terminal, a GUI agent and a tmux-launched process. Restart the responsible app/terminal if macOS asks. The check prints both booleans and exits 2 until both are true, without requesting dialogs. A successful check in one launcher does not prove that another launcher has the same permissions. Recheck the actual MCP/helper runtime before desktop acceptance.

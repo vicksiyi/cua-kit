@@ -7,7 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./networkPolicy": "./src/network_policy_compiler.ts",
+    "./cdpSecurity": "./src/cdp_security.ts",
+    "./sessionFinalization": "./src/browser_session.ts"
   },
   "dependencies": {
     "@core/browser": "0.0.0-reconstructed.0",

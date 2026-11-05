@@ -180,3 +180,27 @@ test("native helper timeout covers legal hold duration and repetition",async()=>
  assert.equal(nativeRequestTimeout("mouseInput",{duration:Infinity}),15000);
  assert.equal(nativeRequestTimeout("mouseInput",{duration:30,clickCount:100000}),15000);
 });
+
+test("unrunning app resolves and authorizes launch before binding; denial prevents launch",async()=>{
+ for(const deny of [true,false]){
+  const calls:string[]=[];
+  const installed={pid:0,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:0};
+  const running={...installed,pid:43,launchTime:2};
+  const helper:NativeTransport={request:async<T>(method:string,params?:Record<string,unknown>)=>{
+   calls.push(method);
+   if(method==="listApps")return {apps:[]} as T;
+   if(method==="resolveApp")return {app:installed} as T;
+   if(method==="launchApp"){assert.deepEqual(params,{path:installed.path,bundleId:installed.bundleId});return {app:running} as T;}
+   if(method==="bind")return {targetId:"launched",app:running} as T;
+   if(method==="hello")return {permissions:{screenRecording:false}} as T;
+   if(method==="observe")return {snapshotId:"s",elements:[],warnings:[]} as T;
+   throw Error(method);
+  }};
+  const client=createNativeMacClient(helper,async ({operation,effect})=>{
+   calls.push(`authorize:${operation}`);
+   if(operation==="launchApp"){assert.equal(effect,"write");if(deny)throw Error("launch denied");}
+  });
+  if(deny){await assert.rejects(client.get_app_state({app:"Fixture"}),/launch denied/);assert.equal(calls.includes("launchApp"),false);}
+  else{await client.get_app_state({app:"Fixture"});assert.deepEqual(calls.slice(0,6),["listApps","resolveApp","authorize:launchApp","launchApp","authorize:get_app_state","bind"]);}
+ }
+});

@@ -37,7 +37,7 @@ export async function browserPreflight(
     id: "host-browser-inventory",
     name: "js",
     arguments: {
-      code: "nodeRepl.write(JSON.stringify({cuaBrowserCount:(await cua.getState({emit:false})).browsers.length}));",
+      code: "{ const state = await cua.getState({emit:false}); nodeRepl.write(JSON.stringify({cuaBrowserCount:state.browsers.length,browsers:state.browsers})); }",
       title: "Verify browser availability",
     },
   };

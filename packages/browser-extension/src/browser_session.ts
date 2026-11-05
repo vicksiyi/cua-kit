@@ -640,7 +640,7 @@ function validateTabId(method: string, tabId: number) {
   if (!Number.isInteger(tabId))
     throw new Error(`${method} requires an integer tabId`);
 }
-function validateFinalizedTabs(keep: any[], known: Set<number>) {
+export function validateFinalizedTabs(keep: any[], known: Set<number>) {
   const marks = new Map<number, string>();
   for (const entry of keep) {
     if (entry == null)
@@ -657,7 +657,7 @@ function validateFinalizedTabs(keep: any[], known: Set<number>) {
   }
   return marks;
 }
-function partitionFinalizedTabs(leases: any[]) {
+export function partitionFinalizedTabs(leases: any[]) {
   const groups: Record<string, number[]> = {
     close: [],
     release: [],

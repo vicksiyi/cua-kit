@@ -16,7 +16,7 @@ func scalar(_ value: CFTypeRef?) -> Any? {
     return nil
 }
 func info(_ app: NSRunningApplication) -> [String: Any] {
-    ["pid": Int(app.processIdentifier), "name": app.localizedName ?? "", "bundleId": app.bundleIdentifier ?? "", "path": app.bundleURL?.path ?? "", "launchTime": app.launchDate?.timeIntervalSince1970 ?? 0]
+    ["pid": Int(app.processIdentifier), "name": app.localizedName ?? "", "bundleId": app.bundleIdentifier ?? "", "path": app.bundleURL?.resolvingSymlinksInPath().path ?? "", "launchTime": app.launchDate?.timeIntervalSince1970 ?? 0]
 }
 struct Node {
     let element: AXUIElement
@@ -121,9 +121,11 @@ let clipboard = ClipboardStore()
 @MainActor
 func handle(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
     switch method {
-    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX", "pasteWithClipboard", "mouseClick", "scroll", "drag", "heldInput"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["resolveApp", "launchApp", "listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX", "pasteWithClipboard", "mouseClick", "scroll", "drag", "heldInput"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
     case "clipboardBegin": return try clipboard.begin(params)
     case "clipboardRestore": return try clipboard.restore(params["token"] as? String ?? "")
+    case "resolveApp": return ["app": try resolveInstalledApp(params["reference"] as? String ?? "")]
+    case "launchApp": return try await launchInstalledApp(params)
     case "listApps": return ["apps": NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map(info)]
     case "bind":
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
@@ -160,6 +162,18 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         return try method == "observe" ? target.observe() : target.action(params)
     default: throw fail("UNSUPPORTED_CAPABILITY", "Unknown helper method.")
     }
+}
+// Explicit operator-only entry: request system dialogs, never change TCC settings.
+if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.contains("--request-permissions") {
+    let request = CommandLine.arguments.contains("--request-permissions")
+    if request {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
+        if !CGPreflightScreenCaptureAccess() { _ = CGRequestScreenCaptureAccess() }
+    }
+    let status: [String: Any] = ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess(), "helper": Bundle.main.executablePath ?? CommandLine.arguments[0], "requested": request]
+    if let data = try? JSONSerialization.data(withJSONObject: status, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text) }
+    exit(AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() ? 0 : 2)
 }
 if CommandLine.arguments.contains("--held-input-self-test") {
     do { try await runHeldInputChecks(); print("{\"heldInputRelease\":true}"); exit(0) }

@@ -24,8 +24,18 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
   async function target(reference: string, operation: string, effect: "read" | "write") {
     if (typeof reference !== "string" || !reference.trim()) throw new CuaError("INVALID_ARGUMENT", "App reference must be nonempty");
     const matches = (await apps()).filter(app => [app.bundleId,app.name,app.path].includes(reference));
-    if (matches.length !== 1) throw new CuaError(matches.length ? "AMBIGUOUS_TARGET" : "TARGET_NOT_FOUND", "App reference must identify exactly one running app");
-    const app = matches[0]!;
+    if (matches.length > 1) throw new CuaError("AMBIGUOUS_TARGET", "App reference identifies multiple running apps");
+    let app = matches[0];
+    if (!app) {
+      const resolved = await helper.request<{app:NativeAppInfo}>("resolveApp", {reference});
+      const installed = resolved.app;
+      if (!installed || installed.pid !== 0 || !installed.path?.startsWith("/") || !installed.bundleId)
+        throw new CuaError("PROVIDER_DISCONNECTED", "Invalid installed application identity");
+      await authorize({app:installed,operation:"launchApp",effect:"write"});
+      app = (await helper.request<{app:NativeAppInfo}>("launchApp", {path:installed.path,bundleId:installed.bundleId})).app;
+      if (!app || app.pid <= 0 || app.path !== installed.path || app.bundleId !== installed.bundleId)
+        throw new CuaError("ACTION_OUTCOME_UNKNOWN", "Launched app does not match the approved identity");
+    }
     await authorize({app,operation,effect});
     const key = `${app.pid}:${app.launchTime}`;
     let value = bound.get(key);

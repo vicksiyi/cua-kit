@@ -95,6 +95,9 @@ try {
       signal: controller.signal,
       onMessage: trace,
       initialMessages,
+      runtimeContext: process.env.CUA_DEMO_MANAGED_BROWSER === "1"
+        ? "The connected chrome-family backend is a visible temporary Chromium launched by this demo. It is not the user's daily Chrome profile. Use this browser for the requested task and accurately identify it in your answer."
+        : undefined,
     });
     console.log(result.answer);
   }
