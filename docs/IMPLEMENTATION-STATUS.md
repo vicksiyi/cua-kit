@@ -1,5 +1,30 @@
 # Implementation status
 
+## Startup hardening integration checkpoint (2026-11-06)
+
+After commits through `a3842c4`, a fresh reconstruction build and both real
+`extension-native-controller.test.ts` deployments (`native` and `full`) passed:
+2 tests, 0 failures, 0 skips. Each uses an isolated Chromium profile and the
+actual packaged extension/native host/MCP chain to exercise CUA page operations;
+this run did not use DeepSeek, external websites or the user's daily Chrome.
+These results validate compatibility of the recent discovery/preflight changes
+with the complete extension transport. They do not establish the default macOS
+launcher cold-start behavior against a closed daily Chrome instance.
+
+Implemented startup additions now include authenticated live endpoint discovery,
+a two-second transport retry, original-script-derived profile/extension checks,
+read-only native registration checks, explicit existing-profile launch, and one
+read-only MCP inventory retry retaining initial API documentation. Local host
+lifecycle diagnostics and caller-configurable browser-origin approvals are also
+available. Source profile selection was differentially tested against bundled
+browser plugin version `26.1027.30824`; the Core deployment adapter remains
+separate from source-faithful CUA modules.
+
+Outstanding acceptance: closed daily Chrome startup and wrong-profile behavior
+on the user's machine without overlapping interactive runs; recovery after an
+MCP process dies; native App UI permission/action acceptance; complete source
+parity and standalone default runtime deployment. This is not full-goal completion.
+
 ## Latest browser startup checkpoint (2026-11-06)
 
 The default DeepSeek prompt entry now requests macOS to open Google Chrome when the configured extension endpoint directory exists but is empty, then waits up to 15 seconds for a descriptor before the existing MCP browser preflight. Check-only mode remains read-only. Missing installation, invalid permissions and explicit endpoint configurations do not trigger this startup path. Timeout explains extension/profile diagnosis and the explicit `--cdp-browser` alternative; there is no automatic profile/backend switch.
