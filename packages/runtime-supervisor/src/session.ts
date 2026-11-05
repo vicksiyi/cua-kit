@@ -1,6 +1,8 @@
 /** Independently authored supervisor core, not recovered Rust. No implicit OS authority. */
 import { ExecutionDeadline } from "./execution-deadline";
 import { randomUUID } from "node:crypto";
+import { isAbsolute, basename } from "node:path";
+import { realpath, stat } from "node:fs/promises";
 export type Message = Record<string, any>;
 export interface WorkerPort {
   send(message: Message): void;
@@ -22,6 +24,8 @@ export interface SessionOptions {
   launch(): Promise<WorkerPair>;
   /** Explicit services only; kernel-supplied names cannot expand the set. */
   services: readonly string[];
+  /** Must enforce the launcher's module access policy; no default expansion of filesystem authority. */
+  authorizeModuleDirectory?(path: string, signal?: AbortSignal): Promise<void>;
   hostRequest?(
     message: Readonly<Message>,
     context: HostContext,
@@ -54,6 +58,7 @@ interface Pending {
 }
 export class WorkerSession {
   private pair?: WorkerPair;
+  private moduleDirectories = new Set<string>();
   private endedTurns = new Map<string, Promise<Message>>();
   private launching?: Promise<WorkerPair>;
   private closings = new WeakMap<WorkerPair, Promise<void>>();
@@ -68,6 +73,48 @@ export class WorkerSession {
     const next = this.queue.then(() =>
       this.run({ type: "exec", code }, options),
     );
+    this.queue = next.catch(() => {});
+    return next;
+  }
+  addNodeModuleDirectory(path: string, signal?: AbortSignal): Promise<void> {
+    const next = this.queue.then(async () => {
+      if (this.closed) throw Error("Supervisor session is closed");
+      if (
+        typeof path !== "string" ||
+        !isAbsolute(path) ||
+        basename(path) !== "node_modules" ||
+        path !== path.trim()
+      )
+        throw Error("Expected an absolute node_modules directory");
+      if (signal?.aborted) throw Error("Module registration cancelled");
+      await this.retirement;
+      const epoch = this.epoch;
+      if (!this.options.authorizeModuleDirectory)
+        throw Error("Module-directory policy is not configured");
+      const canonical = await realpath(path);
+      if (
+        basename(canonical) !== "node_modules" ||
+        !(await stat(canonical)).isDirectory()
+      )
+        throw Error("Expected a real node_modules directory");
+      await this.options.authorizeModuleDirectory(canonical, signal);
+      if (signal?.aborted) throw Error("Module registration cancelled");
+      if (this.closed || epoch !== this.epoch)
+        throw Error("Session changed during module registration");
+      if (this.moduleDirectories.has(canonical)) return;
+      try {
+        this.pair?.kernel.send({
+          type: "add_node_module_dir",
+          path: canonical,
+        });
+        this.moduleDirectories.add(canonical);
+      } catch (error) {
+        await this.retire(
+          error instanceof Error ? error : Error(String(error)),
+        );
+        throw error;
+      }
+    });
     this.queue = next.catch(() => {});
     return next;
   }
@@ -130,6 +177,15 @@ export class WorkerSession {
       if (this.closed || epoch !== this.epoch) {
         await this.closePair(pair);
         throw Error("Session changed during worker launch");
+      }
+      // The recovered kernel has no acknowledgement for this notification.
+      // Replay before the first cell; JSONL ordering preserves registration-before-exec.
+      try {
+        for (const path of this.moduleDirectories)
+          pair.kernel.send({ type: "add_node_module_dir", path });
+      } catch (error) {
+        await this.closePair(pair);
+        throw error;
       }
       this.pair = pair;
       for (const side of ["kernel", "trusted"] as const) {

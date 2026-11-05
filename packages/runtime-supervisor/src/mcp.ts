@@ -31,6 +31,7 @@ const turnInput = z
     turn_id: z.string().min(1),
   })
   .strict();
+const moduleInput = z.object({ path: z.string().min(1) }).strict();
 const emptyInput = z.object({}).strict();
 function toolError(error: unknown): CallToolResult {
   return {
@@ -71,7 +72,7 @@ export function createSupervisorMcpServer(options: SessionOptions) {
     {
       capabilities: { tools: {} },
       instructions:
-        "Use js for persistent JavaScript, js_reset to clear bindings. turn_ended is host lifecycle only. Additional module-directory registration is not implemented.",
+        "Use js for persistent JavaScript, js_reset to clear bindings. turn_ended is host lifecycle only. js_add_node_module_dir requires host module-directory policy.",
     },
   );
   const session = new WorkerSession({
@@ -122,6 +123,13 @@ export function createSupervisorMcpServer(options: SessionOptions) {
             timeoutMs: input.timeout_ms,
           }),
         );
+      }
+      if (name === "js_add_node_module_dir") {
+        const input = moduleInput.parse(args);
+        await session.addNodeModuleDirectory(input.path, extra.signal);
+        return {
+          content: [{ type: "text", text: "Module directory registered." }],
+        };
       }
       if (name === "js_reset") {
         emptyInput.parse(args);

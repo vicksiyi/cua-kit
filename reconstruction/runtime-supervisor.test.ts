@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, mkdir, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
 import {
@@ -499,5 +499,107 @@ test("completion with unfinished host effects rejects and discards late response
     await session.close();
     assert.equal(kernel.closed, true);
     assert.equal(trusted.closed, true);
+  }
+});
+
+test("module registration requires host policy and replays before first execution", async () => {
+  const root = await mkdtemp(join(tmpdir(), "core-modules-"));
+  const directory = join(root, "node_modules");
+  await mkdir(directory);
+  const canonical = await realpath(directory);
+  const kernel = fakePort(),
+    trusted = fakePort();
+  let launches = 0,
+    approved = false;
+  const denied = new WorkerSession({
+    services: [],
+    launch: async () => {
+      throw Error("Must not launch");
+    },
+  });
+  const session = new WorkerSession({
+    services: [],
+    launch: async () => {
+      launches++;
+      return { kernel, trusted };
+    },
+    authorizeModuleDirectory: async (path) => {
+      assert.equal(path, canonical);
+      if (!approved) throw Error("policy denied");
+    },
+  });
+  try {
+    await assert.rejects(
+      denied.addNodeModuleDirectory(directory),
+      /not configured/,
+    );
+    await assert.rejects(
+      session.addNodeModuleDirectory("relative/node_modules"),
+      /absolute/,
+    );
+    await assert.rejects(
+      session.addNodeModuleDirectory(directory),
+      /policy denied/,
+    );
+    approved = true;
+    await session.addNodeModuleDirectory(directory);
+    await session.addNodeModuleDirectory(directory);
+    assert.equal(launches, 0);
+    const running = session.execute("ignored");
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(kernel.sent[0], {
+      type: "add_node_module_dir",
+      path: canonical,
+    });
+    assert.equal(kernel.sent[1].type, "exec");
+    assert.equal(kernel.sent.length, 2);
+    kernel.emit({ type: "exec_result", id: kernel.sent[1].id, ok: true });
+    await running;
+  } finally {
+    await denied.close();
+    await session.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("module policy finishing after reset cannot register into a new generation", async () => {
+  const root = await mkdtemp(join(tmpdir(), "core-module-policy-"));
+  const directory = join(root, "node_modules");
+  await mkdir(directory);
+  let release!: () => void, started!: () => void;
+  const observed = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const kernel = fakePort(),
+    trusted = fakePort();
+  const session = new WorkerSession({
+    services: [],
+    launch: async () => ({ kernel, trusted }),
+    authorizeModuleDirectory: () => {
+      started();
+      return new Promise((resolve) => {
+        release = resolve;
+      });
+    },
+  });
+  try {
+    const registering = session.addNodeModuleDirectory(directory);
+    const rejected = assert.rejects(
+      registering,
+      /changed during module registration/,
+    );
+    await observed;
+    await session.reset();
+    release();
+    await rejected;
+    const running = session.execute("ignored");
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(kernel.sent.length, 1);
+    assert.equal(kernel.sent[0].type, "exec");
+    kernel.emit({ type: "exec_result", id: kernel.sent[0].id, ok: true });
+    await running;
+  } finally {
+    await session.close();
+    await rm(root, { recursive: true, force: true });
   }
 });

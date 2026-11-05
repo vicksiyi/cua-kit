@@ -1,10 +1,10 @@
-/** Tool schemas observed from the installed supervisor; only implemented endpoints are advertised. */
+/** Tool schemas observed from the installed supervisor. */
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 export const supervisorTools: Tool[] = [
   {
     name: "js",
     description:
-      'Execute JavaScript in a persistent `node_repl` with top-level await. Top-level bindings persist until `js_reset` and can be redeclared. Use `const` for stable values and `let` for changing values. Use dynamic imports such as `await import("playwright")`; top-level static imports and `node:process` are unavailable. Use `nodeRepl.write(value)` for output and `await nodeRepl.emitImage(image)` for images. Execution context is available through `nodeRepl.cwd`, `nodeRepl.homeDir`, `nodeRepl.tmpDir`, and `nodeRepl.requestMeta`. The default timeout is 30000 ms (30 seconds); increase `timeout_ms` for longer operations.',
+      'Execute JavaScript in a persistent `node_repl` with top-level await. Top-level bindings persist until `js_reset` and can be redeclared. Use `const` for stable values and `let` for changing values. Use dynamic imports such as `await import("playwright")`; top-level static imports and `node:process` are unavailable. Use `nodeRepl.write(value)` for output and `await nodeRepl.emitImage(image)` for images. Execution context is available through `nodeRepl.cwd`, `nodeRepl.homeDir`, `nodeRepl.tmpDir`, and `nodeRepl.requestMeta`. The default timeout is 30000 ms (30 seconds); increase `timeout_ms` for longer operations. Use `js_add_node_module_dir` when an additional package directory is required.',
     inputSchema: {
       additionalProperties: false,
       properties: {
@@ -27,6 +27,29 @@ export const supervisorTools: Tool[] = [
       },
       required: ["code"],
       type: "object",
+    },
+  },
+  {
+    name: "js_add_node_module_dir",
+    description:
+      "Add an absolute `node_modules` directory for package imports. The directory remains available after `js_reset`.",
+    inputSchema: {
+      additionalProperties: false,
+      properties: {
+        path: {
+          description:
+            "Absolute path to a node_modules directory to add to Node package resolution.",
+          minLength: 1,
+          type: "string",
+        },
+      },
+      required: ["path"],
+      type: "object",
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
     },
   },
   {

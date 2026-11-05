@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, mkdir, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client";
@@ -22,11 +22,30 @@ test(
       join(root, "service.mjs"),
       'export async function handleRpc(){return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
     );
+    const moduleDir = join(root, "external", "node_modules");
+    await mkdir(join(moduleDir, "fixture-module"), { recursive: true });
+    await writeFile(
+      join(moduleDir, "fixture-module", "package.json"),
+      JSON.stringify({
+        name: "fixture-module",
+        type: "module",
+        main: "index.js",
+      }),
+    );
+    await writeFile(
+      join(moduleDir, "fixture-module", "index.js"),
+      "export const value = 137;",
+    );
+    const canonicalModuleDir = await realpath(moduleDir);
     let launches = 0,
       decision: "accept" | "decline" = "decline";
     let started: (() => void) | undefined;
     const runtime = createSupervisorMcpServer({
       services: ["fixture"],
+      authorizeModuleDirectory: async (path) => {
+        if (path !== canonicalModuleDir)
+          throw Error("Module directory denied by fixture policy");
+      },
       launch: async () => {
         launches++;
         const env = {
@@ -89,7 +108,7 @@ test(
       await client.connect(clientTransport);
       assert.deepEqual(
         (await client.listTools()).tools.map((t) => t.name),
-        ["js", "js_reset", "turn_ended"],
+        ["js", "js_add_node_module_dir", "js_reset", "turn_ended"],
       );
       assert.equal(launches, 0);
       const invalid = await client.callTool({
@@ -117,6 +136,28 @@ test(
         ),
         /42/,
       );
+      const importCode =
+        'nodeRepl.write((await import("fixture-module")).value)';
+      assert.equal(
+        (await client.callTool({ name: "js", arguments: { code: importCode } }))
+          .isError,
+        true,
+      );
+      assert.equal(
+        (
+          await client.callTool({
+            name: "js_add_node_module_dir",
+            arguments: { path: moduleDir },
+          })
+        ).isError,
+        undefined,
+      );
+      const imported = await client.callTool({
+        name: "js",
+        arguments: { code: importCode },
+      });
+      assert.equal(imported.isError, false);
+      assert.match(JSON.stringify(imported.content), /137/);
       for (decision of ["accept", "decline"]) {
         const result = await client.callTool({
           name: "js",
@@ -189,6 +230,12 @@ test(
         false,
       );
       assert.equal(launches, 3);
+      const afterReset = await client.callTool({
+        name: "js",
+        arguments: { code: importCode },
+      });
+      assert.equal(afterReset.isError, false);
+      assert.match(JSON.stringify(afterReset.content), /137/);
     } finally {
       await client.close();
       await runtime.close();
