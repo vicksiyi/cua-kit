@@ -5452,3 +5452,39 @@ ScreenRecording=false), before app launch. It is **not** a successful screenshot
 acceptance; the normal protocol run skips those two opt-in cases. No permission
 dialog or user-app operation was performed. Default DeepSeek demo routing remains
 unchanged, and native start/action support and old adapter retirement remain open.
+
+
+## Explicit native AppStart dispatch (2026-11-06)
+
+`ComputerUseIPCAppStartRequest` now dispatches to Swift LaunchServices through
+SkyAppState.start. It resolves and checks native policy, invalidates the target's
+old observation, revalidates the resolved path/bundle before launch, and checks
+the returned application identity. It reuses an existing application instance.
+The reply contains app bundle ID/PID using the observed MacWindowAppState type's
+optional-skyshot form. No fake screenshot is returned. A post-launch timeout
+explicitly reports that the application may already be running.
+
+Source evidence: a search of installed @oai JS/declarations found startApp and
+ComputerUseIPCAppStartRequest only in the duplicated cua/sky mac client files.
+The restored client envelope is already differentially compared with installed
+JS. This establishes a distinct explicit start request, **not** proof that the
+unavailable original native GetSkyshot implementation never launches an app.
+Our read-state path still requires a running app; original implicit-start behavior
+and precise AppStart response contents remain unresolved. No new CUA public method
+or model-side automatic launch fallback has been invented.
+
+Added `npm run test:native-app-start`: it builds a uniquely identified temporary
+CuaFixture .app and calls startApp through both restored TS and installed original
+JS clients. Both actual LaunchServices cases pass: the app is running at the
+expected bundle path, a second start returns the same PID, and cleanup terminates
+only that unique fixture and waits for its exit. In the current permission-denied
+environment, both clients also receive -10009 for that running app's skyshot.
+Four IPC cases and four original-client differential tests pass. Full screenshot
+acceptance remains blocked by host permissions; input/action protocol dispatch
+and production demo integration remain open. This live launch proof applies to
+the explicit native client route, not an end-to-end DeepSeek getApp experience.
+
+Native error handling now distinguishes malformed JSON (-32700) from unexpected
+native errors (-10005), instead of labeling LaunchServices failures as invalid
+JSON. Failed state refresh after identity resolution invalidates only the resolved
+app's observation, and terminated app handles are pruned.

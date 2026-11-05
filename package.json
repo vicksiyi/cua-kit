@@ -41,7 +41,8 @@
     "build:rust-runtime": "npm run build:sandbox && node scripts/build-rust-runtime.mjs",
     "test:rust-browser": "npm run build:reconstruction && npm run build:rust-runtime && CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-concurrency=1 reconstruction/runtime-cdp-sandbox.test.ts reconstruction/extension-native-controller.test.ts",
     "test:native-ipc": "npm run build:reconstruction && npm run build:native && npm run build:rust-runtime && CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/native-sky-ipc.test.ts",
-    "test:native-skyshot": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern=\"live owned App skyshot\" reconstruction/native-sky-ipc.test.ts"
+    "test:native-skyshot": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern=\"live owned App skyshot\" reconstruction/native-sky-ipc.test.ts",
+    "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"explicit owned App launch\" reconstruction/native-sky-ipc.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

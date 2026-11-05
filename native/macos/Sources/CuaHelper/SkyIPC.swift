@@ -12,7 +12,10 @@ private func rpcFailure(_ code: Int, _ message: String) -> SkyRPCFailure { SkyRP
 private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPolicy, appState: SkyAppState) async -> [String: Any] {
     var id: Any = NSNull()
     do {
-        guard let request = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+        let decoded: Any
+        do { decoded = try JSONSerialization.jsonObject(with: data) }
+        catch { throw rpcFailure(-32700, "Invalid JSON payload") }
+        guard let request = decoded as? [String: Any],
               request["jsonrpc"] as? String == "2.0",
               let number = request["id"] as? NSNumber,
               CFGetTypeID(number) != CFBooleanGetTypeID(), number.doubleValue.isFinite,
@@ -41,6 +44,12 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                     if let path = app.bundleURL?.path { value["appPath"] = path }
                     return value
                 }
+            case "ComputerUseIPCAppStartRequest":
+                let payload = params["request"] as! [String: Any]
+                guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw rpcFailure(-32602, "App start requires a non-empty app reference")
+                }
+                result = try await appState.start(app, policy: appPolicy, deadline: deadline.doubleValue)
             case "ComputerUseIPCAppGetSkyshotRequest":
                 let payload = params["request"] as! [String: Any]
                 guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -79,7 +88,7 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
         }
         return ["id": id, "jsonrpc": "2.0", "error": ["code": code, "message": error.message]]
     } catch {
-        return ["id": id, "jsonrpc": "2.0", "error": ["code": -32700, "message": "Invalid JSON payload"]]
+        return ["id": id, "jsonrpc": "2.0", "error": ["code": -10005, "message": "Native request failed: \(error.localizedDescription)"]]
     }
 }
 private func readExact(_ fd: Int32, _ count: Int, allowEOF: Bool = false) throws -> Data? {

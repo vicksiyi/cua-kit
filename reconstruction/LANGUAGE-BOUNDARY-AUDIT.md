@@ -110,3 +110,11 @@ Target.observeWithScreenshot with the existing adapter. No AX tree, screenshot
 or app identity assembly was moved into TS. Original JS clients/window_result
 remain TS. Protocol and error paths pass; actual PNG/AX acceptance is still
 blocked by missing host TCC permissions and must not be counted as completed.
+
+
+Explicit Sky AppStart now dispatches to the existing Swift LaunchServices adapter,
+with native policy/identity/deadline checks in SkyAppState. Both original JS and
+restored TS clients launched and reused an isolated fixture app successfully.
+The original hidden GetSkyshot auto-launch behavior is still unknown; no policy
+was inferred from the absence of a visible JS startApp caller. Existing TS launch
+adapters have not yet been retired or replaced in production demo routing.

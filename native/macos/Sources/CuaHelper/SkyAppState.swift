@@ -7,7 +7,9 @@ import ApplicationServices
 @MainActor
 final class SkyAppState {
     private var targets: [String: Target] = [:]
-    func get(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
+    /// Explicit AppStart request only. State reads never implicitly launch apps.
+    /// Response uses the original optional-skyshot MacWindowAppState envelope.
+    func start(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
         let evaluated: [String: Any]
         do { evaluated = try policy.evaluate(reference) }
         catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
@@ -16,6 +18,31 @@ final class SkyAppState {
         }
         let identity = evaluated["target"] as! [String: Any]
         let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
+        targets.removeValue(forKey: path)?.invalidateInputState()
+        guard Date().timeIntervalSince1970 * 1000 < deadline else {
+            throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before launch")
+        }
+        let launched = try await launchInstalledApp(["path": path, "bundleId": identifier])
+        guard let app = launched["app"] as? [String: Any], let pid = app["pid"] as? Int else {
+            throw SkyRPCFailure(code: -10005, message: "Native launch returned invalid application identity")
+        }
+        guard Date().timeIntervalSince1970 * 1000 < deadline else {
+            throw SkyRPCFailure(code: -10005, message: "Launch completed after the request deadline; application may be running")
+        }
+        return ["app": ["bundleIdentifier": identifier, "pid": pid]]
+    }
+    func get(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
+        targets = targets.filter { !$0.value.app.isTerminated }
+        let evaluated: [String: Any]
+        do { evaluated = try policy.evaluate(reference) }
+        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
+        let identity = evaluated["target"] as! [String: Any]
+        let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
+        // Failures after resolution retire only this application's earlier observation.
+        targets[path]?.invalidateInputState()
+        guard evaluated["decision"] as? String == "allowed" else {
+            throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
+        }
         let running = NSWorkspace.shared.runningApplications.filter {
             !$0.isTerminated && $0.bundleIdentifier == identifier && $0.bundleURL?.resolvingSymlinksInPath().path == path
         }

@@ -47,6 +47,8 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
    if(decision==='forbidden')assert.equal(policy.target.warningSubtitle,'Fixture rule');
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
+  await assert.rejects(client.startApp('/nonexistent/core-start.app'),(error:any)=>error.code===-10010);
+  await assert.rejects(client.startApp(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
   await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10010);
   await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.allowed.app')),(error:any)=>error.code===-10007);
   await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
@@ -65,6 +67,7 @@ test('Swift IPC enforces negotiation, deadlines, frame limits and unknown-operat
  assert.ok(Array.isArray((await send({...request,id:5})).result));
  const malformed={...request,id:6,params:{...request.params,requestType:'ComputerUseIPCAppGetSkyshotRequest',request:{app:'fixture',disableDiff:1}}};
  assert.equal((await send(malformed)).error.code,-32602);
+ assert.equal((await send({...malformed,id:7,params:{...malformed.params,requestType:'ComputerUseIPCAppStartRequest',request:{app:''}}})).error.code,-32602);
  const closed=once(socket,'close');const oversized=Buffer.alloc(4);oversized.writeUInt32LE(8388609);socket.write(oversized);await closed;
  const [code]=await f.exited;assert.equal(code,1);
 });
@@ -148,4 +151,37 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
    const bytes=Buffer.from(state.skyshot.screenshot.url.split(',')[1],'base64');assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);assert.ok(bytes.length>100);
   }
  }finally{(globalThis as any).nodeRepl=before;}
+});
+
+for(const source of ['restored','installed'] as const) test(`explicit owned App launch through ${source} Sky client`,{skip:process.env.CUA_TEST_NATIVE_APP_START!=='1',timeout:30000},async t=>{
+ assert.equal(process.platform,'darwin');
+ const identifier=`com.core.fixture.start.t${Date.now()}${source}`;
+ const f=await fixture(t,{[identifier]:{decision:'allowed',risk:'low',allowPersistentApproval:false}});
+ const app=await appFixture(f.root,identifier);
+ await mkdir(join(app,'Contents','MacOS'));
+ await copyFile(resolve('native/macos/.build/debug/CuaFixture'),join(app,'Contents','MacOS','CuaFixture'));
+ await chmod(join(app,'Contents','MacOS','CuaFixture'),0o700);
+ await writeFile(join(app,'Contents','Info.plist'),`<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${identifier}</string><key>CFBundleExecutable</key><string>CuaFixture</string><key>CFBundleName</key><string>Owned Launch Fixture</string><key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
+ const before=(globalThis as any).nodeRepl;
+ (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open}};
+ try {
+  const Client=source==='restored'?MacComputerUseClient:(await import(pathToFileURL('/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/targets/mac/client.js').href)).MacComputerUseClient;
+  const client=new Client();
+  const started=await client.startApp(app);assert.equal(started.app.bundleIdentifier,identifier);assert.ok(started.app.pid>0);
+  process.kill(started.app.pid,0);
+  const apps=await client.listApps();const actual=apps.filter((entry:any)=>entry.bundleIdentifier===identifier);
+  assert.equal(actual.length,1);assert.equal(await realpath(actual[0].appPath),await realpath(app));assert.equal(actual[0].isRunning,true);
+  const checked=spawnSync(helper,['--permissions'],{encoding:'utf8'});assert.ifError(checked.error);
+  const permissions=JSON.parse(checked.stdout);
+  if(!permissions.accessibility||!permissions.screenRecording)await assert.rejects(client.getAppState(app),(error:any)=>error.code===-10009);
+  const again=await client.startApp({app});assert.equal(again.app.pid,started.app.pid,'Explicit start should reuse the same running app');
+ } finally {
+  (globalThis as any).nodeRepl=before;
+  // Only terminate our uniquely identified temporary fixture, even if launch timed out.
+  const inventory=spawnSync(helper,[],{input:JSON.stringify({id:'cleanup',method:'listApps',params:{}})+'\n',encoding:'utf8'});
+  assert.ifError(inventory.error);assert.equal(inventory.status,0);
+  const owned=JSON.parse(inventory.stdout).result.apps.filter((entry:any)=>entry.bundleId===identifier);
+  for(const entry of owned){assert.equal(await realpath(entry.path),await realpath(app));try{process.kill(entry.pid,'SIGTERM');}catch(error:any){if(error.code!=='ESRCH')throw error;}}
+  for(const entry of owned){for(let attempt=0;;attempt++){try{process.kill(entry.pid,0);}catch(error:any){assert.equal(error.code,'ESRCH');break;}assert.ok(attempt<200,'Owned fixture did not retire');await new Promise(r=>setTimeout(r,25));}}
+ }
 });
