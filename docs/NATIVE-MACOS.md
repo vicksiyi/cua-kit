@@ -1,5 +1,12 @@
 # macOS 原生后端：第一条独立链路
 
+## Existing adapter language migration
+
+The legacy `@core/native-macos` adapter now forwards raw `text`/`format` to the Swift helper's `pasteFormatted` method. The TypeScript Markdown/HTML renderer has been removed. Swift renders, validates the observed editor, owns the clipboard transaction, verifies insertion and restores the clipboard. The old `pasteWithClipboard` wire method remains compatible for existing callers. This NDJSON method is an independent compatibility bridge, not a claim that the original Sky protocol includes it.
+
+Validation: three restored-wrapper/adapter contract tests, native-macos TypeScript check, Swift build, native format bridge self-test and named-pasteboard transaction checks pass. Real App paste remains unaccepted pending OS permissions. Root `src/native/provider.ts` still has legacy TS orchestration; see `LANGUAGE-MIGRATION-AUDIT.md` for remaining migration scope.
+
+
 本文前半部分描述早期 TypeScript Provider + Swift helper 的 NDJSON 适配器，仍供现有调用方使用。后续新增了 Rust 托管 Swift 服务、接收原始 Sky 协议的迁移路径；当前能力与验收边界以 [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md) 顶部汇总为准。原生原始函数体尚未恢复，不能将协议兼容当作完整还原。两条路径均不执行 ChatGPT 内置服务。构建要求 macOS 14+ 与 Swift 工具链。
 
 当前 Rust/Swift 原生路径可直接选择：

@@ -1,5 +1,12 @@
 # Implementation status
 
+## Existing adapter language migration
+
+The legacy `@core/native-macos` adapter now forwards raw `text`/`format` to the Swift helper's `pasteFormatted` method. The TypeScript Markdown/HTML renderer has been removed. Swift renders, validates the observed editor, owns the clipboard transaction, verifies insertion and restores the clipboard. The old `pasteWithClipboard` wire method remains compatible for existing callers. This NDJSON method is an independent compatibility bridge, not a claim that the original Sky protocol includes it.
+
+Validation: three restored-wrapper/adapter contract tests, native-macos TypeScript check, Swift build, native format bridge self-test and named-pasteboard transaction checks pass. Real App paste remains unaccepted pending OS permissions. Root `src/native/provider.ts` still has legacy TS orchestration; see `LANGUAGE-MIGRATION-AUDIT.md` for remaining migration scope.
+
+
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
 Older dated sections below are development history, not the current completion

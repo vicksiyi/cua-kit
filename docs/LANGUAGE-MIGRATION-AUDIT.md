@@ -1,0 +1,39 @@
+# Existing repository language-boundary audit
+
+This audit includes existing implementation, not just newly written files. Original JavaScript remains readable TypeScript. Responsibilities evidenced in native Rust or Swift must move to those native layers. A TypeScript RPC binding or caller is not itself an incorrect language migration.
+
+## Evidence and current findings
+
+| Existing implementation | Evidence / boundary | Current native replacement | Remaining work |
+| --- | --- | --- | --- |
+| `packages/runtime-supervisor/src` (14 TS files) | `reconstruction/native-language-evidence.json` records Rust compiler/source-path evidence in installed `node_repl`; this is not recovered function source | `native/runtime-supervisor/src`: REPL/process lifecycle, native pipe, MCP, configuration, sandbox, native service | Audit each responsibility and retire TS supervisor routing after parity checks. Type-only caller references and JS worker bootstrap need separate assessment; do not mechanically translate every file. |
+| Removed `packages/native-macos/src/paste-content.ts`; paste binding in `client.ts` | Original Sky JS forwards text/format to native service; legacy adapter performs formatting in TS | `native/macos/Sources/CuaHelper/PasteContent.swift`, `SkyAppState.swift`, `Clipboard.swift`, `Paste.swift` | Both new Sky and legacy `independent` adapter now delegate formatting and transaction to Swift. The legacy adapter sends raw text/format through `pasteFormatted`; its TS renderer has been deleted. Native formatting libraries are independently selected, not proven vendor dependencies. |
+| `src/native/provider.ts`, `src/native/clipboard.ts`, `src/core/paste.ts` | Legacy root exports still expose native paste with TS format handling and clipboard transaction coordination | Swift Sky service owns the transaction in the new route | Migrate public consumers before retiring old root native API. `src/core/paste.ts` also needs caller-by-caller review: browser use does not automatically belong to Swift. |
+| `packages/native-macos/src/helper.ts`, `src/native/helper.ts` | TS transports for independently designed NDJSON native service | Original Sky protocol binding + Rust-owned Swift service | Retire obsolete transport with its consumers, not by replacing legitimate JS-side IPC bindings with Swift. |
+| `packages/native-host/src` (14 TS files) | Original native ownership/language not fully established; some browser profile logic is evidenced in original JS | Partial native service/runtime infrastructure | Establish per-file provenance first; do not guess Rust or Swift from a package name. |
+| Restored CUA/Sky/REPL/browser packages | Installed JS and declarations | Readable TS | Keep TS, preserve package boundaries and `@core/*`; review per-file provenance rather than treating a package label as proof. |
+| AgentLoop, MCP client, demo/configuration/build scripts | Independently authored caller/deployment code | Not an original native component | Keep suitable implementation language unless native responsibilities have leaked into these callers. |
+
+## Routing matters
+
+`packages/agent-loop/src/restored-demo-runtime.ts` still supports both `independent` and `rust` supervisor selections. `CORE_CUA_NATIVE_BACKEND=independent` replaces the Sky service with `@core/native-macos/service`; `swift` requires the Rust supervisor and retains the restored Sky protocol binding. Therefore adding Rust/Swift files alone does not complete the migration: the old TS routes remain reachable.
+
+Root `package.json` exports still point at `dist/*` from legacy `src`, and `demo`/`mcp` still invoke those entries. The 25 legacy TS files require consumer migration, not indiscriminate deletion. `--swift-computer` is an explicit new-path entry, not proof that every old entry has changed.
+
+## Completion criteria
+
+1. Record source-language evidence and classify each existing native-responsibility implementation.
+2. Implement the responsibility in its evidenced language while keeping original JS-side API bindings in TS.
+3. Verify native protocol contracts, failure/cancellation behavior, and observable effects with owned fixtures.
+4. Switch callers and public entry points; remove obsolete branches only after compatibility checks.
+5. Re-run the file inventory and review remaining TS native responsibilities. A file count is review scope, not completion percentage.
+
+Current acceptance: Rust/Swift MCP inventory, explicit owned-app launch and IPC/lifecycle checks have evidence. Actual UI screenshot/input acceptance remains incomplete because the current execution context has neither Accessibility nor Screen Recording permission. Native audio and additional original service behavior also remain incomplete. Native bodies are independently reconstructed; binary language evidence does not prove original algorithm parity.
+
+Reproduce the inventory:
+
+```sh
+python3 scripts/audit-language-boundaries.py > reconstruction/language-boundary-inventory.json
+```
+
+The inventory records implementation file hashes and review categories; it does not certify per-file provenance or native parity.

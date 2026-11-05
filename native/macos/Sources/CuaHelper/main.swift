@@ -125,7 +125,7 @@ let clipboard = ClipboardStore()
 @MainActor
 func handle(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
     switch method {
-    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["resolveApp", "launchApp", "listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX", "pasteWithClipboard", "mouseClick", "scroll", "drag", "heldInput"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["resolveApp", "launchApp", "listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX", "pasteWithClipboard", "pasteFormatted", "mouseClick", "scroll", "drag", "heldInput"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
     case "clipboardBegin": return try clipboard.begin(params)
     case "clipboardRestore": return try clipboard.restore(params["token"] as? String ?? "")
     case "resolveApp": return ["app": try resolveInstalledApp(params["reference"] as? String ?? "")]
@@ -135,14 +135,18 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
         let id = UUID().uuidString; targets[id] = Target(app)
         return ["targetId": id, "app": info(app)]
-    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput", "mouseInput", "scrollInput", "dragInput", "pasteWithClipboard":
+    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput", "mouseInput", "scrollInput", "dragInput", "pasteWithClipboard", "pasteFormatted":
         guard let id = params["targetId"] as? String, let target = targets[id] else { throw fail("TARGET_NOT_FOUND", "Unknown target handle.") }
         if method == "release" { targets.removeValue(forKey: id); return [:] }
         if method == "validatePaste" { _ = try target.pasteEditor(params); return [:] }
-        if method == "pasteWithClipboard" {
+        if method == "pasteWithClipboard" || method == "pasteFormatted" {
             defer { target.invalidateInputState() }
-            _ = try target.pasteEditor(params)
-            return try await withNativeClipboard(clipboard,params:params) { try await target.pasteInput(params) }
+            var input = params
+            if method == "pasteFormatted" {
+                input = try nativeFormattedPasteParameters(params)
+            }
+            _ = try target.pasteEditor(input)
+            return try await withNativeClipboard(clipboard,params:input) { try await target.pasteInput(input) }
         }
         if method == "pasteInput" { return try await target.pasteInput(params) }
         if method == "dragInput" { return try await target.dragInput(params) }

@@ -1,5 +1,4 @@
 /** Independent Sky-shaped adapter. Not a reconstruction of the native service. */
-import { preparePasteContent, plainTextFromHtml } from "./paste-content";
 import { screenshotDataUrl } from "./screenshot";
 import { CuaError } from "./errors";
 import type { NativeAppInfo, HelperHello } from "./helper";
@@ -76,8 +75,7 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       return {app:input.app,screenshot,text:state.text};
     }),
     paste: (input: {app:string;text:string;format:"text"|"md"|"html"}) => serial(async () => {
-      const content = preparePasteContent(input.text,input.format);
-      const result = await write(input.app,"pasteWithClipboard",{...content,richText:content.html === undefined ? undefined : plainTextFromHtml(content.html)}) as {outcome?:string;clipboardRestored?:boolean};
+      const result = await write(input.app,"pasteFormatted",{text:input.text,format:input.format}) as {outcome?:string;clipboardRestored?:boolean};
       if (result.outcome !== "observed" || result.clipboardRestored !== true) throw new CuaError("ACTION_OUTCOME_UNKNOWN","Paste response did not confirm insertion and clipboard restoration; observe before retrying");
     }),
     click: (input: {app:string;element_index?:number;x?:number;y?:number;mouse_button?:string;click_count?:number;key?:string;duration?:number}) => serial(async () => {

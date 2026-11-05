@@ -6,7 +6,7 @@
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
-    "native-desktop-swift-boundary-review": 7,
+    "native-desktop-swift-boundary-review": 6,
     "native-implementation-language-not-yet-parity-proof": 40,
     "native-responsibility-migrate-to-rust": 14
   },
@@ -2809,7 +2809,7 @@
     {
       "path": "packages/native-macos/src/client.ts",
       "category": "native-desktop-swift-boundary-review",
-      "sha256": "28e810d08079999c9c1826f31be8671518fdff7544575b798f4d7dd7d4df75c9"
+      "sha256": "64175a07c8b8a8272a09b82926b1c3fce840aee4eb6c496a75e3e018e3931151"
     },
     {
       "path": "packages/native-macos/src/errors.ts",
@@ -2825,11 +2825,6 @@
       "path": "packages/native-macos/src/index.ts",
       "category": "native-desktop-swift-boundary-review",
       "sha256": "0d056fd3ba851cd7fab0798ab2ff4d10a78cbc2f61f3e440566863a95b018922"
-    },
-    {
-      "path": "packages/native-macos/src/paste-content.ts",
-      "category": "native-desktop-swift-boundary-review",
-      "sha256": "50a2fed2de1c4d7389da8ebfb29fb68a27100bf14860a9fa9b78f70b41e9eaaf"
     },
     {
       "path": "packages/native-macos/src/screenshot.ts",
@@ -3939,7 +3934,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/PasteContent.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "73e70d625ac3a18be31d167047010cfd438413e5c9653a75707e850b05a7b743"
+      "sha256": "878115f61024df4a8108c3a37f3b34804c3018d080e11ff47c31a184cace68bc"
     },
     {
       "path": "native/macos/Sources/CuaHelper/PasteTransactionSelfTest.swift",
@@ -3979,7 +3974,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "7a637b19e40d4a04aa4c220efb4d3d4fb5b571890ae5f46ae43969a5383caac0"
+      "sha256": "0c57e2aff5c5ad6e278fe55c36180088b152e72021db9db3d8126a14210d5f9f"
     },
     {
       "path": "native/macos-sandbox/build.rs",

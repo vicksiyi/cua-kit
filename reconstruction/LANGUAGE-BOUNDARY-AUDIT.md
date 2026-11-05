@@ -1,3 +1,5 @@
+> Update: `packages/native-macos/src/paste-content.ts` has now been deleted. The legacy adapter sends raw text/format to Swift `pasteFormatted`; historical findings below describe the earlier state. Root native exports still require migration. See `docs/LANGUAGE-MIGRATION-AUDIT.md`.
+
 # Repository-wide language and ownership audit
 
 User requirement: installed JavaScript becomes readable TypeScript; code originally
