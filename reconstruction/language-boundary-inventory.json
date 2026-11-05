@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 44,
+    "native-implementation-language-not-yet-parity-proof": 45,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -44,7 +44,7 @@
     {
       "path": "packages/agent-loop/src/chat-model.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "4a98fcf64f3ad471e569fee8cbfea634efee0500b6f8ef9980e4b34436b97d7d"
+      "sha256": "ff4267f39fd5610c3333634432cf02dd8baf3463e61ff5956882a679f4abc6a7"
     },
     {
       "path": "packages/agent-loop/src/computer-preflight.ts",
@@ -54,12 +54,12 @@
     {
       "path": "packages/agent-loop/src/contracts.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "18b1d254d7ad0300768d567da1599145c12877938d0af7b0e7bc03f7d74d2d65"
+      "sha256": "9a426a5819b5c79133f1256091992a5b41b595cde228a0c984491794b39a1416"
     },
     {
       "path": "packages/agent-loop/src/debug-log.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "c4e4235205fa604dbdd875c6f603e79f4427146207076fbf485ccf4eb00e13bf"
+      "sha256": "4c40f6cec991d3b4fca8db454a41e77f7d8fceb1a872c3e53521ee8cbafd3635"
     },
     {
       "path": "packages/agent-loop/src/demo.ts",
@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "a692d7e64337576f4d07424379abe883ddf7f446477eba627a4b92fc2b6232a9"
+      "sha256": "d957bca49ee97dddfc5b4a4e5a14f34f62c58729787306dda68ae813ab31522f"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -99,7 +99,7 @@
     {
       "path": "packages/agent-loop/src/mcp-client.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "f4aa9b62466b18602b96a1685ed55b53f84b5126e6eddccd65dadbd669d743af"
+      "sha256": "f24dd8010241397a1fc0a51093b18d147e2a5e591c60cc59f6314538b843e115"
     },
     {
       "path": "packages/agent-loop/src/native-pipe-diagnostics.ts",
@@ -154,7 +154,7 @@
     {
       "path": "packages/agent-loop/src/terminal-trace.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "298d9fa7e10454c0a1c48258de59e987800adca70e09d5ba8d40c0c333ab8f83"
+      "sha256": "50068a3feac04a391aeafb6b395ce986723ead2cec8b1dfd435f482a78e1c3bb"
     },
     {
       "path": "packages/browser/src/agent.ts",
@@ -3869,7 +3869,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/AudioLifecycleSelfTest.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "5d68cbf05380080e4501525f8ae30f2ce1b072af28275d7a56a860260ae670d0"
+      "sha256": "ff0965af38ebaa7876c5c29c4bedff3162bb632053542a2264301dcf14f364ba"
     },
     {
       "path": "native/macos/Sources/CuaHelper/AudioWriter.swift",
@@ -4034,7 +4034,12 @@
     {
       "path": "native/runtime-supervisor/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "caa7bb1437efb68d60fbf35468d747614533aea3ecdb446c1342a889a46c2379"
+      "sha256": "13bb591afafff5db10287ad0f61b78c5b93331eaedcd0c5f0f8fcafe76bdc7f8"
+    },
+    {
+      "path": "native/runtime-supervisor/src/limits.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "6c724d12e407cb1b35811be6a6df84bc5e265a683b99e117569e5e45c20a80f2"
     },
     {
       "path": "native/runtime-supervisor/src/mcp_server.rs",
@@ -4044,7 +4049,7 @@
     {
       "path": "native/runtime-supervisor/src/media.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "1b21a58fef52b8c5d338a9414216e2636efdf2153885c0a491e4778f020999c6"
+      "sha256": "c188e07db4df0889167fb64e40a9189a96200ce2193c34889ddd819875473d04"
     },
     {
       "path": "native/runtime-supervisor/src/native_pipe.rs",
@@ -4064,12 +4069,12 @@
     {
       "path": "native/runtime-supervisor/src/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "1aa880b21e1d5dd5d6049dada777df7e1c37e318f322021f96cff7599e11699d"
+      "sha256": "8d6bf119c73490cec6d25ab587110b8799e1a22fa73bb669df4775448f2b3b4b"
     },
     {
       "path": "native/runtime-supervisor/src/sandbox_launcher.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "9d73ea6c24cf02728971b95f8284c78422dd45bc199d0d420547c1a6a0b59e6f"
+      "sha256": "faeeaf9ba9e5815b69d784ce59930ad915b8dceae389e175f9de3f392b0eb371"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",

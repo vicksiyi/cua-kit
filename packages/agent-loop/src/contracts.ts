@@ -1,7 +1,7 @@
 /** Agent-neutral v1 contracts. Transport/provider-specific objects do not cross this boundary. */
 export type Content =
   | { type: "text"; text: string }
-  | { type: "image"; mimeType: string; data: string };
+  | { type: "image" | "audio"; mimeType: string; data: string };
 export interface ToolDefinition {
   name: string;
   description: string;

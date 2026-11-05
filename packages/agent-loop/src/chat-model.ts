@@ -70,6 +70,8 @@ export class ChatCompletionsModel implements ModelAdapter {
             : {}),
         });
       else {
+        if (message.result.content.some(item=>item.type === "audio"))
+          throw new Error("This demo model adapter does not support audio input; use an audio-capable ModelAdapter.");
         messages.push({
           role: "tool",
           tool_call_id: message.callId,

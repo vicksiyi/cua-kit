@@ -9,7 +9,7 @@ private final class SyntheticAudioCapture: NativeAudioCaptureBackend {
     var finishCount = 0
     var discardCount = 0
     var failFinish = false
-    init(url: URL, duration: Int) throws {
+    init(url: URL, duration: Int, fillDuration: Bool = false) throws {
         writer = try NativeAudioWriter(url:url,maxDurationMilliseconds:duration)
         let format = AVAudioFormat(commonFormat:.pcmFormatFloat32,sampleRate:48000,channels:2,interleaved:false)!
         let buffer = AVAudioPCMBuffer(pcmFormat:format,frameCapacity:4800)!
@@ -18,7 +18,7 @@ private final class SyntheticAudioCapture: NativeAudioCaptureBackend {
             buffer.floatChannelData![0][n] = Float(sin(Double(n)*2*Double.pi*440/48000))*0.1
             buffer.floatChannelData![1][n] = buffer.floatChannelData![0][n]
         }
-        try writer.append(buffer)
+        for _ in 0..<(fillDuration ? (duration+99)/100 : 1) { try writer.append(buffer) }
     }
     func finish() async throws -> URL {
         finishCount += 1
@@ -121,5 +121,5 @@ func runNativeAudioLifecycleChecks() async throws {
 // Explicit operator fixture only; the normal Sky socket always selects real capture.
 @MainActor
 func startSyntheticAudioCapture(url: URL, duration: Int, deadline: Double) async throws -> NativeAudioCaptureBackend {
-    try SyntheticAudioCapture(url:url,duration:duration)
+    try SyntheticAudioCapture(url:url,duration:duration,fillDuration:true)
 }

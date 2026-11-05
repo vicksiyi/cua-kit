@@ -19,6 +19,8 @@ export function createTerminalTrace(env: NodeJS.ProcessEnv = process.env, write 
       if (item.type === "text") {
         const text = clean(item.text);
         write(env.CUA_DEMO_VERBOSE === "1" || text.length <= 2000 ? text : `${text.slice(0, 2000)}\n[${text.length - 2000} more characters; CUA_DEMO_VERBOSE=1 shows full text]`);
+      } else if (item.type === "audio") {
+        write(`Audio returned (${item.mimeType}, ${Buffer.byteLength(item.data, "base64")} bytes)`);
       } else {
         const extension = ({ "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" } as Record<string, string>)[item.mimeType];
         if (!extension) { write(`Image returned (${item.mimeType}); unsupported preview format`); continue; }

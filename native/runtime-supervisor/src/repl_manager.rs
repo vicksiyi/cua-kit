@@ -450,7 +450,7 @@ async fn route(
                         if !reply.message.is_object(){return Err("Host reply must be an object".into());}
                         for item in reply.content {
                             let bytes=serde_json::to_vec(&item).map_err(|e|e.to_string())?.len();
-                            if content.len()>=64 || content_bytes.saturating_add(bytes)>16*1024*1024{return Err("Execution content budget exceeded".into());}
+                            if content.len()>=64 || content_bytes.saturating_add(bytes)>crate::limits::MAX_EXECUTION_CONTENT_BYTES{return Err("Execution content budget exceeded".into());}
                             content_bytes+=bytes;content.push(item);
                         }
                         reply.message

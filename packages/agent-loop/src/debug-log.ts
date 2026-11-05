@@ -42,9 +42,9 @@ export function createDebugLog(directory: string, secrets: string[] = []) {
     if (Array.isArray(value)) return value.map((item) => clean(item));
     if (value && typeof value === "object") {
       const item = value as Record<string, unknown>;
-      if (item.type === "image" && typeof item.data === "string")
+      if ((item.type === "image" || item.type === "audio") && typeof item.data === "string")
         return {
-          type: "image",
+          type: item.type,
           mimeType: item.mimeType,
           base64Length: item.data.length,
           omitted: true,

@@ -22,7 +22,9 @@ pub fn decode_media_message(message: &Value) -> Result<Value, String> {
     let value = message[key]
         .as_str()
         .ok_or("Media requires a bounded data URL")?;
-    if value.len() > MAX_URL
+    let max_url = if kind == "audio" { crate::limits::MAX_AUDIO_URL_BYTES } else { MAX_URL };
+    let max_bytes = if kind == "audio" { crate::limits::MAX_AUDIO_BYTES } else { MAX_BYTES };
+    if value.len() > max_url
         || !value
             .get(..5)
             .is_some_and(|prefix| prefix.eq_ignore_ascii_case("data:"))
@@ -87,7 +89,7 @@ pub fn decode_media_message(message: &Value) -> Result<Value, String> {
     } else {
         decoded
     };
-    if bytes.is_empty() || bytes.len() > MAX_BYTES {
+    if bytes.is_empty() || bytes.len() > max_bytes {
         return Err("Empty or oversized media payload".into());
     }
     Ok(json!({"type":kind,"mimeType":mime,"data":STANDARD.encode(bytes)}))

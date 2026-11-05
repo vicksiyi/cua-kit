@@ -44,7 +44,7 @@ export class McpToolClient implements ToolClient {
         options.elicit!(request.params),
       );
     try {
-      await client.connect(new StdioClientTransport(parameters));
+      await client.connect(new StdioClientTransport({...parameters,maxBufferSize:parameters.maxBufferSize ?? 64*1024*1024}));
       return new McpToolClient(client, options);
     } catch (error) {
       await client.close();
@@ -84,12 +84,12 @@ export class McpToolClient implements ToolClient {
       if (item.type === "text" && typeof item.text === "string")
         content.push({ type: "text", text: item.text });
       else if (
-        item.type === "image" &&
+        (item.type === "image" || item.type === "audio") &&
         typeof item.data === "string" &&
         typeof item.mimeType === "string"
       )
         content.push({
-          type: "image",
+          type: item.type,
           data: item.data,
           mimeType: item.mimeType,
         });

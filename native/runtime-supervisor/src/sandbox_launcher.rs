@@ -98,6 +98,7 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
                 | "NODE_REPL_TRUSTED_CODE_PATHS"
                 | "SKY_CUA_SERVICE_NATIVE_PIPE_PATH"
                 | "SKY_ENABLE_AUDIO"
+                | "NODE_REPL_ENABLE_AUDIO"
                 | "SKY_AUDIO_MODEL_ALLOWLIST"
         ) || value.contains('\0')
         {
@@ -134,8 +135,8 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
         args,
         cwd: directory,
         env,
-        max_frame_bytes: 8 * 1024 * 1024,
-        max_queued_bytes: 16 * 1024 * 1024,
+        max_frame_bytes: crate::limits::MAX_WORKER_FRAME_BYTES,
+        max_queued_bytes: crate::limits::MAX_WORKER_QUEUED_BYTES,
         terminate_grace: Duration::from_millis(100),
     })
 }

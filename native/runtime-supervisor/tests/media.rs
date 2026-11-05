@@ -81,3 +81,18 @@ fn compares_envelopes_with_existing_typescript_adapter() {
         assert_eq!(actual, expected, "{message}");
     }
 }
+
+#[test]
+fn audio_budget_accepts_full_contract_but_remains_bounded() {
+    use core_runtime_supervisor::limits::{MAX_AUDIO_BYTES, MAX_AUDIO_URL_BYTES, MAX_EXECUTION_CONTENT_BYTES, MAX_WORKER_FRAME_BYTES};
+    // 300 seconds, 24 kHz, stereo PCM16 plus ordinary WAV header space.
+    let pcm = vec![0_u8; 300 * 24000 * 2 * 2 + 4096];
+    let encoded = STANDARD.encode(&pcm);
+    let message = json!({"type":"emit_audio","audio_url":format!("data:audio/wav;base64,{encoded}")});
+    assert!(serde_json::to_vec(&message).unwrap().len() < MAX_WORKER_FRAME_BYTES);
+    let result = decode_media_message(&message).unwrap();
+    assert_eq!(result["data"].as_str().unwrap(), encoded);
+    assert!(serde_json::to_vec(&result).unwrap().len() < MAX_EXECUTION_CONTENT_BYTES);
+    assert!(decode_media_message(&json!({"type":"emit_audio","audio_url":format!("data:audio/wav,{}","a".repeat(MAX_AUDIO_BYTES+1))})).is_err());
+    assert!(decode_media_message(&json!({"type":"emit_audio","audio_url":"a".repeat(MAX_AUDIO_URL_BYTES+1)})).is_err());
+}
