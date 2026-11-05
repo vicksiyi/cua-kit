@@ -37,12 +37,12 @@
     "test:sandbox": "npm run build:sandbox && npm run build:reconstruction && CUA_TEST_MACOS_SANDBOX=1 tsx --test --test-concurrency=1 reconstruction/runtime-macos-sandbox.test.ts reconstruction/runtime-cdp-sandbox.test.ts",
     "permissions:computer": "npm run build:native && native/macos/.build/debug/cua-helper --request-permissions",
     "check:computer-permissions": "native/macos/.build/debug/cua-helper --permissions",
-    "test:native-deepseek": "npm run build:native && npm run build:reconstruction && CUA_NATIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/native-deepseek-live.test.ts",
+    "test:native-deepseek": "npm run build:native && npm run build:reconstruction && npm run build:rust-runtime && CUA_NATIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/native-deepseek-live.test.ts",
     "build:rust-runtime": "npm run build:sandbox && node scripts/build-rust-runtime.mjs",
     "test:rust-browser": "npm run build:reconstruction && npm run build:rust-runtime && CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-concurrency=1 reconstruction/runtime-cdp-sandbox.test.ts reconstruction/extension-native-controller.test.ts",
-    "test:native-ipc": "npm run build:reconstruction && npm run build:native && npm run build:rust-runtime && CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/native-sky-ipc.test.ts reconstruction/native-audio-runtime.test.ts reconstruction/runtime-banner.test.ts reconstruction/runtime-tool-overrides.test.ts",
+    "test:native-ipc": "npm run build:reconstruction && npm run build:native && npm run build:rust-runtime && CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/native-sky-ipc.test.ts reconstruction/native-deepseek-runtime.test.ts reconstruction/native-audio-runtime.test.ts reconstruction/runtime-banner.test.ts reconstruction/runtime-tool-overrides.test.ts",
     "test:native-skyshot": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern=\"live owned App skyshot\" reconstruction/native-sky-ipc.test.ts",
-    "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"explicit owned App launch\" reconstruction/native-sky-ipc.test.ts"
+    "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"owned App launch\" reconstruction/native-sky-ipc.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

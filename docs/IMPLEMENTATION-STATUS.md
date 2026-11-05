@@ -5904,3 +5904,14 @@ The existing Lark architecture document's current-summary section now reflects c
 Document audit also confirmed that `test:native-deepseek` still uses installed supervisor + `@core/native-macos/service`; it is not an end-to-end gate for the new Rust + original Sky binding + Swift IPC route. Migrating that gate is a remaining task, independently of obtaining OS UI permissions. The updated document labels this accurately rather than treating its existence as acceptance of the new route.
 
 Review: https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs
+
+
+## 2026-11-06 — Native DeepSeek acceptance gate migrated to Rust/Sky/Swift
+
+`test:native-deepseek` now builds and selects the independent Rust supervisor, uses the restored original `@core/sky/service` and Rust-owned Swift IPC service, and no longer executes the model through the legacy native-macos adapter or installed `node_repl`. The shared `native-deepseek-runtime.ts` fixture uses the source launcher banner/instructions/completion configuration and accepts only the unique owned fixture through the original `computer-use` approval metadata. The old NDJSON helper client remains solely an independent permission/AX/PNG verification and owned-App cleanup oracle, not the AgentLoop execution backend.
+
+The gate checks actual saved AX text, valid PNG tool output, one separate completion report and owned fixture retirement. It explicitly selects the DeepSeek provider and official endpoint, loading credentials only after permissions and MCP preflight. No credentials are copied into runtime configuration. `test:native-app-start` now selects both explicit and GetSkyshot background launch cases.
+
+Validation: test TypeScript checking passes. A new actual Rust/MCP inventory/guidance/deployment/cleanup preflight and two banner regressions pass without any model request or app operation. Running the full npm `test:native-deepseek` command completes all builds but fails at the real permission gate: Accessibility=false, ScreenRecording=false. No model request or App launch is performed by that failing gate. The action/result assertions therefore remain unexecuted in this environment; migrating the test is not desktop acceptance. Lark's current entry description was corrected accordingly (revision 458).
+
+The npm `test:native-app-start` entry was executed after its selection change: all four explicit/background launch cases pass (installed/restored JS clients), with no skips.

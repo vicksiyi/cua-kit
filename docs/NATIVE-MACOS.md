@@ -660,3 +660,10 @@ The demo receives updated tool descriptions through its normal listTools path. C
 The earlier “read-state requires a running app” checkpoint in earlier sections is superseded. Original installed CUA documentation promises background launch on macOS `getApp`; original JS sends only GetSkyshot. `SkyAppState.get` now owns that startup in Swift, using resolved identity and native policy before `NSWorkspace.openApplication` with activation disabled. Existing running instances are reused. Explicit AppStart retains its prior activation behavior.
 
 Two original/restored-client cold-start tests verify real owned App launch, non-frontmost state and PID reuse, with cleanup. They do not certify screenshot/input: this runtime still lacks Accessibility and Screen Recording permissions. Permission-error ordering is independently implemented (startup, then observation permission check), not recovered original native source. See `reconstruction/mac-app-background-launch-evidence.json` for source evidence and its limits.
+
+
+## Current DeepSeek desktop gate (2026-11-06)
+
+`npm run test:native-deepseek` now tests Rust supervisor → original Sky TS binding → Swift IPC. It builds all three required artifacts and selects the DeepSeek provider explicitly. The acceptance task must cold-start its owned App, input a marker, click Save, observe saved text, emit a valid PNG and report completion once. An independent native helper checks AX/PNG results and cleans up only that owned identity.
+
+`reconstruction/native-deepseek-runtime.test.ts` separately verifies the same deployment's actual MCP startup, source guidance, inventory and cleanup without requesting a model or app action; it is included in `test:native-ipc`. This preflight passes. Full DeepSeek desktop acceptance currently fails before any model request or launch because the executing environment reports both Accessibility and Screen Recording as false. These are distinct results. The helper verification transport is not the model's runtime backend.

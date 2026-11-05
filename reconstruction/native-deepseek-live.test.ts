@@ -10,21 +10,16 @@ import {
   type NativeAppInfo,
 } from "../packages/native-macos/src/helper";
 import { screenshotDataUrl } from "../packages/native-macos/src/screenshot";
-import {
-  stageRuntimePackages,
-  restoredPackageSources,
-} from "../packages/agent-loop/src/runtime-packages";
-import { create_launch_environment } from "@core/cua-repl";
-import { McpToolClient } from "../packages/agent-loop/src/mcp-client";
-import { NodeReplTurnClient } from "../packages/agent-loop/src/node-repl-turn";
+// Legacy NDJSON bindings are an independent verification/cleanup client only;
+// the AgentLoop executes through Rust + original Sky + Swift IPC.
+import { connectNativeAcceptanceRuntime } from "./native-deepseek-runtime";
 import { computerPreflight } from "../packages/agent-loop/src/computer-preflight";
 import { createDemoModel } from "../packages/agent-loop/src/provider";
 import { AgentLoop } from "../packages/agent-loop/src/loop";
 import { createTerminalTrace } from "../packages/agent-loop/src/terminal-trace";
-import { withHostProxy } from "../packages/agent-loop/src/system-proxy";
 
 test(
-  "DeepSeek opens owned native app, enters text, clicks and reads actual saved state",
+  "DeepSeek through Rust and original Sky opens owned native app, enters text, clicks and reads saved state",
   {
     skip: process.env.CUA_NATIVE_DEEPSEEK_TEST !== "1",
     timeout: 180000,
@@ -35,8 +30,8 @@ test(
       resolve("native/macos/.build/debug/cua-helper"),
     );
     let root: string | undefined,
-      runtime: Awaited<ReturnType<typeof stageRuntimePackages>> | undefined;
-    let client: McpToolClient | undefined, turn: NodeReplTurnClient | undefined;
+      runtime:
+        Awaited<ReturnType<typeof connectNativeAcceptanceRuntime>> | undefined;
     let identity: { bundleId: string; path: string } | undefined;
     try {
       assert.ok(
@@ -69,72 +64,22 @@ test(
         false,
         "Fixture must be initially stopped",
       );
-      runtime = await stageRuntimePackages(restoredPackageSources());
-      const env = await withHostProxy(
-        create_launch_environment({
-          env: {
-            CUA_REPL_ENABLED_SURFACES: "computer",
-            NODE_REPL_DISABLE_ANALYTICS: "1",
-            NODE_REPL_NODE_MODULE_DIRS: runtime.root,
-            NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
-            CORE_CUA_NATIVE_HELPER_PATH: resolve(
-              "native/macos/.build/debug/cua-helper",
-            ),
-            CUA_NATIVE_SUPERVISOR_PATH:
-              "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
-            NODE_REPL_NODE_PATH:
-              "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
-          },
-          instructions_directory: new URL(
-            "../instructions/",
-            import.meta.resolve("@core/cua-repl"),
-          ),
-          platform: process.platform,
-        }) as Record<string, string>,
-      );
-      env.NODE_REPL_TRUSTED_SERVICES = JSON.stringify({
-        ...JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}"),
-        sky: "@core/native-macos/service",
-      });
-      const metadata = { session_id: randomUUID(), turn_id: randomUUID() };
-      client = await McpToolClient.connect(
-        {
-          command: process.execPath,
-          args: [
-            "--import",
-            import.meta.resolve("tsx"),
-            resolve("packages/agent-loop/src/native-supervisor.ts"),
-          ],
-          env,
-          stderr: "inherit",
-        },
-        {
-          requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
-          elicit: async (params) => {
-            const target = params._meta?.tool_params;
-            return params.mode !== "url" &&
-              params._meta?.connector_id === "core-native-macos" &&
-              target !== null &&
-              typeof target === "object" &&
-              "app" in target &&
-              target.app === bundleId
-              ? { action: "accept", content: {} }
-              : { action: "decline" };
-          },
-        },
-      );
-      turn = new NodeReplTurnClient(
-        client,
-        { ...metadata, hook_event_name: "turn_ended" },
-        { defaultJsTimeoutMs: 60000 },
-      );
+      runtime = await connectNativeAcceptanceRuntime(bundleId);
+      const { turn } = runtime;
       const trace = createTerminalTrace();
       const initialMessages = await computerPreflight(turn, {
         onMessage: trace,
       });
       loadEnvFile(resolve(".env"));
       const marker = `native-${randomUUID().slice(0, 8)}`;
-      const result = await new AgentLoop(createDemoModel(), turn).run(
+      const result = await new AgentLoop(
+        createDemoModel({
+          ...process.env,
+          CUA_MODEL_PROVIDER: "deepseek",
+          CUA_MODEL_ENDPOINT: "https://api.deepseek.com/chat/completions",
+        }),
+        turn,
+      ).run(
         `打开本机应用 ${identity.path}，在 Fixture name 输入框输入 ${marker}，点击 Save fixture，然后读取保存后的文字并截图。只操作这个测试应用。`,
         {
           initialMessages,
@@ -169,22 +114,49 @@ test(
         ),
       );
       assert.ok(result.answer.includes(`Saved ${marker}`));
+      const images = result.messages
+        .flatMap((message) =>
+          message.role === "tool" ? message.result.content : [],
+        )
+        .filter((item) => item.type === "image");
       assert.ok(
-        result.messages.some(
-          (message) =>
-            message.role === "tool" &&
-            message.result.content.some((item) => item.type === "image"),
-        ),
-        "Agent must return a real screenshot tool result",
+        images.length > 0,
+        "Agent must return a screenshot tool result",
       );
-      console.error("NATIVE DEEPSEEK ACCEPTANCE PASSED", result.answer);
+      for (const image of images) {
+        assert.ok(image.type === "image");
+        assert.equal(image.mimeType, "image/png");
+        const bytes = Buffer.from(image.data, "base64");
+        assert.ok(bytes.length >= 33);
+        assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+        assert.equal(bytes.toString("ascii", 12, 16), "IHDR");
+        assert.ok(bytes.readUInt32BE(16) > 0 && bytes.readUInt32BE(20) > 0);
+      }
+      assert.ok(
+        runtime.approvalCount() > 0,
+        "Original Sky must obtain approval for the owned fixture",
+      );
+      const summaries = result.messages
+        .flatMap((message) =>
+          message.role === "assistant" ? (message.toolCalls ?? []) : [],
+        )
+        .filter(
+          (call) =>
+            call.name === "js" &&
+            Object.hasOwn(call.arguments, "completion_summary"),
+        );
+      assert.equal(
+        summaries.length,
+        1,
+        "Follow original completion-report guidance exactly once",
+      );
+      assert.deepEqual(Object.keys(summaries[0].arguments), [
+        "completion_summary",
+      ]);
+      console.error("RUST SKY SWIFT DEEPSEEK ACCEPTANCE PASSED", result.answer);
     } finally {
       try {
-        try {
-          await client?.close();
-        } finally {
-          await runtime?.dispose();
-        }
+        await runtime?.close();
       } finally {
         try {
           if (identity) {
@@ -198,7 +170,29 @@ test(
               )
                 try {
                   process.kill(app.pid, "SIGTERM");
-                } catch {}
+                } catch (error: any) {
+                  if (error.code !== "ESRCH") throw error;
+                }
+            for (const app of apps.filter(
+              (value) =>
+                value.bundleId === identity!.bundleId &&
+                value.path === identity!.path,
+            )) {
+              const deadline = Date.now() + 5000;
+              for (;;) {
+                try {
+                  process.kill(app.pid, 0);
+                } catch (error: any) {
+                  assert.equal(error.code, "ESRCH");
+                  break;
+                }
+                assert.ok(
+                  Date.now() < deadline,
+                  "Owned fixture did not retire",
+                );
+                await new Promise((resolve) => setTimeout(resolve, 25));
+              }
+            }
           }
         } finally {
           await helper.close();
