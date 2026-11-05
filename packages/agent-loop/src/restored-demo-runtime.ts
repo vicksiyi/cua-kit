@@ -1,4 +1,5 @@
 import { verifyNativeSupervisor } from "./native-supervisor";
+import { prepareIndependentBrowserRuntime } from "./independent-runtime";
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
 import { withHostProxy } from "./system-proxy";
 import { fileURLToPath } from "node:url";
@@ -30,9 +31,13 @@ for (const key of [
 ])
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
-if (!env.CUA_NATIVE_SUPERVISOR_PATH)
-  throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
-await verifyNativeSupervisor(env.CUA_NATIVE_SUPERVISOR_PATH);
+const supervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
+if (!["installed", "independent"].includes(supervisor)) throw Error("CUA_RUNTIME_SUPERVISOR must be installed or independent");
+if (supervisor === "installed") {
+  if (!env.CUA_NATIVE_SUPERVISOR_PATH)
+    throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
+  await verifyNativeSupervisor(env.CUA_NATIVE_SUPERVISOR_PATH);
+}
 // Explicit surfaces opt into CUA initialization; absent retains generic JS mode.
 if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
   env = create_launch_environment(env) as Record<string, string>;
@@ -68,6 +73,7 @@ process.env.CUA_MCP_ARGS = JSON.stringify([
   fileURLToPath(new URL("./native-supervisor.ts", import.meta.url)),
 ]);
 const runtime = await stageRuntimePackages(restoredPackageSources());
+let independent: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
 try {
   env.NODE_REPL_NODE_MODULE_DIRS = [
     runtime.root,
@@ -81,8 +87,20 @@ try {
   ]
     .filter(Boolean)
     .join(delimiter);
-  process.env.CUA_MCP_ENV = JSON.stringify(env);
+  if (supervisor === "independent") {
+    const turn = JSON.parse(process.env.CUA_MCP_TURN_EVENT ?? "{}");
+    independent = await prepareIndependentBrowserRuntime(env, runtime.root, turn.session_id);
+    process.env.CUA_MCP_COMMAND = independent.command;
+    process.env.CUA_MCP_ARGS = JSON.stringify(independent.args);
+    process.env.CUA_MCP_ENV = JSON.stringify(independent.environment);
+    process.env.CUA_MCP_BOOTSTRAP = "core-cua";
+    console.error("Independent sandboxed runtime supervisor selected (browser surface; no installed supervisor).");
+  } else {
+    delete process.env.CUA_MCP_BOOTSTRAP;
+    process.env.CUA_MCP_ENV = JSON.stringify(env);
+  }
   await import("./demo");
 } finally {
+  await independent?.dispose();
   await runtime.dispose();
 }

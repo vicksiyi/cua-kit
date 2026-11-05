@@ -322,3 +322,39 @@ inherited `CUA_DEMO_START_CHROME` before selecting a deployment; only the defaul
 extension prompt path enables it. Use `--` to start a prompt beginning with `--`.
 This routing fix does not establish that a previously observed second browser
 window came from one process; overlapping independent runs remain possible.
+
+## Independent sandbox runtime (opt-in macOS browser demo)
+
+The actual demo can now use `@core/runtime-supervisor` instead of the installed
+ChatGPT supervisor. Build its macOS sandbox addon once, then select it explicitly:
+
+```bash
+npm run build:sandbox
+CUA_RUNTIME_SUPERVISOR=independent npm run demo:deepseek -- --cdp-browser --check-browser
+CUA_RUNTIME_SUPERVISOR=independent npm run demo:deepseek -- --cdp-browser '打开网页并读取内容'
+```
+
+The default remains `installed`; invalid selector values fail. The independent
+path uses the current system Node executable, stages reconstructed packages,
+creates disjoint sandbox worker directories, passes endpoint access only to the
+trusted worker, and initializes CUA through an explicit MCP import. Bootstrap
+responses are retained in the model conversation. Model keys stay in the caller.
+Scratch/configuration files are removed after the MCP client closes.
+
+This is an independently authored native-runtime replacement, not recovered Rust
+source. It currently accepts only the browser surface and uses separate ephemeral
+configuration with history/full raw CDP disabled. It does not load Codex user
+preferences, configure authenticated backend-service fetch, or support desktop
+Sky in this demo composition. Default runtime migration and full source parity
+remain unfinished. The accepted path is independent CDP with an isolated profile;
+this change does not establish live acceptance against daily Chrome extensions.
+
+Verification deliberately sets installed supervisor and bundled Node paths to
+nonexistent files. A real MCP demo with a local model-protocol fixture submits a
+local form and reads a random resulting marker; optional real DeepSeek runs the
+same user task. Neither test operates the daily browser:
+
+```bash
+CUA_TEST_MACOS_SANDBOX=1 node --import tsx --test reconstruction/independent-demo-runtime.test.ts
+CUA_TEST_MACOS_SANDBOX=1 CUA_LIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/independent-demo-runtime.test.ts
+```

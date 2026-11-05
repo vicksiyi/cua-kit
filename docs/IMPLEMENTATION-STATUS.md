@@ -1,5 +1,21 @@
 # Implementation status
 
+## Independent demo runtime checkpoint (2026-11-06)
+
+The real demo entry now supports opt-in `CUA_RUNTIME_SUPERVISOR=independent` on
+macOS for the browser surface. It no longer needs the installed supervisor on
+that selected path. Validation includes: CDP browser-only CLI preflight with an
+intentionally nonexistent installed supervisor path; real demo/MCP/sandbox/CDP
+form submission with a local model-protocol fixture; the same task using actual
+DeepSeek; and nine existing preflight/startup regressions. The real-model test
+verified the submitted page's random result marker, not a canned final answer.
+
+The installed supervisor remains the default. Independent demo composition does
+not yet support native Apps, existing Codex preference reuse or authenticated
+backend-service fetch. Daily Chrome extension acceptance and arbitrary external
+website tasks are not established by the local CDP fixture. Full-goal completion
+is still unproven; see the agent-loop README for the opt-in command and limits.
+
 ## Startup hardening integration checkpoint (2026-11-06)
 
 After commits through `a3842c4`, a fresh reconstruction build and both real

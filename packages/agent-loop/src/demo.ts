@@ -134,16 +134,27 @@ const turnClient = debug ? debug.tools(rawTurnClient) : rawTurnClient;
 const trace = createTerminalTrace();
 let loopStarted = false;
 try {
-  const initialMessages = browserEnabled
-    ? await browserPreflight(turnClient, {
+  const initialMessages: import("./contracts").AgentMessage[] = [];
+  if (process.env.CUA_MCP_BOOTSTRAP === "core-cua") {
+    const call = { id: "host-cua-bootstrap", name: "js", arguments: {
+      code: 'await import("@core/cua/tinyskyAlt");', title: "Initialize CUA runtime",
+    } };
+    const request: import("./contracts").AgentMessage = { role: "assistant", toolCalls: [call] };
+    trace(request);
+    const result = await turnClient.callTool(call, controller.signal);
+    const response: import("./contracts").AgentMessage = { role: "tool", callId: call.id, name: call.name, result };
+    trace(response);
+    initialMessages.push(request, response);
+    if (result.isError) throw Error("Independent CUA bootstrap failed before model execution");
+  }
+  if (browserEnabled) initialMessages.push(...await browserPreflight(turnClient, {
         signal: controller.signal,
         onMessage: trace,
         onRetry: error => {
           console.error("Browser inventory unavailable; retrying read-only preflight once in 2 seconds.");
           debug?.write("browser.preflight.retry", { error });
         },
-      })
-    : [];
+      }));
   if (computerEnabled)
     initialMessages.push(
       ...(await computerPreflight(turnClient, {
