@@ -86,6 +86,12 @@ debug?.write("run.start", {
   computerEnabled,
   node: process.version,
 });
+const terminalElicit = createTerminalElicitation({ signal: controller.signal });
+debug?.write("elicitation.capability", { available: !!terminalElicit });
+if (!terminalElicit && (browserEnabled || computerEnabled))
+  console.error(
+    "Interactive confirmations unavailable: stdin and stderr must be terminals. Actions requiring new approval will be denied. Run directly in a terminal; local debug logs already capture tool activity.",
+  );
 const client = await McpToolClient.connect(
   {
     command,
@@ -95,14 +101,14 @@ const client = await McpToolClient.connect(
   },
   {
     requestMeta: () => requestMeta as Record<string, unknown>,
-    elicit: async (params) => {
-      debug?.write("elicitation.request", params);
-      const result = await createTerminalElicitation({
-        signal: controller.signal,
-      })!(params);
-      debug?.write("elicitation.result", { action: result.action });
-      return result;
-    },
+    elicit: terminalElicit
+      ? async (params) => {
+          debug?.write("elicitation.request", params);
+          const result = await terminalElicit(params);
+          debug?.write("elicitation.result", { action: result.action });
+          return result;
+        }
+      : undefined,
   },
 ).catch((error) => {
   debug?.write("connection.error", { error });

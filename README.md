@@ -136,3 +136,12 @@ For the independent Chrome installation, load
 page after `npm run install:chrome`. Keep Chrome running during the check.
 
 The restored DeepSeek demo now forwards explicit HTTP(S)/ALL_PROXY/NO_PROXY settings to its MCP child. If none is explicitly set, it reads enabled macOS static HTTP/HTTPS system proxy settings; it does not approximate PAC rules. This fixed repeated 30-second site-status transport failures on the development machine without changing browser access policy. A real isolated-browser Baidu run then navigated, filled and submitted the query, but reached human verification, so returning the first search result remains unverified. A connected daily Chrome extension is still required; see `reconstruction/deepseek-browser-acceptance.json` for the bounded evidence.
+
+### Interactive approval availability
+
+Run the demo directly in an interactive terminal when an action requires new
+approval. Both stdin and stderr must be terminals; redirecting stderr or running
+with closed stdin disables the confirmation UI. The demo reports this at startup
+and advertises no MCP elicitation capability in that case. Use the existing local
+`artifacts/debug/` logs to inspect a run without redirecting its approval UI.
+This does not automatically grant access to any site or application.

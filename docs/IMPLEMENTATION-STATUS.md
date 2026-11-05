@@ -4875,3 +4875,15 @@ boards. Remote fetch verifies revision 443 with two boards and the four-path
 status table; previews were exported for visual inspection.
 
 Current section: https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs
+
+### 2026-11-06 — non-interactive approval capability corrected
+
+A fresh external search reproduction found the default extension disconnected.
+The separate owned CDP run connected successfully, but a new origin approval
+failed: redirected non-TTY stdin/stderr cannot present the terminal form. The
+demo incorrectly advertised elicitation unconditionally and called an undefined
+terminal handler. It now constructs the handler once, advertises the capability
+only when available, and records/reports its availability without granting any
+approval automatically. A real MCP child-process regression checks that a
+non-interactive demo does not advertise an approval UI. This fixes capability
+reporting, not the earlier twelve-step convergence issue or site authorization.

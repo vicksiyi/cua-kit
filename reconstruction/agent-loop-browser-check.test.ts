@@ -11,6 +11,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 const server = new Server({name:'inventory-fixture',version:'1'}, {capabilities:{tools:{}}});
 server.setRequestHandler(CallToolRequestSchema, async request => {
+  if (server.getClientCapabilities()?.elicitation)
+    throw Error('Non-interactive demo advertised an unavailable approval UI');
   const code = request.params.arguments.code;
   if (code === 'await cua.getState();') return {content:[{type:'text',text:'fixture documentation'}]};
   if (!code.includes('cuaBrowserCount')) throw Error('Unexpected page action');
@@ -69,6 +71,7 @@ async function run(count: number, surfaces = "browser") {
 test("browser check uses real MCP without constructing a model or taking page actions", async () => {
   const result = await run(1);
   assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /Interactive confirmations unavailable/);
   assert.match(result.output, /Browser connection verified/);
   assert.match(result.output, /No model request or page action/);
 });
