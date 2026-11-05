@@ -148,3 +148,11 @@ CUA_LIVE_DEEPSEEK_TEST=1 npm run test:rust-browser
 不可用。因此方法存在不代表支持 AX 输入，`getAXState()` 也可能仅返回 DOM
 快照。调用侧现在明确提示检查能力与真实索引、缺少 AX 时使用 Playwright。
 这是 demo 提示，不修改还原 API；实际模型仍可能选错方法并从错误中恢复。
+
+### Tool-provider initialization guidance reaches AgentLoop
+
+`ToolClient` now has optional `getInstructions(): string | undefined`, a provider-neutral string contract. `McpToolClient` reads it from the upstream SDK's initialize result; NodeREPL-turn and debug adapters preserve it. AgentLoop snapshots this guidance once per run and includes it in normal model context and optional exhausted-budget summaries alongside host context. Tool results remain in the evidence messages and cannot become system guidance through this path. Existing clients without the optional method keep their previous behavior; invalid values fail before a model request while still running turn cleanup.
+
+Twenty caller regression tests pass. The real MCP stdio + local mock-model integration checks that initialization instructions appear in both actual model HTTP requests. Additional tests cover adapter forwarding, guidance snapshotting, exclusion of tool/page text from system context, summary tools staying disabled, and cleanup after invalid metadata. This changes independently authored caller integration, not a reconstruction claim about the original Codex agent.
+
+The native `NODE_REPL_JS_COMPLETION_SUMMARY` contract remains unfinished. Its source instruction requires a separate js call containing only `completion_summary` after the observed CUA outcome; this must not be conflated with AgentLoop's optional budget-exhaustion summary or host `turn_ended` cleanup.

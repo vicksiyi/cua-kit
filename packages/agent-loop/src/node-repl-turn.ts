@@ -44,6 +44,7 @@ export class NodeReplTurnClient implements ToolClient {
       );
     this.event = Object.freeze(parseNodeReplTurnEvent(event));
   }
+  getInstructions(): string | undefined { return this.client.getInstructions?.(); }
   async listTools(signal?: AbortSignal) {
     return (await this.client.listTools(signal)).filter(
       (tool) => tool.name !== "turn_ended",

@@ -111,6 +111,7 @@ export function createDebugLog(directory: string, secrets: string[] = []) {
     },
     tools(tools: ToolClient): ToolClient {
       return {
+        getInstructions: () => tools.getInstructions?.(),
         listTools: (signal) =>
           operation("tools.list", {}, () => tools.listTools(signal)),
         callTool: (call, signal) =>

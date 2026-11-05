@@ -5859,3 +5859,11 @@ The runtime factory now serializes the source-generated `NODE_REPL_TOOL_OVERRIDE
 Two Rust tests verify exact description changes and unchanged tool contracts, as well as invalid/oversized overrides. A real Rust MCP test compares initialize instructions and tools/list descriptions against the original-shape environment output, and checks required arguments, types, title bounds, tool names and runtime rejection of unknown execution arguments. Both banner integration tests still pass. The metadata integration is included in `npm run test:native-ipc`.
 
 The demo receives updated tool descriptions through its normal listTools path. Consumption of initialize-level server instructions by AgentLoop and native completion-summary execution still require separate work; wire publication alone does not prove those paths.
+
+### Tool-provider initialization guidance reaches AgentLoop
+
+`ToolClient` now has optional `getInstructions(): string | undefined`, a provider-neutral string contract. `McpToolClient` reads it from the upstream SDK's initialize result; NodeREPL-turn and debug adapters preserve it. AgentLoop snapshots this guidance once per run and includes it in normal model context and optional exhausted-budget summaries alongside host context. Tool results remain in the evidence messages and cannot become system guidance through this path. Existing clients without the optional method keep their previous behavior; invalid values fail before a model request while still running turn cleanup.
+
+Twenty caller regression tests pass. The real MCP stdio + local mock-model integration checks that initialization instructions appear in both actual model HTTP requests. Additional tests cover adapter forwarding, guidance snapshotting, exclusion of tool/page text from system context, summary tools staying disabled, and cleanup after invalid metadata. This changes independently authored caller integration, not a reconstruction claim about the original Codex agent.
+
+The native `NODE_REPL_JS_COMPLETION_SUMMARY` contract remains unfinished. Its source instruction requires a separate js call containing only `completion_summary` after the observed CUA outcome; this must not be conflated with AgentLoop's optional budget-exhaustion summary or host `turn_ended` cleanup.

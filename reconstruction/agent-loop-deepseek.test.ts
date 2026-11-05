@@ -56,7 +56,7 @@ test("DeepSeek adapter completes model→real MCP stdio→tool result→answer w
       fixture,
       `import { McpServer } from ${JSON.stringify(pathToFileURL(require.resolve("@modelcontextprotocol/sdk/server/mcp.js")).href)};
 import { StdioServerTransport } from ${JSON.stringify(pathToFileURL(require.resolve("@modelcontextprotocol/sdk/server/stdio.js")).href)};
-const server = new McpServer({name:'fixture',version:'1'});
+const server = new McpServer({name:'fixture',version:'1'},{instructions:'fixture-server-guidance'});
 server.registerTool('observe',{description:'Observe fixture page',inputSchema:{}},async()=>({content:[{type:'text',text:'Fixture heading'}]}));
 await server.connect(new StdioServerTransport());`,
     );
@@ -75,6 +75,7 @@ await server.connect(new StdioServerTransport());`,
     );
     assert.equal(result.answer, "Fixture page contains a heading.");
     assert.equal(requests.length, 2);
+    for (const request of requests) assert.match(request.messages[0].content,/fixture-server-guidance/);
     assert.equal(requests[0].model, "deepseek-flash");
     assert.deepEqual(requests[0].thinking, { type: "disabled" });
     assert.equal(requests[0].tools[0].function.name, "observe");

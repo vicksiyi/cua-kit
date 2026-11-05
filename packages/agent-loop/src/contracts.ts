@@ -21,6 +21,8 @@ export type AgentMessage =
   | { role: "assistant"; content?: string; toolCalls?: ToolCall[] }
   | { role: "tool"; callId: string; name: string; result: ToolResult };
 export interface ToolClient {
+  /** Initialization guidance from the configured tool provider, not tool-result content. */
+  getInstructions?(): string | undefined;
   listTools(signal?: AbortSignal): Promise<ToolDefinition[]>;
   callTool(call: ToolCall, signal?: AbortSignal): Promise<ToolResult>;
   /** Optional host lifecycle cleanup, independent of the model cancellation signal. */

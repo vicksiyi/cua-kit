@@ -51,6 +51,7 @@ export class McpToolClient implements ToolClient {
       throw error;
     }
   }
+  getInstructions(): string | undefined { return this.client.getInstructions(); }
   async listTools(signal?: AbortSignal): Promise<ToolDefinition[]> {
     const definitions: ToolDefinition[] = [];
     let cursor: string | undefined;

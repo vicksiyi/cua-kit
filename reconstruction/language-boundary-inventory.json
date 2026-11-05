@@ -54,12 +54,12 @@
     {
       "path": "packages/agent-loop/src/contracts.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "9a426a5819b5c79133f1256091992a5b41b595cde228a0c984491794b39a1416"
+      "sha256": "10a31d47c8d2c5b52da7530ef3b09e2d1068cb9e20d7f465bfcae7da45a60c8e"
     },
     {
       "path": "packages/agent-loop/src/debug-log.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "4c40f6cec991d3b4fca8db454a41e77f7d8fceb1a872c3e53521ee8cbafd3635"
+      "sha256": "aadc34248866c2124eb1270c6e670977a1519cb527bcebd4973c1fca8bf18228"
     },
     {
       "path": "packages/agent-loop/src/demo.ts",
@@ -84,7 +84,7 @@
     {
       "path": "packages/agent-loop/src/loop.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "048b7cb0dca40674338856ca4111ba7f57230cb9823f212b56776226979a536a"
+      "sha256": "fd602a322692db93bb03818acc440275bc1114ac7fb9f780d62b85b6c989e7a4"
     },
     {
       "path": "packages/agent-loop/src/managed-browser.ts",
@@ -99,7 +99,7 @@
     {
       "path": "packages/agent-loop/src/mcp-client.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "f24dd8010241397a1fc0a51093b18d147e2a5e591c60cc59f6314538b843e115"
+      "sha256": "1da23aaaa9c9a618022ce3943caf7b61475f441896c7312e318d65904d660da2"
     },
     {
       "path": "packages/agent-loop/src/native-pipe-diagnostics.ts",
@@ -114,7 +114,7 @@
     {
       "path": "packages/agent-loop/src/node-repl-turn.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "246b422530564775144ed656cd7f6beb8a2da36d07bc6bde6fbc35b1d33bd7d0"
+      "sha256": "bdc0ec95af132b3effabf7e1848504c4420fb7a482174b6e4b20c397ae9e692a"
     },
     {
       "path": "packages/agent-loop/src/provider.ts",
