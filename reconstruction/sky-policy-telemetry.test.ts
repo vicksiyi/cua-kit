@@ -27,6 +27,14 @@ async function body(file: string) {
     .map((n) => source.slice(n.start, n.end))
     .join("\n");
 }
+async function namedExports(file: string) {
+  const source = await readFile(`${root}/sky/dist/project/cua/sky_js/src/targets/mac/${file}.js`,"utf8");
+  const ast = parse(source,{ecmaVersion:"latest",sourceType:"module"});
+  const entries = ast.body.flatMap(node=>node.type === "ExportNamedDeclaration"
+    ? node.specifiers.map(specifier=>`${JSON.stringify(specifier.exported.type === "Identifier" ? specifier.exported.name : specifier.exported.value)}:${specifier.local.name}`)
+    : []);
+  return `;return {${entries.join(",")}};`;
+}
 const policyFactory = new Function(
   "e",
   "t",
@@ -36,7 +44,7 @@ const policyFactory = new Function(
   "a",
   "i",
   (await body("computer-use-policy")) +
-    ";return {withComputerUsePolicy:c,requestComputerAudioApproval:p,withComputerUseToolTelemetry:u,setComputerUseResponseMeta:d};",
+    (await namedExports("computer-use-policy")),
 );
 const telemetryFactory = new Function(
   "e",
@@ -45,7 +53,7 @@ const telemetryFactory = new Function(
   "o",
   "i",
   (await body("computer-use-telemetry")) +
-    ";return {logComputerUseClientCreated:c,logComputerUseApprovalRequested:p,logComputerUseApprovalResolved:f,logComputerUseToolCalled:v};",
+    (await namedExports("computer-use-telemetry")),
 );
 async function host<T>(runtime: any, run: () => Promise<T>) {
   const prior = Object.getOwnPropertyDescriptor(globalThis, "nodeRepl");

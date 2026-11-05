@@ -92,6 +92,11 @@ final class NativeAudioWriter {
 }
 
 func runNativeAudioWriterChecks() throws {
+    guard try NativeAudioSession.duration([:]) == 60000,
+          try NativeAudioSession.duration(["maxDurationMilliseconds":100]) == 100,
+          try NativeAudioSession.duration(["maxDurationMilliseconds":300000]) == 300000 else {
+        throw fail("SELF_TEST_FAILED","Native recording duration contract differs")
+    }
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent("core-audio-test-"+UUID().uuidString)
     try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:false,attributes:[.posixPermissions:0o700])
     defer { try? FileManager.default.removeItem(at:directory) }

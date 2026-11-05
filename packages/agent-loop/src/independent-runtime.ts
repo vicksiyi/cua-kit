@@ -27,8 +27,8 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
   const helper=computer?await realpath(env.CORE_CUA_NATIVE_HELPER_PATH??join(project,'native/macos/.build/debug/cua-helper')).catch(()=>{throw Error('Build the Swift helper first: npm run build:native');}):undefined;
   const root = await realpath(await mkdtemp('/tmp/core-demo-runtime-'));
   try {
-    const kernelDir=join(root,'kernel'),trustedDir=join(root,'trusted'),codeDir=join(root,'code');
-    await Promise.all([mkdir(kernelDir),mkdir(trustedDir),mkdir(codeDir)]);
+    const kernelDir=join(root,'kernel'),trustedDir=join(root,'trusted'),codeDir=join(root,'code'),nativeDir=join(root,'native');
+    await Promise.all([mkdir(kernelDir),mkdir(trustedDir),mkdir(codeDir),...(computer?[mkdir(nativeDir,{mode:0o700})]:[])]);
     const configFile=join(root,'config.toml'),requirementsFile=join(root,'requirements.toml');
     const browserFile=join(root,'browser.toml'),sessionFile=join(root,'session.toml');
     await Promise.all([
@@ -44,7 +44,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
       entry:join(workers,trusted?'dist/trusted_worker.js':'dist/kernel.js'),
       args:trusted?[trustedDir]:['--session-id',sessionId,'--working-dir',kernelDir],
       directory:trusted?trustedDir:kernelDir,
-      readDirectories:[workers,dependencies,codeDir,stagedRoot,...(trusted?[...new Set(endpoints.map(dirname))]:[])],
+      readDirectories:[workers,dependencies,codeDir,stagedRoot,...(trusted&&computer?[nativeDir]:[]),...(trusted?[...new Set(endpoints.map(dirname))]:[])],
       workerEnvironment:{
         NODE_REPL_TRUSTED_RPC_ENABLED:'1',
         NODE_REPL_TRUSTED_SERVICES:JSON.stringify(services),
@@ -64,7 +64,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
       await access(command).catch(()=>{throw Error('Build the Rust runtime first: npm run build:rust-runtime');});
       const rustWorker=(value:ReturnType<typeof worker>)=>({sandbox:{node:value.node,bootstrap:value.bootstrap,addon:value.addon,entry:value.entry,args:value.args,directory:value.directory,read_directories:value.readDirectories,worker_environment:value.workerEnvironment}});
       const spec=join(root,'rust-runtime.json');
-      await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:options.services,pipe_paths:pipes,...(computer?{native_service:{helper,directory:root,app_policy:appPolicy}}:{}),writable_paths:options.writablePreferencePaths,config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:options.config.tomlFiles}}),{mode:0o600});
+      await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:options.services,pipe_paths:pipes,...(computer?{native_service:{helper,directory:nativeDir,app_policy:appPolicy}}:{}),writable_paths:options.writablePreferencePaths,config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:options.config.tomlFiles}}),{mode:0o600});
       return {command,args:[spec],environment:{HOME:root,TMPDIR:root,CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
     }
     const entry=join(codeDir,'stdio.mjs');

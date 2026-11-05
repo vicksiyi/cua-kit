@@ -36,7 +36,14 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
  (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open},requestMeta:{'x-codex-turn-metadata':{session_id:'fixture',turn_id:'one'}}};
  try{
   const Client=source==='restored'?MacComputerUseClient:(await import(pathToFileURL('/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/targets/mac/client.js').href)).MacComputerUseClient;
-  const client=new Client();const apps=await client.listApps();
+  const client=new Client();
+  // Invalid requests exercise audio routing without starting system capture.
+  await assert.rejects(client.stopAudioRecording(),(error:any)=>error.code===-32602);
+  for(const duration of [0,99,300001,100.5,true,'100']) {
+   await assert.rejects(client.startAudioRecording({maxDurationMilliseconds:duration}),(error:any)=>error.code===-32602);
+  }
+  assert.equal((await readdir(f.root)).some(name=>name.startsWith('audio-')),false);
+  const apps=await client.listApps();
   assert.ok(Array.isArray(apps));for(const app of apps){assert.equal(typeof app.isRunning,'boolean');assert.ok(app.displayName===undefined||typeof app.displayName==='string');}
   for(const [identifier,decision] of [['com.core.fixture.allowed','allowed'],['com.core.fixture.forbidden','forbidden'],['com.core.fixture.unconfigured','denied']]) {
    const path=await appFixture(f.root,identifier);const policy=await client.getAppPolicy(path);
@@ -100,6 +107,8 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
  const runtime=await prepareIndependentRuntime({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift',CORE_CUA_APP_POLICY:JSON.stringify(policyRules)},staged.root,'sky-ipc','rust');
  t.after(()=>runtime.dispose());
  const runtimeSpec=JSON.parse(await readFile(runtime.args[0],'utf8'));const nativeRoot=runtimeSpec.native_service.directory;
+ assert.ok(runtimeSpec.trusted.sandbox.read_directories.includes(nativeRoot),'Only trusted Sky code can read native audio artifacts');
+ assert.ok(!runtimeSpec.kernel.sandbox.read_directories.includes(nativeRoot),'Kernel must not receive the native artifact read grant');
  const transport=new StdioClientTransport({command:runtime.command,args:runtime.args,env:runtime.environment,stderr:'pipe'});
  const {ElicitRequestSchema}=await import('@modelcontextprotocol/sdk/types.js');
  const mcp=new Client({name:'native-owner-test',version:'1.0'},{capabilities:{elicitation:{form:{}}}});

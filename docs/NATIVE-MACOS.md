@@ -586,4 +586,16 @@ Observed JS contract: `targets/mac/audio_recording.js` validates integer duratio
 
 Swift build and a synthetic native test pass: 48 kHz channel-separated tones are converted and read back to check RIFF/WAVE, rate, channels, bit depth, frame limit and channel energy. The test also verifies private permissions, refusal to overwrite, and rejection of empty output. No system audio or microphone is captured.
 
-Still required before audio can be called usable: ScreenCaptureKit loopback capture, native start/stop routing, duration timer and connection/cancellation cleanup, private output lifetime/read access for the trusted JS worker, approval/permission negative-path checks and an explicitly authorized real capture. The IPC server still rejects the unimplemented audio requests; the encoder is not exposed as a fake recording success.
+At this encoder-only checkpoint capture/routing were still missing. The subsequent native audio integration below supersedes this checkpoint; real capture acceptance remains incomplete.
+
+### Native audio start/stop integration (not live-capture acceptance)
+
+`AudioCapture.swift` uses ScreenCaptureKit audio output, copies PCM samples on a serial queue and feeds the native WAV encoder. It does not register a microphone output. Start validates the original duration contract, performs a non-prompting Screen Recording permission preflight, checks the request deadline around asynchronous startup, and refuses overlapping recordings. A duration timer finalizes the stream; explicit stop returns the original `{url: fileURL}` shape. The service closes recordings and removes its private audio directory on connection closure or cooperative cancellation. Empty or failed recordings return an error rather than fabricated audio. This independently authored native lifecycle is not recovered Swift source.
+
+The Rust demo configuration now creates a dedicated private native-artifact directory. Only the trusted worker receives its read grant; the kernel does not. Original Sky JavaScript can read the returned file URL within the trusted service without granting access to the broader runtime/config directory. Real recorded-file consumption through this sandbox is still pending acceptance.
+
+Current installed `audio_recording.js` has no automatic `attachComputerAudio` call. Removed the reconstruction's extra `SKY_AUDIO_ATTACHMENTS` branch to match that source. Corrected differential tests to resolve exported names from declarations instead of stale minified local names. Eight Mac wrapper/policy/telemetry differential tests pass, including approval before start and stop reading synthetic file bytes without extra host calls.
+
+Verification: Swift build, synthetic WAV test, Sky and AgentLoop typechecks, 11 existing native IPC/lifecycle tests (4 real-App tests explicitly skipped). Installed and restored Sky clients both exercise stop-without-recording and invalid-duration failures without audio capture or files. The Rust sandbox integration also verifies trusted-only artifact directory configuration. No real system audio was recorded.
+
+Still required: synthetic lifecycle tests for automatic stop/concurrent stop/error cleanup, real permission denial and explicitly authorized capture acceptance, actual trusted-worker reading of produced recordings, and large-recording transport against runtime response/frame limits. Native code is wired but those outcomes are not yet proved; do not describe audio as fully working.

@@ -268,7 +268,7 @@ test("Mac start audio preserves duration defaults, bounds and approval before cl
       assert.deepEqual(await run(false), await run(true));
     }
 });
-test("Mac stop audio reads synthetic local bytes and preserves attachment metadata/model policy", async () => {
+test("Mac stop audio reads synthetic local bytes without extra host attachment calls", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "sky-audio-")),
     filepath = path.join(directory, "fixture.wav");
   await writeFile(filepath, Buffer.from([0, 1, 2, 255]));

@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 42,
+    "native-implementation-language-not-yet-parity-proof": 43,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "cea0a489eb2e30a3ca39e22b23a2e2652adc5dd156a2325818e25a41881cc047"
+      "sha256": "6535ced3c83b7be637ce6f76e2cc953ac8bfebd4b566be7925a176b7463e6f8b"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -3199,7 +3199,7 @@
     {
       "path": "packages/sky/src/targets/mac/audio_recording.ts",
       "category": "declared-js-restoration-verify-per-file",
-      "sha256": "339228d948296df154efb64a34a4da87d2efd04cfbae195ed0d85e4753463421"
+      "sha256": "f763b47f373a90f1dd7f3302ea6bd17f5a8bf7540918cd8f1bff965fc16576f4"
     },
     {
       "path": "packages/sky/src/targets/mac/click.ts",
@@ -3862,9 +3862,14 @@
       "sha256": "72bc317f9cf2ecfd7bc26118161e64cac78edfaa7017d8dbb2ce3667758b3406"
     },
     {
+      "path": "native/macos/Sources/CuaHelper/AudioCapture.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "ab80ddf404f55d0344ee8a0a8e519b0cbb9eee38e6fb32cd8574091f01a37d61"
+    },
+    {
       "path": "native/macos/Sources/CuaHelper/AudioWriter.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "80dad2ba424a3af6a40721aa888b360ae159e9980db509c8ca03d320c4224b37"
+      "sha256": "3d34caa9013752abe9776df27a5a7960867592e937f0e61d52fa684d77128d22"
     },
     {
       "path": "native/macos/Sources/CuaHelper/Capture.swift",
@@ -3974,7 +3979,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "b3b846088e4e2a62e793e1aafe30eebc0e27728da359361823260231462e059e"
+      "sha256": "742018ba13e2049e7425a698208a852db3c5940d1bb6cd6fa1ec50deeea7c4ca"
     },
     {
       "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",

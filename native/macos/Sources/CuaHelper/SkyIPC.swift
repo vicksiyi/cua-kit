@@ -9,7 +9,7 @@ struct SkyRPCFailure: Error { let code: Int; let message: String }
 private func rpcFailure(_ code: Int, _ message: String) -> SkyRPCFailure { SkyRPCFailure(code: code, message: message) }
 
 @MainActor
-private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPolicy, appState: SkyAppState) async -> [String: Any] {
+private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPolicy, appState: SkyAppState, audio: NativeAudioSession) async -> [String: Any] {
     var id: Any = NSNull()
     do {
         let decoded: Any
@@ -36,6 +36,11 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                   let type = params["requestType"] as? String,
                   params["request"] is [String: Any] else { throw rpcFailure(-32602, "Invalid or expired Computer Use request") }
             switch type {
+            case "ComputerUseIPCStartAudioRecordingRequest":
+                try await audio.start(params["request"] as! [String:Any],deadline:deadline.doubleValue)
+                result = NSNull()
+            case "ComputerUseIPCStopAudioRecordingRequest":
+                result = try await audio.stop()
             case "ComputerUseIPCListAppsRequest":
                 result = NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map { app -> [String: Any] in
                     var value: [String: Any] = ["isRunning": !app.isTerminated, "isFrontmost": app.isActive]
@@ -158,18 +163,22 @@ func serveSkySocket(_ path: String) async throws {
     guard getpeereid(connection, &uid, &gid) == 0, uid == getuid() else { throw rpcFailure(-10000, "Native peer must belong to the service user") }
     var noSigpipe: Int32 = 1
     guard setsockopt(connection, SOL_SOCKET, SO_NOSIGPIPE, &noSigpipe, socklen_t(MemoryLayout<Int32>.size)) == 0 else { throw rpcFailure(-32600, "Cannot configure native connection") }
+    let audio = await NativeAudioSession(parent:parent)
+    do {
     var negotiated = false
     while let header = try readExact(connection, 4, allowEOF: true) {
         let size = header.enumerated().reduce(0) { $0 | Int($1.element) << (8 * $1.offset) }
         guard size > 0 && size <= skyFrameLimit else { throw rpcFailure(-32600, "Invalid native frame length") }
         let body = try readExact(connection, size)!
-        let reply = await skyReply(body, negotiated: &negotiated, appPolicy: appPolicy, appState: appState)
+        let reply = await skyReply(body, negotiated: &negotiated, appPolicy: appPolicy, appState: appState, audio: audio)
         let response = try JSONSerialization.data(withJSONObject: reply, options: [.sortedKeys])
         guard response.count <= skyFrameLimit else { throw rpcFailure(-32600, "Native reply exceeds frame limit") }
         let length = UInt32(response.count)
         let prefix = Data((0..<4).map { UInt8(truncatingIfNeeded: length >> (8 * $0)) })
         try writeAll(connection, prefix + response)
     }
+    } catch { await audio.close(); throw error }
+    await audio.close()
 }
 
 // Integration fixture: saturate a private socketpair, then exercise the same
