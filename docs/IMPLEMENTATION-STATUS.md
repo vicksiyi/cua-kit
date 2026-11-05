@@ -5965,3 +5965,10 @@ Validation: pre-aborted staging allocates no directory. Real SIGTERM and SIGINT 
 The root `demo` command now uses the same restored runtime launcher as the DeepSeek experience; the old QuickJS command is `demo:legacy`. Generic launch preserves `CUA_MODEL_PROVIDER` (DeepSeek default or openai-compatible) and prompts only for the selected provider credential. The explicit `demo:deepseek` wrapper forces DeepSeek before loading local configuration. Check modes remain credential-free and invalid providers fail before builds.
 
 Validation: CLI routing/provider checks pass; actual `npm run demo -- --check-computer` connects to Rust/Sky/Swift inventory without a model. A root `npm --silent run demo` end-to-end test with a local deterministic provider performs five decisions through Rust MCP and an owned Chromium: open/click/read/completion/final marker. It deliberately supplies nonexistent installed-supervisor paths. This verifies the default command route, not a fresh paid DeepSeek run or native App actions. Root CUA SDK/desktop exports and explicitly named legacy command consumers remain to be migrated.
+
+
+### 2026-11-06: refresh current Lark architecture checkpoint
+
+The current Lark architecture section now references f53a844 and distinguishes the default restored demo/MCP entries, browser installed default versus computer Rust/Sky/Swift default, explicit CDP deployment, and retained legacy SDK/commands. The loading and operation boards retain their existing tokens. The text removes obsolete claims that normal --computer still selects the TS desktop adapter or that the demo injects a second bootstrap cell. Agent-neutral MCP setup and provider-specific demo configuration are documented.
+
+The current helper permission probe again reports Accessibility=false and ScreenRecording=false without requesting either permission. This is documentation synchronization, not new native UI acceptance. Root SDK consumers, native-host provenance, authentication/configuration parity, daily Chrome end-to-end acceptance and real desktop/audio effects remain open.

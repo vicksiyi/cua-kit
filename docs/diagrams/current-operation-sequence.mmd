@@ -1,15 +1,17 @@
 sequenceDiagram
     participant U as 用户 / demo 宿主
     participant L as AgentLoop
-    participant D as ModelAdapter<br/>DeepSeek / 其他模型
+    participant D as ModelAdapter<br/>DeepSeek / 兼容模型
     participant M as MCP / CUA 源码服务
     participant P as 浏览器 / macOS 后端
+    Note over U,M: 根目录 demo / DeepSeek demo 均连接 restored runtime
+    Note over L,M: 独立 MCP 可由其他 Agent 自带循环调用<br/>服务端不读取模型凭据 / .env
     U->>U: 接收自然语言 prompt
     U->>M: connect / MCP initialize
     M-->>U: server instructions
     Note over M,P: 内核在首次执行代码的 js 中惰性运行源码 CUA banner<br/>先运行 banner，再运行 cell body（首次调用可能来自预检）<br/>仅 completion_summary 的 js 不运行 banner
     opt 宿主预检已启用
-        U->>M: bootstrap / 只读 surface inventory
+        U->>M: js：只读 surface inventory
         M-->>U: 初始观察（传入 initialMessages）
     end
     U->>L: run(prompt, initialMessages)
@@ -28,7 +30,7 @@ sequenceDiagram
         P-->>M: 状态 / 图片 / 动作结果 / 错误
         M-->>L: tool result；动作后重新观察
     end
-    Note over M,P: macOS：getApp → get_app_state → GetSkyshot<br/>Swift 解析启动策略：未运行则后台启动，已运行则复用<br/>当前 AX / 录屏权限仍为 false；完整桌面截图与输入尚未验收
+    Note over M,P: macOS：getApp → originalSky → GetSkyshot<br/>Swift 解析启动策略：未运行则后台启动，已运行则复用<br/>当前 AX / 录屏权限仍为 false；完整桌面截图与输入尚未验收
     D-->>L: 已观察到最终结果，调用摘要工具
     L->>M: js({completion_summary: 摘要})
     M-->>L: 摘要确认
