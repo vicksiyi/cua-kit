@@ -603,3 +603,55 @@ test("module policy finishing after reset cannot register into a new generation"
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("native pipe requests and events are generation-scoped, including between cells", async () => {
+  const kernel = fakePort(),
+    trusted = fakePort();
+  let emit!: (m: Message) => void;
+  let release!: (value: unknown) => void;
+  let closed = false;
+  let requests = 0;
+  const session = new WorkerSession({
+    services: [],
+    launch: async () => ({ kernel, trusted }),
+    nativePipeHost: (callback) => {
+      emit = callback;
+      return {
+        request: async () => {
+          requests++;
+          return new Promise((resolve) => {
+            release = resolve;
+          });
+        },
+        close: async () => {
+          closed = true;
+        },
+      };
+    },
+  });
+  const running = session.execute("ignored");
+  await new Promise((resolve) => setImmediate(resolve));
+  kernel.emit({ type: "exec_result", id: kernel.sent[0].id, ok: true });
+  await running;
+  trusted.emit({
+    type: "native_pipe_request",
+    id: "pipe-1",
+    op: "connect",
+    path: "fixture",
+  });
+  assert.equal(requests, 1);
+  emit({
+    type: "native_pipe_data",
+    connection_id: "fixture",
+    data_base64: "AA==",
+  });
+  assert.equal(trusted.sent.at(-1)?.type, "native_pipe_data");
+  await session.reset();
+  assert.equal(closed, true);
+  const count = trusted.sent.length;
+  release({ connection_id: "late" });
+  emit({ type: "native_pipe_closed", connection_id: "fixture" });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(trusted.sent.length, count);
+  await session.close();
+});

@@ -1,4 +1,5 @@
 /** Independently authored supervisor core, not recovered Rust. No implicit OS authority. */
+import type { NativePipeHost } from "./native-pipe-host";
 import { ExecutionDeadline } from "./execution-deadline";
 import { randomUUID } from "node:crypto";
 import { isAbsolute, basename } from "node:path";
@@ -26,6 +27,8 @@ export interface SessionOptions {
   services: readonly string[];
   /** Must enforce the launcher's module access policy; no default expansion of filesystem authority. */
   authorizeModuleDirectory?(path: string, signal?: AbortSignal): Promise<void>;
+  /** One generation-scoped transport; events may arrive between cells. */
+  nativePipeHost?(emit: (message: Message) => void): NativePipeHost;
   hostRequest?(
     message: Readonly<Message>,
     context: HostContext,
@@ -58,6 +61,10 @@ interface Pending {
 }
 export class WorkerSession {
   private pair?: WorkerPair;
+  private pipeHosts = new WeakMap<
+    WorkerPair,
+    { host: NativePipeHost; seen: Set<string> }
+  >();
   private moduleDirectories = new Set<string>();
   private endedTurns = new Map<string, Promise<Message>>();
   private launching?: Promise<WorkerPair>;
@@ -188,6 +195,26 @@ export class WorkerSession {
         throw error;
       }
       this.pair = pair;
+      try {
+        if (this.options.nativePipeHost) {
+          const host = this.options.nativePipeHost((message) => {
+            if (this.pair !== pair) return;
+            try {
+              pair.trusted.send(message);
+            } catch (error) {
+              void this.retire(
+                error instanceof Error ? error : Error(String(error)),
+              );
+            }
+          });
+          this.pipeHosts.set(pair, { host, seen: new Set() });
+        }
+      } catch (error) {
+        await this.retire(
+          error instanceof Error ? error : Error(String(error)),
+        );
+        throw error;
+      }
       for (const side of ["kernel", "trusted"] as const) {
         this.detach.push(
           pair[side].onMessage((message) => {
@@ -242,7 +269,12 @@ export class WorkerSession {
   private receive(side: "kernel" | "trusted", message: Message) {
     const pending = this.pending,
       pair = this.pair;
-    if (!pending || !pair) return;
+    if (!pair) return;
+    if (side === "trusted" && message?.type === "native_pipe_request") {
+      void this.nativePipe(message, pair);
+      return;
+    }
+    if (!pending) return;
     if (!message || typeof message !== "object") {
       void this.retire(Error("Malformed worker message"));
       return;
@@ -340,7 +372,6 @@ export class WorkerSession {
               "emit_audio",
               "elicit",
               "authenticated_fetch",
-              "native_pipe_request",
               "config_action",
               "launch_services_action",
             ];
@@ -368,6 +399,41 @@ export class WorkerSession {
       if (!notifications.includes(message.type))
         throw Error(`Unsupported ${side} worker message: ${message.type}`);
       // Response metadata and telemetry integration remain outstanding.
+    } catch (error) {
+      void this.retire(error instanceof Error ? error : Error(String(error)));
+    }
+  }
+  private async nativePipe(message: Message, pair: WorkerPair) {
+    const state = this.pipeHosts.get(pair);
+    let result: Message;
+    try {
+      if (!state) throw Error("Native pipe host is not configured");
+      if (
+        typeof message.id !== "string" ||
+        !message.id ||
+        state.seen.has(message.id)
+      ) {
+        await this.retire(Error("Invalid native pipe request identity"));
+        return;
+      }
+      state.seen.add(message.id);
+      result = {
+        ok: true,
+        result: await state.host.request(Object.freeze({ ...message })),
+      };
+    } catch (error) {
+      result = {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+    if (this.pair !== pair) return;
+    try {
+      pair.trusted.send({
+        ...result,
+        type: "native_pipe_response",
+        id: message.id,
+      });
     } catch (error) {
       void this.retire(error instanceof Error ? error : Error(String(error)));
     }
@@ -421,9 +487,11 @@ export class WorkerSession {
   private closePair(pair: WorkerPair): Promise<void> {
     let closed = this.closings.get(pair);
     if (!closed) {
-      closed = Promise.all([pair.kernel.close(), pair.trusted.close()]).then(
-        () => {},
-      );
+      closed = Promise.all([
+        pair.kernel.close(),
+        pair.trusted.close(),
+        this.pipeHosts.get(pair)?.host.close(),
+      ]).then(() => {});
       this.closings.set(pair, closed);
     }
     return closed;

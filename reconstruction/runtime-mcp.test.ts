@@ -1,4 +1,6 @@
 import test from "node:test";
+import { createServer, type Socket } from "node:net";
+import { UnixNativePipeHost } from "../packages/runtime-supervisor/src/native-pipe-host";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, rm, mkdir, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -18,9 +20,23 @@ test(
   async () => {
     const root = await mkdtemp(join(tmpdir(), "core-mcp-"));
     await writeFile(join(root, "package.json"), '{"type":"module"}');
+    const socketPath = join(root, "fixture.sock");
+    let peer: Socket | undefined;
+    const socketServer = createServer((socket) => {
+      peer = socket;
+      socket.on("data", (data) => socket.write(data));
+    });
+    await new Promise<void>((resolve, reject) => {
+      socketServer.once("error", reject);
+      socketServer.listen(socketPath, resolve);
+    });
+    let idleReceived!: () => void;
+    const idleObserved = new Promise<void>((resolve) => {
+      idleReceived = resolve;
+    });
     await writeFile(
       join(root, "service.mjs"),
-      'export async function handleRpc(){return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
+      'let pipe;let received=[];let waiting;export async function handleRpc(x){if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
     );
     const moduleDir = join(root, "external", "node_modules");
     await mkdir(join(moduleDir, "fixture-module"), { recursive: true });
@@ -42,6 +58,15 @@ test(
     let started: (() => void) | undefined;
     const runtime = createSupervisorMcpServer({
       services: ["fixture"],
+      nativePipeHost: (emit) =>
+        new UnixNativePipeHost([socketPath], (message) => {
+          emit(message);
+          if (
+            message.type === "native_pipe_data" &&
+            Buffer.from(message.data_base64, "base64").toString() === "idle"
+          )
+            idleReceived();
+        }),
       authorizeModuleDirectory: async (path) => {
         if (path !== canonicalModuleDir)
           throw Error("Module directory denied by fixture policy");
@@ -177,6 +202,34 @@ test(
         ).isError,
         true,
       );
+      const openPipe = await client.callTool({
+        name: "js",
+        arguments: {
+          code: `nodeRepl.write(await nodeRepl.rpc("fixture",{open:${JSON.stringify(socketPath)}}))`,
+        },
+      });
+      assert.equal(openPipe.isError, false);
+      const echoed = await client.callTool({
+        name: "js",
+        arguments: {
+          code: 'nodeRepl.write(await nodeRepl.rpc("fixture",{write:"echo"}))',
+        },
+      });
+      assert.equal(echoed.isError, false);
+      assert.match(JSON.stringify(echoed.content), /echo/);
+      peer!.write("idle");
+      await idleObserved;
+      const idleResult = await client.callTool({
+        name: "js",
+        arguments: {
+          code: 'nodeRepl.write(await nodeRepl.rpc("fixture",{read:true}))',
+        },
+      });
+      assert.equal(idleResult.isError, false);
+      assert.match(JSON.stringify(idleResult.content), /idle/);
+      const peerClosed = new Promise<void>((resolve) =>
+        peer!.once("close", resolve),
+      );
       const controller = new AbortController();
       const observed = new Promise<void>((resolve) => {
         started = resolve;
@@ -202,6 +255,7 @@ test(
       });
       assert.match(JSON.stringify(fresh.content), /undefined/);
       assert.equal(launches, 2);
+      await peerClosed;
       await client.callTool({
         name: "turn_ended",
         arguments: {
@@ -239,6 +293,8 @@ test(
     } finally {
       await client.close();
       await runtime.close();
+      peer?.destroy();
+      await new Promise<void>((resolve) => socketServer.close(() => resolve()));
       await rm(root, { recursive: true, force: true });
     }
     await assert.rejects(runtime.session.execute("1"), /closed/);
