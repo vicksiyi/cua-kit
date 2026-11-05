@@ -667,3 +667,8 @@ Two original/restored-client cold-start tests verify real owned App launch, non-
 `npm run test:native-deepseek` now tests Rust supervisor → original Sky TS binding → Swift IPC. It builds all three required artifacts and selects the DeepSeek provider explicitly. The acceptance task must cold-start its owned App, input a marker, click Save, observe saved text, emit a valid PNG and report completion once. An independent native helper checks AX/PNG results and cleans up only that owned identity.
 
 `reconstruction/native-deepseek-runtime.test.ts` separately verifies the same deployment's actual MCP startup, source guidance, inventory and cleanup without requesting a model or app action; it is included in `test:native-ipc`. This preflight passes. Full DeepSeek desktop acceptance currently fails before any model request or launch because the executing environment reports both Accessibility and Screen Recording as false. These are distinct results. The helper verification transport is not the model's runtime backend.
+
+
+## Current normal computer CLI route (2026-11-06)
+
+`npm run demo:deepseek -- --computer "your prompt"` and token-free `--check-computer` now use Rust + restored original Sky binding + Swift IPC by default. `--swift-computer` is retained as an alias. These explicit computer selections override stale backend/surface configuration and build both native components. Earlier opt-in/unchanged-default descriptions above are historical. The real normal CLI inventory check passes; actual screenshot/input and DeepSeek App task acceptance remain separate and incomplete. Direct legacy adapter and root API consumers have not all been retired.

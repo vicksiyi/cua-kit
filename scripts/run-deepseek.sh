@@ -2,10 +2,9 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically. --swift-computer selects the opt-in Rust + original Sky + Swift route.'
+  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route.'
   exit 0
 fi
-swift_computer=false
 managed_browser=false
 cdp_browser=false
 backend=""
@@ -27,7 +26,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --swift-computer)
       if [[ -n "$mode" && "$mode" != computer ]]; then printf '%s\n' 'Swift computer deployment requires computer mode.' >&2; exit 2; fi
-      mode=computer; swift_computer=true; shift
+      mode=computer; shift
       ;;
     --browser|--computer|--js)
       requested_mode="${1#--}"
@@ -58,7 +57,7 @@ if [[ -n "$backend" && "$mode" != browser ]]; then
 fi
 if [[ "$backend" == --managed-browser ]]; then managed_browser=true;
 elif [[ -n "$backend" ]]; then cdp_browser=true; fi
-if [[ "$swift_computer" == true ]]; then
+if [[ "$mode" == computer ]]; then
   export CUA_RUNTIME_SUPERVISOR=rust CORE_CUA_NATIVE_BACKEND=swift
   # An explicit CLI deployment wins over stale surface/backend fields in .env.
   CUA_MCP_ENV="$(node --input-type=module -e '
@@ -75,11 +74,8 @@ if [[ "$mode" == "browser" ]]; then
 elif [[ "$mode" == "computer" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"computer"}'; fi
   unset CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
-  export CORE_CUA_NATIVE_BACKEND="${CORE_CUA_NATIVE_BACKEND:-independent}"
-  if [[ "$CORE_CUA_NATIVE_BACKEND" == independent || "$CORE_CUA_NATIVE_BACKEND" == swift ]]; then
-    export CORE_CUA_NATIVE_HELPER_PATH="${CORE_CUA_NATIVE_HELPER_PATH:-$PWD/native/macos/.build/debug/cua-helper}"
-    if [[ "$CORE_CUA_NATIVE_HELPER_PATH" == "$PWD/native/macos/.build/debug/cua-helper" ]]; then npm run build:native; fi
-  fi
+  export CORE_CUA_NATIVE_HELPER_PATH="${CORE_CUA_NATIVE_HELPER_PATH:-$PWD/native/macos/.build/debug/cua-helper}"
+  if [[ "$CORE_CUA_NATIVE_HELPER_PATH" == "$PWD/native/macos/.build/debug/cua-helper" ]]; then npm run build:native; fi
   printf '%s\n' "Computer mode: $CORE_CUA_NATIVE_BACKEND backend; app inventory does not verify UI permissions or actions." >&2
 else
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1"}'; fi

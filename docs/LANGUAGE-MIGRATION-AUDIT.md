@@ -18,7 +18,7 @@ This audit includes existing implementation, not just newly written files. Origi
 
 `packages/agent-loop/src/restored-demo-runtime.ts` now normalizes the old `CUA_RUNTIME_SUPERVISOR=independent` selector to `rust`. The production factory no longer constructs a TS supervisor entry and no longer imports its options type. The installed native supervisor selection remains supported. Separately, `CORE_CUA_NATIVE_BACKEND=independent` still replaces the Sky service with the legacy `@core/native-macos/service` adapter under the installed supervisor; `swift` uses Rust and the restored Sky protocol binding. Native backend and supervisor selectors are distinct migration concerns.
 
-Root `package.json` exports still point at `dist/*` from legacy `src`, and `demo`/`mcp` still invoke those entries. The 25 legacy TS files require consumer migration, not indiscriminate deletion. `--swift-computer` is an explicit new-path entry, not proof that every old entry has changed.
+Root `package.json` exports still point at `dist/*` from legacy `src`, and `demo`/`mcp` still invoke those entries. The 25 legacy TS files require consumer migration, not indiscriminate deletion. The normal `--computer` and `--check-computer` CLI entries now also select Rust + original Sky + Swift; `--swift-computer` is an alias. Direct legacy adapter consumers and root public exports still require migration.
 
 ## Completion criteria
 

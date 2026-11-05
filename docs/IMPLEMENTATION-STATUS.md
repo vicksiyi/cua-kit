@@ -10,9 +10,10 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
 Older dated sections below are development history, not the current completion
-claim. The default demo has not been switched to a fully independent App runtime.
-An opt-in Rust + Swift demo route now passes native inventory through a real
-DeepSeek-issued tool call; screenshot/input and mixed surfaces remain unaccepted.
+claim. The computer CLI modes (`--computer`, `--check-computer`, and the
+`--swift-computer` alias) now select Rust + original Sky binding + Swift.
+Browser mode still defaults to the installed supervisor. Native inventory passes;
+screenshot/input and mixed surfaces remain unaccepted.
 
 | Original Sky request area | Current independent native route | Actual evidence / remaining gap |
 | --- | --- | --- |
@@ -5915,3 +5916,10 @@ The gate checks actual saved AX text, valid PNG tool output, one separate comple
 Validation: test TypeScript checking passes. A new actual Rust/MCP inventory/guidance/deployment/cleanup preflight and two banner regressions pass without any model request or app operation. Running the full npm `test:native-deepseek` command completes all builds but fails at the real permission gate: Accessibility=false, ScreenRecording=false. No model request or App launch is performed by that failing gate. The action/result assertions therefore remain unexecuted in this environment; migrating the test is not desktop acceptance. Lark's current entry description was corrected accordingly (revision 458).
 
 The npm `test:native-app-start` entry was executed after its selection change: all four explicit/background launch cases pass (installed/restored JS clients), with no skips.
+
+
+### 2026-11-06: migrate normal computer CLI to the native Sky route
+
+`--computer` and token-free `--check-computer` now select the same Rust supervisor and restored original Sky service / Swift IPC backend as `--swift-computer`. Explicit CLI computer selection overrides stale backend/surface settings in `.env` and builds both native components. It no longer selects the legacy TS native-macos service by default. Browser routing is unchanged. Direct restored-demo users can still explicitly configure the legacy adapter; root public API retirement remains incomplete.
+
+Validation: CLI routing tests include normal computer commands, stale configuration, native build dispatch and contradictory flags. The actual `npm run demo:deepseek -- --check-computer` builds, connects to Rust MCP and succeeds on native inventory without a model request or App action. This does not establish UI action acceptance.

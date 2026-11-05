@@ -30,9 +30,10 @@ test('CLI routes deployment flags independently of surface/check flag order',asy
   const result=run(args);assert.equal(result.status,2,JSON.stringify({args,...result}));
   assert.ok(!result.stdout.includes('BUILD_FIXTURE'));
  }
- for(const args of [['--swift-computer','prompt'],['--swift-computer','--check-computer'],['--check-computer','--swift-computer']]){
+ for(const args of [['--computer','prompt'],['--check-computer'],['--computer','--check-computer'],['--swift-computer','prompt'],['--swift-computer','--check-computer'],['--check-computer','--swift-computer']]){
   const result=run(args,{CUA_RUNTIME_SUPERVISOR:'installed',CUA_MCP_ENV:JSON.stringify({CUA_REPL_ENABLED_SURFACES:'browser',CORE_CUA_NATIVE_BACKEND:'independent',NODE_REPL_DISABLE_ANALYTICS:'1'})});
   assert.equal(result.status,0,result.stderr);const value=JSON.parse(result.stdout.trim().split('\n').at(-1)!);
+  assert.match(result.stdout,/BUILD_FIXTURE run build:native/);assert.match(result.stdout,/BUILD_FIXTURE run build:rust-runtime/);
   assert.equal(value.runtime,'rust');assert.equal(value.native,'swift');assert.equal(value.startChrome,undefined);
   const config=JSON.parse(value.configuration);assert.equal(config.CUA_REPL_ENABLED_SURFACES,'computer');assert.equal(config.CORE_CUA_NATIVE_BACKEND,'swift');assert.equal(config.NODE_REPL_DISABLE_ANALYTICS,'1');
   assert.equal(value.argv[2],'packages/agent-loop/src/restored-demo.ts');

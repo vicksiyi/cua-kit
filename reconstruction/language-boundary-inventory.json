@@ -64,7 +64,7 @@
     {
       "path": "packages/agent-loop/src/demo.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "c04f088ae014159a8638d72f5a6d2ab89bdb467e3d2f7014dac2d89cb0734810"
+      "sha256": "06e5bddfb88c3913bce90c25dc8306ddcd9fd93bb439a2940e507e984bcfa4a1"
     },
     {
       "path": "packages/agent-loop/src/independent-browser.ts",
@@ -124,7 +124,7 @@
     {
       "path": "packages/agent-loop/src/restored-demo-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "eb97517fbd081243ec07c76f0182f5094273888ec1e2c1f55575a6952bd1bdca"
+      "sha256": "45418bd7bb4df9852094088609979076c235e62ce125ff667579e3224c074890"
     },
     {
       "path": "packages/agent-loop/src/restored-demo.ts",
@@ -4209,7 +4209,7 @@
     {
       "path": "scripts/run-deepseek.sh",
       "category": "build-or-deployment-script-review",
-      "sha256": "0fba8b459643d4abac2414d4fcda2326df6ab0a13fee6bb1f5bba25dfef9930e"
+      "sha256": "c0f52a43b714da7749de07768d10b186308de4a6ed0a47c15115a2a3fbf94bc4"
     }
   ]
 }

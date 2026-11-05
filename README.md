@@ -15,7 +15,7 @@ DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 
 | `npm run demo:deepseek -- "prompt"` | 已连接 Chrome 扩展；真实 DeepSeek 百度搜索已返回结果 | 要求扩展连接，网站验证和页面差异仍可能阻止任务 |
 | `--cdp-browser "prompt"` | 无扩展临时 Chromium；真实点击、截图、读取与外网导航 | 本轮结束即关闭；百度搜索可能遇到人工验证码 |
 | `--cdp-endpoint 'ws://127.0.0.1:PORT/devtools/browser/ID' "prompt"` | 连接已开启调试的浏览器；测试环境 MCP/DeepSeek 及已有标签页隔离通过 | 必须提供真实本地地址；不自动重启日常 Chrome |
-| `--computer "prompt"` | 独立 macOS helper；发现/协议/fixture 测试已有 | 当前 agent 的辅助功能与录屏权限未通过，完整真实 App 验收未完成 |
+| `--computer "prompt"` | Rust supervisor + 原 Sky 绑定 + Swift IPC；原生清单检查通过 | 当前 agent 的辅助功能与录屏权限未通过，完整真实 App 验收未完成 |
 
 参数放在 `npm run demo:deepseek --` 之后。启动从项目 `.env` 读模型凭证；本地 debug 默认写入 `artifacts/debug/`，不提交 Git。终端会打印日志路径，关闭可设 `CUA_DEBUG=0`。详情见 [CDP 接入说明](packages/cdp-host/README.md) 和 [Agent demo](packages/agent-loop/README.md)。
 
