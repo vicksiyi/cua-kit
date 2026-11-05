@@ -58,6 +58,13 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       const text = state.elements.map(element => `[${element.id}] ${element.role} ${JSON.stringify(element.name)}${element.value === undefined ? "" : ` value=${JSON.stringify(element.value)}`}`).join("\n");
       return {app:input.app,screenshot:null,text:[text,...state.warnings.map(warning => `Warning: ${warning}`)].join("\n")};
     }),
+    select_text: (input: {app:string;element_index:number;text:string;prefix?:string;suffix?:string;selection_type?:"text"|"cursor_before"|"cursor_after"}) => serial(async () => {
+      if (input.selection_type !== undefined && !["text","cursor_before","cursor_after"].includes(input.selection_type)) throw new CuaError("INVALID_ARGUMENT","Unknown selection type");
+      await write(input.app,"action",{operation:"selectText",elementId:input.element_index,value:input.text,options:{prefix:input.prefix,suffix:input.suffix,selectionType:input.selection_type}});
+    }),
+    perform_secondary_action: (input: {app:string;element_index:number;action:string}) => serial(async () => {
+      await write(input.app,"action",{operation:"secondary",elementId:input.element_index,value:input.action});
+    }),
     set_value: (input:{app:string;element_index:number;value:string}) => serial(() => write(input.app,"action",{operation:"setValue",elementId:input.element_index,value:input.value})),
     type_text: (input:{app:string;text:string}) => serial(() => write(input.app,"keyboardInput",{operation:"typeText",text:input.text})),
     press_key: (input:{app:string;key:string;duration?:number}) => serial(async () => {

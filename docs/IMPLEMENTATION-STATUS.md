@@ -4540,3 +4540,10 @@ Build, native-macos and AgentLoop typechecks pass. Six adapter/deployment tests 
 Implemented adapter slice is discovery/full AX text/setValue/focused typeText/unheld keys, with host approvals and helper snapshot validation. Screenshots, coordinate mouse operations, scroll/drag, audio, lifecycle/supervisor independence and exact policy/observation parity remain unfinished. UI read/write behavior is not yet accepted under real OS permissions. No vendor signing/authentication or TCC settings changed.
 
 Real model tool-call acceptance: a subsequent DeepSeek prompt requested the sum of app displayName lengths, which the preflight count cannot answer. DeepSeek emitted a fresh js call invoking cua.listApps({emit:false}), computed the sum and received 620 from the independent native service; final answer was 620. This establishes model-generated tool dispatch on the native discovery path only. No app names were emitted, and no windows or UI actions were accessed.
+
+
+### Independent native selection and secondary action integration
+
+Added Sky-shaped select_text and perform_secondary_action to @core/native-macos, reusing the helper's AX operations. Selection now supports text/cursor_before/cursor_after, matching the original public selection_type contract, with prefix/suffix disambiguation and UTF-16 positions. Factored the existing range search into a testable Swift function; unknown modes/types, missing text and overlapping ambiguity fail explicitly. Both adapter operations return void after successful dispatch, require host authorization and a complete current observation, and invalidate it before action.
+
+Native build and pure Swift self-test pass (Unicode text/cursor offsets, context selection and failures), reconstruction build and native package typecheck pass. Seven adapter tests pass, including actual restored bind_mac_app → createSkyService → independent client routing for selection and secondary actions. No real UI action was performed; Accessibility/screen-recording acceptance and the remaining native/backend/browser requirements remain outstanding.

@@ -29,6 +29,27 @@ func unicodeChunks(_ text: String, limit: Int = 20) -> [[UInt16]] {
     }
     return chunks
 }
+func selectedTextRange(content: String, text: String, options: [String: Any]) throws -> CFRange {
+    guard !text.isEmpty else { throw fail("INVALID_ARGUMENT", "Selection requires nonempty text.") }
+    for name in ["prefix", "suffix", "selectionType"] {
+        if let value = options[name], !(value is String) { throw fail("INVALID_ARGUMENT", "Selection options must be strings.") }
+    }
+    let selection = options["selectionType"] as? String ?? "text"
+    guard ["text", "cursor_before", "cursor_after"].contains(selection) else { throw fail("INVALID_ARGUMENT", "Unknown selection type.") }
+    let prefix = options["prefix"] as? String ?? "", suffix = options["suffix"] as? String ?? ""
+    let value = content as NSString; var matches: [NSRange] = [], offset = 0
+    while offset < value.length {
+        let found = value.range(of:text,options:[],range:NSRange(location:offset,length:value.length-offset))
+        if found.location == NSNotFound { break }
+        let before = value.substring(to:found.location), after = value.substring(from:found.location+found.length)
+        if before.hasSuffix(prefix) && after.hasPrefix(suffix) { matches.append(found) }
+        offset = found.location+1
+    }
+    guard !matches.isEmpty else { throw fail("ELEMENT_NOT_INTERACTABLE", "Selection text not found.") }
+    guard matches.count == 1 else { throw fail("AMBIGUOUS_TARGET", "Selection text is ambiguous; supply prefix/suffix.") }
+    let match = matches[0]
+    return CFRange(location: match.location + (selection == "cursor_after" ? match.length : 0), length: selection == "text" ? match.length : 0)
+}
 @MainActor
 extension Target {
     func invalidateInputState() { snapshot = nil; nodes = [] }
@@ -75,18 +96,7 @@ extension Target {
     func selectText(_ element: AXUIElement, _ params: [String: Any]) throws -> AXError {
         guard let text = params["value"] as? String, !text.isEmpty, let content = attribute(element,kAXValueAttribute) as? String else { throw fail("INVALID_ARGUMENT", "Selection requires nonempty text and a textual AXValue.") }
         let options = params["options"] as? [String:Any] ?? [:]
-        let prefix = options["prefix"] as? String ?? "", suffix = options["suffix"] as? String ?? ""
-        let value = content as NSString; var matches: [NSRange] = [], offset = 0
-        while offset < value.length {
-            let found = value.range(of:text,options:[],range:NSRange(location:offset,length:value.length-offset))
-            if found.location == NSNotFound { break }
-            let before = value.substring(to:found.location), after = value.substring(from:found.location+found.length)
-            if before.hasSuffix(prefix) && after.hasPrefix(suffix) { matches.append(found) }
-            offset = found.location+1
-        }
-        guard !matches.isEmpty else { throw fail("ELEMENT_NOT_INTERACTABLE", "Selection text not found.") }
-        guard matches.count == 1 else { throw fail("AMBIGUOUS_TARGET", "Selection text is ambiguous; supply prefix/suffix.") }
-        var range = CFRange(location:matches[0].location,length:matches[0].length)
+        var range = try selectedTextRange(content: content, text: text, options: options)
         guard let axRange = AXValueCreate(.cfRange,&range) else { throw fail("PROVIDER_DISCONNECTED", "Cannot encode text range.") }
         return AXUIElementSetAttributeValue(element,kAXSelectedTextRangeAttribute as CFString,axRange)
     }

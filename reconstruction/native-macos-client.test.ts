@@ -44,3 +44,37 @@ test("failed observation cannot leave prior snapshot actionable",async()=>{
  await assert.rejects(client.set_value({app:"Fixture",element_index:1,value:"x"}),/Observe/);
  await assert.rejects(client.press_key({app:"Fixture",key:"a",duration:1}),/not yet implemented/);
 });
+test("selection modes preserve Sky options and consume observation once",async()=>{
+ for(const selection_type of ["text","cursor_before","cursor_after"] as const){
+  const {client,calls}=fixture();
+  await client.get_app_state({app:"Fixture"});
+  assert.equal(await client.select_text({app:"Fixture",element_index:1,text:"🌍你好",prefix:"A",suffix:"B",selection_type}),undefined);
+  assert.deepEqual(calls.find(c=>c[0]==="action")?.[1],{targetId:"target",snapshotId:"snapshot",operation:"selectText",elementId:1,value:"🌍你好",options:{prefix:"A",suffix:"B",selectionType:selection_type}});
+  await assert.rejects(client.select_text({app:"Fixture",element_index:1,text:"x"}),/Observe/);
+ }
+});
+test("secondary actions use indexed snapshot and cannot bypass approval",async()=>{
+ const {client,calls}=fixture();
+ await client.get_app_state({app:"Fixture"});
+ assert.equal(await client.perform_secondary_action({app:"Fixture",element_index:1,action:"AXShowMenu"}),undefined);
+ assert.equal(calls.find(c=>c[0]==="action")?.[1].value,"AXShowMenu");
+ const denied=fixture({deny:true});
+ await assert.rejects(denied.client.perform_secondary_action({app:"Fixture",element_index:1,action:"focus"}),/denied/);
+ assert.equal(denied.calls.some(c=>c[0]==="action"),false);
+});
+test("restored CUA app methods reach independent selection and secondary action",async()=>{
+ const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
+ const {createSkyService}=await import("../packages/sky/src/create_service");
+ const {client,calls}=fixture();
+ const service=createSkyService(()=>client);
+ const setup=await service.handleRpc({type:"setup"}) as {methods:string[]};
+ assert.ok(setup.methods.includes("select_text"));
+ assert.ok(setup.methods.includes("perform_secondary_action"));
+ const computer=Object.fromEntries(setup.methods.map(method=>[method,(...args:unknown[])=>service.handleRpc({type:"execute",method,args})]));
+ const app=bind_mac_app(computer as any,"Fixture");
+ await app.getAXState({emit:false});
+ await app.selectText(1,"Name",{selectionType:"cursor_after"});
+ await app.getAXState({emit:false});
+ await app.performSecondaryAction(1,"focus");
+ assert.deepEqual(calls.filter(c=>c[0]==="action").map(c=>[c[1].operation,c[1].options?.selectionType,c[1].value]),[["selectText","cursor_after","Name"],["secondary",undefined,"focus"]]);
+});
