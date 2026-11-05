@@ -23,6 +23,11 @@
       "types": "./src/native-pipe-host.ts",
       "import": "./dist/native-pipe-host.js",
       "default": "./dist/native-pipe-host.js"
+    },
+    "./stdio": {
+      "types": "./src/stdio.ts",
+      "import": "./dist/stdio.js",
+      "default": "./dist/stdio.js"
     }
   },
   "dependencies": {
