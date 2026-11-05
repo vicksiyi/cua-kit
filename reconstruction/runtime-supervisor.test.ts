@@ -684,3 +684,35 @@ test("late host content cannot enter a later execution", async () => {
   release({ ok: true });
   await session.close();
 });
+
+test("response metadata rejects forged, stale and malformed messages", async () => {
+  for (const scenario of ["kernel", "stale", "array"]) {
+    const kernel = fakePort(),
+      trusted = fakePort();
+    const session = new WorkerSession({
+      services: ["fixture"],
+      launch: async () => ({ kernel, trusted }),
+    });
+    const operation = session.execute("ignored");
+    const rejected = assert.rejects(
+      operation,
+      /Unsupported kernel|Uncorrelated response metadata|Invalid response metadata/,
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    const id = kernel.sent[0].id;
+    kernel.emit({
+      type: "trusted_service_request",
+      id: "rpc",
+      exec_id: id,
+      service: "fixture",
+      request: {},
+    });
+    (scenario === "kernel" ? kernel : trusted).emit({
+      type: "response_meta",
+      id: scenario === "stale" ? "old" : id,
+      response_meta: scenario === "array" ? [] : { valid: true },
+    });
+    await rejected;
+    await session.close();
+  }
+});

@@ -36,7 +36,7 @@ test(
     });
     await writeFile(
       join(root, "service.mjs"),
-      'let pipe;let received=[];let waiting;export async function handleRpc(x){if(x?.image){await nodeRepl.emitImage(x.image);return "image emitted";}if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
+      'let pipe;let received=[];let waiting;export async function handleRpc(x){if(x?.meta){nodeRepl.setResponseMeta(x.meta);return "meta set";}if(x?.image){await nodeRepl.emitImage(x.image);return "image emitted";}if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
     );
     const moduleDir = join(root, "external", "node_modules");
     await mkdir(join(moduleDir, "fixture-module"), { recursive: true });
@@ -162,6 +162,23 @@ test(
         ),
         /42/,
       );
+      const metadataResult = await client.callTool({
+        name: "js",
+        arguments: {
+          code: 'await nodeRepl.rpc("fixture",{meta:{first:true,surface:{kind:"old"}}});await nodeRepl.rpc("fixture",{meta:{second:2,surface:{kind:"new"}}});nodeRepl.write("metadata")',
+        },
+      });
+      assert.equal(metadataResult.isError, false);
+      assert.deepEqual(metadataResult._meta, {
+        first: true,
+        second: 2,
+        surface: { kind: "new" },
+      });
+      const noMetadata = await client.callTool({
+        name: "js",
+        arguments: { code: 'nodeRepl.write("next")' },
+      });
+      assert.equal(noMetadata._meta, undefined);
       const png =
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1cAAAAASUVORK5CYII=";
       const media = await client.callTool({

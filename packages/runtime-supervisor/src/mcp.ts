@@ -65,7 +65,17 @@ export function workerResultToMcp(result: Message): CallToolResult {
           ? result.error
           : "JavaScript execution failed",
     });
-  return { content, isError: result.ok === false };
+  const meta = result.response_meta;
+  if (
+    meta !== undefined &&
+    (!meta || typeof meta !== "object" || Array.isArray(meta))
+  )
+    throw Error("Invalid worker response metadata");
+  return {
+    content,
+    isError: result.ok === false,
+    ...(meta === undefined ? {} : { _meta: meta }),
+  };
 }
 export function createSupervisorMcpServer(options: SessionOptions) {
   const server = new Server(

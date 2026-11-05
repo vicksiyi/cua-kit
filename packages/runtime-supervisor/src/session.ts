@@ -57,6 +57,7 @@ interface Pending {
   hostSeen: Set<string>;
   content: Message[];
   contentBytes: number;
+  responseMeta?: Record<string, unknown>;
   deadline: ExecutionDeadline;
   removeAbort(): void;
   resolve(result: Message): void;
@@ -302,6 +303,7 @@ export class WorkerSession {
         const result = {
           ...message,
           content_items: [...(message.content_items ?? []), ...pending.content],
+          response_meta: pending.responseMeta,
         };
         this.finish();
         pending.resolve(result);
@@ -326,6 +328,7 @@ export class WorkerSession {
         const result = {
           ...message,
           content_items: [...(message.content_items ?? []), ...pending.content],
+          response_meta: pending.responseMeta,
         };
         this.finish();
         pending.resolve(result);
@@ -415,13 +418,31 @@ export class WorkerSession {
         void this.host(side, message, pending, pair, key);
         return;
       }
+      if (side === "trusted" && message.type === "response_meta") {
+        if (
+          message.id !== pending.id ||
+          (pending.kind !== "turn_ended" && !pending.rpc.size)
+        )
+          throw Error("Uncorrelated response metadata");
+        const value = message.response_meta;
+        if (!value || typeof value !== "object" || Array.isArray(value))
+          throw Error("Invalid response metadata");
+        const serialized = JSON.stringify({
+          ...pending.responseMeta,
+          ...value,
+        });
+        if (Buffer.byteLength(serialized) > 8 * 1024 * 1024)
+          throw Error("Response metadata budget exceeded");
+        pending.responseMeta = JSON.parse(serialized);
+        return;
+      }
       const notifications =
         side === "kernel"
           ? ["submitted_code_complete", "exec_redacted_source"]
-          : ["response_meta", "response_meta_trace", "otel_log"];
+          : ["response_meta_trace", "otel_log"];
       if (!notifications.includes(message.type))
         throw Error(`Unsupported ${side} worker message: ${message.type}`);
-      // Response metadata and telemetry integration remain outstanding.
+      // Trace and telemetry integration remain outstanding.
     } catch (error) {
       void this.retire(error instanceof Error ? error : Error(String(error)));
     }
