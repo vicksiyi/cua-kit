@@ -1,3 +1,4 @@
+import { createReadonlyConfigHost } from "../packages/runtime-supervisor/src/config-host";
 import { PassThrough } from "node:stream";
 import { dirname } from "node:path";
 import { UnixNativePipeHost } from "../packages/runtime-supervisor/src/native-pipe-host";
@@ -155,17 +156,17 @@ test(
     output.on("data", bytes => { for (const frame of frames.push(bytes)) receive(JSON.parse(frame)); });
     const host = await startNativeHost(input, output, { parentDirectory: root });
     t.after(() => host.close());
+    const configFile = join(root, "config.toml"), requirementsFile = join(root, "requirements.toml"), browserConfigFile = join(root, "browser.toml");
+    await writeFile(configFile, "[browser_use]\nallow_history_access = false\n");
+    await writeFile(requirementsFile, "[featureRequirements]\nbrowser_use_full_cdp_access = false\n");
+    await writeFile(browserConfigFile, "full_cdp_access_enabled = false\n");
     const pipeEvents: string[] = [];
     const session = new WorkerSession({
       services: ["fixture", "browser"],
-      // Explicit test-only preferences; no host config or permission grants are fabricated in production.
-      hostRequest: async message => {
-        if (message.type !== "config_action") throw Error("Unsupported fixture host operation");
-        if (message.action === "read_toml") return { ok: true, value: { full_cdp_access_enabled: false } };
-        if (message.action === "read_config_requirements") return { ok: true, value: { requirements: {} } };
-        if (message.action === "read_config") return { ok: true, value: { config: {} } };
-        throw Error("Fixture configuration is read-only");
-      },
+      hostRequest: createReadonlyConfigHost({
+        configFile, requirementsFile, workingDirectories: [trustedDir],
+        tomlFiles: { "browser/config.toml": browserConfigFile },
+      }),
       nativePipeHost: emit => {
         const pipe = new UnixNativePipeHost([host.endpoint.socketPath], emit);
         return { close: () => pipe.close(), async request(message) {
