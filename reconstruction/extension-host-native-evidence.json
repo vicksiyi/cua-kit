@@ -1,0 +1,143 @@
+{
+  "artifact": "ChatGPT.app/Contents/Resources/plugins/openai-bundled/plugins/chrome/extension-host/macos/arm64/ChatGPT for Chrome",
+  "sha256": "2a5b1035b5dcbb6c9a55f2acf775dc5124d816131388332af60ec2850fd99f5f",
+  "languageEvidence": {
+    "rustCompilerRevisions": [
+      "rustc/8bab26f4f68e0e26f0bb7960be334d5b520ea452"
+    ],
+    "sourcePathLiterals": [
+      "src/app_server.rs",
+      "src/client_writer.rs",
+      "src/main.rs"
+    ],
+    "demangledHostSymbols": [
+      "<extension_host::app_server::AppServerHostConfig>::load",
+      "<extension_host::app_server::AppServerHostConfig>::proxy_runtime_state",
+      "<extension_host::app_server::AppServerManager as core::ops::drop::Drop>::drop",
+      "<extension_host::app_server::AppServerManager>::append_tab_context_asset_chunk",
+      "<extension_host::app_server::AppServerManager>::create_tab_context_asset",
+      "<extension_host::app_server::AppServerManager>::ensure",
+      "<extension_host::app_server::AppServerManager>::finish_tab_context_asset",
+      "<extension_host::app_server::AppServerManager>::new",
+      "<extension_host::app_server::AppServerManager>::remove_tab_context_asset",
+      "<extension_host::app_server::AppServerManager>::shutdown",
+      "<extension_host::app_server::AppServerManager>::status",
+      "<extension_host::app_server::AppServerProcess>::ensure_started",
+      "<extension_host::app_server::AppServerProcess>::stop",
+      "<extension_host::app_server::AppServerProxy>::runtime_session_id",
+      "<extension_host::app_server::ProxyRuntimeState as core::clone::Clone>::clone",
+      "<extension_host::client_writer::ClientWriter<extension_host::transport::unix::UnixSocketShutdown>>::disconnect",
+      "<extension_host::client_writer::ClientWriter<extension_host::transport::unix::UnixSocketShutdown>>::enqueue",
+      "<extension_host::client_writer::ClientWriterRegistry<extension_host::transport::unix::UnixSocketWriter> as core::ops::drop::Drop>::drop",
+      "<extension_host::client_writer::ClientWriterRegistry<extension_host::transport::unix::UnixSocketWriter>>::broadcast",
+      "<extension_host::client_writer::ClientWriterRegistry<extension_host::transport::unix::UnixSocketWriter>>::insert",
+      "<extension_host::client_writer::ClientWriterRegistry<extension_host::transport::unix::UnixSocketWriter>>::remove",
+      "<extension_host::client_writer::ClientWriterRegistry<extension_host::transport::unix::UnixSocketWriter>>::send_to",
+      "<extension_host::client_writer::ClientWriterRegistry<extension_host::transport::unix::UnixSocketWriter>>::with_queue_limits",
+      "<extension_host::client_writer::ClientWriterRegistryInner<extension_host::transport::unix::UnixSocketWriter>>::evict_if_same",
+      "<extension_host::peer_authorization::PeerAuthorizer>::authorize_unix_stream",
+      "<extension_host::rpc_router::RpcRouter>::new",
+      "<extension_host::rpc_router::RpcRouter>::register_message_from_client",
+      "<extension_host::rpc_router::RpcRouter>::remove_client",
+      "<extension_host::rpc_router::RpcRouter>::route_message_to_client",
+      "<extension_host::transport::stdio::StdioReader as extension_host::transport::traits::MessageReader>::receive",
+      "<extension_host::transport::stdio::StdioTransport as extension_host::transport::traits::Transport>::split",
+      "<extension_host::transport::stdio::StdioWriter>::send_or_exit",
+      "<extension_host::transport::unix::UnixSocketReader as extension_host::transport::traits::MessageReader>::receive",
+      "<extension_host::transport::unix::UnixSocketServer>::accept",
+      "<extension_host::transport::unix::UnixSocketServer>::bind::<&std::path::PathBuf>",
+      "<extension_host::transport::unix::UnixSocketShutdown as extension_host::transport::traits::ConnectionShutdown>::shutdown",
+      "<extension_host::transport::unix::UnixSocketTransport as extension_host::transport::traits::Transport>::split",
+      "<extension_host::transport::unix::UnixSocketTransport>::shutdown",
+      "<extension_host::transport::unix::UnixSocketWriter as extension_host::transport::traits::MessageWriter>::send",
+      "extension_host::app_server::close_websocket_writer",
+      "extension_host::app_server::codex_runtime_error_response",
+      "extension_host::app_server::detach_client_writer",
+      "extension_host::app_server::forward_app_server_to_attached_client",
+      "extension_host::app_server::forward_websocket_to_app_server",
+      "extension_host::app_server::handle_native_host_control_message",
+      "extension_host::app_server::handle_proxy_connection",
+      "extension_host::app_server::non_empty_env",
+      "extension_host::app_server::proxy_websocket_to_persistent_app_server",
+      "extension_host::app_server::remember_update_required_error",
+      "extension_host::app_server::remove_tab_context_asset_file",
+      "extension_host::app_server::request_query_param",
+      "extension_host::app_server::required_manifest_path_exists",
+      "extension_host::app_server::required_string_param",
+      "extension_host::app_server::run_proxy_listener",
+      "extension_host::app_server::stop_app_server_child",
+      "extension_host::app_server::string_result_response",
+      "extension_host::app_server::wait_app_server_child",
+      "extension_host::app_server::write_plain_response",
+      "extension_host::app_server::write_shared_websocket_frame",
+      "extension_host::client_writer::run_writer::<extension_host::transport::unix::UnixSocketWriter>",
+      "extension_host::main",
+      "extension_host::open_local_file::open",
+      "extension_host::peer_authorization::code_identity_for_peer_at_depth",
+      "extension_host::peer_authorization::nul_terminated_buffer_to_string",
+      "extension_host::transport::unix::bind_owner_only_socket",
+      "extension_host::transport::unix::remove_stale_socket"
+    ]
+  },
+  "dependencyPathLiterals": [
+    "base64-0.22.1",
+    "itoa-1.0.18",
+    "serde_json-1.0.149",
+    "uuid-1.23.0"
+  ],
+  "migrationCandidates": [
+    {
+      "path": "packages/native-host/src/main.ts",
+      "sha256": "93f401f91b87f1c43d20d63d35793c3ed95876ca72706ea66e36d8028a96c54b",
+      "targetLanguage": "Rust",
+      "evidencedRoles": [
+        "extension_host::main"
+      ],
+      "status": "not-migrated",
+      "limit": "Role-level native ownership, not recovered algorithm or proof that current TS matches the native implementation."
+    },
+    {
+      "path": "packages/native-host/src/server.ts",
+      "sha256": "9cd7c8e8f2e8070675b97516f621bf8842fdcf62512fb0c5f7131e64c857c3ba",
+      "targetLanguage": "Rust",
+      "evidencedRoles": [
+        "extension_host::transport::unix::UnixSocketServer",
+        "extension_host::transport::stdio::StdioTransport",
+        "extension_host::client_writer::ClientWriterRegistry"
+      ],
+      "status": "not-migrated",
+      "limit": "Role-level native ownership, not recovered algorithm or proof that current TS matches the native implementation."
+    },
+    {
+      "path": "packages/native-host/src/router.ts",
+      "sha256": "4f7863a4c6470a78d43c47fc90f31081956bbf424d314f302d2e10ecccf99dfd",
+      "targetLanguage": "Rust",
+      "evidencedRoles": [
+        "extension_host::rpc_router::RpcRouter"
+      ],
+      "status": "not-migrated",
+      "limit": "Role-level native ownership, not recovered algorithm or proof that current TS matches the native implementation."
+    }
+  ],
+  "additionalNativeScope": [
+    "per-client writer queues and eviction",
+    "peer code-identity authorization",
+    "app-server process/manifest/version management",
+    "WebSocket app-server proxy",
+    "tab context asset chunk lifecycle",
+    "local file dispatch"
+  ],
+  "consumersRequiringMigration": [
+    "packages/native-host/src/main.ts (extension native messaging entry)",
+    "packages/cdp-host/src/host.ts (independent CDP adapter currently embeds the same TS host)",
+    "packages/native-host/src/index.ts (public legacy exports)",
+    "direct native-host test consumers"
+  ],
+  "priorAuthorizationEvidence": {
+    "path": "reconstruction/native-host-auth-evidence.json",
+    "sha256": "bd707631640d6b818c2dd61466b83ed9c49612b1c9f176fe57fa26a0097db1ab",
+    "matchesCurrentArtifact": false,
+    "interpretation": "Historical address/allowlist evidence is version-bound; do not apply offsets or assert the same allowlist for this artifact when hashes differ."
+  },
+  "interpretation": "Rust compiler/source paths and demangled host symbols establish native language and responsibility names. Function bodies, exact queue limits, authorization rules and complete dependencies are not recovered. Core capability-token authentication is independently designed, not original peer code-signature authorization. Original JS clients/discovery scripts remain TS. No original host was executed."
+}

@@ -1,12 +1,13 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 27,
+    "build-or-deployment-script-review": 28,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-node-binding-forwarder": 1,
     "legacy-prototype-review-required": 25,
-    "native-boundary-needs-original-language-evidence": 13,
+    "native-boundary-needs-original-language-evidence": 10,
+    "native-browser-host-role-migrate-to-rust": 3,
     "native-desktop-swift-boundary-review": 6,
     "native-implementation-language-not-yet-parity-proof": 47,
     "native-responsibility-migrate-to-rust": 13,
@@ -2811,7 +2812,7 @@
     },
     {
       "path": "packages/native-host/src/main.ts",
-      "category": "native-boundary-needs-original-language-evidence",
+      "category": "native-browser-host-role-migrate-to-rust",
       "sha256": "93f401f91b87f1c43d20d63d35793c3ed95876ca72706ea66e36d8028a96c54b"
     },
     {
@@ -2821,12 +2822,12 @@
     },
     {
       "path": "packages/native-host/src/router.ts",
-      "category": "native-boundary-needs-original-language-evidence",
+      "category": "native-browser-host-role-migrate-to-rust",
       "sha256": "4f7863a4c6470a78d43c47fc90f31081956bbf424d314f302d2e10ecccf99dfd"
     },
     {
       "path": "packages/native-host/src/server.ts",
-      "category": "native-boundary-needs-original-language-evidence",
+      "category": "native-browser-host-role-migrate-to-rust",
       "sha256": "9cd7c8e8f2e8070675b97516f621bf8842fdcf62512fb0c5f7131e64c857c3ba"
     },
     {
@@ -4135,14 +4136,19 @@
       "sha256": "87c1f619d0df7bc8dec347a06b55efa53b843ec34ef0ed328bdc82b0571925b2"
     },
     {
+      "path": "scripts/audit-extension-host-language.py",
+      "category": "build-or-deployment-script-review",
+      "sha256": "5112eaa937e8d930870b11d98efff5531b99dc04ac57a28a432b12fc63688e6b"
+    },
+    {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "714afc6afa89e806bec24e502d862be331573ca5eb7cac2fe13412c5eab46a31"
+      "sha256": "8066c37a5c20c586b02a5c18649de53239b9988c761703a209bfe9fc04fa619a"
     },
     {
       "path": "scripts/audit-native-language.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "77e6b6a10d1b6982daae839a19899511ef0c5ab0f87deade016155c5207f5566"
+      "sha256": "f6e6c7b7655a05f63df9e00bc68d6167b10dcff44ded5d55c0d757c6e3f17a7e"
     },
     {
       "path": "scripts/build-agent-library.mjs",

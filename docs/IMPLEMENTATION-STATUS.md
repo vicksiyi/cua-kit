@@ -1,5 +1,9 @@
 # Implementation status
 
+## Browser extension host remains a native migration gap
+
+The installed extension-host executable is independently confirmed as Rust, distinct from the Rust REPL supervisor. Current `packages/native-host/src/{main,server,router}.ts` still implements those native roles, including the server embedded by the independent CDP adapter. Native writer queues, peer identity authorization, app-server/proxy and tab asset management also remain open. See `NATIVE-HOST-LANGUAGE-AUDIT.md`; Rust supervisor acceptance does not certify this host as migrated.
+
 ## Default runtime build boundary
 
 `build:reconstruction` no longer compiles the legacy TS supervisor or desktop adapter. The independent runtime uses Rust and its own Node-to-NAPI bootstrap; computer mode keeps the original Sky binding and Swift service. `build:legacy-runtime` explicitly includes legacy reference outputs for comparison tests. The default build, isolated browser Loop and native inventory passed with both legacy `dist` directories absent. This retires a build dependency, not all legacy sources or missing real desktop acceptance.

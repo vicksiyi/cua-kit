@@ -1,5 +1,5 @@
 {
-  "scope": "Per-file native-host language audit. Original JavaScript evidence is established for profile inspection and macOS application discovery. Other files remain unresolved, not certified native parity.",
+  "scope": "Per-file native-host audit: two original-JS discovery/profile files retained as TS; three server/entry/router roles now evidenced in native Rust; remaining ten adapter files need further responsibility mapping.",
   "artifacts": [
     {
       "path": "openai-bundled/browser/26.1027.30824/scripts/check-extension-installed.js",
@@ -105,9 +105,11 @@
     {
       "path": "packages/native-host/src/main.ts",
       "sha256": "93f401f91b87f1c43d20d63d35793c3ed95876ca72706ea66e36d8028a96c54b",
-      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
-      "evidence": [],
-      "scope": "Do not infer native language from package name or independently authored implementation."
+      "languageDecision": "native-rust-role-migration-required",
+      "evidence": [
+        "extension-host-native-evidence.json"
+      ],
+      "scope": "Native entry/server/router role proven by demangled Rust symbols. Algorithm parity remains unproven; current TS is still reachable."
     },
     {
       "path": "packages/native-host/src/pipe_authentication.ts",
@@ -119,16 +121,20 @@
     {
       "path": "packages/native-host/src/router.ts",
       "sha256": "4f7863a4c6470a78d43c47fc90f31081956bbf424d314f302d2e10ecccf99dfd",
-      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
-      "evidence": [],
-      "scope": "Do not infer native language from package name or independently authored implementation."
+      "languageDecision": "native-rust-role-migration-required",
+      "evidence": [
+        "extension-host-native-evidence.json"
+      ],
+      "scope": "Native entry/server/router role proven by demangled Rust symbols. Algorithm parity remains unproven; current TS is still reachable."
     },
     {
       "path": "packages/native-host/src/server.ts",
       "sha256": "9cd7c8e8f2e8070675b97516f621bf8842fdcf62512fb0c5f7131e64c857c3ba",
-      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
-      "evidence": [],
-      "scope": "Do not infer native language from package name or independently authored implementation."
+      "languageDecision": "native-rust-role-migration-required",
+      "evidence": [
+        "extension-host-native-evidence.json"
+      ],
+      "scope": "Native entry/server/router role proven by demangled Rust symbols. Algorithm parity remains unproven; current TS is still reachable."
     }
   ],
   "validation": {
@@ -143,5 +149,6 @@
       "Named standard-directory fallback is preserved even when bundle metadata differs, as in original JS.",
       "No claim of full Chrome cold-start or native host service parity."
     ]
-  }
+  },
+  "nativeEvidence": "reconstruction/extension-host-native-evidence.json"
 }

@@ -125,6 +125,6 @@
     "installedJavaScript": "restore as readable TypeScript",
     "nativeSupervisor": "Rust; TS supervisor remains transitional until replacement acceptance",
     "nativeDesktop": "Swift evidence recorded separately in desktop-language-evidence.json; individual responsibility mapping remains open",
-    "nativeBrowserHost": "language and ownership still require separate evidence"
+    "nativeBrowserHost": "Rust host roles evidenced separately in extension-host-native-evidence.json; migration and original algorithm parity remain open"
   }
 }
