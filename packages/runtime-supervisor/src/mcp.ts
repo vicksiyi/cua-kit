@@ -51,6 +51,13 @@ export function workerResultToMcp(result: Message): CallToolResult {
   if (result.output !== undefined && typeof result.output !== "string")
     throw Error("Invalid worker text output");
   if (result.output) content.push({ type: "text", text: result.output });
+  if (result.named_outputs !== undefined) {
+    if (!Array.isArray(result.named_outputs) ||
+        !result.named_outputs.every(item => typeof item === "string"))
+      throw Error("Invalid worker named text output");
+    for (const text of result.named_outputs)
+      content.push({ type: "text", text });
+  }
   if (result.content_items !== undefined) {
     if (!Array.isArray(result.content_items))
       throw Error("Invalid worker content items");

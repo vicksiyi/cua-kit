@@ -4920,3 +4920,20 @@ submission succeeded; Baidu returned CAPTCHA and the model stopped accurately.
 No first-result URL was obtained. This is a single-run comparison, not proof of
 general convergence. Three related actual-MCP/attached-provider regression cases
 and the agent-loop typecheck pass. Private traces remain local and ignored.
+
+### 2026-11-06 — independent supervisor real-browser sandbox acceptance
+
+Added a real MCP-to-CDP local-page test using the independent supervisor and
+system Node, with restored workers under separate OS sandboxes. The installed
+supervisor is not involved. Navigation, actual form input/submission, independent
+HTTP verification, DOM output and screenshot pass. Explicit session/global
+preference files and origin-scoped fixture elicitation are required.
+
+The test exposed and fixed canonical endpoint-path mismatch on macOS, an overly
+small 256 KiB native-pipe write cap that rejected the ~315 KB injected browser
+script, and dropped kernel named_outputs in MCP conversion. Writes now fit a
+full existing 1 MiB frame plus its header, with write/queue limits retained;
+named outputs are forwarded and malformed values rejected. Eight focused tests,
+supervisor/CDP typechecks and reconstruction build pass. The sandbox npm gate
+includes the new test. Default demo still uses the installed supervisor; external
+service authentication/deployment and native desktop acceptance remain open.

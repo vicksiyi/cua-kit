@@ -50,10 +50,26 @@ test(
         host.request({
           op: "write",
           connection_id: id,
-          data_base64: Buffer.alloc(262145).toString("base64"),
+          data_base64: Buffer.alloc(1024 * 1024 + 5).toString("base64"),
         }),
         /oversized|limit/,
       );
+      // A complete maximum-sized browser frame must fit, including its header.
+      const large = Buffer.alloc(1024 * 1024 + 4, 0x61);
+      const largeRead = new Promise<Buffer>(resolve => {
+        const chunks: Buffer[] = [];
+        let size = 0;
+        const receive = (chunk: Buffer) => {
+          chunks.push(chunk); size += chunk.length;
+          if (size >= large.length) {
+            peer!.off("data", receive);
+            resolve(Buffer.concat(chunks));
+          }
+        };
+        peer!.on("data", receive);
+      });
+      await host.request({ op: "write", connection_id: id, data_base64: large.toString("base64") });
+      assert.deepEqual(await largeRead, large);
       const data = new Promise<Message>((resolve) => {
         observed = (m) => {
           if (m.type === "native_pipe_data") resolve(m);

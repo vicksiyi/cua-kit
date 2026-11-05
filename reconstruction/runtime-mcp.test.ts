@@ -249,6 +249,14 @@ test(
         arguments: { code: 'nodeRepl.write("clean")' },
       });
       assert.deepEqual(nextMedia.content, [{ type: "text", text: "clean" }]);
+      const named = await client.callTool({ name: "js", arguments: {
+        code: 'nodeRepl.write("plain");nodeRepl.write("state", "cua.state");nodeRepl.write("docs", "cua.docs");nodeRepl.write(" updated", "cua.state")',
+      } });
+      assert.deepEqual(named.content, [
+        { type: "text", text: "plain" },
+        { type: "text", text: "state updated" },
+        { type: "text", text: "docs" },
+      ]);
       const importCode =
         'nodeRepl.write((await import("fixture-module")).value)';
       assert.equal(
@@ -455,4 +463,11 @@ test("MCP result mapping preserves standard content and rejects opaque items", (
     workerResultToMcp({ ok: false, error: "failure" }).isError,
     true,
   );
+});
+
+test("named worker output is preserved and malformed values fail explicitly", () => {
+  assert.deepEqual(workerResultToMcp({ok:false,named_outputs:["observed state"],error:"failed"}).content,
+    [{type:"text",text:"observed state"},{type:"text",text:"failed"}]);
+  for (const named_outputs of [null, "string", ["valid", {}]])
+    assert.throws(() => workerResultToMcp({ok:true,named_outputs}), /named text/);
 });

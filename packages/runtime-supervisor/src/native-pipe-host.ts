@@ -3,6 +3,9 @@ import { createConnection, type Socket } from "node:net";
 import { isAbsolute } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Message } from "./session";
+// Browser host framing permits a 1 MiB payload plus its four-byte length header.
+const maxWriteBytes = 1024 * 1024 + 4;
+const maxEncodedBytes = Math.ceil(maxWriteBytes / 3) * 4;
 export interface NativePipeHost {
   request(message: Readonly<Message>): Promise<unknown>;
   close(): Promise<void>;
@@ -115,16 +118,15 @@ export class UnixNativePipeHost implements NativePipeHost {
     const value = message.data_base64;
     if (
       typeof value !== "string" ||
-      value.length > 349528 ||
-      !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
-        value,
-      )
+      value.length > maxEncodedBytes ||
+      value.length % 4 !== 0 ||
+      !/^[A-Za-z0-9+/]*={0,2}$/.test(value)
     )
       throw Error("Invalid or oversized native pipe write");
     const bytes = Buffer.from(value, "base64");
-    if (bytes.length > 262144)
+    if (bytes.length > maxWriteBytes)
       throw Error("Invalid or oversized native pipe write");
-    if (connection.socket.writableLength + bytes.length > 1048576) {
+    if (connection.socket.writableLength + bytes.length > maxWriteBytes) {
       connection.socket.destroy(
         Error("Native pipe write queue limit exceeded"),
       );

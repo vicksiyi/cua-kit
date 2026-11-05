@@ -1,0 +1,112 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { mkdtemp, mkdir, writeFile, rm, realpath } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { startCdpHost } from "../packages/cdp-host/src/host";
+import { stageRuntimePackages } from "../packages/agent-loop/src/runtime-packages";
+import { McpToolClient } from "../packages/agent-loop/src/mcp-client";
+import { NodeReplTurnClient } from "../packages/agent-loop/src/node-repl-turn";
+
+/** Real browser and OS-sandboxed restored workers, without the installed supervisor. */
+test("independent sandboxed supervisor executes real browser input, click, read and screenshot over MCP", {
+  skip: process.platform !== "darwin" || process.env.CUA_TEST_MACOS_SANDBOX !== "1",
+  timeout: 60000,
+}, async () => {
+  const submissions: string[] = [];
+  const server = createServer((req, res) => {
+    const url = new URL(req.url!, "http://fixture.invalid");
+    res.setHeader("content-type", "text/html");
+    if (url.pathname === "/submit") {
+      submissions.push(url.searchParams.get("query") ?? "");
+      res.end("<h1>Saved fixture result</h1><p>independent-supervisor-observed</p>");
+    } else res.end('<h1>Independent runtime fixture</h1><form action="/submit"><label>Query<input name="query"></label><button>Submit</button></form>');
+  });
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert(address && typeof address !== "string");
+  const origin = `http://127.0.0.1:${address.port}`;
+  const root = await realpath(await mkdtemp("/tmp/core-real-browser-"));
+  let host: Awaited<ReturnType<typeof startCdpHost>> | undefined;
+  let staged: Awaited<ReturnType<typeof stageRuntimePackages>> | undefined;
+  let turn: NodeReplTurnClient | undefined;
+  try {
+    const kernelDir = join(root, "kernel"), trustedDir = join(root, "trusted"), codeDir = join(root, "code");
+    await Promise.all([mkdir(kernelDir), mkdir(trustedDir), mkdir(codeDir)]);
+    host = await startCdpHost({ headless: true });
+    const endpointFile = await realpath(host.endpointFile);
+    assert.equal(host.endpointFile, endpointFile);
+    staged = await stageRuntimePackages([resolve("packages/native-host"), resolve("packages/cua")]);
+    const workers = await realpath(resolve("packages/node-repl"));
+    const dependencies = await realpath(resolve("node_modules"));
+    const configFile = join(root, "config.toml"), requirementsFile = join(root, "requirements.toml"), browserConfigFile = join(root, "browser.toml");
+    await writeFile(configFile, "[browser_use]\nallow_history_access = false\n");
+    await writeFile(requirementsFile, "[featureRequirements]\nbrowser_use_full_cdp_access = false\n");
+    await writeFile(browserConfigFile, "full_cdp_access_enabled = false\n");
+    const sessionFile = join(root, "session.toml");
+    await writeFile(sessionFile, "");
+    const worker = (trusted: boolean) => ({
+      node: process.execPath,
+      bootstrap: resolve("packages/runtime-supervisor/dist/sandbox-bootstrap.js"),
+      addon: resolve("native/macos-sandbox/dist/sandbox.node"),
+      entry: join(workers, trusted ? "dist/trusted_worker.js" : "dist/kernel.js"),
+      args: trusted ? [trustedDir] : ["--session-id", "independent-browser", "--working-dir", kernelDir],
+      directory: trusted ? trustedDir : kernelDir,
+      readDirectories: [workers, dependencies, codeDir, staged!.root, ...(trusted ? [dirname(endpointFile)] : [])],
+      workerEnvironment: {
+        NODE_REPL_TRUSTED_RPC_ENABLED: "1",
+        NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ browser: "@core/native-host/browserService" }),
+        NODE_REPL_TRUSTED_CODE_PATHS: staged!.root,
+        NODE_REPL_NODE_MODULE_DIRS: staged!.root,
+        NODE_REPL_UNTRUSTED_ENV_ALLOWLIST: "CUA_REPL_ENABLED_SURFACES,CUA_REPL_BROWSER_ENV",
+        CUA_REPL_ENABLED_SURFACES: "browser",
+        CUA_REPL_BROWSER_ENV: "codex-app",
+        ...(trusted ? {
+          CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]),
+          BROWSER_USE_BACKEND_PATHS: host!.endpoint.socketPath,
+          BROWSER_USE_AVAILABLE_BACKENDS: "cdp",
+          BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+        } : {}),
+      },
+      terminateGraceMs: 20,
+    });
+    const options = {
+      kernel: worker(false), trusted: worker(true), services: ["browser"],
+      pipePaths: [host.endpoint.socketPath],
+      writablePreferencePaths: ["browser/config.toml", "browser/sessions/independent-browser.toml"],
+      config: { configFile, requirementsFile, workingDirectories: [trustedDir], tomlFiles: { "browser/config.toml": browserConfigFile, "browser/sessions/independent-browser.toml": sessionFile } },
+    };
+    const entry = join(codeDir, "stdio.mjs");
+    await writeFile(entry, `import {serveSandboxedStdio} from ${JSON.stringify(pathToFileURL(resolve("packages/runtime-supervisor/dist/sandbox-runtime.js")).href)};const server=await serveSandboxedStdio(${JSON.stringify(options)});await server.closed;`);
+    const metadata = { session_id: "independent-browser", turn_id: "one" };
+    const client = await McpToolClient.connect({command:process.execPath,args:[entry],cwd:root,env:{HOME:root,TMPDIR:root},stderr:"inherit"}, {
+      requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
+      elicit: async params => params.mode !== "url" && params._meta?.tool_name === "access_browser_origin" && params._meta?.origin === origin
+        ? { action: "accept", content: {} } : { action: "decline" },
+    });
+    turn = new NodeReplTurnClient(client, {...metadata,hook_event_name:"turn_ended"});
+    let count = 0;
+    const execute = async (code: string) => {
+      const result = await turn!.callTool({id:String(++count),name:"js",arguments:{code}}, AbortSignal.timeout(15000));
+      assert.equal(result.isError, false, JSON.stringify(result));
+      return result;
+    };
+    await execute('await import("@core/cua/tinyskyAlt"); await cua.getState();');
+    await execute(`var tab = await cua.createBrowserTab("1", ${JSON.stringify(origin)}, {sessionName:"Independent runtime acceptance"});`);
+    await execute('await tab.playwright.getByRole("textbox",{name:"Query"}).fill("independent-query"); await tab.playwright.getByRole("button",{name:"Submit"}).click();');
+    const observed = await execute('await tab.getAXState();');
+    assert.match(JSON.stringify(observed.content), /independent-supervisor-observed/);
+    assert.deepEqual(submissions, ["independent-query"]);
+    const screenshot = await execute('await tab.getScreenshot();');
+    assert(screenshot.content.some(item => item.type === "image" && item.data.length > 100));
+  } finally {
+    try { await turn?.endTurn(); } finally {
+      await turn?.close();
+      await host?.close();
+      await staged?.dispose();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+      await rm(root, {recursive:true,force:true});
+    }
+  }
+});

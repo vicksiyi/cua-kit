@@ -1,6 +1,6 @@
 import { attachCdpBrowser } from "./attached-browser";
 /** Reuse @core authenticated local host framing, with a CDP provider instead of an extension. */
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, realpath, rm } from "node:fs/promises";
 import { PassThrough } from "node:stream";
 import { startNativeHost } from "@core/native-host";
 import { BrowserRpcPeer } from "@core/core/browserRpcPeer";
@@ -16,7 +16,7 @@ export async function startCdpHost(
   const browser = options.endpoint
     ? await attachCdpBrowser(options.endpoint)
     : await startOwnedCdpBrowser(options);
-  const directory = await mkdtemp("/tmp/core-cdp-host-");
+  const directory = await realpath(await mkdtemp("/tmp/core-cdp-host-"));
   const incoming = new PassThrough(),
     outgoing = new PassThrough();
   const decoder = new NativePipeFrameDecoder(1024 * 1024);

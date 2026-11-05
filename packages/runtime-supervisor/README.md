@@ -1,5 +1,13 @@
 # @core/runtime-supervisor
 
+Current acceptance (2026-11-06): the independent MCP supervisor with OS-sandboxed
+restored workers now performs real local-page navigation, form input, button
+activation, DOM observation and image capture through the authenticated CDP host.
+The installed ChatGPT supervisor is not used by that test. The default demo
+still uses it: automatic deployment/configuration, authenticated external
+services and native App acceptance remain incomplete. Sections below retain the
+implementation history; see the latest acceptance section at the end.
+
 Independently authored replacement work under approved route A. This package currently implements a worker-session core, not a production MCP server or a restored Rust implementation. The demo still uses the installed supervisor; no automatic fallback or change to existing policy occurs.
 
 WorkerSession owns serialized execution, persistent worker-pair reuse, execution/RPC correlation, explicit service allowlisting, host-provided request metadata, form-elicitation forwarding, reset, timeout and cancellation retirement. Reset retires both workers before another generation can launch. Kernel messages cannot directly invoke privileged host operations. Host requests require an injected callback and are rejected when absent; stale replies after reset are discarded. Execution-scoped host signals are cancelled on execution end/retirement; trusted background fetch uses a generation-scoped signal. There is no fabricated authentication, site-status response or approval decision.
@@ -152,3 +160,31 @@ The explicit OS gate now also launches this compiled entry as a separate process
 Cancellation is checked before queued work and before rename; already issued renames may commit despite later cancellation. This is not an inter-process transaction/compare-and-swap or power-loss durability guarantee (no parent-directory fsync). Caller must own stable private directory ancestry and coordinate external writers; whole-table writes intentionally replace previous contents and formatting/comments. The adapter persists what an authorized trusted service submits; it does not itself prompt, decide permission, or grant full CDP. Existing browser elicitation/policy remains responsible for that decision.
 
 Unit tests cover restart reads, queued write order, mode, cancelled writes, protected targets, corrupt/symlink/hardlink rejection and temp cleanup. The full sandbox gate additionally executes recovered trusted-worker nodeRepl.config.writeToml over supervisor RPC and verifies the actual preference file; browser discovery remains functional with full CDP disabled. These are controlled fixtures, not real permission-prompt acceptance or default demo replacement.
+
+## Real browser actions under the independent sandbox runtime
+
+`npm run test:sandbox` now includes `runtime-cdp-sandbox.test.ts`. It launches the
+independent MCP server with system Node, restored kernel/trusted workers in
+separate OS sandboxes, and a real Chromium CDP provider. The fixture grants only
+its exact localhost origin via MCP elicitation; no external-site approval or
+site-status response is fabricated. It verifies an actual form submission at
+the HTTP server, returned DOM content, and a screenshot image. Dedicated global
+and session preference files are explicitly mapped; no implicit policy fallback
+is introduced.
+
+This acceptance found and fixed three integration defects:
+
+- CDP host directories now use canonical paths before generating endpoint
+  descriptors, avoiding macOS `/tmp` versus `/private/tmp` sandbox mismatches.
+- Independent native-pipe writes now accommodate the browser protocol's full
+  1 MiB payload plus four-byte frame header, rather than rejecting the roughly
+  315 KB initialization script. Single writes and queued bytes remain bounded;
+  oversize input is rejected. Base64 validation handles the larger bounded input.
+- MCP conversion now forwards the restored kernel's `named_outputs` text. CUA
+  emits documentation and page state through these named outputs; dropping them
+  silently made successful observations appear empty. Malformed output fails.
+
+Eight relevant integration/regression cases pass, plus supervisor/CDP typechecks
+and reconstruction build. This verifies localhost browser operations, not full
+external-site authentication, default demo replacement, or desktop/App control.
+The original deprecated macOS sandbox API and deployment constraints remain.
