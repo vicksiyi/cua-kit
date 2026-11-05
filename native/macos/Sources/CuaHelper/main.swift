@@ -226,16 +226,11 @@ if CommandLine.arguments.contains("--sky-socket") {
     catch is CancellationError { exit(0) }
     catch { fputs("Independent Sky IPC service failed: \(error)\n",stderr); exit(1) }
 }
-while let line = readLine() {
-    var id: Any = NSNull()
-    var response: [String: Any]
-    do {
-        guard line.utf8.count <= 1024*1024, let bytes = line.data(using: .utf8), let request = try JSONSerialization.jsonObject(with: bytes) as? [String: Any], let requestId = request["id"] as? String, let method = request["method"] as? String else { throw fail("INVALID_ARGUMENT", "Expected bounded JSON request with string id/method.") }
-        id = requestId
-        response = ["id": id, "result": try await handle(method, request["params"] as? [String: Any] ?? [:])]
-    } catch let error as Failure { response = ["id": id, "error": ["code": error.code, "message": error.message]] }
-      catch { response = ["id": id, "error": ["code": "INVALID_ARGUMENT", "message": String(describing:error)]] }
-    if let data = try? JSONSerialization.data(withJSONObject: response, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text); fflush(stdout) }
-}
-
-clipboard.restoreActive()
+do {
+    try await runNativeService {
+        do { try await serveNativeStdio() }
+        catch { await MainActor.run { clipboard.restoreActive() }; throw error }
+        await MainActor.run { clipboard.restoreActive() }
+    }
+} catch is CancellationError { exit(0) }
+  catch { fputs("Native stdio service ended: \(error)\n",stderr); exit(1) }

@@ -7,7 +7,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 40,
+    "native-implementation-language-not-yet-parity-proof": 41,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -3917,6 +3917,11 @@
       "sha256": "e49bafc842913d80bd8cf6a86a27417289db318f53ca485d01546bbb19930c39"
     },
     {
+      "path": "native/macos/Sources/CuaHelper/NativeStdio.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "afffabe6fe8cb435b4c83f02607bc1eb7233fec2839b32ba07f360d64fb2c56b"
+    },
+    {
       "path": "native/macos/Sources/CuaHelper/NativeTermination.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "d4fec66f1826a532078c4b73608fc340679f159b2ebd2bbb59d995fd794e8c24"
@@ -3974,7 +3979,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/main.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "0c57e2aff5c5ad6e278fe55c36180088b152e72021db9db3d8126a14210d5f9f"
+      "sha256": "5aac31cb7819400134c1b43f0e9e5fa90215cf631ca8c689c907f646d131cd5b"
     },
     {
       "path": "native/macos-sandbox/build.rs",
