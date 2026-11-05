@@ -11,8 +11,10 @@ test("screenshot envelope validates canonical bytes and dimensions",()=>{
 });
 function fixture(mode: "image"|"denied"|"malformed"|"failure") {
  const calls: string[]=[];
+ const requests: Array<[string,Record<string,unknown>|undefined]>=[];
  const app={pid:1,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1};
- const helper: NativeTransport={request:async <T>(method:string)=>{
+ const helper: NativeTransport={request:async <T>(method:string,params?:Record<string,unknown>)=>{
+  requests.push([method,params]);
   calls.push(method);
   if(method==="listApps") return {apps:[app]} as T;
   if(method==="bind") return {targetId:"bound",app} as T;
@@ -21,7 +23,7 @@ function fixture(mode: "image"|"denied"|"malformed"|"failure") {
   if(method==="observe" || method==="observeWithScreenshot") return {snapshotId:"snap",elements:[{id:1,role:"AXTextField",name:"text"}],warnings:[],...(mode!=="denied"?{screenshot:mode==="malformed"?{}:envelope}:{})} as T;
   return {} as T;
  }};
- return {calls,client:createNativeMacClient(helper,async()=>{})};
+ return {calls,requests,client:createNativeMacClient(helper,async()=>{})};
 }
 test("restored getScreenshot decodes independent capture into original PNG bytes",async()=>{
  const {client,calls}=fixture("image");
@@ -50,4 +52,30 @@ test("coordinate click can dispatch only after validated combined screenshot obs
  await client.click({app:"Fixture",x:0,y:0});
  assert.ok(calls.includes("mouseInput"));
  await assert.rejects(client.click({app:"Fixture",x:0,y:0}),/Observe/);
+});
+
+test("restored drag routes both screenshot endpoints through the Sky service",async()=>{
+ const {createSkyService}=await import("../packages/sky/src/create_service");
+ const {client,requests}=fixture("image");
+ const service=createSkyService(()=>client);
+ const setup=await service.handleRpc({type:"setup"}) as {methods:string[]};
+ assert.ok(setup.methods.includes("drag"));
+ const computer=Object.fromEntries(setup.methods.map(method=>[method,(...args:unknown[])=>service.handleRpc({type:"execute",method,args})]));
+ const app=bind_mac_app(computer as any,"Fixture");
+ await app.getAXStateAndScreenshot({emit:false});
+ assert.equal(await app.drag([0,0],[0.5,0.75]),undefined);
+ assert.deepEqual(requests.find(([method])=>method==="dragInput")?.[1],{targetId:"bound",snapshotId:"snap",fromX:0,fromY:0,toX:0.5,toY:0.75});
+ await assert.rejects(app.drag([0,0],[0,0]),/Observe/);
+});
+test("drag never dispatches with missing capture or nonfinite endpoints",async()=>{
+ const denied=fixture("denied");
+ await denied.client.get_app_state({app:"Fixture"});
+ await assert.rejects(denied.client.drag({app:"Fixture",from_x:0,from_y:0,to_x:1,to_y:1}),/current screenshot/);
+ assert.equal(denied.calls.includes("dragInput"),false);
+ const {client,calls}=fixture("image");
+ await client.get_app_state({app:"Fixture"});
+ for(const coordinate of ["from_x","from_y","to_x","to_y"]){
+  await assert.rejects(client.drag({app:"Fixture",from_x:0,from_y:0,to_x:0,to_y:0,[coordinate]:NaN}),/finite screenshot/);
+ }
+ assert.equal(calls.includes("dragInput"),false);
 });

@@ -42,7 +42,7 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
     const binding = await target(app,method,"write");
     const state = binding.observation;
     if (!state || state.warnings.length) throw new CuaError("STALE_OBSERVATION", "Observe a complete app tree before input");
-    if (["mouseInput","scrollInput"].includes(method) && payload.elementId === undefined && state.screenshot === undefined) throw new CuaError("STALE_OBSERVATION","Coordinate input requires the current screenshot");
+    if (["mouseInput","scrollInput","dragInput"].includes(method) && payload.elementId === undefined && state.screenshot === undefined) throw new CuaError("STALE_OBSERVATION","Coordinate input requires the current screenshot");
     if (payload.elementId !== undefined && !state.elements.some(element => element.id === payload.elementId))
       throw new CuaError("STALE_OBSERVATION", "Element is not in the observed app tree");
     binding.observation = undefined;
@@ -79,6 +79,10 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       if (input.duration !== undefined && input.duration !== 0) throw new CuaError("UNSUPPORTED_CAPABILITY","Held mouse buttons are not yet implemented");
       if (input.click_count !== undefined && (!Number.isSafeInteger(input.click_count) || input.click_count < 1 || input.click_count > 10)) throw new CuaError("INVALID_ARGUMENT","Click count must be 1..10");
       await write(input.app,"mouseInput",{elementId:input.element_index,x:input.x,y:input.y,mouseButton:input.mouse_button,clickCount:input.click_count,key:input.key,duration:input.duration});
+    }),
+    drag: (input: {app:string;from_x:number;from_y:number;to_x:number;to_y:number}) => serial(async () => {
+      if (![input.from_x,input.from_y,input.to_x,input.to_y].every(Number.isFinite)) throw new CuaError("INVALID_ARGUMENT","Drag requires finite screenshot coordinates");
+      await write(input.app,"dragInput",{fromX:input.from_x,fromY:input.from_y,toX:input.to_x,toY:input.to_y});
     }),
     scroll: (input: {app:string;element_index?:number;x?:number;y?:number;direction:string;pages?:number}) => serial(async () => {
       const indexed = input.element_index !== undefined;
