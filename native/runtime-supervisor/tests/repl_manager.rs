@@ -234,3 +234,107 @@ export async function handleRpc(x){
     );
     session.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn turn_ended_metadata_deduplication_and_reset_scope() {
+    let (fixture, mut session) = fixture();
+    std::fs::write(fixture.root.join("service.mjs"),r#"
+const events=[];
+nodeRepl.addTurnEndedHandler({timeoutMs:5000,run:async(event)=>{
+ await nodeRepl.withSuspendedTimeout(()=>nodeRepl.withSuspendedTimeout(async()=>{await new Promise(r=>setTimeout(r,200));}));
+ nodeRepl.setResponseMeta({first:1,replace:'old'});nodeRepl.setResponseMeta({replace:'new'});
+ events.push({event,meta:nodeRepl.requestMeta});
+}});
+export async function handleRpc(){return events;}
+"#).unwrap();
+    run(&mut session, "await nodeRepl.rpc('fixture',{})").await;
+    let event = json!({"hook_event_name":"turn_ended","session_id":"session","turn_id":"one"});
+    let first = session
+        .turn_ended(
+            event.clone(),
+            Duration::from_millis(150),
+            json!({"host":"turn-meta"}),
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(first["type"], "turn_ended_result");
+    assert_eq!(first["response_meta"], json!({"first":1,"replace":"new"}));
+    let second = session
+        .turn_ended(event.clone(), Duration::from_secs(1), Value::Null, None)
+        .await
+        .unwrap();
+    assert_eq!(first, second);
+    let observed = run(
+        &mut session,
+        "nodeRepl.write(JSON.stringify(await nodeRepl.rpc('fixture',{})))",
+    )
+    .await;
+    let events: Value = serde_json::from_str(observed["output"].as_str().unwrap()).unwrap();
+    assert_eq!(events.as_array().unwrap().len(), 1);
+    assert_eq!(events[0]["event"], event);
+    assert_eq!(events[0]["meta"], json!({"host":"turn-meta"}));
+    session.reset().await.unwrap();
+    assert_eq!(
+        session
+            .turn_ended(event, Duration::from_secs(1), Value::Null, None)
+            .await
+            .unwrap(),
+        first
+    );
+    assert_eq!(
+        run(
+            &mut session,
+            "nodeRepl.write((await nodeRepl.rpc('fixture',{})).length)"
+        )
+        .await["output"],
+        "0"
+    );
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn failed_turn_can_retry_and_invalid_events_do_not_run() {
+    let (fixture, mut session) = fixture();
+    std::fs::write(
+        fixture.root.join("service.mjs"),
+        r#"
+nodeRepl.addTurnEndedHandler({timeoutMs:5000,run:async()=>{await new Promise(()=>{});}});
+export async function handleRpc(){return 'ready';}
+"#,
+    )
+    .unwrap();
+    run(&mut session, "await nodeRepl.rpc('fixture',{})").await;
+    for event in [
+        json!({}),
+        json!({"hook_event_name":"turn_ended","session_id":"s","turn_id":"t","extra":true}),
+        json!({"hook_event_name":"turn_ended","session_id":"s","turn_id":""}),
+    ] {
+        assert!(session
+            .turn_ended(event, Duration::from_secs(1), Value::Null, None)
+            .await
+            .unwrap_err()
+            .contains("Invalid"));
+    }
+    let event = json!({"hook_event_name":"turn_ended","session_id":"s","turn_id":"t"});
+    let error = session
+        .turn_ended(event.clone(), Duration::from_millis(50), Value::Null, None)
+        .await
+        .unwrap_err();
+    assert!(error.contains("timed out"), "{error}");
+    std::fs::write(fixture.root.join("service.mjs"),"let count=0;nodeRepl.addTurnEndedHandler({timeoutMs:1000,run:async()=>{count++;}});export async function handleRpc(){return count;}").unwrap();
+    run(&mut session, "await nodeRepl.rpc('fixture',{})").await;
+    session
+        .turn_ended(event, Duration::from_secs(1), Value::Null, None)
+        .await
+        .unwrap();
+    assert_eq!(
+        run(
+            &mut session,
+            "nodeRepl.write(JSON.stringify(await nodeRepl.rpc('fixture',{})))"
+        )
+        .await["output"],
+        "1"
+    );
+    session.close().await.unwrap();
+}

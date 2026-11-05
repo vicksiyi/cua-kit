@@ -70,3 +70,18 @@ module-directory registration, continuous between-cell background event handling
 MCP, sandbox composition and broader source/differential acceptance. The demo
 still uses the prior installed/TS paths; this Rust library is not a finished
 replacement. Services/pipe endpoints remain caller-selected explicit allowlists.
+
+## Turn-ended lifecycle migration
+
+The Rust manager now implements the host-only `turn_ended` message. It validates
+the three event fields, dispatches to the trusted worker, checks result identity,
+supports nested timeout suspension and merges bounded response metadata. Successful
+(session_id, turn_id) pairs are deduplicated across reset, matching the current
+supervisor contract; failed attempts are not cached. Kernel traffic during this
+lifecycle operation is rejected rather than treated as a new user execution.
+
+Two additional real-worker tests cover callback event/request metadata, response
+metadata merging, repeated delivery, reset scope, malformed events and timeout
+followed by a successful retry. All fourteen Rust tests pass. This closes the
+basic turn-ended/metadata gap, not the outstanding approval/media/config, module
+registration, continuous background routing, MCP or sandbox-composition gaps.

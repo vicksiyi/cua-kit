@@ -3963,7 +3963,7 @@
     {
       "path": "native/runtime-supervisor/src/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "cde43cc0d640e83979bc05fbd008408df1a47db0607d1f96adc2457a4d979d4a"
+      "sha256": "6c34140c520ebb4f1e382edfe5c1efa3a72980016b5b2c145871d6584c0677d9"
     },
     {
       "path": "native/runtime-supervisor/tests/process_port.rs",
@@ -3973,7 +3973,7 @@
     {
       "path": "native/runtime-supervisor/tests/repl_manager.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "6831040dcc595c1b8d64b9e08ee13d6382d2b279585c893c05a0c71c89ad832f"
+      "sha256": "3cc0202f07c49f23ef1bba028c38dec556b4c1f3e91951c9cd95932701d9d5b5"
     },
     {
       "path": "scripts/assemble-accessibility-asset.mjs",

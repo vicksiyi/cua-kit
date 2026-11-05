@@ -3,7 +3,11 @@
 use crate::native_pipe::NativePipeHost;
 use crate::process_port::{ProcessSpec, ProcessWorker};
 use serde_json::{json, Value};
-use std::{collections::HashSet, path::PathBuf, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+    time::Duration,
+};
 use tokio::{
     sync::{mpsc, oneshot},
     time::Instant,
@@ -26,6 +30,7 @@ pub struct ReplManager {
     /// Set before dispatch; a dropped execution future must not reuse its state.
     dirty: bool,
     closed: bool,
+    ended_turns: HashMap<(String, String), Value>,
 }
 impl ReplManager {
     pub fn new(kernel: ProcessSpec, trusted: ProcessSpec, services: HashSet<String>) -> Self {
@@ -37,6 +42,7 @@ impl ReplManager {
             pair: None,
             dirty: false,
             closed: false,
+            ended_turns: HashMap::new(),
         }
     }
     pub fn with_pipe_paths(mut self, paths: Vec<PathBuf>) -> Result<Self, String> {
@@ -93,6 +99,62 @@ impl ReplManager {
         code: &str,
         timeout: Duration,
         request_meta: Value,
+        cancel: Option<oneshot::Receiver<()>>,
+    ) -> Result<Value, String> {
+        self.run(
+            json!({"type":"exec","code":code}),
+            timeout,
+            request_meta,
+            cancel,
+        )
+        .await
+    }
+    /// Host-only lifecycle API, never exposed as a submitted-code capability.
+    pub async fn turn_ended(
+        &mut self,
+        event: Value,
+        timeout: Duration,
+        request_meta: Value,
+        cancel: Option<oneshot::Receiver<()>>,
+    ) -> Result<Value, String> {
+        if self.closed {
+            return Err("Supervisor session is closed".into());
+        }
+        let fields = ["hook_event_name", "session_id", "turn_id"];
+        let object = event.as_object().ok_or("Invalid turn-ended event")?;
+        if object.len() != 3
+            || fields.iter().any(|field| {
+                !object
+                    .get(*field)
+                    .and_then(Value::as_str)
+                    .is_some_and(|value| !value.is_empty())
+            })
+        {
+            return Err("Invalid turn-ended event".into());
+        }
+        let key = (
+            event["session_id"].as_str().unwrap().to_string(),
+            event["turn_id"].as_str().unwrap().to_string(),
+        );
+        if let Some(result) = self.ended_turns.get(&key) {
+            return Ok(result.clone());
+        }
+        let result = self
+            .run(
+                json!({"type":"turn_ended","event":event}),
+                timeout,
+                request_meta,
+                cancel,
+            )
+            .await?;
+        self.ended_turns.insert(key, result.clone());
+        Ok(result)
+    }
+    async fn run(
+        &mut self,
+        operation: Value,
+        timeout: Duration,
+        request_meta: Value,
         mut cancel: Option<oneshot::Receiver<()>>,
     ) -> Result<Value, String> {
         if cancel
@@ -108,7 +170,7 @@ impl ReplManager {
         self.dirty = true;
         let services = &self.services;
         let pair = self.pair.as_mut().unwrap();
-        let execution = route(pair, services, code, timeout, request_meta, cancel).await;
+        let execution = route(pair, services, operation, timeout, request_meta, cancel).await;
         match execution {
             Ok(result) => {
                 self.dirty = false;
@@ -135,7 +197,7 @@ async fn cancelled(receiver: Option<oneshot::Receiver<()>>) {
 async fn route(
     pair: &mut Pair,
     services: &HashSet<String>,
-    code: &str,
+    mut request: Value,
     timeout: Duration,
     request_meta: Value,
     cancel: Option<oneshot::Receiver<()>>,
@@ -144,14 +206,27 @@ async fn route(
     let cancellation = cancelled(cancel);
     tokio::pin!(cancellation);
     let mut remaining = timeout;
-    let mut deadline = Some(Instant::now() + remaining);
-    let request = json!({"type":"exec","id":id,"code":code,"request_meta":request_meta,"form_elicitation_supported":false});
+    let mut deadline = Some(
+        Instant::now()
+            .checked_add(remaining)
+            .ok_or("Execution timeout is too large")?,
+    );
+    let lifecycle = request["type"] == "turn_ended";
+    request["id"] = json!(id);
+    request["request_meta"] = request_meta.clone();
+    request["form_elicitation_supported"] = json!(false);
+    let destination = if lifecycle {
+        &mut pair.trusted
+    } else {
+        &mut pair.kernel
+    };
     tokio::select! {
         biased;
         _=&mut cancellation=>return Err("Execution cancelled; worker state discarded".into()),
         _=tokio::time::sleep_until(deadline.unwrap())=>return Err("Execution timed out; worker state discarded".into()),
-        sent=pair.kernel.send(&request)=>sent?,
+        sent=destination.send(&request)=>sent?,
     }
+    let mut response_meta: Option<serde_json::Map<String, Value>> = None;
     let mut rpc = HashSet::new();
     let mut depth = 0usize;
     loop {
@@ -173,11 +248,23 @@ async fn route(
                 continue;
             },
         };
-        let message = message.ok_or("Worker exited during execution")?;
+        let mut message = message.ok_or("Worker exited during execution")?;
         let kind = message["type"]
             .as_str()
             .ok_or("Worker message has no type")?;
+        if !trusted && lifecycle {
+            return Err("Kernel message during host lifecycle operation".into());
+        }
         match (trusted, kind) {
+            (true, "turn_ended_result") => {
+                if !lifecycle || message["id"] != id || depth != 0 || !rpc.is_empty() {
+                    return Err("Turn-ended response identity mismatch".into());
+                }
+                if let Some(meta) = response_meta {
+                    message["response_meta"] = Value::Object(meta);
+                }
+                return Ok(message);
+            }
             (true, "native_pipe_request") => {
                 let request_id = message["id"]
                     .as_str()
@@ -205,6 +292,9 @@ async fn route(
             (false, "exec_result") => {
                 if message["id"] != id || !rpc.is_empty() || depth != 0 {
                     return Err("Execution result correlation mismatch".into());
+                }
+                if let Some(meta) = response_meta {
+                    message["response_meta"] = Value::Object(meta);
                 }
                 return Ok(message);
             }
@@ -243,8 +333,21 @@ async fn route(
                 }
                 pair.kernel.send(&message).await?;
             }
+            (true, "response_meta") => {
+                if message["id"] != id || (!lifecycle && rpc.is_empty()) {
+                    return Err("Uncorrelated response metadata".into());
+                }
+                let value = message["response_meta"]
+                    .as_object()
+                    .ok_or("Invalid response metadata")?;
+                let merged = response_meta.get_or_insert_with(serde_json::Map::new);
+                merged.extend(value.clone());
+                if serde_json::to_vec(merged).map_err(|e| e.to_string())?.len() > 8 * 1024 * 1024 {
+                    return Err("Response metadata budget exceeded".into());
+                }
+            }
             (true, "suspend_timeout" | "resume_timeout") => {
-                if message["exec_id"] != id || rpc.is_empty() {
+                if message["exec_id"] != id || (!lifecycle && rpc.is_empty()) {
                     return Err("Uncorrelated timeout control".into());
                 }
                 if kind == "suspend_timeout" {

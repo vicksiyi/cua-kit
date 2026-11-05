@@ -1,5 +1,19 @@
 # Implementation status
 
+## Rust turn-ended checkpoint (2026-11-06)
+
+Rust host lifecycle routing now dispatches `turn_ended` to the actual restored
+trusted worker, validates response identity, preserves host request metadata,
+merges bounded response metadata and supports nested timeout suspension. Success
+is deduplicated by session/turn even across reset; timeout failures remain
+retryable after worker retirement. Two new integration cases cover these
+behaviors and invalid input; all fourteen Rust tests pass.
+
+This supersedes the earlier basic turn-ended/metadata gap. Approval/media/config,
+module registration, continuous between-cell routing, MCP and sandbox assembly
+still prevent replacing the existing demo runtime. No new browser/desktop or
+DeepSeek acceptance is claimed by these local-worker tests.
+
 ## Rust dual-worker routing checkpoint (2026-11-06)
 
 The Rust manager now drives both reconstructed Node workers: persistent cells,
