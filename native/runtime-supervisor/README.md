@@ -296,3 +296,27 @@ This verifies the controlled CDP deployment, not original Codex fallback policy.
 Original-style extension and native App acceptance, source parity, production
 credential composition, complete language audit and retirement of old TS native
 implementations remain outstanding. Default selection is not switched yet.
+
+## Rust extension-chain acceptance (2026-11-06)
+
+The independent MCP browser fixture now explicitly selects installed, transitional
+TS, or Rust supervisors; unknown selections fail rather than silently testing a
+different runtime. Both native-messaging and full packaged extensions pass the
+Rust path in temporary Chromium profiles. This exercises extension-started host
+registration, endpoint discovery/authentication, actual browser tab notifications,
+CUA navigation/click/read/screenshot and MCP lifecycle. It does not manipulate the
+user's daily Chrome or establish missing-extension/cold-start UI acceptance.
+
+The controlled page now generates a random action marker and its button reports
+that marker to the local HTTP server. Live-model answers must contain the exact
+random marker, and the server must independently observe the click. This avoids
+relying on a fixed model answer or external Playwright page enumeration: newly
+created session pages were not visible to that enumeration. Verification runs
+before endTurn cleanup. Two deterministic and two actual DeepSeek extension
+cases pass. The latest live run recovered from two unsupported accessibility-input
+calls by using the exposed Playwright API; it is not a zero-tool-error result.
+
+`npm run test:rust-browser` builds the prerequisites and runs isolated CDP plus
+both extension fixtures. Set CUA_LIVE_DEEPSEEK_TEST=1 for model-driven cases (uses
+local .env and API quota). Native App, daily Chrome startup, production host
+language provenance and full source-behavior parity remain separate open gates.

@@ -29,6 +29,7 @@ export async function verifyIndependentMcpBrowser(
   hostDirectory?: string,
   backend: "chrome" | "cdp" = "chrome",
   scenario?: { question: string; expectedAnswer: RegExp },
+  verifyBeforeTurnEnd?: () => Promise<void>,
 ) {
   const baiduSearch =
     process.env.CUA_LIVE_BAIDU_TEST === "1" ||
@@ -36,7 +37,9 @@ export async function verifyIndependentMcpBrowser(
   const genericSearch = process.env.CUA_LIVE_SEARCH_TEST === "1";
   const runtime = await stageRuntimePackages(restoredPackageSources());
   let independent: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
-  const independentSelected = process.env.CUA_RUNTIME_SUPERVISOR === "independent";
+  const supervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
+  if (!["installed", "independent", "rust"].includes(supervisor)) throw Error("Unknown test supervisor");
+  const independentSelected = supervisor !== "installed";
   try {
     const env = await configureIndependentBrowser(
       await withHostProxy(create_launch_environment({
@@ -58,7 +61,7 @@ export async function verifyIndependentMcpBrowser(
       }) as Record<string, string>),
     );
     const metadata = { session_id: "mcp-browser-live", turn_id: "mcp-live-1" };
-    if (independentSelected) independent = await prepareIndependentBrowserRuntime(env, runtime.root, metadata.session_id);
+    if (independentSelected) independent = await prepareIndependentBrowserRuntime(env, runtime.root, metadata.session_id, supervisor === "rust" ? "rust" : "typescript");
     const client = await McpToolClient.connect(
       {
         command: independent?.command ?? process.execPath,
@@ -177,6 +180,7 @@ export async function verifyIndependentMcpBrowser(
         console.error("DEEPSEEK ANSWER", result.answer);
         if (scenario) {
           assert.match(result.answer, scenario.expectedAnswer);
+          await verifyBeforeTurnEnd?.();
           return result;
         }
         if (baiduSearch || genericSearch) {
@@ -201,6 +205,7 @@ export async function verifyIndependentMcpBrowser(
           assert.ok(observedLinks.some(link => result.answer.includes(link)),
             "Final answer must preserve an observed result link or its decoded destination, including the full path");
         } else assert.match(result.answer, /action-completed-marker/);
+        await verifyBeforeTurnEnd?.();
         return;
       }
       await execute("await cua.getState();");
@@ -223,6 +228,7 @@ export async function verifyIndependentMcpBrowser(
       const clicked = await execute("await liveTab.getAXState();");
       assert.match(clicked, /action-completed-marker/);
       await execute("await liveTab.getScreenshot();", true);
+      await verifyBeforeTurnEnd?.();
     } finally {
       try {
         await turn.endTurn();

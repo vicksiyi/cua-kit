@@ -129,3 +129,16 @@ CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 CUA_LIVE_DEEPSEEK_TEST=1 node -
 
 此测试使用隔离 Chromium 和本地随机表单，验证输入、提交、结果及截图。本次通过
 为 5 轮、0 工具错误。任意外部网站、日常 Chrome 扩展和原生 App 尚未由此验收。
+
+
+Rust 浏览器回归入口（临时配置，不操作日常 Chrome）：
+
+```sh
+npm run test:rust-browser
+# 可选：使用本地 .env，消耗真实模型 API 配额
+CUA_LIVE_DEEPSEEK_TEST=1 npm run test:rust-browser
+```
+
+包含隔离 CDP、Native Messaging 扩展、完整打包扩展三种部署。扩展场景用随机
+结果和本地服务端点击记录双重核验；最近真实模型测试曾先误用 accessibility
+点击，收到不支持提示后改用 Playwright 完成。任务成功不代表没有工具调用错误。

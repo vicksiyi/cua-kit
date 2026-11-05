@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { discoverEndpointFiles } from "../packages/native-host/src/endpoint_configuration";
 import { verifyIndependentMcpBrowser } from "./independent-mcp-browser";
@@ -69,11 +70,18 @@ for (const deployment of ["native", "full"] as const)
         assert.ok(installed.includes(extensionId));
         assert.match(installed, /project .env was not changed/);
       }
+      const clickedMarkers = new Set<string>();
+      const actionMarker = `action-completed-marker-${randomUUID()}`;
       const pageServer = createServer((request, response) => {
+        const incoming=new URL(request.url!, 'http://fixture.invalid');
+        if (incoming.pathname==='/clicked' && request.method==='POST') {
+          clickedMarkers.add(incoming.searchParams.get('marker') ?? '');
+          response.writeHead(204);response.end();return;
+        }
         response.setHeader("Content-Type", "text/html");
         response.end(
           request.url === "/next"
-            ? `<title>Navigation target</title><h1>Navigation target</h1><button onclick="document.querySelector('p').textContent='action-completed-marker'">Run action</button><p>waiting</p>`
+            ? `<title>Navigation target</title><h1>Navigation target</h1><button onclick="document.querySelector('p').textContent='${actionMarker}';fetch('/clicked?marker=${actionMarker}',{method:'POST'})">Run action</button><p>waiting</p>`
             : "<title>Core native page</title><h1>Actual browser capture</h1><p>native-roundtrip-marker</p>",
         );
       });
@@ -269,6 +277,14 @@ for (const deployment of ["native", "full"] as const)
           endpointFile!,
           pageUrl,
           hostDirectory,
+          "chrome",
+          process.env.CUA_LIVE_DEEPSEEK_TEST === "1" && process.env.CUA_LIVE_BAIDU_TEST !== "1" && process.env.CUA_LIVE_SEARCH_TEST !== "1"
+            ? {question:`使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,expectedAnswer:new RegExp(actionMarker)} : undefined,
+          process.env.CUA_LIVE_BAIDU_TEST !== "1" && process.env.CUA_LIVE_SEARCH_TEST !== "1" && process.env.CUA_BROWSER_BAIDU_PROBE !== "1" ? async () => {
+            // Independent HTTP evidence survives tabs created outside Playwright's page inventory.
+            for(let attempt=0;attempt<100 && !clickedMarkers.has(actionMarker);attempt++) await new Promise(resolve=>setTimeout(resolve,10));
+            assert.ok(clickedMarkers.has(actionMarker),'Fixture server must observe the actual random button action');
+          } : undefined,
         );
       } catch (error) {
         if (process.env.CUA_LIVE_BAIDU_TEST === "1") {
