@@ -90,3 +90,6 @@ Eight fixture scenarios execute the actual installed JS discovery functions and 
 The current installed browser extension host is a separate Rust executable from `node_repl`. Compiler paths and 66 demangled host symbols now establish native entry, Unix/stdio server, RPC routing, queued client writers, peer code-identity authorization, app-server process/proxy management and tab-context asset responsibilities. See `NATIVE-HOST-LANGUAGE-AUDIT.md` and the reproducible `extension-host-native-evidence.json`.
 
 `main.ts`, `server.ts` and `router.ts` are now marked for Rust migration, not left in the unknown-language queue. Both the production extension host and the independent CDP adapter still reach this TS server. The broader original native host capabilities are not supplied by the current simple router. Historical authorization disassembly describes a different binary hash and cannot establish the current allowlist. No native source bodies or full parity are claimed.
+
+
+The separate `native/browser-extension-host` crate now implements and tests the Core-compatible routing state machine in Rust. Seven native tests and thirty TS/Rust contract transitions pass. The production server and CDP consumers are still TS until native transport/writer/lifecycle integration is accepted; router role migration is in progress, not complete.

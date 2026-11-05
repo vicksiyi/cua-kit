@@ -1,7 +1,7 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 28,
+    "build-or-deployment-script-review": 29,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-node-binding-forwarder": 1,
@@ -9,7 +9,7 @@
     "native-boundary-needs-original-language-evidence": 10,
     "native-browser-host-role-migrate-to-rust": 3,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 47,
+    "native-implementation-language-not-yet-parity-proof": 50,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
     "original-js-browser-discovery-retain-typescript": 2
@@ -3876,6 +3876,21 @@
       "sha256": "98931407da95ad2ad29545ee896b5654cfeda2a8a9dd2552f91854fed46779b9"
     },
     {
+      "path": "native/browser-extension-host/examples/router_contract.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "9b3ea1677bd53238b4827f9d5ee4b5223d59cc38c78d6d7fa1689a2e81a639c4"
+    },
+    {
+      "path": "native/browser-extension-host/src/lib.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "45fe56f88cc559526c25f0513641c4bfc6871508f1f75289f2ca699ef4d999f8"
+    },
+    {
+      "path": "native/browser-extension-host/src/rpc_router.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "c5d917ec28a7329558b02dafa56f9ff8bde7d7cacdfec5e0a6cea6b560e19cf9"
+    },
+    {
       "path": "native/macos/Package.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "65f7afdeb51a6261d0dced12d1b9a39d8e08db9834a58d860e3b707df12e1445"
@@ -4254,6 +4269,11 @@
       "path": "scripts/run-demo.mjs",
       "category": "build-or-deployment-script-review",
       "sha256": "de2e176882a3a3373ad90041f315af105ff37901829b27332b11fbe3507c0c86"
+    },
+    {
+      "path": "scripts/test-native-host-router.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "8007bc5f49ceb326a56aea1a2c2873ea28b6fca9c946a91fa16c440a9ad37f39"
     }
   ]
 }

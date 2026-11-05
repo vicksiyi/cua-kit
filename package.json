@@ -49,7 +49,8 @@
     "build:agent": "node scripts/build-agent-library.mjs",
     "mcp:legacy": "node dist/mcp/stdio.js",
     "demo:legacy": "npm run build && node dist/agent/demo.js",
-    "build:legacy-runtime": "node scripts/build-reconstruction.mjs --include-legacy"
+    "build:legacy-runtime": "node scripts/build-reconstruction.mjs --include-legacy",
+    "test:native-host-router": "node scripts/test-native-host-router.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

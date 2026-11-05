@@ -30,3 +30,12 @@ The current production extension host and the independent CDP adapter both use `
 `reconstruction/native-host-auth-evidence.json` describes a historical binary with SHA-256 `bd707631640d6b818c2dd61466b83ed9c49612b1c9f176fe57fa26a0097db1ab`. It does **not** match the currently inspected installed host. Its disassembly addresses and 15-entry allowlist must not be treated as current offsets/policy without re-auditing this exact executable. The new evidence records the mismatch instead of overwriting the historical record.
 
 This audit is static evidence, not a passed browser acceptance test. It does not execute the original host, connect to user browser sessions, recover Rust source bodies, or prove parity of the current independently implemented Core protocol.
+
+
+## Rust routing implementation checkpoint
+
+`native/browser-extension-host` now contains a real Rust routing core, with `serde_json 1.0.149` reused from the observed host dependency version. It owns request-ID correlation, multiple clients, id-only void replies, reverse heartbeat replies, explicit monotonic deadlines, client removal, stale response rejection and failed-delivery rollback. The future native event loop must expire deadlines before dispatch and deliver actions via bounded writers; this crate does not yet provide a socket/stdio executable.
+
+Run `npm run test:native-host-router`: seven Rust contract tests and a 30-transition differential against the **current Core TS router** pass. The latter is a compatibility check, not a differential against the installed original Rust host. The NDJSON `router_contract` example is exclusively a test harness and must not be registered as a browser Native Messaging host.
+
+Production `startNativeHost` and CDP still use the TS implementation. Native transport, writer queues, cleanup/authentication, installation/consumer switch, and original app-server/proxy capabilities remain required. The routing implementation alone does not retire the TS package or establish vendor algorithm parity.
