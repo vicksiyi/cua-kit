@@ -145,18 +145,7 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         if method == "scrollInput" { return try await target.scrollInput(params) }
         if method == "mouseInput" { return try await target.mouseInput(params) }
         if method == "keyboardInput" { return try await target.keyboardInput(params) }
-        if method == "observeWithScreenshot" {
-            var state = try target.observe()
-            let captured = try await target.screenshot(params)
-            let (after, warnings) = try target.collect()
-            guard warnings.isEmpty, after.count == target.nodes.count,
-                  zip(after,target.nodes).allSatisfy({ CFEqual($0.element,$1.element) && NSDictionary(dictionary:$0.data).isEqual(to:$1.data) }) else {
-                target.snapshot = nil; target.nodes = []
-                throw fail("STALE_OBSERVATION", "AX state changed during screenshot; observe again.")
-            }
-            state["screenshot"] = captured
-            return state
-        }
+        if method == "observeWithScreenshot" { return try await target.observeWithScreenshot(params) }
         if method == "listWindows" { return try await target.windows() }
         if method == "screenshot" { return try await target.screenshot(params) }
         return try method == "observe" ? target.observe() : target.action(params)
@@ -207,7 +196,7 @@ if CommandLine.arguments.contains("--sky-socket") {
     guard CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--sky-socket" else {
         fputs("Usage: cua-helper --sky-socket ABSOLUTE_PATH\n",stderr); exit(2)
     }
-    do { try serveSkySocket(CommandLine.arguments[2]); exit(0) }
+    do { try await serveSkySocket(CommandLine.arguments[2]); exit(0) }
     catch { fputs("Independent Sky IPC service failed: \(error)\n",stderr); exit(1) }
 }
 while let line = readLine() {

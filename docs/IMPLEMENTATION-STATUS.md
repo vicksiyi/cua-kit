@@ -5415,3 +5415,40 @@ Forbidden/unconfigured fixtures fail before elicitation. Fixtures are temporary
 .app metadata bundles: no application is launched and no UI permission requested.
 The four IPC tests and 29 Rust regression tests pass. App start/skyshot/action
 requests remain explicitly unsupported on this original-protocol service route.
+
+
+## Native Sky app-state dispatch (2026-11-06)
+
+`ComputerUseIPCAppGetSkyshotRequest` now dispatches to Swift `SkyAppState`.
+The service re-evaluates native app policy, resolves a unique running app by bundle
+ID plus canonical bundle path, checks Accessibility and Screen Recording without
+prompting, and invokes the shared Swift AX/window-capture implementation. It
+returns the original client schema: app bundle ID/PID and skyshot text plus PNG
+data URL/mimeType. Requests for a non-running app fail explicitly; implicit app
+startup has not been implemented or inferred from the client request name.
+
+The existing observeWithScreenshot consistency check was extracted into
+Target.observeWithScreenshot and is shared with the old NDJSON route. A failed
+capture, changing AX tree, or expired reply invalidates the target observation.
+The socket server now awaits MainActor dispatch so async ScreenCaptureKit work
+can complete without keeping the main actor blocked in the socket read loop.
+
+Protocol errors are separated from native failures: invalid application -10010,
+native policy denial -10006, no running application -10007, ambiguous application
+-10018, missing permissions -10009, and AX/capture failures -10008. These mappings
+use the original error-code vocabulary; precise vendor failure classification is
+not proven. disableDiff accepts only booleans; the independent renderer currently
+returns a full snapshot for both values. Original incremental diff formatting,
+app-specific instructions, native session policy and full source parity remain open.
+
+Verification: four IPC cases pass, including original-installed/restored client
+error behavior and real Rust/MCP approval followed by native app-state dispatch.
+29 existing native adapter tests and the Swift observation-text self-test pass.
+A separate real capture gate is available as `npm run test:native-skyshot`; it
+packages and launches only the owned CuaFixture app and checks actual AX text and
+PNG bytes with both installed and restored clients. Explicitly running that gate
+currently fails both cases at the permission precheck (Accessibility=false,
+ScreenRecording=false), before app launch. It is **not** a successful screenshot
+acceptance; the normal protocol run skips those two opt-in cases. No permission
+dialog or user-app operation was performed. Default DeepSeek demo routing remains
+unchanged, and native start/action support and old adapter retirement remain open.

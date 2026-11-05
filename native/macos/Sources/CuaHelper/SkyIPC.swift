@@ -5,11 +5,11 @@ import Darwin
 // Independent server for the observed Sky JS wire protocol, not recovered native source.
 private let skyVersion = "CodexComputerUseIPC-5"
 private let skyFrameLimit = 8_388_608
-private struct SkyRPCFailure: Error { let code: Int; let message: String }
+struct SkyRPCFailure: Error { let code: Int; let message: String }
 private func rpcFailure(_ code: Int, _ message: String) -> SkyRPCFailure { SkyRPCFailure(code: code, message: message) }
 
 @MainActor
-private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPolicy) -> [String: Any] {
+private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPolicy, appState: SkyAppState) async -> [String: Any] {
     var id: Any = NSNull()
     do {
         guard let request = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -41,6 +41,17 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                     if let path = app.bundleURL?.path { value["appPath"] = path }
                     return value
                 }
+            case "ComputerUseIPCAppGetSkyshotRequest":
+                let payload = params["request"] as! [String: Any]
+                guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw rpcFailure(-32602, "App skyshot requires a non-empty app reference")
+                }
+                if let value = payload["disableDiff"] {
+                    guard let number = value as? NSNumber, CFGetTypeID(number) == CFBooleanGetTypeID() else {
+                        throw rpcFailure(-32602, "disableDiff must be a boolean")
+                    }
+                }
+                result = try await appState.get(app, policy: appPolicy, deadline: deadline.doubleValue)
             case "ComputerUseIPCAppPolicyRequest":
                 let payload = params["request"] as! [String: Any]
                 guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -56,6 +67,17 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
         return ["id": id, "jsonrpc": "2.0", "result": result]
     } catch let error as SkyRPCFailure {
         return ["id": id, "jsonrpc": "2.0", "error": ["code": error.code, "message": error.message]]
+    } catch let error as Failure {
+        let code: Int
+        switch error.code {
+        case "PERMISSION_DENIED": code = -10009
+        case "TARGET_NOT_FOUND": code = -10007
+        case "AMBIGUOUS_TARGET": code = -10018
+        case "INVALID_ARGUMENT": code = -32602
+        case "STALE_OBSERVATION", "PROVIDER_DISCONNECTED": code = -10008
+        default: code = -10005
+        }
+        return ["id": id, "jsonrpc": "2.0", "error": ["code": code, "message": error.message]]
     } catch {
         return ["id": id, "jsonrpc": "2.0", "error": ["code": -32700, "message": "Invalid JSON payload"]]
     }
@@ -83,9 +105,9 @@ private func writeAll(_ fd: Int32, _ data: Data) throws {
 }
 /// One private connection per owned process; caller owns service launch/retirement.
 /// No vendor endpoint, entitlement or authentication identity is impersonated.
-@MainActor
-func serveSkySocket(_ path: String) throws {
+func serveSkySocket(_ path: String) async throws {
     let appPolicy = try SkyAppPolicy()
+    let appState = await SkyAppState()
     guard path.hasPrefix("/"), !path.utf8.contains(0) else { throw rpcFailure(-32602, "Expected an absolute socket path") }
     let parent = URL(fileURLWithPath: path).deletingLastPathComponent().resolvingSymlinksInPath().path
     var metadata = stat()
@@ -119,7 +141,8 @@ func serveSkySocket(_ path: String) throws {
         let size = header.enumerated().reduce(0) { $0 | Int($1.element) << (8 * $1.offset) }
         guard size > 0 && size <= skyFrameLimit else { throw rpcFailure(-32600, "Invalid native frame length") }
         let body = try readExact(connection, size)!
-        let response = try JSONSerialization.data(withJSONObject: skyReply(body, negotiated: &negotiated, appPolicy: appPolicy), options: [.sortedKeys])
+        let reply = await skyReply(body, negotiated: &negotiated, appPolicy: appPolicy, appState: appState)
+        let response = try JSONSerialization.data(withJSONObject: reply, options: [.sortedKeys])
         guard response.count <= skyFrameLimit else { throw rpcFailure(-32600, "Native reply exceeds frame limit") }
         let length = UInt32(response.count)
         let prefix = Data((0..<4).map { UInt8(truncatingIfNeeded: length >> (8 * $0)) })

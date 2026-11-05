@@ -103,3 +103,10 @@ This division was exercised through real MCP workers and the Swift endpoint.
 Original native rule contents/defaults remain unknown; explicit standalone rules
 must not be labeled original policy parity. App start/state/action and legacy
 adapter retirement remain open.
+
+
+Sky app-state dispatch now lives in Swift SkyAppState.swift and shares native
+Target.observeWithScreenshot with the existing adapter. No AX tree, screenshot
+or app identity assembly was moved into TS. Original JS clients/window_result
+remain TS. Protocol and error paths pass; actual PNG/AX acceptance is still
+blocked by missing host TCC permissions and must not be counted as completed.

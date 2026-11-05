@@ -9,6 +9,23 @@ func rectData(_ rect: CGRect) -> [String: Double] {
     ["x": rect.origin.x, "y": rect.origin.y, "width": rect.width, "height": rect.height]
 }
 extension Target {
+    func observeWithScreenshot(_ params: [String: Any]) async throws -> [String: Any] {
+        do {
+            var state = try observe()
+            let captured = try await screenshot(params)
+            let (after, warnings) = try collect()
+            guard warnings.isEmpty, after.count == nodes.count,
+                  zip(after,nodes).allSatisfy({ CFEqual($0.element,$1.element) && NSDictionary(dictionary:$0.data).isEqual(to:$1.data) }) else {
+                throw fail("STALE_OBSERVATION", "AX state changed during screenshot; observe again.")
+            }
+            state["screenshot"] = captured
+            return state
+        } catch {
+            invalidateInputState()
+            throw error
+        }
+    }
+
     func captureWindows() async throws -> [SCWindow] {
         try validateIdentity()
         guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED", "Screen Recording permission is required; no permission prompt was requested.") }

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {spawn,execFileSync} from 'node:child_process';
+import {spawn,execFileSync,spawnSync} from 'node:child_process';
 import {connect, type Socket} from 'node:net';
 import {once} from 'node:events';
-import {mkdtemp,realpath,access,rm,chmod,mkdir,writeFile,readdir} from 'node:fs/promises';
+import {mkdtemp,realpath,access,rm,chmod,mkdir,writeFile,readdir,copyFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {MacComputerUseClient} from '../packages/sky/src/targets/mac/client';
@@ -47,7 +47,9 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
    if(decision==='forbidden')assert.equal(policy.target.warningSubtitle,'Fixture rule');
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
-  await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10003);
+  await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10010);
+  await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.allowed.app')),(error:any)=>error.code===-10007);
+  await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
  }finally{(globalThis as any).nodeRepl=before;}
 });
 test('Swift IPC enforces negotiation, deadlines, frame limits and unknown-operation errors',{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:10000},async t=>{
@@ -61,6 +63,8 @@ test('Swift IPC enforces negotiation, deadlines, frame limits and unknown-operat
  assert.equal((await send({id:3,jsonrpc:'2.0',method:'ping',params:{clientApiVersion:'CodexComputerUseIPC-5'}})).result.serverApiVersion,'CodexComputerUseIPC-5');
  assert.equal((await send({...request,id:4,params:{...request.params,deadlineUnixMilliseconds:0}})).error.code,-32602);
  assert.ok(Array.isArray((await send({...request,id:5})).result));
+ const malformed={...request,id:6,params:{...request.params,requestType:'ComputerUseIPCAppGetSkyshotRequest',request:{app:'fixture',disableDiff:1}}};
+ assert.equal((await send(malformed)).error.code,-32602);
  const closed=once(socket,'close');const oversized=Buffer.alloc(4);oversized.writeUInt32LE(8388609);socket.write(oversized);await closed;
  const [code]=await f.exited;assert.equal(code,1);
 });
@@ -80,8 +84,8 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
  const transport=new StdioClientTransport({command:resolve('native/runtime-supervisor/dist/core-runtime-supervisor'),args:[spec],env:{HOME:f.root,TMPDIR:f.root},stderr:'pipe'});
  const {ElicitRequestSchema}=await import('@modelcontextprotocol/sdk/types.js');
  const mcp=new Client({name:'native-owner-test',version:'1.0'},{capabilities:{elicitation:{form:{}}}});
- let approvalCount=0;
- mcp.setRequestHandler(ElicitRequestSchema,request=>{approvalCount++;assert.match(request.params.message,/Policy Fixture/);assert.equal(request.params._meta?.riskLevel,'low');assert.deepEqual(request.params._meta?.persist,['session','always']);assert.deepEqual(request.params._meta?.tool_params,{app:'com.core.fixture.allowed'});return {action:'decline' as const};});
+ let approvalCount=0;let approvalAction:'accept'|'decline'='decline';
+ mcp.setRequestHandler(ElicitRequestSchema,request=>{approvalCount++;assert.match(request.params.message,/Policy Fixture/);assert.equal(request.params._meta?.riskLevel,'low');assert.deepEqual(request.params._meta?.persist,['session','always']);assert.deepEqual(request.params._meta?.tool_params,{app:'com.core.fixture.allowed'});return {action:approvalAction};});
  await mcp.connect(transport);
  const policyApp=await appFixture(root,'com.core.fixture.allowed');
  const children=()=>execFileSync('/bin/ps',['-axo','pid=,ppid='],{encoding:'utf8'}).trim().split('\n').map(line=>line.trim().split(/\s+/).map(Number)).filter(([,parent])=>parent===transport.pid).map(([pid])=>pid);
@@ -101,6 +105,9 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
    const blocked=await mcp.callTool({name:'js',arguments:{code:`await cua.getApp(${JSON.stringify(path)});`}});
    assert.equal(blocked.isError,true);assert.ok(JSON.stringify(blocked).includes(reason));assert.equal(approvalCount,1,'Blocked policies must not request approval');
   }
+  approvalAction='accept';
+  const accepted=await mcp.callTool({name:'js',arguments:{code:`await cua.getApp(${JSON.stringify(policyApp)});`}});
+  assert.equal(accepted.isError,true);assert.match(JSON.stringify(accepted),/Application is not running/);assert.equal(approvalCount,2);
   const first=children();assert.equal(first.length,3,'Rust owns kernel, trusted worker and Swift service');
   assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,1);
   const reset=await mcp.callTool({name:'js_reset',arguments:{}});assert.equal(Boolean(reset.isError),false);gone(first);
@@ -109,4 +116,36 @@ test('restored CUA app inventory traverses Rust sandbox and original Sky service
  } finally {await mcp.close();}
  gone(active);
  assert.equal((await readdir(root)).filter(name=>name.startsWith('sky-')).length,0,'Closing MCP removes the owned service socket directory');
+});
+
+for(const source of ['restored','installed'] as const) test(`live owned App skyshot through ${source} Sky client`,{skip:process.env.CUA_TEST_NATIVE_SKYSHOT!=='1',timeout:30000},async t=>{
+ assert.equal(process.platform,'darwin');
+ const checked=spawnSync(helper,['--permissions'],{encoding:'utf8'});
+ assert.ifError(checked.error);
+ const permissions=JSON.parse(checked.stdout);
+ assert.ok(permissions.accessibility&&permissions.screenRecording,'Real skyshot gate requires Accessibility and Screen Recording; no permission dialog or app launch was attempted');
+ const identifier='com.core.fixture.skyshot';
+ const f=await fixture(t,{[identifier]:{decision:'allowed',risk:'low',allowPersistentApproval:false}});
+ const app=await appFixture(f.root,identifier);
+ await mkdir(join(app,'Contents','MacOS'));
+ const executable=join(app,'Contents','MacOS','CuaFixture');
+ await copyFile(resolve('native/macos/.build/debug/CuaFixture'),executable);await chmod(executable,0o700);
+ await writeFile(join(app,'Contents','Info.plist'),`<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${identifier}</string><key>CFBundleExecutable</key><string>CuaFixture</string><key>CFBundleName</key><string>Skyshot Fixture</string><key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
+ const child=spawn(executable,[],{stdio:['ignore','pipe','pipe']});child.stderr.resume();
+ const exited=once(child,'exit');t.after(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGTERM');await exited;});
+ let output='';child.stdout.on('data',chunk=>output+=chunk);
+ for(let attempt=0;!output.includes('READY');attempt++){assert.ok(attempt<200&&child.exitCode===null,'Owned fixture did not become ready');await new Promise(r=>setTimeout(r,25));}
+ const before=(globalThis as any).nodeRepl;
+ (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open}};
+ try {
+  const Client=source==='restored'?MacComputerUseClient:(await import(pathToFileURL('/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/targets/mac/client.js').href)).MacComputerUseClient;
+  const client=new Client();
+  for(const disableDiff of [true,false]) {
+   const state=await client.getAppState({app,disableDiff});
+   assert.equal(state.app.bundleIdentifier,identifier);assert.equal(state.app.pid,child.pid);
+   assert.match(state.skyshot.text,/Save fixture/);assert.equal(state.skyshot.screenshot.mimeType,'image/png');
+   assert.match(state.skyshot.screenshot.url,/^data:image\/png;base64,/);
+   const bytes=Buffer.from(state.skyshot.screenshot.url.split(',')[1],'base64');assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);assert.ok(bytes.length>100);
+  }
+ }finally{(globalThis as any).nodeRepl=before;}
 });
