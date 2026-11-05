@@ -22,6 +22,7 @@ fn fixture() -> (Fixture, ReplManager) {
         .unwrap();
     let root = PathBuf::from("/tmp").join(format!("core-rust-repl-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir(&root).unwrap();
+    let root = root.canonicalize().unwrap();
     let service = root.join("service.mjs");
     std::fs::write(&service,r#"export async function handleRpc(x){if(x.suspend)return await nodeRepl.withSuspendedTimeout(()=>nodeRepl.withSuspendedTimeout(async()=>{await new Promise(r=>setTimeout(r,x.suspend));return 'waited';}));return {echo:x,meta:nodeRepl.requestMeta};}"#).unwrap();
     let root_string = root.to_string_lossy().to_string();
@@ -512,5 +513,78 @@ async fn cancelled_host_callback_is_dropped_and_state_is_retired() {
         run(&mut session, "nodeRepl.write(typeof stale)").await["output"],
         "undefined"
     );
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn restored_trusted_worker_reads_and_persists_actual_toml() {
+    use core_runtime_supervisor::{
+        config_manager::{ConfigManager, ConfigSources},
+        host::HostReply,
+    };
+    use std::{collections::HashMap, os::unix::fs::PermissionsExt, sync::Arc};
+    let (fixture, session) = fixture();
+    std::fs::set_permissions(&fixture.root, std::fs::Permissions::from_mode(0o700)).unwrap();
+    for (name, text) in [
+        ("config.toml", "[browser_use]\nallow_history_access=false\n"),
+        (
+            "requirements.toml",
+            "[featureRequirements]\nbrowser_use_full_cdp_access=false\n",
+        ),
+        ("browser.toml", "count=0\n"),
+    ] {
+        std::fs::write(fixture.root.join(name), text).unwrap();
+    }
+    std::fs::write(fixture.root.join("service.mjs"),r#"
+export async function handleRpc(x){
+ if(x.write)await nodeRepl.config.writeToml('browser/config.toml',{count:42});
+ return {config:await nodeRepl.config.read({cwd:nodeRepl.cwd}),requirements:await nodeRepl.config.readRequirements(),preference:await nodeRepl.config.readToml('browser/config.toml')};
+}"#).unwrap();
+    let manager = Arc::new(
+        ConfigManager::new(
+            ConfigSources {
+                config: fixture.root.join("config.toml"),
+                requirements: fixture.root.join("requirements.toml"),
+                working_directories: HashSet::from([fixture.root.clone()]),
+                toml_files: HashMap::from([(
+                    "browser/config.toml".into(),
+                    fixture.root.join("browser.toml"),
+                )]),
+            },
+            HashSet::from(["browser/config.toml".into()]),
+        )
+        .unwrap(),
+    );
+    let mut session = session.with_host_handler(
+        Arc::new(move |request| {
+            let manager = manager.clone();
+            Box::pin(async move {
+                manager
+                    .request(&request.message)
+                    .await
+                    .map(HostReply::message)
+            })
+        }),
+        false,
+    );
+    let result = run(
+        &mut session,
+        "nodeRepl.write(JSON.stringify(await nodeRepl.rpc('fixture',{write:true})))",
+    )
+    .await;
+    let value: Value = serde_json::from_str(result["output"].as_str().unwrap()).unwrap();
+    assert_eq!(value["preference"]["count"], 42);
+    assert_eq!(
+        value["config"]["config"]["browser_use"]["allow_history_access"],
+        false
+    );
+    assert_eq!(
+        value["requirements"]["requirements"]["featureRequirements"]["browser_use_full_cdp_access"],
+        false
+    );
+    let written: toml::Value =
+        toml::from_str(&std::fs::read_to_string(fixture.root.join("browser.toml")).unwrap())
+            .unwrap();
+    assert_eq!(written["count"].as_integer(), Some(42));
     session.close().await.unwrap();
 }

@@ -1,5 +1,19 @@
 # Implementation status
 
+## Rust configuration storage checkpoint (2026-11-06)
+
+The configuration host now reads actual TOML and persists explicitly mapped
+preferences in Rust, reusing observed toml 0.9.11. Private-directory checks,
+protected config/requirements, link rejection, size bounds, parser-error redaction,
+serialized atomic commits and precommit cancellation are implemented. Three
+storage tests plus a restored-worker disk roundtrip pass; all twenty-one Rust
+tests pass. Main configuration/requirements are not rewritten.
+
+This migrates the independent explicit-source storage adapter, not Codex full
+configuration layering/resolution. MCP, sandbox composition, real media adapters
+and continuous between-cell event routing still prevent replacing the demo
+runtime. Original-language audit and native App acceptance also remain open.
+
 ## Rust host callback checkpoint (2026-11-06)
 
 Explicit execution-scoped host handlers now route media, elicitation, config and

@@ -108,3 +108,28 @@ missing capabilities/handler rejection, host metadata identity and cancellation
 that drops a pending callback and discards cell state. All seventeen Rust tests
 pass. The media case is a fixture callback receipt, not image decoder or screenshot
 acceptance. Authenticated fetch and between-cell background routing remain open.
+
+## Actual Rust configuration storage
+
+`config_manager.rs` implements explicit-source `read_config`, requirements,
+logical `read_toml` and opt-in `write_toml`. It reuses `toml` 0.9.11 (the version
+visible in original binary dependency paths). Configuration/requirements are
+protected; preference targets require explicit mapping and private owned parent
+directories. Same canonical target aliases share a serialization lock. Reads are
+bounded and parser errors omit source text. Nonfinite values and TOML datetimes
+are rejected by the current JSON-only deployment adapter rather than silently
+coerced to null or reinterpreted.
+
+Writes validate existing data, use a private same-directory temporary file and
+rename relative to an open directory descriptor. A precommit cancellation point
+cleans the temp file. Cancellation after atomic commit cannot promise rollback.
+This is the independent deployment adapter migrated from TS; original Codex
+layered/user configuration resolution is still not reconstructed. Callers must
+provide explicit canonical working-directory scopes, including on macOS /tmp.
+
+Three storage tests validate disk contents, protected paths, invalid/private
+source handling, link rejection and precommit cancellation. A fourth real-worker
+test invokes restored config APIs through Rust and verifies the resulting TOML
+on disk. All twenty-one Rust tests pass. Filesystem access itself is bounded
+synchronous host I/O under an async per-target lock; deployment must keep these
+host operations out of untrusted workers. The demo composition is still pending.

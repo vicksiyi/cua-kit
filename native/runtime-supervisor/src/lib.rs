@@ -10,3 +10,6 @@ pub mod process_port;
 pub mod repl_manager;
 
 pub mod host;
+
+#[cfg(unix)]
+pub mod config_manager;
