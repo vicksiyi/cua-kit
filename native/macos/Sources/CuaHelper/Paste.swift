@@ -42,7 +42,8 @@ extension Target {
         // Call the same snapshot/focus-checked keyboard path; it invalidates input state.
         var input = params; input["operation"] = "pressKey"; input["key"] = "super+v"
         _ = try await keyboardInput(input)
-        let deadline = Date().addingTimeInterval(Double(timeout)/1000)
+        let requestedDeadline = (params["deadlineUnixMilliseconds"] as? Double).map { Date(timeIntervalSince1970:$0/1000) } ?? .distantFuture
+        let deadline = min(Date().addingTimeInterval(Double(timeout)/1000),requestedDeadline)
         while Date() < deadline {
             try await Task.sleep(nanoseconds:20_000_000)
             do { try validateIdentity() } catch { throw fail("ACTION_OUTCOME_UNKNOWN","Application exited after paste dispatch.") }

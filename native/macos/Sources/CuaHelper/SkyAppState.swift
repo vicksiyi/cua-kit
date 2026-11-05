@@ -6,6 +6,7 @@ import ApplicationServices
 // Native function bodies and original incremental skyshot formatting are unavailable.
 @MainActor
 final class SkyAppState {
+    private let clipboard = ClipboardStore()
     private var targets: [String: Target] = [:]
     func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) async throws {
         let evaluated: [String: Any]
@@ -40,6 +41,11 @@ final class SkyAppState {
         } else if params["operation"] as? String == "click" { _ = try await target.mouseInput(params) }
         else if params["operation"] as? String == "scroll" { _ = try await target.scrollInput(params) }
         else if params["operation"] as? String == "drag" { _ = try await target.dragInput(params) }
+        else if params["operation"] as? String == "paste" {
+            _ = try target.pasteEditor(params)
+            guard Date().timeIntervalSince1970 * 1000 < deadline else { throw SkyRPCFailure(code:-32602,message:"Paste expired before clipboard mutation") }
+            _ = try await withNativeClipboard(clipboard,params:params) { try await target.pasteInput(params) }
+        }
         else { _ = try target.action(params) }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")

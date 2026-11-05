@@ -152,3 +152,13 @@ Original drag endpoint arrays now decode in Swift and route through the existing
 native capture/drag engine. Mapping and interruption-release self-tests pass;
 actual gesture-pad acceptance remains pending. Interpolation and pacing are still
 explicit independent native choices, not original source bodies recovered into TS.
+
+
+Paste text/md/html processing on the original wire route now resides in Swift
+PasteContent.swift (Ink/SwiftSoup reuse) and the existing native clipboard
+transaction. Original JS forwards text/format; the earlier independent
+packages/native-macos/src/paste-content.ts conversion is therefore a remaining
+legacy native-responsibility migration/retirement item, not evidence of vendor JS
+formatting. The new Swift renderer is independent and not output-parity-proven.
+Named-board restoration passes; real editor effects and forced-exit cleanup remain
+unaccepted. Native dependency versions/revisions are pinned in Package.resolved.

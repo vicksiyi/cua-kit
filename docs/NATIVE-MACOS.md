@@ -416,3 +416,38 @@ UI case has not passed acceptance and is not counted as verified coordinate inpu
 The existing 20-step interpolation/10ms pacing remains independently authored,
 not recovered original native timing. Forced process termination cannot guarantee
 cooperative release. Paste/audio and production demo migration remain open.
+
+
+## Native paste dispatch and format processing (2026-11-06)
+
+Original Paste.d.ts requires text/md/html insertion followed by clipboard restore.
+The original Sky JS wrapper forwards text/format without conversion. That request
+now decodes and renders in Swift, validates the focused AX editor before clipboard
+mutation, and invokes the existing withNativeClipboard + pasteInput transaction.
+Verification is bounded by the request deadline. Successful execution returns null
+through the original void envelope; unobserved paste effects or failed restore
+remain errors, never automatic retries.
+
+Native format rendering reuses [Ink](https://github.com/JohnSundell/Ink) 0.6.0
+(Markdown to HTML) and [SwiftSoup](https://github.com/scinfu/SwiftSoup) 2.9.6
+(string HTML parsing/cleanup). Both are exact-pinned with Package.resolved. These
+are independent native implementation dependencies, **not** recovered vendor
+native dependencies. Raw Markdown remains the plain-editor fallback; cleaned HTML
+is offered to rich editors. HTML input gets extracted plain text. Renderer dialect,
+whitespace and sanitization can differ from the earlier marked/sanitize-html TS
+adapter and from the unknown vendor renderer. No HTML resource loading is used.
+
+Swift build, three native checks (formats, named-pasteboard transaction, UTF-16
+replacement) and all four IPC cases pass. Named-board checks exercise text/md/html,
+restore on success/error/cancellation, and preservation of external changes; they
+do not touch the general clipboard. Original and restored clients exercise all
+three format envelopes and invalid-format rejection. The live fixture gate now
+pastes Unicode into its own field and checks the observed value; this UI case has
+not passed acceptance. Rich-editor rendering remains unverified. Cooperative
+restoration does not guarantee recovery after forced process termination; native
+shutdown during an active paste is a remaining lifecycle gap.
+
+The old packages/native-macos/src/paste-content.ts renderer is still used by its
+legacy adapter; its callers must migrate before deletion. Audio, native policy/
+session parity, production demo integration and whole-repository retirement work
+remain open.

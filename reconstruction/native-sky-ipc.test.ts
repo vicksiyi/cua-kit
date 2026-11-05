@@ -48,11 +48,12 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
   for(const [method,args] of [
-   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],['scroll',{direction:' R ',pages:0.5}],['drag',{fromX:1.5,fromY:2,toX:30,toY:40.5}],
+   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],['scroll',{direction:' R ',pages:0.5}],['drag',{fromX:1.5,fromY:2,toX:30,toY:40.5}],['paste',{text:'hello 🌍',format:'text'}],['paste',{text:'**hello**',format:'md'}],['paste',{text:'<b>hello</b>',format:'html'}],
   ] as const){
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
   }
+  await assert.rejects(client.paste({app:join(f.root,'com.core.fixture.allowed.app'),text:'x',format:'rtf'}),(error:any)=>error.code===-32602);
   await assert.rejects(client.scroll({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,direction:'down',pages:1}),(error:any)=>error.code===-10011);
   await assert.rejects(client.click({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,mouseButton:'right'}),(error:any)=>error.code===-10011);
   await assert.rejects(client.click({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,clickCount:1.5}),(error:any)=>error.code===-32602);
@@ -184,6 +185,10 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
   await client.click({app,elementIndex:Number(/^\[(\d+)\]/.exec(buttonLine)![1])});
   let saved:any;for(let attempt=0;attempt<20;attempt++){saved=await refresh();if(saved.skyshot.text.includes('Saved keyboard 🌍 result'))break;await new Promise(r=>setTimeout(r,25));}
   assert.match(saved.skyshot.text,/Saved keyboard 🌍 result/);
+  await client.performSecondaryAction({app,elementIndex:field(saved),action:'focus'});await refresh();
+  await client.pressKey({app,key:'Super+a'});await refresh();
+  await client.paste({app,text:'pasted 🌍 fixture',format:'text'});
+  saved=await refresh();const pastedLine=saved.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(pastedLine,/pasted 🌍 fixture/);
   const scrollLine=saved.skyshot.text.split('\n').find((line:string)=>line.includes('AXScrollArea')&&line.includes('Fixture scroll area'));assert.ok(scrollLine);
   const offsets=()=>output.split('\n').flatMap(line=>{try{const event=JSON.parse(line);return event.event==='scroll'?[event.offsetY]:[];}catch{return [];}});
   const beforeScroll=offsets().at(-1)??0;

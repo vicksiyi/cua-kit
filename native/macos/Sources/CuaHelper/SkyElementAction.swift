@@ -7,6 +7,14 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
           let value = action[name] as? [String: Any] else {
         throw SkyRPCFailure(code: -32602, message: "Expected one Computer Use action")
     }
+    if name == "paste" {
+        guard let text = value["text"] as? String, let format = value["format"] as? String else {
+            throw SkyRPCFailure(code: -32602, message: "Paste requires text and format")
+        }
+        var params = try nativePasteContent(text,format:format)
+        params["operation"] = "paste"
+        return params
+    }
     if name == "drag" {
         func point(_ key: String) throws -> [Double] {
             guard let pair = value[key] as? [Any], pair.count == 2 else {

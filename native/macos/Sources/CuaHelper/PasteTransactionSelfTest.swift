@@ -12,6 +12,15 @@ func runPasteTransactionChecks() async throws {
         return ["outcome":"observed"]
     }
     guard result["clipboardRestored"] as? Bool == true, board.string(forType:.string) == "original" else { throw fail("SELF_TEST_FAILED","Successful paste failed restoration.") }
+    for format in ["text","md","html"] {
+        let content = try nativePasteContent(format == "html" ? "<b>hello</b>" : "**hello**",format:format)
+        let transaction = try await withNativeClipboard(store,params:content) {
+            guard board.string(forType:.string) == content["text"] as? String,
+                  board.string(forType:.html) == content["html"] as? String else { throw fail("SELF_TEST_FAILED","Native paste format did not reach the clipboard") }
+            return ["outcome":"observed"]
+        }
+        guard transaction["clipboardRestored"] as? Bool == true, board.string(forType:.string) == "original" else { throw fail("SELF_TEST_FAILED","Formatted paste did not restore clipboard") }
+    }
     do {
         _ = try await withNativeClipboard(store,params:["text":"temporary"]) { throw fail("STALE_OBSERVATION","changed") }
         throw fail("SELF_TEST_FAILED","Paste error was lost.")

@@ -168,6 +168,10 @@ if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.cont
     if let data = try? JSONSerialization.data(withJSONObject: status, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text) }
     exit(AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() ? 0 : 2)
 }
+if CommandLine.arguments.contains("--paste-content-self-test") {
+    do { try runPasteContentChecks(); print("{\"nativePasteFormats\":true}"); exit(0) }
+    catch { fputs("Paste format self-test failed: \(error)\n",stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--sky-action-self-test") {
     do { try runSkyActionChecks(); print("{\"skyActionMapping\":true}"); exit(0) }
     catch { fputs("Sky action self-test failed: \(error)\n",stderr); exit(1) }
