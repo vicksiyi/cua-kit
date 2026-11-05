@@ -4,6 +4,7 @@ import { lstat, readFile } from "node:fs/promises";
 import { dirname, isAbsolute, delimiter } from "node:path";
 import { authenticateNativeHostSocket } from "./client";
 import type { NativeHostEndpoint } from "./server";
+import { discoverEndpointFiles, IndependentBrowserUnavailableError } from "./endpoint_configuration";
 /** Read a private capability file. Its contents must never enter model context. */
 async function readEndpoint(file: string): Promise<NativeHostEndpoint> {
   if (!isAbsolute(file))
@@ -37,6 +38,27 @@ async function readEndpoint(file: string): Promise<NativeHostEndpoint> {
   )
     throw Error("@core socket must be private and owned by the current user");
   return value;
+}
+
+/** A crashed host can leave a valid private descriptor and a dead socket behind.
+ * Probe only authenticated transports; never delete files or hide policy/config errors.
+ */
+export async function discoverLiveEndpointFiles(directory: string): Promise<string[]> {
+  const live: string[] = [];
+  for (const file of await discoverEndpointFiles(directory)) {
+    try {
+      const endpoint = await readEndpoint(file);
+      const socket = await authenticateNativeHostSocket(endpoint);
+      socket.on("error", () => {});
+      socket.destroy();
+      live.push(file);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "ENOENT" && code !== "ECONNREFUSED") throw error;
+    }
+  }
+  if (!live.length) throw new IndependentBrowserUnavailableError("no_endpoints");
+  return live;
 }
 /** Explicit composition point for assembleBrowserService.host.getNativePipeBridge.
  * Only registered @core socket paths are accepted; no arbitrary socket fallback.

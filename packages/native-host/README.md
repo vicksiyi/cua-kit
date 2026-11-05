@@ -121,3 +121,13 @@ An `input-ended` event means Chrome closed the native input stream; it does not
 by itself prove whether the user quit Chrome, disabled the extension or the
 worker restarted. SIGKILL/process crashes can leave no final event. This log
 narrows the failure stage; it does not claim to repair every disconnect.
+
+Directory-based demo discovery now authenticates each candidate socket before
+selecting it. Missing sockets and connection-refused endpoints left by crashed
+hosts are skipped without deleting the files. If none remain, the normal
+unavailable/cold-start path runs. Invalid descriptors, unsafe permissions and
+failed authentication are still reported as errors. Explicit endpoint lists
+remain strict and are not silently replaced. This probe verifies a live host
+transport, not extension/browser readiness; the MCP inventory preflight still
+runs afterward. A host can disconnect after any probe, so this does not remove
+all connection races.

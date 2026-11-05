@@ -2,7 +2,7 @@
 import {
   createBrowserServiceConnector,
   parseEndpointFiles,
-  discoverEndpointFiles,
+  discoverLiveEndpointFiles,
 } from "@core/native-host/browserConnector";
 import { discoverOrStartChrome } from "./browser-startup";
 
@@ -22,7 +22,7 @@ export async function configureIndependentBrowser(env: Record<string, string>) {
     env.CORE_CUA_ENDPOINT_FILES === undefined
       ? await (process.env.CUA_DEMO_START_CHROME === "1"
           ? discoverOrStartChrome(env.CORE_CUA_HOST_DIRECTORY!)
-          : discoverEndpointFiles(env.CORE_CUA_HOST_DIRECTORY!))
+          : discoverLiveEndpointFiles(env.CORE_CUA_HOST_DIRECTORY!))
       : parseEndpointFiles(env.CORE_CUA_ENDPOINT_FILES);
   const connector = await createBrowserServiceConnector(endpointFiles);
   const services: unknown = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");

@@ -2,12 +2,12 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { setTimeout as delay } from "node:timers/promises";
-import { discoverEndpointFiles, IndependentBrowserUnavailableError } from "@core/native-host/browserConnector";
+import { discoverLiveEndpointFiles, IndependentBrowserUnavailableError } from "@core/native-host/browserConnector";
 
 export class BrowserStartupError extends Error {}
 
 export async function discoverOrStartChrome(directory: string, dependencies = {
-  discover: discoverEndpointFiles,
+  discover: discoverLiveEndpointFiles,
   launch: async () => {
     if (process.platform !== "darwin") throw new Error("Automatic Chrome startup currently requires macOS");
     await promisify(execFile)("/usr/bin/open", ["-a", "Google Chrome"], { timeout: 10000 });
