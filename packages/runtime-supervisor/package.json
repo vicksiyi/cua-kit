@@ -28,6 +28,11 @@
       "types": "./src/stdio.ts",
       "import": "./dist/stdio.js",
       "default": "./dist/stdio.js"
+    },
+    "./sandbox-launcher": {
+      "types": "./src/sandbox-launcher.ts",
+      "import": "./dist/sandbox-launcher.js",
+      "default": "./dist/sandbox-launcher.js"
     }
   },
   "dependencies": {

@@ -1,10 +1,10 @@
 import test from "node:test";
 import { WorkerSession } from "../packages/runtime-supervisor/src/session";
-import { ProcessWorkerPort } from "../packages/runtime-supervisor/src/process-port";
+import { launchSandboxedWorker, sandboxedWorkerSpec } from "../packages/runtime-supervisor/src/sandbox-launcher";
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, writeFile, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve, dirname } from "node:path";
+import { join, resolve } from "node:path";
 import { createServer, type AddressInfo } from "node:net";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -112,37 +112,32 @@ test(
         "packages/runtime-supervisor/dist/sandbox-bootstrap.js",
       ),
       addon = resolve("native/macos-sandbox/dist/sandbox.node");
+    const policyOptions = {
+      node: process.execPath, bootstrap, addon,
+      entry: join(workers, "dist/kernel.js"), args: [],
+      directory: kernelDir, readDirectories: [workers, dependencies, codeDir],
+    };
+    await assert.rejects(sandboxedWorkerSpec({ ...policyOptions,
+      workerEnvironment: { NODE_OPTIONS: "--import=/tmp/untrusted.js" },
+    }), /Unsupported worker environment/);
+    await assert.rejects(sandboxedWorkerSpec({ ...policyOptions,
+      readDirectories: [root, workers],
+    }), /separate/);
+    await assert.rejects(sandboxedWorkerSpec({ ...policyOptions,
+      readDirectories: ["/"],
+    }), /Filesystem root/);
+    const spec = await sandboxedWorkerSpec(policyOptions);
+    assert.equal(spec.env.PATH, undefined);
+    assert.equal(spec.env.NODE_OPTIONS, undefined);
+    await writeFile(join(trustedDir, "private.txt"), "trusted scratch");
     const session = new WorkerSession({
       services: ["fixture"],
       launch: async () => {
         const start = (entry: string, args: string[], directory: string) => {
-          const ancestors = new Set<string>();
-          for (const allowedPath of [
-            workers,
-            dependencies,
-            codeDir,
-            directory,
-          ]) {
-            for (
-              let ancestor = dirname(allowedPath);
-              ;
-              ancestor = dirname(ancestor)
-            ) {
-              ancestors.add(ancestor);
-              if (ancestor === dirname(ancestor)) break;
-            }
-          }
-          const metadata = `(allow file-read-metadata ${[...ancestors].map((path) => `(literal ${JSON.stringify(path)})`).join(" ")})`;
-          const profile = `(version 1)(deny default)(allow file-read* (subpath ${JSON.stringify(workers)}) (subpath ${JSON.stringify(dependencies)}) (subpath ${JSON.stringify(codeDir)}))(allow file-read* file-write* (subpath ${JSON.stringify(directory)}))(allow sysctl-read)(allow signal (target self))${metadata}`;
-          return ProcessWorkerPort.start({
-            command: process.execPath,
-            args: ["--experimental-vm-modules", bootstrap, entry, ...args],
-            cwd: directory,
-            env: {
-              HOME: directory,
-              TMPDIR: directory,
-              CORE_CUA_SANDBOX_PROFILE: profile,
-              CORE_CUA_SANDBOX_ADDON: addon,
+          return launchSandboxedWorker({
+            node: process.execPath, bootstrap, addon, entry, args,
+            directory, readDirectories: [workers, dependencies, codeDir],
+            workerEnvironment: {
               NODE_REPL_TRUSTED_RPC_ENABLED: "1",
               NODE_REPL_TRUSTED_SERVICES: JSON.stringify({
                 fixture: join(codeDir, "service.js"),
@@ -181,6 +176,10 @@ test(
       );
       assert.equal(forbidden.ok, true);
       assert.equal(forbidden.output, "EPERM");
+      const peer = await session.execute(
+        `try{(await import("node:fs")).readFileSync(${JSON.stringify(join(trustedDir, "private.txt"))});nodeRepl.write("unexpected")}catch(error){nodeRepl.write(error.code)}`,
+      );
+      assert.equal(peer.output, "EPERM");
       const trusted = await session.execute(
         'nodeRepl.write(await nodeRepl.rpc("fixture",{}))',
       );
