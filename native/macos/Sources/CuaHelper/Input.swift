@@ -52,7 +52,7 @@ func selectedTextRange(content: String, text: String, options: [String: Any]) th
 }
 @MainActor
 extension Target {
-    func invalidateInputState() { snapshot = nil; nodes = [] }
+    func invalidateInputState() { snapshot = nil; nodes = []; capturedWindow = nil }
     func validateSnapshot(_ params: [String: Any]) throws {
         try validate()
         guard let expected = params["snapshotId"] as? String, expected == snapshot else { throw fail("STALE_OBSERVATION", "Input needs a current observation.") }

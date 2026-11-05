@@ -27,6 +27,14 @@ func selectCaptureWindow(_ candidates: [CaptureWindowCandidate], requestedId: In
     }
     throw fail("AMBIGUOUS_TARGET", "Focused window cannot be uniquely matched to a capturable window.")
 }
+func axElementFrame(_ element: AXUIElement) -> CGRect? {
+    guard let rawPoint = attribute(element,kAXPositionAttribute), CFGetTypeID(rawPoint) == AXValueGetTypeID(),
+          let rawSize = attribute(element,kAXSizeAttribute), CFGetTypeID(rawSize) == AXValueGetTypeID() else { return nil }
+    var point = CGPoint.zero, size = CGSize.zero
+    guard AXValueGetValue(rawPoint as! AXValue,.cgPoint,&point), AXValueGetValue(rawSize as! AXValue,.cgSize,&size),
+          point.x.isFinite, point.y.isFinite, size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0 else { return nil }
+    return CGRect(origin:point,size:size)
+}
 struct FocusedCaptureWindow {
     let element: AXUIElement
     let frame: CGRect

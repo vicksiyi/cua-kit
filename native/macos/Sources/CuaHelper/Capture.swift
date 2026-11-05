@@ -55,6 +55,7 @@ extension Target {
         CGImageDestinationAddImage(destination, image, nil)
         guard CGImageDestinationFinalize(destination) else { throw fail("PROVIDER_DISCONNECTED", "Cannot encode screenshot PNG.") }
         guard data.length <= 5 * 1024 * 1024 else { throw fail("INVALID_ARGUMENT", "Screenshot exceeds 5 MiB response budget.") }
+        capturedWindow = CapturedWindow(windowId:window.windowID,frame:originalFrame,contentRect:rect,pixelWidth:image.width,pixelHeight:image.height,scale:scale,snapshotId:snapshot,focus:focus?.element)
         return ["id": UUID().uuidString, "windowId": Int(window.windowID), "mimeType": "image/png", "data": (data as Data).base64EncodedString(),
                 "pixelWidth": image.width, "pixelHeight": image.height, "pointPixelScale": scale,
                 "coordinateSpace": "window-image-pixels", "windowFrame": rectData(originalFrame), "contentRect": rectData(rect),

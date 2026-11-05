@@ -29,6 +29,7 @@ final class Target {
     let launch: Date?
     var nodes: [Node] = []
     var snapshot: String?
+    var capturedWindow: CapturedWindow?
     init(_ app: NSRunningApplication) {
         self.app = app; launch = app.launchDate
         root = AXUIElementCreateApplication(app.processIdentifier)
@@ -53,6 +54,7 @@ final class Target {
             var title = string(element, kAXTitleAttribute)
             if title.isEmpty { title = string(element, kAXDescriptionAttribute) }
             var data: [String: Any] = ["id": id, "role": role, "name": title]
+            if let frame = axElementFrame(element) { data["frame"] = rectData(frame) }
             if let parent = parent { data["parentId"] = parent }
             // Secure input contents are not exported.
             let secure = string(element, kAXSubroleAttribute) == "AXSecureTextField"
@@ -77,6 +79,7 @@ final class Target {
         return (result, warnings)
     }
     func observe() throws -> [String: Any] {
+        capturedWindow = nil
         let (current, warnings) = try collect()
         nodes = current; snapshot = UUID().uuidString
         return ["snapshotId": snapshot!, "elements": current.map { $0.data }, "warnings": warnings]
@@ -118,7 +121,7 @@ let clipboard = ClipboardStore()
 @MainActor
 func handle(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
     switch method {
-    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
+    case "hello": return ["protocolVersion": 1, "platform": "macos", "capabilities": ["listApps", "observeAX", "pressAX", "setValueAX", "listWindows", "screenshotWindow", "typeText", "pressKey", "selectTextAX", "secondaryAX", "clipboardLease", "pasteTextAX", "mouseClick"], "permissions": ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess()]]
     case "clipboardBegin": return try clipboard.begin(params)
     case "clipboardRestore": return try clipboard.restore(params["token"] as? String ?? "")
     case "listApps": return ["apps": NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map(info)]
@@ -126,11 +129,12 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
         let id = UUID().uuidString; targets[id] = Target(app)
         return ["targetId": id, "app": info(app)]
-    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput":
+    case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput", "mouseInput":
         guard let id = params["targetId"] as? String, let target = targets[id] else { throw fail("TARGET_NOT_FOUND", "Unknown target handle.") }
         if method == "release" { targets.removeValue(forKey: id); return [:] }
         if method == "validatePaste" { _ = try target.pasteEditor(params); return [:] }
         if method == "pasteInput" { return try await target.pasteInput(params) }
+        if method == "mouseInput" { return try await target.mouseInput(params) }
         if method == "keyboardInput" { return try target.keyboardInput(params) }
         if method == "observeWithScreenshot" {
             var state = try target.observe()

@@ -79,3 +79,22 @@ test("restored CUA app methods reach independent selection and secondary action"
  await app.performSecondaryAction(1,"focus");
  assert.deepEqual(calls.filter(c=>c[0]==="action").map(c=>[c[1].operation,c[1].options?.selectionType,c[1].value]),[["selectText","cursor_after","Name"],["secondary",undefined,"focus"]]);
 });
+test("indexed clicks use native mouse events and require fresh observations",async()=>{
+ const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
+ const {client,calls}=fixture();
+ const app=bind_mac_app(client as any,"Fixture");
+ await app.getAXState({emit:false});
+ assert.equal(await app.click(1,{mouseButton:"right",clickCount:2,key:"Control+Shift"}),undefined);
+ assert.deepEqual(calls.find(c=>c[0]==="mouseInput")?.[1],{targetId:"target",snapshotId:"snapshot",elementId:1,x:undefined,y:undefined,mouseButton:"right",clickCount:2,key:"Control+Shift",duration:undefined});
+ assert.equal(calls.some(c=>c[0]==="action"),false);
+ await assert.rejects(app.click(1),/Observe/);
+});
+test("click rejects missing screenshot, mixed targets, counts and unsupported holds",async()=>{
+ const {client,calls}=fixture();
+ await client.get_app_state({app:"Fixture"});
+ await assert.rejects(client.click({app:"Fixture",x:1,y:2}),/current screenshot/);
+ await assert.rejects(client.click({app:"Fixture",x:1,y:2,element_index:1}),/either/);
+ await assert.rejects(client.click({app:"Fixture",element_index:1,click_count:0}),/count/);
+ await assert.rejects(client.click({app:"Fixture",element_index:1,duration:1}),/not yet implemented/);
+ assert.equal(calls.some(c=>c[0]==="mouseInput"),false);
+});

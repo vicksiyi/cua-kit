@@ -44,3 +44,10 @@ test("capture failure or malformed image cannot enable actions",async()=>{
   await assert.rejects(client.set_value({app:"Fixture",element_index:1,value:"x"}),/Observe/);
  }
 });
+test("coordinate click can dispatch only after validated combined screenshot observation",async()=>{
+ const {client,calls}=fixture("image");
+ await client.get_app_state({app:"Fixture"});
+ await client.click({app:"Fixture",x:0,y:0});
+ assert.ok(calls.includes("mouseInput"));
+ await assert.rejects(client.click({app:"Fixture",x:0,y:0}),/Observe/);
+});

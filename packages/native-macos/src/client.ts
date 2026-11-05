@@ -42,6 +42,7 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
     const binding = await target(app,method,"write");
     const state = binding.observation;
     if (!state || state.warnings.length) throw new CuaError("STALE_OBSERVATION", "Observe a complete app tree before input");
+    if (method === "mouseInput" && payload.elementId === undefined && state.screenshot === undefined) throw new CuaError("STALE_OBSERVATION","Coordinate click requires the current screenshot");
     if (payload.elementId !== undefined && !state.elements.some(element => element.id === payload.elementId))
       throw new CuaError("STALE_OBSERVATION", "Element is not in the observed app tree");
     binding.observation = undefined;
@@ -62,6 +63,13 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       binding.observation = state;
       const text = state.elements.map(element => `[${element.id}] ${element.role} ${JSON.stringify(element.name)}${element.value === undefined ? "" : ` value=${JSON.stringify(element.value)}`}`).join("\n");
       return {app:input.app,screenshot,text:[text,...state.warnings.map(warning => `Warning: ${warning}`),...(!capture ? ["Screenshot unavailable: Screen Recording permission is not granted."] : [])].join("\n")};
+    }),
+    click: (input: {app:string;element_index?:number;x?:number;y?:number;mouse_button?:string;click_count?:number;key?:string;duration?:number}) => serial(async () => {
+      const indexed = input.element_index !== undefined;
+      if (indexed ? (!Number.isSafeInteger(input.element_index) || input.element_index! <= 0 || input.x !== undefined || input.y !== undefined) : (!Number.isFinite(input.x) || !Number.isFinite(input.y))) throw new CuaError("INVALID_ARGUMENT","Click requires either an element index or finite screenshot coordinates");
+      if (input.duration !== undefined && input.duration !== 0) throw new CuaError("UNSUPPORTED_CAPABILITY","Held mouse buttons are not yet implemented");
+      if (input.click_count !== undefined && (!Number.isSafeInteger(input.click_count) || input.click_count < 1 || input.click_count > 10)) throw new CuaError("INVALID_ARGUMENT","Click count must be 1..10");
+      await write(input.app,"mouseInput",{elementId:input.element_index,x:input.x,y:input.y,mouseButton:input.mouse_button,clickCount:input.click_count,key:input.key,duration:input.duration});
     }),
     select_text: (input: {app:string;element_index:number;text:string;prefix?:string;suffix?:string;selection_type?:"text"|"cursor_before"|"cursor_after"}) => serial(async () => {
       if (input.selection_type !== undefined && !["text","cursor_before","cursor_after"].includes(input.selection_type)) throw new CuaError("INVALID_ARGUMENT","Unknown selection type");

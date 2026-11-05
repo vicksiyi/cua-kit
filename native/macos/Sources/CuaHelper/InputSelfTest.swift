@@ -46,4 +46,20 @@ func runInputChecks() throws {
         do { _ = try selectCaptureWindow(candidates,requestedId:id,focusedFrame:frame,focusedTitle:title); throw fail("SELF_TEST_FAILED","Invalid window selection accepted.") }
         catch let error as Failure { guard error.code == code else { throw error } }
     }
+    let capture = CapturedWindow(windowId:1,frame:frameB,contentRect:frameB,pixelWidth:1200,pixelHeight:800,scale:2,snapshotId:"test",focus:nil)
+    let mapped = try screenshotPoint(CGPoint(x:200,y:100),capture:capture)
+    guard mapped == CGPoint(x:-400,y:90) else { throw fail("SELF_TEST_FAILED","Retina screenshot coordinates mapped incorrectly.") }
+    for point in [CGPoint(x:-1,y:0),CGPoint(x:1200,y:0),CGPoint(x:0,y:800),CGPoint(x:CGFloat.nan,y:0)] {
+        do { _ = try screenshotPoint(point,capture:capture); throw fail("SELF_TEST_FAILED","Invalid screenshot point accepted.") }
+        catch let error as Failure { guard error.code == "INVALID_ARGUMENT" else { throw error } }
+    }
+    for (name,down,up,button) in [("left",CGEventType.leftMouseDown,CGEventType.leftMouseUp,0),("right",.rightMouseDown,.rightMouseUp,1),("middle",.otherMouseDown,.otherMouseUp,2)] {
+        let events = try mouseClickEvents(point:mapped,button:name,count:2,flags:mouseModifiers("Control+Shift"))
+        guard events.count == 4, events[0].type == down, events[1].type == up,
+              events[2].getIntegerValueField(.mouseEventClickState) == 2,
+              events[0].getIntegerValueField(.mouseEventButtonNumber) == button,
+              events.allSatisfy({$0.location == mapped && $0.flags.contains(.maskControl) && $0.flags.contains(.maskShift)}) else { throw fail("SELF_TEST_FAILED","Mouse event sequence differs.") }
+    }
+    do { _ = try mouseModifiers("a"); throw fail("SELF_TEST_FAILED","Unsupported mouse key accepted.") }
+    catch let error as Failure { guard error.code == "UNSUPPORTED_CAPABILITY" else { throw error } }
 }
