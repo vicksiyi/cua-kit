@@ -48,11 +48,13 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   }
   await assert.rejects(client.getAppPolicy('/nonexistent/core-policy.app'),(error:any)=>error.code===-10010);
   for(const [method,args] of [
-   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],
+   ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],
   ] as const){
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
    await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
   }
+  await assert.rejects(client.click({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,mouseButton:'right'}),(error:any)=>error.code===-10011);
+  await assert.rejects(client.click({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,clickCount:1.5}),(error:any)=>error.code===-32602);
   await assert.rejects(client.pressKey({app:join(f.root,'com.core.fixture.allowed.app'),key:'a',duration:-1}),(error:any)=>error.code===-32602);
   await assert.rejects(client.selectText({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,text:'hello',selection:'invalid'}),(error:any)=>error.code===-32602);
   await assert.rejects(client.startApp('/nonexistent/core-start.app'),(error:any)=>error.code===-10010);
@@ -173,6 +175,10 @@ for(const source of ['restored','installed'] as const) test(`live owned App skys
   let typed:any;
   for(let attempt=0;attempt<20;attempt++){typed=await refresh();if(typed.skyshot.text.includes('keyboard 🌍 result'))break;await new Promise(r=>setTimeout(r,25));}
   const typedLine=typed.skyshot.text.split('\n').find((line:string)=>line.includes('AXTextField')&&line.includes('Fixture name'));assert.match(typedLine,/keyboard 🌍 result/);
+  const buttonLine=typed.skyshot.text.split('\n').find((line:string)=>line.includes('AXButton')&&line.includes('Save fixture'));assert.ok(buttonLine);
+  await client.click({app,elementIndex:Number(/^\[(\d+)\]/.exec(buttonLine)![1])});
+  let saved:any;for(let attempt=0;attempt<20;attempt++){saved=await refresh();if(saved.skyshot.text.includes('Saved keyboard 🌍 result'))break;await new Promise(r=>setTimeout(r,25));}
+  assert.match(saved.skyshot.text,/Saved keyboard 🌍 result/);
  }finally{(globalThis as any).nodeRepl=before;}
 });
 

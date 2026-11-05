@@ -1,5 +1,21 @@
 # Implementation status
 
+## Current native-protocol checkpoint (latest: 2026-11-06)
+
+Older dated sections below are development history, not the current completion
+claim. The default demo has not been switched to a fully independent App runtime.
+
+| Original Sky request area | Current independent native route | Actual evidence / remaining gap |
+| --- | --- | --- |
+| Inventory, version negotiation | Swift service supervised by Rust | Original/restored client and real MCP worker paths pass. |
+| App policy and approval | Swift explicit rules; original Sky TS approval flow | Decline and policy denial verified; vendor native rules/authentication not recovered. |
+| Explicit AppStart | Swift LaunchServices | Both clients launch/reuse/retire an owned fixture; no proof of implicit GetSkyshot startup behavior. |
+| App skyshot | Shared Swift AX + window PNG capture | Protocol/permission errors pass; real screenshot gate blocked by host permissions in last explicit run. |
+| setValue, selectText, secondary action | Shared Swift AX engine | Envelopes/guards and mapping tests pass; real input effect not accepted. |
+| type, pressKey, click | Shared Swift keyboard/mouse engines | Protocol/mapping/release tests pass; actual UI and screenshot-coordinate effects not accepted. |
+| scroll, drag, paste, audio | Existing engines partially available, original-protocol dispatch pending | Not complete. |
+| Source/language parity and legacy retirement | JS-derived TS retained; native responsibilities migrating to Rust/Swift | Whole-repository per-file review, original hidden semantics, production integration and old adapter retirement remain open. |
+
 ## Rust MCP checkpoint (2026-11-06)
 
 Rust MCP now uses rmcp 1.5.0 and the observed four-tool schema snapshot. An
@@ -5545,3 +5561,25 @@ been accepted: host TCC permissions blocked prior live runs. No passing protocol
 or pure native self-test is counted as evidence of actual keyboard events.
 Mouse/click/scroll/drag/paste/audio original-protocol dispatch, full native parity
 and production demo replacement remain outstanding.
+
+
+## Native click dispatch (2026-11-06)
+
+Original Click.d.ts defines coordinates in the app-window screenshot and element
+indices from the latest app-state text. The original client emits a click enum
+with `at.elementID._0` or `at.coordinate._0`, numeric mouse button 0/1/2, count,
+optional modifier chord and hold seconds. Swift now decodes both target variants,
+checks numeric types/count/button/duration, and dispatches to Target.mouseInput.
+The existing engine revalidates AX state; coordinate clicks additionally check
+captured window identity/frame, capture geometry/scale and captured focus before
+mapping screenshot pixels. Mouse-down is not begun after the request deadline;
+release handling remains shared with held keyboard input.
+
+Swift build, native action-mapping self-test, existing input/held-release self-tests
+and four IPC tests pass. Both installed JS and restored TS clients exercise element
+and coordinate click envelopes and reject fractional counts. The native decoder
+self-test creates the expected middle-button down/up pairs for a double click.
+The opt-in UI gate now clicks the fixture Save button and checks its visible saved
+text after keyboard entry. That gate remains unaccepted; neither synthetic events
+nor protocol guards prove real coordinate accuracy or real UI click effects.
+Scroll/drag/paste/audio and production adapter retirement remain outstanding.

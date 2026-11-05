@@ -7,6 +7,36 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
           let value = action[name] as? [String: Any] else {
         throw SkyRPCFailure(code: -32602, message: "Expected one Computer Use action")
     }
+    if name == "click" {
+        func number(_ raw: Any?, _ label: String) throws -> Double {
+            guard let n = raw as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID(), n.doubleValue.isFinite else {
+                throw SkyRPCFailure(code: -32602, message: "Click requires finite numeric \(label)")
+            }
+            return n.doubleValue
+        }
+        guard let at = value["at"] as? [String: Any], at.count == 1 else {
+            throw SkyRPCFailure(code: -32602, message: "Click requires one element or coordinate target")
+        }
+        var params: [String: Any] = ["operation": "click"]
+        if let target = at["elementID"] as? [String: Any], let text = target["_0"] as? String,
+           let id = Int(text), id > 0, String(id) == text { params["elementId"] = id }
+        else if let target = at["coordinate"] as? [String: Any], let point = target["_0"] as? [Any], point.count == 2 {
+            params["x"] = try number(point[0], "x"); params["y"] = try number(point[1], "y")
+        } else { throw SkyRPCFailure(code: -32602, message: "Invalid click target") }
+        let button = try number(value["mouseButton"], "mouseButton")
+        guard [0.0,1.0,2.0].contains(button) else { throw SkyRPCFailure(code: -32602, message: "Unknown mouse button") }
+        params["mouseButton"] = ["left","right","middle"][Int(button)]
+        let count = try number(value["clickCount"], "clickCount")
+        guard count.rounded() == count, (1...10).contains(count) else { throw SkyRPCFailure(code: -32602, message: "Click count must be 1..10") }
+        params["clickCount"] = Int(count)
+        let duration = try value["duration"].map { try number($0,"duration") } ?? 0
+        _ = try heldNanoseconds(duration); params["duration"] = duration
+        if let key = value["key"] {
+            guard let key = key as? String else { throw SkyRPCFailure(code: -32602, message: "Click key must be a modifier chord") }
+            _ = try mouseModifiers(key); params["key"] = key
+        }
+        return params
+    }
     if name == "type" {
         guard let text = value["_0"] as? String, text.utf16.count <= 100000 else {
             throw SkyRPCFailure(code: -32602, message: "type requires bounded Unicode text")
@@ -58,6 +88,11 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
 }
 
 func runSkyActionChecks() throws {
+    let click = try decodeSkyElementAction(["click": ["at": ["coordinate": ["_0": [12.5,24.0]]], "mouseButton": 2, "clickCount": 2, "duration": 0.125, "key": "Shift"]])
+    guard click["x"] as? Double == 12.5, click["y"] as? Double == 24, click["mouseButton"] as? String == "middle", click["clickCount"] as? Int == 2, click["duration"] as? Double == 0.125 else { throw fail("SELF_TEST_FAILED", "Click payload mapping differs") }
+    let events = try mouseClickEvents(point: CGPoint(x: click["x"] as! Double,y:click["y"] as! Double),button:click["mouseButton"] as! String,count:click["clickCount"] as! Int,flags:mouseModifiers(click["key"] as? String))
+    guard events.count == 4, events[0].type == .otherMouseDown, events[3].type == .otherMouseUp else { throw fail("SELF_TEST_FAILED", "Mapped click produced incorrect events") }
+
     let selected = try decodeSkyElementAction(["selectText": ["elementID": "2", "text": "🌍", "selection": "text", "prefix": "hello "]])
     guard let text = selected["value"] as? String else { throw fail("SELF_TEST_FAILED", "Selection text did not reach native value field") }
     let range = try selectedTextRange(content: "hello 🌍 world", text: text, options: selected)

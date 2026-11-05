@@ -133,3 +133,10 @@ hold conversion/release and deadline checks. The selectText parameter bridge was
 corrected to match the existing Swift engine's value field. Native mapping and
 release self-tests pass; live input acceptance and original native semantics are
 still unproven. No TS key-event implementation was introduced.
+
+
+Original click enum decoding now stays in Swift and reuses the native mouse and
+capture-identity engine. Original coordinate declarations identify app-window
+screenshot space; actual pixel-to-screen behavior still needs live acceptance.
+Numeric button/count/hold conversion is exercised with original/restored clients
+and native event construction, not treated as original native implementation proof.

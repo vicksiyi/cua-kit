@@ -1,6 +1,6 @@
 # macOS 原生后端：第一条独立链路
 
-实现由 TypeScript Provider 和 Swift helper 组成，不调用 Sky 私有 IPC，也不复用 ChatGPT 内置可执行文件。构建要求 macOS 14+ 与 Swift 工具链。
+本文前半部分描述早期 TypeScript Provider + Swift helper 的 NDJSON 适配器，仍供现有调用方使用。后续新增了 Rust 托管 Swift 服务、接收原始 Sky 协议的迁移路径；当前能力与验收边界以 [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md) 顶部汇总为准。原生原始函数体尚未恢复，不能将协议兼容当作完整还原。两条路径均不执行 ChatGPT 内置服务。构建要求 macOS 14+ 与 Swift 工具链。
 
 ```bash
 npm run build:native
@@ -349,3 +349,25 @@ been accepted: host TCC permissions blocked prior live runs. No passing protocol
 or pure native self-test is counted as evidence of actual keyboard events.
 Mouse/click/scroll/drag/paste/audio original-protocol dispatch, full native parity
 and production demo replacement remain outstanding.
+
+
+## Native click dispatch (2026-11-06)
+
+Original Click.d.ts defines coordinates in the app-window screenshot and element
+indices from the latest app-state text. The original client emits a click enum
+with `at.elementID._0` or `at.coordinate._0`, numeric mouse button 0/1/2, count,
+optional modifier chord and hold seconds. Swift now decodes both target variants,
+checks numeric types/count/button/duration, and dispatches to Target.mouseInput.
+The existing engine revalidates AX state; coordinate clicks additionally check
+captured window identity/frame, capture geometry/scale and captured focus before
+mapping screenshot pixels. Mouse-down is not begun after the request deadline;
+release handling remains shared with held keyboard input.
+
+Swift build, native action-mapping self-test, existing input/held-release self-tests
+and four IPC tests pass. Both installed JS and restored TS clients exercise element
+and coordinate click envelopes and reject fractional counts. The native decoder
+self-test creates the expected middle-button down/up pairs for a double click.
+The opt-in UI gate now clicks the fixture Save button and checks its visible saved
+text after keyboard entry. That gate remains unaccepted; neither synthetic events
+nor protocol guards prove real coordinate accuracy or real UI click effects.
+Scroll/drag/paste/audio and production adapter retirement remain outstanding.

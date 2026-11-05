@@ -37,7 +37,8 @@ final class SkyAppState {
                 throw SkyRPCFailure(code: -32602, message: "Key hold exceeds remaining request deadline")
             }
             _ = try await target.keyboardInput(params)
-        } else { _ = try target.action(params) }
+        } else if params["operation"] as? String == "click" { _ = try await target.mouseInput(params) }
+        else { _ = try target.action(params) }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")
         }

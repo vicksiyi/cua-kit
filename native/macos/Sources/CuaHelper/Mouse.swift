@@ -81,6 +81,10 @@ extension Target {
         try validateSnapshot(params)
         defer { invalidateInputState() }
         for index in stride(from:0,to:events.count,by:2) {
+            if let deadline = params["deadlineUnixMilliseconds"] as? Double,
+               Date().timeIntervalSince1970 * 1000 + Double(held) / 1_000_000 >= deadline {
+                throw fail("INVALID_ARGUMENT", "Click deadline expired before the next mouse-down; earlier clicks may have been dispatched.")
+            }
             try await dispatchHeldPair(events[index],events[index+1],nanoseconds:held,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{try await Task.sleep(nanoseconds:$0)})
         }
         return ["outcome":"dispatched","eventCount":events.count]

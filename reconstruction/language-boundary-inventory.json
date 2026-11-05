@@ -3919,7 +3919,7 @@
     {
       "path": "native/macos/Sources/CuaHelper/Mouse.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "bf4700b08e64f4bfbbb9ca430af4db069055ae1088b329fed959d1a092ebaf34"
+      "sha256": "e49bafc842913d80bd8cf6a86a27417289db318f53ca485d01546bbb19930c39"
     },
     {
       "path": "native/macos/Sources/CuaHelper/ObservationText.swift",
@@ -3949,12 +3949,12 @@
     {
       "path": "native/macos/Sources/CuaHelper/SkyAppState.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "0e49379b2c63d97567656cfc80103504b53818812da7aad536bab0b9df95e389"
+      "sha256": "e7926b78aaaa41ae5200e7b2990d2e2fc18f669844e552f70ca903d7dd1a79b6"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyElementAction.swift",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "35c529aebc0817b6ac90c42ce7ce7cd09b28a6591d51b7625a3ccdebbedd6c75"
+      "sha256": "0637d0c0858e30fe863f6ca68851e4d63938c973668e5e38f7e3b0c22182696f"
     },
     {
       "path": "native/macos/Sources/CuaHelper/SkyIPC.swift",
