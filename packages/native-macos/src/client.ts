@@ -8,7 +8,7 @@ export interface NativeTransport {
 export type NativeAuthorization = (request: {
   app: NativeAppInfo; operation: string; effect: "read" | "write";
 }) => Promise<void>;
-type Observation = { snapshotId: string; elements: Array<{id: number; role: string; name: string; value?: string}>; warnings: string[]; screenshot?: unknown };
+type Observation = { snapshotId: string; elements: Array<{id: number; role: string; name: string; value?: string; parentId?: number; frame?: Record<string, number>; properties?: Record<string, unknown>}>; warnings: string[]; screenshot?: unknown };
 type Bound = { targetId: string; app: NativeAppInfo; observation?: Observation };
 export function createNativeMacClient(helper: NativeTransport, authorize: NativeAuthorization) {
   if (typeof authorize !== "function") throw new Error("Native adapter requires an authorization callback");
@@ -61,7 +61,16 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       const state = await helper.request<Observation>(capture ? "observeWithScreenshot" : "observe",{targetId:binding.targetId});
       const screenshot = capture ? {url:screenshotDataUrl(state.screenshot)} : null;
       binding.observation = state;
-      const text = state.elements.map(element => `[${element.id}] ${element.role} ${JSON.stringify(element.name)}${element.value === undefined ? "" : ` value=${JSON.stringify(element.value)}`}`).join("\n");
+      // Preserve native context: models need hierarchy, state and advertised actions
+      // to distinguish duplicate labels and choose an operation from observation.
+      const text = state.elements.map(element => {
+        const fields = [`[${element.id}]`, element.role, JSON.stringify(element.name)];
+        if (element.parentId !== undefined) fields.push(`parent=[${element.parentId}]`);
+        if (element.value !== undefined && element.properties?.secure !== true) fields.push(`value=${JSON.stringify(element.value)}`);
+        if (element.frame !== undefined) fields.push(`frame=${JSON.stringify(element.frame)}`);
+        if (element.properties !== undefined) fields.push(`properties=${JSON.stringify(element.properties)}`);
+        return fields.join(" ");
+      }).join("\n");
       return {app:input.app,screenshot,text:[text,...state.warnings.map(warning => `Warning: ${warning}`),...(!capture ? ["Screenshot unavailable: Screen Recording permission is not granted."] : [])].join("\n")};
     }),
     click: (input: {app:string;element_index?:number;x?:number;y?:number;mouse_button?:string;click_count?:number;key?:string;duration?:number}) => serial(async () => {

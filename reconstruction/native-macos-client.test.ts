@@ -98,3 +98,29 @@ test("click rejects missing screenshot, mixed targets, counts and unsupported ho
  await assert.rejects(client.click({app:"Fixture",element_index:1,duration:1}),/not yet implemented/);
  assert.equal(calls.some(c=>c[0]==="mouseInput"),false);
 });
+
+test("restored AX state exposes hierarchy, available actions and state without secure values",async()=>{
+ const elements = [
+  {id:1,role:"AXWindow",name:"Editor"},
+  {id:2,parentId:1,role:"AXTextField",name:"Name",value:"draft",frame:{x:-20,y:40,width:200,height:30},properties:{secure:false,actions:"AXShowMenu",AXEnabled:true,AXFocused:false,selectionStart:0,selectionLength:2}},
+  {id:3,parentId:1,role:"AXSecureTextField",name:"Password",value:"must-not-leak",properties:{secure:true,actions:"",AXEnabled:true}},
+ ];
+ const helper:NativeTransport={request:async <T>(method:string)=>{
+  if(method==="listApps") return {apps:[{pid:42,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1}]} as T;
+  if(method==="bind") return {targetId:"target",app:{pid:42,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1}} as T;
+  if(method==="hello") return {permissions:{screenRecording:false}} as T;
+  if(method==="observe") return {snapshotId:"snapshot",elements,warnings:[]} as T;
+  throw Error(`Unexpected method ${method}`);
+ }};
+ const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
+ const app=bind_mac_app(createNativeMacClient(helper,async()=>{}) as any,"Fixture");
+ const state=await app.getAXState({emit:false});
+ const text=typeof state === "string" ? state : JSON.stringify(state);
+ assert.match(text,/parent=\[1\]/);
+ assert.ok(text.includes("AXShowMenu"));
+ assert.ok(text.includes("AXFocused"));
+ assert.ok(text.includes("selectionLength"));
+ assert.ok(text.includes("-20"));
+ assert.ok(text.includes("draft"));
+ assert.ok(!text.includes("must-not-leak"));
+});
