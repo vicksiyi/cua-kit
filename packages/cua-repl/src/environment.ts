@@ -1,11 +1,17 @@
 import { readFileSync } from "node:fs";
 import { load_instructions } from "./instructions";
-/** Extracted from the restored launch path; preserves its environment contract. */
-export function create_launch_environment(
-  environment: NodeJS.ProcessEnv,
-  platform: NodeJS.Platform = process.platform,
-): NodeJS.ProcessEnv {
+/** Readable restoration of the installed environment.js contract. */
+export function create_launch_environment({
+  env: environment,
+  instructions_directory,
+  platform,
+}: {
+  env: NodeJS.ProcessEnv;
+  instructions_directory: URL;
+  platform: NodeJS.Platform;
+}) {
   const instructions = load_instructions(
+    instructions_directory,
     platform,
     environment.CUA_REPL_BROWSER_ENV,
     environment.CUA_REPL_BROWSER_GUIDANCE,
@@ -36,15 +42,18 @@ export function create_launch_environment(
   if (
     surfaces.has("computer") &&
     environment.SKY_ENABLE_AUDIO === "1" &&
-    environment.SKY_AUDIO_ATTACHMENTS === "1"
+    environment.NODE_REPL_ENABLE_AUDIO === "1"
   )
-    description.push(instructions.audio_attachments);
+    description.push(instructions.audio);
   const overrides = {
     server_instructions: instructions.server,
     tools: {
       js: {
         description: description.join("\n\n"),
-        field_descriptions: { code: instructions.code },
+        field_descriptions: {
+          code: instructions.code,
+          title: instructions.title,
+        },
       },
       js_reset: { description: instructions.reset },
     },
@@ -52,6 +61,13 @@ export function create_launch_environment(
   return {
     ...environment,
     CUA_REPL_ENABLED_SURFACES: [...surfaces].join(","),
+    NODE_REPL_JS_COMPLETION_SUMMARY:
+      surfaces.size > 0
+        ? JSON.stringify({
+            instructions: instructions.task_completion,
+            description: instructions.completion_summary,
+          })
+        : undefined,
     NODE_REPL_UNTRUSTED_ENV_ALLOWLIST: [
       environment.NODE_REPL_UNTRUSTED_ENV_ALLOWLIST,
       "CUA_REPL_ENABLED_SURFACES",
@@ -63,10 +79,7 @@ export function create_launch_environment(
       environment.NODE_REPL_TRUSTED_SERVICES ?? JSON.stringify(services),
     NODE_REPL_JS_BANNER:
       environment.NODE_REPL_JS_BANNER ??
-      readFileSync(
-        new URL(import.meta.resolve("#instructions/banner.js")),
-        "utf8",
-      ),
+      readFileSync(new URL("banner.js", instructions_directory), "utf8"),
     NODE_REPL_TOOL_OVERRIDES: JSON.stringify(overrides),
   };
 }

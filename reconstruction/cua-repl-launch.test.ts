@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { execFile } from "node:child_process";
+import { create_launch_environment } from "../packages/cua-repl/src/environment";
 import { load_instructions } from "../packages/cua-repl/src/instructions";
 const vendor =
   process.env.CUA_VENDOR_ROOT ??
@@ -30,16 +31,24 @@ test("REPL instructions preserve platform/environment/guidance selection and err
       "unknown",
     ])
       for (const guidance of [undefined, "tool_description", "other"]) {
-        const run = (fn: typeof load_instructions) => {
+        const run = (fn: typeof load_instructions, directory: URL) => {
           try {
-            return { value: fn(platform, environment, guidance) };
+            return { value: fn(directory, platform, environment, guidance) };
           } catch (e: any) {
             return { error: e.message };
           }
         };
         assert.deepEqual(
-          run(load_instructions),
-          remap(run(originalInstructions.load_instructions)),
+          run(
+            load_instructions,
+            pathToFileURL(resolve("packages/cua-repl/instructions") + "/"),
+          ),
+          remap(
+            run(
+              originalInstructions.load_instructions,
+              pathToFileURL(`${vendor}/cua-repl/instructions/`),
+            ),
+          ),
         );
       }
 });
@@ -74,7 +83,7 @@ test("REPL launcher preserves actual child environment, overrides, validation an
     const child = join(directory, "node-repl-fixture");
     await writeFile(
       child,
-      `#!${process.execPath}\nconst keys = ["CUA_REPL_ENABLED_SURFACES","NODE_REPL_UNTRUSTED_ENV_ALLOWLIST","NODE_REPL_TRUSTED_SERVICES","NODE_REPL_JS_BANNER","NODE_REPL_TOOL_OVERRIDES"]; console.log(JSON.stringify(Object.fromEntries(keys.map(k=>[k,process.env[k]])))); process.exitCode=Number(process.env.FIXTURE_EXIT||0); if(process.env.FIXTURE_SIGNAL) process.kill(process.pid,process.env.FIXTURE_SIGNAL);\n`,
+      `#!${process.execPath}\nconst keys = ["CUA_REPL_ENABLED_SURFACES","NODE_REPL_UNTRUSTED_ENV_ALLOWLIST","NODE_REPL_TRUSTED_SERVICES","NODE_REPL_JS_BANNER","NODE_REPL_TOOL_OVERRIDES","NODE_REPL_JS_COMPLETION_SUMMARY"]; console.log(JSON.stringify(Object.fromEntries(keys.map(k=>[k,process.env[k]])))); process.exitCode=Number(process.env.FIXTURE_EXIT||0); if(process.env.FIXTURE_SIGNAL) process.kill(process.pid,process.env.FIXTURE_SIGNAL);\n`,
     );
     await chmod(child, 0o700);
     const cases: NodeJS.ProcessEnv[] = [
@@ -95,7 +104,7 @@ test("REPL launcher preserves actual child environment, overrides, validation an
         CUA_REPL_NODE_REPL_PATH: child,
         CUA_REPL_ENABLED_SURFACES: "computer",
         SKY_ENABLE_AUDIO: "1",
-        SKY_AUDIO_ATTACHMENTS: "1",
+        NODE_REPL_ENABLE_AUDIO: "1",
       },
       {
         CUA_REPL_NODE_REPL_PATH: child,
@@ -144,4 +153,72 @@ test("REPL launcher preserves actual child environment, overrides, validation an
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("environment builder matches current source audio flags, title and completion-summary contract", async () => {
+  const original = (
+    await import(pathToFileURL(`${originalDirectory}/environment.js`).href)
+  ).create_launch_environment;
+  const restoredDirectory = pathToFileURL(
+    resolve("packages/cua-repl/instructions") + "/",
+  );
+  const vendorDirectory = pathToFileURL(`${vendor}/cua-repl/instructions/`);
+  for (const platform of [
+    "darwin",
+    "linux",
+    "win32",
+    "freebsd",
+  ] as NodeJS.Platform[])
+    for (const surfaces of [
+      undefined,
+      "",
+      "browser",
+      "computer",
+      "browser, computer,browser",
+      "invalid",
+    ])
+      for (const audio of [
+        {},
+        { SKY_ENABLE_AUDIO: "1", NODE_REPL_ENABLE_AUDIO: "1" },
+        { SKY_ENABLE_AUDIO: "1", SKY_AUDIO_ATTACHMENTS: "1" },
+        { SKY_ENABLE_AUDIO: "true", NODE_REPL_ENABLE_AUDIO: "1" },
+      ]) {
+        const env = {
+          CUA_REPL_ENABLED_SURFACES: surfaces,
+          NODE_REPL_JS_COMPLETION_SUMMARY: "caller-old-value",
+          ...audio,
+        };
+        const run = (fn: typeof create_launch_environment, directory: URL) => {
+          try {
+            return {
+              value: fn({ env, instructions_directory: directory, platform }),
+            };
+          } catch (error: any) {
+            return { error: error.message };
+          }
+        };
+        assert.deepEqual(
+          remap(run(create_launch_environment, restoredDirectory)),
+          remap(run(original, vendorDirectory)),
+        );
+      }
+  const disabled = create_launch_environment({
+    env: { CUA_REPL_ENABLED_SURFACES: "" },
+    instructions_directory: restoredDirectory,
+    platform: "darwin",
+  });
+  assert.equal(disabled.NODE_REPL_JS_COMPLETION_SUMMARY, undefined);
+  const enabled = create_launch_environment({
+    env: { CUA_REPL_ENABLED_SURFACES: "computer" },
+    instructions_directory: restoredDirectory,
+    platform: "darwin",
+  });
+  assert.ok(
+    JSON.parse(enabled.NODE_REPL_TOOL_OVERRIDES!).tools.js.field_descriptions
+      .title.length > 0,
+  );
+  assert.ok(
+    JSON.parse(enabled.NODE_REPL_JS_COMPLETION_SUMMARY!).instructions.length >
+      0,
+  );
 });

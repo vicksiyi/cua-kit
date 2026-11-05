@@ -9,7 +9,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdtemp, writeFile, readFile, rm, realpath } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { create_launch_environment } from "../packages/cua-repl/src/launch_environment";
+import { create_launch_environment } from "../packages/cua-repl/src/environment";
 import path from "node:path";
 import os from "node:os";
 import {
@@ -246,28 +246,41 @@ test("agent-neutral MCP client reaches both restored workers through the package
         path.resolve("packages/agent-loop/src/native-supervisor.ts"),
       ],
       env: create_launch_environment({
-        HOME: root,
-        CODEX_HOME: root,
-        TMPDIR: root,
-        CUA_NATIVE_SUPERVISOR_PATH: binary,
-        NODE_REPL_NODE_PATH: node,
-        NODE_REPL_DISABLE_ANALYTICS: "1",
-        NODE_REPL_NODE_MODULE_DIRS: runtime.root,
-        CUA_REPL_ENABLED_SURFACES: "",
-        NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ fixture: service }),
-        NODE_REPL_TRUSTED_CODE_PATHS: root,
-        NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:
-          "DEEPSEEK_API_KEY,CUA_MODEL_ENDPOINT,CUA_REPL_ENABLED_SURFACES",
-        DEEPSEEK_API_KEY: "fixture-not-a-real-key",
-        CUA_MODEL_ENDPOINT: "fixture-not-a-real-endpoint",
+        env: {
+          HOME: root,
+          CODEX_HOME: root,
+          TMPDIR: root,
+          CUA_NATIVE_SUPERVISOR_PATH: binary,
+          NODE_REPL_NODE_PATH: node,
+          NODE_REPL_DISABLE_ANALYTICS: "1",
+          NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+          CUA_REPL_ENABLED_SURFACES: "",
+          NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ fixture: service }),
+          NODE_REPL_TRUSTED_CODE_PATHS: root,
+          NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:
+            "DEEPSEEK_API_KEY,CUA_MODEL_ENDPOINT,CUA_REPL_ENABLED_SURFACES",
+          DEEPSEEK_API_KEY: "fixture-not-a-real-key",
+          CUA_MODEL_ENDPOINT: "fixture-not-a-real-endpoint",
+        },
+        instructions_directory: new URL(
+          "../instructions/",
+          import.meta.resolve("@core/cua-repl"),
+        ),
+        platform: process.platform,
       }),
       stderr: "pipe",
     });
     try {
       const tools = await client.listTools();
       const expectedTools = JSON.parse(
-        create_launch_environment({ CUA_REPL_ENABLED_SURFACES: "" })
-          .NODE_REPL_TOOL_OVERRIDES!,
+        create_launch_environment({
+          env: { CUA_REPL_ENABLED_SURFACES: "" },
+          instructions_directory: new URL(
+            "../instructions/",
+            import.meta.resolve("@core/cua-repl"),
+          ),
+          platform: process.platform,
+        }).NODE_REPL_TOOL_OVERRIDES!,
       ).tools;
       assert.equal(
         tools.find((t) => t.name === "js")?.description,
@@ -349,19 +362,26 @@ test("native MCP initializes the default restored browser service with isolated 
           path.resolve("packages/agent-loop/src/native-supervisor.ts"),
         ],
         env: create_launch_environment({
-          HOME: root,
-          CODEX_HOME: root,
-          TMPDIR: root,
-          CUA_NATIVE_SUPERVISOR_PATH: binary,
-          NODE_REPL_NODE_PATH: node,
-          NODE_REPL_DISABLE_ANALYTICS: "1",
-          NODE_REPL_NODE_MODULE_DIRS: runtime.root,
-          NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
-          CUA_REPL_ENABLED_SURFACES: "browser",
-          CUA_REPL_BROWSER_ENV: "codex-app",
-          BROWSER_USE_BACKEND_PATHS: "",
-          BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
-          BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+          env: {
+            HOME: root,
+            CODEX_HOME: root,
+            TMPDIR: root,
+            CUA_NATIVE_SUPERVISOR_PATH: binary,
+            NODE_REPL_NODE_PATH: node,
+            NODE_REPL_DISABLE_ANALYTICS: "1",
+            NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+            NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
+            CUA_REPL_ENABLED_SURFACES: "browser",
+            CUA_REPL_BROWSER_ENV: "codex-app",
+            BROWSER_USE_BACKEND_PATHS: "",
+            BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
+            BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+          },
+          instructions_directory: new URL(
+            "../instructions/",
+            import.meta.resolve("@core/cua-repl"),
+          ),
+          platform: process.platform,
         }),
         stderr: "pipe",
       },
@@ -514,23 +534,30 @@ for (const allowFixtureOrigin of [false, true])
             path.resolve("packages/agent-loop/src/native-supervisor.ts"),
           ],
           env: create_launch_environment({
-            HOME: root,
-            CODEX_HOME: root,
-            TMPDIR: root,
-            CUA_NATIVE_SUPERVISOR_PATH: binary,
-            NODE_REPL_NODE_PATH: node,
-            NODE_REPL_DISABLE_ANALYTICS: "1",
-            NODE_REPL_NODE_MODULE_DIRS: runtime.root,
-            NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
-            CUA_REPL_ENABLED_SURFACES: "browser",
-            CUA_REPL_BROWSER_ENV: "codex-app",
-            BROWSER_USE_BACKEND_PATHS: socketPath,
-            BROWSER_USE_TINYSKY_ENABLED: "1",
-            BROWSER_USE_DISABLE_TAB_CAPABILITIES: "webMcp",
-            BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH:
-              "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br",
-            BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
-            BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+            env: {
+              HOME: root,
+              CODEX_HOME: root,
+              TMPDIR: root,
+              CUA_NATIVE_SUPERVISOR_PATH: binary,
+              NODE_REPL_NODE_PATH: node,
+              NODE_REPL_DISABLE_ANALYTICS: "1",
+              NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+              NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
+              CUA_REPL_ENABLED_SURFACES: "browser",
+              CUA_REPL_BROWSER_ENV: "codex-app",
+              BROWSER_USE_BACKEND_PATHS: socketPath,
+              BROWSER_USE_TINYSKY_ENABLED: "1",
+              BROWSER_USE_DISABLE_TAB_CAPABILITIES: "webMcp",
+              BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH:
+                "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-accessibility.wasm.br",
+              BROWSER_USE_AVAILABLE_BACKENDS: "chrome",
+              BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
+            },
+            instructions_directory: new URL(
+              "../instructions/",
+              import.meta.resolve("@core/cua-repl"),
+            ),
+            platform: process.platform,
           }),
           stderr: "pipe",
         },

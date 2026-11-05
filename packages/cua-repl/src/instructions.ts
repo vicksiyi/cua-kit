@@ -4,17 +4,17 @@ const directories: Partial<Record<NodeJS.Platform, string>> = {
   darwin: "macos",
   win32: "windows",
 };
-function readInstruction(name: string) {
-  return readFileSync(
-    new URL(import.meta.resolve(`#instructions/${name}.md`)),
-    "utf8",
-  ).trimEnd();
-}
 export function load_instructions(
+  instructions_directory: URL,
   platform: NodeJS.Platform,
   browser_environment?: string,
   browser_guidance?: string,
 ) {
+  const readInstruction = (name: string) =>
+    readFileSync(
+      new URL(`${name}.md`, instructions_directory),
+      "utf8",
+    ).trimEnd();
   const directory = directories[platform];
   if (!directory) throw new Error(`unsupported cua_repl platform=${platform}`);
   const cloudFile =
@@ -33,11 +33,14 @@ export function load_instructions(
     browser,
     computer: readInstruction(`${directory}/computer`),
     output: readInstruction(`${directory}/output`),
-    audio_attachments: readInstruction("audio-attachments"),
+    audio: readInstruction("audio"),
     browser_disabled: readInstruction("browser-disabled"),
     computer_disabled: readInstruction("computer-disabled"),
     server: readInstruction("server"),
     code: readInstruction("code"),
+    title: readInstruction("title"),
+    task_completion: readInstruction("task-completion"),
+    completion_summary: readInstruction("completion-summary"),
     reset: readInstruction("reset"),
   };
 }

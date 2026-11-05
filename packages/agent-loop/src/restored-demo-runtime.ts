@@ -33,7 +33,8 @@ for (const key of [
   if (env[key] === undefined && process.env[key] !== undefined)
     env[key] = process.env[key]!;
 const supervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
-if (!["installed", "independent", "rust"].includes(supervisor)) throw Error("CUA_RUNTIME_SUPERVISOR must be installed, independent or rust");
+if (!["installed", "independent", "rust"].includes(supervisor))
+  throw Error("CUA_RUNTIME_SUPERVISOR must be installed, independent or rust");
 if (supervisor === "installed") {
   if (!env.CUA_NATIVE_SUPERVISOR_PATH)
     throw new Error("Set CUA_NATIVE_SUPERVISOR_PATH for demo:restored");
@@ -41,7 +42,14 @@ if (supervisor === "installed") {
 }
 // Explicit surfaces opt into CUA initialization; absent retains generic JS mode.
 if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
-  env = create_launch_environment(env) as Record<string, string>;
+  env = create_launch_environment({
+    env: env,
+    instructions_directory: new URL(
+      "../instructions/",
+      import.meta.resolve("@core/cua-repl"),
+    ),
+    platform: process.platform,
+  }) as Record<string, string>;
   process.env.CUA_MCP_REQUEST_META ??= JSON.stringify({
     "x-codex-turn-metadata": {
       session_id: randomUUID(),
@@ -58,17 +66,38 @@ if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
   });
 }
 if (env.CORE_CUA_NATIVE_BACKEND === "independent") {
-  if (!env.CUA_REPL_ENABLED_SURFACES?.split(",").some(surface => surface.trim() === "computer")) throw new Error("Independent native backend requires computer surface");
+  if (
+    !env.CUA_REPL_ENABLED_SURFACES?.split(",").some(
+      (surface) => surface.trim() === "computer",
+    )
+  )
+    throw new Error("Independent native backend requires computer surface");
   const services = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");
-  if (services.sky && services.sky !== "@core/sky/service") throw new Error("Independent native backend conflicts with configured Sky service");
+  if (services.sky && services.sky !== "@core/sky/service")
+    throw new Error(
+      "Independent native backend conflicts with configured Sky service",
+    );
   services.sky = "@core/native-macos/service";
   env.NODE_REPL_TRUSTED_SERVICES = JSON.stringify(services);
 } else if (env.CORE_CUA_NATIVE_BACKEND === "swift") {
-  if (supervisor !== "rust") throw new Error("Swift native backend requires CUA_RUNTIME_SUPERVISOR=rust");
-} else if (env.CORE_CUA_NATIVE_BACKEND !== undefined && env.CORE_CUA_NATIVE_BACKEND !== "vendor") {
-  throw new Error("CORE_CUA_NATIVE_BACKEND must be independent, swift or vendor");
+  if (supervisor !== "rust")
+    throw new Error(
+      "Swift native backend requires CUA_RUNTIME_SUPERVISOR=rust",
+    );
+} else if (
+  env.CORE_CUA_NATIVE_BACKEND !== undefined &&
+  env.CORE_CUA_NATIVE_BACKEND !== "vendor"
+) {
+  throw new Error(
+    "CORE_CUA_NATIVE_BACKEND must be independent, swift or vendor",
+  );
 }
-if (env.CUA_REPL_ENABLED_SURFACES?.split(",").some(surface=>surface.trim()==="browser")) env = await configureIndependentBrowser(env);
+if (
+  env.CUA_REPL_ENABLED_SURFACES?.split(",").some(
+    (surface) => surface.trim() === "browser",
+  )
+)
+  env = await configureIndependentBrowser(env);
 process.env.CUA_MCP_COMMAND = process.execPath;
 process.env.CUA_MCP_ARGS = JSON.stringify([
   "--import",
@@ -76,7 +105,8 @@ process.env.CUA_MCP_ARGS = JSON.stringify([
   fileURLToPath(new URL("./native-supervisor.ts", import.meta.url)),
 ]);
 const runtime = await stageRuntimePackages(restoredPackageSources());
-let independent: Awaited<ReturnType<typeof prepareIndependentRuntime>> | undefined;
+let independent:
+  Awaited<ReturnType<typeof prepareIndependentRuntime>> | undefined;
 try {
   env.NODE_REPL_NODE_MODULE_DIRS = [
     runtime.root,
@@ -92,12 +122,19 @@ try {
     .join(delimiter);
   if (supervisor === "independent" || supervisor === "rust") {
     const turn = JSON.parse(process.env.CUA_MCP_TURN_EVENT ?? "{}");
-    independent = await prepareIndependentRuntime(env, runtime.root, turn.session_id, supervisor === "rust" ? "rust" : "typescript");
+    independent = await prepareIndependentRuntime(
+      env,
+      runtime.root,
+      turn.session_id,
+      supervisor === "rust" ? "rust" : "typescript",
+    );
     process.env.CUA_MCP_COMMAND = independent.command;
     process.env.CUA_MCP_ARGS = JSON.stringify(independent.args);
     process.env.CUA_MCP_ENV = JSON.stringify(independent.environment);
     process.env.CUA_MCP_BOOTSTRAP = "core-cua";
-    console.error(`${supervisor === "rust" ? "Rust" : "TypeScript"} independent sandboxed runtime supervisor selected (${env.CUA_REPL_ENABLED_SURFACES} surface; no installed supervisor).`);
+    console.error(
+      `${supervisor === "rust" ? "Rust" : "TypeScript"} independent sandboxed runtime supervisor selected (${env.CUA_REPL_ENABLED_SURFACES} surface; no installed supervisor).`,
+    );
   } else {
     delete process.env.CUA_MCP_BOOTSTRAP;
     process.env.CUA_MCP_ENV = JSON.stringify(env);

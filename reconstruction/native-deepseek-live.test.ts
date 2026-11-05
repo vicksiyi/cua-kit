@@ -72,17 +72,24 @@ test(
       runtime = await stageRuntimePackages(restoredPackageSources());
       const env = await withHostProxy(
         create_launch_environment({
-          CUA_REPL_ENABLED_SURFACES: "computer",
-          NODE_REPL_DISABLE_ANALYTICS: "1",
-          NODE_REPL_NODE_MODULE_DIRS: runtime.root,
-          NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
-          CORE_CUA_NATIVE_HELPER_PATH: resolve(
-            "native/macos/.build/debug/cua-helper",
+          env: {
+            CUA_REPL_ENABLED_SURFACES: "computer",
+            NODE_REPL_DISABLE_ANALYTICS: "1",
+            NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+            NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
+            CORE_CUA_NATIVE_HELPER_PATH: resolve(
+              "native/macos/.build/debug/cua-helper",
+            ),
+            CUA_NATIVE_SUPERVISOR_PATH:
+              "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
+            NODE_REPL_NODE_PATH:
+              "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
+          },
+          instructions_directory: new URL(
+            "../instructions/",
+            import.meta.resolve("@core/cua-repl"),
           ),
-          CUA_NATIVE_SUPERVISOR_PATH:
-            "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
-          NODE_REPL_NODE_PATH:
-            "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
+          platform: process.platform,
         }) as Record<string, string>,
       );
       env.NODE_REPL_TRUSTED_SERVICES = JSON.stringify({

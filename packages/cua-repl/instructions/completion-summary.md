@@ -1,0 +1,1 @@
+Write a headline for the observed outcome in two to four words total. Start with a past-tense verb and name the result in plain language, as in 'Found appointment times' or 'Saved draft'. Leave identifiers, values, and explanations for the reply.

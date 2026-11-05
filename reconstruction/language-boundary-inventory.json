@@ -124,7 +124,7 @@
     {
       "path": "packages/agent-loop/src/restored-demo-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "68dff802764fb41aa52ab05c79cd9b3e4b3bc5294ff3751b662168e0484aac2f"
+      "sha256": "ae6578631a55ac2bab20c82b59ec2857e4857c126f9692fadc9f1f8532a492b0"
     },
     {
       "path": "packages/agent-loop/src/restored-demo.ts",
@@ -2717,24 +2717,24 @@
       "sha256": "e91757a56b37b708a20e83d5f1bfa4d42e6b3fff1c091e8dab55deec0777b813"
     },
     {
+      "path": "packages/cua-repl/src/environment.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2df1be11332bd495b541e89a05d7c8b3e0adca69215925162ee5620125f1ba78"
+    },
+    {
       "path": "packages/cua-repl/src/index.ts",
       "category": "declared-js-restoration-verify-per-file",
-      "sha256": "1a02e048ba03665cbaa4855e87e8d6cfdfdc68c500f8ebc4c3626c9d6cc28488"
+      "sha256": "c381cdb943f42a7e5d7803e7f8cbf26d1dc7019d772fcc90ad985eb9cae721a4"
     },
     {
       "path": "packages/cua-repl/src/instructions.ts",
       "category": "declared-js-restoration-verify-per-file",
-      "sha256": "5150286dc25630c77c2bbf10f3b9e86607a1de33210f6755209d557ba5e7d517"
+      "sha256": "df3e7bdd54a81c3948e3f96f53c36096ee1758d0cf438e50470be75387325591"
     },
     {
       "path": "packages/cua-repl/src/launch.ts",
       "category": "declared-js-restoration-verify-per-file",
-      "sha256": "de157e1e9c1f7db48c6338ae8ef9f9b44a78c4475d48dfeb7863958f2f662acf"
-    },
-    {
-      "path": "packages/cua-repl/src/launch_environment.ts",
-      "category": "declared-js-restoration-verify-per-file",
-      "sha256": "70620384347637c7496b2690fe8d82667e4d146ae56cca183555412916a2a6d7"
+      "sha256": "94a7bed27f60bd056e8504c207bf82a7f645fe1107d5a8bdd54645e659c1d874"
     },
     {
       "path": "packages/native-host/src/browser_connector.ts",

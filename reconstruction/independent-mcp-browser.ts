@@ -37,32 +37,51 @@ export async function verifyIndependentMcpBrowser(
     process.env.CUA_BROWSER_BAIDU_PROBE === "1";
   const genericSearch = process.env.CUA_LIVE_SEARCH_TEST === "1";
   const runtime = await stageRuntimePackages(restoredPackageSources());
-  let independent: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
+  let independent:
+    Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
   const supervisor = process.env.CUA_RUNTIME_SUPERVISOR ?? "installed";
-  if (!["installed", "independent", "rust"].includes(supervisor)) throw Error("Unknown test supervisor");
+  if (!["installed", "independent", "rust"].includes(supervisor))
+    throw Error("Unknown test supervisor");
   const independentSelected = supervisor !== "installed";
   try {
     const env = await configureIndependentBrowser(
-      await withHostProxy(create_launch_environment({
-        CUA_REPL_ENABLED_SURFACES: "browser",
-        CUA_REPL_BROWSER_ENV: "codex-app",
-        BROWSER_USE_AVAILABLE_BACKENDS: backend,
-        ...(hostDirectory
-          ? { CORE_CUA_HOST_DIRECTORY: hostDirectory }
-          : { CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]) }),
-        NODE_REPL_DISABLE_ANALYTICS: "1",
-        CORE_CUA_RUNTIME_DIAGNOSTICS:
-          process.env.CORE_CUA_RUNTIME_DIAGNOSTICS ?? "0",
-        NODE_REPL_NODE_MODULE_DIRS: runtime.root,
-        NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
-        CUA_NATIVE_SUPERVISOR_PATH:
-          independentSelected ? "/intentionally-not-installed" : "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
-        NODE_REPL_NODE_PATH:
-          independentSelected ? "/intentionally-not-installed" : "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
-      }) as Record<string, string>),
+      await withHostProxy(
+        create_launch_environment({
+          env: {
+            CUA_REPL_ENABLED_SURFACES: "browser",
+            CUA_REPL_BROWSER_ENV: "codex-app",
+            BROWSER_USE_AVAILABLE_BACKENDS: backend,
+            ...(hostDirectory
+              ? { CORE_CUA_HOST_DIRECTORY: hostDirectory }
+              : { CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]) }),
+            NODE_REPL_DISABLE_ANALYTICS: "1",
+            CORE_CUA_RUNTIME_DIAGNOSTICS:
+              process.env.CORE_CUA_RUNTIME_DIAGNOSTICS ?? "0",
+            NODE_REPL_NODE_MODULE_DIRS: runtime.root,
+            NODE_REPL_TRUSTED_CODE_PATHS: runtime.root,
+            CUA_NATIVE_SUPERVISOR_PATH: independentSelected
+              ? "/intentionally-not-installed"
+              : "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
+            NODE_REPL_NODE_PATH: independentSelected
+              ? "/intentionally-not-installed"
+              : "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node",
+          },
+          instructions_directory: new URL(
+            "../instructions/",
+            import.meta.resolve("@core/cua-repl"),
+          ),
+          platform: process.platform,
+        }) as Record<string, string>,
+      ),
     );
     const metadata = { session_id: "mcp-browser-live", turn_id: "mcp-live-1" };
-    if (independentSelected) independent = await prepareIndependentBrowserRuntime(env, runtime.root, metadata.session_id, supervisor === "rust" ? "rust" : "typescript");
+    if (independentSelected)
+      independent = await prepareIndependentBrowserRuntime(
+        env,
+        runtime.root,
+        metadata.session_id,
+        supervisor === "rust" ? "rust" : "typescript",
+      );
     const client = await McpToolClient.connect(
       {
         command: independent?.command ?? process.execPath,
@@ -82,9 +101,18 @@ export async function verifyIndependentMcpBrowser(
           if (
             params.mode === "url" ||
             params._meta?.tool_name !== "access_browser_origin" ||
-            !(genericSearch
-              ? ["https://www.google.com", "https://www.bing.com", "https://cn.bing.com"]
-              : [baiduSearch ? "https://www.baidu.com" : new URL(pageUrl).origin]
+            !(
+              genericSearch
+                ? [
+                    "https://www.google.com",
+                    "https://www.bing.com",
+                    "https://cn.bing.com",
+                  ]
+                : [
+                    baiduSearch
+                      ? "https://www.baidu.com"
+                      : new URL(pageUrl).origin,
+                  ]
             ).includes(params._meta?.origin)
           )
             return { action: "decline" };
@@ -130,12 +158,20 @@ export async function verifyIndependentMcpBrowser(
     try {
       const bootstrapMessages: AgentMessage[] = [];
       if (independent) {
-        const call = { id: "bootstrap", name: "js", arguments: {
-          code: 'await import("@core/cua/tinyskyAlt");', title: "Initialize independent CUA",
-        } };
+        const call = {
+          id: "bootstrap",
+          name: "js",
+          arguments: {
+            code: 'await import("@core/cua/tinyskyAlt");',
+            title: "Initialize independent CUA",
+          },
+        };
         const result = await turn.callTool(call, AbortSignal.timeout(70000));
         assert.equal(result.isError, false, JSON.stringify(result));
-        bootstrapMessages.push({role:"assistant",toolCalls:[call]}, {role:"tool",callId:call.id,name:call.name,result});
+        bootstrapMessages.push(
+          { role: "assistant", toolCalls: [call] },
+          { role: "tool", callId: call.id, name: call.name, result },
+        );
       }
       if (process.env.CUA_BROWSER_BAIDU_PROBE === "1") {
         await execute("await cua.getState();");
@@ -157,25 +193,42 @@ export async function verifyIndependentMcpBrowser(
         );
         return;
       }
-      if (scenario || process.env.CUA_LIVE_DEEPSEEK_TEST === "1" || baiduSearch || genericSearch) {
+      if (
+        scenario ||
+        process.env.CUA_LIVE_DEEPSEEK_TEST === "1" ||
+        baiduSearch ||
+        genericSearch
+      ) {
         loadEnvFile(resolve(".env"));
         const trace = createTerminalTrace();
-        const initialMessages = [...bootstrapMessages, ...await browserPreflight(turn, {
-          onMessage: trace,
-        })];
+        const initialMessages = [
+          ...bootstrapMessages,
+          ...(await browserPreflight(turn, {
+            onMessage: trace,
+          })),
+        ];
         const result = await new AgentLoop(createDemoModel(), turn).run(
-          scenario ? scenario.question : genericSearch
-            ? "打开本地Chrome 搜索 deepseek 给我返回第一条搜索结果"
-            : baiduSearch
-            ? "访问百度 搜索 deepseek 给我返回第一条搜索结果"
-            : `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
+          scenario
+            ? scenario.question
+            : genericSearch
+              ? "打开本地Chrome 搜索 deepseek 给我返回第一条搜索结果"
+              : baiduSearch
+                ? "访问百度 搜索 deepseek 给我返回第一条搜索结果"
+                : `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
           {
             initialMessages,
-            runtimeContext: [BROWSER_INPUT_CONTEXT, backend === "cdp" ? CDP_OPERATION_CONTEXT : undefined].filter(Boolean).join("\n"),
+            runtimeContext: [
+              BROWSER_INPUT_CONTEXT,
+              backend === "cdp" ? CDP_OPERATION_CONTEXT : undefined,
+            ]
+              .filter(Boolean)
+              .join("\n"),
             onMessage: trace,
             // Live search includes repeated upstream site-status checks. Keep enough
             // observation time to distinguish transport delay from page failure.
-            signal: AbortSignal.timeout(baiduSearch || genericSearch ? 180000 : 90000),
+            signal: AbortSignal.timeout(
+              baiduSearch || genericSearch ? 180000 : 90000,
+            ),
           },
         );
         console.error("DEEPSEEK ANSWER", result.answer);
@@ -197,14 +250,18 @@ export async function verifyIndependentMcpBrowser(
                 : [],
             )
             .join("\n");
-          const evidence = await mkdtemp(join(tmpdir(), "core-search-evidence-"));
+          const evidence = await mkdtemp(
+            join(tmpdir(), "core-search-evidence-"),
+          );
           await writeFile(join(evidence, "observed.txt"), observed);
           await writeFile(join(evidence, "answer.txt"), result.answer);
           console.error("SEARCH EVIDENCE DIRECTORY", evidence);
           assert.match(result.answer, /deepseek/i);
           const observedLinks = observedSearchLinks(observed);
-          assert.ok(observedLinks.some(link => result.answer.includes(link)),
-            "Final answer must preserve an observed result link or its decoded destination, including the full path");
+          assert.ok(
+            observedLinks.some((link) => result.answer.includes(link)),
+            "Final answer must preserve an observed result link or its decoded destination, including the full path",
+          );
         } else assert.match(result.answer, /action-completed-marker/);
         await verifyEvidence?.();
         return;
@@ -238,6 +295,10 @@ export async function verifyIndependentMcpBrowser(
       }
     }
   } finally {
-    try { await independent?.dispose(); } finally { await runtime.dispose(); }
+    try {
+      await independent?.dispose();
+    } finally {
+      await runtime.dispose();
+    }
   }
 }
