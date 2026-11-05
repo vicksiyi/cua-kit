@@ -18,6 +18,7 @@ use tokio::{
     task::JoinHandle,
 };
 
+#[derive(Clone)]
 pub struct ProcessSpec {
     pub command: PathBuf,
     pub args: Vec<String>,

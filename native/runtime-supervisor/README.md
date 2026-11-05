@@ -52,3 +52,21 @@ was repeated to check an observed exit/reap race. The native crate still lacks
 full session routing, MCP and sandbox composition; it has not replaced the TS
 supervisor in the demo. A cancelled write/session must retire its worker before
 reuse; that orchestration remains part of the pending session migration.
+
+## Dual-worker session migration
+
+`repl_manager.rs` now launches both real reconstructed workers and routes
+execution, configured service RPC/hooks, host-supplied request metadata and
+nested timeout suspension. Reset, execution timeout, explicit cancellation and
+a dropped caller future retire worker state before reuse. Native-pipe requests
+and byte/close events now traverse Rust through the recovered trusted worker;
+an integration test verifies a 315,000-byte socket roundtrip and endpoint denial.
+
+Four dual-worker integration tests pass in addition to the eight transport tests.
+They are controlled local fixtures, not browser/MCP or OS sandbox acceptance.
+Unsupported host operations fail explicitly and discard the session. Remaining:
+media/elicitation/config/authenticated fetch, turn-ended lifecycle and metadata,
+module-directory registration, continuous between-cell background event handling,
+MCP, sandbox composition and broader source/differential acceptance. The demo
+still uses the prior installed/TS paths; this Rust library is not a finished
+replacement. Services/pipe endpoints remain caller-selected explicit allowlists.

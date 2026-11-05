@@ -5,3 +5,6 @@ pub mod native_pipe;
 
 #[cfg(unix)]
 pub mod process_port;
+
+#[cfg(unix)]
+pub mod repl_manager;

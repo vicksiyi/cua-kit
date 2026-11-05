@@ -1,5 +1,21 @@
 # Implementation status
 
+## Rust dual-worker routing checkpoint (2026-11-06)
+
+The Rust manager now drives both reconstructed Node workers: persistent cells,
+service RPC/hooks, host request metadata, reset, timeout/cancellation recovery
+and nested timeout suspension. It also routes native-pipe requests and events
+through the trusted worker to an actual allowed Unix socket (315,000-byte echo).
+Four new integration tests pass; all twelve Rust tests pass. No browser or
+DeepSeek/MCP acceptance is implied. Dropped caller futures mark the generation
+for retirement before the next cell.
+
+Remaining Rust migration includes continuous background routing between cells,
+turn-ended/module registration, media/approval/config/authenticated fetch, MCP
+and native sandbox composition. Unsupported host requests fail explicitly;
+this library is not yet selected by the demo. Existing TS runtime remains
+transitional, not a completed original-language implementation.
+
 ## Native process and repository audit checkpoint (2026-11-06)
 
 The language audit now inventories existing package source, legacy src, native
