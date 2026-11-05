@@ -4937,3 +4937,16 @@ named outputs are forwarded and malformed values rejected. Eight focused tests,
 supervisor/CDP typechecks and reconstruction build pass. The sandbox npm gate
 includes the new test. Default demo still uses the installed supervisor; external
 service authentication/deployment and native desktop acceptance remain open.
+
+### 2026-11-06 — real DeepSeek through independent sandbox runtime
+
+Extended the real-browser sandbox gate with an opt-in actual DeepSeek path.
+The model fills a random query, submits a real form, reads an independently
+generated result-only marker and captures an image; server-side submission and
+MCP image output are checked independently. The latest run passes in four model
+decisions with zero tool errors. An initial failed efficiency assertion revealed
+that the test caller dropped import-time CUA API docs; preserving the complete
+bootstrap exchange in initialMessages fixes that integration error. Updated the
+agent integration guide from the legacy QuickJS path to current package/runtime
+contracts and acceptance limits. No default-supervisor replacement or external
+service/native App completion is claimed.

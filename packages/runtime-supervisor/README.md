@@ -188,3 +188,18 @@ Eight relevant integration/regression cases pass, plus supervisor/CDP typechecks
 and reconstruction build. This verifies localhost browser operations, not full
 external-site authentication, default demo replacement, or desktop/App control.
 The original deprecated macOS sandbox API and deployment constraints remain.
+
+### Live model through the independent runtime
+
+The same sandbox test opts into real DeepSeek with
+`CUA_TEST_MACOS_SANDBOX=1 CUA_LIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/runtime-cdp-sandbox.test.ts`.
+It uses local `.env` credentials only in the parent ModelAdapter. It independently
+verifies the submitted random query, a result-only random marker, and actual
+screenshot output. The latest run completed in four model decisions with zero
+tool errors. The deterministic mode remains available without model credentials.
+
+The first live run exposed dropped bootstrap documentation in the test caller:
+CUA emits core docs during import and caches them. Keeping that initial tool
+exchange in AgentLoop.initialMessages corrected the integration. This does not
+add inferred capabilities or change restored code. See docs/AGENT-INTEGRATION.md
+for current protocol, initialization and lifecycle requirements.

@@ -1,3 +1,10 @@
+import { randomUUID } from "node:crypto";
+import { loadEnvFile } from "node:process";
+import { AgentLoop } from "../packages/agent-loop/src/loop";
+import { createDemoModel } from "../packages/agent-loop/src/provider";
+import { browserPreflight } from "../packages/agent-loop/src/browser-preflight";
+import { createTerminalTrace } from "../packages/agent-loop/src/terminal-trace";
+import { CDP_OPERATION_CONTEXT } from "../packages/agent-loop/src/cdp-guidance";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -12,15 +19,18 @@ import { NodeReplTurnClient } from "../packages/agent-loop/src/node-repl-turn";
 /** Real browser and OS-sandboxed restored workers, without the installed supervisor. */
 test("independent sandboxed supervisor executes real browser input, click, read and screenshot over MCP", {
   skip: process.platform !== "darwin" || process.env.CUA_TEST_MACOS_SANDBOX !== "1",
-  timeout: 60000,
+  timeout: 120000,
 }, async () => {
+  const liveModel = process.env.CUA_LIVE_DEEPSEEK_TEST === "1";
+  const query = `independent-query-${randomUUID()}`;
+  const marker = `observed-${randomUUID()}`;
   const submissions: string[] = [];
   const server = createServer((req, res) => {
     const url = new URL(req.url!, "http://fixture.invalid");
     res.setHeader("content-type", "text/html");
     if (url.pathname === "/submit") {
       submissions.push(url.searchParams.get("query") ?? "");
-      res.end("<h1>Saved fixture result</h1><p>independent-supervisor-observed</p>");
+      res.end(`<h1>Saved fixture result</h1><p>${marker}</p>`);
     } else res.end('<h1>Independent runtime fixture</h1><form action="/submit"><label>Query<input name="query"></label><button>Submit</button></form>');
   });
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
@@ -92,14 +102,37 @@ test("independent sandboxed supervisor executes real browser input, click, read 
       assert.equal(result.isError, false, JSON.stringify(result));
       return result;
     };
-    await execute('await import("@core/cua/tinyskyAlt"); await cua.getState();');
-    await execute(`var tab = await cua.createBrowserTab("1", ${JSON.stringify(origin)}, {sessionName:"Independent runtime acceptance"});`);
-    await execute('await tab.playwright.getByRole("textbox",{name:"Query"}).fill("independent-query"); await tab.playwright.getByRole("button",{name:"Submit"}).click();');
-    const observed = await execute('await tab.getAXState();');
-    assert.match(JSON.stringify(observed.content), /independent-supervisor-observed/);
-    assert.deepEqual(submissions, ["independent-query"]);
-    const screenshot = await execute('await tab.getScreenshot();');
-    assert(screenshot.content.some(item => item.type === "image" && item.data.length > 100));
+    const bootstrapCode = 'await import("@core/cua/tinyskyAlt");';
+    const bootstrapResult = await execute(bootstrapCode);
+    if (liveModel) {
+      loadEnvFile(resolve(".env"));
+      const trace = createTerminalTrace();
+      const initialMessages = await browserPreflight(turn, { onMessage: trace });
+      const result = await new AgentLoop(createDemoModel(), turn).run(
+        `Open ${origin} in Chrome, fill Query with ${query}, submit the form, take a screenshot of the result page and report its paragraph. Actually operate the page.`,
+        { initialMessages: [
+            { role: "assistant", toolCalls: [{ id: "1", name: "js", arguments: { code: bootstrapCode } }] },
+            { role: "tool", callId: "1", name: "js", result: bootstrapResult },
+            ...initialMessages,
+          ], runtimeContext: CDP_OPERATION_CONTEXT, onMessage: trace, signal: AbortSignal.timeout(90000) },
+      );
+      assert(result.answer.includes(marker));
+      assert.deepEqual(submissions, [query]);
+      assert(result.messages.some(m => m.role === "tool" && m.result.content.some(c => c.type === "image")));
+      const failures = result.messages.filter(m => m.role === "tool" && m.result.isError);
+      assert.deepEqual(failures, []);
+      console.error("INDEPENDENT DEEPSEEK ANSWER", result.answer);
+      console.error("INDEPENDENT DEEPSEEK DECISIONS", result.messages.filter(m => m.role === "assistant").length - 3);
+    } else {
+      await execute('await cua.getState();');
+      await execute(`var tab = await cua.createBrowserTab("1", ${JSON.stringify(origin)}, {sessionName:"Independent runtime acceptance"});`);
+      await execute(`await tab.playwright.getByRole("textbox",{name:"Query"}).fill(${JSON.stringify(query)}); await tab.playwright.getByRole("button",{name:"Submit"}).click();`);
+      const observed = await execute('await tab.getAXState();');
+      assert(JSON.stringify(observed.content).includes(marker));
+      assert.deepEqual(submissions, [query]);
+      const screenshot = await execute('await tab.getScreenshot();');
+      assert(screenshot.content.some(item => item.type === "image" && item.data.length > 100));
+    }
   } finally {
     try { await turn?.endTurn(); } finally {
       await turn?.close();
