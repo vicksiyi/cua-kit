@@ -29,3 +29,26 @@ Remaining migration: worker transport/launch/sandbox, session routing and reset,
 active execution/timeouts/cancellation, native pipe request dispatch, config and
 host callbacks, MCP/elicitation/media, then differential and full-browser tests.
 Do not switch the default or remove the TS baseline until these gates pass.
+
+## Worker process migration
+
+`process_port.rs` now owns POSIX process-group launch/retirement, an exact child
+environment, bounded UTF-8 JSONL frames and startup output, and normal final-frame
+delivery. It reaps exited leaders during Darwin's transient zombie-group EPERM
+window; persistent signal errors remain errors. This transport is not an OS
+sandbox and must be combined with the native sandbox launcher before deployment.
+
+After building the reconstructed JS workers, run:
+
+```sh
+CUA_TEST_NODE="$(command -v node)" cargo test --locked --manifest-path native/runtime-supervisor/Cargo.toml
+```
+
+Five process integration tests exercise actual Node child processes, ordinary
+owned descendants, invalid/truncated/oversized frames and startup overflow,
+spawn failure, environment isolation, and the actual reconstructed kernel's
+persistent bindings (42 then 43). Three pipe tests also pass. The process suite
+was repeated to check an observed exit/reap race. The native crate still lacks
+full session routing, MCP and sandbox composition; it has not replaced the TS
+supervisor in the demo. A cancelled write/session must retire its worker before
+reuse; that orchestration remains part of the pending session migration.

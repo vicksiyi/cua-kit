@@ -1,0 +1,4079 @@
+{
+  "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
+  "counts": {
+    "build-or-deployment-script-review": 22,
+    "caller-or-deployment-code-review-for-native-responsibility": 37,
+    "declared-js-restoration-verify-per-file": 671,
+    "legacy-prototype-review-required": 25,
+    "native-boundary-needs-original-language-evidence": 21,
+    "native-implementation-language-not-yet-parity-proof": 23,
+    "native-responsibility-migrate-to-rust": 14
+  },
+  "files": [
+    {
+      "path": "packages/agent-loop/src/browser-origin-approval.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "a6e1772c1481be3c232a860d2551f15accc984c27ffa8119aa544f8bd1bc71b9"
+    },
+    {
+      "path": "packages/agent-loop/src/browser-preflight.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "d25d2bf12574ff50af1a7c6ef1a4bdf5374ed5f235187eccc1497b3aacf55cbd"
+    },
+    {
+      "path": "packages/agent-loop/src/browser-startup.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "88696854bf150ab98697268b919b37c7cc1de02a71efeca784d5eba589447a0f"
+    },
+    {
+      "path": "packages/agent-loop/src/cdp-demo.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "fec1e65ceeab80f9a4a9ce405b5e15ff0d0b6c62a213dfe1a41a420bd4f90924"
+    },
+    {
+      "path": "packages/agent-loop/src/cdp-guidance.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "abc1af599f14f3a84d010bb4dc18ee91a5a673922c8c83fe0be0aeb393b5aef4"
+    },
+    {
+      "path": "packages/agent-loop/src/chat-model.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "4a98fcf64f3ad471e569fee8cbfea634efee0500b6f8ef9980e4b34436b97d7d"
+    },
+    {
+      "path": "packages/agent-loop/src/computer-preflight.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "863f2a25e389dd20c45396047cd9b40fbe705410ee68b10b1184121a6d950f4b"
+    },
+    {
+      "path": "packages/agent-loop/src/contracts.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "18b1d254d7ad0300768d567da1599145c12877938d0af7b0e7bc03f7d74d2d65"
+    },
+    {
+      "path": "packages/agent-loop/src/debug-log.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "c4e4235205fa604dbdd875c6f603e79f4427146207076fbf485ccf4eb00e13bf"
+    },
+    {
+      "path": "packages/agent-loop/src/demo.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "efd55b8bc4ad5ad96abf708c35764fbca62531c7e49a6b80d6c6d3cf274d492e"
+    },
+    {
+      "path": "packages/agent-loop/src/independent-browser.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "0d4a8d53f6a8a4b748c0f4f6850e53397af4163f0f5b2e00a37f9e08f5e982a2"
+    },
+    {
+      "path": "packages/agent-loop/src/independent-runtime.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "4f7e4d8350cbd770fbd16e0ea5402fde4adcb5dbd3923eab318e91cedd8d82ad"
+    },
+    {
+      "path": "packages/agent-loop/src/index.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "82661ad15c5d45f75a86531e78bfee3c48eea9ed0fb33078ff82c804c1884727"
+    },
+    {
+      "path": "packages/agent-loop/src/loop.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "048b7cb0dca40674338856ca4111ba7f57230cb9823f212b56776226979a536a"
+    },
+    {
+      "path": "packages/agent-loop/src/managed-browser.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "e67e40633c2e721faf3a99237a161fcf40a4604110ee3927cb3b1929e3df8d21"
+    },
+    {
+      "path": "packages/agent-loop/src/managed-demo.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "7bb009ba50d000723ef24eda975fdcce70bf055809f3d384ba2a07deeb7623f0"
+    },
+    {
+      "path": "packages/agent-loop/src/mcp-client.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "f4aa9b62466b18602b96a1685ed55b53f84b5126e6eddccd65dadbd669d743af"
+    },
+    {
+      "path": "packages/agent-loop/src/native-pipe-diagnostics.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "dadbf3263afe81708cba1b11aee8a801c0e9250bf1c130562b7f807b4aa4c482"
+    },
+    {
+      "path": "packages/agent-loop/src/native-supervisor.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "606a6a30cf2ea9ff2921bd4177fd87219c18b478188e2a86f43c9f22ed105ed7"
+    },
+    {
+      "path": "packages/agent-loop/src/node-repl-turn.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "246b422530564775144ed656cd7f6beb8a2da36d07bc6bde6fbc35b1d33bd7d0"
+    },
+    {
+      "path": "packages/agent-loop/src/provider.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "51f4cf453371e8c5a930259a6682d15aea292e98ebc6e9d889b231f86db032f1"
+    },
+    {
+      "path": "packages/agent-loop/src/restored-demo-runtime.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "8e67f51931d9ef2939847a8530302d7d3dc9fb06507fd25fa7c87181df789bf1"
+    },
+    {
+      "path": "packages/agent-loop/src/restored-demo.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "a6ecb115ac7e96d13b0f96b5d9e7d3a64d86db73d3d1ecaed09e8c1d0ec4e6e3"
+    },
+    {
+      "path": "packages/agent-loop/src/runtime-diagnostics.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "56f24a559b7ae15d415cd0658707cc6cb0a6c9e7b07c7d98352656ef74ab963b"
+    },
+    {
+      "path": "packages/agent-loop/src/runtime-packages.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "9db82200b1a43e1a1d1d70cae8a67a05f0cb3ef37cae9229a29fe6a4cb2f9e42"
+    },
+    {
+      "path": "packages/agent-loop/src/system-proxy.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "34cbda603117c4b7478ff94fb42cad2c3d1b4ada43ed30fc7c4aaf8fb10e54b9"
+    },
+    {
+      "path": "packages/agent-loop/src/terminal-elicitation.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "5633acd3076ea34e387a444d723ddfb75554d55877c75f1cce0563e89df7d58f"
+    },
+    {
+      "path": "packages/agent-loop/src/terminal-trace.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "298d9fa7e10454c0a1c48258de59e987800adca70e09d5ba8d40c0c333ab8f83"
+    },
+    {
+      "path": "packages/browser/src/agent.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4b37b84e4293015b24042bd29cbb70232c617b7aa4288cea55c8fd7ef7fc94ad"
+    },
+    {
+      "path": "packages/browser/src/ax.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2c8c75c6e2f9169d0b6cf4a4a3bc1e22dde91c25463daf3b9eba105ccbbadf5e"
+    },
+    {
+      "path": "packages/browser/src/browser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fd1e9384eef47afec08c9d58c4a051934717cf6428d1cb6feaa5b1a35f00c01f"
+    },
+    {
+      "path": "packages/browser/src/browser_user.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cfd2fdb6944b76c09c7fe081b8e4c3c56359b86720d74413a98c10832a244e9a"
+    },
+    {
+      "path": "packages/browser/src/capabilities/base.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "586d62f19beb07358f04f875b719dee063756307a82cd35ee6fb8886067c5ef5"
+    },
+    {
+      "path": "packages/browser/src/capabilities/browser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "35a90b9d7517464bf8d826bc501793ed5b4435b854743f2d076b0748ac59b4b0"
+    },
+    {
+      "path": "packages/browser/src/capabilities/tab.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "93cdcbce754d8e165e7d65bbf300d9a0e0ad18cef570fd840adb7e4a4eb6f481"
+    },
+    {
+      "path": "packages/browser/src/capabilities/tab_bot_detection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d0d5dcdf87b9a18adc8c237241871f8e71f441ff968d76ba93f6ab50cb0b92c3"
+    },
+    {
+      "path": "packages/browser/src/capabilities/tab_browser_auth.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6f4b26187a244200a1d53767bc70545412ae3e6553b2aadbcf4562e1f4677500"
+    },
+    {
+      "path": "packages/browser/src/capabilities/tab_cdp.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e9a20079468a26a575fc087a986797ef74ac6d958cb42b43894c83236e07fac8"
+    },
+    {
+      "path": "packages/browser/src/capabilities/tab_page_assets.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6a999947a435f649526b0038b224847210d07f31d14fd1d0a3cf8faa6fcb110d"
+    },
+    {
+      "path": "packages/browser/src/capabilities/tab_web_mcp.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bedb043f824e7b4c7e8eb9a1fed10ac4a6713b5098b69aaccd7087bdf401d312"
+    },
+    {
+      "path": "packages/browser/src/clipboard.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "134d62f84a71f0377e4e11824aacbea9c20c0d226f46aa09d70029a3034f62e7"
+    },
+    {
+      "path": "packages/browser/src/commands/ax.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8e9a22f2d7d3e80c9f5e4881988e042a3eccdf25e541a83515ed49f94605f5ef"
+    },
+    {
+      "path": "packages/browser/src/commands/browser_auth.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4509ae587bb9e30c4c8a1cd0a8a52b7a57d392914fe78d5a20ced67e1999dd18"
+    },
+    {
+      "path": "packages/browser/src/commands/browser_capabilities.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c8ab8c12b66474351685090fda5a6cf541a6245e94e7bad224b908359ef573ea"
+    },
+    {
+      "path": "packages/browser/src/commands/browser_inventory.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "55eb0fece1ebce593a0f9c0bb0d3540725d84aec71901678cc893cbce6e18f3f"
+    },
+    {
+      "path": "packages/browser/src/commands/browser_session.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "51aacc19269cb0c9e9dae16f8023f854960553f1b2cbcdcfcb0d884f85a99bd9"
+    },
+    {
+      "path": "packages/browser/src/commands/browser_user.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cfd9331a1b052d32c4e949bd60ca7dc5cfdfe876b6a2953bd75040ca4e588a43"
+    },
+    {
+      "path": "packages/browser/src/commands/command.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b87651c6bfd75fc84d159d3f8e3c704a7b320d39ce726279cea21ce91493e7dd"
+    },
+    {
+      "path": "packages/browser/src/commands/cua_input.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0a8cb4d2e6a9e70b2b2edc9d4c032db0d392a178e89f0833e2cd99b79f318cb4"
+    },
+    {
+      "path": "packages/browser/src/commands/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e900106a64f6a04e9b05739e1db2cdf37f9627159df498257d0d477a8152c6e6"
+    },
+    {
+      "path": "packages/browser/src/commands/page_assets.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5ebe897da7f076003fe50d799a59580756ee9f99b49bede42c0ebe77096a608c"
+    },
+    {
+      "path": "packages/browser/src/commands/playwright_locator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eaadad7c19dd2f846513f74693a1ea9f6e8bfb6015e40cb63265aa97521bc0f0"
+    },
+    {
+      "path": "packages/browser/src/commands/playwright_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "927392b3f5e165c9ee1fc431f5e6f429ea427ce12bc3a71f5d943c712de21040"
+    },
+    {
+      "path": "packages/browser/src/commands/playwright_read_all.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0d1cd7f3da236a2425d77b319c2b023ea38dfe8ee8562226789a93670056f354"
+    },
+    {
+      "path": "packages/browser/src/commands/runtime_config.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4a8b598c7d0ea21846be5ca03d7973d50c5b3893f3a4278289bcec8ac44e87b9"
+    },
+    {
+      "path": "packages/browser/src/commands/tab_control.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "55fdc9338677bd9715ce5bc684f1e0069cb43624648445dc98ca5b3036a867de"
+    },
+    {
+      "path": "packages/browser/src/commands/tab_developer.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "491ca062a4f2c4d1996e533f40313266cb262f53816fe9822548e4bc5c1fee69"
+    },
+    {
+      "path": "packages/browser/src/commands/tab_services.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d2de8663e22ec3882e9359ddee932c3ab26d5106881f97d8d0c0bd588ca3159a"
+    },
+    {
+      "path": "packages/browser/src/commands/tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fececeb223852f4d014fc70158bd145aa5c50346c5326b287ffc9b5a89f10ac8"
+    },
+    {
+      "path": "packages/browser/src/commands/web_mcp.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "19438d145bfc9e9f9f4bccb4b6e6218acf1a9d0ff9f0d790205a3ee224afc5fb"
+    },
+    {
+      "path": "packages/browser/src/content.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2a1d9ce57bafe7033852cf586868347d98126cc87c1334c33422ab32b07d2ca6"
+    },
+    {
+      "path": "packages/browser/src/cua.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dfe811fa6f4807f095cf6b28310ce479d79ec1deee795c0cf8da5dd38052e91f"
+    },
+    {
+      "path": "packages/browser/src/dev.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3c6045a685d6c84530a97bed6e511319346c9d97d35725ee159392b9c6ca4d13"
+    },
+    {
+      "path": "packages/browser/src/dialogs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fdcb75ef3af313eef1fd77cc33356ed581857a7553aeb55d685ffc78ae529306"
+    },
+    {
+      "path": "packages/browser/src/dom_cua.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ded685e67c5d29434c87e7934c3049a6ce2db2d9fc51c6d46b581cdb67eac671"
+    },
+    {
+      "path": "packages/browser/src/errors/browser_security_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6f2bd08af3c14c53d955ff977d5a2945e4f94404ddd9138e51c9965dca2791ab"
+    },
+    {
+      "path": "packages/browser/src/errors/credential_recovery_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c3dbaa43971415f2ed0b32bf23491806172c267beb5048265ae5d4fe63e5c4db"
+    },
+    {
+      "path": "packages/browser/src/extension_protocol.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "25beeda66790b995f2c95722e12842abce1561e1dbf022e943cbe996a96014a5"
+    },
+    {
+      "path": "packages/browser/src/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "67d252a8d2338b05c87bc20936f14d5159f964ddb715dc7f98735c99ef6684b7"
+    },
+    {
+      "path": "packages/browser/src/kernel_browser_api.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "96f9cfce36745fa3108d9cd06a2e1023ecda47e80d74f7ece5d5bb9cdb7b6f88"
+    },
+    {
+      "path": "packages/browser/src/kernel_browser_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3c68c10710191e400504b05b3a0b02e7baed8e111c10cc14fc97a91e223ab17d"
+    },
+    {
+      "path": "packages/browser/src/kernel_browser_service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "03d5ed8de68b72967b1b4b4e864980f7d65fe5b467c9bf75416f474cba9c93a2"
+    },
+    {
+      "path": "packages/browser/src/playwright/api.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "004f1c73113d84b08c58fb83c4256473d753946c8667f6ea4ae97f160bb0d674"
+    },
+    {
+      "path": "packages/browser/src/playwright/collection_read_cache.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7005e9b777dfa5e1f77218b666ff31023433ad1b18287f638dd67bb41e3a74cf"
+    },
+    {
+      "path": "packages/browser/src/playwright/download.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "298f215ee839ae16de2362608dd3e63508d864232b12488427a07f15077d9b37"
+    },
+    {
+      "path": "packages/browser/src/playwright/file_chooser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "90a70dd4b0753e0390b7a2eceab3402651fcecc8f8f8f44c005068ce48441d16"
+    },
+    {
+      "path": "packages/browser/src/playwright/frame_locator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b8a50bf49e4861ac482f88fa1c3fa4b5f444b7501490e8cb7c28a16bede2163e"
+    },
+    {
+      "path": "packages/browser/src/playwright/helpers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5e0be382faa89b827b73ced4059a71f2521c1c8e5d6a6ac821a00ccd66367987"
+    },
+    {
+      "path": "packages/browser/src/playwright/locator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bfcdca25d178235986522dfb715465af871676760bd5c20ec20fff8cbb67ef55"
+    },
+    {
+      "path": "packages/browser/src/playwright/selectors.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e4b0d49300eb40504b38e0b8f2340dcd5cb7ee0479a65d31427947ca34a524db"
+    },
+    {
+      "path": "packages/browser/src/runtime/api_view.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bc3694b55784aa5e77a398d72a32d51dcaeef13a064bda5181273e1e99f86e0c"
+    },
+    {
+      "path": "packages/browser/src/runtime/base64.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "45a9b7f2f33b501212b3bb16b558d426853b7231d4d13221a48a51b38caa1be9"
+    },
+    {
+      "path": "packages/browser/src/runtime/browser_service_executor.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d3ec345a23e9d4b0d3c0d73bd1ae34ef613aa53cf778ccd98d99ae2260c2ead9"
+    },
+    {
+      "path": "packages/browser/src/runtime/display.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4bc785415d88ab0c6b52897fba4778c7d851f485339ce01bb7e45b2d1d7ca68e"
+    },
+    {
+      "path": "packages/browser/src/runtime/factory.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b595ab2ddc9d0f50073aa437ff733678ee13e77ab84e0b1097c956f7cae0bbf7"
+    },
+    {
+      "path": "packages/browser/src/runtime/function_agent_transport.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "84ed904ff9b7535c4d0504f88f9388438987dc0ab7c8232b016b47e5148be034"
+    },
+    {
+      "path": "packages/browser/src/runtime/object_utils.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "16bc5cb050120dd2a0876c24150ee0db4c64c40a4a190490abd131f62778c636"
+    },
+    {
+      "path": "packages/browser/src/runtime/registry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a8cf95dd83e00d421a191ed337dd93e3b27d0fce00e4bc1fc84b20bd2ff24efb"
+    },
+    {
+      "path": "packages/browser/src/runtime/request_id.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5de5a87e71de721b86f1a6232ee8f5febf62939122a37d085673b20d839d90d2"
+    },
+    {
+      "path": "packages/browser/src/runtime/setup.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ed9717af68ed98d55b21e967c455dc4af2b5d1f0831e90f9cc5b699f2b29ce27"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/action_coordinator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "51ed8f870a26327309a6e78feb50003f14994ed22975caad9e2d6f14e5d159e9"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/activation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7a94a0b73ab336a5e7a6808e92aa66da07b52e79566f117eb99d6f57581624a7"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/capture_documents.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2ef01a87232defb1a4daf855c1365276675f9472157dab52a749959b78f59050"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/capture_manager.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fc0800d08bd80c1c76ec4f23e6878a1297d249f341c2ff0e99fa88b4014d49ed"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/click_action.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c4ed896d7d00b08645a5cf656bb138e0becdf4945aec72d867c9fe20456a423d"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/dialog_actions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4b5b9f32ca88cf985890bc3c1781a450161bbe68d695e94ef58c52f6e22222bd"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/dialog_tree.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "414a8b8ecc9cad1fa7324b45bdeaf7aea2169de3704eca384e0f029832da1b52"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/element_execution.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ce61cc630f72b862bc737c6de538833998d3b5b0fdb9e8ceeebd177b728bd3eb"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/hit_test.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c29696df39f8140ee6c0a7c736f1b83b0043325649d47a73c468a457b78af66a"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/navigation_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4582ec3568547fc097d4a2c28d73b255a8c37e8675bd315e1c51a394164c4d0a"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/page_actions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8401766bc4c0ea4676f1a58b52692491369363f4d020033913f4338f65ec27f7"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/position_target.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3f756ebae7f13d6591d686a80c671a141e2bc7aa1131f69634f12df019e08d6f"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/prepare_action.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c8bd8d2d8bb0b4ccc709351eb23d50b92347db7201f44c37e8321f5b91d366c0"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/scroll_action.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fdcb547cc4b101566fe49588c8647966bb3c8a2273e19643c9e117c3b9543500"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/selection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "44072e9aa72902ab4eeda26af687f72aa00cce617b94cd474160f192ce8fd766"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/set_value.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f4b0fe2f09c17b589863aa779f897ab0d5377ce352dc71cae5bb6ff8a296c0be"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/snapshot_metadata.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d0d36cd68ae7114e01427fa8562f0c2449e6c2e51f12caddf723939bcd655ada"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/state_store.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a00c60812250bcacf7db5e6f0d930354e8aed489c7f87c6a1cadb710c72d1d55"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/target_geometry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "542cef20b53f18f5c5d44e6126ede12b6a5767eb25827bac5695a713a50df26e"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/tracking.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "62ae4e04c18b59d536f60ff43ad2c71c555e2b6d37fbadbc1dc962e05f1a1fca"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/tree_conversion.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3f4b3be3347abcf6cc65bfd3da052d5f0030d646c6145572a3ac8d9fcd0663fb"
+    },
+    {
+      "path": "packages/browser/src/service/accessibility/wasm.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5f4ba063a0d587f0b93ca3d45b47dce5e892025b0fa5f505b6684e89bca17853"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/action_review.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "68e1a8e11409d9f146325451c4732571a273d941cc63b73cebe9fe8853b6522c"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/automated_review.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "32e6e3615bf024a3f9b1d18308cf944cb899f9d707f184d18e00a1c1059aa8d0"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/bindings.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "72e3068e317bf4f0980c3fe1cd601b6b869054a4761d1262c7213105bf548370"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/broker_binding.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "97c5083e0cd2d54d23a24f89312b4c624bef1a392eacd448b8193925b8bb2545"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/checkpoint.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5b3f0f2a90c6ca5e5fc3eddff626deed52ede3fc26efe1c35bcff9a1b521b975"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/credential_fields.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "60baf9e70f06f3c524f3fcc3d2efe235c2b5611ea103ec059fa0f4f6cf2aaee0"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/field_delivery.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f3877b8355ffbf2a22bf3efce484c64bb6333a67b8ac4c0dbbd975db90d6e8b8"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/field_inspection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f5b7f3b1da350d6d569e2ff4e499baed825c50f37b75adda547232c85c5ca272"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/field_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3ae21b094b5613fc7cc209dc6a9c02177f8dcf78540399ed32a0bfd30a68bd3f"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/field_plan.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "55b7e1d71bc1860daf9171233c6f030f6248bbe1a475b96065ac56388cf7f843"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/handoff.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7764c2bcc156ad9d999c514af8eaabc033be424c55027cd04c8a033e857db26f"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/handoff_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8a26ace08824627aab29b1931e12e0c9c6338fe5cf3b3aa61814f060839c033c"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/native_submit.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eb383b1556414a79f0913d8b41b7e2b687f8c36d4a673dce25283c8ea580e06e"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/qr.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c06c324d592f60e9fe92dbea600a9345479fbdfb808d6f27b2fc0ae18111e4ca"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/qr_browser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a182d2dd13843552a969e1dd0535f11517e4ceab544d2a43695d0542ef4d1c63"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/qr_decode.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cb76214e42eae4be09f7320f259435dc7eb3b2d7d053d2f41c019fa9a3983dc4"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/qr_monitor.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9e28f2c600f2c9dc6014257bcdf1dea4e7db96221bd48902b41f5d220a796ac3"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/qr_shared.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "90e58e0037c5d74898c282113ad277671e12479304ce01554f311ccd11cf5995"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/safety_review.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b85a80172bee4c7b4c7ca6decb5bf2e574d42808479cea28f656307a5c7fcad0"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/screenshot.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bb46d335de9bf9cea0aedb1d8b92bd538681770786ea5f035b99a6159457417a"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/submission.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "324280ced244be10da608f072f15bf8b173240007dedb99c1084d855d217a078"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/submission_origin.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "43ee66c8efe7b7218793decbdbf423d89002509aeffbc03d871883cd049ab64b"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/submission_status.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "72fc94505c3250843b98b039968ed976e78d8487bb8f63ea76075623b90fb456"
+    },
+    {
+      "path": "packages/browser/src/service/browser_auth/zxing_reader.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "42758f7202c764c1d236584146b90f4796486a25576b8fa3f767fcb0bdf92455"
+    },
+    {
+      "path": "packages/browser/src/service/browser_family.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "89cc63a90fb9542c774dabaebd5e57f61dde39de049232aafc037d56e7817558"
+    },
+    {
+      "path": "packages/browser/src/service/browser_info.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6051c198e6804f1c58e96f355b3068420595c82f9b8467f45ac736b9f0b00290"
+    },
+    {
+      "path": "packages/browser/src/service/capability_filter.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "75ab790efe7573256284dfc9a00ed36f755794a3ac88ca8835d52b4c6786ff83"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/attachment_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e0fd6b20d7a977481a6c547f4ce2080ac9b70406ab0eb3161ae7043fad81aebd"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/close_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c3fe0c86864a64ca6a69e28ce142241e181084e33ef79cdc0ae96c0537cc45fe"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/deadline.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a1c82c3e7b350f3069a5ff4d4ba59c8fbd3bc6fbe5d677efdcc88480650db321"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/dialog_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ac5ddfebaf77f983f425e3c73d1b3b3a98ac42e8ce3339a5c0b407fa8c1bd351"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/dispatch_helpers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1591cdea5a16a993ef10e2d095d46112ddc4bbc3f96e1f2070a787cd57393bd9"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/document_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "83ab5a5fd9c131741bf8c3d7af4cb28d4a137fdb82f4e2089f1ccb7fbdb56784"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/event_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4bc84dc2c6fd976f69e0172e3a83b3a1fda7b4dccc6d9dfa19637d04e6245c39"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/event_emitter.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6a8fbc67258fea7721409f295d74a6b5c2f623245a3507b08f163067d8866407"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/event_wait.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fb624ec51a292ead861b45d0c67fd06f87fd75fcd0a202cc0bbda58e10a1f369"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/execute_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "66c86dd8159228e8d9c636b7f0a95e699ccc272466b1cefdb164e795a3a28030"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/frame_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1afda1a5c107efef04c09bae6595125dbb7394bac828639127e07eeb3899473e"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/frame_target_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "22aa0183ea5c0ceeb2bd800b25b1b45cdb7af33374f6301de00c4b1915a7f4e1"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/lifecycle_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a97945647ca4b5ba12af01b0ebd1ed6b4aa39757120d7d19dd526d0bdc5e2923"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/manager.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a810447debd059460683d740a4957eceaef16c7b1318a519bf67201eb5860da1"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/network_idle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "137f763756305ef5a3320985003dd7aa536e0145705e63d528ef781e8e214aec"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/page_load.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cf17a3a66b7ce1c301463a015000548df4f76d9bfea03408b35e3e5b56d6e7e6"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/protection_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6e7d16d326175aa94708acb1e3b3c933dff5f8d5b3f19e697a7da0fee9b38c40"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/raw_event_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5fffae9501d720ded8fafbd0dbfa603097268a44eb9768a4ac119e1e70e8767b"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/raw_policy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cbad606553f065e7f7a096c526488ec4876b4ed99452b8925d5afbf4d7af9a52"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/raw_policy_data.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "709ac1ffced5dc440337da0572184e0ef308749e0eefe39829417bb46fa53190"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/raw_urls.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "926f62eabcf218aed0d7bc6b577a74eac201ddc9e16b00915a0502e4033e2369"
+    },
+    {
+      "path": "packages/browser/src/service/cdp/screencast_methods.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b633cd6e27c453b58d3d5fc53fa5c9f737628bfab94898f86a5811f3fbee9975"
+    },
+    {
+      "path": "packages/browser/src/service/classify_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f7cdd8736c3cef2ecebf0f4182fa46b996c0ab305d2e9aca230a865c5a5052e8"
+    },
+    {
+      "path": "packages/browser/src/service/clipboard/focused_frame.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "59d554fc759d0f61427fb6482f3b89f5fcbb68dec321a4aeabda5dccfca1e88a"
+    },
+    {
+      "path": "packages/browser/src/service/clipboard/operations.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "731f75686ac3bba843f652f55b2136eb128b5ea8d9e8608316e2cf508c610eb7"
+    },
+    {
+      "path": "packages/browser/src/service/clipboard/page_execution.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b0e5014a758c6f55d8f03af97f319bbc3ade313572e41d0222e1290fa97539fa"
+    },
+    {
+      "path": "packages/browser/src/service/clipboard/page_operations.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fd522e141ab432a25e7eafa8d393615f132a2e7d55d3642d46bdddcd96c38179"
+    },
+    {
+      "path": "packages/browser/src/service/command_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "77e941897deb80d0078f5b93697863f604938ddf773be1f0fe2c5867091c82a9"
+    },
+    {
+      "path": "packages/browser/src/service/command_registry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7305b18601f101eadf85a76d1c5687d45e4b55e02f5618a999fec21243551aed"
+    },
+    {
+      "path": "packages/browser/src/service/commands/accessibility.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6df2bd7efada3d1f4209ddca862d14336ec63399daec999a7df9c36a56a45d83"
+    },
+    {
+      "path": "packages/browser/src/service/commands/bot_detection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "552439427c30b3b6b523c4fc42b4b49d4e3b7ac3c79a4a0c73c6bb06e2e776a4"
+    },
+    {
+      "path": "packages/browser/src/service/commands/browser_inventory.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "320142e4e3883754de3e87a406b5fc8efe5929cc1739f28674e401c8c26d6444"
+    },
+    {
+      "path": "packages/browser/src/service/commands/browser_user.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b9d30e246702c4d056229fc4117c20f1d1434d1f23a7b9b7d3cfc0793e310699"
+    },
+    {
+      "path": "packages/browser/src/service/commands/clipboard.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a1022a103aee7bfc768e26b29c14af91d5b980276038204d5ed0c15d42870449"
+    },
+    {
+      "path": "packages/browser/src/service/commands/content_export.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bce404fc7992db110f3079348c064f1933a017aabac88a3f4f7c68eab7c08b12"
+    },
+    {
+      "path": "packages/browser/src/service/commands/coordinate_input.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4f1f2dfc9a069ea4425cb86be0975e11e2fcad6881e9eab922f057a891f9576e"
+    },
+    {
+      "path": "packages/browser/src/service/commands/define_command.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5655747ca9955470ccd7424644948f58cd4f8a769da73f06676e0684e9896881"
+    },
+    {
+      "path": "packages/browser/src/service/commands/dev_logs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dbea3f09d9fcbdd8ed276437e0ce01fe164814f30b4cb6c48a671dcaca710143"
+    },
+    {
+      "path": "packages/browser/src/service/commands/dialog.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bd9f1420655e2855a060a60890cb0c6ac0e5026821d96e75a77a5de19883e4f8"
+    },
+    {
+      "path": "packages/browser/src/service/commands/dom_input.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f2575a582a93ba25b7dfdac83dd6f77b7ba5623df57a9f372cfbcb0fd7fe76d3"
+    },
+    {
+      "path": "packages/browser/src/service/commands/dom_snapshot.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "29fde676d82231d388edbb128f682e38103a20af3cd134c6793162949ef8a868"
+    },
+    {
+      "path": "packages/browser/src/service/commands/download_media.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5ba5af876ac6732463de02e4d750e456247b8c406d9b0b5ad46d052297c8a5d8"
+    },
+    {
+      "path": "packages/browser/src/service/commands/downloads.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "642d27eecf3fb859330e0b04ed744b8d9dc80f8908b0466d43d852f872febfae"
+    },
+    {
+      "path": "packages/browser/src/service/commands/file_chooser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cc578f6bbed2c3b0ac08c6a114841634e080b5ab521721af24c937bd5c84eed1"
+    },
+    {
+      "path": "packages/browser/src/service/commands/handoff.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ff76168a70700a753e13a6f618ad058ec461d91b66758d5f4ea218b96a48f811"
+    },
+    {
+      "path": "packages/browser/src/service/commands/history_navigation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4889b4b75bb0793b2cb4d604aad13285f64967353e3b446b2c578ca341daec3c"
+    },
+    {
+      "path": "packages/browser/src/service/commands/locator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3c2f149f7aa771393d182c719bf082e77655f8c43ac1dfd3114525629511e667"
+    },
+    {
+      "path": "packages/browser/src/service/commands/locator_actions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0d002a81effa20fcbf30c68cfcd60a47d3ab407ff334706159c996e99e914a5d"
+    },
+    {
+      "path": "packages/browser/src/service/commands/locator_fill.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2cb4ee03202fc0a1d444bbfad7c61e41bf2af22d6a3e6580d20b44ba69bbbc0e"
+    },
+    {
+      "path": "packages/browser/src/service/commands/locator_press.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d5c8359d1c37d7c0f240a3430306e0db8b489faeb2551871d636fdadcbfc08e5"
+    },
+    {
+      "path": "packages/browser/src/service/commands/navigate_url.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "df7a97875ad6c733e097d15995ecd38a6cb18786d6e0e0ddc9147af8e5d0800f"
+    },
+    {
+      "path": "packages/browser/src/service/commands/page_assets.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b0c22dfe5ae5f18073cf1501304eaaf67fbc96be10815ef57478263d2e186132"
+    },
+    {
+      "path": "packages/browser/src/service/commands/raw_cdp.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3f434a5dd2f87960281568bb29b5c7b6849fb5f4022187fdb6439232ee8001a7"
+    },
+    {
+      "path": "packages/browser/src/service/commands/readonly_evaluate.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ed73cd17de4eecc543f99a25ed126f40e5449039b5aee1ea9b7340165eab62c3"
+    },
+    {
+      "path": "packages/browser/src/service/commands/screenshot.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "90389e8e33df57c5a20bcc4d4bdd603a6a69e3bbd0c03d5af859a97d333347dd"
+    },
+    {
+      "path": "packages/browser/src/service/commands/tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e459cf708bbf9198b868077b8da4c9d5cef42b2d524f88e8fe0dce0c56ee6ab6"
+    },
+    {
+      "path": "packages/browser/src/service/commands/url_navigation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9168dd1662e73b12a129906559a2f7d06e6444e2ab6f4b407bc1b8adf27528d6"
+    },
+    {
+      "path": "packages/browser/src/service/commands/wait.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8788b6e8fdc687379913ccc0abbbfcfb289a2c83d62e05a33ee5aae4c09deb0c"
+    },
+    {
+      "path": "packages/browser/src/service/commands/web_mcp.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "48cfb25133321814b3ecd764bde475185fc53ad02befbd08999ba2ab0c61d4d1"
+    },
+    {
+      "path": "packages/browser/src/service/commands/youtube_export.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5f104dc39063086bc01c4cd7f56cc95650f095e74f073ab53bd0a0a6e75b3b04"
+    },
+    {
+      "path": "packages/browser/src/service/content/youtube_transcript.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9f3680bad8a6d34e1113cc39ba82b9e6e460e7b8a8bb8aa9197d2d538fc4fb70"
+    },
+    {
+      "path": "packages/browser/src/service/context/asset_discovery.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "27f401f2e3f8d58ebde1cf056935582eab61fb4344d5eb8acac02dc81caf2649"
+    },
+    {
+      "path": "packages/browser/src/service/context/asset_fetch.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "de9cb8b245d39607eead1319ddae971b1ece99a7e486450436c0975e4911b0dc"
+    },
+    {
+      "path": "packages/browser/src/service/context/browser_clipboard.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cba52f3b178ce433e9b662e81419efb5312232a0f7ae5437c9410e8ed3d6394d"
+    },
+    {
+      "path": "packages/browser/src/service/context/browser_context.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "192d2345eb95da2e271359db299e306fa985ed81cdbeae3e6675824716e5d05b"
+    },
+    {
+      "path": "packages/browser/src/service/context/browser_context_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7bb583ffabbb3fb4e8f657c525e972b5c4fe23c0d2e595f4fb486d5d4f0ab482"
+    },
+    {
+      "path": "packages/browser/src/service/context/browser_user.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c9fed8d7a721a1091450dab7aa497c3ac0185b7de721e74588d1511183f6e928"
+    },
+    {
+      "path": "packages/browser/src/service/context/clipboard.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "32574db308438c36a0f4ddd680a636e2930a589272f1c53fe7845a7dda9fef51"
+    },
+    {
+      "path": "packages/browser/src/service/context/clipboard_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7af285c154dd3a8b10049b7900639cc2abd331718a3747c72557b0fa174211a4"
+    },
+    {
+      "path": "packages/browser/src/service/context/clipboard_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e0ec83d185a7321a596e40e04dd88d9f8ea89cbd4f694679b5d60893957837c8"
+    },
+    {
+      "path": "packages/browser/src/service/context/dev.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8b78cd29b473df3d756f7e8994bb10bd3186229b58e141b74ec86b3de5f66aaf"
+    },
+    {
+      "path": "packages/browser/src/service/context/document_responses.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "709b32e9840164f4b28360551e9ff3b8bdc7cd2683877b5843d9f8cd571627d2"
+    },
+    {
+      "path": "packages/browser/src/service/context/documentation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2582fded542e3872cf9cb394deffb19c01e635b5ce1fae341af7838183255bad"
+    },
+    {
+      "path": "packages/browser/src/service/context/downloads.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "11efb3d80a25933bb7bfe3c6fd722693fbba3b7aa1240dc7167cbc8588440e1f"
+    },
+    {
+      "path": "packages/browser/src/service/context/page_assets.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b96283dae59fb23af1c8580d36e8d79ae7f3b323d218a083518e0bd05e82ebe7"
+    },
+    {
+      "path": "packages/browser/src/service/context/site_instructions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1df6a99c3777af5ca86143e398eb612f624a4abb54a59b872e7a4ba6ce23cc05"
+    },
+    {
+      "path": "packages/browser/src/service/context/tab_context.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c10f48950d46bc7f19f09f8aa074e4e3df8783f5294a4c80ce8c2b28551aa77e"
+    },
+    {
+      "path": "packages/browser/src/service/context/tab_lifecycle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "62c0547c90dba6cae061e160583becea78999b9f4afac3d22a6cab5ff8fcb1bc"
+    },
+    {
+      "path": "packages/browser/src/service/context/tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a4aad937665f510e194f6159b2e9cd75664133983948541cae93b33736f7ad5d"
+    },
+    {
+      "path": "packages/browser/src/service/context/ui.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e63f15ea3a61a0201c0cdce3f509a149b02f4acae3bca39e1e2d480f40dc7c86"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/containment.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3f2e2a9ae0a750236dc18e4f12f65100f9b238de7752e9e100822e20678fbd3a"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a4081835f073e13cc95343d6cea0cba0b4498fb51bb1d9e23ab582f167cef7e5"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/lease.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e73e7a4732c0d48b43fc56a5849dbccccfde837fd551c4eb323c6fb07c8ecbf2"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/lease_cleanup.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "08547cc2888f06107b54fe1730bdb0fa010465a2cbacea19f1b7d16a0db39fdd"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/lease_events.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "259fa167a7c920e8bbe6cb2a4731223cba4446fcac197f67f5cf899f01c7a6bb"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/lease_registry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "34934948c183d50ae77e393644d45c383a9b6b97dd2eff13a63a9196244645e9"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/lease_requests.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fcefeed52aa7a9115716c039f01164f6117ff77f678fa1791ac6d695a2f56ff6"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/lease_results.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "108ab58ebbf702a7d1cfc4ead030ec5612eb78929dbb0069f481d3f3c76eeb73"
+    },
+    {
+      "path": "packages/browser/src/service/credentials/request_matching.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "86f0cf04deb668844dfb1c73e129762be1c809bc152232f1c9d91fb04f9b38ce"
+    },
+    {
+      "path": "packages/browser/src/service/errors/authority_gate_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ad6b94bf51869253b53465271f3855fb5f4281751a83183c8d737206db4b07c1"
+    },
+    {
+      "path": "packages/browser/src/service/errors/browser_security_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "720e6bfdd2eb48989569912b04a107695e8efa6c54d73dbf1707784f0146b7e5"
+    },
+    {
+      "path": "packages/browser/src/service/errors/credential_recovery_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1fc75b5f68cb8929f7ea1e19ecf5e147a955f2a2ec529c225c50e233f3f8ae76"
+    },
+    {
+      "path": "packages/browser/src/service/errors/locator_error.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "96da15caf98e58cfe0c6c94b816821c50f62dafb25de045d71ab6521fdb32351"
+    },
+    {
+      "path": "packages/browser/src/service/input/dom_node.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "94f9bda503d6882dacfe083250dc61b2ce21150eec222d1d6d056403e37b30a4"
+    },
+    {
+      "path": "packages/browser/src/service/input/dom_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "50711bf3366e32e5fbea134a789895b040d6aa46d504b22442e35a4ca936e05e"
+    },
+    {
+      "path": "packages/browser/src/service/input/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2b7e7fb771d690f98f33223449bbb393b24b3f00b2037127ead8ff7e4311363f"
+    },
+    {
+      "path": "packages/browser/src/service/input/input.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a829cb9800a3144ac6f81ade84cb00c0712a246438db805fb286134a9e91b9a1"
+    },
+    {
+      "path": "packages/browser/src/service/input/input_guard.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "01b97c4365f812de33d292ae64728b2d31dda7da0df88f16cfa043bce92f4e47"
+    },
+    {
+      "path": "packages/browser/src/service/input/keyboard_data.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eb6f90951d5a4bfdb371e90db949287bc3bc2c9d6c0fff92200c50eed31ce7d4"
+    },
+    {
+      "path": "packages/browser/src/service/input/keyboard_dispatch.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1452bb24882e2885a396daf93ebb290458a1195248dac3b880540e0712609fbb"
+    },
+    {
+      "path": "packages/browser/src/service/input/keyboard_keys.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1a90af03f0796648b3050e729e562133602cb5fcfcab6b554b77b5602300cb30"
+    },
+    {
+      "path": "packages/browser/src/service/input/keyboard_map.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2832662a0fc6b1647a8d8020e1d8b5e9b3f10ebca42e86c007777cde47bc8c58"
+    },
+    {
+      "path": "packages/browser/src/service/input/markdown_paste.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a27a2bd19f7ab3e021fa926c1f175b8441916c0b90e61466bd04e040a53b16a0"
+    },
+    {
+      "path": "packages/browser/src/service/input/text_input.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "859b3c5883a85c0e9e535597493e536ce6378ade08607644e0a1db948b4001ea"
+    },
+    {
+      "path": "packages/browser/src/service/input/text_paste.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "31fc509283e0193420a09d093849ae8d797f07057976575ef8a4676a08f3cda1"
+    },
+    {
+      "path": "packages/browser/src/service/input/visible_dom.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9a46d4b81c4632ba636ccf3bef48d4ac6adf8f059dcbc9d6535ef30549a39309"
+    },
+    {
+      "path": "packages/browser/src/service/input/visible_dom_capture.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "43e10e67129b67fe093f8cb0c8a2c30bc5cfb668f9eebbe6e282e51a52199804"
+    },
+    {
+      "path": "packages/browser/src/service/input/visible_dom_frame.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ba5d49ac9eaae7b14c4d7b6546d3076f8a68cd4381c80a684147aaca55edb16e"
+    },
+    {
+      "path": "packages/browser/src/service/input/visible_dom_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f31169837972b069eb3f6ad04c1012cdb8fdafda175a1ea3a7b920faba7bfce9"
+    },
+    {
+      "path": "packages/browser/src/service/localization/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c03d056062b9a88978caede8476c09b06f8535f5f311ca2cd390d6aa31d21f4c"
+    },
+    {
+      "path": "packages/browser/src/service/localization/messages.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eca4c707d7edd867b5855cdcd69d5bfe85763dcb38bba8da73e51b4cc3f768c7"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/click.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "63d34031cd789cfe136dfa929e6dfe9a7f98057d302196df84e6ec2f1191901e"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/execution_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1dc1cd2c146b7b33d734b9be82d1f3239e6a1e4bbb33ce7e19140ad2f1b8cfec"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/focus.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "662b0bda85ebde64538cefdd52aaad428e55fa73e8aec21594198120fc53219e"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/frame_routing.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c4a088cc1d667d87932464193b5ef7c81d6152d231921b9879e2544d179c665e"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/attribute_selector.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2882df1beaa35bcb2e53913ea3f3c2e5f928a056e03d0444183375290d3a282d"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/dom_text.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2c8062d8b8fa3f28ebedd227ef54233e43a42f54d245bd81009b4864774a84cc"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/dom_visibility.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "95cb9731aacfe0547ca28c0b2c3ef9068e913a68f036e3c041698842faf69bad"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/layout_selector.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3cf1723fc3a221a919bbf3acb6dbee4644a1d49d942aedfd8c50d66dc9e5b449"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/role_options.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d99ad566f53e506aab19ac1b3b93ef15d10d10518dbbe284fa4579a8884e4add"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/selector_engines.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ab6d1036b72e2e534235da3e33a5c977cbda3d515a12bd738c263306c173152d"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/selector_evaluator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7fc383ac2a30ccc4e01b3daf0868ca9cbf2e226f9e333341d11ecc19c426b2a9"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/selector_types.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "08861909c0d81579e75680aa83b1b0c7f6efa0fd28d2e307497f2dadc631325c"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injected/text_matcher.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "641c7394c8de78d14c1eac2ccd71e8e7c1a4a10887b1d7c7f93f64a91038bb61"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/injection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1becacd29876408422098d68161cca6fc66ae375c909afc4ddd4e5a96dcea227"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/input_preparation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "405d0ee6599f20a5f6b305edad8bf386a06bceaf7b5cedb38a022ee051880081"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/locator_binding.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "76eb86f0ab09c10e6026ab084a89ee20d66b56b67122dd256fbbeab0ddd59fd7"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/locator_evaluation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0e6265731988b1382a1e5d5aeb09f3e7a6c2d8c3375c00717df91d694ab8895f"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/node_execution.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d3a726af74a9055d13ac83b2c197b554ba1fc76122465d8f9557d2d1aba022dd"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/pointer_actions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "aba4f866b5fd4ab9317b548725ba198b2a45f61e568b995a7dce9a733fa55963"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/pointer_frames.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "52a445e4bc0711106b9b8c315277fb65bca6373674b056b5e1b14c6ec27b434f"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/retry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fcdd4a79b105442ca6776b17ac81ebb99a33ed0488ecebd20a6e063b9dff0fd4"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/selector_execution.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "694b08e22f84ccbf33f9aa5740cca4d21510b22a82ead64eb4348c5a29c22124"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/selector_scope.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8a3449593715949cd20ed00edc1dfbef34827f6898a07e1cce4014a05d223e9b"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ef20dd5ce6a9ce699c00a7136c2cf11f042131f627ba9d01776fbb0ed8670bc8"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/upstream_generated_source.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "54fc39aab2de0580ce52961eb0666c51a509a7b3b95541ca1ba586e4eef12b70"
+    },
+    {
+      "path": "packages/browser/src/service/playwright/upstream_source.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fde4ca752a62954ac9d6eb1fd9b9cd940a8ff2e176cac8d2885369776b2131fc"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/auto_answer.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "da04e11cf0dea6fbd9b3e00fae22f3d67db09ff92f35a064c5bf00a97b6ecb98"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/guardian_cache.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "672746846d7ab7bd9af5c4254e7f4550ecccb8b23d6e59d7c57f95462ddc4cf7"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/network_config.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "616bbb1638df0075a48b928372b81ecc2c680b2f7425f0787219ae133e5aeee9"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/origin_patterns.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9770d868c7849fa4defccc939bce0391fee4d97fc4eabe1b6844efaf57cc622e"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/origin_policy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0708c38f6e0783f84980416a373904cbd10ed80306d3de377bd3446c041caa25"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/persisted_permissions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8cffe1e994cddb9bebf15bada02c825075d739c34d0589e98aad0d19bf047c34"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/preferences.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6c68db2d3961c9eeccc3ef6e53c537017b13087b8aabbe45d8c86c923bd7e17d"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/prompt_results.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0710255f7ac9016184418506459c6b5fc4654f5812ac456bc2b8f92e9abc4959"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/request_context.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c6fba3ce4d2aa70c67da26f21cd011d958c54290c879ce4b69ab0471037d525f"
+    },
+    {
+      "path": "packages/browser/src/service/preferences/turn_caches.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e2e1f3657190547640056903b0339cb2db0e48b49ef6a8f079a0969f0b256a0a"
+    },
+    {
+      "path": "packages/browser/src/service/readonly/expression.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dbe77658cfa022eb7cfb6fe64a4fea61cb9d403b65ab4177b28dc5bcca9abf46"
+    },
+    {
+      "path": "packages/browser/src/service/readonly/runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "92770743189f32ddba3d6ceafc76d094d668b980df5e318c655375a1b0596a39"
+    },
+    {
+      "path": "packages/browser/src/service/rpc_dispatch.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5984ad154191952af0d1d167fc2b7b5ab4ed7eff1b71b3de3de7d333952fb4a2"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/auth_broker.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fcbddb88f2a48b0ef6edc9a1816ca91eea441565f27c76e4bc429fd12b2229f1"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_access.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ffc8113affe00b086ee4962cc2ec046e6c6cb111eebd668359ea333280f66d53"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_api.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c7c590466fbae10a72e7e0d5fb2ba8d4c0b25331fd56c06664e90af6b991904b"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_directory.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "706a1c51d87e9eb02342c3e02637053f06406c862e1ffd8c3b7478abeb08e7d3"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_discovery.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "246e87437400ab786cc2e827c05f222633a63b343c472f89ae51a2c7ff446e3e"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_handshake.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d4d20280b019fa180155a7e098b2446b2c7872be49de675466346f3856237833"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_profiles.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f68d7875d36231dc9da953d112e2cd377d9bdb8dd3d759d8f4b25d65e0eba988"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_selection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ddd8829b56cc78b952395634dfeccb895ccc9e87743d6e81b7dd53376e467120"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/browser_telemetry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5ccd6252ad2e5faae4ba7fde8b7b33918343959e1d4ec5b48976c919400bb21a"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_errors.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "40e61a891a94536c4fc91da60986f1dd1cd60425a6dfb9178d80728bd8dc7372"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_execution.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f83132cb2ea8ea695e44d5952c5f34cf995200e421e22ab6e586fd9bc3143857"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_recorders.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5a181c3a4860a248db57ae4e016ac2b740d58b454d3cbaa16179352519a5de85"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "321869463463b5ab20bdbe65086ce418041e8e9f4115aa0a691ed209aff0dc99"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_runtime_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0c4f956c541927aaaef4601e21aa43a118216a882195305174b9131d0d2992b5"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_scheduler.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3c6662f9068f9453a815d6f0482cde97c5b7f2b70b56fa7f756f47ea1930e5ac"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/command_timing.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1b452bf54c90a0495a1e89ec07e4e76ed29757c477c08e653bda1007f72b49d2"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/config_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d23f950a36ed3d428959cc3ffa62b975b0d7a696d2ad6e63c23464c9446528ab"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/discovery_telemetry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f1c186dc4c4831db8b1f735e5fa0ba5c8255112d4bdc3d813dc210989c0fa146"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/documentation_controller.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fb257e42363fa50f66c745c5ed1cb7409743e1be63747c1c9eafaa9b2d85e6b1"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/elicitation_telemetry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "677079b5ade7999d04160105c6a728123b4d77225e7406a346f59b118eaedc06"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/error_reporter.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b6d7faf40f165b74dee751f1b027c22d8eb06e2fdc0346ce84c5d0486a49411f"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/host.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4ff14c72166be0bacd21c9f7ac1408634b83c02efa3d317140a878a495bb9961"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/host_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "749d0d509597bcd1e891ef06675f3974e98da102ddf15d29c61e733db9096ceb"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/native_pipe.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1c9a42449330c0b6ccfb2f455458751e6eb219b088e04fc5fe23c109972d3bd2"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/native_pipe_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "82d718f59070897e54dc63fbc1c39407ec9c103984b48d345df31889527f7217"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/performance_span.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e387bc4b416738fb220d9db5b0907e0e75a7770d0a5e38e3452617d4b28e5564"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/request_headers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c8c9238d731f7855fa39f6d208afa6c0256a3665ad63cb354575519c39996d07"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/response_metadata.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f6808589246d32eda093a14f8830c354fa06a8d231f157832fabbe7f2c54c917"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/rpc_peer.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7796928158c72170cccb3a30f584ebe88dcbfa0bd55f87e00559707f1abb61a1"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/runtime_policies.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c023f8d4f9ed843cf7a08282ed55a0a96739ea68d03d45d891dab0ccf788370f"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/service_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3615dd9d0d1dae6ec45a826b8f7cf4cadc970a9bb03db997d012fe41a18e69a5"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/surface_policy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "06d21c6cd409247380aeb56ba2f42c9a4e9cfbdcb9555e17963081c09b0fe1d2"
+    },
+    {
+      "path": "packages/browser/src/service/runtime/telemetry_identity.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "61faee92d19b70d198570dededb093a8e8061125d880a00ee65b309391e6b22f"
+    },
+    {
+      "path": "packages/browser/src/service/security/approval.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5f5bbf5dae1c3edebcb4e0fae19bfce53b6793c370f3af496f4b142005fa4a79"
+    },
+    {
+      "path": "packages/browser/src/service/security/authority_builder.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c69183891b9e467d19eaf3354544bbfd035060d4fbb7b7693c49db6c69ecdbce"
+    },
+    {
+      "path": "packages/browser/src/service/security/browser_security.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2c4246a251deda2fb3835460e49701a264f0229a36ad628bb3d5dac47b5567b6"
+    },
+    {
+      "path": "packages/browser/src/service/security/capability_approvals.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d71491f33d4dbfda856214cbcc8cb2d55337ec5bbd1028c92db471f11eec916c"
+    },
+    {
+      "path": "packages/browser/src/service/security/credential_observation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6fad1dc3fe391a453f2b721aa415bb90f81f947e86e03f8132463e173f2e6e08"
+    },
+    {
+      "path": "packages/browser/src/service/security/gate_policy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "918948af0a32e858d7dbbbea08f97b0d1a1ee19379a8b563bc2dd2d9091fc6d9"
+    },
+    {
+      "path": "packages/browser/src/service/security/origin_approval.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0b14cb6f866db92e84e4afa39d5bfbb253d7c0765c19ae905a92eb30c2e3777e"
+    },
+    {
+      "path": "packages/browser/src/service/security/site_status.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1a9faef4447854b462150f2e738e30c44521bbecc1e28d60b7c656401a9c2e12"
+    },
+    {
+      "path": "packages/browser/src/service/tab_id.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "08d1b68c121cbeea3bd6b13245907e52453e0f65df889d8a285e6dd153628cc3"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/defaults.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "27c7060e18bd0f49fa2bf6cb661f0ea62948c5ceecab11d1438af62a52928035"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/frame_discovery.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "941419cf400abb8a9611abdb0df860edebfc2096a8610ec289c8a10533b20f91"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/host.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6cc6f9b182060c98208a1a9d7f6d9c008665d4c3ef54538050fe8c3e313ed002"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/notification_queue.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f266573217b2a532496450e1a430f3ec07d54d891371101cd5acbffb6dcb8b60"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/notifications.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "419e5aae2d02943065138b68d2b6353220a30ee4cc33a67619aae5222d8b4b96"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "be35666ad917aec584aa4eeee0f26556e1d91cb3bcec399b23b35170ee48df9a"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/session_catalog.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "49fcf92f7328a40ec2f498b12f784e38b86003e018aafb9a7d3d19dbadde953f"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/support.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5462a941980e664ca377ca1c36e1a52464edbc9a376466f865a0b65e44a4bd88"
+    },
+    {
+      "path": "packages/browser/src/service/webmcp/tool_directory.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8d0ab90805c237bb04b6720b8a6c406deba65f39f694a42ea419092d6d2c5b1a"
+    },
+    {
+      "path": "packages/browser/src/service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "685ff7f6cd49f8775e75c5d5ac20c11935ae52534a0755d2cbd30236a2b01858"
+    },
+    {
+      "path": "packages/browser/src/tab.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a2cdb8a86a305ce9538514acc868b96c821ca1d438019c09266429a6eceb2d78"
+    },
+    {
+      "path": "packages/browser/src/tab_reading.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "20d49d41cad00f49f85f60f3d081394a36da271e0f2994e478871fd0cec468f1"
+    },
+    {
+      "path": "packages/browser/src/tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ca88bf92062f61df5fe889b0102a6fbec1e558582c1f5870d3ecec59978859a0"
+    },
+    {
+      "path": "packages/browser/src/vendor/bundled_zod.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fb89d75a8b23980caf5ffb18cdd17503f0e3c7a9bfcf19cb7ee55fb13953c6cc"
+    },
+    {
+      "path": "packages/browser-desktop/src/documentation_bundle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ff57fbeb4f3ba5781cd9c2227f0c600ec1c178cb91e56b0042b539ccde82a399"
+    },
+    {
+      "path": "packages/browser-desktop/src/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fcb1720b939a81c6841568974d7d58f5d4c5783ca60c26ed6d9d3c51b99098b0"
+    },
+    {
+      "path": "packages/browser-desktop/src/service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "066015cc2fd992edd2329aacc69096352e28aa027f74b49a3d7dab5a32a53a30"
+    },
+    {
+      "path": "packages/browser-extension/src/action_callout.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "516f6db667566f6e2c9b38e35250fbf222770b7ee19553b4fe62971dd1018a1e"
+    },
+    {
+      "path": "packages/browser-extension/src/background_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b0aa923ec22296d0a9fe279b00895d083c2ccb9b415cb42909079a66aecb3a03"
+    },
+    {
+      "path": "packages/browser-extension/src/background_mentions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "de7dee9f3006103ddc3c4e5a082ba93762316e91712866997054aa8424e8c129"
+    },
+    {
+      "path": "packages/browser-extension/src/background_messages.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a3a2c062942095c8e4fee38599165e2970586594f8eaf87422f2c018e494eabe"
+    },
+    {
+      "path": "packages/browser-extension/src/background_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0da1e3cf5017276bb9fc78ee732db0dfa18ace42d14eab71f3e2c51552bd629f"
+    },
+    {
+      "path": "packages/browser-extension/src/background_startup.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d15cd13568581a3635a18950c728795f3cc4ea0cdac6afbc64c2635f2c4c7824"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_events.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eb00bd697ed45546826d0a6e9240f9352701fd0594f0a3ec16a189da2cacb8c0"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_foundation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9676deb4611116b4df719774406e17315ae7b7d2f340e84c9601365586db274e"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_management.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2b309b27784d224ae9f9e9e14ff40a911b6848fbe7d67715fd2892e638f1a63a"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_peer.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fc1476c9f6ecace805c517ae811ae5a9a563a6460a607691389785ed4b73f2ad"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_platform.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f185f31a168d9b1bd9a9184cee2c3fe1f8105d275ea6f4a6187185ed37520a87"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_protocol.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6aa1e76404d05135e5d8fb40bfd1eff9af64a7a64ba262f8f90508b4c4023898"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_queries.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b570b21edc57a0e46fa5f371d467eb80f50a711fec5fe6b331dc636dc0228a08"
+    },
+    {
+      "path": "packages/browser-extension/src/browser_session.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a1b004fc30ca034da91888aec1551c9da130985d7c4c3283e4b68290711148fa"
+    },
+    {
+      "path": "packages/browser-extension/src/cdp_security.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "712d342c99258b30e44fa5a695d39ca6baa4043bc4ba64c6308f094914759ea3"
+    },
+    {
+      "path": "packages/browser-extension/src/chat_api.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2dfd900d11b84ffbd9aeb3c7d412ebd7e8d53e3ca4cdf983be3ec669c9aae515"
+    },
+    {
+      "path": "packages/browser-extension/src/client_heartbeat.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7a10b70103652cb713065876156056a8e50ec903f8518c1994839523cc2b877f"
+    },
+    {
+      "path": "packages/browser-extension/src/cloud_clients.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0486f1f6d7975cbe20c78287e238551f11e1d23f7d8b3611b4076c7090445900"
+    },
+    {
+      "path": "packages/browser-extension/src/cloud_requirements.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9dd0bc5753d5ffc5768810bb1b52688489862f71ec08f650825e4a03ab7a965c"
+    },
+    {
+      "path": "packages/browser-extension/src/codex_content.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9e16b5d7a2e290fa19b359ba99acad24cc511b6eb8eee0f2d5ebac3698312495"
+    },
+    {
+      "path": "packages/browser-extension/src/codex_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b63ab4f2a65635f31c13ec6815a1fbc4d08cf557d8d26e3d085bd2e67ff0ef46"
+    },
+    {
+      "path": "packages/browser-extension/src/command_handler.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c645e172c3b067927af80958fc831c22103e1dd6511437e3ca697646de703efb"
+    },
+    {
+      "path": "packages/browser-extension/src/content_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "994bafa894ed0e4c5e0c3849eb7b4ac6906ff00cf909adfcc631a48f794f294c"
+    },
+    {
+      "path": "packages/browser-extension/src/cursor_animator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3bd84512a91653869d8a39756e3514240055460937947ff932913a5c6b070c3d"
+    },
+    {
+      "path": "packages/browser-extension/src/cursor_motion.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "08fd6d5f9b75bfdb898e6767660e65e2c81605a3405517b36af6ac11ab9992e8"
+    },
+    {
+      "path": "packages/browser-extension/src/cursor_path.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8fc554affbf609f6bc148a260b7fa9bbaa921afbe962376f88bc2c8e2ba5db77"
+    },
+    {
+      "path": "packages/browser-extension/src/cursor_spring.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eccbba0e22634742c65efa8ec3db6a8da60ebf264f5e82d312acb004e09c1b50"
+    },
+    {
+      "path": "packages/browser-extension/src/debugger_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d0190eec3944aae44bd8c7e490c43876025a16b3dddf5c2c937d4c58bca9733e"
+    },
+    {
+      "path": "packages/browser-extension/src/extension_lifecycle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "af3e790191b4a8daa983be0489795bd104f2bb2e6031d5cb84115b06c1c042f2"
+    },
+    {
+      "path": "packages/browser-extension/src/extension_updates.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ddb1bb253bad82eaad63955ac3451ef61da1d4344e2487958c24d6834e7802d3"
+    },
+    {
+      "path": "packages/browser-extension/src/favicon_badge_dom.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "04d3633ebe2dea94854938116ac56583ada68a81b545c1d91721304cfee8304c"
+    },
+    {
+      "path": "packages/browser-extension/src/favicon_resource.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "283dfc488bad95c198ca72f83d5df664ae0baaf01f47ee93f0c311bc280fbf3e"
+    },
+    {
+      "path": "packages/browser-extension/src/feature_service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "42e653e09ca7fec322bec23d5725ee2b9838ed983c5424f71b78d25adba56e6b"
+    },
+    {
+      "path": "packages/browser-extension/src/foreign_frame_dom.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0b7cf5e523eba4fbcd63c5617489fcad098467e0522c29ea24d1df88402c7298"
+    },
+    {
+      "path": "packages/browser-extension/src/foreign_frame_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a4b8f637672efec2dc48e0dcdd828526ec5d6717f3696bb63659c6025235a7d0"
+    },
+    {
+      "path": "packages/browser-extension/src/foreign_frame_monitor.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "da73bac0e8b8de3014d3b926fabd144abc284db47ff5c8d22bea1d178b294c36"
+    },
+    {
+      "path": "packages/browser-extension/src/full_background.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2328d52d2473aaf1a92fcd0fdceea9a6897fdac085c5ba9d76b1708e50036720"
+    },
+    {
+      "path": "packages/browser-extension/src/full_background_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "eda8215efd09e0af297a02b1e265e081d468f340937b27ae305b24815ef4b20d"
+    },
+    {
+      "path": "packages/browser-extension/src/google_workspace.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4522ad037d6629dab3ba961b57bb68c8f1075c1f5145161ec5ae540213ab5143"
+    },
+    {
+      "path": "packages/browser-extension/src/hostname_intersection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "95e10ee0c6f5a92cb7d38e32b339d053b66a553073536c603416ec25e32b6e71"
+    },
+    {
+      "path": "packages/browser-extension/src/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4b6cd8ee6b60382ac782d58503fcc068b17eaa6babb117e7b30c08bd7fe4a582"
+    },
+    {
+      "path": "packages/browser-extension/src/instance_id.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "deabbf6fa813b2b9f1f42a67e5cf95bd4de0a0bf4bd3e24784c1409e016cd196"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_background.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5986ae125f81f148c453f9ad7f85fc3cb7d36df72a55166fae5703ccd6fc790e"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_background_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "09f97402ffc5eaede57339ec9fcaa84c72feebcdeec1bc6595448ecc8f16e3a4"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_browser_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ebe2dfe7395fab9789d370349e94f35327d584a144546badf8da6fce9073b746"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_browser_service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3ed6417f8fe11af269291b6eccc71bccd5f90417bf389a29d09bd8debd802e5c"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_config.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fd77206f43368492c3c06a69a55a5174eb8e965b3a438b6e47df8b24f8aa179c"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_control.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "996bc896835e6be09793c529a215516a1d1b54a734617965cc6706fa69398433"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_control_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9729786e662e9510781c02ee1616ca29d20d43845dc10bf64d907478b65a5e63"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_documentation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dd80895dddac37db052ce79fde797cc890ddcdac64ba3b2d1dbc9776e3783eca"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_elicitation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f287afc74ae03ecdf77984c565c8a148119cb7cd929bb61bd991500ad93da8e4"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_execution_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c299b8572056965c6d41bd895c208368c4b69d9ea7225fd8afcba474e8c16e82"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_fetch.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7df3f0ed11059ef11b07c9cc90f46434863b603cd5999b8d5a4414f29e30d8ec"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_frame_host.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4aa9b5d9a47c9a7084595e762c0747e1aba4f6bdcec19a3c2abc7ded7fa79b93"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_frame_host_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "02d711cfb5bfcfe7a60774db1cf8c026abf0011c41760dde23019597782117aa"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_host.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dec2d2f86275b7ff47e184d6e25886cd57bbfb806fec25e3f6ef0f958963d321"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_host_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8cab1b390cb163b6612b094a89d8ebc1c47d2624fb1f2c708f32ea54fd1e8d78"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_http_tunnel.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9cbee43e25e40eff5618eab48f2291f41135f253cd911166d4cab839db9811f8"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_instrumentation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c453b1e11c6b213f37b06b90cddee3db44fbf2d16ad856a17475c2b9166402e1"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_js_handler.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "efaa6541876bf9a51816566331f127fd80b616ea88f02cab95b4c20d2c56f465"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_offscreen.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ba73313f72490f9f4be297aea5e06bd9dd185eaadac32422e71d7ea14c3dcf9e"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_offscreen_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "27325b139e0769828ab918b1c895e6ad8f2d38080bdb7436749273a336f53a5d"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_sandbox.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f142425b95486ebf3b27a4c6c77741e7512f1b339588742f202eb27fa2e87590"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_sandbox_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8ee98588604b7bfca5d04b49db1e6fdea068b1ac263b6968aef665072e2186a2"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_scope.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c2828dab7790d7338548cda3e54cef216598d990ada91330a18db2883a59b449"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_session_lifecycle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b033adfe323b3fe1a1001e74455f99e33d1103579dda0ef00268ae39a4725d51"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_transport.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9ef79cbeed98c1830f5f38135c2eb1a1fbe7bd82d83ccc51101b1aac5ef04ed0"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_tunnel_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "314597ad105d0b909d8f9ffb7ad87901743c14d37b5d317fd805cad5e6bc4e66"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_worker.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d2f72264eedd784d735a7a1076fb847c91ccf222168e2cb91c6f6f6604f7c3e3"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_worker_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "932622ecfffc27ed319744f587b3e9ed7e440c990270c7bd0da50f58fcea25d0"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_worker_factory.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6c9cea6161dc061d2d730f13e4db68cf7d7a4827c42e437469756e05c1c6aebd"
+    },
+    {
+      "path": "packages/browser-extension/src/kernel_worker_source.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6d11932f7e5d72cbf30256024c7c6212a1a5ce41a0fc541cf4829f224d37adba"
+    },
+    {
+      "path": "packages/browser-extension/src/lease_codec.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e749983a9f426c5e4ba005fa89b86ef431e3b45ec669eb33f66d0b701e4a540f"
+    },
+    {
+      "path": "packages/browser-extension/src/library_pdf_upload.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8d3774d92306b8298789108607a9c8453ea973d0bb2b3c5f2418c9d8554dec49"
+    },
+    {
+      "path": "packages/browser-extension/src/media_permission_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4f0c9a774363e5734a4c7514b542a4df66e9b219d4ea1349739027993b1419b7"
+    },
+    {
+      "path": "packages/browser-extension/src/media_permission_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b7d57df1914f01316b70d80e5061cc0b7c6fda0d94a1a1866673cf399b5bc03b"
+    },
+    {
+      "path": "packages/browser-extension/src/native_background.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1afd757cd5b01587a48f19e283f66fb19971c63efac4f3b46dfee68178e34a26"
+    },
+    {
+      "path": "packages/browser-extension/src/native_background_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1c5f6ddc347a14b9da8bb26e21f5d839d6caf9651f353359bb7c95c98562265c"
+    },
+    {
+      "path": "packages/browser-extension/src/native_browser_controller.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8c9ffbbdc23a25e2d335751a8dbce88dae8bc4255247e2b97d0c4adc97db7df0"
+    },
+    {
+      "path": "packages/browser-extension/src/native_transport.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a83d899ae2c24409ca8956dbb4f05cb16b76b1ccd76b64d2f77a94388d349bda"
+    },
+    {
+      "path": "packages/browser-extension/src/network_policy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e1e88215dcb9fd8beb73633b73068aabe09cccee70e1e47007ce3109e007dd33"
+    },
+    {
+      "path": "packages/browser-extension/src/network_policy_compiler.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "08435795354ba0b6623796a88fee6e232f0bf6676d87d563b42a8a6b7ce09482"
+    },
+    {
+      "path": "packages/browser-extension/src/network_policy_enforcement.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "701f67952a5970a27ff41adb1e0b8cc0a37121e1806d04949b6dd3818a66613c"
+    },
+    {
+      "path": "packages/browser-extension/src/observed_tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0f775ffc38172f9365189332e0097998958da3bc58b9517592aa9e1aa384ef51"
+    },
+    {
+      "path": "packages/browser-extension/src/overlay_controller.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "37ca889fd4868221526b1f29126693c9f48177c2cd2773e7e1ef12bc330e7c63"
+    },
+    {
+      "path": "packages/browser-extension/src/overlay_manager.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a7e50bd5f71d6be04020b60bd14e9f146812fcf2d7e8a2ae73c832d065346163"
+    },
+    {
+      "path": "packages/browser-extension/src/overlay_root.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c8ec63827b1fcf55828a455bad2a59cc45495f23a1f4b6921c3ac9db13bd7739"
+    },
+    {
+      "path": "packages/browser-extension/src/page_telemetry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "284e876ec070f0cd0fc491052ac73219a5b0b4e9068a15267b0ddca70212e155"
+    },
+    {
+      "path": "packages/browser-extension/src/pdf_capture_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d2c59ad4fcb2afa08493d512226bb5817959f04235c43d71928248a9215d176c"
+    },
+    {
+      "path": "packages/browser-extension/src/plugin_installation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "093dca4995a31a68d826c320716469494270d53a6d0607daf11e9fbe8483c8c3"
+    },
+    {
+      "path": "packages/browser-extension/src/plugin_installation_service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bd7bdb96e1356f052b094b34a1b0068a88e13ac7091dd906be9a8d5d6380706f"
+    },
+    {
+      "path": "packages/browser-extension/src/popup_dom.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b75507a2dde30e0054d797ba6d6ac8a5ccb813cdc948c52f119253eb0ffd3834"
+    },
+    {
+      "path": "packages/browser-extension/src/popup_interceptor.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "854783c521a9a8c98538234a754fa97832695ff8e35cfc0b10e51d82531406cd"
+    },
+    {
+      "path": "packages/browser-extension/src/request_header_rules.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "de2d2260e1f866516c0eb3ce650391e428454bdbdaa5c1ce0db06bbef495565a"
+    },
+    {
+      "path": "packages/browser-extension/src/request_headers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "67da482990c362de8fd11450f105e202794398b152fc9fbfd767592d8bda3231"
+    },
+    {
+      "path": "packages/browser-extension/src/side_chat_mentions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7815878201090f81b2e7ee9ab61b64070af5c1bdc4d2ff852ae2eec6c6ebf788"
+    },
+    {
+      "path": "packages/browser-extension/src/side_chat_mentions_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a324ffb6acde2cc0fdcb3e9917f11361fcd4759bfc1580423ecbb6f39252f964"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_actions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "32325c6b53fae4ecf2294352e52d7d8d902f7536c0b7ba2f66e50e03dab2e836"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_auth.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0ba0cb0d553caef2e2f12c756caa569ed27ec3b9ee4a9eff1c840de22a7dd765"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_controller.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3ee35f892d2a189c0e2047c3e434ec41c55e126db109930e6fac4fb7c659adfb"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2bd27ba4d65932d5b255008c2ce3f26e4631fd710a6b38c521c8682b0fe77e3f"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_entrypoints.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b5eb00632231fb276706cab5f9fc4c1e8835a421e44a268e9049f4c9cdd2c3cf"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_messages.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "178e4e29696925a5a903e1a9a16b25f28055ebb0ec35da0289ac4f00a216923d"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_page.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "df11178b06e2af5eef814119f5fea59487da5ac7a26717851d4c00bb155f84d3"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_protocol.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "784a7c9c162b6a1aa0a9f8068d99e91c6aece2042f3a334acea9e299f82af1ee"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_selection.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2c0e1d281d3edf0c78a691e30ca2ac9676728fd043efef80c285f8893c5efbdd"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_selection_capture.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "40adfcdec559da2b917b6450501e1822c58bfd33cdc51737d49c7fa27c3876ee"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "452a9bef5da1304fb62c74afe26f121a58e0f47823b26c2965f81737afdf8290"
+    },
+    {
+      "path": "packages/browser-extension/src/side_panel_window.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "14998bb488eb7db93cccef81a57693a91f1f11a23c8d00b0b7c4355f2a4cffdb"
+    },
+    {
+      "path": "packages/browser-extension/src/siwc.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "62a17d4fd9779efb887b3e0d0f811d761e100ec9c1b13353a875ad4735dd304e"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "624c481c485a105ae59c8487fa92548c02d2d7cb644739989c341edf4744422d"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_client_lifecycle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "90945a15ea8b840fe716dd6fc2d125fdad93e73ae1c444d8fca35816d3278557"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_data_adapter.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3ca1f36fc84e23ea8cf2196fd97a408c7b5ea86503d11fc47d3e6a12d65958de"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_diagnostics.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3feac235ba60a3e06c51661032349802161baca1a5ee62f101dc2cdd913bd1ea"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_live_network.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2142cba77635385f9ea6cf60ea1d057b97c10f49d9985af7b776942add4f0ca4"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_live_refresh.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "12f42411b7f15fa309c192e89aa7aab9ce1df6f523d6245e7f05d02619f086d2"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_live_store.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "58d449b9d432971b5eee49af7cd59079565ba1151b4d6b3f22b58aeaecf8ee78"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_network.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "14711336aadf3d499d6df0087542c7c2d8e8ec9cc489eb5f428c6d8b522afbf3"
+    },
+    {
+      "path": "packages/browser-extension/src/statsig_network_core.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5e858fc38d0dbd5f692ecd4434bbd98c14ca36ee7b23a4e2cf140e8312ba72fc"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_audio.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ffb6cbe3c7f0a5910178e77386c99e041199fe0f78c5b08e1033b07b5ed2d763"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_capture.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a4a50cb447bd2be23403c667fc6d006ce244520d6ae198424fbb4b65ebc44b2d"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_favicons.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f7edac792d67fb4f00254aba9f726f4a30f8fea8793c7b310f69aa8a153bd486"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_groups.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "13c5d6f9377c2caa0b0952f17d6118febf9abe8bd6ec58768507c6df9018f775"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_leases.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b8d72632ddecaf59ffe7f8283783fee34a3cab7022a5c8ba3dcbc12b474e0063"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_mention_messages.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b8cbaeeeba0cff6f276b356a891c607bf61342c4ca7a13c3914b223c8643d6c5"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_mentions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4a7091496c7b86421bd91c3ab284e15e611cd5f2d0b375a8c9663ebf5a031142"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_pdf_capture.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d2bc34d98269a4de80e257d43e8119d1ac07c4bbd7569912ec68452f0ea5763a"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_read.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "468b30dcaed7b9ca9c1519617738246f0165e9dd580a065dc4bf8b6897aae8b6"
+    },
+    {
+      "path": "packages/browser-extension/src/tab_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "89a65793c1c5a35c0ee14843a9073ce908b4cf33ca69957cf02eba0a00044667"
+    },
+    {
+      "path": "packages/browser-extension/src/toolbar_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0ceaf8d7f84cf9944bfce9ac64bb01fc28ce260564eaf89c108189bc955ae24c"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_activity.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f8b0291d03a5cea9b8cf712a058d76f77b8626151b8b6c364a2b4eef0a677579"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_assembly.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ef722321cd0e236e12e45b958c87592e57ecb99e83153a21c0ae534437995d4b"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_coordinator.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e130d454431ec9b6594ed69a5396e56240cff0082b1b19bd535c3be118c0652e"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_elicitation_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6e880da73866b16bb90ba0ec82a02e437502cb67e9f648f7766dba724d4c15bd"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_http_server.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "38b79a358781ef594576b0ebc3e473939b88be1748e0192e891274a57c4ba229"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_kernel_bindings.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "536ed4f2f7a5918d1fdb6647df8a740e00879012dc04f4d965cadfd1aab35d7f"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_mcp_server.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "47a4fcf4e39dcd3d406312fd6e403b2557cc6a7496565b92e48437eb23c8b0d3"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_polling.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8fd164226bd28a6ba9fe34b900b8bb15251377e944b748639fcfe7e09fb2a44f"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_response_delivery.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f981571a2a42f12025db0f721cb0b4e658aa84d42359793856f313fcd9995650"
+    },
+    {
+      "path": "packages/browser-extension/src/tunnel_setup.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ef25670334325f0acff0967ae70db833829b51d1b18c4ab2a369f1cc30a23a3c"
+    },
+    {
+      "path": "packages/browser-extension/src/web_mcp_registration.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0aea23ec971cb19ea75522b694314e21a96ee6ea5f92cc496c9e7c66f1d1900d"
+    },
+    {
+      "path": "packages/browser-extension/src/website_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b353d300cb8766a447b4ffddd5d0fb9c6a2340c572f03c14f31242a417e3eca6"
+    },
+    {
+      "path": "packages/browser-extension/src/website_content.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1fa44f2f690f5266a55892a5810d6235fab095b8c5e158614d8d7c15c241f96e"
+    },
+    {
+      "path": "packages/browser-extension/src/website_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a381e02cee3885fc3e9160bb5a68bb2339552ffb1b867f4d3d7c2de7f830d23a"
+    },
+    {
+      "path": "packages/browser-extension/src/website_status.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a8f506712532fa508371dcba38beea3040740b7e7e088aa7e7c114648ab90751"
+    },
+    {
+      "path": "packages/browser-extension/src/work_preload.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a4af9e16e4dc691a53fdfab68e6b881bea8f1a417fad08364ade7e055eca412a"
+    },
+    {
+      "path": "packages/browser-extension/src/work_preload_entry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e552597c070b34d5222a317a2c6dac696b0744dd5bb68851bbcfbd9918dc1c06"
+    },
+    {
+      "path": "packages/browser-extension/src/youtube_timestamp.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5eb6dea87aad756560bde587a5ed744b5461c8ff30a2c1615a66527a7423a204"
+    },
+    {
+      "path": "packages/cdp-host/src/attached-browser.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "6380db6cc2a7350c7a6ae7d2c38a98b43fd2a5a455a77dd7ffe8890ff395169d"
+    },
+    {
+      "path": "packages/cdp-host/src/connection.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "f84ee7f131d047ea8baf4bb582be6637e6bbca39bfb79d57cdaf827bc214dc6c"
+    },
+    {
+      "path": "packages/cdp-host/src/event-forwarding.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "62388bdd338808dc3a85694555436a9381a359acf0483e21061bdab3f01743a8"
+    },
+    {
+      "path": "packages/cdp-host/src/host.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "b1c28d86f1b123bdf606e9c5ef48c0995edea49c6b9943109b0d86402f794b94"
+    },
+    {
+      "path": "packages/cdp-host/src/index.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "5a6e5a43f7caba969b8aa8206893610436cdd4c1b4dc85d84a00c35c99130ff5"
+    },
+    {
+      "path": "packages/cdp-host/src/owned-browser.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "50257c5e242446ffc6645a129b44f910bfbecd179aca4dbdef1722e92ad2f4a4"
+    },
+    {
+      "path": "packages/cdp-host/src/page-http-routing.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "75acfd0cf1e27e102d8c6b336f451d192bc7d368f9e4f41a48e4a242a19a04e3"
+    },
+    {
+      "path": "packages/cdp-host/src/page-network-lease.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "c0a6be227f18ce2a719b6cb16cd9ba786aecf90fb176ef9a6ac2cf810ffe60ee"
+    },
+    {
+      "path": "packages/cdp-host/src/provider.ts",
+      "category": "caller-or-deployment-code-review-for-native-responsibility",
+      "sha256": "934786559a7910d7d5dc51f71d4cd79ed02dcb2407e4501baa1164f4a52c97e9"
+    },
+    {
+      "path": "packages/core/src/UnreachableCaseError.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bb7b4790aa7bcbf7a5afaa56090cd161144d75a376c7500eb00b4b6d4373184a"
+    },
+    {
+      "path": "packages/core/src/UnreachableCaseError.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e9ecaf62adf75078725bb99143fdc18584c829129e29083fe88f6621cfa54a30"
+    },
+    {
+      "path": "packages/core/src/browser_rpc_peer.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "947cea9397873f6ce6117d07fe28aaef3b266a5a201e69dab17748caba9aed86"
+    },
+    {
+      "path": "packages/core/src/origin_patterns.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1767f9e9e13b0dee9050d7de995f5c007372999d93e465b7332829c3a2ecd427"
+    },
+    {
+      "path": "packages/core/src/request_headers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "56fd3cebeacc9a2baf26873af593f00eace906baca5150587913fdc53a266078"
+    },
+    {
+      "path": "packages/cua/src/core/display.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cca3d19de861187ec5d00bbda515e99c6dae7c950689c9e1a680f4d1da206b96"
+    },
+    {
+      "path": "packages/cua/src/core/positive_pixels.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9223b0779693c6e1313e104db2ffd9b27fd4b7a0de41822236918a4920aebfa8"
+    },
+    {
+      "path": "packages/cua/src/core/screenshot_bytes.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "27731eac1c64b20f6c5d258ddf42e150d0a847920aa39d7ed3d31baf7617753c"
+    },
+    {
+      "path": "packages/cua/src/cua.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6103e4d907c23c99f86f8f00cf97175389d0e1ac7e853186cae07b13c40c89cd"
+    },
+    {
+      "path": "packages/cua/src/get_apps.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9080b18108faee3d4059bef316c4164c4c0cd698252a914826ca8ce583a37b20"
+    },
+    {
+      "path": "packages/cua/src/get_browser_tabs.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9527c9f08ca99ea70f4f110b5d1506a76d289d90d0601321f26bbf44ee37e885"
+    },
+    {
+      "path": "packages/cua/src/get_browsers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3442e0caa053ce768ac53a9434f1d8845e17d6163e7d423aae2bce0b0394821e"
+    },
+    {
+      "path": "packages/cua/src/get_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d46f9cc4b596c0d78e226f9a8fbf63ec96fd428d103688589d449d67d87562c5"
+    },
+    {
+      "path": "packages/cua/src/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e77ace69fe0dadde9694f0bc4ca8ba793f5c7a354d719e4c198bc6d41de1a9f8"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/bind_linux_app.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cf6d38af4af2848d862bd6995e1344c838b729907c6b8a2c56814788222359d8"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/bind_mac_app.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8a52141a1f8820a55d4b21271daff18fd67537faca384b4ee62f4b91ad41245b"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/bind_tab.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5044b14e83a56edb9b7ff4ef067a97d58af07d3ab47ca49b19c8362fcea75007"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/bind_windows_app.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0aa552b99b7358fc9e6456a402f89a3aa5d88a7b2af255938ebcb8ed28baef21"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/create_bootstrap_emitter.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ed72acb970c3edb1cb77dd42982a3712855a0232876477cd99d3ef6857d1c6d1"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/create_bootstrap_emitter.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2bf0aa2af52a330050af5eef36db540c769b0a93ea412303934b589c6512eba0"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/create_browser_api.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5bc01ddd0af4235ac365d3d3e1176f254e581323c0237caa006a1267ca6dcf8f"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/create_documentation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c1ddc95ff9697cbdea7d85b2b5927901a781d5cb9dad86d8f6d36d55beac4027"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/create_tinysky_alt.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a7bf41b67385bb0a8c140abcd9479cca2247318b7c6330f7a38fd5ea385174f9"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/duration_seconds.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b5d4af297fd19fd33598f478779e82ea7c1669093cbd61a15ab1dc3613bc9edb"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/globals.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3d921218a963e29919a21876932617cb289cdd9e90988ace5e0f3cb237902fea"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/one_screenshot.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "82efd3a43a6307d495588086ca206c129243aa464f691b4f71722363f3d690be"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/read_documentation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "65acf0e7cd11fb4239c7344a2429386c924e8d91e9148aec43c162a6a5f4c42d"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/require_plain_text.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dcd2cf8d3e7fa5cf295a81939511d7e5c8ff17f9b85331b6961b26f2ad72ebc1"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/setup_browser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7d2a22838bec7d3f5d5dac9931581190b6ff3621ca8453977f15e5bdd5d5916b"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/tab_reference.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dfbd32885d3ce1625073c54dd3d0d24a7a092ac5499bad6f6d540dddff9fd773"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/types.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "698a0cfbbaf7bc5c6e70527dc8c4ada3094e942d1653f9304371cfbc0fc0a4cc"
+    },
+    {
+      "path": "packages/cua/src/tinysky_browser/create_tinysky_browser.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2919bf54a375b5dd3e6da0962e9bb720a21a578c98ddbf1967bd457ea015b9db"
+    },
+    {
+      "path": "packages/cua/src/tinysky_vision_only/create_tinysky_vision_only.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3af9df55c4b3b4a00f01c99c23bc2c1e00f7e5782afdde27510046f00a979682"
+    },
+    {
+      "path": "packages/cua/src/tinysky_vision_only/globals.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3852cc5a5d90eccbd77510c8c8a4d7c99ab8ef8dff1812903ebd8273bf43f312"
+    },
+    {
+      "path": "packages/cua/src/types.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e91757a56b37b708a20e83d5f1bfa4d42e6b3fff1c091e8dab55deec0777b813"
+    },
+    {
+      "path": "packages/cua-repl/src/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1a02e048ba03665cbaa4855e87e8d6cfdfdc68c500f8ebc4c3626c9d6cc28488"
+    },
+    {
+      "path": "packages/cua-repl/src/instructions.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5150286dc25630c77c2bbf10f3b9e86607a1de33210f6755209d557ba5e7d517"
+    },
+    {
+      "path": "packages/cua-repl/src/launch.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "de157e1e9c1f7db48c6338ae8ef9f9b44a78c4475d48dfeb7863958f2f662acf"
+    },
+    {
+      "path": "packages/cua-repl/src/launch_environment.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "70620384347637c7496b2690fe8d82667e4d146ae56cca183555412916a2a6d7"
+    },
+    {
+      "path": "packages/native-host/src/browser_connector.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "633b063aa60fb0be5d0e1e4ed3382a9560480a61578cc718bc273392b4f46523"
+    },
+    {
+      "path": "packages/native-host/src/browser_service.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "f430d2e5710d332472edf8606a9d84b91966c8511dc85c4a44007daec4cacecb"
+    },
+    {
+      "path": "packages/native-host/src/chrome_profile.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "138935e5659c34a43dd200e6a70e3258ba423fb9b76cb1b00a8b5a0fd3e4f39c"
+    },
+    {
+      "path": "packages/native-host/src/client.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "dbb3c636547356112468819c57c52f10bee4ee973ac070a306dc89550b58a994"
+    },
+    {
+      "path": "packages/native-host/src/endpoint_configuration.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "9e173f976dc34f8259edde59502300ce9681a1c3250a18d6d71c484629a9cffb"
+    },
+    {
+      "path": "packages/native-host/src/index.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "585e057dbcc8b989e786bfa8986d9a0fd2af5baa7efecf0033261f2b8a09ca99"
+    },
+    {
+      "path": "packages/native-host/src/install_cli.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "87df22bea4c175354990528bee3975313238820ebb681a97335502efca20f973"
+    },
+    {
+      "path": "packages/native-host/src/installation.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "0dd79a90cf7b9b95e11e451bb8358ff2cd04e79c999a212b4ef30016a34315ea"
+    },
+    {
+      "path": "packages/native-host/src/installation_check.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "1e897d4dccbd1bcbd30d1e51bf8fcf11ff0d70bd17e1555aa15a1b54a5da5bb0"
+    },
+    {
+      "path": "packages/native-host/src/lifecycle_log.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "a6bdeba92cf3be358c5aa093c996742abd543076687824ba6270155feb6ba9aa"
+    },
+    {
+      "path": "packages/native-host/src/main.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "93f401f91b87f1c43d20d63d35793c3ed95876ca72706ea66e36d8028a96c54b"
+    },
+    {
+      "path": "packages/native-host/src/pipe_authentication.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "416d174063b193e1f1ae86c9636e9eb5a48c229575f22b0572dcfcc218912ba5"
+    },
+    {
+      "path": "packages/native-host/src/router.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "4f7863a4c6470a78d43c47fc90f31081956bbf424d314f302d2e10ecccf99dfd"
+    },
+    {
+      "path": "packages/native-host/src/server.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "9cd7c8e8f2e8070675b97516f621bf8842fdcf62512fb0c5f7131e64c857c3ba"
+    },
+    {
+      "path": "packages/native-macos/src/client.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "4ab15778738936e8402f503884676d8ce94397b4ca4703117c0427564b90e152"
+    },
+    {
+      "path": "packages/native-macos/src/errors.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "b3d3dd6116d3a7491ab5f1549a2e4c2a0f06378728ee9ab68215f876d7a76be5"
+    },
+    {
+      "path": "packages/native-macos/src/helper.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "67670836bab7696f357d1a5c5b45fd1fd68b672766939cdc653277d7c323c1a0"
+    },
+    {
+      "path": "packages/native-macos/src/index.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "0d056fd3ba851cd7fab0798ab2ff4d10a78cbc2f61f3e440566863a95b018922"
+    },
+    {
+      "path": "packages/native-macos/src/paste-content.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "50a2fed2de1c4d7389da8ebfb29fb68a27100bf14860a9fa9b78f70b41e9eaaf"
+    },
+    {
+      "path": "packages/native-macos/src/screenshot.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "859ad9a00a8718c1ef950fc0682c03f4af93723dcd5b6d85418bf7219e682649"
+    },
+    {
+      "path": "packages/native-macos/src/service.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "bb8116fb4d501315dc6bd0e2b5862176055a81eee461d2c6da1f4982c3725421"
+    },
+    {
+      "path": "packages/node-repl/src/background_operations.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4b0b2490a59ee39f36950452df4a892f4ea3ff6f0ca5e3363dffbf5a2cc3f7c8"
+    },
+    {
+      "path": "packages/node-repl/src/diagnostics.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "646289733b7fbd10f6d753df9d88f546d40457557cd68d13e64137072b2441f1"
+    },
+    {
+      "path": "packages/node-repl/src/exec_context.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e6f969f63152502db01cb4be3e1cbe02b0576a1e23bc8628735567a67f1b041e"
+    },
+    {
+      "path": "packages/node-repl/src/kernel.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f41f3d31751e84550f68a8893ecce4433a805e5303d44a4ab14fea3985f828e4"
+    },
+    {
+      "path": "packages/node-repl/src/kernel_bindings.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d6fbe8aaada13c402ee7e3bd5f16c221212f2e157b2a5c4409b608f9d68b63a5"
+    },
+    {
+      "path": "packages/node-repl/src/kernel_instrumentation.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "446712c97b458eb0877f66f543290d01b764dafb2962d3d76b26e372d57d1bb0"
+    },
+    {
+      "path": "packages/node-repl/src/kernel_module_builder.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "90f02ec4ff8a8e1d40d02e7de82adf9cb4a678488f96ed9c27917f720417456e"
+    },
+    {
+      "path": "packages/node-repl/src/kernel_module_loader.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4cc102ca1ae1dcac74b96f32e3d245f8366436e4d16f91751d0a4d4a38b65225"
+    },
+    {
+      "path": "packages/node-repl/src/kernel_module_resolver.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c24dc0eb14c583efac49a8d37eacb087188c4ae0d0863799fe873621b1dd46cb"
+    },
+    {
+      "path": "packages/node-repl/src/lifecycle_handlers.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c9d65775bdb7288ccdbf39d1e722a9525c07d639106cc0e8ea72eb67bb5c1bf7"
+    },
+    {
+      "path": "packages/node-repl/src/native_pipe_bridge.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a2383143dabaa7ee97ee851205742f23f8a500a7c2c6a6c5f6d9cc42a9cc2ff6"
+    },
+    {
+      "path": "packages/node-repl/src/privileged_config.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0f3017845eaecb2cbbd569b49e848cb3f8221692b5b110fa918ad3f41c9c3b73"
+    },
+    {
+      "path": "packages/node-repl/src/privileged_host_operations.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "92fdbb8fdffeb7abbe903a0dac8806313d1d8f11d5c1d63e87bd003b90e2b880"
+    },
+    {
+      "path": "packages/node-repl/src/privileged_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3ccd2ea2b4414bb2cdb12fdeffe16460c3bd66109e2efeaa30d97284dd7c158a"
+    },
+    {
+      "path": "packages/node-repl/src/realmChecks.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6e2b19a95071853f1bb5a70cf93f2f0054e941869d52f7587e1e110b9807bc29"
+    },
+    {
+      "path": "packages/node-repl/src/tracing.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "38f4c7c20a99c63c2df9e452b546eaeb27b0f022d0ca66217606a765b549cb85"
+    },
+    {
+      "path": "packages/node-repl/src/trusted_worker.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "024e007595ac04bd3bfa6a51f6a988b347abad59f3ac80789dde7d7aecb74f4b"
+    },
+    {
+      "path": "packages/node-repl/src/worker_runtime.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3c8634de4966b500aa2dc1f0ee2bc4a2eb529a03726e7e5b177d03f3feaaf897"
+    },
+    {
+      "path": "packages/node-repl/src/worker_values.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6ea9a8aafb204ac6784f33187c6ea8e584a48a59cdb9fd054361cf4477f7d25c"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/background-host.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "751683ec602f12c7ba9fc0319658ab1176faefeacaa28eef64e4e84728b75d94"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/config-host.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "cabfe34dd5f6609cc6267379c7d2a1a821254743404b7d566acb6f7d4cfcdafc"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/execution-deadline.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "41985db29381a32891f784b1a5d294d39cc9acb54693bc7a9d72d2e61bdc4d4d"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/mcp-tools.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "c2a3898639c31db5d4404406ccf6135dd74ffadcc83d99ad92851286b60ed71d"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/mcp.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "cda4c7ba91830e9bd10805296726318f896f2efc7fdd2d310d52596ce387c2bd"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/media.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "1e2f05357968b586f11454142f8200e5f9c4af539f3c92fb200463e007c8e5e0"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/native-pipe-host.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "4daa79049465f66bedde528643cf36075e8d53edfa90c212b79cfa8498cb214d"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/persistent-config-host.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "3223c0839067e5ce3572abbcd76a60c5880e87b7e4780219d71974396c02adf5"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/process-port.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "1b59e987ef05e94fedb1f859b4a7c7c55affc14f646c5a4db20a635563abd10b"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/sandbox-bootstrap.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "ca53c520009830645fa95d27e3f1fd189dad7dfa07d73c292efcf5019d51b913"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/sandbox-launcher.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "2a6baacfd93079accc8fc2650a110940e6d24e99c291144dddca3aecfd1cb2d5"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/sandbox-runtime.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "eec84f9b6d34cee15e86d4abcdd76f08c8b151bcae77b7132cb3697da2b4496b"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/session.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "78f6abc3e7d60f0df1cac4b603ccdaa0143338c4e968a40d013ffdf3995a1534"
+    },
+    {
+      "path": "packages/runtime-supervisor/src/stdio.ts",
+      "category": "native-responsibility-migrate-to-rust",
+      "sha256": "b6820e772c05a3d44f9315bac06d01b651057d33f0ca0d295d8d744b0ef0ad4b"
+    },
+    {
+      "path": "packages/sky/src/core/cli.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "41fcfb71ed00793f6870baa79e36c563406fb4924421f8273e8caf7fb4ee27d3"
+    },
+    {
+      "path": "packages/sky/src/core/package_bin.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "00b99759ee69e18db886a62bde6c63b66a71c2b3b4c2a155666062afec32cb02"
+    },
+    {
+      "path": "packages/sky/src/core/uint8.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3c1f88d1eba08fe1076e975eb01ff6fba53cd2571db8504cb234f2a8167931ed"
+    },
+    {
+      "path": "packages/sky/src/create_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "33b178c4cbea693a89822c5bddbf23427df53cb7430490387b381945fbdae0db"
+    },
+    {
+      "path": "packages/sky/src/create_service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ebb0465e19d27ad86ef2aee4c5a7768e140af10af621dde2985339f19fa9e10c"
+    },
+    {
+      "path": "packages/sky/src/create_sky_proxy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bf02906c26c551c7d6a79383c1b04209c2d6764370f6a63496187890cab800ea"
+    },
+    {
+      "path": "packages/sky/src/index.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1ee27923af5c3141412f2bb027b61310e58eeed8e49eeed9afb4b9e66ec4909b"
+    },
+    {
+      "path": "packages/sky/src/load_options.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b97b46dbe0fc17533e3ee058409081ab129a82a023bc00bbf3ce216ed6514510"
+    },
+    {
+      "path": "packages/sky/src/require_audio_model_support.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a59cc32b20bacef31dc7b3565227ad0cea817981bc1f2c7edd24c5ca8c2526a6"
+    },
+    {
+      "path": "packages/sky/src/service.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0cd130a277ff2ad2e90738c18bf46b10d089661bd4baee7bf84d062ff3fbc888"
+    },
+    {
+      "path": "packages/sky/src/sky.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ad8ad384efea84779a5aa182bca562a80aa0281efeb9e5d269de7b8e7d7626ef"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/accessibility_tree.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6f9d9ff279d4915de105f0e1af27a113958e6cc5ddda32b1c4c8d00624a5771e"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/action_settler.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a4f6a928000b6353879978ded28d56bcd770693c0a5b7492d5131bd0803a8bba"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/activate_window.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "83778ddf408d5b78704b37222a5d3051678f28606a4a1d611981c9a50438f59d"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/audio_recording.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0558362c155c7e23538e3b803c5c2a685a08cde80a1490bff186c6e1edf3339d"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/click.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0887721a5314ade6a6467090237dc05547541ded9a49f90120f335fa39d55fef"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/clipboard_read.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "230b6e93798a788ce4179ba95a1012f6e6ec0a5c3a09dc765ae0e9b2a219bf02"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/clipboard_release.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ab9a5fa8cd85df135fc018f30712501495ae82e1fa4bd0f2b7e93fbf26038b5f"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/clipboard_write.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d1b821ecc4ea1fb55640415b0c290de755f4607575dee00f342fc351892cd25c"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/create_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "75f07d4404080fb2be5a7c640e64e681391973d620c48f438f6215f87350a1e5"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/drag.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a92402d170ab4d50ae15d6d192c82b6f1f3cde585767e9ed8da805396614a999"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/drag_handle.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b5179485f517f0b5abe6556debca80a4cc32c184e1e38144a766c859cfc65d33"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/element_ids.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e84060825d4344e9fae279031e44331926ec1eb68c1bb08a6285ee11c52dacd8"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/get_screenshot.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c07625293f12f7794637ab7fcbba4e8d31dedc4ec755baaa81257f7e99cb287e"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/get_window_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "16a2da47c20f063e26454eeeb9acb964a7d679ca05e4657cd89ff5d6b4af4c87"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/key_down.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0e3712845cb8e2264df53d5adf1745ea23c50fa4842678a3d8f4c49b5dda7126"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/key_up.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "932abbd7742ce2a5ec90026ed6aa26dcb3580546e40db551cdaf654f6592b4e3"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/launch_app.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "875808b2a855cabbd7f2de1a3d71a6710324d56673891f3f8c25011af5efe744"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/list_apps.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2659f882ffbb4935e57e3d7e6a91fb75921742bf1de452b7feaa4fb22899de96"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/list_windows.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "15021794cf86d2cb7a78330ddcfbc64429228cac3668811f579e807f3fca8069"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/move.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c35b2bbee91ababd0d145bdf186bd7dce57253f54b71a183d3ad0eb31cbcee26"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/move_relative.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2d03278597d09e8e74af5ac305611ff8f5dca261390a0e502de9e5727ba9715c"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/perform_secondary_action.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a6c60a22ee55b45e81f45432da2f1e57a603de5817c3bb43f894d6dec88a329d"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/press_key.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "966f98a5d7c04dc38d41b84472e9c055de26c1ba52d2d3f4d73c158486ecbc99"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/scroll.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9372a2f4aa2dbdb3b6e69f7439ea127b285e9e396f43fcec8c5ce74559829027"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/sky_linux.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c319c417b878a19baf70bf10dfdf34de6a4a5ba27a72e1b4d8e8acfa689c604a"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/sky_linux_transport.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1702f7ce8bd02ccb8840e36aee69a6685e8e6ec139018190d11447f369b5e144"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/type_characters.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0692b1e8106c1b73be01f7b7241dd026a6545c2df28acf9fec1102cc8403e375"
+    },
+    {
+      "path": "packages/sky/src/targets/linux/type_text.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "75edcfec272aaa8e4f45771c5f0442283cd5809b1c472d3563aaf6ea83d406df"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/audio_recording.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "339228d948296df154efb64a34a4da87d2efd04cfbae195ed0d85e4753463421"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/click.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e7facc731a0b2311b264a7e7e877b63836de99a902c3fe0cb1be2d0386215c7f"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "18e562dcce5771efe342ec0da101a02cc768786c125b20d9c23df3380c052357"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/computer-use-policy.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "da0dc106250d2c53b26a031ca8c6d2179d9e878a2f0d4776cdd2aa609dedf6a9"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/computer-use-telemetry.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "46fe5339ed3932fe370207bc19191f193ccec3c029b1ca716925a46cc3699d5b"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/create_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6fe497a889f0d2edac333a7b9cda70d7c416d0c9ff9347fe6a91cc5d24689458"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/drag.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e7f26926cd3f1de13df9d34bcc1d36258a52f2eeb2ad86fc70c67fd4c070add0"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/errors.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a11086caaf317c47fea8ab18f12312af0993b5d73cb70856d18b6ab6656a518b"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/get_app_state.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "80454f50a7bf0323a5acf9d49c67ddd9de95554d5203e183ae4fc395ee39039f"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/lazy-client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7b811de0e907ef06edac0ab3a51a18d693b95812fb09d7ddcaf4c8e2351f2841"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/list_apps.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1e0cf94ac972d31b2fe3d7263ef209d8c57b8c883f35f739876625d9a4688283"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/native-pipe.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "df2833784af807abb89724b41d99b25dc51f6b212b0bf1251b112600fc8dcb4c"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/paste.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "80efa0e060d1598e8b1bf3de8f979b53516dea70db9c3ab42cb367f1e95914ed"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/perform_secondary_action.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a0b7f738f8810c995b641509f56ee393bb6db89ccb5bc0a4984fd9a5f9442046"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/press_key.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9b2620cfa5c2b9a7bb24543e95a6d2d4ebd7e7749fc2d79221c41be1727b1d71"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/scroll.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a5c18dc64502154df6dbcc5e302e82a4de5216a83476b8dd0c23964f2f1e90cc"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/select_text.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1e6d01374d8f9740ea91a7c5f368ba302d9bb58cbfbcb908658c1d368c9fe892"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/set_value.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "489a2d1eda233dd4859bc0edc245ace476cc962effeddfa4ed6862e7c6a0294e"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/type_text.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "44303df41444151a33e5408bc225e587ecca5f1ef20d65ef058a29db3e8c1091"
+    },
+    {
+      "path": "packages/sky/src/targets/mac/window_result.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "14e848ba63003fcc47958e05c3b00a4d67be34853af1c16065d0b7f1864dd8e5"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/create_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "873d7cbaa7d3ae42989db405942220f8c4f245329cb2f9a3fa3c2fb405334f31"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/codex_turn_metadata.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c025b81d689daa40b6ad9810cf2d559fb2c9e0a10d8b837e8063e16e2e3d496b"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/computer_use_client.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3260e8c10655c66d3eaa6a89ec4aec8cf7e6193ee122dcb6013c630af1803879"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/computer_use_client_base.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1d94fcadd9a3bebf92ed20116c1116fd5039dc4baef5b3ef413ce111fcfeafce"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/helper_protocol.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "24349877bf7769dbea730bd6760ad772b32699e51138777aa23471a941c33f2c"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/helper_transport.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e649c719108c1c98a62795b666fa2266ca44dab770cd82f24f5e1258c7ec0f15"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/native_pipe_transport.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "49d211e85885cc41b2b60f742208f3ed93c1480bcb1a899cb542e87015f77696"
+    },
+    {
+      "path": "packages/sky/src/targets/windows/internal/window_protocol.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4bfd2b055f1e8f7ccd335ce7da26064aba6823dda2f7a8a0682b06a827aaa854"
+    },
+    {
+      "path": "packages/sky/src/types/Direction.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c1422b0e694b052fddb2ac0cb6ffeae7109c108012b22aa129e6c361afd9db4f"
+    },
+    {
+      "path": "packages/sky/src/types/MouseButton.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dbb548c19b958c48b07114ae6e6c691aab83c648a9849ab60c990eb050880dad"
+    },
+    {
+      "path": "packages/sky/src/types/Point.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "452ee6fb49dda75266fe4679c31dc4f323b80125666fd6f5c1ec3668aa4a6908"
+    },
+    {
+      "path": "packages/sky/src/types/SkyClient.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dbe3d8669f2abb294e9c6ab19cb346b66722cd44279f8d002a32edcbb607baf2"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ActivateWindow.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8b2b2ee8503a0d4f339746b02599559c09ae529efab8fe7433885aaf654d2223"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Audio.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d3a5c44212d1be1e643b2a3989272f91c1f111ed83bbef7c5d5abb2967671ff8"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Click.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "43efd0608a0a68c769d09d726ccf7833398a09deba74190185a4a5be447de5f2"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ClipboardHandle.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "fdfce5af076b291dba16248cb2db6ae6ed780aed182e330d7c82e43b05fa0e2c"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ClipboardRead.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "05711085b2bf5c66f1006daaaeadfbcc76139b56e5c7851e855a0c06a987cd7e"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ClipboardRelease.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e2d949c360bde02fca08f52eadfc50f9a38d0512b81578cf307ffa5ba00d42d2"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ClipboardWrite.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8bf1e382ce825fa6311bbe5e3db2cfad9584990dff187e96c71cb232730630db"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Drag.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "20b5cfe44c3799706ace5cda8ba3aab34f3b4381d2825f6977edd562603c6af4"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/DragHandle.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f8ce88c408d59f956be85cf85e3c4e48dd284a1438588b9038284da92de4b0f3"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/FullDesktopComputerUseClient.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6bd636ced639eeabce1db6dc044ff919cbee21b2215134bae8a61e74f2c15ba4"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/GetScreenshot.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "08ea22ad5e5eabcc275f9ffc46343fd24d38f426f578cc185a234c941f14745a"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/GetWindowState.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f64a988fe6f0fa23abe7e2630beaf956014cbe30446ab8676adaf77b4dd57e15"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/KeyDown.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "be23eaa767ca6620536c1da19c662ec99dee69fd6c779564d69a7d0057f843b2"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/KeyUp.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "77b9b83a337498e3e57e6847f08ef7c7520f70340845a21e62bb2fbba3aeae2e"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/LaunchApp.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "44b065de5a1951757408185b2ab61e02fcba1b140af907084db73f89464b97f4"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ListApps.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bab3b8f15b532d01e25fe8cddf302cf04d09584cfa31988885c1e1e826ff86da"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/ListWindows.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1330bdb44cfd834ab17975eafd085a9ecb3936e8c03cec1fdc0f0bc1c5f79737"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Move.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "7cd646a6f0a74b078b9d9cda064d26ea43884b5cf3651bea7b4b8b863d02bc6e"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/MoveRelative.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c222bef6bdd845cf0aef13e4cdf684c99c999f1e20d42797ad58dcf25f6336ce"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Options.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2f988c2f4d8b0c3a32a9cc197cbd3ffbe83749de5fb288ede6a31b782aa29abe"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/PerformSecondaryAction.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f84b1ba8e020f48787feb3f52e86b9d36052286b27061f4b50f85a423a7333a0"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/PressKey.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c96547c2ac078280ce21030e6b1369174eb146f1c15b87f953f3f8bf7903e773"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Screenshot.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "39229aa7a8543e7437871b8f6dc79ccfdcce3f4368139a10f60e1955e0876647"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Scroll.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "bc062204d078718ded990d123fadc7aad9be76cc4bbf54515e3b34b6c67de9e6"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/StartAudioRecording.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c771576fd04f6d4d0a0cc15f816663d73cc26a2297f79365687ea56510c427ee"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/StopAudioRecording.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8856774f165020d3ea3ce43c200285b8ce3e25fa6d4e820dfec849be5243102a"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/TypeCharacters.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "74da6138586f53a86f8af478803550d7e14aa083f93b9f4700bfde625a3b48a6"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/TypeText.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dcf32711d7e5ac671f699d32940c669becdec3b2886a947500d7a1dfc31e7cca"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/Window.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "97972830741a96cad1bbe9452b5dec70fe343dc4dad4feb16a35ee0bf42f59c2"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/WindowState.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d8bfafbcd3e5deba5817656c37705accdd8b2190d6ea52bd4e08c2f81fc6cab1"
+    },
+    {
+      "path": "packages/sky/src/types/full-desktop/index.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "5af2468c7ea74cc4b159b50416f3944a694278079ee140302cd6dc1806161a59"
+    },
+    {
+      "path": "packages/sky/src/types/index.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d4ec8b40747099297141d87f4705336dd4cd5f34d7384f431d9f983786b4d995"
+    },
+    {
+      "path": "packages/sky/src/types/window/AppIdentifier.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d686d5c341aac7e0c06dabc58230cef7677bd907f48b7583bc30495d9e61750f"
+    },
+    {
+      "path": "packages/sky/src/types/window/AppState.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8923aeeb7f60715493de2c29e19067b1e24211f77f63c6c64a96543fa4dfb78f"
+    },
+    {
+      "path": "packages/sky/src/types/window/Audio.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d2909971b4798effc9271aff29bbafe8cc475542ef0296ba9434802ac2c6c71b"
+    },
+    {
+      "path": "packages/sky/src/types/window/Click.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "6adc3625069b8ecdf64ca393d1b5ec23a20b1befd27a985866b7806448c230c0"
+    },
+    {
+      "path": "packages/sky/src/types/window/Drag.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "10aeba9607f10a62924f7dced3c77aab5314fb85d178499bac6c0a5f805441b3"
+    },
+    {
+      "path": "packages/sky/src/types/window/GetAppState.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "996dd4e45f7b2e119dfa074cf5b4b5893248ae79323596da0dcfc3bc3c8c8b55"
+    },
+    {
+      "path": "packages/sky/src/types/window/ListApps.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8298eb3a109963fdc0a07a6a30349025dd19c745a241b8ee502bc0779f5617a0"
+    },
+    {
+      "path": "packages/sky/src/types/window/Options.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d239ee4c8c1e248e46b056a5452a7ba4761ab84c55773d4907f0cc77ddf7abb7"
+    },
+    {
+      "path": "packages/sky/src/types/window/Paste.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3d3ac35d0a85332d85ef07d0aebea837321ce5c3d17b5d60f33cba974f18ca4b"
+    },
+    {
+      "path": "packages/sky/src/types/window/PerformSecondaryAction.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "9420653e6f1531094a893bde59cf229a5982976263655cbbee97fbe29e20ec44"
+    },
+    {
+      "path": "packages/sky/src/types/window/PressKey.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0d8bfc2ade64d7f996cee102909a8158760ce869bf1e9523ba55872e49c68b34"
+    },
+    {
+      "path": "packages/sky/src/types/window/Screenshot.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e30ea72625d59780f1f8b4aad00f52dfaea59703f94eb49ea04d784429cdb228"
+    },
+    {
+      "path": "packages/sky/src/types/window/Scroll.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "800ac84854c3c64fee6678fb36d7a47ccaa823953cedc5543ef092cd78bf88a7"
+    },
+    {
+      "path": "packages/sky/src/types/window/SelectText.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "dfdc885f128699dc4b7721b161c40a8fdc62185cc3f305bc446d896e7e822619"
+    },
+    {
+      "path": "packages/sky/src/types/window/SetValue.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "1c55428ade82bf7a37db01aece1faaeae7acf8b22301fbd318abd585c52f93e1"
+    },
+    {
+      "path": "packages/sky/src/types/window/StartAudioRecording.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "223888166843db29924aaa18d1955682a7614681135145a61b9dfef067a29d15"
+    },
+    {
+      "path": "packages/sky/src/types/window/StopAudioRecording.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8856774f165020d3ea3ce43c200285b8ce3e25fa6d4e820dfec849be5243102a"
+    },
+    {
+      "path": "packages/sky/src/types/window/TypeText.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "a6891c01a84202e00f7d2a156d6222281afe853fa5109f3053fa6e8623f15c0a"
+    },
+    {
+      "path": "packages/sky/src/types/window/WindowComputerUseClient.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "4978f3303c28acd2306e7012614b49f24522122b4c2f254fd4b71cb93373dcb0"
+    },
+    {
+      "path": "packages/sky/src/types/window/index.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "ae5d3c33ded6056204304ae6b2a98c93651519b8bc1645c7e5a8d28d56ec42d6"
+    },
+    {
+      "path": "packages/sky/src/types/window2/ActivateWindow.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f0e9b316f2bfd4eac22d66c100af40533cd537d8996b0cfd27a23b3120436ddc"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Audio.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "d2909971b4798effc9271aff29bbafe8cc475542ef0296ba9434802ac2c6c71b"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Click.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "3820ce4debf5d5f731ea5259f731b5bd74d9999fd59b95b3a1e24922d0e9d57c"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Drag.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "994cc79a582b94f2fe060c1b621690017bfa62fe67366dfdd7cd2d80e06bf565"
+    },
+    {
+      "path": "packages/sky/src/types/window2/GetWindow.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "cddb10da21916fb903f7efd60f6acd2aaef6a58f2abbbb075c4af083c6e7408f"
+    },
+    {
+      "path": "packages/sky/src/types/window2/GetWindowState.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "68bfc1e35dddaaeb2d89d259373aff50965340b32b7d922abef2741f863f3322"
+    },
+    {
+      "path": "packages/sky/src/types/window2/LaunchApp.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "16306b8f623eeeb41461b46733b587afd2340ff43e6080e57b2bbacf38dce847"
+    },
+    {
+      "path": "packages/sky/src/types/window2/ListApps.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "b3d5135bb2ba9df98fca022e46aefcaaa873a329e88e5503e102d9800b2ec0dd"
+    },
+    {
+      "path": "packages/sky/src/types/window2/ListWindows.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c2e3c794d75924e5b751d5b7c62ef676c9e721d87fec1f457d93267a3633c67c"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Options.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f4d7927600da6f29840b3f59eab7c20ef903fdf155674457f714a8e652a156e9"
+    },
+    {
+      "path": "packages/sky/src/types/window2/PerformSecondaryAction.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "c9ed5eacae59d99a752bf4ce11c3d1ecc4c187f53ed48879d1378f540c01dd26"
+    },
+    {
+      "path": "packages/sky/src/types/window2/PressKey.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "67632d226030d8740267e4b12a8806e3997f43c290c68758c4487fd189cb270e"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Screenshot.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "2734de416038a1ba93229996eb7020c98dd0faacd6566dcdc62dc8c417331b50"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Scroll.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "f618d4c72097a0a3a69454ee240f8401f664d5fcfe72976bf5ddb6c12b0615d2"
+    },
+    {
+      "path": "packages/sky/src/types/window2/SetValue.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "0cd338e16395b9416f4f58204fe9f8e29afae1591f2213daf1759b666f8e7bb2"
+    },
+    {
+      "path": "packages/sky/src/types/window2/StartAudioRecording.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "223888166843db29924aaa18d1955682a7614681135145a61b9dfef067a29d15"
+    },
+    {
+      "path": "packages/sky/src/types/window2/StopAudioRecording.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "8856774f165020d3ea3ce43c200285b8ce3e25fa6d4e820dfec849be5243102a"
+    },
+    {
+      "path": "packages/sky/src/types/window2/TypeText.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "93e489baaac67ec8ab7272452071b7a8724fa301a3219786f2a3b8cd42962235"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Window.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e870fdd3389a8050d90a2c4d637f90ce008b6fef6b877f73e5084f07c772377a"
+    },
+    {
+      "path": "packages/sky/src/types/window2/Window2ComputerUseClient.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "e721a9cad11263d56e8dc296bc22afe35ea6cb7c058487000944babbde138ad7"
+    },
+    {
+      "path": "packages/sky/src/types/window2/WindowState.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "19a04c5477425816c395ec039049912243207c8e0e0c8c657928ebd5b8e80daa"
+    },
+    {
+      "path": "packages/sky/src/types/window2/index.d.ts",
+      "category": "declared-js-restoration-verify-per-file",
+      "sha256": "18b84d14f9d7d1cb41cca598df6bee0668eb1f8284a9881bffc611ec1e3c4366"
+    },
+    {
+      "path": "src/agent/chat-model.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "798f33264d8f6991034fc49d09c808db280683daa1cee3817340aabd9f9f7072"
+    },
+    {
+      "path": "src/agent/contracts.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "52e9c1b9e90c6f71649b4e9e6328f4a80800fa4f276caf9c6bdb09fa7555c287"
+    },
+    {
+      "path": "src/agent/demo.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "6ddadbc3eee569759dd418b153b57494d360b23f7c413734ae9caa24f2d57b9c"
+    },
+    {
+      "path": "src/agent/loop.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "ac07d263860be1e9cc5b97a388dd0fca57fa783570aa18fbdd41d373749d9120"
+    },
+    {
+      "path": "src/agent/mcp-client.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "7ca8ef316ac048ffa59614dda8490cbfe09da5e412e478dfb6724dfefa143fc1"
+    },
+    {
+      "path": "src/browser/accessibility.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "a2067637443ed69424280bc8596d23234df985b2340f081eb3798af84c06c9f7"
+    },
+    {
+      "path": "src/browser/driver.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "e38df0ec6b0474a83bc32d85dc1da69bbaf5fc33de9978a2947368ea5d59cd08"
+    },
+    {
+      "path": "src/browser/stamp.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "b13cf955a0c02cd04347f3631450bd571bf15e529727dbc236a381c64209aee7"
+    },
+    {
+      "path": "src/browser/tab.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "c51231835918fb0a6912e74f7a310acfe2d1c7c2950b8ea13ab8b99207225ca6"
+    },
+    {
+      "path": "src/core/clipboard.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "08f13de05025959036c6a8c6684be97d3bffc7ff4359485cebd611575ef81f3f"
+    },
+    {
+      "path": "src/core/errors.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "acf6f0db6cf8885cdfd4b9a7bc6ad8bd0355d200fbf6a236934d1e2c17792bfe"
+    },
+    {
+      "path": "src/core/paste.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "0a02d429a83d6df044694b611af81bddc2e041939c3d4bf15a53ef450ad077c8"
+    },
+    {
+      "path": "src/core/serial.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "06758d6eae48d93951aebccb85ad1353926f81d178798c16ed8184ba4bb621ce"
+    },
+    {
+      "path": "src/core/types.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "0aba23ff33ef622511207056b385c99622aac3369b85bae5ba172d10147d8d6f"
+    },
+    {
+      "path": "src/extension/bridge.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "c7378f3e4d3ce4840eac36cff8d6a9a1dd27175f7644a77082371c6192ece72a"
+    },
+    {
+      "path": "src/extension/driver.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "d40332cae1706bab24f6593faf4a681f8b01d5ec9301dc61f9bd7d7cebab3356"
+    },
+    {
+      "path": "src/extension/native-host.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "9d639525fece8c0a0ffc849a2935ee1f6f3609373bdfd3a3c3814d66f61df896"
+    },
+    {
+      "path": "src/extension/provider.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "c75148e851d3e596551bb61b9f5b5c029d338096b67b5a934c99606a27c9f67d"
+    },
+    {
+      "path": "src/index.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "3de0a8a550a06592260bfc120b652894951a364ce969a3f663c4de52f043e4ff"
+    },
+    {
+      "path": "src/mcp/server.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "5a69689c940808510c92ba0ed6bb5f335ddb8f7fa9ca325ab881d8b1360ec7dd"
+    },
+    {
+      "path": "src/mcp/stdio.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "939ee15ee060c08df2be6f4f4ca8939a4ecb2bf5bb343d7d7a67fc458d73d417"
+    },
+    {
+      "path": "src/native/clipboard.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "e99d2aa130cb5df63e4a7dd7c338b2497f5c5ff94ceb098ff563c15ac20e52d8"
+    },
+    {
+      "path": "src/native/helper.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "aa9aa975f8fd585e912a126f93a79f9fa4526459d788b01c0aa66e4b6b8a0cc0"
+    },
+    {
+      "path": "src/native/provider.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "44c55557b220a40ee6f1e3fdf2f2c28dcb19cc15f21ff945f278c64672db3ba1"
+    },
+    {
+      "path": "src/runtime/javascript.ts",
+      "category": "legacy-prototype-review-required",
+      "sha256": "98931407da95ad2ad29545ee896b5654cfeda2a8a9dd2552f91854fed46779b9"
+    },
+    {
+      "path": "native/macos/Package.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "2c080e960d78c5c5987c70ee77ebdb37a2cfdd3af29bf3a77deaf7485dca19ab"
+    },
+    {
+      "path": "native/macos/Sources/CuaFixture/main.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "72bc317f9cf2ecfd7bc26118161e64cac78edfaa7017d8dbb2ce3667758b3406"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Capture.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "a8c2c11f0fb50bcf2d44198eb92e6288a993271e029e26578f14a3f0955a82ce"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Clipboard.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "3b172f46cb6e3a90f1586fc298515061ebd7bec682e2ceba5733aceb143e75db"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Drag.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "43bde9168b2410a943fad1abb5f2c3d5d1c96e8dd09bec33218dbcaf1d0a27e4"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/DragSelfTest.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "509ca01819ef917b65d3d1da65f63a5d686f42a9173742d88629c5bcb558e0ea"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/HeldInput.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "b9f8abac18d22dff9daeca4af3e519c38065b4f009ed4086362d744c78f876bb"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Input.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "2f8fcafd0cafd0214381e1430789cc4a9bc22a02f5c7a2f3c8fd607c13931684"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/InputSelfTest.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "75f7def488b1eea770d2f6f5249c3d71998e262804664760d4a99d54b9af4bc3"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/KeyMapping.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "a9aad246e5b268c505c07bda0699501d089df4535154ad950a36678b585c6e4b"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/KeyMappingSelfTest.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "ec846c8789c3ba934bfce36c4d5616d6f77e3de6ab99310806be216f14648576"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Launch.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "968b1ac34e184d614ce90ea760bdaec1cdbbb45276cc1359cf0d5378046d414e"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Mouse.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "bf4700b08e64f4bfbbb9ca430af4db069055ae1088b329fed959d1a092ebaf34"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Paste.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "e2ba5fc0216a4350511787dc88cf68ca4683313c9c41d0bd30648c9738935aa1"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/PasteTransactionSelfTest.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "abc023f3065a26933be8202cd28ea6f02d603f91672707b86832faf1f77bc352"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/Scroll.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "b64271f3ede321b0e7dc585ade22ce307c2430625d5b0a7400800b70144c07a9"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/WindowSelection.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "430c3f82b87bbf825cc7e04c09672b964b68a429ed2f0e82a1df33913bea1a55"
+    },
+    {
+      "path": "native/macos/Sources/CuaHelper/main.swift",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "bf7213a05602e290d42d3f6cf52d1f06acb654fcc2901c40037f43c70aa3b3f0"
+    },
+    {
+      "path": "native/macos-sandbox/sandbox.c",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "de69e40fd94dddbd43bd06ef3ed6d830900d09723d01a1a5b4f6d3c92b06996e"
+    },
+    {
+      "path": "native/runtime-supervisor/src/lib.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "d49d7c1dfbc3eda709a0ffe841ecce19b1a1b4756b4794962af01a74916b7700"
+    },
+    {
+      "path": "native/runtime-supervisor/src/native_pipe.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "4d4fe25a000d210466b07fa215c73936e5932701b5d6fc8a48c9c2bfca5192d8"
+    },
+    {
+      "path": "native/runtime-supervisor/src/process_port.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "93bb0dd66e169d56f374842ce90083b9b65fd6a09de39233c43c1b4ad2dec3c3"
+    },
+    {
+      "path": "native/runtime-supervisor/tests/process_port.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "25b2df434c5b0867ca8577472a488964ce85dd3c026917a273db7ad3ae35fe07"
+    },
+    {
+      "path": "scripts/assemble-accessibility-asset.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "76f4204c1bc88c25f62e953e1a89fabebc2d8cf9a36a72661e9807f13bb0e570"
+    },
+    {
+      "path": "scripts/assemble-kernel-worker.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "769f5e346a24b94ec6eeca96ebe50641ba90ec4d19907cd673e6a9a121a1bc51"
+    },
+    {
+      "path": "scripts/assemble-playwright-source.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "f4ecf8f9efaf76e59abfe661daa5a341bf0cdb2842247c11a8a2c25b5b9ac85d"
+    },
+    {
+      "path": "scripts/audit-language-boundaries.py",
+      "category": "build-or-deployment-script-review",
+      "sha256": "5935d7ef94cb07f908768b7ad960426bfc0b7b8ea33885ed9ee7d0696caa7fe2"
+    },
+    {
+      "path": "scripts/audit-native-language.py",
+      "category": "build-or-deployment-script-review",
+      "sha256": "b569ea1c13013c2d589e7a65880ce5b007f699004abadad711d5af7e6d57ddd6"
+    },
+    {
+      "path": "scripts/build-extension.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "7836b8042ff804be1258ca20d3426c6011a6a73010b55f6a64c2f8cb1ff50be7"
+    },
+    {
+      "path": "scripts/build-full-extension.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "ac0babd7b3368201fd2308d79bed83c4c8c3ad70212bb0f51dd917d7848acc2c"
+    },
+    {
+      "path": "scripts/build-macos-sandbox.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "06cdcf810b8f2c4ef60b55e62618711b1021e8e417da76ed72c03a993538be80"
+    },
+    {
+      "path": "scripts/build-native-extension.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "69a95142f50648a176318844b3c1763e54c4857219c6f67908481d584f37cc2e"
+    },
+    {
+      "path": "scripts/build-native-host.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "7fe1eed773159577c2bd79d22d3b0748f3decdafe2e61f9f94dbc59068bce292"
+    },
+    {
+      "path": "scripts/build-reconstructed-content.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "a4548472ce545c2758e086a8a2e8c3f3b8eeb55d1d7c110ac63cdc67b68349d8"
+    },
+    {
+      "path": "scripts/build-reconstructed-kernel.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "5b111e050e5bf0dd2ebbbdd7f95b3e281604cf77042f9858f057e82940b7e9fc"
+    },
+    {
+      "path": "scripts/build-reconstructed-pages.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "abd8908edcc2651527db884ba5810cff6586691d4df3125acdd563a079eaee95"
+    },
+    {
+      "path": "scripts/build-reconstruction.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "6c5ac623a74d5f05c6ddee417e12710077c95dc178a54258648f88646e8d849d"
+    },
+    {
+      "path": "scripts/extract-browser-service-segments.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "4580ae7e9875ab234b3b41ff8c7fd5d96e6db88a09321ff9e0ccb5d9efffd3db"
+    },
+    {
+      "path": "scripts/extract-bundled-validator.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "bdb874e75b738db3217be3b9e57dab1c3a1799f9c21e880870d487cadc6e4a6f"
+    },
+    {
+      "path": "scripts/extract-desktop-documentation.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "5624799dc33c500edadfa5d9e3bff17138725f8cf8839e485d5ed4b33a634655"
+    },
+    {
+      "path": "scripts/extract-extension-documentation.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "aeeaa25560340292034066e468ccde704b41642e4a71aab5330da5625bf34ecd"
+    },
+    {
+      "path": "scripts/extract-node-repl-sources.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "724a4904938aea3097eda439f3f3cba50d0a1c2ec456722fe98f502d74f7a587"
+    },
+    {
+      "path": "scripts/reconstruct-input-schemas.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "d75b2abe9a8736961c781e537d68d252cc05de6e3fef01413e1c9c48597447c6"
+    },
+    {
+      "path": "scripts/run-deepseek.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "de2e176882a3a3373ad90041f315af105ff37901829b27332b11fbe3507c0c86"
+    },
+    {
+      "path": "scripts/run-deepseek.sh",
+      "category": "build-or-deployment-script-review",
+      "sha256": "2488e5e6ec7a733e1d9558eb877349a7fb75ebcb0dc0bdfa47544fadb4d3fa84"
+    }
+  ]
+}

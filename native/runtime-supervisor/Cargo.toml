@@ -7,5 +7,6 @@ publish = false
 [dependencies]
 base64 = "=0.22.1"
 serde_json = "=1.0.149"
-tokio = { version = "=1.51.6", features = ["rt-multi-thread", "macros", "net", "io-util", "sync", "time"] }
+tokio = { version = "=1.51.6", features = ["rt-multi-thread", "macros", "net", "io-util", "sync", "time", "process"] }
 uuid = { version = "=1.22.0", features = ["v4"] }
+libc = "0.2"

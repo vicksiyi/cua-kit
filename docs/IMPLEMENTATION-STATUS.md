@@ -1,5 +1,20 @@
 # Implementation status
 
+## Native process and repository audit checkpoint (2026-11-06)
+
+The language audit now inventories existing package source, legacy src, native
+code and build/deployment scripts, with hashes and review queues. See
+`reconstruction/LANGUAGE-BOUNDARY-AUDIT.md`. Inventory coverage is not proof that
+every file has been semantically audited or migrated. Fourteen TS supervisor
+files are in the confirmed native-responsibility migration queue; twenty-one
+Native Host/App boundary files require more original-language evidence.
+
+Rust process transport now drives the actual reconstructed kernel and preserves
+bindings across two executions. Eight Rust tests pass (three pipe, five process),
+covering real sockets/Node workers and descendant cleanup. A Darwin exit/reap
+race was corrected by reaping owned leaders while retrying transient EPERM.
+Full native session/MCP/sandbox migration remains incomplete.
+
 ## Original-language migration checkpoint (2026-11-06)
 
 User clarification: installed JS must still be restored as readable TS; other

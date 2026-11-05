@@ -63,3 +63,7 @@ Native-language evidence is now reproducible in `native-language-evidence.json`.
 The Rust migration begins in `native/runtime-supervisor`; see its README for
 implemented scope and explicit missing integration gates. This does not yet
 replace the transitional TS runtime.
+
+The existing-repository audit is tracked in `LANGUAGE-BOUNDARY-AUDIT.md` and
+`language-boundary-inventory.json`, including the old root src implementation.
+Do not limit the migration review to recently added files.
