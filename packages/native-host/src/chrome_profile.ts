@@ -1,7 +1,8 @@
 /** Profile/status rules reconstructed from bundled browser/26.1027.30824
  * scripts/check-extension-installed.js and open-chrome-window.js.
- * Independent composition supplies the Core extension ID and macOS app name.
+ * Independent composition supplies the Core extension ID; app discovery follows the original macOS script.
  */
+import { findMacosBrowserAppPath, chromeMacosDescription, type MacosBrowserDiscoveryHost } from './macos_browser_app';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
@@ -63,8 +64,8 @@ export function inspectChromeExtension(options: {
     enabled:chosen.enabled, profiles:statuses, exitCode:chosen.enabled ? 0 : chosen.installed ? 1 : 2};
 }
 
-export function chromeProfileLaunchCommand(profileDirectory: string) {
+export function chromeProfileLaunchCommand(profileDirectory: string, host?: MacosBrowserDiscoveryHost) {
   // Profile comes from local inspection, not model-generated command text.
-  return {command:'/usr/bin/open', args:['-n','-a','Google Chrome','--args',
+  return {command:'/usr/bin/open', args:['-n','-a',findMacosBrowserAppPath(chromeMacosDescription,host),'--args',
     `--profile-directory=${profileDirectory}`, '--new-window', 'about:blank']};
 }

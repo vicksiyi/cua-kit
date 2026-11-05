@@ -1,0 +1,147 @@
+{
+  "scope": "Per-file native-host language audit. Original JavaScript evidence is established for profile inspection and macOS application discovery. Other files remain unresolved, not certified native parity.",
+  "artifacts": [
+    {
+      "path": "openai-bundled/browser/26.1027.30824/scripts/check-extension-installed.js",
+      "sha256": "c25b45762ca649f33a52e690a1500ee7a6307f11b4ff79f9c14ff4f35fab5693"
+    },
+    {
+      "path": "openai-bundled/browser/26.1027.30824/scripts/open-chrome-window.js",
+      "sha256": "eae1b56942ec6262f650f3ed1242c7274fa131dc7013816f7dac4d42947c4ea7"
+    },
+    {
+      "path": "openai-bundled/browser/26.1027.30824/scripts/chromium-browser-diagnostics.mjs",
+      "sha256": "1d0dfbf04777d14e0eec27e2025f2f7ffe64da145c322ea62ad568a187d54633"
+    },
+    {
+      "path": "openai-bundled/browser/26.1027.30824/scripts/extension-ids.json",
+      "sha256": "7e321e8c9d1ce0310ee144de51198fcb25c0c42c0004c15ad095493dd384630a"
+    }
+  ],
+  "files": [
+    {
+      "path": "packages/native-host/src/browser_connector.ts",
+      "sha256": "633b063aa60fb0be5d0e1e4ed3382a9560480a61578cc718bc273392b4f46523",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/browser_service.ts",
+      "sha256": "f430d2e5710d332472edf8606a9d84b91966c8511dc85c4a44007daec4cacecb",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/chrome_profile.ts",
+      "sha256": "38c27899e1339549b758d3df62da1208abf2a68d26bee9e2f92b9cc6c8076202",
+      "languageDecision": "retain-readable-typescript-original-javascript-evidence",
+      "evidence": [
+        "check-extension-installed.js",
+        "open-chrome-window.js"
+      ],
+      "scope": "profile/status and macOS launch command"
+    },
+    {
+      "path": "packages/native-host/src/client.ts",
+      "sha256": "dbb3c636547356112468819c57c52f10bee4ee973ac070a306dc89550b58a994",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/endpoint_configuration.ts",
+      "sha256": "9e173f976dc34f8259edde59502300ce9681a1c3250a18d6d71c484629a9cffb",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/index.ts",
+      "sha256": "585e057dbcc8b989e786bfa8986d9a0fd2af5baa7efecf0033261f2b8a09ca99",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/install_cli.ts",
+      "sha256": "87df22bea4c175354990528bee3975313238820ebb681a97335502efca20f973",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/installation.ts",
+      "sha256": "0dd79a90cf7b9b95e11e451bb8358ff2cd04e79c999a212b4ef30016a34315ea",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/installation_check.ts",
+      "sha256": "1e897d4dccbd1bcbd30d1e51bf8fcf11ff0d70bd17e1555aa15a1b54a5da5bb0",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/lifecycle_log.ts",
+      "sha256": "a6bdeba92cf3be358c5aa093c996742abd543076687824ba6270155feb6ba9aa",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/macos_browser_app.ts",
+      "sha256": "edb98efa074eea647863d44f7781d8f3e8872d75c8b45ea46035b150fdd8f9aa",
+      "languageDecision": "retain-readable-typescript-original-javascript-evidence",
+      "evidence": [
+        "open-chrome-window.js",
+        "extension-ids.json"
+      ],
+      "scope": "macOS application discovery only"
+    },
+    {
+      "path": "packages/native-host/src/main.ts",
+      "sha256": "93f401f91b87f1c43d20d63d35793c3ed95876ca72706ea66e36d8028a96c54b",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/pipe_authentication.ts",
+      "sha256": "416d174063b193e1f1ae86c9636e9eb5a48c229575f22b0572dcfcc218912ba5",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/router.ts",
+      "sha256": "4f7863a4c6470a78d43c47fc90f31081956bbf424d314f302d2e10ecccf99dfd",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/server.ts",
+      "sha256": "9cd7c8e8f2e8070675b97516f621bf8842fdcf62512fb0c5f7131e64c857c3ba",
+      "languageDecision": "independent-adapter-original-language-boundary-unresolved",
+      "evidence": [],
+      "scope": "Do not infer native language from package name or independently authored implementation."
+    }
+  ],
+  "validation": {
+    "test": "reconstruction/macos-browser-discovery.test.ts",
+    "cases": 8,
+    "configurationCases": 1,
+    "method": "Evaluate actual installed discovery functions with fixture filesystem/command adapters; compare returned path/error against restored TS. No browser launch.",
+    "limits": [
+      "macOS Chrome discovery only; caller does not yet expose every original browser/platform.",
+      "Core extension identity and authentication are independent composition.",
+      "Absolute /usr/bin/open is deployment choice; original script resolves open through PATH.",
+      "Named standard-directory fallback is preserved even when bundle metadata differs, as in original JS.",
+      "No claim of full Chrome cold-start or native host service parity."
+    ]
+  }
+}

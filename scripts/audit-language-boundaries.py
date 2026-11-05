@@ -13,6 +13,7 @@ for package in sorted((root/'packages').iterdir()):
         kind = ('legacy-node-binding-forwarder' if file.name=='sandbox-bootstrap.ts' and package.name=='runtime-supervisor' else
                 'native-responsibility-migrate-to-rust' if package.name=='runtime-supervisor' else
                 'native-desktop-swift-boundary-review' if package.name=='native-macos' else
+                'original-js-browser-discovery-retain-typescript' if package.name=='native-host' and file.name in {'chrome_profile.ts','macos_browser_app.ts'} else
                 'native-boundary-needs-original-language-evidence' if package.name=='native-host' else
                 'declared-js-restoration-verify-per-file' if package.name in restored else
                 'caller-or-deployment-code-review-for-native-responsibility')

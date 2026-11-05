@@ -37,5 +37,5 @@ for(const scenario of cases)test(scenario.name,async t=>{
   }
 });
 test('launch command selects existing profile without temporary user-data directory or CDP flags',()=>{
-  assert.deepEqual(chromeProfileLaunchCommand('Profile 2'),{command:'/usr/bin/open',args:['-n','-a','Google Chrome','--args','--profile-directory=Profile 2','--new-window','about:blank']});
+  assert.deepEqual(chromeProfileLaunchCommand('Profile 2', {exists:path=>path==='/Applications/Google Chrome.app',directories:()=>[],home:'/fixture',run:()=>null}),{command:'/usr/bin/open',args:['-n','-a','/Applications/Google Chrome.app','--args','--profile-directory=Profile 2','--new-window','about:blank']});
 });

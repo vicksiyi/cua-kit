@@ -6,11 +6,12 @@
     "declared-js-restoration-verify-per-file": 671,
     "legacy-node-binding-forwarder": 1,
     "legacy-prototype-review-required": 25,
-    "native-boundary-needs-original-language-evidence": 14,
+    "native-boundary-needs-original-language-evidence": 13,
     "native-desktop-swift-boundary-review": 6,
     "native-implementation-language-not-yet-parity-proof": 47,
     "native-responsibility-migrate-to-rust": 13,
-    "node-to-native-binding-not-native-service": 1
+    "node-to-native-binding-not-native-service": 1,
+    "original-js-browser-discovery-retain-typescript": 2
   },
   "files": [
     {
@@ -2765,8 +2766,8 @@
     },
     {
       "path": "packages/native-host/src/chrome_profile.ts",
-      "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "138935e5659c34a43dd200e6a70e3258ba423fb9b76cb1b00a8b5a0fd3e4f39c"
+      "category": "original-js-browser-discovery-retain-typescript",
+      "sha256": "38c27899e1339549b758d3df62da1208abf2a68d26bee9e2f92b9cc6c8076202"
     },
     {
       "path": "packages/native-host/src/client.ts",
@@ -2802,6 +2803,11 @@
       "path": "packages/native-host/src/lifecycle_log.ts",
       "category": "native-boundary-needs-original-language-evidence",
       "sha256": "a6bdeba92cf3be358c5aa093c996742abd543076687824ba6270155feb6ba9aa"
+    },
+    {
+      "path": "packages/native-host/src/macos_browser_app.ts",
+      "category": "original-js-browser-discovery-retain-typescript",
+      "sha256": "edb98efa074eea647863d44f7781d8f3e8872d75c8b45ea46035b150fdd8f9aa"
     },
     {
       "path": "packages/native-host/src/main.ts",
@@ -4131,7 +4137,7 @@
     {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "4946adace64c07225e94e8c605e86d1e3f5322b9fd560e3713d19f8779916b2b"
+      "sha256": "714afc6afa89e806bec24e502d862be331573ca5eb7cac2fe13412c5eab46a31"
     },
     {
       "path": "scripts/audit-native-language.py",
