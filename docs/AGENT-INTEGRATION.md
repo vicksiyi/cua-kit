@@ -1,8 +1,8 @@
 # 可替换的调用侧：MCP Client + AgentLoop
 
 当前入口使用 `packages/agent-loop`，公共类型见
-[`contracts.ts`](../packages/agent-loop/src/contracts.ts)。根目录 Agent API 已转接共享实现；QuickJS
-和 `npm run demo` 的执行后端仍是早期原型。根目录 `mcp` 命令现已切换到还原运行时。
+[`contracts.ts`](../packages/agent-loop/src/contracts.ts)。根目录 Agent API 已转接共享实现；默认 `demo` 和 `mcp` 均连接还原运行时。
+QuickJS 原型仅保留在显式的 `demo:legacy` / `mcp:legacy` 命令。
 
 模型、AgentLoop、MCP 客户端和浏览器执行层可以分别替换。模型凭证只交给
 ModelAdapter，不能传入 MCP 子进程、worker 环境或网页。
@@ -185,7 +185,7 @@ Runtime staging now excludes the retired `@core/native-macos` adapter. The origi
 
 `@core/agent-loop` now exports built ESM plus declarations, usable by plain Node without a TS loader. Run `npm run build:agent` (also part of root build/check and reconstruction build). Source imports remain extensionless; generated declarations use Node-compatible suffixes. `npm run build -w @core/agent-loop` is also supported.
 
-Existing root `@vicksiyi/cua-kit/agent/loop`, `/agent/mcp-client`, and `/agent/contracts` paths delegate to this package. Their consumers now receive current server initialization guidance, optional endTurn cleanup, MCP metadata/elicitation/media support and the same agent-neutral contracts. The old internal chat-model path also delegates to the shared provider. Root demo and MCP still use the legacy CUA/QuickJS server; sharing the caller does not turn that server into the restored Rust runtime.
+Existing root `@vicksiyi/cua-kit/agent/loop`, `/agent/mcp-client`, and `/agent/contracts` paths delegate to this package. Their consumers now receive current server initialization guidance, optional endTurn cleanup, MCP metadata/elicitation/media support and the same agent-neutral contracts. The old internal chat-model path also delegates to the shared provider. Default root demo and MCP now use the restored runtime. Explicit `demo:legacy` / `mcp:legacy` and root CUA SDK exports still use the prototype server/API; caller compatibility does not establish native feature parity.
 
 
 ## Agent-neutral stdio MCP entry
@@ -215,3 +215,18 @@ The equivalent process command is `npm run --silent mcp`; silent mode prevents n
 The server and demo share `prepareRestoredRuntime`: source launcher instructions/banner/completion configuration, runtime selection, dependency staging and disposal. Model clients provide request metadata and end turns through the observed `turn_ended` protocol (the provided `NodeReplTurnClient` hides this lifecycle tool from the model). The stdio entry forwards signals to the native supervisor and removes staged deployment files when it exits. SIGTERM/SIGINT during package staging are now covered by a real process gate: it observes the owned staging directory before a native supervisor exists, interrupts preparation, and verifies exit codes plus cleanup. Staging checks an AbortSignal during file copying; signals received during earlier setup are checked before allocating the deployment. This does not guarantee cleanup after SIGKILL or a host crash.
 
 The old QuickJS entry is explicitly named `npm run --silent mcp:legacy`. Its `CUA_ALLOWED_ORIGINS` configuration is not the new native App policy.
+
+
+## Default demo and model selection
+
+`npm run demo -- "your prompt"` now uses the restored runtime launcher, including surface/backend flags, local `.env`, tool logs and the shared preflight. The old QuickJS demo is explicitly `npm run demo:legacy`. The browser default still selects the installed supervisor; computer selects Rust/Sky/Swift, and `CUA_RUNTIME_SUPERVISOR=rust` is available for configured browser deployments.
+
+`npm run demo:deepseek -- "your prompt"` explicitly selects DeepSeek regardless of a stale provider setting. The generic demo uses `CUA_MODEL_PROVIDER` (default `deepseek`). For another compatible provider set `CUA_MODEL_PROVIDER=openai-compatible`, `CUA_MODEL_API_KEY`, `CUA_MODEL`, and `CUA_MODEL_ENDPOINT` in the private environment. Its credential prompt requests the matching provider key; it does not accept a DeepSeek key in place of the generic provider key. Check modes require neither key. Invalid provider names fail before native builds.
+
+Validation entry for the root demo with a deterministic local model and owned real Chromium (build reconstruction and Rust first):
+
+```sh
+CUA_TEST_ROOT_DEMO=1 CUA_TEST_MACOS_SANDBOX=1 node --import tsx --test reconstruction/independent-demo-runtime.test.ts
+```
+
+This tests five model decisions, actual open/click/read, completion reporting and the observed final marker. It does not make a paid provider request or use the daily Chrome profile.

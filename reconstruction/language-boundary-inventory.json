@@ -1,7 +1,7 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 26,
+    "build-or-deployment-script-review": 27,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
@@ -4224,12 +4224,17 @@
     {
       "path": "scripts/run-deepseek.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "de2e176882a3a3373ad90041f315af105ff37901829b27332b11fbe3507c0c86"
+      "sha256": "a18bf7347b63c16b5e8db7bd504997917754ce9cdcd2606a81f45b6d69dba4bf"
     },
     {
       "path": "scripts/run-deepseek.sh",
       "category": "build-or-deployment-script-review",
-      "sha256": "c0f52a43b714da7749de07768d10b186308de4a6ed0a47c15115a2a3fbf94bc4"
+      "sha256": "616fafb53b56788932f3ca6c622d38780d75c04a16d32e21503df4d37a6d6226"
+    },
+    {
+      "path": "scripts/run-demo.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "de2e176882a3a3373ad90041f315af105ff37901829b27332b11fbe3507c0c86"
     }
   ]
 }

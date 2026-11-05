@@ -19,7 +19,7 @@
     "build": "npm run build:agent && tsc -p tsconfig.json && npm run build:extension",
     "check": "npm run build:agent && tsc -p tsconfig.json --noEmit",
     "test": "npm run build && tsx --test tests/*.test.ts",
-    "demo": "npm run build && node dist/agent/demo.js",
+    "demo": "node scripts/run-demo.mjs",
     "mcp": "node --import tsx packages/agent-loop/src/restored-mcp.ts",
     "build:native": "swift build --package-path native/macos",
     "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts",
@@ -44,7 +44,8 @@
     "test:native-skyshot": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern=\"live owned App skyshot\" reconstruction/native-sky-ipc.test.ts",
     "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"owned App launch\" reconstruction/native-sky-ipc.test.ts",
     "build:agent": "node scripts/build-agent-library.mjs",
-    "mcp:legacy": "node dist/mcp/stdio.js"
+    "mcp:legacy": "node dist/mcp/stdio.js",
+    "demo:legacy": "npm run build && node dist/agent/demo.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

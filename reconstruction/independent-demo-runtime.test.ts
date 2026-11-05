@@ -7,7 +7,7 @@ import {randomUUID} from 'node:crypto';
 import {loadEnvFile} from 'node:process';
 import {startCdpHost} from '../packages/cdp-host/src/host';
 
-test('demo independent selector uses Rust sandbox runtime, preserves bootstrap docs and executes real browser action without installed supervisor',{
+test('demo independent selector uses Rust sandbox runtime, receives source banner docs on first observation and executes real browser action without installed supervisor',{
  skip:process.platform!=='darwin'||process.env.CUA_TEST_MACOS_SANDBOX!=='1',timeout:90000,
 },async t=>{
  const liveModel=process.env.CUA_LIVE_DEEPSEEK_TEST==='1';
@@ -18,7 +18,11 @@ test('demo independent selector uses Rust sandbox runtime, preserves bootstrap d
    const request=JSON.parse(body);modelCalls++;
    let message;
    if(modelCalls===1){
-    assert.match(JSON.stringify(request.messages),/host-cua-bootstrap/);
+    assert.doesNotMatch(JSON.stringify(request.messages),/host-cua-bootstrap/);
+    assert.match(JSON.stringify(request.messages),/host-browser-preflight/);
+    const firstTool=request.messages.find((message:any)=>message.role==='tool');
+    assert.equal(firstTool.tool_call_id,'host-browser-preflight');
+    assert.match(firstTool.content,/createBrowserTab/);
     assert.match(JSON.stringify(request.messages),/createBrowserTab/);
     message={content:null,tool_calls:[{id:'real-action',type:'function',function:{name:'js',arguments:JSON.stringify({code:`var tab = await cua.createBrowserTab("1", ${JSON.stringify(origin)}, {sessionName:"Independent CLI test"});`,title:'Submit isolated fixture'})}}]};
    }else if(modelCalls===2){
@@ -48,11 +52,13 @@ test('demo independent selector uses Rust sandbox runtime, preserves bootstrap d
  const address=server.address();assert(address&&typeof address!=='string');origin=`http://127.0.0.1:${address.port}`;
  const host=await startCdpHost({headless:true});t.after(()=>host.close());
  if(liveModel) loadEnvFile(resolve('.env'));
- const child=spawn(process.execPath,['--import','tsx','packages/agent-loop/src/restored-demo.ts',`Open ${origin} in the connected browser, click Submit, read the resulting page and return the exact result text.`],{
+ const rootDemo=process.env.CUA_TEST_ROOT_DEMO==='1';
+ const question=`Open ${origin} in the connected browser, click Submit, read the resulting page and return the exact result text.`;
+ const child=spawn(rootDemo?'npm':process.execPath,rootDemo?['--silent','run','demo','--',question]:['--import','tsx','packages/agent-loop/src/restored-demo.ts',question],{
   cwd:resolve('.'),env:{PATH:process.env.PATH,HOME:process.env.HOME,CUA_RUNTIME_SUPERVISOR:'independent',
    CUA_NATIVE_SUPERVISOR_PATH:'/intentionally-not-installed',NODE_REPL_NODE_PATH:'/intentionally-not-installed',
    ...(liveModel ? {CUA_MODEL_PROVIDER:'deepseek',DEEPSEEK_API_KEY:process.env.DEEPSEEK_API_KEY,CUA_MODEL:process.env.CUA_MODEL??'deepseek-flash'} : {CUA_MODEL_PROVIDER:'openai-compatible',CUA_MODEL_API_KEY:'local-model-fixture',CUA_MODEL:'fixture',CUA_MODEL_ENDPOINT:origin+'/model'}),
-   CUA_AUTO_APPROVE_BROWSER_ORIGINS:origin,CUA_DEBUG:'0',
+   CUA_AUTO_APPROVE_BROWSER_ORIGINS:origin,CUA_DEBUG:'0',CORE_CUA_NATIVE_BACKEND:'vendor',
    CUA_MCP_ENV:JSON.stringify({CUA_REPL_ENABLED_SURFACES:'browser',CUA_REPL_BROWSER_ENV:'codex-app',BROWSER_USE_AVAILABLE_BACKENDS:'cdp',CORE_CUA_ENDPOINT_FILES:JSON.stringify([host.endpointFile])}),
   },stdio:['ignore','pipe','pipe'],
  });

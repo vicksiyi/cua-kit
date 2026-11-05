@@ -7,7 +7,7 @@ import {spawnSync} from 'node:child_process';
 test('CLI routes deployment flags independently of surface/check flag order',async t=>{
  const root=await mkdtemp('/tmp/cua-cli-routing-');t.after(()=>rm(root,{recursive:true,force:true}));
  await writeFile(join(root,'npm'),'#!/bin/sh\necho BUILD_FIXTURE "$@"\n',{mode:0o700});
- await writeFile(join(root,'node'),`#!${process.execPath}\nif(process.argv[2]==='--input-type=module'){const child=require('node:child_process').spawnSync(process.execPath,process.argv.slice(2),{stdio:'inherit'});process.exit(child.status??1);}console.log(JSON.stringify({runtime:process.env.CUA_RUNTIME_SUPERVISOR,native:process.env.CORE_CUA_NATIVE_BACKEND,configuration:process.env.CUA_MCP_ENV,argv:process.argv.slice(2),startChrome:process.env.CUA_DEMO_START_CHROME,endpoint:process.env.CUA_CDP_ENDPOINT}));\n`,{mode:0o700});
+ await writeFile(join(root,'node'),`#!${process.execPath}\nif(process.argv[2]==='--input-type=module'){const child=require('node:child_process').spawnSync(process.execPath,process.argv.slice(2),{stdio:'inherit'});process.exit(child.status??1);}console.log(JSON.stringify({provider:process.env.CUA_MODEL_PROVIDER,runtime:process.env.CUA_RUNTIME_SUPERVISOR,native:process.env.CORE_CUA_NATIVE_BACKEND,configuration:process.env.CUA_MCP_ENV,argv:process.argv.slice(2),startChrome:process.env.CUA_DEMO_START_CHROME,endpoint:process.env.CUA_CDP_ENDPOINT}));\n`,{mode:0o700});
  const run=(args:string[],extra:Record<string,string>={})=>spawnSync('/bin/bash',[resolve('scripts/run-deepseek.sh'),...args],{encoding:'utf8',timeout:5000,env:{PATH:root+':/usr/bin:/bin',HOME:process.env.HOME,DEEPSEEK_API_KEY:'fixture-not-a-secret',CUA_DEMO_START_CHROME:'1',...extra}});
  for(const args of [
   ['--cdp-browser','--browser','prompt'],['--browser','--cdp-browser','prompt'],
@@ -44,6 +44,13 @@ test('CLI routes deployment flags independently of surface/check flag order',asy
   assert.match(result.stdout,/BUILD_FIXTURE run build:rust-runtime/);
  }
  assert.ok(!run(['--check-browser'],{CUA_RUNTIME_SUPERVISOR:'installed'}).stdout.includes('build:rust-runtime'));
+ const compatible=run(['--computer','prompt'],{CUA_MODEL_PROVIDER:'openai-compatible',CUA_MODEL_API_KEY:'fixture-only',DEEPSEEK_API_KEY:''});
+ assert.equal(compatible.status,0,compatible.stderr);
+ assert.equal(JSON.parse(compatible.stdout.trim().split('\n').at(-1)!).provider,'openai-compatible');
+ const missing=run(['prompt'],{CUA_MODEL_PROVIDER:'openai-compatible',DEEPSEEK_API_KEY:'irrelevant-fixture'});
+ assert.equal(missing.status,1);assert.match(missing.stderr,/Set CUA_MODEL_API_KEY/);
+ const invalid=run(['--check-computer'],{CUA_MODEL_PROVIDER:'unsupported'});
+ assert.equal(invalid.status,2);assert.match(invalid.stderr,/Unsupported CUA_MODEL_PROVIDER/);assert.ok(!invalid.stdout.includes('BUILD_FIXTURE'));
  const normal=JSON.parse(run(['prompt']).stdout.trim().split('\n').at(-1)!);
  assert.equal(normal.argv[2],'packages/agent-loop/src/restored-demo.ts');assert.equal(normal.startChrome,'1');
  const check=JSON.parse(run(['--check-browser']).stdout.trim().split('\n').at(-1)!);

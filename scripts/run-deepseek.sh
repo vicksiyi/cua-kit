@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo:deepseek -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route.'
+  printf '%s\n' 'Usage: npm run demo -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route.'
   exit 0
 fi
 managed_browser=false
@@ -57,6 +57,12 @@ if [[ -n "$backend" && "$mode" != browser ]]; then
 fi
 if [[ "$backend" == --managed-browser ]]; then managed_browser=true;
 elif [[ -n "$backend" ]]; then cdp_browser=true; fi
+export CUA_MODEL_PROVIDER="${CUA_MODEL_PROVIDER:-deepseek}"
+case "$CUA_MODEL_PROVIDER" in
+  deepseek) credential_name=DEEPSEEK_API_KEY ;;
+  openai-compatible) credential_name=CUA_MODEL_API_KEY ;;
+  *) printf '%s\n' 'Unsupported CUA_MODEL_PROVIDER; use deepseek or openai-compatible.' >&2; exit 2 ;;
+esac
 if [[ "$mode" == computer ]]; then
   export CUA_RUNTIME_SUPERVISOR=rust CORE_CUA_NATIVE_BACKEND=swift
   # An explicit CLI deployment wins over stale surface/backend fields in .env.
@@ -84,13 +90,12 @@ if [[ $# -eq 0 ]]; then
   read -r -p 'Prompt: ' prompt
   set -- "$prompt"
 fi
-if [[ "$check_only" == false && -z "${DEEPSEEK_API_KEY:-}" ]]; then
-  if [[ ! -t 0 ]]; then printf '%s\n' 'Set DEEPSEEK_API_KEY or run interactively to enter it securely.' >&2; exit 1; fi
-  read -r -s -p 'DeepSeek API key (hidden): ' DEEPSEEK_API_KEY
+if [[ "$check_only" == false && -z "${!credential_name:-}" ]]; then
+  if [[ ! -t 0 ]]; then printf 'Set %s or run interactively to enter it securely.\n' "$credential_name" >&2; exit 1; fi
+  read -r -s -p "$credential_name (hidden): " "$credential_name"
   printf '\n' >&2
 fi
-export DEEPSEEK_API_KEY
-export CUA_MODEL_PROVIDER=deepseek
+export "$credential_name"
 export CUA_NATIVE_SUPERVISOR_PATH="${CUA_NATIVE_SUPERVISOR_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl}"
 export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 npm run build:reconstruction
