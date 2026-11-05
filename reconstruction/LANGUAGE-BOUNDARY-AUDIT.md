@@ -45,7 +45,7 @@ until the Rust deployment passes equivalent acceptance and replaces its callers.
 | `media.ts` | `media.rs`; data URL envelope handling tested, not native screenshot/codec parity. |
 | `mcp.ts`, `mcp-tools.ts`, `stdio.ts` | `mcp_server.rs` and `examples/mcp_stdio.rs`; actual SDK client integration tested; example is not the production launcher. |
 | `background-host.ts` | `background_host.rs`; retained execution context, callback routing between cells and cancellation tested. Production authenticated HTTP host composition remains open. |
-| `sandbox-runtime.ts`, `sandbox-launcher.ts`, `sandbox-bootstrap.ts` | Pending Rust sandbox policy/launch/composition. JS worker entry points may remain JS-derived TS; native policy ownership must move to Rust. |
+| `sandbox-runtime.ts`, `sandbox-launcher.ts`, `sandbox-bootstrap.ts` | `sandbox_launcher.rs` now owns validated policy/spec generation and is exercised through the MCP harness. Production runtime composition and C/N-API bridge plus bootstrap ownership remain pending. |
 
 The 14 TS files above are a confirmed migration queue, not 14 completed rewrites.
 Retirement must include import/script consumer checks, a production entry-point

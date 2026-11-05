@@ -5190,3 +5190,33 @@ retaining the original metadata. Unit cases cover replay rejection and cancellat
 of an in-flight callback. These fixture responses are not live authenticated HTTP
 acceptance. Production host authentication composition and Rust sandbox/launcher
 integration are still outstanding; the default demo entry point is unchanged.
+
+## Rust-owned sandbox policy and MCP launch (2026-11-06)
+
+`sandbox_launcher.rs` now constructs the exact child environment and explicit
+Seatbelt read/scratch grants, validates absolute canonical paths and disjoint
+writable/code roots, rejects loader environment overrides, and returns the Rust
+ProcessSpec. The MCP harness accepts `{ "sandbox": { ... } }` worker specs so
+this policy construction no longer depends on the TS launcher. Explicit raw
+worker specs remain available to integration callers and are not sandbox claims.
+
+29 Rust tests pass, including actual macOS scratch read/write success and EPERM
+for outside-file reads, subprocess launch and loopback networking (zero accepted
+connections). The two existing external MCP EOF/SIGTERM cases now use this
+Rust-generated deny-default policy with separate kernel/trusted scratch roots,
+not the earlier allow-default/network-deny fixture. They exercise actual restored
+workers, modules, service RPC, elicitation, media, pipe events, reset/cancellation
+and process retirement under the generated policy.
+
+The post-initialization C/N-API bridge and TS bootstrap are still explicit
+transitional dependencies. They have not been restored from original native
+source or migrated by this change. Applying deny-default before Node's native
+loader previously failed locally; this change preserves the verified ordering:
+trusted Node initialization, apply policy, then import worker code. Original
+embedded sandbox_state.rs paths establish Rust ownership but do not prove this
+specific policy or ordering. Immutable code/scratch parents remain caller-owned;
+path grants are canonicalized, not inode-pinned against concurrent replacement.
+
+Remaining: native bridge/bootstrap ownership, production browser runtime assembly
+and authenticated host composition, full browser/App acceptance, and removal of
+the transitional TS path after entry-point migration. The default demo is unchanged.

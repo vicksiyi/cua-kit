@@ -1,11 +1,12 @@
 //! Integration harness: caller supplies explicit worker launch policies.
-//! This example does not construct a native sandbox and is not the demo default.
+//! Supports Rust-owned Seatbelt specs; not the production demo default.
 use core_runtime_supervisor::{
     config_manager::{ConfigManager, ConfigSources},
     deployment_host::deployment_host,
     mcp_server::SupervisorMcp,
     process_port::ProcessSpec,
     repl_manager::ReplManager,
+    sandbox_launcher::{worker_spec, SandboxedWorkerOptions},
 };
 use rmcp::ServiceExt;
 use serde::Deserialize;
@@ -37,10 +38,29 @@ impl Worker {
     }
 }
 #[derive(Deserialize)]
+#[serde(untagged)]
+enum Launch {
+    Sandboxed(SandboxLaunch),
+    Explicit(Worker),
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SandboxLaunch {
+    sandbox: SandboxedWorkerOptions,
+}
+impl Launch {
+    fn process(self) -> Result<ProcessSpec, String> {
+        match self {
+            Self::Sandboxed(spec) => worker_spec(spec.sandbox),
+            Self::Explicit(spec) => Ok(spec.process()),
+        }
+    }
+}
+#[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Options {
-    kernel: Worker,
-    trusted: Worker,
+    kernel: Launch,
+    trusted: Launch,
     services: HashSet<String>,
     config: ConfigSources,
     #[serde(default)]
@@ -67,8 +87,8 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let options: Options = serde_json::from_slice(&std::fs::read(path)?)?;
     let config = Arc::new(ConfigManager::new(options.config, options.writable_paths)?);
     let session = ReplManager::new(
-        options.kernel.process(),
-        options.trusted.process(),
+        options.kernel.process()?,
+        options.trusted.process()?,
         options.services,
     )
     .with_pipe_paths(options.pipe_paths)?

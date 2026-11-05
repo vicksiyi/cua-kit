@@ -22,3 +22,6 @@ pub mod media;
 pub mod mcp_server;
 
 pub mod background_host;
+
+#[cfg(unix)]
+pub mod sandbox_launcher;
