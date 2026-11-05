@@ -139,7 +139,7 @@
     {
       "path": "packages/agent-loop/src/runtime-packages.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "9db82200b1a43e1a1d1d70cae8a67a05f0cb3ef37cae9229a29fe6a4cb2f9e42"
+      "sha256": "525a8e9347ffba00799635bf55a0af3ceb3ddccfa9171b97689ca30bebd4ed10"
     },
     {
       "path": "packages/agent-loop/src/runtime-selection.ts",

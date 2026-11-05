@@ -107,7 +107,6 @@ test("actual restored CUA runtime packages resolve wholly inside deployment and 
     const require = createRequire(path.join(runtime.root, "entry.cjs"));
     for (const specifier of [
       "@core/sky/service",
-      "@core/native-macos/service",
       "@core/browser-desktop/service",
       "@core/native-host/browserService",
       "@core/native-host/browserConnector",
@@ -115,6 +114,10 @@ test("actual restored CUA runtime packages resolve wholly inside deployment and 
       const resolved = await realpath(require.resolve(specifier));
       assert.ok(resolved.startsWith(runtime.root + path.sep));
     }
+    assert.ok(!runtime.packages.some((pkg) => pkg.name === "@core/native-macos"));
+    assert.throws(() => require.resolve("@core/native-macos/service"), {
+      code: "MODULE_NOT_FOUND",
+    });
     for (const pkg of runtime.packages) {
       const directory = await realpath(pkg.directory);
       assert.ok(directory.startsWith(runtime.root + path.sep));

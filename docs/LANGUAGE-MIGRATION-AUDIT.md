@@ -48,3 +48,6 @@ For each remaining candidate, record the original artifact and language evidence
 
 
 The background launch required by macOS `getApp` is implemented in Swift `SkyAppState`/`Launch`, matching the original JS-to-native responsibility boundary. It was not added as a TS wrapper around a missing native behavior. Original documentation establishes the expected behavior; original native function bodies remain unavailable.
+
+
+The normal runtime staging roots no longer include `@core/native-macos`. A deployment test verifies it is absent from the staged dependency graph and its service cannot resolve there, while original Sky/browser service exports and distinct dependency versions remain available. Legacy source packages and root public APIs remain in the repository for consumer migration; removing a staged root is not full package retirement.

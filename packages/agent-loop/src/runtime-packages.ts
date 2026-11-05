@@ -149,7 +149,7 @@ export async function stageRuntimePackages(
 }
 
 export function restoredPackageSources() {
-  return ["cua", "browser-desktop", "sky", "native-host", "native-macos"].map((name) =>
+  return ["cua", "browser-desktop", "sky", "native-host"].map((name) =>
     fileURLToPath(new URL(`../../${name}/`, import.meta.url)),
   );
 }

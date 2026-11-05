@@ -5930,3 +5930,10 @@ Validation: CLI routing tests include normal computer commands, stale configurat
 The direct restored-demo entry now selects the original Sky binding and Swift backend for computer by default. Native backend `independent` aliases `swift`; the branch replacing Sky with `@core/native-macos/service` is removed. Explicit incompatible supervisor/backend or Sky service configurations fail before launching. Explicit vendor comparisons remain possible; browser/generic defaults remain installed. Root public APIs and direct legacy package consumers remain outside this completed entry migration.
 
 Validation: three selection tests and one real subprocess inventory test pass with no skips; the actual subprocess uses an intentionally nonexistent installed supervisor path and no model credentials. Agent-loop type checking passes. No UI action acceptance is claimed.
+
+
+### 2026-11-06: remove retired desktop adapter from deployed packages
+
+`restoredPackageSources()` no longer stages `@core/native-macos`. The deployment graph test verifies the legacy service cannot resolve inside the runtime while original Sky/browser services and both Statsig versions remain available. The old source package remains for existing direct consumers and reference tests.
+
+Validation: two staging tests, four runtime-selection tests (including real Rust/Swift inventory), and the real isolated browser demo test all pass without skips; agent-loop type checking passes. The browser test uses a deterministic local model fixture and actual Chromium open/click/read/completion, not a paid DeepSeek request or the daily Chrome profile. Desktop input/screenshot acceptance remains incomplete.
