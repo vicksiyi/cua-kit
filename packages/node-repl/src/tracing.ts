@@ -1,14 +1,50 @@
+import { Buffer } from "node:buffer";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { performance } from "node:perf_hooks";
 
-
-interface TraceExecState { id: unknown; requestMeta?: unknown }
+interface TraceExecState {
+  id: unknown;
+  requestMeta?: unknown;
+}
 type TraceAttrs = Record<string, string | number | boolean>;
-interface TraceSpanRecord { id: string; name: string; start_ms: number; duration_ms: number; status: string; attrs: TraceAttrs; parent_id?: string }
-interface TraceState { droppedSpanCount: number; spanCounter: number; spans: TraceSpanRecord[]; startedAtMs: number }
-interface ResponseMetaTrace { version: number; started_at_ms: number; spans: TraceSpanRecord[]; dropped_span_count?: number }
-interface SpanEndOptions { attrs?: unknown; status?: unknown }
-interface TelemetrySpan { end(options?: SpanEndOptions): void }
+interface ParentTrace {
+  traceparent: string;
+  tracestate?: string;
+}
+interface SpanOptions {
+  resultAttrs?: ResultAttrs;
+  errorAttrs?: ResultAttrs;
+  parentTrace?: unknown;
+}
+interface TraceSpanRecord {
+  parent_trace?: ParentTrace;
+  id: string;
+  name: string;
+  start_ms: number;
+  duration_ms: number;
+  status: string;
+  attrs: TraceAttrs;
+  parent_id?: string;
+}
+interface TraceState {
+  droppedSpanCount: number;
+  spanCounter: number;
+  spans: TraceSpanRecord[];
+  startedAtMs: number;
+}
+interface ResponseMetaTrace {
+  version: number;
+  started_at_ms: number;
+  spans: TraceSpanRecord[];
+  dropped_span_count?: number;
+}
+interface SpanEndOptions {
+  attrs?: unknown;
+  status?: unknown;
+}
+interface TelemetrySpan {
+  end(options?: SpanEndOptions): void;
+}
 type ResultAttrs = ((result: unknown) => unknown) | null | undefined;
 
 const responseMetaTraceVersion = 1;
@@ -21,6 +57,21 @@ const maxResponseMetaTraceAttrs = 32;
 const maxResponseMetaTraceAttrKeyLength = 128;
 const maxResponseMetaTraceNameLength = 128;
 const maxResponseMetaTraceAttrStringLength = 256;
+
+function sanitizeParentTrace(value: unknown): ParentTrace | undefined {
+  if (!isPlainObject(value)) return undefined;
+  const { traceparent, tracestate } = value;
+  if (
+    typeof traceparent !== "string" ||
+    traceparent.length === 0 ||
+    Buffer.byteLength(traceparent, "utf8") > 55 ||
+    (tracestate !== undefined &&
+      (typeof tracestate !== "string" ||
+        Buffer.byteLength(tracestate, "utf8") > 512))
+  )
+    return undefined;
+  return { traceparent, ...(tracestate === undefined ? {} : { tracestate }) };
+}
 
 function roundTraceMs(value: number) {
   return Math.round(value * 1000) / 1000;
@@ -95,7 +146,13 @@ function sanitizeTraceAttrs(value: unknown) {
   return attrs;
 }
 
-export function createResponseMetaTracer({ enabled, getCurrentExecState }: { enabled: boolean; getCurrentExecState: () => TraceExecState }) {
+export function createResponseMetaTracer({
+  enabled,
+  getCurrentExecState,
+}: {
+  enabled: boolean;
+  getCurrentExecState: () => TraceExecState;
+}) {
   const spanStorage = new AsyncLocalStorage<{ spanId: string }>();
   const traces = new Map<unknown, TraceState>();
 
@@ -104,7 +161,12 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
       return true;
     }
     try {
-      return typeof (getCurrentExecState().requestMeta as { traceparent?: unknown } | null | undefined)?.traceparent === "string";
+      return (
+        typeof (
+          getCurrentExecState().requestMeta as
+            { traceparent?: unknown } | null | undefined
+        )?.traceparent === "string"
+      );
     } catch {
       return false;
     }
@@ -153,7 +215,19 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
   }
 
   function telemetryErrorKind(error: unknown) {
-    return error instanceof Error && error.name ? error.name : typeof error;
+    const name = error instanceof Error ? error.name : "other";
+    switch (name) {
+      case "AbortError":
+      case "TimeoutError":
+      case "TypeError":
+      case "RangeError":
+      case "SyntaxError":
+      case "ReferenceError":
+      case "Error":
+        return name;
+      default:
+        return "other";
+    }
   }
 
   function objectAttrs(value: unknown) {
@@ -167,7 +241,11 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
     return typeof activeSpan?.spanId === "string" ? activeSpan.spanId : null;
   }
 
-  function startSpan(name: unknown, attrs: unknown = {}): { span: TelemetrySpan; spanId?: string } {
+  function startSpan(
+    name: unknown,
+    attrs: unknown = {},
+    options: SpanOptions | null = {},
+  ): { span: TelemetrySpan; spanId?: string } {
     if (!isEnabled()) {
       return { span: makeNoopTelemetrySpan() };
     }
@@ -182,6 +260,7 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
     const state = getTraceState(execState);
     const spanId = `span-${++state.spanCounter}`;
     const parentSpanId = currentParentSpanId();
+    const parentTrace = sanitizeParentTrace(options?.parentTrace);
     const startMs = performance.now();
     let ended = false;
 
@@ -211,6 +290,7 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
         if (parentSpanId != null) {
           record.parent_id = parentSpanId;
         }
+        if (parentTrace != null) record.parent_trace = parentTrace;
         state.spans.push(record);
       },
     });
@@ -238,7 +318,12 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
       return startSpan(name, attrs).span;
     },
 
-    async withSpan(name: unknown, attrs: unknown = {}, operation: unknown, options: { resultAttrs?: ResultAttrs } | null = {}) {
+    async withSpan(
+      name: unknown,
+      attrs: unknown = {},
+      operation: unknown,
+      options: SpanOptions | null = {},
+    ) {
       if (typeof operation !== "function") {
         return undefined;
       }
@@ -247,7 +332,11 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
         options && typeof options.resultAttrs === "function"
           ? options.resultAttrs
           : null;
-      const { span, spanId } = startSpan(name, attrs);
+      const errorAttrs =
+        options && typeof options.errorAttrs === "function"
+          ? options.errorAttrs
+          : null;
+      const { span, spanId } = startSpan(name, attrs, options);
       const run = async () => {
         try {
           const result = await operation();
@@ -258,7 +347,10 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
           return result;
         } catch (error) {
           span.end({
-            attrs: { "error.kind": telemetryErrorKind(error) },
+            attrs: {
+              ...resultAttrsFor(error, errorAttrs),
+              "error.kind": telemetryErrorKind(error),
+            },
             status: "error",
           });
           throw error;
@@ -278,4 +370,3 @@ export function createResponseMetaTracer({ enabled, getCurrentExecState }: { ena
     isEnabled,
   });
 }
-

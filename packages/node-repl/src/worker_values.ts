@@ -136,7 +136,10 @@ export function normalizeEmitImageValue(value: unknown): { image_url: string } {
     if (
       Object.keys(value).some((key) => key !== "bytes" && key !== "mimeType")
     ) {
-      throw new Error("nodeRepl.emitImage received an unsupported value");
+      throw Object.assign(
+        new Error("nodeRepl.emitImage received an unsupported value"),
+        { code: "NODE_REPL_IMAGE_UNSUPPORTED_KEYS" },
+      );
     }
     const bytes = toByteArray(value.bytes);
     if (!bytes) {

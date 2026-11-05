@@ -214,3 +214,23 @@ test("execution context keeps originating async store but rejects outputs from i
       context.run({ id }, () => assert.equal(context.getOptional(), null));
   }
 });
+
+test("image unsupported-field errors preserve the updated machine-readable code", () => {
+  for (const library of [original, restored]) {
+    assert.throws(
+      () =>
+        library.normalizeEmitImageValue({
+          bytes: new Uint8Array([1]),
+          mimeType: "image/png",
+          extra: true,
+        }),
+      (error) => (error as any).code === "NODE_REPL_IMAGE_UNSUPPORTED_KEYS",
+    );
+    assert.throws(
+      () => library.normalizeEmitImageValue({ unrelated: true }),
+      (error) =>
+        (error as any).code === undefined &&
+        (error as Error).message.includes("unsupported value"),
+    );
+  }
+});

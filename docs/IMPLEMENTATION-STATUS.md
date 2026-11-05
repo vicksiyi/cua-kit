@@ -4821,3 +4821,18 @@ native supervisor implementation gap. No production keys or debug logs are
 committed.
 
 All five actual native-supervisor MCP integration cases also pass after this change, including reset/cancellation, trusted RPC and allowed/denied browser operations.
+
+### 2026-11-05 — current tracing and image-error source deltas
+
+Ported the remaining observed tracing deltas from the locally extracted current
+JS into typed TS: bounded UTF-8 parent trace propagation, error-attribute
+callbacks isolated from execution failures, and the upstream error-name
+allowlist. Added `NODE_REPL_IMAGE_UNSUPPORTED_KEYS` only to the image-object
+extra-field failure, preserving ordinary unsupported-value behavior.
+
+Sixteen targeted tests pass against original extracted code and restored code,
+including parent trace byte boundaries, custom error-name redaction, callback
+failure isolation, image error codes, actual rebuilt workers and private-key
+bootstrap. Reconstruction build and node-repl typecheck pass. This narrows the
+observed installed-JS version gap; it does not finish native supervisor source
+restoration or resolve the independent desktop permission acceptance gate.
