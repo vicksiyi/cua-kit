@@ -1,5 +1,9 @@
 import test from "node:test";
-import { createServer, type Socket } from "node:net";
+import { createServer, type Socket, type AddressInfo } from "node:net";
+import {
+  createServer as createHttpServer,
+  type ServerResponse,
+} from "node:http";
 import { UnixNativePipeHost } from "../packages/runtime-supervisor/src/native-pipe-host";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, rm, mkdir, realpath } from "node:fs/promises";
@@ -30,13 +34,24 @@ test(
       socketServer.once("error", reject);
       socketServer.listen(socketPath, resolve);
     });
+    let httpResponse: ServerResponse | undefined,
+      httpStarted: (() => void) | undefined;
+    const httpServer = createHttpServer((_request, response) => {
+      httpResponse = response;
+      httpStarted?.();
+    });
+    await new Promise<void>((resolve) =>
+      httpServer.listen(0, "127.0.0.1", resolve),
+    );
+    const httpUrl = `http://127.0.0.1:${(httpServer.address() as AddressInfo).port}/fixture`;
+    let fetchSignal: AbortSignal | undefined;
     let idleReceived!: () => void;
     const idleObserved = new Promise<void>((resolve) => {
       idleReceived = resolve;
     });
     await writeFile(
       join(root, "service.mjs"),
-      'let pipe;let received=[];let waiting;export async function handleRpc(x){if(x?.meta){nodeRepl.setResponseMeta(x.meta);return "meta set";}if(x?.image){await nodeRepl.emitImage(x.image);return "image emitted";}if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
+      'let pipe;let received=[];let waiting;let fetched;export async function handleRpc(x){if(x?.fetchStart){fetched=nodeRepl.fetch(x.fetchStart).then(r=>r.text());void fetched.catch(()=>{});return "started";}if(x?.fetchWait)return await fetched;if(x?.meta){nodeRepl.setResponseMeta(x.meta);return "meta set";}if(x?.image){await nodeRepl.emitImage(x.image);return "image emitted";}if(x?.open){pipe=await nodeRepl.nativePipe.createConnection(x.open);pipe.on("data",data=>{received.push(data.toString());waiting?.(data.toString());waiting=null});return "connected";}if(x?.write){const reply=new Promise(r=>waiting=r);pipe.write(new TextEncoder().encode(x.write));return await reply;}if(x?.read)return received;return await nodeRepl.createElicitation({message:"Approve fixture?",meta:{fixture:true}})}',
     );
     const moduleDir = join(root, "external", "node_modules");
     await mkdir(join(moduleDir, "fixture-module"), { recursive: true });
@@ -58,6 +73,23 @@ test(
     let started: (() => void) | undefined;
     const runtime = createSupervisorMcpServer({
       services: ["fixture"],
+      hostRequest: async (message, context) => {
+        assert.equal(message.type, "authenticated_fetch");
+        assert.equal(message.request.url, httpUrl);
+        fetchSignal = context.signal;
+        const response = await fetch(httpUrl, { signal: context.signal });
+        return {
+          ok: true,
+          response: {
+            status: response.status,
+            status_text: response.statusText,
+            headers: [],
+            body_base64: Buffer.from(await response.arrayBuffer()).toString(
+              "base64",
+            ),
+          },
+        };
+      },
       nativePipeHost: (emit) =>
         new UnixNativePipeHost([socketPath], (message) => {
           emit(message);
@@ -258,6 +290,48 @@ test(
         ).isError,
         true,
       );
+      let arrived = new Promise<void>((resolve) => {
+        httpStarted = resolve;
+      });
+      const backgroundStart = await client.callTool({
+        name: "js",
+        arguments: {
+          code: `nodeRepl.write(await nodeRepl.rpc("fixture",{fetchStart:${JSON.stringify(httpUrl)}}))`,
+        },
+      });
+      assert.equal(backgroundStart.isError, false);
+      await arrived;
+      assert.equal(fetchSignal?.aborted, false);
+      const whilePending = await client.callTool({
+        name: "js",
+        arguments: { code: 'nodeRepl.write("independent next cell")' },
+      });
+      assert.equal(whilePending.isError, false);
+      httpResponse!.end("fixture HTTP response");
+      const fetched = await client.callTool({
+        name: "js",
+        arguments: {
+          code: 'nodeRepl.write(await nodeRepl.rpc("fixture",{fetchWait:true}))',
+        },
+      });
+      assert.equal(fetched.isError, false);
+      assert.match(JSON.stringify(fetched.content), /fixture HTTP response/);
+      arrived = new Promise<void>((resolve) => {
+        httpStarted = resolve;
+      });
+      await client.callTool({
+        name: "js",
+        arguments: {
+          code: `await nodeRepl.rpc("fixture",{fetchStart:${JSON.stringify(httpUrl)}})`,
+        },
+      });
+      await arrived;
+      const httpClosed = new Promise<void>((resolve) =>
+        httpResponse!.once("close", resolve),
+      );
+      await client.callTool({ name: "js_reset", arguments: {} });
+      assert.equal(fetchSignal?.aborted, true);
+      await httpClosed;
       const openPipe = await client.callTool({
         name: "js",
         arguments: {
@@ -310,7 +384,7 @@ test(
         arguments: { code: "nodeRepl.write(typeof value)" },
       });
       assert.match(JSON.stringify(fresh.content), /undefined/);
-      assert.equal(launches, 2);
+      assert.equal(launches, 3);
       await peerClosed;
       await client.callTool({
         name: "turn_ended",
@@ -339,7 +413,7 @@ test(
         ).isError,
         false,
       );
-      assert.equal(launches, 3);
+      assert.equal(launches, 4);
       const afterReset = await client.callTool({
         name: "js",
         arguments: { code: importCode },
@@ -349,6 +423,8 @@ test(
     } finally {
       await client.close();
       await runtime.close();
+      httpServer.closeAllConnections();
+      await new Promise<void>((resolve) => httpServer.close(() => resolve()));
       peer?.destroy();
       await new Promise<void>((resolve) => socketServer.close(() => resolve()));
       await rm(root, { recursive: true, force: true });

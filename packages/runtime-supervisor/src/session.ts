@@ -1,4 +1,5 @@
 /** Independently authored supervisor core, not recovered Rust. No implicit OS authority. */
+import { BackgroundHostRequests } from "./background-host";
 import type { NativePipeHost } from "./native-pipe-host";
 import { ExecutionDeadline } from "./execution-deadline";
 import { randomUUID } from "node:crypto";
@@ -65,6 +66,7 @@ interface Pending {
 }
 export class WorkerSession {
   private pair?: WorkerPair;
+  private backgroundHosts = new WeakMap<WorkerPair, BackgroundHostRequests>();
   private pipeHosts = new WeakMap<
     WorkerPair,
     { host: NativePipeHost; seen: Set<string> }
@@ -199,6 +201,19 @@ export class WorkerSession {
         throw error;
       }
       this.pair = pair;
+      this.backgroundHosts.set(
+        pair,
+        new BackgroundHostRequests(this.options.hostRequest, (message) => {
+          if (this.pair !== pair) return;
+          try {
+            pair.trusted.send(message);
+          } catch (error) {
+            void this.retire(
+              error instanceof Error ? error : Error(String(error)),
+            );
+          }
+        }),
+      );
       try {
         if (this.options.nativePipeHost) {
           const host = this.options.nativePipeHost((message) => {
@@ -261,6 +276,9 @@ export class WorkerSession {
       };
       options.signal?.addEventListener("abort", abort, { once: true });
       try {
+        this.backgroundHosts
+          .get(this.pair!)!
+          .register(id, options.requestMeta, operation.type === "turn_ended");
         this.pair![operation.type === "exec" ? "kernel" : "trusted"].send({
           ...operation,
           id,
@@ -278,6 +296,10 @@ export class WorkerSession {
     if (!pair) return;
     if (side === "trusted" && message?.type === "native_pipe_request") {
       void this.nativePipe(message, pair);
+      return;
+    }
+    if (side === "trusted" && message?.type === "authenticated_fetch") {
+      void this.backgroundHosts.get(pair)?.handle(message);
       return;
     }
     if (!pending) return;
@@ -357,6 +379,7 @@ export class WorkerSession {
           });
           return;
         }
+        this.backgroundHosts.get(pair)?.allow(pending.id);
         pending.rpc.add(message.id);
         pair.trusted.send({
           ...message,
@@ -397,7 +420,6 @@ export class WorkerSession {
               "emit_image",
               "emit_audio",
               "elicit",
-              "authenticated_fetch",
               "config_action",
               "launch_services_action",
             ];
@@ -548,6 +570,7 @@ export class WorkerSession {
   private closePair(pair: WorkerPair): Promise<void> {
     let closed = this.closings.get(pair);
     if (!closed) {
+      this.backgroundHosts.get(pair)?.close();
       closed = Promise.all([
         pair.kernel.close(),
         pair.trusted.close(),
