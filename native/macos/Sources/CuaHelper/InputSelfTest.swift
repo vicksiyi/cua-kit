@@ -29,4 +29,21 @@ func runInputChecks() throws {
         do { _ = try selectedTextRange(content:content,text:text,options:options); throw fail("SELF_TEST_FAILED","Invalid selection accepted.") }
         catch let error as Failure { guard error.code == expected else { throw error } }
     }
+    let frameA = CGRect(x:10,y:20,width:300,height:200), frameB = CGRect(x:-500,y:40,width:600,height:400)
+    let windows = [CaptureWindowCandidate(id:1,title:"A",frame:frameA),CaptureWindowCandidate(id:2,title:"B",frame:frameB)]
+    guard try selectCaptureWindow(windows,requestedId:nil,focusedFrame:frameB,focusedTitle:"B") == 2,
+          try selectCaptureWindow(windows.reversed(),requestedId:nil,focusedFrame:frameB,focusedTitle:"B") == 2,
+          try selectCaptureWindow(windows,requestedId:1,focusedFrame:frameB,focusedTitle:"B") == 1 else { throw fail("SELF_TEST_FAILED","Capture selection depends on ordering or ignores explicit identity.") }
+    let overlapping = [CaptureWindowCandidate(id:1,title:"A",frame:frameA),CaptureWindowCandidate(id:2,title:"B",frame:frameA)]
+    guard try selectCaptureWindow(overlapping,requestedId:nil,focusedFrame:frameA,focusedTitle:"B") == 2 else { throw fail("SELF_TEST_FAILED","Focused title did not disambiguate matching geometry.") }
+    for (candidates,id,frame,title,code) in [
+        (windows,nil,nil,nil,"AMBIGUOUS_TARGET"),
+        (overlapping,nil,frameA,nil,"AMBIGUOUS_TARGET"),
+        (windows,99,nil,nil,"TARGET_NOT_FOUND"),
+        ([],nil,nil,nil,"TARGET_NOT_FOUND"),
+        (windows,nil,CGRect(x:900,y:900,width:1,height:1),"B","AMBIGUOUS_TARGET")
+    ] as [([CaptureWindowCandidate],Int?,CGRect?,String?,String)] {
+        do { _ = try selectCaptureWindow(candidates,requestedId:id,focusedFrame:frame,focusedTitle:title); throw fail("SELF_TEST_FAILED","Invalid window selection accepted.") }
+        catch let error as Failure { guard error.code == code else { throw error } }
+    }
 }

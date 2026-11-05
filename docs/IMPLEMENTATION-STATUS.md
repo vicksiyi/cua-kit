@@ -4556,3 +4556,10 @@ get_app_state now refreshes helper permission status and uses the existing obser
 Without screen recording, AX-only observation returns screenshot:null and explicit warning; getScreenshot reports unavailable. Capture failures and malformed images propagate without retaining an actionable old snapshot. Multiple capturable windows still trigger the helper's ambiguity error because original app references do not yet supply a window selector; full multiwindow selection parity remains incomplete.
 
 Eleven native adapter/screenshot tests pass, including restored CUA image-byte roundtrip with a fixture PNG, permission absence, malformed images and failed-capture snapshot invalidation. Native package typecheck and reconstruction build pass. No real window screenshot or UI action was performed; OS permissions and full native/browser acceptance remain outstanding.
+
+
+### Independent multiwindow capture selection
+
+Added native WindowSelection.swift. For multiple eligible windows, the helper reads the bound app's AXFocusedWindow, validates its PID and point/size values, and matches its frame against that app's ScreenCaptureKit windows. Unique geometry wins; a nonempty exact title may disambiguate same-geometry candidates. No first-window fallback occurs. Explicit helper windowId retains priority. Missing/unmatched/ambiguous focus fails explicitly. After capture, focus AX identity and geometry must still match, in addition to existing window geometry and AX observation checks.
+
+Swift build and --self-test pass, with pure selection cases for reversed candidate order, explicit ID, overlapping windows, missing focus, absent IDs, no candidates, unrelated geometry and negative screen coordinates. This supersedes the blanket multiple-window rejection but does not prove real multi-monitor AX/ScreenCaptureKit coordinate correspondence or native focus-race handling. No live screenshot/input was performed; permission and full feature acceptance remain outstanding.

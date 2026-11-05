@@ -27,12 +27,12 @@ extension Target {
     }
     func screenshot(_ params: [String: Any]) async throws -> [String: Any] {
         let available = try await captureWindows()
-        let matches: [SCWindow]
-        if let id = params["windowId"] as? Int { matches = available.filter { Int($0.windowID) == id } }
-        else { matches = available }
-        guard !matches.isEmpty else { throw fail("TARGET_NOT_FOUND", "No capturable window belongs to this application.") }
-        guard matches.count == 1 else { throw fail("AMBIGUOUS_TARGET", "Application has multiple windows; call listWindows and specify windowId.") }
-        let window = matches[0], originalFrame = window.frame
+        let requestedId = params["windowId"] as? Int
+        if params["windowId"] != nil && requestedId == nil { throw fail("INVALID_ARGUMENT", "windowId must be an integer.") }
+        let focus = requestedId == nil && available.count > 1 ? try focusedCaptureWindow() : nil
+        let selectedId = try selectCaptureWindow(available.map { CaptureWindowCandidate(id:Int($0.windowID),title:$0.title ?? "",frame:$0.frame) }, requestedId:requestedId, focusedFrame:focus?.frame, focusedTitle:focus?.title)
+        guard let window = available.first(where: {Int($0.windowID) == selectedId}) else { throw fail("TARGET_NOT_FOUND", "Selected window disappeared.") }
+        let originalFrame = window.frame
         let filter = SCContentFilter(desktopIndependentWindow: window)
         let config = SCStreamConfiguration()
         let scale = Double(filter.pointPixelScale)
@@ -47,6 +47,9 @@ extension Target {
         try validateIdentity()
         let current = try await captureWindows()
         guard let same = current.first(where: { $0.windowID == window.windowID }), same.frame == originalFrame else { throw fail("STALE_OBSERVATION", "Window moved, resized or closed during capture.") }
+        if let originalFocus = focus {
+            guard let currentFocus = try focusedCaptureWindow(), CFEqual(originalFocus.element,currentFocus.element), captureFramesMatch(originalFocus.frame,currentFocus.frame) else { throw fail("STALE_OBSERVATION", "Focused window changed during capture.") }
+        }
         let data = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil) else { throw fail("PROVIDER_DISCONNECTED", "Cannot create PNG encoder.") }
         CGImageDestinationAddImage(destination, image, nil)
