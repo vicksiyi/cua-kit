@@ -4762,3 +4762,21 @@ The provider reuses the restored `validateFinalizedTabs` and `partitionFinalized
 Added `--cdp-browser` deployment selection to the existing demo script and `@core/agent-loop` CDP entry; it reuses project .env loading, model/AgentLoop, restored MCP runtime, terminal traces and terminal elicitation. The entry validates the environment before browser startup, clears extension endpoint selection and advertises `cdp` only. The owned browser remains temporary/visible and closes on exit.
 
 Ran the actual npm entry with `--check-browser`, then the original generic search prompt in a real terminal. Bing's visible results were incomplete; DeepSeek used DuckDuckGo and returned the observed first result `DeepSeek | API Platform`, https://www.deepseek.com/en/platform/. Exact search-site permission requests were accepted in the terminal for this authorized search, without a test elicitation callback. Inspected the produced screenshot: the first result is visibly the API Platform link. Command exited 0 and no owned CDP directories remained (log files excluded from that check). This verifies the CLI route, not desktop UI permissions or daily Chrome profile control. Site result ordering varies and is not pinned to a preset expected answer.
+
+### 2026-11-05 — ended-turn guard and launcher recheck
+
+CDP action/claim/create/finalize/name operations now reject a previously ended session/turn pair; repeated cleanup remains idempotent. Actual-browser provider tests cover stale create/claim rejection and release/reclaim semantics, alongside restored CUA navigation/click/screenshot regression (three tests passed), and the package type check passed.
+
+Read-only desktop permission recheck still reports Accessibility=false and ScreenRecording=false. A read-only process check found one existing Google Chrome main process with remote-debugging-port=0, but its profile belongs to a stepwise temporary workspace and its DevToolsActivePort descriptor is absent. This does not establish a connectable daily Chrome backend; no action was taken on that browser.
+
+### 2026-11-05 — real native DeepSeek acceptance prepared, not passed
+
+Added an explicit `test:native-deepseek` gate for the full model/MCP/CUA/native path, including launching an initially stopped owned .app, marker input, Save click, returned text and real screenshot. It validates the result independently through native AX and PNG inspection and limits test elicitation to the unique owned bundle. Type-check passes. An actual enabled execution failed immediately and correctly on Accessibility=false/ScreenRecording=false, before model access or app launch. The task execution portion is therefore still unverified; this is not a desktop end-to-end pass. The operator authorization request remains pending.
+
+### 2026-11-05 — external CDP connection ownership
+
+Added a separate `attachCdpBrowser` helper using upstream Playwright's `connectOverCDP` with `noDefaults:true`, based on the locally installed upstream implementation/types. A live second-client connection to a test-owned browser verifies target discovery and that repeated client disconnect preserves browser process, tab IDs and page contents. Package type check and the live ownership test pass. This is an attachment-resource test, not daily Chrome/MCP end-to-end acceptance. Provider policy routing remains context-wide for owned browsers; existing-browser integration must isolate changes to controlled pages before exposing an endpoint selector in the CLI.
+
+### 2026-11-05 — page-scoped HTTP interception primitive
+
+Added `installPageHttpRouting`, a reversible per-page HTTP routing lease that chains allowed requests through existing Playwright handlers and removes only its own handler on release. A real two-client/two-tab test proves a denied request on the controlled page is blocked, an unrelated page still reaches the server, preexisting handlers still execute, release restores requests, and disconnect preserves both tabs. Type check and the live test pass. This primitive is not yet wired into external-browser MCP deployment; it does not claim redirect, WebSocket, service-worker or popup enforcement by itself. The restored CDP policy layer must remain part of the composed backend.

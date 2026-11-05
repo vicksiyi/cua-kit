@@ -48,3 +48,7 @@ npm run check:computer-permissions
 ```
 
 The first command builds the helper and explicitly requests the standard macOS Accessibility/Screen Recording dialogs. The operator must grant the permissions in System Settings; this does not write TCC databases or grant access automatically. Use the application named by macOS, since permission attribution can differ between Terminal, a GUI agent and a tmux-launched process. Restart the responsible app/terminal if macOS asks. The check prints both booleans and exits 2 until both are true, without requesting dialogs. A successful check in one launcher does not prove that another launcher has the same permissions. Recheck the actual MCP/helper runtime before desktop acceptance.
+
+### Real DeepSeek desktop acceptance
+
+`npm run test:native-deepseek` builds current native/restored runtime artifacts and explicitly runs the opt-in real-model acceptance gate. It fails before launching any app or requesting the model if either OS permission is absent. With permissions, it creates an owned initially stopped .app, authorizes only that unique bundle, asks real DeepSeek through restored MCP/CUA to open it, enter a random marker, click Save fixture, read the result and capture a screenshot. Independent native AX and PNG checks verify the saved state; matching text in the model answer alone cannot pass. Cleanup targets only that bundle/path. This acceptance is prepared and type-checked but has not run past the permission gate on the current host.

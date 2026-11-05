@@ -49,8 +49,15 @@ export async function startOwnedCdpBrowser(
       .split("\n");
     if (!port || !/^\d+$/.test(port) || !path?.startsWith("/devtools/browser/"))
       throw Error("Invalid owned browser CDP descriptor");
-    connection = await CdpConnection.connect(`ws://127.0.0.1:${port}${path}`);
-    return { context, connection, close };
+    const endpoint = `ws://127.0.0.1:${port}${path}`;
+    connection = await CdpConnection.connect(endpoint);
+    return {
+      context,
+      connection,
+      close,
+      endpoint,
+      ownership: "owned" as const,
+    };
   } catch (error) {
     await close();
     throw error;

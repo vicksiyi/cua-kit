@@ -21,6 +21,22 @@ type Tab = {
 };
 export class CdpProvider {
   private nextTab = 0;
+  private endedTurns = new Set<string>();
+  private turnKey(request: any) {
+    if (
+      typeof request.session_id !== "string" ||
+      !request.session_id ||
+      typeof request.turn_id !== "string" ||
+      !request.turn_id
+    )
+      throw Error("CDP requires session_id and turn_id");
+    return JSON.stringify([request.session_id, request.turn_id]);
+  }
+  private activeTurn(request: any) {
+    const key = this.turnKey(request);
+    if (this.endedTurns.has(key)) throw Error("CDP turn has already ended");
+    return key;
+  }
   private tabs = new Map<number, Tab>();
   private sessionTabs = new Map<string, Tab>();
   private stop: () => void;
@@ -113,6 +129,7 @@ export class CdpProvider {
     return tab;
   }
   private own(request: any, tab: Tab) {
+    this.activeTurn(request);
     if (typeof request.session_id !== "string" || !request.session_id)
       throw Error("CDP requires session_id");
     if (tab.owner && tab.owner !== request.session_id)
@@ -171,6 +188,7 @@ export class CdpProvider {
   }
   private names = new Map<string, string>();
   nameSession(request: any) {
+    this.activeTurn(request);
     if (
       typeof request.session_id !== "string" ||
       typeof request.name !== "string"
@@ -179,6 +197,7 @@ export class CdpProvider {
     this.names.set(request.session_id, request.name);
   }
   async finalizeTabs(request: any) {
+    this.activeTurn(request);
     if (typeof request.session_id !== "string" || !request.session_id)
       throw Error("CDP requires session_id");
     if (!Array.isArray(request.keep))
@@ -204,6 +223,8 @@ export class CdpProvider {
     tab.mark = request.status;
   }
   async turnEnded(request: any) {
+    const key = this.turnKey(request);
+    if (this.endedTurns.has(key)) return;
     if (typeof request.session_id !== "string" || !request.session_id)
       throw Error("CDP requires session_id");
     const owned = [...this.tabs.values()].filter(
@@ -227,6 +248,7 @@ export class CdpProvider {
         tab.mark = undefined;
       }
     }
+    this.endedTurns.add(key);
   }
 
   ping() {
@@ -263,6 +285,7 @@ export class CdpProvider {
     return (await this.getTabs()).find((value) => value.id === tab.id);
   }
   async createTab(request: any) {
+    this.activeTurn(request);
     if (typeof request.session_id !== "string" || !request.session_id)
       throw Error("CDP requires session_id");
     const page = await this.context.newPage();

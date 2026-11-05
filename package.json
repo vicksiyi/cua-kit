@@ -36,7 +36,8 @@
     "build:sandbox": "node scripts/build-macos-sandbox.mjs",
     "test:sandbox": "npm run build:sandbox && npm run build:reconstruction && CUA_TEST_MACOS_SANDBOX=1 tsx --test reconstruction/runtime-macos-sandbox.test.ts",
     "permissions:computer": "npm run build:native && native/macos/.build/debug/cua-helper --request-permissions",
-    "check:computer-permissions": "native/macos/.build/debug/cua-helper --permissions"
+    "check:computer-permissions": "native/macos/.build/debug/cua-helper --permissions",
+    "test:native-deepseek": "npm run build:native && npm run build:reconstruction && CUA_NATIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/native-deepseek-live.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

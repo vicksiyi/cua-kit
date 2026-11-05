@@ -93,6 +93,12 @@ test(
       await request("finalizeTabs", {
         keep: [{ tabId: allowed.id, status: "deliverable" }],
       });
+      await request("turnEnded"); // Cleanup is idempotent.
+      await assert.rejects(request("createTab"), /already ended/);
+      await assert.rejects(
+        request("claimUserTab", { tabId: allowed.id }),
+        /already ended/,
+      );
       const remaining = await request("getTabs");
       assert.equal(
         remaining.some((entry: any) => entry.id === tab.id),
