@@ -17,7 +17,7 @@ classification is a review queue, **not a per-file semantic parity verdict**.
 | `packages/cua`, `cua-repl`, `sky` | Original installed JS and declarations inventoried in package-source and sky-native-source records. JS native-pipe *client* is not the native-pipe *server*: retain client restoration in TS. Per-file behavioral parity remains open. |
 | `packages/browser`, `browser-desktop`, `core`, `browser-extension` | Restored JS bundles/shared logic and extension-source provenance. Retain TS for proven JS portions; audit adapters separately. Accessibility WASM is a native/binary asset, not permission to implement its internals in TS. Original WASM source language remains unconfirmed. |
 | `packages/native-host` | Mixed deployment and native transport adapters. `chrome_profile.ts` derives from original JS plugin scripts and may remain TS. Socket server, authentication/router/installation are independently authored; original browser host language/ownership must be established before native-language rewrite. `browser_service.ts` composes restored JS rather than proving host-language parity. |
-| `packages/native-macos` and `native/macos` | TS service adapter plus independent Swift OS helper. Neither means original desktop service was necessarily Swift. Separate original Sky JS forwarding from native AX/input/capture/policy responsibilities; verify original native artifact/language then migrate misplaced TS logic. Real UI acceptance also remains outstanding. |
+| `packages/native-macos` and `native/macos` | The installed SkyComputerUseService now has explicit Swift IPC/service source-path evidence in desktop-language-evidence.json. AX text rendering has moved from the independent TS client into Swift; the JS client now preserves native text, matching the original getAppState/window_result boundary. Original Sky JS forwarding/policy remains TS. Process management and the remaining independent adapter responsibilities still need per-file review; real UI acceptance remains outstanding. |
 | `native/macos-sandbox` | Rust N-API Seatbelt helper replaces the independent C bridge; Rust supervisor now constructs policy/launch specs. The post-initialization bridge ordering remains an independently verified deployment choice, not established original behavior. Production composition and bootstrap ownership still require review. |
 | `packages/cdp-host` | Independently authored deployment for Playwright/CDP. User requested CUA fidelity: this is not evidence of an original CDP auto-launch policy or native source language. Audit and keep its optional demo scope distinct. |
 | `packages/agent-loop` | Agent-neutral caller and DeepSeek demo are requested additions, not vendor native source. TS caller logic is legitimate; inspect runtime assembly/startup/config code for responsibilities being incorrectly assigned out of the native layer. |
@@ -53,3 +53,12 @@ switch and equivalent isolated browser acceptance. Native-host and desktop
 service language identification, plus the legacy root `src` review, remain open.
 A module calling native APIs from JS is not by itself evidence that its original
 implementation was native; retain JS-derived client/protocol wrappers in TS.
+
+
+Desktop evidence is reproducible with `python3 scripts/audit-desktop-language.py`.
+It reads the bundled app Info.plist/executable and extracts only selected Swift
+source-path literals and linked framework names. No original service is launched.
+`ComputerUse/ComputerUseIPCServer.swift` and service-specific Swift files establish
+native Swift participation, not every function's implementation or recovered bodies.
+The native text formatter remains independently authored; exact original formatting,
+diff logic and IPC/schema compatibility are still pending.

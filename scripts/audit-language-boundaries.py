@@ -11,7 +11,8 @@ for package in sorted((root/'packages').iterdir()):
     for file in sorted((package/'src').rglob('*')):
         if not file.is_file() or file.suffix not in {'.ts','.js','.mjs','.cjs'}:continue
         kind = ('native-responsibility-migrate-to-rust' if package.name=='runtime-supervisor' else
-                'native-boundary-needs-original-language-evidence' if package.name in {'native-host','native-macos'} else
+                'native-desktop-swift-boundary-review' if package.name=='native-macos' else
+                'native-boundary-needs-original-language-evidence' if package.name=='native-host' else
                 'declared-js-restoration-verify-per-file' if package.name in restored else
                 'caller-or-deployment-code-review-for-native-responsibility')
         rows.append({'path':str(file.relative_to(root)),'category':kind,'sha256':hashlib.sha256(file.read_bytes()).hexdigest()})

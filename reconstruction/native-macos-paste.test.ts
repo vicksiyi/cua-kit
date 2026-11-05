@@ -12,7 +12,7 @@ function fixture(options: {denied?:boolean;fail?:boolean;restored?:boolean;warni
   if(method==="listApps")return {apps:[app]} as T;
   if(method==="bind")return {targetId:"bound",app} as T;
   if(method==="hello")return {permissions:{screenRecording:false}} as T;
-  if(method==="observe")return {snapshotId:"snap",elements:[],warnings:options.warning?["truncated"]:[]} as T;
+  if(method==="observe")return {text:'[1] AXTextField "Name"\nScreenshot unavailable: Screen Recording permission is not granted.',snapshotId:"snap",elements:[],warnings:options.warning?["truncated"]:[]} as T;
   if(method==="pasteWithClipboard"){
    if(options.fail) throw Error("paste failed after dispatch");
    return {outcome:"observed",clipboardRestored:options.restored??true} as T;

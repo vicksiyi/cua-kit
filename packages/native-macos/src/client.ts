@@ -9,7 +9,7 @@ export interface NativeTransport {
 export type NativeAuthorization = (request: {
   app: NativeAppInfo; operation: string; effect: "read" | "write";
 }) => Promise<void>;
-type Observation = { snapshotId: string; elements: Array<{id: number; role: string; name: string; value?: string; parentId?: number; frame?: Record<string, number>; properties?: Record<string, unknown>}>; warnings: string[]; screenshot?: unknown };
+type Observation = { text: string; snapshotId: string; elements: Array<{id: number; role: string; name: string; value?: string; parentId?: number; frame?: Record<string, number>; properties?: Record<string, unknown>}>; warnings: string[]; screenshot?: unknown };
 type Bound = { targetId: string; app: NativeAppInfo; observation?: Observation };
 export function createNativeMacClient(helper: NativeTransport, authorize: NativeAuthorization) {
   if (typeof authorize !== "function") throw new Error("Native adapter requires an authorization callback");
@@ -71,18 +71,9 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
       const capture = hello.permissions.screenRecording;
       const state = await helper.request<Observation>(capture ? "observeWithScreenshot" : "observe",{targetId:binding.targetId});
       const screenshot = capture ? {url:screenshotDataUrl(state.screenshot)} : null;
+      if (typeof state.text !== "string") throw new CuaError("PROVIDER_DISCONNECTED", "Native observation text is missing; rebuild the native helper");
       binding.observation = state;
-      // Preserve native context: models need hierarchy, state and advertised actions
-      // to distinguish duplicate labels and choose an operation from observation.
-      const text = state.elements.map(element => {
-        const fields = [`[${element.id}]`, element.role, JSON.stringify(element.name)];
-        if (element.parentId !== undefined) fields.push(`parent=[${element.parentId}]`);
-        if (element.value !== undefined && element.properties?.secure !== true) fields.push(`value=${JSON.stringify(element.value)}`);
-        if (element.frame !== undefined) fields.push(`frame=${JSON.stringify(element.frame)}`);
-        if (element.properties !== undefined) fields.push(`properties=${JSON.stringify(element.properties)}`);
-        return fields.join(" ");
-      }).join("\n");
-      return {app:input.app,screenshot,text:[text,...state.warnings.map(warning => `Warning: ${warning}`),...(!capture ? ["Screenshot unavailable: Screen Recording permission is not granted."] : [])].join("\n")};
+      return {app:input.app,screenshot,text:state.text};
     }),
     paste: (input: {app:string;text:string;format:"text"|"md"|"html"}) => serial(async () => {
       const content = preparePasteContent(input.text,input.format);

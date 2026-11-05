@@ -5302,3 +5302,28 @@ Also corrected the acceptance callback name to verifyEvidence. AgentLoop.run
 itself calls endTurn before returning, so a callback after it cannot be called
 before-turn-end verification. Persistent local HTTP click evidence remains valid
 across that lifecycle; live browser-tab enumeration after run is not equivalent.
+
+## Native desktop language evidence and text migration (2026-11-06)
+
+Static inspection located the bundled SkyComputerUseService executable under
+@oai/sky/Codex Computer Use.app. It contains ComputerUse/ComputerUseIPCServer.swift,
+service-specific Swift source paths and Swift runtime links. The reproducible
+`audit-desktop-language.py` records the binary hash and restricted provenance in
+`desktop-language-evidence.json`. This establishes native Swift participation,
+not recovered native bodies or the language of every dependency.
+
+The restored JS getAppState/window_result path receives native skyshot.text.
+Our independent client previously rendered its own AX element text in TS. That
+rendering, secure-value omission, warnings and missing-screenshot text now live in
+Swift ObservationText.swift; the TS adapter validates and preserves native text.
+Missing native text fails before enabling input state, so older helper binaries
+must be rebuilt with `npm run build:native`. No guessed native-to-TS formatter
+fallback remains. The formatter still expresses the independent helper contract,
+not original text/diff parity.
+
+Swift build and observation-text self-test pass (hierarchy/actions/selection,
+escaping/Unicode, secure-value omission and warnings), as do 28 TS adapter tests
+and native-macos typecheck. Rebuilding reconstructed packages passes. Read-only
+permission status for this host remains accessibility=false, screenRecording=false;
+no real App UI acceptance or TCC change is claimed. Native process ownership,
+Swift service IPC alignment and Rust/App runtime composition remain open.

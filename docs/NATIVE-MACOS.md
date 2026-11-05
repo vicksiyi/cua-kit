@@ -106,3 +106,28 @@ The helper now supplies private clipboardBegin/clipboardRestore leases for heade
 `app.paste(text,{format?:'text'|'html'|'md',timeoutMs?:number})` uses the same process-wide clipboard queue as browser paste. Observe the focused editor first. The helper validates the snapshot/focus/selection before mutation and again before Command+V; it waits for the expected AXValue change. Result: `{outcome:'observed',verification:'AXValue',clipboardRestored:boolean}`. No observed matching change produces ACTION_OUTCOME_UNKNOWN. Secure or non-text AX editors are unsupported; arbitrary custom-editor paste and rich-format verification are not complete.
 
 `cua-helper --paste-self-test` verifies UTF-16 replacement and invalid range handling without system input. The owned fixture gate now includes actual paste. Swift builds and the complete suite has 18 passing tests and one live native fixture skipped. Actual App paste is not verified on this machine without Accessibility.
+
+## Native desktop language evidence and text migration (2026-11-06)
+
+Static inspection located the bundled SkyComputerUseService executable under
+@oai/sky/Codex Computer Use.app. It contains ComputerUse/ComputerUseIPCServer.swift,
+service-specific Swift source paths and Swift runtime links. The reproducible
+`audit-desktop-language.py` records the binary hash and restricted provenance in
+`desktop-language-evidence.json`. This establishes native Swift participation,
+not recovered native bodies or the language of every dependency.
+
+The restored JS getAppState/window_result path receives native skyshot.text.
+Our independent client previously rendered its own AX element text in TS. That
+rendering, secure-value omission, warnings and missing-screenshot text now live in
+Swift ObservationText.swift; the TS adapter validates and preserves native text.
+Missing native text fails before enabling input state, so older helper binaries
+must be rebuilt with `npm run build:native`. No guessed native-to-TS formatter
+fallback remains. The formatter still expresses the independent helper contract,
+not original text/diff parity.
+
+Swift build and observation-text self-test pass (hierarchy/actions/selection,
+escaping/Unicode, secure-value omission and warnings), as do 28 TS adapter tests
+and native-macos typecheck. Rebuilding reconstructed packages passes. Read-only
+permission status for this host remains accessibility=false, screenRecording=false;
+no real App UI acceptance or TCC change is claimed. Native process ownership,
+Swift service IPC alignment and Rust/App runtime composition remain open.

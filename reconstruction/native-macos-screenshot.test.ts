@@ -20,7 +20,7 @@ function fixture(mode: "image"|"denied"|"malformed"|"failure") {
   if(method==="bind") return {targetId:"bound",app} as T;
   if(method==="hello") return {permissions:{screenRecording:mode!=="denied"}} as T;
   if(method==="observeWithScreenshot" && mode==="failure") throw Error("Window moved during capture");
-  if(method==="observe" || method==="observeWithScreenshot") return {snapshotId:"snap",elements:[{id:1,role:"AXTextField",name:"text"}],warnings:[],...(mode!=="denied"?{screenshot:mode==="malformed"?{}:envelope}:{})} as T;
+  if(method==="observe" || method==="observeWithScreenshot") return {text:'[1] AXTextField "Name"\nScreenshot unavailable: Screen Recording permission is not granted.',snapshotId:"snap",elements:[{id:1,role:"AXTextField",name:"text"}],warnings:[],...(mode!=="denied"?{screenshot:mode==="malformed"?{}:envelope}:{})} as T;
   return {} as T;
  }};
  return {calls,requests,client:createNativeMacClient(helper,async()=>{})};

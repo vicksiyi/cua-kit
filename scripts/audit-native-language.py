@@ -16,5 +16,5 @@ print(json.dumps({
     'languageEvidence': {'rustCompilerRevisions': sorted(set(x.decode() for x in re.findall(rb'rustc/[a-f0-9]{40}', raw))), 'sourcePathLiterals': modules},
     'dependencyPathLiterals': crates,
     'interpretation': 'Rust build and module names are evidenced by embedded paths. Native source bodies, exact Cargo features and complete dependency graph are not available from these strings. New Rust is independently implemented against observed worker protocols, not a recovered original source file.',
-    'migration': {'installedJavaScript': 'restore as readable TypeScript', 'nativeSupervisor': 'Rust; TS supervisor remains transitional until replacement acceptance', 'nativeDesktopAndBrowserHost': 'language and ownership still require separate evidence'},
+    'migration': {'installedJavaScript': 'restore as readable TypeScript', 'nativeSupervisor': 'Rust; TS supervisor remains transitional until replacement acceptance', 'nativeDesktop': 'Swift evidence recorded separately in desktop-language-evidence.json; individual responsibility mapping remains open', 'nativeBrowserHost': 'language and ownership still require separate evidence'},
 }, indent=2))

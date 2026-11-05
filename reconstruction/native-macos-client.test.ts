@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createNativeMacClient, type NativeTransport } from "../packages/native-macos/src/client";
-function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFailure?: boolean } = {}) {
+function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFailure?: boolean; missingText?: boolean } = {}) {
  const calls: Array<[string,any]> = [];
  const app={pid:42,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1};
  let reads=0;
@@ -10,7 +10,7 @@ function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFai
   if(method==="hello") return {permissions:{screenRecording:false}} as T;
   if(method==="listApps") return {apps:[app]} as T;
   if(method==="bind") return {targetId:"target",app:{...app,launchTime:options.changeIdentity?2:1}} as T;
-  if(method==="observe") {if(options.observeFailure && ++reads>1) throw Error("read failed"); return {snapshotId:"snapshot",elements:[{id:1,role:"AXTextField",name:"Name"}],warnings:[]} as T;}
+  if(method==="observe") {if(options.observeFailure && ++reads>1) throw Error("read failed"); return {text:options.missingText ? undefined : '[1] AXTextField "Name"\nScreenshot unavailable: Screen Recording permission is not granted.',snapshotId:"snapshot",elements:[{id:1,role:"AXTextField",name:"Name"}],warnings:[]} as T;}
   return {} as T;
  }};
  const client=createNativeMacClient(helper,async request=>{calls.push(["authorize",request]);if(options.deny)throw Error("denied");});
@@ -99,30 +99,21 @@ test("click rejects missing screenshot, mixed targets, counts and invalid holds"
  assert.equal(calls.some(c=>c[0]==="mouseInput"),false);
 });
 
-test("restored AX state exposes hierarchy, available actions and state without secure values",async()=>{
- const elements = [
-  {id:1,role:"AXWindow",name:"Editor"},
-  {id:2,parentId:1,role:"AXTextField",name:"Name",value:"draft",frame:{x:-20,y:40,width:200,height:30},properties:{secure:false,actions:"AXShowMenu",AXEnabled:true,AXFocused:false,selectionStart:0,selectionLength:2}},
-  {id:3,parentId:1,role:"AXSecureTextField",name:"Password",value:"must-not-leak",properties:{secure:true,actions:"",AXEnabled:true}},
- ];
+test("restored AX state preserves text supplied by the native service verbatim",async()=>{
+ const nativeText = 'Native-rendered AX text, preserved verbatim: 🌍';
+ const elements = [{id:1,role:"AXWindow",name:"Adapter must not reconstruct this"}];
  const helper:NativeTransport={request:async <T>(method:string)=>{
   if(method==="listApps") return {apps:[{pid:42,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1}]} as T;
   if(method==="bind") return {targetId:"target",app:{pid:42,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1}} as T;
   if(method==="hello") return {permissions:{screenRecording:false}} as T;
-  if(method==="observe") return {snapshotId:"snapshot",elements,warnings:[]} as T;
+  if(method==="observe") return {snapshotId:"snapshot",elements,warnings:[],text:nativeText} as T;
   throw Error(`Unexpected method ${method}`);
  }};
  const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
  const app=bind_mac_app(createNativeMacClient(helper,async()=>{}) as any,"Fixture");
  const state=await app.getAXState({emit:false});
  const text=typeof state === "string" ? state : JSON.stringify(state);
- assert.match(text,/parent=\[1\]/);
- assert.ok(text.includes("AXShowMenu"));
- assert.ok(text.includes("AXFocused"));
- assert.ok(text.includes("selectionLength"));
- assert.ok(text.includes("-20"));
- assert.ok(text.includes("draft"));
- assert.ok(!text.includes("must-not-leak"));
+ assert.equal(text,nativeText);
 });
 
 test("restored app scroll exposes the service method and preserves direction/page target",async()=>{
@@ -193,7 +184,7 @@ test("unrunning app resolves and authorizes launch before binding; denial preven
    if(method==="launchApp"){assert.deepEqual(params,{path:installed.path,bundleId:installed.bundleId});return {app:running} as T;}
    if(method==="bind")return {targetId:"launched",app:running} as T;
    if(method==="hello")return {permissions:{screenRecording:false}} as T;
-   if(method==="observe")return {snapshotId:"s",elements:[],warnings:[]} as T;
+   if(method==="observe")return {text:'[1] AXTextField "Name"\nScreenshot unavailable: Screen Recording permission is not granted.',snapshotId:"s",elements:[],warnings:[]} as T;
    throw Error(method);
   }};
   const client=createNativeMacClient(helper,async ({operation,effect})=>{
@@ -203,4 +194,10 @@ test("unrunning app resolves and authorizes launch before binding; denial preven
   if(deny){await assert.rejects(client.get_app_state({app:"Fixture"}),/launch denied/);assert.equal(calls.includes("launchApp"),false);}
   else{await client.get_app_state({app:"Fixture"});assert.deepEqual(calls.slice(0,6),["listApps","resolveApp","authorize:launchApp","launchApp","authorize:get_app_state","bind"]);}
  }
+});
+
+test("missing native text is rejected without enabling stale actions",async()=>{
+ const {client}=fixture({missingText:true});
+ await assert.rejects(client.get_app_state({app:"Fixture"}),/Native observation text is missing/);
+ await assert.rejects(client.set_value({app:"Fixture",element_index:1,value:"x"}),/Observe/);
 });

@@ -82,7 +82,7 @@ final class Target {
         capturedWindow = nil
         let (current, warnings) = try collect()
         nodes = current; snapshot = UUID().uuidString
-        return ["snapshotId": snapshot!, "elements": current.map { $0.data }, "warnings": warnings]
+        return ["snapshotId": snapshot!, "elements": current.map { $0.data }, "warnings": warnings, "text": try observationText(elements: current.map { $0.data }, warnings: warnings, screenshotAvailable: CGPreflightScreenCaptureAccess())]
     }
     func action(_ params: [String: Any]) throws -> [String: Any] {
         try validateSnapshot(params)
@@ -174,6 +174,10 @@ if CommandLine.arguments.contains("--permissions") || CommandLine.arguments.cont
     let status: [String: Any] = ["accessibility": AXIsProcessTrusted(), "screenRecording": CGPreflightScreenCaptureAccess(), "helper": Bundle.main.executablePath ?? CommandLine.arguments[0], "requested": request]
     if let data = try? JSONSerialization.data(withJSONObject: status, options: [.sortedKeys]), let text = String(data:data,encoding:.utf8) { print(text) }
     exit(AXIsProcessTrusted() && CGPreflightScreenCaptureAccess() ? 0 : 2)
+}
+if CommandLine.arguments.contains("--observation-text-self-test") {
+    do { try runObservationTextChecks(); print("{\"nativeObservationText\":true}"); exit(0) }
+    catch { fputs("Observation text self-test failed: \(error)\n",stderr); exit(1) }
 }
 if CommandLine.arguments.contains("--held-input-self-test") {
     do { try await runHeldInputChecks(); print("{\"heldInputRelease\":true}"); exit(0) }
