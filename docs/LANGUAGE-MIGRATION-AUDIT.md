@@ -57,3 +57,6 @@ Root agent compatibility exports (`src/agent/{contracts,loop,mcp-client,chat-mod
 
 
 The root `mcp` command now launches the restored runtime via the shared deployment factory; `mcp:legacy` names the retained QuickJS prototype explicitly. The standalone stdio entry is agent-neutral and does not instantiate a model. Root SDK exports and explicitly named legacy command consumers still need migration; this does not retire all QuickJS source consumers.
+
+
+Public SDK audit found a separate contract gap: original `tinyskyAlt` installs global CUA inside nodeRepl, while the root prototype exposes `Cua.launch`. These cannot be renamed into compatibility. The deprecated prototype is now explicitly reachable under `/legacy` subpaths while original root paths remain for existing consumers. Installed entry hashes and a differential entry-initialization check are recorded in `public-api-boundary.json`; actual legacy consumer conversion remains pending.

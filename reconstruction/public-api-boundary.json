@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-06",
+  "scope": "Public API / worker initialization boundary, not native implementation equivalence",
+  "evidence": [
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/package.json",
+      "sha256": "6ccd4c5f97bbf308e0bf071ef5d9d32619d168f5544f4b4dbc29388a103acc4a"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/globals.js",
+      "sha256": "18b8039f846a6e00206128530c5f59ff05bd361c655a858a4a27059ec0f63d23"
+    },
+    {
+      "path": "packages/cua/src/tinysky_alt/globals.ts",
+      "sha256": "3d921218a963e29919a21876932617cb289cdd9e90988ace5e0f3cb237902fea"
+    },
+    {
+      "path": "packages/cua/src/cua.ts",
+      "sha256": "6103e4d907c23c99f86f8f00cf97175389d0e1ac7e853186cae07b13c40c89cd"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/index.js",
+      "sha256": "2a24424f33d4d049f4d96d73616ae5ca86fd9c4347887977b0804851d52b1957"
+    },
+    {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/cua.js",
+      "sha256": "4723fddd6ab6ebea521b5bd9b1e1635ef57845fd26cd84140a5b16a26c1e7529"
+    }
+  ],
+  "originalPackageExports": {
+    ".": "./dist/lib/js/oai_js_cua/src/index.js",
+    "./tinyskyAlt": "./dist/lib/js/oai_js_cua/src/tinysky_alt/globals.js",
+    "./tinysky_vision_only": "./dist/lib/js/oai_js_cua/src/tinysky_vision_only/globals.js",
+    "./tinyskyBrowser": "./dist/lib/js/oai_js_cua/src/tinysky_browser/create_tinysky_browser.js"
+  },
+  "findings": [
+    "Original tinyskyAlt reads nodeRepl.env.CUA_REPL_ENABLED_SURFACES, awaits create_tinysky_alt and assigns globalThis.cua; it is not a host-side Cua.launch constructor.",
+    "The package root cua has a lower-level initialize/computer/browsers/documentation contract distinct from tinyskyAlt global getTab/getApp.",
+    "Root Cua/createCua and native providers are independent legacy APIs. Deprecation markers and explicit /legacy paths do not make them source-equivalent or retire their implementation."
+  ],
+  "verification": {
+    "test": "reconstruction/cua-global-entry.test.ts",
+    "cases": 8,
+    "result": "Original/restored emitted global entry differential passes: missing/empty surfaces, each surface, duplicates/whitespace, unknown/case-sensitive surfaces, setup failure; initializer alias identity preserved.",
+    "isolation": "vm SourceTextModule with only create_tinysky_alt stubbed; no actual browser/App service. This validates entry semantics, not native/UI behavior."
+  },
+  "migration": "New agents use the restored MCP entry and kernel global cua; preserve original @core/cua package boundaries. Migrate legacy consumer call contracts explicitly instead of aliasing incompatible constructors."
+}

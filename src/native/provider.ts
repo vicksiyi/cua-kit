@@ -24,6 +24,7 @@ export interface NativeObservation {
   sessionId: string; targetId: string; snapshotId: string; capturedAt: string;
   elements: AXElement[]; text: string; warnings: string[]; screenshot?: NativeScreenshot;
 }
+/** @deprecated Legacy NDJSON binding. Restored CUA uses the original Sky binding and Swift IPC. */
 export class MacApp {
   private queue = new SerialQueue();
   private current?: NativeObservation;
@@ -129,6 +130,7 @@ export class MacApp {
   }
   async release(): Promise<void> { if (!this.alive) return; this.alive = false; this.current = undefined; await this.provider.helper.request('release', { targetId: this.id }); }
 }
+/** @deprecated Legacy NDJSON provider; use the restored MCP computer surface. */
 export class MacProvider {
   readonly sessionId = randomUUID();
   readonly clipboard: NativeClipboard;

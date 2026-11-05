@@ -5972,3 +5972,10 @@ Validation: CLI routing/provider checks pass; actual `npm run demo -- --check-co
 The current Lark architecture section now references f53a844 and distinguishes the default restored demo/MCP entries, browser installed default versus computer Rust/Sky/Swift default, explicit CDP deployment, and retained legacy SDK/commands. The loading and operation boards retain their existing tokens. The text removes obsolete claims that normal --computer still selects the TS desktop adapter or that the demo injects a second bootstrap cell. Agent-neutral MCP setup and provider-specific demo configuration are documented.
 
 The current helper permission probe again reports Accessibility=false and ScreenRecording=false without requesting either permission. This is documentation synchronization, not new native UI acceptance. Root SDK consumers, native-host provenance, authentication/configuration parity, daily Chrome end-to-end acceptance and real desktop/audio effects remain open.
+
+
+### 2026-11-06: establish public CUA entry migration contract
+
+Read the installed package exports, root `cua` implementation and `tinyskyAlt` initializer. Confirmed that root lower-level `cua`, worker global convenience `cua`, and prototype host `Cua.launch` are different contracts. Added installed artifact hashes and migration evidence, deprecated prototype Cua/createCua/MacApp/MacProvider declarations, and explicit `/legacy` package paths while retaining compatibility. This does not relabel the prototype as restored code.
+
+Validation: one installed/restored differential test covers eight initialization cases (missing/empty surfaces, browser/computer, whitespace/duplicates, unknown/case-sensitive values, setup failure), including initialize/getState alias identity. It stubs only setup and runs no UI service. Root type checking/build and plain Node legacy alias resolution pass. Root SDK consumer conversion and native/UI acceptance remain incomplete.

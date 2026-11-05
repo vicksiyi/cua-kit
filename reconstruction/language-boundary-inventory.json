@@ -3834,7 +3834,7 @@
     {
       "path": "src/index.ts",
       "category": "legacy-prototype-review-required",
-      "sha256": "3de0a8a550a06592260bfc120b652894951a364ce969a3f663c4de52f043e4ff"
+      "sha256": "29ee055dd9a235063dfc912bc9eed4969991586435154964ff3f7096d98b1e76"
     },
     {
       "path": "src/mcp/server.ts",
@@ -3859,7 +3859,7 @@
     {
       "path": "src/native/provider.ts",
       "category": "legacy-prototype-review-required",
-      "sha256": "62b407f722b6abbe33c15fad66d8de3a31962ccbe7df7a0e7c646d8e32184957"
+      "sha256": "1ff79ca1faee5cc6ba17b765cde4eee4991a3fc8b97e2021e0ec1384980f058b"
     },
     {
       "path": "src/runtime/javascript.ts",

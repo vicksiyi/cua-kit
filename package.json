@@ -12,7 +12,10 @@
     "./agent/loop": "./dist/agent/loop.js",
     "./agent/mcp-client": "./dist/agent/mcp-client.js",
     "./native": "./dist/native/provider.js",
-    "./extension": "./dist/extension/provider.js"
+    "./extension": "./dist/extension/provider.js",
+    "./legacy": "./dist/index.js",
+    "./legacy/native": "./dist/native/provider.js",
+    "./legacy/extension": "./dist/extension/provider.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

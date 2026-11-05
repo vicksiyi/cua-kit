@@ -24,7 +24,11 @@ export interface CuaOptions {
 export interface TabInfo { id: string; browserId: string; title: string; url: string }
 export interface BrowserInfo { id: string; name: string; type: 'cdp' }
 
-/** One SDK instance owns one isolated Chromium context, not the user's profile. */
+/**
+ * Legacy independent SDK; this is not the source-restored global CUA API.
+ * @deprecated Use the restored MCP runtime and its kernel-provided global cua.
+ * Existing prototype consumers may explicitly import the /legacy entry.
+ */
 export class Cua {
   readonly sessionId = randomUUID();
   private active = true;
@@ -165,4 +169,5 @@ export class Cua {
     try { await this.context.close(); } finally { await this.browser.close(); await this.native?.close(); await this.extension?.close(); }
   }
 }
+/** @deprecated Legacy SDK factory; use the restored MCP runtime for original CUA semantics. */
 export const createCua = Cua.launch;

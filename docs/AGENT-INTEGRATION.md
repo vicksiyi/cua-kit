@@ -230,3 +230,12 @@ CUA_TEST_ROOT_DEMO=1 CUA_TEST_MACOS_SANDBOX=1 node --import tsx --test reconstru
 ```
 
 This tests five model decisions, actual open/click/read, completion reporting and the observed final marker. It does not make a paid provider request or use the daily Chrome profile.
+
+
+## Restored CUA API versus the legacy host SDK
+
+The installed package exposes two different contracts: its root exports a lower-level `cua` object with `initialize`, `computer`, `browsers`, and `documentation`; `tinyskyAlt` reads `nodeRepl.env.CUA_REPL_ENABLED_SURFACES`, awaits setup and installs the convenience API as `globalThis.cua`. It aliases `initialize` to `getState`. This latter entry supplies `cua.getTab`, `cua.getApp`, and related methods inside the configured kernel. It is not an ordinary host-side `Cua.launch` constructor.
+
+New hosts should connect the restored MCP runtime and call the documented CUA API inside its `js` tool. They should not import the legacy root class and assume it represents the restored source. Existing root Cua/createCua and MacApp/MacProvider declarations are now marked deprecated; explicit `@vicksiyi/cua-kit/legacy`, `/legacy/native`, and `/legacy/extension` paths identify remaining prototype consumers. Existing root paths remain compatible while those consumers migrate; this is not full legacy removal.
+
+`reconstruction/public-api-boundary.json` records installed artifact hashes and this distinction. The original/restored `tinyskyAlt` entry differential test covers eight initialization cases with setup stubbed, without touching a browser or App. Entry parity is not proof of complete CUA or native behavior parity.

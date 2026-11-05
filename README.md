@@ -145,3 +145,6 @@ with closed stdin disables the confirmation UI. The demo reports this at startup
 and advertises no MCP elicitation capability in that case. Use the existing local
 `artifacts/debug/` logs to inspect a run without redirecting its approval UI.
 This does not automatically grant access to any site or application.
+
+
+根目录旧 `Cua.launch` SDK 已标记 deprecated，现有使用者可通过 `@vicksiyi/cua-kit/legacy` 显式引用。原版 `tinyskyAlt` 是在 nodeRepl 中初始化全局 `cua` 的入口，不能把两者当作同一 API；新宿主通过还原 MCP 运行时接入，详见 [API 边界](docs/AGENT-INTEGRATION.md#restored-cua-api-versus-the-legacy-host-sdk)。旧 SDK 消费者仍在迁移中。
