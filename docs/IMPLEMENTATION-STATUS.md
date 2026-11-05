@@ -5867,3 +5867,12 @@ The demo receives updated tool descriptions through its normal listTools path. C
 Twenty caller regression tests pass. The real MCP stdio + local mock-model integration checks that initialization instructions appear in both actual model HTTP requests. Additional tests cover adapter forwarding, guidance snapshotting, exclusion of tool/page text from system context, summary tools staying disabled, and cleanup after invalid metadata. This changes independently authored caller integration, not a reconstruction claim about the original Codex agent.
 
 The native `NODE_REPL_JS_COMPLETION_SUMMARY` contract remains unfinished. Its source instruction requires a separate js call containing only `completion_summary` after the observed CUA outcome; this must not be conflated with AgentLoop's optional budget-exhaustion summary or host `turn_ended` cleanup.
+
+
+## 2026-11-06 — Native completion-summary protocol
+
+An isolated, network-denied probe of the installed `node_repl` now records the enabled/disabled `NODE_REPL_JS_COMPLETION_SUMMARY` behavior in `reconstruction/node-repl-completion-protocol.json`. With the feature enabled, `js` advertises a `oneOf`: execute code or submit only `completion_summary`. The latter must be non-blank and at most 80 Unicode scalar values (80 emoji accepted, 81 rejected); mixing code/title/timeout is an invalid-params error. Repeated summaries are accepted. The “exactly once” requirement is caller guidance, not demonstrated server deduplication.
+
+Rust owns this schema transformation and summary dispatch in `completion_summary.rs`/`mcp_server.rs`; the demo factory forwards source environment configuration through the explicit native spec. A successful summary returns `Completion summary received.` without executing/resetting the JS kernel or invoking `turn_ended`. This is distinct from the AgentLoop's budget-exhaustion response.
+
+Validation: installed schema and enabled summary argument results replay against Rust; real MCP checks configuration, repeated summaries, Unicode bounds and mixed-field rejection. Banner/lifecycle regression verifies summaries do not execute the failing startup banner or reset persistent bindings. AgentLoop TypeScript check passes. This does not prove original native implementation internals, telemetry, or unrelated protocol parity. Config parsing retains independent deployment validation.

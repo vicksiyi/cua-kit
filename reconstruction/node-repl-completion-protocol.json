@@ -1,0 +1,627 @@
+{
+  "binarySha256": "44d08fb5c7346c53c869a9853c93090b3c10457950c2861ce8bdc4baabab5632",
+  "conditions": {
+    "network": "denied by sandbox-exec",
+    "home": "temporary isolated HOME and CODEX_HOME",
+    "actions": "initialize, tools/list and summary argument validation only"
+  },
+  "records": [
+    {
+      "enabled": false,
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocolVersion": "2024-11-05",
+          "capabilities": {
+            "experimental": {
+              "openai/private-keys": {
+                "version": 1
+              }
+            },
+            "tools": {
+              "listChanged": true
+            }
+          },
+          "serverInfo": {
+            "name": "rmcp",
+            "version": "1.5.0"
+          },
+          "instructions": "Use `js` for `node_repl` execution with persistent, redeclarable top-level bindings, `js_reset` to clear bindings, and `js_add_node_module_dir` to add package directories."
+        }
+      },
+      "tools": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "tools": [
+            {
+              "name": "js",
+              "description": "Execute JavaScript in a persistent `node_repl` with top-level await. Top-level bindings persist until `js_reset` and can be redeclared. Use `const` for stable values and `let` for changing values. Use dynamic imports such as `await import(\"playwright\")`; top-level static imports and `node:process` are unavailable. Use `nodeRepl.write(value)` for output and `await nodeRepl.emitImage(image)` for images. Execution context is available through `nodeRepl.cwd`, `nodeRepl.homeDir`, `nodeRepl.tmpDir`, and `nodeRepl.requestMeta`. The default timeout is 30000 ms (30 seconds); increase `timeout_ms` for longer operations. Use `js_add_node_module_dir` when an additional package directory is required.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "description": "JavaScript code to execute with top-level await.",
+                    "type": "string"
+                  },
+                  "timeout_ms": {
+                    "description": "Optional execution timeout in milliseconds. Defaults to 30000 (30 seconds) when omitted.",
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "title": {
+                    "description": "Short user-facing description of what the code does.",
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code"
+                ],
+                "type": "object"
+              }
+            },
+            {
+              "name": "js_add_node_module_dir",
+              "description": "Add an absolute `node_modules` directory for package imports. The directory remains available after `js_reset`.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "description": "Absolute path to a node_modules directory to add to Node package resolution.",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "type": "object"
+              },
+              "annotations": {
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "openWorldHint": false
+              }
+            },
+            {
+              "name": "js_reset",
+              "description": "Reset the JavaScript kernel and clear all bindings.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              },
+              "annotations": {
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "openWorldHint": false
+              }
+            },
+            {
+              "name": "turn_ended",
+              "description": "Notify trusted libraries that a Codex turn ended. Repeated notifications for the same session and turn are ignored.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "hook_event_name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "turn_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "hook_event_name",
+                  "session_id",
+                  "turn_id"
+                ],
+                "type": "object"
+              },
+              "annotations": {
+                "idempotentHint": true
+              },
+              "_meta": {
+                "ui": {
+                  "visibility": []
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cases": [
+        {
+          "arguments": {
+            "completion_summary": "Reviewed fixture page"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Reviewed fixture page"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "  "
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 7,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": ""
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 8,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": null
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 9,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Done",
+            "code": "nodeRepl.write(42)"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 10,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Done",
+            "title": "Title"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 11,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Done",
+            "timeout_ms": 100
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 12,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `completion_summary`, expected one of `title`, `code`, `timeout_ms`"
+            }
+          }
+        },
+        {
+          "arguments": {},
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 13,
+            "error": {
+              "code": -32602,
+              "message": "js: missing field `code`"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "initialize": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocolVersion": "2024-11-05",
+          "capabilities": {
+            "experimental": {
+              "openai/private-keys": {
+                "version": 1
+              }
+            },
+            "tools": {
+              "listChanged": true
+            }
+          },
+          "serverInfo": {
+            "name": "rmcp",
+            "version": "1.5.0"
+          },
+          "instructions": "Use `js` for `node_repl` execution with persistent, redeclarable top-level bindings, `js_reset` to clear bindings, and `js_add_node_module_dir` to add package directories."
+        }
+      },
+      "tools": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "tools": [
+            {
+              "name": "js",
+              "description": "Execute JavaScript in a persistent `node_repl` with top-level await. Top-level bindings persist until `js_reset` and can be redeclared. Use `const` for stable values and `let` for changing values. Use dynamic imports such as `await import(\"playwright\")`; top-level static imports and `node:process` are unavailable. Use `nodeRepl.write(value)` for output and `await nodeRepl.emitImage(image)` for images. Execution context is available through `nodeRepl.cwd`, `nodeRepl.homeDir`, `nodeRepl.tmpDir`, and `nodeRepl.requestMeta`. The default timeout is 30000 ms (30 seconds); increase `timeout_ms` for longer operations. Use `js_add_node_module_dir` when an additional package directory is required.\n\nReport the completed task.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "description": "JavaScript code to execute with top-level await.",
+                        "type": "string"
+                      },
+                      "timeout_ms": {
+                        "description": "Optional execution timeout in milliseconds. Defaults to 30000 (30 seconds) when omitted.",
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "description": "Short user-facing description of what the code does.",
+                        "maxLength": 80,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "completion_summary": {
+                        "description": "Short completed task headline.",
+                        "maxLength": 80,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "completion_summary"
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "properties": {
+                  "code": {
+                    "description": "JavaScript code to execute with top-level await.",
+                    "type": "string"
+                  },
+                  "completion_summary": {
+                    "description": "Short completed task headline.",
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "timeout_ms": {
+                    "description": "Optional execution timeout in milliseconds. Defaults to 30000 (30 seconds) when omitted.",
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "title": {
+                    "description": "Short user-facing description of what the code does.",
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            {
+              "name": "js_add_node_module_dir",
+              "description": "Add an absolute `node_modules` directory for package imports. The directory remains available after `js_reset`.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "description": "Absolute path to a node_modules directory to add to Node package resolution.",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "type": "object"
+              },
+              "annotations": {
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "openWorldHint": false
+              }
+            },
+            {
+              "name": "js_reset",
+              "description": "Reset the JavaScript kernel and clear all bindings.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              },
+              "annotations": {
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "openWorldHint": false
+              }
+            },
+            {
+              "name": "turn_ended",
+              "description": "Notify trusted libraries that a Codex turn ended. Repeated notifications for the same session and turn are ignored.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "hook_event_name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "turn_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "hook_event_name",
+                  "session_id",
+                  "turn_id"
+                ],
+                "type": "object"
+              },
+              "annotations": {
+                "idempotentHint": true
+              },
+              "_meta": {
+                "ui": {
+                  "visibility": []
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cases": [
+        {
+          "arguments": {
+            "completion_summary": "Reviewed fixture page"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Completion summary received."
+                }
+              ],
+              "isError": false
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Reviewed fixture page"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Completion summary received."
+                }
+              ],
+              "isError": false
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Completion summary received."
+                }
+              ],
+              "isError": false
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "error": {
+              "code": -32602,
+              "message": "js: completion_summary must be non-blank and at most 80 characters"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "  "
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 7,
+            "error": {
+              "code": -32602,
+              "message": "js: completion_summary must be non-blank and at most 80 characters"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": ""
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 8,
+            "error": {
+              "code": -32602,
+              "message": "js: completion_summary must be non-blank and at most 80 characters"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": null
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 9,
+            "error": {
+              "code": -32602,
+              "message": "js: invalid type: null, expected a string"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Done",
+            "code": "nodeRepl.write(42)"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 10,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `code`, expected `completion_summary`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Done",
+            "title": "Title"
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 11,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `title`, expected `completion_summary`"
+            }
+          }
+        },
+        {
+          "arguments": {
+            "completion_summary": "Done",
+            "timeout_ms": 100
+          },
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 12,
+            "error": {
+              "code": -32602,
+              "message": "js: unknown field `timeout_ms`, expected `completion_summary`"
+            }
+          }
+        },
+        {
+          "arguments": {},
+          "response": {
+            "jsonrpc": "2.0",
+            "id": 13,
+            "error": {
+              "code": -32602,
+              "message": "js: missing field `code`"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

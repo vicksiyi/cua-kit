@@ -21,14 +21,21 @@ test('Rust initialize and tools/list consume original CUA environment descriptio
   const listed=await client.listTools();
   for(const [name,settings] of Object.entries(expected.tools) as Array<[string,any]>){
    const tool=listed.tools.find(tool=>tool.name===name);assert.ok(tool);
-   assert.equal(tool.description,settings.description);
+   assert.equal(tool.description,settings.description+(name==='js'?'\n\n'+JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY!).instructions:''));
    for(const [field,description] of Object.entries(settings.field_descriptions??{}))assert.equal((tool.inputSchema.properties![field] as any).description,description);
   }
   const js=listed.tools.find(tool=>tool.name==='js')!;
-  assert.equal(js.inputSchema.additionalProperties,false);assert.deepEqual(js.inputSchema.required,['code']);
+  assert.equal(js.inputSchema.additionalProperties,false);assert.equal(js.inputSchema.required,undefined);assert.deepEqual((js.inputSchema.oneOf as any[])[0].required,['code']);
   assert.equal((js.inputSchema.properties!.title as any).maxLength,80);
   assert.equal((js.inputSchema.properties!.code as any).type,'string');
   assert.deepEqual(listed.tools.map(tool=>tool.name).sort(),['js','js_add_node_module_dir','js_reset','turn_ended'].sort());
+  // Summary-only dispatch must not execute/reset a worker or become turn_ended.
+  const summary=await client.callTool({name:'js',arguments:{completion_summary:'Reviewed fixture page'}});
+  assert.deepEqual(summary,{content:[{type:'text',text:'Completion summary received.'}],isError:false});
+  assert.deepEqual(await client.callTool({name:'js',arguments:{completion_summary:'Reviewed fixture page'}}),summary);
+  for(const args of [{completion_summary:' '},{completion_summary:'😀'.repeat(81)},{completion_summary:'Done',code:'throw Error("must not execute")'}])
+   await assert.rejects(client.callTool({name:'js',arguments:args}),error=>String(error).includes('-32602'));
+  assert.deepEqual(await client.callTool({name:'js',arguments:{completion_summary:'😀'.repeat(80)}}),summary);
   const invalid=await client.callTool({name:'js',arguments:{code:'1',inputSchema:{additionalProperties:true}}});assert.equal(invalid.isError,true);
  }finally{await client.close();await runtime?.dispose();await staged.dispose();}
 });

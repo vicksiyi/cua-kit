@@ -17,6 +17,7 @@ pub struct SupervisorMcp {
     incoming: Arc<tokio::sync::Notify>,
     tool_definitions: Arc<Vec<Tool>>,
     instructions: Option<String>,
+    completion_summary: bool,
 }
 impl SupervisorMcp {
     pub fn new(session: ReplManager, host: HostHandler) -> Self {
@@ -46,12 +47,18 @@ impl SupervisorMcp {
             incoming,
             tool_definitions: Arc::new(tools()),
             instructions: None,
+            completion_summary: false,
         }
     }
     pub fn with_tool_overrides(mut self, overrides: crate::tool_overrides::ToolOverrides) -> Result<Self,String> {
         let (tools,instructions) = overrides.apply(self.tool_definitions.as_ref().clone())?;
         self.tool_definitions = Arc::new(tools);
         self.instructions = instructions;
+        Ok(self)
+    }
+    pub fn with_completion_summary(mut self, config: crate::completion_summary::CompletionSummary) -> Result<Self,String> {
+        config.apply(Arc::make_mut(&mut self.tool_definitions).as_mut_slice())?;
+        self.completion_summary = true;
         Ok(self)
     }
     pub async fn close(&self) -> Result<(), String> {
@@ -133,6 +140,10 @@ impl ServerHandler for SupervisorMcp {
         context: RequestContext<RoleServer>,
     ) -> Result<CallToolResult, McpError> {
         let arguments = Value::Object(request.arguments.unwrap_or_default());
+        if request.name.as_ref() == "js" && self.completion_summary && arguments.get("completion_summary").is_some() {
+            crate::completion_summary::validate(&arguments)?;
+            return Ok(CallToolResult::success(vec![Content::text("Completion summary received.")]));
+        }
         self.incoming.notify_one();
         let mut session = tokio::select! {biased;_=context.ct.cancelled()=>return Ok(error("Request cancelled before dispatch")),_=self.shutdown.cancelled()=>return Ok(error("Server is shutting down")),session=self.session.lock()=>session};
         let peer = context.peer.clone();

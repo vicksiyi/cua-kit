@@ -1,13 +1,13 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 24,
+    "build-or-deployment-script-review": 25,
     "caller-or-deployment-code-review-for-native-responsibility": 38,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 14,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 46,
+    "native-implementation-language-not-yet-parity-proof": 47,
     "native-responsibility-migrate-to-rust": 14
   },
   "files": [
@@ -74,7 +74,7 @@
     {
       "path": "packages/agent-loop/src/independent-runtime.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "1a5f8c2ed0e29a0482ce4a409e9e00f1eaa84c4ca2f3dd978397371a8c3ede12"
+      "sha256": "e41a647e527474c856913fe55b1d9a3f3755eb60c32b48ee481cadce3ade8cf4"
     },
     {
       "path": "packages/agent-loop/src/index.ts",
@@ -4009,12 +4009,17 @@
     {
       "path": "native/runtime-supervisor/examples/mcp_stdio.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "b65f3bd1725a37dd745b1f51445a643fef2ec261b7c04c6ba8cee73aa8cfa7d6"
+      "sha256": "e9d3cfa3a8b1217775eb6cbd2b9e2fdce055e4b3119a795dffd0a26d13c43166"
     },
     {
       "path": "native/runtime-supervisor/src/background_host.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "b6dd11966dc7908476c36e2eefbf2c03b4fd6e23076da4eaad4aae7d59abdb66"
+    },
+    {
+      "path": "native/runtime-supervisor/src/completion_summary.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "60830249e1f3d829d682a2b72559a3b6b9605aafc174f93635073428f5577672"
     },
     {
       "path": "native/runtime-supervisor/src/config_manager.rs",
@@ -4034,7 +4039,7 @@
     {
       "path": "native/runtime-supervisor/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "4dc3e3299a908d20fb35bfc9a8e4975632417da92574ba52127c448b57cb94f8"
+      "sha256": "f95f61d2a073fe340eabe9f8f77cd02c9d24d1c7b3e7967b5535b8110ac02a29"
     },
     {
       "path": "native/runtime-supervisor/src/limits.rs",
@@ -4044,7 +4049,7 @@
     {
       "path": "native/runtime-supervisor/src/mcp_server.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "073aaa02694707a69e3661cb2d9031c6008b2da991429f1a4d10a49d576f1e6d"
+      "sha256": "2e9f45aafff8e6ff66bc1bbf25b491155e01859e6e389e4cfac9684c3af1e8c4"
     },
     {
       "path": "native/runtime-supervisor/src/media.rs",
@@ -4185,6 +4190,11 @@
       "path": "scripts/extract-node-repl-sources.mjs",
       "category": "build-or-deployment-script-review",
       "sha256": "724a4904938aea3097eda439f3f3cba50d0a1c2ec456722fe98f502d74f7a587"
+    },
+    {
+      "path": "scripts/probe-completion-summary.py",
+      "category": "build-or-deployment-script-review",
+      "sha256": "c2c08b98181c82a47695b87c178d36afcbf20d094ac73bbede1a19e1f3d7483a"
     },
     {
       "path": "scripts/reconstruct-input-schemas.mjs",

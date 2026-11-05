@@ -28,8 +28,11 @@ test('Rust deployment executes source CUA banner before the first user cell',{sk
 });
 test('Rust deployment preserves banner once-per-kernel, failed-banner retry and reset',{skip,timeout:20000},async t=>{
  const f=await runtime(t,'globalThis.bannerRuns=(globalThis.bannerRuns??0)+1;if(globalThis.bannerRuns===1)throw Error("fixture banner failure");');
+ const summary=()=>f.client.callTool({id:'summary',name:'js',arguments:{completion_summary:'Checked fixture'}});
+ assert.equal((await summary()).isError,false); // Must not run the failing banner.
  const first=await f.call('nodeRepl.write("body must not run");');assert.equal(first.isError,true);assert.match(f.text(first),/fixture banner failure/);assert.ok(!f.text(first).includes('body must not run'));
  for(let n=0;n<2;n++){
+  assert.equal((await summary()).isError,false);
   const result=await f.call('nodeRepl.write(String(globalThis.bannerRuns));');assert.equal(result.isError,false,f.text(result));assert.equal(f.text(result).trim(),'2');
  }
  const reset=await f.client.callTool({id:'reset',name:'js_reset',arguments:{}});assert.equal(reset.isError,false);

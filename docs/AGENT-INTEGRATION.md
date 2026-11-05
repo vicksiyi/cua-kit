@@ -156,3 +156,8 @@ CUA_LIVE_DEEPSEEK_TEST=1 npm run test:rust-browser
 Twenty caller regression tests pass. The real MCP stdio + local mock-model integration checks that initialization instructions appear in both actual model HTTP requests. Additional tests cover adapter forwarding, guidance snapshotting, exclusion of tool/page text from system context, summary tools staying disabled, and cleanup after invalid metadata. This changes independently authored caller integration, not a reconstruction claim about the original Codex agent.
 
 The native `NODE_REPL_JS_COMPLETION_SUMMARY` contract remains unfinished. Its source instruction requires a separate js call containing only `completion_summary` after the observed CUA outcome; this must not be conflated with AgentLoop's optional budget-exhaustion summary or host `turn_ended` cleanup.
+
+
+### Completion reports on the Rust runtime
+
+When the source launcher supplies `NODE_REPL_JS_COMPLETION_SUMMARY`, the Rust tool schema exposes a summary-only branch of `js`. After observing the final task outcome, follow the advertised guidance and submit `{ "completion_summary": "Reviewed search results" }` as a separate call with no code/title/timeout. It reports completion without executing JavaScript or clearing bindings. The field is non-blank, at most 80 Unicode characters. Do not confuse this with `turn_ended` or the demo's budget-exhaustion handling. The server accepts repeated reports; the caller must follow the source instruction to report once. Without the configuration, the field is not advertised.

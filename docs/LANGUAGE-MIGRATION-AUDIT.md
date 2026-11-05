@@ -37,3 +37,11 @@ python3 scripts/audit-language-boundaries.py > reconstruction/language-boundary-
 ```
 
 The inventory records implementation file hashes and review categories; it does not certify per-file provenance or native parity.
+
+## Repository recheck — 2026-11-06
+
+The existing repository is explicitly in scope for the user's language-alignment requirement, including legacy root exports, not only new packages. A fresh inventory finds 14 supervisor TS files, 6 desktop adapter TS files, 14 native-host TS files with unresolved provenance, and 25 root prototype TS files. These are review scopes, not counts of proven incorrect translations.
+
+The current `restored-demo-runtime.ts` still accepts `independent` and `rust` and maps them to `typescript` and `rust` runtime preparation respectively. Thus the native supervisor migration is not complete while the former route remains supported. Both `src/native/provider.ts` and `packages/native-macos/src/client.ts` now delegate paste to `pasteFormatted`; that responsibility has already moved to Swift and must not be reintroduced in TS.
+
+For each remaining candidate, record the original artifact and language evidence, caller/server boundary, destination, reachable consumers, and acceptance result before retiring it. Original JS clients remain readable TS. Native source bodies unavailable in the installation must be described as independently implemented from observed contracts; matching a binary's language alone does not establish matching behavior.
