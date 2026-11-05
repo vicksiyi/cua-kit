@@ -280,3 +280,22 @@ Baidu reproduction also improved from the preceding run's twelve decisions and
 three errors to four decisions with zero errors, but still encountered Baidu's
 CAPTCHA and returned no result URL. These are observed individual runs, not a
 statistical reliability claim or a CAPTCHA workaround.
+
+## Demo browser-origin approval configuration
+
+`CUA_AUTO_APPROVE_BROWSER_ORIGINS` is an optional caller-side policy. Leave it unset
+for terminal confirmation. Set comma-separated HTTP(S) origins (scheme and port
+must match), or `*` to accept all browser-origin access requests:
+
+```bash
+CUA_AUTO_APPROVE_BROWSER_ORIGINS=https://www.google.com npm run demo:deepseek -- '搜索公司信息'
+CUA_AUTO_APPROVE_BROWSER_ORIGINS='*' npm run demo:deepseek -- '搜索公司信息'
+```
+
+The same variable can be stored in the ignored project `.env`. It accepts only
+structured `browser-use` / `access_browser_origin` requests with matching origin
+metadata and an empty, valid confirmation form. Other requests still use terminal
+confirmation, or cancel in non-interactive mode. It does not override server
+policy denials or automatically complete URL-mode or data-entry forms. Each
+automatic approval is printed and recorded in the local debug log. This policy
+is demo configuration; embedding agents retain their own `elicit` callback.

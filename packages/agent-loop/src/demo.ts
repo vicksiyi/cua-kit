@@ -5,6 +5,7 @@ import { computerPreflight } from "./computer-preflight";
 import { browserPreflight } from "./browser-preflight";
 import { createTerminalTrace } from "./terminal-trace";
 import { createTerminalElicitation } from "./terminal-elicitation";
+import { createBrowserOriginApproval } from "./browser-origin-approval";
 import { NodeReplTurnClient, parseNodeReplTurnEvent } from "./node-repl-turn";
 import { AgentLoop, AgentStepBudgetError } from "./loop";
 import { McpToolClient } from "./mcp-client";
@@ -88,7 +89,15 @@ debug?.write("run.start", {
   computerEnabled,
   node: process.version,
 });
-const terminalElicit = createTerminalElicitation({ signal: controller.signal });
+const terminalElicit = createBrowserOriginApproval({
+  origins: process.env.CUA_AUTO_APPROVE_BROWSER_ORIGINS,
+  signal: controller.signal,
+  fallback: createTerminalElicitation({ signal: controller.signal }),
+  onApproved: origin => {
+    console.error(`Browser origin automatically approved by caller configuration: ${origin}`);
+    debug?.write("elicitation.auto-approved", { origin, policy: "browser-origin" });
+  },
+});
 debug?.write("elicitation.capability", { available: !!terminalElicit });
 if (!terminalElicit && (browserEnabled || computerEnabled))
   console.error(
