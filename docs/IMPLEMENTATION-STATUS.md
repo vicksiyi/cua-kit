@@ -1,5 +1,19 @@
 # Implementation status
 
+## Rust media composition checkpoint (2026-11-06)
+
+Actual data-URL image/audio envelope decoding and a config/media deployment
+host now exist in Rust, using observed URL/percent/base64 libraries. HTTP/file
+fetches are rejected. Twenty-four cases compare Rust output/errors against the
+existing TS/Node adapter; malformed padding and spaced base64 flags were fixed
+from that evidence. Real restored kernel emissions return image/audio content
+through the composed handler. All twenty-three Rust tests pass.
+
+This proves envelope transport for fixture payloads, not image/audio codec
+validation or real capture. The library still needs MCP/sandbox integration,
+continuous background routing and remaining native protocols before replacing
+the demo runtime. Full original-language and behavior fidelity remains open.
+
 ## Rust configuration storage checkpoint (2026-11-06)
 
 The configuration host now reads actual TOML and persists explicitly mapped

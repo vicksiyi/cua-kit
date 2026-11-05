@@ -133,3 +133,24 @@ test invokes restored config APIs through Rust and verifies the resulting TOML
 on disk. All twenty-one Rust tests pass. Filesystem access itself is bounded
 synchronous host I/O under an async per-target lock; deployment must keep these
 host operations out of untrusted workers. The demo composition is still pending.
+
+## Real media envelope processing and host composition
+
+`media.rs` decodes bounded image/audio data URLs to base64 MCP content. It uses
+observed `url` 2.5.8, `percent-encoding` 2.3.2 and `base64` 0.22.1 crates. It never
+fetches HTTP/file URLs. Type/MIME matching and size limits are enforced; this is
+an envelope decoder, not image/audio codec validation, transcoding or capture.
+
+`deployment_host.rs` composes actual configuration storage and media processing.
+Other operations remain explicit errors until their adapters are supplied; it
+provides no automatic approval or authenticated HTTP authority.
+
+Twenty-four data-URL cases are compared against the existing TS adapter/Node
+implementation, including forgiving base64 padding, percent bytes, query versus
+fragment handling and the space before `base64` flag. That comparison found two
+initial parser mismatches, now fixed. It establishes migration compatibility for
+that corpus, not complete equivalence with unavailable native source. Additional
+limits/type tests and actual kernel image/audio emission return encoded content
+through the deployment handler. Those payloads are protocol fixtures, not real
+screenshots/recordings. All twenty-three Rust tests pass. The host composition
+is still a library; MCP/sandbox integration and background routing remain open.

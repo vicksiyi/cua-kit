@@ -13,3 +13,7 @@ pub mod host;
 
 #[cfg(unix)]
 pub mod config_manager;
+
+#[cfg(unix)]
+pub mod deployment_host;
+pub mod media;

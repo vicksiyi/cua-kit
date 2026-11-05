@@ -30,6 +30,7 @@ fn fixture() -> (Fixture, ReplManager) {
         ("HOME".into(), root_string.clone()),
         ("TMPDIR".into(), root_string.clone()),
         ("NODE_REPL_TRUSTED_RPC_ENABLED".into(), "1".into()),
+        ("NODE_REPL_ENABLE_AUDIO".into(), "1".into()),
         (
             "NODE_REPL_TRUSTED_SERVICES".into(),
             json!({"fixture":service}).to_string(),
@@ -520,7 +521,7 @@ async fn cancelled_host_callback_is_dropped_and_state_is_retired() {
 async fn restored_trusted_worker_reads_and_persists_actual_toml() {
     use core_runtime_supervisor::{
         config_manager::{ConfigManager, ConfigSources},
-        host::HostReply,
+        deployment_host::deployment_host,
     };
     use std::{collections::HashMap, os::unix::fs::PermissionsExt, sync::Arc};
     let (fixture, session) = fixture();
@@ -555,18 +556,7 @@ export async function handleRpc(x){
         )
         .unwrap(),
     );
-    let mut session = session.with_host_handler(
-        Arc::new(move |request| {
-            let manager = manager.clone();
-            Box::pin(async move {
-                manager
-                    .request(&request.message)
-                    .await
-                    .map(HostReply::message)
-            })
-        }),
-        false,
-    );
+    let mut session = session.with_host_handler(deployment_host(manager), false);
     let result = run(
         &mut session,
         "nodeRepl.write(JSON.stringify(await nodeRepl.rpc('fixture',{write:true})))",
@@ -586,5 +576,33 @@ export async function handleRpc(x){
         toml::from_str(&std::fs::read_to_string(fixture.root.join("browser.toml")).unwrap())
             .unwrap();
     assert_eq!(written["count"].as_integer(), Some(42));
+    let image = run(
+        &mut session,
+        "await nodeRepl.emitImage('data:image/png;base64,iVBORw0KGgo=')",
+    )
+    .await;
+    assert_eq!(
+        image["content_items"],
+        json!([{"type":"image","mimeType":"image/png","data":"iVBORw0KGgo="}])
+    );
+    let audio = run(
+        &mut session,
+        "await nodeRepl.emitAudio('data:audio/wav;base64,AQID')",
+    )
+    .await;
+    assert_eq!(
+        audio["content_items"],
+        json!([{"type":"audio","mimeType":"audio/wav","data":"AQID"}])
+    );
+    let rejected = session
+        .execute(
+            "await nodeRepl.emitImage('https://example.invalid/not-fetched')",
+            Duration::from_secs(5),
+            Value::Null,
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(rejected["ok"], false);
     session.close().await.unwrap();
 }
