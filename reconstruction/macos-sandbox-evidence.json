@@ -1,0 +1,23 @@
+{
+  "verifiedAt": "2026-11-05T11:39:00.170583+00:00",
+  "command": "npm run test:sandbox",
+  "status": "passed",
+  "tests": 2,
+  "skipped": 0,
+  "verified": [
+    "scratch file I/O",
+    "outside sentinel read EPERM",
+    "process spawn EPERM",
+    "loopback connect EPERM and no accepted connections",
+    "restored kernel value 42",
+    "restored trusted RPC",
+    "bootstrap env removed"
+  ],
+  "notEstablished": [
+    "production launcher",
+    "cross-version API support",
+    "comprehensive escape resistance",
+    "forced-termination containment",
+    "browser or App acceptance"
+  ]
+}
