@@ -63,3 +63,20 @@ func runClipboardChecks() throws {
     let result = try store.restore(next["token"] as! String)
     guard result["restored"] as? Bool == false, board.string(forType:.string) == "external copy" else { throw fail("SELF_TEST_FAILED","External clipboard content overwritten.") }
 }
+
+// Keep lease restoration inside the helper so caller-side errors cannot skip it.
+@MainActor
+func withNativeClipboard(_ store: ClipboardStore, params: [String:Any],
+                         operation: () async throws -> [String:Any]) async throws -> [String:Any] {
+    let lease = try store.begin(params)
+    let token = lease["token"] as! String
+    var outcome: Result<[String:Any],Error>
+    do { outcome = .success(try await operation()) } catch { outcome = .failure(error) }
+    let restored: Bool
+    do { restored = try store.restore(token)["restored"] as? Bool == true }
+    catch { throw fail("ACTION_OUTCOME_UNKNOWN","Paste transaction ended but clipboard restoration failed; inspect app and clipboard before retrying.") }
+    guard restored else { throw fail("ACTION_OUTCOME_UNKNOWN","Clipboard changed externally during paste and was preserved; inspect app before retrying.") }
+    var result = try outcome.get()
+    result["clipboardRestored"] = true
+    return result
+}
