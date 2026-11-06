@@ -987,3 +987,19 @@ attributeUnsupported（常量 -25212/-25205 固定在 0x101570d18），其它状
 新增 `UIElementCachedRole.swift` 与 UIElementRole.unknown，复用缓存 String 解码。
 测试涵盖标准角色、自定义/Unicode 角色、空串、缺失、数字、NSNull 和数组；Swift 测试通过。
 完整角色目录、presentationKind 映射和生产树观察接线仍待完成。
+
+## 动作 witness 与展开/折叠补充动作（2026-11-07）
+
+新增确认两个 concrete witness：0x10149ed88 指向 0x1007925f4（actions），
+0x10149ed90 指向 0x100792600（动作描述映射）。前者调用 0x100790b88：
+系统 AX actions 成功后还会调用 0x100793f94 计算补充动作，再组合数组；后者映射该组合列表。
+因此不能直接用 AXUIElementCopyActionNames 的输出冒充最终 actions。
+
+补充动作检查 AXDisclosing：事务请求集合为空缺（nil）或包含该属性时使用缓存支持集合；
+事务未请求时会重新枚举支持属性。只有支持且 isAttributeSettable 成功为 true，才继续读取
+缓存里的 disclosing 值。Bool 为 true 选择 collapse；false、缺失或解码错误选择 expand。
+原生动作读取失败走日志路径并返回空数组，不等同于成功的空动作数组。
+
+已固定 witness、分支与补充动作机器码证据。尚需恢复完整 Bool decoder、动作数据类型、
+描述映射与数组组合的细节，未提前安装简化的动作实现。直接协议要求中已确认七项语义，
+剩余三项及父协议仍待核查。

@@ -829,6 +829,30 @@ element_storage_evidence['cachedRole']={
     'interpretation':'Read cache once; decode cached AXRole as String with throwing disabled. Non-nil string bridges into UIElementRole; missing/failed decoding uses AXUnknown. Empty and custom strings are not replaced. No uncached read or static role witness lookup.',
     'limitations':'Concrete UIElement getter restored; full role catalog, presentation mapping and production tree integration remain pending.',
 }
+for slot,target in [('0x10149ed88','0x1007925f4'),('0x10149ed90','0x100792600')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if target not in line.lower(): raise SystemExit('UIElement action witness changed')
+element_storage_evidence['protocolContract']['confirmedElementWitnesses'].extend([
+    {'slot':'0x10149ed88','target':'0x1007925f4','meaning':'actions getter specialization calls 0x100790b88'},
+    {'slot':'0x10149ed90','target':'0x100792600','meaning':'action-description getter specialization maps the composed action list'},
+])
+element_storage_evidence['protocolContract']['limitations']='Three remaining direct witness semantics and inherited AccessibilityNode contract still need recovery; complete action descriptor mapping is not implemented.'
+element_storage_evidence['actionWitnesses']={
+    'actions':'0x100790b88','nativeActionsCall':'0x100790bf4 -> 0x1006f93a0',
+    'supplementalActionsCall':'0x100790d70 -> 0x100793f94',
+    'arrayCombination':'0x100790d7c -> 0x10076d304',
+    'descriptionWitness':'0x100792600','descriptionMap':'0x100790690',
+    'descriptionCallback':'0x1007975a8 -> 0x10079716c',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007925f4,0x100792670),(0x100793f94,0x1007941e0)]],
+    'disclosurePolicy':[
+        'Check AXDisclosing support against cached supported attributes when transactionAttributes is nil or includes the key; otherwise enumerate fresh supported attributes.',
+        'Only if supported, call isAttributeSettable; false or error yields no supplemental disclosure action.',
+        'Decode cached AXDisclosing with Bool specialization 0x10070fc2c; true selects collapse, false or missing selects expand.',
+    ],
+    'interpretation':'Action witnesses are not raw AX action-name lists. The successful native action read is combined with computed disclosure actions before description mapping.',
+    'limitations':'Complete Bool decoder, action storage/description mapping and array combination semantics still need recovery; no fabricated action implementation is installed.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))
