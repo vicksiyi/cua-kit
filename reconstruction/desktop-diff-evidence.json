@@ -1867,6 +1867,34 @@
       ],
       "interpretation": "Fallback lookup and storage use separate lock regions. The storage call passes nil for transactionAttributes. The dictionary setter replaces an existing three-field cache value or inserts a new key; it does not keep the first concurrent value by double-checking.",
       "limitations": "Does not recover the full attributes collection pipeline, every error path or all cache writers. No process-wide cache or single-flight guarantee follows."
+    },
+    "prefetchedHit": {
+      "constructor": "0x10076589c",
+      "tableLookup": "0x1007658fc",
+      "missBranch": "0x100765900",
+      "emptyAttributesBranch": "0x100765928",
+      "keysToSet": "0x100766224",
+      "instructionWords": {
+        "0x1007658fc": "0x9401462f",
+        "0x100765900": "0x36000f21",
+        "0x100765904": "0xf9401f28",
+        "0x100765908": "0xf8607914",
+        "0x10076591c": "0xf9400a9c",
+        "0x100765928": "0xb40047dc",
+        "0x1007659f8": "0xf9401a88",
+        "0x1007659fc": "0xf87b7900",
+        "0x100766208": "0xd10063a8",
+        "0x10076620c": "0xf8500117",
+        "0x100766220": "0xaa1303e0",
+        "0x100766224": "0x94001d9b",
+        "0x100766228": "0xaa0003fc",
+        "0x10076625c": "0x17ffffda",
+        "0x1007661c4": "0xaa1c03e0",
+        "0x1007661c8": "0xaa1403e1",
+        "0x1007661cc": "0xaa1703e2"
+      },
+      "interpretation": "A transaction table hit returns a cache whose supported set comes from the stored attribute dictionary keys; attributes and requested transaction set are retained. An empty per-element dictionary is a hit, not a fallback. Requested attributes are neither synthesized into the data nor used to filter existing keys.",
+      "limitations": "The extracted helper returns nil on a miss; full construction must still follow the separate locked fallback and attribute collection paths. It does not implement TaskLocal or transaction prefetch creation."
     }
   },
   "attributeNamesEvidence": {

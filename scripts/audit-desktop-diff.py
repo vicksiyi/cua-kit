@@ -979,6 +979,26 @@ parameter_evidence['dynamicDispatch']={
     'interpretation':'Extract raw UIElement/marker references, encode concrete AX ranges/geometry, otherwise use the Swift runtime object bridge without recursive collection traversal. AXEncodedValue.init(wrapping:) forwards to this encoder.',
     'limitations':'UIElement/cache immutable fields are restored, but the source AX-element initializer still needs transaction-aware cache construction. This is encoding only, not generic decoding or UI acceptance.',
 }
+prefetched_cache_words={
+    0x1007658fc:0x9401462f,0x100765900:0x36000f21,
+    0x100765904:0xf9401f28,0x100765908:0xf8607914,
+    0x10076591c:0xf9400a9c,0x100765928:0xb40047dc,
+    0x1007659f8:0xf9401a88,0x1007659fc:0xf87b7900,
+    0x100766208:0xd10063a8,0x10076620c:0xf8500117,
+    0x100766220:0xaa1303e0,0x100766224:0x94001d9b,
+    0x100766228:0xaa0003fc,0x10076625c:0x17ffffda,
+    0x1007661c4:0xaa1c03e0,0x1007661c8:0xaa1403e1,0x1007661cc:0xaa1703e2,
+}
+for address,word in prefetched_cache_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('Prefetched UIElement cache hit branch changed')
+element_cache_evidence['prefetchedHit']={
+    'constructor':'0x10076589c','tableLookup':'0x1007658fc','missBranch':'0x100765900',
+    'emptyAttributesBranch':'0x100765928','keysToSet':'0x100766224',
+    'instructionWords':{hex(a):hex(w) for a,w in prefetched_cache_words.items()},
+    'interpretation':'A transaction table hit returns a cache whose supported set comes from the stored attribute dictionary keys; attributes and requested transaction set are retained. An empty per-element dictionary is a hit, not a fallback. Requested attributes are neither synthesized into the data nor used to filter existing keys.',
+    'limitations':'The extracted helper returns nil on a miss; full construction must still follow the separate locked fallback and attribute collection paths. It does not implement TaskLocal or transaction prefetch creation.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))

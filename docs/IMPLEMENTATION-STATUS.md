@@ -6960,3 +6960,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：动态原生参数编码与 wrapping
 
 恢复 UIElement/UIElementCache 不可变存储，补齐 Any 参数分派和 AXEncodedValue.init(wrapping:)。分派保留 UIElement/marker 引用、AXValue 类型及非递归系统对象桥接；新组合测试与既有编码测试通过，helper 构建/输入 self-test 通过。原始事务缓存构造和泛型解码仍未接通，不能视为生产 UI 完成。
+
+
+### 2026-11-06：事务预取命中构造分支
+
+恢复预取 attributeTable→UIElementCache 的命中分支，保留空字典命中、keys 支持集合和独立 requestedAttributes。原生组合测试及 helper 构建通过；源分支加入审计。完整未命中构造、TaskLocal 事务及生产观察器仍未接通。
