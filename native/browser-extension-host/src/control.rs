@@ -40,6 +40,17 @@ impl NativeControl {
     ) -> Option<Value> {
         let method = message.get("method")?.as_str()?;
         let id = message.get("id").cloned().unwrap_or(Value::Null);
+        if method == "codexRuntime/hello" {
+            // Pinned native host 0x100025970..0x100025c68: static capabilities,
+            // independent of installed registry, proxy state and request params.
+            return Some(json!({"jsonrpc":"2.0","id":id,"result":{
+                "manifestSchemaVersion":2,
+                "nativeHostProtocolVersion":2,
+                "nativeHostVersion":"0.1.0",
+                "supportedMethods":["codexRuntime/openLocalFile"],
+                "supportedProtocolVersions":[2]
+            }}));
+        }
         if method == "codexRuntime/status" {
             return Some(json!({"jsonrpc":"2.0","id":id,
                 "result":crate::app_server_status::from_proxy(self.proxy.as_ref())}));

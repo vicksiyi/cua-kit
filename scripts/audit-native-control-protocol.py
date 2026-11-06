@@ -183,6 +183,15 @@ def vm_offset(address):
             return offset + address - vm
     raise RuntimeError('No file-backed VM address: '+hex(address))
 
+hello_keys = [raw[o:o+n].decode() for o,n in [(0x90aeb,21),(0x9044c,25),(0x90465,17),(0x90d60,16),(0x90b05,25)]]
+assert hello_keys == ['manifestSchemaVersion','nativeHostProtocolVersion','nativeHostVersion','supportedMethods','supportedProtocolVersions']
+assert struct.unpack_from('<QQ', raw, vm_offset(0x100090d00)) == (0,2)
+hello_strings = []
+for address in [0x1000b0cf0, 0x1000b0d00]:
+    pointer, length = struct.unpack_from('<QQ', raw, vm_offset(address))
+    hello_strings.append(raw[vm_offset(pointer):vm_offset(pointer)+length].decode())
+assert hello_strings == ['0.1.0','codexRuntime/openLocalFile']
+
 runtime_error_types = []
 for index in range(7):
     pointer = struct.unpack_from('<Q', raw, vm_offset(0x1000b0d88) + index * 8)[0]
@@ -737,7 +746,19 @@ result = {
         'contract': 'Extension-input dispatcher owns proxy alongside assets, routes ensure/restart through shared manager pipeline, status through current proxy, preserves JSON-RPC IDs and uses categorized runtime error response. Production handler obtains current_exe and process var_os for ensure/restart. Drop runs proxy shutdown before asset cleanup.',
         'integrationStatus': 'Production Core debug executable exercised with six actual Native Messaging framed requests in isolated temporary HOME/CODEX_HOME/config: idle, ensure, connected, restart, missing-registry error and retained connected session. Browser/UI operation and hello remain unaccepted. Existing asset ownership checks are Core-specific, not claimed native parity.',
     },
-    'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
+    'helloHandshake': {
+        'implementation': 'native/browser-extension-host/src/control.rs',
+        'keys': hello_keys,
+        'strings': hello_strings,
+        'numericLiteral': 2,
+        'schemaAndProtocol': evidence(control, 0x100025970, 0x100025a44, ['#0xaeb','#0xd00','#0x44c','[sp]']),
+        'version': evidence(control, 0x100025a74, 0x100025ad0, ['#0x465','#0xcf0','to_value']),
+        'singleSupportedMethod': evidence(control, 0x100025b04, 0x100025b74, ['#0xd60','#0xd00','#0x1','#0x4']),
+        'singleSupportedProtocol': evidence(control, 0x100025ba8, 0x100025c44, ['#0xb05','[sp]','#0x1','#0x4','#0x5']),
+        'contract': 'Static hello result: manifestSchemaVersion=2, nativeHostProtocolVersion=2, nativeHostVersion=0.1.0, supportedMethods=[codexRuntime/openLocalFile], supportedProtocolVersions=[2]. Advertised methods are deliberately not expanded to all dispatched controls. No registry/environment/proxy initialization.',
+        'validation': 'Native dispatcher test plus seven-request real Core debug stdio lifecycle fixture. Static binary evidence, not original binary dynamic parity.',
+    },
+    'remainingUnknowns': ['process launch contract and runtime integration', 'release and real browser acceptance of native controls',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
         'error codes and full websocket proxy behavior'],
     'limits': 'Static analysis, not native source recovery or runtime parity. No original host, browser, app-server, file opener or network request was executed.',

@@ -16,7 +16,7 @@ User constraint: restore installed JavaScript as readable TypeScript; retain the
 
 ## Outstanding native work
 
-- Rust App Server: configuration and typed errors, child spawn/stop/wait, runtime-state reuse, ensure-started composition, stdout replay/forwarding, WebSocket output and EOF cleanup now exist with targeted tests. These modules are not yet connected to the production control dispatcher. Remaining work: WebSocket input and handshake, full proxy session/manager integration, hello/status/ensure/restart dispatch and original authorization.
+- Rust App Server: configuration, process lifecycle, WebSocket input/output and handshake, proxy listener/session/manager, and status/ensure/restart are implemented and connected to `NativeControl`. `codexRuntime/hello` is also implemented from pinned constant-field evidence, with a real framed stdio check. Release deployment and real browser/App Server acceptance remain open; source wiring alone does not prove runtime parity. Original authorization and remaining control/cleanup differences still require evidence-based review.
 - Swift desktop: complete original state/diff semantics and real screenshot/input acceptance; native language selection alone does not validate effects.
 - Remove remaining production consumers of prototype/TS-native alternatives, then retire references with compatibility tests retained as needed.
 - For each migration record original artifact/hash and symbol/instruction evidence, target native module, caller path and verification. Binary evidence supports reconstruction, not a claim to recovered Rust/Swift source bodies.
@@ -43,3 +43,11 @@ For every remaining migration, require: original artifact/symbol language eviden
 ## Acceptance rule for existing TS replacements
 
 The existing repository is in scope, not only future additions. A native rewrite is complete only when the original responsibility has language evidence, its native replacement is implemented, actual callers and public exports select that replacement, and behavior has been verified. Keeping a TS replacement behind a legacy flag is an intermediate migration state, not completion. Preserve TS implementations evidenced as original JavaScript and necessary native-process bindings. Record unknown native source languages as unknown rather than selecting Rust or Swift by guesswork.
+
+## Existing-code inventory refresh — 2026-11-06
+
+Fresh file hashes were generated with `scripts/audit-language-boundaries.py`. Current queues: 13 legacy supervisor TS implementations, 5 legacy native-host service/reference files, 6 desktop adapter files, 25 root prototype files, and 10 native-host files awaiting per-file language provenance. These counts are review scope, not proven mistranslations. Three native-host deployment/discovery files have JS evidence and remain TS; the supervisor bootstrap forwarder and native process bindings are separate from native service implementations.
+
+Priority for the existing-code migration is unchanged: retire remaining TS supervisor service exports/consumers; retire TS native-host server/router/main/logger consumers; classify desktop adapter and root prototype native responsibilities and move evidenced native behavior to Rust/Swift. Keep original JS APIs, IPC clients and Node bindings in TS. For uncertain original native bodies, state that the implementation is a contract reconstruction rather than claiming recovered source.
+
+This refresh changes the audit record and inventory only. It does not claim that the remaining legacy source or public API migration is complete.

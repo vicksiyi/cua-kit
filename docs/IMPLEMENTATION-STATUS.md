@@ -6397,3 +6397,10 @@ Manager-level shutdown, restart/reuse/update and returned endpoint schema still 
 Implemented the process portion of native manager shutdown: take optional proxy, take process map under lock, unlock, stop each process ignoring individual errors, and drop proxy. Asset cleanup is a subsequent manager stage and has not been composed here. The existing detached-listener ownership remains unchanged. Four proxy tests pass, including two real owned child processes plus a poisoned process-state entry: shutdown still drains the map, reaps both healthy children, clears the slot and is repeatable.
 
 Full manager shutdown/assets composition, restart/update behavior and production control dispatch remain outstanding.
+
+
+### Static native hello handshake checkpoint
+
+The pinned Rust host hello branch constructs five constant fields: manifestSchemaVersion 2, nativeHostProtocolVersion 2, nativeHostVersion 0.1.0, supportedMethods containing only codexRuntime/openLocalFile, and supportedProtocolVersions containing only 2. The declared methods list is not a list of every dispatchable control. Mach-O pointer/length decoding and instruction assertions are recorded by audit-native-control-protocol.py.
+
+NativeControl now returns this response without loading environment/configuration or initializing a proxy. Three native control tests pass, including unchanged IDs/missing ID, ignored parameters and idle state after hello. The built Core debug host passes seven real framed Native Messaging requests including hello and the existing ensure/status/restart/error lifecycle. The original host was not executed. Release/browser acceptance and remaining native behavior reconstruction remain open.

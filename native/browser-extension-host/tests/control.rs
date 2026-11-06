@@ -74,3 +74,23 @@ fn dispatcher_ensure_status_restart_share_one_proxy() {
     drop(control);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn hello_is_static_without_configuration_or_proxy_initialization() {
+    let root = std::env::temp_dir().join(format!("core-hello-{}", uuid::Uuid::new_v4()));
+    let mut control = NativeControl::new(root.clone());
+    for id in [Value::Null, json!({"nested":[3]}), json!("hello")] {
+        let result = control.handle_with_environment(
+            &json!({"method":"codexRuntime/hello","id":id,"params":{"constraints":false}}),
+            None, |_| panic!("hello must not load configuration"),
+        ).unwrap();
+        assert_eq!(result, json!({"jsonrpc":"2.0","id":id,"result":{
+            "manifestSchemaVersion":2,"nativeHostProtocolVersion":2,
+            "nativeHostVersion":"0.1.0",
+            "supportedMethods":["codexRuntime/openLocalFile"],"supportedProtocolVersions":[2]
+        }}));
+    }
+    assert_eq!(control.handle(&json!({"method":"codexRuntime/hello"})).unwrap()["id"], Value::Null);
+    assert_eq!(control.handle(&json!({"method":"codexRuntime/status"})).unwrap()["result"], json!({"phase":"idle"}));
+    assert!(!root.exists());
+}

@@ -3999,7 +3999,7 @@
     {
       "path": "native/browser-extension-host/src/control.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "4187c0659acf125d47622d2d06b6bb9c32407a99ddd9fe7504778867aab44c78"
+      "sha256": "a3349a2b98a181cee25a69e9593554bafc39af7ab20869dd2242bc9f8583e65d"
     },
     {
       "path": "native/browser-extension-host/src/endpoint.rs",
@@ -4319,7 +4319,7 @@
     {
       "path": "scripts/audit-native-control-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "5f5d6381dd70a6ea6716d636500c3fb9e8ef550ac90251fa056847125ff09527"
+      "sha256": "0a9b6ffc621f1601f2d6079ca9d5e96c264312deb49c4d91fe0f1a994e1237d9"
     },
     {
       "path": "scripts/audit-native-language.py",
@@ -4439,7 +4439,7 @@
     {
       "path": "scripts/test-native-control-lifecycle.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "2ef9b82c1c795eae8099b71123b389390cf6a02479ab50fb1340afda541414fb"
+      "sha256": "5f5ba24fbcd0df78cc7a7b6e8a25efafdaf4952980ed9d82ade2358885e6067e"
     },
     {
       "path": "scripts/test-native-host-router.mjs",

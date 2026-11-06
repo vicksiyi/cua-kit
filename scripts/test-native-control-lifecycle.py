@@ -50,6 +50,11 @@ with tempfile.TemporaryDirectory(prefix='cc-', dir='/tmp') as directory:
             assert data, 'host closed before response'
             pending.extend(data)
     try:
+        assert request('codexRuntime/hello', 'hello')['result'] == {
+            'manifestSchemaVersion': 2, 'nativeHostProtocolVersion': 2,
+            'nativeHostVersion': '0.1.0',
+            'supportedMethods': ['codexRuntime/openLocalFile'],
+            'supportedProtocolVersions': [2]}
         assert request('codexRuntime/status', 1)['result'] == {'phase': 'idle'}
         first = request('codexRuntime/ensure', {'key': 2})['result']
         assert first['entryId'] == 'stdio-fixture'
@@ -63,7 +68,7 @@ with tempfile.TemporaryDirectory(prefix='cc-', dir='/tmp') as directory:
         assert request('codexRuntime/status', 6)['result']['runtimeSessionId'] == restarted['runtimeSessionId']
         child.stdin.close()
         assert child.wait(timeout=10) == 0
-        print('Native Messaging control lifecycle: 6 framed requests passed')
+        print('Native Messaging control lifecycle: 7 framed requests passed')
     finally:
         if child.poll() is None:
             child.kill()
