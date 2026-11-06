@@ -28,10 +28,10 @@ func selectCaptureWindow(_ candidates: [CaptureWindowCandidate], requestedId: In
     throw fail("AMBIGUOUS_TARGET", "Focused window cannot be uniquely matched to a capturable window.")
 }
 func axElementFrame(_ element: AXUIElement) -> CGRect? {
-    guard let rawPoint = attribute(element,kAXPositionAttribute), CFGetTypeID(rawPoint) == AXValueGetTypeID(),
-          let rawSize = attribute(element,kAXSizeAttribute), CFGetTypeID(rawSize) == AXValueGetTypeID() else { return nil }
-    var point = CGPoint.zero, size = CGSize.zero
-    guard AXValueGetValue(rawPoint as! AXValue,.cgPoint,&point), AXValueGetValue(rawSize as! AXValue,.cgSize,&size),
+    guard let rawPoint = attribute(element,kAXPositionAttribute),
+          let rawSize = attribute(element,kAXSizeAttribute),
+          let point = decodedAXTypedAttribute(rawPoint, as: CGPoint.self),
+          let size = decodedAXTypedAttribute(rawSize, as: CGSize.self),
           point.x.isFinite, point.y.isFinite, size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0 else { return nil }
     return CGRect(origin:point,size:size)
 }
@@ -46,11 +46,7 @@ extension Target {
         guard let raw = attribute(root,kAXFocusedWindowAttribute), let window = try unwrapAXUIElement(raw, throwingOnFailure: false) else { return nil }
         var pid: pid_t = 0
         guard AXUIElementGetPid(window,&pid) == .success, pid == app.processIdentifier else { throw fail("TARGET_NOT_FOUND", "Focused window belongs to another process.") }
-        guard let rawPoint = attribute(window,kAXPositionAttribute), CFGetTypeID(rawPoint) == AXValueGetTypeID(),
-              let rawSize = attribute(window,kAXSizeAttribute), CFGetTypeID(rawSize) == AXValueGetTypeID() else { return nil }
-        var point = CGPoint.zero, size = CGSize.zero
-        guard AXValueGetValue(rawPoint as! AXValue,.cgPoint,&point), AXValueGetValue(rawSize as! AXValue,.cgSize,&size),
-              point.x.isFinite, point.y.isFinite, size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0 else { return nil }
-        return FocusedCaptureWindow(element:window,frame:CGRect(origin:point,size:size),title:string(window,kAXTitleAttribute))
+        guard let frame = axElementFrame(window) else { return nil }
+        return FocusedCaptureWindow(element:window,frame:frame,title:string(window,kAXTitleAttribute))
     }
 }

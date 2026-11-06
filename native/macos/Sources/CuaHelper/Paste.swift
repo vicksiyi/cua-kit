@@ -25,8 +25,7 @@ extension Target {
         guard string(editor,kAXSubroleAttribute) != "AXSecureTextField" else { throw fail("UNSUPPORTED_CAPABILITY","Secure fields cannot provide paste verification.") }
         guard let value = attribute(editor,kAXValueAttribute) as? String,
               let selected = attribute(editor,kAXSelectedTextRangeAttribute), CFGetTypeID(selected) == AXValueGetTypeID() else { throw fail("UNSUPPORTED_CAPABILITY","Native paste requires readable AXValue and AXSelectedTextRange.") }
-        var range = CFRange()
-        guard AXValueGetValue(selected as! AXValue,.cfRange,&range) else { throw fail("UNSUPPORTED_CAPABILITY","Cannot decode editor selection.") }
+        guard let range = decodedAXTypedAttribute(selected, as: CFRange.self) else { throw fail("UNSUPPORTED_CAPABILITY","Cannot decode editor selection.") }
         var candidates = [try replacingSelection(value,range,with:text)]
         if let richText = params["richText"] as? String {
             guard richText.utf16.count <= 200000 else { throw fail("INVALID_ARGUMENT","Rich paste text exceeds budget.") }

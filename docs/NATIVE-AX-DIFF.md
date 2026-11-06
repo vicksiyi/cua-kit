@@ -441,3 +441,19 @@ arrayTargetEvidence 保存协议布局、conformance 和 dyld binding 证据。
 引用和顺序；三项相关 Swift 编译执行测试通过，完整 cua-helper 构建通过，固定原构建
 191 项签名/局部函数证据检查通过。这些测试不读取应用 UI，不能替代有系统权限后的
 真实应用树验收。
+
+## 将 AXValue 解码接入几何和文本选区
+
+`AXTypedAttributeDecoding.swift` 提供具体的非抛错属性适配：先验证 CF 类型为 AXValue，
+再调用已还原的 `decodeAXValue` / `unpackAXValue`。应用节点和焦点窗口的 CGPoint / CGSize，
+以及观察输出、粘贴前校验的 CFRange 均已使用该路径。焦点窗口复用同一几何读取函数。
+现在 helper 中底层 AXValueGetValue 读取集中在 AXValueUnpacking.swift。
+
+这消除了生产路径与已还原解码规则各自维护的情况，并不意味着完整原厂树渲染已接入。
+几何有限值/正尺寸、进程身份、文本 UTF-16 选区和安全字段校验仍由相应消费者负责；
+解码器不擅自修正负数范围或越界值，也不会将 AXError 当作点或选区返回。
+
+验证：真实 AXValue 的点、尺寸、范围、错误载荷与错误目标类型，以及普通 NSString、
+NSNumber、数组、字典、AXUIElement 输入；6 项相关测试通过（包括原解包/类型转换和
+粘贴协议回归），完整 Swift helper 构建、UTF-16 粘贴替换自检通过。粘贴协议回归使用
+模拟 transport；本轮没有对用户应用执行粘贴或宣称真实 App UI 已验收。

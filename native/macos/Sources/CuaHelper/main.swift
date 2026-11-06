@@ -63,9 +63,9 @@ final class Target {
             AXUIElementCopyActionNames(element, &actions)
             var props: [String: Any] = ["secure": secure, "actions": (actions as? [String] ?? []).joined(separator: ",")]
             for name in [kAXEnabledAttribute, kAXFocusedAttribute, kAXSelectedAttribute] { if let value = scalar(attribute(element, name)) { props[name] = value } }
-            if let selected = attribute(element,kAXSelectedTextRangeAttribute), CFGetTypeID(selected) == AXValueGetTypeID() {
-                var range = CFRange()
-                if AXValueGetValue(selected as! AXValue,.cfRange,&range) { props["selectionStart"] = range.location; props["selectionLength"] = range.length }
+            if let selected = attribute(element,kAXSelectedTextRangeAttribute),
+               let range = decodedAXTypedAttribute(selected, as: CFRange.self) {
+                props["selectionStart"] = range.location; props["selectionLength"] = range.length
             }
             data["properties"] = props
             result.append(Node(element: element, data: data))
