@@ -27,6 +27,19 @@ def read(address, length):
             return raw[offset:offset+length]
     raise RuntimeError('Unmapped static address')
 
+request_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10003cff4','--stop-address=0x10003e1d0',str(artifact)], text=True)
+assert read(0x1009c14b7,27) == b'methodurlheadersbody_base64'
+assert b'missing field `' in read(0x100b338fb,20)
+assert b'duplicate field `' in read(0x100b33977,22)
+for expected in ['10003d0ac:', '0x10003d980', '10003d0c8:', '0x10003db08',
+                 '10003d0cc:', '10003d0d0:', '10003d0d4:', '10003d0e0:', '10003d0e4:',
+                 '10003d0e8:', '10003d0ec:', '10003d218:', '0x10003db60',
+                 '10003d8a0:', 'VecVisitor<node_repl::authenticated_fetch::FetchHeader>',
+                 '10003d7d0:', 'OptionVisitor<alloc::string::String>',
+                 '10003d8c4:', '10003d8f4:', '10003de18:', '10003de6c:']:
+    assert expected in request_decode, expected
+
 method_error = read(0x100a49dc6,32).decode()
 body_error = read(0x100a49c58,30).decode()
 assert method_error == 'nodeRepl.fetch method is invalid'
@@ -406,6 +419,20 @@ print(json.dumps({
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
         'limits':'Pinned-build path only. Client shared-connection lifecycle implemented; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
     },
+    'requestDeserialization': {
+        'range':['0x10003cff4','0x10003e1d0'],
+        'instructionTextSha256':hashlib.sha256(request_decode.encode()).hexdigest(),
+        'reviewedBehavior':[
+            'map method/url missing checks branch at 0x10003d0ac/0x10003d0c8 to missing-field errors with method/url literals',
+            'headers Vec sentinel x21=-1 selects zero capacity, aligned dangling pointer 8 and zero length at 0x10003d0cc..0x10003d0e4; absent headers defaults empty',
+            'body Option sentinel -2 is converted to None at 0x10003d0e8..0x10003d0ec; supplied body uses OptionVisitor<String>',
+            'present headers uses VecVisitor<FetchHeader>, so null is not an absent-field default',
+            'unknown map field drops its Content at 0x10003d8c4..0x10003d8f4; duplicate recognized fields branch to duplicate-field errors',
+            'sequence after method/url defaults absent headers through 0x10003d218 -> 0x10003db60; optional body has its own absence path'
+        ],
+        'implementation':'native/runtime-supervisor/src/authenticated_fetch.rs',
+        'limits':'Static visitor reconstruction, not execution of vendor binary. Direct typed-deserializer duplicate tests do not establish transport parity: current deployment adapter receives serde_json::Value, which has already collapsed duplicate JSON object keys. Whole dispatcher parse/error semantics remain incomplete.'
+    },
     'appServerClientLifecycle': {
         'source':'inlined CodexAppServerClient::send_request in AccessTokenFetcher async body',
         'instructionTextSha256':hashlib.sha256(access_token_fetcher.encode()).hexdigest(),
@@ -425,5 +452,5 @@ print(json.dumps({
         'limits':'Owned fixtures and static reconstruction. Native diagnostics, process-env integration with deployment, service wiring, cancellation during outstanding RPC and full live auth acceptance remain incomplete.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
-    'limits': 'Static reconstruction, no original execution. URL routing, authenticated header shaping and concrete App Server provider/client are reconstructed. An explicit deployment_host_with_fetch adapter is covered through the restored JS worker and real owned HTTP; default deployment composition still does not enable it. Request DTO malformed/missing-field behavior is not claimed as native-equivalent. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
+    'limits': 'Static reconstruction, no original execution. URL routing, authenticated header shaping and concrete App Server provider/client are reconstructed. An explicit deployment_host_with_fetch adapter is covered through the restored JS worker and real owned HTTP; default deployment composition still does not enable it. Request visitor required/default/unknown-field behavior is statically reviewed; whole dispatcher malformed-input and duplicate-key preservation remain incomplete. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
 },indent=2))

@@ -14,7 +14,10 @@ pub struct FetchHeader {
 pub struct AuthenticatedFetchRequest {
     pub method: String,
     pub url: String,
+    // Pinned native visitor defaults absent headers to Vec::new (not null).
+    #[serde(default)]
     pub headers: Vec<FetchHeader>,
+    #[serde(default)]
     pub body_base64: Option<String>,
 }
 

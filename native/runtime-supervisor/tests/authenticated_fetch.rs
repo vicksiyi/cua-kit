@@ -740,3 +740,41 @@ mod orchestration {
         assert!(fixture.events.lock().unwrap().is_empty());
     }
 }
+
+#[test]
+fn request_decode_defaults_missing_headers_and_body() {
+    for value in [
+        serde_json::json!({"method":"GET","url":"https://example.test/"}),
+        serde_json::json!(["GET","https://example.test/"]),
+    ] {
+        let request: AuthenticatedFetchRequest = serde_json::from_value(value).unwrap();
+        assert_eq!(request.method, "GET");
+        assert_eq!(request.url, "https://example.test/");
+        assert!(request.headers.is_empty());
+        assert!(request.body_base64.is_none());
+    }
+    let request: AuthenticatedFetchRequest = serde_json::from_value(serde_json::json!({
+        "method":"POST","url":"https://example.test/","body_base64":null,
+        "unrecognized":{"nested":[1,2,3]}
+    })).unwrap();
+    assert!(request.headers.is_empty());
+    assert!(request.body_base64.is_none());
+}
+
+#[test]
+fn request_decode_keeps_required_fields_and_rejects_invalid_present_headers() {
+    for (value, error) in [
+        (serde_json::json!({}), "missing field `method`"),
+        (serde_json::json!({"method":"GET"}), "missing field `url`"),
+        (serde_json::json!({"method":"GET","url":"https://example.test/","headers":null}), "invalid type: null, expected a sequence"),
+    ] {
+        let actual = serde_json::from_value::<AuthenticatedFetchRequest>(value).err().unwrap();
+        assert_eq!(actual.to_string(), error);
+    }
+    for field in ["method", "url", "headers", "body_base64"] {
+        let value = match field { "headers" => "[]", "body_base64" => "null", _ => "\"x\"" };
+        let raw = format!(r#"{{"{field}":{value},"{field}":{value}}}"#);
+        let error = serde_json::from_str::<AuthenticatedFetchRequest>(&raw).err().unwrap();
+        assert!(error.to_string().starts_with(&format!("duplicate field `{field}`")));
+    }
+}
