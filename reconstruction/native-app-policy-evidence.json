@@ -112,6 +112,18 @@
       "start": "0x100194fc8",
       "endExclusive": "0x10019501c",
       "sha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
+    },
+    {
+      "name": "riskAndApprovalResultConstruction",
+      "start": "0x100191eec",
+      "endExclusive": "0x100192130",
+      "sha256": "9999cba6406e23953c541163cba92dc9ab61d03541aa199b3235488ad94ee1e8"
+    },
+    {
+      "name": "bundleHTTPSchemePredicate",
+      "start": "0x1002561f0",
+      "endExclusive": "0x10025644c",
+      "sha256": "382da0ac308a62073380717db8b6d9cd54ae0675d9abf79abe21439f31004c15"
     }
   ],
   "normalForbiddenTargetGroups": [
@@ -164,6 +176,30 @@
       ]
     }
   ],
+  "elevatedRiskTargets": {
+    "label": "elevatedRisk",
+    "address": "0x1015587c8",
+    "values": [
+      "com.apple.ScreenContinuity",
+      "com.apple.keychainaccess",
+      "com.apple.Passwords",
+      "com.1password.1password",
+      "com.1password.safari",
+      "com.bitwarden.desktop",
+      "com.dashlane.dashlanephonefinal",
+      "com.lastpass.LastPass",
+      "com.nordsec.nordpass",
+      "me.proton.pass.electron",
+      "me.proton.pass.catalyst"
+    ]
+  },
+  "approvalMetadata": {
+    "highRisk": "terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme",
+    "bundleProbe": "lazy after list misses; missing bundle means false",
+    "httpScheme": "CFBundleURLTypes as [[String: Any]], CFBundleURLSchemes as [String], exact http membership",
+    "warningSubtitle": "present only for high risk",
+    "allowPersistentApproval": "copied from parsed policy unchanged, including high-risk targets"
+  },
   "recoveredParser": {
     "requiredEnvelope": [
       "requirementsResponse.requirements (null accepted)",
@@ -210,7 +246,7 @@
   "limitations": [
     "Field names and enum cases establish structure, not runtime defaults or precedence.",
     "Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.",
-    "Native transport, risk descriptor and production integration remain incomplete.",
+    "Native transport, complete target descriptor and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.",
     "No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.",
     "No vendor execution, network requests, policy changes, or approval bypass."
   ]

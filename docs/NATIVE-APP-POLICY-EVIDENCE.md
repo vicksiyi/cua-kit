@@ -145,6 +145,32 @@ these arrays. This component does not read, change, or expose that override.
 It therefore claims only the normal classification branch, not full parity
 for every original process configuration. No current app rules were modified.
 
+## Recovered risk and approval metadata
+
+`0x100191eec..<0x100192130` classifies risk independently of the previously
+computed allowed/denied/forbidden decision. It checks the terminal array,
+then the elevated-risk array at `0x1015587c8` (11 identifiers), then, only if
+both miss, `Bundle.supportsHTTPScheme` when a bundle exists. Any match yields
+high risk and the original warning subtitle; otherwise risk is low with nil
+subtitle. The elevated-risk array includes ScreenContinuity and password/keychain
+applications and is decoded in the static evidence JSON.
+
+The existing recovered `BundleWebClassification.swift` is reused. Its HTTP
+predicate checks `CFBundleURLTypes` as an entire `[[String: Any]]` array, each
+`CFBundleURLSchemes` as `[String]`, and exact `http` membership. It does not
+infer this capability from app names, Electron classification, or `https` alone.
+
+The result copies `allowPersistentApproval` from policy byte 1 at
+`0x100192020`, writing it at result offset `0x50` at `0x10019207c`.
+This branch does not add a high-risk persistence veto. This field describes
+permitted approval choices, **not** a stored approval or an automatic approval.
+
+`NativePolicyApprovalMetadata.swift` restores these fields with a lazy bundle
+predicate and a concrete optional-Bundle overload. Tests cover all 22 terminal
+and elevated-risk IDs, both persistence settings, probe short-circuiting,
+missing bundles, exact scheme handling, and unmatched ID suffixes. It is not
+yet wired to the standalone production policy or approval storage.
+
 ## Current request boundary
 
 The reconstructed `packages/sky/src/targets/mac/computer-use-policy.ts` asks the
@@ -158,8 +184,9 @@ approval, and macOS Accessibility/Screen Recording grants remain distinct.
 1. Implement the concrete native connection integration and original error
    representation. Cache timing, parser, request sequence, and cleanup are
    evidenced; the complete original provider is not implemented yet.
-2. Recover risk classification and persistence application. The two-layer
-   access predicate and normal forbidden-target branch are now restored; the
+2. Finish complete target descriptor construction and approval persistence
+   storage/integration. Risk and persistence-choice metadata, the two-layer
+   access predicate, and normal forbidden-target branch are now restored; the
    original process-preference override remains outside this component.
 3. Map installed-app resolution and launch to the policy evaluation order.
 4. Implement the recovered native-language logic with tests derived from those

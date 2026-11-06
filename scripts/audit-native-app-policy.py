@@ -75,14 +75,12 @@ def audit():
         ('appDecisionBranch', 0x100191c60, 0x100191c98),
         ('forbiddenClassifier', 0x1002570c0, 0x1002572d4),
         ('forbiddenStringEquality', 0x100194fc8, 0x10019501c),
+        ('riskAndApprovalResultConstruction', 0x100191eec, 0x100192130),
+        ('bundleHTTPSchemePredicate', 0x1002561f0, 0x10025644c),
     ]:
         code_ranges.append(dict(name=name, start=hex(start), endExclusive=hex(end),
                                 sha256=hashlib.sha256(read(start, end-start)).hexdigest()))
-    forbidden_groups = []
-    for label, address, expected_count in [
-        ('terminals', 0x1015588a0, 11), ('codex', 0x101558978, 5),
-        ('chatGPT', 0x1015589f0, 5), ('systemAuthentication', 0x101558c70, 3),
-    ]:
+    def decode_string_array(label, address, expected_count):
         count = struct.unpack('<Q', read(address + 16, 8))[0]
         if count != expected_count:
             raise ValueError('Unexpected static string array count')
@@ -96,10 +94,21 @@ def audit():
                 # Pinned arm64 chained rebase + Swift immortal string bias.
                 value = read(0x100000000 + (second & 0xffffffff) + 32, first & 0xffff).decode('utf-8')
             values.append(value)
-        forbidden_groups.append(dict(label=label, address=hex(address), values=values))
+        return dict(label=label, address=hex(address), values=values)
+    forbidden_groups = [decode_string_array(*entry) for entry in [
+        ('terminals', 0x1015588a0, 11), ('codex', 0x101558978, 5),
+        ('chatGPT', 0x1015589f0, 5), ('systemAuthentication', 0x101558c70, 3),
+    ]]
     return dict(binarySha256=digest, method='Static Mach-O Swift metadata and pinned disassembly analysis',
                 types=records, codeRanges=code_ranges,
                 normalForbiddenTargetGroups=forbidden_groups,
+                elevatedRiskTargets=decode_string_array('elevatedRisk', 0x1015587c8, 11),
+                approvalMetadata=dict(
+                    highRisk='terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme',
+                    bundleProbe='lazy after list misses; missing bundle means false',
+                    httpScheme='CFBundleURLTypes as [[String: Any]], CFBundleURLSchemes as [String], exact http membership',
+                    warningSubtitle='present only for high risk',
+                    allowPersistentApproval='copied from parsed policy unchanged, including high-risk targets'),
                 recoveredParser=dict(
                     requiredEnvelope=['requirementsResponse.requirements (null accepted)', 'configResponse.config (dictionary required)'],
                     optionalDictionary='missing/null becomes empty; other non-dictionaries throw',
@@ -124,7 +133,7 @@ def audit():
                 limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
                     'Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.',
-                    'Native transport, risk descriptor and production integration remain incomplete.',
+                    'Native transport, complete target descriptor and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 
