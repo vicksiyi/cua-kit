@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+plain_response = disassemble(0x100021a94, 0x100021df0)
 http_input = disassemble(0x100022d80, 0x100023f8c)
 query_param = disassemble(0x1000217e4, 0x100021970)
 prefixed_reader = disassemble(0x10002b0a8, 0x10002b1e4)
@@ -557,6 +558,16 @@ result = {
         'keyPresence': evidence(http_input, 0x100023ca0, 0x100023cb8, ['#0x7aa', '#0x11', 'contains_key']),
         'contract': 'Token query comparison first; optional expected origin requires origin header, trims only received trailing slashes and compares exact. Then GET, comma-separated connection upgrade token (trim/case-insensitive), exact case-insensitive websocket Upgrade value and presence of sec-websocket-key. Auth failures 403; shape failures 404. No path/version or key base64 checks at this gate.',
         'integrationStatus': 'Validation against parsed requests tested; upstream expected-origin construction, rejection writes, upgrade response and production handler remain open.',
+    },
+    'httpRejectionResponse': {
+        'implementation': 'native/browser-extension-host/src/app_server_http.rs::write_rejection/read_validated_request',
+        'formatBytes': raw[0x8d3d2:0x8d401].hex(),
+        'contentType': raw[0x907d3:0x907f8].decode(),
+        'statusFormatting': evidence(plain_response, 0x100021b60, 0x100021b98, ['#0xd', '#0x3d2', 'core::fmt::write']),
+        'bodyLength': evidence(plain_response, 0x100021bcc, 0x100021c04, ['#0x9', '#0x3e1', 'core::fmt::write']),
+        'blankLineThenBody': evidence(plain_response, 0x100021d54, 0x100021d84, ['#0x730', '#0x2', '#0x9', 'write_all']),
+        'contract': 'HTTP/1.1 status CRLF, Content-Length CRLF, Content-Type: text/plain; charset=utf-8 CRLF, blank line, body. Both native rejection statuses have 13-byte status strings and 9-byte bodies. Write errors propagate; no explicit flush or shutdown.',
+        'integrationStatus': 'Read/parse/auth/shape checks now compose into a TCP rejection path. Exact bytes and short-write/error propagation tested. Successful 101 upgrade, connection attachment, manager and production listener remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

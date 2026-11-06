@@ -164,3 +164,38 @@ pub fn validate_upgrade<'a>(
         .map(String::as_str)
         .ok_or(RequestRejection::NotFound)
 }
+
+/// Native plain rejection response: status, byte length, content type, blank
+/// line, body; write failures propagate and no explicit flush/shutdown is added.
+pub fn write_rejection(
+    writer: &mut impl std::io::Write,
+    rejection: RequestRejection,
+) -> io::Result<()> {
+    let (status, body) = match rejection {
+        RequestRejection::Forbidden => ("403 Forbidden", "Forbidden"),
+        RequestRejection::NotFound => ("404 Not Found", "Not Found"),
+    };
+    write!(writer, "HTTP/1.1 {status}\r\n")?;
+    write!(writer, "Content-Length: {}\r\n", body.len())?;
+    write!(writer, "Content-Type: text/plain; charset=utf-8\r\n")?;
+    writer.write_all(b"\r\n")?;
+    writer.write_all(body.as_bytes())
+}
+
+/// Composes native request reading and validation. Rejection is fully written
+/// before returning None. Successful requests retain buffered WebSocket bytes
+/// for the subsequent upgrade/session owner; no child is started at this stage.
+pub fn read_validated_request(
+    stream: &mut TcpStream,
+    expected_token: &str,
+    expected_origin: Option<&str>,
+) -> io::Result<Option<HttpRequest>> {
+    let request = read_request(stream)?;
+    match validate_upgrade(&request, expected_token, expected_origin) {
+        Ok(_) => Ok(Some(request)),
+        Err(rejection) => {
+            write_rejection(stream, rejection)?;
+            Ok(None)
+        }
+    }
+}

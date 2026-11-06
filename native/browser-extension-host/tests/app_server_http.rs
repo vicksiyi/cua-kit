@@ -141,3 +141,65 @@ fn upgrade_gate_authenticates_before_checking_upgrade_shape() {
     request.headers.remove("sec-websocket-key");
     assert_eq!(validate_upgrade(&request, "secret", None), Err(NotFound));
 }
+
+#[test]
+fn real_tcp_rejection_writes_exact_native_response() {
+    use core_browser_extension_host::app_server_http::read_validated_request;
+    for (request, status, body) in [
+        ("POST /?token=wrong\r\n\r\n", "403 Forbidden", "Forbidden"),
+        ("POST /?token=secret\r\n\r\n", "404 Not Found", "Not Found"),
+    ] {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let mut client = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        let (mut server, _) = listener.accept().unwrap();
+        client
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .unwrap();
+        server
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .unwrap();
+        client.write_all(request.as_bytes()).unwrap();
+        assert!(read_validated_request(&mut server, "secret", None)
+            .unwrap()
+            .is_none());
+        drop(server);
+        let mut response = String::new();
+        client.read_to_string(&mut response).unwrap();
+        assert_eq!(response,format!("HTTP/1.1 {status}\r\nContent-Length: 9\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n{body}"));
+    }
+}
+
+#[test]
+fn rejection_short_writes_and_failures_are_propagated_without_flush() {
+    use core_browser_extension_host::app_server_http::{write_rejection, RequestRejection};
+    struct Failing {
+        bytes: Vec<u8>,
+        limit: usize,
+    }
+    impl Write for Failing {
+        fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+            if self.bytes.len() == self.limit {
+                return Err(io::Error::new(io::ErrorKind::BrokenPipe, "fixture"));
+            }
+            let count = bytes.len().min(1);
+            self.bytes.extend_from_slice(&bytes[..count]);
+            Ok(count)
+        }
+        fn flush(&mut self) -> io::Result<()> {
+            panic!("native response has no flush")
+        }
+    }
+    for limit in [0, 10, 50, 89] {
+        let mut writer = Failing {
+            bytes: vec![],
+            limit,
+        };
+        assert_eq!(
+            write_rejection(&mut writer, RequestRejection::Forbidden)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::BrokenPipe
+        );
+        assert_eq!(writer.bytes.len(), limit);
+    }
+}

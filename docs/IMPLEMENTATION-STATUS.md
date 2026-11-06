@@ -6264,3 +6264,10 @@ The HTTP parser is not yet an authenticated upgrade handler: authentication, rou
 Added validate_upgrade on parsed requests, retaining native ordering: exact first token query value, optional expected-origin comparison with trailing slashes removed from the received origin, then GET/Connection upgrade token/Upgrade websocket/key presence. Authentication failures are classified Forbidden and upgrade-shape failures NotFound. Five HTTP tests pass, with new coverage of authentication precedence, duplicate tokens, optional origin, comma token matching and empty-versus-missing key.
 
 Expected-origin construction, response serialization, successful upgrade and connection manager integration remain open. This gate is not yet a production listener or a completed browser session.
+
+
+### Native HTTP rejection response checkpoint
+
+Composed read_validated_request with real TCP request reading, parser, token/origin/upgrade checks and write_rejection. Responses follow the installed write_plain_response ordering: status, byte content length, text/plain UTF-8 content type, blank line and body. Rejected requests return None only after successful response writing; errors propagate. Seven HTTP tests pass, including exact wire bytes for 403/404 and short-write/error propagation without an added flush.
+
+Successful 101 upgrade, connection attachment, manager and production listener remain unfinished. This is a composed rejection path, not completed browser acceptance.
