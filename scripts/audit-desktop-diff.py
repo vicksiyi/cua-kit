@@ -1173,7 +1173,9 @@ element_storage_evidence['clippingFrame']={
     'predicates':{'scrollContainer':'0x1007a04d4..<0x1007a0654','terminalBoundary':'0x1007a0654..<0x1007a088c','clipsChildren':'0x1007a088c..<0x1007a08d8'},
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079ffb8,0x1007a03f8),(0x1007a04d4,0x1007a08d8)]],
     'implementation':'UIElementClippingFrame.swift preserves lazy role predicates and generic ancestor/geometry flow.',
-    'limitations':'Concrete cached/uncached frame and parent composition and hasScrollAction provider still explicit dependencies. No production replacement or live UI claim.',
+    'composition':'UIElementClippingComposition.swift composes raw AXFrame cached/strict fresh decoding, strict fresh AXParent with transaction construction, and actions Set intersection with four page-scroll actions.',
+    'hasScrollAction':'0x100794538..<0x1007946b0 reads actions once, builds Set at 0x100770120, intersects four page-scroll actions via 0x1007968dc, returns nonempty.',
+    'limitations':'Full clickablePoint preferred geometry and scroll implementation pending. Environment remains explicit; no production replacement or live UI claim.',
 }
 element_storage_evidence['clickablePointFlow']={
     'core':'0x10079e6ac..<0x10079eb20, including scroll continuation',

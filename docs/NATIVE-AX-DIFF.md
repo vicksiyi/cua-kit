@@ -2439,3 +2439,22 @@ UIElementClippingFrame.swift 恢复该算法和三个角色判断的短路顺序
 
 此处尚未接入具体 AX cached/uncached reader；hasScrollAction 保留显式依赖。
 完整特殊位置与实际滚动仍待恢复。生产点击行为未改变，测试只使用几何与节点 fixture。
+
+
+## 裁剪区域的实际 AX 读取接线（2026-11-07）
+
+UIElementClippingComposition.swift 补齐 cached/uncached AXFrame 与 AXParent 的
+具体解码。AXFrame 读取不走 position/size 回退；刷新模式绕过缓存值，但保留原版
+known-unsupported 门槛与严格解码、错误记录后 nil 的规则。parent 刷新时也绕过旧
+AXParent 值，再用原事务构造 UIElement；并不凭空清空整份事务缓存或变更 role 策略。
+
+hasScrollAction 按 0x100794538..<0x1007946b0：读取 actions 一次，转 Set，
+与 scrollLeftByPage/scrollRightByPage/scrollUpByPage/scrollDownByPage 取交集，
+返回是否非空。使用现有完整 actions getter，保留原生失败及补充动作处理。
+AXScrollToVisible 不属于这四种动作。
+
+具体测试使用 AX 引用和预取事务构造旧/新父节点，验证缓存路径无 raw 读取，刷新路径
+按 frame、actions、parent、frame 顺序读取，并使用新 frame；父节点引用切换验证通过。
+严格读取/解码失败时不回退旧 frame，known-unsupported 不触发系统读取。
+四个按页动作及其它动作排除测试通过，Swift package 构建通过。
+尚未补齐特殊位置 helper 与实际滚动，也未把整个 clickablePoint 接入生产 indexed click。
