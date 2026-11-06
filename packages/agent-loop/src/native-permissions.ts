@@ -39,3 +39,8 @@ export function standaloneAppPolicyDenialHint(text: string): string | undefined 
   if (!match) return undefined;
   return `本独立 demo 使用本地 CORE_CUA_APP_POLICY；上述 organization policy 是通用错误文案，不证明设备受组织管理。应用 ${match[1]} 的策略结果为 denied（未配置的应用也默认拒绝）。请由配置所有者检查该应用规则；自动审核参数不会覆盖此拒绝。尚未执行本次受阻的应用操作。`;
 }
+
+/** The app-server provider supplies effective policy; no local allow-list is inferred. */
+export function nativeAppServerPolicyContext(): string {
+  return "Native application policy comes from the selected app-server provider. Effective access combines management requirements and local configuration, followed by forbidden-target classification. Do not infer a default allow or deny rule or an approved application list before querying policy. A policy allowance is separate from interactive App approval and macOS Accessibility/Screen Recording grants. Preserve denied/forbidden results; do not edit policy or switch access paths to retry a denied action. Generic organization-policy wording alone does not identify which policy layer denied access.";
+}

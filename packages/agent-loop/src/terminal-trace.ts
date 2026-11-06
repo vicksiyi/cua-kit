@@ -19,7 +19,7 @@ export function createTerminalTrace(env: NodeJS.ProcessEnv = process.env, write 
     for (const item of message.result.content) {
       if (item.type === "text") {
         const text = clean(item.text);
-        if (message.result.isError && env.CUA_DEMO_NATIVE_POLICY_CONTEXT) {
+        if (message.result.isError && env.CUA_DEMO_NATIVE_POLICY_CONTEXT && (env.CUA_DEMO_NATIVE_POLICY_SOURCE ?? "standalone") === "standalone") {
           const hint = standaloneAppPolicyDenialHint(text);
           if (hint) write(clean(hint));
         }

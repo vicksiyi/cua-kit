@@ -2,6 +2,7 @@
 import {mkdtemp,mkdir,writeFile,rm,realpath,access} from 'node:fs/promises';
 import {dirname,join,delimiter} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {nativePolicyConfiguration} from './native-policy-configuration';
 import {nativeSupervisorEnvironment} from './native-supervisor-environment';
 
 export async function prepareIndependentRuntime(env: Record<string,string>, stagedRoot: string, sessionId: string, implementation: "rust" = "rust") {
@@ -22,8 +23,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
     throw Error('Independent runtime requires explicit matching native endpoints and pipes');
   const services={...(browser?{browser:'@core/native-host/browserService'}:{}),...(computer?{sky:'@core/sky/service'}:{})};
   const enabled=surfaces.length ? [...new Set(surfaces)].join(',') : undefined;
-  const appPolicy:unknown=computer?JSON.parse(env.CORE_CUA_APP_POLICY??'{}'):{};
-  if(computer&&(!appPolicy||typeof appPolicy!=='object'||Array.isArray(appPolicy))) throw Error('CORE_CUA_APP_POLICY must be a native app rule map');
+  const nativePolicy = computer ? nativePolicyConfiguration(env) : undefined;
   const project = fileURLToPath(new URL('../../../',import.meta.url));
   const supervisor = join(project,'native/runtime-supervisor/dist');
   const addon = join(project,'native/macos-sandbox/dist/sandbox.node');
@@ -68,7 +68,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
     await access(command).catch(()=>{throw Error('Build the Rust runtime first: npm run build:rust-runtime');});
     const rustWorker=(value:ReturnType<typeof worker>)=>({sandbox:{node:value.node,bootstrap:value.bootstrap,addon:value.addon,entry:value.entry,args:value.args,directory:value.directory,read_directories:value.readDirectories,worker_environment:value.workerEnvironment}});
     const spec=join(root,'rust-runtime.json');
-    await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:Object.keys(services),pipe_paths:dynamicDirectory?[]:pipes,endpoint_roots:dynamicDirectory?[dynamicDirectory]:[],...(env.NODE_REPL_TOOL_OVERRIDES!==undefined?{tool_overrides:JSON.parse(env.NODE_REPL_TOOL_OVERRIDES)}:{}),...(env.NODE_REPL_JS_COMPLETION_SUMMARY!==undefined?{completion_summary:JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY)}:{}),...(computer?{native_service:{helper,directory:nativeDir,app_policy:appPolicy}}:{}),writable_paths:['browser/config.toml',sessionPreference],config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}}),{mode:0o600});
+    await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:Object.keys(services),pipe_paths:dynamicDirectory?[]:pipes,endpoint_roots:dynamicDirectory?[dynamicDirectory]:[],...(env.NODE_REPL_TOOL_OVERRIDES!==undefined?{tool_overrides:JSON.parse(env.NODE_REPL_TOOL_OVERRIDES)}:{}),...(env.NODE_REPL_JS_COMPLETION_SUMMARY!==undefined?{completion_summary:JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY)}:{}),...(computer?{native_service:{helper,directory:nativeDir,...nativePolicy}}:{}),writable_paths:['browser/config.toml',sessionPreference],config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}}),{mode:0o600});
     return {command,args:[spec],environment:{...nativeSupervisorEnvironment(env,root),...(enabled!==undefined?{CUA_REPL_ENABLED_SURFACES:enabled}:{}),...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
   } catch(error) {await rm(root,{recursive:true,force:true});throw error;}
 }

@@ -31,3 +31,12 @@ test("local policy explanation is limited to standalone error output and preserv
     assert.equal(JSON.stringify(message), before);
   }
 });
+
+test("app-server denial is not mislabeled as standalone allow-list denial", () => {
+  const text = "Computer Use is blocked from using the app 'test.fixture' by your organization's policy.";
+  const lines: string[] = [];
+  const trace = createTerminalTrace({CUA_DEMO_NATIVE_POLICY_CONTEXT:"app-server provider",CUA_DEMO_NATIVE_POLICY_SOURCE:"app-server"},line=>lines.push(line));
+  trace({role:"tool",callId:"provider-denied",name:"js",result:{isError:true,content:[{type:"text",text}]}});
+  assert.ok(lines.includes(text));
+  assert.equal(lines.some(line=>line.includes('CORE_CUA_APP_POLICY')),false);
+});

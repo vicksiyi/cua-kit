@@ -89,7 +89,7 @@ if [[ "$mode" == computer || "$mode" == unified ]]; then
   export CUA_MCP_ENV
 fi
 if [[ "$mode" == "browser" ]]; then
-  unset CORE_CUA_NATIVE_BACKEND CORE_CUA_NATIVE_HELPER_PATH CORE_CUA_APP_POLICY
+  unset CORE_CUA_NATIVE_BACKEND CORE_CUA_NATIVE_HELPER_PATH CORE_CUA_APP_POLICY CORE_CUA_POLICY_SOURCE
   export CUA_RUNTIME_SUPERVISOR="${CUA_RUNTIME_SUPERVISOR:-rust}"
   CUA_MCP_ENV="$(node --input-type=module -e '
     const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");
@@ -97,6 +97,7 @@ if [[ "$mode" == "browser" ]]; then
     delete env.CORE_CUA_NATIVE_BACKEND;
     delete env.CORE_CUA_NATIVE_HELPER_PATH;
     delete env.CORE_CUA_APP_POLICY;
+    delete env.CORE_CUA_POLICY_SOURCE;
     env.CUA_REPL_ENABLED_SURFACES="browser";
     env.CUA_REPL_BROWSER_ENV="codex-app";
     env.NODE_REPL_DISABLE_ANALYTICS??="1";
@@ -113,7 +114,7 @@ elif [[ "$mode" == "computer" || "$mode" == "unified" ]]; then
   printf '%s\n' "$mode mode: $CORE_CUA_NATIVE_BACKEND backend; app inventory does not verify UI permissions or actions." >&2
 else
   # Explicit JS-only mode must not inherit stale CUA service/bootstrap settings.
-  unset CORE_CUA_NATIVE_BACKEND CORE_CUA_NATIVE_HELPER_PATH CORE_CUA_APP_POLICY CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
+  unset CORE_CUA_NATIVE_BACKEND CORE_CUA_NATIVE_HELPER_PATH CORE_CUA_APP_POLICY CORE_CUA_POLICY_SOURCE CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
   if [[ "$(uname -s)" == Darwin ]]; then export CUA_RUNTIME_SUPERVISOR=rust; fi
   CUA_MCP_ENV="$(node --input-type=module -e '
     const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");

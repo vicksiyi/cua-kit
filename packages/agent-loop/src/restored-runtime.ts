@@ -45,6 +45,7 @@ export async function readRuntimeEnvironment(
     "CORE_CUA_NATIVE_BACKEND",
     "CORE_CUA_NATIVE_HELPER_PATH",
     "CORE_CUA_APP_POLICY",
+    "CORE_CUA_POLICY_SOURCE",
   ])
     if (env[key] === undefined && parent[key] !== undefined)
       env[key] = parent[key]!;

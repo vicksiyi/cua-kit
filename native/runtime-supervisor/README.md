@@ -538,3 +538,18 @@ sources. The native Swift provider has separate owned-peer policy tests. This
 is not yet proof of the complete DeepSeek launcher path: its environment filter,
 spec generator and standalone-specific model context still need source-aware
 wiring. Real CLI interoperability and approvals remain unverified.
+
+The DeepSeek/restored runtime factory now maps `CORE_CUA_POLICY_SOURCE=app-server`
+to that native-service spec, with optional `CODEX_CLI_PATH`. `CUA_MCP_ENV` values
+win over parent environment values. `CORE_CUA_APP_POLICY` must be absent when
+selecting app-server, including if it was set in `.env`; conflicts are errors,
+not permission to discard local rules. Defaults have not changed. Rebuild the
+Rust runtime after updating to use the new spec fields.
+
+The host's model context/terminal explanation now distinguishes the two sources.
+MCP integration with an owned app-server fixture verifies allowed/denied/forbidden
+routing and cached policy fetch through the production runtime factory; approvals
+are declined and no application input occurs. Real CLI authentication/configuration
+and end-to-end model-driven UI acceptance are still pending. This is an explicit
+integration option, not a recommendation to switch policy sources to retry a denied
+application.

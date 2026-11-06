@@ -789,3 +789,39 @@ filter forwarding, TypeScript spec-generation selection/conflict validation,
 and source-aware model/terminal policy context. Real CLI integration and full
 approval persistence remain open. The direct Rust spec support alone must not
 be reported as completing that end-to-end path.
+
+## Demo policy-source wiring and MCP acceptance
+
+The production host environment reader now carries CORE_CUA_POLICY_SOURCE with
+CUA_MCP_ENV precedence. A host-only TypeScript adapter selects standalone versus
+app-server spec fields; it performs no application-policy evaluation. App-server
+selection requires CORE_CUA_APP_POLICY to be absent, preserving the native conflict
+rule. CODEX_CLI_PATH is passed as the explicit CLI selection only for that source.
+Native service settings are not added to either sandbox worker's environment.
+Browser-only/JS-only launch modes clear the irrelevant source selector.
+
+The demo now supplies model context according to the selected source. It no longer
+claims unlisted applications are denied or prints the standalone-only denial hint
+when using app-server policy. Default standalone messages remain unchanged.
+Unknown selections, conflicting sources (including empty strings/maps), malformed
+rule-map containers, environment precedence and worker isolation are tested.
+
+An owned-peer test runs the same environment reader and runtime-spec factory used
+by the demo, then MCP → restored CUA/Sky → Rust supervisor → Swift → owned Node
+app-server. An allowed fixture reaches approval, which the test declines; a denied
+fixture and forbidden terminal fixture do not request approval. Thus no app launch,
+screenshot or user input occurs. Multiple policy requests share one native fetch.
+The supervisor also has a distinct codex-browser-use authentication client; the
+fixture distinguishes its requests from core-computer-use policy requests and
+returns no authentication token. It does not impersonate a real authenticated CLI.
+
+This closes the host wiring gap identified above, not the full acceptance gap.
+No DeepSeek request or installed CLI process is used in this test. Actual CLI
+configuration/auth environment propagation, real policy results, persistent
+approval and full application/browser interaction still need separate evidence.
+
+Validation for this change: seven host configuration/terminal/environment tests,
+AgentLoop TypeScript check, shell syntax check, Rust release build, the owned-peer
+MCP policy integration, and the pre-existing standalone MCP/Sky inventory-policy
+lifecycle regression all pass. The latter retains explicit allowed/denied rules
+and verifies reset/child cleanup; no real application UI operation is performed.
