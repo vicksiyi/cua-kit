@@ -1224,9 +1224,69 @@
     "contract": "JSON-RPC 2.0, original ID, error.code=1, original error message, error.data.type from native enum table. Newer candidate protocol maps to chrome_extension_update_required; older/missing to codex_app_update_required.",
     "integrationStatus": "Manifest error conversion and response serializer implemented. Runtime hello/status/ensure/restart dispatcher not yet wired."
   },
+  "managerStatus": {
+    "implementation": "native/browser-extension-host/src/app_server_status.rs",
+    "connectedPhase": "connected",
+    "sessionKey": "runtimeSessionId",
+    "proxyPresenceBranch": [
+      "10001a898: b100043f    \tcmn\tx1, #0x1",
+      "10001a89c: 540008a0    \tb.eq\t0x10001a9b0 <<extension_host::app_server::AppServerManager>::status+0x134>",
+      "10001a8a0: aa0203f4    \tmov\tx20, x2"
+    ],
+    "idleLiteral": [
+      "10001aa04: 528c8d28    \tmov\tw8, #0x6469             ; =25705",
+      "10001aa08: 72acad88    \tmovk\tw8, #0x656c, lsl #16",
+      "10001aa0c: b9000008    \tstr\tw8, [x0]",
+      "10001aa10: 52800068    \tmov\tw8, #0x3                ; =3"
+    ],
+    "connectedLiteral": [
+      "10001a8fc: 52800c88    \tmov\tw8, #0x64               ; =100",
+      "10001a900: 39002008    \tstrb\tw8, [x0, #0x8]",
+      "10001a904: d00003a8    \tadrp\tx8, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001a908: 91122108    \tadd\tx8, x8, #0x488",
+      "10001a90c: f9400108    \tldr\tx8, [x8]",
+      "10001a910: f9000008    \tstr\tx8, [x0]",
+      "10001a914: 52800068    \tmov\tw8, #0x3                ; =3"
+    ],
+    "sessionRead": [
+      "10001a96c: d00003a8    \tadrp\tx8, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001a970: 9134c108    \tadd\tx8, x8, #0xd30",
+      "10001a974: 3dc00100    \tldr\tq0, [x8]",
+      "10001a978: 3d800000    \tstr\tq0, [x0]",
+      "10001a97c: 52800208    \tmov\tw8, #0x10               ; =16",
+      "10001a980: a90203e8    \tstp\tx8, x0, [sp, #0x20]",
+      "10001a984: f9001be8    \tstr\tx8, [sp, #0x30]",
+      "10001a988: 910163e0    \tadd\tx0, sp, #0x58",
+      "10001a98c: aa1403e1    \tmov\tx1, x20",
+      "10001a990: 9400154c    \tbl\t0x10001fec0 <<extension_host::app_server::AppServerProxy>::runtime_session_id>",
+      "10001a994: a9465bf4    \tldp\tx20, x22, [sp, #0x60]",
+      "10001a998: b6f80636    \ttbz\tx22, #0x3f, 0x10001aa5c <<extension_host::app_server::AppServerManager>::status+0x1e0>"
+    ],
+    "sessionLockAndClone": [
+      "10001feec: 9400c8b0    \tbl\t0x1000521ac <<std::sys::pal::unix::sync::mutex::Mutex>::lock>",
+      "10001fef0: d00004b7    \tadrp\tx23, 0x1000b5000 <__RNvNtNtNtNtCsa9BKTri5B3M_3std3sys12thread_local11destructors4list5DTORS$tlv$init>",
+      "10001fef4: 9102e2f7    \tadd\tx23, x23, #0xb8",
+      "10001fef8: f94002e8    \tldr\tx8, [x23]",
+      "10001fefc: f240f91f    \ttst\tx8, #0x7fffffffffffffff",
+      "10001ff00: 54000341    \tb.ne\t0x10001ff68 <<extension_host::app_server::AppServerProxy>::runtime_session_id+0xa8>",
+      "10001ff04: 52800016    \tmov\tw22, #0x0               ; =0",
+      "10001ff08: 39406288    \tldrb\tw8, [x20, #0x18]",
+      "10001ff0c: 35000368    \tcbnz\tw8, 0x10001ff78 <<extension_host::app_server::AppServerProxy>::runtime_session_id+0xb8>",
+      "10001ff10: 91008280    \tadd\tx0, x20, #0x20",
+      "10001ff14: aa1503e8    \tmov\tx8, x21",
+      "10001ff18: 940159bb    \tbl\t0x100076604 <<alloc::string::String as core::clone::Clone>::clone>",
+      "10001ff1c: 37000096    \ttbnz\tw22, #0x0, 0x10001ff2c <<extension_host::app_server::AppServerProxy>::runtime_session_id+0x6c>"
+    ],
+    "dispatcher": [
+      "100026028: 97ffd215    \tbl\t0x10001a87c <<extension_host::app_server::AppServerManager>::status>",
+      "10002602c: d10183a0    \tsub\tx0, x29, #0x60"
+    ],
+    "semantics": "No proxy: {phase:idle}; existing proxy: {phase:connected,runtimeSessionId:<cloned string>}. No configuration load, process spawn or PID health probe occurs in status. Empty strings remain strings.",
+    "integrationStatus": "Status projection only. Not registered as a live control method until real proxy lifecycle exists; never fabricate a connected state from configuration."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
-    "complete hello/status response schemas",
+    "complete hello response schema and status lifecycle integration",
     "filename sanitization edge cases",
     "asset cleanup on all process/session failures",
     "authorization at control entry",

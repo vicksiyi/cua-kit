@@ -5,6 +5,7 @@
 pub mod app_server_configuration;
 pub mod app_server_error;
 pub mod app_server_manifest;
+pub mod app_server_status;
 #[cfg(unix)]
 pub mod client_writer;
 #[cfg(unix)]

@@ -19,6 +19,8 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+manager_status = disassemble(0x10001a87c, 0x10001abec)
+proxy_session = disassemble(0x10001fec0, 0x10001ffec)
 control = disassemble(0x100025498, 0x100026880)
 assets = disassemble(0x100015fd8, 0x100017754)
 sanitizer = disassemble(0x100029c24, 0x100029ea8)
@@ -357,7 +359,20 @@ result = {
         'contract': 'JSON-RPC 2.0, original ID, error.code=1, original error message, error.data.type from native enum table. Newer candidate protocol maps to chrome_extension_update_required; older/missing to codex_app_update_required.',
         'integrationStatus': 'Manifest error conversion and response serializer implemented. Runtime hello/status/ensure/restart dispatcher not yet wired.',
     },
-    'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello/status response schemas',
+    'managerStatus': {
+        'implementation': 'native/browser-extension-host/src/app_server_status.rs',
+        'connectedPhase': raw[0x90488:0x90490].decode() + 'd',
+        'sessionKey': raw[0x90d30:0x90d40].decode(),
+        'proxyPresenceBranch': evidence(manager_status, 0x10001a898, 0x10001a8a0, ['cmn', '0x10001a9b0']),
+        'idleLiteral': evidence(manager_status, 0x10001aa04, 0x10001aa10, ['#0x6469', '#0x656c']),
+        'connectedLiteral': evidence(manager_status, 0x10001a8fc, 0x10001a914, ['#0x64', '#0x488']),
+        'sessionRead': evidence(manager_status, 0x10001a96c, 0x10001a998, ['#0xd30', 'runtime_session_id']),
+        'sessionLockAndClone': evidence(proxy_session, 0x10001feec, 0x10001ff1c, ['Mutex>::lock', 'String as core::clone::Clone']),
+        'dispatcher': evidence(control, 0x100026028, 0x10002602c, ['AppServerManager>::status']),
+        'semantics': 'No proxy: {phase:idle}; existing proxy: {phase:connected,runtimeSessionId:<cloned string>}. No configuration load, process spawn or PID health probe occurs in status. Empty strings remain strings.',
+        'integrationStatus': 'Status projection only. Not registered as a live control method until real proxy lifecycle exists; never fabricate a connected state from configuration.',
+    },
+    'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
         'error codes and full websocket proxy behavior'],
     'limits': 'Static analysis, not native source recovery or runtime parity. No original host, browser, app-server, file opener or network request was executed.',

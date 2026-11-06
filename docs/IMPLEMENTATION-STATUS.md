@@ -6139,3 +6139,10 @@ Seventeen targeted Rust tests pass. The new owned-file integration test exercise
 Decoded the seven-entry native error type pointer/length table using Mach-O segment address translation. Added Rust RuntimeErrorKind, manifest-error conversion and codex_runtime_error_response-compatible JSON serialization: jsonrpc 2.0, preserved ID/message, numeric code 1 and data.type. Native discriminant 1 is chrome_extension_update_required, while 2 is codex_app_update_required; the earlier comparison-only protocol mismatch names now map to confirmed wire categories. Other types cover runtime, invalid/missing manifest, no matching installation and required-path missing.
 
 Nineteen configuration/manifest/error tests pass, including every category, opaque JSON IDs, Unicode/quoted messages and serialization round trips. The static audit verifies both type tables, the instruction indexing them and the code-1 literal. This serializer is not yet wired to hello/status/ensure/restart; no new runtime capability is advertised and no original process was launched.
+
+
+### 2026-11-06: native manager status projection
+
+Audited AppServerManager::status at 0x10001a87c and its dispatcher call at 0x100026028. No proxy yields only phase=idle. An existing proxy yields phase=connected and runtimeSessionId from the proxy's mutex-protected String clone. Status itself does not load configuration, launch a process or probe child/PID health. The native literal bytes confirm connected and runtimeSessionId; empty session strings are preserved rather than treated as idle.
+
+Implemented this projection in Rust and tested absence versus empty/present IDs, Unicode and owned snapshots. The version-pinned static audit passes and records branch, literal, session-lock and dispatcher evidence. This deliberately does not register a fake live status handler: the real proxy ownership/lifecycle and ensure/restart integration remain required. No original executable or user browser was run.

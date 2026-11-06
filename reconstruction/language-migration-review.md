@@ -16,7 +16,7 @@ User constraint: restore installed JavaScript as readable TypeScript; retain the
 
 ## Outstanding native work
 
-- Rust App Server: schema-2 validation and selection, complete load precedence, hello/status/ensure/restart, process/proxy lifecycle and original authorization. Environment resolution exists but is not connected to startup yet.
+- Rust App Server: schema-2 discovery, validation, selection, file loading, sidecar supplementation, environment composition and typed runtime errors now exist with targeted tests. They are not yet connected to runtime startup. Remaining work: hello/status/ensure/restart, process/proxy lifecycle and original authorization.
 - Swift desktop: complete original state/diff semantics and real screenshot/input acceptance; native language selection alone does not validate effects.
 - Remove remaining production consumers of prototype/TS-native alternatives, then retire references with compatibility tests retained as needed.
 - For each migration record original artifact/hash and symbol/instruction evidence, target native module, caller path and verification. Binary evidence supports reconstruction, not a claim to recovered Rust/Swift source bodies.
@@ -28,3 +28,14 @@ User constraint: restore installed JavaScript as readable TypeScript; retain the
 `node --import tsx --test reconstruction/native-host-public-boundary.test.ts` checks that normal native-host client graphs exclude the TS server/router/main/logger while the legacy API remains explicit.
 
 No credentials, personal desktop/browser data or installed registrations are needed for this review.
+
+## Existing repository follow-up: public entry points
+
+Rechecked package manifests and callers after the user clarified that existing implementations must also follow the original native language:
+
+- `packages/runtime-supervisor/package.json` still exposes TS `session`, MCP, stdio, pipe/config and sandbox host entry points. The default reconstruction build gates their compilation behind `--include-legacy`, but public exports still need consumer-by-consumer migration; build gating alone is not retirement.
+- `packages/native-macos/package.json` still exposes `src/index.ts` and `src/service.ts`. These require operation-level classification: keep native process clients/bindings, migrate native service semantics to the evidenced Rust/Swift layer. Do not rewrite every TS file merely because its package name contains native.
+- Root `package.json` still exposes `.` and `./native` to prototype outputs. `src/index.ts` imports `MacProvider`/`MacApp` from `src/native/provider.ts`. Legacy aliases do not remove these original public routes.
+- `@core/native-host` has an explicit legacy route and normal client graph exclusion test. This is a verified boundary improvement, not evidence that all original native host behavior has been restored.
+
+For every remaining migration, require: original artifact/symbol language evidence → responsibility mapping → native implementation → real caller switch → behavior validation → retire the old service/export. Original JavaScript remains readable TypeScript; original language unknown stays explicitly unknown until evidence exists. Native binary symbols do not establish recovered source bodies.
