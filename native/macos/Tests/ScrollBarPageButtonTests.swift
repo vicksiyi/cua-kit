@@ -19,6 +19,11 @@ struct ScrollBarPageButtonTests {
 
     static func main() throws {
         testCachedEnabledAndFocus()
+        let textNode = element("AXStaticText" as NSString, nil, id: 424237)
+        precondition(textNode.flattenedRole == UIElementFlattenedRole(
+            separator: " ", description: "text", targetDescription: "text"))
+        precondition(element(nil, nil, id: 424236).flattenedRole == nil)
+        precondition(element("AXTextField" as NSString, nil, id: 424235).flattenedRole == nil)
         precondition(element("AXImage" as NSString, nil, id: 424238).hasDescriptiveAttributes)
         precondition(!element("AXButton" as NSString, nil, id: 424239).hasDescriptiveAttributes)
         for key in ["AXTitle", "AXDescription", "AXValue", "AXPlaceholderValue"] {

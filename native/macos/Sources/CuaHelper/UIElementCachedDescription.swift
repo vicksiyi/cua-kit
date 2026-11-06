@@ -1,4 +1,6 @@
 extension UIElement {
+    var flattenedRole: UIElementFlattenedRole? { uiElementFlattenedRole(role: { role }) }
+
     var hasDescriptiveAttributes: Bool {
         uiElementHasDescriptiveAttributes(
             title: { cachedStringValue(for: UIElementAttribute("AXTitle")) },

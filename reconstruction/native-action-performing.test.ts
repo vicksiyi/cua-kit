@@ -180,3 +180,18 @@ test("native descriptive attributes preserve lazy text and image fallback", {
     assert.match(result.stdout, /descriptive attributes preserve ordered nonempty text and image fallback: 512 cases/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native flattened role preserves static text defaults", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-flat-role-"));
+  try {
+    const output = join(directory, "role");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementRole", "UIElementFlattenedRole"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementFlattenedRoleTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /flattened role reads once, preserves static text literals and rejects other roles/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

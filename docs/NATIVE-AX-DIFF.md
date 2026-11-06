@@ -1805,3 +1805,22 @@ UIElementRole witness table `0x10149f818` 的槽 `0x10149f848` 指向 `0x1007baf
 nil/空/空白/非空与图片/非图片角色，验证返回值和惰性 getter 顺序；具体对象
 检查四个 AX 字段的空白、空串和错误类型，以及图片/按钮角色默认值。两项相关
 测试通过。完整协议、生产节点筛选/transform 接线仍未完成。
+
+### 默认 flattenedRole 与不可变返回结构
+
+`AccessibilityNode.flattenedRole` (`0x10062520c..<0x100625368`) 读取一次 role，
+通过 AccessibilityRole witness +0x18 获取 staticText：UIElementRole 表槽
+`0x10149f830` → `0x1007baf3c`。相等时返回三个字符串，不等返回 nil。
+常量区 `0x101189ce0` 的两个 Swift small-string 值分别为单空格和 `text`；
+后者写入两次，故 separator=" "、description="text"、targetDescription="text"。
+
+名义类型 `0x1012c9470` 的 field descriptor `0x10132122c` 声明三个字段，
+名称和顺序与上述一致；三条 field record 的 flags 均为 0（不可变）。导出符号
+确认初始化器、三个 getter 和 Equatable，初始化器按 0/16/32 偏移保存字段。
+LLDB 对共享机器码显示的其它类型名称不能取代该类型的符号和字段元数据证据。
+
+恢复 UIElementFlattenedRole 结构、默认判断及具体缓存元素组合。测试覆盖静态
+文本、输入框、文本区域、图片、组、未知、空/大小写变体角色，检查 getter 只读
+一次，以及三个返回字段和相等语义；具体缓存测试验证角色解码。相关两项测试
+通过。TransformedUIElement 的 override 仍需单独还原，不能把默认实现宣称为
+整个生产角色变换流程。

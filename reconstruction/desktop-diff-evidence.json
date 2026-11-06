@@ -2015,7 +2015,8 @@
         {
           "slot": "0x101575770",
           "target": "0x10078fe38",
-          "requirementDescriptor": "0x1012c9380"
+          "requirementDescriptor": "0x1012c9380",
+          "meaning": "flattenedRole"
         },
         {
           "slot": "0x101575778",
@@ -2113,6 +2114,49 @@
         "native/macos/Sources/CuaHelper/UIElementCachedDescription.swift"
       ],
       "limitations": "Concrete UIElement cached fields composed; no claim to full generic AccessibilityNode conformance or production transform/filter integration."
+    },
+    "flattenedRole": {
+      "entry": "AccessibilityNode.flattenedRole at 0x10062520c..<0x100625368",
+      "role": "Read node role once, compare to AccessibilityRole witness +0x18 -> UIElementRole.staticText at 0x10149f830 -> 0x1007baf3c",
+      "result": "AXStaticText -> separator space, description text, targetDescription text; all other roles nil",
+      "constants": {
+        "address": "0x101189ce0",
+        "hex": "200000000000000000000000000000e1746578740000000000000000000000e4"
+      },
+      "layout": {
+        "nominal": "0x1012c9470",
+        "fieldDescriptor": "0x10132122c",
+        "immutableStrings": [
+          "separator",
+          "description",
+          "targetDescription"
+        ],
+        "offsets": [
+          0,
+          16,
+          32
+        ],
+        "conformance": "Equatable"
+      },
+      "blocks": [
+        {
+          "start": "0x10062520c",
+          "endExclusive": "0x100625368",
+          "machineCodeSha256": "356bca7de2f4ee101fa34bf45de3900b9f71f91580ce9ed664f7e218831f0f93"
+        },
+        {
+          "start": "0x1007baf3c",
+          "endExclusive": "0x1007baf58",
+          "machineCodeSha256": "755b5fb8ccac8dcb46e09c58208cb60d55af0743ae56185122b42c8b1c05f554"
+        },
+        {
+          "start": "0x1000bd498",
+          "endExclusive": "0x1000bd4a8",
+          "machineCodeSha256": "444faf659faf67117d966462f4caf09ccd29bf01affda1a813cf5a65fadc418a"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementFlattenedRole.swift",
+      "limitations": "Default node getter and concrete cached UIElement composition only. TransformedUIElement override and complete production rendering remain pending."
     },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",

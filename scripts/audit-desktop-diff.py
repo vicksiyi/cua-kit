@@ -811,6 +811,29 @@ element_storage_evidence['descriptiveAttributes']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementDescriptiveAttributes.swift','native/macos/Sources/CuaHelper/UIElementCachedDescription.swift'],
     'limitations':'Concrete UIElement cached fields composed; no claim to full generic AccessibilityNode conformance or production transform/filter integration.',
 }
+flattened_constants=read_virtual(0x101189ce0,32)
+if flattened_constants.hex()!='200000000000000000000000000000e1746578740000000000000000000000e4':
+    raise SystemExit('Flattened role small-string constants changed')
+if read_virtual(0x10132122c,16).hex()!='fea0f7ff0000000000000c0003000000':
+    raise SystemExit('Flattened role field descriptor changed')
+for address in [0x10132123c,0x101321248,0x101321254]:
+    if struct.unpack('<I',read_virtual(address,4))[0]!=0:
+        raise SystemExit('Flattened role fields are no longer immutable')
+line=next((line for line in fixups.splitlines() if '0x10149f830' in line.lower()),'')
+if '0x1007baf3c' not in line.lower(): raise SystemExit('Static text role witness changed')
+for entry in node_slots:
+    if entry['slot']=='0x101575770': entry['meaning']='flattenedRole'
+element_storage_evidence['flattenedRole']={
+    'entry':'AccessibilityNode.flattenedRole at 0x10062520c..<0x100625368',
+    'role':'Read node role once, compare to AccessibilityRole witness +0x18 -> UIElementRole.staticText at 0x10149f830 -> 0x1007baf3c',
+    'result':'AXStaticText -> separator space, description text, targetDescription text; all other roles nil',
+    'constants':{'address':'0x101189ce0','hex':flattened_constants.hex()},
+    'layout':{'nominal':'0x1012c9470','fieldDescriptor':'0x10132122c','immutableStrings':['separator','description','targetDescription'],'offsets':[0,16,32],'conformance':'Equatable'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10062520c,0x100625368),(0x1007baf3c,0x1007baf58),(0x1000bd498,0x1000bd4a8)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementFlattenedRole.swift',
+    'limitations':'Default node getter and concrete cached UIElement composition only. TransformedUIElement override and complete production rendering remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
