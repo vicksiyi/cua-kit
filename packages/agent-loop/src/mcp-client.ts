@@ -1,5 +1,7 @@
 import {
   ElicitRequestSchema,
+  McpError,
+  ErrorCode,
   type ElicitRequestParams,
   type ElicitResult,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -69,15 +71,28 @@ export class McpToolClient implements ToolClient {
     return definitions;
   }
   async callTool(call: ToolCall, signal?: AbortSignal): Promise<ToolResult> {
-    const result = await this.client.callTool(
-      {
-        name: call.name,
-        arguments: call.arguments,
-        _meta: this.options.requestMeta?.(),
-      },
-      undefined,
-      { signal, timeout: 65000 },
-    );
+    let result: Awaited<ReturnType<Client["callTool"]>>;
+    try {
+      result = await this.client.callTool(
+        {
+          name: call.name,
+          arguments: call.arguments,
+          _meta: this.options.requestMeta?.(),
+        },
+        undefined,
+        { signal, timeout: 65000 },
+      );
+    } catch (error) {
+      // Caller recovery only: preserve the server's strict argument contract.
+      // Do not retry, rewrite arguments, or swallow transport/policy failures.
+      signal?.throwIfAborted();
+      if (!(error instanceof McpError) || error.code !== ErrorCode.InvalidParams)
+        throw error;
+      return {
+        isError: true,
+        content: [{ type: "text", text: error.message }],
+      };
+    }
     const content: Content[] = [];
     if (!Array.isArray(result.content))
       throw new Error("MCP tool returned unsupported content envelope.");

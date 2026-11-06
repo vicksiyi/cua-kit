@@ -6420,3 +6420,14 @@ Both native and full packaged extensions pass the isolated Chromium MCP-chain te
 The same runs verify browser tab discovery/update notification, context reading, tab creation, real CUA navigation/click/read through MCP and a deterministic AgentLoop model, independent HTTP evidence of the random button action, and native endpoint cleanup after owned browser shutdown. Temporary profiles and registrations are removed; daily Chrome is not used. This accepts these operations in isolated Chromium, not existing-profile Chrome, a live DeepSeek model, desktop UI, or the sidepanel-to-Codex App Server session.
 
 Reproduce: `CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-concurrency=1 reconstruction/extension-native-controller.test.ts` after building the required runtime/extension/host artifacts.
+
+
+### Live DeepSeek browser acceptance and argument-error recovery
+
+A real DeepSeek run through Rust supervisor, packaged native extension, release Rust host and isolated Chromium successfully navigated to a local fixture and clicked its random action button, but initially terminated when the model combined code and completion_summary in one JS call. The native supervisor correctly rejected that mutually exclusive shape with MCP InvalidParams (-32602); McpToolClient previously propagated the exception and ended the loop.
+
+The caller now returns only typed MCP InvalidParams failures as isError tool feedback, allowing the model to correct its next call within the existing step budget. No automatic retry, argument rewriting or native schema relaxation is introduced. Other MCP failures, connection closure and cancellation still propagate. This is independently authored AgentLoop integration behavior, not a recovered native implementation.
+
+Validation: four targeted tests and agent-loop TypeScript checking pass. A real stdio MCP fixture demonstrates invalid mixed arguments produce no execution, the model sees the error and corrects the next call, and internal errors/connection loss remain fatal. A subsequent real DeepSeek run passed in approximately 18 seconds, with actual page navigation/click, observed random marker in the final answer, an independent HTTP action receipt, completion-summary acceptance and normal cleanup. The successful live run is not evidence that every model-generated argument error will recover; the regression fixture establishes that recovery path deterministically.
+
+Only the native packaged extension was exercised with DeepSeek this checkpoint. Daily Chrome profiles, public search and native desktop acceptance remain open. Local tool traces are outside the repository and are not published; credentials are not included in source or reports.

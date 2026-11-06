@@ -104,7 +104,7 @@
     {
       "path": "packages/agent-loop/src/mcp-client.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "1da23aaaa9c9a618022ce3943caf7b61475f441896c7312e318d65904d660da2"
+      "sha256": "b3f459b22557f067e6d4d5818d64051e093ea2cb62b6d7d037442fb86f3e8a1b"
     },
     {
       "path": "packages/agent-loop/src/native-pipe-diagnostics.ts",
