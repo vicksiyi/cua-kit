@@ -1166,6 +1166,14 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['chessSystemComposition']={
+    'bundleGetter':'UIElementProtocol 0x1007a7f04..<0x1007a7f4c delegates to AX bundle getter 0x1006fa49c..<0x1006fa640; system path catches PID failure then NSRunningApplication(processIdentifier:).bundleIdentifier or nil',
+    'composition':'Concrete UIElement role/title cache, frameValue including position/size fallback, parentValue with transaction and parent frameValue; preserves lazy gate order; system adapters bind running app lookup, AX hit test and CFEqual semantics',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007a7f04,0x1007a7f4c),(0x1006fa49c,0x1006fa640)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementChessComposition.swift','native/macos/Sources/CuaHelper/SystemChessClickPoint.swift'],
+    'validation':'Concrete prefetched AX references and transaction run center+4096 samples; verify mean, no raw reads, actual AX equality, title-gate short circuit and lazy parent after center-hit.',
+    'limitations':'System-only composition; full TaskLocal provider context and production clickablePoint/action dispatch integration remain outstanding. No live Chess UI was operated.',
+}
 element_storage_evidence['runningProcessNative']={
     'enumeration':'0x10024503c..<0x1002452d8: options bit 0 selects PROC_UID_ONLY/getuid, otherwise PROC_ALL_PIDS/0; two proc_listpids calls with exact initial allocation; <=0/allocation failure returns nil; skip PID<1; preserve order without retry/dedup/sort',
     'filters':'Optional name exact isEqualToString; optional executable path resolves symlinks then standardizes on both sides, compares isEqual. Initialize process for name only when needed; otherwise after path acceptance.',
@@ -1207,7 +1215,7 @@ element_storage_evidence['chessPreferredPoint']={
     'sampling':'64 rows x 64 columns; cell centers using parent minX/minY + size/64 * (index+0.5); individual hit errors/nil ignored; matching points collected; nil if empty else sequential coordinate sums / count',
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079eb20,0x10079f380),(0x1007a3520,0x1007a3880),(0x1007a73ec,0x1007a7494),(0x101572998,0x101572a38),(0x101572a40,0x101572ae0)]],
     'implementation':'UIElementChessClickPoint.swift preserves gate order, title suffix and complete sampling/averaging control flow.',
-    'limitations':'App lookup, hit-test and provider equality remain explicit dependencies; concrete app wrapper/provider composition and production integration pending. Sampling tests use fixtures only.',
+    'limitations':'Concrete system composition now exists in UIElementChessComposition/SystemChessClickPoint; TaskLocal provider dispatch and production click integration remain pending. Sampling tests use fixtures only.',
 }
 element_storage_evidence['clippingFrame']={
     'entry':'0x10079ffb8..<0x1007a03f8',

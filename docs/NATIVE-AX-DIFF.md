@@ -2549,3 +2549,21 @@ SystemRunningApplicationLookup.swift 已把上一轮 PID 回退控制流接到�
 Objective-C 专项测试实际只读查询测试进程自身，验证 UID/name/path、符号链接路径
 匹配、空结果、无效 PID，以及可变字符串输入的 copy 语义；Swift package 构建通过。
 尚未故障注入内存分配/枚举失败，也未完成完整点击接线和真实 UI 操作验收。
+
+
+## Chess 特殊位置系统接线（2026-11-07）
+
+UIElementChessComposition.swift 连接缓存 role/title、带 position/size 回退的 frame、
+事务父元素解码和父 frame。读取保持惰性：前置 gate 失败不查询应用，中心已命中目标
+则不读取父节点。SystemChessClickPoint.swift 将这些边界接到实际应用查询、AX
+命中测试、CFEqual 和 raw 属性读取；事务仍由调用者传入。
+
+补查 bundle getter：0x1007a7f04 委托给 AX getter 0x1006fa49c；系统分支
+0x1006fa57c 捕获 PID 读取错误并返回 nil，否则查询 NSRunningApplication 的
+processIdentifier 对应实例，再取 bundleIdentifier。没有启动应用或额外 PID 正值门槛。
+原版 MockProvider 分支仍需单独还原，不能用系统接线覆盖它。
+
+具体组合测试使用 AX 引用及预取事务，执行中心 + 4096 次采样，验证四个命中点的
+均值、实际 AX 相等语义及全缓存路径不触发 raw 读取；另验证中心命中跳过父读取、
+无标题跳过 bundle/app 查询。专项测试及 Swift 构建通过。未操作真实 Chess，
+完整 clickablePoint 与生产 indexed click 尚未切换，故不宣称用户点击已修复。
