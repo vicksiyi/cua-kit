@@ -31,3 +31,16 @@ test('RPC error categories expose no raw message or structured payload',()=>{
  assert.deepEqual(rows.map(row=>row.errorKind),['detached-during-command','debugger-unattached','debugger-unattached','method-not-found','other','other']);
  assert(!/SECRET|PRIVATE/.test(JSON.stringify(rows)));
 });
+
+test('only the CDP command deadline format gets the timeout diagnostic',()=>{
+ const rows=[],observe=createWireObserver(v=>rows.push(v),true);
+ for(const message of [
+  'Timed out after 10000ms waiting for CDP command Runtime.evaluate.',
+  'Timed out after 0.5ms waiting for CDP command Page.navigate.',
+  'Timed out waiting for selector PRIVATE_SELECTOR',
+  'Timed out after 10000ms waiting for CDP command PRIVATE_URL https://private.test.',
+  'Timed out after 10000ms waiting for CDP command Runtime.evaluate. PRIVATE_TOKEN',
+ ])observe(frame({jsonrpc:'2.0',id:7,error:{code:-32000,message}}));
+ assert.deepEqual(rows.map(row=>row.errorKind),['cdp-command-timeout','cdp-command-timeout','other','other','other']);
+ assert(!/PRIVATE|private.test/.test(JSON.stringify(rows)));
+});

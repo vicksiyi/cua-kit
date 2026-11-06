@@ -6,6 +6,7 @@ export function wireErrorKind(error) {
   const message = typeof error.message === 'string' ? error.message : '';
   if (message.includes('Detached while handling command')) return 'detached-during-command';
   if (message.includes('Debugger unattached') || message.includes('Debugger is not attached')) return 'debugger-unattached';
+  if (/^Timed out after [0-9]+(?:\.[0-9]+)?ms waiting for CDP command [A-Za-z][A-Za-z0-9_.]{0,100}\.$/.test(message)) return 'cdp-command-timeout';
   if (error.code === -32601) return 'method-not-found';
   return 'other';
 }

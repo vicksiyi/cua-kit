@@ -42,6 +42,9 @@ function fixture(original: boolean) {
     popup: true,
     attachFail: false,
     timeout: false,
+    commandError: undefined as Error | undefined,
+    stopLoadingFail: false,
+    timeoutDetachFail: false,
     detachFail: false,
     owner: null as string | null,
     child: true,
@@ -129,12 +132,18 @@ function fixture(original: boolean) {
     executeBrowserManagement: call("management", () => "managed"),
     getBrowserManagementAuditTrail: call("audit", () => ["entry"]),
     sendCdp: call("cdp", (params) => {
+      if (params.method === "Page.stopLoading" && state.stopLoadingFail)
+        throw Error("stop loading failed");
+      if (params.method !== "Page.stopLoading" && state.commandError)
+        throw state.commandError;
       if (state.timeout && params.method !== "Page.stopLoading")
         throw Error("timeout");
       return { ok: true };
     }),
     isCdpTimeout: (error: any) => error.message === "timeout",
-    detachAfterTimeout: call("timeout.detach"),
+    detachAfterTimeout: call("timeout.detach", () => {
+      if (state.timeoutDetachFail) throw Error("timeout detach failed");
+    }),
     attachDebugger: call("debugger.attach", () => {
       if (state.attachFail) throw Error("attach failed");
     }),
@@ -1267,4 +1276,60 @@ test("restored session waits for network policy acknowledgement before attaching
   await session.detach({ ...request, tabId: 1 });
   await NetworkPolicy.getInstance().queue;
   assert.deepEqual(rules, []);
+});
+
+// Compare the installed session method with restored TS under the same dependency
+// failures. These are protocol-boundary tests, not a real Chrome timeout claim.
+test("extension CDP timeout matrix matches installed cleanup boundaries", async () => {
+  for (const method of ["Page.navigate", "Runtime.evaluate"]) {
+    for (const target of [{ tabId: 1 }, { tabId: 1, sessionId: "child" }, { targetId: "target:1" }]) {
+      for (const preserve of [undefined, false, true, "true"]) {
+        await compare(async ({ session, state, trace }) => {
+          await session.activateTurn(request);
+          trace.length = 0;
+          state.timeout = true;
+          const result = await outcome(() => session.executeCdp({
+            target, method, preserveDebuggerOnTimeout: preserve,
+          }));
+          assert.deepEqual(result, { error: "timeout" });
+          const cleanup = trace.filter(([name]) => name === "cdp" || name === "timeout.detach");
+          const expected: any[] = [["cdp", { target, method, preserveDebuggerOnTimeout: preserve }]];
+          if (method === "Page.navigate") expected.push(["cdp", {
+            target, method: "Page.stopLoading", commandParams: {}, timeoutMs: 1000,
+          }]);
+          if ("tabId" in target && preserve !== true) expected.push(["timeout.detach", 1]);
+          assert.deepEqual(cleanup, expected);
+          return result;
+        });
+      }
+    }
+  }
+});
+
+test("extension timeout cleanup failures and ordinary command errors match installed source", async () => {
+  for (const stopLoadingFail of [false, true]) {
+    for (const timeoutDetachFail of [false, true]) {
+      await compare(async ({ session, state, trace }) => {
+        await session.activateTurn(request);
+        state.timeout = true;
+        state.stopLoadingFail = stopLoadingFail;
+        state.timeoutDetachFail = timeoutDetachFail;
+        trace.length = 0;
+        const result = await outcome(() => session.executeCdp({ target: { tabId: 1 }, method: "Page.navigate" }));
+        assert.deepEqual(result, { error: timeoutDetachFail ? "timeout detach failed" : "timeout" });
+        assert.equal(trace.filter(([name]) => name === "timeout.detach").length, 1);
+        return result;
+      });
+    }
+  }
+  await compare(async ({ session, state, trace }) => {
+    await session.activateTurn(request);
+    state.commandError = Error("Detached while handling command.");
+    trace.length = 0;
+    const result = await outcome(() => session.executeCdp({ target: { tabId: 1 }, method: "Page.navigate" }));
+    assert.deepEqual(result, { error: "Detached while handling command." });
+    assert.equal(trace.filter(([name]) => name === "cdp").length, 1);
+    assert.equal(trace.filter(([name]) => name === "timeout.detach").length, 0);
+    return result;
+  });
 });
