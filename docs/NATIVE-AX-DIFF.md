@@ -2201,3 +2201,19 @@ is returned without normalization. Tests exercise actual AXValue/NSValue bridgin
 AXError payloads, wrong CF types, cache/fresh/status combinations and fallback order.
 Position and size remain typed dependencies; their concrete readers and production
 observation wiring are still incomplete.
+
+
+### Position/size readers and frame composition
+
+Restored CGPoint and CGSize CF dispatch through original shared decoder
+0x100712178 (entries 0x100712814 and 0x10071215c), and the window position/size
+readers at 0x10079d594 / 0x10079da24. Both preserve cached lenient decoding,
+known-unsupported gating and strict fresh decoding. Status constant data confirms
+noValue (-25212) and attributeUnsupported (-25205) are tolerated alongside success.
+
+`UIElement.frameValue(readAttribute:reportError:)` now composes the actual frame,
+position and size readers. Tests cover real AXValue/NSValue geometry, mismatched
+geometry types, the cached/fresh/status matrix, unsupported attributes, and complete
+frame fallback including one logged frame error and position-dependent size reads.
+This replaces the previous position/size dependency gap; the raw provider,
+WindowUIElement wrapper and production observation pipeline remain incomplete.

@@ -1127,6 +1127,17 @@ element_storage_evidence['windowFrame']={
     'implementation':['native/macos/Sources/CuaHelper/AXRectDecoding.swift','native/macos/Sources/CuaHelper/UIElementFrame.swift'],
     'limitations':'Concrete UIElement composition uses injected provider read and typed position/size getters. Those getter implementations, WindowUIElement wrapper and production observation wiring remain pending.',
 }
+element_storage_evidence['positionSize']={
+    'position':'Window entry 0x10079d594, shared reader 0x10079d5c4..<0x10079da00; CGPoint decoder 0x100712814 -> 0x100712178',
+    'size':'Window reader 0x10079da24..<0x10079de18; CGSize decoder 0x10071215c -> 0x100712178',
+    'attributes':{'position':'AXPosition, initializer 0x100799170','size':'AXSize, initializer 0x100799200'},
+    'toleratedStatusData':{'position':'0x101571610: -25212, -25205','size':'0x101571640: -25212, -25205'},
+    'evaluation':'Cached lenient typed decode wins; otherwise known-unsupported gate then fresh strict read. Invalid or failed fresh values log once and return nil. No coordinate normalization or geometry-type reinterpretation.',
+    'composition':'UIElement.frameValue(readAttribute:reportError:) composes AXFrame then position and size against the same cache and provider.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079d594,0x10079da00),(0x10079da24,0x10079de18),(0x10071215c,0x100712830),(0x100799170,0x1007991a4),(0x100799200,0x10079922c)]],
+    'implementation':['native/macos/Sources/CuaHelper/AXPointDecoding.swift','native/macos/Sources/CuaHelper/AXSizeDecoding.swift','native/macos/Sources/CuaHelper/UIElementGeometry.swift'],
+    'limitations':'Provider remains injected; native wrapper types and production observation integration remain incomplete.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

@@ -2985,6 +2985,53 @@
       ],
       "limitations": "Concrete UIElement composition uses injected provider read and typed position/size getters. Those getter implementations, WindowUIElement wrapper and production observation wiring remain pending."
     },
+    "positionSize": {
+      "position": "Window entry 0x10079d594, shared reader 0x10079d5c4..<0x10079da00; CGPoint decoder 0x100712814 -> 0x100712178",
+      "size": "Window reader 0x10079da24..<0x10079de18; CGSize decoder 0x10071215c -> 0x100712178",
+      "attributes": {
+        "position": "AXPosition, initializer 0x100799170",
+        "size": "AXSize, initializer 0x100799200"
+      },
+      "toleratedStatusData": {
+        "position": "0x101571610: -25212, -25205",
+        "size": "0x101571640: -25212, -25205"
+      },
+      "evaluation": "Cached lenient typed decode wins; otherwise known-unsupported gate then fresh strict read. Invalid or failed fresh values log once and return nil. No coordinate normalization or geometry-type reinterpretation.",
+      "composition": "UIElement.frameValue(readAttribute:reportError:) composes AXFrame then position and size against the same cache and provider.",
+      "blocks": [
+        {
+          "start": "0x10079d594",
+          "endExclusive": "0x10079da00",
+          "machineCodeSha256": "4f26fc1b3fe7f3d3ab2415fe81176f62ba7f06fc7dfa78fa0d4b2632f51fe034"
+        },
+        {
+          "start": "0x10079da24",
+          "endExclusive": "0x10079de18",
+          "machineCodeSha256": "aa9b684a2204f7338cb46a42ee287f5fab1d3db871608ec0cc4158cde474ae66"
+        },
+        {
+          "start": "0x10071215c",
+          "endExclusive": "0x100712830",
+          "machineCodeSha256": "dfb83414923fd5eefc7a7779da8535277b06aa61453060873820e37add1cdbbe"
+        },
+        {
+          "start": "0x100799170",
+          "endExclusive": "0x1007991a4",
+          "machineCodeSha256": "1fa3dd16fc1fcec39cf80ba64d3996ab9d829228404f14cb706e5bcbd6bbf75b"
+        },
+        {
+          "start": "0x100799200",
+          "endExclusive": "0x10079922c",
+          "machineCodeSha256": "02ce63bfff869ae86ab318538992ce70f490c87994e26f0169c82ef02f5fa1a5"
+        }
+      ],
+      "implementation": [
+        "native/macos/Sources/CuaHelper/AXPointDecoding.swift",
+        "native/macos/Sources/CuaHelper/AXSizeDecoding.swift",
+        "native/macos/Sources/CuaHelper/UIElementGeometry.swift"
+      ],
+      "limitations": "Provider remains injected; native wrapper types and production observation integration remain incomplete."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

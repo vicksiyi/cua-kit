@@ -8,7 +8,8 @@ extension UIElementAttribute {
 extension UIElement {
     // Window specialization 0x1007575ac..<0x100757a50. AXFrame is preferred;
     // only a nil result (including logged read/decode errors) enters fallback.
-    // Position/size keep their own typed provider boundaries until restored.
+    // Position/size keep separate typed provider boundaries; UIElementGeometry
+    // composes their concrete readers through the readAttribute overload.
     func frameValue(
         read: () -> (error: AXError, value: AXPartialValue?),
         reportError: (Error) -> Void,
