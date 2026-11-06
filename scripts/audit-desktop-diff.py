@@ -896,6 +896,30 @@ element_storage_evidence['transformedElementStorage']={
     'interpretation':'Struct with 26 mutable stored fields; element is concrete UIElement, not AXUIElement or Any. Role is stored independently; eight Bool fields follow actionDescriptions. NSAttributedString and TransformedUIString are distinct optional types, not plain String substitutes.',
     'limitations':'Storage/type contract recovered. Physical offsets other than separately audited role, initializer transformation semantics, TransformedUIString, full protocol conformance and production integration remain pending; no partial same-name TransformedUIElement substitute is introduced.',
 }
+for address,expected in [
+    (0x101321390,'0aa4f7ff0000000000000c0001000000'),
+    (0x1013213ac,'12a3f7ff0000000000000c0002000000'),
+    (0x1013213d4,'74a4f7ff0000000002000c0002000000')]:
+    if read_virtual(address,16).hex()!=expected:
+        raise SystemExit('TransformedUIString field descriptor changed')
+if struct.unpack('<QQ',read_virtual(0x101159560,16))!=(1,2):
+    raise SystemExit('TransformedUIString empty constructor span count changed')
+line=next((line for line in fixups.splitlines() if '0x101466148' in line.lower()),'')
+if 'libswiftCore/_$sSKsSS7ElementRtzrlE6joined9separatorS2S_tF' not in line:
+    raise SystemExit('TransformedUIString description join changed')
+element_storage_evidence['transformedStringStorage']={
+    'outer':{'nominal':'0x1012c9600','fields':[{'name':'stringInterpolation','type':'StringInterpolation','mutable':True}]},
+    'interpolation':{'nominal':'0x1012c961c','fields':[{'name':'spans','type':'[Span]','mutable':True},{'name':'sourceOffsets','type':'[Int?]?','mutable':True}]},
+    'span':{'nominal':'0x1012c9640','kind':'enum with two payload cases','cases':['string(String)','url(String, url: Foundation.URL, isImage: Bool)']},
+    'constructors':{'empty':'0x10063a084 creates one string-empty span and nil offsets; not zero spans',
+        'literal':'0x10063a11c creates one string span and nil offsets',
+        'capacity':'0x100638c78 checks signed overflow for literalCapacity + interpolationCount, clamps negative sum to zero, reserves spans with nil offsets'},
+    'description':'0x100638c74 -> 0x10063b5f8: collect first String payload from each span, join with empty separator; URL and image metadata do not regenerate text; sourceOffsets not used',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100638c74,0x100638cb0),(0x10063a084,0x10063a1c4),(0x10063b5f8,0x10063b808),(0x10063cc34,0x10063cc3c)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringSpan.swift restores enum under a local name and shared description body',
+    'limitations':'Full interpolation append/merge, mapped-string offsets and source-range methods, URL shortening and renderer context remain pending. No partial same-name TransformedUIString is substituted.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

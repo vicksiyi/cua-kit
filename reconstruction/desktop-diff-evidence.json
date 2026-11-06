@@ -2431,6 +2431,71 @@
       "interpretation": "Struct with 26 mutable stored fields; element is concrete UIElement, not AXUIElement or Any. Role is stored independently; eight Bool fields follow actionDescriptions. NSAttributedString and TransformedUIString are distinct optional types, not plain String substitutes.",
       "limitations": "Storage/type contract recovered. Physical offsets other than separately audited role, initializer transformation semantics, TransformedUIString, full protocol conformance and production integration remain pending; no partial same-name TransformedUIElement substitute is introduced."
     },
+    "transformedStringStorage": {
+      "outer": {
+        "nominal": "0x1012c9600",
+        "fields": [
+          {
+            "name": "stringInterpolation",
+            "type": "StringInterpolation",
+            "mutable": true
+          }
+        ]
+      },
+      "interpolation": {
+        "nominal": "0x1012c961c",
+        "fields": [
+          {
+            "name": "spans",
+            "type": "[Span]",
+            "mutable": true
+          },
+          {
+            "name": "sourceOffsets",
+            "type": "[Int?]?",
+            "mutable": true
+          }
+        ]
+      },
+      "span": {
+        "nominal": "0x1012c9640",
+        "kind": "enum with two payload cases",
+        "cases": [
+          "string(String)",
+          "url(String, url: Foundation.URL, isImage: Bool)"
+        ]
+      },
+      "constructors": {
+        "empty": "0x10063a084 creates one string-empty span and nil offsets; not zero spans",
+        "literal": "0x10063a11c creates one string span and nil offsets",
+        "capacity": "0x100638c78 checks signed overflow for literalCapacity + interpolationCount, clamps negative sum to zero, reserves spans with nil offsets"
+      },
+      "description": "0x100638c74 -> 0x10063b5f8: collect first String payload from each span, join with empty separator; URL and image metadata do not regenerate text; sourceOffsets not used",
+      "blocks": [
+        {
+          "start": "0x100638c74",
+          "endExclusive": "0x100638cb0",
+          "machineCodeSha256": "196f553605e94e42e169513da66b0256e3e09d34c87f53e597254b4f6fcf1b81"
+        },
+        {
+          "start": "0x10063a084",
+          "endExclusive": "0x10063a1c4",
+          "machineCodeSha256": "a273c4052fdac9b4311280e1e5da095e7449f403bfcfe88a0de75d20d93ca24d"
+        },
+        {
+          "start": "0x10063b5f8",
+          "endExclusive": "0x10063b808",
+          "machineCodeSha256": "d7fd6b24382c463aacb13798271b34a711e775053970d89aab32ebe2a244670e"
+        },
+        {
+          "start": "0x10063cc34",
+          "endExclusive": "0x10063cc3c",
+          "machineCodeSha256": "a15536abfeeaafc0c6280395942b12a54a147b8c317a37fb966ecba13ba9b6a1"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringSpan.swift restores enum under a local name and shared description body",
+      "limitations": "Full interpolation append/merge, mapped-string offsets and source-range methods, URL shortening and renderer context remain pending. No partial same-name TransformedUIString is substituted."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

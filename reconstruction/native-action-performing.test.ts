@@ -210,3 +210,18 @@ test("transformed native roles preserve mutable table and missing-entry behavior
     assert.match(result.stdout, /transformed roles preserve three defaults, mutation, removal and no fallback/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed string description preserves span payloads", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-spans-"));
+  try {
+    const output = join(directory, "spans");
+    await exec("xcrun", ["swiftc",
+      resolve("native/macos/Sources/CuaHelper/TransformedUIStringSpan.swift"),
+      resolve("native/macos/Tests/TransformedUIStringSpanTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /transformed string description preserves span text, ordering, Unicode and URL metadata/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

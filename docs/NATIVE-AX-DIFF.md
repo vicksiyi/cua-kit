@@ -1879,3 +1879,26 @@ flags=2（var），不是缓存 UIElement 的不可变字段布局。字段顺�
 审计脚本逐项校验 26 个字段名、类型引用、可变标志和六个间接类型绑定，保存到
 transformedElementStorage。下一步需要恢复 TransformedUIString 与变换上下文，
 再组合完整节点，避免先创建同名但缺字段的简化类型。
+
+### TransformedUIString 的片段、源位置映射和 description
+
+字段元数据确认三层结构：TransformedUIString（nominal 0x1012c9600）仅存一个
+可变 stringInterpolation；嵌套 StringInterpolation（0x1012c961c）存可变
+spans:[Span] 与 sourceOffsets:[Int?]?。Span（0x1012c9640）是两种 payload
+case 的枚举：string(String)、url(String, url:Foundation.URL, isImage:Bool)。
+不能把这个类型替换成 String，否则会丢失链接和源位置映射。
+
+空构造器 `0x10063a084` 创建一个空文本 span 而非空数组，offsets=nil；literal
+构造器 `0x10063a11c` 同样创建单一文本 span。capacity 构造器 `0x100638c78`
+对 literalCapacity+interpolationCount 做检查溢出加法，将负和截为零后预留容量，
+offsets 仍为 nil。构造证据已记录，完整类型尚未宣称实现。
+
+description 的共享机器码 `0x10063b5f8..<0x10063b808` 顺序提取两种 span 的
+第一个 String payload，以空分隔符 joined。它不读取 sourceOffsets，不重新
+渲染 URL 或 isImage；这些元数据由其它逻辑使用。GOT 0x101466148 指向 Swift
+joined(separator:) 验证了调用目标。
+
+本轮在独立文件恢复完整 Span payload 与 description helper，使用局部命名
+TransformedUIStringSpan，待完整插值类型恢复后组合。测试空数组/空文本、混合
+链接和图片、Unicode 组合字符与 emoji、顺序和 URL 元数据保留。插值追加/合并、
+映射偏移、源范围反查及 URL 缩短仍需继续恢复，生产变换流程未完成。
