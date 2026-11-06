@@ -43,3 +43,18 @@
 - 使用真实 BrowserContext.supportsTabCapability：provider 声明 webmcp 但运行时禁用它时，invoke 在页面读取、审批与 CDP 派发前拒绝；不会只在文档中隐藏。
 
 这里证明 WebMCP 命令已有的支持检查正确接入有效能力过滤，不意味着新增了所有命令通用的 capability 拦截器。原 runtime_policies.assertCommandSupported 本身只覆盖特定下载组合，不能把它误称为通用权限检查。
+
+## SIWC 客户端协议恢复（尚未注册为可用能力）
+
+已新增 commands/siwc.ts 与 capabilities/tab_siwc.ts：还原 detect/authenticate 的 payload、结果 union、候选数量规则、AX/DOM target 约束，以及客户端调用顺序。authenticate 在发送前 parse，并以当前实例的 browser/tab id 覆盖外部同名字段；detect 与 authenticate 都原样返回 transport 结果，不擅自多做结果解析。
+
+两项测试通过：schema 对照当前原构建、客户端验证与派发边界；Browser TypeScript 检查通过。没有发生真实登录、grant 请求或 cookie 安装。
+
+当前没有把该类加入 tabCapabilityDefinitions，也没有注册未完成的服务端命令。剩余工作明确为：
+- 注入脚本的 siwcDetect/siwcDocumentId/siwcRef/isSiwcControl；
+- detect 的会话与 document generation 校验；
+- authenticate 的绑定 selector、页面/账户反复校验、原生用户授权与 permission 持久化；
+- grant、cookie、单次点击的完整编排及各失败状态；
+- 完成后再一起接入命令注册、能力注册、文档与端到端验收。
+
+上下文方法和客户端类型存在，不代表以上服务端流程已完成。
