@@ -1166,6 +1166,16 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clickPointResolution']={
+    'pointError':'0x1007b1dc4 checks async error and propagates before point-result handling',
+    'missingPoint':'0x1007b1e7c..<0x1007b1eb8 checks CGPoint optional tag; nil constructs SynthesizedEvent.Error tag 3',
+    'target':'0x1007b1f94 calls ApplicationUIElement.target(forMouseEventAt:axWindowAtPoint:axElementAtPoint:); error at 0x1007b1f9c propagates',
+    'eventStorage':{'descriptor':'0x1012ccc98','fieldDescriptor':'0x10132376c','field':'immutable cgEvents: [__C.CGEvent]','symbolicType':'0x10129eefa Say + indirect reference via 0x101462170 -> 0x1012cc08c (CGEvent in __C) + G'},
+    'errorStorage':{'descriptor':'0x1012cccd0','fieldDescriptor':'0x1013237c8','casesInOrder':['invalidParameter','failedToCreateSource','failedToTranslateKeyCodes','cannotClickOffscreenElement'],'payloads':False,'conformances':['Swift.Error','Swift.Equatable','Swift.Hashable']},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007b1d7c,0x1007b1fc4),(0x1012ccc98,0x1012cccec),(0x10132376c,0x101323788),(0x1013237c8,0x101323808)]],
+    'implementation':['SynthesizedEvent.swift','UIElementClickTarget.swift'],
+    'limitations':'Extracted generic target boundary preserves errors and point forwarding. Actual clickablePoint geometry, ApplicationUIElement target resolver, event sending and cursor animation still pending; production demo center-point behavior remains unmodified.',
+}
 element_storage_evidence['clickPreparation']={
     'entry':'0x1007b0dd4 stores click arguments; continuation 0x1007b0f08..<0x1007b11b8 selects first path',
     'ordering':'actions witness +0x48 read once; contains pick before contains press; isInsideWebView witness +0x40 read before all parameter gates',

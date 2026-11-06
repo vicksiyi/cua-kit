@@ -3093,6 +3093,60 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "clickPointResolution": {
+      "pointError": "0x1007b1dc4 checks async error and propagates before point-result handling",
+      "missingPoint": "0x1007b1e7c..<0x1007b1eb8 checks CGPoint optional tag; nil constructs SynthesizedEvent.Error tag 3",
+      "target": "0x1007b1f94 calls ApplicationUIElement.target(forMouseEventAt:axWindowAtPoint:axElementAtPoint:); error at 0x1007b1f9c propagates",
+      "eventStorage": {
+        "descriptor": "0x1012ccc98",
+        "fieldDescriptor": "0x10132376c",
+        "field": "immutable cgEvents: [__C.CGEvent]",
+        "symbolicType": "0x10129eefa Say + indirect reference via 0x101462170 -> 0x1012cc08c (CGEvent in __C) + G"
+      },
+      "errorStorage": {
+        "descriptor": "0x1012cccd0",
+        "fieldDescriptor": "0x1013237c8",
+        "casesInOrder": [
+          "invalidParameter",
+          "failedToCreateSource",
+          "failedToTranslateKeyCodes",
+          "cannotClickOffscreenElement"
+        ],
+        "payloads": false,
+        "conformances": [
+          "Swift.Error",
+          "Swift.Equatable",
+          "Swift.Hashable"
+        ]
+      },
+      "blocks": [
+        {
+          "start": "0x1007b1d7c",
+          "endExclusive": "0x1007b1fc4",
+          "machineCodeSha256": "7ed1c5dccd1295805785a544a953fa6bedab22c339955a4f6d39d7593654dc84"
+        },
+        {
+          "start": "0x1012ccc98",
+          "endExclusive": "0x1012cccec",
+          "machineCodeSha256": "e9a99478efdc2d45e06c1d12750803236c1ba0c4fd35749b69961c38e33cbc97"
+        },
+        {
+          "start": "0x10132376c",
+          "endExclusive": "0x101323788",
+          "machineCodeSha256": "07ad3b68594756d19dc22f80e16d66e81a05770cf129d5d9d58288b9a342c3b7"
+        },
+        {
+          "start": "0x1013237c8",
+          "endExclusive": "0x101323808",
+          "machineCodeSha256": "38878d90746d37553badadc0318dedadd201514deaf3772df7058e7f8f8b777b"
+        }
+      ],
+      "implementation": [
+        "SynthesizedEvent.swift",
+        "UIElementClickTarget.swift"
+      ],
+      "limitations": "Extracted generic target boundary preserves errors and point forwarding. Actual clickablePoint geometry, ApplicationUIElement target resolver, event sending and cursor animation still pending; production demo center-point behavior remains unmodified."
+    },
     "clickPreparation": {
       "entry": "0x1007b0dd4 stores click arguments; continuation 0x1007b0f08..<0x1007b11b8 selects first path",
       "ordering": "actions witness +0x48 read once; contains pick before contains press; isInsideWebView witness +0x40 read before all parameter gates",

@@ -2380,3 +2380,25 @@ UIElementClickPreparation.swift 保留候选优先级、读取顺序和参数门
 未伪造 SAIVirtualKeyPress。7056 组组合测试通过，包括极端 count、零时长、
 不同鼠标键与 web-view 状态。完整 click 执行、第二次 web-view 查询、虚拟光标及
 窗口/焦点/选择协同仍待恢复，本 helper 尚未替换生产点击链路。
+
+
+## 模拟点击的位置与目标错误语义（2026-11-07）
+
+0x1007b1d7c continuation 先传播 clickablePoint() 的异常；成功返回 nil 时，
+0x1007b1e7c..<0x1007b1eb8 创建 SynthesizedEvent.Error 的 tag 3。
+字段描述符 0x1013237c8 的四个无 payload case 按顺序为 invalidParameter、
+failedToCreateSource、failedToTranslateKeyCodes、cannotClickOffscreenElement。
+因此 nil 的精确错误为 cannotClickOffscreenElement，不是点击中心或成功无操作。
+有坐标时 0x1007b1f94 调用 app.target(forMouseEventAt:axWindowAtPoint:axElementAtPoint:)；
+目标解析错误也直接传播，不能继续发送鼠标事件。
+
+SynthesizedEvent.swift 恢复原 Swift struct 的不可变 cgEvents: [CGEvent] 字段
+和嵌套 Error（Error/Equatable/Hashable）。字段描述符 0x10132376c 的类型引用
+经 0x101462170 指向 0x1012cc08c，确认为 __C.CGEvent，而非自定义事件包装。
+尚未实现该类型完整的事件构造或发送方法，不宣称完整原生事件支持已恢复。
+
+resolveUIElementClickTarget 是提取的异步分支边界：读取位置一次，nil 抛原错误，
+非 nil 原样传给目标解析，保留上下游异常身份。测试覆盖 nil、两侧异常、原点和
+负坐标的原样转发；不新增此源码位置没有的坐标裁剪或中点替代。
+目前生产 Mouse.swift 的 indexed click 仍用 frame 中心，尚不等价于原版。
+替换它必须补齐 clickablePoint()、目标解析及后续焦点/事件处理，不能只接这个 helper。
