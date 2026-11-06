@@ -29,7 +29,6 @@ extension UIElement {
     // Witness 0x1007aff6c: reads only the cached AXSubrole entry. Descriptors
     // do not participate, and decode errors are suppressed at this boundary.
     var subrole: String? {
-        guard let partial = cache.attributes[UIElementAttribute(kAXSubroleAttribute)] else { return nil }
-        return try? decodeAXString(partial.value.value, throwingOnFailure: false)
+        cachedStringValue(for: UIElementAttribute(kAXSubroleAttribute))
     }
 }

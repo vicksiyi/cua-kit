@@ -1865,6 +1865,30 @@
       ],
       "implementation": "native/macos/Sources/CuaHelper/AXStringDecoding.swift",
       "limitations": "Concrete String specialization only. Original executable was not run; static branch evidence plus local Swift boundary tests."
+    },
+    "cachedValueLookup": {
+      "rawLookup": "0x1007af0d0",
+      "typedLookup": "0x1007aeea4",
+      "partialDecoder": "0x1006fac18",
+      "blocks": [
+        {
+          "start": "0x1007af0d0",
+          "endExclusive": "0x1007af1e0",
+          "machineCodeSha256": "2217ce43bb334365daa0f58e05cbf60cf3ea8141c188948df95ce4db45870a5e"
+        },
+        {
+          "start": "0x1007aeea4",
+          "endExclusive": "0x1007af014",
+          "machineCodeSha256": "54aebfb9d774a401ea1a55e6cf2ef6e90dcc64e64df85f7ee195a28feac70abe"
+        }
+      ],
+      "branches": [
+        "Read cache once via witness offset 0x28, then dictionary lookup. Empty/missing key returns nil without decoding.",
+        "Copy the complete 56-byte AXPartialValue including both descriptors; typed lookup calls AXPartialValue.decoded.",
+        "Preserve Optional<Value> nesting: a decoded some(nil) for an Optional target remains a hit, while decoder none allows the outer value(for:) fallback."
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementCachedValue.swift",
+      "limitations": "Generic decoder is an explicit dependency; concrete String decoder is connected. Full generic decoder and production observation integration remain incomplete."
     }
   },
   "transactionScopeEvidence": {

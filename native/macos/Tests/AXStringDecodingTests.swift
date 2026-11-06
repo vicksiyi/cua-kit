@@ -63,6 +63,38 @@ struct AXStringDecodingTests {
         }
         let missing = UIElement(axElement: element, cache: UIElementCache(supportedAttributes: [key], attributes: [:], transactionAttributes: nil))
         precondition(missing.subrole == nil)
+        // Compose cache lookup, descriptor-preserving decode and fallback.
+        // A decoded .some(nil) for Optional<String> remains a cache HIT.
+        let raw = "payload" as NSString
+        let partial = AXPartialValue(value: AXEncodedValue(value: raw),
+            arraySubsetDescriptor: AXArraySubsetDescriptor(count: 7, availableRanges: []),
+            textTruncationDescriptor: AXTruncationDescriptor(count: 9, availableRange: 2..<4))
+        let cache = UIElementCache(supportedAttributes: [], attributes: [key: partial], transactionAttributes: [])
+        var events: [String] = []
+        let nested: String?? = uiElementAttributeValue(ignoringTypeMismatch: true, cachedValue: {
+            uiElementCachedValue(key, readCache: { events.append("cache"); return cache }) { entry -> String?? in
+                events.append("decode")
+                precondition(entry.value.value === raw)
+                precondition(entry.arraySubsetDescriptor == partial.arraySubsetDescriptor)
+                precondition(entry.textTruncationDescriptor == partial.textTruncationDescriptor)
+                return .some(nil)
+            }
+        }, uncachedValue: { _ in preconditionFailure("Nested nil is a cache hit") })
+        if case .some(.none) = nested {} else { preconditionFailure("Lost nested Optional") }
+        precondition(events == ["cache", "decode"])
+        for missingKey in [false, true] {
+            events = []
+            let result: String? = uiElementAttributeValue(ignoringTypeMismatch: true, cachedValue: {
+                uiElementCachedValue(missingKey ? UIElementAttribute("Missing") : key,
+                    readCache: { events.append("cache"); return cache }) { _ in
+                        events.append("decode"); return nil
+                    }
+            }, uncachedValue: { flag in
+                precondition(flag); events.append("uncached"); return "fresh"
+            })
+            precondition(result == "fresh")
+            precondition(events == (missingKey ? ["cache", "uncached"] : ["cache", "decode", "uncached"]))
+        }
         print("native String decoding preserves CF dispatch, strict errors, Unicode and cached subrole")
     }
 }

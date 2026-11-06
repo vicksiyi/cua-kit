@@ -785,6 +785,18 @@ element_storage_evidence['stringDecoder']={
     'implementation':'native/macos/Sources/CuaHelper/AXStringDecoding.swift',
     'limitations':'Concrete String specialization only. Original executable was not run; static branch evidence plus local Swift boundary tests.',
 }
+element_storage_evidence['cachedValueLookup']={
+    'rawLookup':'0x1007af0d0','typedLookup':'0x1007aeea4','partialDecoder':'0x1006fac18',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007af0d0,0x1007af1e0),(0x1007aeea4,0x1007af014)]],
+    'branches':[
+        'Read cache once via witness offset 0x28, then dictionary lookup. Empty/missing key returns nil without decoding.',
+        'Copy the complete 56-byte AXPartialValue including both descriptors; typed lookup calls AXPartialValue.decoded.',
+        'Preserve Optional<Value> nesting: a decoded some(nil) for an Optional target remains a hit, while decoder none allows the outer value(for:) fallback.',
+    ],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementCachedValue.swift',
+    'limitations':'Generic decoder is an explicit dependency; concrete String decoder is connected. Full generic decoder and production observation integration remain incomplete.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))

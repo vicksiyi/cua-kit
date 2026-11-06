@@ -936,3 +936,17 @@ fallbackElements；prefetchEnabled 的 TaskLocal 初始化值为 true。这些�
 验证使用本地创建的真实 CF/AX 对象，覆盖空串、Unicode、内嵌 NUL、元素、文本标记及范围、
 数组、数字、NSNull、字典、点和四类 AXError，校验严格模式的错误类型及非严格模式的空值。
 Swift 测试与 helper 构建通过。没有执行原厂服务；完整泛型 decoder、协议和生产观察器接线仍待恢复。
+
+## 缓存查找与 typed fallback 组合（2026-11-07）
+
+恢复 `cachedValue` 的查找边界：`0x1007af0d0` 通过 cache witness 读取一次缓存，
+空字典或缺失键直接返回 nil；命中则保留完整 AXPartialValue（编码对象、数组子集、文本截断），
+由 `0x1007aeea4` 继续调用部分值解码，不提前丢弃描述信息。
+
+新增 `UIElementCachedValue.swift`。具体 String 分支接入已恢复的 decoder，subrole 复用它；
+泛型部分值解码仍是显式依赖，不冒充完整 decoder。与现有 typed attribute dispatch 组合验证：
+缺失键不调用 decoder，解码失败才 fallback，ignoringTypeMismatch 原样传递；对于 Optional 目标，
+解码得到 some(nil) 仍是缓存命中，不能把双层 Optional 压平后重新读取应用。
+
+两个 Swift 测试通过，覆盖描述信息原样传递、编码对象身份、getter 次数和 fallback 顺序；
+helper 构建通过。未连接生产观察器，也没有用此辅助方法替代完整原生协议。

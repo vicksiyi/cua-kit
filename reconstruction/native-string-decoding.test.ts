@@ -29,6 +29,8 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AXStoredValue.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXValueDescriptors.swift"),
                 join(root, "native/macos/Sources/CuaHelper/AXStringDecoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementCachedValue.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementAttributeValue.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXOrdinaryValueDecoding.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXValueDecoding.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXValueUnpacking.swift"),
