@@ -44,11 +44,18 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   let staged: Awaited<ReturnType<typeof stageRuntimePackages>> | undefined;
   let turn: NodeReplTurnClient | undefined;
   let rust: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
+  const dailyDirectory = process.env.CUA_TEST_DAILY_CHROME_ENDPOINT_DIRECTORY;
+  let dailyTabCreated=false;
+  const cleanupDailyTab=async()=>{
+    if(dailyTabCreated && turn){
+      const closed=await turn.callTool({id:"fixture-cleanup",name:"js",arguments:{code:"await fixtureTab.close();"}},AbortSignal.timeout(10000));
+      assert.equal(closed.isError,false,"Owned daily fixture tab cleanup failed");
+      dailyTabCreated=false;
+    }
+  };
   try {
-    const dailyDirectory = process.env.CUA_TEST_DAILY_CHROME_ENDPOINT_DIRECTORY;
     let browserEnvironment: Record<string,string>;
     if (dailyDirectory) {
-      assert.equal(liveModel,false,"Daily-profile fixture uses explicit deterministic actions only");
       const files=await discoverLiveEndpointFiles(dailyDirectory);
       const connector=await createBrowserServiceConnector(files);
       browserEnvironment={CORE_CUA_ENDPOINT_FILES:JSON.stringify(files),...connector.environment};
@@ -78,14 +85,30 @@ test("independent sandboxed supervisor executes real browser input, click, read 
     if (liveModel) {
       loadEnvFile(resolve(".env"));
       const trace = createTerminalTrace();
-      const initialMessages = await browserPreflight(turn, { onMessage: trace });
-      const result = await new AgentLoop(createDemoModel(), turn).run(
-        `Open ${origin} in Chrome, fill Query with ${query}, submit the form, take a screenshot of the result page and report its paragraph. Actually operate the page.`,
+      const initialMessages = dailyDirectory ? [] : await browserPreflight(turn, { onMessage: trace });
+      if(dailyDirectory){
+        const code=`var fixtureTab = await cua.createBrowserTab("1", ${JSON.stringify(origin)}, {sessionName:"DeepSeek local acceptance"});`;
+        const result=await execute(code);
+        dailyTabCreated=true;
+        initialMessages.push(
+          {role:"assistant",toolCalls:[{id:"fixture-open",name:"js",arguments:{code}}]},
+          {role:"tool",callId:"fixture-open",name:"js",result},
+        );
+      }
+      const loopTools = dailyDirectory ? {
+        getInstructions:()=>turn!.getInstructions(),
+        listTools:(signal?:AbortSignal)=>turn!.listTools(signal),
+        callTool:turn.callTool.bind(turn),
+        endTurn:async()=>{try{await cleanupDailyTab();}finally{await turn!.endTurn();}},
+        close:()=>turn!.close(),
+      } : turn;
+      const result = await new AgentLoop(createDemoModel(), loopTools).run(
+        `${dailyDirectory ? 'Use only the already-open fixtureTab in daily Chrome; do not open or inspect other tabs. Keep fixtureTab available for cleanup.' : `Open ${origin} in the isolated Chromium browser.`} Fill Query with ${query}, submit the form, take a screenshot of the result page and report its paragraph. Actually operate the page.`,
         { initialMessages: [
             { role: "assistant", toolCalls: [{ id: "1", name: "js", arguments: { code: bootstrapCode } }] },
             { role: "tool", callId: "1", name: "js", result: bootstrapResult },
             ...initialMessages,
-          ], runtimeContext: `${BROWSER_INPUT_CONTEXT}\n${CDP_OPERATION_CONTEXT}`, onMessage: trace, signal: AbortSignal.timeout(90000) },
+          ], runtimeContext: `${BROWSER_INPUT_CONTEXT}\n${dailyDirectory ? 'The existing Chrome extension backend is selected. Use only the provided local fixture tab.' : CDP_OPERATION_CONTEXT}`, onMessage: trace, signal: AbortSignal.timeout(90000) },
       );
       assert(result.answer.includes(marker));
       assert.deepEqual(submissions, [query]);
@@ -109,7 +132,11 @@ test("independent sandboxed supervisor executes real browser input, click, read 
     console.error("BROWSER ACCEPTANCE FAILURE",error);
     throw error;
   } finally {
-    try { await turn?.endTurn(); } finally {
+    try {
+      try {
+        await cleanupDailyTab();
+      } finally { await turn?.endTurn(); }
+    } finally {
       await turn?.close();
       await rust?.dispose();
       await host?.close();
