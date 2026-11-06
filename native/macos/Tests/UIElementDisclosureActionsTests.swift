@@ -51,6 +51,28 @@ struct UIElementDisclosureActionsTests {
         let empty = UIElementCache(supportedAttributes: [key], attributes: [:], transactionAttributes: nil)
         precondition(uiElementDisclosureActions(cache: empty, freshSupportedAttributes: { fatalError("must use cache") }, isAttributeSettable: { _ in true }).first?.name == "custom-action")
         UIElementAction.expand = original
+        let element = UIElement(axElement: AXUIElementCreateSystemWide(), cache: empty)
+        var trace: [String] = []
+        let combined = element.actions(readNativeActions: {
+            trace.append("native"); return [UIElementAction("AXPress"), .expand]
+        }, freshSupportedAttributes: { fatalError("must use cached support") },
+        isAttributeSettable: { _ in trace.append("writable"); return true },
+        reportError: { _ in fatalError("successful read") })
+        precondition(combined.map(\.name) == ["AXPress", "SAIExpand", "SAIExpand"])
+        precondition(trace == ["native", "writable"])
+        trace = []
+        let failed = element.actions(readNativeActions: {
+            trace.append("native"); throw UIElementError.axError(.cannotComplete)
+        }, freshSupportedAttributes: { fatalError("must skip supplemental actions") },
+        isAttributeSettable: { _ in fatalError("must skip writability") }, reportError: {
+            guard case UIElementError.axError(.cannotComplete) = $0 else { fatalError("lost original error") }
+            trace.append("error")
+        })
+        precondition(failed.isEmpty && trace == ["native", "error"])
+        let emptyNative = element.actions(readNativeActions: { [] },
+            freshSupportedAttributes: { fatalError("must use cached support") },
+            isAttributeSettable: { _ in true }, reportError: { _ in fatalError("successful empty read") })
+        precondition(emptyNative == [.expand])
         print("native disclosure actions preserve lazy support, writability and Bool selection: \(count) cases")
     }
 }

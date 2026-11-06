@@ -1031,3 +1031,21 @@ Swift.String `name`；不是 CFString 属性包装。数据区 0x101575898/0x101
 
 这仍是补充动作组件，尚未接入完整 actions getter。其它静态动作、系统 provider 接线、
 动作数组组合与描述映射待继续恢复，不宣称真实应用展开/折叠操作已经验收。
+
+
+## 系统动作与补充动作组合（2026-11-07）
+
+核查 0x10076d304..0x10076d3f4：读取源/目标数组长度，按 16 字节 UIElementAction
+步长在目标尾部调用 swift_arrayInitWithCopy，再更新长度。调用者先保存系统动作数组，
+计算补充动作后将其追加。此边界不排序、不去重；不能把整组结果转成 Set。
+
+新增 UIElementActions.swift，将原生读取 → 补充动作 → 追加接起来。
+原生读取抛错时调用显式错误报告器并返回空数组，不继续计算补充动作；成功的空数组
+仍然继续补充。UIElement 的注入式方法接入既有缓存与 disclosure helper。
+测试覆盖顺序、重复 SAIExpand 保留、读取错误只报告一次且跳过后续系统查询、空数组成功。
+
+进一步发现原生 AX actions getter 内部另有 MockProvider 分派，以及 String 数组转换和
+Algorithms.UniquedSequence 路径。它与外层追加是不同边界，仍需恢复，不能将原始
+AXUIElementCopyActionNames 数组直接视为本 helper 的完整上游实现。
+当前错误报告器保持原错误对象，但原版日志类别/格式、原生 provider、动作描述与生产观察器
+接线尚未完成；这些测试不证明真实应用的动作展示/执行已经完整对齐。

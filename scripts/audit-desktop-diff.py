@@ -865,6 +865,16 @@ element_storage_evidence['boolDecoder']={
     'implementation':'native/macos/Sources/CuaHelper/AXBoolDecoding.swift',
     'limitations':'Decoder only; complete action data types, description mapping and supplemental-action wiring remain pending.',
 }
+element_storage_evidence['actionArrayComposition']={
+    'start':'0x10076d304','endExclusive':'0x10076d3f4',
+    'machineCodeSha256':hashlib.sha256(read_virtual(0x10076d304,0xf0)).hexdigest(),
+    'elementMetadata':'0x10149ef08 = UIElementAction','elementStride':16,
+    'copyCall':'0x10076d37c -> swift_arrayInitWithCopy',
+    'caller':'0x100790d5c saves native array; 0x100790d70 computes supplemental; 0x100790d7c appends',
+    'semantics':'Append supplemental after native actions, preserve order and duplicates at this boundary; native failure reports error and skips supplemental computation.',
+    'implementation':'native/macos/Sources/CuaHelper/UIElementActions.swift',
+    'limitations':'Original native action reader includes separate conversion/uniquing and provider dispatch; these are not replaced by array concatenation. Original logging category/format and production action-description wiring remain pending.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

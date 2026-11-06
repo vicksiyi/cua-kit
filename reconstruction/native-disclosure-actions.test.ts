@@ -40,6 +40,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AXArrayTargetConversion.swift"),
         join(root, "native/macos/Sources/CuaHelper/TypeErasedArray.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementAction.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementActions.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementDisclosureActions.swift"),
         join(root, "native/macos/Tests/UIElementDisclosureActionsTests.swift"),
       ]);
