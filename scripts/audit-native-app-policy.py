@@ -75,6 +75,9 @@ def audit():
         ('appDecisionBranch', 0x100191c60, 0x100191c98),
         ('forbiddenClassifier', 0x1002570c0, 0x1002572d4),
         ('forbiddenStringEquality', 0x100194fc8, 0x10019501c),
+        ('applicationTargetInitialization', 0x100261e30, 0x100261f10),
+        ('applicationTargetIdentifier', 0x100264a14, 0x100264b8c),
+        ('appPolicyResultComposition', 0x100191c2c, 0x100192130),
         ('riskAndApprovalResultConstruction', 0x100191eec, 0x100192130),
         ('bundleHTTPSchemePredicate', 0x1002561f0, 0x10025644c),
     ]:
@@ -103,6 +106,12 @@ def audit():
                 types=records, codeRanges=code_ranges,
                 normalForbiddenTargetGroups=forbidden_groups,
                 elevatedRiskTargets=decode_string_array('elevatedRisk', 0x1015587c8, 11),
+                targetDescriptor=dict(
+                    bundleURL='resolvingSymlinksInPath then standardizedFileURL',
+                    identifier='normalize URL again, path(percentEncoded: false), trim trailing slashes while count > 1',
+                    displayName='first String of CFBundleDisplayName, CFBundleName, otherwise URL deletingPathExtension().lastPathComponent; empty String accepted',
+                    order='policy decision, Bundle(url:), display name, risk and persistence metadata',
+                    ipcProjection='standalone dictionary matching observed Sky client types, not original encoder reconstruction'),
                 approvalMetadata=dict(
                     highRisk='terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme',
                     bundleProbe='lazy after list misses; missing bundle means false',
@@ -133,7 +142,7 @@ def audit():
                 limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
                     'Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.',
-                    'Native transport, complete target descriptor and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.',
+                    'Native transport, application resolution and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 

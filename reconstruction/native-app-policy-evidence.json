@@ -114,6 +114,24 @@
       "sha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
     },
     {
+      "name": "applicationTargetInitialization",
+      "start": "0x100261e30",
+      "endExclusive": "0x100261f10",
+      "sha256": "600b699b9df30cbac3b3d88afe3dac5f86acd1b77b5b4b7b7f16c635eeb677cd"
+    },
+    {
+      "name": "applicationTargetIdentifier",
+      "start": "0x100264a14",
+      "endExclusive": "0x100264b8c",
+      "sha256": "5bc965f436e35a4b0a8a181d1d7196a4a6106f87e7c480d1cb2f059c855fa212"
+    },
+    {
+      "name": "appPolicyResultComposition",
+      "start": "0x100191c2c",
+      "endExclusive": "0x100192130",
+      "sha256": "665dc4438173b9e72105c822326ebfd24c5d9f849a3070baf4f1f7fa8af8add1"
+    },
+    {
       "name": "riskAndApprovalResultConstruction",
       "start": "0x100191eec",
       "endExclusive": "0x100192130",
@@ -193,6 +211,13 @@
       "me.proton.pass.catalyst"
     ]
   },
+  "targetDescriptor": {
+    "bundleURL": "resolvingSymlinksInPath then standardizedFileURL",
+    "identifier": "normalize URL again, path(percentEncoded: false), trim trailing slashes while count > 1",
+    "displayName": "first String of CFBundleDisplayName, CFBundleName, otherwise URL deletingPathExtension().lastPathComponent; empty String accepted",
+    "order": "policy decision, Bundle(url:), display name, risk and persistence metadata",
+    "ipcProjection": "standalone dictionary matching observed Sky client types, not original encoder reconstruction"
+  },
   "approvalMetadata": {
     "highRisk": "terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme",
     "bundleProbe": "lazy after list misses; missing bundle means false",
@@ -246,7 +271,7 @@
   "limitations": [
     "Field names and enum cases establish structure, not runtime defaults or precedence.",
     "Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.",
-    "Native transport, complete target descriptor and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.",
+    "Native transport, application resolution and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.",
     "No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.",
     "No vendor execution, network requests, policy changes, or approval bypass."
   ]

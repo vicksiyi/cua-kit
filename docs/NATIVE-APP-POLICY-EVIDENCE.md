@@ -196,3 +196,32 @@ approval, and macOS Accessibility/Screen Recording grants remain distinct.
 No application rules or defaults were changed by this investigation. Do not
 implement guessed permissive defaults or treat automatic approval as permission
 to override a denied policy result.
+
+## Target descriptor and result composition
+
+`ApplicationTarget.init(bundleIdentifier:bundleURL:)` at
+`0x100261e30..<0x100261f10` retains the bundle ID and normalizes the URL with
+`resolvingSymlinksInPath()` followed by `standardizedFileURL`. The identifier
+helper at `0x100264a14..<0x100264b8c` normalizes again, obtains
+`path(percentEncoded: false)`, and removes trailing `/` while the string count
+is greater than one. The root `/` is preserved. This is path identity, not the
+bundle identifier. `NativeApplicationTarget.swift` restores these operations.
+
+The result branch at `0x100191c2c..<0x100192130` evaluates access and forbidden
+classification **before** constructing `Bundle(url:)`. It chooses the first
+String value from `CFBundleDisplayName` and `CFBundleName`; wrong types fall
+through, but an empty String is accepted. When neither is a String, it uses
+`bundleURL.deletingPathExtension().lastPathComponent`. The canonical identifier
+is copied into the result's app path. Risk classification and persistence
+metadata follow descriptor construction, including for denied applications.
+
+`NativeAppPolicyResult.swift` composes these recovered components. Its
+`ipcObject` is a standalone dictionary projection matching the observed Sky
+client contract, not a claim to have reconstructed the original wire encoder.
+Tests exercise real temporary symlinks, Unicode and spaces in paths, root path
+preservation, display-name fallback and empty names, lazy evaluation order,
+JSON projection, concrete Bundle fallback and denied/high-risk results.
+
+These components do not launch an app, grant approval, or replace the current
+`SkyAppPolicy` deployment policy. Native policy transport, application
+resolution and production wiring still require reconstruction and validation.
