@@ -50,6 +50,24 @@ struct ScrollBarPageButtonTests {
                 })
             precondition(handled && pressed)
         }
+        let valid = element("AXButton" as NSString, "AXIncrementPage" as NSString, id: 424244)
+        var initialized: [AXUIElement] = []
+        let array: NSArray = ["wrong", valid.axElement, NSNumber(value: 12), valid.axElement, NSArray()]
+        let decoded = decodeCFUIElementArray(array) { ax in
+            initialized.append(ax)
+            return UIElement(axElement: ax, cache: valid.cache)
+        }!
+        precondition(decoded.count == 2 && initialized.count == 2)
+        precondition(initialized.allSatisfy { $0 === valid.axElement })
+        precondition(ScrollBarPageButton.increment.find(in: decoded)!.axElement === valid.axElement)
+        let boxed: NSArray = [valid as AnyObject]
+        let preserved = decodeCFUIElementArray(boxed) { _ in fatalError("boxed element must not reinitialize") }!
+        precondition(preserved.count == 1 && preserved[0].axElement === valid.axElement)
+        initialized.removeAll()
+        precondition(decodeCFUIElementArray(NSArray()) { _ in fatalError("empty") }!.isEmpty)
+        for invalid: AnyObject in ["wrong" as NSString, valid.axElement, NSNumber(value: 12)] {
+            precondition(decodeCFUIElementArray(invalid) { _ in fatalError("not array") } == nil)
+        }
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

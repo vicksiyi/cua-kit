@@ -1375,3 +1375,23 @@ UIElement 缓存角色与子角色解码。测试覆盖空数组、缺失或非�
 这里传入已解码的 [UIElement]，没有将 AXChildren 解码和 ScrollBarUIElement 包装器
 伪装为完成。原协议级返回 existential 以及 provider/生产接线仍需继续恢复。
 未执行原版二进制、真实 UI 按键或模型请求。
+
+## AXChildren 数组解码入口（2026-11-07）
+
+进一步追踪 ScrollBar 子节点读取：0x1007244e4 跳到 0x100724514，先尝试缓存属性解码，
+缺失或失败再进入未缓存读取。数组解码入口是 0x100712f2c → 0x1007135c8；相邻的
+0x100712f58 → 0x100712f84 是 ScrollBar 单元素 specialization，不能将二者混用。
+CFArray 分支在 0x100713880，逐元素转换经 0x100713d2c → 0x1006ea28c，最终在
+0x100713dac 转换为请求的数组类型。
+
+恢复具体 CFArray→[UIElement] 分支 decodeCFUIElementArray，复用已恢复的逐元素
+compactMap 和最终数组转换。原 AX 引用通过显式 initializer 构造元素；已经桥接的
+UIElement 保留身份；不匹配项被省略，顺序和重复引用保留，空数组仍为有效空结果。
+元素解码保留 CF 类型分流（AX、marker、range、AXValue、array、普通桥接），不把
+一切 AnyObject 都强转为 AXUIElement。initializer 仍由调用方提供真实事务/缓存上下文。
+
+新增混合数组、重复引用、空数组、非数组拒绝、已桥接 UIElement 不重复初始化的测试，
+并将解码结果传入已恢复的翻页按钮筛选。测试与 Swift 构建通过，无真实 UI 或模型调用。
+
+完整属性读取器还包含失效/错误日志等未恢复路径，原 TaskLocal 与泛型协议分派仍未
+接线；这里不将 CFArray 分支冒充完整 AXChildren 读取或 production 滚动支持。

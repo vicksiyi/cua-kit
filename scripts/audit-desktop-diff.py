@@ -1003,6 +1003,14 @@ element_storage_evidence['scrollBarPageButtons']={
     'implementation':'native/macos/Sources/CuaHelper/ScrollBarPageButton.swift',
     'limitations':'Concrete cached child selection restored and composed with scroll execution; AXChildren array decoding, ScrollBarUIElement wrapper and full protocol/provider integration remain pending.',
 }
+element_storage_evidence['uiElementCollectionDecoding']={
+    'childrenReader':'0x1007244e4 -> 0x100724514; cached decode first, uncached AX read on missing/failed cached decode',
+    'arrayDecoder':'0x100712f2c -> 0x1007135c8; CFArray branch 0x100713880, element conversion 0x100713d2c -> 0x1006ea28c, final requested-array cast 0x100713dac',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007244e4,0x1007248bc),(0x100712f2c,0x100712f58),(0x1007135c8,0x100713e20)]],
+    'implementation':'native/macos/Sources/CuaHelper/AXUIElementCollectionDecoding.swift',
+    'limitations':'Concrete CFArray branch with explicit element initializer only. Full attribute reader invalidation/logging, TaskLocal acquisition, generic type/protocol dispatch and production connection remain pending.',
+}
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
     'condition':'0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing',

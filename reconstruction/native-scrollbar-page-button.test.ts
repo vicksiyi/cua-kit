@@ -53,6 +53,10 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementActionDispatch.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift"),
         join(root, "native/macos/Sources/CuaHelper/ScrollBarPageButton.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXUIElementCollectionDecoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXUIElementDecoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXArrayElementDecoding.swift"),
+
         join(root, "native/macos/Tests/ScrollBarPageButtonTests.swift"),
       ]);
       const { stdout } = await exec(executable);

@@ -2242,6 +2242,29 @@
       "implementation": "native/macos/Sources/CuaHelper/ScrollBarPageButton.swift",
       "limitations": "Concrete cached child selection restored and composed with scroll execution; AXChildren array decoding, ScrollBarUIElement wrapper and full protocol/provider integration remain pending."
     },
+    "uiElementCollectionDecoding": {
+      "childrenReader": "0x1007244e4 -> 0x100724514; cached decode first, uncached AX read on missing/failed cached decode",
+      "arrayDecoder": "0x100712f2c -> 0x1007135c8; CFArray branch 0x100713880, element conversion 0x100713d2c -> 0x1006ea28c, final requested-array cast 0x100713dac",
+      "blocks": [
+        {
+          "start": "0x1007244e4",
+          "endExclusive": "0x1007248bc",
+          "machineCodeSha256": "0f19522810a1a9595b09615a2edc86f57908d68b07ebe3522f804e8789e07ffb"
+        },
+        {
+          "start": "0x100712f2c",
+          "endExclusive": "0x100712f58",
+          "machineCodeSha256": "f654281e2459603c1e3aa6be5db7d5ac28fd93d5eb66433bc95ab281a7c167b2"
+        },
+        {
+          "start": "0x1007135c8",
+          "endExclusive": "0x100713e20",
+          "machineCodeSha256": "14a89a74563e222c088a97f15ff4e361c64c54b24d5aeeaf722b09c8ce7b9fb9"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/AXUIElementCollectionDecoding.swift",
+      "limitations": "Concrete CFArray branch with explicit element initializer only. Full attribute reader invalidation/logging, TaskLocal acquisition, generic type/protocol dispatch and production connection remain pending."
+    },
     "toggleDisclosure": {
       "dispatch": "0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure",
       "condition": "0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing",
