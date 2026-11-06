@@ -3127,7 +3127,8 @@
         }
       ],
       "implementation": "UIElementClickSelection.swift preserves generic traversal and predicate order; original Swift language retained.",
-      "limitations": "Concrete selection-attribute helper/provider composition and full click integration pending; production focus remains direct setter. Tests use fixtures, not live UI."
+      "composition": "UIElementSelectionComposition.swift filters ordered selection attributes against cache.supportedAttributes, composes isSelectable with existing support/writability rules, and traverses typed parent values with explicit transaction/environment.",
+      "limitations": "Full provider TaskLocal and click integration pending; production focus remains direct setter. Concrete composition tests use prefetched AX reference fixtures, not live UI."
     },
     "selectionState": {
       "focused": "0x1007abf94 -> 0x1007ac3f0..<0x1007ac52c: cached AXFocused lenient Bool, absent/error/nil false",

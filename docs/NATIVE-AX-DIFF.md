@@ -2338,3 +2338,20 @@ UIElementClickSelection.swift 恢复此 Swift 分支，以显式回调保留尚�
 协议/provider 边界。测试覆盖角色和两个能力布尔组合、惰性调用顺序、祖先选择能力、
 application 截断及 300/301 深度边界。测试通过不代表实机点击通过。
 具体选择属性 helper 接线和完整 click 异步状态机仍待恢复；生产 focus 暂未改为此路径。
+
+
+## 点击选择判定的具体 UIElement 接线（2026-11-07）
+
+UIElementSelectionComposition.swift 补齐前述 helper 的具体边界：
+- supportedSelectionAttributes 保留 selectedRows、selectedCells、selectedChildren
+  顺序，只过滤 cache.supportedAttributes；即便事务未请求这些属性，也不新查系统支持列表。
+- isSelectable 复用原角色排除、属性支持与 settable 查询。事务未请求 AXSelected 时
+  支持查询仍走已有 fresh 分支；settable 抛错按原 getter 转成 false。
+- clickingMayCauseSelection 通过 parentValue 解码 AXParent，携带明确的事务缓存，
+  再调用上一轮恢复的祖先判定。父节点不会被替换为原始 AX 引用上的近似角色判断。
+
+测试覆盖全部八种选择属性支持组合（没有选中项数据仍可为 true）、菜单排除、
+事务外 fresh 支持查询、settable 异常、真实 AX 引用的预取父节点构造和 application
+边界。父节点选择数组为空仍以属性支持判定为 true；application 则优先 false。
+测试未访问实际应用，两项测试及其 Swift package 构建通过。
+仍未接入完整 click 状态机；生产 focus 未改变，完整 TaskLocal/provider 尚待恢复。

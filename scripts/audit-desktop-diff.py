@@ -1174,7 +1174,8 @@ element_storage_evidence['clickingMayCauseSelection']={
     'selectionAttributeHelper':'0x1007afa64 reads cache supportedAttributes; 0x1007afb68 filters ordered selectedRows/selectedCells/selectedChildren constants built at 0x1007afe30. Does not read selected item values/counts.',
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007a7790,0x1007a79e8),(0x1007afa64,0x1007afad0),(0x1007afb68,0x1007afd2c),(0x1007afe30,0x1007aff30)]],
     'implementation':'UIElementClickSelection.swift preserves generic traversal and predicate order; original Swift language retained.',
-    'limitations':'Concrete selection-attribute helper/provider composition and full click integration pending; production focus remains direct setter. Tests use fixtures, not live UI.',
+    'composition':'UIElementSelectionComposition.swift filters ordered selection attributes against cache.supportedAttributes, composes isSelectable with existing support/writability rules, and traverses typed parent values with explicit transaction/environment.',
+    'limitations':'Full provider TaskLocal and click integration pending; production focus remains direct setter. Concrete composition tests use prefetched AX reference fixtures, not live UI.',
 }
 element_storage_evidence['selectionState']={
     'focused':'0x1007abf94 -> 0x1007ac3f0..<0x1007ac52c: cached AXFocused lenient Bool, absent/error/nil false',
