@@ -1980,3 +1980,19 @@ incoming、旧映射长短不一致时的原版 prefix 行为、同一值自追�
 
 已恢复 Swift helper，测试空结构/多空片段、空 URL、空尾片段、跨片段 Unicode
 边界以及与 removeLast 的组合。完整类型和生产文本流程仍待恢复。
+
+### 按子串和上下文定位原文
+
+`sourceRange(ofMarkdownSubstring:prefix:suffix:)` 在 `0x10063a31c..<0x10063a380`
+先查找符合上下文的所有出现位置，仅有一个结果时才调用已有源偏移映射。重复结果
+直接返回 nil，即使只有其中一个结果有源映射，也不会自动选择它。
+
+搜索函数 `0x10063bd5c..<0x10063c0ac` 把 description 桥接为 NSString，
+调用 rangeOfString:options:range:（options=0），空搜索串返回空数组。每次从
+匹配起点+1 个 UTF-16 单位继续，因此包含重叠匹配。prefix/suffix 必须紧邻
+匹配处，通过 NSString.length/subString 范围提取再以 Swift String 比较；
+上下文越界排除，空上下文允许。选择器槽位依次确认 length=0x101543da8、
+rangeOfString:options:range:=0x101542ff8、substringWithRange:=0x101542e20。
+
+已恢复 Swift 实现，测试重叠、大小写、上下文边界、跨片段匹配、emoji UTF-16
+偏移、规范等价以及先消歧后映射。完整类型和生产文本处理链仍待接入。

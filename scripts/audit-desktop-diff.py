@@ -978,6 +978,16 @@ element_storage_evidence['transformedStringState']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringState.swift',
     'limitations':'Standalone getters restored; full transformed string type and production integration remain pending.',
 }
+element_storage_evidence['transformedStringSubstring']={
+    'entry':'0x10063a31c..<0x10063a380: find contextual occurrences; require exactly one before mapping via sourceRange(forMarkdownRange:)',
+    'search':'0x10063bd5c..<0x10063c0ac: bridge description to NSString; empty needle returns []; rangeOfString options 0; advance by matched location + 1 UTF16 unit, retaining overlaps',
+    'context':'Optional prefix/suffix match immediately adjacent UTF16 substrings with Swift String equality; reject out-of-bounds context; empty context accepted',
+    'selectors':{'0x101543da8':'length','0x101542ff8':'rangeOfString:options:range:','0x101542e20':'substringWithRange:'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10063a31c,0x10063a380),(0x10063bd5c,0x10063c0ac)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringSubstring.swift',
+    'limitations':'Contextual lookup restored as helpers; full transformed type, URL rendering and production integration remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

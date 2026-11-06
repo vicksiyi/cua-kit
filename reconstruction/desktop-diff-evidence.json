@@ -2603,6 +2603,30 @@
       "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringState.swift",
       "limitations": "Standalone getters restored; full transformed string type and production integration remain pending."
     },
+    "transformedStringSubstring": {
+      "entry": "0x10063a31c..<0x10063a380: find contextual occurrences; require exactly one before mapping via sourceRange(forMarkdownRange:)",
+      "search": "0x10063bd5c..<0x10063c0ac: bridge description to NSString; empty needle returns []; rangeOfString options 0; advance by matched location + 1 UTF16 unit, retaining overlaps",
+      "context": "Optional prefix/suffix match immediately adjacent UTF16 substrings with Swift String equality; reject out-of-bounds context; empty context accepted",
+      "selectors": {
+        "0x101543da8": "length",
+        "0x101542ff8": "rangeOfString:options:range:",
+        "0x101542e20": "substringWithRange:"
+      },
+      "blocks": [
+        {
+          "start": "0x10063a31c",
+          "endExclusive": "0x10063a380",
+          "machineCodeSha256": "95caa347bd1d030cff9c5ed879c8fc6b3bc039036eb25ce6016b3fa8394609a8"
+        },
+        {
+          "start": "0x10063bd5c",
+          "endExclusive": "0x10063c0ac",
+          "machineCodeSha256": "641b7e9f09e6e0ccf160cb616c2553b23645b605dc0fbf46fe13b736e28ae9e6"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringSubstring.swift",
+      "limitations": "Contextual lookup restored as helpers; full transformed type, URL rendering and production integration remain pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

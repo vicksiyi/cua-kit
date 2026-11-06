@@ -308,3 +308,18 @@ test("native transformed state preserves span-local boundaries", {
     assert.match(result.stdout, /state getters preserve structural emptiness, empty tails and span-local graphemes/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed substring preserves contextual occurrence semantics", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-substring-"));
+  try {
+    const output = join(directory, "substring");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringSourceRange", "TransformedUIStringSubstring"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringSubstringTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /substring search preserves overlaps, context, UTF16 and ambiguity before mapping/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
