@@ -1070,3 +1070,23 @@ API/保序依据：[官方 Unique.swift](https://github.com/apple/swift-algorith
 使用实际 Foundation 数组桥接、重复字符串和 Unicode 不同编码、
 混合类型、nil/空数组、错误状态与非空输出组合验证。readSystemAXActions 是显式系统分支，
 未冒充原版 TaskLocal MockProvider 分派，也未接入完整动作描述/生产观察器。
+
+
+## 系统动作描述读取（2026-11-07）
+
+新增 Swift `AXActionDescriptionReading.swift`，对应原版
+`AXUIElementRef.description(for:)` 的系统分支 0x1006f9904–0x1006f99e0。
+0x1006f9924 调用 AXUIElementCopyActionDescription；0x1006f9934 仅允许 success，
+其余状态（包括 noValue/actionUnsupported）抛出原始 UIElementError.axError。
+成功但输出 nil 返回 nil；空字符串仍是有效描述，不替换成动作名。
+NSString 类引用 0x10151efe8 已通过 Mach-O fixups 核查。Swift 实现使用系统 API
+规定的 CFString 输出桥接；不通过不安全指针伪造违反 API 契约的其它对象。
+
+独立 Swift 测试覆盖 nil、空/中文/组合 Unicode/换行描述，以及七种错误状态与
+有/无输出的组合；验证调用次数和错误原样传播。测试和 SwiftPM 构建通过。
+这些测试验证状态处理，不代表已在真实应用上验收动作描述。
+
+同时确认外层映射 0x10079716c 调用描述解析器 0x100793768，nil 时才回退动作名。
+该解析器先调用自定义描述函数 0x100794cec，再请求系统描述；目前没有猜测自定义
+文本或将这一层提前接入生产。TaskLocal MockProvider 分派、完整描述解析与
+页面状态输出的接线仍待恢复。

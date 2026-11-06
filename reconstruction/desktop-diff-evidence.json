@@ -2030,6 +2030,19 @@
       "dependency": "swift-algorithms 1.2.1 selected and pinned; original linked version is not established",
       "limitations": "System branch only; original TaskLocal MockProvider selection and complete production action wiring remain pending."
     },
+    "systemActionDescriptionReader": {
+      "copyCall": "0x1006f9924 -> AXUIElementCopyActionDescription",
+      "statusGate": "0x1006f9934: only success continues; all other statuses throw UIElementError.axError",
+      "stringClass": "0x10151efe8 = NSString",
+      "nilGate": "0x1006f997c; nil output remains nil, empty string remains present",
+      "block": {
+        "start": "0x1006f9904",
+        "endExclusive": "0x1006f99e4",
+        "machineCodeSha256": "1ca6dac169216ccc285e0a5a9300a90964974beaa7278808ba5d36bbf6582f9f"
+      },
+      "implementation": "native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift",
+      "limitations": "System branch only. TaskLocal MockProvider dispatch, custom description resolver and production descriptor wiring remain pending. Typed CFString output follows the system API contract."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

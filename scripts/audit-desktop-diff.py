@@ -889,6 +889,18 @@ element_storage_evidence['systemActionReader']={
     'dependency':'swift-algorithms 1.2.1 selected and pinned; original linked version is not established',
     'limitations':'System branch only; original TaskLocal MockProvider selection and complete production action wiring remain pending.',
 }
+description_class=next((line for line in fixups.splitlines() if '0x10151efe8' in line.lower()),'')
+if '_OBJC_CLASS_$_NSString' not in description_class: raise SystemExit('Action-description string class changed')
+element_storage_evidence['systemActionDescriptionReader']={
+    'copyCall':'0x1006f9924 -> AXUIElementCopyActionDescription',
+    'statusGate':'0x1006f9934: only success continues; all other statuses throw UIElementError.axError',
+    'stringClass':'0x10151efe8 = NSString',
+    'nilGate':'0x1006f997c; nil output remains nil, empty string remains present',
+    'block':{'start':'0x1006f9904','endExclusive':'0x1006f99e4',
+        'machineCodeSha256':hashlib.sha256(read_virtual(0x1006f9904,0x1006f99e4-0x1006f9904)).hexdigest()},
+    'implementation':'native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift',
+    'limitations':'System branch only. TaskLocal MockProvider dispatch, custom description resolver and production descriptor wiring remain pending. Typed CFString output follows the system API contract.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))
