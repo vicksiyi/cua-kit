@@ -89,7 +89,7 @@ test("combined discovery tolerates missing connections, never unsafe endpoint di
 });
 
 for (const dynamic of [false,true])
-test(`unified CLI starts both surfaces and reaches model without a Chrome connection (${dynamic ? "dynamic" : "static"})`, {
+test(`unified CLI starts both surfaces and reaches model without a Chrome connection (${dynamic ? "explicit dynamic" : "default static"})`, {
   skip: process.platform !== "darwin" || process.env.CUA_TEST_NATIVE_SKY_IPC !== "1", timeout:90000,
 }, async t => {
   const {createServer} = await import("node:http");
@@ -113,7 +113,7 @@ test(`unified CLI starts both surfaces and reaches model without a Chrome connec
   await new Promise<void>(r=>server.listen(0,"127.0.0.1",r));
   t.after(()=>{server.closeAllConnections();server.close();});
   const address=server.address();assert(address&&typeof address!=="string");
-  const child=spawn("bash",["scripts/run-deepseek.sh","--unified","Inspect available surfaces; do not open or operate any app or tab."],{
+  const child=spawn("bash",["scripts/run-deepseek.sh",...(dynamic ? ["--unified"] : []),"Inspect available surfaces; do not open or operate any app or tab."],{
     cwd:path.resolve("."),env:{PATH:process.env.PATH,HOME:process.env.HOME,TMPDIR:process.env.TMPDIR,
       CUA_DEBUG:"0",CUA_MODEL_PROVIDER:"openai-compatible",CUA_MODEL_API_KEY:"fixture",CUA_MODEL:"fixture",
       CUA_MODEL_ENDPOINT:`http://127.0.0.1:${address.port}/model`,

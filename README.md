@@ -12,7 +12,8 @@ DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 
 
 | 入口 | 后端与已验证范围 | 主要限制 |
 | --- | --- | --- |
-| `npm run demo -- "prompt"` / `demo:deepseek` | 已连接 Chrome 扩展；真实 DeepSeek 百度搜索已返回结果 | 要求扩展连接，网站验证和页面差异仍可能阻止任务 |
+| `npm run demo -- "prompt"` / `demo:deepseek` | macOS 默认同时开放浏览器/原生应用，由模型结合清单选择；其它平台默认浏览器 | 浏览器需宿主配置；App 需权限与策略，全量验收未完成 |
+| `--browser "prompt"` | 仅浏览器；真实 DeepSeek 百度搜索已返回结果 | 要求扩展连接，网站验证和页面差异仍可能阻止任务 |
 | `--cdp-browser "prompt"` | 无扩展临时 Chromium；真实点击、截图、读取与外网导航 | 本轮结束即关闭；百度搜索可能遇到人工验证码 |
 | `--cdp-endpoint 'ws://127.0.0.1:PORT/devtools/browser/ID' "prompt"` | 连接已开启调试的浏览器；测试环境 MCP/DeepSeek 及已有标签页隔离通过 | 必须提供真实本地地址；不自动重启日常 Chrome |
 | `--computer "prompt"` | Rust supervisor + 原 Sky 绑定 + Swift IPC；原生清单检查通过 | 当前 agent 的辅助功能与录屏权限未通过，完整真实 App 验收未完成 |
@@ -110,7 +111,8 @@ Uncompressed `.wasm` input is also accepted. The build validates its exports and
 本机交互入口：`npm run demo:deepseek`，按提示输入 prompt。
 自动读取项目根目录 `.env` 中的 `DEEPSEEK_API_KEY`（已有环境变量优先）；没有配置时才隐藏输入 token。
 `.env` 被 Git 忽略，勿提交；新机器可复制 `.env.example` 后填写自己的 token。
-默认启用浏览器工具：`npm run demo:deepseek -- "访问百度 搜索 deepseek 给我返回第一条搜索结果"`。
+macOS 默认同时启用浏览器与原生应用工具（其它平台默认浏览器），例如：`npm run demo:deepseek -- "访问百度 搜索 deepseek 给我返回第一条搜索结果"`。
+仅浏览器可加 `--browser`；仅原生应用可加 `--computer`。
 仅验证模型与 JS 工具：`npm run demo:deepseek -- --js "请调用 js 计算 6 * 7"`。
 终端显示工具参数、执行结果和最终回答；返回的截图保存为临时文件。
 首次安装请运行 `npm run install:chrome`，然后在 `chrome://extensions` 启用开发者模式，加载 `packages/browser-extension/dist/native-extension`。安装命令注册独立宿主并在被忽略的 `.env` 中写入连接目录；扩展加载后 demo 自动发现连接。目前两条外部搜索指令仍未验收。

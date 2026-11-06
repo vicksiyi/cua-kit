@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--unified|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route. --unified enables browser and computer together; it discovers existing browser connections without eagerly launching Chrome.'
+  printf '%s\n' 'Usage: npm run demo -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--unified|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: unified browser + native app tools on macOS; browser tools on other systems. Explicit browser deployment flags select browser-only mode. Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route. --unified enables browser and computer together; it discovers existing browser connections without eagerly launching Chrome.'
   exit 0
 fi
 managed_browser=false
@@ -51,7 +51,13 @@ if [[ -n "$check_option" ]]; then
   check_only=true
   set -- "$check_option"
 fi
-mode="${mode:-browser}"
+# Host demo default, not a recovered intent classifier: expose both supported
+# surfaces so the model can preserve a native-app request on macOS.
+if [[ -z "$mode" ]]; then
+  if [[ -n "$backend" ]]; then mode=browser;
+  elif [[ "$(uname -s)" == Darwin ]]; then mode=unified;
+  else mode=browser; fi
+fi
 if [[ -n "$backend" && "$mode" != browser ]]; then
   printf '%s\n' 'Browser deployment options require browser mode.' >&2; exit 2
 fi
@@ -84,7 +90,16 @@ if [[ "$mode" == computer || "$mode" == unified ]]; then
 fi
 if [[ "$mode" == "browser" ]]; then
   export CUA_RUNTIME_SUPERVISOR="${CUA_RUNTIME_SUPERVISOR:-rust}"
-  if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"browser","CUA_REPL_BROWSER_ENV":"codex-app","BROWSER_USE_AVAILABLE_BACKENDS":"chrome"}'; fi
+  CUA_MCP_ENV="$(node --input-type=module -e '
+    const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");
+    if(!env || Array.isArray(env) || typeof env!=="object" || !Object.values(env).every(v=>typeof v==="string")) throw Error("CUA_MCP_ENV must be a JSON string map");
+    env.CUA_REPL_ENABLED_SURFACES="browser";
+    env.CUA_REPL_BROWSER_ENV="codex-app";
+    env.NODE_REPL_DISABLE_ANALYTICS??="1";
+    env.BROWSER_USE_AVAILABLE_BACKENDS??="chrome";
+    process.stdout.write(JSON.stringify(env));
+  ')"
+  export CUA_MCP_ENV
   printf '%s\n' 'Browser mode: checks the selected backend before model requests. Search results depend on live page access.' >&2
 elif [[ "$mode" == "computer" || "$mode" == "unified" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"computer"}'; fi

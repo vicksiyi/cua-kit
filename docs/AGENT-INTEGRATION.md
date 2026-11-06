@@ -219,7 +219,7 @@ The old QuickJS entry is explicitly named `npm run --silent mcp:legacy`. Its `CU
 
 ## Default demo and model selection
 
-`npm run demo -- "your prompt"` now uses the restored runtime launcher, including surface/backend flags, local `.env`, tool logs and the shared preflight. The old QuickJS demo is explicitly `npm run demo:legacy`. The browser default selects the reconstructed Rust supervisor; computer selects Rust/Sky/Swift. Explicit `CUA_RUNTIME_SUPERVISOR=installed` remains available for browser comparisons.
+`npm run demo -- "your prompt"` now uses the restored runtime launcher, including surface/backend flags, local `.env`, tool logs and the shared preflight. The old QuickJS demo is explicitly `npm run demo:legacy`. The macOS default selects unified Rust/Sky/Swift; explicit browser mode selects the reconstructed Rust supervisor. Explicit `CUA_RUNTIME_SUPERVISOR=installed` remains available for browser comparisons.
 
 `npm run demo:deepseek -- "your prompt"` explicitly selects DeepSeek regardless of a stale provider setting. The generic demo uses `CUA_MODEL_PROVIDER` (default `deepseek`). For another compatible provider set `CUA_MODEL_PROVIDER=openai-compatible`, `CUA_MODEL_API_KEY`, `CUA_MODEL`, and `CUA_MODEL_ENDPOINT` in the private environment. Its credential prompt requests the matching provider key; it does not accept a DeepSeek key in place of the generic provider key. Check modes require neither key. Invalid provider names fail before native builds.
 
@@ -343,8 +343,10 @@ browser and computer with Promise.all, conditionally attaches browser APIs and l
 and routes macOS getApp to get_app_state with disableDiff:true. This API module does not classify
 natural-language prompts. The reconstructed `create_tinysky_alt.ts` retains that composition.
 
-The CLI now offers `--unified`, which enables browser and computer together. The default remains
-browser-only. In unified mode existing configured browser connections are discovered without eagerly
+On macOS the CLI now defaults to `--unified`, enabling browser and computer together so the model
+can choose based on the request and observed inventory. Other platforms retain browser-only defaults.
+Explicit `--browser`, `--computer`, and browser deployment flags preserve their respective modes.
+This is a standalone demo default, not a claim about a source API intent classifier. In unified mode existing configured browser connections are discovered without eagerly
 launching Chrome; missing host directories or no live endpoints produce an explicit empty browser
 allowlist. Invalid permissions, malformed endpoints and authentication errors remain fatal. With no
 browser host configuration, unified mode explicitly selects the empty allowlist. Native helper and
@@ -552,3 +554,27 @@ controlled Rust extension-protocol peer through the adapter and then observes it
 session. This tests the connection path, not an actual Chrome process launch. Daily Chrome operations
 have separately passed while Chrome was already running. Actual DeepSeek-driven cold startup still
 requires acceptance; the feature's presence alone is not evidence of that completion.
+
+
+#### Default macOS surface selection
+
+A plain `npm run demo:deepseek -- "打开本机 Multica 应用"` now exposes both surfaces on macOS.
+`--browser` still restricts a run to browser tools and overrides stale computer surface fields in
+CUA_MCP_ENV. `--cdp-browser`, `--managed-browser`, `--cdp-endpoint` and explicit check commands
+retain browser-specific behavior without implicitly building/enabling the native app service.
+On other platforms the default is browser-only; this does not introduce a Swift dependency there.
+
+Unified mode does not eagerly open Chrome. Install/host-directory configuration remains required
+for extension discovery and the host prepare_browser tool; missing browser configuration is an
+explicit empty allowlist. Native UI still requires App policy, interactive approval and macOS
+permissions. Enabling both surfaces is not evidence that either target operation succeeded.
+
+Routing tests cover both platform defaults and explicit deployment precedence. Real Rust + Swift +
+MCP CLI tests with a local model-compatible HTTP fixture verify default and explicit unified runs
+reach the model with both surfaces, unified inventory and readiness facts, without launching Chrome.
+
+A real DeepSeek run through the plain default command also completed a read-only inventory request:
+the model identified running Multica (ai.multica.desktop), recognized the connected Chrome backend,
+and reported the missing native UI permissions/local App allowance. No browser navigation or App
+window operation was requested. The local transcript remains ignored under artifacts; this result
+establishes default dual-surface delivery, not successful native application control.

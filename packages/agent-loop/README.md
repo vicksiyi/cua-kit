@@ -13,11 +13,18 @@ npm run demo:deepseek -- --js "请调用 js 计算 6 * 7，并告诉我结果"
 npm run demo:deepseek -- --browser "列出当前可用浏览器；没有浏览器就明确说明"
 ```
 
-Default mode enables CUA browser setup (`--browser` is an explicit alias); `--js` selects JavaScript-only tools. However,
-browser availability depends on the configured backend. The default extension
-route checks the selected Chrome profile and can launch it when needed; explicit
-CDP mode uses an isolated browser. Native App operation acceptance remains
-incomplete. Explicit CUA_MCP_ENV takes precedence over mode defaults.
+On macOS, default mode is `--unified`: browser and native app APIs are both available to the
+model for target selection. Other platforms default to browser-only. Use `--browser` or `--computer`
+to restrict the run, and `--js` for JavaScript-only tools. Explicit browser deployment options
+(`--cdp-browser`, `--managed-browser`, `--cdp-endpoint`) select browser-only mode. CLI surface
+selection overrides stale surface fields in CUA_MCP_ENV; other configuration remains in effect.
+
+Unified mode discovers configured existing browser connections and offers the host prepare_browser
+tool when a valid private host directory is available; it does not eagerly launch Chrome for an
+app task. Explicit browser-only mode checks its selected backend before the model request and can
+launch the selected Chrome profile. CDP launch mode uses an isolated browser. Native App actions
+still require local policy, interactive approval and macOS permissions; full native UI acceptance
+remains incomplete. Missing browser configuration is not automatically repaired.
 
 The terminal shows timestamped TOOL REQUEST entries with arguments and TOOL RESULT
 entries with status and output, followed by the final model answer. Returned images
