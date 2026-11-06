@@ -1,3 +1,4 @@
+import { DomSnapshot } from "../packages/browser/src/commands/playwright_page";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
@@ -50,9 +51,11 @@ test("SIWC public factory and serialized transport dispatch registered detection
         }),
       }),
       playwright: {
-        executionPolicy: {documentOnly:true},
+        executionPolicy: { documentOnly: true },
         evaluateOnPlaywrightPage: async (_tab: string, fn: any, options: any) =>
-          page.evaluate(`(${fn.toString()})(window.__codexPlaywrightInjected, ${JSON.stringify(options.arg)})`),
+          page.evaluate(
+            `(${fn.toString()})(window.__codexPlaywrightInjected, ${JSON.stringify(options.arg)})`,
+          ),
       },
     };
     const transport = new FunctionAgentTransport({
@@ -77,12 +80,24 @@ test("SIWC public factory and serialized transport dispatch registered detection
     assert.equal(result.candidates.length, 1);
     assert.equal(result.candidates[0].target.kind, "dom");
     assert.equal(authorized.length, 2);
-    const snapshot = await transport.send({command:{toJSON:()=>({type:"playwright_dom_snapshot",browser_id:"fixture",tab_id:"7"})}});
-    assert.equal(snapshot.siwc.status,"possible_matches");
+    const snapshot = await transport.send({
+      command: {
+        toJSON: () => ({
+          type: "playwright_dom_snapshot",
+          browser_id: "fixture",
+          tab_id: "7",
+        }),
+      },
+    });
+    assert.deepEqual(DomSnapshot.ResultSchema.parse(snapshot), snapshot);
+    assert.equal(snapshot.siwc.status, "possible_matches");
     assert(snapshot.snapshotId);
-    assert.match(snapshot.dom_snapshot,/Continue with ChatGPT.*\[ref=/);
-    assert.match(snapshot.dom_snapshot,/SIWC snapshotId:/);
-    assert.equal(snapshot.siwc.candidates[0].target.snapshotId,snapshot.snapshotId);
+    assert.match(snapshot.dom_snapshot, /Continue with ChatGPT.*\[ref=/);
+    assert.match(snapshot.dom_snapshot, /SIWC snapshotId:/);
+    assert.equal(
+      snapshot.siwc.candidates[0].target.snapshotId,
+      snapshot.snapshotId,
+    );
     enabled = false;
     assert.deepEqual(await capability.detect(), {
       status: "unavailable",

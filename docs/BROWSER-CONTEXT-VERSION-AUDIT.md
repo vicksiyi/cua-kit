@@ -137,3 +137,9 @@
 新增配置隔离测试覆盖缺省/0/1，断言开关仅进 trusted worker、测试模型密钥不进入 runtime spec。该修复属于独立 Rust 部署适配，不能宣称恢复了原厂 native sandbox 实现。
 
 Rust supervisor 全套测试以 CUA_TEST_NODE=/opt/homebrew/bin/node 执行：87 项通过（首次未设置该测试依赖时 media 测试报配置缺失，补齐后全套通过）。另扩展 sandbox 实测，在同一受限 worker 初始化 WASI，并同时验证外部文件、进程启动和网络仍为 EPERM。
+
+## 后续恢复：DOM result schema 与 demo AX 配置入口
+
+按原 VG 为 DomSnapshot.ResultSchema 补齐 snapshotId/siwc；否则显式 parse 会剥离服务已返回的元数据。增加原 schema 差分，并在真实 Chromium 注册链中断言实际 snapshot parse 后保持不变。与 AX schema 合计 3 项测试通过，Browser TypeScript 与重建通过。
+
+核查 demo 配置链：原版 AX 开关须放 CUA_MCP_ENV，而非任意 ambient 环境透传。新增解析测试验证显式 JSON 优先、ambient 不被引入以及模型凭据隔离（入口测试 2 通过，4 个 native 专项按其 opt-in 条件跳过）。新增 docs/AX-OBSERVATION.md 说明 DOM fallback、显式 AX 配置、已验证路径和限制。

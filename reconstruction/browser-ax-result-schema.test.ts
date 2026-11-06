@@ -1,3 +1,4 @@
+import { DomSnapshot } from "../packages/browser/src/commands/playwright_page";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { z } from "../packages/browser/src/vendor/bundled_zod";
@@ -32,6 +33,34 @@ test("AX result schema preserves snapshot and SIWC metadata exactly as source", 
   ]) {
     const expected = original.safeParse(input),
       actual = StateResultSchema.safeParse(input);
+    assert.equal(actual.success, expected.success);
+    if (actual.success && expected.success)
+      assert.deepEqual(actual.data, expected.data);
+  }
+});
+
+const originalDom = originalServiceBindings(["VG"], {
+  p: z,
+  yi: SiwcDetectionSchema,
+}).VG;
+test("DOM result schema retains snapshot identity and candidate metadata", () => {
+  for (const input of [
+    {
+      dom_snapshot: "- button",
+      snapshotId: "snapshot",
+      siwc: { status: "no_deterministic_matches", candidates: [] },
+    },
+    {
+      dom_snapshot: "changed",
+      siwc: { status: "unavailable", reason: "page_changed" },
+    },
+    { dom_snapshot: "plain", unknown: "stripped" },
+    { dom_snapshot: "", snapshotId: 123 },
+    { dom_snapshot: 123 },
+    {},
+  ]) {
+    const expected = originalDom.safeParse(input),
+      actual = DomSnapshot.ResultSchema.safeParse(input);
     assert.equal(actual.success, expected.success);
     if (actual.success && expected.success)
       assert.deepEqual(actual.data, expected.data);

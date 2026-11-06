@@ -201,3 +201,15 @@ for (const signal of ["SIGTERM", "SIGINT"] as const)
       }
     },
   );
+
+test("explicit AX setting is read from MCP configuration, not ambient model environment", async () => {
+  const configured = await readRuntimeEnvironment({
+    CUA_MCP_ENV: JSON.stringify({CUA_REPL_ENABLED_SURFACES:"browser",BROWSER_USE_TINYSKY_ENABLED:"1"}),
+    BROWSER_USE_TINYSKY_ENABLED:"0",
+    DEEPSEEK_API_KEY:"fixture-private-key",
+  });
+  assert.equal(configured.BROWSER_USE_TINYSKY_ENABLED,"1");
+  assert.equal(configured.DEEPSEEK_API_KEY,undefined);
+  const ambient = await readRuntimeEnvironment({BROWSER_USE_TINYSKY_ENABLED:"1"});
+  assert.equal(ambient.BROWSER_USE_TINYSKY_ENABLED,undefined);
+});

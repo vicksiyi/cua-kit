@@ -1,3 +1,4 @@
+import { SiwcDetectionSchema } from "./siwc";
 // Generated from original AST schema expressions; identifiers expanded and payload types inferred.
 // Regenerate with node scripts/reconstruct-input-schemas.mjs.
 import { z } from "../vendor/bundled_zod";
@@ -90,7 +91,11 @@ export namespace DomSnapshot {
     browser_id: z.string(),
     tab_id: z.string(),
   });
-  export const ResultSchema = z.object({ dom_snapshot: z.string() });
+  export const ResultSchema = z.object({
+    dom_snapshot: z.string(),
+    snapshotId: z.string().optional(),
+    siwc: SiwcDetectionSchema.optional(),
+  });
   export function create(payload: PageTarget & {}) {
     return new Command(commandType, PayloadSchema, payload);
   }
