@@ -1,10 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";
-import * as selectors from "../packages/browser/dist/playwright/selectors.js";
-import { CollectionReadCache } from "../packages/browser/dist/playwright/collection_read_cache.js";
-import { PlaywrightLocatorReadAll } from "../packages/browser/dist/commands/playwright_read_all.js";
+import * as selectors from "../packages/browser/src/playwright/selectors";
+import { CollectionReadCache } from "../packages/browser/src/playwright/collection_read_cache";
+import { PlaywrightLocatorReadAll } from "../packages/browser/src/commands/playwright_read_all";
 const root =
   process.env.CUA_VENDOR_ROOT ??
   "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai";
@@ -12,8 +13,12 @@ const source = await readFile(
   `${root}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js`,
   "utf8",
 );
+assert.equal(
+  createHash("sha256").update(source).digest("hex"),
+  "04d63754bb1134eae351c164e750c7a9b798de2757a734e7a62e14b63edf8de4",
+);
 const original = await import(
-  `data:text/javascript;base64,${Buffer.from(source + "\nexport {Sl,Tl,jl,Il,Cl,Rl,Pl,El,Al,Ml,Yc};").toString("base64")}`
+  `data:text/javascript;base64,${Buffer.from(source + "\nexport {Al as CollectionReadCache,Ml as appendRelativeSelector,Ol as escapeRegexForSelector,Zl as escapeTextForSelector,Nl as escapeAttributeForSelector,$l as roleSelector,ql as textSelector,Dl as labelSelector,Ll as placeholderSelector,Bl as testIdSelector,nd as ReadAll};").toString("base64")}`
 );
 function outcome(fn: () => any) {
   try {
@@ -39,9 +44,9 @@ test("selector builders preserve string/regex escaping, flags, cross-realm recog
     { [Symbol.toStringTag]: "RegExp" },
   ];
   for (const [local, old] of [
-    [selectors.textSelector, original.Pl],
-    [selectors.labelSelector, original.El],
-    [selectors.placeholderSelector, original.Al],
+    [selectors.textSelector, original.textSelector],
+    [selectors.labelSelector, original.labelSelector],
+    [selectors.placeholderSelector, original.placeholderSelector],
   ]) {
     for (const matcher of matchers)
       for (const exact of [true, false, undefined, "truthy"])
@@ -54,11 +59,11 @@ test("selector builders preserve string/regex escaping, flags, cross-realm recog
     for (const exact of [true, false]) {
       assert.equal(
         selectors.escapeTextForSelector(text, exact),
-        original.Il(text, exact),
+        original.escapeTextForSelector(text, exact),
       );
       assert.equal(
         selectors.escapeAttributeForSelector(text, exact),
-        original.Cl(text, exact),
+        original.escapeAttributeForSelector(text, exact),
       );
     }
   for (const role of ["", "button", 42])
@@ -70,18 +75,18 @@ test("selector builders preserve string/regex escaping, flags, cross-realm recog
     ])
       assert.deepEqual(
         outcome(() => selectors.roleSelector(role, options)),
-        outcome(() => original.Rl(role, options)),
+        outcome(() => original.roleSelector(role, options)),
       );
   for (const value of matchers.slice(0, 10))
     assert.deepEqual(
       outcome(() => selectors.testIdSelector(value)),
-      outcome(() => original.Ml(value)),
+      outcome(() => original.testIdSelector(value)),
     );
   for (const parent of [undefined, "", "a"])
     for (const child of ["", "b"])
       assert.equal(
         selectors.appendRelativeSelector(parent, child),
-        original.Tl(parent, child),
+        original.appendRelativeSelector(parent, child),
       );
 });
 function fixture(Cache: any) {
@@ -140,7 +145,7 @@ async function cacheScenario(Cache: any) {
 test("collection cache shares promises by relative selector, keeps first timeout, clears and retries failures", async () => {
   assert.deepEqual(
     await cacheScenario(CollectionReadCache),
-    await cacheScenario(original.Sl),
+    await cacheScenario(original.CollectionReadCache),
   );
 });
 async function raceScenario(Cache: any) {
@@ -161,9 +166,9 @@ async function raceScenario(Cache: any) {
 test("collection cache preserves clear/in-flight-rejection race and does not validate transport results", async () => {
   assert.deepEqual(
     await raceScenario(CollectionReadCache),
-    await raceScenario(original.Sl),
+    await raceScenario(original.CollectionReadCache),
   );
-  for (const Cache of [CollectionReadCache, original.Sl]) {
+  for (const Cache of [CollectionReadCache, original.CollectionReadCache]) {
     const { cache, pending } = fixture(Cache);
     const read = cache.read({ index: 0 });
     const raw = { extra: "unvalidated" };
@@ -182,11 +187,11 @@ test("read-all command/schema matches original raw payload and parsed result beh
   ]) {
     assert.deepEqual(
       PlaywrightLocatorReadAll.create(payload).toJSON(),
-      original.Yc.create(payload).toJSON(),
+      original.ReadAll.create(payload).toJSON(),
     );
     assert.deepEqual(
       outcome(() => PlaywrightLocatorReadAll.create(payload).parse()),
-      outcome(() => original.Yc.create(payload).parse()),
+      outcome(() => original.ReadAll.create(payload).parse()),
     );
   }
   for (const result of [
@@ -197,6 +202,6 @@ test("read-all command/schema matches original raw payload and parsed result beh
   ])
     assert.deepEqual(
       outcome(() => PlaywrightLocatorReadAll.ResultSchema.parse(result)),
-      outcome(() => original.Yc.ResultSchema.parse(result)),
+      outcome(() => original.ReadAll.ResultSchema.parse(result)),
     );
 });

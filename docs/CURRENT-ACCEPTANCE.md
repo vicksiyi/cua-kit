@@ -119,3 +119,15 @@ Tab.goto → 参数解析 → 导航命令 → beforeDispatch/deadline helper �
 
 该测试使用设置为 orbit/cdp 的 context fixture，以及 Playwright CDPSession 传输适配层；
 不是生产 orbit 部署，也没有验证完整 CdpManager 附着/重试链。测试通过，产品逻辑未改动。
+
+## Locator 批量读取审计
+
+当前 read-all 客户端缓存和服务处理均已存在，本轮未发现该路径需要新增公开方法。
+更新 `browser-playwright-collection.test.ts` 到当前客户端 SHA/符号，并直接测试 TS 源码，
+避免陈旧 dist/旧压缩符号影响结论。选择器转义、缓存合并/首个超时、失败重试、
+clear 与在途失败竞争、read-all schema 对照通过。
+
+新增真实 Chromium read-all 对照：原 R2 与还原服务回调运行在真实 DOM 和注入 helper 上，
+覆盖 10 种相对选择器/授权组合；password value 被过滤、普通 input value 保留、
+缺失子元素返回 null、拒绝授权时未执行页面读取。共 5 项测试通过。
+本轮没有修改产品逻辑，也没有将该服务专项视为完整 Agent/MCP 流程验收。
