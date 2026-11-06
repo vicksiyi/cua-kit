@@ -421,3 +421,23 @@ AXError 系统值接到已恢复的类型解码，确认不匹配/缺值被跳�
 新增 TypeErasedArray.swift 仅恢复协议和标准数组 conformance，Swift 构建验证成立；
 底层 CFArray bridging 和完整泛型 decoder 尚未接入，不能以该协议声明证明数组观察可用。
 arrayTargetEvidence 保存协议布局、conformance 和 dyld binding 证据。
+
+## 将逐元素解码接入 AXChildren 遍历
+
+`Target.collect` 原先通过 `as? [AXUIElement]` 转换完整 AXChildren 数组。这不能替代
+原构建已确认的逐元素 compactMap 和 CF 类型检查，尤其不能将 Swift 对 opaque CF
+对象的条件转换视为底层类型验证。
+
+现在实际遍历调用 `unwrapAXUIElementArray`：先验证 CFArray 类型，再通过 NSArray
+桥接取得元素，复用已还原的 `decodeAXArrayElements` 与 `unwrapAXUIElement`。
+有效 AXUIElement 保留引用身份和顺序，重复引用仍保留；非 AXUIElement 元素被跳过，
+嵌套数组不展开。遍历自身既有的 visited 集合仍负责去重，未改变节点预算或 ID 分配。
+
+这是原生 Swift 观察路径对已证实解码规则的具体接入。NSArray 桥接为当前具体适配，
+并非宣称完整恢复原构建 generic AXEncodedValue / TypeErasedArray 分派、错误映射或
+所有 AX 属性类型。完整增量树、disableDiff 接收后的实现仍未完成。
+
+验证包括真实 CF/AX 引用构造下的非数组、空数组、全无效、混合类型、嵌套数组、重复
+引用和顺序；三项相关 Swift 编译执行测试通过，完整 cua-helper 构建通过，固定原构建
+191 项签名/局部函数证据检查通过。这些测试不读取应用 UI，不能替代有系统权限后的
+真实应用树验收。

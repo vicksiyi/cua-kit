@@ -69,7 +69,10 @@ final class Target {
             }
             data["properties"] = props
             result.append(Node(element: element, data: data))
-            if let children = attribute(element, kAXChildrenAttribute) as? [AXUIElement] { for child in children { walk(child, id, depth + 1) } }
+            if let rawChildren = attribute(element, kAXChildrenAttribute),
+               let children = unwrapAXUIElementArray(rawChildren) {
+                for child in children { walk(child, id, depth + 1) }
+            }
         }
         // Distinguish denied/unresponsive AX from an actual empty tree.
         var role: CFTypeRef?
