@@ -171,3 +171,62 @@ fn reader_stops_at_invalid_utf8_and_preserves_prior_delivery() {
     assert_eq!(deliveries, [Delivery::Buffered]);
     assert_eq!(state.lock().unwrap().replay.pending_requests.len(), 1);
 }
+
+#[test]
+fn eof_cleanup_is_generation_guarded_and_closes_owned_resources() {
+    use core_browser_extension_host::{
+        app_server_output::{finish_output, forward_and_finish, OutputState},
+        app_server_process::wait_child,
+    };
+    use std::{
+        io::Read,
+        net::{TcpListener, TcpStream},
+        process::{Command, Stdio},
+        sync::{Arc, Mutex},
+        time::Duration,
+    };
+    let mut child = Command::new("/bin/cat")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .spawn()
+        .unwrap();
+    let input = child.stdin.take().unwrap();
+    let child = Arc::new(Mutex::new(child));
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let writer = Arc::new(Mutex::new(
+        TcpStream::connect(listener.local_addr().unwrap()).unwrap(),
+    ));
+    let (mut peer, _) = listener.accept().unwrap();
+    peer.set_read_timeout(Some(Duration::from_secs(3))).unwrap();
+    let state = Arc::new(Mutex::new(OutputState {
+        generation: 5,
+        writer: Some(writer),
+        child: Some(child.clone()),
+        stdin: Some(input),
+        replay: OutputReplay {
+            initialize_response: Some("init".into()),
+            pending_requests: vec!["pending".into()],
+        },
+    }));
+    finish_output(&state, 4);
+    {
+        let s = state.lock().unwrap();
+        assert!(s.child.is_some() && s.stdin.is_some() && s.writer.is_some());
+        assert_eq!(s.replay.pending_requests.len(), 1);
+    }
+    let error = forward_and_finish(&b"\xff"[..], &state, 5, |_| {}).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+    {
+        let s = state.lock().unwrap();
+        assert!(s.child.is_none() && s.stdin.is_none() && s.writer.is_none());
+        assert!(s.replay.pending_requests.is_empty());
+        assert!(s.replay.initialize_response.is_none());
+        assert_eq!(s.generation, 5);
+    }
+    let mut frame = [0; 2];
+    peer.read_exact(&mut frame).unwrap();
+    assert_eq!(frame, [0x88, 0]);
+    assert_eq!(peer.read(&mut [0]).unwrap(), 0);
+    wait_child(child).unwrap(); // stdin closure lets cat exit naturally
+    finish_output(&state, 5); // already cleared is harmless
+}

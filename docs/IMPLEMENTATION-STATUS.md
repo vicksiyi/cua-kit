@@ -6195,3 +6195,10 @@ Three output tests pass, including actual socket delivery of non-JSON text, stal
 Added forward_lines using an 8192-byte BufReader and cleared reusable String. Each nonzero successful read reaches the existing delivery path, including the final unterminated line; UTF-8/read errors return to the lifecycle owner. No line-size limit or JSON reserialization was invented.
 
 Five output tests pass. A real owned fake CLI launched through the restored command helper now feeds stdout through the Rust reader and delivery state into actual TCP websocket frames, then the worker waits/reaps the child. CRLF-only lines are skipped and a final unterminated line arrives intact. Invalid UTF-8 stops processing after the prior valid delivery. This verifies a composed transport segment, not a full App Server session: owner diagnostics, generation-guarded EOF cleanup, handshake/attach and manager startup still remain.
+
+
+### 2026-11-06: generation-guarded reader cleanup
+
+Added owned child/stdin fields to the output-state subset and composed forward_and_finish. Both EOF and read error clear same-generation child reference, stdin, pending requests and initialize cache, then take/close the websocket outside the state mutex. A stale reader changes nothing; unlike explicit stop, this cleanup does not increment generation.
+
+Six output tests pass. The new real pipe/socket case verifies stale cleanup preserves resources, invalid UTF-8 invokes cleanup, close-frame/EOF reaches the peer, closing stdin lets the owned cat exit naturally, wait reaps it, and repeated cleanup is harmless. Original cleanup also clears ProxyRuntimeState, whose full representation remains pending; no claim of complete native state restoration is made. Manager and attach/handshake integration remain open.

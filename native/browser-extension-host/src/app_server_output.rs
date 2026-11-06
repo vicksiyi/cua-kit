@@ -72,6 +72,8 @@ pub struct OutputState {
     pub generation: u64,
     pub replay: OutputReplay,
     pub writer: Option<SharedWriter>,
+    pub child: Option<crate::app_server_process::SharedChild>,
+    pub stdin: Option<std::process::ChildStdin>,
 }
 pub type SharedOutput = Arc<Mutex<OutputState>>;
 
@@ -149,4 +151,39 @@ pub fn forward_lines(
         }
         on_delivery(deliver_line(state, generation, &line));
     }
+}
+
+/// Clear the currently represented process/output resources only for this reader's
+/// generation, then close the detached websocket outside the state lock.
+/// ProxyRuntimeState will also need clearing when its representation is restored.
+/// Unlike explicit stop, native EOF cleanup does not increment generation.
+pub fn finish_output(state: &SharedOutput, generation: u64) {
+    let writer = if let Ok(mut state) = state.lock() {
+        if state.generation != generation {
+            return;
+        }
+        state.child = None;
+        state.stdin = None;
+        state.replay.pending_requests.clear();
+        state.replay.initialize_response = None;
+        state.writer.take()
+    } else {
+        None
+    };
+    if let Some(writer) = writer {
+        crate::app_server_websocket::close(&writer);
+    }
+}
+
+/// Combines stream consumption and cleanup on both EOF and read failure. Child
+/// wait belongs to the worker after return; state owns no blocking child lock.
+pub fn forward_and_finish(
+    reader: impl std::io::Read,
+    state: &SharedOutput,
+    generation: u64,
+    on_delivery: impl FnMut(Delivery),
+) -> std::io::Result<()> {
+    let result = forward_lines(reader, state, generation, on_delivery);
+    finish_output(state, generation);
+    result
 }
