@@ -33,3 +33,15 @@ CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 nod
 ```
 
 测试的安装包客户端用于协议对照；不启动原厂 node_repl 服务。浏览器和 owned App 验收使用测试对象，未使用用户真实账号进行登录。日志保留本地，未纳入提交。
+
+## 当前 AX 客户端 oracle 更新
+
+`reconstruction/browser-ax.test.ts` 原先仍引用旧客户端压缩符号 Fl/$s/Ls。
+重新读取当前安装的 browser-client.js 后，将 oracle 对齐到 Hl/zn/Gn，
+并锁定 SHA256 `04d63754bb1134eae351c164e750c7a9b798de2757a734e7a62e14b63edf8de4`；
+后续安装包变化会显式要求重新审计。还原侧直接导入 TS 源码，避免陈旧 dist 掩盖差异。
+
+3 项差分测试通过：280 组观察/显示组合（7 种返回、5 种模式、2 种方法、4 种 diff 选项），
+18 组操作参数及错误路径，以及两类命令的原始 payload/延迟解析行为。
+当前 AxClient 行为与本次原构建一致，未为通过测试改写产品逻辑。
+该验收只覆盖客户端协议与结果处理，不代表 native diff 算法或全部真实网站操作已完成。

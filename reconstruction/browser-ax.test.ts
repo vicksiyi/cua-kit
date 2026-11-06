@@ -1,11 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { AxClient } from "../packages/browser/dist/ax.js";
+import { createHash } from "node:crypto";
+import { AxClient } from "../packages/browser/src/ax";
 import {
   ActionCommand,
   StateCommand,
-} from "../packages/browser/dist/commands/ax.js";
+} from "../packages/browser/src/commands/ax";
 const root =
   process.env.CUA_VENDOR_ROOT ??
   "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai";
@@ -13,9 +14,14 @@ const bundle = await readFile(
   `${root}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js`,
   "utf8",
 );
+assert.equal(
+  createHash("sha256").update(bundle).digest("hex"),
+  "04d63754bb1134eae351c164e750c7a9b798de2757a734e7a62e14b63edf8de4",
+  "Re-audit AX bindings when the installed client changes",
+);
 // Test-only exports expose the ORIGINAL lexical classes without replacing their dependencies.
 const original = await import(
-  `data:text/javascript;base64,${Buffer.from(bundle + "\nexport {Fl as AxClient,$s as StateCommand,Ls as ActionCommand};").toString("base64")}`
+  `data:text/javascript;base64,${Buffer.from(bundle + "\nexport {Hl as AxClient,zn as StateCommand,Gn as ActionCommand};").toString("base64")}`
 );
 
 test("AX capture client matches original transport, decoding, display and missing-data paths", async () => {
@@ -46,23 +52,25 @@ test("AX capture client matches original transport, decoding, display and missin
   for (const result of [
     { state: "AX", data: "AQID" },
     { state: "AX", screenshot_unavailable: "" },
+    { state: "AX", screenshot_unavailable: "Page unavailable", snapshotId: "id", siwc: {status: "unavailable", reason: "page_changed"} },
     { state: "AX" },
     { data: "AQID" },
     {},
     { state: "AX", data: "%%%" },
   ])
-    for (const mode of ["state", "screenshot", "both", "invalid"])
-      for (const method of ["get", "write"]) {
+    for (const mode of [undefined, "state", "screenshot", "both", "invalid"])
+      for (const method of ["get", "write"])
+        for (const options of [undefined, {}, {disableDiffing: false}, {disableDiffing: true}]) {
         assert.deepEqual(
           await run(AxClient, result, method, [
             mode,
-            { disableDiffing: false },
+            options,
           ]),
           await run(original.AxClient, result, method, [
             mode,
-            { disableDiffing: false },
+            options,
           ]),
-          `${method}:${mode}:${JSON.stringify(result)}`,
+          `${method}:${mode}:${JSON.stringify(options)}:${JSON.stringify(result)}`,
         );
       }
 });
