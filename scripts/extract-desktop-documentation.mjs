@@ -8,6 +8,8 @@ const source = await readFile(
   `${root}/browser-desktop/scripts/browser-service.mjs`,
   "utf8",
 );
+if (createHash("sha256").update(source).digest("hex") !== "ff48f49dae194da13d03427af5130fd67c183cf76f007309afc9f3e60179cb0f")
+  throw Error("Unrecognized desktop service documentation source; audit before regeneration");
 const ast = parse(source, { ecmaVersion: "latest", sourceType: "module" });
 let bundle;
 function key(property) {

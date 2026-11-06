@@ -92,3 +92,9 @@
 将 SIWC client 命令、tab capability factory、runtime export 与 service detect/authenticate 处理器接入现有注册链。当前原构建 `pg` 的 77 项 service exports 已按名称、顺序、getter 属性验证；client Commands 的完整 key 列表与 `ee` 对齐。静态源码 export-table 检查不再依赖旧压缩器 helper 名 H（当前为 W），仍检查实际 AST 的目标表与 getter 结构。
 
 真实 Chromium 集成测试通过：public capability factory → FunctionAgentTransport 序列化 → assembled service registry → injected DOM detector 返回候选。关闭测试 feature gate 后 detect 返回 observation_unavailable，authenticate 返回 unsupported，且无新增授权/页面读取。这里通过受控 context 连接真实 DOM，不代表真实账号/grant provider 验收。Browser TypeScript 与重建通过，注册层 3 项测试通过。生产 browser-specific gate 未放开或绕过。
+
+## 后续恢复：实际部署的文档包与必读检查
+
+发现独立 native service 通过 @core/browser-desktop/documentation 加载旧静态包（source 0c1cb5...），没有 SIWC 文档/requiredFor，尽管 extension kernel 文档已有 SIWC。按当前安装的 desktop browser-service 静态对象重新生成整包，并为提取脚本加 source SHA-256 校验：ff48f49dae194da13d03427af5130fd67c183cf76f007309afc9f3e60179cb0f。不执行原厂 runtime，不手工拼接不同环境说明。
+
+新测试验证 default、codex-app、cloud、orbit、training 的 packaged 文档读取：detect 无必读限制；authenticate 在读 capabilities/tab/siwc 前被文档控制器拒绝，读后通过。四种环境的 SIWC 正文与原安装目录逐字对照（仅 @oai→@core）。Browser/Desktop TypeScript、重建通过，真实 native 扩展 MCP 操作回归通过（约 8.9 秒）。尚未验收真实账号/grant 登录。
