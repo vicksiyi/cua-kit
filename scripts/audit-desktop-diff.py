@@ -1166,6 +1166,16 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clickPreparation']={
+    'entry':'0x1007b0dd4 stores click arguments; continuation 0x1007b0f08..<0x1007b11b8 selects first path',
+    'ordering':'actions witness +0x48 read once; contains pick before contains press; isInsideWebView witness +0x40 read before all parameter gates',
+    'actionEligibility':'count < 2 AND action exists AND mouseButton raw 0 AND holdDuration nil AND heldKey nil AND flags raw 0 AND !alwaysSimulateClick',
+    'argumentStorage':{'mouseButton':'w0 -> context+0x94','count':'x1 -> +0x438','holdDuration':'x2,x3 -> +0x440,+0x448; optional nil tag w4 -> +0x91','heldKey':'x5 -> +0x450, nullable ObjC SAIVirtualKeyPress reference','flags':'x6 -> +0x458','alwaysSimulateClick':'w7 -> +0x92'},
+    'branchTargets':{'ineligible':'0x1007b1164 -> clickablePoint at 0x1007a03f8','eligible':'0x1007b11b8, re-read web-view state before further async processing'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007b0dd4,0x1007b0f08),(0x1007b0f08,0x1007b11b8),(0x100194fc8,0x10019501c)]],
+    'implementation':'UIElementClickPreparation.swift extracted result records candidate, initial web-view flag and eligibility. Does not send events.',
+    'limitations':'Held-key existence is explicit Bool until original Objective-C key type is restored. Full async execution, second web query, cursor feedback, focus/window and selection handling remain pending. No production click replacement claimed.',
+}
 element_storage_evidence['clickingMayCauseSelection']={
     'entry':'0x1007a7790..<0x1007a79e8',
     'walk':'parentChain(maxDepth:300, includingSelf:true), including its parent lookahead',

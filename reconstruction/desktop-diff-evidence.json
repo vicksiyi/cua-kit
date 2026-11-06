@@ -3093,6 +3093,42 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "clickPreparation": {
+      "entry": "0x1007b0dd4 stores click arguments; continuation 0x1007b0f08..<0x1007b11b8 selects first path",
+      "ordering": "actions witness +0x48 read once; contains pick before contains press; isInsideWebView witness +0x40 read before all parameter gates",
+      "actionEligibility": "count < 2 AND action exists AND mouseButton raw 0 AND holdDuration nil AND heldKey nil AND flags raw 0 AND !alwaysSimulateClick",
+      "argumentStorage": {
+        "mouseButton": "w0 -> context+0x94",
+        "count": "x1 -> +0x438",
+        "holdDuration": "x2,x3 -> +0x440,+0x448; optional nil tag w4 -> +0x91",
+        "heldKey": "x5 -> +0x450, nullable ObjC SAIVirtualKeyPress reference",
+        "flags": "x6 -> +0x458",
+        "alwaysSimulateClick": "w7 -> +0x92"
+      },
+      "branchTargets": {
+        "ineligible": "0x1007b1164 -> clickablePoint at 0x1007a03f8",
+        "eligible": "0x1007b11b8, re-read web-view state before further async processing"
+      },
+      "blocks": [
+        {
+          "start": "0x1007b0dd4",
+          "endExclusive": "0x1007b0f08",
+          "machineCodeSha256": "eaafd01a76c4c8a35356390df24d996d8ae9a391ce9d38266046418271cb7f00"
+        },
+        {
+          "start": "0x1007b0f08",
+          "endExclusive": "0x1007b11b8",
+          "machineCodeSha256": "24c3b2033e8cee9006216161bd94416aacfdda390921609c3ea29fdb7a696cc5"
+        },
+        {
+          "start": "0x100194fc8",
+          "endExclusive": "0x10019501c",
+          "machineCodeSha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
+        }
+      ],
+      "implementation": "UIElementClickPreparation.swift extracted result records candidate, initial web-view flag and eligibility. Does not send events.",
+      "limitations": "Held-key existence is explicit Bool until original Objective-C key type is restored. Full async execution, second web query, cursor feedback, focus/window and selection handling remain pending. No production click replacement claimed."
+    },
     "clickingMayCauseSelection": {
       "entry": "0x1007a7790..<0x1007a79e8",
       "walk": "parentChain(maxDepth:300, includingSelf:true), including its parent lookahead",

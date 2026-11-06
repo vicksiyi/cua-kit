@@ -2355,3 +2355,28 @@ UIElementSelectionComposition.swift 补齐前述 helper 的具体边界：
 边界。父节点选择数组为空仍以属性支持判定为 true；application 则优先 false。
 测试未访问实际应用，两项测试及其 Swift package 构建通过。
 仍未接入完整 click 状态机；生产 focus 未改变，完整 TaskLocal/provider 尚待恢复。
+
+
+## click 入口的 AX 动作与模拟点击分流（2026-11-07）
+
+0x1007b0dd4 保存参数，0x1007b0f08 continuation 先读取一次 actions，再查
+AXPick，未找到才查 AXPress；优先级不由 actions 数组顺序决定。比较 helper
+0x100194fc8 对 action 的 String 执行相等判断。随后读取 isInsideWebView
+（协议 +0x40），即便后续参数会强制进入模拟分支，此次读取也不会跳过。
+
+进入 AX 动作后续流程的条件为 count < 2、有候选动作、左键、holdDuration 为 nil、
+heldKey 为 nil、flags 为零、alwaysSimulateClick=false。count 的原比较不是 ==1；
+此内部函数不额外校验负数或零。Duration.zero 是非 nil，也会进入模拟分支。
+条件失败跳转 clickablePoint()；通过则再次读取 web-view 状态，继续后续异步路径。
+这不是“只要有 AXPress 就直接执行”的逻辑。
+
+寄存器和 context 对应关系已记录到机器审计。另用本机 Swift 编译器编译相同参数
+布局的只读探针（heldKey 用 NSObject? 验证可空 ObjC 引用布局），确认 Duration?
+占 x2/x3 与 w4 tag，后续 x5/x6/w7 分别对应 heldKey、flags、强制模拟。
+该探针仅支持 ABI 解释，不替代原版指令证据，也未执行原版服务。
+
+UIElementClickPreparation.swift 保留候选优先级、读取顺序和参数门槛；显式结果结构
+是本项目提取边界，不宣称原版有同名类型。heldKeyIsPresent 暂只表达 nil 检查，
+未伪造 SAIVirtualKeyPress。7056 组组合测试通过，包括极端 count、零时长、
+不同鼠标键与 web-view 状态。完整 click 执行、第二次 web-view 查询、虚拟光标及
+窗口/焦点/选择协同仍待恢复，本 helper 尚未替换生产点击链路。
