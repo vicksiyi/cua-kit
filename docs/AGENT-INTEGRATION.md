@@ -311,3 +311,20 @@ For ordinary REPL execution failures, the model guidance now explicitly warns th
 initialization does not establish a usable binding and may still have side effects. It should inspect
 documented inventory before recovery. This is guidance, not a deterministic recovery algorithm or
 permission to retry denied actions.
+
+
+### Login and human-verification handoff
+
+The demo's model guidance distinguishes existing-account sign-in from account registration and
+password reset. Filling a password field does not set a password. When the user requests an
+arbitrary new password while asking to sign in, the model must clarify the intended flow before
+submitting credentials. It must not print generated passwords in tool output or final prose.
+This guidance does not retroactively redact existing local logs and is not a deterministic
+credential filter.
+
+Human-verification challenges require user takeover. The model should stop challenge interaction,
+use the documented markHandoff capability where available, and explain what remains unfinished
+without submitting completion_summary. Website-access approval does not complete a CAPTCHA.
+The loop's existing `completed` status means model conversation termination, not verified login
+success; applications must not translate it into “login successful”. Structured handoff status and
+interactive resume remain separate work, not implemented by this guidance change.
