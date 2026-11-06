@@ -22,7 +22,11 @@ export function createDebugLog(directory: string, secrets: string[] = []) {
       .replace(/\bsk-[A-Za-z0-9_-]{12,}/g, "[REDACTED]")
       .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+=*/gi, "Bearer [REDACTED]");
   };
-  function clean(value: unknown, key = ""): unknown {
+  function clean(
+    value: unknown,
+    key = "",
+    ancestors = new Set<object>(),
+  ): unknown {
     if (
       /^(authorization|cookie|set-cookie|api[_-]?key|password|secret|token|access[_-]?token|refresh[_-]?token)$/i.test(
         key,
@@ -30,19 +34,39 @@ export function createDebugLog(directory: string, secrets: string[] = []) {
     )
       return "[REDACTED]";
     if (typeof value === "string") return cleanString(value);
-    if (value instanceof Error)
-      return {
-        name: value.name,
-        message: cleanString(value.message),
-        stack: cleanString(value.stack ?? ""),
-        ...(value instanceof AggregateError
-          ? { errors: value.errors.map((e) => clean(e)) }
-          : {}),
-      };
-    if (Array.isArray(value)) return value.map((item) => clean(item));
     if (value && typeof value === "object") {
+      if (ancestors.has(value)) return "[Circular]";
+      const next = new Set(ancestors).add(value);
+      if (value instanceof Error) {
+        const details = value as Error & {
+          maxSteps?: number;
+          partialSummary?: string;
+        };
+        return {
+          name: value.name,
+          message: cleanString(value.message),
+          stack: cleanString(value.stack ?? ""),
+          ...(Object.hasOwn(value, "cause")
+            ? { cause: clean(value.cause, "cause", next) }
+            : {}),
+          ...(typeof details.maxSteps === "number"
+            ? { maxSteps: details.maxSteps }
+            : {}),
+          ...(typeof details.partialSummary === "string"
+            ? { partialSummary: cleanString(details.partialSummary) }
+            : {}),
+          ...(value instanceof AggregateError
+            ? { errors: clean(value.errors, "errors", next) }
+            : {}),
+        };
+      }
+      if (Array.isArray(value))
+        return value.map((item) => clean(item, "", next));
       const item = value as Record<string, unknown>;
-      if ((item.type === "image" || item.type === "audio") && typeof item.data === "string")
+      if (
+        (item.type === "image" || item.type === "audio") &&
+        typeof item.data === "string"
+      )
         return {
           type: item.type,
           mimeType: item.mimeType,
@@ -52,7 +76,7 @@ export function createDebugLog(directory: string, secrets: string[] = []) {
       return Object.fromEntries(
         Object.entries(item)
           .filter(([name]) => name !== "signal")
-          .map(([name, entry]) => [name, clean(entry, name)]),
+          .map(([name, entry]) => [name, clean(entry, name, next)]),
       );
     }
     return value;

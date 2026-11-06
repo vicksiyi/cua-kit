@@ -111,3 +111,44 @@ test("tool transport failures are recorded and rethrown without substituting suc
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("debug preserves redacted causal chains and budget details without failing on cycles", async (t) => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), "cua-debug-cause-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const log = createDebugLog(dir, ["fixture-private-key"]);
+  const underlying = new Error("request failed fixture-private-key", {
+    cause: { token: "hidden-token", status: 503 },
+  });
+  const budget = new AgentStepBudgetError(
+    12,
+    "unfinished fixture-private-key",
+    { cause: underlying },
+  );
+  const aggregate = new AggregateError(
+    [budget, new Error("cleanup failed")],
+    "turn failed",
+    { cause: budget },
+  );
+  log.write("run.error", { error: aggregate });
+  const cyclic = new Error("cyclic");
+  cyclic.cause = cyclic;
+  log.write("cycle", { error: cyclic });
+  const shared = { message: "shared" };
+  log.write("shared", { first: shared, second: shared });
+  const raw = await readFile(log.file, "utf8");
+  assert(!raw.includes("fixture-private-key"));
+  assert(!raw.includes("hidden-token"));
+  const rows = raw
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  const error = rows[0].data.error;
+  assert.equal(error.cause.maxSteps, 12);
+  assert.equal(error.cause.partialSummary, "unfinished [REDACTED]");
+  assert.equal(error.cause.cause.cause.status, 503);
+  assert.equal(error.cause.cause.cause.token, "[REDACTED]");
+  assert.equal(error.errors[0].maxSteps, 12);
+  assert.equal(error.errors[1].message, "cleanup failed");
+  assert.equal(rows[1].data.error.cause, "[Circular]");
+  assert.deepEqual(rows[2].data, { first: shared, second: shared });
+});
