@@ -105,7 +105,15 @@ final class Target {
         case "setValue":
             guard let text = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "setValue requires a string.") }
             guard (try? isSystemAXAttributeSettable(element, UIElementAttribute(kAXValueAttribute))) == true else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
-            status = AXUIElementSetAttributeValue(element, kAXValueAttribute as CFString, text as CFTypeRef)
+            do {
+                try setSystemAXAttribute(element, AXEncodedValue(value: text as NSString),
+                    for: UIElementAttribute(kAXValueAttribute))
+                status = .success
+            } catch UIElementError.axError(let error) {
+                // Preserve the existing snapshot invalidation and transport
+                // outcome mapping below, including failed system writes.
+                status = error
+            }
         case "selectText": status = try selectText(element,params)
         case "secondary":
             guard let action = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "Secondary action requires a name.") }

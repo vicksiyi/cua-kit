@@ -990,6 +990,18 @@ element_storage_evidence['supportedAndSettable']={
     'composition':'UIElement disclosure action advertisement and toggle share support/writability policy',
     'limitations':'Concrete immutable UIElement composition restored; original protocol dynamic dispatch and native encoded setter remain pending.',
 }
+element_storage_evidence['systemAttributeWriting']={
+    'directCall':'0x1006f765c -> AXUIElementSetAttributeValue',
+    'mainQueueClosure':'0x1006f7760..0x1006f77bc, same success-only status handling',
+    'status':'all non-success statuses throw UIElementError.axError; no action-specific tolerated errors or retry',
+    'value':'passes AXEncodedValue.value unchanged with UIElementAttribute.name',
+    'thread':'same-process non-main callers synchronously dispatch to main queue; otherwise direct call',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1006f75dc,0x1006f7748),(0x1006f7760,0x1006f77bc)]],
+    'implementation':'native/macos/Sources/CuaHelper/AXAttributeWriting.swift',
+    'productionUse':'Target.action setValue; caller preserves snapshot invalidation and error outcome mapping',
+    'limitations':'System adapter only. Higher-level generic setter, provider dispatch and disclosure action execution are not yet fully integrated.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

@@ -1224,3 +1224,20 @@ toggle 组合及查询错误不写入；原 240 组合测试保持通过。Swift
 
 目前仍需要原版编码值 setter、完整 provider/protocol 分派与生产观察器整合，
 不把注入 setter 的测试视作真实应用执行。期间未调用模型或重复尝试缺权限的 UI 验收。
+
+
+## 编码属性值的系统写入（2026-11-07）
+
+恢复 AXAttributeWriting.swift：原系统分支 0x1006f75dc–0x1006f7748 将
+AXEncodedValue.value 与 UIElementAttribute.name 原样传给 AXUIElementSetAttributeValue。
+同进程且非主线程时同步切主队列；其闭包 0x1006f7760–0x1006f77bc 同样只有
+success 不抛错。所有非 success（包括 cannotComplete/attributeUnsupported）均抛
+UIElementError.axError，不能复用普通动作 perform 的错误容忍策略。
+
+测试验证多种 Foundation/AX 编码对象及属性引用身份原样传递，全部 15 个标准
+非 success AXError 原样抛出，且仅一次调用、无重试。Swift 测试和构建通过。
+生产 setValue 已接入此系统写入边界；捕获 AXError 后仍执行原来的快照失效和
+传输错误映射，未把失败误当成功。此处字符串本身已是系统对象，无需几何等重编码。
+
+剩余：UIElementProtocol 的通用编码 setter、MockProvider 分派及合成动作生产执行。
+本轮未运行真实 UI 操作；线程分流复用既有函数，测试不声称完成真实系统写入验收。
