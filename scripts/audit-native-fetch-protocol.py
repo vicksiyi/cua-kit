@@ -100,11 +100,16 @@ reqwest_source = read(path_pointer,path_length).decode()
 assert reqwest_source.endswith('/reqwest-0.12.28/src/async_impl/client.rs')
 assert (source_line, source_column) == (434,25)
 client_init_error = read(0x100a49d68,47).decode()
+redirect_dispatch = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1005ecde8','--stop-address=0x1005ecf20',str(artifact)], text=True)
+for expected in ['1005ecdf0:', '1005ece44', '1005ecdf4:', '#0x1',
+                 '1005ecdf8:', '1005ececc', '1005eced4:']:
+    assert expected in redirect_dispatch, expected
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
     'range': ['0x1002712b8','0x100271524'],
-    'dependencies': {'http':'1.4.0','base64':'0.22.1','url':'2.5.8'},
+    'dependencies': {'http':'1.4.0','base64':'0.22.1','url':'2.5.8','reqwest':'0.12.28'},
     'steps': ['http::Method::from_bytes at 0x1002712ec',
               'optional body decoded at 0x100271324; absent -> empty vector at 0x100271394',
               'header vector clone at 0x1002713b8',
@@ -150,7 +155,7 @@ print(json.dumps({
             '0x10026d064..0x10026d268 and 0x10026d774: get first content-type, permit HTAB/printable ASCII, expose only that header, retain empty value',
             '0x10026d694..0x10026d770: canonical status reason or empty string and standard-base64 body, without status error conversion'
         ],
-        'limits': 'Response shaping implemented independently of transport. Called reqwest version established in clientInitialization; redirects/timeouts/decompression and sending still require review.'
+        'limits': 'Response shaping and explicit-client reqwest sending implemented. Called version established in clientInitialization; client configuration and full TLS/decompression behavior remain under review.'
     },
     'clientInitialization': {
         'range': ['0x10026e900','0x10026ebdc'],
@@ -163,16 +168,16 @@ print(json.dumps({
         },
         'observations': [
             'runtime mode is parsed before constructing CodexAppServerAuthProvider',
-            'ClientBuilder::default followed by explicit redirect policy (discriminant 2)',
-            'writes 30 seconds and zero nanoseconds at builder offsets 0x310/0x318 before build'
+            'ClientBuilder::default followed by explicit no-follow redirect policy: discriminant 0 invokes custom, 1 checks limit, 2 returns Stop at 0x1005ececc',
+            'writes 30 seconds and zero nanoseconds at builder offsets 0x310/0x318 before build; copied to ClientRef 0x1c8/0x1d0 and consumed by request sleep at 0x1005eaea0'
         ],
         'buildError': client_init_error,
         'upstreamReferences': [
             'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/async_impl/client.rs',
             'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/redirect.rs'
         ],
-        'limits': 'Version is tied to the called build function, not merely a binary string hit. Redirect discriminant and duration field semantic mapping still require completion; TLS/decompression compiled features remain unverified. No default sender has been selected or wired.'
+        'limits': 'Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and TLS/decompression compiled features remain under review. No default production client has been wired.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
-    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
+    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and production client construction remain unimplemented; explicit-client HTTP send has local fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
 },indent=2))

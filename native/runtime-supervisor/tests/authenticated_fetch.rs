@@ -336,3 +336,120 @@ fn response_size_boundary_checks_declared_and_collected_lengths() {
     )
     .is_ok());
 }
+
+async fn response_fixture(response: Vec<u8>) -> (Url, tokio::task::JoinHandle<Vec<u8>>) {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = Url::parse(&format!(
+        "http://{}/fixture",
+        listener.local_addr().unwrap()
+    ))
+    .unwrap();
+    let task = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut request = Vec::new();
+        loop {
+            let mut byte = [0];
+            if socket.read(&mut byte).await.unwrap() == 0 {
+                break;
+            }
+            request.push(byte[0]);
+            if request.ends_with(b"\r\n\r\n") {
+                break;
+            }
+        }
+        socket.write_all(&response).await.unwrap();
+        socket.shutdown().await.unwrap();
+        request
+    });
+    (url, task)
+}
+
+#[tokio::test]
+async fn real_transport_preserves_http_error_status_and_does_not_follow_configured_redirect() {
+    use core_runtime_supervisor::authenticated_fetch::send_request;
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .redirect(reqwest::redirect::Policy::none())
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .unwrap();
+    for (status, reason, extra) in [
+        (404, "Not Found", ""),
+        (303, "See Other", "Location: /next\r\n"),
+    ] {
+        let response = format!("HTTP/1.1 {status} fixture reason\r\nContent-Length: 3\r\nContent-Type: application/octet-stream\r\nSet-Cookie: private=fixture\r\n{extra}Connection: close\r\n\r\n");
+        let mut bytes = response.into_bytes();
+        bytes.extend_from_slice(&[0, 255, b'a']);
+        let (url, server) = response_fixture(bytes).await;
+        let mut input = request("GET", None);
+        input.headers = vec![
+            FetchHeader {
+                name: "X-Fixture".into(),
+                value: "one".into(),
+            },
+            FetchHeader {
+                name: "X-Fixture".into(),
+                value: "two".into(),
+            },
+        ];
+        let output = tokio::time::timeout(
+            std::time::Duration::from_secs(2),
+            send_request(&client, outbound_passthrough_request(&input, url).unwrap()),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+        assert_eq!(output.status, status);
+        assert_eq!(output.status_text, reason);
+        assert_eq!(output.body_base64, "AP9h");
+        assert_eq!(output.headers.len(), 1);
+        let observed = String::from_utf8(server.await.unwrap())
+            .unwrap()
+            .to_ascii_lowercase();
+        assert!(observed.contains("x-fixture: one\r\n"));
+        assert!(observed.contains("x-fixture: two\r\n"));
+    }
+}
+
+#[tokio::test]
+async fn real_transport_maps_send_read_and_declared_size_failures() {
+    use core_runtime_supervisor::authenticated_fetch::send_request;
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    let mut input = request("GET", None);
+    input.headers.push(FetchHeader {
+        name: "bad header".into(),
+        value: "fixture".into(),
+    });
+    assert_eq!(
+        send_request(
+            &client,
+            outbound_passthrough_request(&input, url()).unwrap()
+        )
+        .await
+        .unwrap_err(),
+        "nodeRepl.fetch request failed"
+    );
+    for (raw, expected) in [
+        (
+            "HTTP/1.1 200 OK\r\nContent-Length: 10485761\r\nConnection: close\r\n\r\n",
+            "nodeRepl.fetch response is too large",
+        ),
+        (
+            "HTTP/1.1 200 OK\r\nContent-Length: 10\r\nConnection: close\r\n\r\nshort",
+            "nodeRepl.fetch response read failed",
+        ),
+    ] {
+        let (url, server) = response_fixture(raw.as_bytes().to_vec()).await;
+        assert_eq!(
+            send_request(
+                &client,
+                outbound_passthrough_request(&request("GET", None), url).unwrap()
+            )
+            .await
+            .unwrap_err(),
+            expected
+        );
+        server.await.unwrap();
+    }
+}

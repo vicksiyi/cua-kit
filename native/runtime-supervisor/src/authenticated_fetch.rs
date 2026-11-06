@@ -1,5 +1,5 @@
 //! Native request preparation reconstructed from the pinned node_repl binary.
-//! Request routing and shaping only; no credential acquisition or HTTP sending.
+//! Request routing, shaping and explicit-client HTTP sending; no credential acquisition.
 use base64::{engine::general_purpose::STANDARD, Engine};
 use http::Method;
 use url::Url;
@@ -207,4 +207,31 @@ pub fn finish_response(
         headers,
         body_base64: STANDARD.encode(body),
     })
+}
+
+/// Send using an explicitly supplied client. Client construction (TLS and other
+/// compiled features) and credential acquisition remain deployment concerns.
+/// No default client is installed into the production host by this function.
+pub async fn send_request(
+    client: &reqwest::Client,
+    request: OutboundRequest,
+) -> Result<FetchResponse, &'static str> {
+    let mut builder = client
+        .request(request.method, request.url)
+        .body(request.body);
+    for header in request.headers {
+        builder = builder.header(header.name, header.value);
+    }
+    let response = builder
+        .send()
+        .await
+        .map_err(|_| "nodeRepl.fetch request failed")?;
+    check_response_content_length(response.content_length())?;
+    let status = response.status();
+    let headers = response.headers().clone();
+    let body = response
+        .bytes()
+        .await
+        .map_err(|_| "nodeRepl.fetch response read failed")?;
+    finish_response(status, &headers, &body)
 }
