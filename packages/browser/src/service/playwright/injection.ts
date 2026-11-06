@@ -1,3 +1,4 @@
+import { installSiwcHelpers } from "./siwc_injected";
 import {
   PlaywrightNodeExecution,
   playwrightEvaluationError,
@@ -53,6 +54,8 @@ export function playwrightInstallation(source: string) {
       browserName: "chromium",
       customEngines: [],
     });
+    const __name = (target) => target;
+    (${installSiwcHelpers.toString()})(window.__codexPlaywrightInjected);
   }
   window.__codexPlaywrightInjected.isProtectedCredentialField = (element) =>
     (${isCredentialField.toString()})(element, ${JSON.stringify(credentialFieldPolicy)});

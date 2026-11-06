@@ -58,3 +58,11 @@
 - 完成后再一起接入命令注册、能力注册、文档与端到端验收。
 
 上下文方法和客户端类型存在，不代表以上服务端流程已完成。
+
+## 后续恢复：注入检测与页面一致性
+
+已按当前 PF 还原 SIWC 注入 helper，并接入 Playwright 的正常首次注入：识别显式标记和 ChatGPT 按钮/链接，保留 rendered/hidden 区分，拒绝断开节点和 closed shadow 控件；refs 绑定当前 aria snapshot，snapshot 对象变化时 document generation 变化。
+
+已恢复 Co/Dc/bN/Pv 的只读观察和页面身份检查：检测结果绑定 session、tab 和 document generation；generation 变化返回 page_changed；读取失败返回 observation_unavailable；提交页面使用 frame id、loader id、origin 和包含 fragment 的 URL 校验。
+
+验证：真实 Chromium DOM 对照当前 PF 的候选、可见性、shadow、ref 和 generation 行为通过；两个 service helper 差分测试通过；重建与 Browser TypeScript 检查通过；真实 native 扩展 MCP 页面点击、截图、光标回归通过（约 8.9 秒）。本次没有发起登录、授权或 cookie 操作。detect/authenticate 对外服务命令注册仍待完整编排完成。
