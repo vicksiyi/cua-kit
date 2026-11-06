@@ -474,3 +474,18 @@ test("native application web shape preserves PID resolution and predicate order"
     assert.match(result.stdout, /application classification preserves resolution failures and ordered bundle predicates/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformation context preserves constructor order and URL integration", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-context-"));
+  try {
+    const output = join(directory, "context");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementContextType", "UIElementURLShortenerConfiguration", "UIElementURLShortenerCore", "UIElementURLShortener", "UIElementURLRenderingPass", "UIElementTransformationContext"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementTransformationContextTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /transformation context preserves repeated reads, window gating and URL state: 384 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

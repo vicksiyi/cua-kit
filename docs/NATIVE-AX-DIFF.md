@@ -2170,3 +2170,21 @@ Missing values return false; read/decode failures are reported once then false.
 Tests cover cached true/false/malformed/missing, fresh value/status combinations,
 and transaction/support gates. The application wrapper, complete context
 constructor, and production observation wiring are still incomplete.
+
+
+### Transformation context construction
+
+Restored all six fields and the constructor branching of
+`UIElementTransformationContext` (0x100758398..<0x10075875c). Application and
+window getters are explicit injected dependencies while native wrappers remain
+incomplete. The web-shaped getter is deliberately invoked twice: the first
+result is stored and the second independently gates the optional Chromium-window
+probe. Window frame is read even when application is absent or non-web-shaped.
+Absent URL configuration creates an unlimited initial configuration with query
+and fragment enabled; supplied configuration is preserved without normalization.
+
+384 constructor combinations verify ordering, changing web-shaped results,
+missing applications/windows, missing frames, and real URL rendering-pass state.
+The concrete frame getter additionally falls back from the frame attribute to
+position then size (0x10075791c); its provider integration is not yet restored.
+Rendering protocol conformance and production observation remain pending.

@@ -2934,6 +2934,27 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementCatalyst.swift",
       "limitations": "Composed on concrete UIElement with injected provider read; ApplicationUIElement wrapper and full context constructor remain pending."
     },
+    "transformationContextConstruction": {
+      "entry": "0x100758398..<0x10075875c",
+      "storage": "Six mutable fields: type, isCatalyst, isWebShaped, isChromium, windowFrame, urlShortener; descriptor 0x1013238b0",
+      "order": "Application present: Catalyst once, web-shaped twice. First web result stored; second gates optional window Chrome-node probe. Window frame read independently of application presence or web shape.",
+      "urlDefault": "Absent configuration -> individualLimit=nil,totalLimit=nil,includeQuery=true,includeFragment=true; supplied configuration preserved; new shortener initialized",
+      "frameEvidence": "0x1007575ac..<0x100757a50 first tries frame attribute with cached/fresh typed reading; absent result enters position then size fallback at 0x10075791c. Concrete dependency implementation remains pending.",
+      "blocks": [
+        {
+          "start": "0x100758398",
+          "endExclusive": "0x10075875c",
+          "machineCodeSha256": "58c8466b92b9aaa41cf8f13c1f9491b0bc61f9e138a2b5dbe9f0cd67d71f9a1e"
+        },
+        {
+          "start": "0x1007575ac",
+          "endExclusive": "0x100757a50",
+          "machineCodeSha256": "2f41d882bd04cab82a17ce23a6be7d3fc74b1957e0ad49c2537eb340a06abbfb"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementTransformationContext.swift",
+      "limitations": "Full field storage and constructor branches restored using explicit application/window getter dependencies. Native wrappers, rendering protocol conformance, frame provider and production observation wiring remain incomplete."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

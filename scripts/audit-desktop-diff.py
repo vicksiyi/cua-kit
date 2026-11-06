@@ -1106,6 +1106,16 @@ element_storage_evidence['applicationCatalyst']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementCatalyst.swift',
     'limitations':'Composed on concrete UIElement with injected provider read; ApplicationUIElement wrapper and full context constructor remain pending.',
 }
+element_storage_evidence['transformationContextConstruction']={
+    'entry':'0x100758398..<0x10075875c',
+    'storage':'Six mutable fields: type, isCatalyst, isWebShaped, isChromium, windowFrame, urlShortener; descriptor 0x1013238b0',
+    'order':'Application present: Catalyst once, web-shaped twice. First web result stored; second gates optional window Chrome-node probe. Window frame read independently of application presence or web shape.',
+    'urlDefault':'Absent configuration -> individualLimit=nil,totalLimit=nil,includeQuery=true,includeFragment=true; supplied configuration preserved; new shortener initialized',
+    'frameEvidence':'0x1007575ac..<0x100757a50 first tries frame attribute with cached/fresh typed reading; absent result enters position then size fallback at 0x10075791c. Concrete dependency implementation remains pending.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x100758398,0x10075875c),(0x1007575ac,0x100757a50)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementTransformationContext.swift',
+    'limitations':'Full field storage and constructor branches restored using explicit application/window getter dependencies. Native wrappers, rendering protocol conformance, frame provider and production observation wiring remain incomplete.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
