@@ -2168,7 +2168,33 @@
       ],
       "disclosureFinding": "both expand and collapse enter toggleDisclosure at 0x100791e0c; toggle uses protocol getters then negates current Bool and writes AXDisclosing",
       "implementation": "native/macos/Sources/CuaHelper/AXActionPerforming.swift",
-      "limitations": "Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; menu ancestry, scroll-bar implementation, protocol integration and MockProvider dispatch remain incomplete."
+      "limitations": "Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; concrete parent-chain traversal, protocol integration and MockProvider dispatch remain incomplete; menu preparation and scrollbar composition are restored separately."
+    },
+    "menuActionPreparation": {
+      "entry": "UIElementProtocol.perform(action:) at 0x100791a68",
+      "parents": "menuItem only; defaultMaximumParentTraversalDepth and parentChain(includingSelf:false) at 0x100791b34",
+      "prefix": "0x100791bb0 calls childrenPreferringVisible; first nonempty children terminates collection; candidates materialized before actions lookup",
+      "match": "0x100791ce8 actions witness +0x48; predicate 0x10079720c compares requested action String; first matching ancestor in prefix order only",
+      "execution": "0x100791e88 perform witness +0x60; error returns at 0x100791e9c, success continues target dispatch at 0x100791d78",
+      "blocks": [
+        {
+          "start": "0x100791a68",
+          "endExclusive": "0x100791d78",
+          "machineCodeSha256": "48806ecdfbe74b944b74512bc00d8b5c06edc21f8f6e7f4b77308b844a4cea55"
+        },
+        {
+          "start": "0x100791e38",
+          "endExclusive": "0x100791ea8",
+          "machineCodeSha256": "0f7183b791dd1b41fe0a97f3c32ee7d3527f43a7d89dd91d63886bf2b200195e"
+        },
+        {
+          "start": "0x10079720c",
+          "endExclusive": "0x100797260",
+          "machineCodeSha256": "b2af053b63cbf7081799e2f425f097dab0c44bf149241219048b0b92cc00e576"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementMenuPreparation.swift",
+      "limitations": "Original parent-chain and visible-child accessors, protocol/provider and production wiring remain injected boundaries; no live menu acceptance yet."
     },
     "actionDispatchTail": {
       "directionMapping": "0x100728f34: ordered mutable action comparisons up/down/left/right; 0/1/2/3 or optional-none tag 4",
@@ -2188,7 +2214,7 @@
         }
       ],
       "implementation": "native/macos/Sources/CuaHelper/UIElementActionDispatch.swift",
-      "limitations": "Restored post-menu dispatch with injected execution boundaries only. Original menu ancestry preparation, concrete scrollbar/page-button getters, protocol/provider wiring and production entry point remain pending; this function does not replace the complete perform method."
+      "limitations": "Restored post-menu dispatch with injected execution boundaries only. Menu preparation and concrete scrollbar/page-button helpers are restored separately; original parent traversal, protocol/provider wiring and production entry point remain pending; this function does not replace the complete perform method."
     },
     "scrollUsingScrollBar": {
       "entry": "0x1007287d0",
@@ -2210,7 +2236,7 @@
         }
       ],
       "implementation": "native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift",
-      "limitations": "Control flow restored with injected typed getter/perform boundaries and tested in composition with action dispatch. Concrete ScrollBarUIElement construction, page-button discovery, full protocol wiring and live UI acceptance remain pending."
+      "limitations": "Control flow restored with injected typed getter/perform boundaries and tested in composition with action dispatch. Concrete ScrollBarUIElement construction and page-button discovery are restored separately; full protocol wiring and live UI acceptance remain pending."
     },
     "scrollBarPageButtons": {
       "incrementEntry": "0x1007277a4",

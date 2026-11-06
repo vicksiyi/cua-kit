@@ -1505,3 +1505,21 @@ logger 均保持显式注入；没有将其替换为绕过协议的直接 OS 输
 本轮完成元素级读取到执行边界的组合，未连接生产 UIElementProtocol/provider/
 TaskLocal 或完整 perform 菜单祖先路径；也未把普通 AX 错误容忍等同于可见操作成功。
 真实应用滚动验收仍未完成，没有运行模型或用户界面操作。
+
+## 菜单祖先准备与目标动作分发（2026-11-07）
+
+静态核对原 perform(action:) 0x100791a68 的菜单前缀：只有 menuItem 才请求
+parentChain（默认最大父级深度、includingSelf:false）。依次读取祖先的
+childrenPreferringVisible，收集其为空的连续前缀；遇到非空立即停止。
+先完成此前缀收集，随后按原顺序查 actions，向第一个包含目标动作的祖先执行
+相同动作。祖先执行失败直接传播错误；成功或没有匹配祖先都继续目标动作分发。
+这不是对所有祖先执行，也不是祖先执行成功后跳过目标动作。
+
+恢复 UIElementMenuPreparation.swift 并组合已恢复的 disclosure/scroll/AX 分支。
+64 组角色、前缀长度、动作匹配和错误组合验证顺序及停止条件；另外以惰性无限序列
+验证不读取前缀边界之后的祖先，并验证 expand/collapse/scrollDownByPage 都先准备祖先，
+再进入对应目标分支。四项 native-action-performing 测试与 Swift 构建通过。
+
+父链生成、childrenPreferringVisible、协议 witness、provider 和事务上下文仍是
+显式依赖边界，未连接生产入口；不能据此宣布真实菜单操作已验收。未调用 DeepSeek、
+未操作用户界面、未更改应用策略或 macOS 权限。

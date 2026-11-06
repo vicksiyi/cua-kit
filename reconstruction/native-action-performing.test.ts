@@ -47,3 +47,17 @@ test("native scrollbar execution composes with action dispatch without duplicate
     assert.match(result.stdout, /native scrollbar dispatch preserves axis, page button, fallback and thrown errors/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+test("native menu preparation composes with full action dispatch", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-dispatch-"));
+  try {
+    const output = join(directory, "dispatch");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementAction", "UIElementRole", "UIElementActionDispatch", "UIElementMenuPreparation"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementMenuPreparationTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /native menu preparation preserves prefix ordering, first match and error stop: 64 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
