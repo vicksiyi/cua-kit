@@ -629,3 +629,37 @@ service, no model calls and no user apps. Swift build and the subprocess suite
 pass. Real CLI launch configuration, host client identity, production policy
 provider wiring, approval persistence and actual app/browser acceptance remain
 incomplete.
+
+### CLI executable selection and argument composition (2026-11-07)
+
+`NativeCLIExecutableLocator` and `NativeCLILaunchConfiguration` restore the
+selection order at `0x10025cedc`: first the environment override, then bundled
+executables, finally `/usr/bin/env` with argumentPrefix `["codex"]`. Environment
+helper `0x10025d0e8` reads exactly CODEX_CLI_PATH, trims whitespacesAndNewlines,
+and requires a nonempty executable path. It neither expands tilde nor parses a
+shell command. The executable check selector is `0x1015421f0`.
+
+Bundle candidates (`0x10025d308`) are running applications whose exact bundle ID
+is in the same five-entry static Codex array `0x101558978`, compact-mapping their
+bundle URLs, followed by supplied fallbackBundleURLs. Input order/duplicates are
+preserved. Probe helper `0x10025db08` tries these paths per candidate:
+1. Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex
+2. Contents/Resources/codex
+The static String values reside at `0x1015595a0` and `0x1015595b0`. The first
+executable candidate wins with an empty argumentPrefix. If none wins, the static
+array at `0x1015595c8` supplies `["codex"]` to `/usr/bin/env`.
+
+The app-server wrapper (`0x100dccad4`) passes process environment and the
+workspace's running applications to that locator with an empty fallback bundle
+array. After lookup it appends `["app-server", "--listen", "stdio://"]`
+(`0x1015ae380`), followed only when disablePlugins is true by
+`["--config", "features.plugins=false"]` (`0x1015ae408`). Argument construction
+is available on the restored configuration value, but automatic system lookup
+and production provider switching are not performed by this change.
+
+Tests verify explicit override precedence/whitespace, invalid override fallback,
+exact candidate order, duplicate retention, per-bundle path ordering, fallback
+prefix, both plugin flag cases, and actual filesystem executable permissions on
+an owned non-executed fixture. Tests and Swift build pass. Lookup does not execute
+any returned program; the vendor service is never run. Host identity and policy
+provider integration remain pending.

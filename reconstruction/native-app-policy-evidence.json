@@ -134,6 +134,36 @@
       "sha256": "bfef63b204cef19197d46e952eb3a5adb1e5dbb9f5b05b63ebb30526be76bc6e"
     },
     {
+      "name": "cliLaunchSelection",
+      "start": "0x10025cedc",
+      "endExclusive": "0x10025d0e8",
+      "sha256": "c0e791db2ce6c9d9e3664105c1a5c8d13a03e91d943c8cae1f5fc980c3e7e608"
+    },
+    {
+      "name": "cliEnvironmentOverride",
+      "start": "0x10025d0e8",
+      "endExclusive": "0x10025d2c0",
+      "sha256": "829ecd378e7c1911dbf4d113adbdd5fb74949af07def22048266a2542d30363b"
+    },
+    {
+      "name": "cliRunningBundleCandidates",
+      "start": "0x10025d308",
+      "endExclusive": "0x10025d71c",
+      "sha256": "36426b744fdbde891648f0ae99ce2a65c0eca142e66c08130a4d1f13561b4d24"
+    },
+    {
+      "name": "cliBundledExecutableProbe",
+      "start": "0x10025db08",
+      "endExclusive": "0x10025ddc4",
+      "sha256": "1c16114c5782b7e750bc02c610e22dabb349344a853af9aefd18c5a1d6e4b9e0"
+    },
+    {
+      "name": "appServerLaunchConfiguration",
+      "start": "0x100dccad4",
+      "endExclusive": "0x100dccf24",
+      "sha256": "1f0b4665f33859a204c77d6d41192f95f523e51595e0e5bb91dec1d4b88702a2"
+    },
+    {
       "name": "jsonRPCConnectionInitializer",
       "start": "0x100dccf24",
       "endExclusive": "0x100dcd480",
@@ -379,6 +409,32 @@
         "com.apple.UserNotificationCenter",
         "com.apple.LocalAuthenticationRemoteService",
         "com.apple.SecurityAgent"
+      ]
+    }
+  ],
+  "launchArgumentArrays": [
+    {
+      "label": "pathFallbackPrefix",
+      "address": "0x1015595c8",
+      "values": [
+        "codex"
+      ]
+    },
+    {
+      "label": "appServerArguments",
+      "address": "0x1015ae380",
+      "values": [
+        "app-server",
+        "--listen",
+        "stdio://"
+      ]
+    },
+    {
+      "label": "disablePluginArguments",
+      "address": "0x1015ae408",
+      "values": [
+        "--config",
+        "features.plugins=false"
       ]
     }
   ],

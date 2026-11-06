@@ -78,6 +78,11 @@ def audit():
         ('jsonRPCDeferredOutputClose', 0x100dd0bdc, 0x100dd0d9c),
         ('jsonRPCMessageRace', 0x100dd0e34, 0x100dd1264),
         ('jsonRPCMessageTimeout', 0x100dd16c4, 0x100dd1864),
+        ('cliLaunchSelection', 0x10025cedc, 0x10025d0e8),
+        ('cliEnvironmentOverride', 0x10025d0e8, 0x10025d2c0),
+        ('cliRunningBundleCandidates', 0x10025d308, 0x10025d71c),
+        ('cliBundledExecutableProbe', 0x10025db08, 0x10025ddc4),
+        ('appServerLaunchConfiguration', 0x100dccad4, 0x100dccf24),
         ('jsonRPCConnectionInitializer', 0x100dccf24, 0x100dcd480),
         ('jsonRPCConnectionDeinit', 0x100dd0d9c, 0x100dd0e34),
         ('jsonRPCRequestFull', 0x100dcdeac, 0x100dcfe4c),
@@ -136,6 +141,11 @@ def audit():
     return dict(binarySha256=digest, method='Static Mach-O Swift metadata and pinned disassembly analysis',
                 types=records, codeRanges=code_ranges,
                 normalForbiddenTargetGroups=forbidden_groups,
+                launchArgumentArrays=[decode_string_array(*entry) for entry in [
+                    ('pathFallbackPrefix', 0x1015595c8, 1),
+                    ('appServerArguments', 0x1015ae380, 3),
+                    ('disablePluginArguments', 0x1015ae408, 2),
+                ]],
                 elevatedRiskTargets=decode_string_array('elevatedRisk', 0x1015587c8, 11),
                 targetDescriptor=dict(
                     bundleURL='resolvingSymlinksInPath then standardizedFileURL',
