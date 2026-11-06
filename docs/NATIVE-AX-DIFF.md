@@ -1257,3 +1257,19 @@ Boolean 的 CFBoolean 类型和 CGPoint 的真实 AXValue 编码；测试和 Swi
 
 剩余原 provider 分派、合成动作及观察器整合仍未完成。注入测试未执行真实属性写入，
 本轮没有调用模型或操作用户界面。
+
+## 展开/折叠元素级写入链整合（2026-11-07）
+
+新增 UIElementSystemDisclosure.swift，将已恢复的支持判断、缓存 Bool 状态、
+toggle 取反、通用值编码、系统属性写入串起来。toggleDisclosureWritingValue 保留
+可注入的 provider 写入边界；toggleSystemDisclosure 使用实际系统属性列表/可写性/
+写入 API。调用方必须提供真实 UIElementCache，不在方法内部构造空缓存。
+
+已有 240 组合测试扩展到完整元素级编码链：每个组合同时验证动作广告结果与预期
+写入次数/值，确认值为 CFBoolean、目标 AX 引用和 AXDisclosing 属性均保持。
+另验证不能完成的写入错误穿透系统结果处理、通用 setter 和 toggle，且不重试、
+不把缓存状态提前更新为成功。Swift 测试与构建通过。
+
+测试只替换最后的外部写入边界，没有执行系统 UI 写入；真实 UI 验收仍未通过。
+生产简化采集器尚未获得原版完整缓存，因此未调用此入口或广告 synthetic 动作。
+下一步仍需缓存/provider/动作分派整体整合，而不是在现有树里伪造缓存绕过缺口。

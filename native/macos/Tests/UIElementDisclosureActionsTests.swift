@@ -36,6 +36,21 @@ struct UIElementDisclosureActionsTests {
                             let expected: [UIElementAction] = supported && writable == 1
                                 ? [(raw as? Bool) == true ? .collapse : .expand] : []
                             precondition(result == expected)
+                            let ax = AXUIElementCreateSystemWide()
+                            let element = UIElement(axElement: ax, cache: cache)
+                            var writes: [Bool] = []
+                            try element.toggleDisclosureWritingValue(freshSupportedAttributes: {
+                                freshSupports ? [key] : []
+                            }, isAttributeSettable: { _ in
+                                if writable == 2 { throw UIElementError.axError(.cannotComplete) }
+                                return writable == 1
+                            }, write: { target, value, attribute in
+                                precondition(target === ax && attribute == key)
+                                precondition(CFGetTypeID(value.value) == CFBooleanGetTypeID())
+                                writes.append(value.value as! Bool)
+                            })
+                            let expectedWrites: [Bool] = expected.isEmpty ? [] : [(raw as? Bool) != true]
+                            precondition(writes == expectedWrites)
                             count += 1
                         }
                     }
@@ -65,6 +80,19 @@ struct UIElementDisclosureActionsTests {
             isAttributeSettable: { _ in throw UIElementError.axError(.cannotComplete) },
             setDisclosing: { _ in fatalError("failed writability must not write") })
         precondition(concreteWrites == [true])
+        var encodedWrites = 0
+        do {
+            try toggleElement.toggleDisclosureWritingValue(freshSupportedAttributes: { [] },
+                isAttributeSettable: { _ in true }, write: { _, value, attribute in
+                    encodedWrites += 1
+                    try systemAXAttributeWriteResult(value, for: attribute) { _, _ in .cannotComplete }
+                })
+            fatalError("encoded write failure must propagate through toggle")
+        } catch UIElementError.axError(let error) {
+            precondition(error == .cannotComplete && encodedWrites == 1)
+            precondition(!uiElementIsDisclosing(cache: toggleElement.cache))
+        }
+
         for allowed in [false, true] {
             for current in [false, true] {
                 var calls: [String] = []

@@ -44,6 +44,12 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementDisclosureActions.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementDisclosure.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementAttributeSupport.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementSystemDisclosure.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementSetValue.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXParameterEncoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXDynamicParameterEncoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXAttributeWriting.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXAttributeSettable.swift"),
         join(root, "native/macos/Tests/UIElementDisclosureActionsTests.swift"),
       ]);
       const { stdout } = await exec(executable);
