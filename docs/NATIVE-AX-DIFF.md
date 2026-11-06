@@ -2030,3 +2030,20 @@ shortener 两个明确依赖，未宣称完整泛型 context 已实现。
 
 256 组标签/图片/映射组合及 nil shortener 测试通过，包含空白标签、方括号转义、
 UTF-16 映射和 URL 片段边界。原生构建验证另行执行；生产接入仍待完成。
+
+### URL shortener 的状态和配置边界
+
+Swift 字段描述符确认 UIElementURLShortener（nominal 0x1012c9d20，字段表
+0x101321a00）有四个 var：configuration、accumulated:Int、domains:[String:Int]、
+urls:Set<URL>。构造/重置代码确认后三个字段偏移 +0x20/+0x28/+0x30。
+Configuration（nominal 0x1012c9d3c，字段表 0x101321a40）只有四个 var：
+individualLimit:Int?、totalLimit:Int?、includeQuery:Bool、includeFragment:Bool。
+
+虽然公开 initializer 接收 baseHost，0x10065fae0..<0x10065fb6c 直接释放该参数，
+没有保存或应用它。不能据参数名臆造同源 URL 重写。已恢复独立命名的配置类型，
+不校正负数/零限制、不推断未确认的默认参数；100 组配置检查通过。
+
+trim 入口先记录已见 URL，再调用 0x10065fde4 的实际格式化/累计逻辑，成功返回
+域名时更新计数。reset 清零累计并清空两种集合，保留配置。compactConfiguration
+还有独立重算路径；仅有配置和 callback 不能视为完整 shortener，这些逻辑仍待
+继续还原后才能接入生产渲染上下文。

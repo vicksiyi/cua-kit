@@ -353,3 +353,18 @@ test("native transformed Markdown link preserves label and mapping behavior", {
     assert.match(result.stdout, /Markdown links preserve label precedence, escaping, trimming, URL boundaries and source mapping/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native URL shortener configuration preserves original fields", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-url-config-"));
+  try {
+    const output = join(directory, "config");
+    await exec("xcrun", ["swiftc",
+      resolve("native/macos/Sources/CuaHelper/UIElementURLShortenerConfiguration.swift"),
+      resolve("native/macos/Tests/UIElementURLShortenerConfigurationTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /shortener configuration preserves raw limits, flags and discarded baseHost/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

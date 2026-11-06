@@ -1009,6 +1009,19 @@ element_storage_evidence['transformedStringMarkdownLink']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringMarkdownLink.swift',
     'limitations':'Label and span construction restored; role classification is passed as isImage, shortener is callback; full context and production integration remain pending.',
 }
+element_storage_evidence['urlShortenerStorage']={
+    'nominal':'0x1012c9d20',
+    'fields':{'descriptor':'0x101321a00','header':'7aa5f7ff0000000000000c0004000000','mutable':['configuration: Configuration','accumulated: Int','domains: [String:Int]','urls: Set<URL>']},
+    'configuration':{'nominal':'0x1012c9d3c','descriptor':'0x101321a40','header':'40a5f7ff0000000000000c0004000000','mutable':['individualLimit: Int?','totalLimit: Int?','includeQuery: Bool','includeFragment: Bool']},
+    'constructor':'0x10065fae0..<0x10065fb6c: stores supplied optional limits and Bool flags unchanged; releases baseHost without retaining or storing it',
+    'stateOffsets':'configuration at 0; accumulated +0x20; domains +0x28; urls +0x30, confirmed by init and reset stores',
+    'trimEntry':'0x10065f7c0 first inserts URL into urls, then calls 0x10065fde4 with configuration and accumulated address; returned domain, when present with rendered text, increments domains count',
+    'reset':'0x1006604c8..<0x100660588: accumulated=0, clears urls and domains; configuration untouched',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10065fae0,0x10065fbfc),(0x1006604c8,0x100660588),(0x101321a00,0x101321a80)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementURLShortenerConfiguration.swift',
+    'limitations':'Only configuration restored. Stateful trim core 0x10065fde4 and compaction algorithm require further audit before full shortener or rendering context integration.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
