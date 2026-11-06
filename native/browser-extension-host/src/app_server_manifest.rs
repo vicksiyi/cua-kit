@@ -44,6 +44,8 @@ pub enum ManifestError {
     RequiredPath(String),
     Protocol(ProtocolMismatch),
     NoCompatibleEntry,
+    MissingRegistry,
+    InvalidRegistry(String),
 }
 
 impl fmt::Display for ManifestError {
@@ -61,6 +63,8 @@ impl fmt::Display for ManifestError {
             Self::NoCompatibleEntry => {
                 f.write_str("No compatible Codex app-server entry was found")
             }
+            Self::MissingRegistry => f.write_str("Codex Chrome native host v2 manifest is missing"),
+            Self::InvalidRegistry(message) => f.write_str(message),
             Self::RequiredPath(field) => write!(
                 f,
                 "Codex app-server manifest entry is missing required path {field}"
@@ -74,6 +78,71 @@ impl std::error::Error for ManifestError {}
 pub struct SelectedManifestEntry {
     pub index: usize,
     pub configuration: RawManifestConfiguration,
+}
+
+#[derive(Debug)]
+pub struct LoadedManifestEntry {
+    pub registry_path: PathBuf,
+    pub selected: SelectedManifestEntry,
+}
+
+/// Try registries in discovery order; the first file with a usable selection
+/// wins, rather than comparing scores across files. Missing files are ignored.
+/// Other failures are retained while later files are tried. No schema-1 fallback
+/// or process/environment configuration is performed by this schema-2 stage.
+pub fn load_registries(
+    paths: &[PathBuf],
+    identity: &IdentityConstraints<'_>,
+    protocols: &ProtocolRequirements,
+) -> Result<LoadedManifestEntry, ManifestError> {
+    let mut path_error = None;
+    let mut protocol_error = None;
+    let mut invalid_error = None;
+    let mut found = false;
+    for path in paths {
+        let text = match fs::read_to_string(path) {
+            Ok(text) => {
+                found = true;
+                text
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => {
+                invalid_error = Some(ManifestError::InvalidRegistry(error.to_string()));
+                continue;
+            }
+        };
+        let document = match serde_json::from_str::<Value>(&text) {
+            Ok(document) => document,
+            Err(error) => {
+                invalid_error = Some(ManifestError::InvalidRegistry(error.to_string()));
+                continue;
+            }
+        };
+        match select_entry(&document, identity, protocols) {
+            Ok(selected) => {
+                return Ok(LoadedManifestEntry {
+                    registry_path: path.clone(),
+                    selected,
+                })
+            }
+            Err(error @ ManifestError::RequiredPath(_)) => path_error = Some(error),
+            Err(ManifestError::Protocol(error)) => {
+                if protocol_error.is_none() || error == ProtocolMismatch::CandidateNewer {
+                    protocol_error = Some(error);
+                }
+            }
+            Err(ManifestError::NoCompatibleEntry) => {}
+            Err(error) => invalid_error = Some(error),
+        }
+    }
+    Err(path_error
+        .or_else(|| protocol_error.map(ManifestError::Protocol))
+        .or(invalid_error)
+        .unwrap_or(if found {
+            ManifestError::NoCompatibleEntry
+        } else {
+            ManifestError::MissingRegistry
+        }))
 }
 
 /// Select from a parsed schema-2 registry. An invalid entry schema aborts even

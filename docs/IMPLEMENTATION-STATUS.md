@@ -6105,3 +6105,12 @@ Implemented registry_paths using supplied OsString environment access. Pinned na
 All 11 manifest tests pass, including the new 64-combination environment matrix, identical-path preservation and invalid-Unicode path case. The evidence extractor pins path/environment literals and native branch/join calls. No actual user registry is read or modified by tests.
 
 Multi-file read/error fallback is still under analysis: missing-file branches continue to the next candidate, but non-missing read errors, JSON/schema failures and final fallback precedence must be integrated with their exact retention rules. Path construction is not yet a full runtime loader.
+
+
+### 2026-11-06: native registry file loading
+
+Composed read_to_string, serde_json parsing and select_entry in load_registries. Candidate files are tried in order and the first successful registry wins; scores are not compared across registries. Missing files are skipped. Other read, JSON/schema, path and protocol errors are retained while trying later files. Final error priority follows the native branches: last required-path error, protocol mismatch (newer takes priority), last read/parse/schema error, then no-compatible-entry versus missing-registry.
+
+All 12 manifest tests pass. New real temporary-file cases cover absent files, invalid UTF-8, malformed JSON, schema failure followed by success, first-file success despite a higher-score or unreadable second file, error priority and last-error retention. No actual user registry or vendor process was accessed. Static evidence records file read/parse, missing-file, success exit and error-priority branches.
+
+The schema-2 file-loading stage is available, but schema-1 fallback/load precedence, environment composition and runtime process/proxy integration remain incomplete.

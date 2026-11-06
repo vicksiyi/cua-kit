@@ -624,3 +624,84 @@ fn registry_discovery_preserves_native_os_paths_and_candidate_order() {
         );
     }
 }
+
+#[test]
+fn registry_files_use_first_success_and_preserve_failure_precedence() {
+    use core_browser_extension_host::app_server_manifest::{
+        load_registries, IdentityConstraints, ProtocolMismatch::*, ProtocolRequirements,
+    };
+    let root = std::env::temp_dir().join(format!("core-registry-files-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    let first = root.join("first.json");
+    let second = root.join("second.json");
+    let identity = IdentityConstraints::default();
+    let protocols = ProtocolRequirements {
+        app_server: Some(2),
+        native_host: None,
+    };
+    let run = || load_registries(&[first.clone(), second.clone()], &identity, &protocols);
+    let good = json!({"schemaVersion":2,"appServerProtocolVersion":2,"paths":{"codexCliPath":root,"codexHome":root,"nodePath":root,"resourcesPath":root}});
+    let write = |path: &std::path::Path, entry: Value| {
+        fs::write(
+            path,
+            json!({"schemaVersion":2,"entries":[entry]}).to_string(),
+        )
+        .unwrap()
+    };
+    assert_eq!(run().unwrap_err(), ManifestError::MissingRegistry);
+    fs::write(&first, b"{").unwrap();
+    write(&second, good.clone());
+    assert_eq!(run().unwrap().registry_path, second);
+    fs::write(&first, [0xff]).unwrap();
+    assert_eq!(run().unwrap().registry_path, second);
+    write(&first, json!({"schemaVersion":1}));
+    assert_eq!(run().unwrap().registry_path, second);
+    write(&first, good.clone());
+    let mut higher = good.clone();
+    higher["presence"] = json!({"pid":0});
+    write(&second, higher);
+    assert_eq!(run().unwrap().registry_path, first);
+    fs::remove_file(&second).unwrap();
+    fs::create_dir(&second).unwrap();
+    assert_eq!(run().unwrap().registry_path, first);
+    fs::remove_dir(&second).unwrap();
+    let mut newer = good.clone();
+    newer["appServerProtocolVersion"] = json!(3);
+    let mut older = good.clone();
+    older["appServerProtocolVersion"] = json!(1);
+    write(&first, newer.clone());
+    write(&second, older.clone());
+    assert_eq!(run().unwrap_err(), ManifestError::Protocol(CandidateNewer));
+    write(&first, older);
+    write(&second, newer);
+    assert_eq!(run().unwrap_err(), ManifestError::Protocol(CandidateNewer));
+    let mut missing = good.clone();
+    missing["paths"]["nodePath"] = Value::Null;
+    write(&second, missing);
+    assert_eq!(
+        run().unwrap_err(),
+        ManifestError::RequiredPath("nodePath".into())
+    );
+    fs::write(&first, b"{").unwrap();
+    assert_eq!(
+        run().unwrap_err(),
+        ManifestError::RequiredPath("nodePath".into())
+    );
+    write(&second, json!({"schemaVersion":1}));
+    assert_eq!(run().unwrap_err(), ManifestError::EntrySchema);
+    fs::write(&second, b"[").unwrap();
+    assert_eq!(
+        run().unwrap_err(),
+        ManifestError::InvalidRegistry(serde_json::from_str::<Value>("[").unwrap_err().to_string())
+    );
+    fs::remove_file(&first).unwrap();
+    fs::write(&second, json!({"schemaVersion":2,"entries":[]}).to_string()).unwrap();
+    assert_eq!(run().unwrap_err(), ManifestError::NoCompatibleEntry);
+}
