@@ -38,3 +38,15 @@ native 打包端到端测试通过（约 9.3 秒）；扩展 TypeScript 检查�
 - deliverable 标签保留但退出受管组；未标记的 Agent 标签关闭；用户原标签及原分组保持。
 
 此处直接调用 moveMouse RPC 验证扩展生命周期，不证明所有模型生成的动作路径都会触发光标。
+
+## 公共 locator 点击链路验收
+
+进一步通过真实 MCP 执行 `liveTab.playwright.getByRole("button", {name:"Run action"}).click()`，随后在该动作所属会话尚未结束时检查扩展 overlay。该断言不调用 moveMouse，也不注入 cursor state：
+- 页面 HTTP 服务实际收到按钮动作的随机标记。
+- overlay sessionId 属于本次 MCP 会话，而非前面直接 RPC 测试会话。
+- 光标坐标位于实际被点击按钮的 bounding rect 内。
+- 活动标签中图片已加载，祖先 opacity / visibility / display 表明其可见。
+
+native（约 10.2 秒）与 full（约 16.6 秒）两项真实测试通过。已将证明范围从“直接 moveMouse 可用”扩展至“公共 locator click 经 MCP 能驱动可见光标”；仍不等于所有输入类型、所有模型任务都完成验收。测试会主动激活受控目标标签以检查呈现，不修改产品的自动聚焦策略。
+
+当前原构建 CDP input 类的 clickPoint 方法也先等待 ui.moveMouse，再发 CDP mouse move / down / up，与还原实现的调用顺序一致。

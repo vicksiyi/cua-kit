@@ -406,6 +406,43 @@ for (const deployment of ["native", "full"] as const)
             // Independent HTTP evidence survives tabs created outside Playwright's page inventory.
             for(let attempt=0;attempt<100 && !clickedMarkers.has(actionMarker);attempt++) await new Promise(resolve=>setTimeout(resolve,10));
             assert.ok(clickedMarkers.has(actionMarker),'Fixture server must observe the actual random button action');
+            // The fixed MCP scenario has not ended its turn yet. Prove that the
+            // public locator click itself reaches BrowserUi/extension overlay;
+            // do not call moveMouse or inject cursor state in this assertion.
+            if (process.env.CUA_LIVE_DEEPSEEK_TEST !== "1") {
+              const actionTabs = await worker.evaluate((url) => chrome.tabs.query({}).then(tabs => tabs.filter(t => t.url === url)), pageUrl + "next");
+              assert.equal(actionTabs.length, 1);
+              const actionTabId = actionTabs[0].id!;
+              await worker.evaluate((id) => chrome.tabs.update(id, {active: true}), actionTabId);
+              let clickCursorVerified = false;
+              for (let attempt = 0; attempt < 50; attempt++) {
+                const [view] = await worker.evaluate(`chrome.scripting.executeScript({
+                  target: {tabId: ${actionTabId}}, func: async () => {
+                    const {state} = await chrome.runtime.sendMessage({type: "GET_AGENT_CURSOR_STATE"});
+                    const root = document.getElementById("codex-agent-overlay-root");
+                    const shadow = root && chrome.dom.openOrClosedShadowRoot(root);
+                    const img = shadow && shadow.querySelector("[data-browser-agent-cursor-asset]");
+                    let opacity = 1;
+                    for (let node = img; node; node = node.parentElement) {
+                      const style = getComputedStyle(node);
+                      opacity *= Number(style.opacity);
+                      if (style.display === "none" || style.visibility === "hidden") opacity = 0;
+                    }
+                    const rect = document.querySelector("button").getBoundingClientRect();
+                    const cursor = state?.cursor;
+                    return {session: state?.sessionId, visible: state?.isVisible && cursor?.visible,
+                      loaded: !!img && img.complete && img.naturalWidth > 0, opacity,
+                      atButton: cursor && cursor.x >= rect.left && cursor.x <= rect.right && cursor.y >= rect.top && cursor.y <= rect.bottom};
+                  }
+                })`);
+                clickCursorVerified = view.result?.session === "mcp-browser-live" && view.result.visible &&
+                  view.result.loaded && view.result.opacity > 0.9 && view.result.atButton;
+                if (clickCursorVerified) break;
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+              assert(clickCursorVerified, "MCP locator click must publish a rendered Agent cursor at the clicked button");
+            }
+
           } : undefined,
         );
       } catch (error) {
