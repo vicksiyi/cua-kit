@@ -18,10 +18,34 @@ import {
 } from "../packages/browser/src/service/runtime/native_pipe_bridge";
 import { BrowserRpcPeer } from "../packages/browser/src/service/runtime/rpc_peer";
 import { BrowserApi } from "../packages/browser/src/service/runtime/browser_api";
-import { originalServiceBindings } from "./service-source";
+import {
+  originalServiceBindings,
+  serviceClassWithMethods,
+  serviceSourceSha256,
+} from "./service-source";
+if (
+  serviceSourceSha256 !==
+  "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021"
+)
+  throw Error("Native pipe source changed; re-audit helpers before comparison");
+const decoderClass = serviceClassWithMethods([
+  "push",
+  "append",
+  "peekBytes",
+  "consumeBytes",
+  "discardFirstChunk",
+]);
+const transportClass = serviceClassWithMethods([
+  "sendMessage",
+  "setMessageCallback",
+  "addCloseListener",
+  "isClosed",
+  "handleData",
+  "markClosed",
+]);
 const original = originalServiceBindings(
-  ["sb", "kx", "ab", "Zue", "Que", "m6", "cs", "h6", "rle"],
-  { od: Buffer, f6: endianness, ls: 4 },
+  ["db", "Ox", decoderClass, "Yue", "Jue", "h6", transportClass, "b6", "ele"],
+  { ud: Buffer, g6: endianness, us: 4 },
 );
 test("native framing matches original chunking, limits, UTF-8 and single-response state", () => {
   for (const text of ["", "ascii", "合成😀", "x".repeat(100)])
@@ -33,7 +57,7 @@ test("native framing matches original chunking, limits, UTF-8 and single-respons
           return [error.message, error.messageBytes, error.maxFrameBytes];
         }
       };
-      assert.deepEqual(run(encodeNativePipeFrame), run(original.kx));
+      assert.deepEqual(run(encodeNativePipeFrame), run(original.Ox));
     }
   const encoded = Buffer.concat(
     ["one", "合成😀", "", "last"].map((value) => encodeNativePipeFrame(value)),
@@ -57,9 +81,12 @@ test("native framing matches original chunking, limits, UTF-8 and single-respons
         ]);
         return trace;
       }
-      assert.deepEqual(run(NativePipeFrameDecoder), run(original.ab));
+      assert.deepEqual(
+        run(NativePipeFrameDecoder),
+        run(original[decoderClass]),
+      );
     }
-  for (const Source of [NativePipeFrameDecoder, original.ab]) {
+  for (const Source of [NativePipeFrameDecoder, original[decoderClass]]) {
     const decoder = new Source(2);
     assert.throws(
       () => decoder.push(encodeNativePipeFrame("long")),
@@ -82,7 +109,10 @@ test("native framing matches original chunking, limits, UTF-8 and single-respons
       decoder.push(new Uint8Array()),
     ];
   }
-  assert.deepEqual(compaction(NativePipeFrameDecoder), compaction(original.ab));
+  assert.deepEqual(
+    compaction(NativePipeFrameDecoder),
+    compaction(original[decoderClass]),
+  );
 });
 test("native transport preserves original deferred response and close/error ordering", async () => {
   for (const mode of [
@@ -109,12 +139,12 @@ test("native transport preserves original deferred response and close/error orde
         }
       }
       const socket = new Socket();
-      const Transport = source ? original.cs : NativePipeTransport;
+      const Transport = source ? original[transportClass] : NativePipeTransport;
       const transport = new Transport(socket, {
         decodeMessage: (value: any) =>
           mode === "decode-ignore"
             ? undefined
-            : (source ? original.h6 : nativePipeMessage)(value),
+            : (source ? original.b6 : nativePipeMessage)(value),
         singleResponse: ["single", "extra", "partial"].includes(mode),
         closeSocket:
           mode === "close-hook"
@@ -172,24 +202,74 @@ test("native transport preserves original deferred response and close/error orde
 });
 test("privileged pipe factory matches original absence checks and constructor return identity", async () => {
   for (const environment of ["production", "development"]) {
-    const { tle } = originalServiceBindings(["tle"], { Po: () => environment });
-    assert.equal(nativePipeUnavailableMessage(environment), tle());
-    const factory = createBrowserPipeClass(
-      () => environment,
-      () => null,
-    );
-    await assert.rejects(
-      factory.BrowserPipe.create("synthetic"),
-      new RegExp("privileged native pipe bridge"),
-    );
-    await assert.rejects(
-      factory.connect(
-        "synthetic",
-        { decodeMessage: nativePipeMessage },
-        "custom",
+    const { Que } = originalServiceBindings(["Que"], { mo: () => environment });
+    assert.equal(nativePipeUnavailableMessage(environment), Que());
+    const sourceFactory = originalServiceBindings(["Nx", "Wo"], {
+      ls: original[transportClass],
+      b6: original.b6,
+      ele: () => null,
+      Que,
+    });
+    for (const factory of [
+      createBrowserPipeClass(
+        () => environment,
+        () => null,
       ),
-      /^Error: custom$/,
+      { BrowserPipe: sourceFactory.Wo, connect: sourceFactory.Nx },
+    ]) {
+      await assert.rejects(
+        factory.BrowserPipe.create("synthetic"),
+        /privileged native pipe bridge/,
+      );
+      await assert.rejects(
+        factory.connect(
+          "synthetic",
+          { decodeMessage: nativePipeMessage },
+          "custom",
+        ),
+        /^Error: custom$/,
+      );
+    }
+  }
+  // create returns the base transport, whereas direct construction returns the subclass.
+  for (const source of [false, true]) {
+    const paths: string[] = [];
+    class Socket extends EventEmitter {
+      write() {}
+      end() {}
+    }
+    const bridge = {
+      createConnection: async (path: string) => {
+        paths.push(path);
+        return new Socket();
+      },
+    };
+    const factory = source
+      ? originalServiceBindings(["Nx", "Wo"], {
+          ls: original[transportClass],
+          b6: original.b6,
+          ele: () => bridge,
+          Que: () => "unexpected missing bridge",
+        })
+      : undefined;
+    const Pipe = source
+      ? factory!.Wo
+      : createBrowserPipeClass(
+          () => "production",
+          () => bridge,
+        ).BrowserPipe;
+    const value = await Pipe.create("owned-fixture");
+    assert.equal(value instanceof Pipe, false);
+    assert.equal(
+      value instanceof
+        (source ? original[transportClass] : NativePipeTransport),
+      true,
     );
+    const direct = new Pipe(new Socket());
+    assert.equal(direct instanceof Pipe, true);
+    assert.deepEqual(paths, ["owned-fixture"]);
+    await value.close();
+    await direct.close();
   }
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, "nodeRepl");
   try {
@@ -203,7 +283,7 @@ test("privileged pipe factory matches original absence checks and constructor re
         value,
         configurable: true,
       });
-      assert.equal(privilegedNativePipe(), original.rle());
+      assert.equal(privilegedNativePipe(), original.ele());
     }
   } finally {
     if (descriptor) Object.defineProperty(globalThis, "nodeRepl", descriptor);

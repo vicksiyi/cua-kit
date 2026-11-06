@@ -4,32 +4,48 @@ import {
   originalServiceBindings,
   serviceAssignment,
   serviceExpression,
+  serviceSourceSha256,
 } from "./service-source.ts";
-import * as filtering from "../packages/browser/dist/service/capability_filter.js";
-import * as info from "../packages/browser/dist/service/browser_info.js";
-import * as handlers from "../packages/browser/dist/service/commands/browser_inventory.js";
+import * as filtering from "../packages/browser/src/service/capability_filter";
+import * as info from "../packages/browser/src/service/browser_info";
+import * as handlers from "../packages/browser/src/service/commands/browser_inventory";
+if (
+  serviceSourceSha256 !==
+  "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021"
+)
+  throw Error(
+    "Browser inventory source changed; re-audit helper bindings before comparison",
+  );
 const original = originalServiceBindings(
   [
-    "hC",
-    "gC",
-    "fC",
-    "dl",
-    "jy",
-    "CA",
-    "AA",
-    "yp",
-    "wp",
-    "Hy",
-    "Sx",
-    "Go",
-    "xx",
-    "Ex",
-    "Tx",
+    "mc",
+    "B_",
+    "Of",
+    "oD",
+    "Ea",
+    "Nf",
+    "D_",
     "Cx",
+    "Ho",
     "Ax",
     "Px",
+    "Ix",
+    "Rx",
+    "kx",
+    "Bx",
   ],
-  { On: { id: "browserAuth" } },
+  {
+    OR: "BROWSER_USE_DISABLE_BROWSER_CAPABILITIES",
+    NR: "BROWSER_USE_DISABLE_TAB_CAPABILITIES",
+    MR: "BROWSER_USE_DISABLE_API_MEMBERS",
+    In: { id: "browserAuth" },
+    YB: () => {
+      throw Error("Feature-gated siwc is outside this inventory fixture");
+    },
+    vv: () => {
+      throw Error("Feature preparation is outside this inventory fixture");
+    },
+  },
 );
 const oe = {
   GetBrowser: { commandType: "get_browser" },
@@ -39,15 +55,15 @@ const oe = {
   GetBrowserForUrl: { commandType: "get_browser_for_url" },
   ListBrowsers: { commandType: "list_browsers" },
 };
-for (const name of ["xx", "Ex", "Tx", "Cx", "Ax", "Px"])
-  new Function(name, "oe", serviceAssignment(name + ".type"))(
+for (const name of ["Ax", "Px", "Ix", "Rx", "kx", "Bx"])
+  new Function(name, "ee", serviceAssignment(name + ".type"))(
     original[name],
     oe,
   );
 const registry = new Function(
-  "oe",
+  "ee",
   ...Object.keys(original),
-  "return " + serviceExpression("c6"),
+  "return " + serviceExpression("p6"),
 )(oe, ...Object.values(original));
 async function outcome(fn: () => any) {
   try {
@@ -56,7 +72,7 @@ async function outcome(fn: () => any) {
     return { error: { name: error.name, message: error.message } };
   }
 }
-test("service capability filters preserve reference identity, env parsing and disabled-member rules", () => {
+test("non-feature-gated capability filters preserve reference identity, env parsing and disabled-member rules", () => {
   const capabilities = {
     browser: [{ id: "a" }, { id: "b" }],
     tab: [{ id: "browserAuth" }, { id: "cdp" }],
@@ -70,7 +86,7 @@ test("service capability filters preserve reference identity, env parsing and di
       },
     };
     const ours = filtering.availableCapabilities(runtime, capabilities),
-      theirs = original.yp(runtime, capabilities);
+      theirs = original.Ea(runtime, { capabilities });
     assert.deepEqual(ours, theirs);
     assert.equal(
       ours.browser === capabilities.browser,
@@ -82,15 +98,15 @@ test("service capability filters preserve reference identity, env parsing and di
     );
     assert.deepEqual(
       filtering.disabledApiMembers(runtime),
-      original.wp(runtime),
+      original.Nf(runtime),
     );
   }
   assert.deepEqual(
     filtering.availableCapabilities({ env: {} }, undefined),
-    original.yp({ env: {} }, undefined),
+    original.Ea({ env: {} }, {}),
   );
 });
-test("browser info projection and CDP handoff overrides follow effective capability filtering", () => {
+test("browser info projection and CDP handoff overrides follow effective capability filtering", async () => {
   for (const type of ["extension", "iab", "mcpapps", "cdp", "unknown"])
     for (const disabled of ["", "browserAuth"])
       for (const metadata of [
@@ -119,11 +135,11 @@ test("browser info projection and CDP handoff overrides follow effective capabil
           };
         assert.deepEqual(
           info.browserSummary("b", record),
-          original.Sx("b", record),
+          original.Cx("b", record),
         );
         assert.deepEqual(
-          info.browserDetails(runtime, "b", record),
-          original.Go(runtime, "b", record),
+          await info.browserDetails(runtime, "b", record),
+          await original.Ho(runtime, "b", record),
         );
       }
 });
