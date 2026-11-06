@@ -1,6 +1,6 @@
 {
   "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
-  "method": "Static Mach-O Swift nominal/field metadata decoding",
+  "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
       "name": "CodexAppServerComputerUsePolicyProvider",
@@ -52,9 +52,40 @@
       "fieldMetadataSha256": "db294977e9859b35c93956304dd77119c75d26d78fb2dd9cbaaabfb630e3e1cd"
     }
   ],
+  "codeRanges": [
+    {
+      "name": "providerCacheAndRefresh",
+      "start": "0x1000a7cbc",
+      "endExclusive": "0x1000a81f0",
+      "sha256": "eb99ff07be37dc0303f45010965bb32af5880e974a21507b280214357f417af1"
+    },
+    {
+      "name": "appServerPolicyFetch",
+      "start": "0x1000aa444",
+      "endExclusive": "0x1000aab28",
+      "sha256": "336fb1a54ec90791747fd4ca6fe805bdd17dc3fe2fee9c7cda463c84244a924f"
+    }
+  ],
+  "recoveredProvider": {
+    "cacheTTLSeconds": 900,
+    "requestTimeoutSeconds": 30,
+    "cacheTimestamp": "Date captured before refresh",
+    "cacheHit": "cached policy and timestamp exist; now.timeIntervalSince(cachedAt) < 900",
+    "refreshFailure": "propagate error; do not return stale policy or overwrite cache",
+    "transport": "CodexAppServerJSONRPCConnection(timeout: 30, disablePlugins: false)",
+    "requestOrder": [
+      "initialize",
+      "configRequirements/read",
+      "config/read"
+    ],
+    "configReadParams": {
+      "includeLayers": false
+    },
+    "closesConnectionOn": "success, request failure, and policy parsing failure"
+  },
   "limitations": [
     "Field names and enum cases establish structure, not runtime defaults or precedence.",
-    "Provider name and cache fields do not prove transport, cache TTL, refresh, or failure behavior.",
+    "Recovered cache is an extracted Swift component; production policy transport and evaluation remain incomplete.",
     "No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.",
     "No vendor execution, network requests, policy changes, or approval bypass."
   ]

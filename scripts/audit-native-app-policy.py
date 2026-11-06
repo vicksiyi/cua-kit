@@ -63,10 +63,26 @@ def audit():
         records.append(dict(name=name, descriptor=hex(descriptor),
                             fieldDescriptor=hex(fields), kind=kind, fields=names,
                             fieldMetadataSha256=hashlib.sha256(read(fields, 16 + count * record_size)).hexdigest()))
-    return dict(binarySha256=digest, method='Static Mach-O Swift nominal/field metadata decoding',
-                types=records, limitations=[
+    code_ranges = []
+    for name, start, end in [
+        ('providerCacheAndRefresh', 0x1000a7cbc, 0x1000a81f0),
+        ('appServerPolicyFetch', 0x1000aa444, 0x1000aab28),
+    ]:
+        code_ranges.append(dict(name=name, start=hex(start), endExclusive=hex(end),
+                                sha256=hashlib.sha256(read(start, end-start)).hexdigest()))
+    return dict(binarySha256=digest, method='Static Mach-O Swift metadata and pinned disassembly analysis',
+                types=records, codeRanges=code_ranges,
+                recoveredProvider=dict(cacheTTLSeconds=900, requestTimeoutSeconds=30,
+                    cacheTimestamp='Date captured before refresh',
+                    cacheHit='cached policy and timestamp exist; now.timeIntervalSince(cachedAt) < 900',
+                    refreshFailure='propagate error; do not return stale policy or overwrite cache',
+                    transport='CodexAppServerJSONRPCConnection(timeout: 30, disablePlugins: false)',
+                    requestOrder=['initialize', 'configRequirements/read', 'config/read'],
+                    configReadParams={'includeLayers': False},
+                    closesConnectionOn='success, request failure, and policy parsing failure'),
+                limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
-                    'Provider name and cache fields do not prove transport, cache TTL, refresh, or failure behavior.',
+                    'Recovered cache is an extracted Swift component; production policy transport and evaluation remain incomplete.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 
