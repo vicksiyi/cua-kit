@@ -171,3 +171,80 @@ fn stderr_consumer_drains_more_than_pipe_capacity() {
     assert!(child.wait().unwrap().success());
     assert_eq!(drain.join().unwrap(), 1024);
 }
+
+#[test]
+fn ensure_reuses_replaces_and_stops_real_owned_processes() {
+    use core_browser_extension_host::{
+        app_server_configuration::LoadedLaunchConfiguration,
+        app_server_manifest::{
+            LoadedManifestEntry, RawManifestConfiguration, SelectedManifestEntry,
+        },
+        app_server_output::{stop_process, OutputState},
+        app_server_process::ensure_started,
+    };
+    use std::sync::{Arc, Mutex};
+    let root = std::env::temp_dir().join(format!("core-ensure-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    let executable = root.join("fake-cli");
+    fs::write(&executable, b"#!/bin/sh\nexec /bin/cat\n").unwrap();
+    fs::set_permissions(&executable, fs::Permissions::from_mode(0o700)).unwrap();
+    let mut config = LoadedLaunchConfiguration {
+        launch: LaunchFields {
+            codex_cli_path: Some(executable.to_string_lossy().into()),
+            ..Default::default()
+        }
+        .resolve(|_| None),
+        selection: LoadedManifestEntry {
+            registry_path: "unused".into(),
+            selected: SelectedManifestEntry {
+                index: 0,
+                configuration: RawManifestConfiguration::default(),
+            },
+        },
+    };
+    let state = Arc::new(Mutex::new(OutputState::default()));
+    ensure_started(&state, &config).unwrap();
+    let old_child = state.lock().unwrap().child.clone().unwrap();
+    let first_pid = old_child.lock().unwrap().id();
+    ensure_started(&state, &config).unwrap();
+    assert_eq!(state.lock().unwrap().generation, 1);
+    assert_eq!(
+        state
+            .lock()
+            .unwrap()
+            .child
+            .as_ref()
+            .unwrap()
+            .lock()
+            .unwrap()
+            .id(),
+        first_pid
+    );
+    config.launch.node_path = "changed-node".into();
+    ensure_started(&state, &config).unwrap();
+    {
+        let state = state.lock().unwrap();
+        assert_eq!(state.generation, 2);
+        assert_ne!(
+            state.child.as_ref().unwrap().lock().unwrap().id(),
+            first_pid
+        );
+        assert_eq!(
+            state.runtime_state.as_ref().unwrap().node_path,
+            "changed-node"
+        );
+    }
+    assert!(old_child.lock().unwrap().try_wait().unwrap().is_some());
+    let last_child = state.lock().unwrap().child.clone().unwrap();
+    stop_process(&state).unwrap();
+    assert!(last_child.lock().unwrap().try_wait().unwrap().is_some());
+    // A launch failure clears old state but does not increment the generation.
+    config.launch.codex_cli_path = root.join("missing").to_string_lossy().into();
+    assert!(ensure_started(&state, &config).is_err());
+    {
+        let state = state.lock().unwrap();
+        assert_eq!(state.generation, 3);
+        assert!(state.child.is_none() && state.stdin.is_none() && state.runtime_state.is_none());
+    }
+    fs::remove_dir_all(root).unwrap();
+}

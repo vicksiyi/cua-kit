@@ -98,3 +98,68 @@ pub fn drain_child_stderr(stderr: std::process::ChildStderr) {
         });
     }));
 }
+
+/// Compose the native ensure_started lifecycle. Replacement holds the state
+/// lock through old-child shutdown and new spawn; the output worker starts only
+/// after the new generation, configuration and stdin have been published.
+pub fn ensure_started(
+    state: &crate::app_server_output::SharedOutput,
+    config: &crate::app_server_configuration::LoadedLaunchConfiguration,
+) -> io::Result<()> {
+    use crate::{
+        app_server_output::{finish_output, forward_lines, Delivery},
+        app_server_runtime_state::ProxyRuntimeState,
+    };
+    use std::sync::{Arc, Mutex};
+    let requested = ProxyRuntimeState::from(config);
+    let mut locked = state
+        .lock()
+        .map_err(|_| io::Error::other("app-server process state mutex poisoned"))?;
+    if locked.can_reuse(&requested) {
+        return Ok(());
+    }
+    let old_child = locked.child.take();
+    let old_writer = locked.writer.take();
+    locked.replay.pending_requests.clear();
+    locked.replay.initialize_response = None;
+    locked.runtime_state = None;
+    locked.stdin = None;
+    if let Some(writer) = old_writer {
+        crate::app_server_websocket::close(&writer);
+    }
+    stop_child(old_child)?;
+    let mut child = spawn(&config.launch)?;
+    let stdin = child
+        .stdin
+        .take()
+        .ok_or_else(|| io::Error::other("Codex app-server stdin is unavailable"))?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| io::Error::other("Codex app-server stdout is unavailable"))?;
+    if let Some(stderr) = child.stderr.take() {
+        drain_child_stderr(stderr);
+    }
+    let child = Arc::new(Mutex::new(child));
+    locked.generation = locked.generation.wrapping_add(1);
+    locked.child = Some(child.clone());
+    locked.runtime_state = Some(requested);
+    locked.stdin = Some(stdin);
+    let generation = locked.generation;
+    drop(locked);
+    let state = state.clone();
+    drop(std::thread::spawn(move || {
+        if let Err(error) = forward_lines(stdout, &state, generation, |delivery| {
+            if delivery == Delivery::Dropped {
+                eprintln!(
+                    "extension-host: dropped app-server message while side panel is detached"
+                );
+            }
+        }) {
+            eprintln!("extension-host: app-server stdout read failed: {error}");
+        }
+        finish_output(&state, generation);
+        let _ = wait_child(child);
+    }));
+    Ok(())
+}

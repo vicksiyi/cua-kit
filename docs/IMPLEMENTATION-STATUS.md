@@ -6216,3 +6216,10 @@ Added the Rust projection and output-state storage; same-generation EOF cleanup 
 Traced all ensure_started early-return comparisons: stored stdin and ProxyRuntimeState must exist and all seven runtime fields match exactly. There is no PID/try_wait probe or requirement for a stored child handle/client writer in that predicate. Added can_reuse with tests changing each field, optional absence and syntactically different paths.
 
 Composed explicit stop: take child/writer, clear replay/runtime/stdin, increment wrapping generation under state lock, unlock, close writer then kill/reap child. Unlike EOF cleanup, even an empty explicit stop advances generation. Three runtime-state and seven output tests pass, including an owned child stop/reap and u64 wrap/repeated stop. Full ensure_started spawn/replacement and worker ownership remain pending, alongside manager control integration.
+
+
+### 2026-11-06: compose ensure_started through replacement and workers
+
+Composed ensure_started over configuration projection, reuse predicate, old-resource clearing, websocket close, child stop/reap, spawn, stderr drain, state publication and detached stdout worker. Native replacement holds the process-state mutex through stopping the old child and spawning the new one; it is not implemented by calling the separately unlocked explicit-stop helper. Generation advances only after successful spawn and pipe extraction. The new worker begins after state publication/unlock and performs output cleanup before waiting on its retained child.
+
+Seven process tests pass, including an actual owned CLI reused without a PID/generation change, replacement on Node-path change, prior-child reaping, explicit stop and failed-spawn state/generation behavior. Existing transport/output checks remain independent evidence. Native spawn-error decoration and manager/control/handshake integration are still incomplete; this is not a full browser acceptance run.
