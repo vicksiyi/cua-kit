@@ -80,3 +80,9 @@
 验证：存储/匹配源码差分及实际 Preferences 会话授权、跨账号隔离、全局拒绝优先、cancel 不写入、强制刷新测试通过；Browser TypeScript 与重建通过。测试使用内存配置，无真实账号或授权写入。
 
 本轮真实 native 扩展 MCP 浏览器操作回归通过（约 8.8 秒），包含 locator 点击和光标检查。完整 SIWC authenticate 编排与公开注册仍待完成，不宣称登录能力已可用。
+
+## 后续恢复：authenticate 服务编排
+
+恢复同一构建 `gN` 的完整服务命令处理器。保留 capability/authority 检查在阶段异常捕获之外；自动/显式 DOM/AX 目标解析；绑定 selector 后的 committed-page 验证；账号 origin 核对；用户授权 metadata 与持久化选择；grant 前、cookie 前、click 前页面检查及账号复查；各阶段对应失败状态。仅最终 click 完成后返回 initiated，该状态不等于登录已完成。
+
+新增差分测试覆盖 27 种场景，比对原函数与还原实现的结果和完整有序副作用轨迹，涵盖成功、无候选、多候选、过期引用、无效 ref、授权拒绝/取消、账号变化、页面变化、grant/cookie/follow/click 异常。总计本轮 8 项 SIWC 编排/检测/偏好/观察测试通过，Browser TypeScript 和重建通过。测试依赖受控 context，未执行真实账号登录。下一阶段仍需公共 catalog/capability 注册与真实 service/provider 集成验证。
