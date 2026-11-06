@@ -10,7 +10,20 @@ struct SkyAppRule: Codable {
 }
 struct SkyAppPolicy {
     let rules: [String: SkyAppRule]
+    private let nativeEvaluation: NativeAppPolicyEvaluation?
+
+    /// Explicit host wiring for the restored provider. Existing environment
+    /// policy remains the default; this initializer does not modify its rules.
+    @MainActor
+    init(provider: NativeAppPolicyProvider) {
+        rules = [:]
+        nativeEvaluation = NativeAppPolicyEvaluation(
+            resolve: { try NativeApplicationResolution.system().resolve($0) },
+            loadPolicy: { try await provider.policy() })
+    }
+
     init(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
+        nativeEvaluation = nil
         let encoded = environment["CORE_CUA_APP_POLICY"] ?? "{}"
         guard encoded.utf8.count <= 65_536, let data = encoded.data(using: .utf8) else {
             throw fail("INVALID_ARGUMENT", "Native app policy exceeds its configuration limit.")
@@ -24,8 +37,16 @@ struct SkyAppPolicy {
         }
     }
     @MainActor
-    func evaluate(_ reference: String) throws -> [String: Any] {
-        let app = try resolveInstalledApp(reference)
+    func evaluate(_ reference: String) async throws -> [String: Any] {
+        if let nativeEvaluation {
+            do { return try await nativeEvaluation.evaluate(reference).ipcObject }
+            catch is NativeApplicationResolution.BundleIDLookupError {
+                throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved")
+            }
+        }
+        let app: [String: Any]
+        do { app = try resolveInstalledApp(reference) }
+        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
         let identifier = app["bundleId"] as! String
         let rule = rules[identifier] ?? SkyAppRule(decision: "denied", risk: "high", allowPersistentApproval: false, warningSubtitle: nil)
         var target: [String: Any] = ["appPath": app["path"]!, "bundleIdentifier": identifier,

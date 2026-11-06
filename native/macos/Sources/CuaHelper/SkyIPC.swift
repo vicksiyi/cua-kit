@@ -79,8 +79,7 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                 guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     throw rpcFailure(-32602, "App policy requires a non-empty app reference")
                 }
-                do { result = try appPolicy.evaluate(app) }
-                catch { throw rpcFailure(-10010, "Installed application could not be resolved") }
+                result = try await appPolicy.evaluate(app)
             default:
                 throw rpcFailure(-10003, "Computer Use request type is not implemented by this independent service")
             }

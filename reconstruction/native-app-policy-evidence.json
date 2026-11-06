@@ -268,8 +268,8 @@
     {
       "name": "applicationPolicyResolutionEntry",
       "start": "0x100191ad4",
-      "endExclusive": "0x100191b50",
-      "sha256": "5f7b13fd45c05e71c0a43d570d35277b6b05833100d50b9fb27d1b8f80780e4e"
+      "endExclusive": "0x100191c2c",
+      "sha256": "e4f040f13ea5d917d99cbd6b10b4a8fdb9b6a42d7aeb83ca167c53e110da4e84"
     },
     {
       "name": "applicationTargetsEnumeration",

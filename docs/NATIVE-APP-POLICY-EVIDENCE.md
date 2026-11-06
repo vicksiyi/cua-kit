@@ -695,3 +695,34 @@ Swift build passes. Production SkyAppPolicy still uses its existing explicit
 rules: switching that entrypoint and completing approval persistence/real-system
 acceptance remain outstanding. The composed provider is ready for host wiring,
 not proof that those remaining integrations already work.
+
+### Async application policy entrypoint (2026-11-07)
+
+The resolution-entry audit now extends through `0x100191c2c`: after ordinary
+application resolution succeeds, `0x100191bc8` invokes the provider at
+`0x1000a7cbc`, and only successful completion reaches result construction.
+`NativeAppPolicyEvaluation` composes that exact order and preserves upstream
+errors. Tests verify resolve-before-fetch, no fetch on resolution failure,
+provider error identity, denied result, and result IPC projection.
+
+SkyAppPolicy now offers an explicit `init(provider:)` composition path, using
+NativeApplicationResolution.system and the restored provider/evaluator/result.
+Its evaluate method and the app policy/start/get/input callers are async. The
+existing environment initializer remains selected by the deployed socket host;
+this change does not remove or override CORE_CUA_APP_POLICY constraints or
+activate a different policy source. Provider selection at service bootstrap is
+still pending.
+
+Resolution-to-IPC error conversion remains a host adapter concern. The existing
+legacy resolution failures retain -10010. The new provider path catches only
+BundleIDLookupError for that conversion; transport/policy errors propagate to
+the general IPC error path instead of being incorrectly labeled as a missing
+installed app. No approval, launch or input is performed by evaluation itself.
+
+Swift build and the evaluation suite pass. The existing restored-client IPC
+fixture test also passes against the rebuilt helper, covering explicit allowed,
+forbidden and unconfigured-denied rules, missing-app failures, and rejection of
+input without a fresh snapshot. It uses owned fixture bundles and the project
+helper; no vendor service or real app operation is used. The native-provider
+bootstrap path still needs end-to-end IPC testing and deployment selection;
+this is not a claim that active policy defaults have changed.

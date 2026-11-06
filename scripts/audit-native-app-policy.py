@@ -100,7 +100,7 @@ def audit():
         ('appDecisionBranch', 0x100191c60, 0x100191c98),
         ('forbiddenClassifier', 0x1002570c0, 0x1002572d4),
         ('forbiddenStringEquality', 0x100194fc8, 0x10019501c),
-        ('applicationPolicyResolutionEntry', 0x100191ad4, 0x100191b50),
+        ('applicationPolicyResolutionEntry', 0x100191ad4, 0x100191c2c),
         ('applicationTargetsEnumeration', 0x1002626a8, 0x100262934),
         ('runningApplicationTargetsEnumeration', 0x100264e58, 0x100265228),
         ('applicationCandidateValidation', 0x100263040, 0x1002632d0),

@@ -9,9 +9,7 @@ final class SkyAppState {
     private let clipboard = ClipboardStore()
     private var targets: [String: Target] = [:]
     func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) async throws {
-        let evaluated: [String: Any]
-        do { evaluated = try policy.evaluate(reference) }
-        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
+        let evaluated = try await policy.evaluate(reference)
         let identity = evaluated["target"] as! [String: Any]
         let path = identity["appPath"] as! String
         guard evaluated["decision"] as? String == "allowed" else {
@@ -54,9 +52,7 @@ final class SkyAppState {
     /// Explicit AppStart request. State reads also launch missing apps in background.
     /// Response uses the original optional-skyshot MacWindowAppState envelope.
     func start(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
-        let evaluated: [String: Any]
-        do { evaluated = try policy.evaluate(reference) }
-        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
+        let evaluated = try await policy.evaluate(reference)
         guard evaluated["decision"] as? String == "allowed" else {
             throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
         }
@@ -77,9 +73,7 @@ final class SkyAppState {
     }
     func get(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
         targets = targets.filter { !$0.value.app.isTerminated }
-        let evaluated: [String: Any]
-        do { evaluated = try policy.evaluate(reference) }
-        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
+        let evaluated = try await policy.evaluate(reference)
         let identity = evaluated["target"] as! [String: Any]
         let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
         // Failures after resolution retire only this application's earlier observation.
