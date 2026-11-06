@@ -306,6 +306,35 @@ unpack_evidence={
     'unsupportedTypeError':'0x1006ea214',
     'limitations':'Concrete AXValue unpacking only; noValue policy belongs to outer AXEncodedValue decoding.',
 }
+# AXValue decoding first dynamically casts Optional<Any> to the requested
+# generic type. Only a failed cast enters AXError/noValue handling.
+cast_descriptor = 0x101193410
+cast_displacement,cast_length=struct.unpack('<ii',read_virtual(cast_descriptor,8))
+cast_typeref=read_virtual(cast_descriptor+cast_displacement,cast_length)
+if cast_typeref != b'ypSg': raise SystemExit('AXValue cast source is no longer Optional<Any>')
+if indirect.get(0x101155118) != '_swift_dynamicCast': raise SystemExit('Swift dynamic cast stub changed')
+axvalue_decode_words={
+    0x1006e9548:0x940002d4, # call unpacker
+    0x1006e9550:0xb4001835, # no lower error -> cast; error bypasses flag helper
+    0x1006e9890:0x9429ae22, # dynamicCast Optional<Any> -> requested type
+    0x1006e9894:0x34000be0, # failed cast -> AXError fallback
+    0x1006e9a74:0x9429ada9, # dynamicCast Any -> AXError
+    0x1006e9a80:0x128c4f68, # -25212
+    0x1006e9a88:0x54000861, # other AXError -> error construction
+    0x1006e9bb8:0x3900403f, # enum case 0: axError
+    0x1006e9b60:0x39004028, # store case 2: failedToUnwrapAttributeValue
+    0x1006e9d44:0x360000e1, # false flag -> nil; true -> throw
+}
+for address,word in axvalue_decode_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('AXValue decoded-result branch changed at '+hex(address))
+axvalue_decode_evidence={
+    'castSourceDescriptor':hex(cast_descriptor),'castSourceType':cast_typeref.decode(),
+    'dynamicCastStub':'0x101155118',
+    'verifiedInstructions':{hex(address):hex(word) for address,word in axvalue_decode_words.items()},
+    'order':['try concrete unpacker (errors propagate)', 'cast Optional<Any> to requested type', 'on cast failure, inspect AXError', 'noValue returns nil; other AXError uses conditional failure', 'non-AXError mismatch uses failedToUnwrapAttributeValue(requested type)'],
+    'scope':'AXValue branch only, not the full generic decoder.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -349,6 +378,7 @@ record = {
     'decodingEvidence':decoding_evidence,
     'errorEvidence':error_evidence,
     'axValueUnpackingEvidence':unpack_evidence,
+    'axValueDecodingEvidence':axvalue_decode_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

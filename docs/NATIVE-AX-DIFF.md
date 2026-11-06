@@ -280,3 +280,30 @@ AXError.noValue 在这一层仍为 AXError；其 nil 策略由外层 decoder 决
 
 此 helper 尚未接入完整 AXEncodedValue decoder；缓存、数组解码、类型不匹配策略和
 原生观察差量仍有未恢复部分，不能据此声称原生观察链路整体一致。
+
+## AXValue 分支的泛型转换与错误顺序
+
+`AXValueDecoding.swift` 继续恢复 `unwrappedThrowing` 的 AXValue 专用分支，复用上节解包器。
+这不是完整 AXEncodedValue 的替代实现，尚未连接 UIElement/marker/array 的其它分支。
+
+关键顺序来自 `0x1006e9548` 到 `0x1006e9bbc` 的控制流：
+
+1. 调用具体解包器；其抛错直接传播，不受外层失败标志影响。
+2. 将 **Optional<Any>** 动态转换为调用者请求的泛型类型，成功即返回。
+3. 转换失败后再尝试 AXError：noValue 返回 nil；其它错误在标志为 true 时抛出
+   `.axError(error)`，false 时返回 nil。
+4. 其它转换失败在 true 时抛出 `.failedToUnwrapAttributeValue(请求类型)`，false 时返回 nil。
+
+类型源不是猜测：`0x101193410` 的相对 typeref 为 `ypSg`（Optional<Any>），
+`0x1006e9890` 的目标 stub 经 Mach-O indirect symbols 确认为 `_swift_dynamicCast`。
+后续 AXError fallback 位于 `0x1006e9a74`，顺序不能交换。
+
+这意味着请求 AXError 或 Any 时，`.noValue` 本身可以成功返回；只有请求类型转换失败
+才进入 noValue → nil 分支。同样，对 Optional 类型的成功转换可能返回 `.some(.none)`，
+不能先用 guard let 去掉空值。原分支也没有为 AXError.success 添加特殊豁免。
+
+22 个 Swift 案例覆盖实际系统值的具体/Any 转换、两种失败标志、noValue 的目标类型差异、
+嵌套 Optional、普通 AXError（含 success）以及底层解包异常不被标志吞掉。
+审计记录 `axValueDecodingEvidence` 固定 typeref、动态转换 stub 和关键跳转指令。
+测试是恢复代码与系统值的行为验证，尚没有原厂服务运行时 oracle；不能外推为整个原生
+属性读取或桌面观察链路已经对齐。

@@ -1141,6 +1141,31 @@
     "unsupportedTypeError": "0x1006ea214",
     "limitations": "Concrete AXValue unpacking only; noValue policy belongs to outer AXEncodedValue decoding."
   },
+  "axValueDecodingEvidence": {
+    "castSourceDescriptor": "0x101193410",
+    "castSourceType": "ypSg",
+    "dynamicCastStub": "0x101155118",
+    "verifiedInstructions": {
+      "0x1006e9548": "0x940002d4",
+      "0x1006e9550": "0xb4001835",
+      "0x1006e9890": "0x9429ae22",
+      "0x1006e9894": "0x34000be0",
+      "0x1006e9a74": "0x9429ada9",
+      "0x1006e9a80": "0x128c4f68",
+      "0x1006e9a88": "0x54000861",
+      "0x1006e9bb8": "0x3900403f",
+      "0x1006e9b60": "0x39004028",
+      "0x1006e9d44": "0x360000e1"
+    },
+    "order": [
+      "try concrete unpacker (errors propagate)",
+      "cast Optional<Any> to requested type",
+      "on cast failure, inspect AXError",
+      "noValue returns nil; other AXError uses conditional failure",
+      "non-AXError mismatch uses failedToUnwrapAttributeValue(requested type)"
+    ],
+    "scope": "AXValue branch only, not the full generic decoder."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
