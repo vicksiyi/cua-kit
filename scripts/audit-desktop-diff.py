@@ -25,6 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
+    'AXPartialValue', 'AXEncodedValue',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -245,16 +246,46 @@ attribute_evidence = {
     'markerWrapperInitializer':{'address':'0x100009888','instructionWord':hex(struct.unpack('<I',read_virtual(0x100009888,4))[0])},
     'scope':'Cache/fallback dispatch only; underlying cache, AX decoding and marker validation are not recovered.',
 }
+# Imported C calls are in the indirect symbol table, not the Swift export
+# table. Resolve exact stub addresses rather than nearest-symbol annotations.
+indirect_text = subprocess.check_output(['xcrun','llvm-objdump','--macho','--indirect-symbols',str(artifact)],text=True)
+indirect = {}
+for line in indirect_text.splitlines():
+    match = re.match(r'0x([0-9a-fA-F]+)\s+\d+\s+(.*)',line)
+    if match: indirect[int(match[1],16)] = match[2]
+decode_functions = []
+for address,name in [(0x1006fac18,'AXPartialValue decoded dispatch'),(0x1006e8fc8,'AXEncodedValue.unwrapped()'),(0x1006e9044,'AXEncodedValue.unwrappedThrowing(_:)'),(0x1007ae414,'UIElementProtocol.uncachedValue(for:ignoringTypeMismatch:)')]:
+    boundary = starts[starts.index(address)+1]
+    decode_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+type_calls=[]
+for address in range(0x1006e9044,0x1006e9d38,4):
+    word = struct.unpack('<I',read_virtual(address,4))[0]
+    if word >> 26 != 0b100101: continue
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    destination = address+immediate*4
+    symbol = indirect.get(destination,'')
+    if symbol in ['_CFGetTypeID','_AXUIElementGetTypeID','_AXTextMarkerGetTypeID','_AXTextMarkerRangeGetTypeID','_AXValueGetTypeID','_CFArrayGetTypeID']:
+        type_calls.append({'address':hex(address),'stub':hex(destination),'symbol':symbol})
+if {row['symbol'] for row in type_calls} != {'_CFGetTypeID','_AXUIElementGetTypeID','_AXTextMarkerGetTypeID','_AXTextMarkerRangeGetTypeID','_AXValueGetTypeID','_CFArrayGetTypeID'}:
+    raise SystemExit('Native typed decoding dispatch changed')
+decoding_evidence = {
+    'functions':decode_functions,'resolvedTypeCalls':type_calls,
+    'symbolResolution':'Mach-O indirect symbol table + decoded ARM64 BL immediate',
+    'nonthrowingWrapper':{'argumentFlagZero':'0x1006e8fe8','throwingCall':'0x1006e8ff4','errorCheck':'0x1006e8ff8','nilAssignment':'0x1006e9004..0x1006e9018'},
+    'limitations':'Confirms type dispatch and wrapper error handling, not the complete conversion/error algorithm.',
+}
 record = {
     'artifact':'@oai/'+relative,
     'sha256':sha,
     'evidenceKind':'exported Swift symbols and bounded ARM64 call-site/basic-block evidence',
-    'commands':['nm -g <artifact>', 'xcrun swift-demangle', 'xcrun llvm-objdump --macho --function-starts=addrs <artifact>', 'xcrun llvm-objdump --disassemble --start-address=<start> --stop-address=<end> <artifact>'],
+    'commands':['nm -g <artifact>', 'xcrun swift-demangle', 'xcrun llvm-objdump --macho --function-starts=addrs <artifact>', 'xcrun llvm-objdump --macho --indirect-symbols <artifact>', 'xcrun llvm-objdump --disassemble --start-address=<start> --stop-address=<end> <artifact>'],
     'implementationEvidence':implementation_evidence,
     'callerEvidence':caller_evidence,
     'presentationEvidence':presentation_evidence,
     'selectionEvidence':selection_evidence,
     'attributeEvidence':attribute_evidence,
+    'decodingEvidence':decoding_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

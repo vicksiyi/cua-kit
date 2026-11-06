@@ -197,3 +197,38 @@ text/focusedElement/selectedText/selectedElements 字段。依据是固定原生
 
 入口：`node --import tsx --test reconstruction/native-attribute-value.test.ts`。
 当前 helper 的实际观察链仍未接入该缓存分流，验收范围仅为恢复的内部逻辑及静态证据。
+
+## AXPartialValue / AXEncodedValue 解码边界
+
+已追踪缓存值进一步解码的路径：
+
+```mermaid
+flowchart TD
+  C[cachedValue] --> P[AXPartialValue 的 decoded 转发]
+  P --> U[AXEncodedValue.unwrapped]
+  U --> T[unwrappedThrowing: flag 为 false]
+  T --> K[CFGetTypeID / 类型专用分支]
+  K --> E[AXUIElement]
+  K --> M[AXTextMarker]
+  K --> R[AXTextMarkerRange]
+  K --> V[AXValue]
+  K --> A[CFArray]
+  T -->|解码异常| N[unwrapped 捕获并返回 nil]
+  T -->|正常返回| O[保留返回的 Optional]
+```
+
+`AXPartialValue` 的转发只有三条指令，取其 encoded value 后跳至 `unwrapped()`；
+后者以 false 调用 throwing 版本，检查 Swift error register，并在错误分支写入 Optional.none。
+这不等于 throwing 版本在 false 时永远不抛错，更不等于所有原生读取错误都可以任意忽略。
+
+审计工具现在读取 Mach-O indirect symbol table，并解码每条 ARM64 BL 的目标，确认调用：
+CFGetTypeID、AXUIElementGetTypeID、AXTextMarkerGetTypeID、AXTextMarkerRangeGetTypeID、
+AXValueGetTypeID、CFArrayGetTypeID。这样能把原来反汇编中显示为无关符号偏移的调用还原为真实 C API。
+记录保存在 desktop-diff-evidence.json 的 decodingEvidence，包含函数边界、代码哈希和调用位置。
+
+这说明普通 `as? String` 或 `String(describing:)` 无法代表整个原生 decoder。
+各种类型的转换规则、AX 错误值、类型不匹配和数组子集描述仍需逐支恢复；本轮不以一个宽松的
+AnyObject 强转实现替代它。图只列出已确认的类型判断，不声称枚举了所有转换分支。
+
+此外 uncachedValue 的外层会捕获内部 throwing reader 的错误、通过 os.Logger 记录并返回 nil；
+这一层与原始 AX API 以及 parameterizedValue 的错误行为要分别处理，不能统一改为全抛出或全吞掉。

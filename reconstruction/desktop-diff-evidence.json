@@ -6,6 +6,7 @@
     "nm -g <artifact>",
     "xcrun swift-demangle",
     "xcrun llvm-objdump --macho --function-starts=addrs <artifact>",
+    "xcrun llvm-objdump --macho --indirect-symbols <artifact>",
     "xcrun llvm-objdump --disassemble --start-address=<start> --stop-address=<end> <artifact>"
   ],
   "implementationEvidence": {
@@ -981,6 +982,84 @@
     },
     "scope": "Cache/fallback dispatch only; underlying cache, AX decoding and marker validation are not recovered."
   },
+  "decodingEvidence": {
+    "functions": [
+      {
+        "name": "AXPartialValue decoded dispatch",
+        "start": "0x1006fac18",
+        "endExclusive": "0x1006fac24",
+        "machineCodeSha256": "a161892fe48ef45023dec19fb0a1f361cc5d786bb3c7cdc5ce2675349de0a2c4"
+      },
+      {
+        "name": "AXEncodedValue.unwrapped()",
+        "start": "0x1006e8fc8",
+        "endExclusive": "0x1006e9044",
+        "machineCodeSha256": "37776af2aae93faaa216e4b26b39f0aaa98f08eeb05277608202362a18ede3a4"
+      },
+      {
+        "name": "AXEncodedValue.unwrappedThrowing(_:)",
+        "start": "0x1006e9044",
+        "endExclusive": "0x1006e9d38",
+        "machineCodeSha256": "2b2a4d8d330160263a260f5a39599e5d6a2f1e17dfcef269b1aabf7d85b9c0b8"
+      },
+      {
+        "name": "UIElementProtocol.uncachedValue(for:ignoringTypeMismatch:)",
+        "start": "0x1007ae414",
+        "endExclusive": "0x1007ae5f8",
+        "machineCodeSha256": "2e3e927726d65495dde1c3d22ef6693aa816bb4b30bdf5b6579026efd53ee212"
+      }
+    ],
+    "resolvedTypeCalls": [
+      {
+        "address": "0x1006e91dc",
+        "stub": "0x101153a68",
+        "symbol": "_CFGetTypeID"
+      },
+      {
+        "address": "0x1006e91e4",
+        "stub": "0x101153924",
+        "symbol": "_AXUIElementGetTypeID"
+      },
+      {
+        "address": "0x1006e9210",
+        "stub": "0x101153a68",
+        "symbol": "_CFGetTypeID"
+      },
+      {
+        "address": "0x1006e9218",
+        "stub": "0x101153924",
+        "symbol": "_AXUIElementGetTypeID"
+      },
+      {
+        "address": "0x1006e9248",
+        "stub": "0x101153864",
+        "symbol": "_AXTextMarkerGetTypeID"
+      },
+      {
+        "address": "0x1006e930c",
+        "stub": "0x10115387c",
+        "symbol": "_AXTextMarkerRangeGetTypeID"
+      },
+      {
+        "address": "0x1006e9510",
+        "stub": "0x10115396c",
+        "symbol": "_AXValueGetTypeID"
+      },
+      {
+        "address": "0x1006e9680",
+        "stub": "0x101153a14",
+        "symbol": "_CFArrayGetTypeID"
+      }
+    ],
+    "symbolResolution": "Mach-O indirect symbol table + decoded ARM64 BL immediate",
+    "nonthrowingWrapper": {
+      "argumentFlagZero": "0x1006e8fe8",
+      "throwingCall": "0x1006e8ff4",
+      "errorCheck": "0x1006e8ff8",
+      "nilAssignment": "0x1006e9004..0x1006e9018"
+    },
+    "limitations": "Confirms type dispatch and wrapper error handling, not the complete conversion/error algorithm."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -1803,6 +1882,91 @@
       "signature": "static ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded.__derived_enum_equals(ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded, ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded) -> Swift.Bool"
     },
     {
+      "address": "00000001006e4ba0",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV06stringD03forSSSgAA17UIElementProtocol_p_tF",
+      "signature": "AccessibilitySupport.AXEncodedValue.stringValue(for: AccessibilitySupport.UIElementProtocol) -> Swift.String?"
+    },
+    {
+      "address": "00000001006ea328",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV12countIfArraySiSgvg",
+      "signature": "AccessibilitySupport.AXEncodedValue.countIfArray.getter : Swift.Int?"
+    },
+    {
+      "address": "00000001006e5854",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV13valueIsStringSbvg",
+      "signature": "AccessibilitySupport.AXEncodedValue.valueIsString.getter : Swift.Bool"
+    },
+    {
+      "address": "00000001006ea344",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV14lengthIfStringSiSgvg",
+      "signature": "AccessibilitySupport.AXEncodedValue.lengthIfString.getter : Swift.Int?"
+    },
+    {
+      "address": "00000001006e9044",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV17unwrappedThrowingyxSgSbKlF",
+      "signature": "AccessibilitySupport.AXEncodedValue.unwrappedThrowing<A>(Swift.Bool) throws -> A?"
+    },
+    {
+      "address": "00000001006e525c",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV20StringConversionTypeO03rawD0AESgSS_tcfC",
+      "signature": "AccessibilitySupport.AXEncodedValue.StringConversionType.init(rawValue: Swift.String) -> AccessibilitySupport.AXEncodedValue.StringConversionType?"
+    },
+    {
+      "address": "00000001006e5260",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV20StringConversionTypeO03rawD0SSvg",
+      "signature": "AccessibilitySupport.AXEncodedValue.StringConversionType.rawValue.getter : Swift.String"
+    },
+    {
+      "address": "00000001006e9e50",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV24unwrappedElementThrowing_2asxSgSb_xmtKAA17UIElementProtocolRzlF",
+      "signature": "AccessibilitySupport.AXEncodedValue.unwrappedElementThrowing<A where A: AccessibilitySupport.UIElementProtocol>(_: Swift.Bool, as: A.Type) throws -> A?"
+    },
+    {
+      "address": "00000001006e9d90",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV28unwrappedAXUIElementThrowingySo0F3RefaSgSbKF",
+      "signature": "AccessibilitySupport.AXEncodedValue.unwrappedAXUIElementThrowing(Swift.Bool) throws -> __C.AXUIElementRef?"
+    },
+    {
+      "address": "00000001006e8f48",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV2eeoiySbAC_ACtFZ",
+      "signature": "static AccessibilitySupport.AXEncodedValue.== infix(AccessibilitySupport.AXEncodedValue, AccessibilitySupport.AXEncodedValue) -> Swift.Bool"
+    },
+    {
+      "address": "00000001006e8f44",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV5valueyXlvg",
+      "signature": "AccessibilitySupport.AXEncodedValue.value.getter : Swift.AnyObject"
+    },
+    {
+      "address": "00000001006e8f88",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV8wrappingACyp_tKcfC",
+      "signature": "AccessibilitySupport.AXEncodedValue.init(wrapping: Any) throws -> AccessibilitySupport.AXEncodedValue"
+    },
+    {
+      "address": "00000001006e8fc8",
+      "mangled": "_$s20AccessibilitySupport14AXEncodedValueV9unwrappedxSgylF",
+      "signature": "AccessibilitySupport.AXEncodedValue.unwrapped<A>() -> A?"
+    },
+    {
+      "address": "00000001006fac44",
+      "mangled": "_$s20AccessibilitySupport14AXPartialValueV12decodedArraySayxG5array_15ComputerUseCore23AXArraySubsetDescriptorVSg06subsetM0tSgylF",
+      "signature": "AccessibilitySupport.AXPartialValue.decodedArray<A>() -> (array: [A], subsetDescriptor: ComputerUseCore.AXArraySubsetDescriptor?)?"
+    },
+    {
+      "address": "00000001006f5a68",
+      "mangled": "_$s20AccessibilitySupport14AXPartialValueV21arraySubsetDescriptor15ComputerUseCore07AXArrayfG0VSgvg",
+      "signature": "AccessibilitySupport.AXPartialValue.arraySubsetDescriptor.getter : ComputerUseCore.AXArraySubsetDescriptor?"
+    },
+    {
+      "address": "00000001006f5a98",
+      "mangled": "_$s20AccessibilitySupport14AXPartialValueV24textTruncationDescriptorAA012AXTruncationG0VSgvg",
+      "signature": "AccessibilitySupport.AXPartialValue.textTruncationDescriptor.getter : AccessibilitySupport.AXTruncationDescriptor?"
+    },
+    {
+      "address": "0000000100512344",
+      "mangled": "_$s20AccessibilitySupport14AXPartialValueV5valueAA09AXEncodedD0Vvg",
+      "signature": "AccessibilitySupport.AXPartialValue.value.getter : AccessibilitySupport.AXEncodedValue"
+    },
+    {
       "address": "00000001007aeea4",
       "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE11cachedValue3forqd__SgAA0C9AttributeV_tlF",
       "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.cachedValue<A>(for: AccessibilitySupport.UIElementAttribute) -> A1?"
@@ -1846,6 +2010,16 @@
       "address": "000000010079c490",
       "mangled": "_$s20AccessibilitySupport18UIElementAttributeV23selectedTextMarkerRangeACvgZ",
       "signature": "static AccessibilitySupport.UIElementAttribute.selectedTextMarkerRange.getter : AccessibilitySupport.UIElementAttribute"
+    },
+    {
+      "address": "00000001006f5f88",
+      "mangled": "_$sSo14AXUIElementRefa20AccessibilitySupportE5value3forSo7AXErrorV5error_AC14AXPartialValueVSgADtAC18UIElementAttributeV_tF",
+      "signature": "(extension in AccessibilitySupport):__C.AXUIElementRef.value(for: AccessibilitySupport.UIElementAttribute) -> (error: __C.AXError, value: AccessibilitySupport.AXPartialValue?)"
+    },
+    {
+      "address": "00000001006f77bc",
+      "mangled": "_$sSo14AXUIElementRefa20AccessibilitySupportE6values3forSDyAC18UIElementAttributeVAC14AXPartialValueVGSayAGG_tKF",
+      "signature": "(extension in AccessibilitySupport):__C.AXUIElementRef.values(for: [AccessibilitySupport.UIElementAttribute]) throws -> [AccessibilitySupport.UIElementAttribute : AccessibilitySupport.AXPartialValue]"
     }
   ]
 }
