@@ -6146,3 +6146,10 @@ Nineteen configuration/manifest/error tests pass, including every category, opaq
 Audited AppServerManager::status at 0x10001a87c and its dispatcher call at 0x100026028. No proxy yields only phase=idle. An existing proxy yields phase=connected and runtimeSessionId from the proxy's mutex-protected String clone. Status itself does not load configuration, launch a process or probe child/PID health. The native literal bytes confirm connected and runtimeSessionId; empty session strings are preserved rather than treated as idle.
 
 Implemented this projection in Rust and tested absence versus empty/present IDs, Unicode and owned snapshots. The version-pinned static audit passes and records branch, literal, session-lock and dispatcher evidence. This deliberately does not register a fake live status handler: the real proxy ownership/lifecycle and ensure/restart integration remain required. No original executable or user browser was run.
+
+
+### 2026-11-06: native app-server command and owned child launch
+
+Implemented the command-construction segment of AppServerProcess::ensure_started in Rust: configured CLI, app-server and --analytics-default-enabled arguments, three piped streams, optional home directory creation and child cwd/CODEX_HOME. One-component executable names preserve PATH lookup; other relative executable paths become host-cwd-relative before changing child cwd. Optional home resolves against host cwd, without canonicalization.
+
+Two targeted tests pass, including a real owned fake executable in a path containing spaces: exact argv, child cwd/home, stdin/stdout/stderr and failure before spawn when home is a file. The test launches no vendor executable or browser and prints no ambient environment. Static evidence pins command/path/stdio/directory/env/spawn instructions. This is a raw child launcher, not complete ensure_started: reuse rules, formatted launch errors, proxy streams, child/thread ownership and stop remain open, and no production dispatcher route has been enabled.

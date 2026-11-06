@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+process_start = disassemble(0x10001ffec, 0x100020d54)
 manager_status = disassemble(0x10001a87c, 0x10001abec)
 proxy_session = disassemble(0x10001fec0, 0x10001ffec)
 control = disassemble(0x100025498, 0x100026880)
@@ -371,6 +372,17 @@ result = {
         'dispatcher': evidence(control, 0x100026028, 0x10002602c, ['AppServerManager>::status']),
         'semantics': 'No proxy: {phase:idle}; existing proxy: {phase:connected,runtimeSessionId:<cloned string>}. No configuration load, process spawn or PID health probe occurs in status. Empty strings remain strings.',
         'integrationStatus': 'Status projection only. Not registered as a live control method until real proxy lifecycle exists; never fabricate a connected state from configuration.',
+    },
+    'processCommand': {
+        'implementation': 'native/browser-extension-host/src/app_server_process.rs',
+        'arguments': [raw[0x90891:0x9089b].decode(), raw[0x9089b:0x908b6].decode()],
+        'homeEnvironment': raw[0x904e5:0x904ef].decode(),
+        'executableResolution': evidence(process_start, 0x100020278, 0x1000202f8, ['Path>::is_absolute', 'Path>::components', 'Iterator>::next', 'current_dir', 'Path>::_join']),
+        'argumentsAndPipes': evidence(process_start, 0x1000203a4, 0x1000203f0, ['#0x891', '#0x89b', 'Command>::arg', 'Command>::stdin', 'Command>::stdout', 'Command>::stderr']),
+        'homeResolution': evidence(process_start, 0x100020460, 0x1000204e4, ['current_dir', 'Path>::_join', '#0x1ff', 'DirBuilder>::_create']),
+        'cwdEnvSpawn': evidence(process_start, 0x100020594, 0x1000205e4, ['Command>::cwd', '#0x4e5', 'CommandEnv>::set', 'Command>::spawn']),
+        'semantics': 'Bare one-component program retains PATH search; other relative program paths resolve against host cwd. Arguments app-server and --analytics-default-enabled. All three stdio streams piped. Optional codexHome resolves relative to host cwd, create_dir_all, child cwd and CODEX_HOME. Other environment inherited.',
+        'integrationStatus': 'Command construction and raw child spawn tested against an owned fake executable. Process reuse, launch-error decoration, stderr drain, proxy/read threads, stop and manager/dispatcher integration remain incomplete.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
