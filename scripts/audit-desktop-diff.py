@@ -733,6 +733,41 @@ transaction_scope_evidence={
     'interpretation':'current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.',
     'limitations':'Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied.',
 }
+# Transaction cache types recovered from symbolic Swift field typerefs.
+# Resolve indirect references through dyld fixups, not adjacent symbol labels.
+transaction_cache_nominal=0x1012ccef8
+transaction_cache_fields=relative_address(transaction_cache_nominal+16)
+_,_,cache_kind,cache_size,cache_count=struct.unpack('<iiHHI',read_virtual(transaction_cache_fields,16))
+cache_names=[c_string(relative_address(transaction_cache_fields+16+i*cache_size+8)) for i in range(cache_count)]
+if (cache_kind,cache_size,cache_names)!=(0,12,['attributeTable','requestedAttributes','fallbackElements']):
+    raise SystemExit('Transaction cache field layout changed')
+cache_types=[
+    ('attributeTable',0x10129f1a0,'53447902f42f1c0053447902341c1c0002bf1b1c004747','[AXUIElement: [UIElementAttribute: AXPartialValue]]'),
+    ('requestedAttributes',0x10129f0ee,'53687902ee1c1c0047','Set<UIElementAttribute>'),
+    ('fallbackElements',0x10129f1b8,'022fa91c007953447902d62f1c0002c11b1c004747','OSAllocatedUnfairLock<[AXUIElement: UIElementCache]>'),
+]
+cache_type_evidence=[]
+for index,(name,address,encoded,decoded) in enumerate(cache_types):
+    if relative_address(transaction_cache_fields+16+index*cache_size+4)!=address or read_virtual(address,len(bytes.fromhex(encoded))+1)!=bytes.fromhex(encoded)+b'\0':
+        raise SystemExit('Transaction cache symbolic field type changed: '+name)
+    cache_type_evidence.append({'field':name,'typeReference':hex(address),'encodedTypeHex':encoded,'type':decoded})
+cache_bindings=[]
+for slot,descriptor,name in [(0x101462198,0x1012cc16c,'AXUIElement'),(0x101460de0,0x1012cd3ec,'UIElementAttribute'),(0x101460d70,0x1012cc5e8,'AXPartialValue'),(0x101460d88,0x1012cce40,'UIElementCache')]:
+    line=next((line for line in fixups.splitlines() if hex(slot) in line.lower()),'')
+    if ('rebase  '+hex(descriptor)).lower() not in line.lower() or c_string(relative_address(descriptor+8))!=name:
+        raise SystemExit('Transaction cache indirect type reference changed: '+name)
+    cache_bindings.append({'slot':hex(slot),'descriptor':hex(descriptor),'name':name})
+lock_slot=0x101469ae8
+lock_binding='libswiftos/_$s2os21OSAllocatedUnfairLockVMn'
+if lock_binding not in next((line for line in fixups.splitlines() if hex(lock_slot) in line.lower()),''):
+    raise SystemExit('Transaction fallback cache lock type changed')
+transaction_cache_evidence={
+    'nominalDescriptor':hex(transaction_cache_nominal),'fieldDescriptor':hex(transaction_cache_fields),
+    'fields':cache_type_evidence,'indirectReferences':cache_bindings,
+    'lock':{'slot':hex(lock_slot),'binding':lock_binding},
+    'interpretation':'The transaction cache contains an AX-element-keyed partial attribute table, a set of requested attributes, and a system OSAllocatedUnfairLock protecting the fallback UIElementCache dictionary.',
+    'limitations':'Field types alone do not prove initialization, insertion, invalidation or lock critical sections. Do not replace these with process-global caches or a guessed locking policy.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
@@ -813,6 +848,7 @@ record = {
     'arrayTargetEvidence':array_target_evidence,
     'elementStorageEvidence':element_storage_evidence,
     'transactionScopeEvidence':transaction_scope_evidence,
+    'transactionCacheEvidence':transaction_cache_evidence,
     'frequencyTableEvidence':frequency_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',

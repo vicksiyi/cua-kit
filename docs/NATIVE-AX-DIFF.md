@@ -724,3 +724,20 @@ isUnique；审计新增对应字段、四个函数哈希和九条分支/计数�
 另外查明事务 Cache 存储的三个字段是 attributeTable、requestedAttributes、
 fallbackElements；prefetchEnabled 的 TaskLocal 初始化值为 true。这些观察用于后续
 追踪，并不证明属性表填充、fallbackElements 容器或失效算法已经实现。
+
+
+## 事务 Cache 的实际容器和锁（2026-11-06）
+
+对固定构建的 Swift field descriptor 与 symbolic typeref、dyld fixup 联合解析，确认 UIElementTreeTransaction.Cache（nominal `0x1012ccef8`，字段描述 `0x101323b98`）有以下存储：
+
+| 字段 | 原构建类型 | typeref |
+| --- | --- | --- |
+| attributeTable | `[AXUIElement: [UIElementAttribute: AXPartialValue]]` | `0x10129f1a0` |
+| requestedAttributes | `Set<UIElementAttribute>` | `0x10129f0ee` |
+| fallbackElements | `OSAllocatedUnfairLock<[AXUIElement: UIElementCache]>` | `0x10129f1b8` |
+
+间接类型引用分别解析到 AXUIElement、UIElementAttribute、AXPartialValue、UIElementCache 的 nominal descriptor；锁类型经 GOT `0x101469ae8` 绑定到 `libswiftos/_$s2os21OSAllocatedUnfairLockVMn`。因此回退表使用系统 Swift os 锁，不应自行实现一套 TS 锁或用全局缓存替代。
+
+审计脚本新增 transactionCacheEvidence：校验字段布局、完整 symbolic typeref 字节和终止符、间接引用目标名称、系统锁绑定。这个证据补全了此前“Cache 字段类型未解码”的缺口。
+
+局限：容器类型不能证明初始化内容、锁临界区、缓存更新或失效顺序。本轮未创建猜测版 UIElementCache，也未将孤立的 TaskLocal scope 冒充完整事务。下一步需要还原 Cache 构造/访问，以及 UIElementAttribute、UIElementCache 的实际行为，再接入生产观察器。

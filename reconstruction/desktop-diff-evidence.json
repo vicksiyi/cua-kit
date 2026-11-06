@@ -1695,6 +1695,58 @@
     "interpretation": "current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.",
     "limitations": "Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied."
   },
+  "transactionCacheEvidence": {
+    "nominalDescriptor": "0x1012ccef8",
+    "fieldDescriptor": "0x101323b98",
+    "fields": [
+      {
+        "field": "attributeTable",
+        "typeReference": "0x10129f1a0",
+        "encodedTypeHex": "53447902f42f1c0053447902341c1c0002bf1b1c004747",
+        "type": "[AXUIElement: [UIElementAttribute: AXPartialValue]]"
+      },
+      {
+        "field": "requestedAttributes",
+        "typeReference": "0x10129f0ee",
+        "encodedTypeHex": "53687902ee1c1c0047",
+        "type": "Set<UIElementAttribute>"
+      },
+      {
+        "field": "fallbackElements",
+        "typeReference": "0x10129f1b8",
+        "encodedTypeHex": "022fa91c007953447902d62f1c0002c11b1c004747",
+        "type": "OSAllocatedUnfairLock<[AXUIElement: UIElementCache]>"
+      }
+    ],
+    "indirectReferences": [
+      {
+        "slot": "0x101462198",
+        "descriptor": "0x1012cc16c",
+        "name": "AXUIElement"
+      },
+      {
+        "slot": "0x101460de0",
+        "descriptor": "0x1012cd3ec",
+        "name": "UIElementAttribute"
+      },
+      {
+        "slot": "0x101460d70",
+        "descriptor": "0x1012cc5e8",
+        "name": "AXPartialValue"
+      },
+      {
+        "slot": "0x101460d88",
+        "descriptor": "0x1012cce40",
+        "name": "UIElementCache"
+      }
+    ],
+    "lock": {
+      "slot": "0x101469ae8",
+      "binding": "libswiftos/_$s2os21OSAllocatedUnfairLockVMn"
+    },
+    "interpretation": "The transaction cache contains an AX-element-keyed partial attribute table, a set of requested attributes, and a system OSAllocatedUnfairLock protecting the fallback UIElementCache dictionary.",
+    "limitations": "Field types alone do not prove initialization, insertion, invalidation or lock critical sections. Do not replace these with process-global caches or a guessed locking policy."
+  },
   "frequencyTableEvidence": {
     "nominalDescriptor": "0x1012ccd50",
     "fieldDescriptor": "0x101323894",

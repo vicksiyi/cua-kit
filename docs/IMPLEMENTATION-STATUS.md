@@ -6920,3 +6920,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Identified roleFrequencyTable as FrequencyTable<UIElementRole>; reflected storage is [Metric: Int]. Restored its full small counter helper in Swift with standard Dictionary value semantics, zero for absent keys, checked increment and uniqueness only for a present count of one.
 - Added native tests for counts, missing-key uniqueness, independent copies, case-sensitive role keys and hash collisions. The compiled test and full helper build pass. Static audit now includes 206 native signatures plus counter storage/function/branch evidence.
 - Role collection and transaction integration remain incomplete; this helper is not yet used by the production tree collector. Also identified transaction Cache field names and the true prefetch default for follow-up inspection; no full cache/prefetch implementation is claimed.
+
+
+### 2026-11-06：原生事务缓存类型证据补全
+
+静态确认 transaction Cache 的属性嵌套字典、请求属性 Set，以及系统 OSAllocatedUnfairLock 包裹的回退 UIElementCache 字典；新增 transactionCacheEvidence 自动校验。原生系统锁依赖已确认，应直接使用 Swift os 实现，不能替换为 TS 近似逻辑。缓存构造、读写临界区、失效及完整事务接线仍未恢复；本次没有新增生产应用操作能力。详见 NATIVE-AX-DIFF.md。
