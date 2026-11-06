@@ -66,3 +66,9 @@
 已恢复 Co/Dc/bN/Pv 的只读观察和页面身份检查：检测结果绑定 session、tab 和 document generation；generation 变化返回 page_changed；读取失败返回 observation_unavailable；提交页面使用 frame id、loader id、origin 和包含 fragment 的 URL 校验。
 
 验证：真实 Chromium DOM 对照当前 PF 的候选、可见性、shadow、ref 和 generation 行为通过；两个 service helper 差分测试通过；重建与 Browser TypeScript 检查通过；真实 native 扩展 MCP 页面点击、截图、光标回归通过（约 8.9 秒）。本次没有发起登录、授权或 cookie 操作。detect/authenticate 对外服务命令注册仍待完整编排完成。
+
+## 后续恢复：SIWC 检测授权与点击前校验
+
+从同一 hash 的 `yN/Ja/mte/uw` 恢复检测命令及自包含页面 readiness 函数。检测先检查 capability，再对观察前后各自的当前 URL 做 observeContent 授权；第二次拒绝不会返回已观察内容。点击前检查 control、visible、enabled，滚动后等待一帧并重新检查和 hit-test；自动模式要求唯一候选且 ref 相同。账号比较保留 accountKey、authLifetimeId、authOrigin、pageOrigin 四字段。
+
+新增 3 项源码差分测试通过：包含 capability 缺失、前后授权拒绝、观察失败、无效 tab；readiness 的 8 种情况 × scroll/automatic 组合；逐项账号身份变化。Browser TypeScript 检查通过。这些是命令/页面算法边界测试，不代表真实登录流程验收。检测命令尚未加入公共注册表；完整 authenticate、偏好存储、原生 grant/cookie 编排仍未接通。
