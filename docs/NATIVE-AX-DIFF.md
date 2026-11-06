@@ -1650,3 +1650,27 @@ nil bundleIdentifier 返回 false。此分类不是应用白名单或授权策�
 十个直接要求已能命名，不再将“还有三个未知直接要求”当作后续阻碍；真正尚未完成的
 是继承 AccessibilityNode 的完整约束/要求、各 conformer、provider/TaskLocal 与生产
 入口接线。此轮是静态协议取证，没有新增不完整同名协议，也没有运行真实 UI 或模型。
+
+## AccessibilityNode 父协议的真实规模（2026-11-07）
+
+解析 descriptor 0x1012c9238：4 条签名约束、36 个 witness requirement，关联类型
+名称字符串是 Role、PresentationActions。结合 GOT 绑定与 symbolic reference，确认：
+
+- 继承 Swift.Identifiable；ID 由该继承约束提供。
+- Role 遵循 ComputerUseCore.AccessibilityRole。
+- PresentationActions 遵循 Swift.Sequence。
+- PresentationActions.Element == ComputerUseCore.AccessibilityPresentationAction。
+
+36 项不是 36 个业务方法：1 个继承 conformance、2 个关联 conformance、2 个关联类型，
+以及 31 个 instance getter。原始 flags 为 [0,8,8,7,7] + 31 个 0x13，所有 descriptor
+中的 default implementation relative pointer 均为零；不能据此忽略外部 extension 默认实现。
+
+具体 UIElement 的父协议 witness table 在 0x101575668，31 个 getter slot 从
+0x101575698 到 0x101575788。机器审计已逐个固定 target 地址，并校验 descriptor、
+约束及 Identifiable/Sequence 的绑定。部分默认 nil/false getter 会共用函数体，不能
+仅凭“函数返回 nil”给它命名；完整成员语义仍需逐个从调用点和具体属性来源确认。
+
+这纠正了实现范围：UIElementProtocol 的十个直接要求并不足以支撑完整事务和节点观察。
+后续必须把这 31 个 getter 和相关 Role/PresentationActions 类型纳入协议接线，而不是
+创建只有 AX 引用、cache、actions 的同名简化协议。本轮完成静态约束与表布局取证，
+没有修改生产行为或运行 UI/模型。

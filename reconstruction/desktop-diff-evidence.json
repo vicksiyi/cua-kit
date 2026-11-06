@@ -1810,6 +1810,189 @@
       "interpretation": "Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.",
       "limitations": "All ten direct witness meanings identified; inherited AccessibilityNode contract, complete conformer implementations, provider/TaskLocal and production integration remain incomplete. No partial same-name protocol is substituted."
     },
+    "accessibilityNodeContract": {
+      "descriptor": "0x1012c9238",
+      "headerBytes": "430001001cffffff300decff0400000024000000440decff",
+      "signatureBytes": "800000004c26fdffc9a81c00800000004020fdffc5a81c0080000000f82bfdff2cffffff010000004620fdfff01ffdff",
+      "inherits": [
+        "Swift.Identifiable"
+      ],
+      "associatedTypes": {
+        "Role": "ComputerUseCore.AccessibilityRole",
+        "PresentationActions": "Swift.Sequence"
+      },
+      "sameTypes": {
+        "PresentationActions.Element": "ComputerUseCore.AccessibilityPresentationAction"
+      },
+      "sameTypeNominal": "symbolic reference 0x10129b26c -> 0x1012c9200 (AccessibilityPresentationAction)",
+      "witnessRequirementCount": 36,
+      "breakdown": {
+        "baseConformance": 1,
+        "associatedConformance": 2,
+        "associatedType": 2,
+        "instanceGetter": 31
+      },
+      "concreteElementWitnessTable": "0x101575668",
+      "concreteGetterSlots": [
+        {
+          "slot": "0x101575698",
+          "target": "0x1007aff80",
+          "requirementDescriptor": "0x1012c92a8"
+        },
+        {
+          "slot": "0x1015756a0",
+          "target": "0x1007affa8",
+          "requirementDescriptor": "0x1012c92b0"
+        },
+        {
+          "slot": "0x1015756a8",
+          "target": "0x1007affb0",
+          "requirementDescriptor": "0x1012c92b8"
+        },
+        {
+          "slot": "0x1015756b0",
+          "target": "0x1007affb8",
+          "requirementDescriptor": "0x1012c92c0"
+        },
+        {
+          "slot": "0x1015756b8",
+          "target": "0x1007affc0",
+          "requirementDescriptor": "0x1012c92c8"
+        },
+        {
+          "slot": "0x1015756c0",
+          "target": "0x1007affc8",
+          "requirementDescriptor": "0x1012c92d0"
+        },
+        {
+          "slot": "0x1015756c8",
+          "target": "0x10078fd5c",
+          "requirementDescriptor": "0x1012c92d8"
+        },
+        {
+          "slot": "0x1015756d0",
+          "target": "0x1007affd0",
+          "requirementDescriptor": "0x1012c92e0"
+        },
+        {
+          "slot": "0x1015756d8",
+          "target": "0x1007affd8",
+          "requirementDescriptor": "0x1012c92e8"
+        },
+        {
+          "slot": "0x1015756e0",
+          "target": "0x1007affe0",
+          "requirementDescriptor": "0x1012c92f0"
+        },
+        {
+          "slot": "0x1015756e8",
+          "target": "0x1007affec",
+          "requirementDescriptor": "0x1012c92f8"
+        },
+        {
+          "slot": "0x1015756f0",
+          "target": "0x1007afff8",
+          "requirementDescriptor": "0x1012c9300"
+        },
+        {
+          "slot": "0x1015756f8",
+          "target": "0x1007b0004",
+          "requirementDescriptor": "0x1012c9308"
+        },
+        {
+          "slot": "0x101575700",
+          "target": "0x1007b0038",
+          "requirementDescriptor": "0x1012c9310"
+        },
+        {
+          "slot": "0x101575708",
+          "target": "0x1007b0044",
+          "requirementDescriptor": "0x1012c9318"
+        },
+        {
+          "slot": "0x101575710",
+          "target": "0x1007b004c",
+          "requirementDescriptor": "0x1012c9320"
+        },
+        {
+          "slot": "0x101575718",
+          "target": "0x1007b88d0",
+          "requirementDescriptor": "0x1012c9328"
+        },
+        {
+          "slot": "0x101575720",
+          "target": "0x1007b0070",
+          "requirementDescriptor": "0x1012c9330"
+        },
+        {
+          "slot": "0x101575728",
+          "target": "0x10078fd68",
+          "requirementDescriptor": "0x1012c9338"
+        },
+        {
+          "slot": "0x101575730",
+          "target": "0x1007b0108",
+          "requirementDescriptor": "0x1012c9340"
+        },
+        {
+          "slot": "0x101575738",
+          "target": "0x10078fd70",
+          "requirementDescriptor": "0x1012c9348"
+        },
+        {
+          "slot": "0x101575740",
+          "target": "0x1007b0138",
+          "requirementDescriptor": "0x1012c9350"
+        },
+        {
+          "slot": "0x101575748",
+          "target": "0x10079068c",
+          "requirementDescriptor": "0x1012c9358"
+        },
+        {
+          "slot": "0x101575750",
+          "target": "0x10078fd7c",
+          "requirementDescriptor": "0x1012c9360"
+        },
+        {
+          "slot": "0x101575758",
+          "target": "0x100790688",
+          "requirementDescriptor": "0x1012c9368"
+        },
+        {
+          "slot": "0x101575760",
+          "target": "0x1007b0140",
+          "requirementDescriptor": "0x1012c9370"
+        },
+        {
+          "slot": "0x101575768",
+          "target": "0x10078fe30",
+          "requirementDescriptor": "0x1012c9378"
+        },
+        {
+          "slot": "0x101575770",
+          "target": "0x10078fe38",
+          "requirementDescriptor": "0x1012c9380"
+        },
+        {
+          "slot": "0x101575778",
+          "target": "0x10078fe74",
+          "requirementDescriptor": "0x1012c9388"
+        },
+        {
+          "slot": "0x101575780",
+          "target": "0x10078fe84",
+          "requirementDescriptor": "0x1012c9390"
+        },
+        {
+          "slot": "0x101575788",
+          "target": "0x10078fe94",
+          "requirementDescriptor": "0x1012c9398"
+        }
+      ],
+      "interpretation": "UIElementProtocol inherits this entire contract. Its ten direct requirements are not the whole node interface. Identifiable supplies ID; Role and PresentationActions are separately constrained.",
+      "limitations": "Getter slot addresses fixed, but not all 31 names/semantics mapped. Shared nil/false witness bodies do not uniquely identify property names. Full protocol and production conformances remain pending."
+    },
     "attributeSupport": {
       "symbol": "UIElementProtocol.attributeIsKnownUnsupported",
       "start": "0x1007b0854",

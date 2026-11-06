@@ -727,6 +727,43 @@ element_storage_evidence['protocolContract']={
     'interpretation':'Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.',
     'limitations':'Six remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted.',
 }
+node_descriptor=0x1012c9238
+node_header=read_virtual(node_descriptor,24)
+if node_header.hex()!='430001001cffffff300decff0400000024000000440decff':
+    raise SystemExit('AccessibilityNode protocol descriptor changed')
+node_signature=read_virtual(node_descriptor+24,48)
+if node_signature.hex()!='800000004c26fdffc9a81c00800000004020fdffc5a81c0080000000f82bfdff2cffffff010000004620fdfff01ffdff':
+    raise SystemExit('AccessibilityNode signature constraints changed')
+node_flags=[0,8,8,7,7]+[0x13]*31
+for index,flag in enumerate(node_flags):
+    if struct.unpack('<II',read_virtual(0x1012c9280+index*8,8))!=(flag,0):
+        raise SystemExit('AccessibilityNode witness requirement changed')
+for slot,binding in [('0x101493b20','libswiftCore/_$ss12IdentifiableMp'),('0x101493b28','libswiftCore/_$sSTMp')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if binding not in line: raise SystemExit('AccessibilityNode inherited constraint changed')
+node_targets=[0x1007aff80,0x1007affa8,0x1007affb0,0x1007affb8,0x1007affc0,0x1007affc8,
+    0x10078fd5c,0x1007affd0,0x1007affd8,0x1007affe0,0x1007affec,0x1007afff8,0x1007b0004,
+    0x1007b0038,0x1007b0044,0x1007b004c,0x1007b88d0,0x1007b0070,0x10078fd68,0x1007b0108,
+    0x10078fd70,0x1007b0138,0x10079068c,0x10078fd7c,0x100790688,0x1007b0140,0x10078fe30,
+    0x10078fe38,0x10078fe74,0x10078fe84,0x10078fe94]
+node_slots=[]
+for index,target in enumerate(node_targets):
+    slot=0x101575698+index*8
+    line=next((line for line in fixups.splitlines() if hex(slot) in line.lower()),'')
+    if hex(target) not in line.lower(): raise SystemExit('AccessibilityNode concrete getter witness changed')
+    node_slots.append({'slot':hex(slot),'target':hex(target),'requirementDescriptor':hex(0x1012c92a8+index*8)})
+element_storage_evidence['accessibilityNodeContract']={
+    'descriptor':hex(node_descriptor),'headerBytes':node_header.hex(),'signatureBytes':node_signature.hex(),
+    'inherits':['Swift.Identifiable'],
+    'associatedTypes':{'Role':'ComputerUseCore.AccessibilityRole','PresentationActions':'Swift.Sequence'},
+    'sameTypes':{'PresentationActions.Element':'ComputerUseCore.AccessibilityPresentationAction'},
+    'sameTypeNominal':'symbolic reference 0x10129b26c -> 0x1012c9200 (AccessibilityPresentationAction)',
+    'witnessRequirementCount':36,
+    'breakdown':{'baseConformance':1,'associatedConformance':2,'associatedType':2,'instanceGetter':31},
+    'concreteElementWitnessTable':'0x101575668','concreteGetterSlots':node_slots,
+    'interpretation':'UIElementProtocol inherits this entire contract. Its ten direct requirements are not the whole node interface. Identifiable supplies ID; Role and PresentationActions are separately constrained.',
+    'limitations':'Getter slot addresses fixed, but not all 31 names/semantics mapped. Shared nil/false witness bodies do not uniquely identify property names. Full protocol and production conformances remain pending.',
+}
 element_storage_evidence['attributeSupport']={
     'symbol':'UIElementProtocol.attributeIsKnownUnsupported',
     'start':'0x1007b0854','endExclusive':'0x1007b0958',
