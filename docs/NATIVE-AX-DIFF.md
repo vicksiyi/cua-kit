@@ -1411,3 +1411,22 @@ UIElement(systemElement:transaction:) 组合，真实 AX 引用通过既有系�
 
 仍需恢复完整 AXChildren 属性读取（包括失效及错误日志）、ScrollBar 类型、隐式
 事务作用域、菜单祖先准备和生产协议接线。此项是元素级组合完成，非真实 UI 验收。
+
+## 元素数组属性读取与错误语义（2026-11-07）
+
+恢复 UIElement.elementCollectionValue 的 accessor 组合，依照 0x100724514：缓存用
+非严格解码，非 nil（包括空数组）直接命中；缓存缺失、nil 或解码抛错才检查已知不支持
+并尝试 raw read。系统 success、noValue、attributeUnsupported 进入值处理，其它错误
+报告一次并返回 []。允许状态的值使用严格解码；错误同样报告一次并返回 []。原常量
+0x101570f20 两个 Int32 为 -25212/-25205。完整 partial value 交给 decoder，保留描述符。
+
+扩展组合测试覆盖缓存存在/缺失、缓存解码失败、四类状态及空数组命中，另外验证
+已知不支持不读系统、严格解码错误只报告一次。测试与 Swift 构建通过。
+
+纠正前几节“属性读取还包含失效路径”的说法：0x1002323d4 经静态检查只是可选
+partial value 的释放（unknownObjectRelease 与描述符释放），并非缓存失效操作。
+不能据此给读取器加入失效或重试逻辑；已修正机器审计的对应待办描述。
+
+当前 accessor 注入完整 decoder、raw provider 和日志边界；不是将现有仅覆盖具体
+CFArray 的 decoder 假装成所有严格解码分支。原完整 decoder/provider/logger、TaskLocal
+和生产协议仍待接入，未执行真实 UI 或模型调用。

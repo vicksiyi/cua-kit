@@ -88,6 +88,46 @@ struct ScrollBarPageButtonTests {
         let originalSubrole = valid.cache.attributes[UIElementAttribute("AXSubrole")]!.value.value
         precondition(systemSelected.cache.attributes[UIElementAttribute("AXSubrole")]!.value.value === originalSubrole)
         precondition(fallbackUIElementCache(element: valid.axElement, in: fallback) == nil)
+        let childrenKey = UIElementAttribute("AXChildren")
+        let childrenRaw = AXPartialValue(value: AXEncodedValue(value: [valid.axElement] as NSArray),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        enum DecodeFailure: Error { case fixture }
+        for cached in [false, true] {
+            for cacheFails in [false, true] {
+                for status: AXError in [.success, .noValue, .attributeUnsupported, .cannotComplete] {
+                    var trace: [String] = []
+                    let parent = UIElement(axElement: emptyChild, cache: UIElementCache(
+                        supportedAttributes: [childrenKey],
+                        attributes: cached ? [childrenKey: childrenRaw] : [:], transactionAttributes: nil))
+                    let result = parent.elementCollectionValue(for: childrenKey, read: {
+                        trace.append("read"); return (status, childrenRaw)
+                    }, decode: { partial, strict in
+                        precondition(partial.value.value === childrenRaw.value.value)
+                        trace.append(strict ? "strict" : "cached")
+                        if !strict && cacheFails { throw DecodeFailure.fixture }
+                        return [] // empty array is a successful cached decode
+                    }, reportError: { _ in trace.append("error") })
+                    precondition(result.isEmpty)
+                    if cached && !cacheFails { precondition(trace == ["cached"]) }
+                    else {
+                        let prefix = cached ? ["cached"] : []
+                        precondition(trace == prefix + ["read", status == .cannotComplete ? "error" : "strict"])
+                    }
+                }
+            }
+        }
+        let unsupportedParent = UIElement(axElement: emptyChild, cache: UIElementCache(
+            supportedAttributes: [], attributes: [:], transactionAttributes: [childrenKey]))
+        let absent = unsupportedParent.elementCollectionValue(for: childrenKey,
+            read: { fatalError("known unsupported must not read") },
+            decode: { _, _ in fatalError("no value") }, reportError: { _ in fatalError("not an error") })
+        precondition(absent.isEmpty)
+        var reports = 0
+        let strictFailure = valid.elementCollectionValue(for: childrenKey,
+            read: { (.success, childrenRaw) },
+            decode: { _, strict in precondition(strict); throw DecodeFailure.fixture },
+            reportError: { error in precondition(error is DecodeFailure); reports += 1 })
+        precondition(strictFailure.isEmpty && reports == 1)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

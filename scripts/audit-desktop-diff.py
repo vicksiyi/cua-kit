@@ -1009,7 +1009,22 @@ element_storage_evidence['uiElementCollectionDecoding']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x1007244e4,0x1007248bc),(0x100712f2c,0x100712f58),(0x1007135c8,0x100713e20)]],
     'implementation':'native/macos/Sources/CuaHelper/AXUIElementCollectionDecoding.swift',
-    'limitations':'Concrete CFArray branch with explicit element initializer only. Full attribute reader invalidation/logging, TaskLocal acquisition, generic type/protocol dispatch and production connection remain pending.',
+    'limitations':'Concrete CFArray branch with explicit element initializer only. Full attribute reader/logger integration, TaskLocal acquisition, generic type/protocol dispatch and production connection remain pending.',
+}
+if struct.unpack('<ii',read_virtual(0x101570f20,8))!=(-25212,-25205):
+    raise SystemExit('Native collection reader tolerated errors changed')
+element_storage_evidence['elementCollectionValue']={
+    'entry':'0x100724514',
+    'cache':'0x1007245ec decode(false), failure discarded; nonnil including empty returns at 0x100724874',
+    'support':'0x100724624..0x100724650 respects requested attributes and supported set; known unsupported yields empty',
+    'read':'0x100724660 raw value; success/noValue/attributeUnsupported accepted; other statuses reported',
+    'allowedErrorData':{'address':'0x101570f20','rawValues':[-25212,-25205]},
+    'decode':'0x1007246ec decode(true); thrown read/decode error logged then empty array',
+    'cleanupCorrection':'0x1002323d4 releases optional partial-value storage; not evidence of cache invalidation',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100724514,0x1007248bc),(0x1002323d4,0x100232408)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementCollectionValue.swift',
+    'limitations':'Concrete accessor composition with original decoder/provider/logger boundaries injected; original full strict decoder, native logger backend, TaskLocal and production wiring remain pending.',
 }
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
