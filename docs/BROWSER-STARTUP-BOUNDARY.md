@@ -69,7 +69,9 @@ launcher and then re-observe through CUA. This integration does not rewrite sour
 methods or claim a built-in launcher. Real terminated-process acceptance remains pending.
 The tested no-window extension path is already restored. A separate opt-in test now passes
 against an already running daily Chrome for new-tab navigation, observation, click, returned screenshot
-and owned-tab cleanup. It does not cover zero-window or terminated-process startup. App getApp has its own policy, approval and macOS permission requirements.
+and owned-tab cleanup. Its additional live DeepSeek mode also passed model-selected interaction
+and an exact observed-marker final answer on that host-prepared tab. Neither mode covers
+zero-window or terminated-process startup. App getApp has its own policy, approval and macOS permission requirements.
 
 The inspected methods establish their own boundaries only. They do not prove where every Codex/
 ChatGPT parent-host browser activation occurs, nor rule out launch behavior outside these modules.

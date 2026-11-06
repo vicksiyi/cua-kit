@@ -492,8 +492,22 @@ than the raw request target, so a form's empty query delimiter is not mistaken f
 Navigation acceptance waits for server evidence and then observes the committed page; it does not
 repeat a click to compensate for asynchronous navigation.
 
-This was a scripted MCP acceptance test, not a DeepSeek decision-loop test. It used the already
-running daily Chrome, not a terminated process. It does not prove cold startup, arbitrary website
+The default opt-in run is scripted MCP. A second opt-in exercises the real DeepSeek decision loop:
+
+```bash
+CUA_TEST_DAILY_CHROME=1 CUA_LIVE_DEEPSEEK_TEST=1 node --env-file=.env --import tsx --test reconstruction/unified-daily-chrome.test.ts
+```
+
+This makes provider requests using the local .env credentials. The host creates the fixture tab and
+passes its setup/tool-documentation transcript; DeepSeek chooses the click and subsequent observation.
+The model prompt does not contain the random result marker, which is revealed by the fixture only
+after navigation. Acceptance requires actual model tool calls, completed status, the exact observed
+marker in the final answer, server evidence, post-answer AX state, screenshot content and owned-tab
+cleanup. The live run passed in about 15 seconds with four model tool calls. This is evidence for
+model-driven interaction with a host-prepared tab, not model-driven tab creation or cold startup.
+The harness owns endTurn so it can validate screenshot/state and close its tab after the answer.
+
+Both runs used the already running daily Chrome, not a terminated process. It does not prove cold startup, arbitrary website
 success, or native App observation/input. Screenshot acceptance here checks returned image content;
 no screenshots, daily-tab content, login state or local configuration were published. Existing user
 tabs were not targeted; the newly created fixture tab was closed on completion.
