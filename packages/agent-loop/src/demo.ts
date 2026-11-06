@@ -1,3 +1,4 @@
+import { surfaceContext } from "./surface-context";
 import { BROWSER_INPUT_CONTEXT } from "./browser-guidance";
 import { CDP_OPERATION_CONTEXT } from "./cdp-guidance";
 import { createDebugLog } from "./debug-log";
@@ -174,6 +175,7 @@ try {
       summarizeOnExhaustion: true,
       summarizeOnBlocked: true,
       runtimeContext: [
+        surfaceContext({ browser: !!browserEnabled, computer: !!computerEnabled }),
         browserEnabled ? BROWSER_INPUT_CONTEXT : undefined,
         (serverEnv as Record<string, string>).BROWSER_USE_AVAILABLE_BACKENDS === "cdp"
           ? CDP_OPERATION_CONTEXT : undefined,

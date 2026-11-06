@@ -328,3 +328,25 @@ without submitting completion_summary. Website-access approval does not complete
 The loop's existing `completed` status means model conversation termination, not verified login
 success; applications must not translate it into “login successful”. Structured handoff status and
 interactive resume remain separate work, not implemented by this guidance change.
+
+
+### Native app versus website selection
+
+The demo now supplies actual enabled surface flags to model context. A request to open a local
+application must not silently become a website visit. If computer access is disabled, the model
+should explain that limitation and the `--computer` entry. A disabled surface is not evidence that
+an application is uninstalled. This is model guidance, not a deterministic natural-language router
+or proof of successful app launch.
+
+Source evidence: the installed `cua/.../tinysky_alt/create_tinysky_alt.js` independently initializes
+browser and computer with Promise.all, conditionally attaches browser APIs and listApps/getApp,
+and routes macOS getApp to get_app_state with disableDiff:true. This API module does not classify
+natural-language prompts. The reconstructed `create_tinysky_alt.ts` retains that composition.
+
+Current demo gaps: `run-deepseek.sh` defaults to browser and makes explicit surface flags mutually
+exclusive. The runtime can compose both services, but independent browser setup requires live,
+authenticated endpoint files, and demo preflight requires a nonempty browser inventory before the
+model runs. Merely enabling both surfaces does not fix app-only startup when Chrome is unavailable.
+A complete unified entry requires source-aligned backend discovery/startup and independent surface
+readiness, plus end-to-end validation with Chrome closed and an installed native app. Those changes
+are still pending; there is no accepted automatic browser/app selection demo yet.
