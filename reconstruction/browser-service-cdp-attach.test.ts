@@ -2,26 +2,31 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { attachmentMethods } from "../packages/browser/dist/service/cdp/attachment_methods.js";
-import { createCdpExecutionMethods } from "../packages/browser/dist/service/cdp/execute_methods.js";
-import { tabAttachmentSetup } from "../packages/browser/dist/service/cdp/deadline.js";
-import { classifyCommandError } from "../packages/browser/dist/service/classify_error.js";
+import { attachmentMethods } from "../packages/browser/src/service/cdp/attachment_methods";
+import { createCdpExecutionMethods } from "../packages/browser/src/service/cdp/execute_methods";
+import { tabAttachmentSetup } from "../packages/browser/src/service/cdp/deadline";
+import { classifyCommandError } from "../packages/browser/src/service/classify_error";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit CDP dispatch helper bindings for changed browser-service artifact");
+const sourceClass = serviceClassWithMethods(["executeTargetCdp", "waitForTabAttachment", "ensureAttachedTab", "attachTab", "callRawCdp", "rawCdpTarget"]);
 const bindings = originalServiceBindings([
-  "Cv",
-  "eu",
-  "Lh",
-  "$t",
-  "tu",
-  "Av",
-  "jN",
-  "Pv",
-  "At",
-  "WN",
+  "Bv",
+  "nu",
+  "jh",
+  "Ht",
+  "ou",
+  "Dv",
+  "ZN",
+  "Mv",
+  "_t",
+  "e2",
+  "xte",
   "Tte",
-  "Cte",
-  "zN",
+  "o2",
 ]);
 const names = [
   "addTabCleanupHandler",
@@ -37,15 +42,15 @@ const names = [
 const original = new Function(
   ...Object.keys(bindings),
   "return {" +
-    names.map((name) => serviceClassMethod("qh", name)).join(",") +
+    names.map((name) => serviceClassMethod(sourceClass, name)).join(",") +
     "};",
 )(...Object.values(bindings));
-const executionDeps = { ...bindings, Qa: classifyCommandError, Dt: () => {} };
+const executionDeps = { ...bindings, ru: classifyCommandError, dt: () => {} };
 const originalExecution = new Function(
   ...Object.keys(executionDeps),
   "return {" +
     ["executeTargetCdp", "call", "callTarget"]
-      .map((name) => serviceClassMethod("qh", name))
+      .map((name) => serviceClassMethod(sourceClass, name))
       .join(",") +
     "};",
 )(...Object.values(executionDeps));
@@ -151,7 +156,7 @@ test("attach reproduces policy/focus/handler ordering, setup-token reentrancy, s
   ])
     assert.deepEqual(
       await scenario(attachmentMethods, tabAttachmentSetup, config),
-      await scenario(original, bindings.eu, config),
+      await scenario(original, bindings.nu, config),
     );
 });
 async function concurrent(methods: any, token: symbol) {
@@ -168,7 +173,7 @@ async function concurrent(methods: any, token: symbol) {
 test("concurrent waiters share one attach promise and keep the first attach timeout", async () => {
   assert.deepEqual(
     await concurrent(attachmentMethods, tabAttachmentSetup),
-    await concurrent(original, bindings.eu),
+    await concurrent(original, bindings.nu),
   );
 });
 async function handlersScenario(methods: any, token: symbol) {
@@ -201,7 +206,7 @@ async function handlersScenario(methods: any, token: symbol) {
 test("attach handlers settle in parallel and rethrow first deadline failure, while cleanup swallows rejections", async () => {
   assert.deepEqual(
     await handlersScenario(attachmentMethods, tabAttachmentSetup),
-    await handlersScenario(original, bindings.eu),
+    await handlersScenario(original, bindings.nu),
   );
 });
 async function autoAttach(methods: any, token: symbol, cdpError: any) {
@@ -215,7 +220,7 @@ test("auto-attach falls back from iframe filter only for non-deadline errors", a
   for (const error of [undefined, "once", "unsupported", "deadline"])
     assert.deepEqual(
       await autoAttach(attachmentMethods, tabAttachmentSetup, error),
-      await autoAttach(original, bindings.eu, error),
+      await autoAttach(original, bindings.nu, error),
     );
 });
 async function combined(methods: any, token: symbol, execution: any) {
@@ -238,6 +243,6 @@ test("real reconstructed dispatch and attachment groups execute nested setup com
       tabAttachmentSetup,
       createCdpExecutionMethods(() => {}),
     ),
-    await combined(original, bindings.eu, originalExecution),
+    await combined(original, bindings.nu, originalExecution),
   );
 });

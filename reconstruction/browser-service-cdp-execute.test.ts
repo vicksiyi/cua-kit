@@ -3,25 +3,30 @@ import assert from "node:assert/strict";
 import {
   originalServiceBindings,
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
 } from "./service-source.ts";
-import * as timing from "../packages/browser/dist/service/cdp/deadline.js";
-import * as helpers from "../packages/browser/dist/service/cdp/dispatch_helpers.js";
-import { createCdpExecutionMethods } from "../packages/browser/dist/service/cdp/execute_methods.js";
-import { classifyCommandError } from "../packages/browser/dist/service/classify_error.js";
+import * as timing from "../packages/browser/src/service/cdp/deadline";
+import * as helpers from "../packages/browser/src/service/cdp/dispatch_helpers";
+import { createCdpExecutionMethods } from "../packages/browser/src/service/cdp/execute_methods";
+import { classifyCommandError } from "../packages/browser/src/service/classify_error";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit CDP dispatch helper bindings for changed browser-service artifact");
+const sourceClass = serviceClassWithMethods(["executeTargetCdp", "waitForTabAttachment", "ensureAttachedTab", "attachTab", "callRawCdp", "rawCdpTarget"]);
 const source = originalServiceBindings([
-  "Cv",
-  "eu",
-  "Lh",
-  "$t",
-  "tu",
-  "Av",
-  "jN",
-  "Pv",
-  "At",
-  "WN",
+  "Bv",
+  "nu",
+  "jh",
+  "Ht",
+  "ou",
+  "Dv",
+  "ZN",
+  "Mv",
+  "_t",
+  "e2",
+  "xte",
   "Tte",
-  "Cte",
-  "zN",
+  "o2",
 ]);
 function originalMethods(report: any) {
   const names = [
@@ -32,11 +37,11 @@ function originalMethods(report: any) {
     "executeTargetCdp",
     "rawCdpTarget",
   ];
-  const deps = { ...source, Qa: classifyCommandError, Dt: report };
+  const deps = { ...source, ru: classifyCommandError, dt: report };
   return new Function(
     ...Object.keys(deps),
     "return {" +
-      names.map((name) => serviceClassMethod("qh", name)).join(",") +
+      names.map((name) => serviceClassMethod(sourceClass, name)).join(",") +
       "};",
   )(...Object.values(deps));
 }
@@ -67,9 +72,9 @@ test("CDP deadline helpers retain boundary checks, beforeDispatch ordering, time
     ])
       assert.deepEqual(
         await outcome(() => timing.remainingCdpTimeout(options)),
-        await outcome(() => source.Av(options)),
+        await outcome(() => source.Dv(options)),
       );
-    for (const fn of [timing.dispatchTimeout, source.tu]) {
+    for (const fn of [timing.dispatchTimeout, source.ou]) {
       let ran = false;
       assert.throws(() =>
         fn({
@@ -81,7 +86,7 @@ test("CDP deadline helpers retain boundary checks, beforeDispatch ordering, time
       );
       assert.equal(ran, true);
     }
-    for (const [ours, theirs] of [[timing.awaitCdpDeadline, source.Pv]]) {
+    for (const [ours, theirs] of [[timing.awaitCdpDeadline, source.Mv]]) {
       assert.deepEqual(
         await outcome(() => ours(Promise.resolve("ok"), { deadlineMs: 1005 })),
         await outcome(() =>
@@ -110,7 +115,7 @@ test("CDP deadline helpers retain boundary checks, beforeDispatch ordering, time
       null,
       "timeout",
     ])
-      assert.equal(timing.isDeadlineError(error), source.Lh(error));
+      assert.equal(timing.isDeadlineError(error), source.jh(error));
     const inherited = Object.create({ expression: "1" });
     for (const params of [
       undefined,
@@ -120,10 +125,10 @@ test("CDP deadline helpers retain boundary checks, beforeDispatch ordering, time
       { expression: 4 },
       { expression: "1", awaitPromise: true, returnByValue: false },
     ]) {
-      assert.equal(helpers.hasCdpExpression(params), source.zN(params));
+      assert.equal(helpers.hasCdpExpression(params), source.o2(params));
       assert.deepEqual(
         helpers.evaluationTelemetry("Runtime.evaluate", params),
-        source.Cte("Runtime.evaluate", params),
+        source.Tte("Runtime.evaluate", params),
       );
     }
   } finally {
@@ -266,7 +271,7 @@ test("CDP dispatch preserves attach retry eligibility, document target, cached e
             config,
             target,
           ),
-          await scenario(originalMethods, source.eu, config, target),
+          await scenario(originalMethods, source.nu, config, target),
         );
     for (const params of [{ expression: "2" }, {}])
       assert.deepEqual(
@@ -277,7 +282,7 @@ test("CDP dispatch preserves attach retry eligibility, document target, cached e
           undefined,
           { expressionCacheKey: "key" },
         ),
-        await scenario(originalMethods, source.eu, { params }, undefined, {
+        await scenario(originalMethods, source.nu, { params }, undefined, {
           expressionCacheKey: "key",
         }),
       );
@@ -292,7 +297,7 @@ test("CDP dispatch preserves attach retry eligibility, document target, cached e
         ),
         await scenario(
           originalMethods,
-          source.eu,
+          source.nu,
           { failure: 'Timed out running CDP command "Runtime.evaluate"' },
           undefined,
           { telemetryAttrs: attrs },
@@ -361,5 +366,23 @@ test("document scoped execution uses a non-enumerable immutable inherited overri
         configurable: false,
       },
     );
+  }
+});
+
+test("detach retry is bounded and distinguishes transport text from Error objects", async () => {
+  for (const [failure, expectedDispatches] of [
+    ["Debugger unattached", 2],
+    ["Debugger is not attached to target", 2],
+    ["Detached while handling command", 1],
+    [new Error("Debugger unattached"), 1],
+  ] as const) {
+    const outcomes = [];
+    for (const create of [createCdpExecutionMethods, originalMethods]) {
+      const f = fixture(create, { failure, always: true });
+      const result = await outcome(() => f.state.executeTargetCdp({ tabId: 1 }, "Runtime.evaluate", { expression: "1" }));
+      assert.equal(f.calls.filter((call: any) => call[0] === "execute").length, expectedDispatches);
+      outcomes.push({ result, calls: f.calls, reports: f.reports });
+    }
+    assert.deepEqual(outcomes[0], outcomes[1]);
   }
 });
