@@ -21,6 +21,15 @@ pub struct AuthenticatedFetchRequest {
     pub body_base64: Option<String>,
 }
 
+/// Typed worker payload recovered from AuthenticatedFetchMessage. Decode this
+/// from raw JSON, before Value can collapse duplicate fields in the request.
+#[derive(serde::Deserialize)]
+pub struct AuthenticatedFetchMessage {
+    pub id: String,
+    pub exec_id: String,
+    pub request: AuthenticatedFetchRequest,
+}
+
 #[derive(Clone, Debug)]
 pub struct OutboundRequest {
     pub method: Method,

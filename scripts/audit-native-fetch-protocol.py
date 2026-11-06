@@ -40,6 +40,21 @@ for expected in ['10003d0ac:', '0x10003d980', '10003d0c8:', '0x10003db08',
                  '10003d8c4:', '10003d8f4:', '10003de18:', '10003de6c:']:
     assert expected in request_decode, expected
 
+fetch_message_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1000380ac','--stop-address=0x100038f50',str(artifact)], text=True)
+worker_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1000caefc','--stop-address=0x1000cb0fc',str(artifact)], text=True)
+for address, length, expected in [(0x1009c145e,2,b'id'),(0x1009c1461,7,b'exec_id'),(0x1009c1481,7,b'request')]:
+    assert read(address,length) == expected
+for expected in ['100038158:', '0x100038914', '10003816c:', '0x1000389a0',
+                 '100038178:', '0x1000389e0', 'AuthenticatedFetchRequest']:
+    assert expected in fetch_message_decode, expected
+for expected in ['1000caf08:', 'from_str::<node_repl::repl_manager::KernelToHost>',
+                 '1000caf14:', '0x1000cafd0', '1000cb078:', 'Event>::dispatch',
+                 '1000cb0f8:', '0x1000cf9d4']:
+    assert expected in worker_decode, expected
+assert b'node_repl kernel sent invalid JSON:' in read(0x100b32097,50)
+
 method_error = read(0x100a49dc6,32).decode()
 body_error = read(0x100a49c58,30).decode()
 assert method_error == 'nodeRepl.fetch method is invalid'
@@ -419,6 +434,19 @@ print(json.dumps({
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
         'limits':'Pinned-build path only. Client shared-connection lifecycle implemented; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
     },
+    'fetchMessageBoundary': {
+        'messageRange':['0x1000380ac','0x100038f50'],
+        'messageInstructionTextSha256':hashlib.sha256(fetch_message_decode.encode()).hexdigest(),
+        'readerRange':['0x1000caefc','0x1000cb0fc'],
+        'readerInstructionTextSha256':hashlib.sha256(worker_decode.encode()).hexdigest(),
+        'reviewedBehavior':[
+            'AuthenticatedFetchMessage requires id, exec_id and typed AuthenticatedFetchRequest; missing fields branch to errors in that order',
+            'read_stdout calls serde_json::from_str<KernelToHost> on the raw line at 0x1000caf08',
+            'failed decoding branches to optional tracing at 0x1000cafd0, drops the error and joins per-line cleanup at 0x1000cf9d4; no fetch dispatch on this branch'
+        ],
+        'implementation':['native/runtime-supervisor/src/authenticated_fetch.rs','native/runtime-supervisor/src/process_port.rs'],
+        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variants, duplicate type tags, malformed JSON policy and tracing parity still require full KernelToHost reconstruction. No claim of complete reader parity.'
+    },
     'requestDeserialization': {
         'range':['0x10003cff4','0x10003e1d0'],
         'instructionTextSha256':hashlib.sha256(request_decode.encode()).hexdigest(),
@@ -431,7 +459,7 @@ print(json.dumps({
             'sequence after method/url defaults absent headers through 0x10003d218 -> 0x10003db60; optional body has its own absence path'
         ],
         'implementation':'native/runtime-supervisor/src/authenticated_fetch.rs',
-        'limits':'Static visitor reconstruction, not execution of vendor binary. Direct typed-deserializer duplicate tests do not establish transport parity: current deployment adapter receives serde_json::Value, which has already collapsed duplicate JSON object keys. Whole dispatcher parse/error semantics remain incomplete.'
+        'limits':'Static visitor reconstruction, not execution of vendor binary. Direct typed-deserializer duplicate tests do not establish transport parity: the process reader now additionally validates raw fetch payloads before dispatch, preserving duplicate-field rejection for that variant. Whole enum/tag routing and dispatcher parse/error semantics remain incomplete.'
     },
     'appServerClientLifecycle': {
         'source':'inlined CodexAppServerClient::send_request in AccessTokenFetcher async body',
@@ -452,5 +480,5 @@ print(json.dumps({
         'limits':'Owned fixtures and static reconstruction. Native diagnostics, process-env integration with deployment, service wiring, cancellation during outstanding RPC and full live auth acceptance remain incomplete.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
-    'limits': 'Static reconstruction, no original execution. URL routing, authenticated header shaping and concrete App Server provider/client are reconstructed. An explicit deployment_host_with_fetch adapter is covered through the restored JS worker and real owned HTTP; default deployment composition still does not enable it. Request visitor required/default/unknown-field behavior is statically reviewed; whole dispatcher malformed-input and duplicate-key preservation remain incomplete. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
+    'limits': 'Static reconstruction, no original execution. URL routing, authenticated header shaping and concrete App Server provider/client are reconstructed. An explicit deployment_host_with_fetch adapter is covered through the restored JS worker and real owned HTTP; default deployment composition still does not enable it. Request visitor required/default/unknown-field behavior is statically reviewed; raw fetch-message validation is implemented; whole enum/tag and malformed-input behavior remain incomplete. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
 },indent=2))

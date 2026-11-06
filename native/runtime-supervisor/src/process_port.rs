@@ -225,6 +225,18 @@ async fn read_frames(
             if !value.is_object() {
                 return Err("Worker JSONL must contain an object".into());
             }
+            // The native reader decodes KernelToHost directly from the JSONL
+            // text and drops parse failures before dispatch. Restore that typed
+            // boundary for fetch messages without first losing duplicate keys.
+            // Other variants still use the standalone Value-based transport.
+            if value["type"] == "authenticated_fetch"
+                && serde_json::from_slice::<crate::authenticated_fetch::AuthenticatedFetchMessage>(
+                    &line,
+                ).is_err()
+            {
+                line.clear();
+                continue;
+            }
             let bytes = line.len();
             if queued
                 .fetch_add(bytes, Ordering::AcqRel)

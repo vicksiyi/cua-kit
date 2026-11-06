@@ -6617,3 +6617,13 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Tests cover omitted headers/body in map and sequence forms, explicit null optional body, ignored unknown nested fields, required-field failures, null headers rejection and direct typed-deserializer duplicate-field rejection. The initial test failed with missing headers, then failed with missing trailing body; both now pass.
 - Boundary: deployment_host currently receives serde_json::Value, which collapses duplicate object keys before typed decoding. Direct deserializer tests do not prove transport-level duplicate handling. Native whole-message dispatcher and error-envelope parity remain unfinished, along with default production composition and browser/app acceptance.
 - Validation after both corrections: 17 authenticated_fetch tests and 14 repl_manager tests passed (31 total); pinned static audit passed. No live account credentials or vendor executable were used.
+
+
+### Raw authenticated-fetch message boundary checkpoint (2026-11-06)
+
+- Confirmed original read_stdout calls serde_json::from_str<KernelToHost> directly on each raw line (0x1000caf08), rather than decoding to Value first. Parse failures take a tracing/drop branch and return to per-line cleanup without dispatching fetch.
+- Reconstructed AuthenticatedFetchMessage: required string id, required string exec_id, required typed request. Missing-field branches/literals are pinned at 0x100038158/16c/178 and 0x100038914/9a0/9e0.
+- Process reader now validates raw bytes for frames selected as authenticated_fetch before queuing them. Invalid typed fetch frames are dropped and reading continues, preventing duplicate request methods/id fields from becoming silently accepted last-value objects. Valid frames still travel through the existing host/ownership checks.
+- Real subprocess regression emits duplicate request method, missing exec_id, duplicate id and null headers followed by a valid request and another message. Only the valid request and following message are delivered; transport remains live and closes normally.
+- Validation: 37 tests passed (17 fetch, 6 process transport, 14 manager/worker integration). Static evidence audit passed. No vendor binary was executed, and no real credentials were accessed.
+- Scope remains partial: initial routing still uses Value type selection; duplicate type tags, all other KernelToHost variants, malformed JSON handling and original tracing are not yet aligned. This corrects raw fetch payload validation without claiming the entire reader is restored. Default fetch composition and browser/application acceptance remain pending.

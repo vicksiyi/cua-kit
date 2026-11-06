@@ -142,3 +142,25 @@ async fn bounded_startup_output_and_invalid_launch() {
     missing.command = PathBuf::from("/nonexistent/core-worker");
     assert!(ProcessWorker::start(missing).await.is_err());
 }
+
+
+#[tokio::test]
+async fn fetch_frames_validate_raw_fields_before_value_and_continue_after_failure() {
+    // A Value-only transport would silently accept the last repeated method.
+    let code = r#"
+for (const line of [
+ '{"type":"authenticated_fetch","id":"dup","exec_id":"e","request":{"method":"GET","method":"POST","url":"https://example.test/"}}',
+ '{"type":"authenticated_fetch","id":"missing-exec","request":{"method":"GET","url":"https://example.test/"}}',
+ '{"type":"authenticated_fetch","id":"dup-id","id":"last","exec_id":"e","request":{"method":"GET","url":"https://example.test/"}}',
+ '{"type":"authenticated_fetch","id":"null-headers","exec_id":"e","request":{"method":"GET","url":"https://example.test/","headers":null}}',
+ '{"type":"authenticated_fetch","id":"valid","exec_id":"e","request":{"method":"GET","url":"https://example.test/"}}',
+ '{"type":"fixture-end"}'
+]) process.stdout.write(line+'\n');
+"#;
+    let mut worker = ProcessWorker::start(spec(code)).await.unwrap();
+    let first = timeout(Duration::from_secs(5), worker.next_message()).await.unwrap().unwrap().unwrap();
+    assert_eq!(first["id"], "valid");
+    assert_eq!(worker.next_message().await.unwrap(), Some(json!({"type":"fixture-end"})));
+    assert_eq!(worker.next_message().await.unwrap(), None);
+    worker.close().await.unwrap();
+}
