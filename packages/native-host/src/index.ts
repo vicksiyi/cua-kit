@@ -19,3 +19,10 @@ export {
   startRustNativeHost,
   resolveRustNativeHostExecutable,
 } from "./native_process";
+export {
+  createAppServerHostConfiguration,
+  createPluginAppServerHostConfiguration,
+  writeAppServerHostConfiguration,
+  type AppServerRuntimePaths,
+  type AppServerHostConfiguration,
+} from "./app_server_host_configuration";

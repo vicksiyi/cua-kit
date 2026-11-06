@@ -16,9 +16,22 @@
     {
       "path": "openai-bundled/browser/26.1027.30824/scripts/extension-ids.json",
       "sha256": "7e321e8c9d1ce0310ee144de51198fcb25c0c42c0004c15ad095493dd384630a"
+    },
+    {
+      "path": "ChatGPT.app/Contents/Resources/plugins/openai-bundled/plugins/chrome/scripts/installManifest.mjs",
+      "sha256": "2a1daeb3a0de6f66efe13ae757a0ef20f383ef044420b460424d9402c4eb589e"
     }
   ],
   "files": [
+    {
+      "path": "packages/native-host/src/app_server_host_configuration.ts",
+      "sha256": "cb71661413dcdc325d89a3e584af15116c16b83db1a9c49147f6b2ede68e6d7e",
+      "languageDecision": "retain-readable-typescript-original-javascript-evidence",
+      "evidence": [
+        "installManifest.mjs (J, v, Z)"
+      ],
+      "scope": "Schema-1 host deployment config builder/writer; not native schema-2 selection."
+    },
     {
       "path": "packages/native-host/src/browser_connector.ts",
       "sha256": "90841d8c42b55e5518420777e23673f5c1cdc98b945839a175a5af9fd701502e",
@@ -59,7 +72,7 @@
     },
     {
       "path": "packages/native-host/src/index.ts",
-      "sha256": "df3c03ec53b6e1a9c0ea8668900140304ffb5fd9bdf1c91336752dcd91ba8919",
+      "sha256": "f08450a980806a60a50cf098728ab046bc14ef4cf302194e8f73260a81a74bb0",
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."

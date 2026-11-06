@@ -6033,3 +6033,12 @@ Added Rust `open_local_file` and wired `codexRuntime/openLocalFile` with the `pa
 Validation: one native validator test covers missing/relative/NUL paths, directories, symlinks, all three execute bits and five extension variants. All nine real stdio runtime tests pass, including a new test-owned PATH opener: invalid input produces no launch, a path containing spaces/semicolon/shell-like text arrives as one literal argument, the child is reaped while the host stays running, and clean EOF still succeeds. No personal file or actual GUI app was opened. The release Rust host has been rebuilt.
 
 Original native dynamic parity, exact diagnostic wording and LaunchServices/GUI acceptance remain unverified. Hello/status/ensure/restart and full App Server manifest/process/WebSocket behavior remain missing; this change adds only the evidenced file-opening control, not those runtime services.
+
+
+### 2026-11-06: distinguish deployment configuration from runtime registry
+
+The installed Chrome plugin's JavaScript `installManifest.mjs` writes schemaVersion-1 `extension-host-config.json` next to the extension-host executable. It includes CLI/Node/REPL paths, optional browser client/channel and proxy host/port. This is distinct from the native schemaVersion-2 chrome-native-hosts-v2.json runtime registry. The native load function has both registry processing and later configuration/environment code; their full precedence/selection behavior remains to be recovered.
+
+Restored the three JS configuration builder/plugin-path/writer helpers as readable TS in `app_server_host_configuration.ts`, exported from @core/native-host. They preserve original validation order, optional-null omission, whitespace preservation, port bounds/defaults and override spread semantics. This belongs in TS because the evidence is JavaScript; native registry selection will remain Rust.
+
+Two differential tests execute the pinned installed helpers (not install()) against the restored implementation: 21 configuration cases, 4 plugin-path overrides, and an owned temporary write compare bytes and location. Both tests and native-host type check pass. No installed registration/configuration or user environment was modified. The helpers are available but deliberately not wired to launch an App Server before native loading/selection is implemented.

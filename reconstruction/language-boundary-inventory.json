@@ -13,7 +13,7 @@
     "native-process-caller-binding-not-native-service": 1,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
-    "original-js-browser-discovery-retain-typescript": 2
+    "original-js-deployment-discovery-retain-typescript": 3
   },
   "files": [
     {
@@ -2757,6 +2757,11 @@
       "sha256": "94a7bed27f60bd056e8504c207bf82a7f645fe1107d5a8bdd54645e659c1d874"
     },
     {
+      "path": "packages/native-host/src/app_server_host_configuration.ts",
+      "category": "original-js-deployment-discovery-retain-typescript",
+      "sha256": "cb71661413dcdc325d89a3e584af15116c16b83db1a9c49147f6b2ede68e6d7e"
+    },
+    {
       "path": "packages/native-host/src/browser_connector.ts",
       "category": "native-boundary-needs-original-language-evidence",
       "sha256": "90841d8c42b55e5518420777e23673f5c1cdc98b945839a175a5af9fd701502e"
@@ -2768,7 +2773,7 @@
     },
     {
       "path": "packages/native-host/src/chrome_profile.ts",
-      "category": "original-js-browser-discovery-retain-typescript",
+      "category": "original-js-deployment-discovery-retain-typescript",
       "sha256": "38c27899e1339549b758d3df62da1208abf2a68d26bee9e2f92b9cc6c8076202"
     },
     {
@@ -2784,7 +2789,7 @@
     {
       "path": "packages/native-host/src/index.ts",
       "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "df3c03ec53b6e1a9c0ea8668900140304ffb5fd9bdf1c91336752dcd91ba8919"
+      "sha256": "f08450a980806a60a50cf098728ab046bc14ef4cf302194e8f73260a81a74bb0"
     },
     {
       "path": "packages/native-host/src/install_cli.ts",
@@ -2813,7 +2818,7 @@
     },
     {
       "path": "packages/native-host/src/macos_browser_app.ts",
-      "category": "original-js-browser-discovery-retain-typescript",
+      "category": "original-js-deployment-discovery-retain-typescript",
       "sha256": "edb98efa074eea647863d44f7781d8f3e8872d75c8b45ea46035b150fdd8f9aa"
     },
     {
@@ -4229,7 +4234,7 @@
     {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "5044a9308cccfbe43d1ee34834a8f813f530f4ad93d0cffa8de46f15483533a8"
+      "sha256": "ae6465837e087bf5dbe3577a2a81ac54973117f5496006ec1092e3e40b8153f0"
     },
     {
       "path": "scripts/audit-native-control-protocol.py",

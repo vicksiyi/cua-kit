@@ -1,0 +1,27 @@
+{
+  "artifact": "ChatGPT.app/Contents/Resources/plugins/openai-bundled/plugins/chrome/scripts/installManifest.mjs",
+  "sha256": "2a1daeb3a0de6f66efe13ae757a0ef20f383ef044420b460424d9402c4eb589e",
+  "sourceFunctions": {
+    "J": "createAppServerHostConfiguration",
+    "v": "createPluginAppServerHostConfiguration",
+    "Z": "writeAppServerHostConfiguration"
+  },
+  "implementation": "packages/native-host/src/app_server_host_configuration.ts",
+  "implementationSha256": "cb71661413dcdc325d89a3e584af15116c16b83db1a9c49147f6b2ede68e6d7e",
+  "languageDecision": "Installed JavaScript helper restored as readable TypeScript, not a TS rewrite of Rust manifest selection.",
+  "configurationFile": "extension-host-config.json",
+  "schemaVersion": 1,
+  "defaults": {
+    "proxyHost": "127.0.0.1",
+    "proxyPort": 0
+  },
+  "validation": "Required strings reject non-string/trimmed empty but preserve original whitespace; optional null channel/browserClientPath omitted; integer proxyPort 0..65535; option spread can override/omit derived browser client path.",
+  "writer": "Adjacent to extension host executable; mkdir recursive; pretty JSON with trailing newline; exact original encoding.",
+  "differentialTest": "reconstruction/app-server-host-configuration.test.ts",
+  "validationScope": "21 config outcomes, 4 plugin-path overrides, real owned fixture write bytes/path. Original install() never called.",
+  "remaining": [
+    "native schema-2 registry selection",
+    "schema-1 native parsing and env overrides",
+    "runtime process/proxy integration"
+  ]
+}
