@@ -1,6 +1,5 @@
 //! Successful manager ensure payload (0x100018a6c..0x100019e0c).
-//! Metadata must already be materialized by the configuration loader. Raw
-//! optional registry fields are deliberately not defaulted at this boundary.
+//! Metadata defaults are recovered from the final native configuration load.
 use crate::app_server_proxy::AppServerProxy;
 use serde_json::{json, Value};
 
@@ -35,4 +34,41 @@ pub fn ensure_response(proxy: &AppServerProxy, metadata: &SelectedRuntimeMetadat
         "selected": selected,
         "runtimeConfig": runtime,
     })
+}
+
+impl<'a> From<&'a crate::app_server_manifest::RawManifestConfiguration>
+    for SelectedRuntimeMetadata<'a>
+{
+    fn from(raw: &'a crate::app_server_manifest::RawManifestConfiguration) -> Self {
+        Self {
+            entry_id: raw.entry_id.as_deref().unwrap_or("env"),
+            app_server_protocol_version: raw.app_server_protocol_version.unwrap_or(2),
+            app_version: raw.app_version.as_deref().unwrap_or("0.0.0"),
+            channel: raw.channel.as_deref().unwrap_or("unknown"),
+            cli_version: raw.cli_version.as_deref().unwrap_or("0.0.0"),
+            native_host_protocol_version: raw.native_host_protocol_version.unwrap_or(2),
+            native_host_version: raw.native_host_version.as_deref().unwrap_or("0.0.0"),
+        }
+    }
+}
+
+/// Manager ensure stage after successful configuration load. Preserve an
+/// existing proxy even when host/port configuration changes. New proxies enter
+/// the same refresh/restart path. No child is eagerly launched by ensure.
+pub fn ensure_loaded(
+    slot: &mut Option<AppServerProxy>,
+    config: &crate::app_server_configuration::LoadedLaunchConfiguration,
+    params: Option<&Value>,
+    restart: bool,
+) -> Result<Value, crate::app_server_error::RuntimeError> {
+    if slot.is_none() {
+        *slot = Some(crate::app_server_proxy::prepare(config)?.start());
+    }
+    let proxy = slot.as_ref().expect("proxy was initialized");
+    proxy.update_configuration(config);
+    if restart {
+        proxy.restart_client(params)?;
+    }
+    let metadata = SelectedRuntimeMetadata::from(&config.selection.selected.configuration);
+    Ok(ensure_response(proxy, &metadata))
 }

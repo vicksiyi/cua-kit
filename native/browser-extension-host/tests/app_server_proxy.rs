@@ -517,3 +517,81 @@ fn ensure_payload_composes_exact_shape_without_launching_a_child() {
         response["runtimeSessionId"]
     );
 }
+
+#[test]
+fn ensure_loaded_initializes_once_refreshes_metadata_and_restarts_lazily() {
+    use core_browser_extension_host::app_server_response::ensure_loaded;
+    let (mut config, _) = update_fixture();
+    let mut slot = None;
+    let first =
+        ensure_loaded(&mut slot, &config, None, false).unwrap_or_else(|e| panic!("{}", e.message));
+    assert_eq!(first["entryId"], "env");
+    assert_eq!(
+        first["selected"],
+        serde_json::json!({
+            "appServerProtocolVersion":2,"appVersion":"0.0.0","channel":"unknown",
+            "cliVersion":"0.0.0","nativeHostProtocolVersion":2,"nativeHostVersion":"0.0.0"
+        })
+    );
+    config.launch.proxy_host = "unusable-rebind-host.invalid".into();
+    config.launch.proxy_port = 1;
+    config.launch.codex_cli_path = "new-cli".into();
+    let raw = &mut config.selection.selected.configuration;
+    raw.entry_id = Some("chosen".into());
+    raw.app_version = Some("9.0".into());
+    raw.channel = Some("".into());
+    raw.cli_version = Some("cli-version".into());
+    raw.native_host_version = Some("host-version".into());
+    raw.app_server_protocol_version = Some(0);
+    raw.native_host_protocol_version = Some(u64::MAX);
+    let second =
+        ensure_loaded(&mut slot, &config, None, false).unwrap_or_else(|e| panic!("{}", e.message));
+    assert_eq!(first["localAppServerUrl"], second["localAppServerUrl"]);
+    assert_eq!(first["runtimeSessionId"], second["runtimeSessionId"]);
+    assert_eq!(second["entryId"], "chosen");
+    assert_eq!(second["runtimeConfig"]["codexCliPath"], "new-cli");
+    assert_eq!(
+        second["selected"],
+        serde_json::json!({
+            "appServerProtocolVersion":0,"appVersion":"9.0","channel":"",
+            "cliVersion":"cli-version","nativeHostProtocolVersion":u64::MAX,"nativeHostVersion":"host-version"
+        })
+    );
+    let third =
+        ensure_loaded(&mut slot, &config, None, true).unwrap_or_else(|e| panic!("{}", e.message));
+    assert_eq!(third["localAppServerUrl"], first["localAppServerUrl"]);
+    assert_ne!(third["runtimeSessionId"], second["runtimeSessionId"]);
+    assert!(slot.as_ref().unwrap().processes.lock().unwrap().is_empty());
+    core_browser_extension_host::app_server_proxy::shutdown_proxy(&mut slot);
+}
+
+#[test]
+fn ensure_loaded_failures_preserve_native_partial_state() {
+    use core_browser_extension_host::app_server_response::ensure_loaded;
+    let (mut config, proxy) = update_fixture();
+    let mut empty = None;
+    config.launch.proxy_host = "192.0.2.1".into();
+    assert!(ensure_loaded(&mut empty, &config, None, false).is_err());
+    assert!(empty.is_none());
+    let map = proxy.processes.clone();
+    assert!(std::thread::spawn(move || {
+        let _guard = map.lock().unwrap();
+        panic!("fixture");
+    })
+    .join()
+    .is_err());
+    let mut slot = Some(proxy);
+    config.launch.codex_cli_path = "updated-before-restart-error".into();
+    let error = ensure_loaded(&mut slot, &config, None, true).err().unwrap();
+    assert!(error
+        .message
+        .starts_with("Failed to restart Codex app-server for client default:"));
+    assert_eq!(
+        slot.as_ref().unwrap().runtime_config()["codexCliPath"],
+        "updated-before-restart-error"
+    );
+    assert_eq!(
+        slot.as_ref().unwrap().runtime_session_id(),
+        "existing-session"
+    );
+}

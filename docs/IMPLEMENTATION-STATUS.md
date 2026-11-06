@@ -17,6 +17,15 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+The native metadata default boundary is now traced: app/CLI/native-host versions
+fall back to `0.0.0`, channel to `unknown`, entryId to `env`, both protocols to 2.
+`ensure_loaded` composes proxy initialization/reuse, config refresh, optional
+restart and response after successful configuration loading. Sixteen proxy tests
+pass, including stable endpoint across changed bind config, metadata refresh,
+lazy restart, bind failure and restart failure preserving already updated state.
+Invocation argument decoding/config-loader composition, production control dispatch
+and assets lifecycle integration remain open; browser/App acceptance is unproven.
+
 Ensure success payload composition now uses the actual proxy endpoint/session and
 runtime snapshot, plus an explicitly materialized metadata record. The five outer
 fields and six selected fields are pinned to native evidence; protocols retain
