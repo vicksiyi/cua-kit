@@ -10,6 +10,8 @@ pub mod control;
 pub mod endpoint;
 #[cfg(unix)]
 pub mod lifecycle_log;
+#[cfg(unix)]
+pub mod open_local_file;
 pub mod rpc_router;
 #[cfg(unix)]
 pub mod runtime;

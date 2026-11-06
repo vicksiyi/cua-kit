@@ -9,6 +9,7 @@ import {
   readFile,
   rm,
   access,
+  chmod,
 } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { createConnection } from "node:net";
@@ -23,7 +24,7 @@ import {
 const enabled =
   process.platform !== "win32" && process.env.CUA_TEST_RUST_HOST_ROUTER === "1";
 const origin = `chrome-extension://${"a".repeat(32)}/`;
-async function start(t: TestContext, requestedOrigin = origin) {
+async function start(t: TestContext, requestedOrigin = origin, environment: NodeJS.ProcessEnv = {}) {
   const root = await realpath(await mkdtemp("/tmp/cua-native-runtime-"));
   const parent = join(root, "hosts"),
     config = join(root, "config.json");
@@ -41,7 +42,7 @@ async function start(t: TestContext, requestedOrigin = origin) {
       "native/browser-extension-host/target/debug/core-browser-extension-host",
     ),
     ["--config", config, requestedOrigin],
-    { stdio: ["pipe", "pipe", "pipe"] },
+    { stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, ...environment } },
   );
   const closed = new Promise<number | null>((resolve, reject) => {
     child.on("error", reject);
@@ -263,4 +264,45 @@ test("native attachment controls write real files without a browser RPC client a
   assert.equal(await host.closed, 0);
   await assert.rejects(access(retained.path), {code:"ENOENT"});
   await assert.rejects(access(endpoint), {code:"ENOENT"});
+});
+
+
+test("native openLocalFile uses one literal argument and reaps an owned fake opener", {skip: !enabled || process.platform !== "darwin", timeout: 10000}, async t => {
+  const fixture = await mkdtemp("/tmp/cua-file-open-");
+  t.after(() => rm(fixture, {recursive:true, force:true}));
+  const log = join(fixture, "arguments");
+  const opener = join(fixture, "open");
+  await writeFile(opener, "#!/bin/sh\nprintf '%s\\n%s' \"$$\" \"$1\" > \"$CUA_OPEN_TEST_LOG\"\n");
+  await chmod(opener, 0o700);
+  const path = join(fixture, "literal ; $(not-executed).txt");
+  await writeFile(path, "owned fixture", {mode:0o600});
+  const host = await start(t, origin, {PATH:fixture, CUA_OPEN_TEST_LOG:log});
+  await host.ready();
+  const extension = extensionFor(host.child, {});
+  const open = (path: string) => extension.sendRequest("codexRuntime/openLocalFile" as any, {path} as any);
+  await assert.rejects(open(join(fixture, "missing.txt")), /does not exist/);
+  await assert.rejects(access(log), {code:"ENOENT"});
+  assert.deepEqual(await open(path), {});
+  let observed = "";
+  for(let attempt=0;attempt<100;attempt++) {
+    try { observed = await readFile(log, "utf8"); } catch(error) { if((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+    if(observed.includes("\n")) break;
+    await new Promise(resolve=>setTimeout(resolve,10));
+  }
+  const split = observed.indexOf("\n");
+  assert.ok(split > 0);
+  assert.equal(observed.slice(split+1), path);
+  const pid = Number(observed.slice(0,split));
+  let reaped = false;
+  for(let attempt=0;attempt<100;attempt++) {
+    try { process.kill(pid,0); } catch(error) {
+      if((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
+      reaped=true;break;
+    }
+    await new Promise(resolve=>setTimeout(resolve,10));
+  }
+  assert.ok(reaped, "Owned opener child must be reaped while host is still running");
+  assert.equal(host.child.exitCode, null);
+  host.child.stdin.end();
+  assert.equal(await host.closed,0);
 });

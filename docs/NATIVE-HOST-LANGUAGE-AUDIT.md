@@ -152,3 +152,12 @@ Core deployment deliberately places attachments under the private owned endpoint
 Validation: six attachment Rust tests include real binary/Unicode bytes, malformed Base64 with no writes, finished-entry behavior, same-name unique files, capacity including finished entries, a real exactly-100-MiB file plus rejected overflow, and preservation of replacement paths/unrelated files. The restored ExtensionBrowserPeer exchanges real framed stdio with the production debug executable, exercises all five methods without a browser RPC client, checks disk contents and verifies EOF removes files and endpoint. The full gate passes 32 native tests and 17 cross-language/process tests.
 
 After this dispatcher change, both packaged native/full extension deployments also pass actual isolated Chromium navigation/click/read and native EOF cleanup (2/2). No daily Chrome profile or paid model request was used.
+
+
+### 2026-11-06: native openLocalFile control implemented
+
+Added Rust `open_local_file` and wired `codexRuntime/openLocalFile` with the `path` parameter. The pinned binary evidence establishes embedded-NUL rejection, absolute paths, regular-file/symlink checks, ASCII-case-insensitive command/desktop/jar/terminal/tool extension rejection and Unix execute-bit rejection. The implementation uses `Command::new("open").arg(path)` with null standard streams, responds after successful spawn and reaps the child on a detached waiter, matching the observed asynchronous boundary. It does not claim the GUI application finished opening the document. Non-macOS platforms return unsupported.
+
+Validation: one native validator test covers missing/relative/NUL paths, directories, symlinks, all three execute bits and five extension variants. All nine real stdio runtime tests pass, including a new test-owned PATH opener: invalid input produces no launch, a path containing spaces/semicolon/shell-like text arrives as one literal argument, the child is reaped while the host stays running, and clean EOF still succeeds. No personal file or actual GUI app was opened. The release Rust host has been rebuilt.
+
+Original native dynamic parity, exact diagnostic wording and LaunchServices/GUI acceptance remain unverified. Hello/status/ensure/restart and full App Server manifest/process/WebSocket behavior remain missing; this change adds only the evidenced file-opening control, not those runtime services.

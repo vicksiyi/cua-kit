@@ -6024,3 +6024,12 @@ Implemented native Rust attachment storage and an extension-input control dispat
 This is not yet an end-user attachment UI: the five native methods work directly, while hello/status/ensure/restart, original App Server manifest/process/proxy integration, openLocalFile and original authorization are still pending. Core uses per-host private storage and ownership checks instead of the vendor global temporary asset directory; exact error wording and original-host dynamic parity remain unverified.
 
 After this dispatcher change, both packaged native/full extension deployments also pass actual isolated Chromium navigation/click/read and native EOF cleanup (2/2). No daily Chrome profile or paid model request was used.
+
+
+### 2026-11-06: native openLocalFile control implemented
+
+Added Rust `open_local_file` and wired `codexRuntime/openLocalFile` with the `path` parameter. The pinned binary evidence establishes embedded-NUL rejection, absolute paths, regular-file/symlink checks, ASCII-case-insensitive command/desktop/jar/terminal/tool extension rejection and Unix execute-bit rejection. The implementation uses `Command::new("open").arg(path)` with null standard streams, responds after successful spawn and reaps the child on a detached waiter, matching the observed asynchronous boundary. It does not claim the GUI application finished opening the document. Non-macOS platforms return unsupported.
+
+Validation: one native validator test covers missing/relative/NUL paths, directories, symlinks, all three execute bits and five extension variants. All nine real stdio runtime tests pass, including a new test-owned PATH opener: invalid input produces no launch, a path containing spaces/semicolon/shell-like text arrives as one literal argument, the child is reaped while the host stays running, and clean EOF still succeeds. No personal file or actual GUI app was opened. The release Rust host has been rebuilt.
+
+Original native dynamic parity, exact diagnostic wording and LaunchServices/GUI acceptance remain unverified. Hello/status/ensure/restart and full App Server manifest/process/WebSocket behavior remain missing; this change adds only the evidenced file-opening control, not those runtime services.

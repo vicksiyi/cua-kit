@@ -160,6 +160,52 @@
     ],
     "validation": "Real stdio process test with restored extension peer; disk byte checks and EOF cleanup. Not dynamic original-host parity."
   },
+  "localFileOpening": {
+    "implementation": "native/browser-extension-host/src/open_local_file.rs",
+    "method": "codexRuntime/openLocalFile",
+    "parameter": "path",
+    "validation": [
+      "reject embedded NUL",
+      "require absolute path",
+      "symlink_metadata must resolve a regular file",
+      "reject final-component symlinks",
+      "reject ASCII-case-insensitive command/desktop/jar/terminal/tool extensions",
+      "reject any Unix execute permission bit"
+    ],
+    "executeMaskInstructions": [
+      "100036364: d360bec8    \tubfx\tx8, x22, #32, #16",
+      "100036368: 52800929    \tmov\tw9, #0x49               ; =73",
+      "10003636c: 6a09011f    \ttst\tw8, w9",
+      "100036370: 54000fe0    \tb.eq\t0x10003656c <extension_host::open_local_file::open+0x41c>"
+    ],
+    "spawnInstructions": [
+      "10003656c: f00002c0    \tadrp\tx0, 0x100091000 <_anon.16ddd44c734025e29c6e39220dbede92.8+0x28>",
+      "100036570: 910b6000    \tadd\tx0, x0, #0x2d8",
+      "100036574: 9101c3e8    \tadd\tx8, sp, #0x70",
+      "100036578: 52800081    \tmov\tw1, #0x4                ; =4",
+      "10003657c: 94009c29    \tbl\t0x10005d620 <<std::sys::process::unix::common::Command>::new>",
+      "100036580: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "100036584: aa1403e1    \tmov\tx1, x20",
+      "100036588: aa1303e2    \tmov\tx2, x19",
+      "10003658c: 94009ba9    \tbl\t0x10005d430 <<std::sys::process::unix::common::Command>::arg>",
+      "100036590: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "100036594: 52800021    \tmov\tw1, #0x1                ; =1",
+      "100036598: 94009cc0    \tbl\t0x10005d898 <<std::sys::process::unix::common::Command>::stdin>",
+      "10003659c: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "1000365a0: 52800021    \tmov\tw1, #0x1                ; =1",
+      "1000365a4: 94009cdf    \tbl\t0x10005d920 <<std::sys::process::unix::common::Command>::stdout>",
+      "1000365a8: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "1000365ac: 52800021    \tmov\tw1, #0x1                ; =1",
+      "1000365b0: 94009ccb    \tbl\t0x10005d8dc <<std::sys::process::unix::common::Command>::stderr>",
+      "1000365b4: 910163e8    \tadd\tx8, sp, #0x58",
+      "1000365b8: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "1000365bc: 9400aa46    \tbl\t0x100060ed4 <<std::process::Command>::spawn>"
+    ],
+    "openerLiteral": "open",
+    "blockedExtensionLiteral": "command;desktop;jar;terminal;tool",
+    "completion": "Successful spawn responds with empty result; detached waiter reaps opener, not GUI application completion.",
+    "validationScope": "Rust validator fixtures and real stdio host with test-owned PATH opener; no actual LaunchServices/GUI acceptance."
+  },
   "remainingUnknowns": [
     "full manifest selection and process launch contract",
     "complete hello/status response schemas",

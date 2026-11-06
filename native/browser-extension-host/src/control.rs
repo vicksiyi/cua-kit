@@ -24,6 +24,7 @@ impl NativeControl {
     pub fn handle(&mut self, message: &Value) -> Option<Value> {
         let method = message.get("method")?.as_str()?;
         let operation = match method {
+            "codexRuntime/openLocalFile" => "open",
             "codexRuntime/tabContextAsset/create" => "create",
             "codexRuntime/tabContextAsset/appendChunk" => "append",
             "codexRuntime/tabContextAsset/finish" => "finish",
@@ -34,6 +35,10 @@ impl NativeControl {
         };
         let params = &message["params"];
         let result = (|| -> io::Result<Value> {
+            if operation == "open" {
+                crate::open_local_file::open(required(params, "path")?)?;
+                return Ok(json!({}));
+            }
             // Validate arguments before creating any directory or file.
             let key = if operation == "create" {
                 "fileName"

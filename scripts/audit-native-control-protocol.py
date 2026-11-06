@@ -22,6 +22,7 @@ def disassemble(start, stop):
 control = disassemble(0x100025498, 0x100026880)
 assets = disassemble(0x100015fd8, 0x100017754)
 sanitizer = disassemble(0x100029c24, 0x100029ea8)
+open_file = disassemble(0x100036150, 0x100036858)
 # Decode only straight-line method comparison operands, not arbitrary code semantics.
 # x21 is the method string pointer loaded at 0x100025508. Constants are assembled
 # with MOV/MOVK; string loads include overlapping tails at offsets 11 and 27.
@@ -144,6 +145,19 @@ result = {
         'coreDifferences': ['owned per-host endpoint/assets directory instead of global temp/codex-tab-context-assets',
             'private-root and inode checks protect Core-owned cleanup', 'parameter and I/O diagnostic wording not fully matched'],
         'validation': 'Real stdio process test with restored extension peer; disk byte checks and EOF cleanup. Not dynamic original-host parity.',
+    },
+    'localFileOpening': {
+        'implementation': 'native/browser-extension-host/src/open_local_file.rs',
+        'method': 'codexRuntime/openLocalFile', 'parameter': 'path',
+        'validation': ['reject embedded NUL', 'require absolute path', 'symlink_metadata must resolve a regular file',
+            'reject final-component symlinks', 'reject ASCII-case-insensitive command/desktop/jar/terminal/tool extensions',
+            'reject any Unix execute permission bit'],
+        'executeMaskInstructions': evidence(open_file, 0x100036364, 0x100036370, ['#0x49', 'tst']),
+        'spawnInstructions': evidence(open_file, 0x10003656c, 0x1000365bc, ['Command>::new', 'Command>::arg', 'Command>::spawn']),
+        'openerLiteral': raw[0x912d8:0x912dc].decode(),
+        'blockedExtensionLiteral': raw[0x91250:0x91271].decode(),
+        'completion': 'Successful spawn responds with empty result; detached waiter reaps opener, not GUI application completion.',
+        'validationScope': 'Rust validator fixtures and real stdio host with test-owned PATH opener; no actual LaunchServices/GUI acceptance.',
     },
     'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

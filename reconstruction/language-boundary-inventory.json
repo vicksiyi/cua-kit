@@ -9,7 +9,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 11,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 60,
+    "native-implementation-language-not-yet-parity-proof": 61,
     "native-process-caller-binding-not-native-service": 1,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
@@ -3914,7 +3914,7 @@
     {
       "path": "native/browser-extension-host/src/control.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "a450cd9e24496c00fecca77dd28fdec4c72f067b97b126b19a6df8ee062350ba"
+      "sha256": "27d7918fa451617e6bbca080b7dc9ae1d5f8b94e81691ae9ecfbf7deead71bbd"
     },
     {
       "path": "native/browser-extension-host/src/endpoint.rs",
@@ -3924,7 +3924,7 @@
     {
       "path": "native/browser-extension-host/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "906ec0168b3781414c8c7258f74b2f65c17d15155ab055a4249fb82bea788294"
+      "sha256": "5dd5cc2adfb37ae0ce6379e7a96ef746860ca0dea053fe1c4f28dd73b2063e2a"
     },
     {
       "path": "native/browser-extension-host/src/lifecycle_log.rs",
@@ -3935,6 +3935,11 @@
       "path": "native/browser-extension-host/src/main.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "f1ea6c93c3bbdc9dc095ddcba9e4d7976b21c57345a95d3cde90e9afea3720c5"
+    },
+    {
+      "path": "native/browser-extension-host/src/open_local_file.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "32af7763c2a23ca5992b0228b2f4cbdb45c30e943a0d9380937db7af4a7dc39e"
     },
     {
       "path": "native/browser-extension-host/src/rpc_router.rs",
@@ -4229,7 +4234,7 @@
     {
       "path": "scripts/audit-native-control-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "8bd7ef3b43d51334d7fe9627c2a6d4d0cfd57a0bcac19ed0d94ed7032c3b9b63"
+      "sha256": "4db2b8caa1efb1ca66f089c4a1f08e18f85ed159074cfa225fdb88da514d3b5f"
     },
     {
       "path": "scripts/audit-native-language.py",
