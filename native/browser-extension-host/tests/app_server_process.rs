@@ -122,3 +122,52 @@ fn poisoned_child_lock_returns_the_native_error_without_panicking() {
         assert_eq!(error.to_string(), "app-server child mutex poisoned");
     }
 }
+
+#[test]
+fn stderr_lines_preserve_content_skip_blank_and_stop_on_invalid_utf8() {
+    use core_browser_extension_host::app_server_process::consume_stderr;
+    let mut lines = Vec::new();
+    let long = "x".repeat(32_000);
+    let input = format!("\n \t\r\n\u{2003}\n  message \t\r\n{long}\nlast");
+    consume_stderr(input.as_bytes(), |line| lines.push(line.to_owned()));
+    assert_eq!(lines, ["  message \t", &long, "last"]);
+    lines.clear();
+    consume_stderr(&b"first\n\xff\nafter-invalid\n"[..], |line| {
+        lines.push(line.to_owned())
+    });
+    assert_eq!(lines, ["first"]);
+}
+
+#[test]
+fn stderr_consumer_drains_more_than_pipe_capacity() {
+    use core_browser_extension_host::app_server_process::consume_stderr;
+    use std::{
+        process::{Command, Stdio},
+        thread,
+    };
+    // A dedicated cat forwards owned test input to stderr; no extra process.
+    let mut child = Command::new("/bin/sh")
+        .args(["-c", "exec /bin/cat >&2"])
+        .stdin(Stdio::piped())
+        .stderr(Stdio::piped())
+        .stdout(Stdio::null())
+        .spawn()
+        .unwrap();
+    let stderr = child.stderr.take().unwrap();
+    let drain = thread::spawn(move || {
+        let mut count = 0;
+        consume_stderr(stderr, |line| {
+            assert_eq!(line.len(), 1024);
+            count += 1;
+        });
+        count
+    });
+    let mut stdin = child.stdin.take().unwrap();
+    let line = format!("{}\n", "x".repeat(1024));
+    for _ in 0..1024 {
+        stdin.write_all(line.as_bytes()).unwrap();
+    }
+    drop(stdin);
+    assert!(child.wait().unwrap().success());
+    assert_eq!(drain.join().unwrap(), 1024);
+}

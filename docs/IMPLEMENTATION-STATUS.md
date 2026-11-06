@@ -6160,3 +6160,10 @@ Two targeted tests pass, including a real owned fake executable in a path contai
 Restored stop_app_server_child and wait_app_server_child in Rust using Arc<Mutex<Child>>. Stop skips absent/already-exited children, propagates try_wait errors, kills a live child, ignores only InvalidInput from kill, then waits. The pinned Darwin error-kind jump table maps errno 22 to native kind 0x14, confirming the exception rather than guessing its enum meaning. Both helpers preserve the native poison message and wait discards exit status while holding the child mutex.
 
 All four process tests pass. New owned-process checks kill and reap a pipe-blocked cat without descendants, repeat stop, wait on nonzero exit and verify poisoned-lock errors after reaping. Full manager shutdown still needs state clearing, websocket close ordering and worker ownership; these helpers are not a completed lifecycle or wired control endpoint.
+
+
+### 2026-11-06: native stderr draining worker
+
+Restored the native detached stderr worker: 8192-byte BufReader and lines, stop on read/UTF-8 error, skip Unicode-whitespace-only lines and print the original untrimmed line to host stderr with the observed prefix. Trimming is a filter, not a transformation of the emitted text. No invented JSON logging or forwarding into MCP stdout.
+
+Six process tests pass, including long/CRLF/blank/final unterminated lines, invalid UTF-8 termination and >1 MiB of actual child-pipe output drained concurrently to completion. The raw spawn API continues returning all pipes; the lifecycle owner still needs to take stderr and call the worker alongside stdout proxy setup. Full ensure/restart integration remains incomplete.

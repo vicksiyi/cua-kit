@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+stderr_worker = disassemble(0x10002ca1c, 0x10002cb70)
 child_stop = disassemble(0x100021f8c, 0x100022254)
 child_wait = disassemble(0x100022254, 0x1000224b4)
 error_kind = disassemble(0x10001fd38, 0x10001fec0)
@@ -398,6 +399,16 @@ result = {
         'wait': evidence(child_wait, 0x100022378, 0x100022390, ['Child>::wait']),
         'semantics': 'Option<Arc<Mutex<Child>>> stop: absent succeeds; poisoned lock is an I/O Other error; try_wait error propagates; already exited succeeds; live child kill then wait. Kill InvalidInput (Darwin EINVAL=22 maps to native kind 0x14) is ignored; other kill errors propagate. Wait helper discards exit status and holds child mutex through wait.',
         'integrationStatus': 'Owned-process tests cover live stop/reap, repeated stop, absent child, nonzero exit and poison error. No production manager wiring or full thread shutdown yet.',
+    },
+    'stderrWorker': {
+        'implementation': 'native/browser-extension-host/src/app_server_process.rs::{consume_stderr,drain_child_stderr}',
+        'bufferAndLines': evidence(stderr_worker, 0x10002ca34, 0x10002ca7c, ['#0x2000', 'BufReader<std::process::ChildStderr>', 'Iterator>::next']),
+        'errorOrEof': evidence(stderr_worker, 0x10002ca7c, 0x10002ca90, ['0x10002cad4', '0x10002cadc']),
+        'filterAndPrint': evidence(stderr_worker, 0x10002ca90, 0x10002cabc, ['trim_matches', 'is_whitespace', 'stdio::_eprint']),
+        'detachedThread': evidence(process_start, 0x100020738, 0x100020768, ['drain_child_stderr', 'JoinHandle']),
+        'formatLiteralHex': raw[0x8d6b4:0x8d6db].hex(),
+        'semantics': '8192-byte BufReader, lines iteration; read/UTF-8 errors terminate silently. Whitespace-only lines skipped, original untrimmed String printed with extension-host: app-server stderr: prefix and newline. Worker detached after creation.',
+        'integrationStatus': 'Worker and stream consumer implemented, tested with >1 MiB through a real owned child pipe. Lifecycle owner must take stderr and invoke worker; raw spawn still exposes all three pipes.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

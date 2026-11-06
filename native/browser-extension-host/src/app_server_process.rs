@@ -75,3 +75,26 @@ pub fn wait_child(child: SharedChild) -> io::Result<()> {
         .wait()
         .map(|_| ())
 }
+
+/// Original stderr worker uses BufReader::lines, stops on read/UTF-8 error,
+/// skips whitespace-only lines and prints the original (untrimmed) line.
+/// The callback keeps deterministic tests separate from process stderr.
+pub fn consume_stderr(reader: impl io::Read, mut emit: impl FnMut(&str)) {
+    use io::BufRead;
+    for line in io::BufReader::with_capacity(8192, reader).lines() {
+        let Ok(line) = line else { break };
+        if !line.trim().is_empty() {
+            emit(&line);
+        }
+    }
+}
+
+/// The native worker's JoinHandle is dropped immediately (detached). This
+/// consumes the supplied pipe; callers must not retain a second stderr reader.
+pub fn drain_child_stderr(stderr: std::process::ChildStderr) {
+    drop(std::thread::spawn(move || {
+        consume_stderr(stderr, |line| {
+            eprintln!("extension-host: app-server stderr: {line}");
+        });
+    }));
+}
