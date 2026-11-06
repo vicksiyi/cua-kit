@@ -6308,3 +6308,10 @@ Twelve focused process/input/session tests passed, then the composed real TCP se
 Added run_proxy_listener and its factored Incoming dispatcher. Native accept errors are ignored; each accepted TCP stream receives a detached worker. The worker snapshots optional Origin before reading the request, while runtime snapshot remains after validation. Connection errors use the evidenced stderr diagnostic. A test injects an accept error and leaves one real TCP connection idle while another receives 403, verifying independent dispatch and no process entry on rejection.
 
 Full native host cargo test regression passed: 89 tests, zero failures. This covers current implementation fixtures, not original binary runtime parity or real browser/app acceptance. Listener binding, token/origin construction and manager lifecycle/control integration still remain.
+
+
+### Native proxy preparation checkpoint
+
+Implemented binding and preparation from inlined AppServerProxy::start: configured host/port bind, retry same host with port zero after any nonzero-port failure, actual bound port lookup, two simple UUIDv4 values concatenated as token, optional chrome-extension origin, shared runtime and empty process map. Errors use the native runtime category and observed message context. Two tests pass for occupied loopback fallback, token/version/origin properties, and direct versus fallback bind errors.
+
+PreparedProxy has not yet transferred ownership to the listener thread or manager. Runtime-session ID, returned endpoint, update/reuse and shutdown ownership require further reconstruction.

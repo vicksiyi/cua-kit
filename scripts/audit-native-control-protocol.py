@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+manager_ensure = disassemble(0x100017754, 0x10001a87c)
 proxy_listener = disassemble(0x100021514, 0x1000217e4)
 connection_worker = disassemble(0x10002cb70, 0x10002cd24)
 proxy_upgrade = disassemble(0x100027664, 0x1000288fc)
@@ -619,6 +620,15 @@ result = {
         'originPoisonMessage': raw[0x91020:0x9104e].decode(),
         'contract': 'Blocking Incoming loop ignores accept errors and starts detached thread per accepted stream. Worker snapshots shared optional origin before handler reads request, while handler snapshots shared runtime after validation; connection errors log to stderr.',
         'integrationStatus': 'Dispatcher tested with injected accept failure and two real TCP connections, proving an idle first connection does not delay a forbidden second request or create process entries. Binding/token construction and manager lifecycle wiring remain open.',
+    },
+    'proxyPreparation': {
+        'implementation': 'native/browser-extension-host/src/app_server_proxy.rs',
+        'bindAndRetry': evidence(manager_ensure, 0x100017b50, 0x100017c04, ['TcpListener>::bind', 'cbz', '_eprint', 'strh\twzr']),
+        'readActualPort': evidence(manager_ensure, 0x100017f64, 0x100017ff8, ['local_addr', 'proxy_runtime_state']),
+        'twoUuidToken': evidence(manager_ensure, 0x1000180f0, 0x100018134, ['Uuid>::new_v4', '#0x72c', '#0x400', 'format_inner']),
+        'originFormat': evidence(manager_ensure, 0x100018134, 0x100018174, ['#0x108', '#0x238', 'format_inner']),
+        'contract': 'Bind configured host/port; any error with nonzero port logs and retries same host at zero. Read actual local port. Token is concatenation of two simple UUIDv4 strings. Optional extension ID formats chrome-extension://<id>. Initialize shared runtime and empty process map.',
+        'integrationStatus': 'Preparation and bind failures tested using owned occupied loopback port and nonlocal numeric address. Thread/manager ownership, session ID, returned endpoint and shutdown remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
