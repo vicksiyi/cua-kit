@@ -105,3 +105,6 @@ The native host modules are now composed into a real Rust stdio/Unix executable 
 
 
 CDP production consumer migration is now complete for the Core host boundary: `startCdpHost` launches the release Rust executable through a TS process/stream binding, with no TS-server fallback. Owned root-demo Loop and attached-browser/MCP fixtures pass. The extension installer still launches the legacy TS host and must be migrated separately. The whole source/native parity objective remains open.
+
+
+Extension installer migration: fresh installs and verified owned Core upgrades now generate a direct Rust launcher, with native lifecycle logs and atomic registration/executable replacement. Real isolated packaged-native-extension CUA/MCP operations pass through Rust host and Rust supervisor. CDP was already switched. Explicit legacy TS APIs/tests remain; native role alignment does not establish original signature/app-server parity.

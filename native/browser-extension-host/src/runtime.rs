@@ -208,6 +208,15 @@ fn deliver(
 /// Caller owns stdio descriptors. Runs until EOF, failure, or the supplied stop flag.
 /// Joins all client workers and drops the private endpoint on every return path.
 pub fn run(parent: &Path, input_fd: RawFd, output_fd: RawFd, stop: &AtomicBool) -> io::Result<()> {
+    run_with_lifecycle(parent, input_fd, output_fd, stop, &|_| {})
+}
+pub fn run_with_lifecycle(
+    parent: &Path,
+    input_fd: RawFd,
+    output_fd: RawFd,
+    stop: &AtomicBool,
+    report: &dyn Fn(&str),
+) -> io::Result<()> {
     let endpoint = Arc::new(OwnedEndpoint::bind(parent)?);
     endpoint.listener().set_nonblocking(true)?;
     let mut input = NonblockingFile::duplicate(input_fd)?;
@@ -231,6 +240,8 @@ pub fn run(parent: &Path, input_fd: RawFd, output_fd: RawFd, stop: &AtomicBool) 
         "@core native host endpoint: {}",
         endpoint.descriptor_path().display()
     );
+    report("ready");
+    let mut final_event = "server-error";
     let result = (|| {
         while !stop.load(Ordering::Acquire) {
             let now = epoch.elapsed().as_millis().min(u64::MAX as u128) as u64;
@@ -297,7 +308,10 @@ pub fn run(parent: &Path, input_fd: RawFd, output_fd: RawFd, stop: &AtomicBool) 
                     Err(error) => return Err(error),
                 }
             }
-            output.flush(&mut output_fd.file)?;
+            output.flush(&mut output_fd.file).map_err(|error| {
+                final_event = "output-error";
+                error
+            })?;
             let mut poll = [
                 libc::pollfd {
                     fd: input.file.as_raw_fd(),
@@ -332,29 +346,49 @@ pub fn run(parent: &Path, input_fd: RawFd, output_fd: RawFd, stop: &AtomicBool) 
                 & (output_close_event | libc::POLLERR | libc::POLLHUP | libc::POLLNVAL)
                 != 0
             {
+                final_event = "output-error";
                 return Err(failure("extension output closed"));
             }
             if poll[0].revents != 0 {
                 for _ in 0..16 {
                     let mut bytes = [0u8; 8192];
                     match input.file.read(&mut bytes) {
-                        Ok(0) => return decoder.finish(),
+                        Ok(0) => {
+                            let result = decoder.finish();
+                            final_event = if result.is_ok() {
+                                "input-ended"
+                            } else {
+                                "invalid-extension-message"
+                            };
+                            return result;
+                        }
                         Ok(count) => {
-                            for message in decoder.feed(&bytes[..count])? {
+                            for message in decoder.feed(&bytes[..count]).map_err(|error| {
+                                final_event = "invalid-extension-message";
+                                error
+                            })? {
                                 let deliveries =
-                                    router.from_extension(message, now).map_err(failure)?;
+                                    router.from_extension(message, now).map_err(|error| {
+                                        final_event = "invalid-extension-message";
+                                        failure(error)
+                                    })?;
                                 deliver(deliveries, &mut connections, &mut router, &mut output)?;
                             }
                         }
                         Err(error) if error.kind() == io::ErrorKind::WouldBlock => break,
                         Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
-                        Err(error) => return Err(error),
+                        Err(error) => {
+                            final_event = "input-error";
+                            return Err(error);
+                        }
                     }
                 }
             }
         }
+        final_event = "explicit-close";
         Ok(())
     })();
+    report(final_event);
     router.close();
     connections.clear();
     result

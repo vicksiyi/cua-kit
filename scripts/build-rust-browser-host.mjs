@@ -1,4 +1,4 @@
-import { access, chmod, copyFile, mkdir } from "node:fs/promises";
+import { access, chmod, copyFile, mkdir, rename, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,8 +34,14 @@ execFileSync(
 );
 await mkdir(join(crate, "dist"), { recursive: true });
 const destination = join(crate, "dist/core-browser-extension-host");
-await copyFile(
-  join(crate, "target/release/core-browser-extension-host"),
-  destination,
-);
-await chmod(destination, 0o755);
+const temporary = destination + `.${process.pid}.tmp`;
+try {
+  await copyFile(
+    join(crate, "target/release/core-browser-extension-host"),
+    temporary,
+  );
+  await chmod(temporary, 0o755);
+  await rename(temporary, destination);
+} finally {
+  await rm(temporary, { force: true });
+}

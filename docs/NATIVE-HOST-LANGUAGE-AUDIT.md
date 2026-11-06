@@ -12,10 +12,10 @@ The extractor reads compiler/source-path literals and `nm --demangle` symbols. I
 
 | Original Rust evidence | Current code / gap | Required direction |
 | --- | --- | --- |
-| `extension_host::main` | `packages/native-host/src/main.ts` still runs a Node host | Replace native host executable entry in Rust; retain installer/client JS where evidenced. |
-| `transport::unix::UnixSocketServer::{bind,accept}`, stdio reader/writer | `server.ts` owns Unix socket and framed stdio | Native transport/server belongs in Rust. Keep original JS native-pipe client bindings in TS. |
-| `rpc_router::RpcRouter::{register_message_from_client,route_message_to_client,remove_client}` | `router.ts` implements an independently designed request router | Reconstruct native routing in Rust; prove message-ID/lifecycle behavior rather than assuming the TS design matches the original. |
-| `client_writer::{ClientWriter,ClientWriterRegistry}`, enqueue/send/broadcast/evict | TS server uses writable-length checks and direct socket writes | Native queued writer and eviction lifecycle need explicit reconstruction and acceptance. Symbol names do not establish queue sizes or exact eviction semantics. |
+| `extension_host::main` | Rust `main.rs` is the default; TS `main.ts` is an explicit legacy entry | Retire remaining legacy consumers; retain installer/client JS where evidenced. |
+| `transport::unix::UnixSocketServer::{bind,accept}`, stdio reader/writer | Rust runtime owns default Unix/stdio service; `server.ts` remains a reference | Keep original JS native-pipe client bindings in TS; retire explicit legacy server consumers. |
+| `rpc_router::RpcRouter::{register_message_from_client,route_message_to_client,remove_client}` | Core Rust routing is implemented and selected; TS reference remains | Original message-ID/lifecycle algorithm parity still needs evidence beyond Core compatibility. |
+| `client_writer::{ClientWriter,ClientWriterRegistry}`, enqueue/send/broadcast/evict | Rust queued writers are integrated and tested; TS version is legacy | Original queue sizes and exact eviction semantics remain unproven by symbol names. |
 | `peer_authorization::PeerAuthorizer::authorize_unix_stream`, code-identity resolver | Core capability tokens authenticate current sockets | Original code-identity policy is not equivalent to Core token authentication. Keep this gap explicit; do not impersonate installed signed clients. |
 | `app_server::{AppServerManager,AppServerProcess,AppServerHostConfig}` | No corresponding original host manager in the current Core host | Manifest/version selection, process startup/status/shutdown remain part of full host scope. |
 | app-server proxy/WebSocket and tab context asset symbols | Simple browser RPC forwarding does not supply these capabilities | Investigate contracts and implement in native host; do not mark host complete after routing alone. |
@@ -23,7 +23,7 @@ The extractor reads compiler/source-path literals and `nm --demangle` symbols. I
 
 Two existing native-host files have separate **original JavaScript** evidence: `chrome_profile.ts` and `macos_browser_app.ts`. Those remain readable TS. Three files now have confirmed corresponding Rust roles (`main.ts`, `server.ts`, `router.ts`); ten remaining files still need finer ownership analysis. Native roles are confirmed, not native function bodies.
 
-The current production extension installer still uses `startNativeHost` through the TS entry. The independent CDP adapter now uses `startRustNativeHost` and the Rust executable. The remaining installation migration must switch the extension call path and validate installation, connection/authentication, multiple clients, framing, cancellation/disconnection and cleanup with owned fixtures. Removing only an export or replacing the demo supervisor leaves this native service in TS.
+The current extension installer now generates a Rust launcher; the independent CDP adapter uses `startRustNativeHost` and the Rust executable. Explicit legacy public APIs/tests still reach the TS reference server. Default-path migration is now validated with owned installation and browser fixtures; remaining legacy API/test consumers still require retirement. Removing only an export or replacing the demo supervisor leaves this native service in TS.
 
 ## Version-bound authorization evidence
 
@@ -79,3 +79,16 @@ Seven new process-level cases use restored `ExtensionBrowserPeer`, `BrowserRpcPe
 `npm run build:rust-browser-host` builds/copies the release executable. CDP demo CLI branches now build it automatically; direct callers need this build first. The broad reconstruction and browser/sandbox test commands include the prerequisite. The extension installation launcher remains Node-based and still needs migration.
 
 Validation: three deployment-binding cases cover RPC, idempotent close, child reaping, listener cleanup, startup failure and startup timeout. The root `npm run demo` isolated-browser Loop passes with the Rust browser host and Rust supervisor, using a local deterministic model; it opens/clicks/reads the fixture and returns the marker. The existing attached-browser/provider/MCP test also passes, preserving unrelated tabs and the attached browser on close. The attachment fixture is owned by the test; no daily Chrome instance was touched. CLI routing tests and native-host/CDP type checks pass. No paid DeepSeek run or original-host algorithm parity is claimed.
+
+
+## Extension installation default migrated
+
+`install:chrome` now builds the Rust executable and generates a shell launcher that directly execs it. `@core/native-host`'s `start` command also selects Rust; `start:legacy` retains the explicit Node reference entry. New configurations record native runtime metadata. A compatible existing Core registration under the caller's installation root is upgraded atomically after origin, config, ownership and path checks. The old launcher remains untouched and its registration is saved as private `previous-registration.json` for rollback; unrelated or changed registrations are refused. Repeating the install is idempotent. No daily Chrome registration was changed during this implementation turn.
+
+Native lifecycle logging preserves private, bounded JSONL metadata (`time`, `pid`, `event`) with no RPCs, page content or tokens. Rust reuses `chrono 0.4.45` for UTC formatting; this is an independent logging dependency, not an observed original-host dependency. Logs reject symlinks/hardlinks/shared permissions. `lifecycle.jsonl` is ignored by Git. Release executable replacement is atomic, so rebuilding does not overwrite the executable inode used by a running process.
+
+Fresh and legacy-upgrade fixtures pass actual generated-launcher RPC, idempotence, rollback-record preservation, incompatible-registration refusal and lifecycle/endpoint cleanup. The packaged native extension also passes real owned Chromium → Rust browser host → Rust supervisor → restored CUA/MCP page-operation acceptance. It verifies the registered runtime is Rust, not just that some host responds. This run did not use the full-extension deployment variant or daily Chrome.
+
+The explicit TS reference server/router APIs are not deleted yet. Original peer code-signature policy, app-server/proxy/tab asset semantics, full-extension acceptance after this migration, and complete native source fidelity remain open. Historical checkpoints above describe earlier stages; the default extension and CDP paths now both use the Core Rust host.
+
+Current host gate result after installer migration: 26 Rust tests and 16 cross-language/installation/process tests pass.

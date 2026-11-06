@@ -19,7 +19,11 @@ import {
   loadHostConfig,
   registerChromeNativeHost,
   registerNativeHostForProfile,
+  replaceOwnedNativeHostRegistration,
+  renderNativeHostLauncher,
 } from "./installation";
+
+import { resolveRustNativeHostExecutable } from "./native_process";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -37,6 +41,7 @@ async function main() {
   }
   if (!profile && process.platform !== "darwin")
     throw Error("Default Chrome installation currently supports macOS only");
+  const nativeExecutable = await resolveRustNativeHostExecutable();
   const extension = resolve("packages/browser-extension/dist/native-extension");
   const manifest = JSON.parse(
     await readFile(join(extension, "manifest.json"), "utf8"),
@@ -55,8 +60,11 @@ async function main() {
         `${HOST_NAME}.json`,
       );
   let existing: any;
+  let existingText: string | undefined;
+  let replaceExisting = false;
   try {
-    existing = JSON.parse(await readFile(registration, "utf8"));
+    existingText = await readFile(registration, "utf8");
+    existing = JSON.parse(existingText);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
@@ -82,16 +90,32 @@ async function main() {
       throw Error(
         "Existing native host configuration does not match this installation",
       );
-  } else {
+    const expectedLauncher = renderNativeHostLauncher(
+      [nativeExecutable],
+      join(dirname(existing.path), "config.json"),
+    );
+    replaceExisting =
+      config.runtime?.kind !== "rust" ||
+      config.runtime.executablePath !== nativeExecutable ||
+      (await readFile(existing.path, "utf8")) !== expectedLauncher;
+  }
+  if (!existing || replaceExisting) {
     const installation = await createNativeHostInstallation({
       parentDirectory: root,
-      nodePath: process.execPath,
-      entryPath: resolve("packages/native-host/dist/main.mjs"),
+      nativeExecutablePath: nativeExecutable,
       extensionIds: [extensionId],
       endpointParentDirectory: endpoints,
     });
     try {
-      if (profile) await registerNativeHostForProfile(installation, profile);
+      if (replaceExisting)
+        await replaceOwnedNativeHostRegistration({
+          registrationPath: registration,
+          expectedRegistration: existingText!,
+          root,
+          installation,
+        });
+      else if (profile)
+        await registerNativeHostForProfile(installation, profile);
       else await registerChromeNativeHost(installation, homedir());
     } catch (error) {
       await rm(installation.directory, { recursive: true, force: true });

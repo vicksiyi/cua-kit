@@ -32,7 +32,7 @@
     "build:reconstruction": "node scripts/build-reconstruction.mjs",
     "demo:deepseek": "node scripts/run-deepseek.mjs",
     "build:native-host": "node scripts/build-native-host.mjs",
-    "install:chrome": "npm run build:reconstruction && node packages/native-host/dist/install.mjs",
+    "install:chrome": "npm run build:reconstruction && npm run build:rust-browser-host && node packages/native-host/dist/install.mjs",
     "build:pages": "node scripts/build-reconstructed-pages.mjs",
     "build:full-extension": "node scripts/build-full-extension.mjs",
     "test:native:restored": "npm run build:native && CUA_NATIVE_LIVE_TEST=1 tsx --test reconstruction/native-macos-live.test.ts",

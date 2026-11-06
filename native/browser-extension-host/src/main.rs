@@ -7,11 +7,13 @@ mod unix {
         io::{self, Read},
         os::unix::fs::DirBuilderExt,
         path::PathBuf,
-        sync::atomic::{AtomicBool, Ordering},
+        sync::atomic::{AtomicBool, AtomicI32, Ordering},
     };
     static STOP: AtomicBool = AtomicBool::new(false);
-    extern "C" fn stop(_: libc::c_int) {
-        STOP.store(true, Ordering::Relaxed);
+    static SIGNAL: AtomicI32 = AtomicI32::new(0);
+    extern "C" fn stop(signal: libc::c_int) {
+        SIGNAL.store(signal, Ordering::Relaxed);
+        STOP.store(true, Ordering::Release);
     }
     pub fn run() -> io::Result<()> {
         // SAFETY: handler only stores to a lock-free atomic; no allocation or locks.
@@ -67,12 +69,39 @@ mod unix {
             .recursive(true)
             .mode(0o700)
             .create(&parent)?;
-        core_browser_extension_host::runtime::run(
+        let log = core_browser_extension_host::lifecycle_log::LifecycleLog::open(
+            &PathBuf::from(&args[1])
+                .parent()
+                .ok_or_else(|| io::Error::other("configuration parent missing"))?
+                .join("lifecycle.jsonl"),
+        )?;
+        log.record("starting")?;
+        let ready = std::cell::Cell::new(false);
+        let result = core_browser_extension_host::runtime::run_with_lifecycle(
             &parent,
             libc::STDIN_FILENO,
             libc::STDOUT_FILENO,
             &STOP,
-        )
+            &|event| {
+                if event == "ready" {
+                    ready.set(true);
+                }
+                let event = if event == "explicit-close" {
+                    match SIGNAL.load(Ordering::Relaxed) {
+                        libc::SIGINT => "signal-SIGINT",
+                        libc::SIGTERM => "signal-SIGTERM",
+                        _ => event,
+                    }
+                } else {
+                    event
+                };
+                let _ = log.record(event);
+            },
+        );
+        if result.is_err() && !ready.get() {
+            let _ = log.record("startup-error");
+        }
+        result
     }
 }
 fn main() {

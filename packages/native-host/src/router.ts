@@ -17,6 +17,7 @@ export function rpcMessage(value: unknown): RpcMessage {
     throw Error("Invalid RPC method");
   return message;
 }
+/** @deprecated TS reference router; production Core routing lives in native/browser-extension-host. */
 export class NativeHostRouter {
   private nextId = 0;
   private clients = new Map<string, (message: RpcMessage) => void>();

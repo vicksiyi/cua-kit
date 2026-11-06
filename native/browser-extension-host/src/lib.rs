@@ -6,6 +6,8 @@
 pub mod client_writer;
 #[cfg(unix)]
 pub mod endpoint;
+#[cfg(unix)]
+pub mod lifecycle_log;
 pub mod rpc_router;
 #[cfg(unix)]
 pub mod runtime;

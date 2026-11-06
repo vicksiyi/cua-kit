@@ -16,3 +16,6 @@ native/macos-sandbox/target/
 
 # Independent Rust browser extension host
 native/browser-extension-host/target/
+
+# Private native host diagnostic metadata
+lifecycle.jsonl

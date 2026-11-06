@@ -17,7 +17,8 @@ export interface NativeHostEndpoint {
   socketPath: string;
   token: string;
 }
-/** Local capability authentication is specific to @core. Original host is untouched. */
+/** @deprecated Legacy TS reference server. Production callers use startRustNativeHost.
+ * Local capability authentication is specific to @core. Original host is untouched. */
 export async function startNativeHost(
   input: Readable,
   output: Writable,

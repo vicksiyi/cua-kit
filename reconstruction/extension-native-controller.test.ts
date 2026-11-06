@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { mkdtemp, rm, readFile, writeFile, cp } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { chromium } from "playwright";
 
 for (const deployment of ["native", "full"] as const)
@@ -70,6 +70,9 @@ for (const deployment of ["native", "full"] as const)
         assert.ok(installed.includes(extensionId));
         assert.match(installed, /project .env was not changed/);
       }
+      const hostRegistration=JSON.parse(await readFile(join(root,"profile","NativeMessagingHosts","com.core.cua.json"),"utf8"));
+      const nativeConfig=JSON.parse(await readFile(join(dirname(hostRegistration.path),"config.json"),"utf8"));
+      assert.equal(nativeConfig.runtime?.kind,"rust","The installed browser host must be native Rust");
       const clickedMarkers = new Set<string>();
       const actionMarker = `action-completed-marker-${randomUUID()}`;
       const pageServer = createServer((request, response) => {

@@ -22,6 +22,14 @@ execFileSync(
   ["build", "--locked", "--manifest-path", manifest, "--bins", "--examples"],
   { cwd: root, stdio: "inherit" },
 );
+execFileSync(process.execPath, ["scripts/build-rust-browser-host.mjs"], {
+  cwd: root,
+  stdio: "inherit",
+});
+execFileSync(process.execPath, ["scripts/build-native-host.mjs"], {
+  cwd: root,
+  stdio: "inherit",
+});
 execFileSync(
   process.execPath,
   [
@@ -33,6 +41,7 @@ execFileSync(
     "reconstruction/native-host-rust-endpoint.test.ts",
     "reconstruction/native-host-rust-runtime.test.ts",
     "reconstruction/native-host-rust-process.test.ts",
+    "reconstruction/native-host-rust-installation.test.ts",
   ],
   {
     cwd: root,
