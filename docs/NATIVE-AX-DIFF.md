@@ -33,3 +33,19 @@ JS/TS 只保留原有调用参数及结果绑定。不能只在 TS 对上次/本
 
 本机 helper 的 Accessibility/Screen Recording 当前均为 false，真实 UI 差分尚无法验收。
 本次工作未改变权限、未启动原厂服务，也没有把缺失算法填成自拟实现。
+
+## JS/TS 到 IPC 的联合验证
+
+`reconstruction/sky-observation-chain.test.ts` 将实际 `bind_mac_app` →
+`get_app_state` → 审批策略 → `MacComputerUseClient` 串起来，以本机原 JS 模块为对照；
+仅替换 native transport 的端点响应，不启动原厂原生服务。
+
+三个观察 API 各覆盖 omitted/false/true，共九组：
+- getAXState 和 getAXStateAndScreenshot 将 disableDiffing 转成 disableDiff，显式 false 不丢失。
+- 参数省略时，最终 IPC payload 不携带 disableDiff。
+- getScreenshot 只发 app；即使动态调用传入 disableDiffing，也不转发，和原 JS 一致。
+- 策略检查使用请求的应用名称，观察请求使用审批解析后的 appPath。
+- 另覆盖一次拒绝审批：只有 policy 请求，没有 skyshot 请求。
+
+原 JS 与还原 TS 的请求、审批参数和返回值逐项一致。本次因此没有改动上层传参逻辑；
+已确认的断点仍在 Swift IPC 接收后，不能把“参数正确到达 transport”当作差分算法已经实现。
