@@ -34,3 +34,5 @@ pub mod limits;
 pub mod tool_overrides;
 
 pub mod completion_summary;
+
+pub mod authenticated_fetch;

@@ -1,0 +1,30 @@
+{
+  "artifact": "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl",
+  "sha256": "44d08fb5c7346c53c869a9853c93090b3c10457950c2861ce8bdc4baabab5632",
+  "function": "node_repl::authenticated_fetch::outbound_passthrough_request",
+  "range": [
+    "0x1002712b8",
+    "0x100271524"
+  ],
+  "dependencies": {
+    "http": "1.4.0",
+    "base64": "0.22.1",
+    "url": "2.5.8"
+  },
+  "steps": [
+    "http::Method::from_bytes at 0x1002712ec",
+    "optional body decoded at 0x100271324; absent -> empty vector at 0x100271394",
+    "header vector clone at 0x1002713b8",
+    "move already-resolved URL and method/body/header fields into output"
+  ],
+  "methodError": "nodeRepl.fetch method is invalid",
+  "bodyError": "nodeRepl.fetch body is invalid",
+  "base64Alphabet": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+  "base64ConfigurationBytes": [
+    1,
+    0,
+    1
+  ],
+  "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
+  "limits": "Static reconstruction, no original execution. URL resolution/authority, authenticated headers, app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
+}

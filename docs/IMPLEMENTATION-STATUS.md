@@ -6468,3 +6468,12 @@ Expanded real Rust rmcp stdio acceptance to verify kernel reads of outside files
 Confirmed native ReplManager/BackgroundHost dispatch support and existing worker-level tests for originating metadata and completion between cells. Added an end-to-end callback-lifetime test using actual restored workers: the host callback signals cancellation after receiving nodeRepl.fetch, its pending future is dropped, and the next execution uses fresh worker state. That test and the two existing fetch tests pass. The two Rust sandbox-launcher tests also pass after switching their bootstrap path to the canonical native binding, removing an accidental legacy dist dependency.
 
 The standalone deployment_host does not configure authenticated outbound HTTP. This remains a concrete production gap requiring original transport/credential-authority evidence; generic HTTP or user credentials must not be silently substituted. These tests establish native callback orchestration, not the vendor backend transport or full retirement of the TS comparison suite.
+
+
+### Native fetch request preparation from binary evidence
+
+Pinned node_repl SHA 44d08fb5c7346c53c869a9853c93090b3c10457950c2861ce8bdc4baabab5632 exposes resolved_request, outbound_passthrough_request, outbound_authenticated_request, AuthenticatedFetchService and ReqwestHttpClient symbols. Added a reproducible static audit for outbound_passthrough_request (0x1002712b8..0x100271524), its diagnostics, method/base64/header-clone calls and standard-base64 alphabet/configuration bytes.
+
+Rust authenticated_fetch.rs now prepares that outbound request from an already resolved URL: http::Method validation first, optional base64 body decode second, then an unchanged ordered header clone. It preserves custom method casing and duplicate headers; later HTTP header validation is a separate layer. Reused the evidenced http 1.4.0 crate and existing base64 0.22.1/url 2.5.8 instead of custom parsers. The locked two-test gate covers validation precedence, invalid methods/base64, absent/empty/binary bodies and preservation of URL/header fields.
+
+No outbound network or credential use was added. URL routing/authorization, authenticated header construction, app-server credential integration and Reqwest send remain under reconstruction; this constructor is not yet wired into the standalone deployment. Native source bodies are unavailable, so the implementation is static contract reconstruction, not recovered source or dynamic parity.

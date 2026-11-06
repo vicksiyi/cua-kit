@@ -1,7 +1,7 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 32,
+    "build-or-deployment-script-review": 33,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-native-host-reference-retirement-pending": 5,
@@ -9,7 +9,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 10,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 77,
+    "native-implementation-language-not-yet-parity-proof": 78,
     "native-process-caller-binding-not-native-service": 1,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
@@ -4212,6 +4212,11 @@
       "sha256": "e9d3cfa3a8b1217775eb6cbd2b9e2fdce055e4b3119a795dffd0a26d13c43166"
     },
     {
+      "path": "native/runtime-supervisor/src/authenticated_fetch.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "b0ce10e56779a6b6e3915116f7b0dec4d2e7c1593555ce5fde7f74f0cb881b5d"
+    },
+    {
       "path": "native/runtime-supervisor/src/background_host.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "b6dd11966dc7908476c36e2eefbf2c03b4fd6e23076da4eaad4aae7d59abdb66"
@@ -4239,7 +4244,7 @@
     {
       "path": "native/runtime-supervisor/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "f95f61d2a073fe340eabe9f8f77cd02c9d24d1c7b3e7967b5535b8110ac02a29"
+      "sha256": "927f131ff460544d9f4c05cde9f4d9cc3fb52bdb29d6740e69677a003de75375"
     },
     {
       "path": "native/runtime-supervisor/src/limits.rs",
@@ -4320,6 +4325,11 @@
       "path": "scripts/audit-native-control-protocol.py",
       "category": "build-or-deployment-script-review",
       "sha256": "0a9b6ffc621f1601f2d6079ca9d5e96c264312deb49c4d91fe0f1a994e1237d9"
+    },
+    {
+      "path": "scripts/audit-native-fetch-protocol.py",
+      "category": "build-or-deployment-script-review",
+      "sha256": "2cde7b56a66713b13aecb37e4e46d6faa88280316d16f0ebb9af31739226a0c0"
     },
     {
       "path": "scripts/audit-native-language.py",
