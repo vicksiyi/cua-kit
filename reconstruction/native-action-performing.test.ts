@@ -444,3 +444,18 @@ test("native Chromium window probe preserves first-child scope", {
     assert.match(result.stdout, /Chromium window probe preserves first-child limits, exact attribute and decode failure/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native bundle classification preserves metadata predicates", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-bundle-"));
+  try {
+    const output = join(directory, "bundle");
+    await exec("xcrun", ["swiftc",
+      resolve("native/macos/Sources/CuaHelper/BundleWebClassification.swift"),
+      resolve("native/macos/Tests/BundleWebClassificationTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /bundle classification preserves exact schemes, typed arrays and principal-class predicates/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

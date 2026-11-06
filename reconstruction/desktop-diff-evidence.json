@@ -2867,6 +2867,35 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementChromiumWindow.swift",
       "limitations": "Window probe is a dependency-injected helper. Original raw array decoding and full application/context composition not wired here."
     },
+    "bundleWebClassification": {
+      "http": "0x1002561f0..<0x10025644c: objectForInfoDictionaryKey CFBundleURLTypes cast as [[String:Any]], each CFBundleURLSchemes cast as [String], contains exact http; no lowercasing or https alternative",
+      "types": {
+        "0x1012939dc": "SaySDySSypGG = [[String:Any]]",
+        "0x1012939ea": "SaySSG = [String]"
+      },
+      "electron": "0x100256494..<0x1002565d0: NSPrincipalClass as? String == AtomApplication",
+      "chromium": "0x1002565d0..<0x100256708: NSPrincipalClass as? String == BrowserCrApplication",
+      "composition": "Application classifier short circuits HTTP, Electron, Chromium in that order",
+      "blocks": [
+        {
+          "start": "0x1002561f0",
+          "endExclusive": "0x10025644c",
+          "machineCodeSha256": "382da0ac308a62073380717db8b6d9cd54ae0675d9abf79abe21439f31004c15"
+        },
+        {
+          "start": "0x100256494",
+          "endExclusive": "0x100256708",
+          "machineCodeSha256": "a819fd5ab1a62cc939fcd4a9013b019cbd89891d617f8a0537f0b1d0d87c012e"
+        },
+        {
+          "start": "0x100256a00",
+          "endExclusive": "0x100256a54",
+          "machineCodeSha256": "e95092b74d399f58d084f2dedfd8444de212a40c4888bfe4005dc44c78a5a67f"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/BundleWebClassification.swift",
+      "limitations": "Bundle predicates and combination restored. AX PID/running-app resolution and full context constructor integration still pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

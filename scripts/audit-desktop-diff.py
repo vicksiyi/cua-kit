@@ -1079,6 +1079,16 @@ element_storage_evidence['chromiumWindowProbe']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementChromiumWindow.swift',
     'limitations':'Window probe is a dependency-injected helper. Original raw array decoding and full application/context composition not wired here.',
 }
+element_storage_evidence['bundleWebClassification']={
+    'http':'0x1002561f0..<0x10025644c: objectForInfoDictionaryKey CFBundleURLTypes cast as [[String:Any]], each CFBundleURLSchemes cast as [String], contains exact http; no lowercasing or https alternative',
+    'types':{'0x1012939dc':'SaySDySSypGG = [[String:Any]]','0x1012939ea':'SaySSG = [String]'},
+    'electron':'0x100256494..<0x1002565d0: NSPrincipalClass as? String == AtomApplication',
+    'chromium':'0x1002565d0..<0x100256708: NSPrincipalClass as? String == BrowserCrApplication',
+    'composition':'Application classifier short circuits HTTP, Electron, Chromium in that order',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1002561f0,0x10025644c),(0x100256494,0x100256708),(0x100256a00,0x100256a54)]],
+    'implementation':'native/macos/Sources/CuaHelper/BundleWebClassification.swift',
+    'limitations':'Bundle predicates and combination restored. AX PID/running-app resolution and full context constructor integration still pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

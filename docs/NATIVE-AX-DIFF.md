@@ -2129,3 +2129,18 @@ ChromeAXNodeId。常量在 0x10079c8e0..<0x10079c91c 中确认，大小写必须
 按 supportsHTTPScheme、isElectronApp、isChromiumApp 顺序短路；它是 Web 形态
 判断，不能直接等同于窗口的 Chromium 标志。context 构造中重复查询该判断，
 第二次为真且存在窗口时才调用上述窗口探测。三个 bundle 谓词仍待进一步核查。
+
+### Bundle 的 Web 形态识别
+
+已核实并恢复三个 Bundle 谓词：supportsHTTPScheme 将 CFBundleURLTypes 整体
+转为 [[String:Any]]，逐项将 CFBundleURLSchemes 转为 [String]，只匹配精确
+小写 http，不匹配 https 或 HTTP。类型引用 0x1012939dc/0x1012939ea 分别
+为 SaySDySSypGG / SaySSG。错误数组元素使对应动态转换失败，不能静默过滤。
+
+isElectronApp 比较 NSPrincipalClass == AtomApplication；isChromiumApp
+比较 NSPrincipalClass == BrowserCrApplication。应用层按 HTTP、Electron、
+Chromium 顺序短路。均通过 object(forInfoDictionaryKey:) 读取，不做 app 名称、
+bundle ID 模糊匹配或类继承推断。
+
+异常元数据、数组转换、大小写和临时真实 .app Bundle 的主类测试通过。AX PID
+到 running app/bundle 的解析及完整 context 构造仍需组合接入。
