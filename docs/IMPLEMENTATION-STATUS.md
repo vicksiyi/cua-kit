@@ -6181,3 +6181,10 @@ Restored the replay bookkeeping in Rust. Two tests cover field presence/types, r
 Restored write_shared_websocket_frame and close_websocket_writer in Rust. The original uses direct std TCP writes, not an evidenced third-party websocket writer: one mutex covers FIN/opcode header and unchanged payload; server frames are unmasked, with 7/16/64-bit big-endian lengths. Close sends an empty close frame then reacquires the lock for shutdown(Both), ignoring errors. The native poison message is retained.
 
 Two real loopback TCP tests pass: payload lengths 0/125/126/65535/65536, close frame then EOF, and 400 frames from eight concurrent writers with no header/payload interleaving. No external connection was made. These are transport primitives; websocket handshake/parser, authorization and stdout worker/state composition remain incomplete.
+
+
+### 2026-11-06: compose per-line stdout delivery with websocket state
+
+Added output-state generation, replay and shared-writer ownership plus deliver_line. It composes initialize caching, same-generation writer selection, unlocked TCP frame write, identity-checked detach on write error, and unattached request buffering. A failed frame is not requeued by the native branch. Arc identity is checked rather than socket address or descriptor; even a new Arc around try_clone of the same TCP socket must not detach the stored writer.
+
+Three output tests pass, including actual socket delivery of non-JSON text, stale-generation suppression, distinct-Arc detach rejection, forced write failure with no requeue and buffering of the subsequent request. This is now composed per-line behavior, but not a complete stdout thread: read/EOF diagnostics and lifecycle cleanup, attach replay and manager ownership still remain open.

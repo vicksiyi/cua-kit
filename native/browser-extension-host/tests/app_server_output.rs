@@ -54,3 +54,48 @@ fn replay_caps_at_128_without_eviction_and_line_trimming_is_only_cr_lf() {
     assert_eq!(payload("\r\n\r"), None);
     assert_eq!(payload("{} \r\n"), Some("{} "));
 }
+
+#[test]
+fn composed_delivery_uses_socket_then_buffers_only_after_disconnect() {
+    use core_browser_extension_host::app_server_output::{
+        deliver_line, detach_writer, Delivery, OutputState,
+    };
+    use std::{
+        io::Read,
+        net::{Shutdown, TcpListener, TcpStream},
+        sync::{Arc, Mutex},
+        time::Duration,
+    };
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let writer = Arc::new(Mutex::new(
+        TcpStream::connect(listener.local_addr().unwrap()).unwrap(),
+    ));
+    let (mut peer, _) = listener.accept().unwrap();
+    peer.set_read_timeout(Some(Duration::from_secs(3))).unwrap();
+    let state = Arc::new(Mutex::new(OutputState {
+        generation: 4,
+        writer: Some(writer.clone()),
+        ..Default::default()
+    }));
+    // Attached clients receive raw lines, including text that is not valid JSON.
+    assert_eq!(deliver_line(&state, 4, "raw text\r\n"), Delivery::Sent);
+    let mut frame = [0; 10];
+    peer.read_exact(&mut frame).unwrap();
+    assert_eq!(&frame, b"\x81\x08raw text");
+    assert_eq!(
+        deliver_line(&state, 3, r#"{"method":"old","id":0}"#),
+        Delivery::Dropped
+    );
+    assert!(state.lock().unwrap().replay.pending_requests.is_empty());
+    // Distinct Arc identity, even for a clone of the same underlying TCP socket.
+    let other = Arc::new(Mutex::new(writer.lock().unwrap().try_clone().unwrap()));
+    detach_writer(&state, &other);
+    assert!(state.lock().unwrap().writer.is_some());
+    writer.lock().unwrap().shutdown(Shutdown::Write).unwrap();
+    let request = r#"{"method":"request","id":1}"#;
+    assert_eq!(deliver_line(&state, 4, request), Delivery::WriteFailed);
+    assert!(state.lock().unwrap().writer.is_none());
+    assert!(state.lock().unwrap().replay.pending_requests.is_empty());
+    assert_eq!(deliver_line(&state, 4, request), Delivery::Buffered);
+    assert_eq!(state.lock().unwrap().replay.pending_requests, [request]);
+}

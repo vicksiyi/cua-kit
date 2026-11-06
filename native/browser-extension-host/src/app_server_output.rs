@@ -61,3 +61,71 @@ impl OutputReplay {
         }
     }
 }
+
+use crate::app_server_websocket::{write_frame, SharedWriter};
+use std::sync::{Arc, Mutex};
+
+/// Output-related subset of AppServerProcessState. Lifecycle fields remain with
+/// the process owner; generation must be updated there when replacing a child.
+#[derive(Default)]
+pub struct OutputState {
+    pub generation: u64,
+    pub replay: OutputReplay,
+    pub writer: Option<SharedWriter>,
+}
+pub type SharedOutput = Arc<Mutex<OutputState>>;
+
+pub fn detach_writer(state: &SharedOutput, expected: &SharedWriter) {
+    if let Ok(mut state) = state.lock() {
+        if state
+            .writer
+            .as_ref()
+            .is_some_and(|writer| Arc::ptr_eq(writer, expected))
+        {
+            state.writer = None;
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Delivery {
+    Empty,
+    Sent,
+    Buffered,
+    Dropped,
+    WriteFailed,
+}
+
+/// Compose the native per-line path. Socket writes occur outside the state lock.
+/// On write failure detach only that writer; do not requeue the failed frame.
+/// The outcome lets the eventual reader reproduce diagnostic logging separately.
+pub fn deliver_line(state: &SharedOutput, generation: u64, line: &str) -> Delivery {
+    let Some(line) = payload(line) else {
+        return Delivery::Empty;
+    };
+    if let Ok(mut state) = state.lock() {
+        let current = state.generation;
+        state.replay.observe_initialize(line, current, generation);
+    }
+    let writer = state.lock().ok().and_then(|state| {
+        if state.generation == generation {
+            state.writer.clone()
+        } else {
+            None
+        }
+    });
+    if let Some(writer) = writer {
+        if write_frame(&writer, 1, line.as_bytes()).is_err() {
+            detach_writer(state, &writer);
+            return Delivery::WriteFailed;
+        }
+        return Delivery::Sent;
+    }
+    if let Ok(mut state) = state.lock() {
+        let current = state.generation;
+        if state.replay.buffer_unattached(line, current, generation) {
+            return Delivery::Buffered;
+        }
+    }
+    Delivery::Dropped
+}

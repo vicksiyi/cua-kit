@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+detach_writer = disassemble(0x100021970, 0x100021a94)
 websocket_write = disassemble(0x100024584, 0x100024810)
 websocket_close = disassemble(0x1000224b4, 0x100022634)
 stdout_forward = disassemble(0x100026bf8, 0x100027664)
@@ -434,6 +435,14 @@ result = {
         'shutdownBoth': evidence(websocket_close, 0x100022554, 0x100022560, ['#0x2', 'shutdown']),
         'semantics': 'Mutex covers header and payload write_all. FIN OR opcode; no masking; lengths <126, <65536, otherwise u64 big endian. No helper-level opcode/control-frame validation. Close attempts empty opcode-8 frame then reacquires lock and shuts down both directions, ignoring errors.',
         'integrationStatus': 'Actual TCP frame boundaries and 400 concurrent frames tested. Handshake, frame reader, authorization and complete stdout worker remain separate work.',
+    },
+    'composedOutputDelivery': {
+        'implementation': 'native/browser-extension-host/src/app_server_output.rs::{OutputState,deliver_line,detach_writer}',
+        'writerSelection': evidence(stdout_forward, 0x1000270d8, 0x10002711c, ['#0x108', '#0x100', 'Mutex>::unlock']),
+        'writeFailureDetach': evidence(stdout_forward, 0x100027124, 0x100027154, ['#0x1', 'write_shared_websocket_frame', 'detach_client_writer']),
+        'identityNotSocketAddress': evidence(detach_writer, 0x1000219bc, 0x1000219f0, ['#0x100', 'cmp', '0x1000219f0', 'str']),
+        'semantics': 'Cache initialize, then select same-generation writer under state lock; write outside lock. Failed write detaches only pointer-identical Arc and does not requeue that frame. Without selected writer, apply request replay rules. Mutex poison does not recover state.',
+        'integrationStatus': 'Per-line composition tested with real TCP and write shutdown. Reader loop, lifecycle EOF cleanup, attach replay and manager integration remain incomplete.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
