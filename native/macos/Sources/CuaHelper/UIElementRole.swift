@@ -5,6 +5,7 @@ import Foundation
 struct UIElementRole: Hashable {
     // Static initializer 0x1007b9798 encodes exactly AXUnknown.
     static let unknown = UIElementRole("AXUnknown")
+    static let button = UIElementRole("AXButton")
 
     let name: CFString
 

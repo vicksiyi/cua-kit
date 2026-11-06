@@ -1357,3 +1357,21 @@ ignoringTypeMismatch:false)。增页按钮 getter 从 AXChildren 开始，但其
 直接改 AXValue 或坐标滚轮代替原路径。生产接入仍需具体 ScrollBarUIElement、完整
 value 解码/按钮发现、菜单祖先准备及协议/provider；真实 UI 滚动效果尚未验收。
 本轮未调用模型或执行 UI 操作。
+
+## 翻页按钮子节点筛选（2026-11-07）
+
+增页/减页 getter 分别位于 0x1007277a4、0x100727cb0。二者读取 AXChildren 后按数组
+顺序检查缓存 role，先要求 UIElementRole.button，再解码缓存 subrole。增页比较
+AXIncrementPage（0x100727b0c..0x100727b30），减页比较 AXDecrementPage
+（0x100728018..0x10072803c）；缺失/类型错误跳过，首个匹配返回，未匹配返回 nil。
+返回的协议盒保留原子节点 AX 引用和缓存字段，而非重新绑定/读取。
+
+恢复 ScrollBarPageButton.find(in:) 与 UIElementRole.button，使用已恢复的具体
+UIElement 缓存角色与子角色解码。测试覆盖空数组、缺失或非字符串 role/subrole、
+错误角色、箭头按钮、大小写不匹配、重复匹配顺序及 AX 引用/缓存保持；同时把选中
+按钮接入上一轮 uiElementScrollUsingScrollBar，验证真实选择结果送到 .press 边界。
+测试和 Swift 构建通过；构建仍有既有的 CFArray cast 与 deprecated API 警告。
+
+这里传入已解码的 [UIElement]，没有将 AXChildren 解码和 ScrollBarUIElement 包装器
+伪装为完成。原协议级返回 existential 以及 provider/生产接线仍需继续恢复。
+未执行原版二进制、真实 UI 按键或模型请求。

@@ -990,6 +990,19 @@ element_storage_evidence['scrollUsingScrollBar']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift',
     'limitations':'Control flow restored with injected typed getter/perform boundaries and tested in composition with action dispatch. Concrete ScrollBarUIElement construction, page-button discovery, full protocol wiring and live UI acceptance remain pending.',
 }
+element_storage_evidence['scrollBarPageButtons']={
+    'incrementEntry':'0x1007277a4', 'decrementEntry':'0x100727cb0',
+    'children':'reads AXChildren using 0x1007244e4, then traverses array in order',
+    'role':'cached role String decoding, unknown fallback; compare UIElementRole.button before subrole lookup',
+    'subroles':{'increment':'AXIncrementPage','decrement':'AXDecrementPage'},
+    'literalSites':['0x100727b0c..0x100727b30','0x100728018..0x10072803c'],
+    'selection':'first matching role+subrole; missing or decode-failed values skip; empty/no match returns nil',
+    'identity':'0x100727c84..0x100727c8c and 0x100728190..0x100728198 preserve original child AX/cache fields in UIElement protocol box',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007277a4,0x100727cb0),(0x100727cb0,0x1007281bc)]],
+    'implementation':'native/macos/Sources/CuaHelper/ScrollBarPageButton.swift',
+    'limitations':'Concrete cached child selection restored and composed with scroll execution; AXChildren array decoding, ScrollBarUIElement wrapper and full protocol/provider integration remain pending.',
+}
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
     'condition':'0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing',
