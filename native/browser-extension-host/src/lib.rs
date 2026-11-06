@@ -11,4 +11,5 @@ pub mod lifecycle_log;
 pub mod rpc_router;
 #[cfg(unix)]
 pub mod runtime;
+pub mod tab_context_asset;
 pub mod transport;

@@ -6010,3 +6010,8 @@ Validation: native-host/CDP type checks; 10 boundary/discovery/pipe-auth tests; 
 ### 2026-11-06: identify missing native control plane from actual instructions
 
 Added a hash-pinned static extractor for the installed ARM64 Native Host. It reconstructs ten `codexRuntime/*` method names from comparison operands, records instruction addresses, confirms shared abort/remove dispatch, and recovers the 16-active-asset / 100-MiB-per-asset limits. The current Rust host has no matching control dispatcher; browser-operation acceptance does not cover this gap. Implementation priority is now concrete native attachment/control contracts followed by manifest/process/WebSocket lifecycle, rather than another TS transport wrapper. The audit neither executes the original host nor claims these methods are implemented.
+
+
+### 2026-11-06: reconstruct attachment filename rules in Rust
+
+The new native tab_context_asset module implements the observed reserved-character mask, slash/backslash component selection and 218-byte UTF-8 truncation with extension preservation. Two native tests cover ASCII, whitespace/path edges and 1196 Unicode/length combinations; the pinned evidence extractor now records the corresponding machine instructions. This is a native implementation increment, not a functioning attachment API yet: storage lifecycle and control dispatch are still pending.

@@ -130,3 +130,12 @@ The asset create comparison permits at most 16 active entries. Append decodes wi
 Current `runtime.rs` forwards extension input to `RpcRouter::from_extension` without a native control dispatcher. Therefore the passing browser navigation tests do not exercise this separate control plane. The next implementation must intercept the evidenced native methods at the correct input boundary, preserve normal browser routing for unhandled methods, and implement asset/process ownership in Rust. Do not advertise all methods in hello until their real contracts are supported. The methods are also distinct from the existing browser-context/pageAssets APIs.
 
 This audit is static only: no vendor host, app-server, file opener, browser profile, or network endpoint was executed. Manifest selection, complete hello/status/error schemas, filename edge cases, control authorization and WebSocket proxy remain required before parity can be claimed.
+
+
+### 2026-11-06: reconstruct native attachment filename handling
+
+Added `native/browser-extension-host/src/tab_context_asset.rs` with the native attachment limits and filename sanitizer, reconstructed from the same pinned ARM64 artifact. The binary chooses the last nonempty slash/backslash segment, substitutes the explicit reserved-character mask plus `|`, trims Unicode whitespace and falls back to `tab-context.txt`. Its 218-byte bound is UTF-8 byte based; long names retain the last extension when a nonempty truncated stem fits, otherwise the whole name is truncated at a character boundary. This behavior stays Rust. The extended static evidence records the mask and branch instructions.
+
+Two native tests pass: exhaustive ASCII checks against the independently decoded bit mask, path/whitespace cases, exact boundary and fallback cases, plus 1196 Unicode/length combinations. No original native function was executed, so this is instruction-supported reconstruction, not dynamic differential parity. The sanitizer deliberately does not introduce unobserved character filtering. It is not sufficient path authorization: the original create operation also prefixes a UUID.
+
+The module is not wired into the runtime yet. Asset storage/create/append/finish/remove, UUID path composition, cleanup ownership and the native control dispatcher remain required; no attachment capability is advertised by this change.

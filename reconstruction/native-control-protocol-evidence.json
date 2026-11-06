@@ -77,6 +77,51 @@
       ]
     }
   },
+  "fileNameSanitization": {
+    "implementation": "native/browser-extension-host/src/tab_context_asset.rs",
+    "component": "Last nonempty slash/backslash component, before trimming whitespace; fallback tab-context.txt",
+    "reservedCharacters": [
+      "\"",
+      "%",
+      "*",
+      ":",
+      "<",
+      ">",
+      "?",
+      "|"
+    ],
+    "replacement": "_",
+    "maxUtf8Bytes": 218,
+    "extension": "Preserve last-dot suffix only when dot is noninitial, suffix is shorter than 218 bytes and truncated trimmed stem remains nonempty; otherwise truncate whole name at UTF-8 boundary and trim.",
+    "maskInstructions": [
+      "100029cb8: d2c08497    \tmov\tx23, #0x42400000000     ; =4552665333760",
+      "100029cbc: f2fa8017    \tmovk\tx23, #0xd400, lsl #48"
+    ],
+    "pipeAndNonAsciiInstructions": [
+      "100029d84: 7101f35f    \tcmp\tw26, #0x7c",
+      "100029d88: 54fffe80    \tb.eq\t0x100029d58 <<alloc::string::String as core::iter::traits::collect::FromIterator<char>>::from_iter::<core::iter::adapters::map::Map<core::str::iter::Chars, extension_host::app_server::sanitize_tab_context_asset_file_name::{closure#1}>>+0x134>",
+      "100029d8c: 7102035f    \tcmp\tw26, #0x80",
+      "100029d90: 54000062    \tb.hs\t0x100029d9c <<alloc::string::String as core::iter::traits::collect::FromIterator<char>>::from_iter::<core::iter::adapters::map::Map<core::str::iter::Chars, extension_host::app_server::sanitize_tab_context_asset_file_name::{closure#1}>>+0x178>",
+      "100029d94: aa1a03fb    \tmov\tx27, x26",
+      "100029d98: 17fffff0    \tb\t0x100029d58 <<alloc::string::String as core::iter::traits::collect::FromIterator<char>>::from_iter::<core::iter::adapters::map::Map<core::str::iter::Chars, extension_host::app_server::sanitize_tab_context_asset_file_name::{closure#1}>>+0x134>"
+    ],
+    "lengthInstructions": [
+      "100016338: b4000298    \tcbz\tx24, 0x100016388 <<extension_host::app_server::AppServerManager>::create_tab_context_asset+0x3b0>",
+      "10001633c: f1036f1f    \tcmp\tx24, #0xdb",
+      "100016340: 54000442    \tb.hs\t0x1000163c8 <<extension_host::app_server::AppServerManager>::create_tab_context_asset+0x3f0>"
+    ],
+    "extensionLimitInstructions": [
+      "100016408: b40003e2    \tcbz\tx2, 0x100016484 <<extension_host::app_server::AppServerManager>::create_tab_context_asset+0x4ac>",
+      "10001640c: 8b020329    \tadd\tx9, x25, x2",
+      "100016410: cb020308    \tsub\tx8, x24, x2",
+      "100016414: a90da3e9    \tstp\tx9, x8, [sp, #0xd8]",
+      "100016418: f103691f    \tcmp\tx8, #0xda",
+      "10001641c: 54000342    \tb.hs\t0x100016484 <<extension_host::app_server::AppServerManager>::create_tab_context_asset+0x4ac>",
+      "100016420: 52801b49    \tmov\tw9, #0xda               ; =218",
+      "100016424: cb080121    \tsub\tx1, x9, x8"
+    ],
+    "limit": "Static reconstruction; no direct invocation of the original native function. Sanitization alone is not path authorization; original create subsequently prefixes a UUID."
+  },
   "dependenciesObservedInCalls": [
     "uuid::Uuid::new_v4",
     "base64::engine::Engine::decode",
