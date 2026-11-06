@@ -761,3 +761,31 @@ provider regression and Swift build pass as well.
 This establishes a tested bootstrap path but does not prove interoperability
 with a real installed CLI, its organization policy, approval persistence or the
 rest of app/browser operation. Those remain separate acceptance requirements.
+
+## Rust supervisor policy-source boundary
+
+Inspecting the actual deployment revealed that `NativeService::spawn` clears
+inherited environment and always injected `CORE_CUA_APP_POLICY`. The Swift
+app-server bootstrap therefore was not reachable through the existing Rust
+spec, despite direct Swift IPC integration passing.
+
+The host Rust spec now distinguishes omitted local rules from an explicitly
+configured empty map, supports `policy_source: "app-server"` and optional
+`codex_cli_path`, and forwards the selected settings to the owned helper.
+Default standalone behavior and explicit-rule serialization are preserved.
+Conflicting sources, unknown modes, null/non-map rules and standalone CLI-path
+configuration fail instead of discarding rules or silently changing sources.
+These are host deployment choices; no additional vendor behavior is claimed.
+
+Four Rust tests cover defaults/rules, exact environment construction, rejection
+before helper resolution/launch, and real process-boundary environment delivery
+with an owned Node helper and readiness socket for both sources. macOS may add
+`__CF_USER_TEXT_ENCODING` inside the child; that runtime-created key is excluded
+from the environment comparison. No vendor service or CLI was launched and no
+model request, application operation or local policy change was made.
+
+Remaining before this source can be selected from the DeepSeek demo: environment
+filter forwarding, TypeScript spec-generation selection/conflict validation,
+and source-aware model/terminal policy context. Real CLI integration and full
+approval persistence remain open. The direct Rust spec support alone must not
+be reported as completing that end-to-end path.

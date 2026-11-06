@@ -504,3 +504,37 @@ the production writer waits against the unread receiver, then cancellation must
 complete with exit code 0. The existing isolated Rust/CDP browser regression and
 AgentLoop TypeScript check also pass. The CLI --check-computer and the real
 DeepSeek loop exited successfully. Full UI acceptance and native parity remain open.
+
+### Native policy source in the supervisor spec
+
+The owned Swift service now accepts an explicit source selection in the Rust
+`native_service` JSON configuration. This is host integration configuration,
+not a vendor setting. The default is unchanged: omitted `policy_source` means
+`standalone`, and omitted `app_policy` produces `{}` (deny unlisted apps).
+
+For the restored app-server provider, a direct supervisor spec can use:
+
+```json
+{
+  "helper": "/absolute/path/to/cua-helper",
+  "directory": "/absolute/path/to/private-directory",
+  "policy_source": "app-server",
+  "codex_cli_path": "/absolute/path/to/selected-cli"
+}
+```
+
+`codex_cli_path` is optional; the Swift provider retains its recovered launch
+selection if omitted. In this mode, `app_policy` must be absent, including an
+explicit empty map. Conversely, `codex_cli_path` is rejected in standalone mode.
+Unknown source values and null/non-map rules are rejected. Conflicts fail before
+filesystem creation or helper launch. The supervisor explicitly forwards only
+the selected source/path, PATH and LANG; it does not inherit model tokens or all
+host environment variables. It does not inject `CORE_CUA_APP_POLICY` in app-server
+mode. No existing configuration is changed by adding this option.
+
+Validation includes an owned Node helper over the real ProcessWorker spawn and
+readiness path, asserting the received environment and shutdown cleanup for both
+sources. The native Swift provider has separate owned-peer policy tests. This
+is not yet proof of the complete DeepSeek launcher path: its environment filter,
+spec generator and standalone-specific model context still need source-aware
+wiring. Real CLI interoperability and approvals remain unverified.
