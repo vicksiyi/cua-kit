@@ -1,7 +1,7 @@
 import ApplicationServices
 
 // Concrete branches of the native parameter encoder at 0x1006ea3e4.
-// UIElement wrapper extraction and generic Any-to-object fallback remain separate.
+// Dynamic UIElement extraction and Any fallback live in AXDynamicParameterEncoding.swift.
 func encodedAXParameter(_ value: UITextMarker) -> AXTextMarker { value.marker }
 func encodedAXParameter(_ value: UITextMarkerRange) -> AXTextMarkerRange { value.range }
 func encodedAXParameter(_ value: CFRange) throws -> AXValue { try createAXParameterValue(value, type: .cfRange) }

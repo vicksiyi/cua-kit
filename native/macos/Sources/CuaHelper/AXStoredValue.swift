@@ -1,6 +1,7 @@
 import Foundation
 
-// Native AXEncodedValue storage, not its still-incomplete init(wrapping: Any).
+// Native AXEncodedValue storage; init(wrapping: Any) is implemented in
+// AXDynamicParameterEncoding.swift.
 // Memberwise init(value:) accepts an already encoded system object; it must not
 // replace the original parameter encoder for geometry, markers or UIElement.
 struct AXEncodedValue {

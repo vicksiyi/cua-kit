@@ -950,6 +950,35 @@ encoded_storage_evidence={
     'interpretation':'Encoded storage holds an immutable AnyObject; partial storage holds three immutable fields. valueIsString compares CF type IDs. The public wrapping initializer calls the separate parameter encoder.',
     'limitations':'Storage memberwise construction is not a replacement for init(wrapping: Any), generic unwrapping, truncation generation or the full cache pipeline.',
 }
+dynamic_parameter_words={
+    0x1006ea420:0x90006da3,0x1006ea424:0x91384063,
+    0x1006ea438:0x9429ab38,0x1006ea440:0xa9425bf4,
+    0x1006ea460:0xb0006da3,0x1006ea464:0x913a0063,
+    0x1006ea478:0x9429ab28,0x1006ea480:0xb0006da3,
+    0x1006ea484:0x913aa063,0x1006ea498:0x9429ab20,
+    0x1006ea4fc:0x9429ab07,0x1006ea568:0x9429aaec,
+    0x1006ea5a0:0x9429aade,0x1006ea5d8:0x9429aad0,
+    0x1006ea654:0x9429a265,
+}
+for address,word in dynamic_parameter_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('AX dynamic parameter dispatch order changed')
+dynamic_bridge_binding='libswiftCore/_$ss27_bridgeAnythingToObjectiveCyyXlxlF'
+if dynamic_bridge_binding not in next((line for line in fixups.splitlines() if '0x101467f88' in line.lower()),''):
+    raise SystemExit('AX dynamic parameter fallback bridge changed')
+for descriptor,names in [(0x1012cd398,['axElement','cache']),(0x1012cce40,['supportedAttributes','attributes','transactionAttributes'])]:
+    field=relative_address(descriptor+16)
+    for index,name in enumerate(names):
+        rec=field+16+index*12
+        if c_string(relative_address(rec+8))!=name or struct.unpack('<I',read_virtual(rec,4))[0]!=0:
+            raise SystemExit('Native UIElement/cache immutable storage changed')
+parameter_evidence['dynamicDispatch']={
+    'order':['UIElement','UITextMarker','UITextMarkerRange','CFRange','CGPoint','CGRect','CGSize','Any-to-Objective-C bridge'],
+    'fallback':{'call':'0x1006ea654','got':'0x101467f88','symbol':dynamic_bridge_binding},
+    'instructionWords':{hex(a):hex(w) for a,w in dynamic_parameter_words.items()},
+    'interpretation':'Extract raw UIElement/marker references, encode concrete AX ranges/geometry, otherwise use the Swift runtime object bridge without recursive collection traversal. AXEncodedValue.init(wrapping:) forwards to this encoder.',
+    'limitations':'UIElement/cache immutable fields are restored, but the source AX-element initializer still needs transaction-aware cache construction. This is encoding only, not generic decoding or UI acceptance.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))

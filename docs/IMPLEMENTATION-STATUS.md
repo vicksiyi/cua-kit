@@ -6955,3 +6955,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：原生编码/部分值存储
 
 恢复 AXEncodedValue/AXPartialValue 不可变存储字段及 valueIsString 的 CF 类型判定，为实际缓存字典提供原始值类型。原生测试覆盖多类 CF 对象与部分数组元数据组合。完整 Any wrapping、泛型 decoder、截断生成和生产缓存尚未完成。
+
+
+### 2026-11-06：动态原生参数编码与 wrapping
+
+恢复 UIElement/UIElementCache 不可变存储，补齐 Any 参数分派和 AXEncodedValue.init(wrapping:)。分派保留 UIElement/marker 引用、AXValue 类型及非递归系统对象桥接；新组合测试与既有编码测试通过，helper 构建/输入 self-test 通过。原始事务缓存构造和泛型解码仍未接通，不能视为生产 UI 完成。

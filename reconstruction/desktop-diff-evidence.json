@@ -1218,7 +1218,43 @@
       "0x1007aedc4": "0xb40003e8"
     },
     "interpretation": "Typed parameterized access encodes before system read, then uses decodedThrowing for a present result. Encoding extracts marker/range references; CFRange/CGPoint/CGRect/CGSize use AXValueCreate types 4/1/3/2 and failure case failedToWrapAXValue.",
-    "limitations": "Concrete marker/geometry/range branches only. UIElement wrapper extraction, generic fallback, typed attribute protocol dispatch and complete output decoding remain separate."
+    "limitations": "Concrete marker/geometry/range branches only. UIElement wrapper extraction, generic fallback, typed attribute protocol dispatch and complete output decoding remain separate.",
+    "dynamicDispatch": {
+      "order": [
+        "UIElement",
+        "UITextMarker",
+        "UITextMarkerRange",
+        "CFRange",
+        "CGPoint",
+        "CGRect",
+        "CGSize",
+        "Any-to-Objective-C bridge"
+      ],
+      "fallback": {
+        "call": "0x1006ea654",
+        "got": "0x101467f88",
+        "symbol": "libswiftCore/_$ss27_bridgeAnythingToObjectiveCyyXlxlF"
+      },
+      "instructionWords": {
+        "0x1006ea420": "0x90006da3",
+        "0x1006ea424": "0x91384063",
+        "0x1006ea438": "0x9429ab38",
+        "0x1006ea440": "0xa9425bf4",
+        "0x1006ea460": "0xb0006da3",
+        "0x1006ea464": "0x913a0063",
+        "0x1006ea478": "0x9429ab28",
+        "0x1006ea480": "0xb0006da3",
+        "0x1006ea484": "0x913aa063",
+        "0x1006ea498": "0x9429ab20",
+        "0x1006ea4fc": "0x9429ab07",
+        "0x1006ea568": "0x9429aaec",
+        "0x1006ea5a0": "0x9429aade",
+        "0x1006ea5d8": "0x9429aad0",
+        "0x1006ea654": "0x9429a265"
+      },
+      "interpretation": "Extract raw UIElement/marker references, encode concrete AX ranges/geometry, otherwise use the Swift runtime object bridge without recursive collection traversal. AXEncodedValue.init(wrapping:) forwards to this encoder.",
+      "limitations": "UIElement/cache immutable fields are restored, but the source AX-element initializer still needs transaction-aware cache construction. This is encoding only, not generic decoding or UI acceptance."
+    }
   },
   "ordinaryValueDecodingEvidence": {
     "blocks": [
