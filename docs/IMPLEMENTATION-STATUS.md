@@ -6243,3 +6243,10 @@ This is not an integrated input session: opcode dispatch, initialize handling, s
 Added Rust forward_frames based on the pinned forward_websocket_to_app_server implementation. Data/continuation frames preserve bytes, ensure the child is started, and write payload plus newline under the state lock. Exact special initialize requests can replay the cached response without spawning. Ping/pong/close branches and read EOF behavior follow the observed native branches; stdin is cleared after write failure. Two input integration tests pass using real loopback sockets and owned child pipes, including raw binary/malformed JSON and a reaped child producing BrokenPipe.
 
 Full proxy operation still requires handshake/prefixed-reader integration, connection attachment and manager/control routing. These tests do not prove browser or application acceptance.
+
+
+### HTTP header bytes and prefixed TCP input checkpoint
+
+Reconstructed native 4096-byte HTTP header collection and PrefixedTcpReader. The delimiter search precedes the >64KiB check, matching the installed branch ordering rather than imposing a different strict boundary. Bytes following the first CRLFCRLF are retained and consumed before subsequent socket input. Two tests pass, covering split delimiters, size/EOF precedence and one WebSocket frame split between buffered handshake bytes and a real TCP socket.
+
+HTTP request parsing, authentication, upgrade response, connection attachment and complete production handler integration remain open. This checkpoint does not claim a completed handshake or browser acceptance.

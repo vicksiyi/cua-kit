@@ -19,6 +19,8 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+http_input = disassemble(0x100022d80, 0x100022ed8)
+prefixed_reader = disassemble(0x10002b0a8, 0x10002b1e4)
 websocket_input = disassemble(0x100024a94, 0x100025498)
 process_stop = disassemble(0x100020d54, 0x100021064)
 proxy_state = disassemble(0x10001b268, 0x10001b4c4)
@@ -519,6 +521,16 @@ result = {
         'writeFailureDropsStdin': evidence(websocket_input, 0x100025094, 0x1000250b8, ['#0x110', '#-0x1']),
         'contract': 'Opcodes 0/1/2 forward raw payload plus newline under state lock after ensure_started, except exact special initialize ID and initialize method replay cached response outside lock. Ping echoes pong, pong ignored, close echoes best effort and succeeds. Frame-read UnexpectedEof succeeds. Write errors clear stdin and propagate. No generation guard or JSON rejection added.',
         'integrationStatus': 'Tested with owned child stdin, raw binary/malformed JSON, appended newline, broken pipe, cached initialization, control frames and EOF. Handshake reader, manager and production control integration remain open.',
+    },
+    'httpInputAndPrefix': {
+        'implementation': 'native/browser-extension-host/src/app_server_http.rs',
+        'chunkAndLimit': evidence(http_input, 0x100022dd4, 0x100022e30, ['#0x1000', '#0x10, lsl #12', 'TcpStream as std::io::Read', 'b.hi']),
+        'delimiterBeforeLimit': evidence(http_input, 0x100022e54, 0x100022e8c, ['#0x4', '0x100022e04', '0x100022fc0']),
+        'prefixThenSocket': evidence(prefixed_reader, 0x10002b0dc, 0x10002b15c, ['#0x10', '#0x18', '#0x20', 'csel', 'TcpStream as std::io::Read']),
+        'eofMessage': raw[0x906e6:0x90715].decode(),
+        'limitMessage': raw[0x90715:0x90730].decode(),
+        'contract': '4096-byte reads, first CRLFCRLF delimiter before >65536 check. Preserve remaining bytes, consume prefix before TCP reads without joining both in one Read call. HTTP read errors propagate; read_exact handles partial prefix/socket reads.',
+        'integrationStatus': 'Header byte collection and prefixed TCP reader tested with split delimiters, native boundary order and a frame split across handshake overread and a real socket. HTTP parsing/authentication/upgrade and full connection handler remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
