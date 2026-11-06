@@ -3,6 +3,28 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "ErrorWithCodexSpanTelemetry",
+      "descriptor": "0x1012e6e88",
+      "fieldDescriptor": "0x10134272c",
+      "kind": 0,
+      "fields": [
+        "underlyingError",
+        "codexSpanTelemetry"
+      ],
+      "fieldMetadataSha256": "93ebb75803f69281d95e005244f1d6e7c463d79617d4d46d7e3af81658a50e3c"
+    },
+    {
+      "name": "CodexSpanTelemetry",
+      "descriptor": "0x1012e6edc",
+      "fieldDescriptor": "0x10134277c",
+      "kind": 0,
+      "fields": [
+        "targetID",
+        "didTriggerServerUserFlow"
+      ],
+      "fieldMetadataSha256": "27e76fbb1de85f84a4e10b6b21294665db8d3098ea3eea489d35dcaeccfb6fa6"
+    },
+    {
       "name": "MCPToolError",
       "descriptor": "0x1012e6ea4",
       "fieldDescriptor": "0x1013426bc",
@@ -120,6 +142,12 @@
     }
   ],
   "codeRanges": [
+    {
+      "name": "mcpErrorUnwrapAndContextPrecedence",
+      "start": "0x100e5ed44",
+      "endExclusive": "0x100e5ee24",
+      "sha256": "9f9c6dd92f9b82d744f849c165c8534430c04302b6afa647628e7f5a65d81500"
+    },
     {
       "name": "mcpToolHandlerCatch",
       "start": "0x100e4f8ec",

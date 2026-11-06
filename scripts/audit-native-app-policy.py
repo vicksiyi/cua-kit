@@ -43,6 +43,8 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e6e88, 'ErrorWithCodexSpanTelemetry', ['underlyingError', 'codexSpanTelemetry']),
+        (0x1012e6edc, 'CodexSpanTelemetry', ['targetID', 'didTriggerServerUserFlow']),
         (0x1012e6ea4, 'MCPToolError', ['missingArgument', 'invalidArgument', 'unknownTool',
          'appBlockedByPolicy', 'appNotAllowed', 'appApprovalDenied',
          'appApprovalCanceled', 'appApprovalPersistenceUnavailable']),
@@ -73,6 +75,10 @@ def audit():
         records.append(dict(name=name, descriptor=hex(descriptor),
                             fieldDescriptor=hex(fields), kind=kind, fields=names,
                             fieldMetadataSha256=hashlib.sha256(read(fields, 16 + count * record_size)).hexdigest()))
+    if string(0x1012af2a2) != 'SSSg' or string(0x1012af54e) != 'Sb':
+        raise ValueError('CodexSpanTelemetry field types changed')
+    if relative(0x1012b1cc1) != 0x1012e6edc or read(0x1012b1cc5, 1) != b'\0':
+        raise ValueError('Error wrapper context is not the nonoptional telemetry type')
     if string(relative(0x10133e6d0 + 20)) != 'ShySSG':
         raise ValueError('Persistent approval field is not Set<String>')
     # Description conformance and its witness, not LocalizedError.
@@ -92,6 +98,7 @@ def audit():
             raise ValueError('Native MCP error description literal changed')
     code_ranges = []
     for name, start, end in [
+        ('mcpErrorUnwrapAndContextPrecedence', 0x100e5ed44, 0x100e5ee24),
         ('mcpToolHandlerCatch', 0x100e4f8ec, 0x100e4f97c),
         ('mcpErrorContextInference', 0x100e5e7bc, 0x100e5e874),
         ('mcpErrorContextValue', 0x100e5e874, 0x100e5ea68),

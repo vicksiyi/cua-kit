@@ -5,6 +5,7 @@ import MCP
     static func main() async throws {
         let tests = Self()
         tests.testErrorContextPreservesUserFlowDistinction()
+        tests.testErrorContextPrecedenceAndSingleUnwrap()
         try tests.testAcceptUsesOnlyExactMetadataString()
         try tests.testDeclineAndCancelDoNotBecomeAcceptFromMetadata()
         tests.testUpstreamDecoderRejectsInvalidActionsAndContainers()
@@ -33,6 +34,26 @@ import MCP
         }
         let empty = NativeMCPErrorContext.infer(from: NativeMCPToolError.appNotAllowed(bundleIdentifier: ""))!
         equal(empty.value, .object(["span": .object(["did_trigger_server_user_flow": .bool(false)])]))
+    }
+
+    func testErrorContextPrecedenceAndSingleUnwrap() {
+        let underlying = NativeMCPToolError.appApprovalDenied(bundleIdentifier: "inferred")
+        let wrappedContext = NativeMCPErrorContext(targetID: nil, didTriggerServerUserFlow: false)
+        let wrapped = NativeErrorWithCodexSpanTelemetry(underlyingError: underlying, codexSpanTelemetry: wrappedContext)
+        let inferred = NativeMCPErrorResolution.resolve(underlying)
+        equal(inferred.context, .init(targetID: "inferred", didTriggerServerUserFlow: true))
+        let resolved = NativeMCPErrorResolution.resolve(wrapped)
+        equal(resolved.error as? NativeMCPToolError, underlying)
+        equal(resolved.context, wrappedContext)
+        equal(resolved.context!.value, .object(["span": .object(["did_trigger_server_user_flow": .bool(false)])]))
+        let explicit = NativeMCPErrorContext(targetID: "explicit", didTriggerServerUserFlow: true)
+        equal(NativeMCPErrorResolution.resolve(wrapped, context: explicit).context, explicit)
+        equal(NativeMCPErrorResolution.resolve(underlying, context: explicit).context, explicit)
+        let outer = NativeErrorWithCodexSpanTelemetry(underlyingError: wrapped, codexSpanTelemetry: explicit)
+        let nested = NativeMCPErrorResolution.resolve(outer)
+        precondition(nested.error is NativeErrorWithCodexSpanTelemetry)
+        equal(nested.context, explicit)
+        precondition(NativeMCPErrorResolution.resolve(NativeMCPToolError.unknownTool("fixture")).context == nil)
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }

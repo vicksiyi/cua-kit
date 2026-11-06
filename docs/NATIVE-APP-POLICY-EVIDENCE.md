@@ -1068,3 +1068,30 @@ encoding, using the upstream MCP.Value; it sends no analytics/network events.
 It is intentionally not yet installed as a substitute for the full handler.
 Tests cover all eight error cases, an unrelated error, and empty-target
 omission. The audit pins the inference, encoder, merge and catch code ranges.
+
+### Error wrapper precedence and optional target correction
+
+The result builder's first cast uses metadata `0x1014f5a20`, resolving to
+`ErrorWithCodexSpanTelemetry` descriptor `0x1012e6e88` (fields at
+`0x10134272c`: underlyingError, codexSpanTelemetry). Its context field has a
+nonoptional symbolic type reference to `CodexSpanTelemetry` descriptor
+`0x1012e6edc`. That type's fields are `targetID: String?` (`SSSg`) and
+`didTriggerServerUserFlow: Bool` (`Sb`). The earlier error-inference-only
+implementation used a nonoptional target string because all five application
+error cases carry a bundle ID; the shared context type now correctly supports
+nil targets too. Nil and empty targets omit target_id but still produce the
+user-flow flag and span object.
+
+At `0x100e5ed44..<0x100e5ee24`, a wrapper is unwrapped once. The builder
+keeps an explicitly supplied context when present; otherwise it uses the
+wrapper's context. Without either, it calls the previously recovered error
+inference helper. It does not recursively unwrap nested wrappers at this
+point. NativeMCPErrorResolution reproduces this selection and retains the
+underlying Error for the later IPC/generic formatting stages. A context with
+nil target still counts as present and must not fall through to inference.
+Tests cover explicit/wrapped/inferred precedence, absent context, nil target
+encoding and a nested wrapper remaining after a single unwrap. Metadata,
+field type encodings and the selection branch are pinned by the audit.
+
+Full result assembly, screenshot-bearing IPC errors and live handler wiring
+remain pending; this helper is not a substitute for those paths.
