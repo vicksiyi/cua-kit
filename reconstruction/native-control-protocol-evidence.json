@@ -4650,6 +4650,39 @@
     "contract": "Read only params.constraints. Three string identity fields are Unicode-trimmed and empty/nonstring values absent; protocol requirements accept u64 only, including zero. Missing/malformed containers yield absent constraints. Reload config before proxy mutation or restart; propagate loader error through RuntimeError conversion. Then enter ensure_loaded.",
     "integrationStatus": "Nested/type tests plus owned registry/listener integration prove identity selection occurs before extension-ID env override, lazy successful ensure, and missing registry on later restart preserves old proxy/session. Production control dispatcher and invocation executable/environment discovery still need composition."
   },
+  "productionRuntimeControl": {
+    "implementation": "native/browser-extension-host/src/control.rs",
+    "restartFlag": [
+      "10002572c: 52800023    \tmov\tw3, #0x1                ; =1",
+      "100025730: 14000266    \tb\t0x1000260c8 <extension_host::app_server::handle_native_host_control_message+0xc30>",
+      "100025734: f1008edf    \tcmp\tx22, #0x23"
+    ],
+    "ensureFlagAndError": [
+      "1000260c4: 52800003    \tmov\tw3, #0x0                ; =0",
+      "1000260c8: 9101c3f5    \tadd\tx21, sp, #0x70",
+      "1000260cc: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "1000260d0: aa1403e1    \tmov\tx1, x20",
+      "1000260d4: 97ffc5a0    \tbl\t0x100017754 <<extension_host::app_server::AppServerManager>::ensure>",
+      "1000260d8: f9403bf6    \tldr\tx22, [sp, #0x70]",
+      "1000260dc: f10006df    \tcmp\tx22, #0x1",
+      "1000260e0: 54000101    \tb.ne\t0x100026100 <extension_host::app_server::handle_native_host_control_message+0xc68>",
+      "1000260e4: ad4187e0    \tldp\tq0, q1, [sp, #0x30]",
+      "1000260e8: ad3d07a0    \tstp\tq0, q1, [x29, #-0x60]",
+      "1000260ec: 910143e0    \tadd\tx0, sp, #0x50",
+      "1000260f0: d10183a1    \tsub\tx1, x29, #0x60",
+      "1000260f4: 910022a2    \tadd\tx2, x21, #0x8",
+      "1000260f8: 97fff7a5    \tbl\t0x100023f8c <extension_host::app_server::codex_runtime_error_response>",
+      "1000260fc: 14000070    \tb\t0x1000262bc <extension_host::app_server::handle_native_host_control_message+0xe24>",
+      "100026100: 3cc082a0    \tldur\tq0, [x21, #0x8]"
+    ],
+    "statusDispatch": [
+      "100026024: 9101c3e0    \tadd\tx0, sp, #0x70",
+      "100026028: 97ffd215    \tbl\t0x10001a87c <<extension_host::app_server::AppServerManager>::status>",
+      "10002602c: d10183a0    \tsub\tx0, x29, #0x60"
+    ],
+    "contract": "Extension-input dispatcher owns proxy alongside assets, routes ensure/restart through shared manager pipeline, status through current proxy, preserves JSON-RPC IDs and uses categorized runtime error response. Production handler obtains current_exe and process var_os for ensure/restart. Drop runs proxy shutdown before asset cleanup.",
+    "integrationStatus": "Production Core debug executable exercised with six actual Native Messaging framed requests in isolated temporary HOME/CODEX_HOME/config: idle, ensure, connected, restart, missing-registry error and retained connected session. Browser/UI operation and hello remain unaccepted. Existing asset ownership checks are Core-specific, not claimed native parity."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",

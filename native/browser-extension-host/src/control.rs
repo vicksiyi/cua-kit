@@ -1,5 +1,5 @@
 //! Native extension-input control, separate from ordinary browser RPC forwarding.
-//! Only implemented attachment methods are intercepted; no invented hello/status.
+//! App-server lifecycle and attachment methods share native control ownership.
 use crate::tab_context_asset::AssetStore;
 use serde_json::{json, Value};
 use std::{
@@ -9,6 +9,7 @@ use std::{
 };
 
 pub struct NativeControl {
+    proxy: Option<crate::app_server_proxy::AppServerProxy>,
     directory: PathBuf,
     assets: Option<AssetStore>,
     directory_identity: Option<(u64, u64)>,
@@ -16,13 +17,46 @@ pub struct NativeControl {
 impl NativeControl {
     pub fn new(directory: PathBuf) -> Self {
         Self {
+            proxy: None,
             directory,
             assets: None,
             directory_identity: None,
         }
     }
     pub fn handle(&mut self, message: &Value) -> Option<Value> {
+        let executable = match message.get("method").and_then(Value::as_str) {
+            Some("codexRuntime/ensure" | "codexRuntime/restart") => std::env::current_exe().ok(),
+            _ => None,
+        };
+        self.handle_with_environment(message, executable.as_deref(), |key| std::env::var_os(key))
+    }
+
+    /// Same dispatcher with explicit process context for isolated integration tests.
+    pub fn handle_with_environment(
+        &mut self,
+        message: &Value,
+        executable: Option<&std::path::Path>,
+        environment: impl FnMut(&str) -> Option<std::ffi::OsString>,
+    ) -> Option<Value> {
         let method = message.get("method")?.as_str()?;
+        let id = message.get("id").cloned().unwrap_or(Value::Null);
+        if method == "codexRuntime/status" {
+            return Some(json!({"jsonrpc":"2.0","id":id,
+                "result":crate::app_server_status::from_proxy(self.proxy.as_ref())}));
+        }
+        if matches!(method, "codexRuntime/ensure" | "codexRuntime/restart") {
+            let result = crate::app_server_request::ensure_with_environment(
+                &mut self.proxy,
+                message.get("params"),
+                method == "codexRuntime/restart",
+                executable,
+                environment,
+            );
+            return Some(match result {
+                Ok(result) => json!({"jsonrpc":"2.0","id":id,"result":result}),
+                Err(error) => error.response(&id),
+            });
+        }
         let operation = match method {
             "codexRuntime/openLocalFile" => "open",
             "codexRuntime/tabContextAsset/create" => "create",
@@ -97,6 +131,7 @@ fn required<'a>(params: &'a Value, key: &str) -> io::Result<&'a str> {
 }
 impl Drop for NativeControl {
     fn drop(&mut self) {
+        crate::app_server_proxy::shutdown_proxy(&mut self.proxy);
         if let Some(mut assets) = self.assets.take() {
             let _ = assets.shutdown();
             drop(assets);

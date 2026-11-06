@@ -17,6 +17,15 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Production Core Rust extension-input control now dispatches ensure/restart/status
+through the reconstructed request/config/proxy pipeline using current executable
+and process environment. Its owner shuts down proxy processes before assets.
+The debug host passed six real Native Messaging stdio requests with an isolated
+registry, including restart and configuration-loss failure preserving session.
+Full native regression: 112 tests passed. This does not verify installed release
+host deployment, original hello schema, WebSocket-to-real-CLI interoperability or
+browser/App operation. Asset ownership checks still differ from raw native code.
+
 Ensure request composition now decodes nested constraints (trimmed identity
 strings; strict unsigned protocol numbers) and reloads registry/sidecar/effective
 configuration before entering the proxy lifecycle. Nineteen request/proxy tests
