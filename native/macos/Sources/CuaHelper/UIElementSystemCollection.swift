@@ -48,3 +48,31 @@ extension UIElement {
             })
     }
 }
+
+extension UIElement {
+    // readArrayCount retains the original provider/AX boundary; it is not
+    // replaced with a full attribute read followed by decoded array length.
+    func elementCount(
+        for attribute: UIElementAttribute,
+        readArrayCount: () -> (error: AXError, count: Int)
+    ) throws -> Int? {
+        try uiElementCount(isKnownUnsupported: { attributeIsKnownUnsupported(attribute) },
+            cachedValue: { cache.attributes[attribute] }, readArrayCount: readArrayCount)
+    }
+}
+
+extension UIElement {
+    func systemChildrenPreferringVisible(
+        transaction: UIElementTransactionCache?,
+        freshSupportedAttributes: () -> Set<UIElementAttribute>,
+        readArrayCount: (UIElementAttribute) -> (error: AXError, count: Int),
+        read: (UIElementAttribute) -> (error: AXError, value: AXPartialValue?),
+        reportError: (Error) -> Void
+    ) -> [UIElement] {
+        systemChildrenPreferringVisible(transaction: transaction,
+            freshSupportedAttributes: freshSupportedAttributes,
+            count: { attribute in
+                try elementCount(for: attribute, readArrayCount: { readArrayCount(attribute) })
+            }, read: read, reportError: reportError)
+    }
+}

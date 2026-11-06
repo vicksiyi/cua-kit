@@ -1542,3 +1542,21 @@ Swift 构建通过。
 
 原始 count 的缓存/provider 实现尚未恢复，因此目前保持显式注入，而不偷换为解码后
 数组长度。完整协议、TaskLocal、父链生成与生产遍历接线仍待完成。没有真实 UI 或模型调用。
+
+## 数组数量读取与可见子节点组合（2026-11-07）
+
+核对 count(for:) 0x1007b06a0..<0x1007b0828 与缓存查找 0x1007af0d0：
+先判断 knownUnsupported，命中直接 nil，连缓存也不读取。缓存 partial 存在时，
+若有 arraySubsetDescriptor，返回其 count（不是当前截取数组长度）；否则原始
+CFArray 直接取 CFArrayGetCount，不解码元素。缓存值不是数组且没有 descriptor 时
+返回 some(0)，不会回退系统读取。没有缓存才调用 AXUIElement.arrayCount，且仅
+success 接受，其余 AXError 全部抛出，包括 noValue 和 attributeUnsupported。
+
+恢复 UIElementCount.swift、具体 UIElement.elementCount，并组合到
+systemChildrenPreferringVisible。48 组测试覆盖支持门槛、缓存类型、descriptor
+优先、负数保持及系统错误传播；缓存数组包含无效元素时仍按原始数量计数。
+另以真实 AX 引用验证从缓存计数、选择可见属性、解码集合整个组合不调用系统读取。
+相关七项测试及 Swift 构建通过，新增组合用例复测通过。
+
+底层 arrayCount 的 MockProvider/系统线程调度仍待恢复，保留显式边界；未用完整
+属性读取替代计数 API。生产协议、事务与遍历接线及真实应用验收尚未完成。

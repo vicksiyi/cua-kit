@@ -2170,6 +2170,26 @@
       "implementation": "native/macos/Sources/CuaHelper/AXActionPerforming.swift",
       "limitations": "Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; concrete parent-chain traversal, protocol integration and MockProvider dispatch remain incomplete; menu preparation and scrollbar composition are restored separately."
     },
+    "elementArrayCount": {
+      "entry": "0x1007b06a0..<0x1007b0828",
+      "support": "attributeIsKnownUnsupported checked before cached value; known unsupported returns nil",
+      "cache": "0x1007b06f0 calls cache-only partial lookup 0x1007af0d0; descriptor exists -> descriptor.count, otherwise CFArrayGetCount; non-array cached value returns some(0), not nil",
+      "uncached": "0x1007b077c calls AXUIElement.arrayCount(for:); only AXError.success accepted, all other statuses throw axError",
+      "blocks": [
+        {
+          "start": "0x1007b06a0",
+          "endExclusive": "0x1007b0828",
+          "machineCodeSha256": "461cb497d99fb9fb574236f8d3b334520e7e1a918516cfc8248738bd277364f1"
+        },
+        {
+          "start": "0x1007af0d0",
+          "endExclusive": "0x1007af1c4",
+          "machineCodeSha256": "f97af3d4a196947cb28fb1f22df39ca6106806c0c17621ccbe23d71deebe7356"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementCount.swift",
+      "limitations": "Concrete cache/count/visible-selection composition restored; lower AX arrayCount provider and main-thread dispatch, original protocol/TaskLocal and production traversal remain pending."
+    },
     "childrenPreferringVisible": {
       "entry": "0x1007a3fd0..<0x1007a409c",
       "freshSupport": "0x1007a4514 calls uncachedSupportedAttributes once before candidate selection",
@@ -2206,7 +2226,7 @@
         }
       ],
       "implementation": "native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift",
-      "limitations": "Count reader remains injected pending original cache/provider count implementation. Concrete collection composition exists; full protocol/TaskLocal and production traversal remain pending."
+      "limitations": "Cache count and collection composition are restored; lower AX array-count provider remains injected; full protocol/TaskLocal and production traversal remain pending."
     },
     "menuActionPreparation": {
       "entry": "UIElementProtocol.perform(action:) at 0x100791a68",

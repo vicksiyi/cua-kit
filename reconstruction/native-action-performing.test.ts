@@ -76,3 +76,18 @@ test("native visible children selection preserves count and support semantics", 
     assert.match(result.stdout, /visible children selection preserves fresh support, positive counts, precedence and no reread: 400 cases/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native array count preserves cache and error semantics", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-count-"));
+  try {
+    const output = join(directory, "count");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementError", "AXStoredValue", "AXValueDescriptors", "UIElementCount"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementCountTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /native count preserves support gate, subset totals, raw arrays and strict AX errors: 48 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

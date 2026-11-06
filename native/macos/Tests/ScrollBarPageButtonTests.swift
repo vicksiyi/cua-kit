@@ -251,6 +251,12 @@ struct ScrollBarPageButtonTests {
             reportError: { _ in fatalError("valid selected array must decode") })
         precondition(visibleTrace == ["fresh", "count"])
         precondition(visibleChildren.count == 1 && visibleChildren[0].axElement === valid.axElement)
+        let countedChildren = visibleParent.systemChildrenPreferringVisible(
+            transaction: barTransaction, freshSupportedAttributes: { [visibleKey] },
+            readArrayCount: { _ in fatalError("cached count must not use provider") },
+            read: { _ in fatalError("cached children must not refetch") },
+            reportError: { _ in fatalError("cached children must decode") })
+        precondition(countedChildren.count == 1 && countedChildren[0].axElement === valid.axElement)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }
