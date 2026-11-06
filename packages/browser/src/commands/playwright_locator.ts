@@ -23,7 +23,7 @@ const selectOptionSchema = z
         });
     },
   );
-/** Original So (To/jo). */
+/** Original Ao (Mo/Oo). */
 export namespace LocatorClick {
   export const commandType = "playwright_locator_click";
   export const PayloadSchema = z.object({
@@ -50,7 +50,7 @@ export namespace LocatorClick {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Ro (Po/Eo). */
+/** Original $o (qo/Do). */
 export namespace LocatorDoubleClick {
   export const commandType = "playwright_locator_dblclick";
   export const PayloadSchema = z.object({
@@ -77,7 +77,7 @@ export namespace LocatorDoubleClick {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Oo ($o/Zo). */
+/** Original Fo (Uo/zo). */
 export namespace LocatorDownloadMedia {
   export const commandType = "playwright_locator_download_media";
   export const PayloadSchema = z.object({
@@ -92,7 +92,7 @@ export namespace LocatorDownloadMedia {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Do (Lo/Bo). */
+/** Original Ko (Jo/Go). */
 export namespace LocatorFill {
   export const commandType = "playwright_locator_fill";
   export const PayloadSchema = z.object({
@@ -115,7 +115,7 @@ export namespace LocatorFill {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original zo (Vo/Wo). */
+/** Original Xo (Qo/ec). */
 export namespace LocatorPress {
   export const commandType = "playwright_locator_press";
   export const PayloadSchema = z.object({
@@ -133,7 +133,7 @@ export namespace LocatorPress {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Go (Ho/Yo). */
+/** Original ac (ic/nc). */
 export namespace LocatorPressSequentially {
   export const commandType = "playwright_locator_press_sequentially";
   export const PayloadSchema = z.object({
@@ -151,7 +151,7 @@ export namespace LocatorPressSequentially {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original ec (tc/rc). */
+/** Original cc (dc/lc). */
 export namespace LocatorWaitFor {
   export const commandType = "playwright_locator_wait_for";
   export const PayloadSchema = z.object({
@@ -169,7 +169,7 @@ export namespace LocatorWaitFor {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original sc (nc/oc). */
+/** Original mc (pc/bc). */
 export namespace LocatorCount {
   export const commandType = "playwright_locator_count";
   export const PayloadSchema = z.object({
@@ -183,7 +183,7 @@ export namespace LocatorCount {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original lc (hc/mc). */
+/** Original yc (wc/vc). */
 export namespace LocatorSelectOption {
   export const commandType = "playwright_locator_select_option";
   export const PayloadSchema = z.object({
@@ -204,7 +204,7 @@ export namespace LocatorSelectOption {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original _c (yc/fc). */
+/** Original Sc (jc/Tc). */
 export namespace LocatorSetChecked {
   export const commandType = "playwright_locator_set_checked";
   export const PayloadSchema = z.object({
@@ -227,7 +227,7 @@ export namespace LocatorSetChecked {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original vc (xc/kc). */
+/** Original Rc (Pc/Ec). */
 export namespace LocatorIsVisible {
   export const commandType = "playwright_locator_is_visible";
   export const PayloadSchema = z.object({
@@ -241,7 +241,7 @@ export namespace LocatorIsVisible {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original jc (Ic/Cc). */
+/** Original Oc (Zc/Nc). */
 export namespace LocatorIsEnabled {
   export const commandType = "playwright_locator_is_enabled";
   export const PayloadSchema = z.object({
@@ -255,7 +255,7 @@ export namespace LocatorIsEnabled {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Ec (Ac/Mc). */
+/** Original Dc (Lc/Bc). */
 export namespace LocatorAllTextContents {
   export const commandType = "playwright_locator_all_text_contents";
   export const PayloadSchema = z.object({
@@ -270,7 +270,7 @@ export namespace LocatorAllTextContents {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Zc (Nc/qc). */
+/** Original zc (Vc/Wc). */
 export namespace LocatorTextContent {
   export const commandType = "playwright_locator_text_content";
   export const PayloadSchema = z.object({
@@ -285,7 +285,7 @@ export namespace LocatorTextContent {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Bc (Fc/Uc). */
+/** Original Gc (Hc/Yc). */
 export namespace LocatorInnerText {
   export const commandType = "playwright_locator_inner_text";
   export const PayloadSchema = z.object({
@@ -300,7 +300,7 @@ export namespace LocatorInnerText {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Wc (Kc/Jc). */
+/** Original ed (td/rd). */
 export namespace LocatorGetAttribute {
   export const commandType = "playwright_locator_get_attribute";
   export const PayloadSchema = z.object({
@@ -318,7 +318,7 @@ export namespace LocatorGetAttribute {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Gs/Hs/Ys/Xs. Shared by page and locator evaluation. */
+/** Original is/ns/ss/os. Shared by page and locator evaluation. */
 export namespace PlaywrightEvaluate {
   export const commandType = "playwright_evaluate";
   export const PayloadSchema = z.object({

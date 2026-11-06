@@ -70,3 +70,15 @@ keyup 失败、keydown 期间取消、预先取消 × 受保护输入开关 × �
 随后按 A/Shift/Control 顺序释放，最终 ctrlKey/shiftKey 都为 false。2 项测试通过。
 该取消测试调用 keyboard dispatcher 的 AbortSignal；不代表公共 cua.keypress 或 MCP
 已暴露/贯通取消参数，也未验收浏览器崩溃或进程强杀时的释放行为。本轮无产品逻辑改动。
+
+## 输入/页面 schema 生成工具更新
+
+`reconstruct-input-schemas.mjs` 已对齐当前 browser-client SHA；命令通过导出表定位，
+不再复用旧的逐命令压缩符号。4 个输出文件全部完成提取与格式检查后才写入；
+`--check` 只校验再生成结果是否一致，不写文件。未知安装包版本在写入前失败。
+
+本轮生成 52 个命令 schema，保留 keypress.duration 及 DOM snapshot 的 snapshotId/siwc。
+新增测试对比当前原构建的 payload/result 解析，同时验证版本变动不会修改输出。
+导航 schema 新补 `prepare_accessibility?: true`，原构建只在请求此标记且 orbit+cdp
+HTTP(S) 导航开始时触发 accessibility core 预加载；当前 tab.goto 和服务导航尚未接通
+该预加载流程，本轮仅恢复参数契约，不声称该功能已完成。

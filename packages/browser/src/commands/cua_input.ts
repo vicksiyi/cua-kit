@@ -10,7 +10,7 @@ const domNodeIdSchema = z
   })
   .min(1, "node_id must not be empty");
 
-/** Original en (tn/rn). */
+/** Original ds (ls/us). */
 export namespace CuaClick {
   export const commandType = "cua_click";
   export const PayloadSchema = z.object({
@@ -34,7 +34,7 @@ export namespace CuaClick {
   }
 }
 
-/** Original nn (on/cn). */
+/** Original ps (bs/fs). */
 export namespace CuaDownloadMedia {
   export const commandType = "cua_download_media";
   export const PayloadSchema = z.object({
@@ -52,7 +52,7 @@ export namespace CuaDownloadMedia {
   }
 }
 
-/** Original un (hn/mn). */
+/** Original gs (ws/vs). */
 export namespace CuaDoubleClick {
   export const commandType = "cua_double_click";
   export const PayloadSchema = z.object({
@@ -70,7 +70,7 @@ export namespace CuaDoubleClick {
   }
 }
 
-/** Current client Ss (js/Ts): duration is finite seconds in [0, 30]. */
+/** Original Ss (js/Ts). */
 export namespace CuaKeypress {
   export const commandType = "cua_keypress";
   export const PayloadSchema = z.object({
@@ -87,7 +87,7 @@ export namespace CuaKeypress {
   }
 }
 
-/** Original vn (xn/kn). */
+/** Original Rs (Ps/Es). */
 export namespace CuaDrag {
   export const commandType = "cua_drag";
   export const PayloadSchema = z.object({
@@ -107,7 +107,7 @@ export namespace CuaDrag {
   }
 }
 
-/** Original jn (In/Cn). */
+/** Original Os (Zs/Ns). */
 export namespace CuaMove {
   export const commandType = "cua_move";
   export const PayloadSchema = z.object({
@@ -125,7 +125,7 @@ export namespace CuaMove {
   }
 }
 
-/** Original En (An/Mn). */
+/** Original Ds (Ls/Bs). */
 export namespace CuaScroll {
   export const commandType = "cua_scroll";
   export const PayloadSchema = z.object({
@@ -151,7 +151,7 @@ export namespace CuaScroll {
   }
 }
 
-/** Original Zn (Nn/qn). */
+/** Original zs (Vs/Ws). */
 export namespace CuaType {
   export const commandType = "cua_type";
   export const PayloadSchema = z.object({
@@ -165,7 +165,7 @@ export namespace CuaType {
   }
 }
 
-/** Original Bn (Un/zn). */
+/** Original Gs (Ys/Xs). */
 export namespace DomCuaClick {
   export const DomNodeIdSchema = domNodeIdSchema;
   export const commandType = "dom_cua_click";
@@ -180,7 +180,7 @@ export namespace DomCuaClick {
   }
 }
 
-/** Original Kn (Jn/Gn). */
+/** Original to (ro/ao). */
 export namespace DomCuaDownloadMedia {
   export const commandType = "dom_cua_download_media";
   export const PayloadSchema = z.object({
@@ -197,7 +197,7 @@ export namespace DomCuaDownloadMedia {
   }
 }
 
-/** Original Xn (Qn/eo). */
+/** Original so (oo/co). */
 export namespace DomCuaDoubleClick {
   export const commandType = "dom_cua_double_click";
   export const PayloadSchema = z.object({
@@ -211,7 +211,7 @@ export namespace DomCuaDoubleClick {
   }
 }
 
-/** Original ao (io/so). */
+/** Original ho (mo/po). */
 export namespace DomCuaGetVisibleDom {
   export const commandType = "dom_cua_get_visible_dom";
   export const PayloadSchema = z.object({
@@ -224,7 +224,7 @@ export namespace DomCuaGetVisibleDom {
   }
 }
 
-/** Original co (lo/uo). */
+/** Original _o (yo/go). */
 export namespace DomCuaKeypress {
   export const commandType = "dom_cua_keypress";
   export const PayloadSchema = z.object({
@@ -238,7 +238,7 @@ export namespace DomCuaKeypress {
   }
 }
 
-/** Original po (bo/_o). */
+/** Original xo (ko/So). */
 export namespace DomCuaScroll {
   export const commandType = "dom_cua_scroll";
   export const PayloadSchema = z.object({
@@ -260,7 +260,7 @@ export namespace DomCuaScroll {
   }
 }
 
-/** Original go (wo/vo). */
+/** Original Io (Co/Ro). */
 export namespace DomCuaType {
   export const commandType = "dom_cua_type";
   export const PayloadSchema = z.object({

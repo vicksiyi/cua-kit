@@ -1,8 +1,8 @@
-import { SiwcDetectionSchema } from "./siwc";
 // Generated from original AST schema expressions; identifiers expanded and payload types inferred.
 // Regenerate with node scripts/reconstruct-input-schemas.mjs.
 import { z } from "../vendor/bundled_zod";
 import { Command } from "./command";
+import { SiwcDetectionSchema } from "./siwc";
 type PageTarget = { browser_id: string; tab_id: string };
 const waitUntilSchema = z.enum([
   "load",
@@ -33,7 +33,7 @@ const elementInfoSchema = z.object({
   preview: z.string(),
   selector: selectorInfoSchema,
 });
-/** Original ad (sd/nd). */
+/** Original ud (md/pd). */
 export namespace WaitForUrl {
   export const commandType = "playwright_wait_for_url";
   export const PayloadSchema = z.object({
@@ -54,7 +54,7 @@ export namespace WaitForUrl {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original dd (ud/hd). */
+/** Original _d (gd/wd). */
 export namespace WaitForLoadState {
   export const LoadStateSchema = loadStateSchema;
   export const commandType = "playwright_wait_for_load_state";
@@ -71,7 +71,7 @@ export namespace WaitForLoadState {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original bd (_d/yd). */
+/** Original kd (Sd/jd). */
 export namespace WaitForTimeout {
   export const commandType = "playwright_wait_for_timeout";
   export const PayloadSchema = z.object({
@@ -84,7 +84,7 @@ export namespace WaitForTimeout {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original wd (vd/xd). */
+/** Original Cd (Rd/Pd). */
 export namespace DomSnapshot {
   export const commandType = "playwright_dom_snapshot";
   export const PayloadSchema = z.object({
@@ -100,7 +100,7 @@ export namespace DomSnapshot {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Td (Rd/Pd). */
+/** Original Md ($d/qd). */
 export namespace ElementInfo {
   export const commandType = "playwright_element_info";
   export const PayloadSchema = z.object({
@@ -121,7 +121,7 @@ export namespace ElementInfo {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Md (Od/$d). */
+/** Original Bd (Fd/Ud). */
 export namespace ElementScreenshot {
   export const commandType = "playwright_element_screenshot";
   export const PayloadSchema = z.object({
@@ -142,7 +142,7 @@ export namespace ElementScreenshot {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original qd (Dd/Ld). */
+/** Original Wd (Kd/Jd). */
 export namespace WaitForDownload {
   export const commandType = "playwright_wait_for_download";
   export const PayloadSchema = z.object({
@@ -155,7 +155,7 @@ export namespace WaitForDownload {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Ud (zd/Vd). */
+/** Original Yd (Xd/Qd). */
 export namespace DownloadPath {
   export const commandType = "playwright_download_path";
   export const PayloadSchema = z.object({
@@ -171,7 +171,7 @@ export namespace DownloadPath {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Jd (Gd/Hd). */
+/** Original rl (al/il). */
 export namespace WaitForFileChooser {
   export const commandType = "playwright_wait_for_file_chooser";
   export const PayloadSchema = z.object({
@@ -187,7 +187,7 @@ export namespace WaitForFileChooser {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
-/** Original Qd (el/tl). */
+/** Original ol (cl/dl). */
 export namespace FileChooserSetFiles {
   export const commandType = "playwright_file_chooser_set_files";
   export const PayloadSchema = z.object({

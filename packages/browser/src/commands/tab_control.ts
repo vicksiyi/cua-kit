@@ -21,7 +21,7 @@ const resultDialogSchema = z.object({
   type: jsDialogTypeSchema,
 });
 
-/** Original Dr (Lr/Br). */
+/** Original Mr (Or/Zr). */
 export namespace CloseTab {
   export const commandType = "close_tab";
   export const PayloadSchema = z.object({
@@ -34,7 +34,7 @@ export namespace CloseTab {
   }
 }
 
-/** Original zr (Wr/Kr). */
+/** Original qr (Lr/Br). */
 export namespace MarkTab {
   export const MarkTabStatusSchema = markTabStatusSchema;
   export const commandType = "mark_tab";
@@ -51,7 +51,7 @@ export namespace MarkTab {
   }
 }
 
-/** Original Hr (Qr/ea). */
+/** Original zr (Kr/Jr). */
 export namespace ManualHandoff {
   export const ReasonSchema = handoffReasonSchema;
   export const commandType = "tab_manual_handoff_request";
@@ -70,21 +70,24 @@ export namespace ManualHandoff {
   }
 }
 
-/** Original La (Ba/Fa). */
+/** Original Ja (Ga/Ha). */
 export namespace NavigateTab {
   export const commandType = "navigate_tab_url";
   export const PayloadSchema = z.object({
     browser_id: z.string(),
     tab_id: z.string(),
     url: z.string(),
+    prepare_accessibility: z.literal(true).optional(),
   });
   export const ResultSchema = z.object({});
-  export function create(payload: TabTarget & { url: string }) {
+  export function create(
+    payload: TabTarget & { url: string; prepare_accessibility?: true },
+  ) {
     return new Command(commandType, PayloadSchema, payload);
   }
 }
 
-/** Original Va (Wa/Ka). */
+/** Original Qa (ei/ti). */
 export namespace NavigateTabBack {
   export const commandType = "navigate_tab_back";
   export const PayloadSchema = z.object({
@@ -97,7 +100,7 @@ export namespace NavigateTabBack {
   }
 }
 
-/** Original Ha (Ya/Xa). */
+/** Original ii (ni/si). */
 export namespace NavigateTabForward {
   export const commandType = "navigate_tab_forward";
   export const PayloadSchema = z.object({
@@ -110,7 +113,7 @@ export namespace NavigateTabForward {
   }
 }
 
-/** Original ti (ri/ai). */
+/** Original di (li/ui). */
 export namespace NavigateTabReload {
   export const commandType = "navigate_tab_reload";
   export const PayloadSchema = z.object({
@@ -123,7 +126,7 @@ export namespace NavigateTabReload {
   }
 }
 
-/** Original Ps (Es/As). */
+/** Original Dn (Ln/Bn). */
 export namespace TabScreenshot {
   export const commandType = "tab_screenshot";
   export const PayloadSchema = z.object({
@@ -149,7 +152,7 @@ export namespace TabScreenshot {
   }
 }
 
-/** Original Ai ($i/Zi). */
+/** Original Li (Ui/zi). */
 export namespace TabGetJsDialog {
   export const JsDialogTypeSchema = jsDialogTypeSchema;
   export const ResultDialogSchema = resultDialogSchema;
@@ -166,7 +169,7 @@ export namespace TabGetJsDialog {
   }
 }
 
-/** Original Di (Li/Bi). */
+/** Original Ki (Ji/Gi). */
 export namespace TabHandleJsDialog {
   export const commandType = "tab_handle_js_dialog";
   export const PayloadSchema = z.object({
