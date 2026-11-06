@@ -1,3 +1,4 @@
+import { discoverLiveEndpointFiles, createBrowserServiceConnector } from "@core/native-host/browserConnector";
 import { prepareIndependentBrowserRuntime } from "../packages/agent-loop/src/independent-runtime";
 import { randomUUID } from "node:crypto";
 import { loadEnvFile } from "node:process";
@@ -44,12 +45,22 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   let turn: NodeReplTurnClient | undefined;
   let rust: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
   try {
-    host = await startCdpHost({ headless: true });
-    const endpointFile = await realpath(host.endpointFile);
-    assert.equal(host.endpointFile, endpointFile);
+    const dailyDirectory = process.env.CUA_TEST_DAILY_CHROME_ENDPOINT_DIRECTORY;
+    let browserEnvironment: Record<string,string>;
+    if (dailyDirectory) {
+      assert.equal(liveModel,false,"Daily-profile fixture uses explicit deterministic actions only");
+      const files=await discoverLiveEndpointFiles(dailyDirectory);
+      const connector=await createBrowserServiceConnector(files);
+      browserEnvironment={CORE_CUA_ENDPOINT_FILES:JSON.stringify(files),...connector.environment};
+    } else {
+      host = await startCdpHost({ headless: true });
+      const endpointFile = await realpath(host.endpointFile);
+      assert.equal(host.endpointFile, endpointFile);
+      browserEnvironment={CORE_CUA_ENDPOINT_FILES:JSON.stringify([endpointFile]),BROWSER_USE_BACKEND_PATHS:host.endpoint.socketPath,BROWSER_USE_AVAILABLE_BACKENDS:'cdp'};
+    }
     staged = await stageRuntimePackages([resolve("packages/native-host"), resolve("packages/cua")]);
     const metadata = { session_id: "independent-browser", turn_id: "one" };
-    rust=await prepareIndependentBrowserRuntime({CUA_REPL_ENABLED_SURFACES:'browser',CORE_CUA_ENDPOINT_FILES:JSON.stringify([endpointFile]),BROWSER_USE_BACKEND_PATHS:host.endpoint.socketPath,BROWSER_USE_AVAILABLE_BACKENDS:'cdp'},staged.root,'independent-browser','rust');
+    rust=await prepareIndependentBrowserRuntime({CUA_REPL_ENABLED_SURFACES:'browser',...browserEnvironment},staged.root,'independent-browser','rust');
     const client = await McpToolClient.connect({command:rust.command,args:rust.args,cwd:root,env:rust.environment,stderr:'inherit'}, {
       requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
       elicit: async params => params.mode !== "url" && params._meta?.tool_name === "access_browser_origin" && params._meta?.origin === origin
@@ -92,13 +103,18 @@ test("independent sandboxed supervisor executes real browser input, click, read 
       assert.deepEqual(submissions, [query]);
       const screenshot = await execute('await tab.getScreenshot();');
       assert(screenshot.content.some(item => item.type === "image" && item.data.length > 100));
+      if(dailyDirectory) await execute('await tab.close();');
     }
+  } catch (error) {
+    console.error("BROWSER ACCEPTANCE FAILURE",error);
+    throw error;
   } finally {
     try { await turn?.endTurn(); } finally {
       await turn?.close();
       await rust?.dispose();
       await host?.close();
       await staged?.dispose();
+      server.closeAllConnections();
       await new Promise<void>(resolve => server.close(() => resolve()));
       await rm(root, {recursive:true,force:true});
     }
