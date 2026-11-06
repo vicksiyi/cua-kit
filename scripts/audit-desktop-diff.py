@@ -25,7 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
-    'AXPartialValue', 'AXEncodedValue', 'UIElementError',
+    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -396,6 +396,21 @@ raw_attribute_evidence={
     'parameterizedSuccessValuePresenceCheck':'0x1006f71e8',
     'limitations':'Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration.',
 }
+pid_functions=[]
+for address in [0x1006f9f30,0x1006fa0d4,0x100256028]:
+    boundary=starts[starts.index(address)+1]
+    pid_functions.append({'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+pid_words={0x1006fa02c:0x12800008,0x1006fa030:0xb90033e8,0x1006fa03c:0x97ed6ffb,
+           0x1006fa040:0x340001e0,0x1006fa07c:0xb94033f4,0x1006fa258:0xf10002bf,
+           0x1006fa25c:0x1a9f07e8,0x1006fa26c:0xaa088120}
+for address,word in pid_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word: raise SystemExit('PID result handling changed')
+raw_attribute_evidence['processIdentity']={
+    'exportedGetter':next(row for row in rows if '.actualPID.getter' in row['signature']),
+    'functions':pid_functions,'resultWords':{hex(a):hex(w) for a,w in pid_words.items()},
+    'interpretation':'Direct actualPID path initializes Int32 output to -1, calls an indirect query wrapper, throws axError on nonzero status, otherwise returns the output. The caller encodes thrown failure as optional nil after logging.',
+    'limitations':'MockProvider, obfuscated function resolution and log emission are not reconstructed. The inspected wrapper initialization is not evidence of a per-element PID result cache.',
+}
 descriptor_records=[]
 for nominal,expected_name,expected_fields in [
     (0x1012c9454,'AXArraySubsetDescriptor',[('count','Si'),('availableRanges','SaySnySiGGSg')]),
@@ -469,7 +484,7 @@ raw_attribute_evidence['sameProcessScheduling'] = {
     'branchWords':{hex(address):hex(word) for address,word in thread_words.items()},
     'mainQueueSyncCalls':['0x1006f61d8','0x1006f7168'],
     'interpretation':'When resolved PID equals getpid and NSThread.isMainThread is false, both direct system-read branches synchronously use DispatchQueue.main; missing/different PID or main thread stays direct.',
-    'limitations':'Static branch and symbol evidence. PID helper cache and MockProvider dispatch remain separate.',
+    'limitations':'Static branch and symbol evidence. PID helper failure handling and MockProvider dispatch remain separate; no per-element PID cache established.',
 }
 compact_symbol='_$sSTsE10compactMapySayqd__Gqd__Sg7ElementQzKXEKlF'
 compact_line=next((line for line in fixups.splitlines() if '0x1014665a8' in line.lower()),'')

@@ -18,6 +18,8 @@ test(
       const executable = join(directory, "axvalue-tests");
       await exec("xcrun", [
         "swiftc",
+        join(root, "native/macos/Sources/CuaHelper/UIElementError.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProcessID.swift"),
         "-o",
         executable,
         join(root, "native/macos/Sources/CuaHelper/AXAttributeReading.swift"),

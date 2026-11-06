@@ -1229,6 +1229,42 @@
     "parameterizedNonzeroStatusThrows": "0x1006f70a8..0x1006f70dc",
     "parameterizedSuccessValuePresenceCheck": "0x1006f71e8",
     "limitations": "Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration.",
+    "processIdentity": {
+      "exportedGetter": {
+        "address": "00000001007a7e50",
+        "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE9actualPIDs5Int32Vvg",
+        "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.actualPID.getter : Swift.Int32"
+      },
+      "functions": [
+        {
+          "start": "0x1006f9f30",
+          "endExclusive": "0x1006fa0d4",
+          "machineCodeSha256": "0a23fd79a551ab6798fad6068c70db4be42671589cbb1cc678a15e9d29e616f5"
+        },
+        {
+          "start": "0x1006fa0d4",
+          "endExclusive": "0x1006fa28c",
+          "machineCodeSha256": "f47cde303cd11f51060b1971b7e9f8dd4d8675d7dc90740a0f42fbbb4b4c205b"
+        },
+        {
+          "start": "0x100256028",
+          "endExclusive": "0x100256034",
+          "machineCodeSha256": "afdfbd6e66111584a4c77a0c707eeb53ae6a209e71d3591cc895ba386fb689bd"
+        }
+      ],
+      "resultWords": {
+        "0x1006fa02c": "0x12800008",
+        "0x1006fa030": "0xb90033e8",
+        "0x1006fa03c": "0x97ed6ffb",
+        "0x1006fa040": "0x340001e0",
+        "0x1006fa07c": "0xb94033f4",
+        "0x1006fa258": "0xf10002bf",
+        "0x1006fa25c": "0x1a9f07e8",
+        "0x1006fa26c": "0xaa088120"
+      },
+      "interpretation": "Direct actualPID path initializes Int32 output to -1, calls an indirect query wrapper, throws axError on nonzero status, otherwise returns the output. The caller encodes thrown failure as optional nil after logging.",
+      "limitations": "MockProvider, obfuscated function resolution and log emission are not reconstructed. The inspected wrapper initialization is not evidence of a per-element PID result cache."
+    },
     "sameProcessScheduling": {
       "bindings": {
         "0x10151ed40": "Foundation/_OBJC_CLASS_$_NSThread",
@@ -1254,7 +1290,7 @@
         "0x1006f7168"
       ],
       "interpretation": "When resolved PID equals getpid and NSThread.isMainThread is false, both direct system-read branches synchronously use DispatchQueue.main; missing/different PID or main thread stays direct.",
-      "limitations": "Static branch and symbol evidence. PID helper cache and MockProvider dispatch remain separate."
+      "limitations": "Static branch and symbol evidence. PID helper failure handling and MockProvider dispatch remain separate; no per-element PID cache established."
     }
   },
   "valueDescriptorEvidence": {
@@ -2281,6 +2317,11 @@
       "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.selectedTextMarkerRange.getter : AccessibilitySupport.UITextMarkerRange?"
     },
     {
+      "address": "00000001007a7e50",
+      "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE9actualPIDs5Int32Vvg",
+      "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.actualPID.getter : Swift.Int32"
+    },
+    {
       "address": "0000000100009888",
       "mangled": "_$s20AccessibilitySupport17UITextMarkerRangeV5rangeACSo06AXTextdE3Refa_tcfC",
       "signature": "AccessibilitySupport.UITextMarkerRange.init(range: __C.AXTextMarkerRangeRef) -> AccessibilitySupport.UITextMarkerRange"
@@ -2314,6 +2355,11 @@
       "address": "00000001006f77bc",
       "mangled": "_$sSo14AXUIElementRefa20AccessibilitySupportE6values3forSDyAC18UIElementAttributeVAC14AXPartialValueVGSayAGG_tKF",
       "signature": "(extension in AccessibilitySupport):__C.AXUIElementRef.values(for: [AccessibilitySupport.UIElementAttribute]) throws -> [AccessibilitySupport.UIElementAttribute : AccessibilitySupport.AXPartialValue]"
+    },
+    {
+      "address": "00000001006f9f30",
+      "mangled": "_$sSo14AXUIElementRefa20AccessibilitySupportE9actualPIDs5Int32Vvg",
+      "signature": "(extension in AccessibilitySupport):__C.AXUIElementRef.actualPID.getter : Swift.Int32"
     }
   ]
 }

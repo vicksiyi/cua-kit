@@ -343,7 +343,7 @@ NSArray、NSDictionary、AXValue 的拒绝与错误类型。创建 AX 引用不�
 此外，两条入口都有可选的协议分派路径；反射描述符 `0x1012cc62c` 的名称是
 **MockProvider**，不能将其误称为另一个生产浏览器/桌面后端。直接系统路径之前还比较
 getpid 与目标进程信息，存在另一执行分支；其线程/调度条件现已进一步确认，见下文“同进程读取的主队列分派”；
-PID 缓存和 MockProvider 路径仍待恢复。
+PID 查询辅助入口和 MockProvider 路径需继续核查；缓存尚未证实。
 
 main.swift 的便利 attribute helper 仍只在 success 时返回值；底层现在由
 readRawAXAttribute 独立保留状态与值，根节点检查也复用该入口。上层仍有
@@ -475,9 +475,28 @@ DispatchQueue.main 和 sync(execute:)。普通属性分派调用在 `0x1006f61d8
 `AXAttributeReading.swift` 将此规则用于实际普通属性读取；main.swift 的属性便利入口
 及根节点连通性检查均已接入。底层 rawAXAttributeResult 将 AXError 与 CF 输出分别
 保留，包括“错误状态但有值”和“成功但空值”；便利入口仍保留既有 success-only 策略，
-没有擅自推断上层错误忽略/缓存规则。目标 PID 当前直接调用系统 API 查询，未复刻
-原构建 PID 缓存；参数化读取只完成静态分派证据，尚未新增其生产调用路径。
+没有擅自推断上层错误忽略/缓存规则。目标 PID 当前直接调用系统 API 查询，不假设尚未证实的 PID 缓存；
+参数化读取只完成静态分派证据，尚未新增其生产调用路径。
 
 测试覆盖四种状态 × 两种值存在性，以及主线程、后台同进程、未知 PID、其它进程。
 同进程后台案例真实执行 GCD main.sync，并由主 RunLoop 泵送，未用同步回调模拟主线程。
 Swift 测试和完整 helper 构建通过。这仍不是原厂服务运行时对照或真实用户应用验收。
+
+
+## PID 结果契约与缓存假设修正
+
+继续追踪线程分派调用的 `0x1006fa0d4`，确认它调用导出的
+`AXUIElementRef.actualPID.getter`（`0x1006f9f30`），失败时记录日志并返回 Optional.nil。
+actualPID 的直接查询路径将 Int32 输出初始化为 -1；状态非零构造 UIElementError.axError，
+成功则原样返回输出，没有额外的“PID 必须大于零”条件。查询经 `0x100256028` 的间接
+函数包装器进入；该包装器的一次性初始化不能证明缓存了每个 AX 元素的 PID。
+此前“原厂 PID 缓存仍待恢复”的措辞预设了尚未证实的缓存，现已修正，不添加猜测缓存。
+
+`AXProcessID.swift` 恢复上述直接结果契约，并接入 readRawAXAttribute 的线程选择。
+原构建 MockProvider、混淆函数解析和日志输出仍未复刻；系统调用使用 macOS SDK
+AXUIElementGetPid，不执行原厂服务。失败输出即使写入数字也不能作为有效 PID；
+成功输出保留 -1、0 等数值，由实际调用者处理，不自行发明过滤规则。
+
+两项测试通过：注入系统状态验证初始化值/成功值/错误值与可选失败，以及真实创建
+本进程 AX 引用后查询 PID；原有主队列调度测试和完整 helper 构建也通过。审计新增
+processIdentity，固定实际导出符号、三个函数边界/哈希和关键返回分支机器码。
