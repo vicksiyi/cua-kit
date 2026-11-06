@@ -319,5 +319,5 @@
     "limits": "Owned fixtures and static reconstruction. Native diagnostics, process-env integration with deployment, service wiring, cancellation during outstanding RPC and full live auth acceptance remain incomplete."
   },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
-  "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
+  "limits": "Static reconstruction, no original execution. URL routing, authenticated header shaping and concrete App Server provider/client are reconstructed. An explicit deployment_host_with_fetch adapter is covered through the restored JS worker and real owned HTTP; default deployment composition still does not enable it. Request DTO malformed/missing-field behavior is not claimed as native-equivalent. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }

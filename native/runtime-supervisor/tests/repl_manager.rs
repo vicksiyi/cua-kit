@@ -704,7 +704,11 @@ export async function handleRpc() { return await (await nodeRepl.fetch('https://
     let (dropped, drop_observed) = oneshot::channel();
     struct DropSignal(Option<oneshot::Sender<()>>);
     impl Drop for DropSignal {
-        fn drop(&mut self) { if let Some(sender) = self.0.take() { let _ = sender.send(()); } }
+        fn drop(&mut self) {
+            if let Some(sender) = self.0.take() {
+                let _ = sender.send(());
+            }
+        }
     }
     let state = Arc::new(Mutex::new(Some((cancel, dropped))));
     let handler: HostHandler = Arc::new(move |request| {
@@ -720,12 +724,128 @@ export async function handleRpc() { return await (await nodeRepl.fetch('https://
     });
     let mut session = session.with_host_handler(handler, false);
     run(&mut session, "let oldFetchState=1").await;
-    let result = timeout(Duration::from_secs(8), session.execute(
-        "await nodeRepl.rpc('fixture',{})", Duration::from_secs(5),
-        json!({"source":"cancel-fixture"}), Some(cancellation),
-    )).await.unwrap();
+    let result = timeout(
+        Duration::from_secs(8),
+        session.execute(
+            "await nodeRepl.rpc('fixture',{})",
+            Duration::from_secs(5),
+            json!({"source":"cancel-fixture"}),
+            Some(cancellation),
+        ),
+    )
+    .await
+    .unwrap();
     assert!(result.unwrap_err().contains("cancel"));
-    timeout(Duration::from_secs(2), drop_observed).await.unwrap().unwrap();
-    assert_eq!(run(&mut session, "nodeRepl.write(typeof oldFetchState)").await["output"], "undefined");
+    timeout(Duration::from_secs(2), drop_observed)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        run(&mut session, "nodeRepl.write(typeof oldFetchState)").await["output"],
+        "undefined"
+    );
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn restored_worker_fetch_uses_native_service_and_real_owned_http() {
+    use core_runtime_supervisor::{
+        authenticated_fetch::{
+            http_client_builder, AuthenticatedFetchService, FetchAuthProvider, FetchCredentials,
+            FetchFuture, FetchRuntimeMode,
+        },
+        config_manager::{ConfigManager, ConfigSources},
+        deployment_host::deployment_host_with_fetch,
+    };
+    use std::{collections::HashMap, sync::Arc};
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    struct NoCredentials;
+    impl FetchAuthProvider for NoCredentials {
+        fn current_auth(&self) -> FetchFuture<'_, FetchCredentials> {
+            Box::pin(async { panic!("local passthrough must not read credentials") })
+        }
+        fn refetch_auth(&self) -> FetchFuture<'_, FetchCredentials> {
+            Box::pin(async { panic!("local passthrough must not refresh credentials") })
+        }
+    }
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut request = Vec::new();
+        loop {
+            let mut byte = [0];
+            socket.read_exact(&mut byte).await.unwrap();
+            request.push(byte[0]);
+            if request.ends_with(b"\r\n\r\n") {
+                break;
+            }
+            assert!(request.len() < 8192);
+        }
+        assert!(String::from_utf8(request)
+            .unwrap()
+            .starts_with("GET /fixture HTTP/1.1\r\n"));
+        socket.write_all(b"HTTP/1.1 418 I'm a teapot\r\nContent-Type: text/plain\r\nX-Not-Exposed: secret-fixture\r\nContent-Length: 13\r\nConnection: close\r\n\r\nowned payload").await.unwrap();
+        drop(socket);
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut request = Vec::new();
+        loop {
+            let mut byte = [0];
+            socket.read_exact(&mut byte).await.unwrap();
+            request.push(byte[0]);
+            if request.ends_with(b"\r\n\r\n") { break; }
+            assert!(request.len() < 8192);
+        }
+        let headers = String::from_utf8(request).unwrap().to_ascii_lowercase();
+        assert!(headers.starts_with("POST /body HTTP/1.1\r\n".to_ascii_lowercase().as_str()));
+        assert!(headers.contains("content-length: 4\r\n"));
+        assert!(headers.contains("x-fixture: roundtrip\r\n"));
+        let mut body = [0; 4];
+        socket.read_exact(&mut body).await.unwrap();
+        assert_eq!(body, [0, 127, 128, 255]);
+        socket.write_all(b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n").await.unwrap();
+    });
+    let (fixture, session) = fixture();
+    std::fs::write(fixture.root.join("config.toml"), "").unwrap();
+    std::fs::write(fixture.root.join("requirements.toml"), "").unwrap();
+    let config = Arc::new(
+        ConfigManager::new(
+            ConfigSources {
+                config: fixture.root.join("config.toml"),
+                requirements: fixture.root.join("requirements.toml"),
+                working_directories: HashSet::from([fixture.root.clone()]),
+                toml_files: HashMap::new(),
+            },
+            HashSet::new(),
+        )
+        .unwrap(),
+    );
+    let http = http_client_builder().no_proxy().build().unwrap();
+    let fetch = Arc::new(AuthenticatedFetchService::with_components(
+        FetchRuntimeMode::Default,
+        Arc::new(NoCredentials),
+        Arc::new(http),
+    ));
+    std::fs::write(fixture.root.join("service.mjs"),format!(r#"
+export async function handleRpc() {{
+ const response=await nodeRepl.fetch('http://{address}/fixture');
+ const first={{status:response.status,statusText:response.statusText,body:await response.text(),type:response.headers.get('content-type'),hidden:response.headers.get('x-not-exposed')}};
+ const empty=await nodeRepl.fetch('http://{address}/body',{{method:'POST',headers:{{'X-Fixture':'roundtrip'}},body:new Uint8Array([0,127,128,255])}});
+ return {{first,second:{{status:empty.status,body:await empty.text()}}}};
+}}
+"#)).unwrap();
+    let mut session =
+        session.with_host_handler(deployment_host_with_fetch(config, Some(fetch)), false);
+    let result = run(
+        &mut session,
+        "nodeRepl.write(JSON.stringify(await nodeRepl.rpc('fixture',{})))",
+    )
+    .await;
+    let value: Value = serde_json::from_str(result["output"].as_str().unwrap()).unwrap();
+    assert_eq!(
+        value,
+        json!({"first":{"status":418,"statusText":"I'm a teapot","body":"owned payload","type":"text/plain","hidden":null},"second":{"status":204,"body":""}})
+    );
+    server.await.unwrap();
     session.close().await.unwrap();
 }

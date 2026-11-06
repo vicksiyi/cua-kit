@@ -1,15 +1,16 @@
 //! Native request preparation reconstructed from the pinned node_repl binary.
-//! Request routing, shaping and explicit-client HTTP sending; no credential acquisition.
+//! Request routing, HTTP transport and App Server credential-provider composition.
 use base64::{engine::general_purpose::STANDARD, Engine};
 use http::Method;
 use url::Url;
 
-#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FetchHeader {
     pub name: String,
     pub value: String,
 }
 
+#[derive(serde::Deserialize)]
 pub struct AuthenticatedFetchRequest {
     pub method: String,
     pub url: String,
@@ -27,7 +28,7 @@ pub struct OutboundRequest {
 
 /// Original outbound_passthrough_request receives an already resolved URL.
 /// Method validation precedes body decoding; headers are cloned without validation
-/// or normalization here. Authorization/routing is a separate, unfinished layer.
+/// or normalization here. Authorization/routing is handled by resolved_request.
 pub fn outbound_passthrough_request(
     request: &AuthenticatedFetchRequest,
     url: Url,
@@ -288,5 +289,43 @@ pub async fn fetch_with_auth(
             http.send(outbound_authenticated_request(request, credentials))
                 .await
         }
+    }
+}
+
+/// Owned native service: runtime mode is captured at construction, while the
+/// shared App Server client rechecks its environment for each auth request.
+pub struct AuthenticatedFetchService {
+    mode: FetchRuntimeMode,
+    auth: std::sync::Arc<dyn FetchAuthProvider>,
+    http: std::sync::Arc<dyn FetchHttpClient>,
+}
+impl AuthenticatedFetchService {
+    pub fn with_app_server_client(
+        client: std::sync::Arc<crate::codex_app_server::CodexAppServerClient>,
+        observer: std::sync::Arc<dyn crate::codex_app_server_auth::AuthUserObserver>,
+    ) -> Result<Self, String> {
+        let mode = FetchRuntimeMode::from_process_env()?;
+        let fetcher = std::sync::Arc::new(
+            crate::codex_app_server_auth::CodexAppServerAccessTokenFetcher::new(client),
+        );
+        let auth = std::sync::Arc::new(
+            crate::codex_app_server_auth::CodexAppServerAuthProvider::new(fetcher, observer),
+        );
+        let http = std::sync::Arc::new(build_http_client().map_err(str::to_owned)?);
+        Ok(Self::with_components(mode, auth, http))
+    }
+    /// Explicit dependency seam for owned HTTP/App Server fixtures and hosts.
+    pub fn with_components(
+        mode: FetchRuntimeMode,
+        auth: std::sync::Arc<dyn FetchAuthProvider>,
+        http: std::sync::Arc<dyn FetchHttpClient>,
+    ) -> Self {
+        Self { mode, auth, http }
+    }
+    pub async fn fetch(
+        &self,
+        request: &AuthenticatedFetchRequest,
+    ) -> Result<FetchResponse, String> {
+        fetch_with_auth(request, self.mode, self.auth.as_ref(), self.http.as_ref()).await
     }
 }
