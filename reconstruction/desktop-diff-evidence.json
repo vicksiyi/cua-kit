@@ -1906,7 +1906,19 @@
       "lenientDecode": "0x1007ad7e0 -> 0x1006fac18",
       "strictDecode": "0x1007ad884 -> 0x1006fac24",
       "interpretation": "Known-unsupported exits before AX reference acquisition/read. Reject other status codes before examining optional data. On tolerated status, absent data returns nil; present data chooses nonthrowing decode when ignoringTypeMismatch, otherwise throwing decode. Preserve descriptors.",
-      "limitations": "Provider read and generic partial decoders remain explicit dependencies. Outer uncachedValue logger/catch and production integration are separate."
+      "limitations": "Provider read and generic partial decoders remain explicit dependencies. Outer catch and concrete String composition are restored; logger backend and production integration remain separate."
+    },
+    "uncachedValueErrorBoundary": {
+      "start": "0x1007ae414",
+      "endExclusive": "0x1007ae5f8",
+      "machineCodeSha256": "2e3e927726d65495dde1c3d22ef6693aa816bb4b30bdf5b6579026efd53ee212",
+      "throwingReadCall": "0x1007ae4a0",
+      "errorBranch": "0x1007ae4a4",
+      "logger": "0x1007ae4b0 -> 0x100622d48",
+      "logCall": "0x1007ae54c",
+      "nilResult": "0x1007ae5bc..0x1007ae5d8",
+      "interpretation": "Success returns directly. Errors enter the logger path then return nil; reporting does not retry reading or decoding.",
+      "limitations": "reportError is an explicit logger dependency, not a claim that original OS log category, level and formatting are restored."
     }
   },
   "transactionScopeEvidence": {

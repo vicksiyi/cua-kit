@@ -962,3 +962,17 @@ attributeUnsupported（常量 -25212/-25205 固定在 0x101570d18），其它状
 `UIElementUncachedValue.swift` 保留这段组合逻辑，read/decode 仍为显式依赖，不捏造 MockProvider。
 40 个支持门槛/状态/存在性/策略组合及严格 decoder 错误传播测试覆盖执行顺序与跳过条件。
 外层日志记录后返回 nil 的 accessor、完整泛型 decoder 与生产观察器接线仍待恢复。
+
+## String 读取组合与外层错误收敛（2026-11-07）
+
+依据 `0x1007ae414..0x1007ae5f8` 补齐 outer accessor：成功直接返回；
+异常进入 logger 路径后返回 nil，不重试。实现保留显式 reportError 依赖，未宣称原 OS logger
+类别、级别和格式已经还原。
+
+具体 UIElement.stringValue 组合缓存 String 解码、attributeIsKnownUnsupported、
+原始部分值读取、宽松/严格解码和外层报告。读取提供者仍由调用方提供；不把裸 AX 输出
+伪装成原 MockProvider 的完整部分值，也没有自动接入当前生产遍历器。
+
+扩展组合测试验证：缓存命中完全跳过 read；已知不支持不读取；缓存类型错误可回退到新值；
+严格解码异常只报告一次并返回 nil；宽松类型不匹配不报告；底层 AXError 不因宽松标志而被吞掉，
+仍先进入统一报告边界。原 40 个内部状态组合继续通过。
