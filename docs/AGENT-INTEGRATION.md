@@ -388,10 +388,11 @@ app inventory is nonempty, browser inventory is empty, and the inventory has no 
 This test observes inventory only; it does not prove app launch, screen capture, clicking, DeepSeek
 selection, or late browser reconnection. Existing host/connector/preflight tests also pass.
 
-Two older source-comparison harnesses (`browser-desktop-discovery.test.ts` and the pipe-inventory
-case in `browser-service-discovery.test.ts`) currently fail because their pinned minified symbol
-bindings no longer match the installed build (`p` / `dt` undefined). They were not counted as
-passing or rewritten as part of this change. The focused Xle comparison uses the installed symbol.
+The stale symbol bindings in `browser-desktop-discovery.test.ts` and the pipe-inventory case of
+`browser-service-discovery.test.ts` have since been updated and their focused comparisons pass.
+Other source-oracle freshness is not implied. See [browser startup boundaries](BROWSER-STARTUP-BOUNDARY.md)
+for the source-backed distinction between creating a window in a connected browser and starting a
+terminated browser process.
 
 The unified test suite additionally exercises the CLI through a local model-compatible HTTP endpoint,
 verifies that both surface flags and unified inventory reach the model, and checks that no eager

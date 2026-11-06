@@ -237,11 +237,10 @@ test("pipe inventory and error formatting preserve original platform and accesso
         };
         try {
           const listing = original
-            ? originalServiceBindings(["Kle", "Xle", "zle"], {
-                ul: originalServiceBindings(["ul"]).ul,
-                O6: read,
-                pb: path,
-              }).zle
+            ? originalServiceBindings(["Gl", "Yle", "Jle", "Xle"], {
+                N6: read,
+                bb: path,
+              }).Xle
             : (r: any) => listBackendPipes(r, read);
           calls.push(await listing(runtime));
         } catch (error: any) {
@@ -251,7 +250,7 @@ test("pipe inventory and error formatting preserve original platform and accesso
       }
       assert.deepEqual(await execute(false), await execute(true));
     }
-  const { N6 } = originalServiceBindings(["jx", "N6"]);
+  const { L6: N6 } = originalServiceBindings(["$x", "L6"]);
   for (const error of [
     "string",
     null,

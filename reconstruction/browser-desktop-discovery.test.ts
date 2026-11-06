@@ -9,19 +9,18 @@ import {
 } from "../packages/browser/src/service/browser_family";
 import { browserProfileDirectory } from "../packages/browser/src/service/runtime/browser_profiles";
 import {
-  backendPipeDirectory,
   listBackendPipes,
 } from "../packages/browser/src/service/runtime/browser_discovery";
-const catalog = desktopBindings(["dp", "HE", "WE", "si", "pp", "sc"]);
+const catalog = desktopBindings(["Dm", "lR", "cR", "Si", "Om", "Wc"]);
 test("desktop catalog matches restored family/distribution metadata and reference sharing", () => {
-  assert.deepEqual(browserFamilies, catalog.sc);
-  assert.deepEqual(extensionDistributions, catalog.si);
-  assert.deepEqual(chromiumExtensionChannels, catalog.pp);
+  assert.deepEqual(browserFamilies, catalog.Wc);
+  assert.deepEqual(extensionDistributions, catalog.Si);
+  assert.deepEqual(chromiumExtensionChannels, catalog.Om);
   for (const family of ["chrome", "brave", "opera", "vivaldi"]) {
-    assert.equal(catalog.sc[family].extensionChannels, catalog.pp);
+    assert.equal(catalog.Wc[family].extensionChannels, catalog.Om);
   }
-  assert.equal(catalog.pp.prod.distributions, catalog.si.chrome.prod);
-  assert.equal(catalog.si.edge.prod[2], catalog.HE);
+  assert.equal(catalog.Om.prod.distributions, catalog.Si.chrome.prod);
+  assert.equal(catalog.Si.edge.prod[2], catalog.lR);
 });
 test("desktop profile paths match restored implementation for all families/platforms and environment precedence", () => {
   for (const environment of [
@@ -34,13 +33,13 @@ test("desktop profile paths match restored implementation for all families/platf
     { XDG_CONFIG_HOME: "/xdg" },
     { CHROME_CONFIG_HOME: "", XDG_CONFIG_HOME: "/xdg", LOCALAPPDATA: "" },
   ]) {
-    const original = desktopBindings(["T3"], {
-      sc: catalog.sc,
-      MT: path.posix,
-      x3: path.win32,
-      OT: { homedir: () => "/synthetic-home" },
-      NT: environment,
-    }).T3;
+    const original = desktopBindings(["C3"], {
+      Wc: catalog.Wc,
+      UT: path.posix,
+      S3: path.win32,
+      FT: { homedir: () => "/synthetic-home" },
+      qT: environment,
+    }).C3;
     for (const family of Object.keys(browserFamilies))
       for (const platform of ["darwin", "linux", "win32", "unsupported"])
         assert.deepEqual(
@@ -88,16 +87,15 @@ test("desktop pipe discovery preserves configured path validation, enumeration a
           if (failure) throw Error("synthetic enumeration failure");
           return ["codex-browser-use-a", "other", "b"];
         };
-        const vendor = desktopBindings(["Kce", "Xce", "Vce"], {
-          lc: backendPipeDirectory,
-          pb: path,
-          O3: read,
+        const vendor = desktopBindings(["Gc", "Jce", "Yce", "Xce"], {
+          bb: path,
+          N3: read,
         });
         try {
           return {
             calls,
             value: await (original
-              ? vendor.Vce(runtime)
+              ? vendor.Xce(runtime)
               : listBackendPipes(runtime, read)),
           };
         } catch (error: any) {
