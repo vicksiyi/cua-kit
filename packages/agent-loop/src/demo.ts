@@ -86,6 +86,7 @@ debug?.write("run.start", {
   model: process.env.CUA_MODEL ?? "deepseek-flash",
   maxSteps: 12,
   summarizeOnExhaustion: true,
+  summarizeOnBlocked: true,
   browserEnabled,
   computerEnabled,
   node: process.version,
@@ -171,6 +172,7 @@ try {
       onMessage: trace,
       initialMessages,
       summarizeOnExhaustion: true,
+      summarizeOnBlocked: true,
       runtimeContext: [
         browserEnabled ? BROWSER_INPUT_CONTEXT : undefined,
         (serverEnv as Record<string, string>).BROWSER_USE_AVAILABLE_BACKENDS === "cdp"
@@ -183,7 +185,10 @@ try {
       ].filter(Boolean).join("\n"),
     });
     debug?.write("run.answer", { status: result.status, answer: result.answer });
-    if (result.status === "blocked") process.exitCode = 1;
+    if (result.status === "blocked") {
+      process.exitCode = 1;
+      if (result.summaryError) debug?.write("run.blocked-summary.error", { error: result.summaryError });
+    }
     console.log(result.answer);
   }
 } catch (error) {

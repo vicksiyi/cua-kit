@@ -245,7 +245,7 @@ New hosts should connect the restored MCP runtime and call the documented CUA AP
 
 `ToolResult.stopReason` is optional host-adapter metadata (`{kind: "authorization", message: string}`). The MCP client does not copy this field from wire content. The NodeREPL turn adapter emits it only for error results whose text starts with the observed browser security rejection/unavailable prefix. Successful page text and ordinary JS/argument errors do not trigger it. This conservative text classification is an independently authored caller policy, not a new native protocol or recovered Codex behavior.
 
-When a tool result has this disposition, AgentLoop stops the remaining batch and model calls, records the tool error and host-authored response, and returns `status: "blocked"` with the existing answer/messages fields. Turn cleanup still runs. Normal model answers return `status: "completed"`; that status describes loop termination, not external verification of task success. The demo prints blocked responses and exits with code 1; debug logs include the status and original error. No automatic approval, retry, or alternate route is performed.
+When a tool result has this disposition, AgentLoop stops the remaining batch and, by default, further model calls, records the tool error and host-authored response, and returns `status: "blocked"` with the existing answer/messages fields. Turn cleanup still runs. Normal model answers return `status: "completed"`; that status describes loop termination, not external verification of task success. The demo prints blocked responses and exits with code 1; debug logs include the status and original error. No automatic approval, retry, or alternate route is performed.
 
 ### Local extension wire diagnostics
 
@@ -281,3 +281,33 @@ CUA_TEST_SELECTOR_TIMEOUT=1 node scripts/trace-deepseek.mjs --owned-fixture
 ```
 
 This expects a selector timeout, then requires subsequent actions in the same tab/session to succeed. It does not deliberately time out a low-level CDP command, whose debugger-retirement behavior is a separate contract.
+
+
+### Text-only report after a blocked turn
+
+`AgentRunOptions.summarizeOnBlocked` defaults to false for library callers. The DeepSeek demo
+explicitly enables it: after an authorization stop the loop may issue exactly one extra model
+request with no tools (`tool_choice: none` in the chat-completions adapter). It summarizes only
+previously observed evidence and explains the unresolved/denied work. No blocked operation is
+retried, no subsequent queued tool is executed, and no alternative observation channel is opened.
+
+Pending tool-call IDs receive explicit host-generated “Not executed” results before this request,
+so multi-call conversations remain valid for model APIs. The final answer always begins with the
+host's stop message and the return status remains `blocked`; the demo still exits with code 1.
+Model text is a report, not proof of completion. A summary error, empty response, or attempted tool
+call falls back to the host stop message and exposes `summaryError` for diagnostics; the demo
+records it locally as `run.blocked-summary.error`. Cancellation still propagates and turn cleanup
+still runs. Existing evidence may be included in this extra model request, just as in ordinary
+loop decisions; it is not uploaded to GitHub.
+
+This is demo/AgentLoop behavior, not a claim that Codex's proprietary agent loop was recovered.
+The browser's policy gate and original input/observation protocols are unchanged.
+
+Validation: `agent-loop-blocked-summary.test.ts` covers the actual HTTP request shape, complete
+batch transcript, skipped-call non-execution, summary failures, cancellation and stable blocked
+status. Policy-stop, budget and turn-lifecycle regressions are run alongside it.
+
+For ordinary REPL execution failures, the model guidance now explicitly warns that failed variable
+initialization does not establish a usable binding and may still have side effects. It should inspect
+documented inventory before recovery. This is guidance, not a deterministic recovery algorithm or
+permission to retry denied actions.
