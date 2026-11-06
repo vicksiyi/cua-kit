@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { originalServiceBindings } from "./service-source";
+import { originalServiceBindings, serviceSourceSha256 } from "./service-source";
 import {
   assertWebMcpSupported,
   webMcpApprovalIntent,
@@ -21,14 +21,15 @@ import { codexTurnMetadata } from "../packages/browser/src/service/preferences/r
 import { downloadSourceOrigin } from "../packages/browser/src/service/context/downloads";
 import { positiveTabId } from "../packages/browser/src/service/tab_id";
 import { defineCommand } from "../packages/browser/src/service/commands/define_command";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021");
 const originalSupport = originalServiceBindings(
-  ["BA", "ai", "Ja", "rD", "uc", "tD"],
+  ["Ei", "aD", "eu", "lO", "Cc", "uO"],
   {
-    Me: codexTurnMetadata,
-    Ql: { id: "webmcp" },
-    oe: commands,
-    ho: approvalRuntime.failCheck,
-    nt: browserDisplayName,
+    je: codexTurnMetadata,
+    Dl: { id: "webmcp" },
+    ee: commands,
+    vo: approvalRuntime.failCheck,
+    Ye: browserDisplayName,
   },
 );
 async function outcome(fn: () => unknown) {
@@ -61,7 +62,7 @@ test("WebMCP model gate and approval payload projection match original", async (
         };
         return {
           result: await outcome(() =>
-            (original ? originalSupport.Ja : assertWebMcpSupported)(
+            (original ? originalSupport.eu : assertWebMcpSupported)(
               "invoke",
               context,
             ),
@@ -91,7 +92,7 @@ test("WebMCP model gate and approval payload projection match original", async (
   ])
     assert.deepEqual(
       await outcome(() => webMcpApprovalIntent(payload, {})),
-      await outcome(() => originalSupport.tD(payload, {})),
+      await outcome(() => originalSupport.uO(payload, {})),
     );
 });
 async function commandScenario(original: boolean, mode: string) {
@@ -210,20 +211,20 @@ async function commandScenario(original: boolean, mode: string) {
     config() {},
     emit() {},
   };
-  const old = originalServiceBindings(["Mh", "TN"], {
-    F: defineCommand,
-    oe: commands,
-    W: positiveTabId,
-    Ja: assertWebMcpSupported,
-    Yi: catalog.assertWebMcpPageEnabled,
-    SN: catalog.assertWebMcpCatalogEnabled,
-    Bc: catalog.findSessionWebMcpTool,
-    qe: downloadSourceOrigin,
-    tD: webMcpApprovalIntent,
-    Ct: "WebMCP tool registration is stale. Call fetchTools() again.",
-    fN: host.invokeWebMcpTool,
-    Bh: createWebMcpToolDirectory(dependencies),
-    Dh: catalog.rememberWebMcpTools,
+  const old = originalServiceBindings(["Lh", "NN"], {
+    O: defineCommand,
+    ee: commands,
+    H: positiveTabId,
+    eu: assertWebMcpSupported,
+    Vi: catalog.assertWebMcpPageEnabled,
+    DN: catalog.assertWebMcpCatalogEnabled,
+    Nc: catalog.findSessionWebMcpTool,
+    He: downloadSourceOrigin,
+    uO: webMcpApprovalIntent,
+    wt: "WebMCP tool registration is stale. Call fetchTools() again.",
+    EN: host.invokeWebMcpTool,
+    Oh: createWebMcpToolDirectory(dependencies),
+    Nh: catalog.rememberWebMcpTools,
   });
   const payload: any = {
     tab_id: mode === "bad-tab" ? "bad" : "7",
@@ -235,7 +236,7 @@ async function commandScenario(original: boolean, mode: string) {
   let result;
   if (mode === "list")
     result = await outcome(() =>
-      (original ? old.TN : createWebMcpListToolsCommand(dependencies))(
+      (original ? old.NN : createWebMcpListToolsCommand(dependencies))(
         payload,
         context,
       ),
@@ -259,7 +260,7 @@ async function commandScenario(original: boolean, mode: string) {
     if (mode === "disabled")
       catalog.ensureWebMcpCatalog(context, 7).disabled = true;
     result = await outcome(() =>
-      (original ? old.Mh : WebMcpInvokeToolCommand)(payload, context),
+      (original ? old.Lh : WebMcpInvokeToolCommand)(payload, context),
     );
   }
   return JSON.parse(JSON.stringify({ result, trace, payload }));
@@ -399,4 +400,21 @@ test("assembled WebMCP list/approve/invoke chain changes Chromium DOM", async ()
   } finally {
     await browser.close();
   }
+});
+
+test("disabled WebMCP capability rejects invoke through real context before page access or approval", async () => {
+  const {createBrowserContextClass} = await import("../packages/browser/src/service/context/browser_context");
+  const context = Object.create(createBrowserContextClass({} as any).prototype);
+  const calls: string[] = [];
+  Object.assign(context, {
+    runtime: {env: {BROWSER_USE_DISABLE_TAB_CAPABILITIES: "webmcp"}},
+    clientInfo: {name: "Fixture", type: "extension"},
+    api: {getInfo: async () => {calls.push("getInfo"); return {capabilities:{tab:[{id:"webmcp"}]}};}},
+    security: {assertWebMcpEnabled: async () => {calls.push("page"); throw Error("must not access page");}},
+    acquireAuthority: () => {calls.push("approval"); throw Error("must not approve");},
+    cdp: {call: async () => {calls.push("cdp"); throw Error("must not dispatch");}},
+  });
+  await assert.rejects(WebMcpInvokeToolCommand({tab_id:"7",registration_id:"fixture",input:{}},context),
+    /Fixture does not support command "webmcp_invoke_tool"/);
+  assert.deepEqual(calls,["getInfo"]);
 });

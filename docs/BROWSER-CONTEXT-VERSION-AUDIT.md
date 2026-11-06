@@ -33,3 +33,13 @@
 5 项针对性测试通过，覆盖原构建差分、调用身份隔离、失败清理、禁用列表、SIWC gating、provider 错误、异步文档组装及真实 telemetry 组装（fake Statsig / fixture identity，无网络凭据）。另有原 SIWC forwarding 两项测试通过。重建与 Browser TypeScript 检查通过；真实 native 扩展 MCP 表单操作、截图、locator 驱动光标回归通过（约 9.2 秒）。
 
 未完成项仍包括：真实 SIWC 账号流程、旧 credential guard 与调度器整体验证，以及其它旧版 feature/telemetry 方法的版本迁移；本次不声称整个授权系统完成对齐。底层 Statsig 使用已有第三方库，没有重写该库。
+
+## 命令执行边界的回归
+
+刷新 `browser-service-webmcp-command.test.ts` 的旧符号（旧 BA 现已是 schema，不能再当作模型门函数；当前 invoke 命令为 Lh），并固定构建哈希。四项通过：
+- 模型限制、支持能力检查与审批参数投影的源码差分。
+- invoke/list 的授权、会话目录元数据替换与失效检查顺序。
+- 已组装的 list → approve → invoke 路径在真实受控 Chromium 页面修改 DOM。
+- 使用真实 BrowserContext.supportsTabCapability：provider 声明 webmcp 但运行时禁用它时，invoke 在页面读取、审批与 CDP 派发前拒绝；不会只在文档中隐藏。
+
+这里证明 WebMCP 命令已有的支持检查正确接入有效能力过滤，不意味着新增了所有命令通用的 capability 拦截器。原 runtime_policies.assertCommandSupported 本身只覆盖特定下载组合，不能把它误称为通用权限检查。
