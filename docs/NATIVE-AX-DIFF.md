@@ -342,10 +342,11 @@ NSArray、NSDictionary、AXValue 的拒绝与错误类型。创建 AX 引用不�
 
 此外，两条入口都有可选的协议分派路径；反射描述符 `0x1012cc62c` 的名称是
 **MockProvider**，不能将其误称为另一个生产浏览器/桌面后端。直接系统路径之前还比较
-getpid 与目标进程信息，存在另一执行分支；其线程/调度条件仍待完整恢复，尚不宣称都是
-当前线程直接调用 AX API。
+getpid 与目标进程信息，存在另一执行分支；其线程/调度条件现已进一步确认，见下文“同进程读取的主队列分派”；
+PID 缓存和 MockProvider 路径仍待恢复。
 
-当前 main.swift 的 attribute helper 只在 success 时返回值，会丢掉错误状态；上层又有
+main.swift 的便利 attribute helper 仍只在 success 时返回值；底层现在由
+readRawAXAttribute 独立保留状态与值，根节点检查也复用该入口。上层仍有
 捕获、日志与忽略类型不匹配策略。因此接入完整原生属性读取时必须逐层恢复，不能仅把
 新增解码函数塞进这个 helper 就声称对齐。审计记录 rawAttributeEvidence 固定两个函数
 边界/哈希、系统调用位置和 MockProvider 名称。本轮为静态证据补全，没有改变运行时
@@ -457,3 +458,26 @@ arrayTargetEvidence 保存协议布局、conformance 和 dyld binding 证据。
 NSNumber、数组、字典、AXUIElement 输入；6 项相关测试通过（包括原解包/类型转换和
 粘贴协议回归），完整 Swift helper 构建、UTF-16 粘贴替换自检通过。粘贴协议回归使用
 模拟 transport；本轮没有对用户应用执行粘贴或宣称真实 App UI 已验收。
+
+
+## 同进程读取的主队列分派
+
+进一步解析原构建两条属性读取路径：
+- 目标 PID 缺失或不同于 getpid()：直接调用。
+- 目标 PID 等于 getpid() 且当前是主线程：直接调用。
+- 目标 PID 等于 getpid() 且不在主线程：DispatchQueue.main.sync 执行读取。
+
+证据不依赖反汇编器的最近符号标签：`0x10151ed40` 绑定 NSThread，selector 地址
+`0x10136b018` 为 isMainThread；`0x101469058` / `0x101469068` 分别绑定 Swift
+DispatchQueue.main 和 sync(execute:)。普通属性分派调用在 `0x1006f61d8`，参数化属性
+在 `0x1006f7168`。审计新增 sameProcessScheduling，固定绑定和八条条件分支机器码。
+
+`AXAttributeReading.swift` 将此规则用于实际普通属性读取；main.swift 的属性便利入口
+及根节点连通性检查均已接入。底层 rawAXAttributeResult 将 AXError 与 CF 输出分别
+保留，包括“错误状态但有值”和“成功但空值”；便利入口仍保留既有 success-only 策略，
+没有擅自推断上层错误忽略/缓存规则。目标 PID 当前直接调用系统 API 查询，未复刻
+原构建 PID 缓存；参数化读取只完成静态分派证据，尚未新增其生产调用路径。
+
+测试覆盖四种状态 × 两种值存在性，以及主线程、后台同进程、未知 PID、其它进程。
+同进程后台案例真实执行 GCD main.sync，并由主 RunLoop 泵送，未用同步回调模拟主线程。
+Swift 测试和完整 helper 构建通过。这仍不是原厂服务运行时对照或真实用户应用验收。

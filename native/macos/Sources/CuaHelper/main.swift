@@ -6,8 +6,10 @@ import ApplicationServices
 struct Failure: Error { let code: String; let message: String }
 func fail(_ code: String, _ message: String) -> Failure { Failure(code: code, message: message) }
 func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
-    var value: CFTypeRef?
-    return AXUIElementCopyAttributeValue(element, name as CFString, &value) == .success ? value : nil
+    let result = readRawAXAttribute(element, name)
+    // Existing observation policy remains success-only. The raw reader retains
+    // both fields for callers that need to distinguish an AX failure from nil.
+    return result.error == .success ? result.value : nil
 }
 func string(_ element: AXUIElement, _ name: String) -> String { attribute(element, name) as? String ?? "" }
 func scalar(_ value: CFTypeRef?) -> Any? {
@@ -75,8 +77,7 @@ final class Target {
             }
         }
         // Distinguish denied/unresponsive AX from an actual empty tree.
-        var role: CFTypeRef?
-        let status = AXUIElementCopyAttributeValue(root, kAXRoleAttribute as CFString, &role)
+        let status = readRawAXAttribute(root, kAXRoleAttribute).error
         guard status == .success else { throw fail(status == .apiDisabled ? "PERMISSION_DENIED" : "PROVIDER_DISCONNECTED", "AX root unavailable: \(status.rawValue)") }
         walk(root, nil, 0)
         return (result, warnings)

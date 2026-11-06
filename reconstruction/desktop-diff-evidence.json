@@ -1228,7 +1228,34 @@
     "plainValuePresenceCheck": "0x1006f6214",
     "parameterizedNonzeroStatusThrows": "0x1006f70a8..0x1006f70dc",
     "parameterizedSuccessValuePresenceCheck": "0x1006f71e8",
-    "limitations": "Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration."
+    "limitations": "Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration.",
+    "sameProcessScheduling": {
+      "bindings": {
+        "0x10151ed40": "Foundation/_OBJC_CLASS_$_NSThread",
+        "0x101469058": "libswiftDispatch/_$sSo17OS_dispatch_queueC8DispatchE4mainABvgZ",
+        "0x101469068": "libswiftDispatch/_$sSo17OS_dispatch_queueC8DispatchE4sync7executexxyKXE_tKlF"
+      },
+      "selector": {
+        "address": "0x10136b018",
+        "value": "isMainThread"
+      },
+      "branchWords": {
+        "0x1006f60fc": "0xb7000140",
+        "0x1006f6100": "0x6b00033f",
+        "0x1006f6104": "0x54000101",
+        "0x1006f6120": "0x36000240",
+        "0x1006f704c": "0xb7000140",
+        "0x1006f7050": "0x6b00039f",
+        "0x1006f7054": "0x54000101",
+        "0x1006f7070": "0x36000480"
+      },
+      "mainQueueSyncCalls": [
+        "0x1006f61d8",
+        "0x1006f7168"
+      ],
+      "interpretation": "When resolved PID equals getpid and NSThread.isMainThread is false, both direct system-read branches synchronously use DispatchQueue.main; missing/different PID or main thread stays direct.",
+      "limitations": "Static branch and symbol evidence. PID helper cache and MockProvider dispatch remain separate."
+    }
   },
   "valueDescriptorEvidence": {
     "descriptors": [

@@ -447,6 +447,30 @@ partial_array_evidence={
 # Some Swift stubs appear as LOCAL ABSOLUTE in the indirect-symbol table.
 # Resolve their GOT binding through dyld fixups instead of guessing from labels.
 fixups=subprocess.check_output(['xcrun','dyld_info','-fixups',str(artifact)],text=True)
+# Resolve the same-process read scheduling branch to actual framework symbols.
+thread_bindings = {}
+for slot, expected_binding in [
+    ('0x10151ed40', 'Foundation/_OBJC_CLASS_$_NSThread'),
+    ('0x101469058', 'libswiftDispatch/_$sSo17OS_dispatch_queueC8DispatchE4mainABvgZ'),
+    ('0x101469068', 'libswiftDispatch/_$sSo17OS_dispatch_queueC8DispatchE4sync7executexxyKXE_tKlF'),
+]:
+    line = next((line for line in fixups.splitlines() if slot in line.lower()), '')
+    if expected_binding not in line: raise SystemExit('AX read scheduling binding changed: '+slot)
+    thread_bindings[slot] = expected_binding
+if c_string(0x10136b018) != 'isMainThread': raise SystemExit('AX read thread selector changed')
+thread_words = {0x1006f60fc:0xb7000140,0x1006f6100:0x6b00033f,0x1006f6104:0x54000101,
+                0x1006f6120:0x36000240,0x1006f704c:0xb7000140,0x1006f7050:0x6b00039f,
+                0x1006f7054:0x54000101,0x1006f7070:0x36000480}
+for address, expected_word in thread_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != expected_word:
+        raise SystemExit('AX read scheduling branch changed')
+raw_attribute_evidence['sameProcessScheduling'] = {
+    'bindings':thread_bindings, 'selector':{'address':'0x10136b018','value':'isMainThread'},
+    'branchWords':{hex(address):hex(word) for address,word in thread_words.items()},
+    'mainQueueSyncCalls':['0x1006f61d8','0x1006f7168'],
+    'interpretation':'When resolved PID equals getpid and NSThread.isMainThread is false, both direct system-read branches synchronously use DispatchQueue.main; missing/different PID or main thread stays direct.',
+    'limitations':'Static branch and symbol evidence. PID helper cache and MockProvider dispatch remain separate.',
+}
 compact_symbol='_$sSTsE10compactMapySayqd__Gqd__Sg7ElementQzKXEKlF'
 compact_line=next((line for line in fixups.splitlines() if '0x1014665a8' in line.lower()),'')
 if 'libswiftCore/'+compact_symbol not in compact_line:
