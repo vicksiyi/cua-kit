@@ -29,6 +29,22 @@ for (const deployment of ["native", "full"] as const)
     async (t) => {
       const root = await mkdtemp(join(tmpdir(), "core-native-controller-"));
       t.after(() => rm(root, { recursive: true, force: true }));
+      // Test-owned feature service enables the documented capability through
+      // normal deployment configuration; no production gate or policy is changed.
+      const featureServer = createServer((request, response) => {
+        request.resume();
+        response.setHeader("Content-Type", "application/json");
+        response.end(JSON.stringify({
+          has_updates: true, time: Date.now(), hash_used: "none",
+          feature_gates: { "codex-app-chrome-extension-browser-management": {
+            name: "codex-app-chrome-extension-browser-management", value: true,
+            rule_id: "local-acceptance", secondary_exposures: [],
+          } }, dynamic_configs: {}, layer_configs: {}, param_stores: {},
+        }));
+      });
+      await new Promise<void>(resolve => featureServer.listen(0, "127.0.0.1", resolve));
+      t.after(() => new Promise<void>(resolve => featureServer.close(() => resolve())));
+      const featureUrl = `http://127.0.0.1:${(featureServer.address() as {port:number}).port}`;
       const extension = join(root, "extension");
       if (deployment === "native") {
         await cp(
@@ -44,7 +60,7 @@ for (const deployment of ["native", "full"] as const)
             channel: "dev",
             nativeHosts: ["com.core.cua"],
             sidePanelEnabled: true,
-            features: { sdkKey: "fixture", api: "https://feature.invalid" },
+            features: { sdkKey: "fixture", api: featureUrl },
             telemetryDsn: "",
             siteStatusUrl: "https://chatgpt.com/backend-api/aura/site_status",
             defaultAllowedPages: [],
@@ -104,6 +120,15 @@ for (const deployment of ["native", "full"] as const)
           clickedMarkers.add(incoming.searchParams.get("marker") ?? "");
           response.writeHead(204);
           response.end();
+          return;
+        }
+        if (incoming.pathname === "/editor") {
+          response.setHeader("Content-Type", "text/html");
+          response.end(`<title>Two-window editor fixture</title><label>Shared draft<textarea aria-label="Shared draft"></textarea></label>
+            <script>const field=document.querySelector('textarea');
+            field.value=localStorage.getItem('shared-draft')||'';
+            field.addEventListener('input',()=>localStorage.setItem('shared-draft',field.value));
+            addEventListener('storage',e=>{if(e.key==='shared-draft')field.value=e.newValue||''});</script>`);
           return;
         }
         response.setHeader("Content-Type", "text/html");
@@ -571,6 +596,28 @@ for (const deployment of ["native", "full"] as const)
                 }
               }
             : undefined,
+          async (execute) => {
+            const editorA = pageUrl + "editor?window=a";
+            const editorB = pageUrl + "editor?window=b";
+            await execute(`var editorBrowser = await cua.getBrowser({id:"1"});`);
+            await execute(`var editorA = await cua.createBrowserTab("1",${JSON.stringify(editorA)});`);
+            await execute(`var editorB = await cua.createBrowserTab("1",${JSON.stringify(editorB)});`);
+            await execute('var management = await editorBrowser.capabilities.get("management");');
+            await execute(`var infoA = (await management.tabs.query({url:${JSON.stringify(editorA)}}))[0]; var infoB = (await management.tabs.query({url:${JSON.stringify(editorB)}}))[0]; var secondWindow = await management.windows.create({tabId:infoB.id});`);
+            const layout = await execute('nodeRepl.write(JSON.stringify({distinct:(await management.tabs.get(infoA.id)).windowId !== (await management.tabs.get(infoB.id)).windowId}));');
+            assert.match(layout, /"distinct":true/);
+            const editA = `from-A-${randomUUID()}`;
+            const editB = `from-B-${randomUUID()}`;
+            await execute(`await editorA.playwright.getByRole("textbox",{name:"Shared draft"}).fill(${JSON.stringify(editA)});`);
+            assert.ok((await execute('await editorB.getAXState();')).includes(editA));
+            await execute(`await editorB.playwright.getByRole("textbox",{name:"Shared draft"}).fill(${JSON.stringify(editB)});`);
+            assert.ok((await execute('await editorA.getAXState();')).includes(editB));
+            await execute(`await editorB.goto(${JSON.stringify(editorB)});`);
+            assert.ok((await execute('await editorB.getAXState();')).includes(editB));
+            await execute('await management.windows.update(secondWindow.id,{focused:true,state:"normal",width:900,height:700});');
+            const focus = await execute('nodeRepl.write(JSON.stringify({focused:(await management.windows.get(secondWindow.id)).focused}));');
+            assert.match(focus, /"focused":true/);
+          },
         );
         // Failure diagnostics come from the existing MCP/tool trace only.
         // Never bypass an observation denial by reading the page through Playwright.

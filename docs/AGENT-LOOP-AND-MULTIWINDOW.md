@@ -36,9 +36,37 @@ Verified locally:
   compared with the installed original facade on the same fixture.
 
 These are fixture/parity tests, not acceptance of a live collaborative editor.
-Remaining acceptance: two real browser windows, tab-specific edits in both
-directions, synchronization and persistence checks in the target application,
-and focus/cursor checks. Two windows of one profile share account state; testing
+Remaining production acceptance: synchronization and persistence in the target
+application, independent user accounts, and visible focus/cursor behavior.
+The controlled real-browser acceptance is recorded below. Two windows of one profile share account state; testing
 two different users requires separate authenticated sessions. The sequential
 AgentLoop does not itself provide concurrent multi-user editing or application
 conflict resolution.
+
+## Real Chromium acceptance (2026-11-07)
+
+The packaged-extension acceptance now exercises a controlled editor over the
+actual MCP → restored Rust supervisor → browser worker → Native Messaging →
+extension → Chromium path. It creates two retained CUA tab handles, uses the
+public management capability to move the second tab into another real browser
+window, and asserts distinct window IDs. It fills A through the CUA locator API
+and reads the synchronized value from B, then fills B and reads from A. A reload
+verifies persistence. A management window update verifies explicit focus.
+
+The editor is a localhost fixture using localStorage/storage events, with random
+per-run text. It proves routing, cross-window operations and this fixture's
+synchronization, not production Stepwise collaboration or multi-account conflict
+resolution. Chromium runs headless with a temporary profile; this does not prove
+visible layout or cursor rendering in the user's daily Chrome. No model or real
+account is used. The existing cursor acceptance remains separate.
+
+The initial full-extension run failed with `Capability is not available:
+management`. Its deployment used an unreachable feature-service endpoint;
+`background_startup.ts` evaluates
+`codex-app-chrome-extension-browser-management` and falls back to false.
+The acceptance fixture now supplies a test-owned localhost feature endpoint via
+the existing full-extension deployment configuration. This tests the enabled
+capability through normal SDK evaluation without changing the runtime's gate
+checks or the user's production deployment. Therefore a deployment with that
+gate disabled still cannot offer management; multi-tab bindings alone do not
+prove that window management is available.

@@ -31,6 +31,7 @@ export async function verifyIndependentMcpBrowser(
   backend: "chrome" | "cdp" = "chrome",
   scenario?: { question: string; expectedAnswer: RegExp },
   verifyEvidence?: () => Promise<void>,
+  verifyMultipleWindows?: (execute: (code: string, expectImage?: boolean) => Promise<string>) => Promise<void>,
 ) {
   const baiduSearch =
     process.env.CUA_LIVE_BAIDU_TEST === "1" ||
@@ -303,6 +304,7 @@ export async function verifyIndependentMcpBrowser(
       assert.match(clicked, /action-completed-marker/);
       await execute("await liveTab.getScreenshot();", true);
       await verifyEvidence?.();
+      await verifyMultipleWindows?.(execute);
     } finally {
       try {
         await turn.endTurn();
