@@ -1591,3 +1591,17 @@ UIElement.systemElementCount 将支持门槛、缓存计数和系统计数连接
 
 此处 generic Node 表达遍历算法边界，不冒充已经恢复完整 UIElementProtocol。
 原 parent getter、协议 existential 和生产菜单接线仍待完成；未执行真实 UI 或模型。
+
+## parent getter 与具体父链组合（2026-11-07）
+
+确认原 parent getter 0x1007b0214..<0x1007b029c 使用 AXParent 调用
+value<UIElement>(ignoringTypeMismatch:false)，直接返回 optional concrete element。
+恢复具体 UIElement 目标解码、缓存优先/严格 uncached 读取，以及 parentValue；
+systemParentChain 将其与已恢复的深度状态机组合，保留显式 transaction/read/reporting。
+
+组合测试使用真实 AX 引用：首个父元素来自缓存并复用事务初始化，下一级已知不支持
+AXParent 时结束，全程不触发 raw provider；另验证错误类型的未缓存父属性记录一次
+解码错误并返回 nil。测试和 Swift 构建通过。
+
+没有把具体 UIElement 链冒充支持所有原版协议 conformer 的 existential 链；
+完整协议、provider、隐式 TaskLocal 和生产菜单入口仍待连接。未执行真实 UI 或模型。

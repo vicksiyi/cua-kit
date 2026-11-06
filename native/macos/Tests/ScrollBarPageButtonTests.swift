@@ -257,6 +257,24 @@ struct ScrollBarPageButtonTests {
             read: { _ in fatalError("cached children must not refetch") },
             reportError: { _ in fatalError("cached children must decode") })
         precondition(countedChildren.count == 1 && countedChildren[0].axElement === valid.axElement)
+        let parentKey = UIElementAttribute("AXParent")
+        let parentRaw = AXPartialValue(value: AXEncodedValue(value: barAX),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        let descendant = UIElement(axElement: emptyChild, cache: UIElementCache(
+            supportedAttributes: [parentKey], attributes: [parentKey: parentRaw],
+            transactionAttributes: [parentKey]))
+        let parentsTransaction = UIElementTransactionCache(
+            attributeTable: [barAX: [:]], requestedAttributes: [parentKey],
+            fallbackElements: UIElementFallbackCache(initialState: [:]))
+        let parents = Array(descendant.systemParentChain(includingSelf: false,
+            transaction: parentsTransaction,
+            read: { _, _ in fatalError("cached first parent and known-unsupported end must not read") },
+            reportError: { _ in fatalError("valid parent must decode") }))
+        precondition(parents.count == 1 && parents[0].axElement === barAX)
+        var parentErrors = 0
+        let invalidParent = valid.parentValue(transaction: parentsTransaction,
+            read: { (.success, wrongPartial) }, reportError: { _ in parentErrors += 1 })
+        precondition(invalidParent == nil && parentErrors == 1)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

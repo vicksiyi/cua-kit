@@ -1001,6 +1001,14 @@ element_storage_evidence['childrenPreferringVisible']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift',
     'limitations':'Cache count and collection composition are restored; explicit system array-count adapter exists; original TaskLocal provider remains pending; full protocol/TaskLocal and production traversal remain pending.',
 }
+element_storage_evidence['parentValue']={
+    'entry':'UIElementProtocol.parent.getter 0x1007b0214..<0x1007b029c',
+    'call':'0x1007b0264 -> value<UIElement>(for:AXParent, ignoringTypeMismatch:false); returns optional concrete element unchanged',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007b0214,0x1007b029c)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementParentValue.swift','native/macos/Sources/CuaHelper/AXConcreteUIElementDecoding.swift'],
+    'limitations':'Concrete cached/uncached parent decoding and parent-chain composition restored with explicit transaction/read/reporting. Full existential protocol/provider, implicit TaskLocal and production menu integration remain pending.',
+}
 element_storage_evidence['parentChain']={
     'defaultDepth':'0x1007a7f9c returns 300',
     'construction':'0x1007a7fa4: includingSelf true seeds self at depth 0; false resolves parent immediately and seeds depth 1',
@@ -1009,7 +1017,7 @@ element_storage_evidence['parentChain']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x1007a7f9c,0x1007a80f0),(0x1007b704c,0x1007b71a8),(0x1007b7e24,0x1007b7e2c)]],
     'implementation':'native/macos/Sources/CuaHelper/UIElementParentChain.swift',
-    'limitations':'Traversal restored with generic node and parent boundary; original parent getter, complete existential protocol and production integration remain pending.',
+    'limitations':'Traversal restored with generic node and parent boundary; concrete parent getter restored separately; complete existential protocol and production integration remain pending.',
 }
 element_storage_evidence['menuActionPreparation']={
     'entry':'UIElementProtocol.perform(action:) at 0x100791a68',

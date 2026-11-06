@@ -2243,6 +2243,22 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift",
       "limitations": "Cache count and collection composition are restored; explicit system array-count adapter exists; original TaskLocal provider remains pending; full protocol/TaskLocal and production traversal remain pending."
     },
+    "parentValue": {
+      "entry": "UIElementProtocol.parent.getter 0x1007b0214..<0x1007b029c",
+      "call": "0x1007b0264 -> value<UIElement>(for:AXParent, ignoringTypeMismatch:false); returns optional concrete element unchanged",
+      "blocks": [
+        {
+          "start": "0x1007b0214",
+          "endExclusive": "0x1007b029c",
+          "machineCodeSha256": "9b701410080caa12beb8f2460cecb90c937741e6e2c1c499bbdfad90ded9d09c"
+        }
+      ],
+      "implementation": [
+        "native/macos/Sources/CuaHelper/UIElementParentValue.swift",
+        "native/macos/Sources/CuaHelper/AXConcreteUIElementDecoding.swift"
+      ],
+      "limitations": "Concrete cached/uncached parent decoding and parent-chain composition restored with explicit transaction/read/reporting. Full existential protocol/provider, implicit TaskLocal and production menu integration remain pending."
+    },
     "parentChain": {
       "defaultDepth": "0x1007a7f9c returns 300",
       "construction": "0x1007a7fa4: includingSelf true seeds self at depth 0; false resolves parent immediately and seeds depth 1",
@@ -2266,7 +2282,7 @@
         }
       ],
       "implementation": "native/macos/Sources/CuaHelper/UIElementParentChain.swift",
-      "limitations": "Traversal restored with generic node and parent boundary; original parent getter, complete existential protocol and production integration remain pending."
+      "limitations": "Traversal restored with generic node and parent boundary; concrete parent getter restored separately; complete existential protocol and production integration remain pending."
     },
     "menuActionPreparation": {
       "entry": "UIElementProtocol.perform(action:) at 0x100791a68",
