@@ -552,3 +552,44 @@ FileHandle failure. A separate disposable executable checks invalid NaN input:
 on this macOS Foundation raises an Objective-C exception before the closed-state
 callback, rather than a catchable Swift serialization error. No preflight
 isValidJSONObject guard or exception conversion is invented in the writer.
+
+### Request exchange, response dispatch and absolute deadline (2026-11-07)
+
+`NativeJSONRPCRequestExchange` now composes the writer, timed message reader and
+response dispatch for one serial request. It is not yet the process-owning
+connection constructor. The original request function is pinned as
+`0x100dcdeac..<0x100dcfe4c`.
+
+After writing, the original creates Date() and adds the connection timeout
+(`0x100dce564` / `0x100dce570`, GOT `0x1014633a0` / `0x101463338`). It reads
+that deadline's timeIntervalSinceNow (`0x101463360`) before each wait, including
+after the notification callback. Nonpositive remaining time throws
+requestTimedOut(method); unrelated messages do not restart the timeout. The
+host reconstruction injects a clock/message source only for deterministic tests.
+
+The dispatch at `0x100dcf374` conditionally casts id to String and compares it
+with the request's UUID String. For a match, presence of the error key wins over
+result, including NSNull. Helper `0x100dd7f6c..<0x100dd80c8` extracts a String
+message from a dictionary, or accepts a String error directly; other forms yield
+nil. The requestRejected case carries method and this optional message. Without
+error, result is cast to [String:Any], falling back to an empty dictionary for
+missing/null/non-dictionary values (`0x100dcf964..<0x100dcfa68`). EOF maps to
+appServerExited. No extra JSON-RPC version validation is introduced.
+
+For a nonmatching/missing/non-String id, the original calls the optional async
+notification handler whenever method casts to String (`0x100dcf5bc..<0x100dcf678`)
+and then continues waiting. It does not additionally require absence of an id.
+The handler receives the complete message and is awaited, so its elapsed time
+counts against the shared request deadline. Messages without a String method
+are ignored. Transport/decoder errors propagate rather than triggering retries.
+
+Tests cover ID type/mismatch, notification routing and precedence, decreasing
+remaining time, callback-induced expiration, zero/negative timeout, result
+fallbacks, error/null precedence and message extraction, EOF, original error
+identity, and a full write/read/response cycle through two owned pipes. The
+first same-process fixture with two Foundation async byte consumers timed out;
+the passing fixture uses a dedicated blocking fake-peer thread and the restored
+async client reader. This changes only the fixture; the vendor peer is a separate
+process. No conclusion about a production scheduling bug is claimed from that
+fixture failure. Process launch/identity, connection ownership, actual policy
+fetch integration and end-to-end app/browser acceptance remain pending.

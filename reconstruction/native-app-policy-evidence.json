@@ -134,6 +134,18 @@
       "sha256": "bfef63b204cef19197d46e952eb3a5adb1e5dbb9f5b05b63ebb30526be76bc6e"
     },
     {
+      "name": "jsonRPCRequestFull",
+      "start": "0x100dcdeac",
+      "endExclusive": "0x100dcfe4c",
+      "sha256": "8b36593faced2b10adf7570b45872786c447b97d6e32257e91481defddf5b35e"
+    },
+    {
+      "name": "jsonRPCRequestErrorMessage",
+      "start": "0x100dd7f6c",
+      "endExclusive": "0x100dd80c8",
+      "sha256": "beb5a046bfbcc49a01701e6d2b1ebb655e63092634248efb953323825046f7d2"
+    },
+    {
       "name": "jsonRPCRequestWritePrefix",
       "start": "0x100dcdf24",
       "endExclusive": "0x100dce510",
