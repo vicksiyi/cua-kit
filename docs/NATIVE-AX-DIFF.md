@@ -2567,3 +2567,24 @@ processIdentifier 对应实例，再取 bundleIdentifier。没有启动应用或
 均值、实际 AX 相等语义及全缓存路径不触发 raw 读取；另验证中心命中跳过父读取、
 无标题跳过 bundle/app 查询。专项测试及 Swift 构建通过。未操作真实 Chess，
 完整 clickablePoint 与生产 indexed click 尚未切换，故不宣称用户点击已修复。
+
+
+## Indexed mouse click 的可点击位置接线（2026-11-07）
+
+UIElementClickablePointComposition.swift 将已有控制流接到具体 AXFrame 读取、
+祖先裁剪和 preferred point。SystemClickablePoint.swift 使用原版无参入口，明确
+scrollToVisible=false；内部滚动回调仅作不可达断言，不模拟成功滚动。显式滚动 API
+仍需恢复实际滚动实现。
+
+Mouse.swift 的 mouseInput indexed 分支现在构造 UIElement 并调用 systemClickablePoint，
+不再无条件用 frame 中心。可点击位置为 nil 时在分配/发送事件前抛出原版
+cannotClickOffscreenElement；缺少 raw AXFrame 保留 elementHasNoFrame 错误。
+截图坐标校验和发送前 snapshot 校验仍保留；drag/scroll 的点选择未被本次改动波及。
+
+三项专项测试通过：已有控制流、错误/目标解析及新的具体组合测试。组合验证可见
+中心、裁剪外中心、缺 frame、特殊点优先及滚动后 childFrame/parent/fresh frame
+读取顺序；Swift 构建通过。没有实际投递 UI 事件，不能据此宣称端到端点击通过。
+
+本轮仅接入位置解析，完整 AX 动作优先分支、焦点/窗口目标选择、事件生成、
+TaskLocal/provider 上下文和真实 UI 验收仍未完成。此前章节“生产 indexed click
+仍无条件取中心”的状态由本节更新，但不能扩展成整个点击实现已经还原。

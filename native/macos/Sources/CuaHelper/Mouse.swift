@@ -1,6 +1,7 @@
 import Foundation
 import ApplicationServices
 import ScreenCaptureKit
+import os
 
 struct CapturedWindow {
     let windowId: UInt32
@@ -75,7 +76,20 @@ extension Target {
     }
     func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
         let held = try heldNanoseconds(params["duration"] as? Double ?? 0)
-        let point = try await observedInputPoint(params)
+        let point: CGPoint
+        if let id = params["elementId"] as? Int {
+            try validateSnapshot(params)
+            guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count else {
+                throw fail("INVALID_ARGUMENT", "Indexed click requires a valid element ID and no coordinates.")
+            }
+            let item = UIElement(systemElement: nodes[id - 1].element, transaction: nil)
+            guard let resolved = try await item.systemClickablePoint(transaction: nil, reportError: { error in
+                Logger(subsystem: "core.cua", category: "Accessibility").error("Clickable geometry read failed: \(String(describing: error))")
+            }) else { throw SynthesizedEvent.Error.cannotClickOffscreenElement }
+            point = resolved
+        } else {
+            point = try await observedInputPoint(params)
+        }
         let events = try mouseClickEvents(point:point,button:params["mouseButton"] as? String ?? "left",count:params["clickCount"] as? Int ?? 1,flags:mouseModifiers(params["key"] as? String))
         // Recheck after async window enumeration and before the first event.
         try validateSnapshot(params)

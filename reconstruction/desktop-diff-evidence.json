@@ -3093,6 +3093,25 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "clickablePointProduction": {
+      "composition": "UIElementClickablePointComposition wires distinct pre-scroll frameValue, raw AXFrame, ancestor clipping and preferred-point readers; only actual didScroll refreshes raw frame and parent reads.",
+      "default": "SystemClickablePoint uses restored no-argument entry 0x1007a03f8..<0x1007a04d4, hence scrollToVisible false; its scrolling callback is unreachable by invariant, not a simulated scroll success.",
+      "production": "Mouse.swift mouseInput indexed element path constructs UIElement, resolves systemClickablePoint and throws cannotClickOffscreenElement for nil before event allocation/posting. Coordinate capture path remains separate.",
+      "blocks": [
+        {
+          "start": "0x1007a03f8",
+          "endExclusive": "0x1007a04d4",
+          "machineCodeSha256": "45c4eb3e41ebcec59e30a197a7e038ee2932b24928c2b4afc886f6bdab5ee338"
+        },
+        {
+          "start": "0x1007b1d7c",
+          "endExclusive": "0x1007b1f94",
+          "machineCodeSha256": "6d022ac4cef4a320198e4eba85e1a672c3b088f3924a643f46248cae1e795e80"
+        }
+      ],
+      "validation": "Concrete prefetched AX geometry/parent fixtures verify visible center, clipped center nil, missing frame error, preferred short circuit and precise post-scroll fresh-read order; existing point/target tests and Swift build pass.",
+      "limitations": "Only indexed mouse-click position resolution integrated. Full AX action selection, window/event targeting, focus enforcement, actual scrolling, TaskLocal provider and live GUI acceptance remain incomplete. Drag/scroll point selection is unchanged."
+    },
     "chessSystemComposition": {
       "bundleGetter": "UIElementProtocol 0x1007a7f04..<0x1007a7f4c delegates to AX bundle getter 0x1006fa49c..<0x1006fa640; system path catches PID failure then NSRunningApplication(processIdentifier:).bundleIdentifier or nil",
       "composition": "Concrete UIElement role/title cache, frameValue including position/size fallback, parentValue with transaction and parent frameValue; preserves lazy gate order; system adapters bind running app lookup, AX hit test and CFEqual semantics",

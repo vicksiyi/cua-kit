@@ -1166,6 +1166,14 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clickablePointProduction']={
+    'composition':'UIElementClickablePointComposition wires distinct pre-scroll frameValue, raw AXFrame, ancestor clipping and preferred-point readers; only actual didScroll refreshes raw frame and parent reads.',
+    'default':'SystemClickablePoint uses restored no-argument entry 0x1007a03f8..<0x1007a04d4, hence scrollToVisible false; its scrolling callback is unreachable by invariant, not a simulated scroll success.',
+    'production':'Mouse.swift mouseInput indexed element path constructs UIElement, resolves systemClickablePoint and throws cannotClickOffscreenElement for nil before event allocation/posting. Coordinate capture path remains separate.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007a03f8,0x1007a04d4),(0x1007b1d7c,0x1007b1f94)]],
+    'validation':'Concrete prefetched AX geometry/parent fixtures verify visible center, clipped center nil, missing frame error, preferred short circuit and precise post-scroll fresh-read order; existing point/target tests and Swift build pass.',
+    'limitations':'Only indexed mouse-click position resolution integrated. Full AX action selection, window/event targeting, focus enforcement, actual scrolling, TaskLocal provider and live GUI acceptance remain incomplete. Drag/scroll point selection is unchanged.',
+}
 element_storage_evidence['chessSystemComposition']={
     'bundleGetter':'UIElementProtocol 0x1007a7f04..<0x1007a7f4c delegates to AX bundle getter 0x1006fa49c..<0x1006fa640; system path catches PID failure then NSRunningApplication(processIdentifier:).bundleIdentifier or nil',
     'composition':'Concrete UIElement role/title cache, frameValue including position/size fallback, parentValue with transaction and parent frameValue; preserves lazy gate order; system adapters bind running app lookup, AX hit test and CFEqual semantics',
