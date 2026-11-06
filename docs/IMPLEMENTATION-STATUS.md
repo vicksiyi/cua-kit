@@ -6174,3 +6174,10 @@ Six process tests pass, including long/CRLF/blank/final unterminated lines, inva
 Static analysis of forward_app_server_to_attached_client established that stdout is not blindly buffered: native code strips CR/LF only, caches an initialize response by exact reserved ID and field presence, and buffers at most the first 128 method-string messages with an ID when no writer is selected. Null IDs count as present; an initialize result may be null, but a present method field disqualifies the cached response. Generation mismatch prevents stale readers from changing cache/queue state. Raw message text remains unchanged.
 
 Restored the replay bookkeeping in Rust. Two tests cover field presence/types, raw text, stale generations, capacity boundary with no eviction, and line-ending behavior. Full stdout worker must still compose these helpers with locked state, writer selection, frame writes, detach and EOF cleanup. The forwarding thread's disassembly also confirms wait_app_server_child runs only after forwarding returns; do not start a separate wait holding the child lock before stdout completes.
+
+
+### 2026-11-06: native websocket frame writer and close
+
+Restored write_shared_websocket_frame and close_websocket_writer in Rust. The original uses direct std TCP writes, not an evidenced third-party websocket writer: one mutex covers FIN/opcode header and unchanged payload; server frames are unmasked, with 7/16/64-bit big-endian lengths. Close sends an empty close frame then reacquires the lock for shutdown(Both), ignoring errors. The native poison message is retained.
+
+Two real loopback TCP tests pass: payload lengths 0/125/126/65535/65536, close frame then EOF, and 400 frames from eight concurrent writers with no header/payload interleaving. No external connection was made. These are transport primitives; websocket handshake/parser, authorization and stdout worker/state composition remain incomplete.

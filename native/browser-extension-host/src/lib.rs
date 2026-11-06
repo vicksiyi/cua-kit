@@ -8,6 +8,7 @@ pub mod app_server_manifest;
 pub mod app_server_status;
 pub mod app_server_process;
 pub mod app_server_output;
+pub mod app_server_websocket;
 #[cfg(unix)]
 pub mod client_writer;
 #[cfg(unix)]
