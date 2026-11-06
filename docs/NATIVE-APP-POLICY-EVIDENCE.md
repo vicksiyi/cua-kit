@@ -225,3 +225,37 @@ JSON projection, concrete Bundle fallback and denied/high-risk results.
 These components do not launch an app, grant approval, or replace the current
 `SkyAppPolicy` deployment policy. Native policy transport, application
 resolution and production wiring still require reconstruction and validation.
+
+## Application resolution control flow
+
+`NSWorkspace.resolveApplicationTarget(for:)` (`0x10026222c..<0x1002624b8`)
+first probes the input as a bundle path. If that fails, it enumerates targets
+by bundle identifier and passes a nonempty result to the candidate selector.
+Only an empty list proceeds to `SAIApplicationPathForName`, followed by another
+bundle path probe. A failed name/path lookup throws the not-found error. A
+selector error propagates; it does not trigger name fallback.
+
+`resolveApplicationTargetPreferringRunningApplication(for:)`
+(`0x100262c10..<0x100262e34`) also probes the path first, then tries running
+targets by bundle ID. A nonempty running list goes through the same selector.
+An empty list calls the ordinary resolver, including a second path probe.
+
+The path helper (`0x1002624b8..<0x1002626a8`) uses `Bundle(path:)` and its
+`bundleIdentifier`; it does not check for an absolute prefix or `.app` suffix.
+The ObjC selector references at `0x101542ab8` and `0x101542740` decode to
+`initWithPath:` and `bundleIdentifier`. The successful branch constructs a
+file URL and the normalized ApplicationTarget.
+
+`SAIApplicationPathForName` (`0x100244ac8..<0x100244b34`) is Objective-C. Its
+selector stubs resolve to `sharedWorkspace` (`0x101543e20`) and
+`fullPathForApplication:` (`0x101543d38`). It is restored in an Objective-C
+`.m` file, not translated into TypeScript. It does not launch the app.
+
+`NativeApplicationResolution.swift` restores the two control-flow methods
+and concrete Bundle path probe. Enumeration and candidate selection remain
+injected dependencies: the original enumeration includes running candidates
+and additional URL processing; the original selector rejects ambiguity rather
+than blindly selecting the first app. These helpers must be fully recovered
+before replacing `Launch.swift`. Tests verify fallback order, selector error
+propagation, and a real temporary `.bundle` path accepted by Foundation.
+The host NotFound error does not claim original error text parity.

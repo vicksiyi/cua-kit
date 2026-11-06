@@ -114,6 +114,30 @@
       "sha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
     },
     {
+      "name": "applicationResolution",
+      "start": "0x10026222c",
+      "endExclusive": "0x1002624b8",
+      "sha256": "71626c7a499cf9a567ba60df3b7176fc0886026190154b2075bfc8080a3e05ed"
+    },
+    {
+      "name": "applicationPathProbe",
+      "start": "0x1002624b8",
+      "endExclusive": "0x1002626a8",
+      "sha256": "bedbfeeeab17e812f1e5141c333e4b6703cf1c6b694d55d2de795225382a7289"
+    },
+    {
+      "name": "applicationResolutionPreferringRunning",
+      "start": "0x100262c10",
+      "endExclusive": "0x100262e34",
+      "sha256": "aaad15a4ec46ff739513bdec8eb352fe0300c29e0bbd13938f8766fb96add950"
+    },
+    {
+      "name": "applicationNameObjCBridge",
+      "start": "0x100244ac8",
+      "endExclusive": "0x100244b34",
+      "sha256": "3e9659ea7734afcb54651c4021c5e0c388926d2ef2c239ca3bbb34c5f4d271c0"
+    },
+    {
       "name": "applicationTargetInitialization",
       "start": "0x100261e30",
       "endExclusive": "0x100261f10",
