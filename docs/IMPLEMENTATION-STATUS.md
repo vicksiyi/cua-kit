@@ -7005,3 +7005,7 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-07 原生属性支持判定
 
 恢复 `UIElementProtocol.attributeIsKnownUnsupported` 的 Swift 分支：区分未知、事务未请求、已请求但不支持和实际支持；保留 lazy cache getter 调用顺序。12 个集合组合及变化 getter 验证通过。完整协议、decoder 和生产原生树观察器接线仍未完成，不将这一辅助函数的通过视为真实应用操作验收。
+
+### 2026-11-07 String 解码与 subrole
+
+恢复原生 String 专用 CF 类型分派，复用现有 AXValue/marker/array helper，并接入具体 UIElement 的缓存 subrole。真实 CF/AX 对象边界测试通过；未连接生产观察器，不宣称完整泛型解码或 UIElementProtocol 已完成。

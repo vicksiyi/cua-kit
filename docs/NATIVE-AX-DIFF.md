@@ -920,3 +920,19 @@ fallbackElements；prefetchEnabled 的 TaskLocal 初始化值为 true。这些�
 
 协议直接要求中已确认五项，尚余五项和父协议需要恢复。这里只固化调用与分支证据；
 专门的 String decoder 尚未完整实现，因此没有用普通类型转换冒充，也没有接入生产观察器。
+
+## String 专用解码与缓存 subrole 实现（2026-11-07）
+
+完成上一节留下的 String 专用路径：目标元数据 GOT `0x1014664b8` 绑定 Swift.String，
+完整机器码范围 `0x100710b44..0x1007111c8`。按原顺序区分 AXUIElement、文本标记、
+标记范围、AXValue、CFArray、普通对象。String 不能接收 UIElement/标记包装/数组，
+因此这些分支保持原来的空值或类型错误；AXValue 复用已恢复的 unpack/AXError 处理。
+普通对象才执行 Foundation 字符串桥接，没有 description/stringification 回退。
+
+新增 `AXStringDecoding.swift`，并为具体 UIElement 接入缓存 subrole getter。
+此 getter 只读取 AXSubrole 的编码值，缺失或解码错误返回 nil；不重新访问应用，
+也不依赖 supportedAttributes 或 transactionAttributes 推断字符串。
+
+验证使用本地创建的真实 CF/AX 对象，覆盖空串、Unicode、内嵌 NUL、元素、文本标记及范围、
+数组、数字、NSNull、字典、点和四类 AXError，校验严格模式的错误类型及非严格模式的空值。
+Swift 测试与 helper 构建通过。没有执行原厂服务；完整泛型 decoder、协议和生产观察器接线仍待恢复。

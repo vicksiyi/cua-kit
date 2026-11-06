@@ -766,6 +766,25 @@ element_storage_evidence['cachedSubrole']={
     ],
     'limitations':'Decoder specialization remains unimplemented; do not wire a plain as? String substitute or trigger fresh AX reads from this cached getter.',
 }
+string_binding=next((line for line in fixups.splitlines() if '0x1014664b8' in line.lower()),'')
+if 'libswiftCore/_$sSSN' not in string_binding:
+    raise SystemExit('Specialized AX decoder target is no longer Swift.String')
+element_storage_evidence['cachedSubrole']['limitations']='String specialization and cached concrete subrole are implemented; full generic decoder, UIElementProtocol and production collector integration remain pending.'
+element_storage_evidence['stringDecoder']={
+    'start':'0x100710b44','endExclusive':'0x1007111c8',
+    'machineCodeSha256':hashlib.sha256(read_virtual(0x100710b44,0x684)).hexdigest(),
+    'targetMetadata':'0x1014664b8 = libswiftCore/_$sSSN',
+    'dispatchOrder':['AXUIElement','AXTextMarker','AXTextMarkerRange','AXValue','CFArray','ordinary object'],
+    'branches':[
+        'String cannot conform to UIElementProtocol or be an AXUIElement class; element target mismatch returns nil or failedToUnwrapAttributeValue(String).',
+        'Marker and marker-range wrappers cannot convert to String; preserve nil versus throwing policy.',
+        'AXValue unpacks via 0x1006ea098 before requested-type cast and AXError handling. noValue becomes nil; other AX errors honor throwingOnFailure.',
+        'CFArray target rejection is unexpectedAttributeValueType(expected: [Any], actual: String).',
+        'Ordinary objects use Foundation dynamic cast to String, with no description/stringification fallback.',
+    ],
+    'implementation':'native/macos/Sources/CuaHelper/AXStringDecoding.swift',
+    'limitations':'Concrete String specialization only. Original executable was not run; static branch evidence plus local Swift boundary tests.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))

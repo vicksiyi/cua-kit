@@ -1841,7 +1841,30 @@
         "Present entry passes its encoded AnyObject to specialized decoder 0x100710b44 with throwingOnFailure=false; decoder errors are swallowed and return nil.",
         "String decoder still performs CF type dispatch before conversion; ordinary String casting alone is not a faithful replacement."
       ],
-      "limitations": "Decoder specialization remains unimplemented; do not wire a plain as? String substitute or trigger fresh AX reads from this cached getter."
+      "limitations": "String specialization and cached concrete subrole are implemented; full generic decoder, UIElementProtocol and production collector integration remain pending."
+    },
+    "stringDecoder": {
+      "start": "0x100710b44",
+      "endExclusive": "0x1007111c8",
+      "machineCodeSha256": "d9dcc264f6c54ed96f1f8c11271d7f45c805d2fc39ecb175a008f69cb094dec7",
+      "targetMetadata": "0x1014664b8 = libswiftCore/_$sSSN",
+      "dispatchOrder": [
+        "AXUIElement",
+        "AXTextMarker",
+        "AXTextMarkerRange",
+        "AXValue",
+        "CFArray",
+        "ordinary object"
+      ],
+      "branches": [
+        "String cannot conform to UIElementProtocol or be an AXUIElement class; element target mismatch returns nil or failedToUnwrapAttributeValue(String).",
+        "Marker and marker-range wrappers cannot convert to String; preserve nil versus throwing policy.",
+        "AXValue unpacks via 0x1006ea098 before requested-type cast and AXError handling. noValue becomes nil; other AX errors honor throwingOnFailure.",
+        "CFArray target rejection is unexpectedAttributeValueType(expected: [Any], actual: String).",
+        "Ordinary objects use Foundation dynamic cast to String, with no description/stringification fallback."
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/AXStringDecoding.swift",
+      "limitations": "Concrete String specialization only. Original executable was not run; static branch evidence plus local Swift boundary tests."
     }
   },
   "transactionScopeEvidence": {
