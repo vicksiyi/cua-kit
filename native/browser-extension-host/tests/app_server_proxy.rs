@@ -595,3 +595,19 @@ fn ensure_loaded_failures_preserve_native_partial_state() {
         "existing-session"
     );
 }
+
+#[test]
+fn request_config_error_precedes_existing_proxy_refresh_or_restart() {
+    use core_browser_extension_host::app_server_request::ensure_with_environment;
+    let (_, proxy) = update_fixture();
+    let original = proxy.runtime.lock().unwrap().clone();
+    let mut slot = Some(proxy);
+    let error = ensure_with_environment(&mut slot, None, true, None, |_| None)
+        .err()
+        .unwrap();
+    assert_eq!(error.kind, RuntimeErrorKind::ManifestMissing);
+    let proxy = slot.as_ref().unwrap();
+    assert_eq!(*proxy.runtime.lock().unwrap(), original);
+    assert_eq!(proxy.runtime_session_id(), "existing-session");
+    assert!(proxy.processes.lock().unwrap().is_empty());
+}

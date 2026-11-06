@@ -17,6 +17,14 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Ensure request composition now decodes nested constraints (trimmed identity
+strings; strict unsigned protocol numbers) and reloads registry/sidecar/effective
+configuration before entering the proxy lifecycle. Nineteen request/proxy tests
+pass, including an owned registry plus real listener and registry deletion before
+restart. Selection uses requested identity before environment origin override;
+load failure leaves the existing proxy untouched. Production control dispatch,
+actual invocation environment/executable discovery and assets remain to connect.
+
 The native metadata default boundary is now traced: app/CLI/native-host versions
 fall back to `0.0.0`, channel to `unknown`, entryId to `env`, both protocols to 2.
 `ensure_loaded` composes proxy initialization/reuse, config refresh, optional
