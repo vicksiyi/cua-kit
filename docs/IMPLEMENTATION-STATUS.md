@@ -6440,3 +6440,10 @@ A live DeepSeek attempt of the original Baidu search prompt reached browser cont
 The model's final response also falsely claimed an already executed curl request and proposed a workaround. No curl tool call occurred, no result URL was observed, and this is a failed acceptance run. No policy bypass or additional approval was attempted. The live-search verifier now reports the observed policy rejection explicitly instead of reducing the failure to a missing result URL. This diagnostic does not count the blocked scenario as success or resolve the model's inaccurate final narrative.
 
 Remaining work includes enforcing reliable final reporting after policy denial, interactive authorized handling when needed, and successful first-result evidence on the public search scenario. Existing local-page success does not satisfy this requirement.
+
+
+### Deterministic reporting after browser authorization failure
+
+The previous live Baidu run established that model-only instructions did not prevent a false curl narrative after an origin refusal. The independently authored NodeREPL caller adapter now classifies the observed browser security error prefixes on isError results and returns a terminal host disposition. AgentLoop stops pending calls in the same batch and makes no further model decision, emits a fixed incomplete-task response, and still runs turn cleanup. The demo exposes a blocked status and nonzero exit code instead of presenting completion. Native browser policy and protocol remain unchanged.
+
+Validation: 24 targeted regression tests, agent-loop type checking and library build pass. Tests cover both rejection and security-check-unavailable prefixes, no execution of a queued workaround, no speculative final model call, retained original diagnostic and exactly-once cleanup, plus exclusion of successful page quotations and ordinary JS/MCP argument errors. The classification relies on the observed textual error boundary; it is not a claim of a structured native authorization field or a universal policy classifier. No denied public-page action was retried for this change. Public search acceptance remains failed/pending.

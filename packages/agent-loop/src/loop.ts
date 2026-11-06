@@ -88,7 +88,7 @@ export class AgentLoop {
         if (!decision.text?.trim())
           throw new Error("Model returned neither answer nor tool calls.");
         add({ role: "assistant", content: decision.text });
-        return { answer: decision.text, messages };
+        return { status: "completed" as const, answer: decision.text, messages };
       }
       if (
         calls.length > 8 ||
@@ -103,6 +103,11 @@ export class AgentLoop {
           throw new Error(`Unknown tool: ${call.name}`);
         const result = await this.tools.callTool(call, options.signal);
         add({ role: "tool", callId: call.id, name: call.name, result });
+        if (result.stopReason) {
+          const answer = result.stopReason.message;
+          add({ role: "assistant", content: answer });
+          return { status: "blocked" as const, answer, messages };
+        }
       }
     }
     options.signal?.throwIfAborted();

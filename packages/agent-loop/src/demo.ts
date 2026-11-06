@@ -136,18 +136,8 @@ const trace = createTerminalTrace();
 let loopStarted = false;
 try {
   const initialMessages: import("./contracts").AgentMessage[] = [];
-  if (process.env.CUA_MCP_BOOTSTRAP === "core-cua") {
-    const call = { id: "host-cua-bootstrap", name: "js", arguments: {
-      code: 'await import("@core/cua/tinyskyAlt");', title: "Initialize CUA runtime",
-    } };
-    const request: import("./contracts").AgentMessage = { role: "assistant", toolCalls: [call] };
-    trace(request);
-    const result = await turnClient.callTool(call, controller.signal);
-    const response: import("./contracts").AgentMessage = { role: "tool", callId: call.id, name: call.name, result };
-    trace(response);
-    initialMessages.push(request, response);
-    if (result.isError) throw Error("Independent CUA bootstrap failed before model execution");
-  }
+  // CUA initialization belongs to the source launcher's kernel banner.
+  // The first observation triggers it; callers do not inject a second import cell.
   if (browserEnabled) initialMessages.push(...await browserPreflight(turnClient, {
         signal: controller.signal,
         onMessage: trace,
@@ -192,7 +182,8 @@ try {
             : undefined,
       ].filter(Boolean).join("\n"),
     });
-    debug?.write("run.answer", { answer: result.answer });
+    debug?.write("run.answer", { status: result.status, answer: result.answer });
+    if (result.status === "blocked") process.exitCode = 1;
     console.log(result.answer);
   }
 } catch (error) {

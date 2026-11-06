@@ -50,7 +50,7 @@ export class NodeReplTurnClient implements ToolClient {
       (tool) => tool.name !== "turn_ended",
     );
   }
-  callTool(call: ToolCall, signal?: AbortSignal): Promise<ToolResult> {
+  async callTool(call: ToolCall, signal?: AbortSignal): Promise<ToolResult> {
     if (call.name === "turn_ended")
       return Promise.reject(
         new Error("turn_ended is a host lifecycle operation"),
@@ -74,7 +74,18 @@ export class NodeReplTurnClient implements ToolClient {
           timeout_ms: this.options.defaultJsTimeoutMs,
         },
       };
-    return this.client.callTool(call, signal);
+    const result = await this.client.callTool(call, signal);
+    // Observed browser error prefixes, not arbitrary text in a successful page
+    // snapshot. This caller policy stops the demo; it does not alter native gates.
+    const denied = call.name === "js" && result.isError && result.content.some(item =>
+      item.type === "text" && (
+        item.text.startsWith("Browser Use rejected this action due to browser security policy. Reason:") ||
+        item.text.startsWith("Browser Use could not complete this action because a browser security check was unavailable. Reason:")
+      ));
+    return denied ? { ...result, stopReason: {
+      kind: "authorization",
+      message: "浏览器安全检查未放行，本次任务未完成。已停止后续工具调用；具体拒绝信息见工具日志。",
+    } } : result;
   }
   endTurn(): Promise<void> {
     return (this.ending ??= (async () => {

@@ -239,3 +239,10 @@ The installed package exposes two different contracts: its root exports a lower-
 New hosts should connect the restored MCP runtime and call the documented CUA API inside its `js` tool. They should not import the legacy root class and assume it represents the restored source. Existing root Cua/createCua and MacApp/MacProvider declarations are now marked deprecated; explicit `@vicksiyi/cua-kit/legacy`, `/legacy/native`, and `/legacy/extension` paths identify remaining prototype consumers. Existing root paths remain compatible while those consumers migrate; this is not full legacy removal.
 
 `reconstruction/public-api-boundary.json` records installed artifact hashes and this distinction. The original/restored `tinyskyAlt` entry differential test covers eight initialization cases with setup stubbed, without touching a browser or App. Entry parity is not proof of complete CUA or native behavior parity.
+
+
+### Terminal tool dispositions
+
+`ToolResult.stopReason` is optional host-adapter metadata (`{kind: "authorization", message: string}`). The MCP client does not copy this field from wire content. The NodeREPL turn adapter emits it only for error results whose text starts with the observed browser security rejection/unavailable prefix. Successful page text and ordinary JS/argument errors do not trigger it. This conservative text classification is an independently authored caller policy, not a new native protocol or recovered Codex behavior.
+
+When a tool result has this disposition, AgentLoop stops the remaining batch and model calls, records the tool error and host-authored response, and returns `status: "blocked"` with the existing answer/messages fields. Turn cleanup still runs. Normal model answers return `status: "completed"`; that status describes loop termination, not external verification of task success. The demo prints blocked responses and exits with code 1; debug logs include the status and original error. No automatic approval, retry, or alternate route is performed.

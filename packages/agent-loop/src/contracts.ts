@@ -10,6 +10,8 @@ export interface ToolDefinition {
 export interface ToolResult {
   content: Content[];
   isError?: boolean;
+  /** Host adapter disposition, never copied from arbitrary MCP/page payloads. */
+  stopReason?: { kind: "authorization"; message: string };
 }
 export interface ToolCall {
   id: string;
