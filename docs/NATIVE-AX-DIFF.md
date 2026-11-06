@@ -1700,3 +1700,20 @@ nil bundleIdentifier 返回 false。此分类不是应用白名单或授权策�
 stringValue(for:)。这也解释为何完整原生快照还需要事务缓存：节点属性 getter 并非
 随读随查系统。机器审计记录九个来源与函数区间，剩余 getter 语义继续核查。
 此轮为静态取证，无生产行为变更或模型/UI 调用。
+
+## 选择能力与焦点状态的区别（2026-11-07）
+
+确认父协议 slot 0x1015756f0 是 isSelectable（经 0x1007afff8 到 0x10078ec70），
+与公开 getter 0x1007abdfc 一致：读取一次 role，AXMenuItem 或 AXMenuBarItem 直接
+false；其它角色调用 isAttributeSupportedAndSettable(AXSelected)。它不读取当前
+AXSelected 值，菜单角色也不能仅凭 AXSelected 可写就认定可选择。
+
+恢复 UIElementSelectionCapability.swift 的角色排除与惰性能力查询，并添加
+AXMenuBarItem 角色常量。10 组测试验证菜单角色完全跳过属性查询，其它角色保留能力
+结果；相关九项测试与 Swift 构建通过。
+
+同时将已确认的父协议槽标记为 isFocused（0x1015756f8）、isFocusable
+（0x101575700）、isDisclosable（0x101575710）、isDisclosing（0x101575718）。
+isFocused 的路径读取缓存 AXFocused 并解码 Bool，失败/缺失为 false；isFocusable
+则包含额外角色判断和系统 settable 分支，不能将两者或 isSelectable 共用成简单布尔
+字段。完整 isFocusable 细节仍待恢复。本轮没有生产接线或真实 UI/模型调用。

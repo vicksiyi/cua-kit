@@ -1920,17 +1920,20 @@
         {
           "slot": "0x1015756f0",
           "target": "0x1007afff8",
-          "requirementDescriptor": "0x1012c9300"
+          "requirementDescriptor": "0x1012c9300",
+          "meaning": "isSelectable"
         },
         {
           "slot": "0x1015756f8",
           "target": "0x1007b0004",
-          "requirementDescriptor": "0x1012c9308"
+          "requirementDescriptor": "0x1012c9308",
+          "meaning": "isFocused"
         },
         {
           "slot": "0x101575700",
           "target": "0x1007b0038",
-          "requirementDescriptor": "0x1012c9310"
+          "requirementDescriptor": "0x1012c9310",
+          "meaning": "isFocusable"
         },
         {
           "slot": "0x101575708",
@@ -1940,12 +1943,14 @@
         {
           "slot": "0x101575710",
           "target": "0x1007b004c",
-          "requirementDescriptor": "0x1012c9320"
+          "requirementDescriptor": "0x1012c9320",
+          "meaning": "isDisclosable"
         },
         {
           "slot": "0x101575718",
           "target": "0x1007b88d0",
-          "requirementDescriptor": "0x1012c9328"
+          "requirementDescriptor": "0x1012c9328",
+          "meaning": "isDisclosing"
         },
         {
           "slot": "0x101575720",
@@ -2067,6 +2072,31 @@
       ],
       "implementationReuse": "UIElement.cachedStringValue(for:) already supplies the observed decoder/cache-only policy; do not replace with stringValue(for:) which may read uncached attributes.",
       "limitations": "Attribute source and return decoding established for nine slots; original protocol property names are not inferred merely from AX constants, especially the two distinct AXValue slots. Remaining getter mapping and protocol wiring pending."
+    },
+    "selectionCapability": {
+      "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
+      "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
+      "roleGate": "read role once; menuItem or menuBarItem -> false without support/settable queries",
+      "otherwise": "isAttributeSupportedAndSettable(AXSelected); not the current AXSelected value",
+      "blocks": [
+        {
+          "start": "0x10078ec70",
+          "endExclusive": "0x10078ee4c",
+          "machineCodeSha256": "7722e4954ab245996ff0f2cfcc9ded5124414202106edf9959e1007303d56a58"
+        },
+        {
+          "start": "0x1007abdfc",
+          "endExclusive": "0x1007abf94",
+          "machineCodeSha256": "8464d43d44d099b9e7228a2879f1573d74525a24975d6870dd46affdd01c139c"
+        },
+        {
+          "start": "0x1007b0004",
+          "endExclusive": "0x1007b0038",
+          "machineCodeSha256": "a77c74ce18f632eb51d245886ace497dd9dcf0d6991419aa1780bc4aea7ff5cb"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementSelectionCapability.swift",
+      "limitations": "Role-gated capability helper restored; support/settable callback remains explicit. Focusability has additional role/error branches and is not collapsed to the same helper. Full node protocol pending."
     },
     "attributeSupport": {
       "symbol": "UIElementProtocol.attributeIsKnownUnsupported",

@@ -789,6 +789,22 @@ element_storage_evidence['accessibilityNodeCachedStrings']={
     'implementationReuse':'UIElement.cachedStringValue(for:) already supplies the observed decoder/cache-only policy; do not replace with stringValue(for:) which may read uncached attributes.',
     'limitations':'Attribute source and return decoding established for nine slots; original protocol property names are not inferred merely from AX constants, especially the two distinct AXValue slots. Remaining getter mapping and protocol wiring pending.',
 }
+node_state_names={
+    '0x1015756f0':'isSelectable', '0x1015756f8':'isFocused',
+    '0x101575700':'isFocusable','0x101575710':'isDisclosable','0x101575718':'isDisclosing',
+}
+for entry in node_slots:
+    if entry['slot'] in node_state_names: entry['meaning']=node_state_names[entry['slot']]
+element_storage_evidence['selectionCapability']={
+    'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
+    'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
+    'roleGate':'read role once; menuItem or menuBarItem -> false without support/settable queries',
+    'otherwise':'isAttributeSupportedAndSettable(AXSelected); not the current AXSelected value',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10078ec70,0x10078ee4c),(0x1007abdfc,0x1007abf94),(0x1007b0004,0x1007b0038)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementSelectionCapability.swift',
+    'limitations':'Role-gated capability helper restored; support/settable callback remains explicit. Focusability has additional role/error branches and is not collapsed to the same helper. Full node protocol pending.',
+}
 element_storage_evidence['attributeSupport']={
     'symbol':'UIElementProtocol.attributeIsKnownUnsupported',
     'start':'0x1007b0854','endExclusive':'0x1007b0958',

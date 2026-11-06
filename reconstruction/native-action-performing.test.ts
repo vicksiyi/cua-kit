@@ -121,3 +121,18 @@ test("native actions preserve disclosure merge and read failure", {
     assert.match(result.stdout, /native actions preserve read failure, lazy disclosure and append duplicates: 32 cases/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native selection capability excludes menu roles lazily", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-selectable-"));
+  try {
+    const output = join(directory, "selectable");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementRole", "UIElementSelectionCapability"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementSelectionCapabilityTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /native selection capability excludes menu roles before attribute queries/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

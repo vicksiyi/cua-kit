@@ -8,6 +8,7 @@ struct UIElementRole: Hashable {
     static let button = UIElementRole("AXButton")
     static let scrollBar = UIElementRole("AXScrollBar")
     static let menuItem = UIElementRole("AXMenuItem")
+    static let menuBarItem = UIElementRole("AXMenuBarItem")
 
     let name: CFString
 
