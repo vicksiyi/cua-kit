@@ -539,3 +539,27 @@ AXPartialValue 元数据、typed 参数编码与 text marker 包装仍需还原�
 然后恢复泛型转换和参数编码；不是把所有 marker 都声明为 AnyObject，也不是把 marker
 内容转换成字符串。尚未确定私有 C 声明/导入方式和完整参数编码，未新增伪兼容 wrapper，
 也没有把这一静态审计宣称为真实 selectedText 回退验收。
+
+## 使用系统 SDK 实现 marker 包装与转换
+
+上节留下的 C 类型导入问题现已核实：本机 SDK 的
+`ApplicationServices.framework/Frameworks/HIServices.framework/Headers/AXUIElement.h`
+已声明 AXTextMarkerRef、AXTextMarkerRangeRef、type-ID、Create 和 range 端点接口。
+Swift 直接 `import ApplicationServices` 即可使用 AXTextMarker / AXTextMarkerRange，
+无需把它们当作 AnyObject 存储，也无需自行声明私有 C 函数或引入替代库。
+
+`AXTextMarkers.swift` 新增两个独立 Swift wrapper，保留原生 CF 引用；range 构造
+调用 `AXTextMarkerRangeCreate(nil,start.marker,end.marker)`。两条 decoder 分支先
+构造 wrapper 再转换请求类型，不会直接返回 raw CF 引用；不匹配时按原标志返回 nil
+或抛出 failedToUnwrapAttributeValue(requestedType)。外层具体属性适配器在强转前
+比较 CFGetTypeID，不冒充完整 AXEncodedValue dispatcher。
+
+使用真实 AXTextMarkerCreate / AXTextMarkerRangeCreate 测试 CF 引用身份、范围
+两端原始字节、Any 与 Optional 请求类型、裸 C 引用请求拒绝、错误请求类型的 nil/throw
+以及字符串/数组/AXUIElement 的类型检查。字节是仅用于对象测试的 opaque fixture，
+不能作为真实文档位置发送到应用。测试不需要辅助功能权限，也未操作任何应用窗口。
+完整 Swift helper 构建通过。
+
+这一实现替代了上节“尚未确认导入方式/未实现 wrapper”的待办，但尚未补齐 typed
+参数编码和缓存/观察集成；现有 selectedText reader 仍未自动在真实 UI 上启用 marker
+回退，也不证明原生增量树已完成。
