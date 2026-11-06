@@ -6315,3 +6315,10 @@ Full native host cargo test regression passed: 89 tests, zero failures. This cov
 Implemented binding and preparation from inlined AppServerProxy::start: configured host/port bind, retry same host with port zero after any nonzero-port failure, actual bound port lookup, two simple UUIDv4 values concatenated as token, optional chrome-extension origin, shared runtime and empty process map. Errors use the native runtime category and observed message context. Two tests pass for occupied loopback fallback, token/version/origin properties, and direct versus fallback bind errors.
 
 PreparedProxy has not yet transferred ownership to the listener thread or manager. Runtime-session ID, returned endpoint, update/reuse and shutdown ownership require further reconstruction.
+
+
+### Native proxy start and ownership checkpoint
+
+PreparedProxy::start now creates a separate hyphenated UUIDv4 runtime-session ID, moves the bound listener into a detached worker, and retains the shared runtime/origin/process map in AppServerProxy. Static proxy drop glue releases fields but does not close/join the detached listener; this behavior is preserved. Three proxy tests pass, including real TCP authentication rejection before and after dropping the proxy handle. The test's listener terminates with its isolated test executable.
+
+Manager-level shutdown, restart/reuse/update and returned endpoint schema still need reconstruction. A live standalone listener does not establish complete production control wiring or browser acceptance.

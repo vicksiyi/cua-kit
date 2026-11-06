@@ -73,3 +73,49 @@ pub fn prepare(config: &LoadedLaunchConfiguration) -> Result<PreparedProxy, Runt
         processes: Arc::new(Mutex::new(Default::default())),
     })
 }
+
+/// Native proxy handle: listener ownership moves into a detached thread, so
+/// dropping this handle does not close the listener. Manager shutdown must be
+/// reconstructed separately; do not infer a listener stop from this Drop.
+pub struct AppServerProxy {
+    pub port: u16,
+    pub token: String,
+    pub origin: SharedOrigin,
+    pub runtime: SharedRuntime,
+    pub processes: ProcessMap,
+    pub runtime_session_id: Arc<Mutex<String>>,
+}
+impl PreparedProxy {
+    pub fn start(self) -> AppServerProxy {
+        let runtime_session_id = Arc::new(Mutex::new(uuid::Uuid::new_v4().to_string()));
+        let PreparedProxy {
+            listener,
+            port,
+            token,
+            origin,
+            runtime,
+            processes,
+        } = self;
+        let thread_runtime = runtime.clone();
+        let thread_token = token.clone();
+        let thread_origin = origin.clone();
+        let thread_processes = processes.clone();
+        drop(std::thread::spawn(move || {
+            crate::app_server_listener::run_proxy_listener(
+                listener,
+                thread_runtime,
+                thread_token,
+                thread_origin,
+                thread_processes,
+            );
+        }));
+        AppServerProxy {
+            port,
+            token,
+            origin,
+            runtime,
+            processes,
+            runtime_session_id,
+        }
+    }
+}

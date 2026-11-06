@@ -62,3 +62,53 @@ fn bind_errors_use_native_runtime_category_and_distinguish_fallback() {
         assert!(error.message.starts_with(expected));
     }
 }
+
+#[test]
+fn started_proxy_serves_rejections_and_handle_drop_does_not_stop_listener() {
+    use std::{
+        io::{Read, Write},
+        net::TcpStream,
+        time::Duration,
+    };
+    let config = LoadedLaunchConfiguration {
+        launch: LaunchFields::default().resolve(|_| None),
+        selection: LoadedManifestEntry {
+            registry_path: "unused".into(),
+            selected: SelectedManifestEntry {
+                index: 0,
+                configuration: RawManifestConfiguration::default(),
+            },
+        },
+    };
+    let proxy = prepare(&config)
+        .unwrap_or_else(|e| panic!("{}", e.message))
+        .start();
+    let id = proxy.runtime_session_id.lock().unwrap().clone();
+    let parsed = uuid::Uuid::parse_str(&id).unwrap();
+    assert_eq!(parsed.get_version_num(), 4);
+    assert_eq!(id.len(), 36);
+    let port = proxy.port;
+    for _ in 0..2 {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        stream
+            .set_read_timeout(Some(Duration::from_secs(3)))
+            .unwrap();
+        stream
+            .write_all(b"GET /?token=wrong HTTP/1.1\r\n\r\n")
+            .unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert!(response.starts_with("HTTP/1.1 403 Forbidden"));
+        assert!(proxy.processes.lock().unwrap().is_empty());
+    }
+    drop(proxy);
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(3)))
+        .unwrap();
+    stream.write_all(b"GET / HTTP/1.1\r\n\r\n").unwrap();
+    let mut response = String::new();
+    stream.read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.1 403 Forbidden"));
+    // The listener is owned by this isolated test executable and ends when it exits.
+}

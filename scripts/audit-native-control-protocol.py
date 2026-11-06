@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+proxy_drop = disassemble(0x1000153c0, 0x10001547c)
 manager_ensure = disassemble(0x100017754, 0x10001a87c)
 proxy_listener = disassemble(0x100021514, 0x1000217e4)
 connection_worker = disassemble(0x10002cb70, 0x10002cd24)
@@ -629,6 +630,14 @@ result = {
         'originFormat': evidence(manager_ensure, 0x100018134, 0x100018174, ['#0x108', '#0x238', 'format_inner']),
         'contract': 'Bind configured host/port; any error with nonzero port logs and retries same host at zero. Read actual local port. Token is concatenation of two simple UUIDv4 strings. Optional extension ID formats chrome-extension://<id>. Initialize shared runtime and empty process map.',
         'integrationStatus': 'Preparation and bind failures tested using owned occupied loopback port and nonlocal numeric address. Thread/manager ownership, session ID, returned endpoint and shutdown remain open.',
+    },
+    'proxyStartOwnership': {
+        'implementation': 'native/browser-extension-host/src/app_server_proxy.rs::PreparedProxy::start',
+        'newSessionId': evidence(manager_ensure, 0x100018300, 0x100018344, ['Uuid>::new_v4', 'Uuid as core::fmt::Display']),
+        'spawnDetach': evidence(manager_ensure, 0x100018424, 0x100018464, ['spawn_unchecked', 'JoinHandle']),
+        'dropFieldsOnly': evidence(proxy_drop, 0x1000153cc, 0x100015478, ['Option<alloc::string::String>', 'HashMap', 'Mutex<alloc::string::String>', 'ProxyRuntimeState', '__rust_dealloc']),
+        'contract': 'Create separate hyphenated UUIDv4 runtime session ID in shared String mutex, move listener into detached thread with cloned token/origin/runtime/process map, retain proxy handle. Proxy field Drop does not stop or join listener.',
+        'integrationStatus': 'Live listener serves real TCP rejections before and after handle drop inside isolated test executable. Manager shutdown/reuse/update semantics and production control wiring remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
