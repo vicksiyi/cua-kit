@@ -6278,3 +6278,12 @@ Successful 101 upgrade, connection attachment, manager and production listener r
 Implemented raw-key SHA-1 plus standard-base64 accept calculation and exact 101 response line ordering using third-party sha1/base64 crates, both evidenced in the installed host. sha1 is pinned to 0.10.6 for this reconstruction; the original crate version is not established. Eight HTTP tests pass, including known accept vectors (empty-key digest independently checked with Python hashlib/base64) and exact upgrade response bytes.
 
 Native ordering requires process ensure_started before writing the response and writer attachment afterward. The response helper is deliberately not connected ahead of those lifecycle steps; full session/manager/listener composition remains unfinished.
+
+
+### Composed single-process native WebSocket session checkpoint
+
+Added run_session and attach_and_replay in Rust. Ordering follows native evidence: ensure process, write 101, clone TCP writer, atomically replace writer/take pending queue, close old writer outside lock, replay pending requests, forward prefixed input, then detach by writer identity. Replay failure drops pending remainder and leaves stored writer as observed.
+
+Two session tests pass. The composed test sends authenticated HTTP and a masked first frame together over real loopback TCP, launches an owned CLI that echoes through child stdin/stdout, receives 101 and echoed WebSocket payload, then closes and verifies the persistent child remains available after writer detachment. Replacement/replay/failed replay behavior is covered separately.
+
+This is a real local transport/process integration fixture, not browser acceptance. Runtime process-map selection, manager controls and production listener wiring remain unfinished.
