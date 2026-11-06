@@ -6514,3 +6514,12 @@ Added reqwest 0.12.28 with default features disabled and implemented send_reques
 Ten fetch tests pass, including actual owned loopback HTTP exchanges for 404, a no-follow 303 with Location, duplicate outgoing headers, filtered incoming headers and binary body. Additional live responses cover an oversized declared length and truncated body; invalid caller header construction maps to the send diagnostic. Tests explicitly use no_proxy for owned fixtures; that setting is not asserted as original production behavior.
 
 Further native dispatch inspection confirms redirect discriminant 2 returns Stop (0 invokes custom and 1 checks limit). The 30-second field is copied from builder 0x310/0x318 to ClientRef 0x1c8/0x1d0 and consumed by the request sleep. TLS/decompression features and full timeout lifecycle still need verification. The dependency graph is locked but transitive-version parity is not claimed. This build intentionally has no TLS feature yet; the explicit-client component is HTTP-testable, not a complete HTTPS deployment. Credential acquisition, production client construction and BackgroundHost wiring remain pending. No personal credentials or external HTTP endpoints were used.
+
+
+### HTTP client construction and owned TLS acceptance
+
+Enabled reqwest Rustls WebPKI and native-root features after tracing both enabled root flags from ClientBuilder::new into the called build function's trust-anchor extension and load_native_certs branches. Added a shared client builder with no-follow redirects and a 30-second request timeout plus native initialization-error mapping. The host still does not install this service automatically.
+
+Eleven fetch tests pass. A temporary localhost TLS server verifies an untrusted certificate fails, an explicitly added owned certificate succeeds, and a hostname mismatch still fails; no certificate/hostname verification bypass is used. The initial fixture certificate was a CA certificate and correctly failed as a server leaf; generating it with CA:FALSE/serverAuth fixed the fixture. The redirect test now uses the shared builder. Test certificates/keys are temporary, removed and never published; no user trust store changes are made.
+
+This establishes actual HTTPS transport and normal trust/hostname enforcement, not exact native TLS provider or transitive-version parity. Decompression features, full timeout lifecycle, App Server credentials, service orchestration and production host wiring remain open.

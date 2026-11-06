@@ -368,10 +368,8 @@ async fn response_fixture(response: Vec<u8>) -> (Url, tokio::task::JoinHandle<Ve
 #[tokio::test]
 async fn real_transport_preserves_http_error_status_and_does_not_follow_configured_redirect() {
     use core_runtime_supervisor::authenticated_fetch::send_request;
-    let client = reqwest::Client::builder()
+    let client = core_runtime_supervisor::authenticated_fetch::http_client_builder()
         .no_proxy()
-        .redirect(reqwest::redirect::Policy::none())
-        .timeout(std::time::Duration::from_secs(30))
         .build()
         .unwrap();
     for (status, reason, extra) in [
@@ -452,4 +450,118 @@ async fn real_transport_maps_send_read_and_declared_size_failures() {
         );
         server.await.unwrap();
     }
+}
+
+#[tokio::test]
+async fn tls_transport_checks_certificate_trust_and_hostname() {
+    use core_runtime_supervisor::authenticated_fetch::{http_client_builder, send_request};
+    use std::process::Stdio;
+    use tokio::io::{AsyncBufReadExt, BufReader};
+    struct FixtureDir(std::path::PathBuf);
+    impl Drop for FixtureDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+    let directory =
+        FixtureDir(std::env::temp_dir().join(format!("core-fetch-tls-{}", uuid::Uuid::new_v4())));
+    std::fs::create_dir(&directory.0).unwrap();
+    let cert = directory.0.join("cert.pem");
+    let key = directory.0.join("key.pem");
+    let generated = std::process::Command::new("openssl")
+        .args([
+            "req",
+            "-x509",
+            "-newkey",
+            "rsa:2048",
+            "-nodes",
+            "-days",
+            "1",
+            "-subj",
+            "/CN=localhost",
+            "-addext",
+            "subjectAltName=DNS:localhost",
+            "-addext",
+            "basicConstraints=critical,CA:FALSE",
+            "-addext",
+            "extendedKeyUsage=serverAuth",
+            "-keyout",
+        ])
+        .arg(&key)
+        .arg("-out")
+        .arg(&cert)
+        .output()
+        .unwrap();
+    assert!(
+        generated.status.success(),
+        "failed to generate owned test certificate"
+    );
+    let script = r#"
+import socket, ssl, sys
+ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ctx.load_cert_chain(sys.argv[1],sys.argv[2])
+with socket.socket() as server:
+ server.bind(('127.0.0.1',0));server.listen();server.settimeout(10)
+ print(server.getsockname()[1],flush=True)
+ for _ in range(3):
+  conn,_=server.accept();conn.settimeout(5)
+  try:
+   with ctx.wrap_socket(conn,server_side=True) as tls:
+    data=b''
+    while b'\r\n\r\n' not in data:
+     part=tls.recv(4096)
+     if not part:break
+     data+=part
+    tls.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 7\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nfixture')
+  except ssl.SSLError: conn.close()
+"#;
+    let mut server = tokio::process::Command::new("python3")
+        .args(["-u", "-c", script])
+        .arg(&cert)
+        .arg(&key)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true)
+        .spawn()
+        .unwrap();
+    let mut lines = BufReader::new(server.stdout.take().unwrap()).lines();
+    let port = tokio::time::timeout(std::time::Duration::from_secs(5), lines.next_line())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    let certificate = reqwest::Certificate::from_pem(&std::fs::read(&cert).unwrap()).unwrap();
+    for (trusted, hostname, succeeds) in [
+        (false, "localhost", false),
+        (true, "localhost", true),
+        (true, "127.0.0.1", false),
+    ] {
+        let mut builder = http_client_builder().no_proxy();
+        if trusted {
+            builder = builder.add_root_certificate(certificate.clone());
+        }
+        let client = builder.build().unwrap();
+        let url = Url::parse(&format!("https://{hostname}:{port}/fixture")).unwrap();
+        let result = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            send_request(
+                &client,
+                outbound_passthrough_request(&request("GET", None), url).unwrap(),
+            ),
+        )
+        .await
+        .unwrap();
+        if succeeds {
+            assert_eq!(result.unwrap().body_base64, "Zml4dHVyZQ==");
+        } else {
+            assert_eq!(result.unwrap_err(), "nodeRepl.fetch request failed");
+        }
+    }
+    assert!(
+        tokio::time::timeout(std::time::Duration::from_secs(5), server.wait())
+            .await
+            .unwrap()
+            .unwrap()
+            .success()
+    );
 }

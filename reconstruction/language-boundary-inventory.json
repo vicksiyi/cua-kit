@@ -4214,7 +4214,7 @@
     {
       "path": "native/runtime-supervisor/src/authenticated_fetch.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "09109e1e6be38b8945d1614f70ff8b523c288b64b9c795be6796060ac7781cf7"
+      "sha256": "7085d20c51abf636e68af6615e49661ee9b5b59aa5fc8a041b252ed5251d686d"
     },
     {
       "path": "native/runtime-supervisor/src/background_host.rs",
@@ -4329,7 +4329,7 @@
     {
       "path": "scripts/audit-native-fetch-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "c70789dfc478a5a499237fae06b070812778d29f0a2bfa576194304ca3bb67eb"
+      "sha256": "c4170b227d023ac928268592c3259d81bef0bf80e00ea28706289f073bb32571"
     },
     {
       "path": "scripts/audit-native-language.py",

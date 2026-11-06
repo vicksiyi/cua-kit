@@ -100,6 +100,14 @@ reqwest_source = read(path_pointer,path_length).decode()
 assert reqwest_source.endswith('/reqwest-0.12.28/src/async_impl/client.rs')
 assert (source_line, source_column) == (434,25)
 client_init_error = read(0x100a49d68,47).decode()
+for expected in ['1005e6ac8:', '#0x68', '1005e78e8:', '#0x3ef',
+                 '1005e7930:', 'TrustAnchor', '1005e7934:', '#0x3f0',
+                 '1005e7940:', 'rustls_native_certs::load_native_certs']:
+    assert expected in client_build, expected
+client_default = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1005e64cc','--stop-address=0x1005e6838',str(artifact)], text=True)
+for expected in ['1005e6784:', '#0x1010101', '1005e6788:', '#0x384', '1005e678c:', '#0x388']:
+    assert expected in client_default, expected
 redirect_dispatch = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
     '--start-address=0x1005ecde8','--stop-address=0x1005ecf20',str(artifact)], text=True)
 for expected in ['1005ecdf0:', '1005ece44', '1005ecdf4:', '#0x1',
@@ -171,13 +179,19 @@ print(json.dumps({
             'ClientBuilder::default followed by explicit no-follow redirect policy: discriminant 0 invokes custom, 1 checks limit, 2 returns Stop at 0x1005ececc',
             'writes 30 seconds and zero nanoseconds at builder offsets 0x310/0x318 before build; copied to ClientRef 0x1c8/0x1d0 and consumed by request sleep at 0x1005eaea0'
         ],
-        'buildError': client_init_error,
+         'buildError': client_init_error,
+        'tlsRootsEvidence': {
+            'defaultFlags': '0x1005e6784..0x1005e678c set flags at builder 0x387 and 0x388 to true',
+            'builderCopy': '0x1005e6ac8 copies config to sp+0x68; root flags become sp+0x3ef/0x3f0',
+            'rootStores': '0x1005e78e8..0x1005e7940 conditionally extend WebPKI trust anchors and load native certificates',
+            'implementation': 'reqwest rustls-tls-webpki-roots and rustls-tls-native-roots features enabled; no disabled certificate or hostname checks'
+        },
         'upstreamReferences': [
             'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/async_impl/client.rs',
             'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/redirect.rs'
         ],
-        'limits': 'Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and TLS/decompression compiled features remain under review. No default production client has been wired.'
+        'limits': 'Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and Rustls WebPKI/native-root branches are evidenced; exact transitive dependency versions, provider parity and decompression features remain under review. Client construction exists but no production handler is wired.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
-    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and production client construction remain unimplemented; explicit-client HTTP send has local fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
+    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
 },indent=2))

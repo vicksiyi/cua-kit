@@ -235,3 +235,17 @@ pub async fn send_request(
         .map_err(|_| "nodeRepl.fetch response read failed")?;
     finish_response(status, &headers, &body)
 }
+
+/// Evidenced native client options. Keep proxy/root discovery delegated to
+/// reqwest; callers may add owned test roots before building.
+pub fn http_client_builder() -> reqwest::ClientBuilder {
+    reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .timeout(std::time::Duration::from_secs(30))
+}
+
+pub fn build_http_client() -> Result<reqwest::Client, &'static str> {
+    http_client_builder()
+        .build()
+        .map_err(|_| "failed to initialize nodeRepl.fetch HTTP client")
+}

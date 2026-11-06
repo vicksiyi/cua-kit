@@ -116,12 +116,18 @@
       "writes 30 seconds and zero nanoseconds at builder offsets 0x310/0x318 before build; copied to ClientRef 0x1c8/0x1d0 and consumed by request sleep at 0x1005eaea0"
     ],
     "buildError": "failed to initialize nodeRepl.fetch HTTP client",
+    "tlsRootsEvidence": {
+      "defaultFlags": "0x1005e6784..0x1005e678c set flags at builder 0x387 and 0x388 to true",
+      "builderCopy": "0x1005e6ac8 copies config to sp+0x68; root flags become sp+0x3ef/0x3f0",
+      "rootStores": "0x1005e78e8..0x1005e7940 conditionally extend WebPKI trust anchors and load native certificates",
+      "implementation": "reqwest rustls-tls-webpki-roots and rustls-tls-native-roots features enabled; no disabled certificate or hostname checks"
+    },
     "upstreamReferences": [
       "https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/async_impl/client.rs",
       "https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/redirect.rs"
     ],
-    "limits": "Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and TLS/decompression compiled features remain under review. No default production client has been wired."
+    "limits": "Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and Rustls WebPKI/native-root branches are evidenced; exact transitive dependency versions, provider parity and decompression features remain under review. Client construction exists but no production handler is wired."
   },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
-  "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and production client construction remain unimplemented; explicit-client HTTP send has local fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
+  "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }
