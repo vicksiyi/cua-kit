@@ -141,7 +141,12 @@ test("independent sandboxed supervisor executes real browser input, click, read 
         await execute('var fixtureTab = tab;');
         dailyTabCreated=true;
       }
-      await execute(`await tab.playwright.getByRole("textbox",{name:"Query"}).fill(${JSON.stringify(query)}); await tab.playwright.getByRole("button",{name:"Submit"}).click();`);
+      const rejectedApi = await turn.callTool({id:String(++count),name:"js",arguments:{
+        code:'await tab.getByLabel("Query").fill("invalid API must not mutate");',
+      }}, AbortSignal.timeout(15000));
+      assert.equal(rejectedApi.isError,true);
+      assert.match(JSON.stringify(rejectedApi.content), /getByLabel is not a function/);
+      await execute(`await tab.playwright.getByLabel("Query").fill(${JSON.stringify(query)}); await tab.playwright.getByRole("button",{name:"Submit"}).click();`);
       const observed = await execute('await tab.getAXState();');
       assert(JSON.stringify(observed.content).includes(marker));
       assert.deepEqual(submissions, [query]);
