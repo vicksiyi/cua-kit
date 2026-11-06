@@ -228,6 +228,33 @@ export function createBrowserContextClass(deps: BrowserContextDependencies) {
     async history(input: any) {
       return await this.api.getUserHistory(input);
     }
+    /** Current installed context: cloud identity is supplied only for CDP. */
+    get cloudSiwcUserId() {
+      return this.clientInfo.type === "cdp"
+        ? this.runtime.gaas?.browserConfig.user_id ?? undefined
+        : undefined;
+    }
+    getSiwcAccountContext(tabId: any) {
+      return this.api.sendSessionRequest("getSiwcAccountContext", {
+        tabId,
+        cloudUserId: this.cloudSiwcUserId,
+      });
+    }
+    issueSiwcBrowserGrant(tabId: any, expectedAccount: any) {
+      return this.api.sendSessionRequest("issueSiwcBrowserGrant", {
+        tabId,
+        expectedAccount,
+        cloudUserId: this.cloudSiwcUserId,
+      });
+    }
+    installSiwcBrowserGrantCookie(tabId: any, expectedAccount: any, grant: any) {
+      return this.api.sendSessionRequest("installSiwcBrowserGrantCookie", {
+        tabId,
+        expectedAccount,
+        grant,
+        cloudUserId: this.cloudSiwcUserId,
+      });
+    }
     sendWebMcpToolInvoked(input: any) {
       this.api.sendWebMcpToolInvoked(input);
     }
