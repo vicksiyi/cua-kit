@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/openai/codex",
+  "commit": "33ffb6f905b9ddd9254ebe9b48ac16ce95e91050",
+  "path": "codex-rs/core/src/session/turn.rs",
+  "gitBlob": "9d1d5caa601691cd9938f0a42e3d8f9bcf52962a",
+  "bytes": 145996,
+  "sha256": "587112b9a161f7fb656764326a6b6b7ff2bcf73b87e85234dbebb3e80a3cc35d",
+  "scope": "ordinary turn and sampling source only; not complete product scheduler parity"
+}

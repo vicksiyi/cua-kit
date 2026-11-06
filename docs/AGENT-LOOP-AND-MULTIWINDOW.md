@@ -18,7 +18,8 @@ https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex
 This is not proof of the ordinary turn loop's exact implementation. The local
 sparse openai/codex checkout at 33ffb6f905b9ddd9254ebe9b48ac16ce95e91050 has
 `codex-rs/core/src/session/turn.rs` in its tree, but fetching its missing blob
-failed on 2026-11-07. No source-level claim about that function is established.
+initially failed on 2026-11-07. The same blob was subsequently retrieved through
+the GitHub API and its Git object hash verified; see CODEX-LOOP-SOURCE-AUDIT.md.
 
 ## Multiple tabs and windows
 
