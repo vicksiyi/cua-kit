@@ -177,3 +177,23 @@ text/focusedElement/selectedText/selectedElements 字段。依据是固定原生
 当前独立 Target.collect 只导出选择范围等信息，尚未具备原 SystemSelection 的 focusTree、
 类型化 marker 及选中元素映射，因此此轮仍未把上述 reader 挂到整棵树上批量读取。
 入口：`node --import tsx --test reconstruction/native-selected-text.test.ts`，包含 10 组 Swift 行为检查。
+
+## Typed AX accessor 的缓存边界
+
+继续沿 selectedText / selectedTextMarkerRange 的调用追踪，发现它们通过
+`0x1007a7600` 的 typed accessor 读取，不能等同于每次直接执行 AXUIElementCopyAttributeValue。
+该分流函数先调用 `cachedValue(for:)`，只在返回 Optional.none 时调用
+`uncachedValue(for:ignoringTypeMismatch:)`，并原样传递 ignoringTypeMismatch。
+缓存中的空字符串、false、0 都不是 miss。
+
+`UIElementAttributeValue.swift` 恢复了这一层 Swift 分流；底层缓存存储、AXPartialValue 类型解码
+及类型不匹配处理仍由待还原的 accessor 提供。此函数不新增缓存写入或失效策略。
+8 组 Swift 检查覆盖值/缺失、标志透传、嵌套 Optional 和 selectedText 组合。
+特别地：缓存命中空字符串不重读普通 AX 属性，而是由 selection getter 转入 marker fallback。
+
+同时确认 UITextMarkerRange 的原生包装构造器与 UITextMarker 共用一个直接 return 的入口，
+它接收的已是类型化 AXTextMarkerRangeRef；不能从该函数没有校验推导出“任意 CFTypeRef 都可接受”。
+类型验证位于更下层解码链，尚未恢复。因此本轮没有用 AnyObject 别名冒充完整 marker 类型。
+
+入口：`node --import tsx --test reconstruction/native-attribute-value.test.ts`。
+当前 helper 的实际观察链仍未接入该缓存分流，验收范围仅为恢复的内部逻辑及静态证据。

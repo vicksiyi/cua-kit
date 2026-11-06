@@ -24,7 +24,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'disableAXDiffing', 'UIElementTreeRevision', 'RefetchableSkyshotAXTree',
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
-    'selectedTextSSSgvg', 'selectedTextMarkerRange',
+    'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -232,6 +232,19 @@ selection_evidence = {
     'fallbackEmptyCheck':'0x10078e92c..0x10078e94c',
     'scope':'Getter fallback logic only; original typed AX element/marker wrappers remain unrestored.',
 }
+attribute_functions = []
+for address,name in [(0x1007a7600,'typed attribute dispatch'),(0x1007aeea4,'cachedValue(for:)'),(0x1007ae414,'uncachedValue(for:ignoringTypeMismatch:)'),(0x1007aecec,'typed parameterized value dispatch'),(0x1007c1c54,'UITextMarkerRange.init(start:end:)')]:
+    boundary = starts[starts.index(address)+1]
+    attribute_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+attribute_evidence = {
+    'functions':attribute_functions,
+    'cachedValueCall':'0x1007a7684',
+    'optionalTagBranch':'0x1007a76a0..0x1007a76a4',
+    'uncachedValueCall':'0x1007a76c4',
+    'ignoreTypeMismatchForwarding':'0x1007a76a8..0x1007a76ac',
+    'markerWrapperInitializer':{'address':'0x100009888','instructionWord':hex(struct.unpack('<I',read_virtual(0x100009888,4))[0])},
+    'scope':'Cache/fallback dispatch only; underlying cache, AX decoding and marker validation are not recovered.',
+}
 record = {
     'artifact':'@oai/'+relative,
     'sha256':sha,
@@ -241,6 +254,7 @@ record = {
     'callerEvidence':caller_evidence,
     'presentationEvidence':presentation_evidence,
     'selectionEvidence':selection_evidence,
+    'attributeEvidence':attribute_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

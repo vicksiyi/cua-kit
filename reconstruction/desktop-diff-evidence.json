@@ -938,6 +938,49 @@
     "fallbackEmptyCheck": "0x10078e92c..0x10078e94c",
     "scope": "Getter fallback logic only; original typed AX element/marker wrappers remain unrestored."
   },
+  "attributeEvidence": {
+    "functions": [
+      {
+        "name": "typed attribute dispatch",
+        "start": "0x1007a7600",
+        "endExclusive": "0x1007a7740",
+        "machineCodeSha256": "9dd225a30cc31b9e00f89d29c28904293a82a534cdda68fdf3b81554282ffda3"
+      },
+      {
+        "name": "cachedValue(for:)",
+        "start": "0x1007aeea4",
+        "endExclusive": "0x1007af014",
+        "machineCodeSha256": "54aebfb9d774a401ea1a55e6cf2ef6e90dcc64e64df85f7ee195a28feac70abe"
+      },
+      {
+        "name": "uncachedValue(for:ignoringTypeMismatch:)",
+        "start": "0x1007ae414",
+        "endExclusive": "0x1007ae5f8",
+        "machineCodeSha256": "2e3e927726d65495dde1c3d22ef6693aa816bb4b30bdf5b6579026efd53ee212"
+      },
+      {
+        "name": "typed parameterized value dispatch",
+        "start": "0x1007aecec",
+        "endExclusive": "0x1007aeea4",
+        "machineCodeSha256": "acec4d4575a7ee188a86005197ed93e2c9a017de3bc7ef9d000574ac7aa21e12"
+      },
+      {
+        "name": "UITextMarkerRange.init(start:end:)",
+        "start": "0x1007c1c54",
+        "endExclusive": "0x1007c1ca4",
+        "machineCodeSha256": "9eca71fc50fe29632b5e5f66ef04bc783f31ab3660c1ccef39e526777bec8100"
+      }
+    ],
+    "cachedValueCall": "0x1007a7684",
+    "optionalTagBranch": "0x1007a76a0..0x1007a76a4",
+    "uncachedValueCall": "0x1007a76c4",
+    "ignoreTypeMismatchForwarding": "0x1007a76a8..0x1007a76ac",
+    "markerWrapperInitializer": {
+      "address": "0x100009888",
+      "instructionWord": "0xd65f03c0"
+    },
+    "scope": "Cache/fallback dispatch only; underlying cache, AX decoding and marker validation are not recovered."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -1760,14 +1803,39 @@
       "signature": "static ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded.__derived_enum_equals(ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded, ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded) -> Swift.Bool"
     },
     {
+      "address": "00000001007aeea4",
+      "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE11cachedValue3forqd__SgAA0C9AttributeV_tlF",
+      "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.cachedValue<A>(for: AccessibilitySupport.UIElementAttribute) -> A1?"
+    },
+    {
       "address": "000000010078e7f0",
       "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE12selectedTextSSSgvg",
       "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.selectedText.getter : Swift.String?"
     },
     {
+      "address": "00000001007ae414",
+      "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE13uncachedValue3for20ignoringTypeMismatchqd__SgAA0C9AttributeV_SbtlF",
+      "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.uncachedValue<A>(for: AccessibilitySupport.UIElementAttribute, ignoringTypeMismatch: Swift.Bool) -> A1?"
+    },
+    {
       "address": "000000010078e994",
       "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE23selectedTextMarkerRangeAA06UITextgH0VSgvg",
       "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.selectedTextMarkerRange.getter : AccessibilitySupport.UITextMarkerRange?"
+    },
+    {
+      "address": "0000000100009888",
+      "mangled": "_$s20AccessibilitySupport17UITextMarkerRangeV5rangeACSo06AXTextdE3Refa_tcfC",
+      "signature": "AccessibilitySupport.UITextMarkerRange.init(range: __C.AXTextMarkerRangeRef) -> AccessibilitySupport.UITextMarkerRange"
+    },
+    {
+      "address": "0000000100724dac",
+      "mangled": "_$s20AccessibilitySupport17UITextMarkerRangeV5rangeSo06AXTextdE3Refavg",
+      "signature": "AccessibilitySupport.UITextMarkerRange.range.getter : __C.AXTextMarkerRangeRef"
+    },
+    {
+      "address": "00000001007c1c54",
+      "mangled": "_$s20AccessibilitySupport17UITextMarkerRangeV5start3endAcA0cD0V_AGtcfC",
+      "signature": "AccessibilitySupport.UITextMarkerRange.init(start: AccessibilitySupport.UITextMarker, end: AccessibilitySupport.UITextMarker) -> AccessibilitySupport.UITextMarkerRange"
     },
     {
       "address": "00000001007988bc",
