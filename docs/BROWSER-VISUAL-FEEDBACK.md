@@ -28,3 +28,13 @@ native 打包端到端测试通过（约 9.3 秒）；扩展 TypeScript 检查�
 ## 生效
 
 本地 native 扩展生成目录已更新。正在运行的日常 Chrome 不会自动替换已加载的 service worker，需要在 chrome://extensions 对 Core CUA 点击“重新加载”。然后新开一轮任务；旧页面上残留的 content script 可通过刷新页面更新。
+
+## 后续生命周期验收
+
+最新 native（约 9.8 秒）与 full（约 15.8 秒）真实测试均通过，并增加以下断言：
+- 图片有尺寸之外，祖先节点的 display / visibility / opacity 也必须证明它实际可见。
+- 切到其它标签后光标状态与实际 opacity 均隐藏；切回原标签恢复。
+- turnEnded 后重新激活原页，光标仍隐藏且 sessionId 清空。
+- deliverable 标签保留但退出受管组；未标记的 Agent 标签关闭；用户原标签及原分组保持。
+
+此处直接调用 moveMouse RPC 验证扩展生命周期，不证明所有模型生成的动作路径都会触发光标。
