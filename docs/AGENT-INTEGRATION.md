@@ -246,3 +246,19 @@ New hosts should connect the restored MCP runtime and call the documented CUA AP
 `ToolResult.stopReason` is optional host-adapter metadata (`{kind: "authorization", message: string}`). The MCP client does not copy this field from wire content. The NodeREPL turn adapter emits it only for error results whose text starts with the observed browser security rejection/unavailable prefix. Successful page text and ordinary JS/argument errors do not trigger it. This conservative text classification is an independently authored caller policy, not a new native protocol or recovered Codex behavior.
 
 When a tool result has this disposition, AgentLoop stops the remaining batch and model calls, records the tool error and host-authored response, and returns `status: "blocked"` with the existing answer/messages fields. Turn cleanup still runs. Normal model answers return `status: "completed"`; that status describes loop termination, not external verification of task success. The demo prints blocked responses and exits with code 1; debug logs include the status and original error. No automatic approval, retry, or alternate route is performed.
+
+### Local extension wire diagnostics
+
+To reproduce a daily-Chrome failure with transport-level metadata in addition to the existing AgentLoop log:
+
+```sh
+CUA_RUNTIME_SUPERVISOR=rust node scripts/trace-deepseek.mjs "访问百度，搜索 deepseek，返回第一条自然结果的标题和链接"
+# Read-only connection check; no model request:
+CUA_RUNTIME_SUPERVISOR=rust node scripts/trace-deepseek.mjs --check-browser
+```
+
+Build the project first using the normal demo setup. The diagnostic launcher selects one existing Core extension endpoint and proxies unchanged framed bytes. Multiple endpoints require an explicit `CORE_CUA_ENDPOINT_FILES` selection. Backend-changing flags are rejected; this does not trace managed Chromium or CDP deployments. Configure endpoint selection outside `CUA_MCP_ENV` for this launcher. Normal origin approval and runtime gates remain in force.
+
+The printed `artifacts/debug/wire-*/wire.jsonl` contains time, connection number, numeric request ID, RPC/CDP method, tab IDs and error code only. It excludes authentication messages, tokens, URLs, expressions, response bodies and error text. Correlate numeric IDs and timestamps with the existing private AgentLoop log. Protocol errors are not necessarily task errors: for example, an unsupported cached-expression RPC can trigger the documented ordinary-CDP fallback.
+
+Logs stay in the ignored `artifacts/` directory. Each trace directory is mode 0700 and its metadata file mode 0600. A short private temporary socket directory holds the capability descriptor during the run and is removed on normal completion or handled SIGINT/SIGTERM. Abrupt process termination such as SIGKILL can leave temporary files; do not publish them. The proxy can affect timing, so a successful traced run alone does not disprove an intermittent failure without the proxy.
