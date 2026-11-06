@@ -23,6 +23,7 @@ raw = subprocess.check_output(['nm', '-g', str(artifact)], text=True)
 selected = [line for line in raw.splitlines() if ' T ' in line and any(word in line for word in (
     'disableAXDiffing', 'UIElementTreeRevision', 'RefetchableSkyshotAXTree',
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
+    'AccessibilityDifferenceLineBudgetExceeded',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -99,13 +100,42 @@ if prefix != b'Removed element IDs: \x00':
     raise SystemExit('Removed-element prefix changed')
 # These are reviewed basic blocks, not a decompilation of the entire function.
 excerpts = []
-for low,high in [(0x1006298a8,0x1006298bc),(0x1006298fc,0x10062993c),(0x10062b6ec,0x10062b708)]:
+for low,high in [(0x1006298a8,0x1006298bc),(0x1006298fc,0x10062993c),(0x10062b6ec,0x10062b708),(0x10062a34c,0x10062a38c),(0x10062ad18,0x10062ad54),(0x10062b7a8,0x10062b7c4),(0x10062b7dc,0x10062b7fc)]:
     excerpts.append([{'address':hex(address), **instructions[address]} for address in range(low,high,4)])
+# Swift enum field reflection identifies the two callback payloads. This is
+# stronger evidence than guessing names from integer discriminants in ARM64.
+def relative_address(address):
+    displacement = struct.unpack('<i',read_virtual(address,4))[0]
+    return address+displacement if displacement else None
+def c_string(address):
+    result = bytearray()
+    for i in range(1024):
+        byte = read_virtual(address+i,1)
+        if byte == b'\x00': return result.decode('utf-8')
+        result.extend(byte)
+    raise SystemExit('Unterminated Swift reflection string')
+nominal = 0x1012c94fc
+name = c_string(relative_address(nominal+8))
+fields = relative_address(nominal+16)
+_,_,kind,record_size,count = struct.unpack('<iiHHI',read_virtual(fields,16))
+if name != 'AccessibilityDifferenceLineBudgetExceeded' or (kind,record_size,count) != (3,12,2):
+    raise SystemExit('Unexpected budget enum reflection layout')
+cases = []
+for i in range(count):
+    field = fields+16+i*record_size
+    cases.append({'name':c_string(relative_address(field+8)), 'payloadTypeMangled':c_string(relative_address(field+4))})
+if cases != [
+    {'name':'difference','payloadTypeMangled':'Si17fullTreeLineCount_t'},
+    {'name':'removedElementSummary','payloadTypeMangled':'Si17fullTreeLineCount_t'},
+]:
+    raise SystemExit('Budget callback payload changed')
+enum_evidence = {'name':name,'nominalDescriptor':hex(nominal),'fieldDescriptor':hex(fields),'cases':cases}
 implementation_evidence = {
     'function':diff['signature'], 'start':hex(start), 'endExclusive':hex(end),
     'boundarySource':'LC_FUNCTION_STARTS', 'instructionCount':len(instructions),
     'machineCodeSha256':hashlib.sha256(body).hexdigest(),
     'renderTreeSnapshotCalls':calls,
+    'budgetCallbackEnum':enum_evidence,
     'removedElementPrefix':{'address':hex(prefix_address),'text':prefix[:-1].decode()},
     'reviewedInstructionExcerpts':excerpts,
     'scope':'Static call sites and basic blocks only; traversal, budget and identity rules remain unrecovered.',

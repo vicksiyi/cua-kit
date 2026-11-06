@@ -19,6 +19,21 @@
       "0x1006298a8",
       "0x1006298fc"
     ],
+    "budgetCallbackEnum": {
+      "name": "AccessibilityDifferenceLineBudgetExceeded",
+      "nominalDescriptor": "0x1012c94fc",
+      "fieldDescriptor": "0x1013212bc",
+      "cases": [
+        {
+          "name": "difference",
+          "payloadTypeMangled": "Si17fullTreeLineCount_t"
+        },
+        {
+          "name": "removedElementSummary",
+          "payloadTypeMangled": "Si17fullTreeLineCount_t"
+        }
+      ]
+    },
     "removedElementPrefix": {
       "address": "0x101255a30",
       "text": "Removed element IDs: "
@@ -168,6 +183,244 @@
           "address": "0x10062b704",
           "word": "a917a269",
           "instruction": "stp x9, x8, [x19, #0x178]"
+        }
+      ],
+      [
+        {
+          "address": "0x10062a34c",
+          "word": "f9406660",
+          "instruction": "ldr x0, [x19, #0xc8]"
+        },
+        {
+          "address": "0x10062a350",
+          "word": "a948da77",
+          "instruction": "ldp x23, x22, [x19, #0x88]"
+        },
+        {
+          "address": "0x10062a354",
+          "word": "b9407268",
+          "instruction": "ldr w8, [x19, #0x70]"
+        },
+        {
+          "address": "0x10062a358",
+          "word": "360000c8",
+          "instruction": "tbz w8, #0x0, 0x10062a370"
+        },
+        {
+          "address": "0x10062a35c",
+          "word": "f9400e61",
+          "instruction": "ldr x1, [x19, #0x18]"
+        },
+        {
+          "address": "0x10062a360",
+          "word": "f9402276",
+          "instruction": "ldr x22, [x19, #0x40]"
+        },
+        {
+          "address": "0x10062a364",
+          "word": "b0007a17",
+          "instruction": "adrp x23, 0x10156b000"
+        },
+        {
+          "address": "0x10062a368",
+          "word": "912402f7",
+          "instruction": "add x23, x23, #0x900"
+        },
+        {
+          "address": "0x10062a36c",
+          "word": "1400022d",
+          "instruction": "b 0x10062ac20"
+        },
+        {
+          "address": "0x10062a370",
+          "word": "f9402274",
+          "instruction": "ldr x20, [x19, #0x40]"
+        },
+        {
+          "address": "0x10062a374",
+          "word": "9400055a",
+          "instruction": "bl 0x10062b8dc"
+        },
+        {
+          "address": "0x10062a378",
+          "word": "aa0103f8",
+          "instruction": "mov x24, x1"
+        },
+        {
+          "address": "0x10062a37c",
+          "word": "f81583a0",
+          "instruction": "stur x0, [x29, #-0xa8]"
+        },
+        {
+          "address": "0x10062a380",
+          "word": "f9402a68",
+          "instruction": "ldr x8, [x19, #0x50]"
+        },
+        {
+          "address": "0x10062a384",
+          "word": "eb08003f",
+          "instruction": "cmp x1, x8"
+        },
+        {
+          "address": "0x10062a388",
+          "word": "540004eb",
+          "instruction": "b.lt 0x10062a424"
+        }
+      ],
+      [
+        {
+          "address": "0x10062ad18",
+          "word": "b940a268",
+          "instruction": "ldr w8, [x19, #0xa0]"
+        },
+        {
+          "address": "0x10062ad1c",
+          "word": "360001c8",
+          "instruction": "tbz w8, #0x0, 0x10062ad54"
+        },
+        {
+          "address": "0x10062ad20",
+          "word": "f9402a68",
+          "instruction": "ldr x8, [x19, #0x50]"
+        },
+        {
+          "address": "0x10062ad24",
+          "word": "f100051f",
+          "instruction": "cmp x8, #0x1"
+        },
+        {
+          "address": "0x10062ad28",
+          "word": "1a9fa7e8",
+          "instruction": "cset w8, lt"
+        },
+        {
+          "address": "0x10062ad2c",
+          "word": "0a080348",
+          "instruction": "and w8, w26, w8"
+        },
+        {
+          "address": "0x10062ad30",
+          "word": "7100051f",
+          "instruction": "cmp w8, #0x1"
+        },
+        {
+          "address": "0x10062ad34",
+          "word": "54000b61",
+          "instruction": "b.ne 0x10062aea0"
+        },
+        {
+          "address": "0x10062ad38",
+          "word": "f9408660",
+          "instruction": "ldr x0, [x19, #0x108]"
+        },
+        {
+          "address": "0x10062ad3c",
+          "word": "942ca8bb",
+          "instruction": "bl 0x101155028"
+        },
+        {
+          "address": "0x10062ad40",
+          "word": "f9408a60",
+          "instruction": "ldr x0, [x19, #0x110]"
+        },
+        {
+          "address": "0x10062ad44",
+          "word": "52800021",
+          "instruction": "mov w1, #0x1"
+        },
+        {
+          "address": "0x10062ad48",
+          "word": "a948a274",
+          "instruction": "ldp x20, x8, [x19, #0x88]"
+        },
+        {
+          "address": "0x10062ad4c",
+          "word": "d63f0100",
+          "instruction": "blr x8"
+        },
+        {
+          "address": "0x10062ad50",
+          "word": "17fffaf1",
+          "instruction": "b 0x100629914"
+        }
+      ],
+      [
+        {
+          "address": "0x10062b7a8",
+          "word": "aa0003f5",
+          "instruction": "mov x21, x0"
+        },
+        {
+          "address": "0x10062b7ac",
+          "word": "f9408660",
+          "instruction": "ldr x0, [x19, #0x108]"
+        },
+        {
+          "address": "0x10062b7b0",
+          "word": "942ca61e",
+          "instruction": "bl 0x101155028"
+        },
+        {
+          "address": "0x10062b7b4",
+          "word": "f9408a60",
+          "instruction": "ldr x0, [x19, #0x110]"
+        },
+        {
+          "address": "0x10062b7b8",
+          "word": "52800001",
+          "instruction": "mov w1, #0x0"
+        },
+        {
+          "address": "0x10062b7bc",
+          "word": "aa1703f4",
+          "instruction": "mov x20, x23"
+        },
+        {
+          "address": "0x10062b7c0",
+          "word": "d63f02c0",
+          "instruction": "blr x22"
+        }
+      ],
+      [
+        {
+          "address": "0x10062b7dc",
+          "word": "f85803b4",
+          "instruction": "ldur x20, [x29, #-0x80]"
+        },
+        {
+          "address": "0x10062b7e0",
+          "word": "aa1503e0",
+          "instruction": "mov x0, x21"
+        },
+        {
+          "address": "0x10062b7e4",
+          "word": "942ca70d",
+          "instruction": "bl 0x101155418"
+        },
+        {
+          "address": "0x10062b7e8",
+          "word": "aa1903e0",
+          "instruction": "mov x0, x25"
+        },
+        {
+          "address": "0x10062b7ec",
+          "word": "942ca70b",
+          "instruction": "bl 0x101155418"
+        },
+        {
+          "address": "0x10062b7f0",
+          "word": "aa1403e0",
+          "instruction": "mov x0, x20"
+        },
+        {
+          "address": "0x10062b7f4",
+          "word": "942ca709",
+          "instruction": "bl 0x101155418"
+        },
+        {
+          "address": "0x10062b7f8",
+          "word": "17fff847",
+          "instruction": "b 0x100629914"
         }
       ]
     ],
@@ -663,6 +916,11 @@
       "address": "00000001006496bc",
       "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV9hashValueSivg",
       "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.hashValue.getter : Swift.Int"
+    },
+    {
+      "address": "00000001006295f8",
+      "mangled": "_$s15ComputerUseCore41AccessibilityDifferenceLineBudgetExceededO21__derived_enum_equalsySbAC_ACtFZ",
+      "signature": "static ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded.__derived_enum_equals(ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded, ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded) -> Swift.Bool"
     }
   ]
 }

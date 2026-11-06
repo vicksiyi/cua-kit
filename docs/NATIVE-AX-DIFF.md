@@ -67,3 +67,29 @@ JS/TS 只保留原有调用参数及结果绑定。不能只在 TS 对上次/本
 
 完整遍历、比较结果的枚举语义、预算判断、ID 生命周期及调用者如何处理 nil 仍需继续恢复。
 此轮未将局部推断接入生产 Swift，避免制造貌似可用但与原行为不同的差分实现。
+
+## 预算回调类型与分支
+
+已进一步读取 Swift nominal type descriptor 和 field descriptor，恢复出原构建类型：
+
+```swift
+enum AccessibilityDifferenceLineBudgetExceeded: Equatable {
+    case difference(fullTreeLineCount: Int)
+    case removedElementSummary(fullTreeLineCount: Int)
+}
+```
+
+字段记录的 payload mangling 均为 `Si17fullTreeLineCount_t`；用
+`xcrun swift-demangle --compact '$sSi17fullTreeLineCount_tD'` 得到
+`(fullTreeLineCount: Swift.Int)`。等价性遵循此前导出的 `__derived_enum_equals` 证据。
+该类型现保留为 Swift 文件；尚未用于 SkyAppState，不能把类型恢复当作差分功能接通。
+
+当前函数体还有以下可复核的静态路径：
+
+- 参数 w3 保存到 `[x19,#0x70]`，随后在 `0x10062a358` 用位测试控制是否跳过一段差分预算计算。结合函数签名，这是 ignoreDifferenceLineBudget 的一条路径；不能扩大为“所有预算分支都会被跳过”。
+- `0x10062b7b4..0x10062b7c0` 给回调传入保存的完整树计数与判别值 0，之后返回 nil。
+- `0x10062ad40..0x10062ad4c` 给同一回调传入计数与判别值 1，随后也跳往 nil 出口。
+- 结合枚举字段顺序及 ABI，两个判别值分别对应 difference / removedElementSummary。这是静态 ABI 推断；尚未用原原生服务做运行时对照。
+
+因此预算失败并非简单截断字符串后返回；至少存在“通知调用者并返回 nil”的路径。
+计数的完整累积规则、各比较结果如何扣减、调用者回退策略仍未恢复。本轮不引入猜测的固定行数限制。
