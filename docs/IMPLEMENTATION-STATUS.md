@@ -6229,3 +6229,10 @@ Seven process tests pass, including an actual owned CLI reused without a PID/gen
 Aligned only the Command::spawn failure branch with native formatting: Failed to start Codex app-server with <configured CLI>: <underlying error>. ErrorKind is preserved; the payload becomes a String, so raw_os_error is absent. Path resolution/home preparation failures remain unwrapped. New tests compare a real missing-program error with its decorated form and distinguish a failed home setup.
 
 The complete native/browser-extension-host cargo test suite passed: 73 tests, zero failures. Coverage includes current configuration/lifecycle primitives, owned child and loopback TCP composition, endpoint, router, assets and transport checks. This is broader regression evidence, not original-host runtime parity or browser/App acceptance. Manager/control and handshake/attach integration remain unfinished.
+
+
+### Native client WebSocket decoding checkpoint
+
+Implemented the installed host's single-frame input decoder in Rust, using static evidence at 0x100024ae8..0x100024c0c of the pinned artifact. It preserves opcode extraction, extended big-endian lengths, the inclusive 64 MiB limit, mask requirement and bytewise XOR. It does not invent FIN/RSV, UTF-8, control-size or canonical-length validation absent from this decoder. Four focused WebSocket tests pass (two new input tests plus existing real TCP output tests), including partial/coalesced input, truncation, size/mask error precedence and noncanonical encoding.
+
+This is not an integrated input session: opcode dispatch, initialize handling, stdin forwarding, handshake prefix preservation and production manager/control wiring remain unfinished. Existing TS native replacements remain in the migration queue described in reconstruction/language-migration-review.md.

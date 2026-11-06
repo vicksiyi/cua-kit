@@ -16,7 +16,7 @@ User constraint: restore installed JavaScript as readable TypeScript; retain the
 
 ## Outstanding native work
 
-- Rust App Server: schema-2 discovery, validation, selection, file loading, sidecar supplementation, environment composition and typed runtime errors now exist with targeted tests. They are not yet connected to runtime startup. Remaining work: hello/status/ensure/restart, process/proxy lifecycle and original authorization.
+- Rust App Server: configuration and typed errors, child spawn/stop/wait, runtime-state reuse, ensure-started composition, stdout replay/forwarding, WebSocket output and EOF cleanup now exist with targeted tests. These modules are not yet connected to the production control dispatcher. Remaining work: WebSocket input and handshake, full proxy session/manager integration, hello/status/ensure/restart dispatch and original authorization.
 - Swift desktop: complete original state/diff semantics and real screenshot/input acceptance; native language selection alone does not validate effects.
 - Remove remaining production consumers of prototype/TS-native alternatives, then retire references with compatibility tests retained as needed.
 - For each migration record original artifact/hash and symbol/instruction evidence, target native module, caller path and verification. Binary evidence supports reconstruction, not a claim to recovered Rust/Swift source bodies.
@@ -39,3 +39,7 @@ Rechecked package manifests and callers after the user clarified that existing i
 - `@core/native-host` has an explicit legacy route and normal client graph exclusion test. This is a verified boundary improvement, not evidence that all original native host behavior has been restored.
 
 For every remaining migration, require: original artifact/symbol language evidence → responsibility mapping → native implementation → real caller switch → behavior validation → retire the old service/export. Original JavaScript remains readable TypeScript; original language unknown stays explicitly unknown until evidence exists. Native binary symbols do not establish recovered source bodies.
+
+## Acceptance rule for existing TS replacements
+
+The existing repository is in scope, not only future additions. A native rewrite is complete only when the original responsibility has language evidence, its native replacement is implemented, actual callers and public exports select that replacement, and behavior has been verified. Keeping a TS replacement behind a legacy flag is an intermediate migration state, not completion. Preserve TS implementations evidenced as original JavaScript and necessary native-process bindings. Record unknown native source languages as unknown rather than selecting Rust or Swift by guesswork.

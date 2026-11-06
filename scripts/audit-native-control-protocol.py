@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+websocket_input = disassemble(0x100024a94, 0x100025498)
 process_stop = disassemble(0x100020d54, 0x100021064)
 proxy_state = disassemble(0x10001b268, 0x10001b4c4)
 stdout_thread = disassemble(0x10002c94c, 0x10002ca1c)
@@ -499,6 +500,15 @@ result = {
         'nativeFormattingBytes': raw[0x8d20b:0x8d236].hex(),
         'preserveKindAndFormat': evidence(process_start, 0x1000205f0, 0x10002063c, ['Error>::kind', '#0xd10', '#0x20b', 'format_inner', 'Error>::new']),
         'contract': 'Only Command::spawn error is wrapped as Failed to start Codex app-server with <original configured CLI>: <original error>, preserving ErrorKind but replacing OS payload with String. Path/home preparation errors propagate unwrapped.',
+    },
+    'clientFrameDecoder': {
+        'implementation': 'native/browser-extension-host/src/app_server_websocket.rs::read_client_frame',
+        'headerAndLengths': evidence(websocket_input, 0x100024ae8, 0x100024b84, ['default_read_exact', '#0xf', '#0x7f', '#0x7e', '#0x4000000', 'b.hi']),
+        'maskAndPayload': evidence(websocket_input, 0x100024b84, 0x100024c0c, ['tbz', '#0x7', '#0x4', '__rust_alloc_zeroed', 'default_read_exact', 'eor']),
+        'unmaskedError': raw[0x9000e:0x90033].decode(),
+        'oversizeError': raw[0x90033:0x90062].decode(),
+        'contract': 'Single frame: low nibble opcode, big-endian extended lengths, >64MiB rejected before mask and allocation, mandatory client mask, XOR modulo four. No FIN/RSV, UTF-8, canonical length or control-size validation in this decoder. Read errors propagate; outer input loop EOF handling remains separate.',
+        'integrationStatus': 'Decoder tested for fragmented/coalesced reads, length boundaries, noncanonical encoding, arbitrary payload bytes, oversize/mask precedence and truncation. Opcode dispatch, stdin forwarding, prefixed handshake reader and full session composition remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
