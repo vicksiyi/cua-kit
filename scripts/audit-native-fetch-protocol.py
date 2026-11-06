@@ -55,6 +55,12 @@ for expected in ['1000caf08:', 'from_str::<node_repl::repl_manager::KernelToHost
     assert expected in worker_decode, expected
 assert b'node_repl kernel sent invalid JSON:' in read(0x100b32097,50)
 
+tag_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10001de30','--stop-address=0x10001e29c',str(artifact)], text=True)
+for expected in ['10001df28:', '10001df2c:', '0x10001e160', '10001e178:', '#0x977',
+                 '10001e034:', 'KernelToHost', '10001e180:']:
+    assert expected in tag_decode, expected
+
 method_error = read(0x100a49dc6,32).decode()
 body_error = read(0x100a49c58,30).decode()
 assert method_error == 'nodeRepl.fetch method is invalid'
@@ -434,6 +440,13 @@ print(json.dumps({
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
         'limits':'Pinned-build path only. Client shared-connection lifecycle implemented; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
     },
+    'workerRoutingTag': {
+        'range':['0x10001de30','0x10001e29c'],
+        'instructionTextSha256':hashlib.sha256(tag_decode.encode()).hexdigest(),
+        'reviewedBehavior':'TaggedContentVisitor holds the parsed enum field in w19; a second tag branches at 0x10001df2c to duplicate-field formatting at 0x10001e160..0x10001e180, before any last-value map projection.',
+        'implementation':'native/runtime-supervisor/src/process_port.rs',
+        'limits':'Raw string tag validation now rejects duplicates and non-string tags on tagged frames. Untagged generic standalone transport frames and unknown string variants remain accepted pending full KernelToHost restoration; malformed JSON and tracing policy remain distinct.'
+    },
     'fetchMessageBoundary': {
         'messageRange':['0x1000380ac','0x100038f50'],
         'messageInstructionTextSha256':hashlib.sha256(fetch_message_decode.encode()).hexdigest(),
@@ -445,7 +458,7 @@ print(json.dumps({
             'failed decoding branches to optional tracing at 0x1000cafd0, drops the error and joins per-line cleanup at 0x1000cf9d4; no fetch dispatch on this branch'
         ],
         'implementation':['native/runtime-supervisor/src/authenticated_fetch.rs','native/runtime-supervisor/src/process_port.rs'],
-        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variants, duplicate type tags, malformed JSON policy and tracing parity still require full KernelToHost reconstruction. No claim of complete reader parity.'
+        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variants, unknown/missing tags, malformed JSON policy and tracing parity still require full KernelToHost reconstruction; duplicate tags are now checked independently on raw frames. No claim of complete reader parity.'
     },
     'requestDeserialization': {
         'range':['0x10003cff4','0x10003e1d0'],

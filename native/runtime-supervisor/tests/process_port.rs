@@ -153,6 +153,11 @@ for (const line of [
  '{"type":"authenticated_fetch","id":"missing-exec","request":{"method":"GET","url":"https://example.test/"}}',
  '{"type":"authenticated_fetch","id":"dup-id","id":"last","exec_id":"e","request":{"method":"GET","url":"https://example.test/"}}',
  '{"type":"authenticated_fetch","id":"null-headers","exec_id":"e","request":{"method":"GET","url":"https://example.test/","headers":null}}',
+ '{"type":"authenticated_fetch","type":"fixture-end","id":"wrong-route"}',
+ '{"type":"fixture-end","type":"authenticated_fetch","id":"dup-type","exec_id":"e","request":{"method":"GET","url":"https://example.test/"}}',
+ '{"type":"authenticated_fetch","type":"authenticated_fetch","id":"same-type","exec_id":"e","request":{"method":"GET","url":"https://example.test/"}}',
+ '{"type":null}',
+ '{"type":42}',
  '{"type":"authenticated_fetch","id":"valid","exec_id":"e","request":{"method":"GET","url":"https://example.test/"}}',
  '{"type":"fixture-end"}'
 ]) process.stdout.write(line+'\n');

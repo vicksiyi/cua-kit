@@ -6627,3 +6627,12 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Real subprocess regression emits duplicate request method, missing exec_id, duplicate id and null headers followed by a valid request and another message. Only the valid request and following message are delivered; transport remains live and closes normally.
 - Validation: 37 tests passed (17 fetch, 6 process transport, 14 manager/worker integration). Static evidence audit passed. No vendor binary was executed, and no real credentials were accessed.
 - Scope remains partial: initial routing still uses Value type selection; duplicate type tags, all other KernelToHost variants, malformed JSON handling and original tracing are not yet aligned. This corrects raw fetch payload validation without claiming the entire reader is restored. Default fetch composition and browser/application acceptance remain pending.
+
+
+### Worker routing-tag validation checkpoint (2026-11-06)
+
+- Original TaggedContentVisitor rejects a second type tag before projecting content: w19 tracks the parsed tag, and 0x10001df2c branches to duplicate-field formatting at 0x10001e160..0x10001e180. Added this range/hash/branch to the pinned audit.
+- Fixed the prior fetch-only validation bypass: a frame with type authenticated_fetch followed by type fixture-end previously routed as fixture-end and escaped typed fetch validation. The real subprocess regression reproduced delivery of wrong-route before the fix.
+- Tagged frames now validate the type field from raw JSON as a string before dispatch. Duplicate tags (both orders and identical values), null and numeric tags are dropped, followed by successful processing of the next valid frame. This prevents last-value routing even when the final type is not authenticated_fetch.
+- Validation: all 6 process transport and 14 manager/worker tests passed after the failing regression. Static pinned audit passed.
+- Remaining: unknown tag variants, missing tags on generic transport frames, full typed KernelToHost variants, malformed JSON/tracing fidelity, production fetch composition and browser/app acceptance. Generic untagged fixture messages remain supported explicitly; this is not full protocol parity.

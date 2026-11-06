@@ -29,6 +29,15 @@ pub struct ProcessSpec {
     pub max_queued_bytes: usize,
     pub terminate_grace: Duration,
 }
+// Validate the routing tag on raw text: Value keeps only the last duplicate.
+// Generic standalone transport frames without a type remain supported; full
+// KernelToHost variant decoding is restored incrementally above this boundary.
+#[derive(serde::Deserialize)]
+struct WorkerMessageTag {
+    #[serde(rename = "type")]
+    kind: String,
+}
+
 struct Frame {
     value: Value,
     bytes: usize,
@@ -224,6 +233,13 @@ async fn read_frames(
             let value: Value = serde_json::from_slice(&line).map_err(|_| "Invalid worker JSONL")?;
             if !value.is_object() {
                 return Err("Worker JSONL must contain an object".into());
+            }
+            if value.get("type").is_some() {
+                let Ok(tag) = serde_json::from_slice::<WorkerMessageTag>(&line) else {
+                    line.clear();
+                    continue;
+                };
+                debug_assert_eq!(value["type"].as_str(), Some(tag.kind.as_str()));
             }
             // The native reader decodes KernelToHost directly from the JSONL
             // text and drops parse failures before dispatch. Restore that typed

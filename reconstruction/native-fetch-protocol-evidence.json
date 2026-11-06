@@ -293,6 +293,16 @@
     "implementation": "native/runtime-supervisor/src/codex_app_server.rs",
     "limits": "Pinned-build path only. Client shared-connection lifecycle implemented; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth."
   },
+  "workerRoutingTag": {
+    "range": [
+      "0x10001de30",
+      "0x10001e29c"
+    ],
+    "instructionTextSha256": "5163ee6bd6ea84d0ffb7b8c9bcad6dc4ce2e5153ce0e96851bb4b8297d9963c2",
+    "reviewedBehavior": "TaggedContentVisitor holds the parsed enum field in w19; a second tag branches at 0x10001df2c to duplicate-field formatting at 0x10001e160..0x10001e180, before any last-value map projection.",
+    "implementation": "native/runtime-supervisor/src/process_port.rs",
+    "limits": "Raw string tag validation now rejects duplicates and non-string tags on tagged frames. Untagged generic standalone transport frames and unknown string variants remain accepted pending full KernelToHost restoration; malformed JSON and tracing policy remain distinct."
+  },
   "fetchMessageBoundary": {
     "messageRange": [
       "0x1000380ac",
@@ -313,7 +323,7 @@
       "native/runtime-supervisor/src/authenticated_fetch.rs",
       "native/runtime-supervisor/src/process_port.rs"
     ],
-    "limits": "Incremental typed validation for frames selected as authenticated_fetch. Other variants, duplicate type tags, malformed JSON policy and tracing parity still require full KernelToHost reconstruction. No claim of complete reader parity."
+    "limits": "Incremental typed validation for frames selected as authenticated_fetch. Other variants, unknown/missing tags, malformed JSON policy and tracing parity still require full KernelToHost reconstruction; duplicate tags are now checked independently on raw frames. No claim of complete reader parity."
   },
   "requestDeserialization": {
     "range": [
