@@ -324,3 +324,29 @@ NSArray、NSDictionary、AXValue 的拒绝与错误类型。创建 AX 引用不�
 这组测试与 Swift 构建不能替代真实键盘、粘贴、截图端到端验收。
 审计记录 axUIElementDecodingEvidence 包含函数边界、机器码哈希、类型检查与强转调用。
 泛型 UIElementProtocol 包装器构造与其余 decoder 分支仍单独待恢复。
+
+## 单属性与参数化属性的底层读取边界
+
+继续核查 `AXUIElement.value(for:)` 与 `parameterizedValue(for:parameter:)`，确认不能
+把二者统一实现为“系统 API 失败就 nil”。
+
+| 路径 | 原构建直接调用系统 API 后的行为 |
+| --- | --- |
+| 单属性 `value(for:)` | 返回 `(error: AXError, value: AXPartialValue?)`，独立保留状态与返回值是否存在 |
+| 参数化属性 | 非零状态抛出 `UIElementError.axError`；成功时根据输出指针决定返回值或 nil |
+
+单属性调用点 `0x1006f6144` 之后没有基于状态码清空值的判断：状态单独存于
+`0x1006f6254`，输出存在性在 `0x1006f6214` 判断。参数化调用点 `0x1006f7098`
+则在 `0x1006f70a8` 检查状态，非零进入错误构造。这是两个不同的契约。
+这里的状态码不能与前面 AXValue 载荷中的 AXError 混为一谈。
+
+此外，两条入口都有可选的协议分派路径；反射描述符 `0x1012cc62c` 的名称是
+**MockProvider**，不能将其误称为另一个生产浏览器/桌面后端。直接系统路径之前还比较
+getpid 与目标进程信息，存在另一执行分支；其线程/调度条件仍待完整恢复，尚不宣称都是
+当前线程直接调用 AX API。
+
+当前 main.swift 的 attribute helper 只在 success 时返回值，会丢掉错误状态；上层又有
+捕获、日志与忽略类型不匹配策略。因此接入完整原生属性读取时必须逐层恢复，不能仅把
+新增解码函数塞进这个 helper 就声称对齐。审计记录 rawAttributeEvidence 固定两个函数
+边界/哈希、系统调用位置和 MockProvider 名称。本轮为静态证据补全，没有改变运行时
+属性读取策略，也没有执行原厂服务。

@@ -1189,6 +1189,47 @@
     "errorCase2": "0x1006e9e28..0x1006e9e30",
     "scope": "Raw AXUIElement decoder only; generic UIElementProtocol wrapper construction is separate."
   },
+  "rawAttributeEvidence": {
+    "functions": [
+      {
+        "name": "AXUIElement.value(for:)",
+        "start": "0x1006f5f88",
+        "endExclusive": "0x1006f629c",
+        "machineCodeSha256": "bf89d24ff3dab046846f683e5d8aa5a26e4dfc05668ea272c9940b6b33d3d592"
+      },
+      {
+        "name": "AXUIElement.parameterizedValue(for:parameter:)",
+        "start": "0x1006f6ed4",
+        "endExclusive": "0x1006f7278",
+        "machineCodeSha256": "486b43cd43237ec186b6293a50d9af64935a76daa71c4b82c6828ad30ee66be0"
+      }
+    ],
+    "resolvedCalls": [
+      {
+        "address": "0x1006f60f0",
+        "symbol": "_getpid"
+      },
+      {
+        "address": "0x1006f6144",
+        "symbol": "_AXUIElementCopyAttributeValue"
+      },
+      {
+        "address": "0x1006f7040",
+        "symbol": "_getpid"
+      },
+      {
+        "address": "0x1006f7098",
+        "symbol": "_AXUIElementCopyParameterizedAttributeValue"
+      }
+    ],
+    "mockProviderDescriptor": "0x1012cc62c",
+    "mockProviderName": "MockProvider",
+    "plainStatusStored": "0x1006f6254",
+    "plainValuePresenceCheck": "0x1006f6214",
+    "parameterizedNonzeroStatusThrows": "0x1006f70a8..0x1006f70dc",
+    "parameterizedSuccessValuePresenceCheck": "0x1006f71e8",
+    "limitations": "Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",

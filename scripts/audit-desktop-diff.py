@@ -362,6 +362,40 @@ element_evidence={
     'errorCase2':'0x1006e9e28..0x1006e9e30',
     'scope':'Raw AXUIElement decoder only; generic UIElementProtocol wrapper construction is separate.',
 }
+# Raw attribute readers have different result/error contracts, and an optional
+# MockProvider path precedes the system API. Do not conflate this with a backend.
+mock_descriptor=0x1012cc62c
+mock_name=c_string(relative_address(mock_descriptor+8))
+if mock_name != 'MockProvider': raise SystemExit('Attribute mock provider changed')
+read_functions=[]
+for address,name in [(0x1006f5f88,'AXUIElement.value(for:)'),(0x1006f6ed4,'AXUIElement.parameterizedValue(for:parameter:)')]:
+    boundary=starts[starts.index(address)+1]
+    read_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+raw_calls=[]
+for low,high in [(0x1006f5f88,0x1006f629c),(0x1006f6ed4,0x1006f7278)]:
+    for address in range(low,high,4):
+        word=struct.unpack('<I',read_virtual(address,4))[0]
+        if word >> 26 != 0b100101: continue
+        immediate=word & 0x3ffffff
+        if immediate & 0x2000000: immediate -= 0x4000000
+        symbol=indirect.get(address+immediate*4,'')
+        if symbol in ['_AXUIElementCopyAttributeValue','_AXUIElementCopyParameterizedAttributeValue','_getpid']:
+            raw_calls.append({'address':hex(address),'symbol':symbol})
+if raw_calls != [
+    {'address':'0x1006f60f0','symbol':'_getpid'},
+    {'address':'0x1006f6144','symbol':'_AXUIElementCopyAttributeValue'},
+    {'address':'0x1006f7040','symbol':'_getpid'},
+    {'address':'0x1006f7098','symbol':'_AXUIElementCopyParameterizedAttributeValue'},
+]: raise SystemExit('Raw attribute system calls changed')
+raw_attribute_evidence={
+    'functions':read_functions,'resolvedCalls':raw_calls,
+    'mockProviderDescriptor':hex(mock_descriptor),'mockProviderName':mock_name,
+    'plainStatusStored':'0x1006f6254',
+    'plainValuePresenceCheck':'0x1006f6214',
+    'parameterizedNonzeroStatusThrows':'0x1006f70a8..0x1006f70dc',
+    'parameterizedSuccessValuePresenceCheck':'0x1006f71e8',
+    'limitations':'Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -407,6 +441,7 @@ record = {
     'axValueUnpackingEvidence':unpack_evidence,
     'axValueDecodingEvidence':axvalue_decode_evidence,
     'axUIElementDecodingEvidence':element_evidence,
+    'rawAttributeEvidence':raw_attribute_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
