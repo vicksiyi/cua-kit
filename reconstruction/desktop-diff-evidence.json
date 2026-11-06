@@ -860,6 +860,46 @@
     ],
     "limitations": "Static caller control flow; no native service execution or complete rendering implementation."
   },
+  "presentationEvidence": {
+    "functions": [
+      {
+        "name": "init(body:focusedElement:selectedText:selectedElements:)",
+        "start": "0x100637128",
+        "endExclusive": "0x100637170",
+        "machineCodeSha256": "ecc2bf238a4ef2ebdbcbb428137b1c58f93a842b9435516e035f9943ce68a6f2"
+      },
+      {
+        "name": "init(windowTitle:applicationName:treeLines:focusedElement:selectedText:selectedElements:)",
+        "start": "0x100637170",
+        "endExclusive": "0x100637310",
+        "machineCodeSha256": "7a586fe44d7ee28ad4d798070ce547b6b1f8ea80adfe4abb3454d06d0561fe43"
+      },
+      {
+        "name": "shared initializer implementation",
+        "start": "0x100637438",
+        "endExclusive": "0x100637654",
+        "machineCodeSha256": "e0e77c3ea844b89c477f2380884a3b2d90600ccfbd9f08fdb80cfa6de134995f"
+      }
+    ],
+    "literals": [
+      {
+        "address": "0x101255c90",
+        "text": "\nSelected text: ```\n"
+      },
+      {
+        "address": "0x101255c70",
+        "text": "\nThe focused UI element is "
+      },
+      {
+        "address": "0x101255b60",
+        "text": "\n\nNote: Pay special attention to the content selected by the user. If the user asks a question or refers to the content they are looking at on-screen, they might be referring to the selected content (but they might be referring to something else that's visible, too)."
+      }
+    ],
+    "selectedTextPresenceBranch": "0x10063747c",
+    "selectedElementsEmptyBranch": "0x1006374ec",
+    "focusedElementPresenceBranch": "0x1006375e0",
+    "scope": "Recovered constructor formatting from static ARM64; not a live native-service oracle."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -1525,6 +1565,101 @@
       "address": "0000000100064a8c",
       "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV9subjectIDSSvg",
       "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.subjectID.getter : Swift.String"
+    },
+    {
+      "address": "0000000100637170",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV11windowTitle15applicationName9treeLines14focusedElement12selectedText0O8ElementsACSS_SSSaySSGSSSgAkJtcfC",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.init(windowTitle: Swift.String, applicationName: Swift.String, treeLines: [Swift.String], focusedElement: Swift.String?, selectedText: Swift.String?, selectedElements: [Swift.String]) -> ComputerUseCore.AccessibilityTreePresentation"
+    },
+    {
+      "address": "00000001006370d0",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV12selectedTextSSSgvM",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedText.modify : Swift.String?"
+    },
+    {
+      "address": "0000000100049e34",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV12selectedTextSSSgvg",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedText.getter : Swift.String?"
+    },
+    {
+      "address": "000000010002dc54",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV12selectedTextSSSgvpfi",
+      "signature": "variable initialization expression of ComputerUseCore.AccessibilityTreePresentation.selectedText : Swift.String?"
+    },
+    {
+      "address": "0000000100049e60",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV12selectedTextSSSgvs",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedText.setter : Swift.String?"
+    },
+    {
+      "address": "00000001006370bc",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV14focusedElementSSSgvM",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.focusedElement.modify : Swift.String?"
+    },
+    {
+      "address": "0000000100049dc0",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV14focusedElementSSSgvg",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.focusedElement.getter : Swift.String?"
+    },
+    {
+      "address": "000000010002dc54",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV14focusedElementSSSgvpfi",
+      "signature": "variable initialization expression of ComputerUseCore.AccessibilityTreePresentation.focusedElement : Swift.String?"
+    },
+    {
+      "address": "0000000100049dec",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV14focusedElementSSSgvs",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.focusedElement.setter : Swift.String?"
+    },
+    {
+      "address": "0000000100637114",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV16selectedElementsSaySSGvM",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedElements.modify : [Swift.String]"
+    },
+    {
+      "address": "00000001006370e4",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV16selectedElementsSaySSGvg",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedElements.getter : [Swift.String]"
+    },
+    {
+      "address": "00000001006370ec",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV16selectedElementsSaySSGvs",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedElements.setter : [Swift.String]"
+    },
+    {
+      "address": "0000000100637080",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV19selectedContentNoteSSvau",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.selectedContentNote.unsafeMutableAddressor : Swift.String"
+    },
+    {
+      "address": "000000010063708c",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV19selectedContentNoteSSvgZ",
+      "signature": "static ComputerUseCore.AccessibilityTreePresentation.selectedContentNote.getter : Swift.String"
+    },
+    {
+      "address": "0000000100637310",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV23__derived_struct_equalsySbAC_ACtFZ",
+      "signature": "static ComputerUseCore.AccessibilityTreePresentation.__derived_struct_equals(ComputerUseCore.AccessibilityTreePresentation, ComputerUseCore.AccessibilityTreePresentation) -> Swift.Bool"
+    },
+    {
+      "address": "0000000100637128",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV4body14focusedElement12selectedText0J8ElementsACSS_SSSgAHSaySSGtcfC",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.init(body: Swift.String, focusedElement: Swift.String?, selectedText: Swift.String?, selectedElements: [Swift.String]) -> ComputerUseCore.AccessibilityTreePresentation"
+    },
+    {
+      "address": "00000001006370a8",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV4textSSvM",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.text.modify : Swift.String"
+    },
+    {
+      "address": "000000010000add8",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV4textSSvg",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.text.getter : Swift.String"
+    },
+    {
+      "address": "0000000100049d78",
+      "mangled": "_$s15ComputerUseCore29AccessibilityTreePresentationV4textSSvs",
+      "signature": "ComputerUseCore.AccessibilityTreePresentation.text.setter : Swift.String"
     },
     {
       "address": "00000001006425ac",

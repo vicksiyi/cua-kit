@@ -133,3 +133,25 @@ flowchart TD
 
 这补上了此前缺失的调用者回退证据。图仅省略选择文本、焦点元素、窗口标题和最终文本拼接；
 树比较算法、revision 创建/失效和这些呈现细节仍未恢复，不能直接把该图当作完整实现。
+
+## Swift 观察文本构造器已还原
+
+新增 `native/macos/Sources/CuaHelper/AccessibilityTreePresentation.swift`，恢复两个构造器及
+text/focusedElement/selectedText/selectedElements 字段。依据是固定原生构建的三个实际函数体：
+`0x100637128`（body 入口）、`0x100637170`（窗口/树行入口）、`0x100637438`（共享实现）。
+审计记录函数边界、机器码哈希、字符串地址与三个优先级分支位置。
+
+恢复的行为：
+
+1. 窗口入口生成 `Window: "<title>", App: <name>.\n`，随后是用换行拼接的树行与末尾换行；标题中的引号不额外转义。
+2. selectedText 非 nil 时追加 fenced text 和原构建的 selectedContentNote，即使文本为空也走此分支。
+3. 否则 selectedElements 非空时追加 `Selected:` 和逐行元素，以及同一提示；包含一个空字符串的数组仍算非空。
+4. 否则 focusedElement 非 nil 时追加焦点说明，不追加选择提示；空焦点字符串仍保留说明前缀。
+5. 保存全部原始字段；呈现的优先级不删除未展示的焦点/选择数据。
+
+原生 Swift 测试覆盖上述优先级、nil/空值区别、嵌入代码围栏、多行文本、中文标题、空树与精确换行。
+入口：`node --import tsx --test reconstruction/native-ax-presentation.test.ts`。
+该测试编译并运行 Swift 格式化器，不需 UI 权限；预期输出来自已审阅指令，不是原厂原生服务的运行时 oracle。
+
+尚未将格式化器接入 SkyAppState：目前 AX 树采集、选择/焦点映射和 revision 仍是独立实现，
+不能为接入新格式而伪造这些输入。整体 helper 的观察输出因此尚未变化。

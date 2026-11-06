@@ -23,7 +23,7 @@ raw = subprocess.check_output(['nm', '-g', str(artifact)], text=True)
 selected = [line for line in raw.splitlines() if ' T ' in line and any(word in line for word in (
     'disableAXDiffing', 'UIElementTreeRevision', 'RefetchableSkyshotAXTree',
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
-    'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection',
+    'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -200,6 +200,20 @@ implementation_evidence = {
     'reviewedInstructionExcerpts':excerpts,
     'scope':'Static call sites and basic blocks only; traversal, budget and identity rules remain unrecovered.',
 }
+presentation_functions = []
+for address,name in [(0x100637128,'init(body:focusedElement:selectedText:selectedElements:)'),(0x100637170,'init(windowTitle:applicationName:treeLines:focusedElement:selectedText:selectedElements:)'),(0x100637438,'shared initializer implementation')]:
+    boundary = starts[starts.index(address)+1]
+    presentation_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+presentation_literals = [{'address':hex(a),'text':c_string(a)} for a in [0x101255c90,0x101255c70,0x101255b60]]
+if presentation_literals[0]['text'] != '\nSelected text: ```\n' or presentation_literals[1]['text'] != '\nThe focused UI element is ':
+    raise SystemExit('Presentation literal changed')
+presentation_evidence = {
+    'functions':presentation_functions,'literals':presentation_literals,
+    'selectedTextPresenceBranch':'0x10063747c',
+    'selectedElementsEmptyBranch':'0x1006374ec',
+    'focusedElementPresenceBranch':'0x1006375e0',
+    'scope':'Recovered constructor formatting from static ARM64; not a live native-service oracle.',
+}
 record = {
     'artifact':'@oai/'+relative,
     'sha256':sha,
@@ -207,6 +221,7 @@ record = {
     'commands':['nm -g <artifact>', 'xcrun swift-demangle', 'xcrun llvm-objdump --macho --function-starts=addrs <artifact>', 'xcrun llvm-objdump --disassemble --start-address=<start> --stop-address=<end> <artifact>'],
     'implementationEvidence':implementation_evidence,
     'callerEvidence':caller_evidence,
+    'presentationEvidence':presentation_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
