@@ -6869,3 +6869,10 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Added distinct UITextMarker and UITextMarkerRange Swift structs, source-matched range construction, generic wrapper conversion with nil/throw policy, and a CF-type-checked concrete attribute adapter. Raw CF references are not interchangeable with the Swift wrappers in requested-type conversion.
 - A compiled Swift regression uses real system-created CF markers/ranges to verify reference identity, opaque endpoint bytes, Any/Optional requests, rejected raw-reference requests, wrong-type policy and safe guards for unrelated CF objects. The focused test and full helper build pass; no App UI/permission claim is made.
 - Still missing: full typed parameter encoding, cached access/observation integration, native tree revisions/diffing and genuine UI acceptance. The new wrappers are not yet invoked by the production observation collector.
+
+### 2026-11-06 Native parameter encoder branches integrated for selection
+
+- Traced typed parameterized reads to the native encoder (0x1006ea3e4), system read, then decodedThrowing for present results. Added pinned hashes and call/branch evidence to the native audit.
+- Implemented concrete Swift marker/range reference extraction and CFRange/CGPoint/CGRect/CGSize AXValueCreate encoding. Creation failures preserve the recovered failedToWrapAXValue case; concrete typed buffers avoid existential-memory corruption.
+- Connected Target.selectText to the recovered CFRange encoder, preserving the independent outer transport's existing failure mapping. Added Unicode selected-range/cursor encoding roundtrips to the input self-test. The standalone real-CF encoding test, full helper build, input self-test and 193-signature audit pass. No actual app input or permission change occurred.
+- Original UIElement extraction, generic fallback and full typed output decoding remain incomplete. Parameter encoding integration does not complete selected-text observation fallback or native tree diff behavior.

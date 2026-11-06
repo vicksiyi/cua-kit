@@ -19,6 +19,13 @@ func runInputChecks() throws {
     let before = try selectedTextRange(content:"A🌍你好B", text:"🌍你好", options:["selectionType":"cursor_before"])
     let after = try selectedTextRange(content:"A🌍你好B", text:"🌍你好", options:["selectionType":"cursor_after"])
     guard selected.location == 1, selected.length == 4, before.location == 1, before.length == 0, after.location == 5, after.length == 0 else { throw fail("SELF_TEST_FAILED","UTF-16 selection/cursor offsets differ.") }
+    for range in [selected, before, after] {
+        let encoded = try encodedAXParameter(range)
+        var decoded = CFRange(location: -1, length: -1)
+        guard AXValueGetValue(encoded, .cfRange, &decoded), decoded.location == range.location, decoded.length == range.length else {
+            throw fail("SELF_TEST_FAILED", "Native selection parameter encoding changed UTF-16 offsets.")
+        }
+    }
     let unique = try selectedTextRange(content:"one cat; two cat!", text:"cat", options:["prefix":"two ","suffix":"!"])
     guard unique.location == 13, unique.length == 3 else { throw fail("SELF_TEST_FAILED","Selection context mismatch.") }
     for (content,text,options,expected) in [

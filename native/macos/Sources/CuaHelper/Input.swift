@@ -87,8 +87,14 @@ extension Target {
     func selectText(_ element: AXUIElement, _ params: [String: Any]) throws -> AXError {
         guard let text = params["value"] as? String, !text.isEmpty, let content = attribute(element,kAXValueAttribute) as? String else { throw fail("INVALID_ARGUMENT", "Selection requires nonempty text and a textual AXValue.") }
         let options = params["options"] as? [String:Any] ?? [:]
-        var range = try selectedTextRange(content: content, text: text, options: options)
-        guard let axRange = AXValueCreate(.cfRange,&range) else { throw fail("PROVIDER_DISCONNECTED", "Cannot encode text range.") }
+        let range = try selectedTextRange(content: content, text: text, options: options)
+        let axRange: AXValue
+        do { axRange = try encodedAXParameter(range) }
+        catch UIElementError.failedToWrapAXValue {
+            // Keep the independent transport mapping while using the recovered
+            // native encoder below it; the original IPC mapping is not restored.
+            throw fail("PROVIDER_DISCONNECTED", "Cannot encode text range.")
+        }
         return AXUIElementSetAttributeValue(element,kAXSelectedTextRangeAttribute as CFString,axRange)
     }
 }

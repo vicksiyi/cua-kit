@@ -321,6 +321,38 @@ marker_evidence = {
     'interpretation':'CF type-ID guards precede forced C-reference casts; distinct Swift wrappers are dynamically cast to the requested generic type. Failed wrapper conversion constructs failedToUnwrapAttributeValue(requestedType) and forwards the throwing flag to shared failure handling. Range construction calls AXTextMarkerRangeCreate(nil,start,end) and returns its result without a local null/error branch.',
     'limitations':'Static evidence only. Does not establish private C declarations, marker validation outside this branch, marker byte layout, or full typed parameter encoding. Native marker wrappers and observation integration remain unrestored.',
 }
+parameter_functions = []
+for address, name in [(0x1006ea3e4,'parameter encoding'), (0x1007aecec,'typed parameterized read')]:
+    boundary = starts[starts.index(address)+1]
+    parameter_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+parameter_calls = []
+for address, destination in [(0x1007aed3c,0x1006ea3e4),(0x1007aed78,0x1006f6ed4),(0x1007aedf8,0x1006fac24),
+                             (0x1006ea518,0x101153954),(0x1006ea5f0,0x101153954)]:
+    word = struct.unpack('<I',read_virtual(address,4))[0]
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    if word >> 26 != 0b100101 or address + immediate*4 != destination:
+        raise SystemExit('Typed parameter encoding/read call changed')
+    parameter_calls.append({'address':hex(address),'destination':hex(destination)})
+if indirect.get(0x101153954) != '_AXValueCreate': raise SystemExit('Parameter AXValueCreate stub changed')
+parameter_words = {
+    0x1006ea464:0x913a0063, 0x1006ea484:0x913aa063, 0x1006ea4a0:0xf94013f4,
+    0x1006ea514:0x52800080, 0x1006ea57c:0x52800020,
+    0x1006ea5b4:0x52800060, 0x1006ea5ec:0x52800040,
+    0x1006ea51c:0xb50006e0, 0x1006ea5f4:0xb4000060,
+    0x1006ea624:0x52800088, 0x1007aed50:0xb5000233,
+    0x1007aed80:0xb40001d5, 0x1007aedc4:0xb40003e8,
+}
+for address, word in parameter_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('Parameter conversion/error branch changed')
+parameter_evidence = {
+    'functions':parameter_functions, 'calls':parameter_calls,
+    'instructionWords':{hex(a):hex(w) for a,w in parameter_words.items()},
+    'interpretation':'Typed parameterized access encodes before system read, then uses decodedThrowing for a present result. Encoding extracts marker/range references; CFRange/CGPoint/CGRect/CGSize use AXValueCreate types 4/1/3/2 and failure case failedToWrapAXValue.',
+    'limitations':'Concrete marker/geometry/range branches only. UIElement wrapper extraction, generic fallback, typed attribute protocol dispatch and complete output decoding remain separate.',
+}
 # The concrete AXValue reader is a separate helper, not the outer decoder.
 unpack_start = 0x1006ea098
 unpack_end = starts[starts.index(unpack_start)+1]
@@ -620,6 +652,7 @@ record = {
     'decodingEvidence':decoding_evidence,
     'errorEvidence':error_evidence,
     'markerDecodingEvidence':marker_evidence,
+    'parameterEncodingEvidence':parameter_evidence,
     'axValueUnpackingEvidence':unpack_evidence,
     'axValueDecodingEvidence':axvalue_decode_evidence,
     'axUIElementDecodingEvidence':element_evidence,

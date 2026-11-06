@@ -563,3 +563,27 @@ Swift 直接 `import ApplicationServices` 即可使用 AXTextMarker / AXTextMark
 这一实现替代了上节“尚未确认导入方式/未实现 wrapper”的待办，但尚未补齐 typed
 参数编码和缓存/观察集成；现有 selectedText reader 仍未自动在真实 UI 上启用 marker
 回退，也不证明原生增量树已完成。
+
+## 原生参数编码及选择范围接入
+
+沿 typed parameterized read `0x1007aecec` 继续追踪，确认其顺序为：先调用参数编码
+`0x1006ea3e4`，再调用底层 `parameterizedValue`，输出存在时调用 `decodedThrowing`。
+编码错误阻止系统读取；读取错误原样往外传播。此处不同于普通属性的 nonthrowing 便利访问。
+新增 parameterEncodingEvidence 固定两个函数哈希、五个调用点及十三条分支/常量指令。
+
+`AXParameterEncoding.swift` 实现已核实的具体分支：UITextMarker / UITextMarkerRange
+取其 CF 引用；CFRange / CGPoint / CGRect / CGSize 通过 AXValueCreate 的类型
+4 / 1 / 3 / 2 包装，创建失败抛 failedToWrapAXValue。保持具体类型缓冲区，不能先擦除成
+Any 再把地址交给系统函数。编码不做坐标规范化或范围校验，这属于调用层职责。
+
+`Input.swift` 的 selectText 现在调用恢复的范围编码入口，不再维护另一套 AXValueCreate
+逻辑。外层仍将编码失败映射为既有 PROVIDER_DISCONNECTED 响应；该映射是独立 helper
+的协议，不冒充原厂 IPC 错误映射。已有目标、权限、快照及文本匹配限制保持执行。
+
+专项测试使用真实 AXValueGetValue 检查四类值往返、marker/range 引用身份，并注入
+创建失败验证 typed buffer 与错误 case。输入 self-test 新增 Unicode 选区及前后光标
+范围的编码往返检查，不发送输入事件。完整 helper 构建、self-test 和固定构建审计通过。
+
+这里恢复的是具体参数分支；UIElement wrapper 的提取、通用 Any bridge fallback、
+完整 typed attribute dispatcher 和结果 decoder 尚未全部恢复。生产文本范围动作
+已接入编码，但观察中的 marker 选择回退仍未接通，不能合并为“原生观察完成”。

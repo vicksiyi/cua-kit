@@ -1165,6 +1165,61 @@
     "interpretation": "CF type-ID guards precede forced C-reference casts; distinct Swift wrappers are dynamically cast to the requested generic type. Failed wrapper conversion constructs failedToUnwrapAttributeValue(requestedType) and forwards the throwing flag to shared failure handling. Range construction calls AXTextMarkerRangeCreate(nil,start,end) and returns its result without a local null/error branch.",
     "limitations": "Static evidence only. Does not establish private C declarations, marker validation outside this branch, marker byte layout, or full typed parameter encoding. Native marker wrappers and observation integration remain unrestored."
   },
+  "parameterEncodingEvidence": {
+    "functions": [
+      {
+        "name": "parameter encoding",
+        "start": "0x1006ea3e4",
+        "endExclusive": "0x1006ea660",
+        "machineCodeSha256": "d6a0fef99980fcb8dd1c46bcb1de115462c22df81955b12f3450b6765c2ef214"
+      },
+      {
+        "name": "typed parameterized read",
+        "start": "0x1007aecec",
+        "endExclusive": "0x1007aeea4",
+        "machineCodeSha256": "acec4d4575a7ee188a86005197ed93e2c9a017de3bc7ef9d000574ac7aa21e12"
+      }
+    ],
+    "calls": [
+      {
+        "address": "0x1007aed3c",
+        "destination": "0x1006ea3e4"
+      },
+      {
+        "address": "0x1007aed78",
+        "destination": "0x1006f6ed4"
+      },
+      {
+        "address": "0x1007aedf8",
+        "destination": "0x1006fac24"
+      },
+      {
+        "address": "0x1006ea518",
+        "destination": "0x101153954"
+      },
+      {
+        "address": "0x1006ea5f0",
+        "destination": "0x101153954"
+      }
+    ],
+    "instructionWords": {
+      "0x1006ea464": "0x913a0063",
+      "0x1006ea484": "0x913aa063",
+      "0x1006ea4a0": "0xf94013f4",
+      "0x1006ea514": "0x52800080",
+      "0x1006ea57c": "0x52800020",
+      "0x1006ea5b4": "0x52800060",
+      "0x1006ea5ec": "0x52800040",
+      "0x1006ea51c": "0xb50006e0",
+      "0x1006ea5f4": "0xb4000060",
+      "0x1006ea624": "0x52800088",
+      "0x1007aed50": "0xb5000233",
+      "0x1007aed80": "0xb40001d5",
+      "0x1007aedc4": "0xb40003e8"
+    },
+    "interpretation": "Typed parameterized access encodes before system read, then uses decodedThrowing for a present result. Encoding extracts marker/range references; CFRange/CGPoint/CGRect/CGSize use AXValueCreate types 4/1/3/2 and failure case failedToWrapAXValue.",
+    "limitations": "Concrete marker/geometry/range branches only. UIElement wrapper extraction, generic fallback, typed attribute protocol dispatch and complete output decoding remain separate."
+  },
   "axValueUnpackingEvidence": {
     "start": "0x1006ea098",
     "endExclusive": "0x1006ea28c",
