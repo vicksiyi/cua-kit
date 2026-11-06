@@ -169,6 +169,38 @@
     "implementation": "native/runtime-supervisor/src/codex_app_server_auth.rs",
     "limits": "Only metadata extraction, never JWT verification. Static instruction review and synthetic tests; native provider cache, App Server requests and production wiring remain incomplete."
   },
+  "authStatusContract": {
+    "fetcherRange": [
+      "0x10022837c",
+      "0x100229bd0"
+    ],
+    "fetcherInstructionTextSha256": "1d0e2d98b17e6460a8ccc4789532de11a2580a72caf8541ace64a129b8fc9df4",
+    "providerRange": [
+      "0x1002272ac",
+      "0x10022753c"
+    ],
+    "providerInstructionTextSha256": "1983dfea07202ccd1e8c6591dce203353ca6d014c56ebeaa7f07f89decaa21df",
+    "literals": {
+      "method": "getAuthStatus",
+      "includeToken": "includeToken",
+      "refreshToken": "refreshToken",
+      "tokenField": "authToken",
+      "methodField": "authMethod",
+      "missingToken": "Codex auth token is unavailable",
+      "missingMethod": "Codex auth method is unavailable",
+      "unsupportedPrefix": "unsupported Codex auth method: ",
+      "accountClaim": "chatgpt_account_id",
+      "userClaim": "chatgpt_user_id"
+    },
+    "reviewedBehavior": [
+      "request getAuthStatus with includeToken=true and refreshToken equal to fetcher argument",
+      "current_auth initializes refresh flag false; refetch_auth initializes true",
+      "result authToken must be a nonempty string, checked before authMethod; token whitespace is not trimmed",
+      "authMethod must be a string exactly equal to chatgpt (seven-byte comparison); other strings produce unsupported error",
+      "provider extracts chatgpt_account_id followed by chatgpt_user_id from the token; observed Sentry user update is not implemented here"
+    ],
+    "limits": "Request parameters, successful-result validation and CodexAuth field projection implemented. Full fetcher transport/initialization, diagnostics, error logging and deployment wiring still incomplete. Provider cache behavior must not be inferred from the API name current_auth."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
   "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }

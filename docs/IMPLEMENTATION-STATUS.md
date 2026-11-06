@@ -6540,3 +6540,13 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Added pinned assembly/literal/config evidence to `audit-native-fetch-protocol.py` and its JSON output. Tests cover missing/wrong-type claims, Unicode/empty values, two/extra segments, ignored expiry, malformed encoding/JSON, prohibited padding and noncanonical trailing bits.
 - Validation: 3 new synthetic helper tests plus all 15 authenticated-fetch tests passed. This does not prove original-binary differential equivalence.
 - Remaining: full App Server provider/cache/fetch behavior, credential DTO and context mapping, deployment wiring. This checkpoint does not advance daily Chrome/public-search or native UI acceptance.
+
+
+### Native App Server auth status contract checkpoint (2026-11-06)
+
+- Reviewed the access-token fetcher `0x10022837c..0x100229bd0`, provider `fetch_auth` `0x1002272ac..0x10022753c`, and current/refetch method constructors. Added instruction hashes and literal/branch assertions to the pinned audit.
+- Restored `getAuthStatus` parameters (`includeToken: true`, `refreshToken: bool`) and successful-RPC-result parsing in Rust. The native code requires a nonempty string `authToken` before checking the string `authMethod`, which must equal `chatgpt` exactly. Missing token/method and unsupported-method error messages preserve observed wording. Whitespace is not trimmed.
+- Restored CodexAuth token/account/user projection: `chatgpt_account_id` and `chatgpt_user_id` are distinct optional claims. Conversion to HTTP credentials uses account ID, never user ID. No Debug/Serialize implementation on the credential DTO.
+- Current/refetch constructors set the refresh argument false/true respectively. This does NOT establish a local token cache; do not infer caching from the current_auth method name. App Server connection reuse and token caching must be audited at their owning layers.
+- Validation: all 6 auth helper/contract tests and 15 authenticated-fetch tests pass. Static audit passes against the pinned artifact; original binary was not executed, no real token was read, no model/network auth request was issued.
+- Still incomplete: App Server process/connection initialization and RPC transport, fetcher diagnostics, provider Sentry user update, production wiring, and end-to-end auth acceptance. Existing daily-browser and native-UI acceptance gaps remain.

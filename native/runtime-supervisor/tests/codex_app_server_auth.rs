@@ -110,3 +110,73 @@ fn rejects_malformed_payloads_padding_and_noncanonical_tail_bits() {
         value.push('x');
     }
 }
+
+#[test]
+fn auth_status_request_preserves_both_boolean_fields() {
+    use core_runtime_supervisor::codex_app_server_auth::{auth_status_params, AUTH_STATUS_METHOD};
+    assert_eq!(AUTH_STATUS_METHOD, "getAuthStatus");
+    for refresh in [false, true] {
+        assert_eq!(
+            auth_status_params(refresh),
+            json!({"includeToken":true,"refreshToken":refresh})
+        );
+    }
+}
+
+#[test]
+fn auth_status_validates_token_before_exact_auth_method() {
+    use core_runtime_supervisor::codex_app_server_auth::access_token_from_auth_status as parse;
+    for response in [
+        json!(null),
+        json!([]),
+        json!({}),
+        json!({"authToken":"","authMethod":"apikey"}),
+        json!({"authToken":42,"authMethod":"chatgpt"}),
+    ] {
+        assert_eq!(
+            parse(&response).unwrap_err(),
+            "Codex auth token is unavailable"
+        );
+    }
+    for response in [
+        json!({"authToken":"synthetic"}),
+        json!({"authToken":"synthetic","authMethod":null}),
+        json!({"authToken":"synthetic","authMethod":42}),
+    ] {
+        assert_eq!(
+            parse(&response).unwrap_err(),
+            "Codex auth method is unavailable"
+        );
+    }
+    for method in ["", "apikey", "ChatGPT", "chatgpt ", "chatgptAuthTokens"] {
+        assert_eq!(
+            parse(&json!({"authToken":"synthetic","authMethod":method})).unwrap_err(),
+            format!("unsupported Codex auth method: {method}")
+        );
+    }
+    // Only length is checked; do not invent whitespace trimming or JWT validation.
+    for value in [" ", "opaque-synthetic-token"] {
+        assert_eq!(
+            parse(&json!({"authToken":value,"authMethod":"chatgpt","ignored":true})).unwrap(),
+            value
+        );
+    }
+}
+
+#[test]
+fn native_auth_projection_keeps_account_and_user_claims_distinct() {
+    use core_runtime_supervisor::codex_app_server_auth::CodexAuth;
+    let source = token(
+        json!({"https://api.openai.com/auth":{"chatgpt_account_id":"account-a","chatgpt_user_id":"user-b"}}),
+    );
+    let auth = CodexAuth::from_access_token(source.clone());
+    assert_eq!(auth.user_id.as_deref(), Some("user-b"));
+    assert_eq!(auth.account_id.as_deref(), Some("account-a"));
+    let credentials = auth.into_fetch_credentials();
+    assert_eq!(credentials.access_token, source);
+    assert_eq!(credentials.account_id.as_deref(), Some("account-a"));
+    let opaque = CodexAuth::from_access_token("opaque".into());
+    assert!(opaque.account_id.is_none());
+    assert!(opaque.user_id.is_none());
+    assert_eq!(opaque.access_token, "opaque");
+}

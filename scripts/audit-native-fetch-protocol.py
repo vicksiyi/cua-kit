@@ -133,6 +133,34 @@ assert claim_namespace == 'https://api.openai.com/auth'
 claim_engine = list(read(0x100a4888e,3))
 assert claim_engine == [0,0,2]
 assert read(0x100a48891,64).decode() == 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+access_token_fetcher = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10022837c','--stop-address=0x100229bd0',str(artifact)], text=True)
+fetch_auth_provider = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1002272ac','--stop-address=0x10022753c',str(artifact)], text=True)
+provider_methods = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10022bb10','--stop-address=0x10022bbfc',str(artifact)], text=True)
+auth_status_literals = {key:read(address,length).decode() for key,address,length in [
+    ('method',0x100a4866f,13), ('includeToken',0x100a489d1,12),
+    ('refreshToken',0x100a489dd,12), ('tokenField',0x100a4867c,9),
+    ('methodField',0x100a48685,10), ('missingToken',0x100a48538,31),
+    ('missingMethod',0x100a4868f,32), ('unsupportedPrefix',0x100b342c2,31),
+    ('accountClaim',0x100a489f8,18), ('userClaim',0x100a489e9,15)]}
+assert auth_status_literals == {
+    'method':'getAuthStatus','includeToken':'includeToken','refreshToken':'refreshToken',
+    'tokenField':'authToken','methodField':'authMethod',
+    'missingToken':'Codex auth token is unavailable','missingMethod':'Codex auth method is unavailable',
+    'unsupportedPrefix':'unsupported Codex auth method: ',
+    'accountClaim':'chatgpt_account_id','userClaim':'chatgpt_user_id'}
+for expected in ['10022844c:', '#0x101', '100228584:', '100228654:',
+                 '100229298:', '1002292a4:', '1002292b0:', '10022937c:',
+                 '100229394:', '#0x7', '1002293a4:', '#0x6863',
+                 '1002293a8:', '#0x7461', '1002293b0:', '#0x6774',
+                 '1002293b4:', '#0x7470', '1002293bc:']:
+    assert expected in access_token_fetcher, expected
+for expected in ['1002273a8:', '1002273c4:', 'chatgpt_auth_claim_from_token', 'diagnostics::set_sentry_user']:
+    assert expected in fetch_auth_provider, expected
+for expected in ['10022bb24:', 'strh\twzr', '10022bb98:', '#0x100', '10022bb9c:']:
+    assert expected in provider_methods, expected
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -238,6 +266,21 @@ print(json.dumps({
         ],
         'implementation': 'native/runtime-supervisor/src/codex_app_server_auth.rs',
         'limits': 'Only metadata extraction, never JWT verification. Static instruction review and synthetic tests; native provider cache, App Server requests and production wiring remain incomplete.'
+    },
+    'authStatusContract': {
+        'fetcherRange': ['0x10022837c','0x100229bd0'],
+        'fetcherInstructionTextSha256': hashlib.sha256(access_token_fetcher.encode()).hexdigest(),
+        'providerRange': ['0x1002272ac','0x10022753c'],
+        'providerInstructionTextSha256': hashlib.sha256(fetch_auth_provider.encode()).hexdigest(),
+        'literals': auth_status_literals,
+        'reviewedBehavior': [
+            'request getAuthStatus with includeToken=true and refreshToken equal to fetcher argument',
+            'current_auth initializes refresh flag false; refetch_auth initializes true',
+            'result authToken must be a nonempty string, checked before authMethod; token whitespace is not trimmed',
+            'authMethod must be a string exactly equal to chatgpt (seven-byte comparison); other strings produce unsupported error',
+            'provider extracts chatgpt_account_id followed by chatgpt_user_id from the token; observed Sentry user update is not implemented here'
+        ],
+        'limits': 'Request parameters, successful-result validation and CodexAuth field projection implemented. Full fetcher transport/initialization, diagnostics, error logging and deployment wiring still incomplete. Provider cache behavior must not be inferred from the API name current_auth.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
