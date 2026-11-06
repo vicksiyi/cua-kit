@@ -38,6 +38,37 @@ struct WorkerMessageTag {
     kind: String,
 }
 
+// The pinned KernelToHost tag visitor's unknown_variant table contains these
+// 18 names (0x100cf82e0; call at 0x1001ca320). Trusted-worker messages use
+// a different protocol and must not be filtered with this enum.
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum KernelMessageKind {
+    TurnEndedResult,
+    ExecResult,
+    ResponseMeta,
+    ResponseMetaTrace,
+    ExecRedactedSource,
+    EmitImage,
+    EmitAudio,
+    Elicit,
+    AuthenticatedFetch,
+    ConfigAction,
+    OtelLog,
+    LaunchServicesAction,
+    SuspendTimeout,
+    ResumeTimeout,
+    SubmittedCodeComplete,
+    NativePipeRequest,
+    TrustedServiceRequest,
+    TrustedServiceHooks,
+}
+#[derive(serde::Deserialize)]
+struct KernelRoutingTag {
+    #[serde(rename = "type")]
+    _kind: KernelMessageKind,
+}
+
 struct Frame {
     value: Value,
     bytes: usize,
@@ -54,6 +85,13 @@ pub struct ProcessWorker {
 }
 impl ProcessWorker {
     pub async fn start(spec: ProcessSpec) -> Result<Self, String> {
+        Self::start_with_protocol(spec, false).await
+    }
+    /// KernelToHost tag boundary; payload DTO restoration remains incremental.
+    pub async fn start_kernel(spec: ProcessSpec) -> Result<Self, String> {
+        Self::start_with_protocol(spec, true).await
+    }
+    async fn start_with_protocol(spec: ProcessSpec, kernel_protocol: bool) -> Result<Self, String> {
         if !spec.command.is_absolute() || !spec.cwd.is_absolute() {
             return Err("Worker command and cwd must be absolute".into());
         }
@@ -87,6 +125,7 @@ impl ProcessWorker {
             reader_queued,
             spec.max_frame_bytes,
             spec.max_queued_bytes,
+            kernel_protocol,
         ));
         let (shutdown, stopped) = oneshot::channel();
         let manager = tokio::spawn(async move {
@@ -210,6 +249,7 @@ async fn read_frames(
     queued: Arc<AtomicUsize>,
     max_frame: usize,
     max_queue: usize,
+    kernel_protocol: bool,
 ) -> Result<(), String> {
     let mut chunk = [0u8; 8192];
     let mut line = Vec::new();
@@ -241,6 +281,10 @@ async fn read_frames(
                     continue;
                 }
             };
+            if kernel_protocol && serde_json::from_slice::<KernelRoutingTag>(&line).is_err() {
+                line.clear();
+                continue;
+            }
             if value.get("type").is_some() {
                 let Ok(tag) = serde_json::from_slice::<WorkerMessageTag>(&line) else {
                     line.clear();

@@ -184,3 +184,20 @@ async fn malformed_json_lines_are_dropped_without_retiring_worker_or_losing_foll
     assert_eq!(timeout(Duration::from_secs(5), worker.next_message()).await.unwrap().unwrap(), Some(json!({"stillAlive":true})));
     worker.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn kernel_protocol_drops_unknown_missing_and_duplicate_tags_before_queueing() {
+    let mut config = spec(r#"
+        for(let i=0;i<300;i++) process.stdout.write(
+          '{}\n{"type":"future_message"}\n{"type":"exec_result","type":"future_message"}\n{"type":"future_message","type":"exec_result"}\n{"type":"trusted_service_response"}\n');
+        process.stdout.write(JSON.stringify({type:'exec_result',id:'first',ok:true})+'\n');
+        process.stdin.once('data',()=>process.stdout.write(JSON.stringify({type:'exec_result',id:'second',ok:true})+'\n'));
+    "#);
+    config.max_frame_bytes = 1024;
+    config.max_queued_bytes = 2048;
+    let mut worker = ProcessWorker::start_kernel(config).await.unwrap();
+    assert_eq!(timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap()["id"], "first");
+    worker.send(&json!({"type":"exec","id":"second"})).await.unwrap();
+    assert_eq!(timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap()["id"], "second");
+    worker.close().await.unwrap();
+}

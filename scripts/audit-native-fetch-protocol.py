@@ -61,6 +61,23 @@ for expected in ['10001df28:', '10001df2c:', '0x10001e160', '10001e178:', '#0x97
                  '10001e034:', 'KernelToHost', '10001e180:']:
     assert expected in tag_decode, expected
 
+kernel_tag_seed = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1001c9dc8','--stop-address=0x1001ca390',str(artifact)], text=True)
+for expected in ['1001ca314:', '0x100cf8000', '1001ca318:', '#0x2e0',
+                 '1001ca31c:', '#0x12', '1001ca320:', 'unknown_variant']:
+    assert expected in kernel_tag_seed, expected
+kernel_tag_names = []
+for index in range(18):
+    pointer, length = struct.unpack('<QQ', read(0x100cf82e0 + index * 16, 16))
+    kernel_tag_names.append(read(pointer, length).decode('ascii'))
+assert kernel_tag_names == [
+    'turn_ended_result', 'exec_result', 'response_meta', 'response_meta_trace',
+    'exec_redacted_source', 'emit_image', 'emit_audio', 'elicit',
+    'authenticated_fetch', 'config_action', 'otel_log', 'launch_services_action',
+    'suspend_timeout', 'resume_timeout', 'submitted_code_complete',
+    'native_pipe_request', 'trusted_service_request', 'trusted_service_hooks',
+]
+
 sentry_user_update = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
     '--start-address=0x10022c17c','--stop-address=0x10022c380',str(artifact)], text=True)
 for crate in ['sentry-core-0.49.2','sentry-types-0.49.2']:
@@ -456,12 +473,21 @@ print(json.dumps({
         'implementation':'native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver',
         'limits':'Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete.'
     },
+    'kernelVariantTags': {
+        'range':['0x1001c9dc8','0x1001ca390'],
+        'instructionTextSha256':hashlib.sha256(kernel_tag_seed.encode()).hexdigest(),
+        'tableAddress':'0x100cf82e0',
+        'unknownVariantCall':'0x1001ca320',
+        'names':kernel_tag_names,
+        'implementation':'ProcessWorker::start_kernel in native/runtime-supervisor/src/process_port.rs; selected by ReplManager for the kernel only',
+        'limits':'Restores the tag set, including missing/duplicate/unknown rejection before queueing. Per-variant payload DTOs remain partial. This is not the trusted-worker protocol; it is deliberately not applied to trusted/helper transports.'
+    },
     'workerRoutingTag': {
         'range':['0x10001de30','0x10001e29c'],
         'instructionTextSha256':hashlib.sha256(tag_decode.encode()).hexdigest(),
         'reviewedBehavior':'TaggedContentVisitor holds the parsed enum field in w19; a second tag branches at 0x10001df2c to duplicate-field formatting at 0x10001e160..0x10001e180, before any last-value map projection.',
         'implementation':'native/runtime-supervisor/src/process_port.rs',
-        'limits':'Raw string tag validation now rejects duplicates and non-string tags on tagged frames. Untagged generic standalone transport frames and unknown string variants remain accepted pending full KernelToHost restoration; malformed JSON and tracing policy remain distinct.'
+        'limits':'Raw string tag validation now rejects duplicates and non-string tags on tagged frames. The explicit kernel reader additionally enforces the recovered 18-tag set. Generic standalone/trusted/helper transports still allow their own untagged or other messages; tracing and full payload decoding remain incomplete.'
     },
     'fetchMessageBoundary': {
         'messageRange':['0x1000380ac','0x100038f50'],
@@ -475,7 +501,7 @@ print(json.dumps({
         ],
         'implementation':['native/runtime-supervisor/src/authenticated_fetch.rs','native/runtime-supervisor/src/process_port.rs'],
         'implementedRecovery':'Malformed UTF-8-valid JSON lines and non-object JSON values are dropped before queueing; subsequent valid frames and bidirectional worker requests continue. UTF-8, EOF framing and resource-limit handling remain separate transport behavior.',
-        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variants, unknown/missing tags and tracing parity still require full KernelToHost reconstruction; duplicate tags are checked independently on raw frames. EOF and UTF-8 behavior are not proven equivalent. No claim of complete reader parity.'
+        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variant payloads and tracing parity still require full KernelToHost reconstruction; the explicit kernel path rejects unknown/missing tags and duplicate tags are checked independently on raw frames. EOF and UTF-8 behavior are not proven equivalent. No claim of complete reader parity.'
     },
     'requestDeserialization': {
         'range':['0x10003cff4','0x10003e1d0'],

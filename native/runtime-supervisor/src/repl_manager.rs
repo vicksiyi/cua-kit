@@ -235,7 +235,7 @@ impl ReplManager {
                 );
                 pipe_paths.push(service.socket_path.clone());
             }
-            let mut kernel = match ProcessWorker::start(self.kernel.clone()).await {
+            let mut kernel = match ProcessWorker::start_kernel(self.kernel.clone()).await {
                 Ok(worker) => worker,
                 Err(error) => {
                     let _ = self.reset().await;
