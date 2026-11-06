@@ -141,6 +141,13 @@ test("independent sandboxed supervisor executes real browser input, click, read 
         await execute('var fixtureTab = tab;');
         dailyTabCreated=true;
       }
+      if(process.env.CUA_TEST_SELECTOR_TIMEOUT === "1") {
+        const timedOut = await turn.callTool({id:String(++count),name:"js",arguments:{
+          code:'await tab.playwright.getByLabel("Missing fixture field").fill("no mutation",{timeoutMs:300});',
+        }},AbortSignal.timeout(15000));
+        assert.equal(timedOut.isError,true);
+        assert.match(JSON.stringify(timedOut.content),/deadline|timed out|timeout/i);
+      }
       const rejectedApi = await turn.callTool({id:String(++count),name:"js",arguments:{
         code:'await tab.getByLabel("Query").fill("invalid API must not mutate");',
       }}, AbortSignal.timeout(15000));

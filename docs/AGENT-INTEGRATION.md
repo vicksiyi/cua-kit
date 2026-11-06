@@ -273,3 +273,11 @@ CUA_LIVE_DEEPSEEK_TEST=1 node scripts/trace-deepseek.mjs --owned-fixture
 ```
 
 The fixture approves only its two temporary local origins, never public sites. The live-model branch checks form submission, observed result, screenshot and cleanup; the fixed branch additionally checks iframe and rejected-JS recovery. Existing endpoint selection and metadata privacy rules apply. `--owned-fixture` is a diagnostic/test mode, not an alternative implementation of the CUA API.
+
+To exercise recovery after a deliberately missing selector (fixed fixture sequence only):
+
+```sh
+CUA_TEST_SELECTOR_TIMEOUT=1 node scripts/trace-deepseek.mjs --owned-fixture
+```
+
+This expects a selector timeout, then requires subsequent actions in the same tab/session to succeed. It does not deliberately time out a low-level CDP command, whose debugger-retirement behavior is a separate contract.
