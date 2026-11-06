@@ -1747,6 +1747,48 @@
     "interpretation": "The transaction cache contains an AX-element-keyed partial attribute table, a set of requested attributes, and a system OSAllocatedUnfairLock protecting the fallback UIElementCache dictionary.",
     "limitations": "Field types alone do not prove initialization, insertion, invalidation or lock critical sections. Do not replace these with process-global caches or a guessed locking policy."
   },
+  "elementCacheEvidence": {
+    "fields": [
+      {
+        "field": "supportedAttributes",
+        "typeReference": "0x10129f0ee",
+        "encodedTypeHex": "53687902ee1c1c0047",
+        "type": "Set<UIElementAttribute>"
+      },
+      {
+        "field": "attributes",
+        "typeReference": "0x10129e56c",
+        "encodedTypeHex": "5344790270281c000173e0020047",
+        "type": "[UIElementAttribute: AXPartialValue]"
+      },
+      {
+        "field": "transactionAttributes",
+        "typeReference": "0x10129f0f8",
+        "encodedTypeHex": "53687902e41c1c00475367",
+        "type": "Set<UIElementAttribute>?"
+      }
+    ],
+    "fallbackLookup": {
+      "start": "0x100764c94",
+      "endExclusive": "0x100764d48",
+      "machineCodeSha256": "f2a3b64d603ad73a4a640fea1b6fed3528ec7a82d0f2c174de12cddfdff2b96e",
+      "caller": "0x100765b38",
+      "lockCalls": [
+        {
+          "site": "0x100765b28",
+          "stub": "0x101154ca4",
+          "symbol": "_os_unfair_lock_lock"
+        },
+        {
+          "site": "0x100765b40",
+          "stub": "0x101154cbc",
+          "symbol": "_os_unfair_lock_unlock"
+        }
+      ]
+    },
+    "interpretation": "The element cache holds a supported set, partial-value dictionary, and optional transaction attribute set. The constructor brackets fallback dictionary lookup with the system unfair lock; the lookup returns the stored three-field value or absent result.",
+    "limitations": "This verifies one read-side critical section, not all cache writes, initialization, invalidation or native observation behavior. Optional transactionAttributes must not be collapsed to an empty set."
+  },
   "frequencyTableEvidence": {
     "nominalDescriptor": "0x1012ccd50",
     "fieldDescriptor": "0x101323894",

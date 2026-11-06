@@ -768,6 +768,42 @@ transaction_cache_evidence={
     'interpretation':'The transaction cache contains an AX-element-keyed partial attribute table, a set of requested attributes, and a system OSAllocatedUnfairLock protecting the fallback UIElementCache dictionary.',
     'limitations':'Field types alone do not prove initialization, insertion, invalidation or lock critical sections. Do not replace these with process-global caches or a guessed locking policy.',
 }
+# UIElementCache differs from the transaction-wide cache: the requested
+# attribute set is optional, and attributes contain partial values directly.
+element_cache_types=[
+    ('supportedAttributes',0x10129f0ee,'53687902ee1c1c0047','Set<UIElementAttribute>'),
+    ('attributes',0x10129e56c,'5344790270281c000173e0020047','[UIElementAttribute: AXPartialValue]'),
+    ('transactionAttributes',0x10129f0f8,'53687902e41c1c00475367','Set<UIElementAttribute>?'),
+]
+element_cache_fields=relative_address(0x1012cce40+16)
+for index,(name,address,encoded,decoded) in enumerate(element_cache_types):
+    record=element_cache_fields+16+index*12
+    if c_string(relative_address(record+8))!=name or relative_address(record+4)!=address or read_virtual(address,len(bytes.fromhex(encoded))+1)!=bytes.fromhex(encoded)+b'\0':
+        raise SystemExit('UIElementCache field type changed: '+name)
+if relative_address(0x10129e575)!=0x1012cc5e8:
+    raise SystemExit('UIElementCache AXPartialValue direct type changed')
+lock_calls=[(0x100765b28,0x101154ca4,'_os_unfair_lock_lock'),(0x100765b40,0x101154cbc,'_os_unfair_lock_unlock')]
+for site,stub,symbol in lock_calls:
+    word=struct.unpack('<I',read_virtual(site,4))[0]
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate-=0x4000000
+    if word>>26!=0b100101 or site+immediate*4!=stub or indirect.get(stub)!=symbol:
+        raise SystemExit('UIElementCache fallback lookup lock call changed')
+lookup_call_word=struct.unpack('<I',read_virtual(0x100765b38,4))[0]
+if lookup_call_word!=0x97fffc57:
+    raise SystemExit('UIElementCache locked lookup call changed')
+lookup_start=0x100764c94
+lookup_end=starts[starts.index(lookup_start)+1]
+lookup_sha=hashlib.sha256(read_virtual(lookup_start,lookup_end-lookup_start)).hexdigest()
+if lookup_sha!='f2a3b64d603ad73a4a640fea1b6fed3528ec7a82d0f2c174de12cddfdff2b96e':
+    raise SystemExit('UIElementCache fallback lookup body changed')
+element_cache_evidence={
+    'fields':[{'field':n,'typeReference':hex(a),'encodedTypeHex':e,'type':t} for n,a,e,t in element_cache_types],
+    'fallbackLookup':{'start':hex(lookup_start),'endExclusive':hex(lookup_end),'machineCodeSha256':lookup_sha,
+        'caller':'0x100765b38','lockCalls':[{'site':hex(c),'stub':hex(st),'symbol':sy} for c,st,sy in lock_calls]},
+    'interpretation':'The element cache holds a supported set, partial-value dictionary, and optional transaction attribute set. The constructor brackets fallback dictionary lookup with the system unfair lock; the lookup returns the stored three-field value or absent result.',
+    'limitations':'This verifies one read-side critical section, not all cache writes, initialization, invalidation or native observation behavior. Optional transactionAttributes must not be collapsed to an empty set.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
@@ -849,6 +885,7 @@ record = {
     'elementStorageEvidence':element_storage_evidence,
     'transactionScopeEvidence':transaction_scope_evidence,
     'transactionCacheEvidence':transaction_cache_evidence,
+    'elementCacheEvidence':element_cache_evidence,
     'frequencyTableEvidence':frequency_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',

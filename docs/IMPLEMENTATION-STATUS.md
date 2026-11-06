@@ -6925,3 +6925,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：原生事务缓存类型证据补全
 
 静态确认 transaction Cache 的属性嵌套字典、请求属性 Set，以及系统 OSAllocatedUnfairLock 包裹的回退 UIElementCache 字典；新增 transactionCacheEvidence 自动校验。原生系统锁依赖已确认，应直接使用 Swift os 实现，不能替换为 TS 近似逻辑。缓存构造、读写临界区、失效及完整事务接线仍未恢复；本次没有新增生产应用操作能力。详见 NATIVE-AX-DIFF.md。
+
+
+### 2026-11-06：单元素缓存布局与回退读锁
+
+补全 UIElementCache 三字段的准确泛型类型，保留 transactionAttributes 的 Optional 语义；静态确认构造器中的回退字典读取位于系统 unfair-lock 临界区。新增 elementCacheEvidence 检查字段字节、系统锁绑定、调用点及读取 helper 机器码。不涉及生产行为变更，完整构造/写入/失效仍未还原。
