@@ -2188,3 +2188,16 @@ missing applications/windows, missing frames, and real URL rendering-pass state.
 The concrete frame getter additionally falls back from the frame attribute to
 position then size (0x10075791c); its provider integration is not yet restored.
 Rendering protocol conformance and production observation remain pending.
+
+
+### Window frame decoding and fallback
+
+Restored CGRect CF dispatch (0x100712830..<0x100712f00) and window frame
+composition (0x1007575ac..<0x100757a50). `AXFrame` is read from cache first,
+then through the supported-attribute gate and strict fresh decoding. A nil result
+also covers logged read/decode errors and falls back to position followed by size;
+missing position skips size. A valid frame, even with zero/negative dimensions,
+is returned without normalization. Tests exercise actual AXValue/NSValue bridging,
+AXError payloads, wrong CF types, cache/fresh/status combinations and fallback order.
+Position and size remain typed dependencies; their concrete readers and production
+observation wiring are still incomplete.

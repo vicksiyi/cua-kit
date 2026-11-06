@@ -1116,6 +1116,17 @@ element_storage_evidence['transformationContextConstruction']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementTransformationContext.swift',
     'limitations':'Full field storage and constructor branches restored using explicit application/window getter dependencies. Native wrappers, rendering protocol conformance, frame provider and production observation wiring remain incomplete.',
 }
+element_storage_evidence['windowFrame']={
+    'entry':'Window frame specialization 0x1007575ac..<0x100757a50',
+    'attribute':'AXFrame, initializer 0x10079c218..<0x10079c248',
+    'decode':'CGRect specialization 0x100712830..<0x100712f00; CF type dispatch before ordinary cast, AXValue unpack then CGRect cast before AXError handling',
+    'fallback':'Valid cached CGRect wins; otherwise support gate and fresh strict read. Missing/failed frame -> position; missing position skips size; otherwise size and CGRect(origin:size:). No positivity validation or retry.',
+    'position':'Window specialization 0x10079d594 -> shared body 0x10079d5c4 references UIElementAttribute.position at 0x10079d650',
+    'size':'Window specialization 0x10079da24 references UIElementAttribute.size at 0x10079daa0',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007575ac,0x100757a50),(0x100712830,0x100712f00),(0x10079c218,0x10079c248)]],
+    'implementation':['native/macos/Sources/CuaHelper/AXRectDecoding.swift','native/macos/Sources/CuaHelper/UIElementFrame.swift'],
+    'limitations':'Concrete UIElement composition uses injected provider read and typed position/size getters. Those getter implementations, WindowUIElement wrapper and production observation wiring remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
