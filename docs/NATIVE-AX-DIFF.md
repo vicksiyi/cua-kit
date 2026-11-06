@@ -1733,3 +1733,21 @@ AXTextArea、AXTextField、AXDateTimeArea（不是滑块）：对这些角色，
 
 getter 的协议/property/provider 边界仍显式注入；没有把成功的 helper 测试当作生产
 可聚焦操作已验收，完整协议和生产观察接线尚未完成。
+
+### isEnabled 的缓存默认值与具体聚焦能力组合
+
+静态核对原版 generic getter `0x1007ac240..<0x1007ac394` 和 concrete
+specialization `0x1007902dc..<0x100790408`：只读取缓存 AXEnabled partial，
+以 `throwingOnFailure: false` 调用 Bool 解码器 `0x10070fc2c`。缺失、解码 nil
+或捕获错误时默认 **true**；实际 false 保持 false。此处不能复用 isDisclosing
+的默认 false，也不进行支持属性检查或新 AX 读取。optional Bool 的 nil tag 2
+经比较、OR、bit-0 mask 转为 true，两处实现一致。
+
+`UIElementEnabled.swift` 恢复该缓存 getter，并把具体 UIElement 的缓存 role、
+属性支持查询、调用者提供的 throwing settable 查询接入已恢复的 isFocusable。
+144 组组合覆盖缺失/true/false/字符串/数组/AX 引用六种缓存值、四类角色、
+支持与不支持及 settable true/false/error；检查查询次数，缓存支持路径若发生
+fresh read 立即失败。测试使用伪 PID 的 AX 引用，不打开应用、不发送模型请求。
+
+这只恢复元素状态和能力判断，绝不用于修改应用策略、权限或授权。完整父协议
+以及生产观察流程接线仍未完成；不能把本项测试等同于桌面端到端验收。

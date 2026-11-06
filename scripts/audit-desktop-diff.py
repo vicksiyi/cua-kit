@@ -819,6 +819,18 @@ element_storage_evidence['focusCapability']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementFocusCapability.swift',
     'limitations':'Original protocol support/role/settable/enabled boundaries remain explicit. Concrete protocol conformance and production observation wiring pending.',
 }
+element_storage_evidence['cachedEnabled']={
+    'generic':'UIElementProtocol.isEnabled at 0x1007ac240..<0x1007ac394',
+    'concrete':'0x1007902dc..<0x100790408',
+    'source':'cache.attributes[AXEnabled] only; no fresh AX read or support gate',
+    'decode':'Bool specialization 0x10070fc2c, throwingOnFailure false',
+    'default':'Missing partial, decoder nil or caught error -> true; decoded false remains false',
+    'optionalCollapse':'generic 0x1007ac340 and concrete 0x1007903d8 compare optional Bool tag with 2, OR equality into result then mask bit 0',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007ac240,0x1007ac394),(0x1007902dc,0x100790408)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementEnabled.swift',
+    'limitations':'Concrete cached getter and focus-capability composition restored. Full AccessibilityNode protocol and production observation integration remain pending; enabled is not an app policy or permission decision.',
+}
 element_storage_evidence['attributeSupport']={
     'symbol':'UIElementProtocol.attributeIsKnownUnsupported',
     'start':'0x1007b0854','endExclusive':'0x1007b0958',

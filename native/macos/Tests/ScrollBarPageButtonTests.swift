@@ -18,6 +18,7 @@ struct ScrollBarPageButtonTests {
     }
 
     static func main() throws {
+        testCachedEnabledAndFocus()
         for selection: ScrollBarPageButton in [.increment, .decrement] {
             let expected = selection.subrole as NSString
             let first = element("AXButton" as NSString, expected, id: 424242)

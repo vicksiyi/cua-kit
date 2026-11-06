@@ -2116,6 +2116,28 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementFocusCapability.swift",
       "limitations": "Original protocol support/role/settable/enabled boundaries remain explicit. Concrete protocol conformance and production observation wiring pending."
     },
+    "cachedEnabled": {
+      "generic": "UIElementProtocol.isEnabled at 0x1007ac240..<0x1007ac394",
+      "concrete": "0x1007902dc..<0x100790408",
+      "source": "cache.attributes[AXEnabled] only; no fresh AX read or support gate",
+      "decode": "Bool specialization 0x10070fc2c, throwingOnFailure false",
+      "default": "Missing partial, decoder nil or caught error -> true; decoded false remains false",
+      "optionalCollapse": "generic 0x1007ac340 and concrete 0x1007903d8 compare optional Bool tag with 2, OR equality into result then mask bit 0",
+      "blocks": [
+        {
+          "start": "0x1007ac240",
+          "endExclusive": "0x1007ac394",
+          "machineCodeSha256": "8ded5c28e395003ee0fc864f9ddcdd9758f478fbdb5046631d8231de08f4ee30"
+        },
+        {
+          "start": "0x1007902dc",
+          "endExclusive": "0x100790408",
+          "machineCodeSha256": "e42e3baf0211347253edac98909645418b2a720bd245203f28adcb6bd4f9cd56"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementEnabled.swift",
+      "limitations": "Concrete cached getter and focus-capability composition restored. Full AccessibilityNode protocol and production observation integration remain pending; enabled is not an app policy or permission decision."
+    },
     "attributeSupport": {
       "symbol": "UIElementProtocol.attributeIsKnownUnsupported",
       "start": "0x1007b0854",
