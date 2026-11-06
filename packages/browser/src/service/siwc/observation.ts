@@ -74,3 +74,21 @@ export async function isSiwcPageCurrent(
     current.url === page.url
   );
 }
+
+/** Current Mc: observation guidance and snapshot identity share one textual footer. */
+export function formatSiwcObservation(
+  snapshotId: string | undefined,
+  detection: any,
+): string {
+  return [
+    ...(snapshotId == null
+      ? []
+      : [`SIWC snapshotId: ${JSON.stringify(snapshotId)}`]),
+    `SIWC: ${JSON.stringify(detection)}`,
+    ...(detection.status !== "possible_matches"
+      ? []
+      : [
+          "The siwc capability provides a dedicated Sign in with ChatGPT flow. Read its documentation() before authenticating. Inspect these candidates. If the site offers Sign in with ChatGPT and the user appears signed out, proactively offer to sign them in once per site origin during this task. If sign-in is already authorized, proceed through siwc.authenticate().",
+        ]),
+  ].join("\n");
+}

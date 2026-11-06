@@ -1,11 +1,20 @@
+import {
+  observeSiwc,
+  isSiwcSnapshotCurrent,
+  formatSiwcObservation,
+} from "../siwc/observation";
+import { positiveTabId } from "../tab_id";
 import { defineCommand } from "./define_command";
 import { inputTimeout } from "../input/input";
 interface Snapshot {
+  siwcGeneration?: string;
   full: string;
   iframeRefs: string[];
   iframeDepths: Record<string, number>;
 }
 interface SnapshotContext {
+  supportsTabCapability(id: string): Promise<boolean>;
+  getCurrentSessionId(): string;
   acquireAuthority(): {
     observeContent(url: unknown): { assert(): Promise<unknown> };
   };
@@ -15,8 +24,8 @@ interface SnapshotContext {
     executionPolicy: { documentOnly?: boolean };
     evaluateOnPlaywrightPage(
       id: string | number,
-      fn: (helper: any) => Snapshot,
-      options: { timeoutMs: number },
+      fn: (helper: any, siwcEnabled: boolean) => Snapshot,
+      options: { timeoutMs: number; arg: boolean },
     ): Promise<Snapshot>;
     evaluateOnPlaywrightSelector(
       id: string | number,
@@ -42,13 +51,15 @@ export const PlaywrightDomSnapshotCommand = defineCommand(
     await context
       .acquireAuthority()
       .observeContent(
-        await context.security.currentTabUrl(Number(payload.tab_id)),
+        await context.security.currentTabUrl(positiveTabId(payload.tab_id)),
       )
       .assert();
+    const siwcEnabled = await context.supportsTabCapability("siwc");
+    const sessionId = siwcEnabled ? context.getCurrentSessionId() : undefined;
     const timeout = inputTimeout(payload);
     const snapshot = await context.playwright.evaluateOnPlaywrightPage(
       payload.tab_id,
-      (helper) => {
+      (helper, enabled) => {
         const root = document.body || document.documentElement;
         if (!root) return { full: "", iframeDepths: {}, iframeRefs: [] };
         const snapshot = helper.incrementalAriaSnapshot(root, { mode: "ai" });
@@ -83,22 +94,55 @@ export const PlaywrightDomSnapshotCommand = defineCommand(
             return false;
           }
         });
-        return { ...snapshot, full, iframeRefs };
+        return {
+          ...snapshot,
+          full,
+          iframeRefs,
+          siwcGeneration: enabled ? helper.siwcDocumentId() : undefined,
+        };
       },
-      { timeoutMs: timeout },
+      { arg: siwcEnabled, timeoutMs: timeout },
     );
-    if (context.playwright.executionPolicy.documentOnly)
-      return { dom_snapshot: normalizeSnapshot(snapshot.full) };
+    const observation = siwcEnabled
+      ? await observeSiwc(payload, context)
+      : undefined;
     const deadline = context.isIabBackend ? Date.now() + 1000 : undefined;
-    const full = await expandSnapshotFrames(
-      context,
+    const full = context.playwright.executionPolicy.documentOnly
+      ? snapshot.full
+      : await expandSnapshotFrames(
+          context,
+          payload.tab_id,
+          snapshot,
+          timeout,
+          undefined,
+          deadline,
+        );
+    const text = normalizeSnapshot(full, siwcEnabled);
+    if (observation == null) return { dom_snapshot: text };
+    await context
+      .acquireAuthority()
+      .observeContent(
+        await context.security.currentTabUrl(positiveTabId(payload.tab_id)),
+      )
+      .assert();
+    const snapshotId = JSON.stringify([
+      sessionId,
       payload.tab_id,
-      snapshot,
-      timeout,
-      undefined,
-      deadline,
-    );
-    return { dom_snapshot: normalizeSnapshot(full) };
+      snapshot.siwcGeneration,
+    ]);
+    if (
+      observation.snapshotId != null &&
+      (snapshotId !== observation.snapshotId ||
+        !(await isSiwcSnapshotCurrent(payload, context, snapshotId)))
+    ) {
+      const siwc = { status: "unavailable", reason: "page_changed" };
+      return { dom_snapshot: formatSiwcObservation(undefined, siwc), siwc };
+    }
+    return {
+      dom_snapshot: `${text}\n\n${formatSiwcObservation(observation.snapshotId, observation.siwc)}`,
+      snapshotId: observation.snapshotId,
+      siwc: observation.siwc,
+    };
   },
 );
 /** Original t2, preserving concurrent child reads and original output ordering. */
@@ -148,7 +192,12 @@ export async function expandSnapshotFrames(
     const indent = line.match(/^ */)?.[0] ?? "";
     lines.push(line.endsWith(":") ? line : `${line}:`);
     lines.push(
-      ...child.split("\n").map((childLine) => `${indent}  ${childLine}`),
+      ...child
+        .split("\n")
+        .map(
+          (childLine) =>
+            `${indent}  ${stripSnapshotMetadata(childLine, false)}`,
+        ),
     );
   }
   return lines.join("\n");
@@ -243,13 +292,21 @@ interface IndentedNode extends SnapshotNode {
   children: IndentedNode[];
 }
 /** Original ZN/zte/QN/r2/n2/Kte/Xte/Yte. */
-export function normalizeSnapshot(text: string): string {
+export function stripSnapshotMetadata(
+  text: string,
+  preserveRefs: boolean,
+): string {
+  const clean = text.replace(/ \[cursor=[^\]]+\]/g, "");
+  return preserveRefs ? clean : clean.replace(/ \[ref=[^\]]+\]/g, "");
+}
+export function normalizeSnapshot(text: string, preserveRefs = false): string {
   if (
     !text.startsWith("- ") &&
     !text.includes("\n- ") &&
     !text.includes("\n  - ")
   )
     return text;
+  text = stripSnapshotMetadata(text, preserveRefs);
   const root: IndentedNode = { children: [], indent: -1, line: "" };
   const stack = [root];
   const last = () => {
@@ -272,9 +329,7 @@ export function normalizeSnapshot(text: string): string {
   }
   function clean(node: SnapshotNode): SnapshotNode[] {
     const children = node.children.flatMap(clean);
-    const line = node.line
-      .replace(/ \[ref=[^\]]+\]/g, "")
-      .replace(/ \[cursor=[^\]]+\]/g, "");
+    const line = node.line;
     return /^- img(?: \[[^\]]+\])*:?$/.test(line)
       ? []
       : /^- (generic|listitem|group)(?: \[[^\]]+\])*:?$/.test(line)

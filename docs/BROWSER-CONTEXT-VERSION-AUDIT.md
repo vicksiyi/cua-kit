@@ -106,3 +106,9 @@
 两条路径通过：正常授权返回 initiated 且真实 HttpOnly/Secure/Lax cookie 已写入后才点击；写 cookie 后账号改变则 provider 回滚删除 cookie，命令返回 cookie_failed，未点击。每条路径使用独立临时 browser context，并全部关闭。
 
 边界：账号/grant HTTP 响应和用户审批为受控 fixture，未请求实际认证服务、未使用用户凭据。此测试不覆盖扩展消息/native socket 传输，也不证明线上 SIWC 登录成功；证明实际服务/provider 算法在真实 DOM/CDP 中的组合与回滚行为。
+
+## 后续恢复：普通 DOM snapshot 的 SIWC 衔接
+
+当前 `l2` 相比旧版增加 capability 检查、快照生成时的 siwcDocumentId、候选观察、再次授权与 generation 一致性检查。已恢复完整分支：SIWC 开启时保留顶层 ref，附加 snapshotId/siwc 和原说明文本；子 frame 展开内容仍剥离 ref，避免把跨 frame 引用当作顶层目标。发现 generation 变化时只返回 page_changed 状态，不返回旧 DOM 正文。关闭能力时保持不附加 SIWC 的路径。
+
+将旧 alias 的 DOM oracle 更新为当前 hash 下 l2/Gte/c2 等实际函数。3 项差分测试覆盖 15 个命令场景、双模式 normalization 和嵌套 frame；真实 Chromium 注册链测试新增普通 DOM snapshot 返回一致的候选 snapshotId 与 ref。Browser TypeScript、重建通过，native 扩展全 MCP 回归通过（约 9 秒）。AX observation 的 SIWC 附加及 discardCapture 生命周期仍待恢复。
