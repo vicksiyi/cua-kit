@@ -1,27 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { originalServiceBindings } from "./service-source.ts";
-import * as screenshot from "../packages/browser/dist/service/commands/screenshot.js";
-import { defineCommand } from "../packages/browser/dist/service/commands/define_command.js";
-import { positiveTabId } from "../packages/browser/dist/service/tab_id.js";
+import { originalServiceBindings, serviceSourceSha256 } from "./service-source";
+import * as screenshot from "../packages/browser/src/service/commands/screenshot";
+import { defineCommand } from "../packages/browser/src/service/commands/define_command";
+import { positiveTabId } from "../packages/browser/src/service/tab_id";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit screenshot helper bindings for changed installed artifact");
 const original = originalServiceBindings([
-  "F",
-  "W",
-  "an",
-  "lJ",
-  "cJ",
-  "dJ",
-  "KD",
-  "Ui",
-  "pJ",
-  "Q_",
-  "mJ",
-  "fJ",
-  "hJ",
-  "gJ",
-  "bJ",
-  "XD",
+  "O", "H", "an", "Dee", "Mee", "Bee", "tN", "wv", "Uee",
+  "Lee", "Fee", "Nee", "Oee", "Wi", "rN",
 ]);
+
 async function outcome(fn: () => any) {
   try {
     return { value: await fn() };
@@ -126,7 +115,7 @@ async function scenario(
     calls: f.calls,
   };
 }
-test("service screenshot reproduces crop/full-page/viewport scale, fallback, validation and gate ordering", async () => {
+test("service screenshot reproduces crop/full-page/viewport scale, fallback, validation and authority ordering", async () => {
   const now = Date.now;
   Date.now = () => 100000;
   try {
@@ -154,8 +143,6 @@ test("service screenshot reproduces crop/full-page/viewport scale, fallback, val
       [{ fail: "Runtime.evaluate" }, { tab_id: "2", fullPage: true }, "css"],
       [{ events: [] }, { tab_id: "2" }, "css"],
       [{ events: [], data: "" }, { tab_id: "2" }, "device"],
-      [{ gate: true }, { tab_id: "2", fullPage: true }, "css"],
-      [{ gate: "reject" }, { tab_id: "2" }, "css"],
       [{}, { tab_id: "bad" }, "css"],
       [
         {},
@@ -171,18 +158,18 @@ test("service screenshot reproduces crop/full-page/viewport scale, fallback, val
     ] as any[])
       assert.deepEqual(
         await scenario(screenshot.captureTabScreenshot, options, payload, mode),
-        await scenario(original.Ui, options, payload, mode),
+        await scenario(original.Wi, options, payload, mode),
       );
     for (const authorityError of [false, true])
       assert.deepEqual(
         await scenario(
           screenshot.TabScreenshotCommand,
-          { gate: true, authorityError },
+          { authorityError },
           { tab_id: "2" },
         ),
         await scenario(
-          original.XD,
-          { gate: true, authorityError },
+          original.rN,
+          { authorityError },
           { tab_id: "2" },
         ),
       );
@@ -234,7 +221,7 @@ test("screencast acknowledges stale frames, cleans up failures and uses original
     ])
       assert.deepEqual(
         await scenario(screenshot.captureTabScreenshot, options, { tab_id: 1 }),
-        await scenario(original.Ui, options, { tab_id: 1 }),
+        await scenario(original.Wi, options, { tab_id: 1 }),
       );
     for (const event of [
       { method: "noise" },
@@ -251,11 +238,11 @@ test("screencast acknowledges stale frames, cleans up failures and uses original
         params: { metadata: { timestamp: 100 } },
       },
     ]) {
-      assert.equal(screenshot.isScreencastEvent(event), original.fJ(event));
-      assert.equal(screenshot.screencastTimestamp(event), original.gJ(event));
+      assert.equal(screenshot.isScreencastEvent(event), original.Nee(event));
+      assert.equal(screenshot.screencastTimestamp(event), original.Lee(event));
       assert.equal(
         screenshot.isFreshScreencastFrame(event, 100),
-        original.hJ(event, 100),
+        original.Fee(event, 100),
       );
     }
   } finally {
@@ -276,9 +263,9 @@ test("command registration stays synchronous and tab ids preserve original numer
   ])
     assert.deepEqual(
       await outcome(() => positiveTabId(value)),
-      await outcome(() => original.W(value)),
+      await outcome(() => original.H(value)),
     );
-  for (const define of [defineCommand, original.F]) {
+  for (const define of [defineCommand, original.O]) {
     const error = new Error("sync");
     const cmd = define({ commandType: "test" }, () => {
       throw error;
@@ -290,4 +277,14 @@ test("command registration stays synchronous and tab ids preserve original numer
       (value) => value === error,
     );
   }
+});
+
+// The current installed capture function no longer has this older gate wrapper.
+// Keep its local guard tested explicitly; do not call this current-source parity.
+test("retained credential observation guard denies before capture; authority denies before guard", async () => {
+  const capture = await scenario(screenshot.captureTabScreenshot, {gate: "reject"}, {tab_id: "2"});
+  assert.deepEqual(capture, {result: {error: {name: "Error", message: "observation denied"}}, calls: [["gate", 2]]});
+  const denied = await scenario(screenshot.TabScreenshotCommand, {gate: "reject", authorityError: true}, {tab_id: "2"});
+  assert.deepEqual(denied.result, {error: {name: "Error", message: "authority denied"}});
+  assert.deepEqual(denied.calls, ["authority", ["url", 2], ["observe", "https://example.com"], "assert"]);
 });
