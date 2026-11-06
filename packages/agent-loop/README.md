@@ -403,3 +403,13 @@ This is a demo provider-adapter validation, not an original CUA API change or a
 claim that every possible malformed model response can be detected. It does not
 retry the model or guarantee a valid answer on the next run. Only the observed
 leading protocol envelope is rejected; ordinary prose mentioning DSML is text.
+
+### Cancellation racing a model result
+
+AgentLoop checks cancellation before requesting the tool inventory and again
+immediately after the model returns, before publishing its decision. A model
+adapter that returns a normal answer after cancellation cannot turn that cancelled
+run into success or publish another tool-call batch. Host turn cleanup still
+runs once. These checks do not forcibly interrupt a non-cooperative adapter while
+it is pending, roll back actions already executed, or impose a default round cap.
+The compatible HTTP adapter separately passes the signal to fetch.

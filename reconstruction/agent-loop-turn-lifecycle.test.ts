@@ -149,3 +149,34 @@ test("host JS deadline default preserves explicit timeouts and does not mutate m
     assert.ok(!Object.hasOwn(calls.at(-1).arguments,'timeout_ms'));
   }
 });
+
+for (const when of ["before-start", "during-model-final", "during-model-tools"] as const) {
+  test(`loop honors cancellation ${when} even when adapters return normally`, async () => {
+    const controller = new AbortController();
+    const cancelled = new Error("caller cancelled");
+    let inventoryCalls = 0, modelCalls = 0, toolCalls = 0, cleanups = 0;
+    const delivered: unknown[] = [];
+    const client: ToolClient = {
+      async listTools() { inventoryCalls++; return [{ name: "js", description: "fixture", inputSchema: {} }]; },
+      async callTool() { toolCalls++; return { content: [] }; },
+      async endTurn() { cleanups++; }, async close() {},
+    };
+    const model: ModelAdapter = { async decide() {
+      modelCalls++;
+      controller.abort(cancelled);
+      // Simulates a non-cooperative adapter or completion racing cancellation.
+      return when === "during-model-tools"
+        ? { toolCalls: [{ id: "late", name: "js", arguments: {} }] }
+        : { text: "late success" };
+    } };
+    if (when === "before-start") controller.abort(cancelled);
+    await assert.rejects(new AgentLoop(model, client).run("fixture", {
+      signal: controller.signal, onMessage: message => delivered.push(message),
+    }), error => error === cancelled);
+    assert.equal(inventoryCalls, when === "before-start" ? 0 : 1);
+    assert.equal(modelCalls, when === "before-start" ? 0 : 1);
+    assert.equal(toolCalls, 0);
+    assert.equal(cleanups, 1);
+    assert.deepEqual(delivered, []);
+  });
+}

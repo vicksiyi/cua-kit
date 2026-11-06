@@ -55,6 +55,7 @@ export class AgentLoop {
     return result!;
   }
   private async runTurn(question: string, options: AgentRunOptions) {
+    options.signal?.throwIfAborted();
     const maxSteps = options.maxSteps ?? Infinity;
     if (options.maxSteps !== undefined && (!Number.isSafeInteger(maxSteps) || maxSteps < 1))
       throw new Error("maxSteps must be a positive safe integer.");
@@ -87,6 +88,9 @@ export class AgentLoop {
         tools: definitions,
         signal: options.signal,
       });
+      // Adapters can finish normally while cancellation races their response.
+      // Do not publish or act on a decision received after the caller stopped.
+      options.signal?.throwIfAborted();
       const calls = decision.toolCalls ?? [];
       if (!calls.length) {
         if (!decision.text?.trim())
