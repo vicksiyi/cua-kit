@@ -1942,6 +1942,40 @@
       "limitations": "This restores the key core and ordered name wrapping, not the full static attribute constant catalog, AppKit-specific overloads, MockProvider override or complete cache construction."
     }
   },
+  "encodedStorageEvidence": {
+    "encodedNominal": "0x1012cc3f0",
+    "encodedFields": "0x101322e34",
+    "encodedValueType": "AnyObject",
+    "partialFields": "0x101322f74",
+    "immutablePartialFieldNames": [
+      "value",
+      "arraySubsetDescriptor",
+      "textTruncationDescriptor"
+    ],
+    "valueIsString": {
+      "start": "0x1006e5854",
+      "endExclusive": "0x1006e5880",
+      "calls": [
+        {
+          "site": "0x1006e5860",
+          "stub": "0x101153a68",
+          "symbol": "_CFGetTypeID"
+        },
+        {
+          "site": "0x1006e5868",
+          "stub": "0x101153b58",
+          "symbol": "_CFStringGetTypeID"
+        }
+      ]
+    },
+    "wrappingInitializer": {
+      "start": "0x1006e8f88",
+      "encoderCall": "0x1006e8f9c",
+      "encoder": "0x1006ea3e4"
+    },
+    "interpretation": "Encoded storage holds an immutable AnyObject; partial storage holds three immutable fields. valueIsString compares CF type IDs. The public wrapping initializer calls the separate parameter encoder.",
+    "limitations": "Storage memberwise construction is not a replacement for init(wrapping: Any), generic unwrapping, truncation generation or the full cache pipeline."
+  },
   "frequencyTableEvidence": {
     "nominalDescriptor": "0x1012ccd50",
     "fieldDescriptor": "0x101323894",

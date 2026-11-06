@@ -6950,3 +6950,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：UIElementAttribute 键核心实现
 
 新增 Swift CFString 属性包装及 CoreFoundation 系统 equality/hash，连接支持属性名称的有序转换。原生测试验证引用、Unicode、系统哈希、Set/Dictionary 键行为。常量目录、AppKit 特有重载与完整缓存装配仍有缺口；生产观察器尚未切换。
+
+
+### 2026-11-06：原生编码/部分值存储
+
+恢复 AXEncodedValue/AXPartialValue 不可变存储字段及 valueIsString 的 CF 类型判定，为实际缓存字典提供原始值类型。原生测试覆盖多类 CF 对象与部分数组元数据组合。完整 Any wrapping、泛型 decoder、截断生成和生产缓存尚未完成。

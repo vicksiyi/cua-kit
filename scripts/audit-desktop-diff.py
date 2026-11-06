@@ -921,6 +921,35 @@ attribute_names_evidence['attributeKey']={
     'interpretation':'UIElementAttribute stores one CFString. String initialization bridges through Foundation; CFString initialization forwards the reference. Equality and hashing delegate to CoreFoundation _CFObject conformances.',
     'limitations':'This restores the key core and ordered name wrapping, not the full static attribute constant catalog, AppKit-specific overloads, MockProvider override or complete cache construction.',
 }
+encoded_value_nominal=0x1012cc3f0
+encoded_value_fields=relative_address(encoded_value_nominal+16)
+_,_,encoded_kind,encoded_size,encoded_count=struct.unpack('<iiHHI',read_virtual(encoded_value_fields,16))
+if (encoded_kind,encoded_size,encoded_count)!=(0,12,1) or c_string(relative_address(encoded_value_fields+24))!='value' or c_string(relative_address(encoded_value_fields+20))!='yXl' or struct.unpack('<I',read_virtual(encoded_value_fields+16,4))[0]!=0:
+    raise SystemExit('AXEncodedValue immutable AnyObject storage changed')
+partial_value_fields=relative_address(0x1012cc5e8+16)
+partial_value_names=['value','arraySubsetDescriptor','textTruncationDescriptor']
+for index,name in enumerate(partial_value_names):
+    record=partial_value_fields+16+index*12
+    if c_string(relative_address(record+8))!=name or struct.unpack('<I',read_virtual(record,4))[0]!=0:
+        raise SystemExit('AXPartialValue immutable fields changed')
+value_is_string_calls=[(0x1006e5860,0x101153a68,'_CFGetTypeID'),(0x1006e5868,0x101153b58,'_CFStringGetTypeID')]
+for site,stub,symbol in value_is_string_calls:
+    word=struct.unpack('<I',read_virtual(site,4))[0]
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate-=0x4000000
+    if word>>26!=0b100101 or site+immediate*4!=stub or indirect.get(stub)!=symbol:
+        raise SystemExit('AXEncodedValue string type test changed')
+for address,word in [(0x1006e586c,0xeb00027f),(0x1006e5870,0x1a9f17e0),(0x1006e8f9c,0x94000512)]:
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('AXEncodedValue test or wrapping initializer changed')
+encoded_storage_evidence={
+    'encodedNominal':hex(encoded_value_nominal),'encodedFields':hex(encoded_value_fields),'encodedValueType':'AnyObject',
+    'partialFields':hex(partial_value_fields),'immutablePartialFieldNames':partial_value_names,
+    'valueIsString':{'start':'0x1006e5854','endExclusive':'0x1006e5880','calls':[{'site':hex(c),'stub':hex(st),'symbol':sy} for c,st,sy in value_is_string_calls]},
+    'wrappingInitializer':{'start':'0x1006e8f88','encoderCall':'0x1006e8f9c','encoder':'0x1006ea3e4'},
+    'interpretation':'Encoded storage holds an immutable AnyObject; partial storage holds three immutable fields. valueIsString compares CF type IDs. The public wrapping initializer calls the separate parameter encoder.',
+    'limitations':'Storage memberwise construction is not a replacement for init(wrapping: Any), generic unwrapping, truncation generation or the full cache pipeline.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
@@ -1004,6 +1033,7 @@ record = {
     'transactionCacheEvidence':transaction_cache_evidence,
     'elementCacheEvidence':element_cache_evidence,
     'attributeNamesEvidence':attribute_names_evidence,
+    'encodedStorageEvidence':encoded_storage_evidence,
     'frequencyTableEvidence':frequency_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
