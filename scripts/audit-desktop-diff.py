@@ -1166,6 +1166,16 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clickablePointFlow']={
+    'core':'0x10079e6ac..<0x10079eb20, including scroll continuation',
+    'defaultEntry':'0x1007a03f8..<0x1007a04d4 calls core with scrollToVisible:false and discards returned scroll Bool',
+    'order':['preferred point helper 0x10079eb20 wins with didScroll:false','if scrolling requested: frame getter then async scrollToVisible(frame:), missing frame throws','AXFrame helper 0x10079fe78 with uncached flag equal to actual scroll result; nil throws','clipping helper 0x10079ffb8 with same flag; nil or center outside -> nil point','otherwise frame center plus actual scroll result'],
+    'frameRead':'0x10079fe78 uses AXFrame value<CGRect> for false, uncachedValue<CGRect> for true, ignoringTypeMismatch:false; no position/size fallback at this stage',
+    'error':'UIElementGeometryError descriptor 0x1012cd450 / field descriptor 0x10132407c: sole no-payload case elementHasNoFrame',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079e6ac,0x10079eb20),(0x10079fe78,0x10079ff78),(0x1007a03f8,0x1007a04d4),(0x1012cd450,0x1012cd46c),(0x10132407c,0x101324098)]],
+    'implementation':'UIElementClickablePoint.swift restores async branching and default false entry with explicit geometry/scroll dependencies.',
+    'limitations':'Special preferred-point helper, clipping ancestor algorithm, concrete raw-frame composition and scrollToVisible body remain pending; production center-only click not replaced. Fixture tests are not live app evidence.',
+}
 element_storage_evidence['clickPointResolution']={
     'pointError':'0x1007b1dc4 checks async error and propagates before point-result handling',
     'missingPoint':'0x1007b1e7c..<0x1007b1eb8 checks CGPoint optional tag; nil constructs SynthesizedEvent.Error tag 3',

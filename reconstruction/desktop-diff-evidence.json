@@ -3093,6 +3093,48 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "clickablePointFlow": {
+      "core": "0x10079e6ac..<0x10079eb20, including scroll continuation",
+      "defaultEntry": "0x1007a03f8..<0x1007a04d4 calls core with scrollToVisible:false and discards returned scroll Bool",
+      "order": [
+        "preferred point helper 0x10079eb20 wins with didScroll:false",
+        "if scrolling requested: frame getter then async scrollToVisible(frame:), missing frame throws",
+        "AXFrame helper 0x10079fe78 with uncached flag equal to actual scroll result; nil throws",
+        "clipping helper 0x10079ffb8 with same flag; nil or center outside -> nil point",
+        "otherwise frame center plus actual scroll result"
+      ],
+      "frameRead": "0x10079fe78 uses AXFrame value<CGRect> for false, uncachedValue<CGRect> for true, ignoringTypeMismatch:false; no position/size fallback at this stage",
+      "error": "UIElementGeometryError descriptor 0x1012cd450 / field descriptor 0x10132407c: sole no-payload case elementHasNoFrame",
+      "blocks": [
+        {
+          "start": "0x10079e6ac",
+          "endExclusive": "0x10079eb20",
+          "machineCodeSha256": "39c96e03b077cce0068d8913421b35ee276b24dc53764f9644077fdf9ef74d5f"
+        },
+        {
+          "start": "0x10079fe78",
+          "endExclusive": "0x10079ff78",
+          "machineCodeSha256": "5616ecd879b3ef30dd187aafc9104f479eb2839aaf04a6c5dbd315f0f3ae4181"
+        },
+        {
+          "start": "0x1007a03f8",
+          "endExclusive": "0x1007a04d4",
+          "machineCodeSha256": "45c4eb3e41ebcec59e30a197a7e038ee2932b24928c2b4afc886f6bdab5ee338"
+        },
+        {
+          "start": "0x1012cd450",
+          "endExclusive": "0x1012cd46c",
+          "machineCodeSha256": "55cc172dbc2e53451d10220f81b2ed4419683eefcc5c3c6554629b208f42f09d"
+        },
+        {
+          "start": "0x10132407c",
+          "endExclusive": "0x101324098",
+          "machineCodeSha256": "fcdb005aa39a091fa9090acdeea4477ab4c1aef5888ca510906fceb21e27597c"
+        }
+      ],
+      "implementation": "UIElementClickablePoint.swift restores async branching and default false entry with explicit geometry/scroll dependencies.",
+      "limitations": "Special preferred-point helper, clipping ancestor algorithm, concrete raw-frame composition and scrollToVisible body remain pending; production center-only click not replaced. Fixture tests are not live app evidence."
+    },
     "clickPointResolution": {
       "pointError": "0x1007b1dc4 checks async error and propagates before point-result handling",
       "missingPoint": "0x1007b1e7c..<0x1007b1eb8 checks CGPoint optional tag; nil constructs SynthesizedEvent.Error tag 3",

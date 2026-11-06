@@ -2402,3 +2402,23 @@ resolveUIElementClickTarget 是提取的异步分支边界：读取位置一次�
 负坐标的原样转发；不新增此源码位置没有的坐标裁剪或中点替代。
 目前生产 Mouse.swift 的 indexed click 仍用 frame 中心，尚不等价于原版。
 替换它必须补齐 clickablePoint()、目标解析及后续焦点/事件处理，不能只接这个 helper。
+
+
+## clickablePoint 的滚动、刷新与裁剪流程（2026-11-07）
+
+0x1007a03f8 默认入口调用 clickablePoint(scrollToVisible:false)，返回 tuple 中的
+CGPoint? 并丢弃滚动结果。核心 0x10079e6ac..<0x10079eb20 已恢复控制流：先调用
+特殊位置 helper，有结果直接返回且 didScroll=false；否则如请求滚动，先读 frame，
+无 frame 抛 UIElementGeometryError.elementHasNoFrame，有 frame 调 scrollToVisible。
+之后使用实际滚动结果（不是请求参数）决定是否绕过 AXFrame 缓存，再计算裁剪区域。
+AXFrame 缺失抛同一错误；裁剪区域缺失或不包含 frame 中心点返回 nil，否则返回中心。
+
+因此前一节“不是点击中心”的含义限定为：nil 结果不能回退成中心。原版正常几何路径
+确实会使用中心，但有前置特殊处理和裁剪检查，并非当前 demo 的无条件 frame 中心。
+0x10079fe78 的读取区分 value<CGRect>(AXFrame) 与 uncachedValue<CGRect>(AXFrame)，
+此处不走带 position/size 回退的 frame getter。滚动前的 frame getter 是另一调用。
+
+恢复 UIElementClickablePoint.swift 和 UIElementGeometryError（字段描述符
+0x10132407c 的唯一无 payload case）。测试验证默认不滚动、特殊位置短路、滚动
+结果控制刷新、缺失 frame 错误、裁剪拒绝及滚动异常原样传播。
+特殊 helper、裁剪祖先遍历、实际滚动实现仍为显式依赖，未伪造成功结果，未接入生产点击。
