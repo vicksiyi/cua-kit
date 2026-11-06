@@ -66,6 +66,8 @@ def audit():
     code_ranges = []
     for name, start, end in [
         ('providerCacheAndRefresh', 0x1000a7cbc, 0x1000a81f0),
+        ('jsonRPCConnectionClose', 0x100dd0958, 0x100dd0bdc),
+        ('jsonRPCDeferredOutputClose', 0x100dd0bdc, 0x100dd0d9c),
         ('jsonRPCNextMessage', 0x100dd0350, 0x100dd0958),
         ('jsonRPCMessageDecode', 0x100dd0740, 0x100dd0958),
         ('appServerPolicyFetch', 0x1000aa444, 0x1000aab28),

@@ -370,3 +370,31 @@ Static metadata identifies the original private line buffer as an actor with
 flag. This establishes structure, not its complete enqueue/cancellation rules.
 The actor reader, timeout race, framing, response dispatch and process lifecycle
 are still pending; the decoder alone does not establish a working connection.
+
+## Connection close lifecycle
+
+`close()` (`0x100dd0958..<0x100dd0bdc`) first acquires the unfair lock protecting
+the closed Bool. An already-closed connection unlocks and returns. Otherwise
+it marks closed and unlocks **before** resource cleanup:
+
+1. Close the input pipe's writing handle, ignoring a thrown close error.
+2. Cancel the reader task.
+3. Terminate the process only when `isRunning` is true.
+4. Start an asynchronous task that awaits the reader's completion and then
+   closes the output pipe's reading handle, ignoring that close error too.
+
+The deferred cleanup at `0x100dd0bdc..<0x100dd0d9c` awaits a nonthrowing Task's
+value. Imports at `0x101469578` and `0x101469598` bind to `Task.cancel()` and
+`Task<Success, Never>.value`. Selector references identify writing/reading
+handles (`0x1015429e0`, `0x1015429d8`), `closeAndReturnError:` (`0x101542128`),
+`isRunning` (`0x101542b10`) and `terminate` (`0x101542e40`). There is no synchronous
+process-exit wait or immediate output-handle close in this method.
+
+`NativeJSONRPCConnectionCleanup` implements that lifecycle with
+`OSAllocatedUnfairLock<Bool>` and Foundation Pipe/Process plus Task bindings.
+Injected callbacks are a host test seam. Tests race 128 close callers for each
+combination of running/stopped process and throwing/nonthrowing handle-close
+operations; cleanup occurs once and output close waits for reader completion.
+This component is not yet attached to a complete reconstructed connection.
+Line buffering, timeout handling, request dispatch and process launch remain
+incomplete; no real application process was terminated by these tests.
