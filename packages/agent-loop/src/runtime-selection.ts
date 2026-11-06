@@ -4,6 +4,9 @@ export function selectRuntime(
   requestedSupervisor?: string,
 ): { environment: Record<string, string>; supervisor: "installed" | "rust" } {
   const env = { ...environment };
+  const browser = env.CUA_REPL_ENABLED_SURFACES?.split(",").some(
+    (surface) => surface.trim() === "browser",
+  );
   const computer = env.CUA_REPL_ENABLED_SURFACES?.split(",").some(
     (surface) => surface.trim() === "computer",
   );
@@ -21,7 +24,7 @@ export function selectRuntime(
     throw new Error("Swift native backend requires computer surface");
   const selected =
     requestedSupervisor === "independent" ? "rust" : requestedSupervisor;
-  const supervisor = selected ?? (backend === "swift" ? "rust" : "installed");
+  const supervisor = selected ?? (backend === "swift" || (browser && !(computer && backend === "vendor")) ? "rust" : "installed");
   if (supervisor !== "rust" && supervisor !== "installed")
     throw new Error(
       "CUA_RUNTIME_SUPERVISOR must be installed, independent or rust",

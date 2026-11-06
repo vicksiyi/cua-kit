@@ -88,8 +88,8 @@ npm run demo:deepseek -- --cdp-browser '打开 https://example.com 并概括页�
 扩展模式的普通 prompt 入口在连接目录存在但为空时，会请求 macOS 打开 Google Chrome，并最多等待 15 秒以发现扩展宿主；超时后给出明确诊断，不自动换用另一浏览器的登录环境。`--check-browser` 仍仅检查，不启动浏览器。发现描述文件只是第一步，后续仍需 MCP 浏览器预检通过。
 
 扩展模式省略 `--cdp-browser`；接管已暴露调试端口的现有浏览器使用
-`--cdp-endpoint <本地浏览器WebSocket地址>`。这些模式默认仍使用安装包 supervisor，
-不是独立 supervisor 的部署入口。完整后端边界见 [README](../README.md)。
+`--cdp-endpoint <本地浏览器WebSocket地址>`。这些模式默认使用重建版 Rust supervisor，
+需要与安装版比较时显式设置 `CUA_RUNTIME_SUPERVISOR=installed`。完整后端边界见 [README](../README.md)。
 
 独立 supervisor 的受控实机验收：
 
@@ -165,7 +165,7 @@ When the source launcher supplies `NODE_REPL_JS_COMPLETION_SUMMARY`, the Rust to
 
 ### Independent supervisor deployment
 
-Set `CUA_RUNTIME_SUPERVISOR=rust` for the independent native supervisor. The previous `independent` value is retained as an alias for Rust; it no longer launches a TypeScript supervisor. `npm run demo:deepseek` builds the Rust runtime for either value. Direct programmatic/demo entry users must build with `npm run build:rust-runtime` first. A missing Rust build fails with that instruction and does not fall back to TS. The default `installed` selection still uses the verified installed native supervisor. The computer CLI modes (`--computer`, `--check-computer`, and alias `--swift-computer`) select Rust plus the Swift service and override stale surface/backend settings. Browser mode retains the installed default; direct programmatic configuration still separates backend and supervisor selection.
+Set `CUA_RUNTIME_SUPERVISOR=rust` for the independent native supervisor. The previous `independent` value is retained as an alias for Rust; it no longer launches a TypeScript supervisor. `npm run demo:deepseek` builds the Rust runtime for either value. Direct programmatic/demo entry users must build with `npm run build:rust-runtime` first. A missing Rust build fails with that instruction and does not fall back to TS. Explicit `CUA_RUNTIME_SUPERVISOR=installed` uses the verified installed native supervisor for comparisons. The computer CLI modes (`--computer`, `--check-computer`, and alias `--swift-computer`) select Rust plus the Swift service and override stale surface/backend settings. Browser mode defaults to Rust; direct programmatic configuration still separates backend and supervisor selection.
 
 
 The turn lifecycle adapter adds a default JS timeout only to code-execution requests. It forwards completion reports unchanged; adding `timeout_ms`, `title` or `code` to that branch violates the native protocol.
@@ -173,7 +173,7 @@ The turn lifecycle adapter adds a default JS timeout only to code-execution requ
 
 ## Direct desktop deployment migration
 
-The direct restored-demo entry defaults the computer surface to `CORE_CUA_NATIVE_BACKEND=swift` and selects Rust when the supervisor is unspecified. The old native backend name `independent` aliases `swift`; it no longer replaces the original Sky service with the legacy TS adapter. Explicit `installed` plus Swift is rejected before any launch. For an installed-service comparison, explicitly choose backend `vendor` and supervisor `installed`. Browser-only and generic JS entries retain their installed default. Direct callers must build reconstruction, Swift and Rust first; the npm CLI handles these builds. These are independently authored deployment choices, not evidence that the original application exposes the same selectors.
+The direct restored-demo entry defaults the computer surface to `CORE_CUA_NATIVE_BACKEND=swift` and selects Rust when the supervisor is unspecified. The old native backend name `independent` aliases `swift`; it no longer replaces the original Sky service with the legacy TS adapter. Explicit `installed` plus Swift is rejected before any launch. For an installed-service comparison, explicitly choose backend `vendor` and supervisor `installed`. Browser-only entries default to Rust; generic JS entries retain their installed default. Direct callers must build reconstruction, Swift and Rust first; the npm CLI handles these builds. These are independently authored deployment choices, not evidence that the original application exposes the same selectors.
 
 A real subprocess test sets an invalid installed supervisor path and successfully performs native inventory through the legacy backend alias, without model credentials or App actions. Run it with `CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/runtime-selection.test.ts` after building; it also participates in `npm run test:native-ipc`.
 
@@ -219,7 +219,7 @@ The old QuickJS entry is explicitly named `npm run --silent mcp:legacy`. Its `CU
 
 ## Default demo and model selection
 
-`npm run demo -- "your prompt"` now uses the restored runtime launcher, including surface/backend flags, local `.env`, tool logs and the shared preflight. The old QuickJS demo is explicitly `npm run demo:legacy`. The browser default still selects the installed supervisor; computer selects Rust/Sky/Swift, and `CUA_RUNTIME_SUPERVISOR=rust` is available for configured browser deployments.
+`npm run demo -- "your prompt"` now uses the restored runtime launcher, including surface/backend flags, local `.env`, tool logs and the shared preflight. The old QuickJS demo is explicitly `npm run demo:legacy`. The browser default selects the reconstructed Rust supervisor; computer selects Rust/Sky/Swift. Explicit `CUA_RUNTIME_SUPERVISOR=installed` remains available for browser comparisons.
 
 `npm run demo:deepseek -- "your prompt"` explicitly selects DeepSeek regardless of a stale provider setting. The generic demo uses `CUA_MODEL_PROVIDER` (default `deepseek`). For another compatible provider set `CUA_MODEL_PROVIDER=openai-compatible`, `CUA_MODEL_API_KEY`, `CUA_MODEL`, and `CUA_MODEL_ENDPOINT` in the private environment. Its credential prompt requests the matching provider key; it does not accept a DeepSeek key in place of the generic provider key. Check modes require neither key. Invalid provider names fail before native builds.
 

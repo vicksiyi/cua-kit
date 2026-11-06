@@ -75,6 +75,7 @@ if [[ "$mode" == computer ]]; then
   export CUA_MCP_ENV
 fi
 if [[ "$mode" == "browser" ]]; then
+  export CUA_RUNTIME_SUPERVISOR="${CUA_RUNTIME_SUPERVISOR:-rust}"
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"browser","CUA_REPL_BROWSER_ENV":"codex-app","BROWSER_USE_AVAILABLE_BACKENDS":"chrome"}'; fi
   printf '%s\n' 'Browser mode: checks the selected backend before model requests. Search results depend on live page access.' >&2
 elif [[ "$mode" == "computer" ]]; then
@@ -98,6 +99,7 @@ fi
 export "$credential_name"
 export CUA_NATIVE_SUPERVISOR_PATH="${CUA_NATIVE_SUPERVISOR_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl}"
 export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
+printf 'Runtime supervisor: %s\n' "${CUA_RUNTIME_SUPERVISOR:-installed}" >&2
 npm run build:reconstruction
 if [[ "${CUA_RUNTIME_SUPERVISOR:-}" == rust || "${CUA_RUNTIME_SUPERVISOR:-}" == independent ]]; then npm run build:rust-runtime; fi
 if [[ "$cdp_browser" == true ]]; then

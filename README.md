@@ -19,7 +19,7 @@ DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 
 
 参数放在 `npm run demo --` 或 `npm run demo:deepseek --` 之后。通用 demo 可用 `CUA_MODEL_PROVIDER=openai-compatible` 配置其他兼容模型；DeepSeek 专用入口固定选择 DeepSeek。启动从项目 `.env` 读模型凭证；本地 debug 默认写入 `artifacts/debug/`，不提交 Git。终端会打印日志路径，关闭可设 `CUA_DEBUG=0`。详情见 [CDP 接入说明](packages/cdp-host/README.md) 和 [Agent demo](packages/agent-loop/README.md)。
 
-[飞书当前架构与验收状态](https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs) 已包含加载与调用时序图。浏览器默认仍依赖安装版原生 supervisor；电脑入口使用独立 Rust/Sky/Swift，全量替代与验收尚未完成。下面的阶段记录描述当时进展，当前状态以上表与 IMPLEMENTATION-STATUS 为准。
+[飞书当前架构与验收状态](https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs) 已包含加载与调用时序图。浏览器默认使用重建版 Rust supervisor；电脑入口使用独立 Rust/Sky/Swift，全量替代与验收尚未完成。下面的阶段记录描述当时进展，当前状态以上表与 IMPLEMENTATION-STATUS 为准。
 
 下面是此前独立实现的历史说明：
 

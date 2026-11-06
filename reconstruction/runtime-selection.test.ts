@@ -18,9 +18,11 @@ test("desktop entry selects original Sky Swift route and migrates legacy name wi
     }
   }
 });
-test("browser and generic entries retain installed default; vendor desktop is explicit", () => {
-  for (const env of [{}, { CUA_REPL_ENABLED_SURFACES: "browser" }])
-    assert.equal(selectRuntime(env).supervisor, "installed");
+test("browser defaults to reconstructed Rust; generic JS and explicit vendor comparisons retain installed", () => {
+  assert.equal(selectRuntime({}).supervisor, "installed");
+  assert.equal(selectRuntime({CUA_REPL_ENABLED_SURFACES:" browser "}).supervisor,"rust");
+  assert.equal(selectRuntime({CUA_REPL_ENABLED_SURFACES:"browser"},"installed").supervisor,"installed");
+  assert.equal(selectRuntime({CUA_REPL_ENABLED_SURFACES:"browser,computer",CORE_CUA_NATIVE_BACKEND:"vendor"}).supervisor,"installed");
   assert.equal(
     selectRuntime({
       CUA_REPL_ENABLED_SURFACES: "computer",
