@@ -578,3 +578,23 @@ the model identified running Multica (ai.multica.desktop), recognized the connec
 and reported the missing native UI permissions/local App allowance. No browser navigation or App
 window operation was requested. The local transcript remains ignored under artifacts; this result
 establishes default dual-surface delivery, not successful native application control.
+
+
+#### Explicit modes discard incompatible inherited deployment
+
+`--browser` (including explicit CDP/managed flags) clears stale native backend/helper/policy settings
+from the shell and CUA_MCP_ENV. Otherwise a former computer deployment could fail runtime selection
+with “Swift native backend requires computer surface” even after the CLI selected browser tools.
+
+`--js` clears CUA_REPL_*, BROWSER_USE_* and CORE_CUA_* fields in its MCP environment, plus the
+inherited JS banner/trusted-service map; ambient native/browser host fields are also unset. On
+macOS it selects Rust with omitted surfaces. Omitted surfaces now deploy the plain restored
+NodeREPL kernel with an empty service map and no native helper, browser sockets or CUA bootstrap.
+An explicitly malformed/empty surface string still fails validation. This is host-demo deployment
+policy, not a change to the recovered CUA globals parser or an API intent classifier.
+
+The real CLI integration test starts with deliberately unusable inherited browser/native paths
+and a stale throwing banner. Through Rust/MCP it executes JS and asserts the exact result
+{answer:42,cua:"undefined",agent:"undefined"}, with no browser/native preflight or helper build.
+It uses a local model-compatible fixture, not a paid provider. The default unified CLI test is
+rerun alongside it to check the expanded runtime configuration does not remove both surfaces.

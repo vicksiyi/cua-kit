@@ -8,7 +8,7 @@ import {
 } from "./restored-runtime";
 const env = await readRuntimeEnvironment();
 let sessionId: string | undefined;
-if (env.CUA_REPL_ENABLED_SURFACES !== undefined) {
+if (env.CUA_REPL_ENABLED_SURFACES !== undefined || process.env.CUA_RUNTIME_SUPERVISOR === "rust" || process.env.CUA_RUNTIME_SUPERVISOR === "independent") {
   process.env.CUA_MCP_REQUEST_META ??= JSON.stringify({
     "x-codex-turn-metadata": {
       session_id: randomUUID(),
@@ -36,7 +36,7 @@ try {
   process.env.CUA_MCP_ENV = JSON.stringify(runtime.environment);
   if (runtime.supervisor === "rust")
     console.error(
-      `Rust independent sandboxed runtime supervisor selected (${runtime.surfaces} surface; no installed supervisor).`,
+      `Rust independent sandboxed runtime supervisor selected (${runtime.surfaces ?? "JavaScript-only"} surface; no installed supervisor).`,
     );
   if (runtime.supervisor === "rust" && runtime.surfaces?.split(",").includes("computer")) {
     const permissions = await readNativePermissions(env.CORE_CUA_NATIVE_HELPER_PATH ?? fileURLToPath(new URL("../../../native/macos/.build/debug/cua-helper", import.meta.url)));

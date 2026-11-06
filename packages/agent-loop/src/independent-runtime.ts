@@ -8,8 +8,8 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
   if (implementation !== 'rust') throw Error('The TypeScript supervisor deployment has been retired; use rust');
   if (process.platform !== 'darwin') throw Error('Independent sandbox demo currently requires macOS');
   if (typeof sessionId !== 'string' || !/^[A-Za-z0-9_-]+$/.test(sessionId)) throw Error('Invalid independent runtime session ID');
-  const surfaces=(env.CUA_REPL_ENABLED_SURFACES??'').split(',').map(value=>value.trim());
-  if(!surfaces.length||surfaces.some(value=>!['browser','computer'].includes(value))) throw Error('Independent runtime supports explicit browser/computer surfaces');
+  const surfaces=env.CUA_REPL_ENABLED_SURFACES===undefined ? [] : env.CUA_REPL_ENABLED_SURFACES.split(',').map(value=>value.trim());
+  if(surfaces.some(value=>!['browser','computer'].includes(value))) throw Error('Independent runtime supports explicit browser/computer surfaces or omitted surfaces for JS-only');
   const browser=surfaces.includes('browser'),computer=surfaces.includes('computer');
   if(computer&&env.CORE_CUA_NATIVE_BACKEND!=='swift') throw Error('Computer surface requires Rust runtime and CORE_CUA_NATIVE_BACKEND=swift');
   const files: unknown = browser ? JSON.parse(env.CORE_CUA_ENDPOINT_FILES ?? '[]') : [];
@@ -21,7 +21,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
   if (browser && (env.CORE_CUA_ENDPOINT_FILES === undefined || env.BROWSER_USE_BACKEND_PATHS === undefined || (endpoints.length === 0) !== (pipes.length === 0)))
     throw Error('Independent runtime requires explicit matching native endpoints and pipes');
   const services={...(browser?{browser:'@core/native-host/browserService'}:{}),...(computer?{sky:'@core/sky/service'}:{})};
-  const enabled=[...new Set(surfaces)].join(',');
+  const enabled=surfaces.length ? [...new Set(surfaces)].join(',') : undefined;
   const appPolicy:unknown=computer?JSON.parse(env.CORE_CUA_APP_POLICY??'{}'):{};
   if(computer&&(!appPolicy||typeof appPolicy!=='object'||Array.isArray(appPolicy))) throw Error('CORE_CUA_APP_POLICY must be a native app rule map');
   const project = fileURLToPath(new URL('../../../',import.meta.url));
@@ -54,7 +54,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
         NODE_REPL_TRUSTED_SERVICES:JSON.stringify(services),
         NODE_REPL_TRUSTED_CODE_PATHS:stagedRoot,NODE_REPL_NODE_MODULE_DIRS:stagedRoot,
         NODE_REPL_UNTRUSTED_ENV_ALLOWLIST:'CUA_REPL_ENABLED_SURFACES,CUA_REPL_BROWSER_ENV',
-        CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{CUA_REPL_BROWSER_ENV:'codex-app'}:{}),
+        ...(enabled!==undefined?{CUA_REPL_ENABLED_SURFACES:enabled}:{}),...(browser?{CUA_REPL_BROWSER_ENV:'codex-app'}:{}),
         ...(!trusted&&env.NODE_REPL_JS_BANNER!==undefined?{NODE_REPL_JS_BANNER:env.NODE_REPL_JS_BANNER}:{}),
         ...(!trusted&&env.NODE_REPL_ENABLE_AUDIO==='1'?{NODE_REPL_ENABLE_AUDIO:'1'}:{}),
         ...(trusted&&computer&&env.SKY_ENABLE_AUDIO==='1'?{SKY_ENABLE_AUDIO:'1',...(env.SKY_AUDIO_MODEL_ALLOWLIST!==undefined?{SKY_AUDIO_MODEL_ALLOWLIST:env.SKY_AUDIO_MODEL_ALLOWLIST}:{})}:{}),
@@ -69,7 +69,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
     const rustWorker=(value:ReturnType<typeof worker>)=>({sandbox:{node:value.node,bootstrap:value.bootstrap,addon:value.addon,entry:value.entry,args:value.args,directory:value.directory,read_directories:value.readDirectories,worker_environment:value.workerEnvironment}});
     const spec=join(root,'rust-runtime.json');
     await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:Object.keys(services),pipe_paths:dynamicDirectory?[]:pipes,endpoint_roots:dynamicDirectory?[dynamicDirectory]:[],...(env.NODE_REPL_TOOL_OVERRIDES!==undefined?{tool_overrides:JSON.parse(env.NODE_REPL_TOOL_OVERRIDES)}:{}),...(env.NODE_REPL_JS_COMPLETION_SUMMARY!==undefined?{completion_summary:JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY)}:{}),...(computer?{native_service:{helper,directory:nativeDir,app_policy:appPolicy}}:{}),writable_paths:['browser/config.toml',sessionPreference],config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}}),{mode:0o600});
-    return {command,args:[spec],environment:{...nativeSupervisorEnvironment(env,root),CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
+    return {command,args:[spec],environment:{...nativeSupervisorEnvironment(env,root),...(enabled!==undefined?{CUA_REPL_ENABLED_SURFACES:enabled}:{}),...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
   } catch(error) {await rm(root,{recursive:true,force:true});throw error;}
 }
 

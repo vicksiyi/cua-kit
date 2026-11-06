@@ -17,7 +17,10 @@ On macOS, default mode is `--unified`: browser and native app APIs are both avai
 model for target selection. Other platforms default to browser-only. Use `--browser` or `--computer`
 to restrict the run, and `--js` for JavaScript-only tools. Explicit browser deployment options
 (`--cdp-browser`, `--managed-browser`, `--cdp-endpoint`) select browser-only mode. CLI surface
-selection overrides stale surface fields in CUA_MCP_ENV; other configuration remains in effect.
+selection overrides stale surface fields in CUA_MCP_ENV. Browser-only mode removes native backend
+settings; JS-only mode removes CUA/browser deployment fields and CUA bootstrap/trusted-service
+configuration. Other configuration remains in effect. On macOS JS-only uses the independent Rust
+runtime without browser/Sky services or the Swift helper, rather than the installed supervisor.
 
 Unified mode discovers configured existing browser connections and offers the host prepare_browser
 tool when a valid private host directory is available; it does not eagerly launch Chrome for an

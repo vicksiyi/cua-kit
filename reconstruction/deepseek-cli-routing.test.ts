@@ -142,8 +142,12 @@ test("CLI routes deployment flags independently of surface/check flag order", as
     ["--managed-browser", "prompt"],
   ]) {
     const output = run(args, {
+      CORE_CUA_NATIVE_BACKEND: "swift",
+      CORE_CUA_NATIVE_HELPER_PATH: "/nonexistent/helper",
       CUA_MCP_ENV: JSON.stringify({
         CUA_REPL_ENABLED_SURFACES: "computer",
+        CORE_CUA_NATIVE_BACKEND: "swift",
+        CORE_CUA_NATIVE_HELPER_PATH: "/nonexistent/helper",
         NODE_REPL_DISABLE_ANALYTICS: "1",
       }),
     });
@@ -153,6 +157,11 @@ test("CLI routes deployment flags independently of surface/check flag order", as
       JSON.parse(parsed.configuration).CUA_REPL_ENABLED_SURFACES,
       "browser",
     );
+    assert.equal(
+      JSON.parse(parsed.configuration).CORE_CUA_NATIVE_BACKEND,
+      undefined,
+    );
+    assert.equal(parsed.native, undefined);
     assert.ok(!output.stdout.includes("BUILD_FIXTURE run build:native"));
   }
   // Only the test PATH supplies this uname stub; production has no platform override.

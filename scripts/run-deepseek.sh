@@ -89,10 +89,14 @@ if [[ "$mode" == computer || "$mode" == unified ]]; then
   export CUA_MCP_ENV
 fi
 if [[ "$mode" == "browser" ]]; then
+  unset CORE_CUA_NATIVE_BACKEND CORE_CUA_NATIVE_HELPER_PATH CORE_CUA_APP_POLICY
   export CUA_RUNTIME_SUPERVISOR="${CUA_RUNTIME_SUPERVISOR:-rust}"
   CUA_MCP_ENV="$(node --input-type=module -e '
     const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");
     if(!env || Array.isArray(env) || typeof env!=="object" || !Object.values(env).every(v=>typeof v==="string")) throw Error("CUA_MCP_ENV must be a JSON string map");
+    delete env.CORE_CUA_NATIVE_BACKEND;
+    delete env.CORE_CUA_NATIVE_HELPER_PATH;
+    delete env.CORE_CUA_APP_POLICY;
     env.CUA_REPL_ENABLED_SURFACES="browser";
     env.CUA_REPL_BROWSER_ENV="codex-app";
     env.NODE_REPL_DISABLE_ANALYTICS??="1";
@@ -108,7 +112,17 @@ elif [[ "$mode" == "computer" || "$mode" == "unified" ]]; then
   if [[ "$CORE_CUA_NATIVE_HELPER_PATH" == "$PWD/native/macos/.build/debug/cua-helper" ]]; then npm run build:native; fi
   printf '%s\n' "$mode mode: $CORE_CUA_NATIVE_BACKEND backend; app inventory does not verify UI permissions or actions." >&2
 else
-  if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1"}'; fi
+  # Explicit JS-only mode must not inherit stale CUA service/bootstrap settings.
+  unset CORE_CUA_NATIVE_BACKEND CORE_CUA_NATIVE_HELPER_PATH CORE_CUA_APP_POLICY CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
+  if [[ "$(uname -s)" == Darwin ]]; then export CUA_RUNTIME_SUPERVISOR=rust; fi
+  CUA_MCP_ENV="$(node --input-type=module -e '
+    const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");
+    if(!env || Array.isArray(env) || typeof env!=="object" || !Object.values(env).every(v=>typeof v==="string")) throw Error("CUA_MCP_ENV must be a JSON string map");
+    for(const key of Object.keys(env)) if(key.startsWith("CORE_CUA_") || key.startsWith("CUA_REPL_") || key.startsWith("BROWSER_USE_") || key==="NODE_REPL_JS_BANNER" || key==="NODE_REPL_TRUSTED_SERVICES") delete env[key];
+    env.NODE_REPL_DISABLE_ANALYTICS??="1";
+    process.stdout.write(JSON.stringify(env));
+  ')"
+  export CUA_MCP_ENV
 fi
 if [[ $# -eq 0 ]]; then
   read -r -p 'Prompt: ' prompt
