@@ -259,3 +259,24 @@ payload 类型保留 AXError、Swift metatype 和 String，而不是统一包装
 
 尚未恢复错误构造条件的全部分支，也未把这些 Error case 接到 SkyIPC 的错误码映射。
 本轮只补齐可确定的原生类型和审计证据；Swift 构建用于验证类型声明，不将构建成功当成错误链路验收。
+
+## AXValue 具体值解包
+
+恢复 `0x1006ea098..0x1006ea28c` 的原生 Swift helper，实现在
+`native/macos/Sources/CuaHelper/AXValueUnpacking.swift`。以 AXValueGetType 分派，
+直接复用系统 AXValueGetValue，返回 CGPoint、CGSize、CGRect、CFRange 或 AXError。
+每个读取失败分支返回 nil；未知类型抛出 `.failedToUnwrapAttributeValue(AXValue.self)`。
+AXError.noValue 在这一层仍为 AXError；其 nil 策略由外层 decoder 决定。
+
+审计记录 `axValueUnpackingEvidence` 固定函数边界、代码哈希和六处系统调用位置。
+真实 macOS AXValueCreate 生成的值覆盖五类系统值（AXError 额外覆盖 noValue），
+注入失败覆盖五个读取失败分支，未知类型检查保证不尝试读取内存，共 12 个案例。
+这些测试执行独立恢复代码与系统 API，不执行原厂服务，也不冒充原厂运行时对照测试。
+
+测试曾暴露 Swift 泛型推断造成的内存破坏：在 `Any?` 返回上下文直接返回泛型
+`read(CGRect.zero)` 时，泛型 Value 被推断成 Any，C API 写入 existential 容器，
+覆盖其元数据。现先显式声明具体类型的 Optional，再擦除到 Any，确保传给 C API
+的缓冲区类型正确。真实 CGRect roundtrip 是该崩溃的回归覆盖。
+
+此 helper 尚未接入完整 AXEncodedValue decoder；缓存、数组解码、类型不匹配策略和
+原生观察差量仍有未恢复部分，不能据此声称原生观察链路整体一致。

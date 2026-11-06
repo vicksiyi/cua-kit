@@ -275,6 +275,37 @@ decoding_evidence = {
     'nonthrowingWrapper':{'argumentFlagZero':'0x1006e8fe8','throwingCall':'0x1006e8ff4','errorCheck':'0x1006e8ff8','nilAssignment':'0x1006e9004..0x1006e9018'},
     'limitations':'Confirms type dispatch and wrapper error handling, not the complete conversion/error algorithm.',
 }
+# The concrete AXValue reader is a separate helper, not the outer decoder.
+unpack_start = 0x1006ea098
+unpack_end = starts[starts.index(unpack_start)+1]
+if unpack_end != 0x1006ea28c: raise SystemExit('AXValue unpacker boundary changed')
+unpack_calls=[]
+for address in range(unpack_start,unpack_end,4):
+    word=struct.unpack('<I',read_virtual(address,4))[0]
+    if word >> 26 != 0b100101: continue
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    destination=address+immediate*4
+    symbol=indirect.get(destination,'')
+    if symbol in ['_AXValueGetType','_AXValueGetValue']:
+        unpack_calls.append({'address':hex(address),'stub':hex(destination),'symbol':symbol})
+if [(row['address'],row['symbol']) for row in unpack_calls] != [
+    ('0x1006ea0d0','_AXValueGetType'),
+    ('0x1006ea104','_AXValueGetValue'),
+    ('0x1006ea144','_AXValueGetValue'),
+    ('0x1006ea170','_AXValueGetValue'),
+    ('0x1006ea1b8','_AXValueGetValue'),
+    ('0x1006ea1e8','_AXValueGetValue'),
+]: raise SystemExit('AXValue unpacker system calls changed')
+unpack_evidence={
+    'start':hex(unpack_start),'endExclusive':hex(unpack_end),
+    'machineCodeSha256':hashlib.sha256(read_virtual(unpack_start,unpack_end-unpack_start)).hexdigest(),
+    'resolvedCalls':unpack_calls,
+    'valueTypes':{'1':'CGPoint','2':'CGSize','3':'CGRect','4':'CFRange','5':'AXError'},
+    'readFailureNil':'0x1006ea208',
+    'unsupportedTypeError':'0x1006ea214',
+    'limitations':'Concrete AXValue unpacking only; noValue policy belongs to outer AXEncodedValue decoding.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -317,6 +348,7 @@ record = {
     'attributeEvidence':attribute_evidence,
     'decodingEvidence':decoding_evidence,
     'errorEvidence':error_evidence,
+    'axValueUnpackingEvidence':unpack_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
