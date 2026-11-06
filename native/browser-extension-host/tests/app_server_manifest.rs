@@ -335,3 +335,123 @@ fn runtime_paths_validate_all_four_fields_in_native_order() {
     }
     assert_eq!(validate_runtime_paths(&entry), Ok(()));
 }
+
+#[test]
+fn raw_configuration_reads_correct_levels_and_trims_optional_strings() {
+    use core_browser_extension_host::app_server_manifest::extract_configuration;
+    let mut entry = json!({"paths":{}});
+    let top = [
+        "appVersion",
+        "channel",
+        "cliVersion",
+        "entryId",
+        "nativeHostVersion",
+        "proxyHost",
+    ];
+    let nested = [
+        "browserClientPath",
+        "browserServicePath",
+        "codexCliPath",
+        "codexHome",
+        "nodePath",
+        "nodeReplPath",
+    ];
+    for key in top {
+        entry[key] = json!(format!(" \u{2003}{key}\t"));
+        entry["paths"][key] = json!("wrong-level");
+    }
+    for key in nested {
+        entry["paths"][key] = json!(format!("\t{key} \u{2003}"));
+        entry[key] = json!("wrong-level");
+    }
+    entry["appServerProtocolVersion"] = json!(0);
+    entry["nativeHostProtocolVersion"] = json!(u64::MAX);
+    let config = extract_configuration(&entry).unwrap();
+    assert_eq!(
+        [
+            config.app_version,
+            config.channel,
+            config.cli_version,
+            config.entry_id,
+            config.native_host_version,
+            config.proxy_host
+        ],
+        top.map(|s| Some(s.into()))
+    );
+    assert_eq!(
+        [
+            config.browser_client_path,
+            config.browser_service_path,
+            config.codex_cli_path,
+            config.codex_home,
+            config.node_path,
+            config.node_repl_path
+        ],
+        nested.map(|s| Some(s.into()))
+    );
+    assert_eq!(config.app_server_protocol_version, Some(0));
+    assert_eq!(config.native_host_protocol_version, Some(u64::MAX));
+    for value in [
+        Value::Null,
+        json!(true),
+        json!(1),
+        json!([]),
+        json!({}),
+        json!(""),
+        json!(" \u{2003}\t"),
+    ] {
+        for key in top {
+            entry[key] = value.clone();
+        }
+        for key in nested {
+            entry["paths"][key] = value.clone();
+        }
+        entry["appServerProtocolVersion"] = json!(2.0);
+        entry["nativeHostProtocolVersion"] = json!("2");
+        assert_eq!(extract_configuration(&entry).unwrap(), Default::default());
+    }
+    for invalid in [
+        Value::Null,
+        json!([]),
+        json!({}),
+        json!({"paths":null}),
+        json!({"paths":[]}),
+    ] {
+        assert_eq!(
+            extract_configuration(&invalid),
+            Err(ManifestError::MalformedEntry)
+        );
+    }
+}
+
+#[test]
+fn manifest_ports_are_nonzero_u16_without_coercion() {
+    use core_browser_extension_host::app_server_manifest::extract_configuration;
+    for port in 0..=65536u64 {
+        let expected = if (1..=65535).contains(&port) {
+            Some(port as u16)
+        } else {
+            None
+        };
+        assert_eq!(
+            extract_configuration(&json!({"paths":{},"proxyPort":port}))
+                .unwrap()
+                .proxy_port,
+            expected
+        );
+    }
+    for value in [
+        json!(-1),
+        json!(1.0),
+        json!("123"),
+        json!(true),
+        json!(u64::MAX),
+    ] {
+        assert_eq!(
+            extract_configuration(&json!({"paths":{},"proxyPort":value}))
+                .unwrap()
+                .proxy_port,
+            None
+        );
+    }
+}

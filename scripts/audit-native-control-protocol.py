@@ -115,6 +115,25 @@ for offset, name in [(0x9080a, 'extensionHostPath'), (0x9081b, 'nativeHostNames'
     if raw[offset:offset+len(name)] != name.encode():
         raise RuntimeError('Identity field literal changed: '+name)
 
+configuration_strings = [
+    (0x90431, 'appVersion', 'entry', 0x10001c354),
+    (0x90690, 'browserClientPath', 'paths', 0x10001c3f0),
+    (0x906a1, 'browserServicePath', 'paths', 0x10001c48c),
+    (0x9043b, 'channel', 'entry', 0x10001c524),
+    (0x90442, 'cliVersion', 'entry', 0x10001c5bc),
+    (0x906b3, 'codexCliPath', 'paths', 0x10001c658),
+    (0x906bf, 'codexHome', 'paths', 0x10001c6f4),
+    (0x90401, 'entryId', 'entry', 0x10001c78c),
+    (0x90465, 'nativeHostVersion', 'entry', 0x10001c854),
+    (0x90d88, 'nodePath', 'paths', 0x10001c8f0),
+    (0x906c8, 'nodeReplPath', 'paths', 0x10001c98c),
+    (0x906d4, 'proxyHost', 'entry', 0x10001ca24),
+]
+for offset, name, parent, call in configuration_strings:
+    if raw[offset:offset+len(name)] != name.encode():
+        raise RuntimeError('Configuration field literal changed: '+name)
+    evidence(config_load, call, call, ['trim_matches'])
+
 # The JSON Number literal referenced by string_result_response is PosInt(1).
 if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
     raise RuntimeError('String-result error code literal changed')
@@ -243,6 +262,15 @@ result = {
         'rankingInstructions': evidence(config_load, 0x10001cc70, 0x10001ccac, ['b.gt', 'csel', 'b.le']),
         'rankingSemantics': 'Higher score first; equal score compares untrimmed updatedAt strings lexically, missing/nonstring becomes empty. Equal keys keep first entry. No date parser.',
         'integrationStatus': 'Native helper stages implemented and tested; full raw-config extraction, global error retention and runtime launch integration remain open.',
+    },
+    'manifestConfigurationExtraction': {
+        'implementation': 'native/browser-extension-host/src/app_server_manifest.rs::extract_configuration',
+        'strings': [{'name':name,'parent':parent,'literalOffset':hex(offset),'trimCall':hex(call)} for offset,name,parent,call in configuration_strings],
+        'normalization': 'Entry and paths must be objects. String fields use Unicode trim; empty/missing/nonstring becomes None. No path join or existence check in extraction.',
+        'protocols': 'Optional u64 protocol values; zero allowed, float/string/negative rejected.',
+        'proxyPortInstructions': evidence(config_load, 0x10001cd84, 0x10001cd98, ['#0xffff', '#0x10000', 'ccmp', 'cset']),
+        'proxyPortSemantics': 'Only integer 1..65535 retained. Zero becomes absent, unlike the separate environment u16 resolver.',
+        'integrationStatus': 'Raw extraction only; not connected to full registry selection, environment resolution or process startup.',
     },
     'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

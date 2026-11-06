@@ -8,6 +8,7 @@ pub enum ManifestError {
     DocumentSchema,
     EntriesShape,
     EntrySchema,
+    MalformedEntry,
     RequiredPath(String),
 }
 
@@ -19,6 +20,7 @@ impl fmt::Display for ManifestError {
             }
             Self::EntriesShape => f.write_str("Manifest entries must be an array"),
             Self::EntrySchema => f.write_str("Manifest entry must use schemaVersion 2"),
+            Self::MalformedEntry => f.write_str("Matching manifest entry is malformed"),
             Self::RequiredPath(field) => write!(
                 f,
                 "Codex app-server manifest entry is missing required path {field}"
@@ -27,6 +29,68 @@ impl fmt::Display for ManifestError {
     }
 }
 impl std::error::Error for ManifestError {}
+
+/// Raw schema-2 extraction, before environment overrides/defaults. Resources
+/// are checked for existence separately, not retained in this native record.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct RawManifestConfiguration {
+    pub app_server_protocol_version: Option<u64>,
+    pub native_host_protocol_version: Option<u64>,
+    pub app_version: Option<String>,
+    pub browser_client_path: Option<String>,
+    pub browser_service_path: Option<String>,
+    pub channel: Option<String>,
+    pub cli_version: Option<String>,
+    pub codex_cli_path: Option<String>,
+    pub codex_home: Option<String>,
+    pub entry_id: Option<String>,
+    pub native_host_version: Option<String>,
+    pub node_path: Option<String>,
+    pub node_repl_path: Option<String>,
+    pub proxy_host: Option<String>,
+    pub proxy_port: Option<u16>,
+}
+
+pub fn extract_configuration(entry: &Value) -> Result<RawManifestConfiguration, ManifestError> {
+    let entry = entry.as_object().ok_or(ManifestError::MalformedEntry)?;
+    let paths = entry
+        .get("paths")
+        .and_then(Value::as_object)
+        .ok_or(ManifestError::MalformedEntry)?;
+    let text = |value: Option<&Value>| {
+        value
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_owned)
+    };
+    Ok(RawManifestConfiguration {
+        app_server_protocol_version: entry
+            .get("appServerProtocolVersion")
+            .and_then(Value::as_u64),
+        native_host_protocol_version: entry
+            .get("nativeHostProtocolVersion")
+            .and_then(Value::as_u64),
+        app_version: text(entry.get("appVersion")),
+        browser_client_path: text(paths.get("browserClientPath")),
+        browser_service_path: text(paths.get("browserServicePath")),
+        channel: text(entry.get("channel")),
+        cli_version: text(entry.get("cliVersion")),
+        codex_cli_path: text(paths.get("codexCliPath")),
+        codex_home: text(paths.get("codexHome")),
+        entry_id: text(entry.get("entryId")),
+        native_host_version: text(entry.get("nativeHostVersion")),
+        node_path: text(paths.get("nodePath")),
+        node_repl_path: text(paths.get("nodeReplPath")),
+        proxy_host: text(entry.get("proxyHost")),
+        // Unlike the environment resolver, raw manifest extraction excludes 0.
+        proxy_port: entry
+            .get("proxyPort")
+            .and_then(Value::as_u64)
+            .and_then(|port| u16::try_from(port).ok())
+            .filter(|port| *port != 0),
+    })
+}
 
 /// Borrow entries without reordering, discarding unknown fields or selecting a
 /// candidate. Empty arrays are valid shape; selection may subsequently fail.

@@ -610,6 +610,95 @@
     "rankingSemantics": "Higher score first; equal score compares untrimmed updatedAt strings lexically, missing/nonstring becomes empty. Equal keys keep first entry. No date parser.",
     "integrationStatus": "Native helper stages implemented and tested; full raw-config extraction, global error retention and runtime launch integration remain open."
   },
+  "manifestConfigurationExtraction": {
+    "implementation": "native/browser-extension-host/src/app_server_manifest.rs::extract_configuration",
+    "strings": [
+      {
+        "name": "appVersion",
+        "parent": "entry",
+        "literalOffset": "0x90431",
+        "trimCall": "0x10001c354"
+      },
+      {
+        "name": "browserClientPath",
+        "parent": "paths",
+        "literalOffset": "0x90690",
+        "trimCall": "0x10001c3f0"
+      },
+      {
+        "name": "browserServicePath",
+        "parent": "paths",
+        "literalOffset": "0x906a1",
+        "trimCall": "0x10001c48c"
+      },
+      {
+        "name": "channel",
+        "parent": "entry",
+        "literalOffset": "0x9043b",
+        "trimCall": "0x10001c524"
+      },
+      {
+        "name": "cliVersion",
+        "parent": "entry",
+        "literalOffset": "0x90442",
+        "trimCall": "0x10001c5bc"
+      },
+      {
+        "name": "codexCliPath",
+        "parent": "paths",
+        "literalOffset": "0x906b3",
+        "trimCall": "0x10001c658"
+      },
+      {
+        "name": "codexHome",
+        "parent": "paths",
+        "literalOffset": "0x906bf",
+        "trimCall": "0x10001c6f4"
+      },
+      {
+        "name": "entryId",
+        "parent": "entry",
+        "literalOffset": "0x90401",
+        "trimCall": "0x10001c78c"
+      },
+      {
+        "name": "nativeHostVersion",
+        "parent": "entry",
+        "literalOffset": "0x90465",
+        "trimCall": "0x10001c854"
+      },
+      {
+        "name": "nodePath",
+        "parent": "paths",
+        "literalOffset": "0x90d88",
+        "trimCall": "0x10001c8f0"
+      },
+      {
+        "name": "nodeReplPath",
+        "parent": "paths",
+        "literalOffset": "0x906c8",
+        "trimCall": "0x10001c98c"
+      },
+      {
+        "name": "proxyHost",
+        "parent": "entry",
+        "literalOffset": "0x906d4",
+        "trimCall": "0x10001ca24"
+      }
+    ],
+    "normalization": "Entry and paths must be objects. String fields use Unicode trim; empty/missing/nonstring becomes None. No path join or existence check in extraction.",
+    "protocols": "Optional u64 protocol values; zero allowed, float/string/negative rejected.",
+    "proxyPortInstructions": [
+      "10001cd84: f9400808    \tldr\tx8, [x0, #0x10]",
+      "10001cd88: 72003d1f    \ttst\tw8, #0xffff",
+      "10001cd8c: 52a00029    \tmov\tw9, #0x10000            ; =65536",
+      "10001cd90: fa491102    \tccmp\tx8, x9, #0x2, ne",
+      "10001cd94: 1a9f27e9    \tcset\tw9, lo",
+      "10001cd98: 17ffff4a    \tb\t0x10001cac0 <<extension_host::app_server::AppServerHostConfig>::load+0x15fc>"
+    ],
+    "proxyPortSemantics": "Only integer 1..65535 retained. Zero becomes absent, unlike the separate environment u16 resolver.",
+    "integrationStatus": "Raw extraction only; not connected to full registry selection, environment resolution or process startup."
+  },
   "remainingUnknowns": [
     "full manifest selection and process launch contract",
     "complete hello/status response schemas",

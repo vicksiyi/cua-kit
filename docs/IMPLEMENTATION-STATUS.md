@@ -6078,3 +6078,12 @@ Added native manifest helpers for exact u64 protocol requirements, required runt
 Corrected a previous conversational assumption: presence.pid contributes one point when it is a u64, including zero; this is not a process-liveness test. On equal score, native code compares raw updatedAt strings lexically (missing/nonstring becomes empty), without date parsing or trimming. Exact ties retain the first candidate.
 
 All seven manifest tests pass, including 100 protocol-value combinations, optional/zero/u64-max requirements, required-path ordering, PID type cases and lexical/tie behavior. Static evidence captures the actual compare/branch instructions. No original host or GUI process was run. Full config extraction, registry-wide error retention and connection to runtime startup remain open; these helper stages are not yet a complete loader.
+
+
+### 2026-11-06: native schema-2 raw configuration extraction
+
+Added RawManifestConfiguration and extract_configuration in Rust from load instructions 0x10001c2b8..0x10001cb20. Entry and paths must be objects. Twelve optional strings are read from their observed entry/paths levels, Unicode-trimmed, and become absent for missing/nonstring/empty values. Protocol fields retain only u64 values. No inferred path joining or filesystem validation is added inside extraction; those are separate stages.
+
+The native raw proxyPort check at 0x10001cd84 accepts only integer 1..65535. Zero becomes absent, unlike the separately observed environment resolver which accepts zero. Tests cover every value 0..65536 plus invalid JSON types and u64-max, all twelve field levels and Unicode/empty behavior. Nine manifest tests plus two existing environment tests pass. Static extraction pins each field literal and trim call along with the port-bound instructions.
+
+Full registry selection/error retention and connection of selected raw fields to environment resolution/process startup remain open. This is static-evidence reconstruction, not invocation parity against the original executable or a new working App Server launch.
