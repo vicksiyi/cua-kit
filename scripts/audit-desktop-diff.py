@@ -1068,6 +1068,17 @@ element_storage_evidence['contextType']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementContextType.swift',
     'limitations':'Enum and mode properties restored; downstream observation/render consumers still pending.',
 }
+element_storage_evidence['chromiumWindowProbe']={
+    'entry':'0x100758cb4..<0x100758e90',
+    'read':'Raw AXChildren arrayValue index=0 maxValues=1 countIfKnown=nil; decode optional array; missing/failed/empty -> false',
+    'probe':'Only first child supportedAttributes contains chromeNodeID; no recursive search or role predicate',
+    'constant':'0x10079c8e0..<0x10079c91c materializes ChromeAXNodeId',
+    'contextGate':'Context initializer calls this window probe only when its second application web-shaped check succeeds and a window exists',
+    'applicationEvidence':'0x10071e484..<0x10071e608 resolves pid -> running app -> bundle, then supportsHTTPScheme || isElectronApp || isChromiumApp; resolution errors -> false; individual bundle predicates still pending audit',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x100758cb4,0x100758e90),(0x10079c8e0,0x10079c91c),(0x10071e484,0x10071e608)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementChromiumWindow.swift',
+    'limitations':'Window probe is a dependency-injected helper. Original raw array decoding and full application/context composition not wired here.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

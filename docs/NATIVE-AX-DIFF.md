@@ -2114,3 +2114,18 @@ fullUIContext、eventStreamContext、informationalContext；allCases 静态数�
 三个 getter 位于 0x100638a74、0x10048177c、0x100638a84，分别比较 tag !=2、
 ==0、==1。不能把“包含菜单”“包含动作说明”“从缓存推断能力”当成一个开关。
 全部模式属性与 case 顺序测试通过。生产观察树的模式消费仍待接入。
+
+### Chromium 窗口识别范围
+
+0x100758cb4..<0x100758e90 从窗口 AXChildren 读取 index=0、maxValues=1、
+countIfKnown=nil，解码后仅检查第一个子节点的 supportedAttributes 是否包含
+ChromeAXNodeId。常量在 0x10079c8e0..<0x10079c91c 中确认，大小写必须一致。
+缺失、空数组、解码失败均为 false；不递归，也不搜索后续子节点。
+
+已恢复探测 helper 和属性常量；测试读取参数、空值/异常、首节点范围和精确名称
+匹配通过。调用侧仍显式提供原生读取/解码边界。
+
+应用层 0x10071e484..<0x10071e608 由 AX PID 找 running app 和 bundle，
+按 supportsHTTPScheme、isElectronApp、isChromiumApp 顺序短路；它是 Web 形态
+判断，不能直接等同于窗口的 Chromium 标志。context 构造中重复查询该判断，
+第二次为真且存在窗口时才调用上述窗口探测。三个 bundle 谓词仍待进一步核查。

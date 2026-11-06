@@ -2840,6 +2840,33 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementContextType.swift",
       "limitations": "Enum and mode properties restored; downstream observation/render consumers still pending."
     },
+    "chromiumWindowProbe": {
+      "entry": "0x100758cb4..<0x100758e90",
+      "read": "Raw AXChildren arrayValue index=0 maxValues=1 countIfKnown=nil; decode optional array; missing/failed/empty -> false",
+      "probe": "Only first child supportedAttributes contains chromeNodeID; no recursive search or role predicate",
+      "constant": "0x10079c8e0..<0x10079c91c materializes ChromeAXNodeId",
+      "contextGate": "Context initializer calls this window probe only when its second application web-shaped check succeeds and a window exists",
+      "applicationEvidence": "0x10071e484..<0x10071e608 resolves pid -> running app -> bundle, then supportsHTTPScheme || isElectronApp || isChromiumApp; resolution errors -> false; individual bundle predicates still pending audit",
+      "blocks": [
+        {
+          "start": "0x100758cb4",
+          "endExclusive": "0x100758e90",
+          "machineCodeSha256": "674b79c919dafc9360fac80f6460c062e3bfc4c44fa237dd306884cce19eadcc"
+        },
+        {
+          "start": "0x10079c8e0",
+          "endExclusive": "0x10079c91c",
+          "machineCodeSha256": "a2087e9e8106a8656f901b2a5f7b4db2fa57afea01a8789b27ed5172eb4e01ae"
+        },
+        {
+          "start": "0x10071e484",
+          "endExclusive": "0x10071e608",
+          "machineCodeSha256": "87595d5dbefec307b0482a42b205537b20b482d4196070e33ec401b5ae96e923"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementChromiumWindow.swift",
+      "limitations": "Window probe is a dependency-injected helper. Original raw array decoding and full application/context composition not wired here."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

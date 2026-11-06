@@ -429,3 +429,18 @@ test("native context types preserve original observation modes", {
     assert.match(result.stdout, /context types preserve menu, action description and cached-capability modes/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native Chromium window probe preserves first-child scope", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-chrome-window-"));
+  try {
+    const output = join(directory, "window");
+    await exec("xcrun", ["swiftc",
+      ...["AXProcessID", "UIElementError", "AXAttributeReading", "UIElementAttribute", "UIElementChromiumWindow"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementChromiumWindowTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /Chromium window probe preserves first-child limits, exact attribute and decode failure/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
