@@ -968,6 +968,18 @@ element_storage_evidence['systemActionPerforming']={
     'implementation':'native/macos/Sources/CuaHelper/AXActionPerforming.swift',
     'limitations':'Explicit system adapter only; not yet wired into production action outcome mapping. Menu ancestry, scroll fallback, disclosure getter witnesses and MockProvider dispatch remain incomplete.',
 }
+element_storage_evidence['toggleDisclosure']={
+    'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
+    'condition':'0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing',
+    'state':'0x1007b017c..0x1007b0188: isDisclosing witness +0xb0',
+    'write':'0x1007b019c negates Bool; 0x1007b01d4 calls setValue witness +0x58 with AXDisclosing',
+    'defaultGetters':{'isDisclosable':'0x1007ac3b8 -> 0x1007ac56c -> isAttributeSupportedAndSettable',
+        'isDisclosing':'0x1007ac3d4 -> 0x1007ac3f0: cache-only Bool decode, false for missing/mismatch/error'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007b0148,0x1007b0214),(0x1007ac3b8,0x1007ac52c),(0x1007ac56c,0x1007ac5c4)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementDisclosure.swift',
+    'limitations':'Injected getter/setter dispatch; synthetic actions are not yet advertised or executed by the production simplified collector.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

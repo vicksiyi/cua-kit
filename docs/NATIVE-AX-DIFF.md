@@ -1188,3 +1188,22 @@ onAXAttributeReadThread 通用同步逻辑。测试本轮只验证错误策略�
 
 因此本轮未将底层“容忍错误”接到当前生产 action 的成功结果：非抛错不保证可见效果，
 完整执行分派、结果观察与调用方语义需一起恢复。现有生产拒绝/结果未知行为未更改。
+
+
+## 展开状态与 toggleDisclosure 控制逻辑（2026-11-07）
+
+新增 UIElementDisclosure.swift：toggle 先调用 isDisclosable，false 时无操作，
+不读取状态或写属性；true 才读取 isDisclosing，取反并调用 setter 一次。setter
+抛错原样向外传播，不吞掉错误或重试。源码 0x1007b0148–0x1007b0214。
+两种合成动作共用此 toggle，因此不能把名称理解为幂等的固定状态写入。
+
+进一步核对默认 getters：isDisclosable 0x1007ac3b8 经 0x1007ac56c 进入
+isAttributeSupportedAndSettable；isDisclosing 0x1007ac3d4 经 0x1007ac3f0
+只读 cache.attributes 中 AXDisclosing 的 AXPartialValue，使用非严格 Bool 解码，
+缺失/类型不匹配/解码异常均为 false，不触发新系统读取。
+已恢复此缓存 getter，并让动作广告复用它。
+
+测试增加条件短路、false/true 的取反写入、调用顺序、setter 错误不重试，以及
+缓存状态与 supported/transaction 集合独立的行为；原 240 组合与动作组合测试保持。
+测试与 Swift 构建通过。toggle 当前通过闭包承接 getter/setter，尚未冒充完整协议
+分派；生产采集器仍不广告或执行 synthetic 动作。真实 UI 验收等待宿主权限。

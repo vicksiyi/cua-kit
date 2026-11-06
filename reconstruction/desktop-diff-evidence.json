@@ -2170,6 +2170,35 @@
       "implementation": "native/macos/Sources/CuaHelper/AXActionPerforming.swift",
       "limitations": "Explicit system adapter only; not yet wired into production action outcome mapping. Menu ancestry, scroll fallback, disclosure getter witnesses and MockProvider dispatch remain incomplete."
     },
+    "toggleDisclosure": {
+      "dispatch": "0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure",
+      "condition": "0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing",
+      "state": "0x1007b017c..0x1007b0188: isDisclosing witness +0xb0",
+      "write": "0x1007b019c negates Bool; 0x1007b01d4 calls setValue witness +0x58 with AXDisclosing",
+      "defaultGetters": {
+        "isDisclosable": "0x1007ac3b8 -> 0x1007ac56c -> isAttributeSupportedAndSettable",
+        "isDisclosing": "0x1007ac3d4 -> 0x1007ac3f0: cache-only Bool decode, false for missing/mismatch/error"
+      },
+      "blocks": [
+        {
+          "start": "0x1007b0148",
+          "endExclusive": "0x1007b0214",
+          "machineCodeSha256": "181c3bfa37e64610ba35e980a3f6434a0fd6b80b6170a7e65348c94a73072b43"
+        },
+        {
+          "start": "0x1007ac3b8",
+          "endExclusive": "0x1007ac52c",
+          "machineCodeSha256": "0a17ea7b2d343b5138b5fa6f7bd11c04108bfaf935b6295b94ce2a25d0394051"
+        },
+        {
+          "start": "0x1007ac56c",
+          "endExclusive": "0x1007ac5c4",
+          "machineCodeSha256": "4c2658e0600def5b87d3acdc45d7972c29a46987ce78f5296a0b30b29704d1e0"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementDisclosure.swift",
+      "limitations": "Injected getter/setter dispatch; synthetic actions are not yet advertised or executed by the production simplified collector."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

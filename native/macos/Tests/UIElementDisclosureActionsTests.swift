@@ -42,6 +42,35 @@ struct UIElementDisclosureActionsTests {
                 }
             }
         }
+        for allowed in [false, true] {
+            for current in [false, true] {
+                var calls: [String] = []
+                uiElementToggleDisclosure(isDisclosable: {
+                    calls.append("check"); return allowed
+                }, isDisclosing: {
+                    calls.append("read"); return current
+                }, setDisclosing: { next in
+                    precondition(next == !current); calls.append("write")
+                })
+                precondition(calls == (allowed ? ["check", "read", "write"] : ["check"]))
+            }
+        }
+        var writes = 0
+        do {
+            try uiElementToggleDisclosure(isDisclosable: { true }, isDisclosing: { false },
+                setDisclosing: { _ in writes += 1; throw UIElementError.axError(.cannotComplete) })
+            fatalError("disclosure write errors must propagate")
+        } catch UIElementError.axError(let error) {
+            precondition(error == .cannotComplete && writes == 1)
+        }
+        // State decoding is independent of supported/transaction attributes.
+        for raw in values {
+            var attributes: [UIElementAttribute: AXPartialValue] = [:]
+            if let raw { attributes[key] = AXPartialValue(value: AXEncodedValue(value: raw),
+                arraySubsetDescriptor: nil, textTruncationDescriptor: nil) }
+            let cache = UIElementCache(supportedAttributes: [], attributes: attributes, transactionAttributes: [])
+            precondition(uiElementIsDisclosing(cache: cache) == ((raw as? Bool) == true))
+        }
         precondition(UIElementAction.expand.name == "SAIExpand")
         precondition(UIElementAction.collapse.name == "SAICollapse")
         precondition(UIElementAction("é") == UIElementAction("e\u{301}"))

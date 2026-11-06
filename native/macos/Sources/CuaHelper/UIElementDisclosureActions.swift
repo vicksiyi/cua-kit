@@ -16,7 +16,5 @@ func uiElementDisclosureActions(
     }
     guard supported.contains(disclosing),
           (try? isAttributeSettable(disclosing)) == true else { return [] }
-    guard let partial = cache.attributes[disclosing] else { return [.expand] }
-    let expanded = try? decodeAXBool(partial.value.value, throwingOnFailure: false)
-    return expanded == true ? [.collapse] : [.expand]
+    return uiElementIsDisclosing(cache: cache) ? [.collapse] : [.expand]
 }
