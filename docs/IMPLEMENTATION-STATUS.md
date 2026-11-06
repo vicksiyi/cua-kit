@@ -6965,3 +6965,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：事务预取命中构造分支
 
 恢复预取 attributeTable→UIElementCache 的命中分支，保留空字典命中、keys 支持集合和独立 requestedAttributes。原生组合测试及 helper 构建通过；源分支加入审计。完整未命中构造、TaskLocal 事务及生产观察器仍未接通。
+
+
+### 2026-11-06：回退缓存系统锁实现
+
+使用原类型 OSAllocatedUnfairLock 恢复独立读取/覆盖写入，保留 nil transactionAttributes、AX 键和字典值语义。真实系统锁并发 fixture（48 键 × 20 次读写）及既有预取测试通过。未新增全局缓存；完整事务与生产构造接线仍待恢复。
