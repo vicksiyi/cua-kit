@@ -1,0 +1,35 @@
+flowchart TD
+    subgraph live[当前生产调用链：实线为真实接线，不代表已完成真实 UI 验收]
+        API["cua.getApp(reference)<br/>get_app_state(app, disableDiff:true)"] --> IPC["Sky / Rust IPC / Swift SkyIPC<br/>校验请求与 deadline<br/>disableDiff 目前只校验类型"]
+        IPC --> POLICY["SkyAppState.get<br/>解析已安装应用身份并检查本地策略"]
+        POLICY --> RUN{是否已有唯一匹配进程}
+        RUN -->|没有| LAUNCH["后台启动：activates=false<br/>检查取消、deadline、进程身份"]
+        RUN -->|已有| PERM["检查 AX 与录屏权限"]
+        LAUNCH --> PERM
+        PERM --> TARGET["按路径、PID、launchDate 复用或创建 Target<br/>使旧输入快照失效"]
+        TARGET --> OBS["observeWithScreenshot → observe"]
+        OBS --> COLLECT["collect：独立 AX 遍历<br/>3000 节点 / 深度 80 / 5 秒上限"]
+        COLLECT --> RAW["readRawAXAttribute<br/>查询 PID；必要时切换主线程<br/>AXUIElementCopyAttributeValue"]
+        RAW --> VALUES["普通标量解码 / typed AXValue 解包<br/>AXChildren CFArray 桥接 → compactMap → 数组转换"]
+        VALUES --> TEXT["独立 observationText 格式化<br/>UUID 快照 + 节点列表 + warnings"]
+        TEXT --> SHOT["ScreenCaptureKit 枚举目标进程窗口<br/>选择窗口并生成 PNG<br/>检查窗口和焦点是否变化"]
+        SHOT --> AGAIN["再次 collect 并比较元素身份和节点数据"]
+        AGAIN --> SAME{无 warnings 且前后相同}
+        SAME -->|是| OUT["组装 app 身份 + skyshot.text<br/>截图 data URL → 沿 RPC 返回模型"]
+        SAME -->|否| STALE["STALE_OBSERVATION<br/>使输入状态失效并返回错误"]
+    end
+    subgraph parts[已还原且有组件测试，但尚未接入生产观察器]
+        MARK["UITextMarker / UITextMarkerRange<br/>参数编码 + parameterized AX read"]
+        SELECT["SelectedText 优先级及回退<br/>AccessibilityTreePresentation"]
+        CACHE["uiElementAttributeValue 缓存值优先 helper<br/>FrequencyTable 计数 / 唯一性"]
+        ARRAY["运行时数组目标资格判定<br/>resolvedAXArrayTarget"]
+    end
+    subgraph gaps[原构建已有静态证据，整体恢复尚未完成]
+        TX["TaskLocal 可选 UIElementTreeTransaction<br/>perform(work:) / prefetchEnabled"]
+        STORAGE["UIElement 与 UIElementCache<br/>事务 attributeTable / requestedAttributes / fallbackElements"]
+        DIFF["完整泛型属性分派、事务预取和树缓存<br/>树 revision / 增量 diff"]
+    end
+    classDef pending fill:#fff4d6,stroke:#a97400,color:#222
+    classDef missing fill:#f7e4e4,stroke:#a33,color:#222
+    class MARK,SELECT,CACHE,ARRAY pending
+    class TX,STORAGE,DIFF missing

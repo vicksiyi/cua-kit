@@ -30,7 +30,7 @@
 
 已验证的局部真实链路包括日常 Chrome 受控表单、截图、跨源 iframe、同 tab JS 错误和 selector timeout 后恢复，以及一次带真实 DeepSeek 的受控任务闭环。跨源 iframe 不等于已经证明 OOPIF 全覆盖。
 
-Swift 受控应用启动和复用已有真实测试；桌面截图与输入尚未完成真实验收，最近检查的 Accessibility / Screen Recording 权限为 false。间歇 debugger detach、公开站点任务稳定性与原生协议完整一致性仍有缺口。
+Swift 受控应用启动和复用已有真实测试；桌面截图与输入尚未完成完整真实验收。较早权限检查为 false；2026-11-06 14:37 UTC 的 demo 日志报告两项权限为 true，但当次允许应用列表为空，仍不能据此认定原生 UI 链路通过。间歇 debugger detach、公开站点任务稳定性与原生协议完整一致性仍有缺口。
 
 默认浏览器运行时已经切换为 Rust。旧 `current-runtime-loading.mmd` 中“browser 默认 installed”的描述已过时，本次图采用当前 `runtime-selection.ts`。本次只生成设计说明，没有修改执行逻辑或重新执行端到端验收。
 
@@ -51,4 +51,21 @@ macOS CLI 默认 unified，同时开放 browser / computer；显式 browser、CD
 
 判断包含两个层次：部署层决定模型能够调用什么；模型结合 prompt、文档和实时清单决定调用哪个入口。不存在硬编码的产品名到浏览器/应用映射。`打开本机 Multica` 应选择原生应用入口；缺少能力或授权时应说明限制，不能自行替换成 Multica 网站。应用清单发现、应用进程启动、应用 UI 观察和输入是不同验收项。
 
-最近已有默认 unified 实测只证明真实 DeepSeek 能从清单识别 Multica；当次允许列表为空且 AX/录屏权限不足，没有验证打开并操作 Multica。当前图中的路径表示接线及条件，不能替代真实 UI 验收。
+最近已有默认 unified 实测只证明真实 DeepSeek 能从清单识别 Multica；该清单测试没有验证打开并操作 Multica；权限及应用策略应以对应运行的记录为准，不能与其他 run 混用。当前图中的路径表示接线及条件，不能替代真实 UI 验收。
+
+
+## 原生观察详细接线（2026-11-06 核查）
+
+新增 `05-native-observation.mmd`，区分生产接线、独立组件和未恢复层。该图为 Mermaid 源文件，尚未生成 PNG；已有 PNG/ZIP 不包含本次新增内容。
+
+关键发现：当前 `observeWithScreenshot` 不是只截一张图。它先遍历 AX 并生成文本、截图，再次遍历比较。任何截断 warning 或节点变化都会拒绝该组合观察；这属于当前独立实现，不能称为原厂事务或 diff 的还原。`SkyIPC` 接收 `disableDiff` 但尚未据此实施树差异语义。
+
+已还原的 SelectedText、marker 参数化读取、原厂 presentation、FrequencyTable 等尚未进入 `Target.collect` 的生产路径。它们通过组件测试不等于当前模型已获得对应原厂观察内容。完整 UIElement/cache/transaction 层是剩余主干工作，不能用独立遍历器替代后宣布对齐完成。
+
+本图依据：
+- `native/macos/Sources/CuaHelper/SkyIPC.swift`、`SkyAppState.swift`：请求、策略、启动、权限与返回结构。
+- `native/macos/Sources/CuaHelper/main.swift`、`Capture.swift`：实际收集、截图、前后比较与失效。
+- `AXAttributeReading.swift`、`AXOrdinaryValueDecoding.swift`、`AXTypedAttributeDecoding.swift`、`AXUIElementArrayDecoding.swift`：当前已接入的解码层。
+- `docs/NATIVE-AX-DIFF.md`、`reconstruction/desktop-diff-evidence.json`：原构建静态证据及尚未恢复的事务/缓存语义。
+
+相关历史误路由诊断见 `docs/MULTICA-ROUTING-INCIDENT.md`。浏览器专用部署不能提供本机应用能力；模型不能因此把应用请求改成网站。
