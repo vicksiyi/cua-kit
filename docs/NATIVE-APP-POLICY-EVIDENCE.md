@@ -467,3 +467,31 @@ cancellation IDs and cancellation requested before registration. Swift build
 and the executable tests pass. The earlier pending actor notes are superseded
 by this implementation; byte framing, timed nextMessage orchestration, request
 dispatch and process creation still remain to complete the connection.
+
+## Foundation pipe reader integration
+
+The native reader at `0x100dcd480..<0x100dcdbec` uses Foundation, rather than a
+custom byte splitter. Calls at `0x100dcd5e4`, `0x100dcd614` and `0x100dcd634`
+resolve respectively to FileHandle `bytes`, AsyncSequence<UInt8> `lines`, and
+`AsyncLineSequence.makeAsyncIterator`. GOT bindings are `0x1014638b0`,
+`0x101463848`, `0x101462a98`; iterator next uses `0x101462aa8`.
+The clean completion branch calls finish(nil) at `0x100dcd814`; the failure
+branch supplies the thrown error at `0x100dcdba4`.
+
+`NativeJSONRPCPipeReader.read(_:into:)` now connects `handle.bytes.lines` to
+the reconstructed line-buffer actor. It forwards lines unchanged, finishes
+on EOF, and stores the original read error on failure. Task creation and
+handle ownership remain in the connection layer. Its generic consume method
+is a test seam for injecting an AsyncSequence failure. Foundation controls
+Unicode, newline, blank-line and trailing-line behavior; decoder unit tests
+for an explicitly supplied blank String do not imply that every blank byte
+line reaches that decoder through Foundation.
+
+Executable tests use owned real Pipe instances and compare framing against an
+independent direct Foundation reader, including Unicode, CRLF, blank input
+lines and a final line without newline. A second real pipe verifies the chain
+from bytes through buffered lines to JSON dictionaries and EOF. A failing
+sequence proves queued data survives before the identical error is rethrown.
+Swift build and these tests pass. No vendor process or model request is used.
+Timed nextMessage handling, request matching and process creation still remain
+before a complete native policy connection can be claimed.
