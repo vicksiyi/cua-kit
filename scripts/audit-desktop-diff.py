@@ -819,6 +819,16 @@ element_storage_evidence['uncachedValueErrorBoundary']={
     'interpretation':'Success returns directly. Errors enter the logger path then return nil; reporting does not retry reading or decoding.',
     'limitations':'reportError is an explicit logger dependency, not a claim that original OS log category, level and formatting are restored.',
 }
+element_storage_evidence['cachedRole']={
+    'getter':'0x1007a80f0','endExclusive':'0x1007a8298',
+    'machineCodeSha256':hashlib.sha256(read_virtual(0x1007a80f0,0x1a8)).hexdigest(),
+    'attribute':'AXRole','attributeStorage':'0x1015ca8e0',
+    'decoderCall':'0x1007a819c -> 0x100710b44',
+    'fallback':'AXUnknown','fallbackInitializer':'0x1007b9798',
+    'fallbackInitializerSha256':hashlib.sha256(read_virtual(0x1007b9798,0x34)).hexdigest(),
+    'interpretation':'Read cache once; decode cached AXRole as String with throwing disabled. Non-nil string bridges into UIElementRole; missing/failed decoding uses AXUnknown. Empty and custom strings are not replaced. No uncached read or static role witness lookup.',
+    'limitations':'Concrete UIElement getter restored; full role catalog, presentation mapping and production tree integration remain pending.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))

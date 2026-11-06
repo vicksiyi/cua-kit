@@ -976,3 +976,14 @@ attributeUnsupported（常量 -25212/-25205 固定在 0x101570d18），其它状
 扩展组合测试验证：缓存命中完全跳过 read；已知不支持不读取；缓存类型错误可回退到新值；
 严格解码异常只报告一次并返回 nil；宽松类型不匹配不报告；底层 AXError 不因宽松标志而被吞掉，
 仍先进入统一报告边界。原 40 个内部状态组合继续通过。
+
+## role 的缓存获取与未知角色回退（2026-11-07）
+
+`UIElementProtocol.role` 的 getter `0x1007a80f0..0x1007a8298` 只解码缓存中的 AXRole，
+使用同一 String 专用 decoder；成功字符串经 Foundation 桥接成为 UIElementRole。
+缺失/失败时返回静态 unknown。其初始化器 `0x1007b9798` 的小字符串立即数明确为 AXUnknown。
+空字符串与自定义角色都保持原值，不以展示名称、静态 role witness 或系统重新读取替代。
+
+新增 `UIElementCachedRole.swift` 与 UIElementRole.unknown，复用缓存 String 解码。
+测试涵盖标准角色、自定义/Unicode 角色、空串、缺失、数字、NSNull 和数组；Swift 测试通过。
+完整角色目录、presentationKind 映射和生产树观察接线仍待完成。

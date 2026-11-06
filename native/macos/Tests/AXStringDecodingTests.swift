@@ -95,6 +95,19 @@ struct AXStringDecodingTests {
             precondition(result == "fresh")
             precondition(events == (missingKey ? ["cache", "uncached"] : ["cache", "decode", "uncached"]))
         }
+        let roleKey = UIElementAttribute(kAXRoleAttribute)
+        precondition(UIElementRole.unknown.rawValue == "AXUnknown")
+        for text in ["", "AXButton", "AXCustomRole", "自定义角色"] {
+            let entry = AXPartialValue(value: AXEncodedValue(value: text as NSString), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+            let item = UIElement(axElement: element, cache: UIElementCache(supportedAttributes: [], attributes: [roleKey: entry], transactionAttributes: []))
+            precondition(item.role == UIElementRole(text))
+        }
+        for bad in [NSNumber(value: 3), NSNull(), NSArray()] as [AnyObject] {
+            let entry = AXPartialValue(value: AXEncodedValue(value: bad), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+            let item = UIElement(axElement: element, cache: UIElementCache(supportedAttributes: [roleKey], attributes: [roleKey: entry], transactionAttributes: nil))
+            precondition(item.role == .unknown)
+        }
+        precondition(missing.role == .unknown)
         print("native String decoding preserves CF dispatch, strict errors, Unicode and cached subrole")
     }
 }

@@ -1919,6 +1919,19 @@
       "nilResult": "0x1007ae5bc..0x1007ae5d8",
       "interpretation": "Success returns directly. Errors enter the logger path then return nil; reporting does not retry reading or decoding.",
       "limitations": "reportError is an explicit logger dependency, not a claim that original OS log category, level and formatting are restored."
+    },
+    "cachedRole": {
+      "getter": "0x1007a80f0",
+      "endExclusive": "0x1007a8298",
+      "machineCodeSha256": "1b4f3436d95125484c336adb5b3b81e322308268c592ecb1db11cce00ebd5d91",
+      "attribute": "AXRole",
+      "attributeStorage": "0x1015ca8e0",
+      "decoderCall": "0x1007a819c -> 0x100710b44",
+      "fallback": "AXUnknown",
+      "fallbackInitializer": "0x1007b9798",
+      "fallbackInitializerSha256": "424748024b47bccaa4fbcbdfacc2924f604975642216b4a5981e130052ae24ca",
+      "interpretation": "Read cache once; decode cached AXRole as String with throwing disabled. Non-nil string bridges into UIElementRole; missing/failed decoding uses AXUnknown. Empty and custom strings are not replaced. No uncached read or static role witness lookup.",
+      "limitations": "Concrete UIElement getter restored; full role catalog, presentation mapping and production tree integration remain pending."
     }
   },
   "transactionScopeEvidence": {

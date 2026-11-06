@@ -3,6 +3,9 @@ import Foundation
 // Native role identity uses CFString equality/hash, like UIElementAttribute,
 // but remains a distinct type so role frequencies cannot mix with attributes.
 struct UIElementRole: Hashable {
+    // Static initializer 0x1007b9798 encodes exactly AXUnknown.
+    static let unknown = UIElementRole("AXUnknown")
+
     let name: CFString
 
     init(_ name: CFString) { self.name = name }
