@@ -1430,3 +1430,23 @@ partial value 的释放（unknownObjectRelease 与描述符释放），并非缓
 当前 accessor 注入完整 decoder、raw provider 和日志边界；不是将现有仅覆盖具体
 CFArray 的 decoder 假装成所有严格解码分支。原完整 decoder/provider/logger、TaskLocal
 和生产协议仍待接入，未执行真实 UI 或模型调用。
+
+## [UIElement] 严格解码与属性读取组合（2026-11-07）
+
+补齐请求目标固定为 [UIElement] 的外层 CF 分流 decodeUIElementArray，复用原
+marker/range/AXValue/ordinary 解码策略。单个 AX 引用不能作为数组；严格模式抛出
+failedToUnwrapAttributeValue([UIElement].self)，宽松模式 nil。AXValue 中的 AXError
+保持原语义。数组成员逐项过滤不因外层严格模式变成 all-or-nothing。
+依据仍为 0x1007135c8..<0x100713e20：0x100713a3c 检查严格标志；数组转换与失败分支
+位于 0x100713d1c..0x100713df0。未宣称恢复任意泛型请求类型的运行时元数据分派。
+
+新增 systemElementCollectionValue，将完整属性 accessor、上述具体 decoder 和系统
+元素初始化/事务缓存构造组合。raw provider 与错误报告保持显式依赖，不从普通 OS
+返回值伪造 AXPartialValue 描述符。
+
+测试验证严格/宽松非数组拒绝、全无效成员数组仍返回有效 []、AXValue 错误传播，
+以及 raw partial→严格解码→系统事务缓存→翻页按钮筛选的完整元素级链。错误 partial
+只报告一次并返回空数组。测试与 Swift 构建通过，无模型或 UI 调用。
+
+尚缺原 ScrollBar 类型、完整协议/TaskLocal、raw provider 和 logger 生产接线，以及
+真实应用验收；不能把这次元素级接线描述为用户可用的滚动功能已经全部完成。

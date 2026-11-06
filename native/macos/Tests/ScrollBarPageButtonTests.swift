@@ -128,6 +128,38 @@ struct ScrollBarPageButtonTests {
             decode: { _, strict in precondition(strict); throw DecodeFailure.fixture },
             reportError: { error in precondition(error is DecodeFailure); reports += 1 })
         precondition(strictFailure.isEmpty && reports == 1)
+        for strict in [false, true] {
+            for raw: AnyObject in ["bad" as NSString, valid.axElement, NSNumber(value: 7)] {
+                do {
+                    let result = try decodeUIElementArray(raw, throwingOnFailure: strict) { _ in fatalError("not an array") }
+                    precondition(!strict && result == nil)
+                } catch UIElementError.failedToUnwrapAttributeValue(let target) {
+                    precondition(strict && target == [UIElement].self)
+                }
+            }
+            let filtered = try decodeUIElementArray(["bad", 3, NSArray()] as NSArray,
+                throwingOnFailure: strict) { _ in fatalError("no AX members") }
+            precondition(filtered != nil && filtered!.isEmpty)
+            var axError = AXError.cannotComplete
+            let errorValue = AXValueCreate(.axError, &axError)!
+            do {
+                let result = try decodeUIElementArray(errorValue, throwingOnFailure: strict) { _ in fatalError() }
+                precondition(!strict && result == nil)
+            } catch UIElementError.axError(let error) {
+                precondition(strict && error == .cannotComplete)
+            }
+        }
+        var readCount = 0
+        var errors: [Error] = []
+        let actualChildren = valid.systemElementCollectionValue(for: childrenKey, transaction: transaction,
+            read: { readCount += 1; return (.success, childrenRaw) }, reportError: { errors.append($0) })
+        precondition(readCount == 1 && errors.isEmpty && actualChildren.count == 1)
+        precondition(ScrollBarPageButton.increment.find(in: actualChildren)!.axElement === valid.axElement)
+        let wrongPartial = AXPartialValue(value: AXEncodedValue(value: "wrong" as NSString),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        let failedChildren = valid.systemElementCollectionValue(for: childrenKey, transaction: transaction,
+            read: { readCount += 1; return (.success, wrongPartial) }, reportError: { errors.append($0) })
+        precondition(readCount == 2 && errors.count == 1 && failedChildren.isEmpty)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

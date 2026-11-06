@@ -1,5 +1,34 @@
 import ApplicationServices
 
+// Requested target is [UIElement]. Preserve the original outer CF dispatch;
+// strictness affects the outer conversion, not compactMap's individual items.
+func decodeUIElementArray(
+    _ raw: AnyObject,
+    throwingOnFailure: Bool,
+    initialize: (AXUIElement) -> UIElement
+) throws -> [UIElement]? {
+    let kind = CFGetTypeID(raw)
+    if kind == AXUIElementGetTypeID() {
+        if throwingOnFailure { throw UIElementError.failedToUnwrapAttributeValue([UIElement].self) }
+        return nil
+    }
+    if kind == AXTextMarkerGetTypeID() {
+        return try decodeAXTextMarker(raw as! AXTextMarker, throwingOnFailure: throwingOnFailure, as: [UIElement].self)
+    }
+    if kind == AXTextMarkerRangeGetTypeID() {
+        return try decodeAXTextMarkerRange(raw as! AXTextMarkerRange, throwingOnFailure: throwingOnFailure, as: [UIElement].self)
+    }
+    if kind == AXValueGetTypeID() {
+        return try decodeAXValue(raw as! AXValue, throwingOnFailure: throwingOnFailure, as: [UIElement].self)
+    }
+    if kind == CFArrayGetTypeID() {
+        if let result = decodeCFUIElementArray(raw, initialize: initialize) { return result }
+        if throwingOnFailure { throw UIElementError.failedToUnwrapAttributeValue([UIElement].self) }
+        return nil
+    }
+    return try decodeAXOrdinaryValue(raw, throwingOnFailure: throwingOnFailure, as: [UIElement].self)
+}
+
 // Concrete CFArray -> [UIElement] branch of the original array decoder.
 // Caller provides the original element initializer's transaction/cache context.
 // This is not the full AXEncodedValue decoder or the AXChildren attribute reader.
