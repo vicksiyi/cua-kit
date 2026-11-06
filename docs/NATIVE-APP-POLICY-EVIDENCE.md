@@ -1095,3 +1095,26 @@ field type encodings and the selection branch are pinned by the audit.
 
 Full result assembly, screenshot-bearing IPC errors and live handler wiring
 remain pending; this helper is not a substitute for those paths.
+
+### Result metadata merge
+
+`NativeMCPResultContext.applying` now restores the merge helper at
+`0x100e5ea68..<0x100e5ec70` using upstream `CallTool.Result` and `Metadata`.
+The nil-context branch (`0x100e5eab8..<0x100e5eaf0`) copies the original result
+without modifying metadata. With context, the helper copies existing metadata
+or creates an empty dictionary, assigns the newly encoded value to
+`codex/telemetry`, then calls `Metadata.progressToken.setter` with nil at
+`0x100e5ebb4`. The result payload is copied back unchanged. This is key
+replacement, not a recursive merge of the old telemetry object. Other metadata
+keys remain intact; clearing the progress token is conditional on context
+being present, not unconditional for every result.
+
+SDK-backed tests decode a result containing text, image, structured content,
+error status, unrelated metadata, old telemetry and a progress token. They
+verify payload/unknown-field preservation, old telemetry replacement, token
+removal, source value immutability, nil-context identity, missing-metadata
+creation and encoded wire output. A malformed token shape is still removed
+because the SDK setter deletes the raw key. These tests use synthetic image
+data and perform no screen capture or desktop actions. The pinned merge code
+range was already included in the static audit. Full error result assembly
+and live host wiring remain separate pending work.

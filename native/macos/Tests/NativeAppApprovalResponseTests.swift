@@ -6,6 +6,7 @@ import MCP
         let tests = Self()
         tests.testErrorContextPreservesUserFlowDistinction()
         tests.testErrorContextPrecedenceAndSingleUnwrap()
+        try tests.testResultContextMergePreservesPayloadAndUnknownMetadata()
         try tests.testAcceptUsesOnlyExactMetadataString()
         try tests.testDeclineAndCancelDoNotBecomeAcceptFromMetadata()
         tests.testUpstreamDecoderRejectsInvalidActionsAndContainers()
@@ -54,6 +55,38 @@ import MCP
         precondition(nested.error is NativeErrorWithCodexSpanTelemetry)
         equal(nested.context, explicit)
         precondition(NativeMCPErrorResolution.resolve(NativeMCPToolError.unknownTool("fixture")).context == nil)
+    }
+
+    func testResultContextMergePreservesPayloadAndUnknownMetadata() throws {
+        // Decode through the SDK so the fixture checks wire fields as well as Swift values.
+        let raw = #"{"content":[{"type":"text","text":"failure"},{"type":"image","data":"AA==","mimeType":"image/png"}],"structuredContent":{"fixture":true},"isError":true,"_meta":{"progressToken":"running","other":{"keep":42},"codex/telemetry":{"old":true}}}"#
+        let input = try JSONDecoder().decode(CallTool.Result.self, from: Data(raw.utf8))
+        equal(NativeMCPResultContext.applying(nil, to: input), input)
+        let context = NativeMCPErrorContext(targetID: "fixture.app", didTriggerServerUserFlow: true)
+        let output = NativeMCPResultContext.applying(context, to: input)
+        equal(output.content, input.content)
+        equal(output.structuredContent, input.structuredContent)
+        equal(output.isError, input.isError)
+        equal(output._meta?["other"], input._meta?["other"])
+        equal(output._meta?["codex/telemetry"], context.value)
+        precondition(output._meta?["progressToken"] == nil)
+        equal(input._meta?.progressToken, .string("running"))
+        equal(input._meta?["codex/telemetry"], .object(["old": .bool(true)]))
+        let encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(output)) as! [String: Any]
+        let meta = encoded["_meta"] as! [String: Any]
+        precondition(meta["progressToken"] == nil && meta["other"] != nil)
+        let span = (meta["codex/telemetry"] as! [String: Any])["span"] as! [String: Any]
+        precondition(span["target_id"] as? String == "fixture.app")
+        precondition(span["did_trigger_server_user_flow"] as? Bool == true)
+        let absent = CallTool.Result(content: [])
+        equal(NativeMCPResultContext.applying(nil, to: absent), absent)
+        let added = NativeMCPResultContext.applying(context, to: absent)
+        equal(added._meta?.fields, ["codex/telemetry": context.value])
+        precondition(added.isError == nil && added.structuredContent == nil && added.content.isEmpty)
+        // Clearing the token is unconditional once context exists, even for an invalid token shape.
+        let malformed = try JSONDecoder().decode(CallTool.Result.self,
+            from: Data(#"{"content":[],"_meta":{"progressToken":{"invalid":true}}}"#.utf8))
+        precondition(NativeMCPResultContext.applying(context, to: malformed)._meta?["progressToken"] == nil)
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }

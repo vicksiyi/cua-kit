@@ -60,3 +60,19 @@ enum NativeMCPErrorResolution {
                         context: context ?? wrappedContext ?? NativeMCPErrorContext.infer(from: underlying))
     }
 }
+
+
+/// Native result merge at 0x100e5ea68..<0x100e5ec70. Preserve the entire
+/// result on nil context; otherwise replace only codex/telemetry and remove
+/// the progress token, retaining other metadata and all result payloads.
+enum NativeMCPResultContext {
+    static func applying(_ context: NativeMCPErrorContext?, to result: CallTool.Result) -> CallTool.Result {
+        guard let context else { return result }
+        var output = result
+        var metadata = result._meta ?? Metadata()
+        metadata.fields["codex/telemetry"] = context.value
+        metadata.progressToken = nil
+        output._meta = metadata
+        return output
+    }
+}
