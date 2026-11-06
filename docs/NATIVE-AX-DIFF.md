@@ -2157,3 +2157,16 @@ initWithURL:。PID 错误和任何缺失步骤返回 false，不启动应用或�
 依赖注入测试覆盖每个失败步骤以及八种谓词组合的调用顺序。此入口目前使用
 直接 OS PID 查询，原版 MockProvider 分派尚未恢复；完整 context 及生产接线
 仍待完成。
+
+
+### Catalyst application classification
+
+Restored `ApplicationUIElement.isCatalystApp` (0x100715974..<0x100715d4c)
+through `UIElement.applicationIsCatalyst`. The original attribute constant is
+`_AXExhibitsMacCatalystBehavior` (initializer 0x10079cab8), not Bundle metadata.
+A cached false is authoritative; only missing/invalid cached decoding falls
+through to the existing known-unsupported gate and strict provider-value read.
+Missing values return false; read/decode failures are reported once then false.
+Tests cover cached true/false/malformed/missing, fresh value/status combinations,
+and transaction/support gates. The application wrapper, complete context
+constructor, and production observation wiring are still incomplete.

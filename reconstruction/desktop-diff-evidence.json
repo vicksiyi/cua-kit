@@ -2915,6 +2915,25 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementApplicationWebShape.swift",
       "limitations": "Concrete adapter composes direct OS PID read; original MockProvider PID dispatch remains absent. Full transformation context and production observation integration pending."
     },
+    "applicationCatalyst": {
+      "entry": "ApplicationUIElement.isCatalystApp 0x100715974..<0x100715d4c",
+      "attribute": "_AXExhibitsMacCatalystBehavior, initializer 0x10079cab8..<0x10079caec",
+      "evaluation": "Cached lenient Bool, including false, wins; missing/malformed cache falls back to known-unsupported gate then provider value read and strict Bool decode. Missing -> false; thrown read/decode reported once -> false.",
+      "blocks": [
+        {
+          "start": "0x100715974",
+          "endExclusive": "0x100715d4c",
+          "machineCodeSha256": "62ac258977d23a4f53f73fe3049af1cbccef208aae0fb7c7ccfa34d45992e1eb"
+        },
+        {
+          "start": "0x10079cab8",
+          "endExclusive": "0x10079caec",
+          "machineCodeSha256": "4d2b6702f5491a86f2e138f794aa3ac7a140c232807e265c11603dab90818a7f"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementCatalyst.swift",
+      "limitations": "Composed on concrete UIElement with injected provider read; ApplicationUIElement wrapper and full context constructor remain pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
