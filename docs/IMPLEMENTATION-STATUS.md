@@ -6791,3 +6791,10 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Added kernel-only raw-line decoding before queue/dispatch: required exec_id:String and optional execution_duration_ms:u64; missing/null duration remains None, unknown fields ignored, duplicate known fields and invalid duration types/ranges rejected. Empty identity is DTO-valid; manager semantics remain separate.
 - Ten library + eleven process transport + fourteen manager tests passed, including unsigned 64-bit maximum, overflow/negative/fractional rejection, duplicate null duration, and malformed notices followed by valid completion/result in the same subprocess. Rebuilt release supervisor; two real MCP/restored-worker fetch checks passed.
 - Scope is completion-notice decoding only, not full lifecycle/hook/duration telemetry restoration. Native protocol remainder, source-oracle gaps and browser/app acceptance remain incomplete. Public-page approval remains separate from this local protocol work.
+
+### 2026-11-06 Native application acceptance recheck
+
+- Read the current helper permission state: Accessibility=false and ScreenRecording=false, requested=false. No permission dialog/settings change attempted; real native AX/screenshot/input acceptance remains incomplete.
+- Re-ran all four owned-App launch cases against current build: explicit launch and GetSkyshot background launch, each through restored and installed JavaScript Sky clients to our Swift service. All passed, checking correct app identity/path, running PID, background non-activation, reuse and owned-process cleanup. GetSkyshot's expected permission error is not counted as successful UI observation.
+- Reviewed current SkyIPC/SkyAppState dispatch and refreshed the front of NATIVE-MACOS.md: old historical statements about unimplemented scroll/drag/paste/audio must not override subsequent implementation. New table separates implementation from live acceptance and makes the native service versus installed JS client distinction explicit. No runtime code changed this turn.
+- Full native parity and UI acceptance remain open; browser source/protocol work can continue without these OS permissions.

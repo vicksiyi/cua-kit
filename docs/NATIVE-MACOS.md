@@ -1,5 +1,27 @@
 # macOS 原生后端：第一条独立链路
 
+## 当前能力与验收（2026-11-06 复核）
+
+下面以 Rust 托管 Swift、使用原始 Sky IPC 的路径为准。本文后续按时间累积的记录包含早期“未实现”描述；对已被后续实现覆盖的能力，以本表和 `IMPLEMENTATION-STATUS.md` 为准，不能把历史状态当作当前状态。
+
+| 能力 | 当前实现 | 当前验收边界 |
+| --- | --- | --- |
+| 应用发现、显式启动、状态读取时后台启动、复用已运行应用 | Swift `SkyIPC.swift` / `SkyAppState.swift`，原始 Sky 客户端调用 | 本轮四项真实 owned-App 测试通过：还原/安装包 JS 客户端 × 显式/状态读取启动；后台启动不抢前台、重复调用复用 PID、测试应用清理通过 |
+| AX 状态与截图 | Swift 原生实现，Skyshot 返回 | 当前 helper 的 Accessibility 与 Screen Recording 均为 false；真实 UI 观察未验收。启动成功后观察返回权限错误不能算截图成功 |
+| 键盘、鼠标点击、滚动、拖拽、AX 元素动作 | `SkyAppState.perform` 已分派到 Swift 原生输入实现 | 有协议/纯逻辑测试，真实系统输入效果仍待权限下验收；并非全部仍未实现 |
+| 粘贴、格式处理与剪贴板恢复 | Swift 负责事务及原生动作，TS 保留调用绑定 | 原生逻辑/命名剪贴板测试已有覆盖，真实 App 粘贴效果未验收 |
+| 音频录制 | `SkyIPC` 已分派 Start/Stop 到 `NativeAudioSession` | 不等于真实麦克风/系统音频和完整原版行为已验收 |
+
+本轮复核命令：
+
+```sh
+npm run check:computer-permissions
+CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern='owned App launch' reconstruction/native-sky-ipc.test.ts
+```
+
+启动验收使用临时专用 App，不操作用户应用。测试中的“installed”指安装包 JavaScript Sky 客户端连接我们的 Swift 服务，不是执行 ChatGPT 的原生服务。系统权限未被修改，也未弹出权限申请。`--check-computer` 的清单检查同样不能证明截图和输入可用。
+
+
 ## Existing adapter language migration
 
 The legacy `@core/native-macos` adapter now forwards raw `text`/`format` to the Swift helper's `pasteFormatted` method. The TypeScript Markdown/HTML renderer has been removed. Swift renders, validates the observed editor, owns the clipboard transaction, verifies insertion and restores the clipboard. The old `pasteWithClipboard` wire method remains compatible for existing callers. This NDJSON method is an independent compatibility bridge, not a claim that the original Sky protocol includes it.
