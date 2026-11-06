@@ -948,6 +948,17 @@ element_storage_evidence['transformedStringSourceRange']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringSourceRange.swift',
     'limitations':'Direct range mapping restored; substring occurrence search and prefix/suffix disambiguation remain pending, as does full transformed type integration.',
 }
+element_storage_evidence['transformedStringMerge']={
+    'entry':'appendInterpolation(TransformedUIString) 0x100639544..<0x1006395d4; offset reconciliation 0x1006395d4..<0x100639834',
+    'order':'Read old description UTF16 length; append each incoming span using ordinary append; if both incoming and resulting offsets are nil, return',
+    'prefix':'If destination offsets exist, Array(prefix(oldLength)) after ordinary append; otherwise oldLength nil entries. Prefix helper 0x10064e604 uses min(count,oldLength).',
+    'suffix':'Incoming offsets unchanged when nonnil; otherwise nil entries equal to new description UTF16 length minus oldLength; assign prefix + suffix',
+    'semantics':'No rebasing of source coordinates; empty-but-nonnil mapping activates mapping; does not validate incoming mapping length; retains ordinary span coalescing and URL boundaries',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100639544,0x100639834),(0x10064e604,0x10064e63c)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringMerging.swift',
+    'limitations':'Interpolation-to-interpolation merge restored; full type construction, removeLast, substring search, URL rendering and production wiring remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

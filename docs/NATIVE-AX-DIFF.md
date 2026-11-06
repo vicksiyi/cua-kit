@@ -1936,3 +1936,19 @@ ZWJ 序列、链接/图片边界、映射保留、未映射前缀、nil 与空�
 全部 nil、内部 nil、非单调映射，以及与 Unicode UTF-16 追加 helper 组合；隔离
 进程检查输入和输出算术溢出 trap。相关测试通过。按 substring 查找和 prefix/
 suffix 消歧仍待恢复，生产文本定位尚未完成。
+
+### 插值文本之间的合并
+
+`appendInterpolation(TransformedUIString)` (`0x100639544..<0x100639834`) 先记录
+旧 description 的 UTF-16 长度，再逐项走普通 span append（保留文本合并/URL
+边界及临时 nil padding）。随后若双方 offsets 都 nil，直接结束。
+
+存在映射时，取追加后 destination offsets 的 prefix(oldLength)；原映射 nil 则
+创建 oldLength 个 nil。prefix helper `0x10064e604` 取 min(count,oldLength)，
+不能换成强制下标切片。suffix 为 incoming offsets 原值；若 nil，则按新总长度
+减旧长度补 nil。最终保存 prefix+suffix，不平移源偏移，不校验 incoming 长度。
+即使空 incoming 只带非 nil 空映射，也会激活 destination 映射。
+
+恢复组合 helper；测试双方映射的四种组合、Unicode 长度、URL 片段边界、空
+incoming、旧映射长短不一致时的原版 prefix 行为、同一值自追加和输入快照。
+相关测试通过。完整类型、删除末字符、substring 查找和生产接线仍未完成。

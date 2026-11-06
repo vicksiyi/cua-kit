@@ -260,3 +260,18 @@ test("native source range preserves mapping endpoint semantics", {
     }
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native interpolation merge preserves source mapping combinations", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-merge-"));
+  try {
+    const output = join(directory, "merge");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringAppending", "TransformedUIStringMerging"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringMergingTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /interpolation merge preserves mapping combinations, UTF16 prefixes, span boundaries and self append/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
