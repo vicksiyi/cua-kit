@@ -368,3 +368,19 @@ test("native URL shortener configuration preserves original fields", {
     assert.match(result.stdout, /shortener configuration preserves raw limits, flags and discarded baseHost/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native URL shortening core preserves formatting and budget semantics", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-url-core-"));
+  try {
+    const output = join(directory, "core");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementURLShortenerConfiguration", "UIElementURLShortenerCore"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementURLShortenerCoreTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /URL core preserves scheme gates, image suppression, file bypass, rewriting and cumulative budgets/);
+    await assert.rejects(exec(output, ["overflow"]), (error: any) => ["SIGTRAP", "SIGILL"].includes(error.signal));
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

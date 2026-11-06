@@ -1022,6 +1022,18 @@ element_storage_evidence['urlShortenerStorage']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementURLShortenerConfiguration.swift',
     'limitations':'Only configuration restored. Stateful trim core 0x10065fde4 and compaction algorithm require further audit before full shortener or rendering context integration.',
 }
+element_storage_evidence['urlShortenerCore']={
+    'entry':'0x10065fde4..<0x1006603ec returns optional domain and optional rendered text',
+    'gates':'Missing scheme, lowercased webdoc/data, or isImage -> nil pair; file URL -> absoluteString without accumulation or budget checks',
+    'format':'URLComponents resolvingAgainstBaseURL=false; remove exact http/https scheme; remove www. host prefix; validate string; clear query/fragment by flags; serialize and strip leading //',
+    'individual':'If index(start, offsetBy: limit+1, limitedBy:end) exists, take prefix(limit-1) and append ellipsis; Swift Character indexing and checked arithmetic',
+    'total':'Count rendered String Characters; if accumulated+count > totalLimit return domain and ellipsis, increment accumulated by 1; otherwise increment by count even with nil totalLimit',
+    'bindings':{'0x1014630c0':'URL.scheme','0x101462fd8':'URL.isFileURL','0x101463010':'URL.absoluteString','0x101462810':'URLComponents.init(url:resolvingAgainstBaseURL:)','0x101466370':'String.count','0x101466388':'String.index(_:offsetBy:limitedBy:)'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10065fde4,0x1006603ec),(0x10009e2fc,0x10009e384)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementURLShortenerCore.swift',
+    'limitations':'Formatting and accumulated accounting restored; enclosing URL/domain storage, compaction and production context still pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

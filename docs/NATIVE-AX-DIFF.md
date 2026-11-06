@@ -2047,3 +2047,20 @@ trim 入口先记录已见 URL，再调用 0x10065fde4 的实际格式化/累计
 域名时更新计数。reset 清零累计并清空两种集合，保留配置。compactConfiguration
 还有独立重算路径；仅有配置和 callback 不能视为完整 shortener，这些逻辑仍待
 继续还原后才能接入生产渲染上下文。
+
+### URL 缩写核心和累计规则
+
+`0x10065fde4..<0x1006603ec` 返回 domain/text 两个可选值。缺少 scheme、
+小写化后的 scheme 为 webdoc/data、或 isImage=true，均返回 nil 对；file URL
+直接返回 absoluteString，跳过格式化和累计。普通 URL 使用 URLComponents
+（resolvingAgainstBaseURL=false），移除精确 http/https scheme 与 www. 主机前缀，
+按配置清除 query/fragment，序列化后移除前导 //。
+
+单条限制通过 String.index(start,offsetBy:limit+1,limitedBy:end) 判断超限；
+超限取 prefix(limit-1)+省略号。计数和截取单位为 Swift Character，不是 UTF-16。
+总限制比较 accumulated+count；超过时返回省略号且 accumulated += 1，即使已经
+超过预算仍继续增加；否则累计当前长度。所有整数运算保留原版溢出 trap。
+
+已恢复核心 Swift helper。测试 scheme/image 门控、文件旁路、四种 query/fragment
+组合、单条边界、总预算边界和多次超额累计，并在子进程验证 limit+1 溢出。
+完整 shortener 的 URL/domain 状态封装、自动压缩和生产 context 接入仍待完成。
