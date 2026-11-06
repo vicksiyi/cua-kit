@@ -121,3 +121,9 @@
 
 验证：2 项命令差分测试（15 个 get-state 场景与 action 路径）和 snapshot lifecycle 原方法对照通过；Browser TypeScript、重建通过。真实 native 扩展 MCP 通用回归另行执行，不能替代所有 AX 端到端验收。
 本轮 native 扩展全 MCP 回归通过（约 9.8 秒）。
+
+## 后续验证：真实 AX/WASM 与结果 schema
+
+本轮观察到独立 native 扩展 MCP 测试的 getAXState 实际输出是 DOM fallback；此前通用回归不能作为 AX/WASM 已验收证据。新增专门测试，直接使用真实 AccessibilityCaptureManager、构建产物中的 AX WASM、真实 Chromium/CDP（含 iframe）和 TabAXGetStateCommand，验证候选附加、AX snapshotId、主 frame 目标定位、拒绝子 frame/过期目标以及旧 capture 不清理新 capture。
+
+同时发现 StateResultSchema 缺少当前原 x9 的 snapshotId/siwc 字段，会在 parse 时剥离元数据。已补齐，新增 schema 差分并断言真实捕获结果 parse 后完整保留。两项测试、Browser TypeScript 与重建通过。该 AX 专项不覆盖 MCP/native socket 的 AX 命令路径，未改动生产 API 可见性策略。临时观察日志代码已移除。

@@ -1,3 +1,4 @@
+import { SiwcDetectionSchema } from "./siwc";
 import { z } from "../vendor/bundled_zod";
 import { Command } from "./command";
 export const StatePayloadSchema = z.object({
@@ -10,6 +11,8 @@ export const StateResultSchema = z.object({
   state: z.string().optional(),
   data: z.string().optional(),
   screenshot_unavailable: z.string().optional(),
+  snapshotId: z.string().optional(),
+  siwc: SiwcDetectionSchema.optional(),
 });
 export const PointSchema = z.tuple([z.number(), z.number()]);
 export const ElementSchema = z.number().int().nonnegative();
