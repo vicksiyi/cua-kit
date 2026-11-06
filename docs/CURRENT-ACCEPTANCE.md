@@ -143,3 +143,21 @@ clear 与在途失败竞争、read-all schema 对照通过。
 继续递归脱敏，并用祖先集合处理循环引用而不误删重复共享对象。9 项诊断/预算测试、
 AgentLoop 类型检查通过。此处是独立 demo 的诊断改进，不声称原厂 AgentLoop 源码还原。
 真实运行日志仍由 gitignore 排除，本次未上传日志、页面内容或凭证。
+
+## 当前真实 DeepSeek → MCP → 扩展操作验收
+
+使用 `CUA_LIVE_DEEPSEEK_TEST=1` 启用现有受控场景，在临时浏览器配置中运行
+`extension-native-controller.test.ts` 的 native 扩展专项。真实模型读取项目本地配置，
+经 Rust supervisor/MCP/扩展打开自有 HTTP 页面、点击 Run action、读取变化后的段落并回答。
+测试约 19.4 秒通过：最终回答包含本次随机动作标记，HTTP fixture 独立确认按钮动作发生。
+
+期间模型有一次未 await agent.browsers.get 就调用 nameSession 的 JavaScript 错误，
+随后自行纠正并完成；没有据此修改原 API 的异步语义。completion_summary 本次以独立
+summary-only 调用成功，之后产生正常最终回答，没有耗尽预算。该单次成功不代表
+公开搜索网站稳定，也未证明此前所有步数耗尽问题已修复。
+
+复现：
+```sh
+CUA_LIVE_DEEPSEEK_TEST=1 CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-name-pattern='packaged native extension' reconstruction/extension-native-controller.test.ts
+```
+该入口会调用真实模型并使用本地 .env；运行日志仅保留本机，未上传页面/请求轨迹或凭证。
