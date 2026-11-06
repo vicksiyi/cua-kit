@@ -954,3 +954,44 @@ The unchanged-mtime fixture was also corrected: reapplying a freshly observed
 fractional timestamp can round during Foundation/filesystem conversion, causing
 an unintended date change. It now sets a whole-second baseline before constructing
 the actor. This changes only the fixture; native exact Date comparison is retained.
+
+## Native approval response semantics and upstream MCP reuse
+
+The pinned native image contains MCP.CreateElicitation.Result with Action,
+content and _meta fields. Action metadata at 0x1012e1274 / field descriptor
+0x10133a8f4 establishes enum order accept, decline, cancel. The continuation at
+0x100e52ee8 branches on that action; accept enters 0x100e5318c. It reads
+MCP.Metadata["persist"] at 0x100e531ac, checks the MCP.Value String case and exact
+"always" equality at 0x100e534ec..<0x100e53544, and otherwise uses false. The
+boolean is saved at 0x100e53560 and passed to the store at 0x100e535c0. Decline and
+cancel enter separate error/telemetry paths and do not reach recordApproval.
+Neither content.persist nor content.source is inspected for persistence here.
+
+NativeAppApprovalResponse maps the SDK result to accepted(persist:), declined or
+cancelled. It does not reproduce localized errors or telemetry, nor does it issue
+an approval automatically. The native Swift target now depends on the official
+[MCP Swift SDK](https://github.com/modelcontextprotocol/swift-sdk/blob/0.12.1/Sources/MCP/Client/Elicitation.swift)
+0.12.1 for protocol types and JSON decoding instead of inventing replacements.
+The chosen host dependency is pinned; the exact vendor SDK revision is not known.
+Its CreateElicitation.Result shape matches the inspected native symbols. This
+component remains in Swift, matching the native responsibility.
+
+Tests exercise exact/incorrect metadata strings, numeric/bool/array/object/null
+values, omitted metadata, content-only persistence markers, decline/cancel,
+invalid actions and malformed protocol containers via the upstream decoder. A
+fixture composes accepted outcomes with the restored store and checks that only
+accepted IDs enter the session set and only exact always enters the saved JSON.
+No live approval or real application operation is performed. Native response
+error presentation, storage-path host configuration and UI integration remain open.
+
+Validation uses the repository's existing standalone Swift fixture pattern,
+linked against the built upstream MCP/EventSource/Logging/SystemPackage objects.
+This Mac has Command Line Tools without XCTest/Swift Testing modules, so no
+XCTest-only target is left in the package. The fixture passes protocol decoding
+and response/store composition; the native helper build passes. Initial Git
+HTTP/2 fetch failed; using the existing system proxy for that build and HTTP/1.1
+resolved dependency download without changing global Git settings. Package.resolved
+pins the resulting dependency graph. The SDK requires a Swift 6.1-compatible
+toolchain (validated here with Swift 6.1.2).
+The existing owned-peer MCP → Rust → Swift policy integration also passes with
+the new linked dependency, including approval decline and denied/forbidden paths.

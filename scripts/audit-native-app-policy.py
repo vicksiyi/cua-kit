@@ -43,6 +43,7 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e1274, 'Action', ['accept', 'decline', 'cancel']),
         (0x1012e4520, 'AppApprovalStore',
          ['$defaultActor', 'storageURL', 'sessionApprovedBundleIdentifiers',
           'persistentApprovals', 'persistentApprovalsModificationDate']),
@@ -73,6 +74,8 @@ def audit():
         raise ValueError('Persistent approval field is not Set<String>')
     code_ranges = []
     for name, start, end in [
+        ('appApprovalResponseBranches', 0x100e52ee8, 0x100e53594),
+        ('appApprovalAcceptedStoreCall', 0x100e53594, 0x100e53614),
         ('appApprovalSessionAndPersistentLookup', 0x100e527a4, 0x100e52904),
         ('appApprovalPersistedHitReturn', 0x100e52904, 0x100e529a8),
         ('appApprovalStorageDefaultInitializer', 0x100e67f90, 0x100e67f9c),
@@ -177,6 +180,7 @@ def audit():
                     writeFailure='propagate; do not undo earlier in-memory mutations',
                     refresh='only if optional file modification date differs; replace persistent record or empty on read/decode failure; update date; preserve session entries',
                     lookup='MCP caller checks session set first; on miss refreshes persistent record then checks persistent set',
+                    response='MCP.CreateElicitation.Result action accept/decline/cancel; only accept reaches record; persistence is exact _meta.persist String always, otherwise session; content.persist is not inspected',
                     rootCommandDefault='static appApprovalStorageURL initializes to nil; later setter/configuration remains separate',
                     wiring='storage and membership only; caller response flow and demo host integration not yet restored'),
                 approvalMetadata=dict(

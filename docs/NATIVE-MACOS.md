@@ -767,3 +767,17 @@ Temporary-file tests cover that short circuit and external deletion/replacement.
 The root command's static storage URL initially contains nil; host assignment
 must still be traced. This is not evidence of a universal default approval-file
 path. The demo responder remains unchanged until the full host flow is restored.
+
+### Native approval response dependency
+
+The native caller uses MCP.CreateElicitation.Result; the reconstruction now reuses
+the official MCP Swift SDK 0.12.1 rather than implementing its decoder. The CUA
+mapping recognizes accept/decline/cancel and only exact `_meta.persist == "always"`
+for persistent acceptance. Tests link the upstream SDK and feed accepted outcomes
+into the recovered store using temporary files. The vendor's exact SDK revision
+is unknown; this is a pinned, tested host dependency with matching observed types.
+Swift 6.1 or a compatible newer toolchain is required by that dependency.
+
+This still does not connect the terminal's approval choices to the store or
+restore native error presentation/host storage configuration. Existing live
+approval behavior is unchanged.

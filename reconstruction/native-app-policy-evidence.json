@@ -3,6 +3,18 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "Action",
+      "descriptor": "0x1012e1274",
+      "fieldDescriptor": "0x10133a8f4",
+      "kind": 2,
+      "fields": [
+        "accept",
+        "decline",
+        "cancel"
+      ],
+      "fieldMetadataSha256": "f62e709d9a1f0424d9ed4cde573731dee35e1576c2b48c9e60be1f86a59ac340"
+    },
+    {
       "name": "AppApprovalStore",
       "descriptor": "0x1012e4520",
       "fieldDescriptor": "0x10133e640",
@@ -91,6 +103,18 @@
     }
   ],
   "codeRanges": [
+    {
+      "name": "appApprovalResponseBranches",
+      "start": "0x100e52ee8",
+      "endExclusive": "0x100e53594",
+      "sha256": "92596885b0bec8a9b7c6bb411b374dacb0e9bb944d208f9f202f9f047cc0cfaf"
+    },
+    {
+      "name": "appApprovalAcceptedStoreCall",
+      "start": "0x100e53594",
+      "endExclusive": "0x100e53614",
+      "sha256": "cafa2a3ef85d2dc85db1b394ca9d9606c03c0a85d7cd5ff14517af6ec29b0701"
+    },
     {
       "name": "appApprovalSessionAndPersistentLookup",
       "start": "0x100e527a4",
@@ -559,6 +583,7 @@
     "writeFailure": "propagate; do not undo earlier in-memory mutations",
     "refresh": "only if optional file modification date differs; replace persistent record or empty on read/decode failure; update date; preserve session entries",
     "lookup": "MCP caller checks session set first; on miss refreshes persistent record then checks persistent set",
+    "response": "MCP.CreateElicitation.Result action accept/decline/cancel; only accept reaches record; persistence is exact _meta.persist String always, otherwise session; content.persist is not inspected",
     "rootCommandDefault": "static appApprovalStorageURL initializes to nil; later setter/configuration remains separate",
     "wiring": "storage and membership only; caller response flow and demo host integration not yet restored"
   },
