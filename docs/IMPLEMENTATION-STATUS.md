@@ -6908,3 +6908,9 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Resolved a LOCAL ABSOLUTE stub through ARM64 GOT loading and dyld fixups to Swift Concurrency TaskLocal.get(). Both element/cache initializers use it; the shared element initializer passes present context components or absent-context zeros to cache construction. Added call/branch assertions to the audit.
 - The fixed 193-signature audit passes. This changes the reconstruction prerequisite: UIElement cannot be restored as a single AX reference or a guessed global dictionary. Context payload, cache population/invalidation and transaction lifetime remain to inspect before generic element dispatch can be completed.
 - Static analysis only; no runtime feature or native UI success is claimed, and no source service was launched.
+
+### 2026-11-06 Concrete native transaction scope identified
+
+- Resolved the cache initializer's context to TaskLocal<UIElementTreeTransaction?> using its symbolic generic typeref and dyld nominal binding. The transaction stores element/cache/roleFrequencyTable; current initializes to nil.
+- Resolved perform(work:) to synchronous TaskLocal.withValue and inspected its work-forwarding closure. Added transaction public symbols, storage/type evidence, function hashes and scope call/branch assertions to the native audit.
+- Static evidence now distinguishes scoped tree-transaction state from a permanent global cache. Transaction creation/prefetch, cache invalidation and revision behavior are still unrecovered; no runtime feature is claimed from these findings.

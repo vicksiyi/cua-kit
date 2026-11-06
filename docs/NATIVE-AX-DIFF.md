@@ -684,3 +684,22 @@ AXChildren 的请求目标固定为 `[AXUIElement]`，由编译期协议约束�
 之后才能将 UIElementProtocol 分派接入完整 decoder。当前 Target 的 UUID snapshot
 机制是独立实现，不能替代原构建的缓存与 tree revision。此次仅补充静态证据与实施边界，
 未增加空缓存/global dictionary 占位，也未改变生产观察或权限行为。
+
+## TaskLocal 的具体事务类型与工作作用域
+
+前一节中的 TaskLocal 已进一步解析为 `TaskLocal<UIElementTreeTransaction?>`：
+类型引用 `0x101195770` 的 14 字节 symbolic typeref 指向 Swift TaskLocal nominal
+GOT `0x1014698c8` 和事务 descriptor `0x1012cceb4`，尾部 `SgG` 表示 Optional 泛型参数。
+`UIElementTreeTransaction` 的三个存储字段是 element、cache、roleFrequencyTable。
+初始化器 `0x10076ccfc` 使用 nil 初始值，静态 current 存储位于 `0x1015ca8b8`。
+
+`perform(work:)` 于 `0x10076c99c` 调用同步 `TaskLocal.withValue`，并通过
+`0x10076d9bc` 的闭包转发执行传入 work。其 stub `0x1011537ec` 的 GOT
+`0x1014698b0` 已由 dyld fixup 精确解析；不是一个异步任务调度或全局缓存写入函数。
+因此后续恢复必须保留有作用域的事务绑定及 Swift TaskLocal 行为，不能把 current
+改成进程级可变全局变量，也不能将原来的同步 work 改成无等待的后台任务。
+
+transactionScopeEvidence 固定该类型引用、字段布局、四个函数哈希、nil 初始化和
+work 转发指令；同时审计清单加入事务公开方法。仍未由此恢复事务创建/预取策略、cache
+填充与失效、roleFrequencyTable 算法或 tree revision。此轮为静态证据补全，没有创建
+假的事务对象或改动生产观察，也没有运行原厂服务。

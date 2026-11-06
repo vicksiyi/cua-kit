@@ -1639,6 +1639,62 @@
     "interpretation": "UIElement stores an AX reference plus UIElementCache. The shared initializer and cache initializer read TaskLocal context. The element initializer forwards context components or absent-context zeros to the cache construction helper.",
     "limitations": "TaskLocal payload semantics, cache population/invalidations and transaction lifetime are not recovered. This does not prove a process-global or per-PID cache, and an AX reference alone cannot stand in for the complete UIElement."
   },
+  "transactionScopeEvidence": {
+    "nominalDescriptor": "0x1012cceb4",
+    "fieldDescriptor": "0x101323b30",
+    "fields": [
+      "element",
+      "cache",
+      "roleFrequencyTable"
+    ],
+    "fieldRecordsSha256": "2e50f230a5df3349df0b9006a153f4c01f6f38e699bfc1157d1f7d691af8c549",
+    "taskLocalType": "TaskLocal<UIElementTreeTransaction?>",
+    "typeDescriptor": "0x101195770",
+    "typeReference": "0x10129f1d8",
+    "currentStorage": "0x1015ca8b8",
+    "withValueGot": "0x1014698b0",
+    "withValueCall": "0x10076c99c",
+    "functions": [
+      {
+        "name": "TaskLocal current initialization",
+        "start": "0x10076ccfc",
+        "endExclusive": "0x10076cd60",
+        "machineCodeSha256": "a89e91c7230a3ff12a47d4f257270ff5e8f7d4b9268d756b2f1b883d5a430f8c"
+      },
+      {
+        "name": "current getter",
+        "start": "0x10076cca8",
+        "endExclusive": "0x10076ccfc",
+        "machineCodeSha256": "d1f5bc967251a44ffc6b6022a02e3b59db740798c2372f7ec2e9445a5c813e12"
+      },
+      {
+        "name": "perform(work:)",
+        "start": "0x10076c8e8",
+        "endExclusive": "0x10076c9f8",
+        "machineCodeSha256": "9e9536bd839ff966f94a454936edf0c1a2a682da9eed58cfde1fc495b30898ea"
+      },
+      {
+        "name": "withValue work forwarding",
+        "start": "0x10076d9bc",
+        "endExclusive": "0x10076d9e4",
+        "machineCodeSha256": "c65b82222d3f459094c3c2cc02cc72cee2a2c6c6f0644c36c26b1b2272a80f60"
+      }
+    ],
+    "instructionWords": {
+      "0x10076cd0c": "0xf90023ff",
+      "0x10076cd10": "0x6f00e400",
+      "0x10076cd14": "0xad0103e0",
+      "0x10076cd18": "0xad0003e0",
+      "0x1011537ec": "0xd00018b0",
+      "0x1011537f0": "0xf9445a10",
+      "0x1011537f4": "0xd61f0200",
+      "0x10076d9c8": "0xa941a68a",
+      "0x10076d9cc": "0xf9401680",
+      "0x10076d9d4": "0xd63f0140"
+    },
+    "interpretation": "current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.",
+    "limitations": "Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -2594,6 +2650,46 @@
       "address": "000000010079c490",
       "mangled": "_$s20AccessibilitySupport18UIElementAttributeV23selectedTextMarkerRangeACvgZ",
       "signature": "static AccessibilitySupport.UIElementAttribute.selectedTextMarkerRange.getter : AccessibilitySupport.UIElementAttribute"
+    },
+    {
+      "address": "000000010076ceb4",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV15prefetchEnabledSbvgZ",
+      "signature": "static AccessibilitySupport.UIElementTreeTransaction.prefetchEnabled.getter : Swift.Bool"
+    },
+    {
+      "address": "000000010076ce18",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV16$prefetchEnableds9TaskLocalCySbGvau",
+      "signature": "AccessibilitySupport.UIElementTreeTransaction.$prefetchEnabled.unsafeMutableAddressor : Swift.TaskLocal<Swift.Bool>"
+    },
+    {
+      "address": "000000010076ce58",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV16$prefetchEnableds9TaskLocalCySbGvgZ",
+      "signature": "static AccessibilitySupport.UIElementTreeTransaction.$prefetchEnabled.getter : Swift.TaskLocal<Swift.Bool>"
+    },
+    {
+      "address": "000000010076cca8",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV7currentACSgvgZ",
+      "signature": "static AccessibilitySupport.UIElementTreeTransaction.current.getter : AccessibilitySupport.UIElementTreeTransaction?"
+    },
+    {
+      "address": "00000001001d3ff0",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV7elementAA0C8Protocol_pvg",
+      "signature": "AccessibilitySupport.UIElementTreeTransaction.element.getter : AccessibilitySupport.UIElementProtocol"
+    },
+    {
+      "address": "000000010076c8e8",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV7perform4workxxAA0C8Protocol_pKXE_tKlF",
+      "signature": "AccessibilitySupport.UIElementTreeTransaction.perform<A>(work: (AccessibilitySupport.UIElementProtocol) throws -> A) throws -> A"
+    },
+    {
+      "address": "000000010076cd60",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV8$currents9TaskLocalCyACSgGvau",
+      "signature": "AccessibilitySupport.UIElementTreeTransaction.$current.unsafeMutableAddressor : Swift.TaskLocal<AccessibilitySupport.UIElementTreeTransaction?>"
+    },
+    {
+      "address": "000000010076cda0",
+      "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV8$currents9TaskLocalCyACSgGvgZ",
+      "signature": "static AccessibilitySupport.UIElementTreeTransaction.$current.getter : Swift.TaskLocal<AccessibilitySupport.UIElementTreeTransaction?>"
     },
     {
       "address": "00000001006f5f88",

@@ -25,7 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
-    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID',
+    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -693,6 +693,46 @@ element_storage_evidence={
     'interpretation':'UIElement stores an AX reference plus UIElementCache. The shared initializer and cache initializer read TaskLocal context. The element initializer forwards context components or absent-context zeros to the cache construction helper.',
     'limitations':'TaskLocal payload semantics, cache population/invalidations and transaction lifetime are not recovered. This does not prove a process-global or per-PID cache, and an AX reference alone cannot stand in for the complete UIElement.',
 }
+transaction_nominal=0x1012cceb4
+transaction_fields=relative_address(transaction_nominal+16)
+_,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))
+transaction_names=[c_string(relative_address(transaction_fields+16+i*transaction_size+8)) for i in range(transaction_count)]
+if (transaction_kind,transaction_size,transaction_names) != (0,12,['element','cache','roleFrequencyTable']):
+    raise SystemExit('UIElementTreeTransaction storage changed')
+tasklocal_descriptor=0x101195770
+displacement,length=struct.unpack('<iI',read_virtual(tasklocal_descriptor,8))
+tasklocal_typeref=tasklocal_descriptor+displacement
+if length != 14 or read_virtual(tasklocal_typeref,1) != b'\x02' or relative_address(tasklocal_typeref+1) != 0x1014698c8 or read_virtual(tasklocal_typeref+5,2) != b'y\x01' or relative_address(tasklocal_typeref+7) != transaction_nominal or read_virtual(tasklocal_typeref+11,3) != b'SgG':
+    raise SystemExit('Transaction TaskLocal optional payload changed')
+for slot,symbol in [('0x1014698c8','_$ss9TaskLocalCMn'),('0x1014698b0','_$ss9TaskLocalC9withValue_9operation4file4lineqd__x_qd__yKXESSSutKlF')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if 'libswift_Concurrency/'+symbol not in line: raise SystemExit('Transaction TaskLocal binding changed')
+transaction_functions=[]
+for address,name in [(0x10076ccfc,'TaskLocal current initialization'),(0x10076cca8,'current getter'),
+                     (0x10076c8e8,'perform(work:)'),(0x10076d9bc,'withValue work forwarding')]:
+    boundary=starts[starts.index(address)+1]
+    transaction_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+transaction_words={0x10076cd0c:0xf90023ff,0x10076cd10:0x6f00e400,
+    0x10076cd14:0xad0103e0,0x10076cd18:0xad0003e0,
+    0x1011537ec:0xd00018b0,0x1011537f0:0xf9445a10,0x1011537f4:0xd61f0200,
+    0x10076d9c8:0xa941a68a,0x10076d9cc:0xf9401680,0x10076d9d4:0xd63f0140}
+for address,word in transaction_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word: raise SystemExit('Transaction scope branch changed')
+word=struct.unpack('<I',read_virtual(0x10076c99c,4))[0]
+immediate=word & 0x3ffffff
+if immediate & 0x2000000: immediate -= 0x4000000
+if word >> 26 != 0b100101 or 0x10076c99c+immediate*4 != 0x1011537ec:
+    raise SystemExit('Transaction withValue call changed')
+transaction_scope_evidence={
+    'nominalDescriptor':hex(transaction_nominal),'fieldDescriptor':hex(transaction_fields),'fields':transaction_names,
+    'fieldRecordsSha256':hashlib.sha256(read_virtual(transaction_fields,16+transaction_size*transaction_count)).hexdigest(),
+    'taskLocalType':'TaskLocal<UIElementTreeTransaction?>','typeDescriptor':hex(tasklocal_descriptor),'typeReference':hex(tasklocal_typeref),
+    'currentStorage':'0x1015ca8b8','withValueGot':'0x1014698b0','withValueCall':'0x10076c99c',
+    'functions':transaction_functions,'instructionWords':{hex(a):hex(w) for a,w in transaction_words.items()},
+    'interpretation':'current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.',
+    'limitations':'Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -747,6 +787,7 @@ record = {
     'arrayTransformEvidence':array_transform_evidence,
     'arrayTargetEvidence':array_target_evidence,
     'elementStorageEvidence':element_storage_evidence,
+    'transactionScopeEvidence':transaction_scope_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
