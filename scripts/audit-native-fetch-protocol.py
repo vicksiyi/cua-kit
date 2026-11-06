@@ -86,6 +86,20 @@ send_literals = {key: read(address,length).decode() for key,address,length in [
 assert send_literals == {'tooLarge':'nodeRepl.fetch response is too large',
     'requestFailed':'nodeRepl.fetch request failed','readFailed':'nodeRepl.fetch response read failed',
     'header':'content-type'}
+client_init = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10026e900','--stop-address=0x10026ebdc',str(artifact)], text=True)
+client_build = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1005e6a9c','--stop-address=0x1005e9a2c',str(artifact)], text=True)
+for expected in ['10026e994:', '0x1005eb690', '10026e9ac:', '0x1005e9acc',
+                 '10026e9b0:', '#0x1e', '10026e9c0:', '0x1005e6a9c']:
+    assert expected in client_init, expected
+for expected in ['1005e8cc8:', '0x100d24000', '1005e8ccc:', '#0x7f8', '1005e8cdc:']:
+    assert expected in client_build, expected
+path_pointer, path_length, source_line, source_column = struct.unpack('<QQII',read(0x100d247f8,24))
+reqwest_source = read(path_pointer,path_length).decode()
+assert reqwest_source.endswith('/reqwest-0.12.28/src/async_impl/client.rs')
+assert (source_line, source_column) == (434,25)
+client_init_error = read(0x100a49d68,47).decode()
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -136,8 +150,29 @@ print(json.dumps({
             '0x10026d064..0x10026d268 and 0x10026d774: get first content-type, permit HTAB/printable ASCII, expose only that header, retain empty value',
             '0x10026d694..0x10026d770: canonical status reason or empty string and standard-base64 body, without status error conversion'
         ],
-        'limits': 'Response shaping implemented independently of transport. Original reqwest client construction/version selection, redirects/timeouts/decompression and sending still require review.'
+        'limits': 'Response shaping implemented independently of transport. Called reqwest version established in clientInitialization; redirects/timeouts/decompression and sending still require review.'
+    },
+    'clientInitialization': {
+        'range': ['0x10026e900','0x10026ebdc'],
+        'instructionTextSha256': hashlib.sha256(client_init.encode()).hexdigest(),
+        'reqwestVersion': '0.12.28',
+        'versionEvidence': {
+            'call': '0x10026e9c0 -> ClientBuilder::build at 0x1005e6a9c',
+            'panicLocationReference': '0x1005e8cc8..0x1005e8cdc -> 0x100d247f8',
+            'source': reqwest_source, 'line': source_line, 'column': source_column
+        },
+        'observations': [
+            'runtime mode is parsed before constructing CodexAppServerAuthProvider',
+            'ClientBuilder::default followed by explicit redirect policy (discriminant 2)',
+            'writes 30 seconds and zero nanoseconds at builder offsets 0x310/0x318 before build'
+        ],
+        'buildError': client_init_error,
+        'upstreamReferences': [
+            'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/async_impl/client.rs',
+            'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/redirect.rs'
+        ],
+        'limits': 'Version is tied to the called build function, not merely a binary string hit. Redirect discriminant and duration field semantic mapping still require completion; TLS/decompression compiled features remain unverified. No default sender has been selected or wired.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
-    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions.'
+    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
 },indent=2))

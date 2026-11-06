@@ -93,8 +93,34 @@
       "0x10026d064..0x10026d268 and 0x10026d774: get first content-type, permit HTAB/printable ASCII, expose only that header, retain empty value",
       "0x10026d694..0x10026d770: canonical status reason or empty string and standard-base64 body, without status error conversion"
     ],
-    "limits": "Response shaping implemented independently of transport. Original reqwest client construction/version selection, redirects/timeouts/decompression and sending still require review."
+    "limits": "Response shaping implemented independently of transport. Called reqwest version established in clientInitialization; redirects/timeouts/decompression and sending still require review."
+  },
+  "clientInitialization": {
+    "range": [
+      "0x10026e900",
+      "0x10026ebdc"
+    ],
+    "instructionTextSha256": "519c98ddfcfa773be4a93469de6fee82febe38e4449f68e4aa134360932a9361",
+    "reqwestVersion": "0.12.28",
+    "versionEvidence": {
+      "call": "0x10026e9c0 -> ClientBuilder::build at 0x1005e6a9c",
+      "panicLocationReference": "0x1005e8cc8..0x1005e8cdc -> 0x100d247f8",
+      "source": "/Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/reqwest-0.12.28/src/async_impl/client.rs",
+      "line": 434,
+      "column": 25
+    },
+    "observations": [
+      "runtime mode is parsed before constructing CodexAppServerAuthProvider",
+      "ClientBuilder::default followed by explicit redirect policy (discriminant 2)",
+      "writes 30 seconds and zero nanoseconds at builder offsets 0x310/0x318 before build"
+    ],
+    "buildError": "failed to initialize nodeRepl.fetch HTTP client",
+    "upstreamReferences": [
+      "https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/async_impl/client.rs",
+      "https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/redirect.rs"
+    ],
+    "limits": "Version is tied to the called build function, not merely a binary string hit. Redirect discriminant and duration field semantic mapping still require completion; TLS/decompression compiled features remain unverified. No default sender has been selected or wired."
   },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
-  "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
+  "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }

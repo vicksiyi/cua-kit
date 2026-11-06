@@ -4329,7 +4329,7 @@
     {
       "path": "scripts/audit-native-fetch-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "7294a3c3068cf4fbf56d9d3e70c6646883db1c334ba6e56ad88a7162a8c68d85"
+      "sha256": "b65877ee3f162a2c5d4a8fd6a9054819dba978e71bd3a934bb5e177b3442d63e"
     },
     {
       "path": "scripts/audit-native-language.py",
