@@ -6550,3 +6550,12 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Current/refetch constructors set the refresh argument false/true respectively. This does NOT establish a local token cache; do not infer caching from the current_auth method name. App Server connection reuse and token caching must be audited at their owning layers.
 - Validation: all 6 auth helper/contract tests and 15 authenticated-fetch tests pass. Static audit passes against the pinned artifact; original binary was not executed, no real token was read, no model/network auth request was issued.
 - Still incomplete: App Server process/connection initialization and RPC transport, fetcher diagnostics, provider Sentry user update, production wiring, and end-to-end auth acceptance. Existing daily-browser and native-UI acceptance gaps remain.
+
+
+### Native authentication provider policy checkpoint (2026-11-06)
+
+- Implemented Rust `AccessTokenFetcher` and `CodexAppServerAuthProvider` with current/refetch delegation (false/true). Each provider invocation calls the fetcher once; the reviewed native provider has no credential-cache branch. This does not establish caching behavior inside the App Server client/server.
+- Provider errors propagate without metadata extraction or diagnostic update. Successful tokens project account/user claims and update the optional diagnostic user before credentials are returned. `AuthUserObserver` is an explicit host adapter seam for the original Sentry update, not a claim of Sentry parity or a telemetry sender.
+- Connected this provider to the reconstructed `fetch_with_auth` interface. Synthetic integration tests check ordered acquisition/user update/HTTP send, one 401 refresh with changed account+token headers, repeated ordinary acquisition, missing user update and initial/refresh error propagation.
+- Validation: 3 provider integration tests + 6 auth contract tests + 15 HTTP/fetch tests passed. Pinned static audit covers provider delegation, error branch, optional user conversion and diagnostic call. Tests use synthetic credentials and scripted HTTP responses; no vendor executable or real account auth was used.
+- Production acceptance remains incomplete: concrete App Server process/connection/RPC, diagnostics backend and deployment wiring still need reconstruction. This checkpoint tests provider-to-fetch composition, not a live App Server login or daily browser operation.

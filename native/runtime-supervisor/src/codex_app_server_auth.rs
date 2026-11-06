@@ -72,3 +72,50 @@ impl CodexAuth {
         }
     }
 }
+
+use crate::authenticated_fetch::{FetchAuthProvider, FetchCredentials, FetchFuture};
+use std::sync::Arc;
+
+/// Native seam between authentication policy and the App Server access-token RPC.
+/// Implementations own transport errors and auth-status response validation.
+pub trait AccessTokenFetcher: Send + Sync {
+    fn fetch_access_token(&self, refresh_token: bool) -> FetchFuture<'_, String>;
+}
+
+/// The native provider updates diagnostics with the extracted user ID before
+/// returning credentials. Keep this explicit, without sending telemetry here.
+/// A host adapter must supply the actual diagnostics behavior when deployed.
+pub trait AuthUserObserver: Send + Sync {
+    fn set_user(&self, user_id: Option<&str>);
+}
+
+/// Provider policy reconstructed from fetch_auth and current/refetch constructors.
+/// No token cache is introduced here: each invocation calls the fetcher once.
+/// App Server connection reuse belongs to the fetcher/client, not this layer.
+pub struct CodexAppServerAuthProvider {
+    fetcher: Arc<dyn AccessTokenFetcher>,
+    observer: Arc<dyn AuthUserObserver>,
+}
+
+impl CodexAppServerAuthProvider {
+    pub fn new(fetcher: Arc<dyn AccessTokenFetcher>, observer: Arc<dyn AuthUserObserver>) -> Self {
+        Self { fetcher, observer }
+    }
+
+    pub async fn fetch_auth(&self, refresh_token: bool) -> Result<CodexAuth, String> {
+        let token = self.fetcher.fetch_access_token(refresh_token).await?;
+        let auth = CodexAuth::from_access_token(token);
+        self.observer.set_user(auth.user_id.as_deref());
+        Ok(auth)
+    }
+}
+
+impl FetchAuthProvider for CodexAppServerAuthProvider {
+    fn current_auth(&self) -> FetchFuture<'_, FetchCredentials> {
+        Box::pin(async move { Ok(self.fetch_auth(false).await?.into_fetch_credentials()) })
+    }
+
+    fn refetch_auth(&self) -> FetchFuture<'_, FetchCredentials> {
+        Box::pin(async move { Ok(self.fetch_auth(true).await?.into_fetch_credentials()) })
+    }
+}

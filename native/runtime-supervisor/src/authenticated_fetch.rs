@@ -253,7 +253,8 @@ pub fn build_http_client() -> Result<reqwest::Client, &'static str> {
 pub type FetchFuture<'a, T> =
     std::pin::Pin<Box<dyn std::future::Future<Output = Result<T, String>> + Send + 'a>>;
 
-/// Native auth boundary: acquisition/cache/refresh belong to the provider.
+/// Native auth boundary: acquisition and refresh are delegated to the provider.
+/// This interface does not imply that the provider caches credentials.
 pub trait FetchAuthProvider: Send + Sync {
     fn current_auth(&self) -> FetchFuture<'_, FetchCredentials>;
     fn refetch_auth(&self) -> FetchFuture<'_, FetchCredentials>;

@@ -157,7 +157,7 @@ for expected in ['10022844c:', '#0x101', '100228584:', '100228654:',
                  '1002293a8:', '#0x7461', '1002293b0:', '#0x6774',
                  '1002293b4:', '#0x7470', '1002293bc:']:
     assert expected in access_token_fetcher, expected
-for expected in ['1002273a8:', '1002273c4:', 'chatgpt_auth_claim_from_token', 'diagnostics::set_sentry_user']:
+for expected in ['1002272ec:', '100227308:', '100227380:', '10022738c:', '1002273a8:', '1002273c4:', '1002273f4:', '1002273f8:', '100227404:', 'chatgpt_auth_claim_from_token', 'diagnostics::set_sentry_user']:
     assert expected in fetch_auth_provider, expected
 for expected in ['10022bb24:', 'strh\twzr', '10022bb98:', '#0x100', '10022bb9c:']:
     assert expected in provider_methods, expected
@@ -251,7 +251,7 @@ print(json.dumps({
             'refetch error at 0x10026c0f8 -> 0x10026c4ac drops original response and returns error',
             'second send at 0x10026c1d0 returns via 0x10026c1f0..0x10026c224 without another status retry'
         ],
-        'limits': 'Provider/HTTP trait interfaces are independent Rust reconstruction. Test providers use synthetic credentials. Native App Server provider, cache, request context and deployment wiring are not supplied by this orchestration.'
+        'limits': 'Provider/HTTP trait interfaces are independent Rust reconstruction. Test providers use synthetic credentials. CodexAppServerAuthProvider policy now connects through AccessTokenFetcher and a diagnostics observer; concrete App Server transport, diagnostics backend, request context and deployment wiring remain incomplete.'
     },
     'authClaimHelper': {
         'range': ['0x10022b524','0x10022b77c'],
@@ -278,9 +278,11 @@ print(json.dumps({
             'current_auth initializes refresh flag false; refetch_auth initializes true',
             'result authToken must be a nonempty string, checked before authMethod; token whitespace is not trimmed',
             'authMethod must be a string exactly equal to chatgpt (seven-byte comparison); other strings produce unsupported error',
-            'provider extracts chatgpt_account_id followed by chatgpt_user_id from the token; observed Sentry user update is not implemented here'
+            'provider invokes AccessTokenFetcher once with refresh flag; fetch errors bypass claim extraction and diagnostics',
+            'provider extracts chatgpt_account_id followed by chatgpt_user_id; diagnostics receives optional user ID before returning credentials',
+            'successful token without user claim passes None to diagnostics; provider has no credential cache branch in the reviewed function'
         ],
-        'limits': 'Request parameters, successful-result validation and CodexAuth field projection implemented. Full fetcher transport/initialization, diagnostics, error logging and deployment wiring still incomplete. Provider cache behavior must not be inferred from the API name current_auth.'
+        'limits': 'Request parameters, result validation, CodexAuth projection and provider refresh delegation implemented. AuthUserObserver is an explicit reconstruction seam for the original Sentry update; backend not implemented and no telemetry emitted. App Server fetcher transport/initialization, error logging and deployment wiring remain incomplete. Any caching below AccessTokenFetcher is not established by this provider review.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
