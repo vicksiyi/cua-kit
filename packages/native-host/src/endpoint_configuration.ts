@@ -52,7 +52,7 @@ export async function discoverEndpointFiles(directory: string) {
 }
 
 /** Paths only. Descriptor secrets stay inside the trusted host process. */
-export function parseEndpointFiles(value: string | undefined): string[] {
+export function parseEndpointFiles(value: string | undefined, options: { allowEmpty?: boolean } = {}): string[] {
   let files: unknown;
   try {
     files = JSON.parse(value ?? "null");
@@ -63,7 +63,7 @@ export function parseEndpointFiles(value: string | undefined): string[] {
   }
   if (
     !Array.isArray(files) ||
-    files.length === 0 ||
+    (!options.allowEmpty && files.length === 0) ||
     !files.every((file) => typeof file === "string" && file.length > 0)
   )
     throw Error(

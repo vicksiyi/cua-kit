@@ -68,8 +68,7 @@ export async function createBrowserServiceConnector(
   endpointFiles: readonly string[],
   connectPipe?: (path: string) => Promise<NativePipeSocket>,
 ) {
-  if (endpointFiles.length === 0)
-    throw Error("At least one @core endpoint is required");
+  // An explicit empty allowlist exposes no sockets; discovery must stay empty.
   const endpoints = await Promise.all(endpointFiles.map(readEndpoint));
   const allowed = new Map(
     endpoints.map((endpoint) => [endpoint.socketPath, endpoint]),

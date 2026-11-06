@@ -1,3 +1,4 @@
+import { unifiedPreflight } from "./unified-preflight";
 import { surfaceContext } from "./surface-context";
 import { BROWSER_INPUT_CONTEXT } from "./browser-guidance";
 import { CDP_OPERATION_CONTEXT } from "./cdp-guidance";
@@ -140,21 +141,25 @@ try {
   const initialMessages: import("./contracts").AgentMessage[] = [];
   // CUA initialization belongs to the source launcher's kernel banner.
   // The first observation triggers it; callers do not inject a second import cell.
-  if (browserEnabled) initialMessages.push(...await browserPreflight(turnClient, {
-        signal: controller.signal,
-        onMessage: trace,
-        onRetry: error => {
-          console.error("Browser inventory unavailable; retrying read-only preflight once in 2 seconds.");
-          debug?.write("browser.preflight.retry", { error });
-        },
-      }));
-  if (computerEnabled)
-    initialMessages.push(
-      ...(await computerPreflight(turnClient, {
-        signal: controller.signal,
-        onMessage: trace,
-      })),
-    );
+  if (browserEnabled && computerEnabled && !checkBrowser && !checkComputer) {
+    initialMessages.push(...await unifiedPreflight(turnClient, { signal: controller.signal, onMessage: trace }));
+  } else {
+    if (browserEnabled) initialMessages.push(...await browserPreflight(turnClient, {
+          signal: controller.signal,
+          onMessage: trace,
+          onRetry: error => {
+            console.error("Browser inventory unavailable; retrying read-only preflight once in 2 seconds.");
+            debug?.write("browser.preflight.retry", { error });
+          },
+        }));
+    if (computerEnabled)
+      initialMessages.push(
+        ...(await computerPreflight(turnClient, {
+          signal: controller.signal,
+          onMessage: trace,
+        })),
+      );
+  }
   if (checkComputer) {
     console.log(
       "Native computer service verified by app inventory. No model request or app action was performed; screenshot/click acceptance remains separate.",

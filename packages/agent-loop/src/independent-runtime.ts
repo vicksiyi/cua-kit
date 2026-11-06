@@ -13,10 +13,11 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
   const browser=surfaces.includes('browser'),computer=surfaces.includes('computer');
   if(computer&&env.CORE_CUA_NATIVE_BACKEND!=='swift') throw Error('Computer surface requires Rust runtime and CORE_CUA_NATIVE_BACKEND=swift');
   const files: unknown = browser ? JSON.parse(env.CORE_CUA_ENDPOINT_FILES ?? '[]') : [];
-  if (browser&&(!Array.isArray(files)||!files.length||!files.every(file=>typeof file==='string'))) throw Error('Independent runtime requires explicit browser endpoints');
+  if (browser&&(!Array.isArray(files)||!files.every(file=>typeof file==='string'))) throw Error('Independent runtime requires explicit browser endpoints');
   const endpoints = browser ? await Promise.all((files as string[]).map(file=>realpath(file))) : [];
   const pipes = browser ? (env.BROWSER_USE_BACKEND_PATHS ?? '').split(delimiter).filter(Boolean) : [];
-  if (browser&&!pipes.length) throw Error('Independent runtime requires explicit native pipes');
+  if (browser && (env.CORE_CUA_ENDPOINT_FILES === undefined || env.BROWSER_USE_BACKEND_PATHS === undefined || (endpoints.length === 0) !== (pipes.length === 0)))
+    throw Error('Independent runtime requires explicit matching native endpoints and pipes');
   const services={...(browser?{browser:'@core/native-host/browserService'}:{}),...(computer?{sky:'@core/sky/service'}:{})};
   const enabled=[...new Set(surfaces)].join(',');
   const appPolicy:unknown=computer?JSON.parse(env.CORE_CUA_APP_POLICY??'{}'):{};

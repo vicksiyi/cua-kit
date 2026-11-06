@@ -23,7 +23,7 @@ export async function configureIndependentBrowser(env: Record<string, string>) {
       ? await (process.env.CUA_DEMO_START_CHROME === "1"
           ? discoverOrStartChrome(env.CORE_CUA_HOST_DIRECTORY!)
           : discoverLiveEndpointFiles(env.CORE_CUA_HOST_DIRECTORY!))
-      : parseEndpointFiles(env.CORE_CUA_ENDPOINT_FILES);
+      : parseEndpointFiles(env.CORE_CUA_ENDPOINT_FILES, { allowEmpty: true });
   const connector = await createBrowserServiceConnector(endpointFiles);
   const services: unknown = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");
   if (

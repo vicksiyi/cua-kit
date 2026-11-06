@@ -10,7 +10,7 @@ if (typeof nativePipe?.createConnection !== "function")
     "Independent browser service requires the privileged Node REPL pipe bridge",
   );
 const connector = await createBrowserServiceConnector(
-  parseEndpointFiles(process.env.CORE_CUA_ENDPOINT_FILES),
+  parseEndpointFiles(process.env.CORE_CUA_ENDPOINT_FILES, { allowEmpty: true }),
   (path) => nativePipe.createConnection(path),
 );
 // Discovery and the authenticated bridge must address the same explicit hosts.

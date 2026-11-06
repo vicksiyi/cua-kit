@@ -343,10 +343,35 @@ browser and computer with Promise.all, conditionally attaches browser APIs and l
 and routes macOS getApp to get_app_state with disableDiff:true. This API module does not classify
 natural-language prompts. The reconstructed `create_tinysky_alt.ts` retains that composition.
 
-Current demo gaps: `run-deepseek.sh` defaults to browser and makes explicit surface flags mutually
-exclusive. The runtime can compose both services, but independent browser setup requires live,
-authenticated endpoint files, and demo preflight requires a nonempty browser inventory before the
-model runs. Merely enabling both surfaces does not fix app-only startup when Chrome is unavailable.
-A complete unified entry requires source-aligned backend discovery/startup and independent surface
-readiness, plus end-to-end validation with Chrome closed and an installed native app. Those changes
-are still pending; there is no accepted automatic browser/app selection demo yet.
+Current demo gaps: `run-deepseek.sh` still defaults to browser and makes explicit surface flags
+mutually exclusive. Automatic discovery still expects a live authenticated endpoint; it does not
+yet turn a missing browser into an on-demand browser launch after model selection. A complete
+unified CLI and real app-opening acceptance remain pending.
+
+#### Explicit zero-browser runtime
+
+The trusted host now accepts an explicitly configured empty endpoint allowlist (`CORE_CUA_ENDPOINT_FILES`
+set to `[]`) and produces `BROWSER_USE_BACKEND_PATHS` set to the empty string. Missing configuration
+is not equivalent to this explicit empty configuration. The bridge rejects every socket in this
+state. It does not search ambient host directories. Endpoint parsing remains nonempty by default;
+only the runtime composition sites opt into empty lists.
+
+This matches the installed browser-service discovery function Xle: non-null explicit paths are
+split, empty entries removed, and an empty array returned without calling directory discovery.
+The independent Rust deployment retains both browser and Sky services with no browser pipes.
+For combined browser/computer runs, demo preflight now observes `cua.getState()` once and preserves
+its per-surface errors instead of requiring both inventories to be nonempty. Tool errors and
+policy stops still prevent model execution. Single-surface explicit check commands retain their
+existing readiness checks. This does not recover an unavailable native service at kernel creation.
+
+Validation: `unified-empty-browser.test.ts` compares the installed Xle function in isolation,
+checks empty-allowlist socket rejection, and runs a real Rust supervisor + Swift helper + MCP
+session with both surfaces enabled and zero browser endpoints. Both API entry points are present,
+app inventory is nonempty, browser inventory is empty, and the inventory has no service errors.
+This test observes inventory only; it does not prove app launch, screen capture, clicking, DeepSeek
+selection, or late browser reconnection. Existing host/connector/preflight tests also pass.
+
+Two older source-comparison harnesses (`browser-desktop-discovery.test.ts` and the pipe-inventory
+case in `browser-service-discovery.test.ts`) currently fail because their pinned minified symbol
+bindings no longer match the installed build (`p` / `dt` undefined). They were not counted as
+passing or rewritten as part of this change. The focused Xle comparison uses the installed symbol.

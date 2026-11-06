@@ -214,10 +214,9 @@ test("independent deployment requires explicit valid configuration", async () =>
     configureIndependentBrowser({ CORE_CUA_ENDPOINT_FILES: "[]" }),
     /browser surface/,
   );
-  await assert.rejects(
-    configureIndependentBrowser({ ...env, CORE_CUA_ENDPOINT_FILES: "[]" }),
-    /nonempty/,
-  );
+  const empty = await configureIndependentBrowser({ ...env, CORE_CUA_ENDPOINT_FILES: "[]" });
+  assert.equal(empty.CORE_CUA_ENDPOINT_FILES, "[]");
+  assert.equal(empty.BROWSER_USE_BACKEND_PATHS, "");
   await assert.rejects(
     configureIndependentBrowser({
       ...env,
