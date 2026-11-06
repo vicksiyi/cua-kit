@@ -1040,3 +1040,31 @@ descriptions, including a Unicode/multiline invalid-argument payload.
 This supersedes the previous description-restoration gap for this type only.
 The native MCP server's conversion of these errors to wire responses and the
 actual host UI wiring still require independent evidence and implementation.
+
+### Native handler error boundary and inferred result context
+
+The CallTool registration at `0x100e4f27c` references async pointer
+`0x10121b708`, resolving to `0x100e5dec4`, which forwards to
+`0x100e4f734`. Its error continuation (`0x100e4f8ec..<0x100e4f97c`)
+calls the result builder at `0x100e5ec70` with no explicit context, copies
+the resulting value to the CallTool return buffer and clears Swift's error
+register. Thus execution errors at this boundary are returned as tool results,
+not simply rethrown as transport failures. Protocol decoding failures outside
+this handler are not covered by that finding.
+
+The builder first handles an error wrapper and context precedence, then IPC
+errors (some with screenshot handling), and a generic description branch.
+These branches are not yet completely reconstructed. Do not replace this
+whole boundary with a catch-all String conversion.
+
+The error-context inference function `0x100e5e7bc..<0x100e5e874` casts to
+MCPToolError. Cases 0–2 and unrelated errors return nil. Cases 3–4 preserve
+the bundle ID and return false for did-trigger-user-flow; cases 5–7 preserve
+it and return true. The encoder `0x100e5e874..<0x100e5ea68` creates
+`{"span":{"did_trigger_server_user_flow":Bool,"target_id":String}}`, omitting
+`target_id` only for an empty target. The outer merge uses `codex/telemetry`
+as its metadata key. NativeMCPErrorContext restores inference and this value
+encoding, using the upstream MCP.Value; it sends no analytics/network events.
+It is intentionally not yet installed as a substitute for the full handler.
+Tests cover all eight error cases, an unrelated error, and empty-target
+omission. The audit pins the inference, encoder, merge and catch code ranges.

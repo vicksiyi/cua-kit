@@ -121,6 +121,30 @@
   ],
   "codeRanges": [
     {
+      "name": "mcpToolHandlerCatch",
+      "start": "0x100e4f8ec",
+      "endExclusive": "0x100e4f97c",
+      "sha256": "eac6a2bca5375809c855c783df5c3ebf7b5515e513e8999e9a2b3fae863f41e1"
+    },
+    {
+      "name": "mcpErrorContextInference",
+      "start": "0x100e5e7bc",
+      "endExclusive": "0x100e5e874",
+      "sha256": "b1040e0dceda7df9cffc3af2248d94cdf972b4add37501990d71f9b43f24cb33"
+    },
+    {
+      "name": "mcpErrorContextValue",
+      "start": "0x100e5e874",
+      "endExclusive": "0x100e5ea68",
+      "sha256": "1eb3fc41e2ee81c0487d64577d7b37bd7c16e86dbadbfb22bc78e378f6c0345e"
+    },
+    {
+      "name": "mcpErrorContextResultMerge",
+      "start": "0x100e5ea68",
+      "endExclusive": "0x100e5ec70",
+      "sha256": "e052356b9f75de3284a330ea21e790d554d9313cbccfbda75e4336556e172222"
+    },
+    {
       "name": "mcpToolErrorDescription",
       "start": "0x100e5db0c",
       "endExclusive": "0x100e5dde4",

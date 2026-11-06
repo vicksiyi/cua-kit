@@ -4,12 +4,37 @@ import MCP
 @main struct NativeAppApprovalResponseTests {
     static func main() async throws {
         let tests = Self()
+        tests.testErrorContextPreservesUserFlowDistinction()
         try tests.testAcceptUsesOnlyExactMetadataString()
         try tests.testDeclineAndCancelDoNotBecomeAcceptFromMetadata()
         tests.testUpstreamDecoderRejectsInvalidActionsAndContainers()
         try await tests.testAcceptedDecisionFeedsRestoredStoreWithoutWritingDeclines()
         print("native MCP SDK approval response and storage composition passed")
     }
+    func testErrorContextPreservesUserFlowDistinction() {
+        struct OtherFailure: Error {}
+        for error: Error in [NativeMCPToolError.missingArgument("app"),
+                            NativeMCPToolError.invalidArgument("bad"),
+                            NativeMCPToolError.unknownTool("tool"), OtherFailure()] {
+            precondition(NativeMCPErrorContext.infer(from: error) == nil)
+        }
+        let cases: [(NativeMCPToolError, Bool)] = [
+            (.appBlockedByPolicy(bundleIdentifier: "fixture"), false),
+            (.appNotAllowed(bundleIdentifier: "fixture"), false),
+            (.appApprovalDenied(bundleIdentifier: "fixture"), true),
+            (.appApprovalCanceled(bundleIdentifier: "fixture"), true),
+            (.appApprovalPersistenceUnavailable(bundleIdentifier: "fixture"), true)
+        ]
+        for (error, triggered) in cases {
+            let context = NativeMCPErrorContext.infer(from: error)!
+            equal(context.value, .object(["span": .object([
+                "target_id": .string("fixture"), "did_trigger_server_user_flow": .bool(triggered)
+            ])]))
+        }
+        let empty = NativeMCPErrorContext.infer(from: NativeMCPToolError.appNotAllowed(bundleIdentifier: ""))!
+        equal(empty.value, .object(["span": .object(["did_trigger_server_user_flow": .bool(false)])]))
+    }
+
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }
     private func interpret(_ text: String) throws -> NativeAppApprovalResponse.Outcome {
         NativeAppApprovalResponse.interpret(try JSONDecoder().decode(CreateElicitation.Result.self, from: Data(text.utf8)))
