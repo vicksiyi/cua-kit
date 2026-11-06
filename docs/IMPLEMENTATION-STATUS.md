@@ -6209,3 +6209,10 @@ Six output tests pass. The new real pipe/socket case verifies stale cleanup pres
 Traced native config layout through load output stores and proxy_runtime_state clone offsets. The state owns codex CLI and Node paths, optional browser client/service, Codex home and Node REPL paths, plus literal platform darwin. Browser service uses the selected/supplemented registry value; other path fields use effective environment-resolved launch configuration. Extension ID and proxy host/port are not copied into this state.
 
 Added the Rust projection and output-state storage; same-generation EOF cleanup now clears this field as observed. Targeted tests cover effective versus raw values, optional absence, independent snapshots and stale/current generation cleanup. Process reuse comparisons and manager startup still remain open; projection and cleanup alone do not launch or reuse an app-server.
+
+
+### 2026-11-06: process reuse predicate and composed explicit stop
+
+Traced all ensure_started early-return comparisons: stored stdin and ProxyRuntimeState must exist and all seven runtime fields match exactly. There is no PID/try_wait probe or requirement for a stored child handle/client writer in that predicate. Added can_reuse with tests changing each field, optional absence and syntactically different paths.
+
+Composed explicit stop: take child/writer, clear replay/runtime/stdin, increment wrapping generation under state lock, unlock, close writer then kill/reap child. Unlike EOF cleanup, even an empty explicit stop advances generation. Three runtime-state and seven output tests pass, including an owned child stop/reap and u64 wrap/repeated stop. Full ensure_started spawn/replacement and worker ownership remain pending, alongside manager control integration.

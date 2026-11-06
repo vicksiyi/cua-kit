@@ -189,3 +189,36 @@ pub fn forward_and_finish(
     finish_output(state, generation);
     result
 }
+
+impl OutputState {
+    /// Native ensure_started's early return checks stored stdin and the entire
+    /// ProxyRuntimeState. It does not probe PID/Child health or require a writer.
+    pub fn can_reuse(
+        &self,
+        requested: &crate::app_server_runtime_state::ProxyRuntimeState,
+    ) -> bool {
+        self.stdin.is_some() && self.runtime_state.as_ref() == Some(requested)
+    }
+}
+
+/// Explicit AppServerProcess::stop order: take child/writer and clear state under
+/// mutex, increment generation, unlock, close writer, then stop/reap child.
+pub fn stop_process(state: &SharedOutput) -> std::io::Result<()> {
+    let (child, writer) = {
+        let mut state = state
+            .lock()
+            .map_err(|_| std::io::Error::other("app-server process state mutex poisoned"))?;
+        let child = state.child.take();
+        let writer = state.writer.take();
+        state.replay.pending_requests.clear();
+        state.replay.initialize_response = None;
+        state.runtime_state = None;
+        state.stdin = None;
+        state.generation = state.generation.wrapping_add(1);
+        (child, writer)
+    };
+    if let Some(writer) = writer {
+        crate::app_server_websocket::close(&writer);
+    }
+    crate::app_server_process::stop_child(child)
+}

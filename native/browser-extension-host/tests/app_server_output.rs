@@ -231,3 +231,36 @@ fn eof_cleanup_is_generation_guarded_and_closes_owned_resources() {
     wait_child(child).unwrap(); // stdin closure lets cat exit naturally
     finish_output(&state, 5); // already cleared is harmless
 }
+
+#[test]
+fn explicit_stop_advances_generation_and_reaps_child_outside_state_lock() {
+    use core_browser_extension_host::{
+        app_server_output::{stop_process, OutputState},
+        app_server_process::SharedChild,
+    };
+    use std::{
+        process::{Command, Stdio},
+        sync::{Arc, Mutex},
+    };
+    let mut child = Command::new("/bin/cat")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .spawn()
+        .unwrap();
+    let stdin = child.stdin.take();
+    let child: SharedChild = Arc::new(Mutex::new(child));
+    let state = Arc::new(Mutex::new(OutputState {
+        generation: u64::MAX,
+        child: Some(child.clone()),
+        stdin,
+        ..Default::default()
+    }));
+    stop_process(&state).unwrap();
+    let snapshot = state.lock().unwrap();
+    assert_eq!(snapshot.generation, 0);
+    assert!(snapshot.child.is_none() && snapshot.stdin.is_none());
+    assert!(child.lock().unwrap().try_wait().unwrap().is_some());
+    drop(snapshot);
+    stop_process(&state).unwrap();
+    assert_eq!(state.lock().unwrap().generation, 1);
+}

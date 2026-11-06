@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+process_stop = disassemble(0x100020d54, 0x100021064)
 proxy_state = disassemble(0x10001b268, 0x10001b4c4)
 stdout_thread = disassemble(0x10002c94c, 0x10002ca1c)
 detach_writer = disassemble(0x100021970, 0x100021a94)
@@ -471,6 +472,18 @@ result = {
         'mapping': {'0x48':'codexCliPath','0x90':'nodePath','0xc0':'browserClientPath','0xd8':'browserServicePath','0xf0':'codexHome','0x120':'nodeReplPath'},
         'semantics': 'Clones six configuration strings preserving optional absence, adds platform darwin. Browser service comes from selected/supplemented configuration; other paths use effective environment-resolved launch values. Does not include extension ID or proxy host/port.',
         'integrationStatus': 'Stored in output state and cleared by same-generation EOF cleanup. Process reuse comparison and lifecycle startup still pending.',
+    },
+    'processReuseAndStop': {
+        'implementation': 'native/browser-extension-host/src/app_server_output.rs::{OutputState::can_reuse,stop_process}',
+        'stdinAndRuntimePresence': evidence(process_start, 0x1000200ec, 0x100020104, ['#0x110', '#0x50', '0x100020148']),
+        'optionalClient': evidence(process_start, 0x100020104, 0x100020148, ['#0x48', '#0x58', 'cmp']),
+        'optionalService': evidence(process_start, 0x100020424, 0x10002045c, ['#0x60', '#0x70']),
+        'cliAndHome': evidence(process_start, 0x100020538, 0x100020590, ['#0x10', '#0x78', '#0x88']),
+        'nodeReplPlatform': evidence(process_start, 0x100020970, 0x100020a20, ['#0x28', '#0x90', '#0xa0', '#0x40', '0x100020234']),
+        'stopStateClear': evidence(process_stop, 0x100020e58, 0x100020ef8, ['#0xf8', '#0x30', 'ProxyRuntimeState', '#0x110', '#0x108']),
+        'stopUnlockCloseReap': evidence(process_stop, 0x100020f08, 0x100020f4c, ['Mutex>::unlock', 'close_websocket_writer', 'stop_app_server_child']),
+        'semantics': 'Reuse requires stdin and all seven ProxyRuntimeState fields equal as strings/options, without child/writer presence or process health probe. Explicit stop clears resources and increments wrapping generation under lock, then closes writer and stops/reaps child outside state lock.',
+        'integrationStatus': 'Reuse predicate and composed stop implemented/tested. ensure_started replacement/spawn/worker composition and manager control wiring remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
