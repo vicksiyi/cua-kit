@@ -9,7 +9,8 @@ let package = Package(
         .package(url: "https://github.com/scinfu/SwiftSoup.git", exact: "2.9.6"),
     ],
     targets: [
-        .executableTarget(name: "CuaHelper", dependencies: ["Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
+        .target(name: "RunningProcess", publicHeadersPath: "include", cSettings: [.unsafeFlags(["-fobjc-arc"])]),
+        .executableTarget(name: "CuaHelper", dependencies: ["RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
         .executableTarget(name: "CuaFixture"),
     ], swiftLanguageModes: [.v5]
 )

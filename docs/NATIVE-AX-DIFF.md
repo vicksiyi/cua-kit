@@ -2528,3 +2528,24 @@ RunningApplicationLookup.swift 恢复上述控制流，底层查询保留显式�
 覆盖提前返回、URL 路径、空/多/单个结果、首候选选择及 -1 原样传入构造器；
 Swift package 构建通过。SAIRunningProcess 底层实现和隐式事务仍待还原，因此本轮
 未把未完成的查询接入真实应用/Chess 路径，也未宣称应用启动或点击验收通过。
+
+
+## Objective-C 进程查询层与 Swift 桥接（2026-11-07）
+
+按原版语言新增 RunningProcess target，恢复 SAIRunningProcess/Filter，未用 TS
+重写。原范围 0x10024503c..<0x100245684；selector stub 已核对 options、name、
+executablePath、copy、isEqualToString、isEqual、路径解析及 UTF8 构造。
+
+options bit0 选择 PROC_UID_ONLY/getuid，否则 PROC_ALL_PIDS/0。两次 proc_listpids：
+第一次取字节数并按该大小分配，第二次填充；失败返回 nil，无扩容重试、排序或去重。
+跳过非正 PID；可选 name 精确匹配，可选路径在两侧依次解析符号链接、标准化后比较。
+进程对象通过 proc_pidinfo(PROC_PIDTBSDINFO) 取得 name/pid/uid；路径使用
+proc_pidpath 的 4096 字节缓冲区。两个系统 API 均沿用“正返回值”成功判断。
+
+SystemRunningApplicationLookup.swift 已把上一轮 PID 回退控制流接到真实查询，
+并实现 bundle ID 首运行实例 → PID → AX 引用 → UIElement 的系统适配。当前事务
+仍显式传入；没有改动应用策略，也未将此查找 helper 当作启动 API。
+
+Objective-C 专项测试实际只读查询测试进程自身，验证 UID/name/path、符号链接路径
+匹配、空结果、无效 PID，以及可变字符串输入的 copy 语义；Swift package 构建通过。
+尚未故障注入内存分配/枚举失败，也未完成完整点击接线和真实 UI 操作验收。

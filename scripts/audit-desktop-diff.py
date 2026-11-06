@@ -1166,13 +1166,23 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['runningProcessNative']={
+    'enumeration':'0x10024503c..<0x1002452d8: options bit 0 selects PROC_UID_ONLY/getuid, otherwise PROC_ALL_PIDS/0; two proc_listpids calls with exact initial allocation; <=0/allocation failure returns nil; skip PID<1; preserve order without retry/dedup/sort',
+    'filters':'Optional name exact isEqualToString; optional executable path resolves symlinks then standardizes on both sides, compares isEqual. Initialize process for name only when needed; otherwise after path acceptance.',
+    'construction':'proc_pidinfo PROC_PIDTBSDINFO size136; any positive result constructs copied pbi_name, pid and uid. proc_pidpath uses4096 bytes and any positive result decodes UTF8; failures return nil.',
+    'filterStorage':'Objective-C copy name/path, NSUInteger options; name/options initializer delegates with nil path; setters preserve copy semantics',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10024503c,0x100245684)]],
+    'implementation':['native/macos/Sources/RunningProcess/SAIRunningProcess.m','native/macos/Sources/RunningProcess/include/SAIRunningProcess.h','native/macos/Sources/CuaHelper/SystemRunningApplicationLookup.swift'],
+    'validation':'Owned Objective-C test executes read-only libproc query for itself with UID/name/path and symlink filter; checks copied properties, invalid PID and empty match. Swift package builds with Objective-C target.',
+    'limitations':'Allocation/proc_listpids failure paths not fault-injected; no application launch or GUI acceptance. Explicit transaction still replaces implicit current-context acquisition; full click composition pending.',
+}
 element_storage_evidence['runningApplicationLookup']={
     'lookup':'0x10071e608..<0x10071e820 calls NSRunningApplication.runningApplicationsWithBundleIdentifier:, selects first or nil; resolves PID then AXUIElementCreateApplication and transaction-based UIElement constructor; no launch or alternate-candidate retry',
     'pid':'0x100260b44..<0x100260dc8 returns positive processIdentifier immediately; otherwise terminated or missing executableURL returns -1; query executableURL.path and accept exactly one result, return its pid without added positivity validation',
     'nativeQuery':{'filterClass':'SAIRunningProcessFilter','initializer':'initWithName:executablePath:options:','arguments':'nil name, executable path, options 1','processClass':'SAIRunningProcess','query':'runningProcessesWithFilter:','resultPID':'pid'},
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10071e608,0x10071e820),(0x100260b44,0x100260dc8)]],
     'implementation':'RunningApplicationLookup.swift preserves selection and PID resolution control flow with explicit native boundaries.',
-    'limitations':'SAIRunningProcess implementation/bridge and TaskLocal transaction acquisition remain incomplete; not connected to production lookup or Chess path yet. Fixture tests do not prove app launch or live UI operation.',
+    'limitations':'SAIRunningProcess and explicit system lookup adapters are now implemented separately; TaskLocal acquisition and production/Chess composition remain pending. No app launch or live UI completion is claimed.',
 }
 element_storage_evidence['systemElementEquality']={
     'entry':'0x1006fb9ac..<0x1006fbb74',
