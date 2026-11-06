@@ -6987,3 +6987,7 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-07：元素缓存构造链路已组合
 
 新增原字段类型的事务缓存快照；将预取、锁内回退、属性选择、批量读取、失败不缓存和成功缓存组合为构造器，并连接直接系统 AX/AppKit 入口。组合测试验证命中顺序、失败重试、成功空缓存及事务隔离；helper 构建通过。生产 Target.collect、TaskLocal 生命周期和真实应用验收仍未完成。
+
+### 2026-11-07：事务角色身份类型
+
+确认完整事务的协议根元素、缓存与角色计数字段；恢复 CFString 支撑的 UIElementRole，并与 FrequencyTable 组合验证内容相等角色合并及值复制。原生测试、helper 构建通过。协议根元素及角色发现尚待恢复，未使用简化缓存 TaskLocal 替代完整事务。

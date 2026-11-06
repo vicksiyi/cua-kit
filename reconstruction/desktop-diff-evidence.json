@@ -1729,7 +1729,65 @@
       "0x10076d9d4": "0xd63f0140"
     },
     "interpretation": "current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.",
-    "limitations": "Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied."
+    "limitations": "Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied.",
+    "fieldTypes": [
+      {
+        "name": "element",
+        "typeReference": "0x10129e8e6",
+        "encoded": "02d9241c005f70",
+        "meaning": "any UIElementProtocol",
+        "mutable": false
+      },
+      {
+        "name": "cache",
+        "typeReference": "0x10129f176",
+        "encoded": "0181dd0200",
+        "meaning": "UIElementTreeTransaction.Cache",
+        "mutable": false
+      },
+      {
+        "name": "roleFrequencyTable",
+        "typeReference": "0x10129f17c",
+        "encoded": "02fb1b1c007902cd1b1c0047",
+        "meaning": "FrequencyTable<UIElementRole>",
+        "mutable": false
+      }
+    ],
+    "roleIdentity": {
+      "nominalDescriptor": "0x1012cd598",
+      "fieldDescriptor": "0x1013240dc",
+      "field": "let name: CFString",
+      "fieldTypeReference": "0x10129e21a",
+      "functions": [
+        {
+          "start": "0x100009888",
+          "endExclusive": "0x10000988c",
+          "machineCodeSha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91"
+        },
+        {
+          "start": "0x1006ea804",
+          "endExclusive": "0x1006ea834",
+          "machineCodeSha256": "48c3d858df0268c8af8073b26e89bf8bde12c1bba14177017a3a84f186e242e3"
+        },
+        {
+          "start": "0x1006ebd60",
+          "endExclusive": "0x1006ebdb4",
+          "machineCodeSha256": "b90630000cc306fab2c816278b4850723e3be1b2f2d602a3faf064a52496b4d9"
+        },
+        {
+          "start": "0x1006ebdf8",
+          "endExclusive": "0x1006ebe40",
+          "machineCodeSha256": "77cb49fb6961f242afa2a0b8d5ebdeb2a45af600b11f7541ac258dbd3ee647a3"
+        },
+        {
+          "start": "0x1007b94e8",
+          "endExclusive": "0x1007b94ec",
+          "machineCodeSha256": "d724f25f56aa98d63576e611fbfc443f59fcf5fed4aabf52d91866cf86d07b12"
+        }
+      ],
+      "interpretation": "Role is a distinct CFString-backed value type, sharing CFString/String constructors and CF hashing with attribute keys; equality delegates to CF equality. rawValue bridges the stored string. FrequencyTable uses this role type, not display labels or attribute names.",
+      "limitations": "Static role constants, presentationKind mapping, role discovery and full transaction protocol remain separate."
+    }
   },
   "transactionCacheEvidence": {
     "nominalDescriptor": "0x1012ccef8",

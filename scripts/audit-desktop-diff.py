@@ -733,6 +733,40 @@ transaction_scope_evidence={
     'interpretation':'current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.',
     'limitations':'Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied.',
 }
+# Transaction fields retain their original existential/cache/role-counter types.
+transaction_field_types = [
+    ('element',0x10129e8e6,'02d9241c005f70','any UIElementProtocol'),
+    ('cache',0x10129f176,'0181dd0200','UIElementTreeTransaction.Cache'),
+    ('roleFrequencyTable',0x10129f17c,'02fb1b1c007902cd1b1c0047','FrequencyTable<UIElementRole>'),
+]
+for index,(name,address,encoded,meaning) in enumerate(transaction_field_types):
+    record=transaction_fields+16+index*transaction_size
+    if relative_address(record+4)!=address or read_virtual(address,len(bytes.fromhex(encoded))).hex()!=encoded or struct.unpack('<I',read_virtual(record,4))[0]!=0:
+        raise SystemExit('Transaction field type/immutability changed')
+for slot,destination in [('0x101460dc0','0x1012cd46c'),('0x101460d78','0x1012ccd50'),('0x101460d50','0x1012cd598')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if 'rebase' not in line or destination not in line.lower():
+        raise SystemExit('Transaction symbolic type rebase changed')
+for descriptor,name in [(0x1012cd46c,'UIElementProtocol'),(0x1012ccd50,'FrequencyTable'),(0x1012cd598,'UIElementRole')]:
+    if c_string(relative_address(descriptor+8)) != name:
+        raise SystemExit('Transaction symbolic type name changed')
+transaction_scope_evidence['fieldTypes']=[{'name':name,'typeReference':hex(address),'encoded':encoded,'meaning':meaning,'mutable':False} for name,address,encoded,meaning in transaction_field_types]
+role_nominal=0x1012cd598
+role_fields=relative_address(role_nominal+16)
+_,_,role_kind,role_size,role_count=struct.unpack('<iiHHI',read_virtual(role_fields,16))
+if (role_kind,role_size,role_count)!=(0,12,1) or c_string(relative_address(role_fields+24))!='name' or relative_address(role_fields+20)!=0x10129e21a or struct.unpack('<I',read_virtual(role_fields+16,4))[0]!=0:
+    raise SystemExit('UIElementRole CFString storage changed')
+if struct.unpack('<I',read_virtual(0x1007b94e8,4))[0]!=0x14265cc7:
+    raise SystemExit('UIElementRole rawValue bridge changed')
+transaction_scope_evidence['roleIdentity']={
+    'nominalDescriptor':hex(role_nominal),'fieldDescriptor':hex(role_fields),
+    'field':'let name: CFString','fieldTypeReference':'0x10129e21a',
+    'functions':[{'start':hex(address),'endExclusive':hex(starts[starts.index(address)+1]),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,starts[starts.index(address)+1]-address)).hexdigest()}
+        for address in [0x100009888,0x1006ea804,0x1006ebd60,0x1006ebdf8,0x1007b94e8]],
+    'interpretation':'Role is a distinct CFString-backed value type, sharing CFString/String constructors and CF hashing with attribute keys; equality delegates to CF equality. rawValue bridges the stored string. FrequencyTable uses this role type, not display labels or attribute names.',
+    'limitations':'Static role constants, presentationKind mapping, role discovery and full transaction protocol remain separate.',
+}
 # Transaction cache types recovered from symbolic Swift field typerefs.
 # Resolve indirect references through dyld fixups, not adjacent symbol labels.
 transaction_cache_nominal=0x1012ccef8
