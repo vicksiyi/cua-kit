@@ -1166,6 +1166,29 @@
     ],
     "scope": "AXValue branch only, not the full generic decoder."
   },
+  "axUIElementDecodingEvidence": {
+    "start": "0x1006e9d90",
+    "endExclusive": "0x1006e9e50",
+    "machineCodeSha256": "c02d0621c00c1af2f9cb4f20b39a3b6268b68c692e839ea94d57fde49e7e3917",
+    "resolvedCalls": [
+      {
+        "address": "0x1006e9db8",
+        "symbol": "_CFGetTypeID"
+      },
+      {
+        "address": "0x1006e9dc0",
+        "symbol": "_AXUIElementGetTypeID"
+      },
+      {
+        "address": "0x1006e9de8",
+        "symbol": "_swift_dynamicCastUnknownClassUnconditional"
+      }
+    ],
+    "typeMismatchBranch": "0x1006e9dc8",
+    "falseFlagReturnsNil": "0x1006e9df8..0x1006e9dfc",
+    "errorCase2": "0x1006e9e28..0x1006e9e30",
+    "scope": "Raw AXUIElement decoder only; generic UIElementProtocol wrapper construction is separate."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",

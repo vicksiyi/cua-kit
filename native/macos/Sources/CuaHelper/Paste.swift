@@ -19,8 +19,7 @@ extension Target {
     func pasteEditor(_ params: [String:Any]) throws -> (AXUIElement,String,[String]) {
         try validateSnapshot(params)
         guard let text = params["text"] as? String, text.utf16.count <= 200000 else { throw fail("INVALID_ARGUMENT","Paste text exceeds budget.") }
-        guard let raw = attribute(root,kAXFocusedUIElementAttribute), CFGetTypeID(raw) == AXUIElementGetTypeID() else { throw fail("ELEMENT_NOT_INTERACTABLE","Focus a textual editor before paste.") }
-        let editor = raw as! AXUIElement
+        guard let raw = attribute(root,kAXFocusedUIElementAttribute), let editor = try unwrapAXUIElement(raw, throwingOnFailure: false) else { throw fail("ELEMENT_NOT_INTERACTABLE","Focus a textual editor before paste.") }
         var pid: pid_t = 0
         guard AXUIElementGetPid(editor,&pid) == .success, pid == app.processIdentifier else { throw fail("TARGET_NOT_FOUND","Paste editor belongs to another process.") }
         guard string(editor,kAXSubroleAttribute) != "AXSecureTextField" else { throw fail("UNSUPPORTED_CAPABILITY","Secure fields cannot provide paste verification.") }

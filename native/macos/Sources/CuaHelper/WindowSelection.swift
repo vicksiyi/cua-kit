@@ -43,8 +43,7 @@ struct FocusedCaptureWindow {
 extension Target {
     func focusedCaptureWindow() throws -> FocusedCaptureWindow? {
         try validate()
-        guard let raw = attribute(root,kAXFocusedWindowAttribute), CFGetTypeID(raw) == AXUIElementGetTypeID() else { return nil }
-        let window = raw as! AXUIElement
+        guard let raw = attribute(root,kAXFocusedWindowAttribute), let window = try unwrapAXUIElement(raw, throwingOnFailure: false) else { return nil }
         var pid: pid_t = 0
         guard AXUIElementGetPid(window,&pid) == .success, pid == app.processIdentifier else { throw fail("TARGET_NOT_FOUND", "Focused window belongs to another process.") }
         guard let rawPoint = attribute(window,kAXPositionAttribute), CFGetTypeID(rawPoint) == AXValueGetTypeID(),

@@ -48,9 +48,9 @@ extension Target {
     }
     func keyboardInput(_ params: [String: Any]) async throws -> [String: Any] {
         try validateSnapshot(params)
-        guard let focused = attribute(root,kAXFocusedUIElementAttribute), CFGetTypeID(focused) == AXUIElementGetTypeID() else { throw fail("ELEMENT_NOT_INTERACTABLE", "Application has no focused accessibility element.") }
+        guard let rawFocus = attribute(root,kAXFocusedUIElementAttribute), let focused = try unwrapAXUIElement(rawFocus, throwingOnFailure: false) else { throw fail("ELEMENT_NOT_INTERACTABLE", "Application has no focused accessibility element.") }
         var pid: pid_t = 0
-        guard AXUIElementGetPid(focused as! AXUIElement,&pid) == .success, pid == app.processIdentifier else { throw fail("TARGET_NOT_FOUND", "Focused element belongs to another process.") }
+        guard AXUIElementGetPid(focused,&pid) == .success, pid == app.processIdentifier else { throw fail("TARGET_NOT_FOUND", "Focused element belongs to another process.") }
         guard let source = CGEventSource(stateID:.privateState) else { throw fail("PROVIDER_DISCONNECTED", "Cannot create keyboard event source.") }
         let operation = params["operation"] as? String ?? ""
         var pairs: [(CGEvent,CGEvent)] = []

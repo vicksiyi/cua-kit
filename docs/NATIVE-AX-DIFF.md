@@ -307,3 +307,20 @@ AXError.noValue 在这一层仍为 AXError；其 nil 策略由外层 decoder 决
 审计记录 `axValueDecodingEvidence` 固定 typeref、动态转换 stub 和关键跳转指令。
 测试是恢复代码与系统值的行为验证，尚没有原厂服务运行时 oracle；不能外推为整个原生
 属性读取或桌面观察链路已经对齐。
+
+## AXUIElement 原生解码入口接入
+
+恢复 `AXEncodedValue.unwrappedAXUIElementThrowing`（`0x1006e9d90..0x1006e9e50`）
+为 `unwrapAXUIElement`：先比较 CFGetTypeID 与 AXUIElementGetTypeID，匹配才强制转换，
+返回同一个系统元素引用；不匹配时 false 返回 nil，true 抛出
+`.failedToUnwrapAttributeValue(AXUIElement.self)`。这一专用入口不套用 AXValue 的 noValue 策略。
+
+Input.keyboardInput、Paste.pasteEditor、WindowSelection.focusedCaptureWindow 的重复
+类型检查已接入该 helper。调用方继续使用 false，再分别保留原有“无焦点元素”错误或
+无窗口时返回 nil；PID 所属校验、快照验证和输入授权仍在原位置。
+
+14 个系统类型案例验证 system-wide / 本进程 AX 引用的身份保留，以及 NSString、NSNumber、
+NSArray、NSDictionary、AXValue 的拒绝与错误类型。创建 AX 引用不读取应用 UI、不操作桌面；
+这组测试与 Swift 构建不能替代真实键盘、粘贴、截图端到端验收。
+审计记录 axUIElementDecodingEvidence 包含函数边界、机器码哈希、类型检查与强转调用。
+泛型 UIElementProtocol 包装器构造与其余 decoder 分支仍单独待恢复。

@@ -335,6 +335,33 @@ axvalue_decode_evidence={
     'order':['try concrete unpacker (errors propagate)', 'cast Optional<Any> to requested type', 'on cast failure, inspect AXError', 'noValue returns nil; other AXError uses conditional failure', 'non-AXError mismatch uses failedToUnwrapAttributeValue(requested type)'],
     'scope':'AXValue branch only, not the full generic decoder.',
 }
+element_start=0x1006e9d90
+element_end=starts[starts.index(element_start)+1]
+if element_end != 0x1006e9e50: raise SystemExit('AXUIElement decoder boundary changed')
+element_calls=[]
+for address in range(element_start,element_end,4):
+    word=struct.unpack('<I',read_virtual(address,4))[0]
+    if word >> 26 != 0b100101: continue
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    destination=address+immediate*4
+    symbol=indirect.get(destination,'')
+    if symbol in ['_CFGetTypeID','_AXUIElementGetTypeID','_swift_dynamicCastUnknownClassUnconditional']:
+        element_calls.append({'address':hex(address),'symbol':symbol})
+if element_calls != [
+    {'address':'0x1006e9db8','symbol':'_CFGetTypeID'},
+    {'address':'0x1006e9dc0','symbol':'_AXUIElementGetTypeID'},
+    {'address':'0x1006e9de8','symbol':'_swift_dynamicCastUnknownClassUnconditional'},
+]: raise SystemExit('AXUIElement checked-cast sequence changed')
+element_evidence={
+    'start':hex(element_start),'endExclusive':hex(element_end),
+    'machineCodeSha256':hashlib.sha256(read_virtual(element_start,element_end-element_start)).hexdigest(),
+    'resolvedCalls':element_calls,
+    'typeMismatchBranch':'0x1006e9dc8',
+    'falseFlagReturnsNil':'0x1006e9df8..0x1006e9dfc',
+    'errorCase2':'0x1006e9e28..0x1006e9e30',
+    'scope':'Raw AXUIElement decoder only; generic UIElementProtocol wrapper construction is separate.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -379,6 +406,7 @@ record = {
     'errorEvidence':error_evidence,
     'axValueUnpackingEvidence':unpack_evidence,
     'axValueDecodingEvidence':axvalue_decode_evidence,
+    'axUIElementDecodingEvidence':element_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
