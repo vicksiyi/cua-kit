@@ -19,3 +19,12 @@ export function nativeSupervisorEnvironment(
   }
   return result;
 }
+
+/** Explicit host inputs for the native policy subprocess, not sandbox workers. */
+export function nativeAppServerEnvironment(environment: Record<string, string>, temporaryDirectory: string): Record<string, string> {
+  const host = nativeSupervisorEnvironment(environment, temporaryDirectory);
+  // CLI selection has its own spec field; runtime mode belongs to the Rust host.
+  delete host.CODEX_CLI_PATH;
+  delete host.NODE_REPL_RUNTIME_MODE;
+  return host;
+}

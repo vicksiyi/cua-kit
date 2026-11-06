@@ -23,12 +23,18 @@ test('policy source preserves defaults, precedence and explicit conflicts',async
 test('production spec selects provider without leaking policy or CLI path into workers',{skip:process.platform!=='darwin'},async t=>{
  const root=await mkdtemp('/tmp/core-policy-spec-');t.after(()=>rm(root,{recursive:true,force:true}));
  const helper=join(root,'owned-helper');await writeFile(helper,'fixture');
- const runtime=await prepareIndependentRuntime({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift',CORE_CUA_NATIVE_HELPER_PATH:helper,CORE_CUA_POLICY_SOURCE:'app-server',CODEX_CLI_PATH:'/fixture/cli',DEEPSEEK_API_KEY:'fixture-model-secret'},root,'policy-spec');
+ const runtime=await prepareIndependentRuntime({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift',CORE_CUA_NATIVE_HELPER_PATH:helper,CORE_CUA_POLICY_SOURCE:'app-server',CODEX_CLI_PATH:'/fixture/cli',HOME:'/fixture/home',CODEX_HOME:'/fixture/config',PATH:'/fixture/bin',HTTPS_PROXY:'',DEEPSEEK_API_KEY:'fixture-model-secret'},root,'policy-spec');
  t.after(()=>runtime.dispose());
  const spec=JSON.parse(await readFile(runtime.args[0],'utf8'));
  assert.equal(spec.native_service.policy_source,'app-server');
  assert.equal(spec.native_service.codex_cli_path,'/fixture/cli');
+ assert.equal(spec.native_service.app_server_environment.HOME,'/fixture/home');
+ assert.equal(spec.native_service.app_server_environment.CODEX_HOME,'/fixture/config');
+ assert.equal(spec.native_service.app_server_environment.PATH,'/fixture/bin');
+ assert.equal(spec.native_service.app_server_environment.HTTPS_PROXY,'');
+ assert.equal(spec.native_service.app_server_environment.CODEX_CLI_PATH,undefined);
+ assert.equal(spec.native_service.app_server_environment.NODE_REPL_RUNTIME_MODE,undefined);
  assert.equal(Object.hasOwn(spec.native_service,'app_policy'),false);
- for(const worker of [spec.kernel,spec.trusted]) for(const key of ['CORE_CUA_POLICY_SOURCE','CORE_CUA_APP_POLICY','CODEX_CLI_PATH','DEEPSEEK_API_KEY']) assert.equal(worker.sandbox.worker_environment[key],undefined);
+ for(const worker of [spec.kernel,spec.trusted]) for(const key of ['CORE_CUA_POLICY_SOURCE','CORE_CUA_APP_POLICY','CODEX_CLI_PATH','DEEPSEEK_API_KEY','HOME','CODEX_HOME','PATH','HTTPS_PROXY']) assert.equal(worker.sandbox.worker_environment[key],undefined);
  assert.doesNotMatch(JSON.stringify(spec),/fixture-model-secret/);
 });

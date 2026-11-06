@@ -13,12 +13,19 @@ test('MCP runtime forwards policy source through Rust and Swift to owned app-ser
  const root=await realpath(await mkdtemp('/tmp/core-policy-runtime-'));
  t.after(()=>rm(root,{recursive:true,force:true}));
  const peer=join(root,'peer'),log=join(root,'methods.jsonl');
- await writeFile(peer,`#!${process.execPath}\nconst log=${JSON.stringify(log)};\n`+String.raw`
+ const home=join(root,'fixture home'),configHome=join(root,'fixture config');
+ await mkdir(home);await mkdir(configHome);
+ await writeFile(join(configHome,'owned-policy.json'),JSON.stringify({requirements:{computerUse:{defaultAppAccess:'deny',macos:{bundleIds:{'com.core.fixture.allowed':'allow','com.apple.Terminal':'allow'}}}}}));
+ await writeFile(peer,`#!${process.execPath}\nconst log=${JSON.stringify(log)},expectedHome=${JSON.stringify(home)},expectedConfig=${JSON.stringify(configHome)};\n`+String.raw`
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 assert.deepEqual(process.argv.slice(2),['app-server','--listen','stdio://']);
 assert.equal(process.env.CORE_CUA_APP_POLICY,undefined);
 assert.equal(process.env.DEEPSEEK_API_KEY,undefined);
+assert.equal(process.env.HOME,expectedHome);
+assert.equal(process.env.CODEX_HOME,expectedConfig);
+assert.equal(process.env.PATH,'/fixture/search/path');
+assert.equal(process.env.HTTPS_PROXY,'');
 let clientName;
 require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
  const request=JSON.parse(line);
@@ -30,7 +37,7 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
  } else if(request.method==='getAuthStatus' && clientName==='codex-browser-use') {
   result={}; // Owned peer supplies no authentication token.
  } else if(request.method==='configRequirements/read') {
-  result={requirements:{computerUse:{defaultAppAccess:'deny',macos:{bundleIds:{'com.core.fixture.allowed':'allow','com.apple.Terminal':'allow'}}}}};
+  result=JSON.parse(fs.readFileSync(require('node:path').join(process.env.CODEX_HOME,'owned-policy.json'),'utf8'));
  } else if(request.method==='config/read') result={config:{}};
  else throw Error('Unexpected request');
  process.stdout.write(JSON.stringify({id:request.id,result})+'\n');
@@ -42,7 +49,7 @@ require('node:readline').createInterface({input:process.stdin}).on('line',line=>
   return path;
  };
  const staged=await stageRuntimePackages([resolve('packages/sky'),resolve('packages/cua')]);t.after(()=>staged.dispose());
- const env=await readRuntimeEnvironment({CORE_CUA_POLICY_SOURCE:'app-server',CODEX_CLI_PATH:peer,DEEPSEEK_API_KEY:'fixture-model-secret',CUA_MCP_ENV:JSON.stringify({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift'})});
+ const env=await readRuntimeEnvironment({CORE_CUA_POLICY_SOURCE:'app-server',HOME:home,CODEX_HOME:configHome,PATH:'/fixture/search/path',HTTPS_PROXY:'',CODEX_CLI_PATH:peer,DEEPSEEK_API_KEY:'fixture-model-secret',CUA_MCP_ENV:JSON.stringify({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift'})});
  const runtime=await prepareIndependentRuntime(env,staged.root,'policy-runtime');t.after(()=>runtime.dispose());
  const transport=new StdioClientTransport({command:runtime.command,args:runtime.args,env:runtime.environment,stderr:'pipe'});
  const client=new Client({name:'owned-policy-runtime-test',version:'1.0'},{capabilities:{elicitation:{form:{}}}});

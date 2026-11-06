@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {nativeSupervisorEnvironment} from '../packages/agent-loop/src/native-supervisor-environment';
+import {nativeSupervisorEnvironment,nativeAppServerEnvironment} from '../packages/agent-loop/src/native-supervisor-environment';
 import {readRuntimeEnvironment} from '../packages/agent-loop/src/restored-runtime';
 import {prepareIndependentRuntime} from '../packages/agent-loop/src/independent-runtime';
 
@@ -38,4 +38,10 @@ test('prepared Rust host retains auth configuration while both sandbox workers r
    for(const key of ['HOME','CODEX_HOME','CODEX_CLI_PATH','PATH','DEEPSEEK_API_KEY','HTTPS_PROXY']) assert.equal(env[key],undefined,key);
   }
  }finally{await runtime?.dispose();await rm(root,{recursive:true,force:true});}
+});
+
+test('policy provider environment carries host routing without model secrets or unrelated launch controls',()=>{
+ const selected=nativeAppServerEnvironment({HOME:'/fixture/home',CODEX_HOME:'',PATH:'/fixture/bin',CODEX_CLI_PATH:'/fixture/cli',NODE_REPL_RUNTIME_MODE:'gaas-browser',HTTP_PROXY:'http://127.0.0.1:9',DEEPSEEK_API_KEY:'fixture-secret',CORE_CUA_APP_POLICY:'{}'},'/fixture/tmp');
+ assert.deepEqual(selected,{HOME:'/fixture/home',TMPDIR:'/fixture/tmp',CODEX_HOME:'',PATH:'/fixture/bin',HTTP_PROXY:'http://127.0.0.1:9'});
+ assert.deepEqual(nativeAppServerEnvironment({},'/fixture/tmp'),{HOME:'/fixture/tmp',TMPDIR:'/fixture/tmp'});
 });

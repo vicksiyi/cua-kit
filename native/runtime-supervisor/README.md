@@ -553,3 +553,18 @@ are declined and no application input occurs. Real CLI authentication/configurat
 and end-to-end model-driven UI acceptance are still pending. This is an explicit
 integration option, not a recommendation to switch policy sources to retry a denied
 application.
+
+For app-server policy mode, the demo also supplies `app_server_environment` in
+the native-service spec. It preserves the selected host HOME/CODEX_HOME/PATH,
+TMPDIR and uppercase/lowercase HTTP_PROXY/HTTPS_PROXY/ALL_PROXY/NO_PROXY values,
+including explicit empty values. This fixes the previous minimal-environment
+boundary that could make the policy CLI read a different configuration location.
+The Swift Process inherits these settings. `codex_cli_path` remains separate.
+Rust rejects other environment keys and nonempty provider settings in standalone
+mode. Model credentials and these host settings are not passed to sandbox workers.
+This is host deployment wiring, not a recovered vendor environment whitelist.
+
+The owned MCP fixture verifies the policy is read from the selected temporary
+CODEX_HOME after crossing both process boundaries; no real user configuration or
+authentication files are read by that fixture. Actual installed CLI interoperability
+still requires separate validation.

@@ -19,6 +19,9 @@ pub struct NativeServiceOptions {
     #[serde(default)]
     pub policy_source: PolicySource,
     pub codex_cli_path: Option<String>,
+    /// Explicit host configuration/auth routing; never the model environment.
+    #[serde(default)]
+    pub app_server_environment: BTreeMap<String, String>,
 }
 // Preserve the existing rejection of explicit null/non-map rules, while
 // distinguishing an omitted field from a deliberately configured empty map.
@@ -43,8 +46,11 @@ impl NativeServiceOptions {
         ]);
         match self.policy_source {
             PolicySource::Standalone => {
-                if self.codex_cli_path.is_some() {
-                    return Err("codex_cli_path requires app-server policy_source".into());
+                if self.codex_cli_path.is_some() || !self.app_server_environment.is_empty() {
+                    return Err(
+                        "codex_cli_path/app_server_environment require app-server policy_source"
+                            .into(),
+                    );
                 }
                 let empty = BTreeMap::new();
                 let rules = self.app_policy.as_ref().unwrap_or(&empty);
@@ -57,6 +63,26 @@ impl NativeServiceOptions {
             PolicySource::AppServer => {
                 if self.app_policy.is_some() {
                     return Err("app-server policy_source conflicts with app_policy".into());
+                }
+                for (key, value) in &self.app_server_environment {
+                    if !matches!(
+                        key.as_str(),
+                        "HOME"
+                            | "PATH"
+                            | "CODEX_HOME"
+                            | "TMPDIR"
+                            | "HTTP_PROXY"
+                            | "HTTPS_PROXY"
+                            | "ALL_PROXY"
+                            | "NO_PROXY"
+                            | "http_proxy"
+                            | "https_proxy"
+                            | "all_proxy"
+                            | "no_proxy"
+                    ) {
+                        return Err("Unsupported app_server_environment key".into());
+                    }
+                    env.insert(key.clone(), value.clone());
                 }
                 env.insert("CORE_CUA_POLICY_SOURCE".into(), "app-server".into());
                 if let Some(path) = &self.codex_cli_path {
@@ -247,6 +273,37 @@ mod tests {
             .contains_key("CODEX_CLI_PATH"));
     }
 
+    #[test]
+    fn provider_environment_preserves_routing_and_rejects_unrelated_keys() {
+        let routing = json!({"HOME":"/fixture/home", "CODEX_HOME":"/fixture/config", "PATH":"", "HTTPS_PROXY":""});
+        let env = options(json!({"policy_source":"app-server", "app_server_environment":routing}))
+            .service_environment()
+            .unwrap();
+        for (key, value) in routing.as_object().unwrap() {
+            assert_eq!(&env[key], value.as_str().unwrap());
+        }
+        for key in [
+            "DEEPSEEK_API_KEY",
+            "CORE_CUA_APP_POLICY",
+            "CORE_CUA_POLICY_SOURCE",
+            "CODEX_CLI_PATH",
+            "DYLD_INSERT_LIBRARIES",
+        ] {
+            let mut values = serde_json::Map::new();
+            values.insert(key.into(), json!("fixture"));
+            assert!(options(
+                json!({"policy_source":"app-server", "app_server_environment":values})
+            )
+            .service_environment()
+            .is_err());
+        }
+        assert!(
+            options(json!({"app_server_environment":{"HOME":"/fixture"}}))
+                .service_environment()
+                .is_err()
+        );
+    }
+
     #[tokio::test]
     async fn owned_helper_receives_selected_policy_through_process_boundary() {
         use std::os::unix::fs::PermissionsExt;
@@ -270,7 +327,7 @@ net.createServer().listen(socketPath, () => console.log(JSON.stringify({type:'sk
         std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
         for source in [
             json!({}),
-            json!({"policy_source":"app-server","codex_cli_path":"/fixture/owned-cli"}),
+            json!({"policy_source":"app-server","codex_cli_path":"/fixture/owned-cli","app_server_environment":{"HOME":"/fixture/home","CODEX_HOME":"/fixture/auth","PATH":"/fixture/bin","HTTPS_PROXY":"","TMPDIR":"/fixture/tmp"}}),
         ] {
             let mut config = options(source);
             config.helper = helper.clone();

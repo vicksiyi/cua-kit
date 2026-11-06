@@ -825,3 +825,39 @@ AgentLoop TypeScript check, shell syntax check, Rust release build, the owned-pe
 MCP policy integration, and the pre-existing standalone MCP/Sky inventory-policy
 lifecycle regression all pass. The latter retains explicit allowed/denied rules
 and verifies reset/child cleanup; no real application UI operation is performed.
+
+## Native policy subprocess configuration environment
+
+The pinned binary audit still passes SHA-256 verification. The reviewed Process
+initializer at 0x100dccf24..<0x100dcd480 sets executable URL, arguments, standard
+input/output/error and launches; it does not replace Process.environment in that
+initializer. The restored Foundation Process likewise inherits the helper's
+process environment. This does not establish how every vendor parent supplies
+its environment.
+
+The owned Rust service boundary was dropping the already-selected host HOME,
+CODEX_HOME, PATH and proxy settings by using a fixed minimal environment. That
+could select a different config/auth location or prevent the CLI fallback from
+being found. The host spec now supplies an explicit app_server_environment for
+app-server mode: HOME, CODEX_HOME, PATH, TMPDIR and uppercase/lowercase HTTP_PROXY,
+HTTPS_PROXY, ALL_PROXY, NO_PROXY. Values, including empty strings and paths with
+spaces, are preserved. CLI selection remains in codex_cli_path. The existing host
+HOME/TMPDIR fallback is retained if no HOME is supplied.
+
+This list is an independently owned deployment boundary, not a claim that the
+vendor initializer filters these keys. Rust rejects unknown keys and rejects
+nonempty provider environment in standalone mode. It cannot be used to overwrite
+the policy source, local rules or CLI selection, and model credentials are not
+forwarded. Neither sandbox worker receives these host routing values.
+
+The owned-peer MCP acceptance now creates separate temporary HOME/CODEX_HOME
+locations and makes the peer read its policy fixture from CODEX_HOME. It also
+asserts PATH and an explicitly empty proxy value after the Rust → Swift → Process
+boundary. The same fixture serves the separate Rust authentication client without
+returning an authentication token. The test reads no user auth/config files and
+performs no model request or real app action. Live CLI interoperability, real
+policy results and approval persistence remain unverified.
+
+Validation: five Rust native-service tests (including real owned helper spawn),
+five host environment/spec tests, AgentLoop typecheck, Rust release build and the
+updated owned-peer MCP integration all pass. Static pinned-binary audit also passes.
