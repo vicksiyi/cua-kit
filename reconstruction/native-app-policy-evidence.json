@@ -64,8 +64,57 @@
       "start": "0x1000aa444",
       "endExclusive": "0x1000aab28",
       "sha256": "336fb1a54ec90791747fd4ca6fe805bdd17dc3fe2fee9c7cda463c84244a924f"
+    },
+    {
+      "name": "optionalDictionaryParser",
+      "start": "0x1000a90f4",
+      "endExclusive": "0x1000a924c",
+      "sha256": "f9d1be488f49f6d19c667b24e65cf754a7c49e1c64100eb60eab0771809eff4d"
+    },
+    {
+      "name": "strictBooleanParser",
+      "start": "0x1000a924c",
+      "endExclusive": "0x1000a93d4",
+      "sha256": "7bb308daaad550c4a96ab2738f20af1f078ef886d5b9bb29c24d30f82edac797"
+    },
+    {
+      "name": "macOSRulesParser",
+      "start": "0x1000a93d4",
+      "endExclusive": "0x1000a98f0",
+      "sha256": "af9a067e45566f7987ad1ee7bdc95ea6c797bbe27672ed491fb6977cff8d48af"
+    },
+    {
+      "name": "policyResponseParser",
+      "start": "0x1000a98f0",
+      "endExclusive": "0x1000aa444",
+      "sha256": "e39b7617b918624bb019fb58d0898c1a0f46b2e4ce7d9b242523c6cff8992302"
     }
   ],
+  "recoveredParser": {
+    "requiredEnvelope": [
+      "requirementsResponse.requirements (null accepted)",
+      "configResponse.config (dictionary required)"
+    ],
+    "optionalDictionary": "missing/null becomes empty; other non-dictionaries throw",
+    "optionalBoolean": "missing/null becomes true; require CFBoolean identity and Bool cast otherwise",
+    "allowComputerUseConjunction": [
+      "requirements.allowBrowserAndComputerUse",
+      "requirements.featureRequirements.computer_use",
+      "config.features.computer_use"
+    ],
+    "persistentApproval": "requirements.computerUse.allowPersistentApproval",
+    "macOS": [
+      "requirements.computerUse.defaultAppAccess",
+      "requirements.computerUse.macos.bundleIds"
+    ],
+    "configuredMacOS": [
+      "config.computer_use.default_app_access",
+      "config.computer_use.macos.bundle_ids"
+    ],
+    "defaultAccess": "missing/null becomes allow; otherwise exact allow or deny string",
+    "bundleEntries": "dictionary of exact allow/deny strings; null entry invalid",
+    "evaluation": "two rule maps retained separately; app evaluation is not implemented by the parser"
+  },
   "recoveredProvider": {
     "cacheTTLSeconds": 900,
     "requestTimeoutSeconds": 30,
@@ -85,7 +134,7 @@
   },
   "limitations": [
     "Field names and enum cases establish structure, not runtime defaults or precedence.",
-    "Recovered cache is an extracted Swift component; production policy transport and evaluation remain incomplete.",
+    "Recovered cache and parser are extracted Swift components; production native transport and app evaluation remain incomplete.",
     "No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.",
     "No vendor execution, network requests, policy changes, or approval bypass."
   ]

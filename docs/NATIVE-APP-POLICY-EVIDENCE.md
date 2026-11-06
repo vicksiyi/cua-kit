@@ -54,9 +54,46 @@ The actor awaits the request; this branch does not add in-flight coalescing.
 and loader and a generic payload. Those are host extraction seams, not original
 API names. Tests cover cache hit, expiry boundary, failed refresh, retained old
 cache after failure, request-start timestamps, and backwards clock changes.
-This component is **not yet wired into production**: the real response parser,
-native transport, and access evaluation must be recovered first. The current
+This component is **not yet wired into production**: native transport and access
+evaluation must be recovered first. The response parser is now restored below. The current
 standalone policy remains enforced unchanged.
+
+## Recovered response parser
+
+`NativeComputerUsePolicy.swift` restores `0x1000a98f0..<0x1000aa444` and its
+three helpers at `0x1000a90f4`, `0x1000a924c`, and `0x1000a93d4`.
+The `requirements` envelope key must exist (NSNull is accepted); `config` must
+exist and be a dictionary. Nested optional dictionaries accept missing/null as
+empty, but reject non-dictionaries. Optional booleans accept missing/null as
+true, but otherwise require **CFBoolean type identity** followed by a Bool cast.
+Integer or string coercion is not permitted.
+
+| Result | Response source |
+| --- | --- |
+| `allowComputerUse` | AND of `requirements.allowBrowserAndComputerUse`, `requirements.featureRequirements.computer_use`, `config.features.computer_use` |
+| `allowPersistentApproval` | `requirements.computerUse.allowPersistentApproval` |
+| `macos.defaultAppAccess` | `requirements.computerUse.defaultAppAccess` |
+| `macos.bundleIDs` | `requirements.computerUse.macos.bundleIds` |
+| `configuredMacOS.defaultAppAccess` | `config.computer_use.default_app_access` |
+| `configuredMacOS.bundleIDs` | `config.computer_use.macos.bundle_ids` |
+
+Every boolean is parsed before computing the conjunction, so an early false
+does not suppress later malformed-field errors. Access defaults to `allow` for
+missing/null; non-null access values must be exactly `allow` or `deny`. Both
+enum lookup tables (`0x10154d7c0`, `0x10154d818`) reference these strings in that
+order at `0x10123fa41`. Bundle maps default to empty; each entry must contain an
+access string (null entries are rejected). Keys are retained without invented
+case normalization, trimming, wildcard matching, or nonempty validation.
+
+The parser keeps requirements and configured rule maps separate. It does not
+establish which rule wins for an app, grant access, or override deployment
+policy. The extracted parser uses a local `ParseError.invalidResponse` instead
+of claiming the full original JSON-RPC error representation is restored.
+
+Tests cover absent/null envelopes, all eight global-flag combinations, strict
+Bool versus NSNumber handling, malformed later flags after an earlier false,
+invalid dictionaries/access values, separate conflicting rule maps, exact key
+spelling, empty bundle keys, and actual JSONSerialization boolean bridging.
 
 ## Current request boundary
 
@@ -68,11 +105,11 @@ approval, and macOS Accessibility/Screen Recording grants remain distinct.
 
 ## Work still required
 
-1. Recover the response parser and concrete native connection integration.
-   Cache timing, request sequence, and connection cleanup are now evidenced;
-   the complete original provider is not implemented yet.
-2. Recover policy evaluation: global switch, `macos` versus `configuredMacOS`,
-   bundle-ID matching, default access, risk classification, and persistence.
+1. Implement the concrete native connection integration and original error
+   representation. Cache timing, parser, request sequence, and cleanup are
+   evidenced; the complete original provider is not implemented yet.
+2. Recover app policy evaluation: `macos` versus `configuredMacOS` precedence,
+   bundle-ID matching, risk classification, and persistence application.
 3. Map installed-app resolution and launch to the policy evaluation order.
 4. Implement the recovered native-language logic with tests derived from those
    branches, preserving the independent deployment's explicit policy boundary.

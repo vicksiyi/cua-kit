@@ -67,11 +67,27 @@ def audit():
     for name, start, end in [
         ('providerCacheAndRefresh', 0x1000a7cbc, 0x1000a81f0),
         ('appServerPolicyFetch', 0x1000aa444, 0x1000aab28),
+        ('optionalDictionaryParser', 0x1000a90f4, 0x1000a924c),
+        ('strictBooleanParser', 0x1000a924c, 0x1000a93d4),
+        ('macOSRulesParser', 0x1000a93d4, 0x1000a98f0),
+        ('policyResponseParser', 0x1000a98f0, 0x1000aa444),
     ]:
         code_ranges.append(dict(name=name, start=hex(start), endExclusive=hex(end),
                                 sha256=hashlib.sha256(read(start, end-start)).hexdigest()))
     return dict(binarySha256=digest, method='Static Mach-O Swift metadata and pinned disassembly analysis',
                 types=records, codeRanges=code_ranges,
+                recoveredParser=dict(
+                    requiredEnvelope=['requirementsResponse.requirements (null accepted)', 'configResponse.config (dictionary required)'],
+                    optionalDictionary='missing/null becomes empty; other non-dictionaries throw',
+                    optionalBoolean='missing/null becomes true; require CFBoolean identity and Bool cast otherwise',
+                    allowComputerUseConjunction=['requirements.allowBrowserAndComputerUse',
+                        'requirements.featureRequirements.computer_use', 'config.features.computer_use'],
+                    persistentApproval='requirements.computerUse.allowPersistentApproval',
+                    macOS=['requirements.computerUse.defaultAppAccess', 'requirements.computerUse.macos.bundleIds'],
+                    configuredMacOS=['config.computer_use.default_app_access', 'config.computer_use.macos.bundle_ids'],
+                    defaultAccess='missing/null becomes allow; otherwise exact allow or deny string',
+                    bundleEntries='dictionary of exact allow/deny strings; null entry invalid',
+                    evaluation='two rule maps retained separately; app evaluation is not implemented by the parser'),
                 recoveredProvider=dict(cacheTTLSeconds=900, requestTimeoutSeconds=30,
                     cacheTimestamp='Date captured before refresh',
                     cacheHit='cached policy and timestamp exist; now.timeIntervalSince(cachedAt) < 900',
@@ -82,7 +98,7 @@ def audit():
                     closesConnectionOn='success, request failure, and policy parsing failure'),
                 limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
-                    'Recovered cache is an extracted Swift component; production policy transport and evaluation remain incomplete.',
+                    'Recovered cache and parser are extracted Swift components; production native transport and app evaluation remain incomplete.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 
