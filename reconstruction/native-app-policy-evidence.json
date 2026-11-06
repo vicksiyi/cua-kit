@@ -335,6 +335,14 @@
       "configRequirements/read",
       "config/read"
     ],
+    "initializeParams": {
+      "clientInfo": "CodexAppServerClientInfo.current (host identity injected in reconstruction)",
+      "capabilities": {
+        "experimentalApi": true,
+        "optOutNotificationMethods": []
+      }
+    },
+    "configRequirementsParams": null,
     "configReadParams": {
       "includeLayers": false
     },

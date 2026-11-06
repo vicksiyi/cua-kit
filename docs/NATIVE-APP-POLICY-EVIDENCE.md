@@ -319,3 +319,31 @@ The RPC test launches no app and proves resolution only. Full desktop actions,
 policy transport, approvals and end-to-end AgentLoop acceptance remain separate
 requirements. Earlier sections describing pending enumeration or pending
 resolution integration are superseded by this section.
+
+## Executable policy-fetch orchestration
+
+`NativeAppPolicyFetch.swift` restores the provider's request sequence from
+`0x1000aa444..<0x1000aab28` against an injected connection protocol:
+
+1. Construct connection with the supplied timeout and `disablePlugins: false`.
+2. Request `initialize` with `clientInfo` and capabilities
+   `{ experimentalApi: true, optOutNotificationMethods: [] }`.
+3. Request `configRequirements/read` with nil params.
+4. Request `config/read` with `{ includeLayers: false }`.
+5. Parse the two response envelopes, then close and return.
+
+The empty opt-out array at `0x1000aa608` loads GOT `0x101468918`, bound to
+`__swiftEmptyArrayStorage`; it is not a missing field or a subscription list.
+The initialize response payload is discarded after a successful request.
+There is no extra initialized notification in this provider sequence.
+
+Connection creation errors propagate before reading client identity. Once a
+connection exists, request and parse failures all close it and propagate. The
+implementation uses `defer` for this shared cleanup. Tests verify exact methods,
+payload shapes, nil parameters, all three request failure positions, invalid
+policy responses, connection creation failure and original error identity.
+
+The connection protocol is an explicit reconstruction seam. These tests use
+a local fake connection and make no Codex/DeepSeek request. Concrete native
+process transport and its request reader remain incomplete; this code does
+not switch the helper's active policy source or change approval rules.

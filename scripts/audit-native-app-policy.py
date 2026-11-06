@@ -149,6 +149,9 @@ def audit():
                     refreshFailure='propagate error; do not return stale policy or overwrite cache',
                     transport='CodexAppServerJSONRPCConnection(timeout: 30, disablePlugins: false)',
                     requestOrder=['initialize', 'configRequirements/read', 'config/read'],
+                    initializeParams={'clientInfo': 'CodexAppServerClientInfo.current (host identity injected in reconstruction)',
+                        'capabilities': {'experimentalApi': True, 'optOutNotificationMethods': []}},
+                    configRequirementsParams=None,
                     configReadParams={'includeLayers': False},
                     closesConnectionOn='success, request failure, and policy parsing failure'),
                 limitations=[
