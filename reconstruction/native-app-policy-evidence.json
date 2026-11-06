@@ -60,6 +60,18 @@
       "sha256": "eb99ff07be37dc0303f45010965bb32af5880e974a21507b280214357f417af1"
     },
     {
+      "name": "jsonRPCNextMessage",
+      "start": "0x100dd0350",
+      "endExclusive": "0x100dd0958",
+      "sha256": "1ccbb3434ad9a6472fce681f6846b14faf28cffebb6be041aa4b1c425bb43e17"
+    },
+    {
+      "name": "jsonRPCMessageDecode",
+      "start": "0x100dd0740",
+      "endExclusive": "0x100dd0958",
+      "sha256": "f2843f44b0dfb292a03923fd7a94d4f89c8e3af49e14cdc5cc86a8c8d581aba1"
+    },
+    {
       "name": "appServerPolicyFetch",
       "start": "0x1000aa444",
       "endExclusive": "0x1000aab28",

@@ -347,3 +347,26 @@ The connection protocol is an explicit reconstruction seam. These tests use
 a local fake connection and make no Codex/DeepSeek request. Concrete native
 process transport and its request reader remain incomplete; this code does
 not switch the helper's active policy source or change approval rules.
+
+## JSON-RPC message decoding boundary
+
+The decoding continuation of `nextMessage(timeout:method:)` at
+`0x100dd0740..<0x100dd0958` returns nil when the optional line is absent.
+Otherwise it converts the String to data and invokes
+`JSONObjectWithData:options:error:` (selector reference `0x101543cb0`), passing
+options zero. A Foundation parse error propagates; successful values must cast
+to `[String: Any]` or the invalid-response branch throws. This stage neither
+unwraps `result` nor validates IDs or JSON-RPC version.
+
+`NativeJSONRPCMessageDecoder` restores that decoding boundary. Tests cover EOF,
+empty dictionaries, Unicode and null values, whitespace/CRLF, arrays, blank
+lines, malformed JSON and scalar fragments. Foundation errors remain distinct
+from non-dictionary container errors. The local error enum represents only
+this branch, not the complete native JSON-RPC error type.
+
+Static metadata identifies the original private line buffer as an actor with
+`lines`, `waiter`, `terminalError`, and `finished` state. Its initialization at
+`0x100db9d3c` starts with an empty array, absent waiter/error and false finished
+flag. This establishes structure, not its complete enqueue/cancellation rules.
+The actor reader, timeout race, framing, response dispatch and process lifecycle
+are still pending; the decoder alone does not establish a working connection.
