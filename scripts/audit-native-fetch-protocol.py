@@ -61,6 +61,14 @@ for expected in ['10001df28:', '10001df2c:', '0x10001e160', '10001e178:', '#0x97
                  '10001e034:', 'KernelToHost', '10001e180:']:
     assert expected in tag_decode, expected
 
+sentry_user_update = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10022c17c','--stop-address=0x10022c380',str(artifact)], text=True)
+for crate in ['sentry-core-0.49.2','sentry-types-0.49.2']:
+    assert ('/'+crate+'/').encode() in raw, crate
+for expected in ['Hub>::current', 'Hub>::is_active_and_usage_safe', '10022c36c:',
+                 'mov\tx2, #0x0', 'node_repl::diagnostics::sentry_user', 'Scope>::set_user']:
+    assert expected in sentry_user_update, expected
+
 method_error = read(0x100a49dc6,32).decode()
 body_error = read(0x100a49c58,30).decode()
 assert method_error == 'nodeRepl.fetch method is invalid'
@@ -439,6 +447,14 @@ print(json.dumps({
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
         'limits':'Pinned-build path only. Client shared-connection lifecycle implemented; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
+    },
+    'authUserDiagnostics': {
+        'range':['0x10022c17c','0x10022c380'],
+        'instructionTextSha256':hashlib.sha256(sentry_user_update.encode()).hexdigest(),
+        'dependencies':['sentry-core=0.49.2','sentry-types=0.49.2'],
+        'reviewedBehavior':'configure_scope uses the active hub, projects optional user ID with the second sentry_user argument absent (x2=0), then replaces Scope user. None clears the user; empty string remains present.',
+        'implementation':'native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver',
+        'limits':'Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete.'
     },
     'workerRoutingTag': {
         'range':['0x10001de30','0x10001e29c'],

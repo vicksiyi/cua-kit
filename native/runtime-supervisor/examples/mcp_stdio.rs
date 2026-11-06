@@ -2,7 +2,10 @@
 //! Supports Rust-owned Seatbelt specs; not the production demo default.
 use core_runtime_supervisor::{
     config_manager::{ConfigManager, ConfigSources},
-    deployment_host::deployment_host,
+    deployment_host::deployment_host_with_fetch,
+    authenticated_fetch::AuthenticatedFetchService,
+    codex_app_server::CodexAppServerClient,
+    codex_app_server_auth::SentryAuthUserObserver,
     mcp_server::SupervisorMcp,
     native_service::NativeServiceOptions,
     process_port::ProcessSpec,
@@ -101,7 +104,11 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     .with_native_service(options.native_service)
     .with_pipe_paths(options.pipe_paths)?
     .with_module_directories(options.module_directories)?;
-    let mut server = SupervisorMcp::new(session, deployment_host(config));
+    let fetch = Arc::new(AuthenticatedFetchService::with_app_server_client(
+        Arc::new(CodexAppServerClient::default()),
+        Arc::new(SentryAuthUserObserver),
+    )?);
+    let mut server = SupervisorMcp::new(session, deployment_host_with_fetch(config, Some(fetch)));
     if let Some(overrides) = options.tool_overrides { server = server.with_tool_overrides(overrides)?; }
     if let Some(config) = options.completion_summary { server = server.with_completion_summary(config)?; }
     let running = server.clone().serve(rmcp::transport::stdio()).await?;

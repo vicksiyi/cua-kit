@@ -141,3 +141,18 @@ impl AccessTokenFetcher for CodexAppServerAccessTokenFetcher {
         })
     }
 }
+
+/// Original set_sentry_user path: update the active Sentry scope with the user
+/// claim, or clear it if absent. No client, DSN or transport is created here.
+/// Reuse the installed artifact's sentry-core version instead of emulating hubs.
+pub struct SentryAuthUserObserver;
+impl AuthUserObserver for SentryAuthUserObserver {
+    fn set_user(&self, user_id: Option<&str>) {
+        sentry_core::configure_scope(|scope| {
+            scope.set_user(user_id.map(|id| sentry_core::protocol::User {
+                id: Some(id.to_owned()),
+                ..Default::default()
+            }));
+        });
+    }
+}

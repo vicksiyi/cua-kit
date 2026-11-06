@@ -18,3 +18,4 @@ url = "=2.5.8"
 rmcp = { version = "=1.5.0", features = ["server", "transport-io", "elicitation"] }
 serde = { version = "=1.0.228", features = ["derive"] }
 tokio-util = { version = "=0.7.18", features = ["rt"] }
+sentry-core = { version = "=0.49.2", default-features = false, features = ["client"] }
