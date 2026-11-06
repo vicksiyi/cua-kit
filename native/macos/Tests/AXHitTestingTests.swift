@@ -29,6 +29,19 @@ import Foundation
             construct: { UIElement(systemElement: $0, transaction: transaction) })
         precondition(result?.role == .button)
         precondition(result?.cache.transactionAttributes == [role])
+        // Two independently created references for one PID represent the same AX
+        // application despite having distinct object addresses and cache objects.
+        let sameAX = AXUIElementCreateApplication(424242)
+        let differentAX = AXUIElementCreateApplication(424243)
+        precondition(ax !== sameAX)
+        precondition(systemAXElementsEqual(ax, sameAX))
+        precondition(!systemAXElementsEqual(ax, differentAX))
+        let otherPartial = AXPartialValue(value: AXEncodedValue(value: "AXWindow" as NSString), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        let otherTransaction = UIElementTransactionCache(attributeTable: [sameAX: [role: otherPartial]], requestedAttributes: [role],
+            fallbackElements: UIElementFallbackCache(initialState: [:]))
+        let other = UIElement(systemElement: sameAX, transaction: otherTransaction)
+        precondition(result!.role != other.role)
+        precondition(result!.representsSameSystemElement(as: other))
         // This branch forwards nonfinite values to the AX API instead of adding
         // new validation; the actual status is still authoritative.
         let _: Int? = try copiedAXElementAtPoint(CGPoint(x: CGFloat.infinity, y: CGFloat.nan), copy: { x, y, _ in

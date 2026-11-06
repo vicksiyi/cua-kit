@@ -1166,6 +1166,14 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['systemElementEquality']={
+    'entry':'0x1006fb9ac..<0x1006fbb74',
+    'system':'When TaskLocal provider is absent, CFEqual(lhs, rhs) at 0x1006fba68; normalize nonzero result to true. Does not compare wrapper/cache identity, PID alone, title or frame.',
+    'provider':'When provider exists, resolve each operand via witness +0x8; nil resolution falls back to AXUIElementRef conformance; dispatch comparison through lhs witness +0x98. This branch has not been implemented.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1006fb9ac,0x1006fbb74)]],
+    'implementation':'systemAXElementsEqual and UIElement.representsSameSystemElement in AXHitTesting.swift explicitly implement system-only equality.',
+    'limitations':'No general Equatable conformance added: provider contract and TaskLocal dispatch remain outstanding. Production click integration pending.',
+}
 element_storage_evidence['systemHitTesting']={
     'entry':'0x1006f7a90..<0x1006f7ea8; main-thread closure 0x1006f7ea8..<0x1006f7f2c',
     'systemBranch':'Resolve target PID; same-process off-main reads dispatch to main; convert CGPoint coordinates to Float; initialize output nil; call AXUIElementCopyElementAtPosition',

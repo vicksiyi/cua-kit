@@ -27,3 +27,16 @@ func systemAXElementAtPoint(
         }, construct: { UIElement(systemElement: $0, transaction: transaction) })
     }
 }
+
+// System branch of 0x1006fb9ac (CFEqual call at 0x1006fba68).
+// Cache identity, titles, geometry and object pointer identity are not compared.
+// This deliberately does not claim to implement the TaskLocal provider branch.
+func systemAXElementsEqual(_ lhs: AXUIElement, _ rhs: AXUIElement) -> Bool {
+    CFEqual(lhs, rhs)
+}
+
+extension UIElement {
+    func representsSameSystemElement(as other: UIElement) -> Bool {
+        systemAXElementsEqual(axElement, other.axElement)
+    }
+}

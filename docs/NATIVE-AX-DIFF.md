@@ -2492,3 +2492,19 @@ CGFloat/Double.infinity 重载歧义，显式指定 CGFloat 后通过。
 
 此处仅恢复系统适配层，事务仍由调用者传入；原 TaskLocal MockProvider、隐式
 current transaction 获取及完整点击生产接线未完成，没有进行真实 UI 操作验收。
+
+
+## AX 元素相等的系统分支（2026-11-07）
+
+0x1006fb9ac..<0x1006fbb74 在无 TaskLocal provider 时调用 CFEqual
+（0x1006fba68），而不是比较 Swift 包装对象、缓存、标题、frame 或裸指针。
+AXHitTesting.swift 增加明确命名的 systemAXElementsEqual 与 UIElement 的
+representsSameSystemElement，保留系统分支边界，不声明完整 Equatable 还原。
+
+provider 存在时，原版依次通过 witness +0x8 解析两侧；解析为 nil 的一侧
+回退 AXUIElementRef conformance，然后通过左侧 witness +0x98 比较。该 provider
+协议及 TaskLocal 接线仍未实现，不可把系统 CFEqual 当成整个原版函数。
+
+验证使用两个分别创建的同 PID AX application 引用（不同对象地址）及另一 PID；
+同一系统元素的 UIElement 即使持有不同预取 role/cache，仍应相等。该测试不启动
+应用、不请求权限，也不证明真实点击已完成。
