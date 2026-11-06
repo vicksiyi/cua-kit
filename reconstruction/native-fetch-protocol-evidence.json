@@ -25,6 +25,30 @@
     0,
     1
   ],
+  "routing": {
+    "function": "resolved_request",
+    "range": [
+      "0x1002706f0",
+      "0x1002712b8"
+    ],
+    "instructionTextSha256": "ad16e58bdcf1d1688ee433604700c625f944cd27a53a84474cc25ea41062cbde",
+    "diagnostics": {
+      "url": "nodeRepl.fetch URL is invalid",
+      "gaasDestination": "nodeRepl.fetch destination is not allowed in gaas-browser runtime mode",
+      "headers": "nodeRepl.fetch does not allow caller headers for this route",
+      "method": "nodeRepl.fetch only allows GET for this route",
+      "body": "nodeRepl.fetch does not allow caller bodies for this route"
+    },
+    "reviewedBranches": {
+      "modeGate": "0x100270774: nonzero mode performs restrictive gaas destination check before common routing",
+      "gaasHostPathComparisons": "0x1002708b0..0x100270cc0 and 0x100271124..0x100271158: exact hosts/paths, ab /v1/ prefix, ASCII POST checks",
+      "commonAuthority": "0x100270cd4..0x100270e50: HTTPS, chatgpt.com (staging only in gaas), no explicit nondefault port or userinfo",
+      "postExceptions": "0x100270e54..0x100270f94: /ces/v1/rgstr and /backend-api/flora/browser/redeem-otp, case-insensitive POST",
+      "getRestrictions": "0x100271038..0x1002711b0: GET then empty headers then absent/empty encoded body",
+      "variant": "0x1002711bc and 0x100271220: gaas passthrough tag 1, default authenticated tag 0; caller dispatch reviewed at 0x10026c410..0x10026c5c4"
+    },
+    "limits": "Branches manually reviewed from pinned instructions; audit checks addresses/literals, not an independent semantic equivalence proof. URL parsing uses evidenced url crate."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
-  "limits": "Static reconstruction, no original execution. URL resolution/authority, authenticated headers, app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
+  "limits": "Static reconstruction, no original execution. URL routing is reconstructed; authenticated headers, app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
 }
