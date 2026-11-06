@@ -1,3 +1,4 @@
+import * as siwc from "./siwc";
 import * as command from "./command";
 import * as browser_user from "./browser_user";
 import * as browser_session from "./browser_session";
@@ -215,6 +216,12 @@ export const Commands = {
   },
   get SelectedTab() {
     return tabs.SelectedTabCommand;
+  },
+  get SiwcAuthenticate() {
+    return siwc.SiwcAuthenticate;
+  },
+  get SiwcDetect() {
+    return siwc.SiwcDetect;
   },
   get TabAxAction() {
     return ax.ActionCommand;

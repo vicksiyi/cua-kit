@@ -83,7 +83,6 @@ export function serviceExportTable(name: string): Record<string, string> {
       node.type === "ExpressionStatement" ? node.expression : undefined;
     if (
       call?.type !== "CallExpression" ||
-      call.callee?.name !== "H" ||
       call.arguments[0]?.name !== name
     )
       continue;

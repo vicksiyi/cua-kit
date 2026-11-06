@@ -1,3 +1,4 @@
+import { SiwcAuthenticateCommand, SiwcDetectCommand } from "./commands/siwc";
 /** Original ug/l6. All required host-bound commands must be supplied; no placeholder handlers. */
 import {
   BrowserUserClaimTabCommand,
@@ -289,6 +290,11 @@ export function createServiceCommandRegistry(host: HostBoundCommands) {
         get: () => PlaywrightWaitForURLCommand,
       },
       SelectedTabCommand: { enumerable: true, get: () => SelectedTabCommand },
+      SiwcAuthenticateCommand: {
+        enumerable: true,
+        get: () => SiwcAuthenticateCommand,
+      },
+      SiwcDetectCommand: { enumerable: true, get: () => SiwcDetectCommand },
       TabAxActionCommand: { enumerable: true, get: () => TabAxActionCommand },
       TabAxGetStateCommand: {
         enumerable: true,
@@ -411,6 +417,8 @@ export function createServiceCommandRegistry(host: HostBoundCommands) {
     readonly PlaywrightWaitForTimeoutCommand: ServiceCommand;
     readonly PlaywrightWaitForURLCommand: ServiceCommand;
     readonly SelectedTabCommand: ServiceCommand;
+    readonly SiwcAuthenticateCommand: ServiceCommand;
+    readonly SiwcDetectCommand: ServiceCommand;
     readonly TabAxActionCommand: ServiceCommand;
     readonly TabAxGetStateCommand: ServiceCommand;
     readonly TabBotDetectionReportCommand: ServiceCommand;

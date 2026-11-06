@@ -1,3 +1,4 @@
+import { siwcTabCapabilityDefinition } from "./tab_siwc";
 import { cdpTabCapabilityDefinition } from "./tab_cdp";
 import { botDetectionTabCapabilityDefinition } from "./tab_bot_detection";
 import { browserAuthTabCapabilityDefinition } from "./tab_browser_auth";
@@ -11,6 +12,7 @@ export const tabCapabilityDefinitions = [
   browserAuthTabCapabilityDefinition,
   pageAssetsTabCapabilityDefinition,
   webMcpTabCapabilityDefinition,
+  siwcTabCapabilityDefinition,
 ];
 export const tabCapabilityFactories = new Map<
   string,

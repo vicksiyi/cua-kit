@@ -86,3 +86,9 @@
 恢复同一构建 `gN` 的完整服务命令处理器。保留 capability/authority 检查在阶段异常捕获之外；自动/显式 DOM/AX 目标解析；绑定 selector 后的 committed-page 验证；账号 origin 核对；用户授权 metadata 与持久化选择；grant 前、cookie 前、click 前页面检查及账号复查；各阶段对应失败状态。仅最终 click 完成后返回 initiated，该状态不等于登录已完成。
 
 新增差分测试覆盖 27 种场景，比对原函数与还原实现的结果和完整有序副作用轨迹，涵盖成功、无候选、多候选、过期引用、无效 ref、授权拒绝/取消、账号变化、页面变化、grant/cookie/follow/click 异常。总计本轮 8 项 SIWC 编排/检测/偏好/观察测试通过，Browser TypeScript 和重建通过。测试依赖受控 context，未执行真实账号登录。下一阶段仍需公共 catalog/capability 注册与真实 service/provider 集成验证。
+
+## 后续恢复：公共 SIWC 注册
+
+将 SIWC client 命令、tab capability factory、runtime export 与 service detect/authenticate 处理器接入现有注册链。当前原构建 `pg` 的 77 项 service exports 已按名称、顺序、getter 属性验证；client Commands 的完整 key 列表与 `ee` 对齐。静态源码 export-table 检查不再依赖旧压缩器 helper 名 H（当前为 W），仍检查实际 AST 的目标表与 getter 结构。
+
+真实 Chromium 集成测试通过：public capability factory → FunctionAgentTransport 序列化 → assembled service registry → injected DOM detector 返回候选。关闭测试 feature gate 后 detect 返回 observation_unavailable，authenticate 返回 unsupported，且无新增授权/页面读取。这里通过受控 context 连接真实 DOM，不代表真实账号/grant provider 验收。Browser TypeScript 与重建通过，注册层 3 项测试通过。生产 browser-specific gate 未放开或绕过。

@@ -1,3 +1,4 @@
+import { siwcTabCapabilityDefinition } from "../capabilities/tab_siwc";
 import * as ax from "../ax";
 import * as agent from "../agent";
 import * as dialogs from "../dialogs";
@@ -183,6 +184,9 @@ export const runtimeTypes = {
   },
   get pageAssetsTabCapabilityDefinition() {
     return capabilities_tab_page_assets.pageAssetsTabCapabilityDefinition;
+  },
+  get siwcTabCapabilityDefinition() {
+    return siwcTabCapabilityDefinition;
   },
   get tabCapabilityDefinitions() {
     return capabilities_tab.tabCapabilityDefinitions;

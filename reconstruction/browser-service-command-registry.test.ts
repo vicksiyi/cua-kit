@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { serviceExportTable, serviceExpression } from "./service-source";
+import {
+  serviceExportTable,
+  serviceExpression,
+  serviceSourceSha256,
+} from "./service-source";
 import {
   createServiceCommandRegistry,
   type HostBoundCommands,
@@ -11,6 +15,10 @@ import { BrowserUserOpenTabsCommand } from "../packages/browser/src/service/comm
 import { TabAXActionCommand } from "../packages/browser/src/service/commands/accessibility";
 import { PlaywrightWaitForUrlCommand } from "../packages/browser/src/service/commands/wait";
 import { DomCuaGetVisibleDomCommand } from "../packages/browser/src/service/input/visible_dom";
+assert.equal(
+  serviceSourceSha256,
+  "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+);
 const bound: HostBoundCommands = {
   BrowserAuthHandoffCommand: defineCommand("browser_auth_handoff", () => {}),
   CuaTypeCommand: defineCommand("cua_type", () => {}),
@@ -26,12 +34,12 @@ const bound: HostBoundCommands = {
   WebMcpListToolsCommand: defineCommand("webmcp_list_tools", () => {}),
 };
 test("service command export registry matches all original names, order and getter semantics", () => {
-  const expected = serviceExportTable("ug"),
+  const expected = serviceExportTable("pg"),
     { registry, commands } = createServiceCommandRegistry({ ...bound });
-  assert.equal(Object.keys(expected).length, 75);
+  assert.equal(Object.keys(expected).length, 77);
   assert.deepEqual(Object.keys(registry), Object.keys(expected));
   for (const [name, symbol] of Object.entries(expected)) {
-    const literal = serviceExpression(symbol).match(/^F\(("[^"\n]*")/);
+    const literal = serviceExpression(symbol).match(/^O\(("[^"\n]*")/);
     if (literal)
       assert.equal(
         registry[name as keyof typeof registry].type,
@@ -40,7 +48,7 @@ test("service command export registry matches all original names, order and gett
       );
   }
   assert.deepEqual(commands, Object.values(registry));
-  assert.equal(new Set(commands.map((command) => command.type)).size, 75);
+  assert.equal(new Set(commands.map((command) => command.type)).size, 77);
   for (const descriptor of Object.values(
     Object.getOwnPropertyDescriptors(registry),
   )) {
@@ -82,7 +90,7 @@ test("assembled registry dispatches restored commands and binds shared typing de
       emit() {},
     },
   });
-  assert.equal(assembly.commands.length, 75);
+  assert.equal(assembly.commands.length, 77);
   const context: any = {
     security: {
       async currentTabUrl(id: number) {
