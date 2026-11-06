@@ -6935,3 +6935,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：回退缓存写入语义确认
 
 新增 fallbackWrite 静态审计：读取与写入使用分离的系统锁临界区；写入会替换既有元素缓存或插入新项，transactionAttributes 为 nil。不能改成单次构建或只保留首个结果。完整属性构建、事务预取、失效及生产接线仍未恢复，本次没有新增运行时 UI 能力。
+
+
+### 2026-11-06：支持属性名称读取的 Swift 实现
+
+恢复 AXUIElementCopyAttributeNames 原始读取与同进程线程调度，按原构建保留输出而忽略系统返回 status；新增 12 项 status/output 组合验证。完整 UIElementAttribute 转换、MockProvider 与缓存构造仍未恢复，尚未接入生产观察器。

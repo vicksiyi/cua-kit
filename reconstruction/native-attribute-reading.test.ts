@@ -10,7 +10,7 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 test(
-  "native AX ordinary and parameterized reads preserve distinct errors and main queue dispatch",
+  "native AX name enumeration, ordinary and parameterized reads preserve distinct errors and main queue dispatch",
   { skip: process.platform !== "darwin", timeout: 60_000 },
   async () => {
     const directory = await mkdtemp(join(tmpdir(), "cua-axread-"));

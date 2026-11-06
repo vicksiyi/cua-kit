@@ -44,3 +44,20 @@ func readRawAXParameterizedAttribute(_ element: AXUIElement, _ name: String, par
         }
     }
 }
+
+// Attribute-name enumeration differs from parameterized value reads: the
+// original system branch at 0x1006f5d04 ignores AXError and consumes the output.
+// Keep the raw CFArray here; MockProvider, array bridging and conversion to
+// UIElementAttribute belong to the still-separate supported-attributes layer.
+func rawAXAttributeNamesResult(copy: (inout CFArray?) -> AXError) -> CFArray? {
+    var names: CFArray?
+    _ = copy(&names)
+    return names
+}
+
+func readRawAXAttributeNames(_ element: AXUIElement) -> CFArray? {
+    let targetPID = resolvedAXProcessID(element)
+    return onAXAttributeReadThread(targetPID: targetPID) {
+        rawAXAttributeNamesResult { AXUIElementCopyAttributeNames(element, &$0) }
+    }
+}

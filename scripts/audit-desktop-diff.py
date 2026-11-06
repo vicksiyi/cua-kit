@@ -836,6 +836,33 @@ element_cache_evidence['fallbackWrite']={
     'interpretation':'Fallback lookup and storage use separate lock regions. The storage call passes nil for transactionAttributes. The dictionary setter replaces an existing three-field cache value or inserts a new key; it does not keep the first concurrent value by double-checking.',
     'limitations':'Does not recover the full attributes collection pipeline, every error path or all cache writers. No process-wide cache or single-flight guarantee follows.',
 }
+# Supported attribute-name direct system branch: AXError is not consumed.
+attribute_names_calls=[(0x1006f5d04,0x1011538a0,'_AXUIElementCopyAttributeNames'),(0x1006f5cb4,0x1011548f0,'_getpid')]
+for site,stub,symbol in attribute_names_calls:
+    word=struct.unpack('<I',read_virtual(site,4))[0]
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate-=0x4000000
+    if word>>26!=0b100101 or site+immediate*4!=stub or indirect.get(stub)!=symbol:
+        raise SystemExit('AX attribute-name system call changed')
+attribute_names_words={
+    0x1006f5c88:0xf8010edf,0x1006f5cc0:0xb7000140,
+    0x1006f5cc4:0x6b0002bf,0x1006f5cc8:0x54000101,
+    0x1006f5ce4:0x36000200,0x1006f5d08:0xd101a3a0,
+    0x1006f5d0c:0x94297d1b,0x1006f5dc8:0xf94002d4,
+}
+for address,word in attribute_names_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('AX attribute-name output or dispatch branch changed')
+attribute_names_start=0x1006f5b8c
+attribute_names_end=starts[starts.index(attribute_names_start)+1]
+attribute_names_evidence={
+    'start':hex(attribute_names_start),'endExclusive':hex(attribute_names_end),
+    'machineCodeSha256':hashlib.sha256(read_virtual(attribute_names_start,attribute_names_end-attribute_names_start)).hexdigest(),
+    'calls':[{'site':hex(c),'stub':hex(st),'symbol':sy} for c,st,sy in attribute_names_calls],
+    'instructionWords':{hex(a):hex(w) for a,w in attribute_names_words.items()},
+    'interpretation':'Direct system enumeration initializes output to nil, calls AXUIElementCopyAttributeNames, and discards its return status before consuming the output. PID/thread dispatch mirrors the ordinary attribute reader.',
+    'limitations':'The restored raw adapter does not implement MockProvider override, CF-array bridging, UIElementAttribute conversion or production cache assembly.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
@@ -918,6 +945,7 @@ record = {
     'transactionScopeEvidence':transaction_scope_evidence,
     'transactionCacheEvidence':transaction_cache_evidence,
     'elementCacheEvidence':element_cache_evidence,
+    'attributeNamesEvidence':attribute_names_evidence,
     'frequencyTableEvidence':frequency_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',

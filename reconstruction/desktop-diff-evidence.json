@@ -1833,6 +1833,35 @@
       "limitations": "Does not recover the full attributes collection pipeline, every error path or all cache writers. No process-wide cache or single-flight guarantee follows."
     }
   },
+  "attributeNamesEvidence": {
+    "start": "0x1006f5b8c",
+    "endExclusive": "0x1006f5f88",
+    "machineCodeSha256": "ae07bb04abbd66056e9f4e59318db2a32365a96b3c555308ad5b64aaef15c18c",
+    "calls": [
+      {
+        "site": "0x1006f5d04",
+        "stub": "0x1011538a0",
+        "symbol": "_AXUIElementCopyAttributeNames"
+      },
+      {
+        "site": "0x1006f5cb4",
+        "stub": "0x1011548f0",
+        "symbol": "_getpid"
+      }
+    ],
+    "instructionWords": {
+      "0x1006f5c88": "0xf8010edf",
+      "0x1006f5cc0": "0xb7000140",
+      "0x1006f5cc4": "0x6b0002bf",
+      "0x1006f5cc8": "0x54000101",
+      "0x1006f5ce4": "0x36000200",
+      "0x1006f5d08": "0xd101a3a0",
+      "0x1006f5d0c": "0x94297d1b",
+      "0x1006f5dc8": "0xf94002d4"
+    },
+    "interpretation": "Direct system enumeration initializes output to nil, calls AXUIElementCopyAttributeNames, and discards its return status before consuming the output. PID/thread dispatch mirrors the ordinary attribute reader.",
+    "limitations": "The restored raw adapter does not implement MockProvider override, CF-array bridging, UIElementAttribute conversion or production cache assembly."
+  },
   "frequencyTableEvidence": {
     "nominalDescriptor": "0x1012ccd50",
     "fieldDescriptor": "0x101323894",

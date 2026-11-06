@@ -4,6 +4,26 @@ import ApplicationServices
 @main
 struct AXAttributeReadingTests {
     static func main() {
+        // Enumeration intentionally preserves an output even with a nonzero
+        // AX status. Do not inherit the parameterized reader's throw policy.
+        let names = ["AXRole", "AXTitle", "AXRole"] as CFArray
+        let empty = [] as CFArray
+        for status in [AXError.success, .noValue, .cannotComplete, .apiDisabled] {
+            for expected: CFArray? in [nil, empty, names] {
+                var calls = 0
+                let result = rawAXAttributeNamesResult { output in
+                    precondition(output == nil)
+                    calls += 1
+                    output = expected
+                    return status
+                }
+                precondition(calls == 1)
+                if let expected {
+                    precondition(result != nil && result! === expected)
+                    precondition(CFArrayGetCount(result!) == CFArrayGetCount(expected))
+                } else { precondition(result == nil) }
+            }
+        }
         for status in [AXError.success, .noValue, .cannotComplete, .apiDisabled] {
             for present in [false, true] {
                 let result = rawAXAttributeResult { output in
