@@ -852,6 +852,50 @@ element_storage_evidence['transformedFlattenedRole']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIElementFlattenedRole.swift',
     'limitations':'Mutable map initializer and lookup restored under local reconstruction names. Full transformed element storage, transform pipeline, and production rendering integration remain pending.',
 }
+transformed_descriptor=0x1012ccde4
+transformed_header=read_virtual(transformed_descriptor,28)
+if transformed_header.hex()!='5100010070f5ffff5487ecff643149ff706b05001a00000002000000':
+    raise SystemExit('TransformedUIElement nominal descriptor changed')
+transformed_fields_address=0x101323964
+if read_virtual(transformed_fields_address,16).hex()!='f2b6f7ff0000000000000c001a000000':
+    raise SystemExit('TransformedUIElement field descriptor changed')
+transformed_field_specs=[
+    ('element','UIElement',0x10129e6b6),('role','UIElementRole',0x10129e802),
+    ('subrole','String?',0x10129eede),('roleDescription','String?',0x10129eede),
+    ('title','String?',0x10129eede),('description','String?',0x10129eede),
+    ('value','String?',0x10129eede),('truncationRange','NSRange?',0x10129f064),
+    ('valueDescription','String?',0x10129eede),('valueTypeName','String?',0x10129eede),
+    ('placeholderValue','String?',0x10129eede),('help','String?',0x10129eede),
+    ('identifier','String?',0x10129eede),('url','Foundation.URL?',0x10129e8b2),
+    ('domClassList','[String]?',0x10129f06c),('actionDescriptions','[UIElementActionDescription]',0x10129f076),
+    ('isSelected','Bool',0x10129e60c),('isSelectable','Bool',0x10129e60c),
+    ('isFocused','Bool',0x10129e60c),('isFocusable','Bool',0x10129e60c),
+    ('isEnabled','Bool',0x10129e60c),('isDisclosing','Bool',0x10129e60c),
+    ('isDisclosable','Bool',0x10129e60c),('isValueSettable','Bool',0x10129e60c),
+    ('attributedString','NSAttributedString?',0x10129f080),('transformedString','TransformedUIString?',0x10129f09a),
+]
+transformed_field_records=[]
+for index,(name,type_name,type_address) in enumerate(transformed_field_specs):
+    address=transformed_fields_address+16+12*index
+    flags,type_relative,name_relative=struct.unpack('<Iii',read_virtual(address,12))
+    if flags!=2 or address+4+type_relative!=type_address:
+        raise SystemExit('TransformedUIElement field mutability/type changed: '+name)
+    if read_virtual(address+8+name_relative,len(name)+1)!=name.encode()+b'\0':
+        raise SystemExit('TransformedUIElement field name changed: '+name)
+    transformed_field_records.append({'index':index,'name':name,'type':type_name,'mutable':True,
+        'record':hex(address),'typeReference':hex(type_address)})
+for slot,binding in [('0x101460eb0','0x1012cd398'),('0x101460d50','0x1012cd598'),
+    ('0x101462148','0x1012cbfcc'),('0x1014630f8','Foundation/_$s10Foundation3URLVMn'),
+    ('0x101460e68','0x1012cd3d0'),('0x101460828','0x1012c9600')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if binding.lower() not in line.lower(): raise SystemExit('TransformedUIElement symbolic field type changed')
+element_storage_evidence['transformedElementStorage']={
+    'nominal':hex(transformed_descriptor),'headerBytes':transformed_header.hex(),
+    'fieldDescriptor':hex(transformed_fields_address),'fieldCount':26,'fields':transformed_field_records,
+    'constructors':{'fromUIElementAndContext':'0x10075c568','fromAXElementAndContext':'0x10075e040','fromAXElement':'0x10075de70'},
+    'interpretation':'Struct with 26 mutable stored fields; element is concrete UIElement, not AXUIElement or Any. Role is stored independently; eight Bool fields follow actionDescriptions. NSAttributedString and TransformedUIString are distinct optional types, not plain String substitutes.',
+    'limitations':'Storage/type contract recovered. Physical offsets other than separately audited role, initializer transformation semantics, TransformedUIString, full protocol conformance and production integration remain pending; no partial same-name TransformedUIElement substitute is introduced.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

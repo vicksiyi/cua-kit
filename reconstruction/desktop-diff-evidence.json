@@ -2208,6 +2208,229 @@
       "implementation": "native/macos/Sources/CuaHelper/TransformedUIElementFlattenedRole.swift",
       "limitations": "Mutable map initializer and lookup restored under local reconstruction names. Full transformed element storage, transform pipeline, and production rendering integration remain pending."
     },
+    "transformedElementStorage": {
+      "nominal": "0x1012ccde4",
+      "headerBytes": "5100010070f5ffff5487ecff643149ff706b05001a00000002000000",
+      "fieldDescriptor": "0x101323964",
+      "fieldCount": 26,
+      "fields": [
+        {
+          "index": 0,
+          "name": "element",
+          "type": "UIElement",
+          "mutable": true,
+          "record": "0x101323974",
+          "typeReference": "0x10129e6b6"
+        },
+        {
+          "index": 1,
+          "name": "role",
+          "type": "UIElementRole",
+          "mutable": true,
+          "record": "0x101323980",
+          "typeReference": "0x10129e802"
+        },
+        {
+          "index": 2,
+          "name": "subrole",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x10132398c",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 3,
+          "name": "roleDescription",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x101323998",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 4,
+          "name": "title",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239a4",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 5,
+          "name": "description",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239b0",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 6,
+          "name": "value",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239bc",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 7,
+          "name": "truncationRange",
+          "type": "NSRange?",
+          "mutable": true,
+          "record": "0x1013239c8",
+          "typeReference": "0x10129f064"
+        },
+        {
+          "index": 8,
+          "name": "valueDescription",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239d4",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 9,
+          "name": "valueTypeName",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239e0",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 10,
+          "name": "placeholderValue",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239ec",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 11,
+          "name": "help",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x1013239f8",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 12,
+          "name": "identifier",
+          "type": "String?",
+          "mutable": true,
+          "record": "0x101323a04",
+          "typeReference": "0x10129eede"
+        },
+        {
+          "index": 13,
+          "name": "url",
+          "type": "Foundation.URL?",
+          "mutable": true,
+          "record": "0x101323a10",
+          "typeReference": "0x10129e8b2"
+        },
+        {
+          "index": 14,
+          "name": "domClassList",
+          "type": "[String]?",
+          "mutable": true,
+          "record": "0x101323a1c",
+          "typeReference": "0x10129f06c"
+        },
+        {
+          "index": 15,
+          "name": "actionDescriptions",
+          "type": "[UIElementActionDescription]",
+          "mutable": true,
+          "record": "0x101323a28",
+          "typeReference": "0x10129f076"
+        },
+        {
+          "index": 16,
+          "name": "isSelected",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a34",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 17,
+          "name": "isSelectable",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a40",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 18,
+          "name": "isFocused",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a4c",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 19,
+          "name": "isFocusable",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a58",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 20,
+          "name": "isEnabled",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a64",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 21,
+          "name": "isDisclosing",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a70",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 22,
+          "name": "isDisclosable",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a7c",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 23,
+          "name": "isValueSettable",
+          "type": "Bool",
+          "mutable": true,
+          "record": "0x101323a88",
+          "typeReference": "0x10129e60c"
+        },
+        {
+          "index": 24,
+          "name": "attributedString",
+          "type": "NSAttributedString?",
+          "mutable": true,
+          "record": "0x101323a94",
+          "typeReference": "0x10129f080"
+        },
+        {
+          "index": 25,
+          "name": "transformedString",
+          "type": "TransformedUIString?",
+          "mutable": true,
+          "record": "0x101323aa0",
+          "typeReference": "0x10129f09a"
+        }
+      ],
+      "constructors": {
+        "fromUIElementAndContext": "0x10075c568",
+        "fromAXElementAndContext": "0x10075e040",
+        "fromAXElement": "0x10075de70"
+      },
+      "interpretation": "Struct with 26 mutable stored fields; element is concrete UIElement, not AXUIElement or Any. Role is stored independently; eight Bool fields follow actionDescriptions. NSAttributedString and TransformedUIString are distinct optional types, not plain String substitutes.",
+      "limitations": "Storage/type contract recovered. Physical offsets other than separately audited role, initializer transformation semantics, TransformedUIString, full protocol conformance and production integration remain pending; no partial same-name TransformedUIElement substitute is introduced."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

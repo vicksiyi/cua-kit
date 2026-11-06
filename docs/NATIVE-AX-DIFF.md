@@ -1846,3 +1846,36 @@ LLDB 对共享机器码显示的其它类型名称不能取代该类型的符号
 
 这是覆盖 getter 的查表部分；完整 TransformedUIElement 的存储、构造和变换流程
 仍未恢复，尚不能宣布生产渲染对齐。
+
+### TransformedUIElement 完整字段合同
+
+名义描述符 `0x1012ccde4` 与字段描述符 `0x101323964` 给出 26 条记录，每条
+flags=2（var），不是缓存 UIElement 的不可变字段布局。字段顺序和类型如下：
+
+| 字段 | 类型 |
+| --- | --- |
+| element | UIElement |
+| role | UIElementRole |
+| subrole、roleDescription、title、description、value | String? |
+| truncationRange | NSRange? |
+| valueDescription、valueTypeName、placeholderValue、help、identifier | String? |
+| url | Foundation.URL? |
+| domClassList | [String]? |
+| actionDescriptions | [UIElementActionDescription] |
+| isSelected、isSelectable、isFocused、isFocusable、isEnabled、isDisclosing、isDisclosable、isValueSettable | Bool |
+| attributedString | NSAttributedString? |
+| transformedString | TransformedUIString? |
+
+类型由字段的 symbolic reference、GOT fixup 和目标 nominal name 共同确定；
+原始 element 是具体 UIElement，不是 AX 引用或 Any。url 不替换成 String，
+富文本及变换文本保持原生类型。role 自身可变，与 backing element 分离。
+
+构造入口有 `init(_:UIElement, context:inout UIElementTransformationContext)`
+(0x10075c568)、`init(element:AXUIElement, context:inout ...)` (0x10075e040)、
+`init(element:AXUIElement)` (0x10075de70)。本轮记录字段和入口证据，尚未恢复
+各构造器的变换顺序，也未声明完整类已实现。字段序号不是物理偏移；除单独
+核实的 role +0x20 外，不据此推断其余内存偏移。
+
+审计脚本逐项校验 26 个字段名、类型引用、可变标志和六个间接类型绑定，保存到
+transformedElementStorage。下一步需要恢复 TransformedUIString 与变换上下文，
+再组合完整节点，避免先创建同名但缺字段的简化类型。
