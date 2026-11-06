@@ -14,6 +14,8 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
   if(computer&&env.CORE_CUA_NATIVE_BACKEND!=='swift') throw Error('Computer surface requires Rust runtime and CORE_CUA_NATIVE_BACKEND=swift');
   const files: unknown = browser ? JSON.parse(env.CORE_CUA_ENDPOINT_FILES ?? '[]') : [];
   if (browser&&(!Array.isArray(files)||!files.every(file=>typeof file==='string'))) throw Error('Independent runtime requires explicit browser endpoints');
+  const dynamicDirectory = browser && env.CORE_CUA_DYNAMIC_HOST_DIRECTORY !== undefined
+    ? await realpath(env.CORE_CUA_DYNAMIC_HOST_DIRECTORY) : undefined;
   const endpoints = browser ? await Promise.all((files as string[]).map(file=>realpath(file))) : [];
   const pipes = browser ? (env.BROWSER_USE_BACKEND_PATHS ?? '').split(delimiter).filter(Boolean) : [];
   if (browser && (env.CORE_CUA_ENDPOINT_FILES === undefined || env.BROWSER_USE_BACKEND_PATHS === undefined || (endpoints.length === 0) !== (pipes.length === 0)))
@@ -46,7 +48,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
       entry:join(workers,trusted?'dist/trusted_worker.js':'dist/kernel.js'),
       args:trusted?[trustedDir]:['--session-id',sessionId,'--working-dir',kernelDir],
       directory:trusted?trustedDir:kernelDir,
-      readDirectories:[workers,dependencies,codeDir,stagedRoot,...(trusted&&computer?[nativeDir]:[]),...(trusted?[...new Set(endpoints.map(dirname))]:[])],
+      readDirectories:[workers,dependencies,codeDir,stagedRoot,...(trusted&&computer?[nativeDir]:[]),...(trusted?[...new Set([...endpoints.map(dirname),...(dynamicDirectory?[dynamicDirectory]:[])])]:[])],
       workerEnvironment:{
         NODE_REPL_TRUSTED_RPC_ENABLED:'1',
         NODE_REPL_TRUSTED_SERVICES:JSON.stringify(services),
@@ -56,7 +58,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
         ...(!trusted&&env.NODE_REPL_JS_BANNER!==undefined?{NODE_REPL_JS_BANNER:env.NODE_REPL_JS_BANNER}:{}),
         ...(!trusted&&env.NODE_REPL_ENABLE_AUDIO==='1'?{NODE_REPL_ENABLE_AUDIO:'1'}:{}),
         ...(trusted&&computer&&env.SKY_ENABLE_AUDIO==='1'?{SKY_ENABLE_AUDIO:'1',...(env.SKY_AUDIO_MODEL_ALLOWLIST!==undefined?{SKY_AUDIO_MODEL_ALLOWLIST:env.SKY_AUDIO_MODEL_ALLOWLIST}:{})}:{}),
-        ...(trusted&&browser?{CORE_CUA_ENDPOINT_FILES:JSON.stringify(endpoints),BROWSER_USE_BACKEND_PATHS:pipes.join(delimiter),
+        ...(trusted&&browser?{...(dynamicDirectory?{CORE_CUA_DYNAMIC_HOST_DIRECTORY:dynamicDirectory}:{}),CORE_CUA_ENDPOINT_FILES:JSON.stringify(endpoints),BROWSER_USE_BACKEND_PATHS:pipes.join(delimiter),
           BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS ?? 'chrome',BROWSER_USE_DISABLE_AMBIENT_NETWORK:'1',
           ...(env.BROWSER_USE_TINYSKY_ENABLED!==undefined?{BROWSER_USE_TINYSKY_ENABLED:env.BROWSER_USE_TINYSKY_ENABLED}:{})}:{}),
       },
@@ -66,7 +68,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
     await access(command).catch(()=>{throw Error('Build the Rust runtime first: npm run build:rust-runtime');});
     const rustWorker=(value:ReturnType<typeof worker>)=>({sandbox:{node:value.node,bootstrap:value.bootstrap,addon:value.addon,entry:value.entry,args:value.args,directory:value.directory,read_directories:value.readDirectories,worker_environment:value.workerEnvironment}});
     const spec=join(root,'rust-runtime.json');
-    await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:Object.keys(services),pipe_paths:pipes,...(env.NODE_REPL_TOOL_OVERRIDES!==undefined?{tool_overrides:JSON.parse(env.NODE_REPL_TOOL_OVERRIDES)}:{}),...(env.NODE_REPL_JS_COMPLETION_SUMMARY!==undefined?{completion_summary:JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY)}:{}),...(computer?{native_service:{helper,directory:nativeDir,app_policy:appPolicy}}:{}),writable_paths:['browser/config.toml',sessionPreference],config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}}),{mode:0o600});
+    await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:Object.keys(services),pipe_paths:dynamicDirectory?[]:pipes,endpoint_roots:dynamicDirectory?[dynamicDirectory]:[],...(env.NODE_REPL_TOOL_OVERRIDES!==undefined?{tool_overrides:JSON.parse(env.NODE_REPL_TOOL_OVERRIDES)}:{}),...(env.NODE_REPL_JS_COMPLETION_SUMMARY!==undefined?{completion_summary:JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY)}:{}),...(computer?{native_service:{helper,directory:nativeDir,app_policy:appPolicy}}:{}),writable_paths:['browser/config.toml',sessionPreference],config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}}),{mode:0o600});
     return {command,args:[spec],environment:{...nativeSupervisorEnvironment(env,root),CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
   } catch(error) {await rm(root,{recursive:true,force:true});throw error;}
 }

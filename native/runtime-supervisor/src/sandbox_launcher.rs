@@ -91,6 +91,7 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
                 | "CUA_REPL_ENABLED_SURFACES"
                 | "CUA_REPL_BROWSER_ENV"
                 | "CORE_CUA_ENDPOINT_FILES"
+                | "CORE_CUA_DYNAMIC_HOST_DIRECTORY"
                 | "BROWSER_USE_BACKEND_PATHS"
                 | "BROWSER_USE_AVAILABLE_BACKENDS"
                 | "BROWSER_USE_DISABLE_AMBIENT_NETWORK"

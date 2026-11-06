@@ -31,6 +31,7 @@ pub struct ReplManager {
     trusted: ProcessSpec,
     services: HashSet<String>,
     pipe_paths: Vec<PathBuf>,
+    endpoint_roots: Vec<PathBuf>,
     allowed_module_dirs: HashSet<PathBuf>,
     module_dirs: HashSet<PathBuf>,
     host_handler: Option<HostHandler>,
@@ -50,6 +51,7 @@ impl ReplManager {
             trusted,
             services,
             pipe_paths: Vec::new(),
+            endpoint_roots: Vec::new(),
             allowed_module_dirs: HashSet::new(),
             module_dirs: HashSet::new(),
             host_handler: None,
@@ -119,6 +121,10 @@ impl ReplManager {
             return Err("Native pipe paths must be absolute".into());
         }
         self.pipe_paths = paths;
+        Ok(self)
+    }
+    pub fn with_endpoint_roots(mut self, roots: Vec<PathBuf>) -> Result<Self, String> {
+        self.endpoint_roots = crate::registered_endpoints::validate_roots(roots)?;
         Ok(self)
     }
     /// Process transport events between tool calls. Incoming work interrupts only
@@ -262,7 +268,8 @@ impl ReplManager {
                 }
             }
             let (events, pipe_events) = mpsc::channel(64);
-            let pipes = NativePipeHost::new(pipe_paths, events)?;
+            let pipes = NativePipeHost::new(pipe_paths, events)?
+                .with_endpoint_roots(self.endpoint_roots.clone())?;
             self.pair = Some(Pair {
                 kernel,
                 trusted,

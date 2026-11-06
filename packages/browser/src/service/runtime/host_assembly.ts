@@ -45,6 +45,8 @@ import {
   type ElicitationSpan,
 } from "./elicitation_telemetry";
 export interface BrowserHostAssemblyOptions {
+  /** Deployment discovery source; defaults to the restored environment/directory logic. */
+  listPipes?: BrowserDiscoveryDependencies["listPipes"];
   reportError?(error: any): void;
   reportDiscoveryFailure?: BrowserDiscoveryDependencies["reportDiscoveryFailure"];
   featureEnabled?: HandshakeDependencies["featureEnabled"];
@@ -82,6 +84,7 @@ export function assembleBrowserHost(options: BrowserHostAssemblyOptions = {}) {
     deploymentEnvironment,
   });
   const discovery = createBrowserDiscovery({
+    listPipes: options.listPipes,
     connect,
     readInfo: handshake.readInfo,
     span: options.span ?? browserPerformanceSpan.withSpan,

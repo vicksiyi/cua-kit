@@ -4,6 +4,7 @@ import {
   parseEndpointFiles,
   discoverLiveEndpointFiles,
   IndependentBrowserUnavailableError,
+  assertPrivateEndpointDirectory,
 } from "@core/native-host/browserConnector";
 import { discoverOrStartChrome } from "./browser-startup";
 
@@ -34,6 +35,15 @@ export async function configureIndependentBrowser(env: Record<string, string>) {
     if (!combined || !(error instanceof IndependentBrowserUnavailableError)) throw error;
     endpointFiles = [];
   }
+  let dynamicDirectory: string | undefined;
+  if (combined && env.CORE_CUA_HOST_DIRECTORY !== undefined && env.CORE_CUA_ENDPOINT_FILES === undefined) {
+    try {
+      await assertPrivateEndpointDirectory(env.CORE_CUA_HOST_DIRECTORY);
+      dynamicDirectory = env.CORE_CUA_HOST_DIRECTORY;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+  }
   const connector = await createBrowserServiceConnector(endpointFiles);
   const services: unknown = JSON.parse(env.NODE_REPL_TRUSTED_SERVICES ?? "{}");
   if (
@@ -56,6 +66,7 @@ export async function configureIndependentBrowser(env: Record<string, string>) {
     );
   return {
     ...env,
+    ...(dynamicDirectory ? {CORE_CUA_DYNAMIC_HOST_DIRECTORY:dynamicDirectory} : {}),
     CORE_CUA_ENDPOINT_FILES: JSON.stringify(endpointFiles),
     ...connector.environment,
     NODE_REPL_TRUSTED_SERVICES: JSON.stringify({

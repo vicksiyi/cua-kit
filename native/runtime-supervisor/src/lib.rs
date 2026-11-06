@@ -44,3 +44,6 @@ pub mod codex_app_server;
 pub mod runtime_mode;
 
 mod kernel_protocol;
+
+#[cfg(unix)]
+mod registered_endpoints;

@@ -28,6 +28,7 @@ struct Connection {
 /// Backpressure pauses socket reads rather than growing an unbounded JSON queue.
 pub struct NativePipeHost {
     allowed: HashSet<PathBuf>,
+    endpoint_roots: Vec<PathBuf>,
     connections: HashMap<String, Connection>,
     events: mpsc::Sender<Value>,
     ended: bool,
@@ -39,10 +40,15 @@ impl NativePipeHost {
         }
         Ok(Self {
             allowed: paths.into_iter().collect(),
+            endpoint_roots: Vec::new(),
             connections: HashMap::new(),
             events,
             ended: false,
         })
+    }
+    pub fn with_endpoint_roots(mut self, roots: Vec<PathBuf>) -> Result<Self, String> {
+        self.endpoint_roots = crate::registered_endpoints::validate_roots(roots)?;
+        Ok(self)
     }
     pub async fn request(&mut self, message: &Value) -> Result<Value, String> {
         if self.ended {
@@ -53,7 +59,12 @@ impl NativePipeHost {
             .retain(|_, connection| !connection.reader.is_finished());
         if message["op"] == "connect" {
             let path = message["path"].as_str().ok_or("Missing native pipe path")?;
-            if !self.allowed.contains(&PathBuf::from(path)) {
+            if !self.allowed.contains(&PathBuf::from(path))
+                && !crate::registered_endpoints::registered_socket(
+                    &self.endpoint_roots,
+                    std::path::Path::new(path),
+                )
+            {
                 return Err("Native pipe endpoint is not authorized".into());
             }
             if self.connections.len() >= MAX_CONNECTIONS {

@@ -94,7 +94,36 @@ export async function createBrowserServiceConnector(
 }
 
 export {
+  assertPrivateEndpointDirectory,
   parseEndpointFiles,
   discoverEndpointFiles,
   IndependentBrowserUnavailableError,
 } from "./endpoint_configuration";
+
+
+/** Registered installation discovery is refreshed by each source browser inventory request. */
+export function createDiscoveringBrowserServiceConnector(
+  directory: string,
+  connectPipe: (path: string) => Promise<NativePipeSocket>,
+) {
+  let current: Awaited<ReturnType<typeof createBrowserServiceConnector>> | undefined;
+  return { host: {
+    async listPipes() {
+      let files: string[];
+      try { files = await discoverEndpointFiles(directory); }
+      catch (error) {
+        if (!(error instanceof IndependentBrowserUnavailableError)) throw error;
+        files = [];
+      }
+      const next = await createBrowserServiceConnector(files, connectPipe);
+      current = next;
+      return next.environment.BROWSER_USE_BACKEND_PATHS.split(delimiter).filter(Boolean);
+    },
+    getNativePipeBridge: () => ({
+      async createConnection(path: string) {
+        if (!current) throw Error("Browser discovery must precede connection");
+        return current.host.getNativePipeBridge().createConnection(path);
+      },
+    }),
+  } };
+}

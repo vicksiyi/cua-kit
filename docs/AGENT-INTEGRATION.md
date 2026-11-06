@@ -360,9 +360,10 @@ operation was requested or performed. This demonstrates the model receives nativ
 a dual-surface run even with zero browser connections, not general app-operation acceptance.
 The local transcript is ignored by Git and is not part of published artifacts.
 
-Still pending: browser launch after model selection and late endpoint discovery. If Chrome connects
-after a run starts, its socket is not added to that run's fixed allowlist. The unified entry does not
-yet implement that lifecycle. Actual Multica opening, screenshot and input acceptance remain pending.
+Still pending: browser launch after model selection and daily-Chrome acceptance. Dynamic discovery
+now supports a browser registering after startup when unified mode is configured with an existing
+private host directory. Explicit endpoint-file configurations remain fixed. Actual Multica opening,
+screenshot and input acceptance remain pending.
 
 #### Explicit zero-browser runtime
 
@@ -397,3 +398,34 @@ verifies that both surface flags and unified inventory reach the model, and chec
 Chrome startup occurs. A separate test confirms missing connections are tolerated only in combined
 mode while unsafe directories still fail. These tests do not replace the real DeepSeek observation
 or prove success for native window actions.
+
+
+#### Browser registration after unified startup
+
+With both surfaces enabled and `CORE_CUA_HOST_DIRECTORY` configured (without an explicit endpoint
+file list), the adapter validates the private directory and passes its canonical path as a scoped
+registration root to the Rust supervisor. The trusted browser service refreshes descriptors on each
+browser discovery call. It retains the restored discovery/handshake/selection machinery and supplies
+a deployment-specific `listPipes` callback; it does not introduce a natural-language router.
+
+New transport connections are authorized by Rust only for sockets directly inside a `core-cua-*`
+child of that host-configured root, with a matching private `endpoint.json`, valid version/token
+shape, and current-user ownership. Symlinks, shared permissions, oversized/malformed descriptors,
+paths outside the root, and missing registrations are rejected. Authentication still occurs in the
+trusted connector; structural registration is not authentication. Each new connection revalidates
+registration, while established connections keep their existing lifecycle. The trusted worker gets
+read access to the installation directory; the untrusted kernel does not. Static endpoint deployment
+continues to use its explicit socket allowlist. Missing directories at startup remain zero-browser
+static deployments; the runtime does not create a browser installation or grant a new scope later.
+
+These are independently implemented Core deployment responsibilities, not a claim that vendor Rust
+source or its app-launch protocol was recovered. The source browser discovery supports refreshing
+its pipe list; original source selection, browser authorization, and page operations stay unchanged.
+
+Validation: three Rust registration tests cover late sockets, unconfigured roots, malformed or
+oversized descriptors, removal, shared permissions and symlinks. `unified-late-browser.test.ts`
+starts the real Rust + Swift + MCP runtime with zero connections, registers a Rust native host with
+a controlled extension-protocol peer after startup, observes one browser, shuts down that host, and
+observes zero browsers again, all in the same MCP session with app inventory retained. This verifies
+registration/discovery/transport/handshake together; it does not open actual Chrome or perform a page
+operation. Chrome launch-on-selection remains separate work.
