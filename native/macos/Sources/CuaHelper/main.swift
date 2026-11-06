@@ -51,14 +51,17 @@ final class Target {
             if result.count >= 3000 || depth > 80 || Date().timeIntervalSince(started) > 5 { if warnings.isEmpty { warnings.append("AX traversal truncated by node/depth/time budget.") }; return }
             if !visited.insert(element).inserted { return }
             let id = result.count + 1
-            let role = string(element, kAXRoleAttribute)
-            var title = string(element, kAXTitleAttribute)
-            if title.isEmpty { title = string(element, kAXDescriptionAttribute) }
+            // One recovered cache per observed node. Cached role/subrole/text
+            // and frame share this snapshot; transaction prefetch remains pending.
+            let item = UIElement(systemElement: element, transaction: nil)
+            let role = item.role.rawValue
+            var title = item.title ?? ""
+            if title.isEmpty { title = item.description ?? "" }
             var data: [String: Any] = ["id": id, "role": role, "name": title]
-            if let frame = axElementFrame(element) { data["frame"] = rectData(frame) }
+            if let frame = axElementFrame(item) { data["frame"] = rectData(frame) }
             if let parent = parent { data["parentId"] = parent }
             // Secure input contents are not exported.
-            let secure = string(element, kAXSubroleAttribute) == "AXSecureTextField"
+            let secure = item.subrole == "AXSecureTextField"
             if !secure, let value = scalar(attribute(element, kAXValueAttribute)) { data["value"] = String(describing: value) }
             // Use the restored system reader: only successful, wholly decoded
             // action arrays are accepted; preserve first-occurrence uniqueness.

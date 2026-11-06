@@ -1148,6 +1148,15 @@ element_storage_evidence['singleAttributeSystemIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/AXSingleAttributeReading.swift','native/macos/Sources/CuaHelper/WindowSelection.swift'],
     'limitations':'System path integrated; original TaskLocal MockProvider and transaction acquisition absent. Native live acceptance remains unverified because required macOS permissions are not granted.',
 }
+element_storage_evidence['cachedTextProduction']={
+    'sharedGetter':'0x1007ab5dc..<0x1007ab724, cache witness then lenient String specialization 0x100710b44; no uncached fallback',
+    'entries':{'title':'0x1007ab72c','description':'0x1007ab750','value':'0x1007ab774','valueDescription':'0x1007ab798'},
+    'semantics':'Cached String optional preserved, including empty/whitespace. Missing or decoding error -> nil. No numeric stringification.',
+    'production':'Target.collect constructs one system UIElement per node and shares its cache for role, subrole, title, description and frame. Secure-subrole export guard retained.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007ab5dc,0x1007ab7bc)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementCachedText.swift','native/macos/Sources/CuaHelper/main.swift','native/macos/Sources/CuaHelper/WindowSelection.swift'],
+    'limitations':'Collector value/scalar properties and child traversal still use older paths; full transformation rendering and transaction-prefetched observation remain incomplete.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

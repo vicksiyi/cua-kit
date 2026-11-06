@@ -2236,3 +2236,19 @@ Tests cover status/output independence, raw-object identity, absent descriptors,
 and typed frame composition including non-success statuses with present output.
 Native build passes. Real app behavior is still unverified pending macOS grants;
 MockProvider routing and TaskLocal transaction ownership remain incomplete.
+
+
+### Shared observation cache and cached text getters
+
+Restored the four cache-only String properties title, description, value and
+valueDescription (shared getter 0x1007ab5dc, entries 0x1007ab72c/750/774/798).
+Missing or malformed entries yield nil, and empty/whitespace strings stay intact.
+There is no fresh-read fallback or number-to-string conversion in these getters.
+
+`Target.collect` now constructs one system UIElement cache per node and uses it
+for role, subrole, title, description and frame. The frame consumer accepts the
+existing item, avoiding a duplicate cache construction. Secure input export checks
+still run before exporting values; the original cold cache may prefetch AXValue. Tests cover independent attributes,
+empty/malformed/absent values and cached roles/subroles. The collector's old scalar
+value/property path, child traversal and complete transformation renderer are still
+pending; new value/valueDescription getters are not yet substituted for that path.
