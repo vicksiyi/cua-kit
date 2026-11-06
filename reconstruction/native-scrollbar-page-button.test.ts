@@ -54,6 +54,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift"),
         join(root, "native/macos/Sources/CuaHelper/ScrollBarPageButton.swift"),
         join(root, "native/macos/Sources/CuaHelper/ScrollBarUIElement.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementScrollBarValue.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXElementConstruction.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXScrollBarDecoding.swift"),
 

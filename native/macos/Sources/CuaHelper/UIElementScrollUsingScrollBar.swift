@@ -1,6 +1,6 @@
 // Reconstructed control flow of 0x1007287d0..<0x1007289b0.
-// Generic values expose the not-yet-restored ScrollBarUIElement / protocol
-// getters without substituting direct AXValue writes or coordinate scrolling.
+// Generic values expose getter/perform boundaries; concrete composition is in
+// UIElementScrollBarValue.swift. No AXValue writes or coordinate substitution.
 func uiElementScrollUsingScrollBar<ScrollBar, Button>(
     direction: UIElementScrollDirection,
     verticalScrollBar: () -> ScrollBar?,

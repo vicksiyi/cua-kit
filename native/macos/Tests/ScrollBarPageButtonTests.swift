@@ -201,6 +201,42 @@ struct ScrollBarPageButtonTests {
                 precondition(strict && expected == [Any].self && actual == ScrollBarUIElement.self)
             }
         }
+        for direction: UIElementScrollDirection in [.up, .down, .left, .right] {
+            let axis = (direction == .up || direction == .down) ? "AXVerticalScrollBar" : "AXHorizontalScrollBar"
+            let pageName = (direction == .up || direction == .left) ? "AXDecrementPage" : "AXIncrementPage"
+            let target = element("AXButton" as NSString, pageName as NSString, id: 424247)
+            let parent = UIElement(axElement: emptyChild, cache: UIElementCache(
+                supportedAttributes: [], attributes: [:], transactionAttributes: []))
+            let chainTransaction = UIElementTransactionCache(
+                attributeTable: [barAX: [:], target.axElement: target.cache.attributes],
+                requestedAttributes: requested, fallbackElements: UIElementFallbackCache(initialState: [:]))
+            var reads: [String] = []
+            var presses = 0
+            let handled = try parent.scrollUsingSystemScrollBar(direction: direction,
+                transaction: chainTransaction, read: { ax, key in
+                    let name = key.name as String
+                    reads.append(name)
+                    let raw: AnyObject
+                    if ax === parent.axElement {
+                        precondition(name == axis); raw = barAX
+                    } else {
+                        precondition(ax === barAX && name == "AXChildren"); raw = [target.axElement] as NSArray
+                    }
+                    return (.success, AXPartialValue(value: AXEncodedValue(value: raw),
+                        arraySubsetDescriptor: nil, textTruncationDescriptor: nil))
+                }, perform: { child, action in
+                    precondition(child.axElement === target.axElement && action == .press); presses += 1
+                }, reportError: { _ in fatalError("unexpected chain failure") })
+            precondition(handled && presses == 1 && reads == [axis, "AXChildren"])
+        }
+        for status: AXError in [.success, .cannotComplete, .noValue] {
+            var failures = 0
+            let handled = try valid.scrollUsingSystemScrollBar(direction: .up, transaction: barTransaction,
+                read: { _, _ in (status, status == .noValue ? nil : wrongPartial) },
+                perform: { _, _ in fatalError("failed bar lookup must not perform") },
+                reportError: { _ in failures += 1 })
+            precondition(!handled && failures == (status == .noValue ? 0 : 1))
+        }
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

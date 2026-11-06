@@ -1488,3 +1488,20 @@ AXUIElement.self，而非目标 wrapper 类型；宽松模式 nil。
 
 具体属性读取与原协议/TaskLocal 生产接线仍待完成。通用构造用显式 initializer 依赖，
 并未通过新增不完整 UIElementProtocol 来冒充原协议。
+
+## 四方向滚动条读取与翻页执行组合（2026-11-07）
+
+恢复 UIElement.scrollBarValue（原 vertical/horizontal getter 调用 typed value，
+ignoringTypeMismatch=false，0x100728658..<0x10072870c），并以
+scrollUsingSystemScrollBar 串联轴选择、属性 accessor、具体 ScrollBar 解码/初始化、
+AXChildren 集合读取/解码、按钮筛选和 .press。raw provider、perform witness 与
+logger 均保持显式注入；没有将其替换为绕过协议的直接 OS 输入。
+
+四方向组合测试使用真实 AX 引用及事务缓存，只有 raw provider 和最终 perform 是
+外部边界：每次依次读取对应轴属性和滚动条 AXChildren，然后只向正确按钮执行一次
+.press。还验证无值、系统读取错误、错误属性类型均不执行按钮，后两者各报告一次。
+测试与 Swift 构建通过。此前 generic helper 的过时“具体类型未恢复”注释同步更新。
+
+本轮完成元素级读取到执行边界的组合，未连接生产 UIElementProtocol/provider/
+TaskLocal 或完整 perform 菜单祖先路径；也未把普通 AX 错误容忍等同于可见操作成功。
+真实应用滚动验收仍未完成，没有运行模型或用户界面操作。
