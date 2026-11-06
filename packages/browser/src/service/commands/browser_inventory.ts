@@ -19,7 +19,7 @@ export interface BrowserContext {
 export interface ServiceDocumentation {
   read(name: string): unknown | Promise<unknown>;
   readBrowser(
-    info: ReturnType<typeof browserDetails>,
+    info: Awaited<ReturnType<typeof browserDetails>>,
   ): unknown | Promise<unknown>;
 }
 /** Original xx. */
@@ -44,7 +44,7 @@ export async function getBrowserDocumentation(
 ) {
   const browser = await context.get(payload.browser_id);
   return await documentation.readBrowser(
-    browserDetails(runtime, browser.id, browser.info),
+    await browserDetails(runtime, browser.id, browser.info),
   );
 }
 export namespace getBrowserDocumentation {

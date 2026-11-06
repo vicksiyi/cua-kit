@@ -1,5 +1,7 @@
+import { effectiveBrowserCapabilities } from "./effective_capabilities";
+import { browserTelemetry } from "./runtime/browser_telemetry";
+import { disabledCapabilities } from "./capability_filter";
 import {
-  availableCapabilities,
   type EnvironmentSource,
   type CapabilityInventory,
 } from "./capability_filter";
@@ -47,12 +49,14 @@ export function browserSummary(id: string, info: ProviderBrowserInfo) {
   };
 }
 /** Original Go. CDP with an available browserAuth capability enables both handoff methods. */
-export function browserDetails(
+export async function browserDetails(
   runtime: EnvironmentSource,
   id: string,
   info: ProviderBrowserInfo,
 ) {
-  const capabilities = availableCapabilities(runtime, info.capabilities),
+  if (!disabledCapabilities(runtime, "tab").has("siwc") && info.capabilities?.tab?.some(({id}) => id === "siwc"))
+    await browserTelemetry.prepareBrowserFeatures(runtime as any, info);
+  const capabilities = effectiveBrowserCapabilities(runtime, info),
     allowHandoff =
       info.type === "cdp" &&
       capabilities.tab?.some(({ id }) => id === "browserAuth") === true;

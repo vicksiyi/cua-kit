@@ -1,9 +1,9 @@
+import { effectiveBrowserCapabilities } from "../effective_capabilities";
 import { browserFamily } from "../browser_family";
 import { browserAuthTabCapabilityDefinition } from "../../capabilities/tab_browser_auth";
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
 import {
-  availableCapabilities,
   type CapabilityInventory,
   type EnvironmentSource,
 } from "../capability_filter";
@@ -37,7 +37,7 @@ export const ManualHandoffCommand = defineCommand(
       .actInFrame(await context.security.currentTabUrl(Number(payload.tab_id)))
       .assert();
     const capabilities =
-      availableCapabilities(context.runtime, context.clientInfo.capabilities)
+      effectiveBrowserCapabilities(context.runtime, context.clientInfo)
         .tab ?? [];
     if (!(
       context.clientInfo.type === "cdp" &&

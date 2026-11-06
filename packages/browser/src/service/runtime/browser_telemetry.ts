@@ -1,3 +1,4 @@
+import { createBrowserFeatureClients } from "./browser_feature_clients";
 import { StatsigClient, type StatsigUser } from "@statsig/js-client";
 import { environmentString } from "../capability_filter";
 import { securityMode } from "../security/gate_policy";
@@ -52,6 +53,27 @@ export function createBrowserTelemetry(
   function reportError(error: any, context?: any) {
     exceptionReporter?.(error, context);
   }
+  function createClient(runtime: TelemetryRuntime, user: StatsigUser) {
+    return new Client(
+        "client-sYWqzCYMRkUg4DqqiZcR5DGTNl2iD7zNJY0HoeDLzxR",
+        user,
+        {
+          environment: { tier: "production" },
+          networkConfig: {
+            api: "https://ab.chatgpt.com/v1",
+            sdkExceptionUrl: "https://ab.chatgpt.com/v1/sdk_exception",
+            networkOverrideFunc: (url, options) => runtime.fetch(url, options),
+          },
+          loggingEnabled: "always",
+        },
+      );
+  }
+  const browserFeatures = createBrowserFeatureClients({parent: () => state, disabled, createClient, reportError});
+  async function prepareBrowserFeatures(runtime: TelemetryRuntime, info: any) {
+    if (disabled(runtime) || identityReady == null) return;
+    try { await Promise.all([initializeClient(runtime), identityReady]); } catch { return; }
+    await browserFeatures.initialize(runtime, info);
+  }
   function getClient(runtime: TelemetryRuntime) {
     if (state != null) return state;
     const codexAppVersion = trimmed(runtime, "BROWSER_USE_CODEX_APP_VERSION");
@@ -67,19 +89,7 @@ export function createBrowserTelemetry(
       },
     };
     state = {
-      client: new Client(
-        "client-sYWqzCYMRkUg4DqqiZcR5DGTNl2iD7zNJY0HoeDLzxR",
-        user,
-        {
-          environment: { tier: "production" },
-          networkConfig: {
-            api: "https://ab.chatgpt.com/v1",
-            sdkExceptionUrl: "https://ab.chatgpt.com/v1/sdk_exception",
-            networkOverrideFunc: (url, options) => runtime.fetch(url, options),
-          },
-          loggingEnabled: "always",
-        },
-      ),
+      client: createClient(runtime, user),
       browserClientBuild,
       codexAppVersion,
       initialized: false,
@@ -285,6 +295,8 @@ export function createBrowserTelemetry(
       });
   }
   return {
+    prepareBrowserFeatures,
+    browserFeatureEnabled: browserFeatures.enabled,
     setExceptionReporter,
     reportError,
     initializeClient,

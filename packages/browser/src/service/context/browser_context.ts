@@ -1,3 +1,4 @@
+import { effectiveBrowserCapabilities } from "../effective_capabilities";
 /** Browser service context (original ob). Host constructors are explicit until production assembly is restored. */
 type ServiceConstructor = new (...args: any[]) => any;
 export interface BrowserContextDependencies {
@@ -270,11 +271,10 @@ export function createBrowserContextClass(deps: BrowserContextDependencies) {
         : await this.api.followSessionTab(tab, reason);
     }
     async supportsTabCapability(capability: any) {
-      return (
-        (await this.api.getInfo().catch(() => {}))?.capabilities?.tab?.some(
-          ({ id }: any) => id === capability,
-        ) === true
-      );
+      const info = await this.api.getInfo().catch(() => {});
+      return info == null ? false : effectiveBrowserCapabilities(this.runtime, info).tab.some(
+        ({id}: any) => id === capability,
+      ) === true;
     }
     async executeUnhandledCommand(command: any) {
       return await this.api.executeUnhandledCommand(command);
