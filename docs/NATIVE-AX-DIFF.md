@@ -1968,3 +1968,15 @@ incoming、旧映射长短不一致时的原版 prefix 行为、同一值自追�
 恢复 helper，测试 ASCII、emoji 代理对、组合字符、ZWJ、旗帜字素的普通/URL
 片段及有/无映射组合，验证 URL 元数据和值快照保留；隔离进程检查空末片段和
 映射长度不足。测试通过。完整类型和生产文本流程仍未完成。
+
+### 空值与末字符查询
+
+`isEmpty` 的共享函数 `0x10063b87c..<0x10063bb5c` 检查片段结构：零片段
+为 true；单片段检查 String payload.isEmpty（普通及 URL case 相同）；多个
+片段恒为 false，即使 description 为空。不能直接替换成 description.isEmpty。
+`last` 在 `0x10063a1c8..<0x10063a2f8` 只读取最后片段的 String.last，空尾
+片段返回 nil，不搜索前面的文本；不先拼接，因此组合字符和旗帜字素不会跨片段
+重新组合。两个查询均不读取 sourceOffsets。
+
+已恢复 Swift helper，测试空结构/多空片段、空 URL、空尾片段、跨片段 Unicode
+边界以及与 removeLast 的组合。完整类型和生产文本流程仍待恢复。

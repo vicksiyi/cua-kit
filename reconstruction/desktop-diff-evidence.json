@@ -2579,6 +2579,30 @@
       "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringRemoval.swift",
       "limitations": "Deletion and map trimming restored as a helper; full transformed string type, substring matching, URL rendering and production integration remain pending."
     },
+    "transformedStringState": {
+      "isEmpty": "0x10063b87c..<0x10063bb5c: zero spans true; one span tests String payload emptiness for both cases; more than one false even if all payloads empty",
+      "last": "0x10063a1c8..<0x10063a2f8: final span String.last only; empty spans or empty final payload nil; does not scan earlier spans or join text",
+      "mapping": "Neither getter reads sourceOffsets; URL metadata does not affect result",
+      "blocks": [
+        {
+          "start": "0x10063b87c",
+          "endExclusive": "0x10063bb5c",
+          "machineCodeSha256": "d3e3ffdc73169d6ef0276744e581ee1c4e86c53f4ee64ea1baa3329f0f9353a9"
+        },
+        {
+          "start": "0x10063a1c8",
+          "endExclusive": "0x10063a2f8",
+          "machineCodeSha256": "13709f7b1bd8b94ebc1662191fae583aaf26055d727b3c099718e946e1d6bd5c"
+        },
+        {
+          "start": "0x1006394cc",
+          "endExclusive": "0x100639544",
+          "machineCodeSha256": "ddc7a1ea939f33262d674381705a04335400899e8ba0ed873016db1da2d88768"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringState.swift",
+      "limitations": "Standalone getters restored; full transformed string type and production integration remain pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

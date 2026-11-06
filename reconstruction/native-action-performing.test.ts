@@ -293,3 +293,18 @@ test("native transformed removeLast preserves grapheme and mapping boundaries", 
     }
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed state preserves span-local boundaries", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-state-"));
+  try {
+    const output = join(directory, "state");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringState", "TransformedUIStringRemoval"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringStateTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /state getters preserve structural emptiness, empty tails and span-local graphemes/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
