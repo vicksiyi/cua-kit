@@ -696,3 +696,33 @@ Two original/restored-client cold-start tests verify real owned App launch, non-
 ## Current normal computer CLI route (2026-11-06)
 
 `npm run demo:deepseek -- --computer "your prompt"` and token-free `--check-computer` now use Rust + restored original Sky binding + Swift IPC by default. `--swift-computer` is retained as an alias. These explicit computer selections override stale backend/surface configuration and build both native components. Earlier opt-in/unchanged-default descriptions above are historical. The real normal CLI inventory check passes; actual screenshot/input and DeepSeek App task acceptance remain separate and incomplete. Direct legacy adapter and root API consumers have not all been retired.
+
+## 应用策略与持久授权边界复核（2026-11-07）
+
+当前 `SkyAppPolicy.swift` 的 bundle-ID JSON 规则和“未列出即 denied”是独立宿主策略，
+不能将它们描述为已恢复的原版默认规则。未修改现有授权配置，也未对被拒绝应用重试。
+
+直接以安装包 `sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js`
+为对照新增连续调用测试：同一应用前两次 native policy 返回 allowed，宿主均返回
+`computer-use-persisted-state` / accept / always，第三次 native policy 改为 denied。
+原版 JS 和可读 TS 均表现为：每次重新查策略；前两次分别调用 elicitation 并执行；
+第三次在 elicitation 和操作之前拒绝。持久授权回复不会在这个 JS 包装器内建立跳过
+策略检查的缓存，也不会重复记录 requested/resolved 交互事件。
+
+因此“每次经过授权接口”不等于“每次必须弹窗”；是否使用已保存授权由宿主处理，
+不是通过将 native policy 改成 allowed 来替代。上述测试为注入对照测试，没有真实
+授权、网络模型请求、应用启动或页面操作。该测试文件共 6 项测试通过。
+
+对 pinned SkyComputerUseService（SHA256
+b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862）的完整 nm
+符号表进行静态检查，确认存在：
+
+- `ComputerUseClient.AppApprovalStore` ObjC class，地址 0x1015b4858。
+- 字段名 `storageURL`、`sessionApprovedBundleIdentifiers`、`persistentApprovals`、
+  `persistentApprovalsModificationDate`。nm 中 ivar 标记值不作为对象字段偏移解释。
+- `ComputerUseMCPServer.__allocating_init(appApprovalStorageURL:)`，0x100e4edd8。
+- `ComputerUseRootCommand.appApprovalStorageURL` getter，0x100e67fb8。
+
+这些符号证明该二进制有授权存储相关类型和入口；不能仅凭符号推断存储格式、默认
+保存路径、失效策略，或断言此 MCPServer 就是当前 Codex JS 宿主使用的持久化后端。
+原 native AppPolicy 判定实现及默认规则来源依然未定位，以上未被当作其替代证据。

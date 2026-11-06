@@ -477,3 +477,54 @@ test("Sky uses its installed upstream Statsig version with host-only fetch and r
     },
   );
 });
+
+test("persisted app approval does not cache or override a later policy denial", async () => {
+  async function run(original: boolean) {
+    const trace: unknown[] = [];
+    let request = 0;
+    const policy = makePolicy(original, {
+      getClient: async () => ({
+        getAppPolicy: async (app: string) => {
+          const decision = ++request < 3 ? "allowed" : "denied";
+          trace.push(["policy", app, decision]);
+          return {
+            decision, allowPersistentApproval: true,
+            target: { appPath: "/fixture/App.app", bundleIdentifier: "test.fixture",
+              displayName: "Fixture", risk: "high" },
+          };
+        },
+      }),
+      logComputerUseToolCalled: () => { trace.push("tool"); },
+      logComputerUseApprovalRequested: () => { trace.push("requested"); },
+      logComputerUseApprovalResolved: () => { trace.push("resolved"); },
+    });
+    const responses = await host({
+      async createElicitation(args: any) {
+        trace.push(["approval", args.meta.persist]);
+        return { action: "accept", content: { source: "computer-use-persisted-state" },
+          _meta: { persist: "always" } };
+      },
+    }, async () => {
+      const responses = [];
+      for (let index = 0; index < 3; index++) {
+        responses.push(await result(() => policy.withComputerUsePolicy("click",
+          { app: "Fixture" }, async (approved: any) => {
+            trace.push(["operation", approved.app]); return "done";
+          })));
+      }
+      return responses;
+    });
+    return { trace, responses };
+  }
+  const original = await run(true);
+  assert.deepEqual(await run(false), original);
+  assert.deepEqual(original.trace, [
+    ["policy", "Fixture", "allowed"], ["approval", ["session", "always"]],
+    ["operation", "/fixture/App.app"], "tool",
+    ["policy", "Fixture", "allowed"], ["approval", ["session", "always"]],
+    ["operation", "/fixture/App.app"], "tool",
+    ["policy", "Fixture", "denied"],
+  ]);
+  assert.deepEqual(original.responses.slice(0, 2), [{ value: "done" }, { value: "done" }]);
+  assert.match((original.responses[2] as any).error, /organization's policy/);
+});
