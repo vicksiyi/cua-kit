@@ -1,11 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { serviceClassMethod } from "./service-source.ts";
-import { protectionMethods } from "../packages/browser/dist/service/cdp/protection_methods.js";
+import { serviceClassMethod, serviceClassWithMethods, serviceSourceSha256 } from "./service-source.ts";
+import { protectionMethods } from "../packages/browser/src/service/cdp/protection_methods";
+const sourceClass = serviceClassWithMethods(Object.keys(protectionMethods));
 const original = new Function(
   "return {" +
     Object.keys(protectionMethods)
-      .map((n) => serviceClassMethod("qh", n))
+      .map((n) => serviceClassMethod(sourceClass, n))
       .join(",") +
     "}",
 )();
@@ -170,3 +171,5 @@ test("protection acquisition failures roll back counts and preserve source error
       await run(original, kind),
     );
 });
+
+test("protection oracle provenance", (t) => { t.diagnostic(`Installed browser-service ${serviceSourceSha256}; class ${sourceClass}`); });

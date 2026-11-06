@@ -3,15 +3,22 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { rawEventMethods } from "../packages/browser/dist/service/cdp/raw_event_methods.js";
-const bindings = originalServiceBindings(["qN", "Bte", "Dte", "Rte"]);
+import { rawEventMethods } from "../packages/browser/src/service/cdp/raw_event_methods";
+// These helper names were re-inspected in this exact installed artifact. A
+// changed artifact must be audited before executing unrelated minified bindings.
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit raw event helper bindings for changed browser-service artifact");
+const sourceClass = serviceClassWithMethods(Object.keys(rawEventMethods));
+const bindings = originalServiceBindings(["JN", "Ate", "kte", "Rte"]);
 const original = new Function(
   ...Object.keys(bindings),
   "return {" +
     Object.keys(rawEventMethods)
-      .map((n) => serviceClassMethod("qh", n))
+      .map((n) => serviceClassMethod(sourceClass, n))
       .join(",") +
     "}",
 )(...Object.values(bindings));
@@ -136,3 +143,5 @@ test("raw event long poll settles on matching data, eviction, detach or timeout 
       await run(original, mode),
     );
 });
+
+test("raw event oracle provenance", (t) => { t.diagnostic(`Installed browser-service ${serviceSourceSha256}; class ${sourceClass}; helpers JN/Ate/kte/Rte`); });
