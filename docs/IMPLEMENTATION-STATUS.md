@@ -6096,3 +6096,12 @@ Added select_entry over a parsed registry, combining strict schema checks, ident
 Added an owned-directory registry integration test covering mixed candidates, tie stability, presence score, fatal schema errors before/after a winner, protocol ordering and path-error precedence/order. All 45 native-host Rust tests pass, including 10 manifest tests and 2 environment tests. This run does not include browser/GUI acceptance and does not execute the vendor host.
 
 The in-memory selector is now composed rather than isolated helper functions. Filesystem registry discovery/read, schema-1 fallback and load precedence, environment integration, hello/status/ensure/restart and process/proxy startup remain incomplete. No runtime default or user registration was changed.
+
+
+### 2026-11-06: native registry path discovery
+
+Implemented registry_paths using supplied OsString environment access. Pinned native instructions first construct HOME (USERPROFILE only if HOME absent)/Library/Application Support/OpenAI/Codex/chrome-native-hosts-v2.json, then CODEX_HOME/chrome-native-hosts-v2.json. If CODEX_HOME is absent, the second location uses HOME/USERPROFILE plus .codex. Unlike non_empty_env, discovery uses var_os with no trimming, Unicode conversion or empty-value rejection. Duplicate candidate paths remain duplicated.
+
+All 11 manifest tests pass, including the new 64-combination environment matrix, identical-path preservation and invalid-Unicode path case. The evidence extractor pins path/environment literals and native branch/join calls. No actual user registry is read or modified by tests.
+
+Multi-file read/error fallback is still under analysis: missing-file branches continue to the next candidate, but non-missing read errors, JSON/schema failures and final fallback precedence must be integrated with their exact retention rules. Path construction is not yet a full runtime loader.

@@ -2,7 +2,38 @@
 //! loader. Registry selection is implemented; filesystem discovery, environment
 //! resolution and startup integration remain separate.
 use serde_json::Value;
-use std::{fmt, fs, path::Path};
+use std::{
+    ffi::OsString,
+    fmt, fs,
+    path::{Path, PathBuf},
+};
+
+/// Native registry discovery at 0x10001b500..0x10001b7a0. Unlike launch-field
+/// resolution, these are var_os values: empty, whitespace and non-Unicode paths
+/// are preserved. Only absence triggers a fallback. Candidate order matters.
+pub fn registry_paths(mut environment: impl FnMut(&str) -> Option<OsString>) -> Vec<PathBuf> {
+    const NAME: &str = "chrome-native-hosts-v2.json";
+    let mut paths = Vec::new();
+    if let Some(home) = environment("HOME").or_else(|| environment("USERPROFILE")) {
+        paths.push(
+            PathBuf::from(home)
+                .join("Library")
+                .join("Application Support")
+                .join("OpenAI")
+                .join("Codex")
+                .join(NAME),
+        );
+    }
+    let codex_home = environment("CODEX_HOME").map(PathBuf::from).or_else(|| {
+        environment("HOME")
+            .or_else(|| environment("USERPROFILE"))
+            .map(|home| PathBuf::from(home).join(".codex"))
+    });
+    if let Some(home) = codex_home {
+        paths.push(home.join(NAME));
+    }
+    paths
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ManifestError {

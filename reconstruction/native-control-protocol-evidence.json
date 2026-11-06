@@ -777,6 +777,158 @@
     "semantics": "Validate schema before identity filtering. Skip identity misses. Retain protocol mismatch with newer-candidate priority. Retain last required-path failure. Rank successfully extracted candidates. Winner takes precedence over retained nonfatal errors; otherwise last path error, then retained protocol error, then no-compatible-entry. Schema/malformed extraction failures abort immediately.",
     "integrationStatus": "Composed in-memory schema-2 selection with real path metadata checks. Registry discovery/read, schema-1 fallback, environment precedence and runtime process integration remain open."
   },
+  "registryPathDiscovery": {
+    "implementation": "native/browser-extension-host/src/app_server_manifest.rs::registry_paths",
+    "literals": [
+      {
+        "offset": "0x90dac",
+        "value": "HOME"
+      },
+      {
+        "offset": "0x901d7",
+        "value": "USERPROFILE"
+      },
+      {
+        "offset": "0x904e5",
+        "value": "CODEX_HOME"
+      },
+      {
+        "offset": "0x9091a",
+        "value": "Library"
+      },
+      {
+        "offset": "0x90921",
+        "value": "Application Support"
+      },
+      {
+        "offset": "0x9090f",
+        "value": "OpenAI"
+      },
+      {
+        "offset": "0x90915",
+        "value": "Codex"
+      },
+      {
+        "offset": "0x908f4",
+        "value": "chrome-native-hosts-v2.json"
+      },
+      {
+        "offset": "0x90069",
+        "value": ".codex"
+      }
+    ],
+    "homeFallback": [
+      "10001b500: b00003a0    \tadrp\tx0, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b504: 9136b000    \tadd\tx0, x0, #0xdac",
+      "10001b508: 911563e8    \tadd\tx8, sp, #0x558",
+      "10001b50c: 52800081    \tmov\tw1, #0x4                ; =4",
+      "10001b510: 94011b92    \tbl\t0x100062358 <std::env::_var_os>",
+      "10001b514: f942aff4    \tldr\tx20, [sp, #0x558]",
+      "10001b518: b100069f    \tcmn\tx20, #0x1",
+      "10001b51c: 54000121    \tb.ne\t0x10001b540 <<extension_host::app_server::AppServerHostConfig>::load+0x7c>",
+      "10001b520: b00003a0    \tadrp\tx0, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b524: 91075c00    \tadd\tx0, x0, #0x1d7",
+      "10001b528: 911563e8    \tadd\tx8, sp, #0x558",
+      "10001b52c: 52800161    \tmov\tw1, #0xb                ; =11",
+      "10001b530: 94011b8a    \tbl\t0x100062358 <std::env::_var_os>",
+      "10001b534: f942aff4    \tldr\tx20, [sp, #0x558]",
+      "10001b538: b100069f    \tcmn\tx20, #0x1",
+      "10001b53c: 54000a40    \tb.eq\t0x10001b684 <<extension_host::app_server::AppServerHostConfig>::load+0x1c0>"
+    ],
+    "applicationSupportPath": [
+      "10001b540: f942b3f5    \tldr\tx21, [sp, #0x560]",
+      "10001b544: f942b7e1    \tldr\tx1, [sp, #0x568]",
+      "10001b548: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b54c: 91246842    \tadd\tx2, x2, #0x91a",
+      "10001b550: 912103e8    \tadd\tx8, sp, #0x840",
+      "10001b554: aa1503e0    \tmov\tx0, x21",
+      "10001b558: 528000e3    \tmov\tw3, #0x7                ; =7",
+      "10001b55c: 9400dff7    \tbl\t0x100053538 <<std::path::Path>::_join>",
+      "10001b560: f94427f7    \tldr\tx23, [sp, #0x848]",
+      "10001b564: f9442be1    \tldr\tx1, [sp, #0x850]",
+      "10001b568: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b56c: 91248442    \tadd\tx2, x2, #0x921",
+      "10001b570: 911bc3e8    \tadd\tx8, sp, #0x6f0",
+      "10001b574: aa1703e0    \tmov\tx0, x23",
+      "10001b578: 52800263    \tmov\tw3, #0x13               ; =19",
+      "10001b57c: 9400dfef    \tbl\t0x100053538 <<std::path::Path>::_join>",
+      "10001b580: f9437ff8    \tldr\tx24, [sp, #0x6f8]",
+      "10001b584: f94383e1    \tldr\tx1, [sp, #0x700]",
+      "10001b588: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b58c: 91243c42    \tadd\tx2, x2, #0x90f",
+      "10001b590: 9110c3e8    \tadd\tx8, sp, #0x430",
+      "10001b594: aa1803e0    \tmov\tx0, x24",
+      "10001b598: 528000c3    \tmov\tw3, #0x6                ; =6",
+      "10001b59c: 9400dfe7    \tbl\t0x100053538 <<std::path::Path>::_join>",
+      "10001b5a0: f9421ffb    \tldr\tx27, [sp, #0x438]",
+      "10001b5a4: f94223e1    \tldr\tx1, [sp, #0x440]",
+      "10001b5a8: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b5ac: 91245442    \tadd\tx2, x2, #0x915",
+      "10001b5b0: d102a3a8    \tsub\tx8, x29, #0xa8",
+      "10001b5b4: aa1b03e0    \tmov\tx0, x27",
+      "10001b5b8: 528000a3    \tmov\tw3, #0x5                ; =5",
+      "10001b5bc: 9400dfdf    \tbl\t0x100053538 <<std::path::Path>::_join>",
+      "10001b5c0: a97607bc    \tldp\tx28, x1, [x29, #-0xa0]",
+      "10001b5c4: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b5c8: 9123d042    \tadd\tx2, x2, #0x8f4",
+      "10001b5cc: d10383a8    \tsub\tx8, x29, #0xe0",
+      "10001b5d0: aa1c03e0    \tmov\tx0, x28",
+      "10001b5d4: 52800363    \tmov\tw3, #0x1b               ; =27",
+      "10001b5d8: 9400dfd8    \tbl\t0x100053538 <<std::path::Path>::_join>"
+    ],
+    "codexHomeFallback": [
+      "10001b684: b00003a0    \tadrp\tx0, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b688: 91139400    \tadd\tx0, x0, #0x4e5",
+      "10001b68c: 911563e8    \tadd\tx8, sp, #0x558",
+      "10001b690: 52800141    \tmov\tw1, #0xa                ; =10",
+      "10001b694: 94011b31    \tbl\t0x100062358 <std::env::_var_os>",
+      "10001b698: f942aff4    \tldr\tx20, [sp, #0x558]",
+      "10001b69c: b100069f    \tcmn\tx20, #0x1",
+      "10001b6a0: 54000421    \tb.ne\t0x10001b724 <<extension_host::app_server::AppServerHostConfig>::load+0x260>",
+      "10001b6a4: b00003a0    \tadrp\tx0, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b6a8: 9136b000    \tadd\tx0, x0, #0xdac",
+      "10001b6ac: 911563e8    \tadd\tx8, sp, #0x558",
+      "10001b6b0: 52800081    \tmov\tw1, #0x4                ; =4",
+      "10001b6b4: 94011b29    \tbl\t0x100062358 <std::env::_var_os>",
+      "10001b6b8: f942aff4    \tldr\tx20, [sp, #0x558]",
+      "10001b6bc: b100069f    \tcmn\tx20, #0x1",
+      "10001b6c0: 54000121    \tb.ne\t0x10001b6e4 <<extension_host::app_server::AppServerHostConfig>::load+0x220>",
+      "10001b6c4: b00003a0    \tadrp\tx0, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b6c8: 91075c00    \tadd\tx0, x0, #0x1d7",
+      "10001b6cc: 911563e8    \tadd\tx8, sp, #0x558",
+      "10001b6d0: 52800161    \tmov\tw1, #0xb                ; =11",
+      "10001b6d4: 94011b21    \tbl\t0x100062358 <std::env::_var_os>",
+      "10001b6d8: f942aff4    \tldr\tx20, [sp, #0x558]",
+      "10001b6dc: b100069f    \tcmn\tx20, #0x1",
+      "10001b6e0: 54000600    \tb.eq\t0x10001b7a0 <<extension_host::app_server::AppServerHostConfig>::load+0x2dc>",
+      "10001b6e4: f942b3f5    \tldr\tx21, [sp, #0x560]",
+      "10001b6e8: f942b7e1    \tldr\tx1, [sp, #0x568]",
+      "10001b6ec: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b6f0: 9101a442    \tadd\tx2, x2, #0x69",
+      "10001b6f4: 911563e8    \tadd\tx8, sp, #0x558",
+      "10001b6f8: aa1503e0    \tmov\tx0, x21",
+      "10001b6fc: 528000c3    \tmov\tw3, #0x6                ; =6",
+      "10001b700: 9400df8e    \tbl\t0x100053538 <<std::path::Path>::_join>",
+      "10001b704: b40000b4    \tcbz\tx20, 0x10001b718 <<extension_host::app_server::AppServerHostConfig>::load+0x254>",
+      "10001b708: aa1503e0    \tmov\tx0, x21",
+      "10001b70c: aa1403e1    \tmov\tx1, x20",
+      "10001b710: 52800022    \tmov\tw2, #0x1                ; =1",
+      "10001b714: 97ffe2be    \tbl\t0x10001420c <__rustc::__rust_dealloc>",
+      "10001b718: f942aff4    \tldr\tx20, [sp, #0x558]",
+      "10001b71c: b100069f    \tcmn\tx20, #0x1",
+      "10001b720: 54000400    \tb.eq\t0x10001b7a0 <<extension_host::app_server::AppServerHostConfig>::load+0x2dc>",
+      "10001b724: f942b3f5    \tldr\tx21, [sp, #0x560]",
+      "10001b728: f942b7e1    \tldr\tx1, [sp, #0x568]",
+      "10001b72c: b00003a2    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "10001b730: 9123d042    \tadd\tx2, x2, #0x8f4",
+      "10001b734: 912103e8    \tadd\tx8, sp, #0x840",
+      "10001b738: aa1503e0    \tmov\tx0, x21",
+      "10001b73c: 52800363    \tmov\tw3, #0x1b               ; =27",
+      "10001b740: 9400df7e    \tbl\t0x100053538 <<std::path::Path>::_join>"
+    ],
+    "semantics": "First HOME (or USERPROFILE when absent)/Library/Application Support/OpenAI/Codex/registry. Then CODEX_HOME/registry, or HOME/USERPROFILE plus .codex/registry when CODEX_HOME absent. var_os preserves empty/whitespace/non-Unicode; no deduplication or file reads.",
+    "integrationStatus": "Path discovery implemented. Multi-file read/error fallback and schema-1/runtime integration remain open."
+  },
   "remainingUnknowns": [
     "registry discovery/fallback and process launch contract",
     "complete hello/status response schemas",

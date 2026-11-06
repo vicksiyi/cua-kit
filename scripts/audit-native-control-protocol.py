@@ -135,6 +135,11 @@ for offset, name, parent, call in configuration_strings:
         raise RuntimeError('Configuration field literal changed: '+name)
     evidence(config_load, call, call, ['trim_matches'])
 
+registry_literals = [(0x90dac,'HOME'),(0x901d7,'USERPROFILE'),(0x904e5,'CODEX_HOME'),(0x9091a,'Library'),(0x90921,'Application Support'),(0x9090f,'OpenAI'),(0x90915,'Codex'),(0x908f4,'chrome-native-hosts-v2.json'),(0x90069,'.codex')]
+for offset, literal in registry_literals:
+    if raw[offset:offset+len(literal)] != literal.encode():
+        raise RuntimeError('Registry path literal changed: '+literal)
+
 # The JSON Number literal referenced by string_result_response is PosInt(1).
 if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
     raise RuntimeError('String-result error code literal changed')
@@ -282,6 +287,15 @@ result = {
         'fallbackProtocolError': evidence(config_load, 0x10001d294, 0x10001d2ac, ['0x10001d2e4']),
         'semantics': 'Validate schema before identity filtering. Skip identity misses. Retain protocol mismatch with newer-candidate priority. Retain last required-path failure. Rank successfully extracted candidates. Winner takes precedence over retained nonfatal errors; otherwise last path error, then retained protocol error, then no-compatible-entry. Schema/malformed extraction failures abort immediately.',
         'integrationStatus': 'Composed in-memory schema-2 selection with real path metadata checks. Registry discovery/read, schema-1 fallback, environment precedence and runtime process integration remain open.',
+    },
+    'registryPathDiscovery': {
+        'implementation': 'native/browser-extension-host/src/app_server_manifest.rs::registry_paths',
+        'literals': [{'offset':hex(offset),'value':literal} for offset,literal in registry_literals],
+        'homeFallback': evidence(config_load, 0x10001b500, 0x10001b53c, ['std::env::_var_os', 'b.ne']),
+        'applicationSupportPath': evidence(config_load, 0x10001b540, 0x10001b5d8, ['Path>::_join']),
+        'codexHomeFallback': evidence(config_load, 0x10001b684, 0x10001b740, ['std::env::_var_os', 'Path>::_join']),
+        'semantics': 'First HOME (or USERPROFILE when absent)/Library/Application Support/OpenAI/Codex/registry. Then CODEX_HOME/registry, or HOME/USERPROFILE plus .codex/registry when CODEX_HOME absent. var_os preserves empty/whitespace/non-Unicode; no deduplication or file reads.',
+        'integrationStatus': 'Path discovery implemented. Multi-file read/error fallback and schema-1/runtime integration remain open.',
     },
     'remainingUnknowns': ['registry discovery/fallback and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

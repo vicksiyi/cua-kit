@@ -558,3 +558,69 @@ fn registry_selection_composes_filters_ranking_and_error_retention() {
         ManifestError::EntrySchema
     );
 }
+
+#[test]
+fn registry_discovery_preserves_native_os_paths_and_candidate_order() {
+    use core_browser_extension_host::app_server_manifest::registry_paths;
+    use std::{collections::BTreeMap, ffi::OsString, path::PathBuf};
+    let options = [None, Some(""), Some(" /home "), Some("/home")];
+    for home in options {
+        for profile in options {
+            for codex in options {
+                let env: BTreeMap<_, OsString> = [
+                    ("HOME", home),
+                    ("USERPROFILE", profile),
+                    ("CODEX_HOME", codex),
+                ]
+                .into_iter()
+                .filter_map(|(k, v)| v.map(|v| (k, v.into())))
+                .collect();
+                let mut calls = Vec::new();
+                let result = registry_paths(|key| {
+                    calls.push(key.to_owned());
+                    env.get(key).cloned()
+                });
+                let mut expected = Vec::new();
+                if let Some(home) = home.or(profile) {
+                    expected.push(PathBuf::from(home).join(
+                        "Library/Application Support/OpenAI/Codex/chrome-native-hosts-v2.json",
+                    ));
+                }
+                if let Some(home) = codex
+                    .map(PathBuf::from)
+                    .or_else(|| home.or(profile).map(|v| PathBuf::from(v).join(".codex")))
+                {
+                    expected.push(home.join("chrome-native-hosts-v2.json"));
+                }
+                assert_eq!(result, expected);
+                assert_eq!(calls[0], "HOME");
+                assert!(calls
+                    .iter()
+                    .all(|k| ["HOME", "USERPROFILE", "CODEX_HOME"].contains(&k.as_str())));
+            }
+        }
+    }
+    // Original pushes both entries even when they refer to the same path.
+    let same = registry_paths(|key| match key {
+        "HOME" => Some("/fixture".into()),
+        "CODEX_HOME" => Some("/fixture/Library/Application Support/OpenAI/Codex".into()),
+        _ => None,
+    });
+    assert_eq!(same.len(), 2);
+    assert_eq!(same[0], same[1]);
+    #[cfg(unix)]
+    {
+        use std::os::unix::ffi::OsStringExt;
+        let home = OsString::from_vec(vec![b'/', 0xff]);
+        let paths = registry_paths(|key| (key == "HOME").then(|| home.clone()));
+        assert_eq!(
+            paths[0],
+            PathBuf::from(home.clone())
+                .join("Library/Application Support/OpenAI/Codex/chrome-native-hosts-v2.json")
+        );
+        assert_eq!(
+            paths[1],
+            PathBuf::from(home).join(".codex/chrome-native-hosts-v2.json")
+        );
+    }
+}
