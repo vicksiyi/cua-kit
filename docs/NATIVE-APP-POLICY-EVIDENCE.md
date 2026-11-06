@@ -726,3 +726,38 @@ input without a fresh snapshot. It uses owned fixture bundles and the project
 helper; no vendor service or real app operation is used. The native-provider
 bootstrap path still needs end-to-end IPC testing and deployment selection;
 this is not a claim that active policy defaults have changed.
+
+### Selectable service bootstrap and full IPC policy tests (2026-11-07)
+
+SkyAppPolicy.bootstrap now selects the restored provider when the standalone
+host explicitly sets CORE_CUA_POLICY_SOURCE=app-server. The unset/default mode
+remains standalone. Supplying both app-server mode and CORE_CUA_APP_POLICY is
+an error, even for `{}`: the bootstrap never silently drops configured local
+rules. Unknown source names are also errors. These environment settings and
+conflict checks are host integration, not recovered vendor configuration keys.
+No settings of the running installation were changed by this work.
+
+For app-server mode, launch selection receives the host environment, current
+NSWorkspace running applications, and an empty fallback-bundle list, as observed
+in the source wrapper. Running applications are read on the main actor at each
+cache miss, not frozen at service startup. NativeAppPolicyProvider's injected
+launch resolver is now async to support that AppKit hop. The client's stable
+host name/title are core-computer-use / Core Computer Use; version is selected
+from the host bundle with the recovered fallback sequence. The same normal
+forbidden-target classifier still applies after upstream access checks.
+
+The restored TypeScript Sky client → project Swift socket server → project-owned
+Node app-server peer → native policy parser/result path passes integration tests.
+They verify no peer launch on invalid application resolution, exact CLI args,
+initialize identity/capabilities, config request params, allowed/denied/forbidden
+results, one fetch for multiple queries, and request failures surfaced as -10005
+rather than -10010. Failed fetches are retried on the next query, not cached as
+success. Conflict/unknown-mode startup failures and the existing standalone
+policy regression also pass. All fixtures are temporary; request logs contain
+only fixture method names and are deleted. No installed vendor process, model
+API, screen capture or real application input is exercised. The child-process
+provider regression and Swift build pass as well.
+
+This establishes a tested bootstrap path but does not prove interoperability
+with a real installed CLI, its organization policy, approval persistence or the
+rest of app/browser operation. Those remain separate acceptance requirements.

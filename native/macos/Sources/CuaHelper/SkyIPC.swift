@@ -129,7 +129,7 @@ private func writeAll(_ fd: Int32, _ data: Data) throws {
 /// One private connection per owned process; caller owns service launch/retirement.
 /// No vendor endpoint, entitlement or authentication identity is impersonated.
 func serveSkySocket(_ path: String, audioFactory: NativeAudioSession.CaptureFactory? = nil) async throws {
-    let appPolicy = try SkyAppPolicy()
+    let appPolicy = try await SkyAppPolicy.bootstrap()
     let appState = await SkyAppState()
     guard path.hasPrefix("/"), !path.utf8.contains(0) else { throw rpcFailure(-32602, "Expected an absolute socket path") }
     let parent = URL(fileURLWithPath: path).deletingLastPathComponent().resolvingSymlinksInPath().path

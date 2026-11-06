@@ -726,3 +726,23 @@ b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862）的完整 nm
 这些符号证明该二进制有授权存储相关类型和入口；不能仅凭符号推断存储格式、默认
 保存路径、失效策略，或断言此 MCPServer 就是当前 Codex JS 宿主使用的持久化后端。
 原 native AppPolicy 判定实现及默认规则来源依然未定位，以上未被当作其替代证据。
+
+### Policy source selection
+
+The Swift Sky socket service accepts `CORE_CUA_POLICY_SOURCE`:
+
+- `standalone` (default): retains `CORE_CUA_APP_POLICY` rules and denies unlisted apps.
+- `app-server`: uses the reconstructed CLI policy provider, 900-second cache,
+  and the initialize/configRequirements/read/config/read sequence. CLI lookup
+  honors executable `CODEX_CLI_PATH`, then running Codex app bundles, then
+  `/usr/bin/env codex`. The host identifies itself as Core Computer Use.
+
+The service rejects app-server mode together with `CORE_CUA_APP_POLICY`, rather
+than overriding either policy source. An unknown source is also rejected. Merely
+starting the service does not fetch policy; successful app resolution precedes
+the first fetch. Errors fetching policy fail the query and do not grant access.
+
+This mode has been verified through the restored Sky client and a project-owned
+app-server fixture, including allow/deny/forbidden outcomes and failure handling.
+Real installed CLI interoperability and complete application-control acceptance
+remain pending. No active local policy configuration was migrated automatically.

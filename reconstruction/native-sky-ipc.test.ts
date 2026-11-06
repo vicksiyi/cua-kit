@@ -9,10 +9,10 @@ import {pathToFileURL} from 'node:url';
 import {MacComputerUseClient} from '../packages/sky/src/targets/mac/client';
 import {encodeMessageFrame,decodeMessageFrames} from '../packages/sky/src/targets/mac/native-pipe';
 const helper=resolve('native/macos/.build/debug/cua-helper');
-async function fixture(t:any, policy:Record<string,unknown> = {}) {
+async function fixture(t:any, policy:Record<string,unknown> = {}, extraEnvironment:NodeJS.ProcessEnv = {}) {
  const root=await realpath(await mkdtemp('/tmp/core-sky-ipc-'));await chmod(root,0o700);
  const path=join(root,'ipc.sock');
- const child=spawn(helper,['--sky-socket',path],{env:{PATH:'/usr/bin:/bin',LANG:'en_US.UTF-8',CORE_CUA_APP_POLICY:JSON.stringify(policy)},stdio:['ignore','ignore','pipe']});
+ const child=spawn(helper,['--sky-socket',path],{env:{PATH:'/usr/bin:/bin',LANG:'en_US.UTF-8',CORE_CUA_APP_POLICY:JSON.stringify(policy),...extraEnvironment},stdio:['ignore','ignore','pipe']});
  let stderr='';child.stderr.on('data',chunk=>stderr+=chunk);
  const exited=once(child,'exit');
  const sockets:Socket[]=[];
@@ -285,4 +285,61 @@ for(const signal of ['SIGTERM','SIGINT'] as const)test(`native ${signal} cancels
  const exited=once(child,'exit');t.after(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');await exited;});
  for(let n=0;!stdout.includes('socketBackpressureReady');n++){assert.ok(n<200&&child.exitCode===null,stderr||'No backpressure readiness');await new Promise(r=>setTimeout(r,10));}
  child.kill(signal);const [code,bySignal]=await exited;assert.equal(code,0,stderr);assert.equal(bySignal,null);assert.match(stdout,/"socketBackpressureCancelled":true/);
+});
+
+test('Swift IPC app-server policy bootstrap uses owned peer and caches policies', {skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:15000}, async t=>{
+ const peerRoot=await realpath(await mkdtemp('/tmp/core-policy-peer-'));
+ t.after(()=>rm(peerRoot,{recursive:true,force:true}));
+ const script=join(peerRoot,'peer'), log=join(peerRoot,'methods.jsonl');
+ await writeFile(script,`#!${process.execPath}
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const readline=require('node:readline');
+assert.deepEqual(process.argv.slice(2),['app-server','--listen','stdio://']);
+readline.createInterface({input:process.stdin}).on('line',line=>{
+ const req=JSON.parse(line); fs.appendFileSync(${JSON.stringify(log)},JSON.stringify(req.method)+'\\n');
+ if(process.env.CUA_TEST_POLICY_PEER_ERROR==='1') {
+  process.stdout.write(JSON.stringify({id:req.id,error:{message:'fixture policy unavailable'}})+'\\n'); return;
+ }
+ let result={};
+ if(req.method==='initialize') {
+  assert.equal(req.params.clientInfo.name,'core-computer-use');
+  assert.deepEqual(req.params.capabilities,{experimentalApi:true,optOutNotificationMethods:[]});
+ } else if(req.method==='configRequirements/read') {
+  assert.equal(req.params,undefined);
+  result={requirements:{computerUse:{defaultAppAccess:'deny',macos:{bundleIds:{'com.core.fixture.allowed':'allow','com.apple.Terminal':'allow'}}}}};
+ } else if(req.method==='config/read') {
+  assert.deepEqual(req.params,{includeLayers:false}); result={config:{}};
+ } else throw Error('unexpected method');
+ process.stdout.write(JSON.stringify({id:req.id,result})+'\\n');
+});
+`,{mode:0o700});
+ const f=await fixture(t,{}, {CORE_CUA_APP_POLICY:undefined,CORE_CUA_POLICY_SOURCE:'app-server',CODEX_CLI_PATH:script});
+ const before=(globalThis as any).nodeRepl;
+ (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open},requestMeta:{'x-codex-turn-metadata':{session_id:'fixture',turn_id:'provider'}}};
+ try {
+  const client=new MacComputerUseClient();
+  await assert.rejects(client.getAppPolicy('/nonexistent/core-provider.app'),(error:any)=>error.code===-10010);
+  await assert.rejects(access(log)); // Failed resolution must not start the peer.
+  for(const [identifier,expected] of [['com.core.fixture.allowed','allowed'],['com.core.fixture.other','denied'],['com.apple.Terminal','forbidden']]) {
+   const path=await appFixture(f.root,identifier);
+   const policy=await client.getAppPolicy(path);
+   assert.equal(policy.decision,expected);assert.equal(policy.target.bundleIdentifier,identifier);
+  }
+  assert.deepEqual((await readFile(log,'utf8')).trim().split('\n').map(line=>JSON.parse(line)),['initialize','configRequirements/read','config/read']);
+  const failed=await fixture(t,{}, {CORE_CUA_APP_POLICY:undefined,CORE_CUA_POLICY_SOURCE:'app-server',CODEX_CLI_PATH:script,CUA_TEST_POLICY_PEER_ERROR:'1'});
+  (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:failed.path},nativePipe:{createConnection:failed.open},requestMeta:{'x-codex-turn-metadata':{session_id:'fixture',turn_id:'provider-error'}}};
+  const failedClient=new MacComputerUseClient();
+  const failedApp=await appFixture(failed.root,'com.core.fixture.allowed');
+  for(let n=0;n<2;n++) await assert.rejects(failedClient.getAppPolicy(failedApp),(error:any)=>error.code===-10005);
+  assert.deepEqual((await readFile(log,'utf8')).trim().split('\n').map(line=>JSON.parse(line)),['initialize','configRequirements/read','config/read','initialize','initialize']);
+ } finally {(globalThis as any).nodeRepl=before;}
+});
+
+test('Swift IPC bootstrap rejects conflicting or unknown policy sources', {skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1'},()=>{
+ for(const extra of [{CORE_CUA_POLICY_SOURCE:'unknown'}, {CORE_CUA_POLICY_SOURCE:'app-server',CORE_CUA_APP_POLICY:'{}'}]) {
+  const child=spawnSync(helper,['--sky-socket','/tmp/not-created-policy.sock'],{env:{PATH:'/usr/bin:/bin',...extra},encoding:'utf8',timeout:3000});
+  assert.notEqual(child.status,0);assert.equal(child.signal,null);
+  assert.match(child.stderr,/CORE_CUA_POLICY_SOURCE/);
+ }
 });

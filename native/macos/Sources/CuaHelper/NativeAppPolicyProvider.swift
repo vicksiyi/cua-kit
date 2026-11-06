@@ -7,12 +7,12 @@ struct NativeAppPolicyProvider: Sendable {
     private let cache: NativeAppPolicyCache<NativeComputerUsePolicy>
 
     init(now: @escaping @Sendable () -> Date = { Date() },
-         resolveLaunch: @escaping @Sendable () throws -> NativeCLILaunchConfiguration,
+         resolveLaunch: @escaping @Sendable () async throws -> NativeCLILaunchConfiguration,
          clientInfo: @escaping @Sendable () -> [String: String]) {
         cache = NativeAppPolicyCache(now: now) { timeout in
-            try await NativeAppPolicyFetch.fetch(timeout: timeout,
+            let launch = try await resolveLaunch()
+            return try await NativeAppPolicyFetch.fetch(timeout: timeout,
                 makeConnection: { timeout, disablePlugins in
-                    let launch = try resolveLaunch()
                     return try NativeJSONRPCConnection(executableURL: launch.executableURL,
                         arguments: launch.appServerArguments(disablePlugins: disablePlugins), timeout: timeout)
                 }, clientInfo: clientInfo)
