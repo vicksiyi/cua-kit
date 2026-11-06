@@ -1194,6 +1194,36 @@
     "semantics": "Discovery -> first usable registry -> adjacent missing-field supplementation -> environment resolution. Invocation extension ID filters candidates and is the fallback final ID; nonempty CODEX_EXTENSION_ID changes only final launch ID. Registry failure returns before launch-environment resolution.",
     "scope": "Composed loader with caller-supplied executable and environment accessor; no runtime manager or process spawn integration yet."
   },
+  "runtimeErrorResponse": {
+    "implementation": "native/browser-extension-host/src/app_server_error.rs",
+    "typesInDiscriminantOrder": [
+      "app_server_runtime_error",
+      "chrome_extension_update_required",
+      "codex_app_update_required",
+      "manifest_invalid",
+      "manifest_missing",
+      "no_matching_codex_install",
+      "required_path_missing"
+    ],
+    "tableLoad": [
+      "1000242c4: 39406288    \tldrb\tw8, [x20, #0x18]",
+      "1000242c8: 90000469    \tadrp\tx9, 0x1000b0000 <dyld_stub_binder+0x1000b0000>",
+      "1000242cc: 91362129    \tadd\tx9, x9, #0xd88",
+      "1000242d0: f868793b    \tldr\tx27, [x9, x8, lsl #3]",
+      "1000242d4: 90000369    \tadrp\tx9, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "1000242d8: 9132a129    \tadd\tx9, x9, #0xca8",
+      "1000242dc: f868793a    \tldr\tx26, [x9, x8, lsl #3]"
+    ],
+    "numericCode": [
+      "10002414c: 52800048    \tmov\tw8, #0x2                ; =2",
+      "100024150: 381803a8    \tsturb\tw8, [x29, #-0x80]",
+      "100024154: 90000368    \tadrp\tx8, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "100024158: 3dc33d00    \tldr\tq0, [x8, #0xcf0]",
+      "10002415c: 3c848260    \tstur\tq0, [x19, #0x48]"
+    ],
+    "contract": "JSON-RPC 2.0, original ID, error.code=1, original error message, error.data.type from native enum table. Newer candidate protocol maps to chrome_extension_update_required; older/missing to codex_app_update_required.",
+    "integrationStatus": "Manifest error conversion and response serializer implemented. Runtime hello/status/ensure/restart dispatcher not yet wired."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello/status response schemas",

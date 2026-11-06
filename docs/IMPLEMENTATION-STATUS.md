@@ -6132,3 +6132,10 @@ Added app_server_configuration::load_configuration, composing registry discovery
 The native instruction at 0x10001e590 loads the invocation extension ID, which provides the final ID fallback. CODEX_EXTENSION_ID overrides that final value after selection; it does not replace the ID used to filter manifest candidates. A failed registry load returns before launch environment lookup or sidecar rescue.
 
 Seventeen targeted Rust tests pass. The new owned-file integration test exercises real discovery, invocation identity matching, sidecar REPL/host defaults, registry port priority, environment Node/ID/zero-port overrides, invalid-env fallback and failure before launch-environment access. No original executable, daily browser, user registry or process launch was involved. Runtime manager/hello/status/ensure/restart and process/proxy integration still remain open.
+
+
+### 2026-11-06: recover typed runtime error response
+
+Decoded the seven-entry native error type pointer/length table using Mach-O segment address translation. Added Rust RuntimeErrorKind, manifest-error conversion and codex_runtime_error_response-compatible JSON serialization: jsonrpc 2.0, preserved ID/message, numeric code 1 and data.type. Native discriminant 1 is chrome_extension_update_required, while 2 is codex_app_update_required; the earlier comparison-only protocol mismatch names now map to confirmed wire categories. Other types cover runtime, invalid/missing manifest, no matching installation and required-path missing.
+
+Nineteen configuration/manifest/error tests pass, including every category, opaque JSON IDs, Unicode/quoted messages and serialization round trips. The static audit verifies both type tables, the instruction indexing them and the code-1 literal. This serializer is not yet wired to hello/status/ensure/restart; no new runtime capability is advertised and no original process was launched.

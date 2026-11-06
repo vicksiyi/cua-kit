@@ -27,6 +27,7 @@ config_load = disassemble(0x10001b4c4, 0x10001fd38)
 env_filter = disassemble(0x1000213e8, 0x100021514)
 required_path = disassemble(0x1000248cc, 0x100024a0c)
 remember_update = disassemble(0x100024a0c, 0x100024a94)
+runtime_error = disassemble(0x100023f8c, 0x100024444)
 # Decode only straight-line method comparison operands, not arbitrary code semantics.
 # x21 is the method string pointer loaded at 0x100025508. Constants are assembled
 # with MOV/MOVK; string loads include overlapping tails at offsets 11 and 27.
@@ -139,6 +140,30 @@ registry_literals = [(0x90dac,'HOME'),(0x901d7,'USERPROFILE'),(0x904e5,'CODEX_HO
 for offset, literal in registry_literals:
     if raw[offset:offset+len(literal)] != literal.encode():
         raise RuntimeError('Registry path literal changed: '+literal)
+
+# Translate Mach-O VM addresses, including the pointer table in __DATA_CONST.
+segments = []
+command_offset = 32
+for _ in range(struct.unpack_from('<I', raw, 16)[0]):
+    command, size = struct.unpack_from('<II', raw, command_offset)
+    if command == 25:
+        vm, vm_size, file_offset, file_size = struct.unpack_from('<QQQQ', raw, command_offset + 24)
+        segments.append((vm, vm_size, file_offset, file_size))
+    command_offset += size
+
+def vm_offset(address):
+    for vm, size, offset, file_size in segments:
+        if vm <= address < vm + min(size, file_size):
+            return offset + address - vm
+    raise RuntimeError('No file-backed VM address: '+hex(address))
+
+runtime_error_types = []
+for index in range(7):
+    pointer = struct.unpack_from('<Q', raw, vm_offset(0x1000b0d88) + index * 8)[0]
+    length = struct.unpack_from('<Q', raw, vm_offset(0x100090ca8) + index * 8)[0]
+    runtime_error_types.append(raw[vm_offset(pointer):vm_offset(pointer)+length].decode())
+if runtime_error_types != ['app_server_runtime_error','chrome_extension_update_required','codex_app_update_required','manifest_invalid','manifest_missing','no_matching_codex_install','required_path_missing']:
+    raise RuntimeError('Native runtime error table changed')
 
 # The JSON Number literal referenced by string_result_response is PosInt(1).
 if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
@@ -323,6 +348,14 @@ result = {
         'extensionIdFallback': evidence(config_load, 0x10001e5f0, 0x10001e624, ['0x10001e620']),
         'semantics': 'Discovery -> first usable registry -> adjacent missing-field supplementation -> environment resolution. Invocation extension ID filters candidates and is the fallback final ID; nonempty CODEX_EXTENSION_ID changes only final launch ID. Registry failure returns before launch-environment resolution.',
         'scope': 'Composed loader with caller-supplied executable and environment accessor; no runtime manager or process spawn integration yet.',
+    },
+    'runtimeErrorResponse': {
+        'implementation': 'native/browser-extension-host/src/app_server_error.rs',
+        'typesInDiscriminantOrder': runtime_error_types,
+        'tableLoad': evidence(runtime_error, 0x1000242c4, 0x1000242dc, ['#0x18', '#0xd88', '#0xca8', 'lsl #3']),
+        'numericCode': evidence(runtime_error, 0x10002414c, 0x10002415c, ['#0xcf0']),
+        'contract': 'JSON-RPC 2.0, original ID, error.code=1, original error message, error.data.type from native enum table. Newer candidate protocol maps to chrome_extension_update_required; older/missing to codex_app_update_required.',
+        'integrationStatus': 'Manifest error conversion and response serializer implemented. Runtime hello/status/ensure/restart dispatcher not yet wired.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

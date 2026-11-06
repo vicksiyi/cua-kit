@@ -9,7 +9,7 @@
     "legacy-prototype-review-required": 25,
     "native-boundary-needs-original-language-evidence": 10,
     "native-desktop-swift-boundary-review": 6,
-    "native-implementation-language-not-yet-parity-proof": 63,
+    "native-implementation-language-not-yet-parity-proof": 64,
     "native-process-caller-binding-not-native-service": 1,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
@@ -3917,6 +3917,11 @@
       "sha256": "1109d516ad63ac74092e1f0aace32f180ec4d3731a9f82ea57fab8477413e5c3"
     },
     {
+      "path": "native/browser-extension-host/src/app_server_error.rs",
+      "category": "native-implementation-language-not-yet-parity-proof",
+      "sha256": "e4c9fde70b6dc796f7d7b4ecce35c4a31c139c0c7b12a92050deb86ad147e327"
+    },
+    {
       "path": "native/browser-extension-host/src/app_server_manifest.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
       "sha256": "de625a4a053d9ff6070badaa0417179ae79db23e7280e88f3c0b56f5c4e58265"
@@ -3939,7 +3944,7 @@
     {
       "path": "native/browser-extension-host/src/lib.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "11badd91031c28aa7e99d09726060474d3a4064466eeac2cc5e49d34c500d12b"
+      "sha256": "90e6ee0ddf9264065582e6d1775bbe3b8c12c0392f521d4ffd0c6997b536c24d"
     },
     {
       "path": "native/browser-extension-host/src/lifecycle_log.rs",
@@ -4249,7 +4254,7 @@
     {
       "path": "scripts/audit-native-control-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "bf61ab4e910adf39e76e7f9cd871ef0dc114d732873829e04859188d7c0dc613"
+      "sha256": "da39c453d15756f899d1dce790971489bd821f71a9354a98de27cb35fbbc20e4"
     },
     {
       "path": "scripts/audit-native-language.py",
