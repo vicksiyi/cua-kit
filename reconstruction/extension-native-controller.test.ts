@@ -143,6 +143,47 @@ for (const deployment of ["native", "full"] as const)
           "Built extension did not launch its registered native host",
         );
         launchedEndpointFile = endpointFile;
+        // Exercise Chrome's actual Native Messaging framing/control path, not
+        // the Unix browser RPC client. One owned port keeps status and hello in
+        // the same host process; disconnect closes only that test-owned port.
+        // A string keeps the tsx/esbuild __name helper out of the worker realm.
+        const controls = await worker.evaluate(`(async () => {
+          const port = chrome.runtime.connectNative("com.core.cua");
+          try {
+            const responses = [];
+            for (const [id, method] of [["hello", "codexRuntime/hello"], ["status", "codexRuntime/status"]]) {
+              const response = await new Promise((resolve, reject) => {
+                const timer = setTimeout(() => { cleanup(); reject(Error("native control timeout")); }, 10000);
+                const onMessage = (value) => {
+                  if (value.id !== id) return;
+                  cleanup(); resolve(value);
+                };
+                const onDisconnect = () => {
+                  const error = chrome.runtime.lastError?.message;
+                  cleanup(); reject(Error(error ?? "native control disconnected"));
+                };
+                function cleanup() {
+                  clearTimeout(timer);
+                  port.onMessage.removeListener(onMessage);
+                  port.onDisconnect.removeListener(onDisconnect);
+                }
+                port.onMessage.addListener(onMessage);
+                port.onDisconnect.addListener(onDisconnect);
+                port.postMessage({ jsonrpc: "2.0", id, method });
+              });
+              responses.push(response);
+            }
+            return responses;
+          } finally { port.disconnect(); }
+        })()`);
+        assert.deepEqual(controls, [
+          { jsonrpc: "2.0", id: "hello", result: {
+            manifestSchemaVersion: 2, nativeHostProtocolVersion: 2,
+            nativeHostVersion: "0.1.0",
+            supportedMethods: ["codexRuntime/openLocalFile"], supportedProtocolVersions: [2],
+          } },
+          { jsonrpc: "2.0", id: "status", result: { phase: "idle" } },
+        ]);
         const transport = await connectNativeHost(
           JSON.parse(await readFile(endpointFile!, "utf8")),
         );
