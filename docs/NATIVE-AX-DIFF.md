@@ -93,3 +93,43 @@ enum AccessibilityDifferenceLineBudgetExceeded: Equatable {
 
 因此预算失败并非简单截断字符串后返回；至少存在“通知调用者并返回 nil”的路径。
 计数的完整累积规则、各比较结果如何扣减、调用者回退策略仍未恢复。本轮不引入猜测的固定行数限制。
+
+## 调用者的基线选择与完整树回退
+
+现在已追踪 `SystemSelection.llmDescription(_:lineOptions:)` 的实际函数体，范围
+`[0x100238b88, 0x1002394a4)`。以下为固定构建的静态还原证据，并非当前 helper 已实现。
+
+Swift 反射元数据确定：
+- `LLMDescriptionMode`：`difference(from: DifferenceBaseline)`、`fullTree`。
+- `DifferenceBaseline`：`initial`、`previous`。
+- payload 的类型引用含 4 字节相对地址，内部可能含零；审计按符号引用解码，不能当作普通零结尾字符串读取。
+
+结合指令与类型布局，调用流程为：
+
+```mermaid
+flowchart TD
+  A[llmDescription] --> B{描述模式}
+  B -->|fullTree| F[完整 renderTree.lines]
+  B -->|difference| C{存在 previousRevision?}
+  C -->|无| F
+  C -->|有| D{基线选项}
+  D -->|previous| P[使用直接前一 revision]
+  D -->|initial| I[沿 previousRevision 回溯到链头]
+  P --> E[differenceLines]
+  I --> E
+  E --> N{返回 nil?}
+  N -->|是| F
+  N -->|否| R[差分结果呈现]
+  F --> T[AccessibilityTreePresentation]
+```
+
+关键位置：
+- `0x100238ed4..0x100238edc`：fullTree 模式直接转完整树路径。
+- `0x100238f48`：没有前一 revision 时转完整树；`0x100238f58..0x100238fb8` 分流直接前一版本与沿链回溯。
+- `previousRevision` 导出 getter 在 `0x100654a6c`，取类元数据偏移 `0x98` 对应字段，与上面回溯指令一致。
+- `0x100238fe0` 调用 differenceLines；w2 来源是 `axTreeDiffingRemovedElementIDRanges` feature flag，w3 为 0（本调用不忽略差分预算）。
+- `0x100239004` 检查保存的返回值，为 nil 时转 `0x1002391f8`，随后 `0x10023926c` 调用完整树 `UIElementRenderTree.lines`。
+- 非 nil 后还有单独的数组长度检查 `0x100239028..0x10023902c`：空数组与 nil 不是同一分支，不能统一成“没有差分就回退完整树”。
+
+这补上了此前缺失的调用者回退证据。图仅省略选择文本、焦点元素、窗口标题和最终文本拼接；
+树比较算法、revision 创建/失效和这些呈现细节仍未恢复，不能直接把该图当作完整实现。

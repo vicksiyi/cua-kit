@@ -426,6 +426,440 @@
     ],
     "scope": "Static call sites and basic blocks only; traversal, budget and identity rules remain unrecovered."
   },
+  "callerEvidence": {
+    "function": "ComputerUse.SystemSelection.llmDescription(_:lineOptions:)",
+    "start": "0x100238b88",
+    "endExclusive": "0x1002394a4",
+    "machineCodeSha256": "0b1a7c5f2c140132af4b15cb69961cc5fb5443cdb8ded004689888d177a33099",
+    "modeCases": [
+      "difference",
+      "fullTree"
+    ],
+    "baselineCases": [
+      "initial",
+      "previous"
+    ],
+    "modeFieldDescriptor": "0x10131a9ec",
+    "baselineFieldDescriptor": "0x10131aa14",
+    "differencePayload": "(from: SystemSelection.DifferenceBaseline)",
+    "previousRevisionGetter": {
+      "address": "0x100654a6c",
+      "words": [
+        "0xf9400288",
+        "0xf9404d08",
+        "0xf8686a80",
+        "0x142c026e"
+      ],
+      "metadataOffset": "0x98"
+    },
+    "differenceCall": "0x100238fe0",
+    "nilBranch": "0x100239004",
+    "fullTreeFallbackEntry": "0x1002391f8",
+    "fullTreeLinesCall": "0x10023926c",
+    "reviewedInstructionExcerpts": [
+      [
+        {
+          "address": "0x100238ed4",
+          "word": "12001e68",
+          "instruction": "and w8, w19, #0xff"
+        },
+        {
+          "address": "0x100238ed8",
+          "word": "7100091f",
+          "instruction": "cmp w8, #0x2"
+        },
+        {
+          "address": "0x100238edc",
+          "word": "540018e0",
+          "instruction": "b.eq 0x1002391f8"
+        }
+      ],
+      [
+        {
+          "address": "0x100238f3c",
+          "word": "f9400308",
+          "instruction": "ldr x8, [x24]"
+        },
+        {
+          "address": "0x100238f40",
+          "word": "f9404d08",
+          "instruction": "ldr x8, [x8, #0x98]"
+        },
+        {
+          "address": "0x100238f44",
+          "word": "f8686b1c",
+          "instruction": "ldr x28, [x24, x8]"
+        },
+        {
+          "address": "0x100238f48",
+          "word": "b400159c",
+          "instruction": "cbz x28, 0x1002391f8"
+        },
+        {
+          "address": "0x100238f4c",
+          "word": "d10283a8",
+          "instruction": "sub x8, x29, #0xa0"
+        },
+        {
+          "address": "0x100238f50",
+          "word": "f8100119",
+          "instruction": "stur x25, [x8, #-0x100]"
+        },
+        {
+          "address": "0x100238f54",
+          "word": "aa1b03f9",
+          "instruction": "mov x25, x27"
+        },
+        {
+          "address": "0x100238f58",
+          "word": "360000b5",
+          "instruction": "tbz w21, #0x0, 0x100238f6c"
+        },
+        {
+          "address": "0x100238f5c",
+          "word": "aa1c03e0",
+          "instruction": "mov x0, x28"
+        },
+        {
+          "address": "0x100238f60",
+          "word": "52800041",
+          "instruction": "mov w1, #0x2"
+        },
+        {
+          "address": "0x100238f64",
+          "word": "943c7136",
+          "instruction": "bl 0x10115543c"
+        },
+        {
+          "address": "0x100238f68",
+          "word": "14000014",
+          "instruction": "b 0x100238fb8"
+        },
+        {
+          "address": "0x100238f6c",
+          "word": "f9400388",
+          "instruction": "ldr x8, [x28]"
+        },
+        {
+          "address": "0x100238f70",
+          "word": "f9404d08",
+          "instruction": "ldr x8, [x8, #0x98]"
+        },
+        {
+          "address": "0x100238f74",
+          "word": "f8686b9a",
+          "instruction": "ldr x26, [x28, x8]"
+        },
+        {
+          "address": "0x100238f78",
+          "word": "aa1c03e0",
+          "instruction": "mov x0, x28"
+        },
+        {
+          "address": "0x100238f7c",
+          "word": "52800041",
+          "instruction": "mov w1, #0x2"
+        },
+        {
+          "address": "0x100238f80",
+          "word": "943c712f",
+          "instruction": "bl 0x10115543c"
+        },
+        {
+          "address": "0x100238f84",
+          "word": "b40001ba",
+          "instruction": "cbz x26, 0x100238fb8"
+        },
+        {
+          "address": "0x100238f88",
+          "word": "aa1c03fb",
+          "instruction": "mov x27, x28"
+        },
+        {
+          "address": "0x100238f8c",
+          "word": "aa1a03f3",
+          "instruction": "mov x19, x26"
+        },
+        {
+          "address": "0x100238f90",
+          "word": "aa1a03e0",
+          "instruction": "mov x0, x26"
+        },
+        {
+          "address": "0x100238f94",
+          "word": "943c7127",
+          "instruction": "bl 0x101155430"
+        },
+        {
+          "address": "0x100238f98",
+          "word": "aa1b03e0",
+          "instruction": "mov x0, x27"
+        },
+        {
+          "address": "0x100238f9c",
+          "word": "943c711f",
+          "instruction": "bl 0x101155418"
+        },
+        {
+          "address": "0x100238fa0",
+          "word": "f9400348",
+          "instruction": "ldr x8, [x26]"
+        },
+        {
+          "address": "0x100238fa4",
+          "word": "f9404d08",
+          "instruction": "ldr x8, [x8, #0x98]"
+        },
+        {
+          "address": "0x100238fa8",
+          "word": "f8686b5a",
+          "instruction": "ldr x26, [x26, x8]"
+        },
+        {
+          "address": "0x100238fac",
+          "word": "aa1303fb",
+          "instruction": "mov x27, x19"
+        },
+        {
+          "address": "0x100238fb0",
+          "word": "b5fffefa",
+          "instruction": "cbnz x26, 0x100238f8c"
+        },
+        {
+          "address": "0x100238fb4",
+          "word": "14000002",
+          "instruction": "b 0x100238fbc"
+        },
+        {
+          "address": "0x100238fb8",
+          "word": "aa1c03f3",
+          "instruction": "mov x19, x28"
+        },
+        {
+          "address": "0x100238fbc",
+          "word": "b0000024",
+          "instruction": "adrp x4, 0x10023d000"
+        },
+        {
+          "address": "0x100238fc0",
+          "word": "91159084",
+          "instruction": "add x4, x4, #0x564"
+        },
+        {
+          "address": "0x100238fc4",
+          "word": "12000282",
+          "instruction": "and w2, w20, #0x1"
+        },
+        {
+          "address": "0x100238fc8",
+          "word": "aa1303e0",
+          "instruction": "mov x0, x19"
+        },
+        {
+          "address": "0x100238fcc",
+          "word": "d10143a8",
+          "instruction": "sub x8, x29, #0x50"
+        },
+        {
+          "address": "0x100238fd0",
+          "word": "f8500101",
+          "instruction": "ldur x1, [x8, #-0x100]"
+        },
+        {
+          "address": "0x100238fd4",
+          "word": "52800003",
+          "instruction": "mov w3, #0x0"
+        },
+        {
+          "address": "0x100238fd8",
+          "word": "d2800005",
+          "instruction": "mov x5, #0x0"
+        },
+        {
+          "address": "0x100238fdc",
+          "word": "aa1803f4",
+          "instruction": "mov x20, x24"
+        },
+        {
+          "address": "0x100238fe0",
+          "word": "940fc194",
+          "instruction": "bl 0x100629630"
+        },
+        {
+          "address": "0x100238fe4",
+          "word": "aa0003fa",
+          "instruction": "mov x26, x0"
+        }
+      ],
+      [
+        {
+          "address": "0x100238ffc",
+          "word": "d10283a8",
+          "instruction": "sub x8, x29, #0xa0"
+        },
+        {
+          "address": "0x100239000",
+          "word": "f8500119",
+          "instruction": "ldur x25, [x8, #-0x100]"
+        },
+        {
+          "address": "0x100239004",
+          "word": "b4000fba",
+          "instruction": "cbz x26, 0x1002391f8"
+        },
+        {
+          "address": "0x100239008",
+          "word": "d2800258",
+          "instruction": "mov x24, #0x12"
+        },
+        {
+          "address": "0x10023900c",
+          "word": "f2fa0018",
+          "instruction": "movk x24, #0xd000, lsl #48"
+        },
+        {
+          "address": "0x100239010",
+          "word": "d10203a8",
+          "instruction": "sub x8, x29, #0x80"
+        },
+        {
+          "address": "0x100239014",
+          "word": "f8500100",
+          "instruction": "ldur x0, [x8, #-0x100]"
+        },
+        {
+          "address": "0x100239018",
+          "word": "943c7004",
+          "instruction": "bl 0x101155028"
+        },
+        {
+          "address": "0x10023901c",
+          "word": "d101e3a8",
+          "instruction": "sub x8, x29, #0x78"
+        },
+        {
+          "address": "0x100239020",
+          "word": "f8500100",
+          "instruction": "ldur x0, [x8, #-0x100]"
+        },
+        {
+          "address": "0x100239024",
+          "word": "943c7001",
+          "instruction": "bl 0x101155028"
+        },
+        {
+          "address": "0x100239028",
+          "word": "f9400b48",
+          "instruction": "ldr x8, [x26, #0x10]"
+        },
+        {
+          "address": "0x10023902c",
+          "word": "b4001d68",
+          "instruction": "cbz x8, 0x1002393d8"
+        }
+      ],
+      [
+        {
+          "address": "0x1002391f8",
+          "word": "d10183a8",
+          "instruction": "sub x8, x29, #0x60"
+        },
+        {
+          "address": "0x1002391fc",
+          "word": "f8500100",
+          "instruction": "ldur x0, [x8, #-0x100]"
+        },
+        {
+          "address": "0x100239200",
+          "word": "943c6f8a",
+          "instruction": "bl 0x101155028"
+        },
+        {
+          "address": "0x100239204",
+          "word": "f9400308",
+          "instruction": "ldr x8, [x24]"
+        },
+        {
+          "address": "0x100239208",
+          "word": "f9403908",
+          "instruction": "ldr x8, [x8, #0x70]"
+        },
+        {
+          "address": "0x10023920c",
+          "word": "8b080308",
+          "instruction": "add x8, x24, x8"
+        },
+        {
+          "address": "0x100239210",
+          "word": "39400113",
+          "instruction": "ldrb w19, [x8]"
+        },
+        {
+          "address": "0x100239214",
+          "word": "f9400514",
+          "instruction": "ldr x20, [x8, #0x8]"
+        },
+        {
+          "address": "0x100239218",
+          "word": "d2800000",
+          "instruction": "mov x0, #0x0"
+        }
+      ],
+      [
+        {
+          "address": "0x10023924c",
+          "word": "52800120",
+          "instruction": "mov w0, #0x9"
+        },
+        {
+          "address": "0x100239250",
+          "word": "d2fc2001",
+          "instruction": "mov x1, #-0x1f00000000000000"
+        },
+        {
+          "address": "0x100239254",
+          "word": "d10143a8",
+          "instruction": "sub x8, x29, #0x50"
+        },
+        {
+          "address": "0x100239258",
+          "word": "f8500102",
+          "instruction": "ldur x2, [x8, #-0x100]"
+        },
+        {
+          "address": "0x10023925c",
+          "word": "aa1303e3",
+          "instruction": "mov x3, x19"
+        },
+        {
+          "address": "0x100239260",
+          "word": "aa1403e4",
+          "instruction": "mov x4, x20"
+        },
+        {
+          "address": "0x100239264",
+          "word": "aa1603e5",
+          "instruction": "mov x5, x22"
+        },
+        {
+          "address": "0x100239268",
+          "word": "aa1803e6",
+          "instruction": "mov x6, x24"
+        },
+        {
+          "address": "0x10023926c",
+          "word": "94101320",
+          "instruction": "bl 0x10063deec"
+        },
+        {
+          "address": "0x100239270",
+          "word": "aa0003f6",
+          "instruction": "mov x22, x0"
+        }
+      ]
+    ],
+    "limitations": "Static caller control flow; no native service execution or complete rendering implementation."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -471,6 +905,151 @@
       "address": "00000001000b4298",
       "mangled": "_$s11ComputerUse0aB17SkyshotAttachmentV4text10screenshot0F16NeededForContext29accessibilityInspectorPayloadACSS_8SlimCore14ScreenshotFileVSgSb0abN0019UIElementRenderTreekL0VSgtcfC",
       "signature": "ComputerUse.ComputerUseSkyshotAttachment.init(text: Swift.String, screenshot: SlimCore.ScreenshotFile?, screenshotNeededForContext: Swift.Bool, accessibilityInspectorPayload: ComputerUseCore.UIElementRenderTreeInspectorPayload?) -> ComputerUse.ComputerUseSkyshotAttachment"
+    },
+    {
+      "address": "000000010023cd78",
+      "mangled": "_$s11ComputerUse15SystemSelectionV11contextType0aB4Core016UIElementContextF0OvM",
+      "signature": "ComputerUse.SystemSelection.contextType.modify : ComputerUseCore.UIElementContextType"
+    },
+    {
+      "address": "000000010023cd2c",
+      "mangled": "_$s11ComputerUse15SystemSelectionV11contextType0aB4Core016UIElementContextF0Ovg",
+      "signature": "ComputerUse.SystemSelection.contextType.getter : ComputerUseCore.UIElementContextType"
+    },
+    {
+      "address": "000000010023cd4c",
+      "mangled": "_$s11ComputerUse15SystemSelectionV11contextType0aB4Core016UIElementContextF0Ovs",
+      "signature": "ComputerUse.SystemSelection.contextType.setter : ComputerUseCore.UIElementContextType"
+    },
+    {
+      "address": "00000001002380d8",
+      "mangled": "_$s11ComputerUse15SystemSelectionV14llmDescriptionSSvg",
+      "signature": "ComputerUse.SystemSelection.llmDescription.getter : Swift.String"
+    },
+    {
+      "address": "0000000100238b88",
+      "mangled": "_$s11ComputerUse15SystemSelectionV14llmDescription_11lineOptionsSSAC18LLMDescriptionModeO_0aB4Core019UIElementRenderLineH0VtF",
+      "signature": "ComputerUse.SystemSelection.llmDescription(_: ComputerUse.SystemSelection.LLMDescriptionMode, lineOptions: ComputerUseCore.UIElementRenderLineOptions) -> Swift.String"
+    },
+    {
+      "address": "000000010023cc20",
+      "mangled": "_$s11ComputerUse15SystemSelectionV14windowRevision0aB4Core013UIElementTreeF0Cy20AccessibilitySupport011TransformedH0VGvM",
+      "signature": "ComputerUse.SystemSelection.windowRevision.modify : ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>"
+    },
+    {
+      "address": "000000010023cbf0",
+      "mangled": "_$s11ComputerUse15SystemSelectionV14windowRevision0aB4Core013UIElementTreeF0Cy20AccessibilitySupport011TransformedH0VGvg",
+      "signature": "ComputerUse.SystemSelection.windowRevision.getter : ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>"
+    },
+    {
+      "address": "000000010023cbf8",
+      "mangled": "_$s11ComputerUse15SystemSelectionV14windowRevision0aB4Core013UIElementTreeF0Cy20AccessibilitySupport011TransformedH0VGvs",
+      "signature": "ComputerUse.SystemSelection.windowRevision.setter : ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>"
+    },
+    {
+      "address": "000000010023cbdc",
+      "mangled": "_$s11ComputerUse15SystemSelectionV17applicationWindow20AccessibilitySupport011ApplicationF0CvM",
+      "signature": "ComputerUse.SystemSelection.applicationWindow.modify : AccessibilitySupport.ApplicationWindow"
+    },
+    {
+      "address": "000000010023cbac",
+      "mangled": "_$s11ComputerUse15SystemSelectionV17applicationWindow20AccessibilitySupport011ApplicationF0Cvg",
+      "signature": "ComputerUse.SystemSelection.applicationWindow.getter : AccessibilitySupport.ApplicationWindow"
+    },
+    {
+      "address": "000000010023cbb4",
+      "mangled": "_$s11ComputerUse15SystemSelectionV17applicationWindow20AccessibilitySupport011ApplicationF0Cvs",
+      "signature": "ComputerUse.SystemSelection.applicationWindow.setter : AccessibilitySupport.ApplicationWindow"
+    },
+    {
+      "address": "00000001000901e0",
+      "mangled": "_$s11ComputerUse15SystemSelectionV18DifferenceBaselineO21__derived_enum_equalsySbAE_AEtFZ",
+      "signature": "static ComputerUse.SystemSelection.DifferenceBaseline.__derived_enum_equals(ComputerUse.SystemSelection.DifferenceBaseline, ComputerUse.SystemSelection.DifferenceBaseline) -> Swift.Bool"
+    },
+    {
+      "address": "00000001000901f0",
+      "mangled": "_$s11ComputerUse15SystemSelectionV18DifferenceBaselineO4hash4intoys6HasherVz_tF",
+      "signature": "ComputerUse.SystemSelection.DifferenceBaseline.hash(into: inout Swift.Hasher) -> ()"
+    },
+    {
+      "address": "0000000100090214",
+      "mangled": "_$s11ComputerUse15SystemSelectionV18DifferenceBaselineO9hashValueSivg",
+      "signature": "ComputerUse.SystemSelection.DifferenceBaseline.hashValue.getter : Swift.Int"
+    },
+    {
+      "address": "000000010023cc64",
+      "mangled": "_$s11ComputerUse15SystemSelectionV19invalidationMonitor20AccessibilitySupport025UIElementTreeInvalidationF0CSgvM",
+      "signature": "ComputerUse.SystemSelection.invalidationMonitor.modify : AccessibilitySupport.UIElementTreeInvalidationMonitor?"
+    },
+    {
+      "address": "000000010023cc34",
+      "mangled": "_$s11ComputerUse15SystemSelectionV19invalidationMonitor20AccessibilitySupport025UIElementTreeInvalidationF0CSgvg",
+      "signature": "ComputerUse.SystemSelection.invalidationMonitor.getter : AccessibilitySupport.UIElementTreeInvalidationMonitor?"
+    },
+    {
+      "address": "0000000100047860",
+      "mangled": "_$s11ComputerUse15SystemSelectionV19invalidationMonitor20AccessibilitySupport025UIElementTreeInvalidationF0CSgvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelection.invalidationMonitor : AccessibilitySupport.UIElementTreeInvalidationMonitor?"
+    },
+    {
+      "address": "000000010023cc3c",
+      "mangled": "_$s11ComputerUse15SystemSelectionV19invalidationMonitor20AccessibilitySupport025UIElementTreeInvalidationF0CSgvs",
+      "signature": "ComputerUse.SystemSelection.invalidationMonitor.setter : AccessibilitySupport.UIElementTreeInvalidationMonitor?"
+    },
+    {
+      "address": "00000001002350a4",
+      "mangled": "_$s11ComputerUse15SystemSelectionV21writeScreenshotToFile_3for8encoding8SlimCore0fH0VSo10CGImageRefa_20AccessibilitySupport23FocusedUIElementContextVAG0F8EncodingOtKFZ",
+      "signature": "static ComputerUse.SystemSelection.writeScreenshotToFile(_: __C.CGImageRef, for: AccessibilitySupport.FocusedUIElementContext, encoding: SlimCore.ScreenshotEncoding) throws -> SlimCore.ScreenshotFile"
+    },
+    {
+      "address": "0000000100237eac",
+      "mangled": "_$s11ComputerUse15SystemSelectionV22eventStreamDescription_11lineOptions26ignoreDifferenceLineBudgetSSAC18LLMDescriptionModeO_0aB4Core015UIElementRenderlI0VSbtF",
+      "signature": "ComputerUse.SystemSelection.eventStreamDescription(_: ComputerUse.SystemSelection.LLMDescriptionMode, lineOptions: ComputerUseCore.UIElementRenderLineOptions, ignoreDifferenceLineBudget: Swift.Bool) -> Swift.String"
+    },
+    {
+      "address": "000000010023cdf0",
+      "mangled": "_$s11ComputerUse15SystemSelectionV26screenshotNeededForContextSbvM",
+      "signature": "ComputerUse.SystemSelection.screenshotNeededForContext.modify : Swift.Bool"
+    },
+    {
+      "address": "000000010023cda4",
+      "mangled": "_$s11ComputerUse15SystemSelectionV26screenshotNeededForContextSbvg",
+      "signature": "ComputerUse.SystemSelection.screenshotNeededForContext.getter : Swift.Bool"
+    },
+    {
+      "address": "0000000100018398",
+      "mangled": "_$s11ComputerUse15SystemSelectionV26screenshotNeededForContextSbvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelection.screenshotNeededForContext : Swift.Bool"
+    },
+    {
+      "address": "000000010023cdc4",
+      "mangled": "_$s11ComputerUse15SystemSelectionV26screenshotNeededForContextSbvs",
+      "signature": "ComputerUse.SystemSelection.screenshotNeededForContext.setter : Swift.Bool"
+    },
+    {
+      "address": "0000000100235518",
+      "mangled": "_$s11ComputerUse15SystemSelectionV37updateScreenshotNeededUsingClassifier10screenshotySo10CGImageRefa_tKF",
+      "signature": "ComputerUse.SystemSelection.updateScreenshotNeededUsingClassifier(screenshot: __C.CGImageRef) throws -> ()"
+    },
+    {
+      "address": "000000010023cd00",
+      "mangled": "_$s11ComputerUse15SystemSelectionV3url10Foundation3URLVSgvM",
+      "signature": "ComputerUse.SystemSelection.url.modify : Foundation.URL?"
+    },
+    {
+      "address": "000000010023cc78",
+      "mangled": "_$s11ComputerUse15SystemSelectionV3url10Foundation3URLVSgvg",
+      "signature": "ComputerUse.SystemSelection.url.getter : Foundation.URL?"
+    },
+    {
+      "address": "00000001000481f0",
+      "mangled": "_$s11ComputerUse15SystemSelectionV3url10Foundation3URLVSgvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelection.url : Foundation.URL?"
+    },
+    {
+      "address": "000000010023ccbc",
+      "mangled": "_$s11ComputerUse15SystemSelectionV3url10Foundation3URLVSgvs",
+      "signature": "ComputerUse.SystemSelection.url.setter : Foundation.URL?"
     },
     {
       "address": "000000010023285c",
@@ -521,6 +1100,76 @@
       "address": "0000000100232998",
       "mangled": "_$s11ComputerUse16SkyshotOperationV7capture9treeCache9imageSize17includeScreenshot14continuingFrom30performAccessibilityEnablementAC7CaptureV0O7Support20TransformedUIElementV04TreeG0VSg_So6CGSizeVSgSb0aB4Core0tU8RevisionCyANGSgSbtYaKF",
       "signature": "ComputerUse.SkyshotOperation.capture(treeCache: AccessibilitySupport.TransformedUIElement.TreeCache?, imageSize: __C.CGSize?, includeScreenshot: Swift.Bool, continuingFrom: ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>?, performAccessibilityEnablement: Swift.Bool) async throws -> ComputerUse.SkyshotOperation.Capture"
+    },
+    {
+      "address": "0000000100239540",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC02oncD7ChangedyAA0cD0VSgYbcSgvM",
+      "signature": "ComputerUse.SystemSelectionClient.onSystemSelectionChanged.modify : (@Sendable (ComputerUse.SystemSelection?) -> ())?"
+    },
+    {
+      "address": "00000001002394a4",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC02oncD7ChangedyAA0cD0VSgYbcSgvg",
+      "signature": "ComputerUse.SystemSelectionClient.onSystemSelectionChanged.getter : (@Sendable (ComputerUse.SystemSelection?) -> ())?"
+    },
+    {
+      "address": "000000010002dc54",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC02oncD7ChangedyAA0cD0VSgYbcSgvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelectionClient.onSystemSelectionChanged : (@Sendable (ComputerUse.SystemSelection?) -> ())?"
+    },
+    {
+      "address": "00000001002394f0",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC02oncD7ChangedyAA0cD0VSgYbcSgvs",
+      "signature": "ComputerUse.SystemSelectionClient.onSystemSelectionChanged.setter : (@Sendable (ComputerUse.SystemSelection?) -> ())?"
+    },
+    {
+      "address": "0000000100239644",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC06systemD0AA0cD0VSgvM",
+      "signature": "ComputerUse.SystemSelectionClient.systemSelection.modify : ComputerUse.SystemSelection?"
+    },
+    {
+      "address": "0000000100239574",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC06systemD0AA0cD0VSgvg",
+      "signature": "ComputerUse.SystemSelectionClient.systemSelection.getter : ComputerUse.SystemSelection?"
+    },
+    {
+      "address": "00000001000481b0",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC06systemD0AA0cD0VSgvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelectionClient.systemSelection : ComputerUse.SystemSelection?"
+    },
+    {
+      "address": "00000001002395d8",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC06systemD0AA0cD0VSgvs",
+      "signature": "ComputerUse.SystemSelectionClient.systemSelection.setter : ComputerUse.SystemSelection?"
+    },
+    {
+      "address": "0000000100239684",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC11contextType_AC0aB4Core016UIElementContextG0O_yAA0cD0VSgYbcSgtcfC",
+      "signature": "ComputerUse.SystemSelectionClient.__allocating_init(contextType: ComputerUseCore.UIElementContextType, _: (@Sendable (ComputerUse.SystemSelection?) -> ())?) -> ComputerUse.SystemSelectionClient"
+    },
+    {
+      "address": "00000001002396d8",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC11contextType_AC0aB4Core016UIElementContextG0O_yAA0cD0VSgYbcSgtcfc",
+      "signature": "ComputerUse.SystemSelectionClient.init(contextType: ComputerUseCore.UIElementContextType, _: (@Sendable (ComputerUse.SystemSelection?) -> ())?) -> ComputerUse.SystemSelectionClient"
+    },
+    {
+      "address": "00000001000481bc",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC12isExtracting33_C07385D980E91A660589775B288B2E3ALL7Atomics13ManagedAtomicCySbGvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelectionClient.(isExtracting in _C07385D980E91A660589775B288B2E3A) : Atomics.ManagedAtomic<Swift.Bool>"
+    },
+    {
+      "address": "0000000100047860",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientC30systemFocusedUIElementObserver33_C07385D980E91A660589775B288B2E3ALL20AccessibilitySupport0cghI0CSgvpfi",
+      "signature": "variable initialization expression of ComputerUse.SystemSelectionClient.(systemFocusedUIElementObserver in _C07385D980E91A660589775B288B2E3A) : AccessibilitySupport.SystemFocusedUIElementObserver?"
+    },
+    {
+      "address": "000000010023a9c4",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientCfD",
+      "signature": "ComputerUse.SystemSelectionClient.__deallocating_deinit"
+    },
+    {
+      "address": "000000010023a968",
+      "mangled": "_$s11ComputerUse21SystemSelectionClientCfd",
+      "signature": "ComputerUse.SystemSelectionClient.deinit"
     },
     {
       "address": "000000010022e504",
@@ -586,6 +1235,16 @@
       "address": "0000000100231298",
       "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeCfd",
       "signature": "ComputerUse.RefetchableSkyshotAXTree.deinit"
+    },
+    {
+      "address": "000000010023d3f0",
+      "mangled": "_$s11ComputerUse24SystemSelectionExtractorO06shouldB11FullSkyshot3forSb10Foundation3URLV_tFZ",
+      "signature": "static ComputerUse.SystemSelectionExtractor.shouldUseFullSkyshot(for: Foundation.URL) -> Swift.Bool"
+    },
+    {
+      "address": "0000000100238110",
+      "mangled": "_$s11ComputerUse24SystemSelectionExtractorO7extract4from11contextType9treeCache14continuingFrom17axTreeRootElement30performAccessibilityEnablement23alwaysIncludeScreenshot15enableAXDiffingAA0cD0V0S7Support23FocusedUIElementContextV_0aB4Core016UIElementContextI0OAO20TransformedUIElementV0oK0VSgAR09UIElementO8RevisionCyAVGSgAO17UIElementProtocol_pSgS3btKFZ",
+      "signature": "static ComputerUse.SystemSelectionExtractor.extract(from: AccessibilitySupport.FocusedUIElementContext, contextType: ComputerUseCore.UIElementContextType, treeCache: AccessibilitySupport.TransformedUIElement.TreeCache?, continuingFrom: ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>?, axTreeRootElement: AccessibilitySupport.UIElementProtocol?, performAccessibilityEnablement: Swift.Bool, alwaysIncludeScreenshot: Swift.Bool, enableAXDiffing: Swift.Bool) throws -> ComputerUse.SystemSelection"
     },
     {
       "address": "000000010063dc28",

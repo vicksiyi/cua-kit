@@ -23,7 +23,7 @@ raw = subprocess.check_output(['nm', '-g', str(artifact)], text=True)
 selected = [line for line in raw.splitlines() if ' T ' in line and any(word in line for word in (
     'disableAXDiffing', 'UIElementTreeRevision', 'RefetchableSkyshotAXTree',
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
-    'AccessibilityDifferenceLineBudgetExceeded',
+    'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -130,6 +130,66 @@ if cases != [
 ]:
     raise SystemExit('Budget callback payload changed')
 enum_evidence = {'name':name,'nominalDescriptor':hex(nominal),'fieldDescriptor':hex(fields),'cases':cases}
+# Follow the caller as well: Optional.none is a request to render the full
+# tree, not an empty diff. Resolve mode names from reflection before naming ABI tags.
+def enum_case_names(nominal):
+    fields = relative_address(nominal+16)
+    _,_,kind,size,count = struct.unpack('<iiHHI',read_virtual(fields,16))
+    if kind != 2 or size != 12:
+        raise SystemExit('Unexpected no-payload/single-payload enum reflection')
+    return fields,[c_string(relative_address(fields+16+i*size+8)) for i in range(count)]
+mode_fields,mode_cases = enum_case_names(0x1012c17ec)
+baseline_fields,baseline_cases = enum_case_names(0x1012c1808)
+if mode_cases != ['difference','fullTree'] or baseline_cases != ['initial','previous']:
+    raise SystemExit('Description modes changed')
+mode_payload = relative_address(mode_fields+20)
+# A symbolic typeref contains embedded zero bytes; it is NOT a C string.
+if read_virtual(mode_payload,1) != b'\x01' or relative_address(mode_payload+1) != 0x1012c1808 or c_string(mode_payload+5) != '4from_t':
+    raise SystemExit('Description difference payload changed')
+caller_start = 0x100238b88
+caller_end = starts[starts.index(caller_start)+1]
+caller_raw = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--start-address='+hex(caller_start),'--stop-address='+hex(caller_end),str(artifact)],text=True)
+caller_instructions = {}
+for line in caller_raw.splitlines():
+    match = re.match(r'^([0-9a-f]+):\s+([0-9a-f]{8})\s+(.+)',line)
+    if match:
+        address = int(match[1],16)
+        word = int(match[2],16)
+        if word != struct.unpack('<I',read_virtual(address,4))[0]:
+            raise SystemExit('Caller machine code mismatch')
+        caller_instructions[address] = {'word':match[2],'instruction':re.sub(r'\s+',' ',match[3].split(' <')[0].split(';')[0].strip())}
+if sorted(caller_instructions) != list(range(caller_start,caller_end,4)):
+    raise SystemExit('Incomplete caller disassembly')
+def require_bl(address,target):
+    word = int(caller_instructions[address]['word'],16)
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    if word >> 26 != 0b100101 or address+immediate*4 != target:
+        raise SystemExit('Caller target changed')
+require_bl(0x100238fe0,start)
+require_bl(0x10023926c,0x10063deec)
+if caller_instructions[0x100239004]['word'] != 'b4000fba':
+    raise SystemExit('Expected nil-result CBZ branch changed')
+caller_excerpts=[]
+for low,high in [(0x100238ed4,0x100238ee0),(0x100238f3c,0x100238fe8),(0x100238ffc,0x100239030),(0x1002391f8,0x10023921c),(0x10023924c,0x100239274)]:
+    caller_excerpts.append([{'address':hex(a),**caller_instructions[a]} for a in range(low,high,4)])
+getter_address = 0x100654a6c
+getter_words = [hex(struct.unpack('<I',read_virtual(getter_address+i*4,4))[0]) for i in range(4)]
+if getter_words != ['0xf9400288','0xf9404d08','0xf8686a80','0x142c026e']:
+    raise SystemExit('Previous revision getter changed')
+caller_evidence = {
+    'function':'ComputerUse.SystemSelection.llmDescription(_:lineOptions:)',
+    'start':hex(caller_start),'endExclusive':hex(caller_end),
+    'machineCodeSha256':hashlib.sha256(read_virtual(caller_start,caller_end-caller_start)).hexdigest(),
+    'modeCases':mode_cases,'baselineCases':baseline_cases,
+    'modeFieldDescriptor':hex(mode_fields),'baselineFieldDescriptor':hex(baseline_fields),
+    'differencePayload':'(from: SystemSelection.DifferenceBaseline)',
+    'previousRevisionGetter':{'address':hex(getter_address),'words':getter_words,'metadataOffset':'0x98'},
+    'differenceCall':'0x100238fe0','nilBranch':'0x100239004',
+    'fullTreeFallbackEntry':'0x1002391f8','fullTreeLinesCall':'0x10023926c',
+    'reviewedInstructionExcerpts':caller_excerpts,
+    'limitations':'Static caller control flow; no native service execution or complete rendering implementation.',
+}
 implementation_evidence = {
     'function':diff['signature'], 'start':hex(start), 'endExclusive':hex(end),
     'boundarySource':'LC_FUNCTION_STARTS', 'instructionCount':len(instructions),
@@ -146,6 +206,7 @@ record = {
     'evidenceKind':'exported Swift symbols and bounded ARM64 call-site/basic-block evidence',
     'commands':['nm -g <artifact>', 'xcrun swift-demangle', 'xcrun llvm-objdump --macho --function-starts=addrs <artifact>', 'xcrun llvm-objdump --disassemble --start-address=<start> --stop-address=<end> <artifact>'],
     'implementationEvidence':implementation_evidence,
+    'callerEvidence':caller_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
