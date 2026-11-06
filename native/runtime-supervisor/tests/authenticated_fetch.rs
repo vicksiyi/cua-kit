@@ -198,3 +198,73 @@ fn gaas_allowlist_is_exact_and_remains_passthrough() {
         "nodeRepl.fetch URL is invalid"
     );
 }
+
+#[test]
+fn authenticated_headers_replace_all_reserved_names_and_preserve_other_fields() {
+    use core_runtime_supervisor::authenticated_fetch::{
+        outbound_authenticated_request, FetchCredentials,
+    };
+    let header = |name: &str, value: &str| FetchHeader {
+        name: name.into(),
+        value: value.into(),
+    };
+    let mut input = request("custom-Method", Some("AP9h"));
+    input.headers = vec![
+        header("X-Trace", "first"),
+        header("Authorization", "caller"),
+        header("authorization", "duplicate"),
+        header("ORIGINATOR", "caller"),
+        header("cHaTgPt-AcCoUnT-Id", "caller"),
+        header("X-Trace", "second"),
+        header("authorization ", "keep exact nonmatch"),
+        header("", "empty name"),
+        header("Öriginator", "non-ASCII nonmatch"),
+    ];
+    let output = outbound_authenticated_request(
+        outbound_passthrough_request(&input, url()).unwrap(),
+        FetchCredentials {
+            access_token: "fixture-token".into(),
+            account_id: Some("fixture-account".into()),
+        },
+    );
+    assert_eq!(output.method.as_str(), "custom-Method");
+    assert_eq!(output.url, url());
+    assert_eq!(output.body, vec![0, 255, b'a']);
+    assert_eq!(
+        output.headers,
+        vec![
+            header("X-Trace", "first"),
+            header("X-Trace", "second"),
+            header("authorization ", "keep exact nonmatch"),
+            header("", "empty name"),
+            header("Öriginator", "non-ASCII nonmatch"),
+            header("authorization", "Bearer fixture-token"),
+            header("originator", "codex_browser_use"),
+            header("ChatGPT-Account-ID", "fixture-account"),
+        ]
+    );
+}
+
+#[test]
+fn authenticated_account_absence_and_empty_values_are_distinct() {
+    use core_runtime_supervisor::authenticated_fetch::{
+        outbound_authenticated_request, FetchCredentials,
+    };
+    for account_id in [None, Some(""), Some("fixture\r\nvalue")] {
+        let mut input = request("GET", None);
+        input.headers.push(FetchHeader {
+            name: "ChatGPT-Account-ID".into(),
+            value: "stale".into(),
+        });
+        let output = outbound_authenticated_request(
+            outbound_passthrough_request(&input, url()).unwrap(),
+            FetchCredentials {
+                access_token: "".into(),
+                account_id: account_id.map(str::to_owned),
+            },
+        );
+        assert_eq!(output.headers[0].value, "Bearer ");
+        assert_eq!(output.headers.len(), 2 + usize::from(account_id.is_some()));
+        assert_eq!(output.headers.get(2).map(|h| h.value.as_str()), account_id);
+    }
+}

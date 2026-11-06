@@ -57,6 +57,22 @@ assert route_errors == {
     'headers':'nodeRepl.fetch does not allow caller headers for this route',
     'method':'nodeRepl.fetch only allows GET for this route',
     'body':'nodeRepl.fetch does not allow caller bodies for this route'}
+auth = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x100271524','--stop-address=0x10027192c',str(artifact)], text=True)
+predicate = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10023a7e0','--stop-address=0x10023aa2c',str(artifact)], text=True)
+for expected in ['100271554:', '>::retain', '100271590:', '1002715a4:',
+                 '1002716c8:', '1002716d0:', '1002716d4:', '100271750:']:
+    assert expected in auth, expected
+for expected in ['10023a934:', '#0x41', '10023a938:', '#0x1a',
+                 '10023a950:', '10023a958:', '10023a960:', '10023a9fc:', 'cset']:
+    assert expected in predicate, expected
+header_literals = {name: read(address,length).decode() for name,address,length in [
+    ('authorization',0x100a4a022,13), ('originator',0x100a4a194,10),
+    ('originatorValue',0x100a4a19e,17), ('account',0x100a4a1af,18),
+    ('bearerPrefix',0x100b34f93,7)]}
+assert header_literals == {'authorization':'authorization', 'originator':'originator',
+    'originatorValue':'codex_browser_use', 'account':'ChatGPT-Account-ID', 'bearerPrefix':'Bearer '}
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -83,6 +99,20 @@ print(json.dumps({
         },
         'limits': 'Branches manually reviewed from pinned instructions; audit checks addresses/literals, not an independent semantic equivalence proof. URL parsing uses evidenced url crate.'
     },
+    'authenticatedHeaders': {
+        'range': ['0x100271524','0x10027192c'],
+        'predicateRange': ['0x10023a7e0','0x10023aa2c'],
+        'instructionTextSha256': hashlib.sha256(auth.encode()).hexdigest(),
+        'predicateInstructionTextSha256': hashlib.sha256(predicate.encode()).hexdigest(),
+        'literals': header_literals,
+        'reviewedBehavior': [
+            'retain predicate lowercases ASCII A-Z in a temporary name copy; exact authorization, originator, chatgpt-account-id matches are removed',
+            '0x100271590: auth struct first String formatted by String Display at 0x100275f6c, using Bearer prefix',
+            'append authorization then originator; preserve other headers and non-header request fields',
+            '0x1002716c8..0x100271750: optional account String at auth offset 0x18; None omitted, Some including empty moved to final header'
+        ],
+        'limits': 'Static instruction review only. FetchCredentials models consumed fields, not the complete original auth DTO. No credential provider or original runtime differential execution.'
+    },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
-    'limits': 'Static reconstruction, no original execution. URL routing is reconstructed; authenticated headers, app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions.'
+    'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions.'
 },indent=2))

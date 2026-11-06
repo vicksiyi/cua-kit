@@ -1,5 +1,5 @@
 //! Native request preparation reconstructed from the pinned node_repl binary.
-//! This module does not resolve authorization, select destinations or send HTTP.
+//! Request routing and shaping only; no credential acquisition or HTTP sending.
 use base64::{engine::general_purpose::STANDARD, Engine};
 use http::Method;
 use url::Url;
@@ -126,4 +126,40 @@ pub fn resolved_request(
         });
     }
     outbound_passthrough_request(request, url).map(ResolvedRequest::Passthrough)
+}
+
+/// Fields consumed by native outbound header shaping. Credential acquisition is
+/// a separate App Server responsibility and is not implemented by this type.
+pub struct FetchCredentials {
+    pub access_token: String,
+    pub account_id: Option<String>,
+}
+
+/// Preserve unrelated headers in order, replace reserved names case-insensitively,
+/// then append the native authorization/originator and optional account headers.
+/// This stage does not validate header values; transport validation comes later.
+pub fn outbound_authenticated_request(
+    mut request: OutboundRequest,
+    credentials: FetchCredentials,
+) -> OutboundRequest {
+    request.headers.retain(|header| {
+        !["authorization", "originator", "chatgpt-account-id"]
+            .iter()
+            .any(|reserved| header.name.eq_ignore_ascii_case(reserved))
+    });
+    request.headers.push(FetchHeader {
+        name: "authorization".into(),
+        value: format!("Bearer {}", credentials.access_token),
+    });
+    request.headers.push(FetchHeader {
+        name: "originator".into(),
+        value: "codex_browser_use".into(),
+    });
+    if let Some(account_id) = credentials.account_id {
+        request.headers.push(FetchHeader {
+            name: "ChatGPT-Account-ID".into(),
+            value: account_id,
+        });
+    }
+    request
 }

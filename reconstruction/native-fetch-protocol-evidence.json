@@ -49,6 +49,32 @@
     },
     "limits": "Branches manually reviewed from pinned instructions; audit checks addresses/literals, not an independent semantic equivalence proof. URL parsing uses evidenced url crate."
   },
+  "authenticatedHeaders": {
+    "range": [
+      "0x100271524",
+      "0x10027192c"
+    ],
+    "predicateRange": [
+      "0x10023a7e0",
+      "0x10023aa2c"
+    ],
+    "instructionTextSha256": "76265a374ce4ed6204c3049f14d39fb073a6dadf85946e00dc6aaf3fd9c9588e",
+    "predicateInstructionTextSha256": "5c234cc2f0b78c427d0fcdc08869114f90e07555ff4c198c627d53bd4c7a4d51",
+    "literals": {
+      "authorization": "authorization",
+      "originator": "originator",
+      "originatorValue": "codex_browser_use",
+      "account": "ChatGPT-Account-ID",
+      "bearerPrefix": "Bearer "
+    },
+    "reviewedBehavior": [
+      "retain predicate lowercases ASCII A-Z in a temporary name copy; exact authorization, originator, chatgpt-account-id matches are removed",
+      "0x100271590: auth struct first String formatted by String Display at 0x100275f6c, using Bearer prefix",
+      "append authorization then originator; preserve other headers and non-header request fields",
+      "0x1002716c8..0x100271750: optional account String at auth offset 0x18; None omitted, Some including empty moved to final header"
+    ],
+    "limits": "Static instruction review only. FetchCredentials models consumed fields, not the complete original auth DTO. No credential provider or original runtime differential execution."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
-  "limits": "Static reconstruction, no original execution. URL routing is reconstructed; authenticated headers, app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
+  "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
 }

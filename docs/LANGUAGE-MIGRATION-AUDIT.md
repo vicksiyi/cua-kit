@@ -2,6 +2,24 @@
 
 This audit includes existing implementation, not just newly written files. Original JavaScript remains readable TypeScript. Responsibilities evidenced in native Rust or Swift must move to those native layers. A TypeScript RPC binding or caller is not itself an incorrect language migration.
 
+## Current repository audit snapshot
+
+This snapshot supersedes the historical migration checkpoints below. The existing repository was re-inventoried, including package sources and the root prototype; language alignment applies to both old and new code.
+
+| Review scope | Current finding | Required disposition |
+| --- | --- | --- |
+| 13 TS supervisor service files + 1 Node binding forwarder | Native service responsibilities have Rust evidence. Ordinary package exports are removed; direct comparison tests still import TS sources. | Complete native service gaps and migrate comparison consumers before retiring the 13 reference implementations. Keep the legitimate Node binding. |
+| 5 legacy TS extension-host files | Production extension installation and CDP host now launch Rust. Legacy reference entry/server/router/logging remain. | Retire legacy consumers after native protocol/lifecycle coverage; do not reintroduce a TS server fallback. |
+| 6 desktop-adapter TS files | Mixed caller/transport responsibilities requiring per-file review. Paste formatting and clipboard transaction already delegate to Swift. | Keep evidenced JS-side bindings as TS; migrate any remaining native behavior only with source-boundary evidence. This is not a count of six proven mistranslations. |
+| 10 native-host files with unresolved provenance | Language ownership has not been established per file. | Record original artifact, relevant symbols/JS call sites and consumers before selecting an implementation language. |
+| 25 root prototype TS files | Legacy public SDK and explicitly named legacy commands remain. Some are caller/browser code. | Migrate reachable native behavior and consumers; do not mechanically rewrite the entire directory. |
+
+The restored JS packages remain TS. AgentLoop, the MCP caller and deployment scripts are independently authored integration code and do not need a native rewrite solely because they call Rust or Swift.
+
+Outstanding native implementation work includes authenticated-fetch credential-provider/App Server and HTTP transport integration, remaining original extension-host behavior, and native desktop UI acceptance. Native fetch preparation and routing already live in Rust, but are not yet a complete deployed authenticated transport. A native implementation plus a matching language does not establish original algorithm parity when native source bodies are unavailable.
+
+Verification for this recheck: regenerated `reconstruction/language-boundary-inventory.json`, inspected direct legacy consumers, and passed `runtime-supervisor-public-boundary.test.ts` (ordinary TS service exports remain unavailable). This checkpoint records the audit; it does not claim all remaining rewrites are complete.
+
 ## Evidence and current findings
 
 | Existing implementation | Evidence / boundary | Current native replacement | Remaining work |
