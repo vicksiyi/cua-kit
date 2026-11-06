@@ -61,3 +61,11 @@ func readRawAXAttributeNames(_ element: AXUIElement) -> CFArray? {
         rawAXAttributeNamesResult { AXUIElementCopyAttributeNames(element, &$0) }
     }
 }
+
+// Supported-attribute enumeration conditionally bridges the whole NSArray to
+// [CFString] using Foundation, falling back to an empty array. Preserve that
+// standard-library boundary instead of filtering individual CF type IDs.
+func decodedAXAttributeNames(_ names: CFArray?) -> [CFString] {
+    guard let names else { return [] }
+    return names as? [CFString] ?? []
+}

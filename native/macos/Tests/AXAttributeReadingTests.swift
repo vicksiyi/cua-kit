@@ -8,6 +8,21 @@ struct AXAttributeReadingTests {
         // AX status. Do not inherit the parameterized reader's throw policy.
         let names = ["AXRole", "AXTitle", "AXRole"] as CFArray
         let empty = [] as CFArray
+        precondition(decodedAXAttributeNames(nil).isEmpty)
+        precondition(decodedAXAttributeNames(empty).isEmpty)
+        let decodedNames = decodedAXAttributeNames(names)
+        precondition(decodedNames.map { $0 as String } == ["AXRole", "AXTitle", "AXRole"])
+        let unicode = ["AX名称", "", "AX名称"] as CFArray
+        precondition(decodedAXAttributeNames(unicode).map { $0 as String } == ["AX名称", "", "AX名称"])
+        // CFString uses foreign-reference bridging. Match Foundation's complete
+        // array bridge even for malformed fixtures; do not add compactMap.
+        let mixed = ["AXRole" as Any, NSNumber(value: 3)] as CFArray
+        let standard = mixed as? [CFString] ?? []
+        let recovered = decodedAXAttributeNames(mixed)
+        precondition(recovered.count == standard.count)
+        for (left, right) in zip(recovered, standard) {
+            precondition(CFGetTypeID(left) == CFGetTypeID(right) && CFEqual(left, right))
+        }
         for status in [AXError.success, .noValue, .cannotComplete, .apiDisabled] {
             for expected: CFArray? in [nil, empty, names] {
                 var calls = 0

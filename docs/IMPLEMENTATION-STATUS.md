@@ -6940,3 +6940,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：支持属性名称读取的 Swift 实现
 
 恢复 AXUIElementCopyAttributeNames 原始读取与同进程线程调度，按原构建保留输出而忽略系统返回 status；新增 12 项 status/output 组合验证。完整 UIElementAttribute 转换、MockProvider 与缓存构造仍未恢复，尚未接入生产观察器。
+
+
+### 2026-11-06：支持属性名称数组桥接
+
+恢复 Foundation 整数组 `[CFString]` 桥接及空输出回退，新增 nil/空/重复/Unicode/系统混合桥接一致性验证；固定 CFString 元数据和 Foundation 符号绑定。不添加与源行为不同的逐项过滤。仍待 UIElementAttribute 包装、集合与缓存接线。

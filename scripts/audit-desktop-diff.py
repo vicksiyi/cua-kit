@@ -863,6 +863,28 @@ attribute_names_evidence={
     'interpretation':'Direct system enumeration initializes output to nil, calls AXUIElementCopyAttributeNames, and discards its return status before consuming the output. PID/thread dispatch mirrors the ordinary attribute reader.',
     'limitations':'The restored raw adapter does not implement MockProvider override, CF-array bridging, UIElementAttribute conversion or production cache assembly.',
 }
+attribute_names_bridge_symbol='Foundation/_$sSa10FoundationE34_conditionallyBridgeFromObjectiveC_6resultSbSo7NSArrayC_SayxGSgztFZ'
+for slot,binding in [('0x101463828',attribute_names_bridge_symbol),('0x10151ef98','CoreFoundation/_OBJC_CLASS_$_NSArray'),('0x101468918','libswiftCore/__swiftEmptyArrayStorage')]:
+    if binding not in next((line for line in fixups.splitlines() if slot in line.lower()),''):
+        raise SystemExit('Attribute-name Foundation bridge binding changed')
+if 'rebase  0x1012CC2C8' not in next((line for line in fixups.splitlines() if '0x10149aa60' in line.lower()),'') or c_string(relative_address(0x1012cc2c8+8))!='CFString':
+    raise SystemExit('Attribute-name CFString metadata changed')
+attribute_names_bridge_words={
+    0x1006e7524:0xf0007441,0x1006e7528:0x91382021,
+    0x1006e752c:0xf0006d82,0x1006e7530:0x91296042,
+    0x1006f5e08:0x97ffc5c7,0x1006f5e28:0x94296bfa,
+    0x1006f5e38:0xf100011f,0x1006f5e3c:0x9a8802b5,
+    0x101150e10:0xf0001890,0x101150e14:0xf9441610,0x101150e18:0xd61f0200,
+}
+for address,word in attribute_names_bridge_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('Attribute-name bridge metadata or empty fallback changed')
+attribute_names_evidence['arrayBridge']={
+    'elementType':'CFString','metadata':'0x10149aa58','nominalDescriptor':'0x1012cc2c8',
+    'symbol':attribute_names_bridge_symbol,'got':'0x101463828',
+    'instructionWords':{hex(a):hex(w) for a,w in attribute_names_bridge_words.items()},
+    'interpretation':'Conditionally bridge NSArray to the whole [CFString] array with Foundation, default to empty on missing bridge output, then preserve order during wrapper conversion. This is not compactMap or CFGetTypeID filtering.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
