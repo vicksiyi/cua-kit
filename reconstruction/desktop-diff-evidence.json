@@ -2241,6 +2241,19 @@
       "productionUse": "Target.action setValue; caller preserves snapshot invalidation and error outcome mapping",
       "limitations": "System adapter only. Higher-level generic setter, provider dispatch and disclosure action execution are not yet fully integrated."
     },
+    "genericElementSetter": {
+      "encode": "0x1007a7d0c -> 0x1006ea3e4; failure at 0x1007a7d20 exits before AX getter",
+      "resolve": "0x1007a7d30 invokes axElement witness +0x20 only after encoding succeeds",
+      "write": "0x1007a7d44 -> AXUIElementRef.setValue once; no additional support/writability check",
+      "block": {
+        "start": "0x1007a7cd4",
+        "endExclusive": "0x1007a7d78",
+        "machineCodeSha256": "aa1e9c4aa6d4cf655d064e8d15715622ccd752db5e92bd6529f0b1d69c5c48fb"
+      },
+      "implementation": "native/macos/Sources/CuaHelper/UIElementSetValue.swift",
+      "productionUse": "Target.action setValue keeps its existing outer guard and outcome mapping",
+      "limitations": "Core sequencing restored with provider injection; concrete setSystemValue deliberately uses system adapter, not full MockProvider dispatch."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

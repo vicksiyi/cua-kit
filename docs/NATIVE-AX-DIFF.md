@@ -1241,3 +1241,19 @@ UIElementError.axError，不能复用普通动作 perform 的错误容忍策略�
 
 剩余：UIElementProtocol 的通用编码 setter、MockProvider 分派及合成动作生产执行。
 本轮未运行真实 UI 操作；线程分流复用既有函数，测试不声称完成真实系统写入验收。
+
+
+## 通用元素 setter 接线（2026-11-07）
+
+UIElementProtocol.setValue(_:forAttribute:) 的 0x1007a7cd4–0x1007a7d78
+先调用动态编码器，编码失败直接返回，不读取 axElement；成功才调用 axElement
+witness +0x20，再调用底层写入一次。此层不附加支持/可写性查询，不修改缓存。
+
+新增 UIElementSetValue.swift，使用已恢复 AXEncodedValue(wrapping:) 编码器，
+支持注入写入边界；具体 UIElement.setSystemValue 明确选择系统实现。
+生产 Target.action 的 setValue 也已使用通用编码组合，仍保留原有外层可写性检查、
+快照失效和错误映射。测试验证编码失败不解析 AX、不写入，写入失败无重试，
+Boolean 的 CFBoolean 类型和 CGPoint 的真实 AXValue 编码；测试和 Swift 构建通过。
+
+剩余原 provider 分派、合成动作及观察器整合仍未完成。注入测试未执行真实属性写入，
+本轮没有调用模型或操作用户界面。

@@ -1002,6 +1002,16 @@ element_storage_evidence['systemAttributeWriting']={
     'productionUse':'Target.action setValue; caller preserves snapshot invalidation and error outcome mapping',
     'limitations':'System adapter only. Higher-level generic setter, provider dispatch and disclosure action execution are not yet fully integrated.',
 }
+element_storage_evidence['genericElementSetter']={
+    'encode':'0x1007a7d0c -> 0x1006ea3e4; failure at 0x1007a7d20 exits before AX getter',
+    'resolve':'0x1007a7d30 invokes axElement witness +0x20 only after encoding succeeds',
+    'write':'0x1007a7d44 -> AXUIElementRef.setValue once; no additional support/writability check',
+    'block':{'start':'0x1007a7cd4','endExclusive':'0x1007a7d78',
+        'machineCodeSha256':hashlib.sha256(read_virtual(0x1007a7cd4,0x1007a7d78-0x1007a7cd4)).hexdigest()},
+    'implementation':'native/macos/Sources/CuaHelper/UIElementSetValue.swift',
+    'productionUse':'Target.action setValue keeps its existing outer guard and outcome mapping',
+    'limitations':'Core sequencing restored with provider injection; concrete setSystemValue deliberately uses system adapter, not full MockProvider dispatch.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

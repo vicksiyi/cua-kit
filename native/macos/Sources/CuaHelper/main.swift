@@ -106,8 +106,10 @@ final class Target {
             guard let text = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "setValue requires a string.") }
             guard (try? isSystemAXAttributeSettable(element, UIElementAttribute(kAXValueAttribute))) == true else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
             do {
-                try setSystemAXAttribute(element, AXEncodedValue(value: text as NSString),
-                    for: UIElementAttribute(kAXValueAttribute))
+                try uiElementSetValue(text, forAttribute: UIElementAttribute(kAXValueAttribute),
+                    readAXElement: { element }, write: { target, encoded, attribute in
+                        try setSystemAXAttribute(target, encoded, for: attribute)
+                    })
                 status = .success
             } catch UIElementError.axError(let error) {
                 // Preserve the existing snapshot invalidation and transport
