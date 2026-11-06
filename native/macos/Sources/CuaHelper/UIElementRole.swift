@@ -6,6 +6,7 @@ struct UIElementRole: Hashable {
     static let window = UIElementRole("AXWindow")
     static let sheet = UIElementRole("AXSheet")
     static let menu = UIElementRole("AXMenu")
+    static let menuButton = UIElementRole("AXMenuButton")
     static let popover = UIElementRole("AXPopover")
     static let scrollArea = UIElementRole("AXScrollArea")
     static let group = UIElementRole("AXGroup")

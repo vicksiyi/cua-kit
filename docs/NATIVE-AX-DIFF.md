@@ -2608,3 +2608,23 @@ virtual cursor/动作准备。后续焦点和 Catalyst 分支尚未完整恢复�
 新增 UIElementWebClickHitTest.swift 与具体系统适配，测试覆盖异常/nil 矩阵、
 父链方向、自身匹配、读取顺序及300/301边界；Swift 构建通过。未改变生产动作选择，
 未实际执行点击；系统适配不代表原 TaskLocal/provider 已全部还原。
+
+
+## AX 动作前焦点条件（2026-11-07）
+
+补查 0x1007b1284...0x1007b16bc 及 WebView continuation 的同一段逻辑。
+无 focus enforcer 时读取应用 AX PID，查询 NSRunningApplication，再读取 isActive；
+selector 0x101542af8 已解析为 isActive，不能误写为 activate。该 Bool 被丢弃，
+缺少运行实例不阻止后续动作；PID 获取异常则传播。系统适配保留这些语义。
+
+有 enforcer 时读取锁内 State 的第二个 byte（applicationBelievesItHasFocus，
+modify 0x100740500 指向偏移1）。已相信获得焦点则跳过；否则仅 Catalyst 应用
+继续检查 clickingMayCauseSelection 或 AXMenuButton。前者为 true 时不读取 role。
+满足条件才对当前 window 调用 safelyEnforceActiveState；异常传播，不继续 AX 动作。
+
+UIElementActionFocusPreparation.swift 提取上述控制流，SystemActionFocusPreparation
+提供无 enforcer 的实际系统查询。补充 AXMenuButton 常量（原初始化器 0x1007b9934）。
+首次编译暴露缺少该常量，补齐后条件组合、短路顺序和错误传播测试及 Swift 构建通过。
+
+仍未实现完整 SyntheticAppFocusEnforcer 状态所有权及其 native enforcement，
+virtual cursor press 也未接齐；没有将回调当成生产成功实现，没有执行实际应用操作。

@@ -1166,6 +1166,16 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['axActionFocusPreparation']={
+    'withoutEnforcer':'0x1007b1348 reads AX PID (errors propagate); 0x1007b142c NSRunningApplication lookup then isActive selector at 0x101542af8. Bool discarded; missing app tolerated; no activation call.',
+    'withEnforcer':'Read locked state, test byte1 applicationBelievesItHasFocus; if true skip. Otherwise test isCatalystApp; only Catalyst selection-causing target or AXMenuButton calls safelyEnforceActiveState(for:window). Selection true skips role read.',
+    'stateEvidence':'State.applicationBelievesItHasFocus modify at0x100740500 points to byte1; state keypath projection helper0x1007405dc returns all3 bytes; click reads second byte after locked state read.',
+    'errors':'PID query and safelyEnforceActiveState errors leave action unperformed; existing performAction follows successful preparation.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007b1284,0x1007b16bc),(0x1007b1978,0x1007b1cd8),(0x1007404e4,0x100740624),(0x1007b9934,0x1007b996c)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementActionFocusPreparation.swift','native/macos/Sources/CuaHelper/SystemActionFocusPreparation.swift'],
+    'validation':'48 combinations of enforcer/focus/Catalyst/selection/optional role and query/enforce error identity pass; Swift builds after adding missing AXMenuButton role.',
+    'limitations':'Focus-enforcer state ownership, actual native enforcement and cursor press remain incomplete. Preparation extracted with explicit callbacks; not yet wired to production AX-click routing.',
+}
 element_storage_evidence['webClickHitProbe']={
     'probe':'0x1007b8444..<0x1007b85fc awaits no-argument clickablePoint, suppresses errors/nil to false, app AX hit-tests the point, suppresses errors/nil to false, then checks ancestor membership',
     'ancestry':'0x1007b7ca4..<0x1007b7e14 starts at hit including self, initializes depth0/max300; iterator thunk 0x1007b7e24 delegates to 0x1007b704c. contains predicate 0x1007b8788 delegates to 0x1007b6228 comparing node AX reference then target via provider-aware equality.',
