@@ -24,7 +24,7 @@ import Foundation
                 let result = try resolver.resolvePreferringRunningApplication("query")
                 precondition(mode != 4 && mode != 5)
                 precondition(result.identifier == target.identifier)
-            } catch is NativeApplicationResolution.NotFound { precondition(mode == 4)
+            } catch NativeApplicationResolution.BundleIDLookupError.notFound(let reference) { precondition(mode == 4 && reference == "query")
             } catch SelectionError.ambiguous { precondition(mode == 5) }
             let expected = [
                 ["path:query"],
@@ -35,6 +35,35 @@ import Foundation
                 ["path:query", "running", "path:query", "installed", "select"],
             ][mode]
             precondition(events == expected)
+        }
+        let other = NativeApplicationTarget(bundleIdentifier: "fixture.app", bundleURL: URL(fileURLWithPath: "/A.app"))
+        let selected = try NativeApplicationResolution.selectUniqueTarget("query", [target])
+        precondition(selected.identifier == target.identifier)
+        for candidates in [[], [target, other], [target, target]] {
+            do {
+                _ = try NativeApplicationResolution.selectUniqueTarget("query", candidates)
+                preconditionFailure("Non-unique candidates must fail")
+            } catch let error as NativeApplicationResolution.BundleIDLookupError {
+                if candidates.isEmpty {
+                    precondition(error == .notFound("query") && error.description == "Invalid app: query")
+                } else {
+                    let paths = candidates.map(\.identifier).sorted()
+                    precondition(error == .ambiguous("query", paths))
+                    precondition(error.description == "Ambiguous app identifier 'query'. Multiple apps share this bundle identifier: " + paths.joined(separator: ", ") + ". Use an app name or full app path instead.")
+                }
+            }
+        }
+        // Use the default selector through the actual resolver, and verify
+        // running ambiguity cannot fall through to installed/name resolution.
+        let ambiguousRunning = NativeApplicationResolution(targetAtPath: { _ in nil },
+            installedTargets: { _ in preconditionFailure("Unexpected installed fallback") },
+            runningTargets: { _ in [target, other] },
+            pathForName: { _ in preconditionFailure("Unexpected name fallback") })
+        do {
+            _ = try ambiguousRunning.resolvePreferringRunningApplication("query")
+            preconditionFailure("Expected ambiguity")
+        } catch let error as NativeApplicationResolution.BundleIDLookupError {
+            precondition(error == .ambiguous("query", [other.identifier, target.identifier]))
         }
         // A genuine temporary bundle verifies the native path probe, including
         // a non-.app suffix that the old independent resolver rejects.

@@ -252,10 +252,34 @@ selector stubs resolve to `sharedWorkspace` (`0x101543e20`) and
 `.m` file, not translated into TypeScript. It does not launch the app.
 
 `NativeApplicationResolution.swift` restores the two control-flow methods
-and concrete Bundle path probe. Enumeration and candidate selection remain
-injected dependencies: the original enumeration includes running candidates
+and concrete Bundle path probe. Enumeration remains an injected dependency; candidate selection is now
+restored below: the original enumeration includes running candidates
 and additional URL processing; the original selector rejects ambiguity rather
-than blindly selecting the first app. These helpers must be fully recovered
+than blindly selecting the first app. The remaining enumeration helpers must be fully recovered
 before replacing `Launch.swift`. Tests verify fallback order, selector error
 propagation, and a real temporary `.bundle` path accepted by Foundation.
-The host NotFound error does not claim original error text parity.
+The lookup-error descriptions are restored below.
+
+## Candidate selection and lookup errors
+
+The shared selector (`0x100262934..<0x100262b64`) has three outcomes: an
+empty list throws the not-found case, exactly one target returns unchanged,
+and multiple targets throw ambiguity. The multiple branch maps each target's
+canonical `identifier`, sorts that String array and stores it in the error.
+The selector itself does not deduplicate identical identifiers. Its sort helper
+at `0x10026353c` calls the Swift String comparison implementation through
+`0x101152ff4` / GOT `0x101467f90`, rather than a localized filename comparator.
+
+The description getter (`0x1002632d0..<0x100263414`) emits:
+
+- `Invalid app: <reference>`
+- `Ambiguous app identifier '<reference>'. Multiple apps share this bundle identifier: <paths joined by comma-space>. Use an app name or full app path instead.`
+
+The separator is the small String literal `0x202c` (comma-space); its join
+call resolves via GOT `0x101466148` to Swift `joined(separator:)`. Error text
+constants are at `0x10124ae20`, `0x10124ae40` and `0x10124ae70`.
+`NativeApplicationResolution` now uses the reconstructed selector by default.
+Tests cover zero/one/multiple entries, duplicate entries, sorted error paths
+and exact descriptions, and running-target ambiguity propagating without
+installed or name fallback. This does not complete native enumeration or
+change the current production launch/authorization path.

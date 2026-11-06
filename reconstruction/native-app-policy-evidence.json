@@ -114,6 +114,24 @@
       "sha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
     },
     {
+      "name": "applicationCandidateSelection",
+      "start": "0x100262934",
+      "endExclusive": "0x100262b64",
+      "sha256": "5956462b91fbfd538f1218dcdff340ec297d318cc14ab7013495cfa6a3cd7e04"
+    },
+    {
+      "name": "applicationLookupErrorDescription",
+      "start": "0x1002632d0",
+      "endExclusive": "0x100263414",
+      "sha256": "5c9ecbc73b01d8ac51912bf7d39447abacb66454cf7101f0e7af32a9c10206e5"
+    },
+    {
+      "name": "applicationCandidatePathSort",
+      "start": "0x10026353c",
+      "endExclusive": "0x100263698",
+      "sha256": "1db2bf2b9151fbd893734b2f8cee607e6b1709ff949217a9126f74907e0e7309"
+    },
+    {
       "name": "applicationResolution",
       "start": "0x10026222c",
       "endExclusive": "0x1002624b8",
