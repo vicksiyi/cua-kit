@@ -226,6 +226,18 @@ for expected in ['100228894:', '10022896c:', '#0x101', '100228b94:', '100228ba0:
     '100229154:', '1002291cc:', '1002291d4:', '10022947c:',
     '1002294d8:', '100229508:', '0x1002289d4', '100228a14:']:
     assert expected in access_token_fetcher, expected
+runtime_parser = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x100292658','--stop-address=0x1002927e8',str(artifact)], text=True)
+assert read(0x100a4b36b,22)==b'NODE_REPL_RUNTIME_MODE'
+assert read(0x100b35597,25)==b'\x0cunsupported \xc0\x08 value: \xc0\x00'
+for expected in ['100292680:', 'std::env::_var_os', '100292694:', '100292698:',
+    '1002926c8:', '1002926d8:', 'from_utf8_lossy', '100292744:', '100292754:', '10029278c:']:
+    assert expected in runtime_parser, expected
+for expected in ['1002286d4:', '1002286f8:', '100228798:', 'Semaphore>::acquire',
+    '100228864:', '10022886c:', '100228a14:', '100228a44:', '100228a48:',
+    '100228a60:', '100228a68:', '100228a90:', 'Semaphore>::release',
+    '1002294d8:', '100229508:', '100229298:']:
+    assert expected in access_token_fetcher, expected
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -361,7 +373,7 @@ print(json.dumps({
             'take stdin then stdout; wrap stdout with 8192-byte BufReader'
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
-        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Request IDs, response matching and per-line timeout now implemented in send_request. Initialization implemented; reconnect and client connection reuse remain pending. Vendor CLI was not executed.'
+        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Request IDs, response matching and per-line timeout now implemented in send_request. Initialization implemented; client connection reuse and next-call recreation implemented; deployment integration pending. Vendor CLI was not executed.'
     },
     'appServerRequestProtocol': {
         'range':['0x10022753c','0x100228224'],
@@ -377,7 +389,7 @@ print(json.dumps({
             'missing result returns JSON null; read/EOF/timeout failures have distinct errors'
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
-        'limits':'Owned subprocess tests, not original-runtime differential execution. Initialization implemented; reviewed path has no initialized notification. Client connection reuse and production auth integration remain pending. Per-line timeout is not an overall deadline; write cancellation/resumption parity is not proven.'
+        'limits':'Owned subprocess tests, not original-runtime differential execution. Initialization implemented; reviewed path has no initialized notification. Client connection reuse and concrete token fetcher implemented; production auth integration remains pending. Per-line timeout is not an overall deadline; write cancellation/resumption parity is not proven.'
     },
     'appServerInitialization': {
         'source':'inlined spawn_initialized in AccessTokenFetcher async body',
@@ -392,7 +404,25 @@ print(json.dumps({
             'successful connection stored at 0x1002294d8; branch 0x100229508 -> 0x1002289d4 -> ordinary request send 0x100228a14; no initialized notification on this path'
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
-        'limits':'Pinned-build path only. Client shared-connection lifecycle still pending; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
+        'limits':'Pinned-build path only. Client shared-connection lifecycle implemented; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
+    },
+    'appServerClientLifecycle': {
+        'source':'inlined CodexAppServerClient::send_request in AccessTokenFetcher async body',
+        'instructionTextSha256':hashlib.sha256(access_token_fetcher.encode()).hexdigest(),
+        'reviewedBehavior':[
+            'runtime mode parse/rejection precedes acquiring shared connection mutex',
+            'mutex held across spawn_initialized and send_request; reuse existing Some connection',
+            'send_request Err drops connection and writes None at 0x100228a60..0x100228a68, releases guard and returns error without retry',
+            'successful RPC result releases guard before authToken/authMethod validation; parser rejection does not invalidate connection',
+            'initialize success stores new connection then continues ordinary request; initialization errors leave no cached connection'
+        ],
+        'runtimeMode':{
+            'range':['0x100292658','0x1002927e8'],
+            'instructionTextSha256':hashlib.sha256(runtime_parser.encode()).hexdigest(),
+            'behavior':'NODE_REPL_RUNTIME_MODE var_os: absent/empty default, exact gaas-browser special mode; all other values error using lossy display (including literal default)'
+        },
+        'implementation':['native/runtime-supervisor/src/codex_app_server.rs','native/runtime-supervisor/src/runtime_mode.rs','native/runtime-supervisor/src/codex_app_server_auth.rs'],
+        'limits':'Owned fixtures and static reconstruction. Native diagnostics, process-env integration with deployment, service wiring, cancellation during outstanding RPC and full live auth acceptance remain incomplete.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'

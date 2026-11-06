@@ -1,5 +1,5 @@
 //! App Server process boundary reconstructed from the pinned native spawn routine.
-//! Initialization and client-level connection reuse remain separate responsibilities.
+//! Process lifecycle, initialization and serialized shared-connection RPC.
 use crate::authenticated_fetch::FetchRuntimeMode;
 use std::{env::VarError, process::Stdio};
 use tokio::{
@@ -149,5 +149,69 @@ impl CodexAppServerConnection {
         // The reviewed native path proceeds directly to the caller's request.
         // It does not send an additional `initialized` notification here.
         Ok(connection)
+    }
+}
+
+/// Environment seam for owned tests; production reads the process environment
+/// each time, matching native mode validation before locking and before spawning.
+pub trait AppServerEnvironment: Send + Sync {
+    fn runtime_mode(&self) -> Result<FetchRuntimeMode, String>;
+    fn cli_path(&self) -> Result<String, VarError>;
+}
+pub struct ProcessAppServerEnvironment;
+impl AppServerEnvironment for ProcessAppServerEnvironment {
+    fn runtime_mode(&self) -> Result<FetchRuntimeMode, String> {
+        FetchRuntimeMode::from_process_env()
+    }
+    fn cli_path(&self) -> Result<String, VarError> {
+        std::env::var("CODEX_CLI_PATH")
+    }
+}
+
+pub struct CodexAppServerClient {
+    environment: std::sync::Arc<dyn AppServerEnvironment>,
+    connection: tokio::sync::Mutex<Option<CodexAppServerConnection>>,
+}
+impl Default for CodexAppServerClient {
+    fn default() -> Self {
+        Self::with_environment(std::sync::Arc::new(ProcessAppServerEnvironment))
+    }
+}
+impl CodexAppServerClient {
+    pub fn with_environment(environment: std::sync::Arc<dyn AppServerEnvironment>) -> Self {
+        Self {
+            environment,
+            connection: tokio::sync::Mutex::new(None),
+        }
+    }
+    pub async fn send_request(
+        &self,
+        method: &str,
+        params: Option<serde_json::Value>,
+    ) -> Result<serde_json::Value, String> {
+        let mode = self.environment.runtime_mode()?;
+        if matches!(mode, FetchRuntimeMode::GaasBrowser) {
+            return Err("Codex app-server is unavailable in gaas-browser runtime mode".into());
+        }
+        let mut connection = self.connection.lock().await;
+        if connection.is_none() {
+            let mode = self.environment.runtime_mode()?;
+            *connection = Some(
+                CodexAppServerConnection::spawn_initialized_with_cli_lookup(mode, || {
+                    self.environment.cli_path()
+                })
+                .await?,
+            );
+        }
+        let result = connection
+            .as_mut()
+            .expect("initialized connection")
+            .send_request(method, params)
+            .await;
+        if result.is_err() {
+            *connection = None;
+        }
+        // No retry of the failed call. The next caller creates a fresh connection.
+        result
     }
 }

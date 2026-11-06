@@ -119,3 +119,25 @@ impl FetchAuthProvider for CodexAppServerAuthProvider {
         Box::pin(async move { Ok(self.fetch_auth(true).await?.into_fetch_credentials()) })
     }
 }
+
+/// Concrete App Server acquisition path. Transport and auth-result validation
+/// are connected; the original failure-diagnostics sink remains unimplemented.
+pub struct CodexAppServerAccessTokenFetcher {
+    client: Arc<crate::codex_app_server::CodexAppServerClient>,
+}
+impl CodexAppServerAccessTokenFetcher {
+    pub fn new(client: Arc<crate::codex_app_server::CodexAppServerClient>) -> Self {
+        Self { client }
+    }
+}
+impl AccessTokenFetcher for CodexAppServerAccessTokenFetcher {
+    fn fetch_access_token(&self, refresh_token: bool) -> FetchFuture<'_, String> {
+        Box::pin(async move {
+            let result = self
+                .client
+                .send_request(AUTH_STATUS_METHOD, Some(auth_status_params(refresh_token)))
+                .await?;
+            access_token_from_auth_status(&result)
+        })
+    }
+}

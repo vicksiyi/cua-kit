@@ -326,3 +326,144 @@ time.sleep(10)
     .await
     .expect("initialization failure must release owned child");
 }
+
+use core_runtime_supervisor::codex_app_server::{AppServerEnvironment, CodexAppServerClient};
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc, Mutex,
+};
+struct ClientEnvironment {
+    path: String,
+    lookups: AtomicUsize,
+    mode: Mutex<Result<FetchRuntimeMode, String>>,
+}
+impl AppServerEnvironment for ClientEnvironment {
+    fn runtime_mode(&self) -> Result<FetchRuntimeMode, String> {
+        self.mode.lock().unwrap().clone()
+    }
+    fn cli_path(&self) -> Result<String, VarError> {
+        self.lookups.fetch_add(1, Ordering::SeqCst);
+        Ok(self.path.clone())
+    }
+}
+fn client(fixture: &OwnedFixture) -> (Arc<CodexAppServerClient>, Arc<ClientEnvironment>) {
+    let environment = Arc::new(ClientEnvironment {
+        path: fixture.cli(),
+        lookups: AtomicUsize::new(0),
+        mode: Mutex::new(Ok(FetchRuntimeMode::Default)),
+    });
+    (
+        Arc::new(CodexAppServerClient::with_environment(environment.clone())),
+        environment,
+    )
+}
+
+#[tokio::test]
+async fn client_serializes_reuses_and_recreates_only_after_failed_call() {
+    let fixture = rpc_fixture(
+        r#"
+import os,select
+for line in sys.stdin:
+ r=json.loads(line)
+ if r['method']=='initialize':
+  print(json.dumps({'id':r['id'],'result':None}),flush=True)
+  continue
+ # Once a request is received, no second request may arrive before its response.
+ concurrent=bool(select.select([sys.stdin],[],[],0.05)[0])
+ out={'id':r['id'],'result':{'pid':os.getpid(),'id':r['id'],'concurrent':concurrent}}
+ if r['method']=='reject': out={'id':r['id'],'error':{'message':'synthetic error'}}
+ print(json.dumps(out),flush=True)
+"#,
+    );
+    let (client, env) = client(&fixture);
+    let (a, b) = tokio::join!(
+        client.send_request("a", None),
+        client.send_request("b", None)
+    );
+    let (a, b) = (a.unwrap(), b.unwrap());
+    assert_eq!(a["pid"], b["pid"]);
+    assert_eq!(a["concurrent"], false);
+    assert_eq!(b["concurrent"], false);
+    let mut ids = vec![a["id"].as_str().unwrap(), b["id"].as_str().unwrap()];
+    ids.sort();
+    assert_eq!(ids, vec!["2", "3"]);
+    assert_eq!(env.lookups.load(Ordering::SeqCst), 1);
+    assert_eq!(
+        client.send_request("reject", None).await.unwrap_err(),
+        "synthetic error"
+    );
+    assert_eq!(
+        env.lookups.load(Ordering::SeqCst),
+        1,
+        "do not retry failing call"
+    );
+    let next = client.send_request("next", None).await.unwrap();
+    assert_eq!(next["id"], "2");
+    assert_ne!(next["pid"], a["pid"]);
+    assert_eq!(env.lookups.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+async fn client_mode_rejection_preserves_cached_connection_and_auth_parser_errors_do_not_reset_it()
+{
+    let fixture = rpc_fixture(
+        r#"
+for line in sys.stdin:
+ r=json.loads(line)
+ if r['method']=='initialize': result=None
+ elif r['method']=='getAuthStatus':
+  result={'authMethod':'chatgpt','authToken':'refreshed' if r['params']['refreshToken'] else ''}
+ else: result=r
+ print(json.dumps({'id':r['id'],'result':result}),flush=True)
+"#,
+    );
+    let (client, env) = client(&fixture);
+    use core_runtime_supervisor::codex_app_server_auth::{
+        AccessTokenFetcher, CodexAppServerAccessTokenFetcher,
+    };
+    let fetcher = CodexAppServerAccessTokenFetcher::new(client.clone());
+    assert_eq!(
+        fetcher.fetch_access_token(false).await.unwrap_err(),
+        "Codex auth token is unavailable"
+    );
+    *env.mode.lock().unwrap() = Ok(FetchRuntimeMode::GaasBrowser);
+    assert_eq!(
+        client.send_request("not-sent", None).await.unwrap_err(),
+        "Codex app-server is unavailable in gaas-browser runtime mode"
+    );
+    *env.mode.lock().unwrap() = Err("synthetic mode error".into());
+    assert_eq!(
+        client.send_request("not-sent", None).await.unwrap_err(),
+        "synthetic mode error"
+    );
+    *env.mode.lock().unwrap() = Ok(FetchRuntimeMode::Default);
+    assert_eq!(fetcher.fetch_access_token(true).await.unwrap(), "refreshed");
+    let last = client.send_request("last", None).await.unwrap();
+    assert_eq!(last["id"], "4");
+    assert_eq!(env.lookups.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn runtime_mode_parser_matches_empty_exact_and_lossy_error_rules() {
+    use core_runtime_supervisor::runtime_mode::NodeReplRuntimeMode as Mode;
+    use std::ffi::OsStr;
+    assert_eq!(Mode::from_env_value(None).unwrap(), Mode::Default);
+    assert_eq!(
+        Mode::from_env_value(Some(OsStr::new(""))).unwrap(),
+        Mode::Default
+    );
+    assert_eq!(
+        Mode::from_env_value(Some(OsStr::new("gaas-browser"))).unwrap(),
+        Mode::GaasBrowser
+    );
+    for value in ["default", " GAAS-BROWSER", "gaas-browser "] {
+        assert_eq!(
+            Mode::from_env_value(Some(OsStr::new(value))).unwrap_err(),
+            format!("unsupported NODE_REPL_RUNTIME_MODE value: {value}")
+        );
+    }
+    assert_eq!(
+        Mode::from_env_value(Some(&OsString::from_vec(vec![255]))).unwrap_err(),
+        "unsupported NODE_REPL_RUNTIME_MODE value: �"
+    );
+}

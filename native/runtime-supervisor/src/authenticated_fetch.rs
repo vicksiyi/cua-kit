@@ -48,11 +48,7 @@ pub fn outbound_passthrough_request(
     })
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FetchRuntimeMode {
-    Default,
-    GaasBrowser,
-}
+pub use crate::runtime_mode::NodeReplRuntimeMode as FetchRuntimeMode;
 
 #[derive(Debug)]
 pub enum ResolvedRequest {
