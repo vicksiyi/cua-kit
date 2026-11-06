@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { discoverEndpointFiles, IndependentBrowserUnavailableError } from "../packages/native-host/src/endpoint_configuration";
+import {
+  discoverEndpointFiles,
+  IndependentBrowserUnavailableError,
+} from "../packages/native-host/src/endpoint_configuration";
 import { verifyIndependentMcpBrowser } from "./independent-mcp-browser";
 import { createServer } from "node:http";
 import { chromeExtensionId } from "../packages/native-host/src/installation";
@@ -16,7 +19,13 @@ import { chromium } from "playwright";
 for (const deployment of ["native", "full"] as const)
   test(
     `packaged ${deployment} extension serves real CUA operations through the full MCP chain (${process.env.CUA_RUNTIME_SUPERVISOR ?? "installed"} supervisor)`,
-    { timeout: (process.env.CUA_LIVE_BAIDU_TEST === "1" || process.env.CUA_LIVE_SEARCH_TEST === "1") ? 240000 : 120000 },
+    {
+      timeout:
+        process.env.CUA_LIVE_BAIDU_TEST === "1" ||
+        process.env.CUA_LIVE_SEARCH_TEST === "1"
+          ? 240000
+          : 120000,
+    },
     async (t) => {
       const root = await mkdtemp(join(tmpdir(), "core-native-controller-"));
       t.after(() => rm(root, { recursive: true, force: true }));
@@ -70,16 +79,32 @@ for (const deployment of ["native", "full"] as const)
         assert.ok(installed.includes(extensionId));
         assert.match(installed, /project .env was not changed/);
       }
-      const hostRegistration=JSON.parse(await readFile(join(root,"profile","NativeMessagingHosts","com.core.cua.json"),"utf8"));
-      const nativeConfig=JSON.parse(await readFile(join(dirname(hostRegistration.path),"config.json"),"utf8"));
-      assert.equal(nativeConfig.runtime?.kind,"rust","The installed browser host must be native Rust");
+      const hostRegistration = JSON.parse(
+        await readFile(
+          join(root, "profile", "NativeMessagingHosts", "com.core.cua.json"),
+          "utf8",
+        ),
+      );
+      const nativeConfig = JSON.parse(
+        await readFile(
+          join(dirname(hostRegistration.path), "config.json"),
+          "utf8",
+        ),
+      );
+      assert.equal(
+        nativeConfig.runtime?.kind,
+        "rust",
+        "The installed browser host must be native Rust",
+      );
       const clickedMarkers = new Set<string>();
       const actionMarker = `action-completed-marker-${randomUUID()}`;
       const pageServer = createServer((request, response) => {
-        const incoming=new URL(request.url!, 'http://fixture.invalid');
-        if (incoming.pathname==='/clicked' && request.method==='POST') {
-          clickedMarkers.add(incoming.searchParams.get('marker') ?? '');
-          response.writeHead(204);response.end();return;
+        const incoming = new URL(request.url!, "http://fixture.invalid");
+        if (incoming.pathname === "/clicked" && request.method === "POST") {
+          clickedMarkers.add(incoming.searchParams.get("marker") ?? "");
+          response.writeHead(204);
+          response.end();
+          return;
         }
         response.setHeader("Content-Type", "text/html");
         response.end(
@@ -177,11 +202,17 @@ for (const deployment of ["native", "full"] as const)
           } finally { port.disconnect(); }
         })()`);
         assert.deepEqual(controls, [
-          { jsonrpc: "2.0", id: "hello", result: {
-            manifestSchemaVersion: 2, nativeHostProtocolVersion: 2,
-            nativeHostVersion: "0.1.0",
-            supportedMethods: ["codexRuntime/openLocalFile"], supportedProtocolVersions: [2],
-          } },
+          {
+            jsonrpc: "2.0",
+            id: "hello",
+            result: {
+              manifestSchemaVersion: 2,
+              nativeHostProtocolVersion: 2,
+              nativeHostVersion: "0.1.0",
+              supportedMethods: ["codexRuntime/openLocalFile"],
+              supportedProtocolVersions: [2],
+            },
+          },
           { jsonrpc: "2.0", id: "status", result: { phase: "idle" } },
         ]);
         const transport = await connectNativeHost(
@@ -308,20 +339,36 @@ for (const deployment of ["native", "full"] as const)
           assert.equal(captured.truncated, false);
           // A claimed user tab retains its original group; only agent-created
           // tabs are grouped by the original BrowserSession contract.
-          const priorGroup = await worker.evaluate((id) => chrome.tabs.get(id).then(t => t.groupId), Number(tab.id));
+          const priorGroup = await worker.evaluate(
+            (id) => chrome.tabs.get(id).then((t) => t.groupId),
+            Number(tab.id),
+          );
           await peer.sendRequest("claimUserTab", {
-            session_id: "native-live", turn_id: "read-1", tabId: Number(tab.id),
+            session_id: "native-live",
+            turn_id: "read-1",
+            tabId: Number(tab.id),
           });
-          assert.equal(await worker.evaluate((id) => chrome.tabs.get(id).then(t => t.groupId), Number(tab.id)), priorGroup);
+          assert.equal(
+            await worker.evaluate(
+              (id) => chrome.tabs.get(id).then((t) => t.groupId),
+              Number(tab.id),
+            ),
+            priorGroup,
+          );
           await page.bringToFront();
           await peer.sendRequest("moveMouse", {
-            session_id: "native-live", turn_id: "read-1", tabId: Number(tab.id),
-            x: 140, y: 100, waitForArrival: false,
+            session_id: "native-live",
+            turn_id: "read-1",
+            tabId: Number(tab.id),
+            x: 140,
+            y: 100,
+            waitForArrival: false,
           });
           // Read the extension's isolated world and closed overlay shadow root.
           // No debug endpoint or test hook is added to the shipped extension.
           const observeCursor = async () => {
-            const [observation] = await worker.evaluate(`chrome.scripting.executeScript({
+            const [observation] =
+              await worker.evaluate(`chrome.scripting.executeScript({
               target: { tabId: ${Number(tab.id)} }, func: async () => {
                 const response = await chrome.runtime.sendMessage({type: "GET_AGENT_CURSOR_STATE"});
                 const root = document.getElementById("codex-agent-overlay-root");
@@ -344,12 +391,22 @@ for (const deployment of ["native", "full"] as const)
           const waitCursor = async (visible: boolean, ended = false) => {
             for (let attempt = 0; attempt < 50; attempt++) {
               const view = await observeCursor();
-              if (visible
-                ? view.state?.isVisible === true && view.state.cursor?.visible === true && view.loaded && view.painted
-                : view.state?.isVisible === false && view.hidden && (!ended || view.state.sessionId === null)) return;
-              await new Promise(resolve => setTimeout(resolve, 100));
+              if (
+                visible
+                  ? view.state?.isVisible === true &&
+                    view.state.cursor?.visible === true &&
+                    view.loaded &&
+                    view.painted
+                  : view.state?.isVisible === false &&
+                    view.hidden &&
+                    (!ended || view.state.sessionId === null)
+              )
+                return;
+              await new Promise((resolve) => setTimeout(resolve, 100));
             }
-            assert.fail(`Cursor did not become ${visible ? "visible" : "hidden"}${ended ? " after turn cleanup" : ""}`);
+            assert.fail(
+              `Cursor did not become ${visible ? "visible" : "hidden"}${ended ? " after turn cleanup" : ""}`,
+            );
           };
           await waitCursor(true);
           const otherTab = await context.newPage();
@@ -359,9 +416,13 @@ for (const deployment of ["native", "full"] as const)
             await waitCursor(false);
             await page.bringToFront();
             await waitCursor(true);
-          } finally { await otherTab.close(); }
+          } finally {
+            await otherTab.close();
+          }
           await peer.sendRequest("nameSession", {
-            session_id: "native-live", turn_id: "read-1", name: "Core visual acceptance",
+            session_id: "native-live",
+            turn_id: "read-1",
+            name: "Core visual acceptance",
           });
           const created = await peer.sendRequest("createTab", {
             session_id: "native-live",
@@ -371,16 +432,25 @@ for (const deployment of ["native", "full"] as const)
           assert.notEqual(created.id, tab.id);
           const group = await worker.evaluate(async (id) => {
             const current = await chrome.tabs.get(id);
-            return current.groupId >= 0 ? chrome.tabGroups.get(current.groupId) : null;
+            return current.groupId >= 0
+              ? chrome.tabGroups.get(current.groupId)
+              : null;
           }, created.id);
-          assert.equal(group?.title, "Core visual acceptance", "Agent-created tab must have its named Chrome group");
+          assert.equal(
+            group?.title,
+            "Core visual acceptance",
+            "Agent-created tab must have its named Chrome group",
+          );
           await peer.sendRequest("markTab", {
-            session_id: "native-live", turn_id: "read-1", tabId: created.id, status: "deliverable",
+            session_id: "native-live",
+            turn_id: "read-1",
+            tabId: created.id,
+            status: "deliverable",
           });
           const disposable = await peer.sendRequest("createTab", {
-            session_id: "native-live", turn_id: "read-1",
+            session_id: "native-live",
+            turn_id: "read-1",
           });
-
 
           await peer.sendRequest("turnEnded", {
             session_id: "native-live",
@@ -389,9 +459,20 @@ for (const deployment of ["native", "full"] as const)
           await page.bringToFront();
           await waitCursor(false, true);
           const remaining = await worker.evaluate(() => chrome.tabs.query({}));
-          assert(!remaining.some(t => t.id === disposable.id), "Unmarked agent tab closes at turn end");
-          assert.equal(remaining.find(t => t.id === created.id)?.groupId, -1, "Deliverable survives but leaves managed group");
-          assert.equal(remaining.find(t => t.id === Number(tab.id))?.groupId, priorGroup, "User tab and its grouping survive cleanup");
+          assert(
+            !remaining.some((t) => t.id === disposable.id),
+            "Unmarked agent tab closes at turn end",
+          );
+          assert.equal(
+            remaining.find((t) => t.id === created.id)?.groupId,
+            -1,
+            "Deliverable survives but leaves managed group",
+          );
+          assert.equal(
+            remaining.find((t) => t.id === Number(tab.id))?.groupId,
+            priorGroup,
+            "User tab and its grouping survive cleanup",
+          );
         } finally {
           await transport.close();
         }
@@ -400,23 +481,50 @@ for (const deployment of ["native", "full"] as const)
           pageUrl,
           hostDirectory,
           "chrome",
-          process.env.CUA_LIVE_DEEPSEEK_TEST === "1" && process.env.CUA_LIVE_BAIDU_TEST !== "1" && process.env.CUA_LIVE_SEARCH_TEST !== "1"
-            ? {question:`使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,expectedAnswer:new RegExp(actionMarker)} : undefined,
-          process.env.CUA_LIVE_BAIDU_TEST !== "1" && process.env.CUA_LIVE_SEARCH_TEST !== "1" && process.env.CUA_BROWSER_BAIDU_PROBE !== "1" ? async () => {
-            // Independent HTTP evidence survives tabs created outside Playwright's page inventory.
-            for(let attempt=0;attempt<100 && !clickedMarkers.has(actionMarker);attempt++) await new Promise(resolve=>setTimeout(resolve,10));
-            assert.ok(clickedMarkers.has(actionMarker),'Fixture server must observe the actual random button action');
-            // The fixed MCP scenario has not ended its turn yet. Prove that the
-            // public locator click itself reaches BrowserUi/extension overlay;
-            // do not call moveMouse or inject cursor state in this assertion.
-            if (process.env.CUA_LIVE_DEEPSEEK_TEST !== "1") {
-              const actionTabs = await worker.evaluate((url) => chrome.tabs.query({}).then(tabs => tabs.filter(t => t.url === url)), pageUrl + "next");
-              assert.equal(actionTabs.length, 1);
-              const actionTabId = actionTabs[0].id!;
-              await worker.evaluate((id) => chrome.tabs.update(id, {active: true}), actionTabId);
-              let clickCursorVerified = false;
-              for (let attempt = 0; attempt < 50; attempt++) {
-                const [view] = await worker.evaluate(`chrome.scripting.executeScript({
+          process.env.CUA_LIVE_DEEPSEEK_TEST === "1" &&
+            process.env.CUA_LIVE_BAIDU_TEST !== "1" &&
+            process.env.CUA_LIVE_SEARCH_TEST !== "1"
+            ? {
+                question: `使用 Chrome 访问 ${pageUrl}next，点击 Run action 按钮，告诉我点击后页面中段落的完整文字。请实际操作并读取结果。`,
+                expectedAnswer: new RegExp(actionMarker),
+              }
+            : undefined,
+          process.env.CUA_LIVE_BAIDU_TEST !== "1" &&
+            process.env.CUA_LIVE_SEARCH_TEST !== "1" &&
+            process.env.CUA_BROWSER_BAIDU_PROBE !== "1"
+            ? async () => {
+                // Independent HTTP evidence survives tabs created outside Playwright's page inventory.
+                for (
+                  let attempt = 0;
+                  attempt < 100 && !clickedMarkers.has(actionMarker);
+                  attempt++
+                )
+                  await new Promise((resolve) => setTimeout(resolve, 10));
+                assert.ok(
+                  clickedMarkers.has(actionMarker),
+                  "Fixture server must observe the actual random button action",
+                );
+                // The fixed MCP scenario has not ended its turn yet. Prove that the
+                // public locator click itself reaches BrowserUi/extension overlay;
+                // do not call moveMouse or inject cursor state in this assertion.
+                if (process.env.CUA_LIVE_DEEPSEEK_TEST !== "1") {
+                  const actionTabs = await worker.evaluate(
+                    (url) =>
+                      chrome.tabs
+                        .query({})
+                        .then((tabs) => tabs.filter((t) => t.url === url)),
+                    pageUrl + "next",
+                  );
+                  assert.equal(actionTabs.length, 1);
+                  const actionTabId = actionTabs[0].id!;
+                  await worker.evaluate(
+                    (id) => chrome.tabs.update(id, { active: true }),
+                    actionTabId,
+                  );
+                  let clickCursorVerified = false;
+                  for (let attempt = 0; attempt < 50; attempt++) {
+                    const [view] =
+                      await worker.evaluate(`chrome.scripting.executeScript({
                   target: {tabId: ${actionTabId}}, func: async () => {
                     const {state} = await chrome.runtime.sendMessage({type: "GET_AGENT_CURSOR_STATE"});
                     const root = document.getElementById("codex-agent-overlay-root");
@@ -435,80 +543,68 @@ for (const deployment of ["native", "full"] as const)
                       atButton: cursor && cursor.x >= rect.left && cursor.x <= rect.right && cursor.y >= rect.top && cursor.y <= rect.bottom};
                   }
                 })`);
-                clickCursorVerified = view.result?.session === "mcp-browser-live" && view.result.visible &&
-                  view.result.loaded && view.result.opacity > 0.9 && view.result.atButton;
-                if (clickCursorVerified) break;
-                await new Promise(resolve => setTimeout(resolve, 100));
+                    clickCursorVerified =
+                      view.result?.session === "mcp-browser-live" &&
+                      view.result.visible &&
+                      view.result.loaded &&
+                      view.result.opacity > 0.9 &&
+                      view.result.atButton;
+                    if (clickCursorVerified) break;
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                  }
+                  assert(
+                    clickCursorVerified,
+                    "MCP locator click must publish a rendered Agent cursor at the clicked button",
+                  );
+                }
               }
-              assert(clickCursorVerified, "MCP locator click must publish a rendered Agent cursor at the clicked button");
-            }
-
-          } : undefined,
+            : undefined,
         );
-      } catch (error) {
-        if (process.env.CUA_LIVE_BAIDU_TEST === "1") {
-          // Preserve observed public-page evidence before deleting the temporary
-          // profile. Never collect endpoint descriptors or model credentials.
-          const artifacts = await mkdtemp(
-            join(tmpdir(), "core-baidu-failure-"),
-          );
-          const observations: unknown[] = [];
-          for (const [index, candidate] of context.pages().entries()) {
-            const url = candidate.url();
-            if (!/^https:\/\/(?:[a-z0-9-]+\.)?baidu\.com(?:\/|$)/i.test(url))
-              continue;
-            const screenshot = join(artifacts, `page-${index}.png`);
-            const observed = await Promise.allSettled([
-              candidate.title(),
-              candidate.locator("body").innerText({ timeout: 5000 }),
-              candidate.screenshot({ path: screenshot, timeout: 5000 }),
-            ]);
-            observations.push({
-              url,
-              title:
-                observed[0].status === "fulfilled" ? observed[0].value : null,
-              text:
-                observed[1].status === "fulfilled"
-                  ? observed[1].value.slice(0, 10000)
-                  : null,
-              screenshot:
-                observed[2].status === "fulfilled" ? screenshot : null,
-            });
-          }
-          await writeFile(
-            join(artifacts, "observations.json"),
-            JSON.stringify(observations, null, 2),
-          );
-          console.error("BAIDU FAILURE EVIDENCE", JSON.stringify(observations));
-        }
-        throw error;
+        // Failure diagnostics come from the existing MCP/tool trace only.
+        // Never bypass an observation denial by reading the page through Playwright.
       } finally {
         await context.close();
       }
       // Closing the owned browser must terminate the registered native host,
       // not leave a discoverable descriptor pointing at a dead socket.
       assert.ok(launchedEndpointFile);
-      const lifecyclePath = join(dirname(hostRegistration.path), "lifecycle.jsonl");
+      const lifecyclePath = join(
+        dirname(hostRegistration.path),
+        "lifecycle.jsonl",
+      );
       let terminalEvent: string | undefined;
       let remainingEndpoints: string[] = [];
       for (let attempt = 0; attempt < 100; attempt++) {
         try {
           remainingEndpoints = await discoverEndpointFiles(hostDirectory);
         } catch (error) {
-          if (!(error instanceof IndependentBrowserUnavailableError) ||
-              error.reason !== "no_endpoints") throw error;
+          if (
+            !(error instanceof IndependentBrowserUnavailableError) ||
+            error.reason !== "no_endpoints"
+          )
+            throw error;
           remainingEndpoints = [];
         }
         const events = (await readFile(lifecyclePath, "utf8"))
-          .trim().split("\n").map((line) => JSON.parse(line));
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line));
         terminalEvent = events.at(-1)?.event;
-        if (!remainingEndpoints.includes(launchedEndpointFile) &&
-            terminalEvent === "input-ended") break;
+        if (
+          !remainingEndpoints.includes(launchedEndpointFile) &&
+          terminalEvent === "input-ended"
+        )
+          break;
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
-      assert.ok(!remainingEndpoints.includes(launchedEndpointFile),
-        "Closing the owned browser must remove its native endpoint");
-      assert.equal(terminalEvent, "input-ended",
-        "Chrome Native Messaging EOF must reach native lifecycle cleanup");
+      assert.ok(
+        !remainingEndpoints.includes(launchedEndpointFile),
+        "Closing the owned browser must remove its native endpoint",
+      );
+      assert.equal(
+        terminalEvent,
+        "input-ended",
+        "Chrome Native Messaging EOF must reach native lifecycle cleanup",
+      );
     },
   );

@@ -161,3 +161,16 @@ summary-only 调用成功，之后产生正常最终回答，没有耗尽预算�
 CUA_LIVE_DEEPSEEK_TEST=1 CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-name-pattern='packaged native extension' reconstruction/extension-native-controller.test.ts
 ```
 该入口会调用真实模型并使用本地 .env；运行日志仅保留本机，未上传页面/请求轨迹或凭证。
+
+## 百度真实模型任务：当前拒绝边界
+
+最新 CUA_LIVE_BAIDU_TEST=1/native 扩展运行约 11.7 秒失败：页面跳转涉及
+https://wappass.baidu.com，受控测试的 origin allowlist 未授权该站点，浏览器观察被拒绝。
+Agent 返回 blocked 并停止，没有取得可验收的搜索结果。此处是 fixture 的授权决定，
+不能表述为真实用户点击了拒绝，也不能据此推断浏览器不能打开或该页面必然是 CAPTCHA。
+没有为绕过拒绝而扩展 allowlist、换接口或重试该页面。
+
+检查发现扩展测试失败处理曾直接通过 Playwright 再读页面并截图；已删除这条兜底诊断路径。
+失败只使用既有 MCP/tool trace，浏览器关闭清理仍在 finally 中执行。
+受控页面 native MCP 回归和 AgentLoop policy-stop 测试用于验证清理与停止行为；
+不把它们当作此次百度搜索成功证据。
