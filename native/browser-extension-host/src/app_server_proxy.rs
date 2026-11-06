@@ -214,3 +214,15 @@ impl AppServerProxy {
             .clone()
     }
 }
+
+impl AppServerProxy {
+    /// Release the shared runtime lock before consulting the persisted defaults.
+    pub fn runtime_config(&self) -> serde_json::Value {
+        let snapshot = self
+            .runtime
+            .lock()
+            .expect("app-server proxy state mutex poisoned")
+            .clone();
+        snapshot.response_value()
+    }
+}

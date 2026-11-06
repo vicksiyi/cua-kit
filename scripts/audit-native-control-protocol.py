@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+defaults_fallback = disassemble(0x100015e00, 0x100015f50)
 manager_shutdown = disassemble(0x10001abec, 0x10001b268)
 proxy_drop = disassemble(0x1000153c0, 0x10001547c)
 manager_ensure = disassemble(0x100017754, 0x10001a87c)
@@ -678,6 +679,21 @@ result = {
         'statusReadsSession': evidence(manager_status, 0x10001a988, 0x10001a998, ['AppServerProxy>::runtime_session_id']),
         'contract': 'Preserve bound host in proxy; localAppServerUrl formats ws://{host}:{actualPort}?token={token} directly with no slash or clientId. Updating config does not rebind or replace stored host. Session accessor clones under lock, preserves empty string, panics on poison. Status checks proxy presence and session only, not child health.',
         'integrationStatus': 'Endpoint/state tests cover original host after refresh, raw bracketed host, empty/poisoned session, and status transitions across restart and shutdown with no children. Complete ensure response including selected/runtimeConfig remains open.',
+    },
+    'runtimeConfigResponse': {
+        'implementation': 'native/browser-extension-host/src/app_server_runtime_state.rs::ProxyRuntimeState::response_value',
+        'snapshotUnlock': evidence(manager_ensure, 0x100019270, 0x1000192bc, ['Mutex>::lock', 'ProxyRuntimeState as core::clone::Clone', 'Mutex>::unlock']),
+        'optionalClientNull': evidence(manager_ensure, 0x100019308, 0x100019398, ['#0x278', '#0x0', '#0x3', 'BTreeMap']),
+        'readPersistedState': evidence(manager_ensure, 0x1000195b0, 0x100019668, ['#0x2a8', 'Path>::_join', 'read_to_string', 'serde_json::de::from_trait', 'index_into']),
+        'absentHomeVersusReadFailure': evidence(manager_ensure, 0x100019778, 0x1000197bc, ['strb\twzr', 'desktop_agent_mode_defaults_value']),
+        'cloneObjectsOnly': evidence(manager_ensure, 0x1000197c0, 0x100019830, ['#0x5', 'Map', 'Clone', 'insert']),
+        'emptyMapsFallback': evidence(defaults_fallback, 0x100015e34, 0x100015ef0, ['#0x181', '#0x193', '#0x5', 'BTreeMap']),
+        'fileName': raw[0x90a33:0x90a4b].decode(),
+        'stateKey': raw[0x90a4b:0x90a68].decode(),
+        'inputKeys': [raw[0x90a68:0x90a7d].decode(), raw[0x90a7d:0x90aac].decode()],
+        'outputKeys': [raw[0x90181:0x90193].decode(), raw[0x90193:0x901b6].decode()],
+        'contract': 'Clone runtime under lock then release. Return browserClientPath, browserServicePath, codexCliPath, desktopAgentModeDefaults, nodePath, nodeReplPath, platform; raw paths and explicit nulls, no codexHome field. No configured home yields null defaults. Otherwise read home/.codex-global-state.json; parse/read/missing atom-object failures yield two empty maps. Only clone two named object maps without filtering nested values; reread each call.',
+        'integrationStatus': 'Owned temporary-file tests cover missing/malformed/non-UTF8 state, invalid atom/map types, arbitrary nested JSON preservation, extra-field exclusion and rereading. Proxy snapshot adapter exists; complete ensure response/control wiring remains open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

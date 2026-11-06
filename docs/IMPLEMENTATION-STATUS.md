@@ -17,6 +17,14 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Runtime configuration response now clones the proxy snapshot under lock and
+projects the native seven fields, preserving raw paths and optional nulls.
+Desktop mode defaults read only two object maps from configured home's persisted
+atom state: absent home yields null; read/parse/type failures yield empty maps.
+Owned temporary-file coverage verifies rereads, nested JSON, invalid UTF-8 and
+exclusion of unrelated persisted data. Eighteen proxy/runtime tests pass.
+Complete ensure response `selected` metadata and control integration remain open.
+
 Proxy endpoint/state projection now preserves the originally bound host and actual
 port; URL formatting matches the native `ws://host:port?token=token` template.
 Configuration refresh leaves that endpoint unchanged. Status now has a proxy-handle
