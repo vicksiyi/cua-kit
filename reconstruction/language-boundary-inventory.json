@@ -4439,7 +4439,7 @@
     {
       "path": "scripts/test-native-control-lifecycle.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "5f5ba24fbcd0df78cc7a7b6e8a25efafdaf4952980ed9d82ade2358885e6067e"
+      "sha256": "d6f733915c4cffc3a2b950be01644bf0f6b25e16f78e362a3b5b50bf91ee5651"
     },
     {
       "path": "scripts/test-native-host-router.mjs",
