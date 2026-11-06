@@ -1970,6 +1970,25 @@
       ],
       "interpretation": "Action witnesses are not raw AX action-name lists. The successful native action read is combined with computed disclosure actions before description mapping.",
       "limitations": "Complete Bool decoder, action storage/description mapping and array combination semantics still need recovery; no fabricated action implementation is installed."
+    },
+    "boolDecoder": {
+      "start": "0x10070fc2c",
+      "endExclusive": "0x1007102c8",
+      "machineCodeSha256": "dfe122b1e24d558d517aed72a5bfc939a5eae608d6828dfdbf19b917c4f2f4f4",
+      "targetMetadata": "0x101466880 = libswiftCore/_$sSbN",
+      "dispatchOrder": [
+        "AXUIElement",
+        "AXTextMarker",
+        "AXTextMarkerRange",
+        "AXValue",
+        "CFArray",
+        "ordinary object"
+      ],
+      "ordinaryCast": "0x10070ffe0",
+      "optionalNilTag": 2,
+      "interpretation": "Concrete Bool specialization retains CF dispatch, AXValue error interpretation and Foundation conditional Bool conversion. Do not replace dynamic casting with NSNumber.boolValue or string truthiness.",
+      "implementation": "native/macos/Sources/CuaHelper/AXBoolDecoding.swift",
+      "limitations": "Decoder only; complete action data types, description mapping and supplemental-action wiring remain pending."
     }
   },
   "transactionScopeEvidence": {

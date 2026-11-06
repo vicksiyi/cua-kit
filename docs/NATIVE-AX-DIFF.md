@@ -1003,3 +1003,14 @@ attributeUnsupported（常量 -25212/-25205 固定在 0x101570d18），其它状
 已固定 witness、分支与补充动作机器码证据。尚需恢复完整 Bool decoder、动作数据类型、
 描述映射与数组组合的细节，未提前安装简化的动作实现。直接协议要求中已确认七项语义，
 剩余三项及父协议仍待核查。
+
+## Bool 专用解码（2026-11-07）
+
+补齐展开/折叠判断所依赖的 `0x10070fc2c..0x1007102c8`。GOT 0x101466880
+绑定 Swift.Bool；普通对象路径调用 Swift dynamic cast，Optional nil 标签为 2。
+保留 AXUIElement、marker、marker range、AXValue、CFArray、普通对象的类型分派顺序，
+复用已有解码组件。不能替换成 NSNumber.boolValue 或“非空字符串就是真”的规则。
+
+新增 AXBoolDecoding.swift。测试使用实际 NSNumber（0/1/2/-1/0.5）、布尔对象、字符串、
+空值、字典、数组、元素、文本标记及 AXError，检查 Foundation 转换和严格模式错误类型。
+测试通过；动作数据类型与补充动作接线仍未完成，本次未伪造可操作动作。

@@ -853,6 +853,18 @@ element_storage_evidence['actionWitnesses']={
     'interpretation':'Action witnesses are not raw AX action-name lists. The successful native action read is combined with computed disclosure actions before description mapping.',
     'limitations':'Complete Bool decoder, action storage/description mapping and array combination semantics still need recovery; no fabricated action implementation is installed.',
 }
+bool_binding=next((line for line in fixups.splitlines() if '0x101466880' in line.lower()),'')
+if 'libswiftCore/_$sSbN' not in bool_binding: raise SystemExit('Bool specialization target changed')
+element_storage_evidence['boolDecoder']={
+    'start':'0x10070fc2c','endExclusive':'0x1007102c8',
+    'machineCodeSha256':hashlib.sha256(read_virtual(0x10070fc2c,0x69c)).hexdigest(),
+    'targetMetadata':'0x101466880 = libswiftCore/_$sSbN',
+    'dispatchOrder':['AXUIElement','AXTextMarker','AXTextMarkerRange','AXValue','CFArray','ordinary object'],
+    'ordinaryCast':'0x10070ffe0','optionalNilTag':2,
+    'interpretation':'Concrete Bool specialization retains CF dispatch, AXValue error interpretation and Foundation conditional Bool conversion. Do not replace dynamic casting with NSNumber.boolValue or string truthiness.',
+    'implementation':'native/macos/Sources/CuaHelper/AXBoolDecoding.swift',
+    'limitations':'Decoder only; complete action data types, description mapping and supplemental-action wiring remain pending.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))
