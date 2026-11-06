@@ -1049,3 +1049,24 @@ Algorithms.UniquedSequence 路径。它与外层追加是不同边界，仍需�
 AXUIElementCopyActionNames 数组直接视为本 helper 的完整上游实现。
 当前错误报告器保持原错误对象，但原版日志类别/格式、原生 provider、动作描述与生产观察器
 接线尚未完成；这些测试不证明真实应用的动作展示/执行已经完整对齐。
+
+
+## 系统动作名称读取与 Swift Algorithms（2026-11-07）
+
+原分支 0x1006f94a8 调用 AXUIElementCopyActionNames，仅 success 继续；即使输出
+数组非空，任何其它 AXError 也先抛出 UIElementError.axError。nil 或整个 NSArray 到
+[String] 的条件桥接失败返回空数组，而不是过滤非法元素后保留部分名称。
+
+0x1006f9694 调用 Algorithms.UniquedSequence.Iterator.init；投影 0x1006fb4d8
+复制并 retain 原 String，确认按字符串自身去重。新增 AXActionReading.swift，使用
+Swift Algorithms 的 uniqued()，保留首次出现顺序、大小写区别和 Swift.String Unicode
+相等语义，然后包装 UIElementAction。没有重写第三方去重算法。
+
+Package.swift 引入并锁定 swift-algorithms 1.2.1；这是明确选择的重建依赖版本，尚无证据
+证明安装包使用同一版本。其间接依赖 swift-numerics 由 Package.resolved 锁定。
+API/保序依据：[官方 Unique.swift](https://github.com/apple/swift-algorithms/blob/1.2.1/Sources/Algorithms/Unique.swift)。
+
+测试先用 SwiftPM 构建真实依赖，再链接 Algorithms/RealModule 对象运行独立 Swift 程序，
+使用实际 Foundation 数组桥接、重复字符串和 Unicode 不同编码、
+混合类型、nil/空数组、错误状态与非空输出组合验证。readSystemAXActions 是显式系统分支，
+未冒充原版 TaskLocal MockProvider 分派，也未接入完整动作描述/生产观察器。

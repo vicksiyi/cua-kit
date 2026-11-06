@@ -875,6 +875,20 @@ element_storage_evidence['actionArrayComposition']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementActions.swift',
     'limitations':'Original native action reader includes separate conversion/uniquing and provider dispatch; these are not replaced by array concatenation. Original logging category/format and production action-description wiring remain pending.',
 }
+action_array_class=next((line for line in fixups.splitlines() if '0x10151ef98' in line.lower()),'')
+if '_OBJC_CLASS_$_NSArray' not in action_array_class: raise SystemExit('Action-name array class changed')
+element_storage_evidence['systemActionReader']={
+    'copyCall':'0x1006f94a8 -> AXUIElementCopyActionNames',
+    'statusGate':'0x1006f94ac: only success continues; other statuses throw UIElementError.axError',
+    'arrayClass':'0x10151ef98 = NSArray','elementType':'0x1014664b8 = Swift.String',
+    'uniquedIterator':'0x1006f9694 -> Algorithms.UniquedSequence.Iterator.init',
+    'identityProjection':'0x1006fb4d8..0x1006fb4e4 copies String words and retains its object',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1006f949c,0x1006f9590),(0x1006f95e4,0x1006f97ec),(0x1006fb4d8,0x1006fb4e4)]],
+    'implementation':'native/macos/Sources/CuaHelper/AXActionReading.swift',
+    'dependency':'swift-algorithms 1.2.1 selected and pinned; original linked version is not established',
+    'limitations':'System branch only; original TaskLocal MockProvider selection and complete production action wiring remain pending.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

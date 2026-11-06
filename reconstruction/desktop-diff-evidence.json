@@ -2002,6 +2002,34 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementActions.swift",
       "limitations": "Original native action reader includes separate conversion/uniquing and provider dispatch; these are not replaced by array concatenation. Original logging category/format and production action-description wiring remain pending."
     },
+    "systemActionReader": {
+      "copyCall": "0x1006f94a8 -> AXUIElementCopyActionNames",
+      "statusGate": "0x1006f94ac: only success continues; other statuses throw UIElementError.axError",
+      "arrayClass": "0x10151ef98 = NSArray",
+      "elementType": "0x1014664b8 = Swift.String",
+      "uniquedIterator": "0x1006f9694 -> Algorithms.UniquedSequence.Iterator.init",
+      "identityProjection": "0x1006fb4d8..0x1006fb4e4 copies String words and retains its object",
+      "blocks": [
+        {
+          "start": "0x1006f949c",
+          "endExclusive": "0x1006f9590",
+          "machineCodeSha256": "bcbdba695549864ccd5e5fe11224b3496ce889bb5759f7ea81a838f8432fbde2"
+        },
+        {
+          "start": "0x1006f95e4",
+          "endExclusive": "0x1006f97ec",
+          "machineCodeSha256": "8760943413fda3bf28ea9977c6ad991952ba69f5e021c0648922738f933e7680"
+        },
+        {
+          "start": "0x1006fb4d8",
+          "endExclusive": "0x1006fb4e4",
+          "machineCodeSha256": "30216011351cd5293a92ae2f81b074a9d6b99b1412f981a3f0b33a08a7e6e668"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/AXActionReading.swift",
+      "dependency": "swift-algorithms 1.2.1 selected and pinned; original linked version is not established",
+      "limitations": "System branch only; original TaskLocal MockProvider selection and complete production action wiring remain pending."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",
