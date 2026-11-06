@@ -495,3 +495,30 @@ sequence proves queued data survives before the identical error is rethrown.
 Swift build and these tests pass. No vendor process or model request is used.
 Timed nextMessage handling, request matching and process creation still remain
 before a complete native policy connection can be claimed.
+
+### Message timeout race and cancellation (2026-11-07)
+
+`NativeJSONRPCMessageReader` reconstructs the two-child throwing task group in
+`nextMessage(timeout:method:)`. The body at `0x100dd0e34` adds a line-buffer read
+and a timeout task, then waits for the first result. Both success at
+`0x100dd11b4` and failure at `0x100dd1240` call the stub `0x1011511e8`, whose
+GOT slot `0x101469620` binds Swift `ThrowingTaskGroup.cancelAll`. The optional
+first result is flattened to `String?`; the structured group settles before the
+outer JSON dictionary decoder runs (`0x100dd0740..<0x100dd0958`).
+
+The timer (`0x100dd16c4..<0x100dd1864`) multiplies seconds by the Double constant
+`0x41cdcd6500000000` (1e9), converts to UInt64, and invokes
+`Task<Never,Never>.sleep(nanoseconds:)` through GOT `0x1014695c0`. A successful
+sleep throws the requestTimedOut case carrying the method; sleep cancellation
+propagates directly. The reconstruction preserves this conversion and does not
+invent timeout clamping, retries, or a detached timer. Its local ReadError is a
+host representation, not a claim that the complete original error enum and its
+localized descriptions have already been reconstructed.
+
+The macOS executable test covers message delivery, EOF, reader-error identity,
+decoding failure, real timeout, cancellation while waiting, absence of a leftover
+waiter, and reuse of the buffer after timeout. Non-timeout cases use a 60-second
+timer while the entire test finishes in seconds, also detecting failure to cancel
+the losing timer. Tests compile/run only project-owned Swift code; no vendor
+service, user app, model API or policy setting is used or changed. The connection
+constructor, request dispatch and production policy wiring remain pending.

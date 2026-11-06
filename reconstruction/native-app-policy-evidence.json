@@ -122,6 +122,18 @@
       "sha256": "3fe71609f0c4d59d0264ea073f091b9797016b457ea3a47cdead7e14a74a4b7f"
     },
     {
+      "name": "jsonRPCMessageRace",
+      "start": "0x100dd0e34",
+      "endExclusive": "0x100dd1264",
+      "sha256": "f1eab5e2f360bf9feca37e6b06258f15f72e7e9e79302daf8bf9a45034b511bb"
+    },
+    {
+      "name": "jsonRPCMessageTimeout",
+      "start": "0x100dd16c4",
+      "endExclusive": "0x100dd1864",
+      "sha256": "bfef63b204cef19197d46e952eb3a5adb1e5dbb9f5b05b63ebb30526be76bc6e"
+    },
+    {
       "name": "jsonRPCNextMessage",
       "start": "0x100dd0350",
       "endExclusive": "0x100dd0958",
