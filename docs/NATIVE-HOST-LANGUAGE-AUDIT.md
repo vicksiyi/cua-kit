@@ -89,6 +89,15 @@ Native lifecycle logging preserves private, bounded JSONL metadata (`time`, `pid
 
 Fresh and legacy-upgrade fixtures pass actual generated-launcher RPC, idempotence, rollback-record preservation, incompatible-registration refusal and lifecycle/endpoint cleanup. The packaged native extension also passes real owned Chromium → Rust browser host → Rust supervisor → restored CUA/MCP page-operation acceptance. It verifies the registered runtime is Rust, not just that some host responds. This run did not use the full-extension deployment variant or daily Chrome.
 
-The explicit TS reference server/router APIs are not deleted yet. Original peer code-signature policy, app-server/proxy/tab asset semantics, full-extension acceptance after this migration, and complete native source fidelity remain open. Historical checkpoints above describe earlier stages; the default extension and CDP paths now both use the Core Rust host.
+The explicit TS reference server/router APIs are not deleted yet. Original peer code-signature policy, app-server/proxy/tab asset semantics, complete native source fidelity and daily Chrome acceptance remain open. Historical checkpoints above describe earlier stages; the default extension and CDP paths now both use the Core Rust host.
 
 Current host gate result after installer migration: 26 Rust tests and 16 cross-language/installation/process tests pass.
+
+
+## Both packaged deployments accepted with native shutdown
+
+After installer migration, both `native` and `full` packaged extension deployments pass in isolated Chromium using the Rust browser host and Rust REPL supervisor. The full deployment includes its restored extension initialization, with external feature/telemetry traffic disabled or DNS-blocked by the fixture. Both exercise tab discovery, native notifications, mention messages/ports, page capture, tab creation, and restored MCP CUA navigation/click/AX read. A random action marker observed independently by the local HTTP server proves the click affected the fixture page.
+
+The same tests now close the owned browser and wait for native endpoint withdrawal plus the `input-ended` lifecycle event. This checks actual Native Messaging EOF cleanup rather than only a fake-extension process test. Both cases pass (2/2, no skips). Discovery's explicit `no_endpoints` result is treated as expected shutdown; other discovery failures remain errors.
+
+Reproduce: `CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test reconstruction/extension-native-controller.test.ts`. This does not prove daily Chrome profile/cold-start behavior, native App screenshot/input, paid DeepSeek reasoning, original host authorization, or source-body parity.

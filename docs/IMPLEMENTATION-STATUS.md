@@ -5987,3 +5987,10 @@ The current helper permission probe again reports Accessibility=false and Screen
 Read the installed package exports, root `cua` implementation and `tinyskyAlt` initializer. Confirmed that root lower-level `cua`, worker global convenience `cua`, and prototype host `Cua.launch` are different contracts. Added installed artifact hashes and migration evidence, deprecated prototype Cua/createCua/MacApp/MacProvider declarations, and explicit `/legacy` package paths while retaining compatibility. This does not relabel the prototype as restored code.
 
 Validation: one installed/restored differential test covers eight initialization cases (missing/empty surfaces, browser/computer, whitespace/duplicates, unknown/case-sensitive values, setup failure), including initialize/getState alias identity. It stubs only setup and runs no UI service. Root type checking/build and plain Node legacy alias resolution pass. Root SDK consumer conversion and native/UI acceptance remain incomplete.
+
+
+### 2026-11-06: validate both extension deployments after native migration
+
+The packaged native and full extension variants both pass actual isolated Chromium → installed Rust browser host → Rust supervisor → restored CUA/MCP operations. The acceptance test now additionally verifies browser close removes its endpoint and produces native `input-ended` lifecycle metadata. The local HTTP fixture independently confirms the random button action. Two cases pass without skips.
+
+No daily Chrome registration/profile or paid DeepSeek request was used. Full-extension acceptance after native installation migration is no longer pending; daily Chrome startup/reattachment, original native authorization/app-server behavior, and actual App screenshot/input remain incomplete.

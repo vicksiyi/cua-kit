@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { discoverEndpointFiles } from "../packages/native-host/src/endpoint_configuration";
+import { discoverEndpointFiles, IndependentBrowserUnavailableError } from "../packages/native-host/src/endpoint_configuration";
 import { verifyIndependentMcpBrowser } from "./independent-mcp-browser";
 import { createServer } from "node:http";
 import { chromeExtensionId } from "../packages/native-host/src/installation";
@@ -116,6 +116,7 @@ for (const deployment of ["native", "full"] as const)
           ],
         },
       );
+      let launchedEndpointFile: string | undefined;
       try {
         const page = await context.newPage();
         await page.goto(pageUrl);
@@ -141,6 +142,7 @@ for (const deployment of ["native", "full"] as const)
           endpointFile,
           "Built extension did not launch its registered native host",
         );
+        launchedEndpointFile = endpointFile;
         const transport = await connectNativeHost(
           JSON.parse(await readFile(endpointFile!, "utf8")),
         );
@@ -329,5 +331,30 @@ for (const deployment of ["native", "full"] as const)
       } finally {
         await context.close();
       }
+      // Closing the owned browser must terminate the registered native host,
+      // not leave a discoverable descriptor pointing at a dead socket.
+      assert.ok(launchedEndpointFile);
+      const lifecyclePath = join(dirname(hostRegistration.path), "lifecycle.jsonl");
+      let terminalEvent: string | undefined;
+      let remainingEndpoints: string[] = [];
+      for (let attempt = 0; attempt < 100; attempt++) {
+        try {
+          remainingEndpoints = await discoverEndpointFiles(hostDirectory);
+        } catch (error) {
+          if (!(error instanceof IndependentBrowserUnavailableError) ||
+              error.reason !== "no_endpoints") throw error;
+          remainingEndpoints = [];
+        }
+        const events = (await readFile(lifecyclePath, "utf8"))
+          .trim().split("\n").map((line) => JSON.parse(line));
+        terminalEvent = events.at(-1)?.event;
+        if (!remainingEndpoints.includes(launchedEndpointFile) &&
+            terminalEvent === "input-ended") break;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      assert.ok(!remainingEndpoints.includes(launchedEndpointFile),
+        "Closing the owned browser must remove its native endpoint");
+      assert.equal(terminalEvent, "input-ended",
+        "Chrome Native Messaging EOF must reach native lifecycle cleanup");
     },
   );
