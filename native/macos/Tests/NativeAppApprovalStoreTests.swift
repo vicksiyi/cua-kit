@@ -2,6 +2,19 @@ import Foundation
 
 @main struct NativeAppApprovalStoreTests {
     static func main() async throws {
+        // Expected descriptions come from the pinned native description branches.
+        let descriptions: [(NativeMCPToolError, String)] = [
+            (.missingArgument("target"), "Missing required argument: target"),
+            (.invalidArgument("原始说明\nunchanged"), "原始说明\nunchanged"),
+            (.unknownTool("fixture"), "Unknown tool: fixture"),
+            (.appBlockedByPolicy(bundleIdentifier: "fixture.app"), "Computer Use is blocked from using the app 'fixture.app' by your organization's policy."),
+            (.appNotAllowed(bundleIdentifier: "fixture.app"), "Computer Use is not allowed to use the app 'fixture.app' for safety reasons."),
+            (.appApprovalDenied(bundleIdentifier: "fixture.app"), "Computer Use approval denied via MCP elicitation for app 'fixture.app'."),
+            (.appApprovalCanceled(bundleIdentifier: "fixture.app"), "Computer Use permission request canceled for app 'fixture.app'."),
+            (.appApprovalPersistenceUnavailable(bundleIdentifier: "fixture.app"), "Computer Use could not persist the approval permanently for app 'fixture.app'.")
+        ]
+        for (error, expected) in descriptions { precondition(String(describing: error) == expected) }
+
         let fm = FileManager.default
         let root = fm.temporaryDirectory.appendingPathComponent("core-approval-store-\(UUID())")
         try fm.createDirectory(at: root, withIntermediateDirectories: false)

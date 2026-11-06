@@ -75,8 +75,25 @@ def audit():
                             fieldMetadataSha256=hashlib.sha256(read(fields, 16 + count * record_size)).hexdigest()))
     if string(relative(0x10133e6d0 + 20)) != 'ShySSG':
         raise ValueError('Persistent approval field is not Set<String>')
+    # Description conformance and its witness, not LocalizedError.
+    if relative(0x10121b870) != 0x1012e6ea4 or relative(0x10121b884) != 0x100e5ddf4:
+        raise ValueError('MCPToolError description witness changed')
+    for address, expected in [
+        (0x101274db0, "Missing required argument: "),
+        (0x101273bb0, "Computer Use is not allowed to use the app '"),
+        (0x101273be0, "' for safety reasons."),
+        (0x101274cd0, "Computer Use permission request canceled for app '"),
+        (0x101274d10, "Computer Use approval denied via MCP elicitation for app '"),
+        (0x101274d50, "Computer Use is blocked from using the app '"),
+        (0x101274d80, "' by your organization's policy."),
+        (0x101274c80, "Computer Use could not persist the approval permanently for app '")
+    ]:
+        if string(address) != expected:
+            raise ValueError('Native MCP error description literal changed')
     code_ranges = []
     for name, start, end in [
+        ('mcpToolErrorDescription', 0x100e5db0c, 0x100e5dde4),
+        ('mcpToolErrorDescriptionWitness', 0x100e5ddf4, 0x100e5de00),
         ('appApprovalResponseBranches', 0x100e52ee8, 0x100e53594),
         ('appApprovalAcceptedStoreCall', 0x100e53594, 0x100e53614),
         ('appApprovalSessionAndPersistentLookup', 0x100e527a4, 0x100e52904),

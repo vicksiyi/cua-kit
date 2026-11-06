@@ -121,6 +121,18 @@
   ],
   "codeRanges": [
     {
+      "name": "mcpToolErrorDescription",
+      "start": "0x100e5db0c",
+      "endExclusive": "0x100e5dde4",
+      "sha256": "bce370fe671eaeb33469def8e7bebd21f17888b38ea90f8a75d3f9a7e75580e5"
+    },
+    {
+      "name": "mcpToolErrorDescriptionWitness",
+      "start": "0x100e5ddf4",
+      "endExclusive": "0x100e5de00",
+      "sha256": "da93141eaf464b94b120fd2ec4a50727c15b7cdf71980200d4e4ce761d593832"
+    },
+    {
       "name": "appApprovalResponseBranches",
       "start": "0x100e52ee8",
       "endExclusive": "0x100e53594",

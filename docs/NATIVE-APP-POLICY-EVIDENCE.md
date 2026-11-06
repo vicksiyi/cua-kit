@@ -1016,3 +1016,27 @@ these branches and the session mutation retained after persistence failure.
 Localized error descriptions, wire error conversion and live host approval UI
 wiring are not established by this metadata evidence and remain unimplemented.
 This is the native MCP server chain, not proof that the JS host uses its store.
+
+### Native MCP error descriptions
+
+The conformance record at `0x10121b86c` references `MCPToolError` and an
+indirect imported `CustomStringConvertible` protocol pointer at `0x1014f5bf0`.
+Its description requirement points to witness `0x100e5ddf4`, which loads the
+String payload and enum byte, then branches to `0x100e5db0c..<0x100e5dde4`.
+The separate record at `0x10121b8fc` is the Swift `Error` conformance. This
+supports implementing `CustomStringConvertible`; it does not establish a
+`LocalizedError` conformance or a localized NSError description.
+
+The description branches preserve eight distinct messages: missing argument
+and unknown tool append their payload to prefixes; invalid argument returns
+its payload unchanged; policy denial and safety prohibition have different
+prefix/suffix pairs; declined, canceled and persistence-unavailable approvals
+have distinct messages ending with apostrophe/period. The latter suffix is
+an inline Swift small string (`0x2e27`), as is `Unknown tool: `. Associated
+values are interpolated unchanged. The audit validates referenced C strings,
+the conformance witness link and code hashes; tests exercise all eight case
+descriptions, including a Unicode/multiline invalid-argument payload.
+
+This supersedes the previous description-restoration gap for this type only.
+The native MCP server's conversion of these errors to wire responses and the
+actual host UI wiring still require independent evidence and implementation.
