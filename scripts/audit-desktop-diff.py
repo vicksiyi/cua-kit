@@ -885,6 +885,42 @@ attribute_names_evidence['arrayBridge']={
     'instructionWords':{hex(a):hex(w) for a,w in attribute_names_bridge_words.items()},
     'interpretation':'Conditionally bridge NSArray to the whole [CFString] array with Foundation, default to empty on missing bridge output, then preserve order during wrapper conversion. This is not compactMap or CFGetTypeID filtering.',
 }
+attribute_nominal=0x1012cd3ec
+attribute_fields=relative_address(attribute_nominal+16)
+_,_,attribute_kind,attribute_size,attribute_count=struct.unpack('<iiHHI',read_virtual(attribute_fields,16))
+attribute_type=relative_address(attribute_fields+20)
+if (attribute_kind,attribute_size,attribute_count)!=(0,12,1) or c_string(relative_address(attribute_fields+24))!='name' or read_virtual(attribute_type,6)!=bytes.fromhex('029d3f1c0000'):
+    raise SystemExit('UIElementAttribute CFString storage changed')
+attribute_slot=relative_address(attribute_type+1)
+if 'rebase  0x1012CC2C8' not in next((line for line in fixups.splitlines() if hex(attribute_slot) in line.lower()),''):
+    raise SystemExit('UIElementAttribute CFString indirect metadata changed')
+attribute_key_bindings=[
+ ('0x101468db0','libswiftCoreFoundation/_$s14CoreFoundation9_CFObjectPAAE2eeoiySbx_xtFZ'),
+ ('0x101468db8','libswiftCoreFoundation/_$s14CoreFoundation9_CFObjectPAAE4hash4intoys6HasherVz_tF'),
+ ('0x101463798','Foundation/_$sSS10FoundationE19_bridgeToObjectiveCSo8NSStringCyF'),
+]
+for slot,binding in attribute_key_bindings:
+    if binding not in next((line for line in fixups.splitlines() if slot in line.lower()),''):
+        raise SystemExit('UIElementAttribute system key conformance changed')
+if relative_address(0x1011964e0+24)!=0x10079cd20:
+    raise SystemExit('UIElementAttribute Equatable witness changed')
+attribute_key_words={0x100009888:0xd65f03c0,0x1006ea814:0x942997f3,
+    0x1006ebe2c:0x94298ca3,0x10079cd5c:0x9426c8d4}
+for address,word in attribute_key_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('UIElementAttribute constructor or key call changed')
+attribute_key_functions=[]
+for address,name in [(0x1006ea804,'String initializer'),(0x100009888,'CFString initializer'),(0x1006ebdf8,'hash(into:)'),(0x10079cd20,'Equatable witness'),(0x10076d890,'attribute array to Set construction')]:
+    boundary=starts[starts.index(address)+1]
+    attribute_key_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+attribute_names_evidence['attributeKey']={
+    'nominalDescriptor':hex(attribute_nominal),'fieldDescriptor':hex(attribute_fields),'nameType':'CFString',
+    'bindings':[{'slot':slot,'symbol':binding} for slot,binding in attribute_key_bindings],
+    'instructionWords':{hex(a):hex(w) for a,w in attribute_key_words.items()},'functions':attribute_key_functions,
+    'interpretation':'UIElementAttribute stores one CFString. String initialization bridges through Foundation; CFString initialization forwards the reference. Equality and hashing delegate to CoreFoundation _CFObject conformances.',
+    'limitations':'This restores the key core and ordered name wrapping, not the full static attribute constant catalog, AppKit-specific overloads, MockProvider override or complete cache construction.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))

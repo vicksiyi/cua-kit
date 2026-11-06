@@ -6945,3 +6945,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：支持属性名称数组桥接
 
 恢复 Foundation 整数组 `[CFString]` 桥接及空输出回退，新增 nil/空/重复/Unicode/系统混合桥接一致性验证；固定 CFString 元数据和 Foundation 符号绑定。不添加与源行为不同的逐项过滤。仍待 UIElementAttribute 包装、集合与缓存接线。
+
+
+### 2026-11-06：UIElementAttribute 键核心实现
+
+新增 Swift CFString 属性包装及 CoreFoundation 系统 equality/hash，连接支持属性名称的有序转换。原生测试验证引用、Unicode、系统哈希、Set/Dictionary 键行为。常量目录、AppKit 特有重载与完整缓存装配仍有缺口；生产观察器尚未切换。

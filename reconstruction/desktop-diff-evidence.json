@@ -1881,6 +1881,65 @@
         "0x101150e18": "0xd61f0200"
       },
       "interpretation": "Conditionally bridge NSArray to the whole [CFString] array with Foundation, default to empty on missing bridge output, then preserve order during wrapper conversion. This is not compactMap or CFGetTypeID filtering."
+    },
+    "attributeKey": {
+      "nominalDescriptor": "0x1012cd3ec",
+      "fieldDescriptor": "0x101324044",
+      "nameType": "CFString",
+      "bindings": [
+        {
+          "slot": "0x101468db0",
+          "symbol": "libswiftCoreFoundation/_$s14CoreFoundation9_CFObjectPAAE2eeoiySbx_xtFZ"
+        },
+        {
+          "slot": "0x101468db8",
+          "symbol": "libswiftCoreFoundation/_$s14CoreFoundation9_CFObjectPAAE4hash4intoys6HasherVz_tF"
+        },
+        {
+          "slot": "0x101463798",
+          "symbol": "Foundation/_$sSS10FoundationE19_bridgeToObjectiveCSo8NSStringCyF"
+        }
+      ],
+      "instructionWords": {
+        "0x100009888": "0xd65f03c0",
+        "0x1006ea814": "0x942997f3",
+        "0x1006ebe2c": "0x94298ca3",
+        "0x10079cd5c": "0x9426c8d4"
+      },
+      "functions": [
+        {
+          "name": "String initializer",
+          "start": "0x1006ea804",
+          "endExclusive": "0x1006ea834",
+          "machineCodeSha256": "48c3d858df0268c8af8073b26e89bf8bde12c1bba14177017a3a84f186e242e3"
+        },
+        {
+          "name": "CFString initializer",
+          "start": "0x100009888",
+          "endExclusive": "0x10000988c",
+          "machineCodeSha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91"
+        },
+        {
+          "name": "hash(into:)",
+          "start": "0x1006ebdf8",
+          "endExclusive": "0x1006ebe40",
+          "machineCodeSha256": "77cb49fb6961f242afa2a0b8d5ebdeb2a45af600b11f7541ac258dbd3ee647a3"
+        },
+        {
+          "name": "Equatable witness",
+          "start": "0x10079cd20",
+          "endExclusive": "0x10079cd74",
+          "machineCodeSha256": "efbaa2621e7e58a4fb64a02a1bb2acf23e6c0ff3878881d6489f5a5468392cf4"
+        },
+        {
+          "name": "attribute array to Set construction",
+          "start": "0x10076d890",
+          "endExclusive": "0x10076d910",
+          "machineCodeSha256": "2b92f5f1f3a2f37eb9f78ce8d9e656828c82a5fe49a184750b3e480ec78110a5"
+        }
+      ],
+      "interpretation": "UIElementAttribute stores one CFString. String initialization bridges through Foundation; CFString initialization forwards the reference. Equality and hashing delegate to CoreFoundation _CFObject conformances.",
+      "limitations": "This restores the key core and ordered name wrapping, not the full static attribute constant catalog, AppKit-specific overloads, MockProvider override or complete cache construction."
     }
   },
   "frequencyTableEvidence": {
