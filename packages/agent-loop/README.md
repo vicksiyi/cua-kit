@@ -327,11 +327,14 @@ window came from one process; overlapping independent runs remain possible.
 
 ## Independent sandbox runtime (opt-in macOS browser demo)
 
-The actual demo can now use `@core/runtime-supervisor` instead of the installed
-ChatGPT supervisor. Build its macOS sandbox addon once, then select it explicitly:
+The demo can use the Rust executable in `native/runtime-supervisor` instead of
+the installed ChatGPT supervisor. `independent` is an alias for `rust`; neither
+selects the legacy TypeScript supervisor. Build the native runtime and sandbox
+addon, then select it explicitly:
 
 ```bash
 npm run build:sandbox
+npm run build:rust-runtime
 CUA_RUNTIME_SUPERVISOR=independent npm run demo:deepseek -- --cdp-browser --check-browser
 CUA_RUNTIME_SUPERVISOR=independent npm run demo:deepseek -- --cdp-browser '打开网页并读取内容'
 ```

@@ -9,8 +9,10 @@ exact binary hash. It establishes native language/boundaries, not source bodies.
 Original JavaScript still becomes readable TypeScript. This Rust crate migrates
 responsibilities previously implemented in `packages/runtime-supervisor`, not
 NodeREPL's original JavaScript workers. It is independently implemented Rust,
-not decompiled Rust source. The TypeScript supervisor is a temporary acceptance
-baseline, and has not yet been removed or replaced in the demo.
+not decompiled Rust source. The Rust supervisor is selected by the independent demo deployment. Legacy TS
+comparison sources remain, but their package exports now require explicit /legacy
+paths. The CDP sandbox acceptance test also always launches Rust. Remaining source
+retirement and native behavior parity are incomplete.
 
 First implemented module: `native_pipe.rs`, implementing the recovered worker's
 connect/write/close fields and base64 data/close event shapes. Tokio, base64,

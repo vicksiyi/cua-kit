@@ -1,4 +1,12 @@
-# @core/runtime-supervisor
+# Legacy TypeScript supervisor reference
+
+This private package is retained for explicit comparison tests only. Native supervisor responsibilities now run in `native/runtime-supervisor`; the normal package root and old service subpaths are intentionally no longer exported. The explicit `/legacy` exports require `npm run build:legacy-runtime`. They are not a supported replacement for the Rust runtime. Direct source comparison tests remain pending retirement; moving export names does not establish full native parity.
+
+Use the shared AgentLoop deployment factory for normal runtime launch. The CDP sandbox acceptance test now always uses Rust and no longer constructs or starts this TS service.
+
+Historical reference API notes follow.
+
+# @core/runtime-supervisor/legacy
 
 Current acceptance (2026-11-06): the independent MCP supervisor with OS-sandboxed
 restored workers now performs real local-page navigation, form input, button
@@ -20,7 +28,7 @@ Validation: `npx tsx --test reconstruction/runtime-supervisor.test.ts` runs actu
 
 ## POSIX process transport
 
-`@core/runtime-supervisor/process-port` provides ProcessWorkerPort: explicit absolute executable/cwd, exact environment (no ambient inheritance), detached owned process group, UTF-8 JSONL object framing, default 8 MiB frame and 16 MiB queued-byte limits, a 256-message startup queue, input backpressure bounds, malformed/truncated frame retirement, bounded final-output draining and idempotent group TERM/KILL cleanup. Brief Darwin zombie-group EPERM races are retried; persistent permission errors propagate. It supports macOS/Linux POSIX process groups, not Windows.
+`@core/runtime-supervisor/legacy/process-port` provides ProcessWorkerPort: explicit absolute executable/cwd, exact environment (no ambient inheritance), detached owned process group, UTF-8 JSONL object framing, default 8 MiB frame and 16 MiB queued-byte limits, a 256-message startup queue, input backpressure bounds, malformed/truncated frame retirement, bounded final-output draining and idempotent group TERM/KILL cleanup. Brief Darwin zombie-group EPERM races are retried; persistent permission errors propagate. It supports macOS/Linux POSIX process groups, not Windows.
 
 The transport is not a sandbox. Its caller must still supply the production OS profile and trusted/untrusted environment policy. Group cleanup covers descendants that remain in the owned group; processes that create another session/group are not guaranteed terminated. Inherited stdout/stderr cannot hold close open indefinitely because the transport destroys its pipe handles after group retirement. Preventing process-group escape remains a launcher/isolation requirement.
 
@@ -48,7 +56,7 @@ Seventeen runtime tests pass. Actual restored workers emit an unawaited tracked 
 
 ## MCP adapter
 
-`@core/runtime-supervisor/mcp` exports createSupervisorMcpServer(SessionOptions), returning `{ server, session, close }`. Connect the SDK Server to a caller-owned MCP transport and await the returned close method for worker cleanup. It reuses @modelcontextprotocol/sdk 1.32.2 and zod 4.6.7; no custom JSON-RPC engine. Native ESM uses the SDK's extensionless /server export; its wildcard types.js subpath requires the published .js suffix. Local and @core imports remain extensionless.
+`@core/runtime-supervisor/legacy/mcp` exports createSupervisorMcpServer(SessionOptions), returning `{ server, session, close }`. Connect the SDK Server to a caller-owned MCP transport and await the returned close method for worker cleanup. It reuses @modelcontextprotocol/sdk 1.32.2 and zod 4.6.7; no custom JSON-RPC engine. Native ESM uses the SDK's extensionless /server export; its wildcard types.js subpath requires the published .js suffix. Local and @core imports remain extensionless.
 
 The adapter advertises all four observed js/js_reset/js_add_node_module_dir/turn_ended schemas, strictly validates arguments, forwards protocol _meta rather than model arguments, maps cancellation to worker retirement, and routes form elicitation through the actual MCP client with its advertised capabilities. No implicit approval is generated. Standard MCP content is validated; unknown opaque worker content errors rather than disappearing. Host operations other than elicitation, media and native pipes require the injected hostRequest callback, so authenticated-fetch and other host integrations remain required. Native pipes use their separate generation-scoped factory.
 
@@ -70,7 +78,7 @@ Twenty-one runtime tests and reconstruction build pass. Actual MCP/client/restor
 
 Inspection of recovered native_pipe_bridge.ts found that native_pipe_request has no exec_id and connections/events survive individual cells. WorkerSession now routes this protocol separately from execution-scoped host requests, only from the trusted worker. An optional nativePipeHost factory creates a transport per worker pair; asynchronous events are forwarded even between cells. Reset/timeout/close retires sockets with the workers, and callbacks or responses from retired generations are discarded. Repeated request IDs are rejected without replay. This does not automatically authorize any endpoint.
 
-@core/runtime-supervisor/native-pipe-host provides UnixNativePipeHost using Node net (no custom socket library). It accepts an explicit host-supplied absolute-path allowlist, at most 64 connections, a 5-second connect timeout, 256 KiB decoded writes, 1 MiB socket write queue, 64 KiB inbound event chunks, and awaited socket destruction. Invalid/oversized individual payloads are rejected without touching the socket; write queue overflow terminates that connection. The allowlist does not authenticate peer identity or pin socket inode identity; production hosts must provide endpoint ownership/authentication policy. No attempt is made to connect to or bypass authentication of the installed vendor service.
+@core/runtime-supervisor/legacy/native-pipe-host provides UnixNativePipeHost using Node net (no custom socket library). It accepts an explicit host-supplied absolute-path allowlist, at most 64 connections, a 5-second connect timeout, 256 KiB decoded writes, 1 MiB socket write queue, 64 KiB inbound event chunks, and awaited socket destruction. Invalid/oversized individual payloads are rejected without touching the socket; write queue overflow terminates that connection. The allowlist does not authenticate peer identity or pin socket inode identity; production hosts must provide endpoint ownership/authentication policy. No attempt is made to connect to or bypass authentication of the installed vendor service.
 
 Twenty-three runtime tests, reconstruction build and compiled package import pass. Actual MCP→restored trusted worker→host Unix socket tests connect to an owned echo fixture, write/read across cells, receive unsolicited data while idle and observe peer closure on cancellation retirement. Additional tests cover denied endpoints, malformed/oversized writes, close and generation-stale callbacks. An initial oversized-input test exposed that oversized payload rejection closed the socket, then its later write hit EPIPE; individual payload rejection was separated from queue-overflow termination and the full suite passed. This is raw transport acceptance, not native service protocol/authentication, production sandbox or browser/App acceptance.
 
@@ -95,7 +103,7 @@ Twenty-six runtime tests and reconstruction build pass. Actual MCP/restored-work
 
 ## External stdio transport
 
-@core/runtime-supervisor/stdio exports serveSupervisorStdio(SessionOptions, io?). It connects the existing SDK StdioServerTransport (16 MiB input buffer) to the independent MCP adapter and returns `{close, closed}`. The caller must provide its worker launcher/services/policies; this function does not invent a sandbox or inherit a credential-bearing environment. A host entry can await serveSupervisorStdio(options), then await its closed promise. stdout is reserved for MCP; optional onError diagnostics are caller-owned.
+@core/runtime-supervisor/legacy/stdio exports serveSupervisorStdio(SessionOptions, io?). It connects the existing SDK StdioServerTransport (16 MiB input buffer) to the independent MCP adapter and returns `{close, closed}`. The caller must provide its worker launcher/services/policies; this function does not invent a sandbox or inherit a credential-bearing environment. A host entry can await serveSupervisorStdio(options), then await its closed promise. stdout is reserved for MCP; optional onError diagnostics are caller-owned.
 
 EOF/input close, input/output stream errors, and SIGINT/SIGTERM initiate idempotent cleanup. Signal handling can be disabled for an embedded host. Teardown waits for runtime/worker cleanup, removes installed listeners, and exposes failure through close/closed. Diagnostics throwing cannot interrupt cleanup. Forced SIGKILL/crash recovery is not guaranteed, and an unresponsive injected launcher/host can still prevent shutdown; production watchdog/process containment remains required.
 
@@ -117,7 +125,7 @@ sandbox-bootstrap.ts loads the independently authored N-API bridge, applies an e
 
 ### Validated launcher configuration
 
-`@core/runtime-supervisor/sandbox-launcher` now provides `sandboxedWorkerSpec` and `launchSandboxedWorker`. The caller supplies existing absolute executable/bootstrap/addon/entry paths, dedicated writable directory and explicit read directories. Paths are canonicalized, filesystem-root grants and overlapping writable/code roots are rejected. Only enumerated restored worker/service, module-resolution and CUA surface configuration keys are accepted; the exact child environment contains these plus isolated HOME/TMPDIR and bootstrap settings, never ambient NODE_OPTIONS, DYLD_* or credentials. Flags before bootstrap are fixed by the launcher.
+`@core/runtime-supervisor/legacy/sandbox-launcher` now provides `sandboxedWorkerSpec` and `launchSandboxedWorker`. The caller supplies existing absolute executable/bootstrap/addon/entry paths, dedicated writable directory and explicit read directories. Paths are canonicalized, filesystem-root grants and overlapping writable/code roots are rejected. Only enumerated restored worker/service, module-resolution and CUA surface configuration keys are accepted; the exact child environment contains these plus isolated HOME/TMPDIR and bootstrap settings, never ambient NODE_OPTIONS, DYLD_* or credentials. Flags before bootstrap are fixed by the launcher.
 
 The actual restored-worker sandbox integration uses this entry and passes, including kernel denial of a trusted-worker scratch sentinel. Configuration tests reject NODE_OPTIONS, broad root and overlapping grants. Type checking passes. This closes the initial configuration construction gap, not the full production policy: caller-selected read roots can still be overly broad, trusted files/directories must not be concurrently replaced, environment values and trusted-service mappings remain caller-owned, and real browser/App service integration and cross-version sandbox reliability remain unverified. Default demo is unchanged.
 
@@ -135,16 +143,16 @@ Discovery also requires host configuration reads for the full-CDP preference. Th
 
 ### Explicit read-only configuration host
 
-`@core/runtime-supervisor/config-host` exports createReadonlyConfigHost. It reads caller-specified TOML files for the config snapshot, enterprise requirements and exact logical readToml paths, using existing third-party smol-toml 1.5.2. No home-directory discovery, implicit empty config or permissive policy fallback occurs. Config cwd must be explicitly listed; layered reads and all writes fail. Each call rereads its source (the recovered browser bridge retains its own cache). Files are bounded to 1 MiB, opened without following the final symlink and checked as regular files; invalid UTF-8/TOML and non-JSON values fail with redacted diagnostics. Parent directories must remain trusted: this does not pin ancestry or implement atomic multi-file snapshots.
+`@core/runtime-supervisor/legacy/config-host` exports createReadonlyConfigHost. It reads caller-specified TOML files for the config snapshot, enterprise requirements and exact logical readToml paths, using existing third-party smol-toml 1.5.2. No home-directory discovery, implicit empty config or permissive policy fallback occurs. Config cwd must be explicitly listed; layered reads and all writes fail. Each call rereads its source (the recovered browser bridge retains its own cache). Files are bounded to 1 MiB, opened without following the final symlink and checked as regular files; invalid UTF-8/TOML and non-JSON values fail with redacted diagnostics. Parent directories must remain trusted: this does not pin ancestry or implement atomic multi-file snapshots.
 
 The sandboxed browser discovery integration now uses this adapter against explicit fixture TOML files, including featureRequirements.browser_use_full_cdp_access=false, instead of canned host responses. Production deployments must supply appropriate scoped files; passing a general secret-bearing config would expose its parsed contents to trusted services. Session preference writes/persistent approval, workspace layering, schema/version parity with Rust and a full production launcher remain unfinished. No user config files were read or changed by these tests.
 
 ### Composed sandboxed MCP entry
 
-`@core/runtime-supervisor/sandbox-runtime` exposes `createSandboxedSessionOptions(options)` and `serveSandboxedStdio(options, io?)`. Options explicitly provide kernel/trusted SandboxedWorkerOptions, service names, allowed Unix pipe paths and read-only config sources. The composition validates both worker policies before spawning either, rejects overlapping writable directories and read grants exposing the peer's scratch, keeps endpoint settings out of the kernel environment, and requires the supervisor service names to match the trusted service map. A failed second spawn closes the first worker. Both workers receive exact captured environments; the installed Rust supervisor is not involved.
+`@core/runtime-supervisor/legacy/sandbox-runtime` exposes `createSandboxedSessionOptions(options)` and `serveSandboxedStdio(options, io?)`. Options explicitly provide kernel/trusted SandboxedWorkerOptions, service names, allowed Unix pipe paths and read-only config sources. The composition validates both worker policies before spawning either, rejects overlapping writable directories and read grants exposing the peer's scratch, keeps endpoint settings out of the kernel environment, and requires the supervisor service names to match the trusted service map. A failed second spawn closes the first worker. Both workers receive exact captured environments; the installed Rust supervisor is not involved.
 
 ```ts
-import { serveSandboxedStdio } from '@core/runtime-supervisor/sandbox-runtime';
+import { serveSandboxedStdio } from '@core/runtime-supervisor/legacy/sandbox-runtime';
 const server = await serveSandboxedStdio(runtimeOptions);
 await server.closed;
 ```

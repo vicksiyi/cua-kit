@@ -33,7 +33,7 @@ No credentials, personal desktop/browser data or installed registrations are nee
 
 Rechecked package manifests and callers after the user clarified that existing implementations must also follow the original native language:
 
-- `packages/runtime-supervisor/package.json` still exposes TS `session`, MCP, stdio, pipe/config and sandbox host entry points. The default reconstruction build gates their compilation behind `--include-legacy`, but public exports still need consumer-by-consumer migration; build gating alone is not retirement.
+- `packages/runtime-supervisor/package.json` now exposes those reference services only under explicit `/legacy` subpaths. The old root and service imports fail resolution. The normal reconstruction build gates compilation behind `--include-legacy`; direct source comparison tests remain and still need retirement.
 - `packages/native-macos/package.json` still exposes `src/index.ts` and `src/service.ts`. These require operation-level classification: keep native process clients/bindings, migrate native service semantics to the evidenced Rust/Swift layer. Do not rewrite every TS file merely because its package name contains native.
 - Root `package.json` still exposes `.` and `./native` to prototype outputs. `src/index.ts` imports `MacProvider`/`MacApp` from `src/native/provider.ts`. Legacy aliases do not remove these original public routes.
 - `@core/native-host` has an explicit legacy route and normal client graph exclusion test. This is a verified boundary improvement, not evidence that all original native host behavior has been restored.
@@ -51,3 +51,7 @@ Fresh file hashes were generated with `scripts/audit-language-boundaries.py`. Cu
 Priority for the existing-code migration is unchanged: retire remaining TS supervisor service exports/consumers; retire TS native-host server/router/main/logger consumers; classify desktop adapter and root prototype native responsibilities and move evidenced native behavior to Rust/Swift. Keep original JS APIs, IPC clients and Node bindings in TS. For uncertain original native bodies, state that the implementation is a contract reconstruction rather than claiming recovered source.
 
 This refresh changes the audit record and inventory only. It does not claim that the remaining legacy source or public API migration is complete.
+
+## Rust-only CDP consumer and explicit reference exports
+
+The CDP sandbox acceptance consumer no longer builds or launches TS serveSandboxedStdio, even without CUA_TEST_RUST_RUNTIME. Removed its unused legacy worker/bootstrap/config composition and always launch the shared Rust factory. A real isolated Chromium test passes input, submit, random result observation, screenshot and cleanup with only CUA_TEST_MACOS_SANDBOX=1. Normal @core/runtime-supervisor root/service exports are removed; explicit /legacy exports retain comparison compatibility. Production packages/src contain no imports of this TS package. Remaining direct comparison tests and 13 service implementation files have not been deleted and are not declared fully migrated.

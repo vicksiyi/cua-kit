@@ -4,47 +4,47 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
+    "./legacy": {
       "types": "./src/session.ts",
       "import": "./dist/session.js",
       "default": "./dist/session.js"
     },
-    "./process-port": {
+    "./legacy/process-port": {
       "types": "./src/process-port.ts",
       "import": "./dist/process-port.js",
       "default": "./dist/process-port.js"
     },
-    "./mcp": {
+    "./legacy/mcp": {
       "types": "./src/mcp.ts",
       "import": "./dist/mcp.js",
       "default": "./dist/mcp.js"
     },
-    "./native-pipe-host": {
+    "./legacy/native-pipe-host": {
       "types": "./src/native-pipe-host.ts",
       "import": "./dist/native-pipe-host.js",
       "default": "./dist/native-pipe-host.js"
     },
-    "./stdio": {
+    "./legacy/stdio": {
       "types": "./src/stdio.ts",
       "import": "./dist/stdio.js",
       "default": "./dist/stdio.js"
     },
-    "./sandbox-launcher": {
+    "./legacy/sandbox-launcher": {
       "types": "./src/sandbox-launcher.ts",
       "import": "./dist/sandbox-launcher.js",
       "default": "./dist/sandbox-launcher.js"
     },
-    "./config-host": {
+    "./legacy/config-host": {
       "types": "./src/config-host.ts",
       "import": "./dist/config-host.js",
       "default": "./dist/config-host.js"
     },
-    "./sandbox-runtime": {
+    "./legacy/sandbox-runtime": {
       "types": "./src/sandbox-runtime.ts",
       "import": "./dist/sandbox-runtime.js",
       "default": "./dist/sandbox-runtime.js"
     },
-    "./persistent-config-host": {
+    "./legacy/persistent-config-host": {
       "types": "./src/persistent-config-host.ts",
       "import": "./dist/persistent-config-host.js",
       "default": "./dist/persistent-config-host.js"

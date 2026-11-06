@@ -10,9 +10,8 @@ import { CDP_OPERATION_CONTEXT } from "../packages/agent-loop/src/cdp-guidance";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtemp, mkdir, writeFile, rm, realpath } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { mkdtemp, rm, realpath } from "node:fs/promises";
+import { resolve } from "node:path";
 import { startCdpHost } from "../packages/cdp-host/src/host";
 import { stageRuntimePackages } from "../packages/agent-loop/src/runtime-packages";
 import { McpToolClient } from "../packages/agent-loop/src/mcp-client";
@@ -23,7 +22,6 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   skip: process.platform !== "darwin" || process.env.CUA_TEST_MACOS_SANDBOX !== "1",
   timeout: 120000,
 }, async () => {
-  const rustRuntime = process.env.CUA_TEST_RUST_RUNTIME === "1";
   const liveModel = process.env.CUA_LIVE_DEEPSEEK_TEST === "1";
   const query = `independent-query-${randomUUID()}`;
   const marker = `observed-${randomUUID()}`;
@@ -46,56 +44,13 @@ test("independent sandboxed supervisor executes real browser input, click, read 
   let turn: NodeReplTurnClient | undefined;
   let rust: Awaited<ReturnType<typeof prepareIndependentBrowserRuntime>> | undefined;
   try {
-    const kernelDir = join(root, "kernel"), trustedDir = join(root, "trusted"), codeDir = join(root, "code");
-    await Promise.all([mkdir(kernelDir), mkdir(trustedDir), mkdir(codeDir)]);
     host = await startCdpHost({ headless: true });
     const endpointFile = await realpath(host.endpointFile);
     assert.equal(host.endpointFile, endpointFile);
     staged = await stageRuntimePackages([resolve("packages/native-host"), resolve("packages/cua")]);
-    const workers = await realpath(resolve("packages/node-repl"));
-    const dependencies = await realpath(resolve("node_modules"));
-    const configFile = join(root, "config.toml"), requirementsFile = join(root, "requirements.toml"), browserConfigFile = join(root, "browser.toml");
-    await writeFile(configFile, "[browser_use]\nallow_history_access = false\n");
-    await writeFile(requirementsFile, "[featureRequirements]\nbrowser_use_full_cdp_access = false\n");
-    await writeFile(browserConfigFile, "full_cdp_access_enabled = false\n");
-    const sessionFile = join(root, "session.toml");
-    await writeFile(sessionFile, "");
-    const worker = (trusted: boolean) => ({
-      node: process.execPath,
-      bootstrap: resolve("packages/runtime-supervisor/dist/sandbox-bootstrap.js"),
-      addon: resolve("native/macos-sandbox/dist/sandbox.node"),
-      entry: join(workers, trusted ? "dist/trusted_worker.js" : "dist/kernel.js"),
-      args: trusted ? [trustedDir] : ["--session-id", "independent-browser", "--working-dir", kernelDir],
-      directory: trusted ? trustedDir : kernelDir,
-      readDirectories: [workers, dependencies, codeDir, staged!.root, ...(trusted ? [dirname(endpointFile)] : [])],
-      workerEnvironment: {
-        NODE_REPL_TRUSTED_RPC_ENABLED: "1",
-        NODE_REPL_TRUSTED_SERVICES: JSON.stringify({ browser: "@core/native-host/browserService" }),
-        NODE_REPL_TRUSTED_CODE_PATHS: staged!.root,
-        NODE_REPL_NODE_MODULE_DIRS: staged!.root,
-        NODE_REPL_UNTRUSTED_ENV_ALLOWLIST: "CUA_REPL_ENABLED_SURFACES,CUA_REPL_BROWSER_ENV",
-        CUA_REPL_ENABLED_SURFACES: "browser",
-        CUA_REPL_BROWSER_ENV: "codex-app",
-        ...(trusted ? {
-          CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]),
-          BROWSER_USE_BACKEND_PATHS: host!.endpoint.socketPath,
-          BROWSER_USE_AVAILABLE_BACKENDS: "cdp",
-          BROWSER_USE_DISABLE_AMBIENT_NETWORK: "1",
-        } : {}),
-      },
-      terminateGraceMs: 20,
-    });
-    const options = {
-      kernel: worker(false), trusted: worker(true), services: ["browser"],
-      pipePaths: [host.endpoint.socketPath],
-      writablePreferencePaths: ["browser/config.toml", "browser/sessions/independent-browser.toml"],
-      config: { configFile, requirementsFile, workingDirectories: [trustedDir], tomlFiles: { "browser/config.toml": browserConfigFile, "browser/sessions/independent-browser.toml": sessionFile } },
-    };
-    const entry = join(codeDir, "stdio.mjs");
-    await writeFile(entry, `import {serveSandboxedStdio} from ${JSON.stringify(pathToFileURL(resolve("packages/runtime-supervisor/dist/sandbox-runtime.js")).href)};const server=await serveSandboxedStdio(${JSON.stringify(options)});await server.closed;`);
     const metadata = { session_id: "independent-browser", turn_id: "one" };
-    if(rustRuntime) rust=await prepareIndependentBrowserRuntime({CUA_REPL_ENABLED_SURFACES:'browser',CORE_CUA_ENDPOINT_FILES:JSON.stringify([endpointFile]),BROWSER_USE_BACKEND_PATHS:host.endpoint.socketPath,BROWSER_USE_AVAILABLE_BACKENDS:'cdp'},staged.root,'independent-browser','rust');
-    const client = await McpToolClient.connect(rust ? {command:rust.command,args:rust.args,cwd:root,env:rust.environment,stderr:'inherit'} : {command:process.execPath,args:[entry],cwd:root,env:{HOME:root,TMPDIR:root},stderr:"inherit"}, {
+    rust=await prepareIndependentBrowserRuntime({CUA_REPL_ENABLED_SURFACES:'browser',CORE_CUA_ENDPOINT_FILES:JSON.stringify([endpointFile]),BROWSER_USE_BACKEND_PATHS:host.endpoint.socketPath,BROWSER_USE_AVAILABLE_BACKENDS:'cdp'},staged.root,'independent-browser','rust');
+    const client = await McpToolClient.connect({command:rust.command,args:rust.args,cwd:root,env:rust.environment,stderr:'inherit'}, {
       requestMeta: () => ({ "x-codex-turn-metadata": metadata }),
       elicit: async params => params.mode !== "url" && params._meta?.tool_name === "access_browser_origin" && params._meta?.origin === origin
         ? { action: "accept", content: {} } : { action: "decline" },
