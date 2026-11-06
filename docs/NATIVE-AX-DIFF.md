@@ -1605,3 +1605,18 @@ AXParent 时结束，全程不触发 raw provider；另验证错误类型的未�
 
 没有把具体 UIElement 链冒充支持所有原版协议 conformer 的 existential 链；
 完整协议、provider、隐式 TaskLocal 和生产菜单入口仍待连接。未执行真实 UI 或模型。
+
+## actions getter 的合并与失败分支（2026-11-07）
+
+核对 0x1007916b0..<0x100791a24：先读取 AXUIElement.actions，若抛错，记录日志后
+直接返回空数组，不再查询补充动作。成功才调用 0x10079446c，经协议 isDisclosable
+决定是否读取 isDisclosing，分别生成 collapse/expand；0x10076d304 将它追加到
+原动作数组，最终不再去重。因此系统动作已包含 expand 时仍可能再次追加 expand。
+
+恢复 UIElementActions.swift 的完整分支顺序，保留原协议属性与 logger 的显式边界。
+32 组测试覆盖原生读取失败、惰性 disclosure 属性访问、空数组和重复动作保持；
+相关八项测试与 Swift 构建通过。原生动作读取内部已有的去重与这里最终不去重是
+两个不同阶段，不能混淆。
+
+完整协议/provider 与生产动作列表接线仍待完成，未把日志回调当作原 os.Logger 已复原。
+没有模型或真实 UI 操作。

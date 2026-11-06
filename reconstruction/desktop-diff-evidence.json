@@ -2284,6 +2284,31 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementParentChain.swift",
       "limitations": "Traversal restored with generic node and parent boundary; concrete parent getter restored separately; complete existential protocol and production integration remain pending."
     },
+    "elementActions": {
+      "entry": "UIElementProtocol.actions.getter 0x1007916b0..<0x100791a24",
+      "read": "0x100791798 calls AXUIElement.actions; failure logs then returns [] without supplemental lookup",
+      "supplement": "0x1007919b8 -> 0x10079446c: isDisclosable witness +0xa8 gates isDisclosing +0xb0; returns collapse when true, expand when false",
+      "merge": "0x1007919c4 -> 0x10076d304 appends supplement to native array; no final deduplication",
+      "blocks": [
+        {
+          "start": "0x1007916b0",
+          "endExclusive": "0x100791a24",
+          "machineCodeSha256": "7ef176ec1573d4abf208cbf29fdf0be06a48f81f6a702878d6a128b2d5b0b4cf"
+        },
+        {
+          "start": "0x10079446c",
+          "endExclusive": "0x100794520",
+          "machineCodeSha256": "0965ffea64510da617ff9005b737b7cc419fe4c1a2878d0a3402d48e5b701ac3"
+        },
+        {
+          "start": "0x10076d304",
+          "endExclusive": "0x10076d3dc",
+          "machineCodeSha256": "bf222c96d252afbd3b2b22b18b185eb8b4aa0d87eb94540cecbf8aec9385cd55"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementActions.swift",
+      "limitations": "Protocol property getters and native action read remain injected. Concrete disclosure helpers exist separately; full protocol/provider and production actions wiring remain pending. Logger is an explicit callback, not original os.Logger integration."
+    },
     "menuActionPreparation": {
       "entry": "UIElementProtocol.perform(action:) at 0x100791a68",
       "parents": "menuItem only; defaultMaximumParentTraversalDepth and parentChain(includingSelf:false) at 0x100791b34",

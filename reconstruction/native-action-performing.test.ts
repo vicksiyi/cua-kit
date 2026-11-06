@@ -106,3 +106,18 @@ test("native parent chain preserves source traversal boundaries", {
     assert.match(result.stdout, /native parent chain preserves eager seed, inclusive depth, lookahead and cycle bound/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native actions preserve disclosure merge and read failure", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-actions-"));
+  try {
+    const output = join(directory, "actions");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementAction", "UIElementActions"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementActionsTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /native actions preserve read failure, lazy disclosure and append duplicates: 32 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

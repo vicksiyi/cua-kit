@@ -1,7 +1,7 @@
 import Foundation
 
 // Supplemental action body 0x100793f94. Providers preserve the original lazy
-// native reads; this does not replace the still-unrestored full actions getter.
+// native reads; the full getter ordering is restored in UIElementActions.swift.
 func uiElementDisclosureActions(
     cache: UIElementCache,
     freshSupportedAttributes: () -> Set<UIElementAttribute>,
