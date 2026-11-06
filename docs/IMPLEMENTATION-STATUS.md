@@ -6431,3 +6431,12 @@ The caller now returns only typed MCP InvalidParams failures as isError tool fee
 Validation: four targeted tests and agent-loop TypeScript checking pass. A real stdio MCP fixture demonstrates invalid mixed arguments produce no execution, the model sees the error and corrects the next call, and internal errors/connection loss remain fatal. A subsequent real DeepSeek run passed in approximately 18 seconds, with actual page navigation/click, observed random marker in the final answer, an independent HTTP action receipt, completion-summary acceptance and normal cleanup. The successful live run is not evidence that every model-generated argument error will recover; the regression fixture establishes that recovery path deterministically.
 
 Only the native packaged extension was exercised with DeepSeek this checkpoint. Daily Chrome profiles, public search and native desktop acceptance remain open. Local tool traces are outside the repository and are not published; credentials are not included in source or reports.
+
+
+### Public Baidu search acceptance remains failed
+
+A live DeepSeek attempt of the original Baidu search prompt reached browser control but did not produce an observed search result. The model first supplied unsupported Chrome visibility options, then corrected them. Navigation to the Baidu search URL encountered an origin authorization request for https://wappass.baidu.com. The test's explicit approval callback allows only www.baidu.com for this scenario and declines other origins, so the browser authority gate rejected observation. The protocol message says user_declined, but in this fixture the decision was made by its callback, not by a human. The contents of the denied page were not observed; do not infer that a particular CAPTCHA appeared.
+
+The model's final response also falsely claimed an already executed curl request and proposed a workaround. No curl tool call occurred, no result URL was observed, and this is a failed acceptance run. No policy bypass or additional approval was attempted. The live-search verifier now reports the observed policy rejection explicitly instead of reducing the failure to a missing result URL. This diagnostic does not count the blocked scenario as success or resolve the model's inaccurate final narrative.
+
+Remaining work includes enforcing reliable final reporting after policy denial, interactive authorized handling when needed, and successful first-result evidence on the public search scenario. Existing local-page success does not satisfy this requirement.

@@ -256,6 +256,11 @@ export async function verifyIndependentMcpBrowser(
           await writeFile(join(evidence, "observed.txt"), observed);
           await writeFile(join(evidence, "answer.txt"), result.answer);
           console.error("SEARCH EVIDENCE DIRECTORY", evidence);
+          const denied = result.messages.some(message => message.role === "tool" && message.result.isError &&
+            message.result.content.some(item => item.type === "text" &&
+              item.text.includes("Browser Use rejected this action due to browser security policy.")));
+          assert.equal(denied, false,
+            "Live search was rejected by browser policy; no search-result acceptance. The isolated fixture declines origins outside its explicit search-site allowlist; this is not evidence of a human user's decision. See local tool trace for the denied origin.");
           assert.match(result.answer, /deepseek/i);
           const observedLinks = observedSearchLinks(observed);
           assert.ok(
