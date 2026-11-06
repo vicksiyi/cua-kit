@@ -3,11 +3,13 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
-} from "./service-source.ts";
-import { waitForCdpEvent } from "../packages/browser/dist/service/cdp/event_wait.js";
-import { screencastMethods } from "../packages/browser/dist/service/cdp/screencast_methods.js";
-import { captureTabScreenshot } from "../packages/browser/dist/service/commands/screenshot.js";
+} from "./service-source";
+import { waitForCdpEvent } from "../packages/browser/src/service/cdp/event_wait";
+import { screencastMethods } from "../packages/browser/src/service/cdp/screencast_methods";
+import { captureTabScreenshot } from "../packages/browser/src/service/commands/screenshot";
 const names = [
   "withInternalScreencast",
   "withScreencastLock",
@@ -16,32 +18,26 @@ const names = [
   "activeRetiredInternalScreencastSessions",
   "retireInternalScreencast",
 ];
-const deps = originalServiceBindings(["Io", "jh", "$N", "_te", "vte"]);
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit screenshot helpers for changed browser-service artifact");
+const sourceClass = serviceClassWithMethods([...names, "waitForEvent"]);
+const deps = originalServiceBindings(["Ao", "$h", "t2", "yte", "wte"]);
 const originalMethods = new Function(
   ...Object.keys(deps),
   "return {" +
-    names.map((name) => serviceClassMethod("qh", name)).join(",") +
+    names.map((name) => serviceClassMethod(sourceClass, name)).join(",") +
     "};",
 )(...Object.values(deps));
 const originalWait = new Function(
-  "return {" + serviceClassMethod("qh", "waitForEvent") + "}.waitForEvent;",
+  "return {" + serviceClassMethod(sourceClass, "waitForEvent") + "}.waitForEvent;",
 )();
+// Current Wi is the capture algorithm; this integration fixture does not exercise
+// an authority/credential gate. Do not infer gate parity from these scenarios.
 const originalCapture = originalServiceBindings([
-  "W",
-  "an",
-  "lJ",
-  "cJ",
-  "dJ",
-  "KD",
-  "Ui",
-  "pJ",
-  "Q_",
-  "mJ",
-  "fJ",
-  "hJ",
-  "gJ",
-  "bJ",
-]).Ui;
+  "H", "an", "Dee", "Mee", "Bee", "tN", "wv", "Uee",
+  "Lee", "Fee", "Nee", "Oee", "Wi",
+]).Wi;
+
 function owner(methods: any) {
   return Object.assign(
     new EventEmitter(),

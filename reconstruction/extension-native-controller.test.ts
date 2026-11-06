@@ -320,26 +320,46 @@ for (const deployment of ["native", "full"] as const)
           });
           // Read the extension's isolated world and closed overlay shadow root.
           // No debug endpoint or test hook is added to the shipped extension.
-          let cursorVisible = false;
-          for (let attempt = 0; attempt < 50; attempt++) {
+          const observeCursor = async () => {
             const [observation] = await worker.evaluate(`chrome.scripting.executeScript({
               target: { tabId: ${Number(tab.id)} }, func: async () => {
-                const state = await chrome.runtime.sendMessage({type: "GET_AGENT_CURSOR_STATE"});
+                const response = await chrome.runtime.sendMessage({type: "GET_AGENT_CURSOR_STATE"});
                 const root = document.getElementById("codex-agent-overlay-root");
                 const shadow = root && chrome.dom.openOrClosedShadowRoot(root);
                 const image = shadow && shadow.querySelector("[data-browser-agent-cursor-asset]");
                 const box = image && image.getBoundingClientRect();
-                return {state, loaded: !!image && image.complete && image.naturalWidth > 0,
-                  rendered: !!box && box.width > 0 && box.height > 0};
+                let opacity = 1;
+                for (let node = image; node; node = node.parentElement) {
+                  const style = getComputedStyle(node);
+                  opacity *= Number(style.opacity);
+                  if (style.display === "none" || style.visibility === "hidden") opacity = 0;
+                }
+                return {state: response.state, loaded: !!image && image.complete && image.naturalWidth > 0,
+                  painted: !!box && box.width > 0 && box.height > 0 && opacity > 0.9,
+                  hidden: !image || opacity < 0.01};
               }
             })`);
-            cursorVisible = observation.result?.state?.state?.isVisible === true &&
-              observation.result?.state?.state?.cursor?.visible === true &&
-              observation.result.loaded && observation.result.rendered;
-            if (cursorVisible) break;
-            await new Promise(resolve => setTimeout(resolve, 100));
-          }
-          assert(cursorVisible, "Active tab must expose a visible cursor state and loaded rendered image");
+            return observation.result;
+          };
+          const waitCursor = async (visible: boolean, ended = false) => {
+            for (let attempt = 0; attempt < 50; attempt++) {
+              const view = await observeCursor();
+              if (visible
+                ? view.state?.isVisible === true && view.state.cursor?.visible === true && view.loaded && view.painted
+                : view.state?.isVisible === false && view.hidden && (!ended || view.state.sessionId === null)) return;
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            assert.fail(`Cursor did not become ${visible ? "visible" : "hidden"}${ended ? " after turn cleanup" : ""}`);
+          };
+          await waitCursor(true);
+          const otherTab = await context.newPage();
+          try {
+            await otherTab.goto(pageUrl + "inactive-cursor-check");
+            await otherTab.bringToFront();
+            await waitCursor(false);
+            await page.bringToFront();
+            await waitCursor(true);
+          } finally { await otherTab.close(); }
           await peer.sendRequest("nameSession", {
             session_id: "native-live", turn_id: "read-1", name: "Core visual acceptance",
           });
@@ -354,11 +374,24 @@ for (const deployment of ["native", "full"] as const)
             return current.groupId >= 0 ? chrome.tabGroups.get(current.groupId) : null;
           }, created.id);
           assert.equal(group?.title, "Core visual acceptance", "Agent-created tab must have its named Chrome group");
+          await peer.sendRequest("markTab", {
+            session_id: "native-live", turn_id: "read-1", tabId: created.id, status: "deliverable",
+          });
+          const disposable = await peer.sendRequest("createTab", {
+            session_id: "native-live", turn_id: "read-1",
+          });
+
 
           await peer.sendRequest("turnEnded", {
             session_id: "native-live",
             turn_id: "read-1",
           });
+          await page.bringToFront();
+          await waitCursor(false, true);
+          const remaining = await worker.evaluate(() => chrome.tabs.query({}));
+          assert(!remaining.some(t => t.id === disposable.id), "Unmarked agent tab closes at turn end");
+          assert.equal(remaining.find(t => t.id === created.id)?.groupId, -1, "Deliverable survives but leaves managed group");
+          assert.equal(remaining.find(t => t.id === Number(tab.id))?.groupId, priorGroup, "User tab and its grouping survive cleanup");
         } finally {
           await transport.close();
         }
