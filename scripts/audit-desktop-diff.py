@@ -353,6 +353,28 @@ parameter_evidence = {
     'interpretation':'Typed parameterized access encodes before system read, then uses decodedThrowing for a present result. Encoding extracts marker/range references; CFRange/CGPoint/CGRect/CGSize use AXValueCreate types 4/1/3/2 and failure case failedToWrapAXValue.',
     'limitations':'Concrete marker/geometry/range branches only. UIElement wrapper extraction, generic fallback, typed attribute protocol dispatch and complete output decoding remain separate.',
 }
+ordinary_words = {0x1006e968c:0x540009e1,0x1006e97ec:0x528000c4,
+    0x1006e97fc:0x34000b20,0x1006e9804:0x52800001,
+    0x1006e99a8:0x52800048,0x1006e99b4:0x12000101}
+for address, word in ordinary_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('Ordinary AX value conversion branch changed')
+ordinary_calls = []
+for address, destination in [(0x1006e97f0,0x101155118),(0x1006e9ae8,0x1006e9d38)]:
+    word = struct.unpack('<I',read_virtual(address,4))[0]
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    if word >> 26 != 0b100101 or address + immediate*4 != destination:
+        raise SystemExit('Ordinary AX value conversion call changed')
+    ordinary_calls.append({'address':hex(address),'destination':hex(destination)})
+if indirect.get(0x101155118) != '_swift_dynamicCast': raise SystemExit('Ordinary cast stub changed')
+ordinary_evidence = {
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1006e97c8,0x1006e9854),(0x1006e9960,0x1006e99c4)]],
+    'instructionWords':{hex(a):hex(w) for a,w in ordinary_words.items()},'calls':ordinary_calls,
+    'interpretation':'After specialized CF branches, dynamically cast the original object to the requested type. Failure constructs failedToUnwrapAttributeValue(requestedType) and forwards the original throwing flag to shared failure handling.',
+    'limitations':'Ordinary-object branch only, not a replacement for UIElement/marker/AXValue/array dispatch or complete typed output decoding.',
+}
 # The concrete AXValue reader is a separate helper, not the outer decoder.
 unpack_start = 0x1006ea098
 unpack_end = starts[starts.index(unpack_start)+1]
@@ -653,6 +675,7 @@ record = {
     'errorEvidence':error_evidence,
     'markerDecodingEvidence':marker_evidence,
     'parameterEncodingEvidence':parameter_evidence,
+    'ordinaryValueDecodingEvidence':ordinary_evidence,
     'axValueUnpackingEvidence':unpack_evidence,
     'axValueDecodingEvidence':axvalue_decode_evidence,
     'axUIElementDecodingEvidence':element_evidence,

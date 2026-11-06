@@ -6876,3 +6876,10 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Implemented concrete Swift marker/range reference extraction and CFRange/CGPoint/CGRect/CGSize AXValueCreate encoding. Creation failures preserve the recovered failedToWrapAXValue case; concrete typed buffers avoid existential-memory corruption.
 - Connected Target.selectText to the recovered CFRange encoder, preserving the independent outer transport's existing failure mapping. Added Unicode selected-range/cursor encoding roundtrips to the input self-test. The standalone real-CF encoding test, full helper build, input self-test and 193-signature audit pass. No actual app input or permission change occurred.
 - Original UIElement extraction, generic fallback and full typed output decoding remain incomplete. Parameter encoding integration does not complete selected-text observation fallback or native tree diff behavior.
+
+### 2026-11-06 Ordinary native value decoding integrated for observation scalars
+
+- Recovered the ordinary-object dynamic-cast branch after the specialized CF branches. Failure preserves failedToUnwrapAttributeValue(requestedType) and the original nil/throw flag. Added bounded code hashes, call targets and instruction assertions to the native audit.
+- Added AXOrdinaryValueDecoding.swift and connected the collector's scalar helper through an adapter restricted to CFString/CFNumber/CFBoolean. Empty values, false, NSNumber identity and Unicode strings are preserved; specialized CF objects do not accidentally enter this adapter. This is not the complete decoder dispatcher.
+- Compiled Swift tests cover bridges, Optional/AnyObject requests, wrong-type error policy and specialized-object rejection. Full helper build and observation-text self-test pass; the 193-signature audit remains pinned to the inspected native build. No actual application UI was read or operated.
+- Native generic dispatch, selected-text observation integration, cache/revisions/diff and real UI acceptance remain incomplete.

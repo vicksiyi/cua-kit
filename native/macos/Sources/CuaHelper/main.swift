@@ -13,9 +13,8 @@ func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
 }
 func string(_ element: AXUIElement, _ name: String) -> String { attribute(element, name) as? String ?? "" }
 func scalar(_ value: CFTypeRef?) -> Any? {
-    if let value = value as? String { return value }
-    if let value = value as? NSNumber { return value }
-    return nil
+    guard let value else { return nil }
+    return decodedAXScalarAttribute(value)
 }
 func info(_ app: NSRunningApplication) -> [String: Any] {
     ["pid": Int(app.processIdentifier), "name": app.localizedName ?? "", "bundleId": app.bundleIdentifier ?? "", "path": app.bundleURL?.resolvingSymlinksInPath().path ?? "", "launchTime": app.launchDate?.timeIntervalSince1970 ?? 0]

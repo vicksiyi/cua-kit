@@ -587,3 +587,22 @@ Any 再把地址交给系统函数。编码不做坐标规范化或范围校验�
 这里恢复的是具体参数分支；UIElement wrapper 的提取、通用 Any bridge fallback、
 完整 typed attribute dispatcher 和结果 decoder 尚未全部恢复。生产文本范围动作
 已接入编码，但观察中的 marker 选择回退仍未接通，不能合并为“原生观察完成”。
+
+## 普通对象返回值解码及观察标量接入
+
+`unwrappedThrowing` 在处理 AXUIElement / marker / AXValue / CFArray 之后，才于
+`0x1006e97c8` 进入普通对象分支。该分支对原对象执行 requested-type dynamic cast；
+成功保留结果，失败构造 failedToUnwrapAttributeValue(requestedType)，按原 throwing
+标志进入共享处理。不能把 NSNumber 的文本描述、空字符串或 false 当作另一种缺失值。
+ordinaryValueDecodingEvidence 固定该分支两个代码块、转换与失败调用和六条关键指令。
+
+`AXOrdinaryValueDecoding.swift` 恢复此具体分支。`decodedAXScalarAttribute` 是独立
+collector 的适配入口：只接收 CFString / CFNumber / CFBoolean，再使用恢复的转换；
+AXValue、marker、数组等不能由它代替专用 decoder。main.swift 的 scalar helper 已接入，
+现有 secure-field 限制保持在调用侧。完整通用 decoder 仍未组合完成。
+
+测试覆盖 NSString→String、NSNumber→数字/布尔、AnyObject 引用身份、嵌套 Optional、
+空字符串、错误请求类型的 nil/throw，以及观察适配器拒绝 AXValue / AXUIElement / 数组。
+Swift 构建、专项测试和 observation-text self-test 通过；这是受控类型与格式验证，
+不是应用 UI 观察验收。marker 回退的完整 typed result dispatch、缓存和选择来源映射
+仍需继续恢复。
