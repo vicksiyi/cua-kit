@@ -6301,3 +6301,10 @@ Proxy listener creation, shared runtime configuration updates, manager control d
 Static listener/handler inspection showed that each authenticated connection clones ProxyRuntimeState after validation and before process selection. Refactored the process, input and session chain to accept that native snapshot directly; loaded-config entry points remain projection adapters. Added handle_shared_connection, which snapshots under the native expect/poison semantics and releases the lock before selecting/starting the process. Existing sessions retain the snapshot for subsequent frames.
 
 Twelve focused process/input/session tests passed, then the composed real TCP session test passed after switching to the shared-runtime handler. Listener inspection additionally establishes detached per-connection workers and ignored accept errors, but listener/manager implementation and production integration are not yet complete.
+
+
+### Native listener dispatch checkpoint
+
+Added run_proxy_listener and its factored Incoming dispatcher. Native accept errors are ignored; each accepted TCP stream receives a detached worker. The worker snapshots optional Origin before reading the request, while runtime snapshot remains after validation. Connection errors use the evidenced stderr diagnostic. A test injects an accept error and leaves one real TCP connection idle while another receives 403, verifying independent dispatch and no process entry on rejection.
+
+Full native host cargo test regression passed: 89 tests, zero failures. This covers current implementation fixtures, not original binary runtime parity or real browser/app acceptance. Listener binding, token/origin construction and manager lifecycle/control integration still remain.

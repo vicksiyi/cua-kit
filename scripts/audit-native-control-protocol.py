@@ -19,6 +19,8 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+proxy_listener = disassemble(0x100021514, 0x1000217e4)
+connection_worker = disassemble(0x10002cb70, 0x10002cd24)
 proxy_upgrade = disassemble(0x100027664, 0x1000288fc)
 plain_response = disassemble(0x100021a94, 0x100021df0)
 http_input = disassemble(0x100022d80, 0x100023f8c)
@@ -607,6 +609,16 @@ result = {
         'poisonMessage': raw[0x905d5:0x905fa].decode(),
         'contract': 'After request validation, clone shared ProxyRuntimeState under mutex then unlock before map selection/ensure. Native expect panics on poison. A session keeps this snapshot for initial ensure and subsequent input, rather than retaining registry configuration or rereading global state per frame.',
         'integrationStatus': 'Runtime-specific process/input/session entry points implemented; old config entry points project once as adapters. Authenticated real TCP session test uses shared snapshot handler. Listener, manager updates and complete production integration remain open.',
+    },
+    'proxyListenerDispatch': {
+        'implementation': 'native/browser-extension-host/src/app_server_listener.rs',
+        'acceptErrorContinue': evidence(proxy_listener, 0x100021558, 0x100021588, ['drop_glue', 'Incoming', '0x100021558']),
+        'detachEachWorker': evidence(proxy_listener, 0x1000215e4, 0x100021620, ['spawn_unchecked', 'JoinHandle', '0x100021560']),
+        'originSnapshot': evidence(connection_worker, 0x10002cbcc, 0x10002cc38, ['String as core::clone::Clone', 'Mutex>::unlock', 'handle_proxy_connection']),
+        'errorDiagnostic': evidence(connection_worker, 0x10002cc38, 0x10002cc6c, ['#0x6ee', '_eprint', 'drop_glue']),
+        'originPoisonMessage': raw[0x91020:0x9104e].decode(),
+        'contract': 'Blocking Incoming loop ignores accept errors and starts detached thread per accepted stream. Worker snapshots shared optional origin before handler reads request, while handler snapshots shared runtime after validation; connection errors log to stderr.',
+        'integrationStatus': 'Dispatcher tested with injected accept failure and two real TCP connections, proving an idle first connection does not delay a forbidden second request or create process entries. Binding/token construction and manager lifecycle wiring remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
