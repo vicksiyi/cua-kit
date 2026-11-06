@@ -173,3 +173,95 @@ fn shutdown_takes_proxy_drains_map_and_reaps_children_despite_one_poisoned_state
     }
     shutdown_proxy(&mut slot);
 }
+
+fn update_fixture() -> (
+    LoadedLaunchConfiguration,
+    core_browser_extension_host::app_server_proxy::AppServerProxy,
+) {
+    use std::sync::{Arc, Mutex};
+    let config = LoadedLaunchConfiguration {
+        launch: LaunchFields::default().resolve(|_| None),
+        selection: LoadedManifestEntry {
+            registry_path: "unused".into(),
+            selected: SelectedManifestEntry {
+                index: 0,
+                configuration: RawManifestConfiguration::default(),
+            },
+        },
+    };
+    // No detached listener is necessary for this shared-state lifecycle fixture.
+    let prepared = prepare(&config).unwrap_or_else(|e| panic!("{}", e.message));
+    let proxy = core_browser_extension_host::app_server_proxy::AppServerProxy {
+        port: prepared.port,
+        token: prepared.token,
+        origin: prepared.origin,
+        runtime: prepared.runtime,
+        processes: prepared.processes,
+        runtime_session_id: Arc::new(Mutex::new("existing-session".into())),
+    };
+    (config, proxy)
+}
+
+#[test]
+fn configuration_update_preserves_processes_identity_and_endpoint() {
+    use core_browser_extension_host::{
+        app_server_output::OutputState, app_server_runtime_state::ProxyRuntimeState,
+    };
+    use std::sync::{Arc, Mutex};
+    let (mut config, proxy) = update_fixture();
+    let process = Arc::new(Mutex::new(OutputState::default()));
+    process.lock().unwrap().generation = 19;
+    proxy
+        .processes
+        .lock()
+        .unwrap()
+        .insert("fixture".into(), process.clone());
+    let endpoint = (proxy.port, proxy.token.clone());
+    config.launch.extension_id = Some("new-id/".into());
+    config.launch.codex_cli_path = "changed-cli".into();
+    config.launch.proxy_port = 1;
+    proxy.update_configuration(&config);
+    assert_eq!(
+        *proxy.runtime.lock().unwrap(),
+        ProxyRuntimeState::from(&config)
+    );
+    assert_eq!(
+        proxy.origin.lock().unwrap().as_deref(),
+        Some("chrome-extension://new-id/")
+    );
+    assert_eq!((proxy.port, proxy.token.clone()), endpoint);
+    assert_eq!(
+        &*proxy.runtime_session_id.lock().unwrap(),
+        "existing-session"
+    );
+    assert!(Arc::ptr_eq(
+        &proxy.processes.lock().unwrap()["fixture"],
+        &process
+    ));
+    assert_eq!(process.lock().unwrap().generation, 19);
+    config.launch.extension_id = None;
+    proxy.update_configuration(&config);
+    assert_eq!(*proxy.origin.lock().unwrap(), None);
+}
+
+#[test]
+fn poisoned_origin_update_panics_after_runtime_replacement_and_poisons_runtime() {
+    use core_browser_extension_host::app_server_runtime_state::ProxyRuntimeState;
+    use std::sync::Arc;
+    let (mut config, proxy) = update_fixture();
+    let origin = Arc::clone(&proxy.origin);
+    assert!(std::thread::spawn(move || {
+        let _guard = origin.lock().unwrap();
+        panic!("fixture");
+    })
+    .join()
+    .is_err());
+    config.launch.codex_cli_path = "replacement-before-origin-failure".into();
+    assert!(std::panic::catch_unwind(|| proxy.update_configuration(&config)).is_err());
+    let runtime = proxy
+        .runtime
+        .lock()
+        .expect_err("runtime guard must unwind while held")
+        .into_inner();
+    assert_eq!(*runtime, ProxyRuntimeState::from(&config));
+}

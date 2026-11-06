@@ -17,6 +17,15 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Latest incremental stage: the existing App Server proxy now supports native-order
+configuration refresh: runtime mutex remains held while the optional extension
+origin is replaced; both poisoned locks panic with the native messages. Refresh
+alone preserves port/token, process entries/generations and runtime session ID.
+Six proxy tests pass, including origin removal and partial-update poison behavior.
+This method is not yet wired into complete manager ensure/restart dispatch, and
+does not establish production browser/App acceptance. Evidence is pinned in
+`proxyConfigurationUpdate` in the native control audit.
+
 Older dated sections below are development history, not the current completion
 claim. The computer CLI modes (`--computer`, `--check-computer`, and the
 `--swift-computer` alias) now select Rust + original Sky binding + Swift.

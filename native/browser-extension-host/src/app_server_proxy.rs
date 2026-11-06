@@ -1,5 +1,5 @@
 //! Proxy preparation recovered from inlined AppServerProxy::start in ensure.
-//! Thread ownership, manager reuse/update and shutdown are not implemented here.
+//! Listener ownership and manager lifecycle stages are reconstructed separately.
 use crate::{
     app_server_configuration::LoadedLaunchConfiguration,
     app_server_error::{RuntimeError, RuntimeErrorKind},
@@ -134,5 +134,27 @@ pub fn shutdown_proxy(slot: &mut Option<AppServerProxy>) {
         for (_, process) in processes {
             let _ = crate::app_server_output::stop_process(&process);
         }
+    }
+}
+
+impl AppServerProxy {
+    /// Existing-proxy branch of manager ensure. Keep the runtime lock while
+    /// replacing origin, matching native lock order and poison propagation.
+    /// Updating configuration alone does not restart children or rotate IDs.
+    pub fn update_configuration(&self, config: &LoadedLaunchConfiguration) {
+        let mut runtime = self
+            .runtime
+            .lock()
+            .expect("app-server proxy state mutex poisoned");
+        *runtime = ProxyRuntimeState::from(config);
+        let mut origin = self
+            .origin
+            .lock()
+            .expect("app-server proxy allowed origin mutex poisoned");
+        *origin = config
+            .launch
+            .extension_id
+            .as_ref()
+            .map(|id| format!("chrome-extension://{id}"));
     }
 }
