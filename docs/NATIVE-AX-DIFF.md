@@ -368,3 +368,18 @@ textTruncationDescriptor 三个字段；后两者的值类型恢复在 `AXValueD
 12 个 Swift 案例覆盖 nil/空数组/全覆盖/分段覆盖、顺序敏感的相等性、属性修改、半开区间。
 原构建结构字段及 getter 指令记录于 valueDescriptorEvidence。尚未恢复子集选择和文本截断
 生成算法，也尚未把这些描述符附加到现有观察输出；只恢复元数据不证明截断链路完成。
+
+## AXPartialValue 数组解码结果组合
+
+恢复 `decodedArray`（`0x1006fac44..0x1006facb8`）的结果组合逻辑：先调用 encoded
+value 的非抛错 `unwrapped<[Element]>()`，返回 nil 时整项失败；返回数组时原样附带
+已存储的 arraySubsetDescriptor。空数组是有效成功值，不根据 count、区间覆盖或数组
+长度重新切片、填充、排序或标准化描述符。
+
+`AXPartialArrayDecoding.swift` 的闭包明确表示尚未完整恢复的底层 generic decoder，
+并不以 Swift 简单强转代替其 CFArray/元素转换过程。12 个组合案例覆盖 nil、空数组、
+重复值/顺序与四种子集描述符。此 helper 和此前的描述符均尚未接入完整观察链路。
+
+另核实相邻 decodedThrowing 转发（`0x1006fac24..0x1006fac44`）将标志固定为 true，
+与 decoded → nonthrowing wrapper 的 false/catch 路径不同。审计 partialArrayEvidence
+保存函数哈希及解码调用、nil 分支、描述符读取和该 true 参数的机器指令。

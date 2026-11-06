@@ -421,6 +421,29 @@ value_descriptor_evidence={
     'isComplete':{'start':hex(complete_address),'endExclusive':hex(complete_end),'instructionWords':[hex(word) for word in complete_words],'semantics':'availableRanges == nil; count and range coverage are not inspected'},
     'limitations':'Value metadata only; truncation generation and subset selection algorithms remain separate.',
 }
+partial_array_start=0x1006fac44
+partial_array_end=starts[starts.index(partial_array_start)+1]
+if partial_array_end != 0x1006facb8: raise SystemExit('Partial array decoder boundary changed')
+partial_array_words={
+    0x1006fac68:0xf9400280, # encoded value field
+    0x1006fac70:0x97ffb8d6, # call nonthrowing unwrapped
+    0x1006fac78:0xb40000d3, # nil array -> nil result
+    0x1006fac7c:0xa940d295, # preserve stored subset descriptor
+    0x1006fac90:0xd2800015,
+    0x1006fac94:0xd2800014,
+    0x1006fac34:0x52800020, # separate decodedThrowing passes true
+    0x1006fac38:0x97ffb903,
+}
+for address,word in partial_array_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('Partial-value decoding dispatch changed at '+hex(address))
+partial_array_evidence={
+    'start':hex(partial_array_start),'endExclusive':hex(partial_array_end),
+    'machineCodeSha256':hashlib.sha256(read_virtual(partial_array_start,partial_array_end-partial_array_start)).hexdigest(),
+    'verifiedInstructions':{hex(address):hex(word) for address,word in partial_array_words.items()},
+    'semantics':'Nonthrowing array decode; nil fails, empty array succeeds; subset metadata forwarded without count/range reconciliation.',
+    'limitations':'Underlying generic CFArray decoding and full AXPartialValue storage are not implemented by this helper.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -468,6 +491,7 @@ record = {
     'axUIElementDecodingEvidence':element_evidence,
     'rawAttributeEvidence':raw_attribute_evidence,
     'valueDescriptorEvidence':value_descriptor_evidence,
+    'partialArrayEvidence':partial_array_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
