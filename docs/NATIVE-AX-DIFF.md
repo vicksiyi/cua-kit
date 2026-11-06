@@ -662,3 +662,25 @@ AXChildren 的请求目标固定为 `[AXUIElement]`，由编译期协议约束�
 
 数组转换与 AXChildren 两项编译执行回归、完整 helper 构建和固定原生审计通过。
 这不等于完整泛型数组解码已接通；各元素的通用类型分派仍是剩余工作。
+
+## UIElement 包装层包含上下文相关缓存
+
+静态反射确认 `AccessibilitySupport.UIElement` 是两个字段的 struct：`axElement` 与
+`cache`。`UIElementCache` 的三个字段为 `supportedAttributes`、`attributes`、
+`transactionAttributes`。这不同于前面只持有一个系统引用的 UITextMarker wrapper。
+不能把 UIElement 简化为 AXUIElement 的别名，再宣称完整 generic decoder 已恢复。
+
+`UIElement.init(element:)` 在 `0x1007213dc` 跳转至共享初始化器 `0x10072187c`。
+该初始化器和 `UIElementCache.init` 都调用 `0x1011537e0`。此 stub 在 indirect table
+中只显示 LOCAL ABSOLUTE；实际 ARM64 stub 读取 GOT `0x1014698a8`，dyld fixup
+明确绑定到 Swift Concurrency 的 `TaskLocal.get()`。有上下文时提取其组成部分；缺失
+时传三个零值给 `0x10076589c` 的缓存构造 helper。没有执行原厂服务。
+
+新增 elementStorageEvidence 固定字段布局、四个函数边界/哈希、TaskLocal binding、
+分支指令及初始化调用。审计通过。这是“初始化依赖 TaskLocal 上下文”的证据，不是
+“所有缓存都全局共享”或“按 PID 缓存”的证据，也不能仅由字段名称推断事务生命周期。
+
+下一层需要恢复该上下文的 payload、缓存填充/失效和 transactionAttributes 的使用方式，
+之后才能将 UIElementProtocol 分派接入完整 decoder。当前 Target 的 UUID snapshot
+机制是独立实现，不能替代原构建的缓存与 tree revision。此次仅补充静态证据与实施边界，
+未增加空缓存/global dictionary 占位，也未改变生产观察或权限行为。

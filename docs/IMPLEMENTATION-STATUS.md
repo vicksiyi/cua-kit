@@ -6901,3 +6901,10 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Resolved native typerefs: the bridge casts to [AnyObject], while an ineligible target reports expected [Any] and actual requestedType. Added exact typeref/call/branch assertions to the audit.
 - Replaced AXChildren's NSArray + map adapter with the inspected conditional [AnyObject] bridge. Added the separate initial TypeErasedArray eligibility helper, preserving its distinct error payload from final conversion failure. The complete generic dispatcher does not yet invoke that helper; AXChildren has a statically known array target.
 - Expanded conversion tests with ordinary/Any/Optional-array rejection and custom protocol conformance eligibility. Both focused tests and full Swift build pass; native audit remains pinned. No live App UI claim or overall completion claim is made.
+
+### 2026-11-06 UIElement cache and TaskLocal initialization evidence
+
+- Recovered reflected storage boundaries: UIElement has axElement/cache; UIElementCache has supportedAttributes/attributes/transactionAttributes. Pinned field records and four initializer/helper function hashes.
+- Resolved a LOCAL ABSOLUTE stub through ARM64 GOT loading and dyld fixups to Swift Concurrency TaskLocal.get(). Both element/cache initializers use it; the shared element initializer passes present context components or absent-context zeros to cache construction. Added call/branch assertions to the audit.
+- The fixed 193-signature audit passes. This changes the reconstruction prerequisite: UIElement cannot be restored as a single AX reference or a guessed global dictionary. Context payload, cache population/invalidation and transaction lifetime remain to inspect before generic element dispatch can be completed.
+- Static analysis only; no runtime feature or native UI success is claimed, and no source service was launched.

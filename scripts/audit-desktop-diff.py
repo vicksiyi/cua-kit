@@ -651,6 +651,48 @@ array_target_evidence={
     'finalFailureConstruction':'0x1006e9d28..0x1006e9d30',
     'limitations':'Protocol, bridge and conversion evidence; the complete generic element decoder and dynamic dispatch are not yet connected.',
 }
+element_storage=[]
+for nominal, name, expected_names in [
+    (0x1012cd398,'UIElement',['axElement','cache']),
+    (0x1012cce40,'UIElementCache',['supportedAttributes','attributes','transactionAttributes']),
+]:
+    fields=relative_address(nominal+16)
+    _,_,kind,size,count=struct.unpack('<iiHHI',read_virtual(fields,16))
+    names=[c_string(relative_address(fields+16+i*size+8)) for i in range(count)]
+    if kind != 0 or size != 12 or names != expected_names:
+        raise SystemExit('UIElement/cache storage layout changed')
+    element_storage.append({'name':name,'nominalDescriptor':hex(nominal),'fieldDescriptor':hex(fields),
+        'fields':names,'fieldRecordsSha256':hashlib.sha256(read_virtual(fields,16+size*count)).hexdigest()})
+context_slot='0x1014698a8'
+context_binding=next((line for line in fixups.splitlines() if context_slot in line.lower()),'')
+if 'libswift_Concurrency/_$ss9TaskLocalC3getxyF' not in context_binding:
+    raise SystemExit('UIElement cache context getter changed')
+element_init_functions=[]
+for address,name in [(0x1007213dc,'UIElement.init(element:) entry'),(0x10072187c,'shared element initializer'),
+                     (0x1007645a4,'UIElementCache.init'),(0x10076589c,'cache construction helper')]:
+    boundary=starts[starts.index(address)+1]
+    element_init_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+context_words={0x1007213dc:0x14000128,0x1011537e0:0xd00018b0,
+    0x1011537e4:0xf9445610,0x1011537e8:0xd61f0200,
+    0x1007218c0:0xb4000188,0x1007218f8:0xd2800014,
+    0x1007218fc:0xd2800015,0x100721900:0xd2800016}
+for address,word in context_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('UIElement context initialization branch changed')
+for address,destination in [(0x1007218b8,0x1011537e0),(0x1007645dc,0x1011537e0),(0x100721914,0x10076589c)]:
+    word=struct.unpack('<I',read_virtual(address,4))[0]
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    if word >> 26 != 0b100101 or address+immediate*4 != destination:
+        raise SystemExit('UIElement cache initialization call changed')
+element_storage_evidence={
+    'layouts':element_storage,'functions':element_init_functions,
+    'contextGetter':{'stub':'0x1011537e0','got':context_slot,'binding':'libswift_Concurrency/_$ss9TaskLocalC3getxyF'},
+    'instructionWords':{hex(a):hex(w) for a,w in context_words.items()},
+    'interpretation':'UIElement stores an AX reference plus UIElementCache. The shared initializer and cache initializer read TaskLocal context. The element initializer forwards context components or absent-context zeros to the cache construction helper.',
+    'limitations':'TaskLocal payload semantics, cache population/invalidations and transaction lifetime are not recovered. This does not prove a process-global or per-PID cache, and an AX reference alone cannot stand in for the complete UIElement.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -704,6 +746,7 @@ record = {
     'partialArrayEvidence':partial_array_evidence,
     'arrayTransformEvidence':array_transform_evidence,
     'arrayTargetEvidence':array_target_evidence,
+    'elementStorageEvidence':element_storage_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

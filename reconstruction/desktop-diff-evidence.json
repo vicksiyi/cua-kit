@@ -1571,6 +1571,74 @@
     "finalFailureConstruction": "0x1006e9d28..0x1006e9d30",
     "limitations": "Protocol, bridge and conversion evidence; the complete generic element decoder and dynamic dispatch are not yet connected."
   },
+  "elementStorageEvidence": {
+    "layouts": [
+      {
+        "name": "UIElement",
+        "nominalDescriptor": "0x1012cd398",
+        "fieldDescriptor": "0x101323fd8",
+        "fields": [
+          "axElement",
+          "cache"
+        ],
+        "fieldRecordsSha256": "8613ebcbe6736536b6936aab09a04aa0a054cffe4cabdabdcdad14053e8a0751"
+      },
+      {
+        "name": "UIElementCache",
+        "nominalDescriptor": "0x1012cce40",
+        "fieldDescriptor": "0x101323aac",
+        "fields": [
+          "supportedAttributes",
+          "attributes",
+          "transactionAttributes"
+        ],
+        "fieldRecordsSha256": "644b366d738013f5303b6feecf5401d4a4f0402b5692d3a5bd223522d7a0a219"
+      }
+    ],
+    "functions": [
+      {
+        "name": "UIElement.init(element:) entry",
+        "start": "0x1007213dc",
+        "endExclusive": "0x1007213e0",
+        "machineCodeSha256": "1335f5ac548d6a1ee19f552bb8f47f9533ab222790afc086bdea14fa75befc03"
+      },
+      {
+        "name": "shared element initializer",
+        "start": "0x10072187c",
+        "endExclusive": "0x100721960",
+        "machineCodeSha256": "de57cbdbf146fab7859bdc15af316a2374690ca3a02eea4e52e92d72170d2694"
+      },
+      {
+        "name": "UIElementCache.init",
+        "start": "0x1007645a4",
+        "endExclusive": "0x100764678",
+        "machineCodeSha256": "c66bfd419fe26152490ec7c08c9171f9230c8e3698e0f760760e7164c90e6a2c"
+      },
+      {
+        "name": "cache construction helper",
+        "start": "0x10076589c",
+        "endExclusive": "0x1007662ac",
+        "machineCodeSha256": "808994b4a42a9adce132d7cd5168ac378cfe576c5bcf9dd4dc25cbe3da8d3931"
+      }
+    ],
+    "contextGetter": {
+      "stub": "0x1011537e0",
+      "got": "0x1014698a8",
+      "binding": "libswift_Concurrency/_$ss9TaskLocalC3getxyF"
+    },
+    "instructionWords": {
+      "0x1007213dc": "0x14000128",
+      "0x1011537e0": "0xd00018b0",
+      "0x1011537e4": "0xf9445610",
+      "0x1011537e8": "0xd61f0200",
+      "0x1007218c0": "0xb4000188",
+      "0x1007218f8": "0xd2800014",
+      "0x1007218fc": "0xd2800015",
+      "0x100721900": "0xd2800016"
+    },
+    "interpretation": "UIElement stores an AX reference plus UIElementCache. The shared initializer and cache initializer read TaskLocal context. The element initializer forwards context components or absent-context zeros to the cache construction helper.",
+    "limitations": "TaskLocal payload semantics, cache population/invalidations and transaction lifetime are not recovered. This does not prove a process-global or per-PID cache, and an AX reference alone cannot stand in for the complete UIElement."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
