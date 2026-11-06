@@ -804,6 +804,38 @@ element_cache_evidence={
     'interpretation':'The element cache holds a supported set, partial-value dictionary, and optional transaction attribute set. The constructor brackets fallback dictionary lookup with the system unfair lock; the lookup returns the stored three-field value or absent result.',
     'limitations':'This verifies one read-side critical section, not all cache writes, initialization, invalidation or native observation behavior. Optional transactionAttributes must not be collapsed to an empty set.',
 }
+# Separate read and write critical sections; the expensive fallback build
+# between them is not held under one lock. The write is an update, not set-if-absent.
+fallback_write_calls=[(0x100766144,0x101154ca4,'_os_unfair_lock_lock'),(0x100766164,0x101154cbc,'_os_unfair_lock_unlock')]
+for site,stub,symbol in fallback_write_calls:
+    word=struct.unpack('<I',read_virtual(site,4))[0]
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate-=0x4000000
+    if word>>26!=0b100101 or site+immediate*4!=stub or indirect.get(stub)!=symbol:
+        raise SystemExit('UIElementCache fallback write lock call changed')
+fallback_write_words={
+    0x100766148:0x910042e0,0x10076614c:0xaa1403e1,
+    0x100766150:0xaa1c03e2,0x100766154:0xaa1a03e3,
+    0x100766158:0xd2800004,0x10076615c:0x97fffbbb,
+    0x1007650c8:0x97fe7e12,0x1007650d8:0xf9000328,
+    0x1007049c4:0x36000259,0x1007049dc:0xa9005517,
+    0x1007049e0:0xf9000913,0x100704a1c:0x97ffb4cb,
+}
+for address,word in fallback_write_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('UIElementCache fallback replacement branch changed')
+fallback_write_functions=[]
+for address,name in [(0x100765048,'fallback dictionary write wrapper'),(0x100704910,'specialized dictionary replacement or insertion')]:
+    boundary=starts[starts.index(address)+1]
+    fallback_write_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+element_cache_evidence['fallbackWrite']={
+    'lockCalls':[{'site':hex(c),'stub':hex(st),'symbol':sy} for c,st,sy in fallback_write_calls],
+    'instructionWords':{hex(a):hex(w) for a,w in fallback_write_words.items()},
+    'functions':fallback_write_functions,
+    'interpretation':'Fallback lookup and storage use separate lock regions. The storage call passes nil for transactionAttributes. The dictionary setter replaces an existing three-field cache value or inserts a new key; it does not keep the first concurrent value by double-checking.',
+    'limitations':'Does not recover the full attributes collection pipeline, every error path or all cache writers. No process-wide cache or single-flight guarantee follows.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))

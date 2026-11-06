@@ -6930,3 +6930,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：单元素缓存布局与回退读锁
 
 补全 UIElementCache 三字段的准确泛型类型，保留 transactionAttributes 的 Optional 语义；静态确认构造器中的回退字典读取位于系统 unfair-lock 临界区。新增 elementCacheEvidence 检查字段字节、系统锁绑定、调用点及读取 helper 机器码。不涉及生产行为变更，完整构造/写入/失效仍未还原。
+
+
+### 2026-11-06：回退缓存写入语义确认
+
+新增 fallbackWrite 静态审计：读取与写入使用分离的系统锁临界区；写入会替换既有元素缓存或插入新项，transactionAttributes 为 nil。不能改成单次构建或只保留首个结果。完整属性构建、事务预取、失效及生产接线仍未恢复，本次没有新增运行时 UI 能力。

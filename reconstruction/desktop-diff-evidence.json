@@ -1787,7 +1787,51 @@
       ]
     },
     "interpretation": "The element cache holds a supported set, partial-value dictionary, and optional transaction attribute set. The constructor brackets fallback dictionary lookup with the system unfair lock; the lookup returns the stored three-field value or absent result.",
-    "limitations": "This verifies one read-side critical section, not all cache writes, initialization, invalidation or native observation behavior. Optional transactionAttributes must not be collapsed to an empty set."
+    "limitations": "This verifies one read-side critical section, not all cache writes, initialization, invalidation or native observation behavior. Optional transactionAttributes must not be collapsed to an empty set.",
+    "fallbackWrite": {
+      "lockCalls": [
+        {
+          "site": "0x100766144",
+          "stub": "0x101154ca4",
+          "symbol": "_os_unfair_lock_lock"
+        },
+        {
+          "site": "0x100766164",
+          "stub": "0x101154cbc",
+          "symbol": "_os_unfair_lock_unlock"
+        }
+      ],
+      "instructionWords": {
+        "0x100766148": "0x910042e0",
+        "0x10076614c": "0xaa1403e1",
+        "0x100766150": "0xaa1c03e2",
+        "0x100766154": "0xaa1a03e3",
+        "0x100766158": "0xd2800004",
+        "0x10076615c": "0x97fffbbb",
+        "0x1007650c8": "0x97fe7e12",
+        "0x1007650d8": "0xf9000328",
+        "0x1007049c4": "0x36000259",
+        "0x1007049dc": "0xa9005517",
+        "0x1007049e0": "0xf9000913",
+        "0x100704a1c": "0x97ffb4cb"
+      },
+      "functions": [
+        {
+          "name": "fallback dictionary write wrapper",
+          "start": "0x100765048",
+          "endExclusive": "0x1007650f8",
+          "machineCodeSha256": "7a818d13408cb74c0fc1503e44ed420e2a6af4024080bdeb4a0c6970540bde26"
+        },
+        {
+          "name": "specialized dictionary replacement or insertion",
+          "start": "0x100704910",
+          "endExclusive": "0x100704a50",
+          "machineCodeSha256": "517a6b079d6b8b6a16289562edf663297ec40f906868e2cbcf30098e66248a28"
+        }
+      ],
+      "interpretation": "Fallback lookup and storage use separate lock regions. The storage call passes nil for transactionAttributes. The dictionary setter replaces an existing three-field cache value or inserts a new key; it does not keep the first concurrent value by double-checking.",
+      "limitations": "Does not recover the full attributes collection pipeline, every error path or all cache writers. No process-wide cache or single-flight guarantee follows."
+    }
   },
   "frequencyTableEvidence": {
     "nominalDescriptor": "0x1012ccd50",
