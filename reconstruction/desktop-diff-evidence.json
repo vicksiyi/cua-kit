@@ -3093,6 +3093,41 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "chessPreferredPoint": {
+      "entry": "0x10079eb20..<0x10079f380",
+      "gates": "role button; title predicate 0x1007a3520; exact bundle com.apple.Chess; app lookup, element frame and center hit must exist; center matching target returns nil; parent frame required",
+      "title": "at least two Characters; suffix(2) via 0x1007a73ec; lowercase a...h then 1...8; static arrays 0x101572998 and 0x101572a40",
+      "sampling": "64 rows x 64 columns; cell centers using parent minX/minY + size/64 * (index+0.5); individual hit errors/nil ignored; matching points collected; nil if empty else sequential coordinate sums / count",
+      "blocks": [
+        {
+          "start": "0x10079eb20",
+          "endExclusive": "0x10079f380",
+          "machineCodeSha256": "dbf12d3fa6d0d72ddf90aeee1c56ed155f2deb4b9435a12910673207dc129469"
+        },
+        {
+          "start": "0x1007a3520",
+          "endExclusive": "0x1007a3880",
+          "machineCodeSha256": "6adeceb2b8b7188e7051a24f2012a91b5ae5102e961a42b0eda739a9e8980b65"
+        },
+        {
+          "start": "0x1007a73ec",
+          "endExclusive": "0x1007a7494",
+          "machineCodeSha256": "cc03ccf5e47becc54f972f371b8557d6bc091c66e4da14d0a2b6682f68720893"
+        },
+        {
+          "start": "0x101572998",
+          "endExclusive": "0x101572a38",
+          "machineCodeSha256": "90e2ce1b097d444f1b7690b21a870d47864755b7e61195c9c52ed351db4e16dd"
+        },
+        {
+          "start": "0x101572a40",
+          "endExclusive": "0x101572ae0",
+          "machineCodeSha256": "b6a5c198e72b1f9f9d2dc0671ab99640a62d6e308470e130941ccd1a4394147c"
+        }
+      ],
+      "implementation": "UIElementChessClickPoint.swift preserves gate order, title suffix and complete sampling/averaging control flow.",
+      "limitations": "App lookup, hit-test and provider equality remain explicit dependencies; concrete app wrapper/provider composition and production integration pending. Sampling tests use fixtures only."
+    },
     "clippingFrame": {
       "entry": "0x10079ffb8..<0x1007a03f8",
       "initial": "CGRectInfinite via GOT 0x101464b58; self included, no depth limit/lookahead",

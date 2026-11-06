@@ -2458,3 +2458,21 @@ AXScrollToVisible 不属于这四种动作。
 严格读取/解码失败时不回退旧 frame，known-unsupported 不触发系统读取。
 四个按页动作及其它动作排除测试通过，Swift package 构建通过。
 尚未补齐特殊位置 helper 与实际滚动，也未把整个 clickablePoint 接入生产 indexed click。
+
+
+## Chess 专用优先点击位置（2026-11-07）
+
+0x10079eb20 的特殊 helper 限定 AXButton、标题后两个 Character 分别为 a...h
+和 1...8、bundleIdentifier 精确 com.apple.Chess。不是前缀匹配或所有应用通用算法。
+标题判定 0x1007a3520 调用末尾切片 helper 0x1007a73ec，静态字母和数字数组位于
+0x101572998 / 0x101572a40；不 trim、不忽略大小写。
+
+应用、元素 frame、中心命中测试结果任一缺失返回 nil；中心已经命中目标也返回 nil，
+交回普通几何路径。否则读取父 frame，在其 64×64 网格的格子中心逐行命中测试。
+单次异常或 nil 跳过，所有命中目标的坐标按扫描顺序收集，无匹配返回 nil，否则坐标
+逐项求和除以数量。结果没有额外再次命中验证；还原时没有自行加入该步骤。
+
+UIElementChessClickPoint.swift 恢复此控制流与标题规则，保留应用查询、AX 命中测试
+和 provider 元素相等比较为显式依赖。测试覆盖 64 个合法坐标、无效/Unicode 标题、
+精确 bundle gate、中心已命中/无结果，以及完整 4096 次采样顺序、异常跳过和均值。
+尚未完成实际 ApplicationUIElement/provider 接线，也未改变生产点击或调用实际 Chess。

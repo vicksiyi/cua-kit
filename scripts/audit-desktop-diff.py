@@ -1166,6 +1166,15 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['chessPreferredPoint']={
+    'entry':'0x10079eb20..<0x10079f380',
+    'gates':'role button; title predicate 0x1007a3520; exact bundle com.apple.Chess; app lookup, element frame and center hit must exist; center matching target returns nil; parent frame required',
+    'title':'at least two Characters; suffix(2) via 0x1007a73ec; lowercase a...h then 1...8; static arrays 0x101572998 and 0x101572a40',
+    'sampling':'64 rows x 64 columns; cell centers using parent minX/minY + size/64 * (index+0.5); individual hit errors/nil ignored; matching points collected; nil if empty else sequential coordinate sums / count',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079eb20,0x10079f380),(0x1007a3520,0x1007a3880),(0x1007a73ec,0x1007a7494),(0x101572998,0x101572a38),(0x101572a40,0x101572ae0)]],
+    'implementation':'UIElementChessClickPoint.swift preserves gate order, title suffix and complete sampling/averaging control flow.',
+    'limitations':'App lookup, hit-test and provider equality remain explicit dependencies; concrete app wrapper/provider composition and production integration pending. Sampling tests use fixtures only.',
+}
 element_storage_evidence['clippingFrame']={
     'entry':'0x10079ffb8..<0x1007a03f8',
     'initial':'CGRectInfinite via GOT 0x101464b58; self included, no depth limit/lookahead',
