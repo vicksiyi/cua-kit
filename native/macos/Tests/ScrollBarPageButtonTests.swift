@@ -160,6 +160,22 @@ struct ScrollBarPageButtonTests {
         let failedChildren = valid.systemElementCollectionValue(for: childrenKey, transaction: transaction,
             read: { readCount += 1; return (.success, wrongPartial) }, reportError: { errors.append($0) })
         precondition(readCount == 2 && errors.count == 1 && failedChildren.isEmpty)
+        precondition(ScrollBarUIElement.role == UIElementRole("AXScrollBar"))
+        let barAX = AXUIElementCreateApplication(424246)
+        let barTransaction = UIElementTransactionCache(
+            attributeTable: [barAX: [childrenKey: childrenRaw], valid.axElement: valid.cache.attributes],
+            requestedAttributes: requested.union([childrenKey]),
+            fallbackElements: UIElementFallbackCache(initialState: [:]))
+        let bar = ScrollBarUIElement(systemElement: barAX, transaction: barTransaction)
+        precondition(bar.axElement === barAX)
+        precondition(bar.cache.attributes[childrenKey]!.value.value === childrenRaw.value.value)
+        let page = bar.pageButton(.increment, transaction: barTransaction,
+            readChildren: { fatalError("prefetched children must not refetch") },
+            reportError: { _ in fatalError("prefetched children are valid") })!
+        precondition(page.axElement === valid.axElement)
+        precondition(bar.pageButton(.decrement, transaction: barTransaction,
+            readChildren: { fatalError("prefetched children must not refetch") },
+            reportError: { _ in fatalError() }) == nil)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

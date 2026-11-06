@@ -2294,6 +2294,26 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementCollectionValue.swift",
       "limitations": "Concrete accessor composition with original decoder/provider/logger boundaries injected; original full strict decoder, native logger backend, TaskLocal and production wiring remain pending."
     },
+    "scrollBarStorage": {
+      "descriptor": "0x1012cc950",
+      "fields": "0x10132336c: immutable axElement and cache",
+      "initializer": "0x100717a54 -> 0x10071e390; TaskLocal read 0x10071e3cc, shared cache constructor 0x10071e438 -> 0x10076589c; no role validation in initializer",
+      "staticRole": "0x100726990 initializes optional role to UIElementRole.scrollBar; getter 0x100726a1c",
+      "blocks": [
+        {
+          "start": "0x10071e390",
+          "endExclusive": "0x10071e46c",
+          "machineCodeSha256": "85cca14653bfeaba34452f7dfb6b7d92455e30293ebcbd7205e2e41b5c20c370"
+        },
+        {
+          "start": "0x100726990",
+          "endExclusive": "0x100726a70",
+          "machineCodeSha256": "ad387b223670afc882759989ac15d7800ab8012aaaca58fbbb995448073b3ac3"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/ScrollBarUIElement.swift",
+      "limitations": "Concrete storage, explicit-transaction system initialization and page-button getter composition restored. Original protocol conformances, implicit TaskLocal, decoder role validation, other scrollbar properties and production dispatch remain pending."
+    },
     "toggleDisclosure": {
       "dispatch": "0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure",
       "condition": "0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing",

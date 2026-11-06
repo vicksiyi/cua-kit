@@ -1026,6 +1026,15 @@ element_storage_evidence['elementCollectionValue']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementCollectionValue.swift',
     'limitations':'Concrete accessor composition with original decoder/provider/logger boundaries injected; original full strict decoder, native logger backend, TaskLocal and production wiring remain pending.',
 }
+element_storage_evidence['scrollBarStorage']={
+    'descriptor':'0x1012cc950', 'fields':'0x10132336c: immutable axElement and cache',
+    'initializer':'0x100717a54 -> 0x10071e390; TaskLocal read 0x10071e3cc, shared cache constructor 0x10071e438 -> 0x10076589c; no role validation in initializer',
+    'staticRole':'0x100726990 initializes optional role to UIElementRole.scrollBar; getter 0x100726a1c',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10071e390,0x10071e46c),(0x100726990,0x100726a70)]],
+    'implementation':'native/macos/Sources/CuaHelper/ScrollBarUIElement.swift',
+    'limitations':'Concrete storage, explicit-transaction system initialization and page-button getter composition restored. Original protocol conformances, implicit TaskLocal, decoder role validation, other scrollbar properties and production dispatch remain pending.',
+}
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
     'condition':'0x1007b016c..0x1007b0178: isDisclosable witness +0xa8; false returns without reading state or writing',

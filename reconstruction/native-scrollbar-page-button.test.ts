@@ -53,6 +53,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementActionDispatch.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift"),
         join(root, "native/macos/Sources/CuaHelper/ScrollBarPageButton.swift"),
+        join(root, "native/macos/Sources/CuaHelper/ScrollBarUIElement.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementCollectionValue.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementUncachedValue.swift"),
 

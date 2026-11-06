@@ -1450,3 +1450,21 @@ failedToUnwrapAttributeValue([UIElement].self)，宽松模式 nil。AXValue 中�
 
 尚缺原 ScrollBar 类型、完整协议/TaskLocal、raw provider 和 logger 生产接线，以及
 真实应用验收；不能把这次元素级接线描述为用户可用的滚动功能已经全部完成。
+
+## ScrollBarUIElement 存储与翻页按钮接线（2026-11-07）
+
+检查 nominal descriptor 0x1012cc950，field descriptor 0x10132336c 包含两个 immutable
+字段 axElement、cache。静态 role 初始化 0x100726990 取 UIElementRole.scrollBar，
+getter 0x100726a1c 返回 optional role。ScrollBar 初始化入口与其它类型共享
+0x100717a54（LLDB 可能显示 WebArea 别名），实际跳转到 0x10071e390，读取 TaskLocal
+并调用共享 cache 构造器 0x10076589c。这里没有角色校验；不能把 decoder 中的类型
+约束提前加入原本不验证角色的构造器。
+
+恢复具体 ScrollBarUIElement 存储、显式 transaction 系统初始化和 pageButton 组合，
+后者连接已有数组属性读取、严格解码、系统子元素初始化及 role/subrole 首匹配。
+未添加假的 UIElementProtocol conformance，也未虚构默认 TaskLocal。
+测试以预取的真实 AXChildren/角色/子角色 partial values 验证原 AX 引用与缓存保持、
+增页匹配和减页缺失，任何意外系统重读都会失败。测试与 Swift 构建通过。
+
+完整协议、隐式事务、解码阶段角色约束、其它滚动条属性及生产入口仍待恢复。
+本次没有真实应用操作或模型请求，不能据此判定用户滚动体验已经完成。
