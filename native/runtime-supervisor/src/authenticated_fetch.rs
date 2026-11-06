@@ -17,7 +17,7 @@ pub struct AuthenticatedFetchRequest {
     pub body_base64: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct OutboundRequest {
     pub method: Method,
     pub url: Url,
@@ -248,4 +248,48 @@ pub fn build_http_client() -> Result<reqwest::Client, &'static str> {
     http_client_builder()
         .build()
         .map_err(|_| "failed to initialize nodeRepl.fetch HTTP client")
+}
+
+pub type FetchFuture<'a, T> =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Result<T, String>> + Send + 'a>>;
+
+/// Native auth boundary: acquisition/cache/refresh belong to the provider.
+pub trait FetchAuthProvider: Send + Sync {
+    fn current_auth(&self) -> FetchFuture<'_, FetchCredentials>;
+    fn refetch_auth(&self) -> FetchFuture<'_, FetchCredentials>;
+}
+
+pub trait FetchHttpClient: Send + Sync {
+    fn send(&self, request: OutboundRequest) -> FetchFuture<'_, FetchResponse>;
+}
+
+impl FetchHttpClient for reqwest::Client {
+    fn send(&self, request: OutboundRequest) -> FetchFuture<'_, FetchResponse> {
+        Box::pin(async move { send_request(self, request).await.map_err(str::to_owned) })
+    }
+}
+
+/// Resolve before auth acquisition. Only authenticated 401 responses trigger one
+/// credential refetch and one resend; transport errors and passthrough never do.
+pub async fn fetch_with_auth(
+    request: &AuthenticatedFetchRequest,
+    mode: FetchRuntimeMode,
+    auth: &dyn FetchAuthProvider,
+    http: &dyn FetchHttpClient,
+) -> Result<FetchResponse, String> {
+    match resolved_request(request, mode).map_err(str::to_owned)? {
+        ResolvedRequest::Passthrough(request) => http.send(request).await,
+        ResolvedRequest::Authenticated(request) => {
+            let credentials = auth.current_auth().await?;
+            let response = http
+                .send(outbound_authenticated_request(request.clone(), credentials))
+                .await?;
+            if response.status != 401 {
+                return Ok(response);
+            }
+            let credentials = auth.refetch_auth().await?;
+            http.send(outbound_authenticated_request(request, credentials))
+                .await
+        }
+    }
 }

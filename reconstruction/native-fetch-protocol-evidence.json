@@ -128,6 +128,26 @@
     ],
     "limits": "Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and Rustls WebPKI/native-root branches are evidenced; exact transitive dependency versions, provider parity and decompression features remain under review. Client construction exists but no production handler is wired."
   },
+  "orchestration": {
+    "range": [
+      "0x10026bf48",
+      "0x10026ca94"
+    ],
+    "instructionTextSha256": "19c27be274ab533b10a5a33a2e6ae2b3f543d67bfcee05e80452c202b4e8b6f6",
+    "authVtable": {
+      "address": "0x100cfb970",
+      "currentAuth": "0x10022bb10",
+      "refetchAuth": "0x10022bb84"
+    },
+    "reviewedBranches": [
+      "resolved_request precedes any provider or HTTP call; passthrough dispatch at 0x10026c49c bypasses auth",
+      "0x10026c5b8 calls current_auth; initial auth errors propagate via 0x10026c278 -> 0x10026c504",
+      "0x10026c6cc first authenticated send; only status 401 at 0x10026c74c triggers refetch_auth at 0x10026c7ac",
+      "refetch error at 0x10026c0f8 -> 0x10026c4ac drops original response and returns error",
+      "second send at 0x10026c1d0 returns via 0x10026c1f0..0x10026c224 without another status retry"
+    ],
+    "limits": "Provider/HTTP trait interfaces are independent Rust reconstruction. Test providers use synthetic credentials. Native App Server provider, cache, request context and deployment wiring are not supplied by this orchestration."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
   "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }

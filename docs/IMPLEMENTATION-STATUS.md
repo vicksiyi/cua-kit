@@ -6523,3 +6523,10 @@ Enabled reqwest Rustls WebPKI and native-root features after tracing both enable
 Eleven fetch tests pass. A temporary localhost TLS server verifies an untrusted certificate fails, an explicitly added owned certificate succeeds, and a hostname mismatch still fails; no certificate/hostname verification bypass is used. The initial fixture certificate was a CA certificate and correctly failed as a server leaf; generating it with CA:FALSE/serverAuth fixed the fixture. The redirect test now uses the shared builder. Test certificates/keys are temporary, removed and never published; no user trust store changes are made.
 
 This establishes actual HTTPS transport and normal trust/hostname enforcement, not exact native TLS provider or transitive-version parity. Decompression features, full timeout lifecycle, App Server credentials, service orchestration and production host wiring remain open.
+
+
+### Native authenticated-fetch orchestration
+
+Implemented fetch_with_auth with explicit provider and HTTP-client traits. Resolution precedes provider access. Passthrough (including permitted gaas mode requests) sends without credentials and never refreshes. Authenticated requests obtain current credentials, shape headers and send; only HTTP 401 triggers one refetch and replay of the original prepared request. A second 401 is returned as response data. Initial/refresh provider errors and either send error propagate; no additional attempts occur.
+
+Pinned instructions and the provider vtable establish current_auth/refetch_auth slots and the single-401 retry branch. Fifteen fetch tests pass, covering retained method/URL/body/unrelated headers, fresh credential replacement, account removal on refresh, status/error paths, no provider use for passthrough and resolution errors before side effects, alongside real HTTP/TLS transport tests. These orchestration tests use synthetic providers/transports; they are not original App Server integration. Credential provider/cache/context and production BackgroundHost wiring remain open.

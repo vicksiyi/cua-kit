@@ -565,3 +565,178 @@ with socket.socket() as server:
             .success()
     );
 }
+
+mod orchestration {
+    use super::*;
+    use core_runtime_supervisor::authenticated_fetch::*;
+    use std::{collections::VecDeque, sync::Mutex};
+    struct Fixture {
+        events: Mutex<Vec<&'static str>>,
+        auth: Mutex<VecDeque<Result<FetchCredentials, String>>>,
+        responses: Mutex<VecDeque<Result<u16, String>>>,
+        requests: Mutex<Vec<OutboundRequest>>,
+    }
+    impl Fixture {
+        fn new(responses: Vec<Result<u16, String>>) -> Self {
+            Self {
+                events: Mutex::new(vec![]),
+                auth: Mutex::new(VecDeque::from([
+                    Ok(FetchCredentials {
+                        access_token: "first-fixture".into(),
+                        account_id: Some("first-account".into()),
+                    }),
+                    Ok(FetchCredentials {
+                        access_token: "second-fixture".into(),
+                        account_id: None,
+                    }),
+                ])),
+                responses: Mutex::new(responses.into()),
+                requests: Mutex::new(vec![]),
+            }
+        }
+        fn credentials(&self, event: &'static str) -> FetchFuture<'_, FetchCredentials> {
+            self.events.lock().unwrap().push(event);
+            let reply = self
+                .auth
+                .lock()
+                .unwrap()
+                .pop_front()
+                .expect("unexpected credential request");
+            Box::pin(async { reply })
+        }
+    }
+    impl FetchAuthProvider for Fixture {
+        fn current_auth(&self) -> FetchFuture<'_, FetchCredentials> {
+            self.credentials("current")
+        }
+        fn refetch_auth(&self) -> FetchFuture<'_, FetchCredentials> {
+            self.credentials("refresh")
+        }
+    }
+    impl FetchHttpClient for Fixture {
+        fn send(&self, request: OutboundRequest) -> FetchFuture<'_, FetchResponse> {
+            self.events.lock().unwrap().push("send");
+            self.requests.lock().unwrap().push(request);
+            let status = self
+                .responses
+                .lock()
+                .unwrap()
+                .pop_front()
+                .expect("unexpected send");
+            Box::pin(async move {
+                status.map(|status| FetchResponse {
+                    status,
+                    status_text: "fixture".into(),
+                    headers: vec![],
+                    body_base64: "".into(),
+                })
+            })
+        }
+    }
+    fn input() -> AuthenticatedFetchRequest {
+        let mut input = request("POST", Some("AP9h"));
+        input.url = "https://chatgpt.com/backend-api/flora/browser/redeem-otp".into();
+        input.headers.push(FetchHeader {
+            name: "X-Fixture".into(),
+            value: "retained".into(),
+        });
+        input
+    }
+    #[tokio::test]
+    async fn authenticated_401_refreshes_once_and_replays_original_request() {
+        for second_status in [200, 401, 403, 500] {
+            let fixture = Fixture::new(vec![Ok(401), Ok(second_status)]);
+            let result = fetch_with_auth(&input(), FetchRuntimeMode::Default, &fixture, &fixture)
+                .await
+                .unwrap();
+            assert_eq!(result.status, second_status);
+            assert_eq!(
+                *fixture.events.lock().unwrap(),
+                ["current", "send", "refresh", "send"]
+            );
+            let sent = fixture.requests.lock().unwrap();
+            assert_eq!(sent[0].method, sent[1].method);
+            assert_eq!(sent[0].url, sent[1].url);
+            assert_eq!(sent[0].body, vec![0, 255, b'a']);
+            assert_eq!(sent[0].body, sent[1].body);
+            assert_eq!(sent[0].headers[0], sent[1].headers[0]);
+            assert_eq!(sent[0].headers[1].value, "Bearer first-fixture");
+            assert_eq!(sent[1].headers[1].value, "Bearer second-fixture");
+            assert!(!sent[1]
+                .headers
+                .iter()
+                .any(|h| h.name.eq_ignore_ascii_case("chatgpt-account-id")));
+        }
+    }
+    #[tokio::test]
+    async fn non_401_and_transport_errors_do_not_refresh() {
+        for response in [Ok(200), Ok(403), Ok(500), Err("fixture send failed".into())] {
+            let fixture = Fixture::new(vec![response.clone()]);
+            let result = fetch_with_auth(&input(), FetchRuntimeMode::Default, &fixture, &fixture)
+                .await
+                .map(|r| r.status);
+            assert_eq!(result, response);
+            assert_eq!(*fixture.events.lock().unwrap(), ["current", "send"]);
+        }
+    }
+    #[tokio::test]
+    async fn provider_and_second_send_errors_propagate_without_further_attempts() {
+        for (fail_current, fail_refresh) in [(true, false), (false, true), (false, false)] {
+            let fixture = Fixture::new(vec![Ok(401), Err("fixture resend failed".into())]);
+            if fail_current {
+                fixture.auth.lock().unwrap()[0] = Err("fixture current failed".into());
+            }
+            if fail_refresh {
+                fixture.auth.lock().unwrap()[1] = Err("fixture refresh failed".into());
+            }
+            let error = fetch_with_auth(&input(), FetchRuntimeMode::Default, &fixture, &fixture)
+                .await
+                .unwrap_err();
+            let (expected, events): (&str, &[_]) = if fail_current {
+                ("fixture current failed", &["current"])
+            } else if fail_refresh {
+                ("fixture refresh failed", &["current", "send", "refresh"])
+            } else {
+                (
+                    "fixture resend failed",
+                    &["current", "send", "refresh", "send"],
+                )
+            };
+            assert_eq!(error, expected);
+            assert_eq!(&*fixture.events.lock().unwrap(), events);
+        }
+    }
+    #[tokio::test]
+    async fn passthrough_never_acquires_credentials_even_for_401() {
+        for (mode, url) in [
+            (FetchRuntimeMode::Default, "https://fixture.invalid/"),
+            (
+                FetchRuntimeMode::GaasBrowser,
+                "https://chatgpt.com/backend-api/aura/identity",
+            ),
+        ] {
+            let fixture = Fixture::new(vec![Ok(401)]);
+            let mut input = request("GET", None);
+            input.url = url.into();
+            assert_eq!(
+                fetch_with_auth(&input, mode, &fixture, &fixture)
+                    .await
+                    .unwrap()
+                    .status,
+                401
+            );
+            assert_eq!(*fixture.events.lock().unwrap(), ["send"]);
+            assert!(fixture.requests.lock().unwrap()[0].headers.is_empty());
+        }
+        let fixture = Fixture::new(vec![]);
+        let mut input = input();
+        input.url = "invalid url".into();
+        assert_eq!(
+            fetch_with_auth(&input, FetchRuntimeMode::Default, &fixture, &fixture)
+                .await
+                .unwrap_err(),
+            "nodeRepl.fetch URL is invalid"
+        );
+        assert!(fixture.events.lock().unwrap().is_empty());
+    }
+}

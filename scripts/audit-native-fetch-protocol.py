@@ -113,6 +113,14 @@ redirect_dispatch = subprocess.check_output(['xcrun','llvm-objdump','--disassemb
 for expected in ['1005ecdf0:', '1005ece44', '1005ecdf4:', '#0x1',
                  '1005ecdf8:', '1005ececc', '1005eced4:']:
     assert expected in redirect_dispatch, expected
+dispatch = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10026bf48','--stop-address=0x10026ca94',str(artifact)], text=True)
+for expected in ['10026c048:', 'resolved_request', '10026c410:', '10026c49c:',
+                 '10026c5b8:', '10026c6cc:', '10026c74c:', '#0x191',
+                 '10026c7ac:', '10026c0f8:', '10026c1d0:', '10026c218:']:
+    assert expected in dispatch, expected
+vtable = struct.unpack('<QQQQQ',read(0x100cfb970,40))
+assert vtable[3:] == (0x10022bb10,0x10022bb84)
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -191,6 +199,19 @@ print(json.dumps({
             'https://raw.githubusercontent.com/seanmonstar/reqwest/v0.12.28/src/redirect.rs'
         ],
         'limits': 'Version is tied to the called build function, not merely a binary string hit. Redirect no-follow behavior confirmed by dispatch branch. Duration is consumed by request sleep; full timeout lifecycle and Rustls WebPKI/native-root branches are evidenced; exact transitive dependency versions, provider parity and decompression features remain under review. Client construction exists but no production handler is wired.'
+    },
+    'orchestration': {
+        'range': ['0x10026bf48','0x10026ca94'],
+        'instructionTextSha256': hashlib.sha256(dispatch.encode()).hexdigest(),
+        'authVtable': {'address':'0x100cfb970', 'currentAuth':'0x10022bb10', 'refetchAuth':'0x10022bb84'},
+        'reviewedBranches': [
+            'resolved_request precedes any provider or HTTP call; passthrough dispatch at 0x10026c49c bypasses auth',
+            '0x10026c5b8 calls current_auth; initial auth errors propagate via 0x10026c278 -> 0x10026c504',
+            '0x10026c6cc first authenticated send; only status 401 at 0x10026c74c triggers refetch_auth at 0x10026c7ac',
+            'refetch error at 0x10026c0f8 -> 0x10026c4ac drops original response and returns error',
+            'second send at 0x10026c1d0 returns via 0x10026c1f0..0x10026c224 without another status retry'
+        ],
+        'limits': 'Provider/HTTP trait interfaces are independent Rust reconstruction. Test providers use synthetic credentials. Native App Server provider, cache, request context and deployment wiring are not supplied by this orchestration.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'
