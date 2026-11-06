@@ -1,0 +1,35 @@
+# 当前验收边界（2026-11-06）
+
+本页用于区分已运行的路径和未完成的还原工作，不是完成率。总体目标仍未完成。历史文档中的“未实现/已通过”可能对应不同版本，以下以本轮运行证据和实际源码为准。
+
+| 路径 | 当前证据 | 不能据此声称 |
+| --- | --- | --- |
+| Rust supervisor → native 扩展 → MCP → 页面 | 本轮真实测试通过，约 9.4 秒；自有页面操作、截图、标签组、locator 光标及清理 | 任意公开网站、模型任务都稳定 |
+| Rust supervisor → full 扩展 → MCP → 页面 | 本轮真实测试通过，约 23.9 秒，同样的操作验收 | 全扩展所有功能均已还原 |
+| 显式 AX 模式 → MCP → 扩展 → AX/WASM → index click | 上一轮 CUA_TEST_AX=1 真实通过；观察编号后点击页面控件 | 默认 getAXState 一定走 AX；默认可走 DOM fallback |
+| DOM/AX 的 SIWC 观察、身份、schema、命令注册 | 源码差分、真实 Chromium/WASM、注册链测试；生产 feature gate 保留 | 当前账号的 SIWC 登录已经可用 |
+| SIWC authenticate → context → provider → Cookie/DOM | 独立 Chromium 中受控账号/grant/审批 fixture 成功；账号变化回滚通过 | 线上认证服务或真实账号登录已验收 |
+| Rust → 原 Sky JS/还原 TS → Swift IPC | 本轮 12 项通过，包含协议、列表、策略、终止、剪贴板恢复、背压清理；6 项 opt-in 测试跳过 | 已取得屏幕/辅助功能权限、能实际操作应用 UI |
+| Swift 显式/观察时后台启动 owned App | 单独启用启动专项，本轮 4 项通过；还原/安装包客户端 × 两种启动方式 | Skyshot 截图/AX 成功；权限错误不算观察成功 |
+| 原生 macOS AX/截图/输入 | helper 当前报告 accessibility=false、screenRecording=false | 不能验收实际 UI 观察或输入效果 |
+
+## 当前明确未完成
+
+1. **原生 UI 验收**：当前 helper 权限不足；不能从应用发现/启动结果推断键鼠、AX、截图或粘贴效果。
+2. **Native disableDiff**：SkyIPC.swift 校验 disableDiff 类型，但调用 SkyAppState.get 时未传入；get 本身也无该参数。当前没有还原原生增量树语义，不能宣称该选项已完整实现。JS 声明说明 true 应返回完整树；原生具体差分算法尚缺证据。
+3. **真实认证联调**：SIWC 线上账号/grant/cookie 流程未验收；受控 fixture 不代表真实登录。
+4. **整体源码版本审计**：当前 browser-service 的部分核心链路已更新 oracle，许多历史测试仍依赖旧压缩符号。没有全仓“全部测试绿”的证据；旧测试通过记录不能证明当前构建整体一致。
+5. **原生语言/算法还原**：Rust/Swift 路径与语言边界已迁移一部分；仍有 native-host、supervisor、legacy exports 等差异。独立实现和协议兼容不能冒充原厂函数体还原，详见 LANGUAGE-MIGRATION-AUDIT.md 和 NATIVE-HOST-LANGUAGE-AUDIT.md。
+6. **真实模型与公开网站稳定性**：曾观察 debugger detach、步数耗尽和最终回答与工具证据不一致，尚无覆盖性修复验收。本轮自有页面测试未解决这些问题。
+7. **历史材料同步**：飞书旧架构文档、早期状态段落与全部源码变更尚未逐项同步。
+
+## 本轮复现入口
+
+```sh
+native/macos/.build/debug/cua-helper --permissions
+CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/native-sky-ipc.test.ts reconstruction/native-deepseek-runtime.test.ts
+CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern='owned App launch' reconstruction/native-sky-ipc.test.ts
+CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test reconstruction/extension-native-controller.test.ts
+```
+
+测试的安装包客户端用于协议对照；不启动原厂 node_repl 服务。浏览器和 owned App 验收使用测试对象，未使用用户真实账号进行登录。日志保留本地，未纳入提交。

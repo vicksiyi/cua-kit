@@ -1,8 +1,10 @@
 # Implementation status
 
+Current acceptance boundaries and remaining work: [CURRENT-ACCEPTANCE.md](CURRENT-ACCEPTANCE.md). The historical checkpoints below are not a whole-project completion claim.
+
 ## Browser extension host remains a native migration gap
 
-The installed extension-host executable is independently confirmed as Rust, distinct from the Rust REPL supervisor. Default extension installation and CDP now launch the Rust host. `packages/native-host/src/{main,server,router}.ts` remains reachable only through explicit legacy entries/public APIs and reference tests. Native writer queues, peer identity authorization, app-server/proxy and tab asset management also remain open. A Core Rust host executable now composes routing, bounded stdio/client I/O, private endpoints and token authentication. Process tests use restored browser/extension peers and verify shutdown cleanup. Both CDP and the extension installer now select the release Rust executable. Owned/attached browser tests and the packaged native-extension CUA/MCP chain pass; the full-extension variant has not been reaccepted after this switch. See `NATIVE-HOST-LANGUAGE-AUDIT.md`; Rust supervisor acceptance does not certify this host as migrated.
+The installed extension-host executable is independently confirmed as Rust, distinct from the Rust REPL supervisor. Default extension installation and CDP now launch the Rust host. `packages/native-host/src/{main,server,router}.ts` remains reachable only through explicit legacy entries/public APIs and reference tests. Native writer queues, peer identity authorization, app-server/proxy and tab asset management also remain open. A Core Rust host executable now composes routing, bounded stdio/client I/O, private endpoints and token authentication. Process tests use restored browser/extension peers and verify shutdown cleanup. Both CDP and the extension installer now select the release Rust executable. Owned/attached browser tests and the packaged native-extension CUA/MCP chain pass; the full-extension variant was reaccepted on 2026-11-06 through the real Rust/MCP fixture (approximately 23.9 seconds), alongside native extension (approximately 9.4 seconds). See `NATIVE-HOST-LANGUAGE-AUDIT.md`; Rust supervisor acceptance does not certify this host as migrated.
 
 ## Default runtime build boundary
 

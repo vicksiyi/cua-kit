@@ -1,5 +1,7 @@
 # macOS 原生后端：第一条独立链路
 
+最新复核与未完成项见 [CURRENT-ACCEPTANCE.md](CURRENT-ACCEPTANCE.md)。本轮 helper 权限仍为 false；IPC 12 项与单独的 owned-App 启动 4 项通过。另确认 disableDiff 尚未接入原生观察实现。
+
 ## 当前能力与验收（2026-11-06 复核）
 
 下面以 Rust 托管 Swift、使用原始 Sky IPC 的路径为准。本文后续按时间累积的记录包含早期“未实现”描述；对已被后续实现覆盖的能力，以本表和 `IMPLEMENTATION-STATUS.md` 为准，不能把历史状态当作当前状态。
