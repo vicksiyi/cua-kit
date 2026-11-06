@@ -1,0 +1,100 @@
+{
+  "artifact": "ChatGPT.app/Contents/Resources/plugins/openai-bundled/plugins/chrome/extension-host/macos/arm64/ChatGPT for Chrome",
+  "sha256": "2a5b1035b5dcbb6c9a55f2acf775dc5124d816131388332af60ec2850fd99f5f",
+  "methodExtraction": "ARM64 method-byte loads and immediate CMP/CCMP operands, including overlapping tail loads; fixed artifact hash required.",
+  "methods": [
+    {
+      "method": "codexRuntime/ensure",
+      "comparisonStart": "0x100025e68",
+      "comparisonBranch": "0x100025e94"
+    },
+    {
+      "method": "codexRuntime/hello",
+      "comparisonStart": "0x1000257f8",
+      "comparisonBranch": "0x100025818"
+    },
+    {
+      "method": "codexRuntime/openLocalFile",
+      "comparisonStart": "0x100025c88",
+      "comparisonBranch": "0x100025cbc"
+    },
+    {
+      "method": "codexRuntime/restart",
+      "comparisonStart": "0x100025704",
+      "comparisonBranch": "0x100025728"
+    },
+    {
+      "method": "codexRuntime/status",
+      "comparisonStart": "0x100025e30",
+      "comparisonBranch": "0x100025e5c"
+    },
+    {
+      "method": "codexRuntime/tabContextAsset/abort",
+      "comparisonStart": "0x100025660",
+      "comparisonBranch": "0x1000256a8"
+    },
+    {
+      "method": "codexRuntime/tabContextAsset/appendChunk",
+      "comparisonStart": "0x100025760",
+      "comparisonBranch": "0x1000257b4"
+    },
+    {
+      "method": "codexRuntime/tabContextAsset/create",
+      "comparisonStart": "0x100025d30",
+      "comparisonBranch": "0x100025d64"
+    },
+    {
+      "method": "codexRuntime/tabContextAsset/finish",
+      "comparisonStart": "0x100025d74",
+      "comparisonBranch": "0x100025da8"
+    },
+    {
+      "method": "codexRuntime/tabContextAsset/remove",
+      "comparisonStart": "0x100025db8",
+      "comparisonBranch": "0x100025dec"
+    }
+  ],
+  "assetLimits": {
+    "maxActiveAssets": {
+      "value": 16,
+      "basis": "create accepts an existing count <= 15; otherwise returns too-many-active-assets error",
+      "instructions": [
+        "100016084: f9403ac8    \tldr\tx8, [x22, #0x70]",
+        "100016088: f1003d1f    \tcmp\tx8, #0xf",
+        "10001608c: 54000329    \tb.ls\t0x1000160f0 <<extension_host::app_server::AppServerManager>::create_tab_context_asset+0x118>"
+      ]
+    },
+    "maxBytesPerAsset": {
+      "value": 104857600,
+      "basis": "decoded chunk length plus existing size uses saturating addition; accepts <= 100 MiB",
+      "instructions": [
+        "1000174e4: f85f0328    \tldur\tx8, [x25, #-0x10]",
+        "1000174e8: ab160108    \tadds\tx8, x8, x22",
+        "1000174ec: da9f3108    \tcsinv\tx8, x8, xzr, lo",
+        "1000174f0: 52a0c809    \tmov\tw9, #0x6400000          ; =104857600",
+        "1000174f4: eb09011f    \tcmp\tx8, x9",
+        "1000174f8: 540003e9    \tb.ls\t0x100017574 <<extension_host::app_server::AppServerManager>::append_tab_context_asset_chunk+0x370>"
+      ]
+    }
+  },
+  "dependenciesObservedInCalls": [
+    "uuid::Uuid::new_v4",
+    "base64::engine::Engine::decode",
+    "std::fs::OpenOptions",
+    "std::io::Write::write_all"
+  ],
+  "dispatchObservations": {
+    "abortAndRemove": "Both branch to AppServerManager::remove_tab_context_asset (call sites 0x1000256bc and 0x100025e00).",
+    "unknownMethods": "The compare miss returns the unhandled sentinel at 0x100025e98 rather than fabricating a success response.",
+    "layer": "handle_native_host_control_message is native host control; it is separate from browser RPC forwarding."
+  },
+  "remainingUnknowns": [
+    "full manifest selection and process launch contract",
+    "complete hello/status response schemas",
+    "filename sanitization edge cases",
+    "asset cleanup on all process/session failures",
+    "authorization at control entry",
+    "error codes and full websocket proxy behavior"
+  ],
+  "limits": "Static analysis, not native source recovery or runtime parity. No original host, browser, app-server, file opener or network request was executed."
+}

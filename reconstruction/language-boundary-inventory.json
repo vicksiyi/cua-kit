@@ -1,7 +1,7 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 30,
+    "build-or-deployment-script-review": 31,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-native-host-reference-retirement-pending": 4,
@@ -4215,6 +4215,11 @@
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
       "sha256": "5044a9308cccfbe43d1ee34834a8f813f530f4ad93d0cffa8de46f15483533a8"
+    },
+    {
+      "path": "scripts/audit-native-control-protocol.py",
+      "category": "build-or-deployment-script-review",
+      "sha256": "ee0adcb4b1d186b85b086dda90cf474d3aa724d14ccedd664461744913eee79a"
     },
     {
       "path": "scripts/audit-native-language.py",

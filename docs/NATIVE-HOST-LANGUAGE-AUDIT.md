@@ -112,3 +112,21 @@ Extracted Core endpoint types, frame limit and JSON-RPC shape validation into `p
 Default native-host/reconstruction builds no longer generate the old Node `main.mjs`; `--include-legacy`, workspace `build:legacy`, and root `build:legacy-runtime` explicitly build it. Existing local artifacts are preserved rather than deleted. A fresh-output check verified default omission and explicit legacy generation. Discovery/live-discovery integration fixtures now use the actual Rust host, with macOS /tmp canonicalization accounted for.
 
 Validation: native-host/CDP type checks; 10 boundary/discovery/pipe-auth tests; 3 Rust process-binding cases; 6 retained legacy compatibility cases; and the real full-extension Chromium/Rust/MCP navigation/click/read plus EOF cleanup case pass. Native source algorithm parity, peer identity policy, app-server behavior and desktop effects remain incomplete.
+
+
+### 2026-11-06: recover the native control protocol boundary
+
+A version-pinned ARM64 audit now decodes ten method comparisons in the installed host's `handle_native_host_control_message`. The names are reconstructed from actual MOV/MOVK and CMP/CCMP operands, including overlapping string-tail loads; they are not guesses from symbol names. See `reconstruction/native-control-protocol-evidence.json` and `scripts/audit-native-control-protocol.py`. The extractor refuses other artifact hashes.
+
+| Native methods | Responsibility | Current Core status |
+| --- | --- | --- |
+| `codexRuntime/hello` | Native control negotiation | Missing; full response schema needs audit |
+| `codexRuntime/status`, `ensure`, `restart` | App-server discovery/status/process lifecycle | Missing; manifest matching and proxy contracts need recovery |
+| `codexRuntime/tabContextAsset/create`, `appendChunk`, `finish`, `abort`, `remove` | Native temporary attachment ownership and chunk transfer | Missing; must be Rust, not browser pageAssets TS |
+| `codexRuntime/openLocalFile` | Native local-file dispatch | Missing; validation and launch behavior need recovery |
+
+The asset create comparison permits at most 16 active entries. Append decodes with the observed base64 library and rejects a cumulative decoded size above 104857600 bytes (100 MiB), using saturating addition. UUID generation and std filesystem calls are also visible. Abort and remove call the same native method. These observations establish concrete implementation requirements, but do not prove every filename/cleanup/error detail.
+
+Current `runtime.rs` forwards extension input to `RpcRouter::from_extension` without a native control dispatcher. Therefore the passing browser navigation tests do not exercise this separate control plane. The next implementation must intercept the evidenced native methods at the correct input boundary, preserve normal browser routing for unhandled methods, and implement asset/process ownership in Rust. Do not advertise all methods in hello until their real contracts are supported. The methods are also distinct from the existing browser-context/pageAssets APIs.
+
+This audit is static only: no vendor host, app-server, file opener, browser profile, or network endpoint was executed. Manifest selection, complete hello/status/error schemas, filename edge cases, control authorization and WebSocket proxy remain required before parity can be claimed.

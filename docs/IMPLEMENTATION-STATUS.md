@@ -6005,3 +6005,8 @@ Extracted Core endpoint types, frame limit and JSON-RPC shape validation into `p
 Default native-host/reconstruction builds no longer generate the old Node `main.mjs`; `--include-legacy`, workspace `build:legacy`, and root `build:legacy-runtime` explicitly build it. Existing local artifacts are preserved rather than deleted. A fresh-output check verified default omission and explicit legacy generation. Discovery/live-discovery integration fixtures now use the actual Rust host, with macOS /tmp canonicalization accounted for.
 
 Validation: native-host/CDP type checks; 10 boundary/discovery/pipe-auth tests; 3 Rust process-binding cases; 6 retained legacy compatibility cases; and the real full-extension Chromium/Rust/MCP navigation/click/read plus EOF cleanup case pass. Native source algorithm parity, peer identity policy, app-server behavior and desktop effects remain incomplete.
+
+
+### 2026-11-06: identify missing native control plane from actual instructions
+
+Added a hash-pinned static extractor for the installed ARM64 Native Host. It reconstructs ten `codexRuntime/*` method names from comparison operands, records instruction addresses, confirms shared abort/remove dispatch, and recovers the 16-active-asset / 100-MiB-per-asset limits. The current Rust host has no matching control dispatcher; browser-operation acceptance does not cover this gap. Implementation priority is now concrete native attachment/control contracts followed by manifest/process/WebSocket lifecycle, rather than another TS transport wrapper. The audit neither executes the original host nor claims these methods are implemented.
