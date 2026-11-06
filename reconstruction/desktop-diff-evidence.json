@@ -3093,6 +3093,44 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "webClickHitProbe": {
+      "probe": "0x1007b8444..<0x1007b85fc awaits no-argument clickablePoint, suppresses errors/nil to false, app AX hit-tests the point, suppresses errors/nil to false, then checks ancestor membership",
+      "ancestry": "0x1007b7ca4..<0x1007b7e14 starts at hit including self, initializes depth0/max300; iterator thunk 0x1007b7e24 delegates to 0x1007b704c. contains predicate 0x1007b8788 delegates to 0x1007b6228 comparing node AX reference then target via provider-aware equality.",
+      "caller": "Eligible AX-action path rereads insideWebView at 0x1007b11b8. Web probe result true routes to simulated clickablePoint branch at 0x1007b17f0; false continues virtual-cursor/action preparation. Remaining action preparation is not yet fully restored.",
+      "blocks": [
+        {
+          "start": "0x1007b8444",
+          "endExclusive": "0x1007b85fc",
+          "machineCodeSha256": "9ee614392f62f1ec16ca5f092c47f45be452fc0c113709d09b0607198317198d"
+        },
+        {
+          "start": "0x1007b7ca4",
+          "endExclusive": "0x1007b7e2c",
+          "machineCodeSha256": "bf6cd91e124a8be2b830316f9e7b8dc4c05bab28ab20bfa1b8c78f3d34203104"
+        },
+        {
+          "start": "0x1007b6228",
+          "endExclusive": "0x1007b62cc",
+          "machineCodeSha256": "f5ec78796b25277fb65b4ad3a6a8dd11c2e55cfb77141c034720b9be21baddab"
+        },
+        {
+          "start": "0x1007b8788",
+          "endExclusive": "0x1007b87a4",
+          "machineCodeSha256": "21e5bbf355a4addebd954d90bd5448564eafb51bda73e386ac8a41da6114c09f"
+        },
+        {
+          "start": "0x1007b177c",
+          "endExclusive": "0x1007b1854",
+          "machineCodeSha256": "5354941fce9e7cd2432e608e95fd2de3bcec7285b14caceff97564595e7f433d"
+        }
+      ],
+      "implementation": [
+        "native/macos/Sources/CuaHelper/UIElementWebClickHitTest.swift",
+        "native/macos/Sources/CuaHelper/SystemWebClickHitTest.swift"
+      ],
+      "validation": "Probe error/nil matrix, exact point, ancestry direction, parent-before-equality lookahead and depth300/301 boundary pass; Swift package builds.",
+      "limitations": "System adapter composed but not wired into unfinished AX-action branch. Provider dispatch and full focus/event routing still pending. No live UI operation performed."
+    },
     "clickablePointProduction": {
       "composition": "UIElementClickablePointComposition wires distinct pre-scroll frameValue, raw AXFrame, ancestor clipping and preferred-point readers; only actual didScroll refreshes raw frame and parent reads.",
       "default": "SystemClickablePoint uses restored no-argument entry 0x1007a03f8..<0x1007a04d4, hence scrollToVisible false; its scrolling callback is unreachable by invariant, not a simulated scroll success.",

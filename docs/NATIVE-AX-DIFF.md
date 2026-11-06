@@ -2588,3 +2588,23 @@ cannotClickOffscreenElement；缺少 raw AXFrame 保留 elementHasNoFrame 错误
 本轮仅接入位置解析，完整 AX 动作优先分支、焦点/窗口目标选择、事件生成、
 TaskLocal/provider 上下文和真实 UI 验收仍未完成。此前章节“生产 indexed click
 仍无条件取中心”的状态由本节更新，但不能扩展成整个点击实现已经还原。
+
+
+## WebView 点击命中探测（2026-11-07）
+
+0x1007b8444..<0x1007b85fc 先调用无参 clickablePoint，再由应用 AX 引用命中
+测试该坐标；两步的异常或 nil 均转成 false。成功后，0x1007b7ca4 沿命中节点
+的父链（含自身）查找目标；不是从目标向下搜索，也不是只比较第一次命中。
+比较谓词 0x1007b6228 将当前节点 AX 引用与目标 AX 引用传入原版 equality。
+
+复用已恢复父链：初始 depth0、最大300，因此比较 depth0...300；每次 yield 前
+读取下一父节点，即使当前已经匹配。没有新增去重或应用 role 截断。
+
+调用端在可用 AX 动作路径重新读取 insideWebView；为 true 才调用本探测。
+探测 true 时，0x1007b17f0 分支转到坐标点击的 clickablePoint；false 则继续
+virtual cursor/动作准备。后续焦点和 Catalyst 分支尚未完整恢复，不能省略后直接
+将探测结果接到 AXPress。
+
+新增 UIElementWebClickHitTest.swift 与具体系统适配，测试覆盖异常/nil 矩阵、
+父链方向、自身匹配、读取顺序及300/301边界；Swift 构建通过。未改变生产动作选择，
+未实际执行点击；系统适配不代表原 TaskLocal/provider 已全部还原。

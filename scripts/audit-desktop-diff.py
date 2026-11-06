@@ -1166,6 +1166,15 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['webClickHitProbe']={
+    'probe':'0x1007b8444..<0x1007b85fc awaits no-argument clickablePoint, suppresses errors/nil to false, app AX hit-tests the point, suppresses errors/nil to false, then checks ancestor membership',
+    'ancestry':'0x1007b7ca4..<0x1007b7e14 starts at hit including self, initializes depth0/max300; iterator thunk 0x1007b7e24 delegates to 0x1007b704c. contains predicate 0x1007b8788 delegates to 0x1007b6228 comparing node AX reference then target via provider-aware equality.',
+    'caller':'Eligible AX-action path rereads insideWebView at 0x1007b11b8. Web probe result true routes to simulated clickablePoint branch at 0x1007b17f0; false continues virtual-cursor/action preparation. Remaining action preparation is not yet fully restored.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007b8444,0x1007b85fc),(0x1007b7ca4,0x1007b7e2c),(0x1007b6228,0x1007b62cc),(0x1007b8788,0x1007b87a4),(0x1007b177c,0x1007b1854)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementWebClickHitTest.swift','native/macos/Sources/CuaHelper/SystemWebClickHitTest.swift'],
+    'validation':'Probe error/nil matrix, exact point, ancestry direction, parent-before-equality lookahead and depth300/301 boundary pass; Swift package builds.',
+    'limitations':'System adapter composed but not wired into unfinished AX-action branch. Provider dispatch and full focus/event routing still pending. No live UI operation performed.',
+}
 element_storage_evidence['clickablePointProduction']={
     'composition':'UIElementClickablePointComposition wires distinct pre-scroll frameValue, raw AXFrame, ancestor clipping and preferred-point readers; only actual didScroll refreshes raw frame and parent reads.',
     'default':'SystemClickablePoint uses restored no-argument entry 0x1007a03f8..<0x1007a04d4, hence scrollToVisible false; its scrolling callback is unreachable by invariant, not a simulated scroll success.',
