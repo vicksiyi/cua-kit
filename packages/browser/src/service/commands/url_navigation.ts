@@ -11,6 +11,9 @@ export interface NavigationFrame {
   [key: string]: unknown;
 }
 export interface UrlNavigationContext {
+  environment?: string;
+  clientInfo?: { type: string };
+  runtime?: { preloadAccessibilityCore?: () => (() => void) | undefined };
   acquireAuthority(): {
     triggerNetworkEgress(url: string): { assert(): Promise<unknown> };
   };
@@ -27,7 +30,12 @@ export interface UrlNavigationContext {
   };
   cdp: {
     readDocumentState(tabId: number): Promise<{ href?: string } | undefined>;
-    call(tabId: number, method: string, params?: object): Promise<any>;
+    call(
+      tabId: number,
+      method: string,
+      params?: object,
+      options?: { beforeDispatch?: () => void },
+    ): Promise<any>;
     on(event: string, listener: (...args: any[]) => void): unknown;
     removeListener(event: string, listener: (...args: any[]) => void): unknown;
     waitForEvent(
@@ -65,10 +73,12 @@ export function navigationCompletionPredicate({
   mainFrameId,
   previousUrl,
   targetUrl,
+  onFrameStarted = () => {},
 }: {
   mainFrameId?: string;
   previousUrl?: string;
   targetUrl?: string;
+  onFrameStarted?: () => void;
 }) {
   let started = false;
   const object = (value: unknown): value is Record<string, any> =>
@@ -104,8 +114,10 @@ export function navigationCompletionPredicate({
       mainFrameId != null &&
       object(event.params) &&
       event.params.frameId === mainFrameId
-    )
+    ) {
       started = true;
+      onFrameStarted();
+    }
     return (
       started &&
       (event.method === "Page.domContentEventFired" ||
@@ -132,7 +144,12 @@ export function createNavigateTabUrlCommand(
   return defineCommand(
     "navigate_tab_url",
     async (
-      payload: { tab_id: unknown; url?: unknown; timeout_ms?: number },
+      payload: {
+        tab_id: unknown;
+        url?: unknown;
+        timeout_ms?: number;
+        prepare_accessibility?: true;
+      },
       context: UrlNavigationContext,
     ) => {
       const tabId = Number(payload.tab_id);
@@ -158,10 +175,18 @@ export function createNavigateTabUrlCommand(
       await context.cdp.call(tabId, "Page.enable", {});
       const previousFrame = await mainFrame(tabId, context),
         frameId = previousFrame?.id;
+      let preloadArmed = false;
+      let cancelPreload: (() => void) | undefined;
       const completed = navigationCompletionPredicate({
         mainFrameId: frameId,
         previousUrl,
         targetUrl,
+        onFrameStarted: () => {
+          if (preloadArmed) {
+            preloadArmed = false;
+            cancelPreload = context.runtime?.preloadAccessibilityCore?.();
+          }
+        },
       });
       let currentFrame = previousFrame,
         startedNavigation: any,
@@ -208,9 +233,21 @@ export function createNavigateTabUrlCommand(
           (error) => (abort.signal.aborted ? { event: undefined } : { error }),
         );
       try {
-        const response = await context.cdp.call(tabId, "Page.navigate", {
-          url,
-        });
+        const response = await context.cdp.call(
+          tabId,
+          "Page.navigate",
+          { url },
+          {
+            beforeDispatch() {
+              preloadArmed =
+                payload.prepare_accessibility === true &&
+                context.environment === "orbit" &&
+                context.clientInfo?.type === "cdp" &&
+                (targetUrl?.startsWith("http://") === true ||
+                  targetUrl?.startsWith("https://") === true);
+            },
+          },
+        );
         if (response.errorText) {
           const display = navigationDisplayUrl(url) ?? "this page";
           throw new Error(
@@ -247,6 +284,9 @@ export function createNavigateTabUrlCommand(
             epoch,
           );
         }
+      } catch (error) {
+        cancelPreload?.();
+        throw error;
       } finally {
         abort.abort();
         context.cdp.removeListener("event", onEvent);

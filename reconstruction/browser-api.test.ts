@@ -22,6 +22,7 @@ function fixture(
     managed?: Info[];
     user?: Info[];
     noGoto?: boolean;
+    ax?: boolean;
     noDefault?: boolean;
   } = {},
 ) {
@@ -34,6 +35,7 @@ function fixture(
   ];
   const tab = {
     id: "bound",
+    ...(options.ax ? { ax: {} } : {}),
     getAXState: async (o: unknown) => {
       log.push(["state", o]);
       return "AX";
@@ -43,8 +45,8 @@ function fixture(
     },
     ...(!options.noGoto
       ? {
-          goto: async (url: string) => {
-            log.push(["goto", url]);
+          goto: async (url: string, options?: unknown) => {
+            log.push(["goto", url, options]);
           },
         }
       : {}),
@@ -159,6 +161,20 @@ test("create_browser_api reconstruction matches original calls/results/errors", 
       ["chrome", "example.com", { sessionName: "Task", visible: false }],
     ],
     ["createBrowserTab", ["chrome"]],
+    ...[
+      undefined,
+      "about:blank",
+      "https://x.test",
+      "http://x.test",
+      "x.test",
+    ].map(
+      (url) =>
+        ["createBrowserTab", ["chrome", url], { ax: true }] as [
+          string,
+          any[],
+          any,
+        ],
+    ),
     ["createBrowserTab", ["chrome", "https://x.test"], { noGoto: true }],
     ["createBrowserTab", [""]],
     ["getTab", ["m1"]],

@@ -80,16 +80,31 @@ keyup 失败、keydown 期间取消、预先取消 × 受保护输入开关 × �
 本轮生成 52 个命令 schema，保留 keypress.duration 及 DOM snapshot 的 snapshotId/siwc。
 新增测试对比当前原构建的 payload/result 解析，同时验证版本变动不会修改输出。
 导航 schema 新补 `prepare_accessibility?: true`，原构建只在请求此标记且 orbit+cdp
-HTTP(S) 导航开始时触发 accessibility core 预加载；当前 tab.goto 和服务导航尚未接通
-该预加载流程，本轮仅恢复参数契约，不声称该功能已完成。
+HTTP(S) 导航开始时触发 accessibility core 预加载。后续已补齐接线，见下方导航预加载验收；
+这里的 schema 提取测试本身只证明参数契约。
 
 ## AX core 预加载生命周期还原
 
 新增 `service/accessibility/core_loading.ts`，按当前原构建 lF/cF/Jh 还原
 冻结环境对象限定、环境身份隔离、显式 WASM 路径排除、导航引用计数、取消、
 正式初始化消费预加载 promise、预加载失败回退和正式初始化 promise 缓存。
-`capture_manager` 的正式初始化已使用该状态机；host 与导航触发尚未连接，
-因此此提交不会宣称 orbit 导航预加载功能已对外可用。
+`capture_manager` 的正式初始化已使用该状态机。后续 host 与导航触发接线见下方验收。
 
 源码差分覆盖 8 类路径，真实 Chromium+AX/WASM snapshot 身份测试通过；
 本轮未更改 credentialObservationGate 或放宽导航授权。
+
+## 导航预加载接线与验收
+
+已按当前源码接通：
+- cua.createBrowserTab：新 tab 有 AX 能力且目标为 HTTP(S) 时，传 prepareAccessibility。
+- Tab.goto：按选项追加 prepare_accessibility:true，缺省不追加。
+- 导航命令：在 Page.navigate 的 beforeDispatch 阶段，仅 orbit+cdp+HTTP(S)+显式标记时
+  布置预加载；主 frameStartedLoading 触发一次，导航失败释放引用。保留原有导航权限检查。
+- browser host：读取部署目录的压缩 WASM，支持 AbortSignal，异步 Brotli 解压，
+  交给已还原的预加载状态机；正式 AX 初始化消费缓存。
+
+14 类导航场景与当前原构建差分通过；公共 goto、新建标签的 AX/URL 分支通过源码对照。
+打包 host 实际加载 WASM 测试、构建及显式 AX 的 native 扩展 MCP 回归通过。
+以上没有连接真实 orbit 服务：Chrome 扩展回归证明该路径未被新条件误触发，
+不能替代真实 orbit+CDP 环境的预加载耗时与事件竞争验收。旧 credentialObservationGate
+相关差异仍保留，未将此处的对照范围扩大为整个导航实现完全一致。

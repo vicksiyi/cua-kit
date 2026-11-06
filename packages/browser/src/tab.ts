@@ -108,7 +108,7 @@ export class Tab {
     }
     this.capabilities = new Capabilities(instances);
   }
-  async goto(url: string) {
+  async goto(url: string, options?: { prepareAccessibility?: boolean }) {
     if (!url) throw new Error("tab.goto requires a url");
     this.#requireTransport();
     if (!this.id) throw new Error("tab.goto requires a tab id");
@@ -117,6 +117,9 @@ export class Tab {
         browser_id: this.#browserId,
         tab_id: this.id,
         url,
+        ...(options?.prepareAccessibility
+          ? { prepare_accessibility: true as const }
+          : {}),
       }),
     });
   }

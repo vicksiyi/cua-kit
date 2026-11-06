@@ -1,3 +1,6 @@
+import { preloadAccessibilityCore } from "../accessibility/capture_manager";
+import { brotliDecompress } from "node:zlib";
+import { promisify } from "node:util";
 import { createBrowserConfig } from "./config_bridge";
 import { mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { tmpdir, platform } from "node:os";
@@ -113,6 +116,19 @@ export function createBrowserHostFactory(deps: BrowserHostDependencies) {
       throw new Error("Browser use requires privileged Node REPL capabilities");
     const runtime = await createRuntime(repl);
     runtime.assertBrowserAccess = deps.createAccessAssertion(runtime);
+    runtime.preloadAccessibilityCore = () =>
+      preloadAccessibilityCore(runtime.env, async (signal) => {
+        const bytes = await readFile(
+          new URL(
+            "../accessibility/browser-accessibility.wasm.br",
+            import.meta.url,
+          ),
+          { signal },
+        );
+        return await promisify(brotliDecompress)(bytes, {
+          chunkSize: 1024 * 1024,
+        });
+      });
     const wasmPath =
       runtime.env.BROWSER_USE_ACCESSIBILITY_CORE_WASM_PATH?.trim();
     if (wasmPath && !(deps.isAbsolute ?? isAbsolute)(wasmPath))

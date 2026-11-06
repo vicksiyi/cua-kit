@@ -113,8 +113,16 @@ export function create_browser_api(
         await visibility.set(options.visible);
       }
       const tab = await browser.tabs.new();
-      if (tab.goto !== undefined) await tab.goto(normalized ?? "about:blank");
-      else if (normalized !== undefined) {
+      if (tab.goto !== undefined) {
+        const target = normalized ?? "about:blank";
+        const protocol = URL.parse(target)?.protocol;
+        if (
+          tab.ax !== undefined &&
+          (protocol === "https:" || protocol === "http:")
+        )
+          await tab.goto(target, { prepareAccessibility: true });
+        else await tab.goto(target);
+      } else if (normalized !== undefined) {
         await tab.close?.();
         throw new Error(`Tab ${tab.id} does not support navigation.`);
       }
