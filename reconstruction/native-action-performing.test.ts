@@ -399,3 +399,18 @@ test("native stateful URL shortener preserves compaction and reset", {
     assert.match(result.stdout, /stateful shortener preserves unique remeasurement, reset, image tracking and compaction floor/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native URL rendering pass preserves success and error ordering", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-url-pass-"));
+  try {
+    const output = join(directory, "pass");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementURLShortenerConfiguration", "UIElementURLShortenerCore", "UIElementURLShortener", "UIElementURLRenderingPass"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementURLRenderingPassTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /URL rendering pass preserves single execution, success reset and throwing state/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

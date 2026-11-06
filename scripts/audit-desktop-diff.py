@@ -1045,6 +1045,17 @@ element_storage_evidence['urlShortenerStateful']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementURLShortener.swift',
     'limitations':'Stateful component composed and tested with URL span refresh; rendering context witness and production transformation pipeline still pending. Configuration default arguments not inferred.',
 }
+element_storage_evidence['urlRenderingPass']={
+    'contextStorage':{'nominal':'0x1012ccd8c','descriptor':'0x1013238b0','header':'9cb6f7ff0000000000000c0006000000','mutable':['type','isCatalyst','isWebShaped','isChromium','windowFrame','urlShortener']},
+    'entry':'UIElementTransformationContext.shortenURLsIfNeeded 0x1007587b4..<0x100758848',
+    'success':'Reset context shortener at +0x30; call body once; compactConfigurationIfNeeded; checked-add measured total to caller totalLength; reset shortener; return original body result',
+    'error':'Body throw jumps to return before compaction/add/reset; preserve mutations performed by body; no defer cleanup or automatic second render',
+    'witness':'AccessibilityRenderingContext table 0x101574b78 getter/setter/modify at +0x18/+0x20/+0x28 address context shortener +0x30; final getter +0x30 reads context type byte',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007587b4,0x100758878),(0x1013238b0,0x101323908)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementURLRenderingPass.swift',
+    'limitations':'Generic key-path helper preserves full caller context; original complete context constructors, role protocol and production rendering pipeline are not yet restored.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

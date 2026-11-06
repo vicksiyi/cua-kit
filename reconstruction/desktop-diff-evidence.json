@@ -2769,6 +2769,39 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementURLShortener.swift",
       "limitations": "Stateful component composed and tested with URL span refresh; rendering context witness and production transformation pipeline still pending. Configuration default arguments not inferred."
     },
+    "urlRenderingPass": {
+      "contextStorage": {
+        "nominal": "0x1012ccd8c",
+        "descriptor": "0x1013238b0",
+        "header": "9cb6f7ff0000000000000c0006000000",
+        "mutable": [
+          "type",
+          "isCatalyst",
+          "isWebShaped",
+          "isChromium",
+          "windowFrame",
+          "urlShortener"
+        ]
+      },
+      "entry": "UIElementTransformationContext.shortenURLsIfNeeded 0x1007587b4..<0x100758848",
+      "success": "Reset context shortener at +0x30; call body once; compactConfigurationIfNeeded; checked-add measured total to caller totalLength; reset shortener; return original body result",
+      "error": "Body throw jumps to return before compaction/add/reset; preserve mutations performed by body; no defer cleanup or automatic second render",
+      "witness": "AccessibilityRenderingContext table 0x101574b78 getter/setter/modify at +0x18/+0x20/+0x28 address context shortener +0x30; final getter +0x30 reads context type byte",
+      "blocks": [
+        {
+          "start": "0x1007587b4",
+          "endExclusive": "0x100758878",
+          "machineCodeSha256": "e83d95fa5477cd922e890a502199585cae3f8db0a3ec98c7395dfed274899089"
+        },
+        {
+          "start": "0x1013238b0",
+          "endExclusive": "0x101323908",
+          "machineCodeSha256": "376c10acd58f3d5ab0fae9b4d487a65640b2089d01df5adf0f22e401984b96f8"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementURLRenderingPass.swift",
+      "limitations": "Generic key-path helper preserves full caller context; original complete context constructors, role protocol and production rendering pipeline are not yet restored."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

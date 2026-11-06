@@ -2080,3 +2080,20 @@ compactConfigurationIfNeeded（0x10065fbfc..<0x10065fde4）将 nil totalLimit
 状态、重复/唯一 URL、图片记录、配置保留、局部计数、压缩下限，以及真实
 shortener 与 URL span refresh 的组合测试通过。尚未恢复完整渲染 context 和
 生产 transformation 接线，不把组件测试作为应用端到端验收。
+
+### 渲染 context 与 URL 处理包裹顺序
+
+UIElementTransformationContext（nominal 0x1012ccd8c，字段表 0x1013238b0）
+有六个可变字段：type、isCatalyst、isWebShaped、isChromium、windowFrame、
+urlShortener。0x101574b78 的 RenderingContext witness 中 getter/setter/modify
+都访问 context+0x30 的 shortener；末尾 getter 返回 type 字节。尚未用简化
+结构冒充完整原类型，构造器中的应用/窗口逻辑仍待恢复。
+
+shortenURLsIfNeeded 在 0x1007587b4..<0x100758848 先 reset，执行 body 一次，
+成功后压缩配置，将测量值以 checked addition 加到 totalLength，再 reset 并
+返回原 body 结果。body 抛错会直接返回错误，不压缩、不加总、不再次 reset；
+不能用 defer 实现收尾，也不能因方法名而添加自动二次渲染。
+
+已恢复接收完整 context 和 shortener key path 的泛型 helper。测试初始脏状态
+清理、成功收尾、异常保留状态、调用次数、配置压缩后仍返回首次 body 结果。
+这些行为通过真实 shortener 组合验证；生产 render tree 连接仍未完成。
