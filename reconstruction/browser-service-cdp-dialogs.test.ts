@@ -2,19 +2,25 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { dialogMethods } from "../packages/browser/dist/service/cdp/dialog_methods.js";
-import { lifecycleMethods } from "../packages/browser/dist/service/cdp/lifecycle_methods.js";
-const bindings = originalServiceBindings(["Ite", "kte"]);
+import { dialogMethods } from "../packages/browser/src/service/cdp/dialog_methods";
+import { lifecycleMethods } from "../packages/browser/src/service/cdp/lifecycle_methods";
+// Minified helper names below were inspected in this exact artifact.
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit helper bindings for changed browser-service artifact");
+const bindings = originalServiceBindings(["Pte", "Ite"]);
 const names = [
   ...Object.keys(dialogMethods),
   "attachedTabIdForCdpEvent",
   "deleteFrameSession",
 ];
+const sourceClass = serviceClassWithMethods(names);
 const original = new Function(
   ...Object.keys(bindings),
-  "return {" + names.map((n) => serviceClassMethod("qh", n)).join(",") + "}",
+  "return {" + names.map((n) => serviceClassMethod(sourceClass, n)).join(",") + "}",
 )(...Object.values(bindings));
 const rebuilt = { ...lifecycleMethods, ...dialogMethods };
 function owner(methods: any, protectedTab = false) {

@@ -2,36 +2,26 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { CdpEventEmitter } from "../packages/browser/dist/service/cdp/event_emitter.js";
+import { CdpEventEmitter } from "../packages/browser/src/service/cdp/event_emitter";
 import {
   waitForPageLoadEvent,
   navigationDisplayUrl,
-} from "../packages/browser/dist/service/cdp/page_load.js";
-import { BrowserUseSecurityError } from "../packages/browser/dist/service/errors/browser_security_error.js";
+} from "../packages/browser/src/service/cdp/page_load";
+import { BrowserUseSecurityError } from "../packages/browser/src/service/errors/browser_security_error";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit page-load helper bindings for changed browser-service artifact");
+const sourceClass = serviceClassWithMethods(["waitForPageLoadEvent"]);
 const b = originalServiceBindings(
-  [
-    "Za",
-    "wte",
-    "At",
-    "Io",
-    "jh",
-    "GN",
-    "VN",
-    "Rv",
-    "Hn",
-    "Ate",
-    "Pte",
-    "Ote",
-    "Mte",
-    "Wn",
-  ],
-  { St: BrowserUseSecurityError },
+  ["tu", "bte", "Ao", "$h", "Ov", "Ln", "Bte", "Cte", "Ete", "_t", "n2", "r2", "Dte", "Un"],
+  { Ft: BrowserUseSecurityError },
 );
 const original = new Function(
   ...Object.keys(b),
-  "return {" + serviceClassMethod("qh", "waitForPageLoadEvent") + "}",
+  "return {" + serviceClassMethod(sourceClass, "waitForPageLoadEvent") + "}",
 )(...Object.values(b)).waitForPageLoadEvent;
 test("service emitter snapshots dispatch, removes last duplicate and preserves receiver", () => {
   function run(Class: any) {
@@ -50,7 +40,7 @@ test("service emitter snapshots dispatch, removes last duplicate and preserves r
     const results = [o.emit("none"), o.emit("x", 1), o.emit("x", 2)];
     return { trace, results };
   }
-  assert.deepEqual(run(CdpEventEmitter), run(b.Za));
+  assert.deepEqual(run(CdpEventEmitter), run(b.tu));
 });
 test("navigation display URL removes credentials and sensitive suffixes exactly as source", () => {
   for (const url of [
@@ -60,7 +50,7 @@ test("navigation display URL removes credentials and sensitive suffixes exactly 
     "https://u:p@example.com/?q=x#hash",
     "http://example.com/a?q=x#hash",
   ])
-    assert.equal(navigationDisplayUrl(url), b.Mte(url));
+    assert.equal(navigationDisplayUrl(url), b.Dte(url));
 });
 test("page load handling matches original classification, navigation scopes and blocked errors", async () => {
   async function run(method: any, mode: string) {

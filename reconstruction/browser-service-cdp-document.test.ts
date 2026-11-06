@@ -2,16 +2,22 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { documentMethods } from "../packages/browser/dist/service/cdp/document_methods.js";
-import { closeMethods } from "../packages/browser/dist/service/cdp/close_methods.js";
-const bindings = originalServiceBindings(["Ste", "Uh"]);
+import { documentMethods } from "../packages/browser/src/service/cdp/document_methods";
+import { closeMethods } from "../packages/browser/src/service/cdp/close_methods";
+// Minified helper names below were inspected in this exact artifact.
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit helper bindings for changed browser-service artifact");
+const bindings = originalServiceBindings(["_te", "Hh"]);
+const sourceClass = serviceClassWithMethods([...Object.keys(documentMethods), ...Object.keys(closeMethods)]);
 const original = new Function(
   ...Object.keys(bindings),
   "return {" +
     [...Object.keys(documentMethods), ...Object.keys(closeMethods)]
-      .map((n) => serviceClassMethod("qh", n))
+      .map((n) => serviceClassMethod(sourceClass, n))
       .join(",") +
     "}",
 )(...Object.values(bindings));
