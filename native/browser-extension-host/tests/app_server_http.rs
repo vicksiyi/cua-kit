@@ -203,3 +203,17 @@ fn rejection_short_writes_and_failures_are_propagated_without_flush() {
         assert_eq!(writer.bytes.len(), limit);
     }
 }
+
+#[test]
+fn upgrade_accept_and_wire_response_match_known_vectors() {
+    use core_browser_extension_host::app_server_http::{websocket_accept, write_upgrade};
+    assert_eq!(
+        websocket_accept("dGhlIHNhbXBsZSBub25jZQ=="),
+        "s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
+    );
+    // Independently computed SHA-1/base64 fixtures; key is not base64 decoded.
+    assert_eq!(websocket_accept(""), "Kfh9QIsMVZcl6xEPYxPHzW8SZ8w=");
+    let mut bytes = vec![];
+    write_upgrade(&mut bytes, "dGhlIHNhbXBsZSBub25jZQ==").unwrap();
+    assert_eq!(bytes,b"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n");
+}

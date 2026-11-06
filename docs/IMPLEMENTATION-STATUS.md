@@ -6271,3 +6271,10 @@ Expected-origin construction, response serialization, successful upgrade and con
 Composed read_validated_request with real TCP request reading, parser, token/origin/upgrade checks and write_rejection. Responses follow the installed write_plain_response ordering: status, byte content length, text/plain UTF-8 content type, blank line and body. Rejected requests return None only after successful response writing; errors propagate. Seven HTTP tests pass, including exact wire bytes for 403/404 and short-write/error propagation without an added flush.
 
 Successful 101 upgrade, connection attachment, manager and production listener remain unfinished. This is a composed rejection path, not completed browser acceptance.
+
+
+### Native WebSocket 101 response checkpoint
+
+Implemented raw-key SHA-1 plus standard-base64 accept calculation and exact 101 response line ordering using third-party sha1/base64 crates, both evidenced in the installed host. sha1 is pinned to 0.10.6 for this reconstruction; the original crate version is not established. Eight HTTP tests pass, including known accept vectors (empty-key digest independently checked with Python hashlib/base64) and exact upgrade response bytes.
+
+Native ordering requires process ensure_started before writing the response and writer attachment afterward. The response helper is deliberately not connected ahead of those lifecycle steps; full session/manager/listener composition remains unfinished.

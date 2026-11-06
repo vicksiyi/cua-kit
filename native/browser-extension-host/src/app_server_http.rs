@@ -199,3 +199,29 @@ pub fn read_validated_request(
         }
     }
 }
+
+/// Native uses the sha1 crate and standard base64 engine on raw key bytes plus
+/// the WebSocket GUID; it does not decode/validate the supplied key beforehand.
+pub fn websocket_accept(key: &str) -> String {
+    use base64::Engine;
+    use sha1::{Digest, Sha1};
+    let mut hash = Sha1::new();
+    hash.update(key.as_bytes());
+    hash.update(b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+    base64::engine::general_purpose::STANDARD.encode(hash.finalize())
+}
+
+/// Must be called after native process selection/ensure_started succeeds.
+/// Attaching the new writer happens only after this response is written.
+pub fn write_upgrade(writer: &mut impl std::io::Write, key: &str) -> io::Result<()> {
+    let accept = websocket_accept(key);
+    let response = [
+        "HTTP/1.1 101 Switching Protocols",
+        "Upgrade: websocket",
+        "Connection: Upgrade",
+        &format!("Sec-WebSocket-Accept: {accept}"),
+        "\r\n",
+    ]
+    .join("\r\n");
+    writer.write_all(response.as_bytes())
+}

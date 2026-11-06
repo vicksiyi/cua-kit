@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+proxy_upgrade = disassemble(0x100027664, 0x1000288fc)
 plain_response = disassemble(0x100021a94, 0x100021df0)
 http_input = disassemble(0x100022d80, 0x100023f8c)
 query_param = disassemble(0x1000217e4, 0x100021970)
@@ -568,6 +569,18 @@ result = {
         'blankLineThenBody': evidence(plain_response, 0x100021d54, 0x100021d84, ['#0x730', '#0x2', '#0x9', 'write_all']),
         'contract': 'HTTP/1.1 status CRLF, Content-Length CRLF, Content-Type: text/plain; charset=utf-8 CRLF, blank line, body. Both native rejection statuses have 13-byte status strings and 9-byte bodies. Write errors propagate; no explicit flush or shutdown.',
         'integrationStatus': 'Read/parse/auth/shape checks now compose into a TCP rejection path. Exact bytes and short-write/error propagation tested. Successful 101 upgrade, connection attachment, manager and production listener remain open.',
+    },
+    'websocketUpgradeResponse': {
+        'implementation': 'native/browser-extension-host/src/app_server_http.rs::websocket_accept/write_upgrade',
+        'ensureBeforeResponse': evidence(proxy_upgrade, 0x100027a80, 0x100027aa0, ['ensure_started']),
+        'sha1Dependency': evidence(proxy_upgrade, 0x100027b88, 0x100027ba0, ['sha1::compress::compress']),
+        'guid': raw[0x90775:0x90799].decode(),
+        'base64Digest': evidence(proxy_upgrade, 0x100027d50, 0x100027d6c, ['#0x14', 'base64::engine::Engine::encode']),
+        'responseLines': [raw[a:b].decode() for a,b in [(0x90b8a,0x90baa),(0x90baa,0x90bbc),(0x90bbc,0x90bcf)]],
+        'joinAndWrite': evidence(proxy_upgrade, 0x100027ddc, 0x100027e20, ['#0x730', '#0x5', '#0x2', 'join_generic_copy', 'write_all']),
+        'contract': 'Hash raw key bytes followed by GUID using SHA-1, standard base64 encode 20-byte digest; join status/Upgrade/Connection/Accept/CRLF lines with CRLF, write_all once. Process ensure precedes handshake; attach follows write success.',
+        'dependencyNote': 'Original sha1 crate and base64 symbols observed. Reconstruction pins sha1 0.10.6; original sha1 crate version has not been established.',
+        'integrationStatus': 'Response and independent accept vectors tested. Session manager/process selection and attach ordering still need composition before successful production handshake.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

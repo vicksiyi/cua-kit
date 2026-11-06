@@ -3028,6 +3028,68 @@
     "contract": "HTTP/1.1 status CRLF, Content-Length CRLF, Content-Type: text/plain; charset=utf-8 CRLF, blank line, body. Both native rejection statuses have 13-byte status strings and 9-byte bodies. Write errors propagate; no explicit flush or shutdown.",
     "integrationStatus": "Read/parse/auth/shape checks now compose into a TCP rejection path. Exact bytes and short-write/error propagation tested. Successful 101 upgrade, connection attachment, manager and production listener remain open."
   },
+  "websocketUpgradeResponse": {
+    "implementation": "native/browser-extension-host/src/app_server_http.rs::websocket_accept/write_upgrade",
+    "ensureBeforeResponse": [
+      "100027a80: f90017f7    \tstr\tx23, [sp, #0x28]",
+      "100027a84: 5280003c    \tmov\tw28, #0x1               ; =1",
+      "100027a88: aa1703e0    \tmov\tx0, x23",
+      "100027a8c: aa1603e1    \tmov\tx1, x22",
+      "100027a90: 97ffe157    \tbl\t0x10001ffec <<extension_host::app_server::AppServerProcess>::ensure_started>",
+      "100027a94: aa0003f7    \tmov\tx23, x0",
+      "100027a98: b40004a0    \tcbz\tx0, 0x100027b2c <extension_host::app_server::proxy_websocket_to_persistent_app_server+0x4c8>",
+      "100027a9c: f94017e8    \tldr\tx8, [sp, #0x28]",
+      "100027aa0: 92800009    \tmov\tx9, #-0x1               ; =-1"
+    ],
+    "sha1Dependency": [
+      "100027b88: d346ff02    \tlsr\tx2, x24, #6",
+      "100027b8c: f9000382    \tstr\tx2, [x28]",
+      "100027b90: 5280003c    \tmov\tw28, #0x1               ; =1",
+      "100027b94: 91002280    \tadd\tx0, x20, #0x8",
+      "100027b98: aa1903e1    \tmov\tx1, x25",
+      "100027b9c: 94004ee0    \tbl\t0x10003b71c <sha1::compress::compress>",
+      "100027ba0: 927ae308    \tand\tx8, x24, #0x7fffffffffffffc0"
+    ],
+    "guid": "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
+    "base64Digest": [
+      "100027d50: b0000340    \tadrp\tx0, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "100027d54: 9109b400    \tadd\tx0, x0, #0x26d",
+      "100027d58: 910243f4    \tadd\tx20, sp, #0x90",
+      "100027d5c: 910243e8    \tadd\tx8, sp, #0x90",
+      "100027d60: d10283a1    \tsub\tx1, x29, #0xa0",
+      "100027d64: 52800282    \tmov\tw2, #0x14               ; =20",
+      "100027d68: 94002485    \tbl\t0x100030f7c <base64::engine::Engine::encode::inner::<base64::engine::general_purpose::GeneralPurpose>>",
+      "100027d6c: b0000008    \tadrp\tx8, 0x100028000 <extension_host::app_server::proxy_websocket_to_persistent_app_server+0x99c>"
+    ],
+    "responseLines": [
+      "HTTP/1.1 101 Switching Protocols",
+      "Upgrade: websocket",
+      "Connection: Upgrade"
+    ],
+    "joinAndWrite": [
+      "100027ddc: a90623f9    \tstp\tx25, x8, [sp, #0x60]",
+      "100027de0: b0000342    \tadrp\tx2, 0x100090000 <_anon.83e84f71c318dcb1a04d14f214c37c67.4+0x80>",
+      "100027de4: 911cc042    \tadd\tx2, x2, #0x730",
+      "100027de8: 52800048    \tmov\tw8, #0x2                ; =2",
+      "100027dec: a90723e2    \tstp\tx2, x8, [sp, #0x70]",
+      "100027df0: 910243e8    \tadd\tx8, sp, #0x90",
+      "100027df4: 9100c3e0    \tadd\tx0, sp, #0x30",
+      "100027df8: 528000a1    \tmov\tw1, #0x5                ; =5",
+      "100027dfc: 52800043    \tmov\tw3, #0x2                ; =2",
+      "100027e00: 940005d8    \tbl\t0x100029560 <alloc::str::join_generic_copy::<str, u8, &str>>",
+      "100027e04: a9496ffa    \tldp\tx26, x27, [sp, #0x90]",
+      "100027e08: 910243e8    \tadd\tx8, sp, #0x90",
+      "100027e0c: f9400902    \tldr\tx2, [x8, #0x10]",
+      "100027e10: 910073e0    \tadd\tx0, sp, #0x1c",
+      "100027e14: aa1b03e1    \tmov\tx1, x27",
+      "100027e18: 940018dc    \tbl\t0x10002e188 <<std::net::tcp::TcpStream as std::io::Write>::write_all>",
+      "100027e1c: aa0003f7    \tmov\tx23, x0",
+      "100027e20: b4000180    \tcbz\tx0, 0x100027e50 <extension_host::app_server::proxy_websocket_to_persistent_app_server+0x7ec>"
+    ],
+    "contract": "Hash raw key bytes followed by GUID using SHA-1, standard base64 encode 20-byte digest; join status/Upgrade/Connection/Accept/CRLF lines with CRLF, write_all once. Process ensure precedes handshake; attach follows write success.",
+    "dependencyNote": "Original sha1 crate and base64 symbols observed. Reconstruction pins sha1 0.10.6; original sha1 crate version has not been established.",
+    "integrationStatus": "Response and independent accept vectors tested. Session manager/process selection and attach ordering still need composition before successful production handshake."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",
