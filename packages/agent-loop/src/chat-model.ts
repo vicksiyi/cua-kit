@@ -131,6 +131,15 @@ export class ChatCompletionsModel implements ModelAdapter {
       throw new Error(`Model request failed: HTTP ${response.status}`);
     const message = responseSchema.parse(await response.json()).choices[0]!
       .message;
+    // Observed DeepSeek failure: serialized calls were returned in content even
+    // with tool_choice:none. Only structured tool_calls are executable. Reject a
+    // protocol envelope rather than reporting it as a successful final answer.
+    // Keep the check anchored so ordinary discussion/quoted examples stay text.
+    if (!message.tool_calls?.length && /^\s*<｜｜DSML｜｜\s+(?:calls|invoke)\b/.test(message.content ?? "")) {
+      throw new Error(
+        "Model protocol error: serialized tool-call markup was returned as text instead of structured tool_calls. No action was executed from this response.",
+      );
+    }
     return {
       text: message.content ?? undefined,
       toolCalls: message.tool_calls?.map((call) => ({

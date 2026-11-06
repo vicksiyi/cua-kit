@@ -387,3 +387,19 @@ page capture/navigation/click and screenshot, with installed runtime executable
 paths deliberately invalid. It uses local pages and deterministic tool calls,
 not a live model or the user's existing Chrome. Omit the environment selector to
 run the same acceptance with the installed supervisor.
+
+### Serialized tool-call text from a provider
+
+The compatible Chat Completions adapter rejects a response that has no structured
+`tool_calls` and begins with the observed DeepSeek `<｜｜DSML｜｜ calls>` or
+`<｜｜DSML｜｜ invoke ...>` envelope. It does not execute or reinterpret that text.
+Previously it could appear as a completed answer or an incomplete-progress
+summary. Now an ordinary turn reports a protocol error; a budget summary keeps
+its original budget error and records the summary failure, and an authorization
+stop retains its host message without appending the malformed text. Cleanup is
+still performed. The diagnostic does not include the raw provider body.
+
+This is a demo provider-adapter validation, not an original CUA API change or a
+claim that every possible malformed model response can be detected. It does not
+retry the model or guarantee a valid answer on the next run. Only the observed
+leading protocol envelope is rejected; ordinary prose mentioning DSML is text.
