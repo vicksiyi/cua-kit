@@ -28,7 +28,7 @@ struct UIElementActionDescriptionTests {
             let result = uiElementActionDescription(UIElementAction(name),
                 readNativeDescription: { _ in fatalError("custom description must bypass provider") },
                 reportError: { _ in fatalError("unexpected error") })
-            precondition(result.name == name && result.description == description)
+            precondition(result.action.name == name && result.description == description)
         }
         for (name, expected): (String, String?) in [
             ("Name: Click\nOther: value", "Click"),
@@ -53,6 +53,32 @@ struct UIElementActionDescriptionTests {
                 errors += 1
             })
         precondition(failure.description == "Unknown" && reads == 4 && errors == 1)
+        var actionReads = 0
+        var descriptionReads: [String] = []
+        var listErrors = 0
+        let input = [UIElementAction("Unknown"), .press, UIElementAction("Fails"),
+                     UIElementAction("Unknown"), .expand]
+        let list = uiElementActionDescriptions(readActions: {
+            actionReads += 1; return input
+        }, readNativeDescription: { action in
+            descriptionReads.append(action.name)
+            if action.name == "Fails" { throw ExpectedError.failure }
+            return "description \(descriptionReads.count)"
+        }, reportError: { _ in listErrors += 1 })
+        precondition(actionReads == 1 && listErrors == 1)
+        precondition(list.map(\.action) == input)
+        precondition(list.map(\.description) == ["description 1", "Press", "Fails", "description 3", "Expand"])
+        precondition(descriptionReads == ["Unknown", "Fails", "Unknown"])
+        let empty = uiElementActionDescriptions(readActions: { [] },
+            readNativeDescription: { _ in fatalError("empty list must not read descriptions") },
+            reportError: { _ in fatalError("unexpected empty-list error") })
+        precondition(empty.isEmpty)
+        precondition(UIElementActionDescription(.press, description: "é") ==
+                     UIElementActionDescription(.press, description: "e\u{301}"))
+        precondition(UIElementActionDescription(.press, description: "Press") !=
+                     UIElementActionDescription(.pick, description: "Press"))
+        precondition(UIElementActionDescription(.press, description: "Press") !=
+                     UIElementActionDescription(.press, description: "Pick"))
         let originalPress = UIElementAction.press
         defer { UIElementAction.press = originalPress }
         UIElementAction.press = .pick

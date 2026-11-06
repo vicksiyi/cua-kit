@@ -2097,6 +2097,29 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementActionDescription.swift",
       "limitations": "Description policy restored with injected provider/error reporting; original role-aware logger, provider dispatch and production state integration remain pending."
     },
+    "actionDescriptionList": {
+      "descriptor": "0x1012cd3d0",
+      "fields": [
+        "let action: UIElementAction",
+        "let description: Swift.String"
+      ],
+      "getter": "0x10079258c reads actions witness at +0x48 once; 0x1007925b4 maps result",
+      "map": "0x100790690..0x1007907c8 reads each 16-byte action and appends one 32-byte description in original order",
+      "blocks": [
+        {
+          "start": "0x100790690",
+          "endExclusive": "0x1007907c8",
+          "machineCodeSha256": "64677c90533b2ca373a3f6651912ea90465a78d9a8f7a03dfc20a707fe5c97f2"
+        },
+        {
+          "start": "0x100792570",
+          "endExclusive": "0x1007925dc",
+          "machineCodeSha256": "02e52b0f6bb58bdaf163a8b4ddb4e17ccdb813febf67837d9b77a4356c2c4d36"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementActionDescription.swift",
+      "limitations": "Typed descriptions and ordered composition restored; production UIElementProtocol dispatch and page-state integration remain pending."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

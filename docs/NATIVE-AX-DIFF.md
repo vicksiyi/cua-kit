@@ -1114,3 +1114,20 @@ scanUpToString("\n")。fixups 0x101466488/0x101463988/0x101463990 和
 本地 Swift 测试和构建通过；不代表真实应用或完整页面状态输出已经验收。
 
 仍待：原角色感知日志格式、TaskLocal provider 分派、描述列表到生产页面状态的完整接线。
+
+
+## 动作描述实体与列表映射（2026-11-07）
+
+原 `UIElementActionDescription` descriptor 0x1012cd3d0 指向两个不可变字段：
+`action: UIElementAction`、`description: String`，不是 name/description 元组。
+类型引用的间接槽 0x101460d90 指向 UIElementAction descriptor 0x1012cd3b4。
+现已将临时返回元组替换为对应 Swift Equatable 结构，保留原 init(_:description:)。
+
+`_actionDescriptions` 0x100792570 在 witness +0x48 读取一次动作列表，交给
+0x100790690 顺序映射。映射每次读取 16 字节动作、写入 32 字节描述；没有过滤、
+排序或再次去重。新增 uiElementActionDescriptions 组合已恢复的逐项描述解析器。
+
+测试验证：混合内置/自定义动作保持原顺序和重复项；单项系统描述抛错只回退该项，
+后续项继续读取；空列表不读取描述；动作 getter 仅调用一次；描述实体的等价比较同时
+使用 action 和 description（包括 Swift.String Unicode 相等语义）。测试和构建通过。
+这是已恢复描述层之间的组合，尚未接入完整生产页面状态或原版协议分派。

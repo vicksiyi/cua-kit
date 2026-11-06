@@ -1,5 +1,16 @@
 import Foundation
 
+// Native descriptor 0x1012cd3d0: immutable action and description fields.
+struct UIElementActionDescription: Equatable {
+    let action: UIElementAction
+    let description: String
+
+    init(_ action: UIElementAction, description: String) {
+        self.action = action
+        self.description = description
+    }
+}
+
 // Recovered ordered comparisons at 0x100794cec–0x1007953b4.
 // Read mutable statics at call time, preserving first-match precedence.
 extension UIElementAction {
@@ -42,12 +53,25 @@ func uiElementActionDescription(
     _ action: UIElementAction,
     readNativeDescription: (UIElementAction) throws -> String?,
     reportError: (Error) -> Void
-) -> (name: String, description: String) {
-    if let description = action.customDescription { return (action.name, description) }
+) -> UIElementActionDescription {
+    if let description = action.customDescription { return UIElementActionDescription(action, description: description) }
     do {
-        return (action.name, try readNativeDescription(action) ?? action.name)
+        return UIElementActionDescription(action, description: try readNativeDescription(action) ?? action.name)
     } catch {
         reportError(error)
-        return (action.name, action.name)
+        return UIElementActionDescription(action, description: action.name)
+    }
+}
+
+// _actionDescriptions reads the action getter once, then maps every entry in
+// order (0x100792570 -> 0x100790690). No filtering, sorting or deduplication.
+func uiElementActionDescriptions(
+    readActions: () -> [UIElementAction],
+    readNativeDescription: (UIElementAction) throws -> String?,
+    reportError: (Error) -> Void
+) -> [UIElementActionDescription] {
+    readActions().map {
+        uiElementActionDescription($0,
+            readNativeDescription: readNativeDescription, reportError: reportError)
     }
 }

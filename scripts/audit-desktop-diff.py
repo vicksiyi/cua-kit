@@ -921,6 +921,28 @@ element_storage_evidence['customActionDescriptions']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementActionDescription.swift',
     'limitations':'Description policy restored with injected provider/error reporting; original role-aware logger, provider dispatch and production state integration remain pending.',
 }
+description_fields=relative_address(0x1012cd3d0+16)
+_,_,description_kind,description_record_size,description_count=struct.unpack('<iiHHI',read_virtual(description_fields,16))
+if (description_kind,description_record_size,description_count)!=(0,12,2): raise SystemExit('Action description field layout changed')
+for index,name in enumerate(['action','description']):
+    record=description_fields+16+12*index
+    if struct.unpack('<I',read_virtual(record,4))[0]!=0: raise SystemExit('Action description field mutability changed')
+    if read_virtual(relative_address(record+8),len(name)+1)!=name.encode()+b'\0': raise SystemExit('Action description field name changed')
+description_action_type=relative_address(description_fields+20)
+if read_virtual(description_action_type,1)!=b'\x02' or relative_address(description_action_type+1)!=0x101460d90:
+    raise SystemExit('Action description action type changed')
+if '0x1012cd3b4' not in next((line.lower() for line in fixups.splitlines() if '0x101460d90' in line.lower()),''):
+    raise SystemExit('Action description action type target changed')
+if read_virtual(relative_address(description_fields+32),3)!=b'SS\0': raise SystemExit('Action description text type changed')
+element_storage_evidence['actionDescriptionList']={
+    'descriptor':'0x1012cd3d0','fields':['let action: UIElementAction','let description: Swift.String'],
+    'getter':'0x10079258c reads actions witness at +0x48 once; 0x1007925b4 maps result',
+    'map':'0x100790690..0x1007907c8 reads each 16-byte action and appends one 32-byte description in original order',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100790690,0x1007907c8),(0x100792570,0x1007925dc)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementActionDescription.swift',
+    'limitations':'Typed descriptions and ordered composition restored; production UIElementProtocol dispatch and page-state integration remain pending.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))
