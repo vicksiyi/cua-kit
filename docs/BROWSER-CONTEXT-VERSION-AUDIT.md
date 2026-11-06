@@ -98,3 +98,11 @@
 发现独立 native service 通过 @core/browser-desktop/documentation 加载旧静态包（source 0c1cb5...），没有 SIWC 文档/requiredFor，尽管 extension kernel 文档已有 SIWC。按当前安装的 desktop browser-service 静态对象重新生成整包，并为提取脚本加 source SHA-256 校验：ff48f49dae194da13d03427af5130fd67c183cf76f007309afc9f3e60179cb0f。不执行原厂 runtime，不手工拼接不同环境说明。
 
 新测试验证 default、codex-app、cloud、orbit、training 的 packaged 文档读取：detect 无必读限制；authenticate 在读 capabilities/tab/siwc 前被文档控制器拒绝，读后通过。四种环境的 SIWC 正文与原安装目录逐字对照（仅 @oai→@core）。Browser/Desktop TypeScript、重建通过，真实 native 扩展 MCP 操作回归通过（约 8.9 秒）。尚未验收真实账号/grant 登录。
+
+## 后续验证：service/context/provider 与真实 DOM、Cookie 的组合
+
+本轮确认当前扩展 SIWC 4 项原源码差分测试仍通过；新增 Chromium 集成测试，将真实 SiwcAuthenticateCommand → BrowserContext forwarding 方法 → 扩展 SiwcService 接起来，页面检测/readiness 使用真实 injected helpers，Network.setCookie/deleteCookies 使用真实 CDP，最终按钮点击修改真实 DOM。
+
+两条路径通过：正常授权返回 initiated 且真实 HttpOnly/Secure/Lax cookie 已写入后才点击；写 cookie 后账号改变则 provider 回滚删除 cookie，命令返回 cookie_failed，未点击。每条路径使用独立临时 browser context，并全部关闭。
+
+边界：账号/grant HTTP 响应和用户审批为受控 fixture，未请求实际认证服务、未使用用户凭据。此测试不覆盖扩展消息/native socket 传输，也不证明线上 SIWC 登录成功；证明实际服务/provider 算法在真实 DOM/CDP 中的组合与回滚行为。
