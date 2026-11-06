@@ -73,6 +73,19 @@ header_literals = {name: read(address,length).decode() for name,address,length i
     ('bearerPrefix',0x100b34f93,7)]}
 assert header_literals == {'authorization':'authorization', 'originator':'originator',
     'originatorValue':'codex_browser_use', 'account':'ChatGPT-Account-ID', 'bearerPrefix':'Bearer '}
+send = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10026cca4','--stop-address=0x10026dae0',str(artifact)], text=True)
+for expected in ['10026cd60:', 'Client>::request', '10026ce28:', 'RequestBuilder>::header',
+                 '10026cee4:', 'RequestBuilder>::send', '10026cfa0:', 'Response>::content_length',
+                 '10026cfac:', '10026d4ec:', '#0xa00, lsl #12', '10026d69c:', 'StatusCode>::canonical_reason',
+                 '10026d730:', 'base64::engine::Engine::encode']:
+    assert expected in send, expected
+send_literals = {key: read(address,length).decode() for key,address,length in [
+    ('tooLarge',0x100a49e36,36),('requestFailed',0x100a49c87,29),
+    ('readFailed',0x100a49ca4,35),('header',0x100a49dba,12)]}
+assert send_literals == {'tooLarge':'nodeRepl.fetch response is too large',
+    'requestFailed':'nodeRepl.fetch request failed','readFailed':'nodeRepl.fetch response read failed',
+    'header':'content-type'}
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -112,6 +125,18 @@ print(json.dumps({
             '0x1002716c8..0x100271750: optional account String at auth offset 0x18; None omitted, Some including empty moved to final header'
         ],
         'limits': 'Static instruction review only. FetchCredentials models consumed fields, not the complete original auth DTO. No credential provider or original runtime differential execution.'
+    },
+    'responseProjection': {
+        'function': 'ReqwestHttpClient::send async body',
+        'range': ['0x10026cca4','0x10026dae0'],
+        'instructionTextSha256': hashlib.sha256(send.encode()).hexdigest(),
+        'literals': send_literals,
+        'reviewedBehavior': [
+            '0x10026cfac and 0x10026d4ec: declared content length and collected body length reject strictly greater than 0xa00000',
+            '0x10026d064..0x10026d268 and 0x10026d774: get first content-type, permit HTAB/printable ASCII, expose only that header, retain empty value',
+            '0x10026d694..0x10026d770: canonical status reason or empty string and standard-base64 body, without status error conversion'
+        ],
+        'limits': 'Response shaping implemented independently of transport. Original reqwest client construction/version selection, redirects/timeouts/decompression and sending still require review.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions.'

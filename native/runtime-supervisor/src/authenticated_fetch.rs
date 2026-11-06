@@ -4,7 +4,7 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use http::Method;
 use url::Url;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 pub struct FetchHeader {
     pub name: String,
     pub value: String,
@@ -162,4 +162,49 @@ pub fn outbound_authenticated_request(
         });
     }
     request
+}
+
+pub const MAX_FETCH_RESPONSE_BYTES: u64 = 10 * 1024 * 1024;
+
+/// Native send checks the transport's decoded content length before reading.
+pub fn check_response_content_length(length: Option<u64>) -> Result<(), &'static str> {
+    if length.is_some_and(|length| length > MAX_FETCH_RESPONSE_BYTES) {
+        Err("nodeRepl.fetch response is too large")
+    } else {
+        Ok(())
+    }
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct FetchResponse {
+    pub status: u16,
+    pub status_text: String,
+    pub headers: Vec<FetchHeader>,
+    pub body_base64: String,
+}
+
+/// Native response projection after body collection. This is not an HTTP sender.
+/// Only the first content-type value is exposed, if HeaderValue::to_str accepts it.
+pub fn finish_response(
+    status: http::StatusCode,
+    headers: &http::HeaderMap,
+    body: &[u8],
+) -> Result<FetchResponse, &'static str> {
+    check_response_content_length(Some(body.len() as u64))?;
+    let headers = headers
+        .get(http::header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .map(|value| {
+            vec![FetchHeader {
+                name: "content-type".into(),
+                value: value.into(),
+            }]
+        })
+        .unwrap_or_default();
+    Ok(FetchResponse {
+        status: status.as_u16(),
+        status_text: status.canonical_reason().unwrap_or("").into(),
+        headers,
+        body_base64: STANDARD.encode(body),
+    })
 }

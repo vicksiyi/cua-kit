@@ -268,3 +268,71 @@ fn authenticated_account_absence_and_empty_values_are_distinct() {
         assert_eq!(output.headers.get(2).map(|h| h.value.as_str()), account_id);
     }
 }
+
+#[test]
+fn response_projection_exposes_only_first_valid_content_type_and_binary_body() {
+    use core_runtime_supervisor::authenticated_fetch::finish_response;
+    use http::{HeaderMap, HeaderValue, StatusCode};
+    let mut headers = HeaderMap::new();
+    headers.append(
+        "content-type",
+        HeaderValue::from_static("application/octet-stream"),
+    );
+    headers.append(
+        "content-type",
+        HeaderValue::from_static("ignored second value"),
+    );
+    headers.insert("set-cookie", HeaderValue::from_static("fixture=private"));
+    let response = finish_response(StatusCode::NOT_FOUND, &headers, &[0, 255, b'a']).unwrap();
+    assert_eq!(
+        serde_json::to_value(response).unwrap(),
+        serde_json::json!({
+            "status":404,"status_text":"Not Found","headers":[{"name":"content-type","value":"application/octet-stream"}],"body_base64":"AP9h"
+        })
+    );
+    headers.insert("content-type", HeaderValue::from_bytes(&[0xff]).unwrap());
+    assert!(finish_response(StatusCode::OK, &headers, b"")
+        .unwrap()
+        .headers
+        .is_empty());
+    headers.insert("content-type", HeaderValue::from_static(""));
+    assert_eq!(
+        finish_response(StatusCode::OK, &headers, b"")
+            .unwrap()
+            .headers[0]
+            .value,
+        ""
+    );
+    let unknown =
+        finish_response(StatusCode::from_u16(599).unwrap(), &HeaderMap::new(), b"").unwrap();
+    assert_eq!(unknown.status_text, "");
+    assert_eq!(unknown.body_base64, "");
+    assert!(unknown.headers.is_empty());
+}
+
+#[test]
+fn response_size_boundary_checks_declared_and_collected_lengths() {
+    use core_runtime_supervisor::authenticated_fetch::{
+        check_response_content_length, finish_response, MAX_FETCH_RESPONSE_BYTES,
+    };
+    for length in [None, Some(0), Some(MAX_FETCH_RESPONSE_BYTES)] {
+        assert_eq!(check_response_content_length(length), Ok(()));
+    }
+    for length in [MAX_FETCH_RESPONSE_BYTES + 1, u64::MAX] {
+        assert_eq!(
+            check_response_content_length(Some(length)),
+            Err("nodeRepl.fetch response is too large")
+        );
+    }
+    let body = vec![0; MAX_FETCH_RESPONSE_BYTES as usize + 1];
+    assert_eq!(
+        finish_response(http::StatusCode::OK, &http::HeaderMap::new(), &body).unwrap_err(),
+        "nodeRepl.fetch response is too large"
+    );
+    assert!(finish_response(
+        http::StatusCode::OK,
+        &http::HeaderMap::new(),
+        &body[..MAX_FETCH_RESPONSE_BYTES as usize]
+    )
+    .is_ok());
+}

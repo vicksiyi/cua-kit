@@ -75,6 +75,26 @@
     ],
     "limits": "Static instruction review only. FetchCredentials models consumed fields, not the complete original auth DTO. No credential provider or original runtime differential execution."
   },
+  "responseProjection": {
+    "function": "ReqwestHttpClient::send async body",
+    "range": [
+      "0x10026cca4",
+      "0x10026dae0"
+    ],
+    "instructionTextSha256": "de84b3a4686424c9c02ec9467e938fcf4190c4d4df7cb78699eae95dbe767a1e",
+    "literals": {
+      "tooLarge": "nodeRepl.fetch response is too large",
+      "requestFailed": "nodeRepl.fetch request failed",
+      "readFailed": "nodeRepl.fetch response read failed",
+      "header": "content-type"
+    },
+    "reviewedBehavior": [
+      "0x10026cfac and 0x10026d4ec: declared content length and collected body length reject strictly greater than 0xa00000",
+      "0x10026d064..0x10026d268 and 0x10026d774: get first content-type, permit HTAB/printable ASCII, expose only that header, retain empty value",
+      "0x10026d694..0x10026d770: canonical status reason or empty string and standard-base64 body, without status error conversion"
+    ],
+    "limits": "Response shaping implemented independently of transport. Original reqwest client construction/version selection, redirects/timeouts/decompression and sending still require review."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
   "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration and HTTP send remain unimplemented. No production handler is wired to this constructor. Binary symbols also evidence ReqwestHttpClient, but original reqwest version selection is not established by these instructions."
 }
