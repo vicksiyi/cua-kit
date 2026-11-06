@@ -494,6 +494,12 @@ result = {
         'semantics': 'Reuse exact state or clear old state under lock, close writer, stop child and spawn replacement while still locked. Increment generation only after successful spawn/pipe extraction, store child/runtime/stdin, unlock then detach forwarding worker. Worker cleans up before wait.',
         'integrationStatus': 'Composed lifecycle tested with real owned CLI reuse, configuration-triggered replacement, stop/reap and failed launch. Native spawn error decoration and complete control manager/handshake integration remain open.',
     },
+    'spawnErrorDecoration': {
+        'implementation': 'native/browser-extension-host/src/app_server_process.rs::spawn',
+        'nativeFormattingBytes': raw[0x8d20b:0x8d236].hex(),
+        'preserveKindAndFormat': evidence(process_start, 0x1000205f0, 0x10002063c, ['Error>::kind', '#0xd10', '#0x20b', 'format_inner', 'Error>::new']),
+        'contract': 'Only Command::spawn error is wrapped as Failed to start Codex app-server with <original configured CLI>: <original error>, preserving ErrorKind but replacing OS payload with String. Path/home preparation errors propagate unwrapped.',
+    },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
         'error codes and full websocket proxy behavior'],

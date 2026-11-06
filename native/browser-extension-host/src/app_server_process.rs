@@ -41,7 +41,15 @@ pub fn command(fields: &ResolvedLaunchFields) -> io::Result<Command> {
 /// owner. The caller must drain output, implement proxy setup and reap the child.
 /// It does not establish a connected runtime or replace ensure_started.
 pub fn spawn(fields: &ResolvedLaunchFields) -> io::Result<Child> {
-    command(fields)?.spawn()
+    command(fields)?.spawn().map_err(|error| {
+        io::Error::new(
+            error.kind(),
+            format!(
+                "Failed to start Codex app-server with {}: {error}",
+                fields.codex_cli_path
+            ),
+        )
+    })
 }
 
 pub type SharedChild = std::sync::Arc<std::sync::Mutex<Child>>;

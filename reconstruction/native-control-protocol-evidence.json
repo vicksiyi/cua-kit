@@ -2282,6 +2282,33 @@
     "semantics": "Reuse exact state or clear old state under lock, close writer, stop child and spawn replacement while still locked. Increment generation only after successful spawn/pipe extraction, store child/runtime/stdin, unlock then detach forwarding worker. Worker cleans up before wait.",
     "integrationStatus": "Composed lifecycle tested with real owned CLI reuse, configuration-triggered replacement, stop/reap and failed launch. Native spawn error decoration and complete control manager/handshake integration remain open."
   },
+  "spawnErrorDecoration": {
+    "implementation": "native/browser-extension-host/src/app_server_process.rs::spawn",
+    "nativeFormattingBytes": "264661696c656420746f20737461727420436f646578206170702d736572766572207769746820c0023a20",
+    "preserveKindAndFormat": [
+      "1000205f0: f9401be0    \tldr\tx0, [sp, #0x30]",
+      "1000205f4: f9008be0    \tstr\tx0, [sp, #0x110]",
+      "1000205f8: 97fffdd0    \tbl\t0x10001fd38 <<std::io::error::Error>::kind>",
+      "1000205fc: aa0003f9    \tmov\tx25, x0",
+      "100020600: 90000048    \tadrp\tx8, 0x100028000 <extension_host::app_server::proxy_websocket_to_persistent_app_server+0x99c>",
+      "100020604: 91344108    \tadd\tx8, x8, #0xd10",
+      "100020608: a91623f6    \tstp\tx22, x8, [sp, #0x160]",
+      "10002060c: 910443e8    \tadd\tx8, sp, #0x110",
+      "100020610: d0000249    \tadrp\tx9, 0x10006a000 <<std::backtrace_rs::symbolize::SymbolName as core::fmt::Display>::fmt+0x8>",
+      "100020614: 91287129    \tadd\tx9, x9, #0xa1c",
+      "100020618: a91727e8    \tstp\tx8, x9, [sp, #0x170]",
+      "10002061c: b0000360    \tadrp\tx0, 0x10008d000 <_anon.7f1658701cef0ae21d4adde03ce618dd.4>",
+      "100020620: 91082c00    \tadd\tx0, x0, #0x20b",
+      "100020624: 9104a3e8    \tadd\tx8, sp, #0x128",
+      "100020628: 910583e1    \tadd\tx1, sp, #0x160",
+      "10002062c: 94015783    \tbl\t0x100076438 <alloc::fmt::format::format_inner>",
+      "100020630: 12001f20    \tand\tw0, w25, #0xff",
+      "100020634: 9104a3e1    \tadd\tx1, sp, #0x128",
+      "100020638: 94003752    \tbl\t0x10002e380 <<std::io::error::Error>::new::<alloc::string::String>>",
+      "10002063c: aa0003f9    \tmov\tx25, x0"
+    ],
+    "contract": "Only Command::spawn error is wrapped as Failed to start Codex app-server with <original configured CLI>: <original error>, preserving ErrorKind but replacing OS payload with String. Path/home preparation errors propagate unwrapped."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",

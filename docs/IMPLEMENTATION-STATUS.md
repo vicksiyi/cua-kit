@@ -6223,3 +6223,9 @@ Composed explicit stop: take child/writer, clear replay/runtime/stdin, increment
 Composed ensure_started over configuration projection, reuse predicate, old-resource clearing, websocket close, child stop/reap, spawn, stderr drain, state publication and detached stdout worker. Native replacement holds the process-state mutex through stopping the old child and spawning the new one; it is not implemented by calling the separately unlocked explicit-stop helper. Generation advances only after successful spawn and pipe extraction. The new worker begins after state publication/unlock and performs output cleanup before waiting on its retained child.
 
 Seven process tests pass, including an actual owned CLI reused without a PID/generation change, replacement on Node-path change, prior-child reaping, explicit stop and failed-spawn state/generation behavior. Existing transport/output checks remain independent evidence. Native spawn-error decoration and manager/control/handshake integration are still incomplete; this is not a full browser acceptance run.
+
+### 2026-11-06: spawn error context and full native regression
+
+Aligned only the Command::spawn failure branch with native formatting: Failed to start Codex app-server with <configured CLI>: <underlying error>. ErrorKind is preserved; the payload becomes a String, so raw_os_error is absent. Path resolution/home preparation failures remain unwrapped. New tests compare a real missing-program error with its decorated form and distinguish a failed home setup.
+
+The complete native/browser-extension-host cargo test suite passed: 73 tests, zero failures. Coverage includes current configuration/lifecycle primitives, owned child and loopback TCP composition, endpoint, router, assets and transport checks. This is broader regression evidence, not original-host runtime parity or browser/App acceptance. Manager/control and handshake/attach integration remain unfinished.

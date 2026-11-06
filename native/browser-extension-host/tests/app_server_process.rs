@@ -248,3 +248,36 @@ fn ensure_reuses_replaces_and_stops_real_owned_processes() {
     }
     fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn spawn_error_preserves_kind_and_names_original_configured_program() {
+    let root = std::env::temp_dir().join(format!("core-spawn-errors-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    let missing = root.join("missing program");
+    let fields = LaunchFields {
+        codex_cli_path: Some(missing.to_string_lossy().into()),
+        ..Default::default()
+    }
+    .resolve(|_| None);
+    let raw = command(&fields).unwrap().spawn().unwrap_err();
+    let decorated = spawn(&fields).unwrap_err();
+    assert_eq!(decorated.kind(), raw.kind());
+    assert_eq!(
+        decorated.to_string(),
+        format!(
+            "Failed to start Codex app-server with {}: {}",
+            missing.display(),
+            raw
+        )
+    );
+    assert_eq!(decorated.raw_os_error(), None); // native wraps the error as a string
+    let file = root.join("not-a-directory");
+    fs::write(&file, "test").unwrap();
+    let mut invalid_home = fields;
+    invalid_home.codex_home = Some(file.to_string_lossy().into());
+    assert!(!spawn(&invalid_home)
+        .unwrap_err()
+        .to_string()
+        .starts_with("Failed to start"));
+    fs::remove_dir_all(root).unwrap();
+}
