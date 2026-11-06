@@ -86,5 +86,18 @@ import Foundation
         }
         print("native policy parser defaults, conjunction, strict types and separate rule maps passed")
         print("72 app access combinations and forbidden classifier ordering passed")
+        let forbidden = NativeForbiddenTargets.terminals + NativeForbiddenTargets.codex
+            + NativeForbiddenTargets.chatGPT + NativeForbiddenTargets.systemAuthentication
+        precondition(forbidden.count == 24 && Set(forbidden).count == 24)
+        for identifier in forbidden {
+            precondition(NativeForbiddenTargets.contains(identifier))
+            precondition(defaults.decisionWithDefaultTargetClassification(bundleIdentifier: identifier) == .forbidden)
+            precondition(!NativeForbiddenTargets.contains(identifier + ".child"))
+            precondition(!NativeForbiddenTargets.contains(" " + identifier))
+            precondition(!NativeForbiddenTargets.contains(identifier.uppercased()))
+        }
+        precondition(defaults.decisionWithDefaultTargetClassification(bundleIdentifier: "example.fixture") == .allowed)
+        precondition(exact.decisionWithDefaultTargetClassification(bundleIdentifier: "com.apple.Terminal") == .denied)
+        print("24 normal forbidden targets and exact-match boundaries passed")
     }
 }

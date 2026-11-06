@@ -113,12 +113,37 @@ At `0x100191c60..<0x100191c98`, a failed predicate becomes `denied`.
 Only after it succeeds does the caller invoke
 `SystemSoftware.BundleIdentifiers.isForbiddenComputerUseTarget`; true becomes
 `forbidden`, false becomes `allowed`. The extracted decision method takes that
-classifier as an injected dependency, without inventing a target list.
+classifier as a dependency; a separate overload now uses the normal classifier
+restored below.
 
 Tests now cover 72 combinations of global enablement, both defaults and both
 optional overrides, plus both forbidden-classifier outcomes and call ordering.
 They also check exact key matching and that a literal wildcard-looking key
 does not match arbitrary bundle IDs. This is not real-app operation acceptance.
+
+## Normal forbidden-target classification
+
+`0x1002570c0..<0x1002572d4` checks four static arrays in order; its predicate
+thunks call string equality at `0x100194fc8..<0x10019501c`. These are exact
+Swift string comparisons, not bundle-prefix matching. The static audit now
+decodes each array and emits all 24 identifiers in the evidence JSON:
+
+| Array address | Contents |
+| --- | --- |
+| `0x1015588a0` | 11 terminal application identifiers |
+| `0x101558978` | 5 Codex application identifiers |
+| `0x1015589f0` | 5 ChatGPT application identifiers |
+| `0x101558c70` | UserNotificationCenter, LocalAuthenticationRemoteService, SecurityAgent |
+
+`NativeForbiddenTargets.swift` restores this normal branch and the policy
+overload composes it after the two-layer access check. Tests cover every
+identifier plus case, whitespace, and suffix mismatches; policy denial still
+takes precedence over forbidden classification.
+
+The original function also has a process-preference override branch before
+these arrays. This component does not read, change, or expose that override.
+It therefore claims only the normal classification branch, not full parity
+for every original process configuration. No current app rules were modified.
 
 ## Current request boundary
 
@@ -133,8 +158,9 @@ approval, and macOS Accessibility/Screen Recording grants remain distinct.
 1. Implement the concrete native connection integration and original error
    representation. Cache timing, parser, request sequence, and cleanup are
    evidenced; the complete original provider is not implemented yet.
-2. Recover full forbidden-target classification, risk classification, and
-   persistence application. The two-layer access predicate is now restored.
+2. Recover risk classification and persistence application. The two-layer
+   access predicate and normal forbidden-target branch are now restored; the
+   original process-preference override remains outside this component.
 3. Map installed-app resolution and launch to the policy evaluation order.
 4. Implement the recovered native-language logic with tests derived from those
    branches, preserving the independent deployment's explicit policy boundary.

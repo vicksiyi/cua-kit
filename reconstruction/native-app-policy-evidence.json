@@ -100,6 +100,68 @@
       "start": "0x100191c60",
       "endExclusive": "0x100191c98",
       "sha256": "8bf09f8278fa0f48738e98ab9561a210823397cba4726511d133c989e5df42c3"
+    },
+    {
+      "name": "forbiddenClassifier",
+      "start": "0x1002570c0",
+      "endExclusive": "0x1002572d4",
+      "sha256": "add0befcad86c8f4f690f2b35fb781739b72e8e9eaf7d09f51b1c0908054e705"
+    },
+    {
+      "name": "forbiddenStringEquality",
+      "start": "0x100194fc8",
+      "endExclusive": "0x10019501c",
+      "sha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
+    }
+  ],
+  "normalForbiddenTargetGroups": [
+    {
+      "label": "terminals",
+      "address": "0x1015588a0",
+      "values": [
+        "com.apple.Terminal",
+        "com.googlecode.iterm2",
+        "org.alacritty",
+        "dev.warp.Warp-Stable",
+        "net.kovidgoyal.kitty",
+        "co.zeit.hyper",
+        "com.github.wez.wezterm",
+        "org.tabby",
+        "com.mitchellh.ghostty",
+        "com.raphaelamorim.rio",
+        "dev.commandline.waveterm"
+      ]
+    },
+    {
+      "label": "codex",
+      "address": "0x101558978",
+      "values": [
+        "com.openai.codex",
+        "com.openai.codex.alpha",
+        "com.openai.codex.beta",
+        "com.openai.codex.dev",
+        "com.openai.codex.nightly"
+      ]
+    },
+    {
+      "label": "chatGPT",
+      "address": "0x1015589f0",
+      "values": [
+        "com.openai.chat",
+        "com.openai.chat.alpha",
+        "com.openai.chat.beta",
+        "com.openai.chat.nightly",
+        "com.openai.chat.mac-debug"
+      ]
+    },
+    {
+      "label": "systemAuthentication",
+      "address": "0x101558c70",
+      "values": [
+        "com.apple.UserNotificationCenter",
+        "com.apple.LocalAuthenticationRemoteService",
+        "com.apple.SecurityAgent"
+      ]
     }
   ],
   "recoveredParser": {
@@ -147,7 +209,8 @@
   },
   "limitations": [
     "Field names and enum cases establish structure, not runtime defaults or precedence.",
-    "Recovered cache, parser and access predicate are extracted Swift components; native transport, forbidden target classification and production integration remain incomplete.",
+    "Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.",
+    "Native transport, risk descriptor and production integration remain incomplete.",
     "No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.",
     "No vendor execution, network requests, policy changes, or approval bypass."
   ]

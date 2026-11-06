@@ -26,10 +26,15 @@ struct NativeComputerUsePolicy: Sendable, Equatable {
     enum Decision: String { case allowed, denied, forbidden }
 
     /// Decision branch at 0x100191c60..<0x100191c98. The original forbidden
-    /// target classifier is a separate native dependency, not reproduced here.
+    /// target classifier is a separate dependency. The overload below uses the
+    /// recovered normal branch without the vendor process preference override.
     func decision(bundleIdentifier: String, isForbiddenTarget: (String) -> Bool) -> Decision {
         guard allowsApplication(bundleIdentifier: bundleIdentifier) else { return .denied }
         return isForbiddenTarget(bundleIdentifier) ? .forbidden : .allowed
+    }
+
+    func decisionWithDefaultTargetClassification(bundleIdentifier: String) -> Decision {
+        decision(bundleIdentifier: bundleIdentifier, isForbiddenTarget: NativeForbiddenTargets.contains)
     }
 
     // Host-local error representation; original throws a native JSON-RPC error.

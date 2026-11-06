@@ -73,11 +73,33 @@ def audit():
         ('policyResponseParser', 0x1000a98f0, 0x1000aa444),
         ('appAccessEvaluation', 0x1000a7860, 0x1000a79e0),
         ('appDecisionBranch', 0x100191c60, 0x100191c98),
+        ('forbiddenClassifier', 0x1002570c0, 0x1002572d4),
+        ('forbiddenStringEquality', 0x100194fc8, 0x10019501c),
     ]:
         code_ranges.append(dict(name=name, start=hex(start), endExclusive=hex(end),
                                 sha256=hashlib.sha256(read(start, end-start)).hexdigest()))
+    forbidden_groups = []
+    for label, address, expected_count in [
+        ('terminals', 0x1015588a0, 11), ('codex', 0x101558978, 5),
+        ('chatGPT', 0x1015589f0, 5), ('systemAuthentication', 0x101558c70, 3),
+    ]:
+        count = struct.unpack('<Q', read(address + 16, 8))[0]
+        if count != expected_count:
+            raise ValueError('Unexpected static string array count')
+        values = []
+        for index in range(count):
+            raw = read(address + 32 + 16 * index, 16)
+            first, second = struct.unpack('<QQ', raw)
+            if raw[15] & 0x20:
+                value = raw[:raw[15] & 15].decode('utf-8')
+            else:
+                # Pinned arm64 chained rebase + Swift immortal string bias.
+                value = read(0x100000000 + (second & 0xffffffff) + 32, first & 0xffff).decode('utf-8')
+            values.append(value)
+        forbidden_groups.append(dict(label=label, address=hex(address), values=values))
     return dict(binarySha256=digest, method='Static Mach-O Swift metadata and pinned disassembly analysis',
                 types=records, codeRanges=code_ranges,
+                normalForbiddenTargetGroups=forbidden_groups,
                 recoveredParser=dict(
                     requiredEnvelope=['requirementsResponse.requirements (null accepted)', 'configResponse.config (dictionary required)'],
                     optionalDictionary='missing/null becomes empty; other non-dictionaries throw',
@@ -101,7 +123,8 @@ def audit():
                     closesConnectionOn='success, request failure, and policy parsing failure'),
                 limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
-                    'Recovered cache, parser and access predicate are extracted Swift components; native transport, forbidden target classification and production integration remain incomplete.',
+                    'Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.',
+                    'Native transport, risk descriptor and production integration remain incomplete.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 
