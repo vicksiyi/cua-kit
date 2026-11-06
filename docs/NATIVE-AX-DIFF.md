@@ -2013,3 +2013,20 @@ shortener，再调用 0x10065f7c0 的 trim(url:isImage:)。返回 nil 转为空�
 调用相同 shortener，nil 转空字符串后追加 URL span。appendMarkdownLink
 0x10063a574 的标签依次选非空 stringValue/title/description，并对方括号转义；
 后续还有字符集合处理和两种输出分支，尚未完整验证，暂不实现猜测版本。
+
+### Markdown 链接标签与结构
+
+已补齐上一节待核对的字符处理：GOT 0x1014626f8 是
+CharacterSet.whitespacesAndNewlines，0x1014639c0 是 trimmingCharacters(in:)，
+0x101469a78 是 Swift StringProcessing replacing(_:with:maxReplacements:)。
+0x10063a574..<0x10063ab88 先从 stringValue/title/description 取首个非空值，
+依次转义左右方括号，再去除首尾空白换行。因此纯空白 value 会胜过非空 title，
+生成空标签，不会重新回退。
+
+有标签构建 [label](URL-span)，无标签构建 <URL-span>，图片标记传入 URL
+shortener 并保存在 URL span，不额外添加感叹号。临时插值的映射为 nil，最后
+通过普通合并补齐目标映射的 nil 项。恢复的 Swift helper 保留 isImage 和
+shortener 两个明确依赖，未宣称完整泛型 context 已实现。
+
+256 组标签/图片/映射组合及 nil shortener 测试通过，包含空白标签、方括号转义、
+UTF-16 映射和 URL 片段边界。原生构建验证另行执行；生产接入仍待完成。

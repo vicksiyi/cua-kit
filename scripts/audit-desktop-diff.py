@@ -998,6 +998,17 @@ element_storage_evidence['transformedStringURLRefresh']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringURLRefresh.swift',
     'limitations':'Span refresh restored with explicit shortener callback; actual mutable shortener/context, Markdown link generation and production integration remain pending.',
 }
+element_storage_evidence['transformedStringMarkdownLink']={
+    'entry':'appendMarkdownLink 0x10063a574..<0x10063ab88',
+    'label':'First nonnil nonempty stringValue/title/description BEFORE trimming; replace [ with backslash+[ then ] with backslash+]; trim whitespacesAndNewlines',
+    'format':'Selected label yields [label](URL-span); no selected label yields <URL-span>; no image exclamation prefix; URL interpolation calls shortener once with image classification, nil result -> empty payload',
+    'mapping':'Build temporary interpolation with nil mapping, then merge into destination via ordinary span append and mapping reconciliation 0x1006395d4',
+    'bindings':{'0x1014626f8':'Foundation.CharacterSet.whitespacesAndNewlines','0x1014639c0':'Foundation.trimmingCharacters(in:)','0x101469a78':'Swift StringProcessing replacing(_:with:maxReplacements:)'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10063a574,0x10063ab88),(0x100638d40,0x100639134)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringMarkdownLink.swift',
+    'limitations':'Label and span construction restored; role classification is passed as isImage, shortener is callback; full context and production integration remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

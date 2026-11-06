@@ -338,3 +338,18 @@ test("native transformed URL refresh preserves span identity", {
     assert.match(result.stdout, /URL refresh preserves call order, metadata, nil conversion and canonical equality/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed Markdown link preserves label and mapping behavior", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-markdown-link-"));
+  try {
+    const output = join(directory, "link");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringAppending", "TransformedUIStringMerging", "TransformedUIStringMarkdownLink"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringMarkdownLinkTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /Markdown links preserve label precedence, escaping, trimming, URL boundaries and source mapping/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

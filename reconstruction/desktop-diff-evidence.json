@@ -2642,6 +2642,31 @@
       "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringURLRefresh.swift",
       "limitations": "Span refresh restored with explicit shortener callback; actual mutable shortener/context, Markdown link generation and production integration remain pending."
     },
+    "transformedStringMarkdownLink": {
+      "entry": "appendMarkdownLink 0x10063a574..<0x10063ab88",
+      "label": "First nonnil nonempty stringValue/title/description BEFORE trimming; replace [ with backslash+[ then ] with backslash+]; trim whitespacesAndNewlines",
+      "format": "Selected label yields [label](URL-span); no selected label yields <URL-span>; no image exclamation prefix; URL interpolation calls shortener once with image classification, nil result -> empty payload",
+      "mapping": "Build temporary interpolation with nil mapping, then merge into destination via ordinary span append and mapping reconciliation 0x1006395d4",
+      "bindings": {
+        "0x1014626f8": "Foundation.CharacterSet.whitespacesAndNewlines",
+        "0x1014639c0": "Foundation.trimmingCharacters(in:)",
+        "0x101469a78": "Swift StringProcessing replacing(_:with:maxReplacements:)"
+      },
+      "blocks": [
+        {
+          "start": "0x10063a574",
+          "endExclusive": "0x10063ab88",
+          "machineCodeSha256": "0449f9335b825629a9f5da4b73e15691ba7d31f9f73d95610502714b368fbc31"
+        },
+        {
+          "start": "0x100638d40",
+          "endExclusive": "0x100639134",
+          "machineCodeSha256": "d4cd9200891efd3da743fb678f8a424b0345c3d3f8a3706ec85edc941bb4cc46"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringMarkdownLink.swift",
+      "limitations": "Label and span construction restored; role classification is passed as isImage, shortener is callback; full context and production integration remain pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
