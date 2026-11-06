@@ -232,3 +232,30 @@ AnyObject 强转实现替代它。图只列出已确认的类型判断，不声�
 
 此外 uncachedValue 的外层会捕获内部 throwing reader 的错误、通过 os.Logger 记录并返回 nil；
 这一层与原始 AX API 以及 parameterizedValue 的错误行为要分别处理，不能统一改为全抛出或全吞掉。
+
+## 原生错误类型恢复
+
+`UIElementError.swift` 按 Swift enum field metadata 恢复五个 case，遵循原构建的 Error conformance：
+
+```swift
+enum UIElementError: Error {
+    case axError(AXError)
+    case unexpectedAttributeValueType(expected: Any.Type, actual: Any.Type)
+    case failedToUnwrapAttributeValue(Any.Type)
+    case failedInit(String)
+    case failedToWrapAXValue
+}
+```
+
+payload 类型保留 AXError、Swift metatype 和 String，而不是统一包装成文字。
+`ypXp8expected_ypXp6actualt` 经 swift-demangle 明确得到 `(expected: Any.Type, actual: Any.Type)`。
+首个 case 的 symbolic typeref 指向名为 AXError 的 descriptor，最后一个 case 没有 payload。
+
+在 unwrappedThrowing 中还找到与 -25212 比较后返回 Optional.none 的路径；
+本机 macOS SDK 的 AXError.h 确认 -25212 是 kAXErrorNoValue。
+该证据针对这一解码分支，不表示所有 API 返回 noValue 都由同一层处理。
+另一个共享失败处理块 `0x1006e9d38` 根据布尔参数选择抛出已有错误或返回 nil，
+也不能据此概括整个 decoder 在 false 时绝不抛错。
+
+尚未恢复错误构造条件的全部分支，也未把这些 Error case 接到 SkyIPC 的错误码映射。
+本轮只补齐可确定的原生类型和审计证据；Swift 构建用于验证类型声明，不将构建成功当成错误链路验收。

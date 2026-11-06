@@ -1060,6 +1060,40 @@
     },
     "limitations": "Confirms type dispatch and wrapper error handling, not the complete conversion/error algorithm."
   },
+  "errorEvidence": {
+    "nominalDescriptor": "0x1012cd360",
+    "fieldDescriptor": "0x101323f58",
+    "cases": [
+      {
+        "name": "axError",
+        "payload": "AXError"
+      },
+      {
+        "name": "unexpectedAttributeValueType",
+        "payload": "ypXp8expected_ypXp6actualt"
+      },
+      {
+        "name": "failedToUnwrapAttributeValue",
+        "payload": "ypXp"
+      },
+      {
+        "name": "failedInit",
+        "payload": "SS"
+      },
+      {
+        "name": "failedToWrapAXValue",
+        "payload": null
+      }
+    ],
+    "noValueComparison": "0x1006e9a80..0x1006e9a88",
+    "noValueRawCode": -25212,
+    "conditionalFailureHelper": {
+      "start": "0x1006e9d38",
+      "endExclusive": "0x1006e9d90",
+      "machineCodeSha256": "9ca3503858fe4f2fc8849d1db478e7250374482637343c3057185ead3ba0387c"
+    },
+    "limitations": "Recovered enum and local branches; full error-routing algorithm and transport mapping remain incomplete."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",

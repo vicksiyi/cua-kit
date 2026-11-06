@@ -25,7 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
-    'AXPartialValue', 'AXEncodedValue',
+    'AXPartialValue', 'AXEncodedValue', 'UIElementError',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -275,6 +275,36 @@ decoding_evidence = {
     'nonthrowingWrapper':{'argumentFlagZero':'0x1006e8fe8','throwingCall':'0x1006e8ff4','errorCheck':'0x1006e8ff8','nilAssignment':'0x1006e9004..0x1006e9018'},
     'limitations':'Confirms type dispatch and wrapper error handling, not the complete conversion/error algorithm.',
 }
+error_nominal = 0x1012cd360
+error_fields = relative_address(error_nominal+16)
+_,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
+if (error_kind,error_size,error_count) != (3,12,5):
+    raise SystemExit('UIElementError layout changed')
+error_cases=[]
+for index in range(error_count):
+    field = error_fields+16+index*error_size
+    payload = relative_address(field+4)
+    if index == 0:
+        if read_virtual(payload,1) != b'\x01': raise SystemExit('Expected symbolic AXError payload')
+        target = relative_address(payload+1)
+        payload_name = c_string(relative_address(target+8))
+    else:
+        payload_name = c_string(payload) if payload else None
+    error_cases.append({'name':c_string(relative_address(field+8)),'payload':payload_name})
+if error_cases != [
+    {'name':'axError','payload':'AXError'},
+    {'name':'unexpectedAttributeValueType','payload':'ypXp8expected_ypXp6actualt'},
+    {'name':'failedToUnwrapAttributeValue','payload':'ypXp'},
+    {'name':'failedInit','payload':'SS'},
+    {'name':'failedToWrapAXValue','payload':None},
+]: raise SystemExit('UIElementError payloads changed')
+error_evidence = {
+    'nominalDescriptor':hex(error_nominal),'fieldDescriptor':hex(error_fields),'cases':error_cases,
+    'noValueComparison':'0x1006e9a80..0x1006e9a88',
+    'noValueRawCode':-25212,
+    'conditionalFailureHelper':{'start':'0x1006e9d38','endExclusive':'0x1006e9d90','machineCodeSha256':hashlib.sha256(read_virtual(0x1006e9d38,0x58)).hexdigest()},
+    'limitations':'Recovered enum and local branches; full error-routing algorithm and transport mapping remain incomplete.',
+}
 record = {
     'artifact':'@oai/'+relative,
     'sha256':sha,
@@ -286,6 +316,7 @@ record = {
     'selectionEvidence':selection_evidence,
     'attributeEvidence':attribute_evidence,
     'decodingEvidence':decoding_evidence,
+    'errorEvidence':error_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
