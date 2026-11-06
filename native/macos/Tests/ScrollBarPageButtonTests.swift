@@ -68,6 +68,26 @@ struct ScrollBarPageButtonTests {
         for invalid: AnyObject in ["wrong" as NSString, valid.axElement, NSNumber(value: 12)] {
             precondition(decodeCFUIElementArray(invalid) { _ in fatalError("not array") } == nil)
         }
+        // Exercise actual system constructor/cache lookup, not a fixture initializer.
+        // Invalid PID references make a lost prefetch fail the selection assertion.
+        let requested: Set<UIElementAttribute> = [UIElementAttribute("AXRole"), UIElementAttribute("AXSubrole")]
+        let emptyChild = AXUIElementCreateApplication(424245)
+        let fallback = UIElementFallbackCache(initialState: [:])
+        storeFallbackUIElementCache(element: emptyChild, supportedAttributes: requested,
+            attributes: valid.cache.attributes, in: fallback)
+        let transaction = UIElementTransactionCache(
+            attributeTable: [valid.axElement: valid.cache.attributes, emptyChild: [:]],
+            requestedAttributes: requested, fallbackElements: fallback)
+        let systemDecoded = decodeSystemCFUIElementArray(
+            [emptyChild, valid.axElement, valid.axElement] as NSArray, transaction: transaction)!
+        precondition(systemDecoded.count == 3)
+        precondition(systemDecoded[0].cache.attributes.isEmpty) // empty prefetch wins over fallback
+        precondition(systemDecoded.allSatisfy { $0.cache.transactionAttributes == requested })
+        let systemSelected = ScrollBarPageButton.increment.find(in: systemDecoded)!
+        precondition(systemSelected.axElement === valid.axElement)
+        let originalSubrole = valid.cache.attributes[UIElementAttribute("AXSubrole")]!.value.value
+        precondition(systemSelected.cache.attributes[UIElementAttribute("AXSubrole")]!.value.value === originalSubrole)
+        precondition(fallbackUIElementCache(element: valid.axElement, in: fallback) == nil)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

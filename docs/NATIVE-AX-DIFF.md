@@ -1395,3 +1395,19 @@ UIElement 保留身份；不匹配项被省略，顺序和重复引用保留，�
 
 完整属性读取器还包含失效/错误日志等未恢复路径，原 TaskLocal 与泛型协议分派仍未
 接线；这里不将 CFArray 分支冒充完整 AXChildren 读取或 production 滚动支持。
+
+## 数组解码与系统元素构造接线（2026-11-07）
+
+新增 decodeSystemCFUIElementArray(raw, transaction:)：把具体 CFArray 解码分支与
+UIElement(systemElement:transaction:) 组合，真实 AX 引用通过既有系统缓存构造器初始化。
+此接口显式要求传入事务（或明确 nil 冷读取），没有 process-global cache、空缓存
+默认值或伪造 TaskLocal 生命周期。已桥接的 UIElement 仍保持原解码行为，不重复初始化。
+
+组合测试提供实际 UIElementTransactionCache，使用不存在 PID 的 AX 引用，验证
+数组→系统构造器→预取缓存→按钮筛选：保留角色/子角色原值引用和 requestedAttributes，
+重复元素保持数组顺序；空预取项优先于冲突的已填充 fallback，不会误选为按钮；
+预取命中不向 fallback 写入。没有以注入 initializer 代替系统构造器完成这部分验证。
+测试与 Swift 构建通过，未启动应用、调用模型或执行输入。
+
+仍需恢复完整 AXChildren 属性读取（包括失效及错误日志）、ScrollBar 类型、隐式
+事务作用域、菜单祖先准备和生产协议接线。此项是元素级组合完成，非真实 UI 验收。
