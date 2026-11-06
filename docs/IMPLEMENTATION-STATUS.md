@@ -6042,3 +6042,12 @@ The installed Chrome plugin's JavaScript `installManifest.mjs` writes schemaVers
 Restored the three JS configuration builder/plugin-path/writer helpers as readable TS in `app_server_host_configuration.ts`, exported from @core/native-host. They preserve original validation order, optional-null omission, whitespace preservation, port bounds/defaults and override spread semantics. This belongs in TS because the evidence is JavaScript; native registry selection will remain Rust.
 
 Two differential tests execute the pinned installed helpers (not install()) against the restored implementation: 21 configuration cases, 4 plugin-path overrides, and an owned temporary write compare bytes and location. Both tests and native-host type check pass. No installed registration/configuration or user environment was modified. The helpers are available but deliberately not wired to launch an App Server before native loading/selection is implemented.
+
+
+### 2026-11-06: reconstruct native launch-field environment resolution
+
+Added Rust `app_server_configuration::LaunchFields::resolve`, based on the pinned native load function at 0x10001e4d8..0x10001ebfc and non_empty_env at 0x1000213e8. It resolves the eight observed CLI/extension/Node/browser-client/home/REPL/proxy environment inputs against already-selected configuration fields. The environment accessor is supplied explicitly and requests only those eight names; this module never scans or forwards model credentials.
+
+Native environment values are converted from Unicode, trimmed, then ignored if empty. This differs from JS configuration generation, which validates trim but preserves the stored string. Nonempty environment values take precedence; fallback CLI/Node/proxy host values are codex/node/127.0.0.1. Proxy ports use Rust u16 parsing (including plus signs and zero); invalid/overflow values fall back to the configured port, then zero, instead of failing. The pinned evidence extractor verifies each environment literal/call and records trim/fallback instructions.
+
+Two Rust tests pass: all eight field overrides, whitespace/invalid-Unicode fallback without global environment mutation, every one of the 65536 valid u16 ports, and malformed/overflow/default cases. This verifies the reconstructed resolver, not dynamic parity with the original binary. Raw JSON schema validation, schema-2 registry selection, full load precedence and connection to process startup remain unimplemented; the new module is not yet wired into the runtime.

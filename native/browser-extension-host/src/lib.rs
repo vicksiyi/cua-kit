@@ -2,6 +2,7 @@
 //! Core protocol compatibility reconstruction, not recovered original Rust source.
 //! A Core socket/stdio executable is implemented; production consumer migration and
 //! original authorization/app-server behavior remain pending.
+pub mod app_server_configuration;
 #[cfg(unix)]
 pub mod client_writer;
 #[cfg(unix)]

@@ -23,6 +23,8 @@ control = disassemble(0x100025498, 0x100026880)
 assets = disassemble(0x100015fd8, 0x100017754)
 sanitizer = disassemble(0x100029c24, 0x100029ea8)
 open_file = disassemble(0x100036150, 0x100036858)
+config_load = disassemble(0x10001b4c4, 0x10001fd38)
+env_filter = disassemble(0x1000213e8, 0x100021514)
 # Decode only straight-line method comparison operands, not arbitrary code semantics.
 # x21 is the method string pointer loaded at 0x100025508. Constants are assembled
 # with MOV/MOVK; string loads include overlapping tails at offsets 11 and 27.
@@ -106,6 +108,21 @@ if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
 if raw[0x8d2ec:0x8d2f1] != b'\xc0\x01-\xc0\x00':
     raise RuntimeError('UUID/name formatting literal changed')
 
+environment_fields = [
+    (0x90491, 14, 'CODEX_CLI_PATH', 0x10001e4e8),
+    (0x9049f, 18, 'CODEX_EXTENSION_ID', 0x10001e58c),
+    (0x904b1, 27, 'CODEX_BROWSER_USE_NODE_PATH', 0x10001e638),
+    (0x904cc, 25, 'CODEX_BROWSER_CLIENT_PATH', 0x10001e734),
+    (0x904e5, 10, 'CODEX_HOME', 0x10001e83c),
+    (0x904ef, 20, 'CODEX_NODE_REPL_PATH', 0x10001e948),
+    (0x90503, 27, 'CODEX_APP_SERVER_PROXY_HOST', 0x10001e9a0),
+    (0x9051e, 27, 'CODEX_APP_SERVER_PROXY_PORT', 0x10001ea40),
+]
+for offset, length, name, call in environment_fields:
+    if raw[offset:offset+length].decode() != name:
+        raise RuntimeError('Environment name literal mismatch: '+name)
+    evidence(config_load, call, call, ['non_empty_env>'])
+
 result = {
     'artifact': str(artifact).removeprefix('/Applications/'), 'sha256': sha,
     'methodExtraction': 'ARM64 method-byte loads and immediate CMP/CCMP operands, including overlapping tail loads; fixed artifact hash required.',
@@ -158,6 +175,17 @@ result = {
         'blockedExtensionLiteral': raw[0x91250:0x91271].decode(),
         'completion': 'Successful spawn responds with empty result; detached waiter reaps opener, not GUI application completion.',
         'validationScope': 'Rust validator fixtures and real stdio host with test-owned PATH opener; no actual LaunchServices/GUI acceptance.',
+    },
+    'launchFieldResolution': {
+        'implementation': 'native/browser-extension-host/src/app_server_configuration.rs',
+        'environmentCalls': [{'name': name, 'literalOffset': hex(offset), 'call': hex(call)} for offset, length, name, call in environment_fields],
+        'normalization': 'non_empty_env uses env::var; invalid Unicode or absent is None; Unicode whitespace is trimmed and empty results are absent.',
+        'trimInstructions': evidence(env_filter, 0x100021448, 0x100021454, ['trim_matches']),
+        'precedence': 'Normalized nonempty environment values override already-selected config fields. No raw JSON parsing is implemented by this module.',
+        'defaults': {'codexCliPath': 'codex', 'nodePath': 'node', 'proxyHost': '127.0.0.1', 'proxyPort': 0},
+        'port': 'u16 parse accepts zero and a plus sign; invalid/overflow environment input falls back to selected config port then zero.',
+        'portFallbackInstructions': evidence(config_load, 0x10001ebcc, 0x10001ebe4, ['csel', 'tst']),
+        'integrationStatus': 'Resolver library only; not yet wired to runtime selection/spawn. Schema-2 registry matching and raw configuration parsing remain open.',
     },
     'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

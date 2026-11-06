@@ -206,6 +206,76 @@
     "completion": "Successful spawn responds with empty result; detached waiter reaps opener, not GUI application completion.",
     "validationScope": "Rust validator fixtures and real stdio host with test-owned PATH opener; no actual LaunchServices/GUI acceptance."
   },
+  "launchFieldResolution": {
+    "implementation": "native/browser-extension-host/src/app_server_configuration.rs",
+    "environmentCalls": [
+      {
+        "name": "CODEX_CLI_PATH",
+        "literalOffset": "0x90491",
+        "call": "0x10001e4e8"
+      },
+      {
+        "name": "CODEX_EXTENSION_ID",
+        "literalOffset": "0x9049f",
+        "call": "0x10001e58c"
+      },
+      {
+        "name": "CODEX_BROWSER_USE_NODE_PATH",
+        "literalOffset": "0x904b1",
+        "call": "0x10001e638"
+      },
+      {
+        "name": "CODEX_BROWSER_CLIENT_PATH",
+        "literalOffset": "0x904cc",
+        "call": "0x10001e734"
+      },
+      {
+        "name": "CODEX_HOME",
+        "literalOffset": "0x904e5",
+        "call": "0x10001e83c"
+      },
+      {
+        "name": "CODEX_NODE_REPL_PATH",
+        "literalOffset": "0x904ef",
+        "call": "0x10001e948"
+      },
+      {
+        "name": "CODEX_APP_SERVER_PROXY_HOST",
+        "literalOffset": "0x90503",
+        "call": "0x10001e9a0"
+      },
+      {
+        "name": "CODEX_APP_SERVER_PROXY_PORT",
+        "literalOffset": "0x9051e",
+        "call": "0x10001ea40"
+      }
+    ],
+    "normalization": "non_empty_env uses env::var; invalid Unicode or absent is None; Unicode whitespace is trimmed and empty results are absent.",
+    "trimInstructions": [
+      "100021448: a94107f5    \tldp\tx21, x1, [sp, #0x10]",
+      "10002144c: aa1503e0    \tmov\tx0, x21",
+      "100021450: 94001e40    \tbl\t0x100028d50 <<str>::trim_matches::<<char>::is_whitespace>>",
+      "100021454: aa0103f6    \tmov\tx22, x1"
+    ],
+    "precedence": "Normalized nonempty environment values override already-selected config fields. No raw JSON parsing is implemented by this module.",
+    "defaults": {
+      "codexCliPath": "codex",
+      "nodePath": "node",
+      "proxyHost": "127.0.0.1",
+      "proxyPort": 0
+    },
+    "port": "u16 parse accepts zero and a plus sign; invalid/overflow environment input falls back to selected config port then zero.",
+    "portFallbackInstructions": [
+      "10001ebcc: 53107f08    \tlsr\tw8, w24, #16",
+      "10001ebd0: b940f3e9    \tldr\tw9, [sp, #0xf0]",
+      "10001ebd4: 7200013f    \ttst\tw9, #0x1",
+      "10001ebd8: b940ebe9    \tldr\tw9, [sp, #0xe8]",
+      "10001ebdc: 1a9f1129    \tcsel\tw9, w9, wzr, ne",
+      "10001ebe0: 7200031f    \ttst\tw24, #0x1",
+      "10001ebe4: 1a881128    \tcsel\tw8, w9, w8, ne"
+    ],
+    "integrationStatus": "Resolver library only; not yet wired to runtime selection/spawn. Schema-2 registry matching and raw configuration parsing remain open."
+  },
   "remainingUnknowns": [
     "full manifest selection and process launch contract",
     "complete hello/status response schemas",
