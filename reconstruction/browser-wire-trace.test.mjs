@@ -18,3 +18,16 @@ test('wire observer reassembles frames and excludes secrets, expressions and pag
 test('oversized frames disable metadata parsing without emitting their bytes',()=>{
  const rows=[],observe=createWireObserver(v=>rows.push(v),true),header=Buffer.alloc(4);header.writeUInt32LE(16777217);observe(header);observe(frame({jsonrpc:'2.0',id:1}));assert.deepEqual(rows,[{diagnostic:'frame-too-large'}]);
 });
+test('RPC error categories expose no raw message or structured payload',()=>{
+ const rows=[],observe=createWireObserver(v=>rows.push(v),true);
+ for(const error of [
+  {code:-1,message:'Detached while handling command PRIVATE_URL'},
+  {code:-1,message:'Debugger unattached PRIVATE_TOKEN'},
+  {code:-1,message:'Debugger is not attached PRIVATE_URL'},
+  {code:-32601,message:'PRIVATE_METHOD'},
+  {code:-1,message:'PRIVATE_ERROR',data:{token:'SECRET'}},
+  {code:-1,message:{private:'SECRET'}},
+ ])observe(frame({jsonrpc:'2.0',id:1,error}));
+ assert.deepEqual(rows.map(row=>row.errorKind),['detached-during-command','debugger-unattached','debugger-unattached','method-not-found','other','other']);
+ assert(!/SECRET|PRIVATE/.test(JSON.stringify(rows)));
+});

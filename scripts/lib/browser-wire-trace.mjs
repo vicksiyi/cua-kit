@@ -1,4 +1,14 @@
 import { endianness } from 'node:os';
+// Fixed categories only: never persist the original error text or arbitrary
+// provider strings. These are diagnostic hints, not retry/authorization policy.
+export function wireErrorKind(error) {
+  if (!error || typeof error !== 'object') return undefined;
+  const message = typeof error.message === 'string' ? error.message : '';
+  if (message.includes('Detached while handling command')) return 'detached-during-command';
+  if (message.includes('Debugger unattached') || message.includes('Debugger is not attached')) return 'debugger-unattached';
+  if (error.code === -32601) return 'method-not-found';
+  return 'other';
+}
 /** Observe framed RPC metadata only. Never return raw payloads or auth frames. */
 export function createWireObserver(record, littleEndian = endianness() === 'LE') {
   let buffered = Buffer.alloc(0), disabled = false;
@@ -17,7 +27,7 @@ export function createWireObserver(record, littleEndian = endianness() === 'LE')
       const integer = v => Number.isSafeInteger(v) ? v : undefined;
       record({id:integer(value.id),method:name(value.method),cdp:name(params.method),
         tabId:integer(params.tabId ?? params.target?.tabId),sourceTabId:integer(params.source?.tabId),
-        errorCode:integer(value.error?.code)});
+        errorCode:integer(value.error?.code),errorKind:wireErrorKind(value.error)});
     }
   };
 }

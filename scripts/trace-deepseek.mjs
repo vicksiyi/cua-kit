@@ -34,12 +34,17 @@ const server=net.createServer(client=>{
   const connection=++nextConnection,upstream=net.createConnection(endpoint.socketPath);
   sockets.add(client);sockets.add(upstream);
   const record=(direction,data)=>writeSync(log.fd,JSON.stringify({time:new Date().toISOString(),connection,direction,...data})+'\n');
+  record('transport',{event:'client-connected'});
+  upstream.on('connect',()=>record('transport',{event:'upstream-connected'}));
+  client.on('end',()=>record('transport',{event:'client-end'}));
+  upstream.on('end',()=>record('transport',{event:'upstream-end'}));
   client.on('data',createWireObserver(data=>record('to-host',data)));
   upstream.on('data',createWireObserver(data=>record('from-host',data)));
   client.pipe(upstream);upstream.pipe(client);
-  client.on('error',()=>upstream.destroy());upstream.on('error',()=>client.destroy());
-  client.on('close',()=>{sockets.delete(client);upstream.destroy();});
-  upstream.on('close',()=>{sockets.delete(upstream);client.destroy();});
+  client.on('error',()=>{record('transport',{event:'client-error'});upstream.destroy();});
+  upstream.on('error',()=>{record('transport',{event:'upstream-error'});client.destroy();});
+  client.on('close',hadError=>{record('transport',{event:'client-close',hadError});sockets.delete(client);upstream.destroy();});
+  upstream.on('close',hadError=>{record('transport',{event:'upstream-close',hadError});sockets.delete(upstream);client.destroy();});
 });
 try{
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(socketPath,resolve);});
@@ -53,7 +58,8 @@ try{
   try{process.exitCode=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',(code)=>resolve(code??1));});}
   finally{process.off('SIGINT',interrupt);process.off('SIGTERM',terminate);}
 }finally{
-  for(const socket of sockets)socket.destroy();
+  const closed=[...sockets].map(socket=>new Promise(resolve=>{socket.once('close',resolve);socket.destroy();}));
+  await Promise.all(closed);
   if(server.listening)await new Promise(resolve=>server.close(resolve));
   await log.close();await fs.rm(socketDirectory,{recursive:true,force:true});
 }
