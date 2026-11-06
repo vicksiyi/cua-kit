@@ -3,6 +3,20 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "JSONRPCLineBuffer",
+      "descriptor": "0x1012e48c8",
+      "fieldDescriptor": "0x10133ea68",
+      "kind": 1,
+      "fields": [
+        "$defaultActor",
+        "lines",
+        "waiter",
+        "terminalError",
+        "finished"
+      ],
+      "fieldMetadataSha256": "9756215ba8305f407240bb8c3684d90647020e2213651b657a9baa061037424d"
+    },
+    {
       "name": "CodexAppServerComputerUsePolicyProvider",
       "descriptor": "0x1012be3b4",
       "fieldDescriptor": "0x101316708",
@@ -58,6 +72,30 @@
       "start": "0x1000a7cbc",
       "endExclusive": "0x1000a81f0",
       "sha256": "eb99ff07be37dc0303f45010965bb32af5880e974a21507b280214357f417af1"
+    },
+    {
+      "name": "jsonRPCLineBufferFinish",
+      "start": "0x100dd1be8",
+      "endExclusive": "0x100dd1e30",
+      "sha256": "e588790689580dec33100e240e45cb1b482cab0a84795c73759d92926a03353d"
+    },
+    {
+      "name": "jsonRPCLineBufferNextImmediate",
+      "start": "0x100dd1e90",
+      "endExclusive": "0x100dd1fac",
+      "sha256": "99740c750ad8029e3812bbc64628024e4e8ba2cdd7f59fef9fb30efc5aef3ad3"
+    },
+    {
+      "name": "jsonRPCLineBufferWaitRegistration",
+      "start": "0x100dd236c",
+      "endExclusive": "0x100dd248c",
+      "sha256": "10e07ebf5365e0851393e1c32332ad49acc9a41a1cd76922e3e9c1d1052bc0cc"
+    },
+    {
+      "name": "jsonRPCLineBufferCancellation",
+      "start": "0x100dd2ba0",
+      "endExclusive": "0x100dd329c",
+      "sha256": "c736c613444962c9acac46393b142a0ffcefc7cb95651d812265c4e255360d8b"
     },
     {
       "name": "jsonRPCConnectionClose",

@@ -43,6 +43,8 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e48c8, 'JSONRPCLineBuffer',
+         ['$defaultActor', 'lines', 'waiter', 'terminalError', 'finished']),
         (0x1012be3b4, 'CodexAppServerComputerUsePolicyProvider',
          ['$defaultActor', 'ttl', 'timeout', 'cachedPolicy', 'cachedAt']),
         (0x1012be434, 'ComputerUsePolicy',
@@ -66,6 +68,10 @@ def audit():
     code_ranges = []
     for name, start, end in [
         ('providerCacheAndRefresh', 0x1000a7cbc, 0x1000a81f0),
+        ('jsonRPCLineBufferFinish', 0x100dd1be8, 0x100dd1e30),
+        ('jsonRPCLineBufferNextImmediate', 0x100dd1e90, 0x100dd1fac),
+        ('jsonRPCLineBufferWaitRegistration', 0x100dd236c, 0x100dd248c),
+        ('jsonRPCLineBufferCancellation', 0x100dd2ba0, 0x100dd329c),
         ('jsonRPCConnectionClose', 0x100dd0958, 0x100dd0bdc),
         ('jsonRPCDeferredOutputClose', 0x100dd0bdc, 0x100dd0d9c),
         ('jsonRPCNextMessage', 0x100dd0350, 0x100dd0958),

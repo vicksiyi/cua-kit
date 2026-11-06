@@ -398,3 +398,39 @@ operations; cleanup occurs once and output close waits for reader completion.
 This component is not yet attached to a complete reconstructed connection.
 Line buffering, timeout handling, request dispatch and process launch remain
 incomplete; no real application process was terminated by these tests.
+
+## Line-buffer actor: verified state transitions, reconstruction pending
+
+The descriptor at `0x1012e48c8` resolves to `JSONRPCLineBuffer` and field
+metadata at `0x10133ea68` confirms `$defaultActor`, `lines`, `waiter`,
+`terminalError`, `finished`. The audit now verifies these fields directly.
+The method descriptor at `0x1012e4974` resolves to `0x100dd1be8`; the async
+entry pointer `0x10120d0a8` resolves to `0x100dd1e30`; the descriptor at
+`0x1012e4984` resolves to `0x100dd2ba0`. These are private symbols, so operation
+names below describe observed behavior rather than recovered public names.
+
+The finish operation (`0x100dd1be8..<0x100dd1e30`) is first-finish-wins. If
+already finished it returns. Otherwise it stores the supplied optional terminal
+error, sets finished, takes and clears the waiter, and resumes that waiter with
+the supplied error or nil. It does **not** clear queued lines.
+
+The immediate part of next (`0x100dd1e90..<0x100dd1fac`) has a significant
+priority order:
+
+1. Return and remove the first queued line if any remain.
+2. Otherwise throw the stored terminal error if present.
+3. Otherwise return nil when finished.
+4. Otherwise proceed to asynchronous waiter registration and cancellation.
+
+Thus a terminal error does not discard already-buffered messages, and the
+error wins over clean EOF only once the queue is drained. A generic stream
+replacement that checks finished/error before the queue would diverge.
+
+The pending path uses an identity-bearing waiter, a task cancellation handler
+and a separate actor operation at `0x100dd2ba0` that conditionally clears and
+resumes the waiter with CancellationError. Registration/cancellation race
+behavior and the producer's enqueue path still need complete tracing before
+implementing the actor; the audit hashes these ranges without claiming their
+full semantics are restored. This evidence changes the implementation plan:
+preserve explicit queued/terminal/waiter state rather than substituting an
+unverified AsyncStream policy. No production behavior changes in this audit.
