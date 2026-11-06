@@ -403,3 +403,21 @@ AXError 系统值接到已恢复的类型解码，确认不匹配/缺值被跳�
 前一节 decodedArray 的“原样返回数组”描述的是**底层转换之后**的结果组合层；
 它仍保留原始 subsetDescriptor，不因底层过滤而重算 count/ranges。两层行为不同。
 完整 CFArray bridging、目标协议检查、最终数组类型转换仍待恢复，当前 helper 不替代它们。
+
+## 数组目标协议与最终转换
+
+恢复原生 `TypeErasedArray`：只有一个关联类型 **ElementType**，没有方法要求；Swift.Array
+通过 `typealias ElementType = Element` 遵循该协议。协议描述符为 `0x1012cc42c`，
+关联类型字符串和 requirement kind 7 均从反射读取。conformance `0x101193450` 的间接
+类型引用指向 GOT `0x1014667e8`，dyld 明确绑定 Swift.Array nominal descriptor `$sSaMn`。
+这不是根据名字推测“任意集合都可用”；当前只确认这一 Array conformance。
+
+数组转换后还有两个步骤：`0x1006e9c38` 经 GOT `0x101467748` 调用 Swift
+`_arrayForceCast`，目标元数据为 Any；随后 `0x1006e9c78` 动态转换到调用者请求类型。
+最终转换失败时原构建构造 `unexpectedAttributeValueType(expected: target, actual: target)`，
+两个 metatype 均来自同一寄存器，然后进入按标志抛错/返回 nil 的共享路径。此处看起来
+重复的错误 payload 不能擅自“修正”为另一个类型。
+
+新增 TypeErasedArray.swift 仅恢复协议和标准数组 conformance，Swift 构建验证成立；
+底层 CFArray bridging 和完整泛型 decoder 尚未接入，不能以该协议声明证明数组观察可用。
+arrayTargetEvidence 保存协议布局、conformance 和 dyld binding 证据。

@@ -1313,6 +1313,20 @@
     "semantics": "compactMap removes nil element decodes, preserving successful element order and duplicates.",
     "limitations": "CFArray bridging, target protocol conformance and final array cast remain separate parts of the full decoder."
   },
+  "arrayTargetEvidence": {
+    "protocolDescriptor": "0x1012cc42c",
+    "associatedType": "ElementType",
+    "methodRequirementCount": 0,
+    "arrayConformanceDescriptor": "0x101193450",
+    "conformingTypeGotSlot": "0x1014667e8",
+    "conformingTypeSymbol": "_$sSaMn",
+    "arrayForceCastGotSlot": "0x101467748",
+    "arrayForceCastCall": "0x1006e9c38",
+    "finalDynamicCast": "0x1006e9c78",
+    "finalFailureError": "unexpectedAttributeValueType(expected: target, actual: target)",
+    "finalFailureConstruction": "0x1006e9d28..0x1006e9d30",
+    "limitations": "Protocol and binding evidence; full CFArray dispatch/bridging not yet connected."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",

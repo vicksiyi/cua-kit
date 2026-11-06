@@ -468,6 +468,30 @@ array_transform_evidence={
     'semantics':'compactMap removes nil element decodes, preserving successful element order and duplicates.',
     'limitations':'CFArray bridging, target protocol conformance and final array cast remain separate parts of the full decoder.',
 }
+array_protocol=0x1012cc42c
+if struct.unpack('<II',read_virtual(array_protocol+12,8)) != (0,1):
+    raise SystemExit('TypeErasedArray protocol requirements changed')
+if c_string(relative_address(array_protocol+20)) != 'ElementType':
+    raise SystemExit('TypeErasedArray associated type changed')
+if struct.unpack('<II',read_virtual(array_protocol+24,8)) != (7,0):
+    raise SystemExit('Expected associated-type requirement without default implementation')
+array_conformance=0x101193450
+if relative_address(array_conformance) != array_protocol or relative_address(array_conformance+4) != 0x1014667e8:
+    raise SystemExit('Array protocol conformance descriptor changed')
+flags=struct.unpack('<I',read_virtual(array_conformance+12,4))[0]
+if (flags >> 3) & 7 != 1: raise SystemExit('Expected indirect nominal type descriptor')
+for slot,symbol in [('0x1014667e8','_$sSaMn'),('0x101467748','_$ss15_arrayForceCastySayq_GSayxGr0_lF')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if 'libswiftCore/'+symbol not in line: raise SystemExit('Array target binding changed')
+array_target_evidence={
+    'protocolDescriptor':hex(array_protocol),'associatedType':'ElementType','methodRequirementCount':0,
+    'arrayConformanceDescriptor':hex(array_conformance),'conformingTypeGotSlot':'0x1014667e8','conformingTypeSymbol':'_$sSaMn',
+    'arrayForceCastGotSlot':'0x101467748','arrayForceCastCall':'0x1006e9c38',
+    'finalDynamicCast':'0x1006e9c78',
+    'finalFailureError':'unexpectedAttributeValueType(expected: target, actual: target)',
+    'finalFailureConstruction':'0x1006e9d28..0x1006e9d30',
+    'limitations':'Protocol and binding evidence; full CFArray dispatch/bridging not yet connected.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -517,6 +541,7 @@ record = {
     'valueDescriptorEvidence':value_descriptor_evidence,
     'partialArrayEvidence':partial_array_evidence,
     'arrayTransformEvidence':array_transform_evidence,
+    'arrayTargetEvidence':array_target_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
