@@ -1166,6 +1166,16 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clickingMayCauseSelection']={
+    'entry':'0x1007a7790..<0x1007a79e8',
+    'walk':'parentChain(maxDepth:300, includingSelf:true), including its parent lookahead',
+    'orderedBranches':['application role -> false immediately','inherited AccessibilityNode witness +0x88 (isSelectable) -> true','nonempty supported selection-attribute list -> true','exhaustion -> false'],
+    'witnessProof':'AccessibilityNode table 0x101575668 + 0x88 = 0x1015756f0, independently mapped isSelectable',
+    'selectionAttributeHelper':'0x1007afa64 reads cache supportedAttributes; 0x1007afb68 filters ordered selectedRows/selectedCells/selectedChildren constants built at 0x1007afe30. Does not read selected item values/counts.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007a7790,0x1007a79e8),(0x1007afa64,0x1007afad0),(0x1007afb68,0x1007afd2c),(0x1007afe30,0x1007aff30)]],
+    'implementation':'UIElementClickSelection.swift preserves generic traversal and predicate order; original Swift language retained.',
+    'limitations':'Concrete selection-attribute helper/provider composition and full click integration pending; production focus remains direct setter. Tests use fixtures, not live UI.',
+}
 element_storage_evidence['selectionState']={
     'focused':'0x1007abf94 -> 0x1007ac3f0..<0x1007ac52c: cached AXFocused lenient Bool, absent/error/nil false',
     'selected':'0x1007abc80..<0x1007abde8: present AXSelected entry decoded leniently and returns low Bool bit, even decode nil/error -> false. Only absent entry enters traits fallback.',

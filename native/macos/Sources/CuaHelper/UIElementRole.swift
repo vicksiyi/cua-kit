@@ -4,6 +4,7 @@ import Foundation
 // but remains a distinct type so role frequencies cannot mix with attributes.
 struct UIElementRole: Hashable {
     // Static initializer 0x1007b9798 encodes exactly AXUnknown.
+    static let application = UIElementRole("AXApplication")
     static let unknown = UIElementRole("AXUnknown")
     static let button = UIElementRole("AXButton")
     static let radioButton = UIElementRole("AXRadioButton")

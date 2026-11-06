@@ -3093,6 +3093,42 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "clickingMayCauseSelection": {
+      "entry": "0x1007a7790..<0x1007a79e8",
+      "walk": "parentChain(maxDepth:300, includingSelf:true), including its parent lookahead",
+      "orderedBranches": [
+        "application role -> false immediately",
+        "inherited AccessibilityNode witness +0x88 (isSelectable) -> true",
+        "nonempty supported selection-attribute list -> true",
+        "exhaustion -> false"
+      ],
+      "witnessProof": "AccessibilityNode table 0x101575668 + 0x88 = 0x1015756f0, independently mapped isSelectable",
+      "selectionAttributeHelper": "0x1007afa64 reads cache supportedAttributes; 0x1007afb68 filters ordered selectedRows/selectedCells/selectedChildren constants built at 0x1007afe30. Does not read selected item values/counts.",
+      "blocks": [
+        {
+          "start": "0x1007a7790",
+          "endExclusive": "0x1007a79e8",
+          "machineCodeSha256": "647cfa109f7c0c2726336670165a704479317e298d1e93dea3872b0f979f947e"
+        },
+        {
+          "start": "0x1007afa64",
+          "endExclusive": "0x1007afad0",
+          "machineCodeSha256": "b8b351b808394664cfa65f50add8e5c4ab9da4b11e740c793648a3d703c32a3a"
+        },
+        {
+          "start": "0x1007afb68",
+          "endExclusive": "0x1007afd2c",
+          "machineCodeSha256": "adf85c3c62a3351eafed63fe10e3e6a0d964b163207f61c3a1c923a9fac57e67"
+        },
+        {
+          "start": "0x1007afe30",
+          "endExclusive": "0x1007aff30",
+          "machineCodeSha256": "6cf93f56c8b0779605778d9bc624f3e2b1529648fe3da102c0421d68ebddd99f"
+        }
+      ],
+      "implementation": "UIElementClickSelection.swift preserves generic traversal and predicate order; original Swift language retained.",
+      "limitations": "Concrete selection-attribute helper/provider composition and full click integration pending; production focus remains direct setter. Tests use fixtures, not live UI."
+    },
     "selectionState": {
       "focused": "0x1007abf94 -> 0x1007ac3f0..<0x1007ac52c: cached AXFocused lenient Bool, absent/error/nil false",
       "selected": "0x1007abc80..<0x1007abde8: present AXSelected entry decoded leniently and returns low Bool bit, even decode nil/error -> false. Only absent entry enters traits fallback.",

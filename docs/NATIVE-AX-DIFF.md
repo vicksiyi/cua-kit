@@ -2319,3 +2319,22 @@ cached-true vs fresh-false, strict decoding errors and propagated click errors.
 The actual original click/window/app/focus-enforcer composition remains pending;
 therefore the demo's current focus shortcut is still a known mismatch, not silently
 replaced with an approximate click implementation.
+
+
+## 点击可能改变选择状态的祖先判定（2026-11-07）
+
+静态核查 pinned SkyComputerUseService 的 clickingMayCauseSelection
+0x1007a7790..<0x1007a79e8：parentChain(maxDepth:300, includingSelf:true)，
+对每个节点先判断 application 角色，遇到它立即 false；否则 isSelectable 为 true
+立即 true，再检查支持的选择属性列表是否非空，非空返回 true，遍历结束 false。
+父链保持原有 lookahead，最大深度包含 300；不新增去重或无限遍历。
+
++0x88 的父协议 witness 对应已核实的 isSelectable（表 0x101575668 的
+0x1015756f0 槽）。0x1007afa64 读取 cache.supportedAttributes，0x1007afb68
+过滤 0x1007afe30 建立的 selectedRows、selectedCells、selectedChildren 有序列表。
+这里不查询选中项值或数量。不能把它替换成 isSelected 或 selectedChildren 非空。
+
+UIElementClickSelection.swift 恢复此 Swift 分支，以显式回调保留尚未完整恢复的
+协议/provider 边界。测试覆盖角色和两个能力布尔组合、惰性调用顺序、祖先选择能力、
+application 截断及 300/301 深度边界。测试通过不代表实机点击通过。
+具体选择属性 helper 接线和完整 click 异步状态机仍待恢复；生产 focus 暂未改为此路径。
