@@ -275,3 +275,21 @@ test("native interpolation merge preserves source mapping combinations", {
     assert.match(result.stdout, /interpolation merge preserves mapping combinations, UTF16 prefixes, span boundaries and self append/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed removeLast preserves grapheme and mapping boundaries", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-remove-"));
+  try {
+    const output = join(directory, "remove");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringRemoval"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringRemovalTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /removeLast preserves grapheme deletion, UTF16 trimming, URL payloads and empty-span boundaries/);
+    for (const mode of ["empty-tail", "short-mapping"]) {
+      await assert.rejects(exec(output, [mode]), (error: any) => ["SIGTRAP", "SIGILL"].includes(error.signal));
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

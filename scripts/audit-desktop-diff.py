@@ -959,6 +959,16 @@ element_storage_evidence['transformedStringMerge']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringMerging.swift',
     'limitations':'Interpolation-to-interpolation merge restored; full type construction, removeLast, substring search, URL rendering and production wiring remain pending.',
 }
+element_storage_evidence['transformedStringRemoval']={
+    'entry':'removeLast 0x10063a2f8 -> 0x100639834..<0x100639bec',
+    'scope':'Empty spans no-op. Only final span is inspected; empty final String traps and does not scan earlier spans.',
+    'mutation':'Measure last Character UTF16 length, remove one Character, replace same span case preserving URL/isImage; retain span even when its text becomes empty',
+    'offsets':'After replacing span, if removed UTF16 length > 0 and offsets nonnil, remove that many mapping entries; too-short map traps; nil remains nil',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100639834,0x100639bec),(0x1006394cc,0x100639544)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringRemoval.swift',
+    'limitations':'Deletion and map trimming restored as a helper; full transformed string type, substring matching, URL rendering and production integration remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
