@@ -1,5 +1,7 @@
 import test from "node:test";
 import path from "node:path";
+import { mkdtemp, chmod, rm } from "node:fs/promises";
+import { configureIndependentBrowser } from "../packages/agent-loop/src/independent-browser";
 import { originalServiceBindings } from "./service-source";
 import assert from "node:assert/strict";
 import { createBrowserServiceConnector } from "../packages/native-host/src/browser_connector";
@@ -69,4 +71,54 @@ test("real Rust + Swift runtime retains app inventory with explicitly zero brows
       assert.equal(value.getApp,"function");assert.equal(value.getTab,"function");
     } finally { await client.close(); }
   } finally { await runtime.dispose(); }
+});
+
+
+test("combined discovery tolerates missing connections, never unsafe endpoint directories", async t => {
+  const directory = await mkdtemp("/tmp/core-unified-discovery-");
+  t.after(()=>rm(directory,{recursive:true,force:true}));
+  const env = {CUA_REPL_ENABLED_SURFACES:"browser,computer", CORE_CUA_HOST_DIRECTORY:directory};
+  const empty = await configureIndependentBrowser(env);
+  assert.equal(empty.CORE_CUA_ENDPOINT_FILES,"[]");
+  assert.equal(empty.BROWSER_USE_BACKEND_PATHS,"");
+  await assert.rejects(configureIndependentBrowser({...env,CUA_REPL_ENABLED_SURFACES:"browser"}), /No independent/);
+  const missing = await configureIndependentBrowser({...env,CORE_CUA_HOST_DIRECTORY:path.join(directory,"missing")});
+  assert.equal(missing.CORE_CUA_ENDPOINT_FILES,"[]");
+  await chmod(directory,0o755);
+  await assert.rejects(configureIndependentBrowser(env), /private/);
+});
+
+test("unified CLI starts both surfaces and reaches model without a Chrome connection", {
+  skip: process.platform !== "darwin" || process.env.CUA_TEST_NATIVE_SKY_IPC !== "1", timeout:90000,
+}, async t => {
+  const {createServer} = await import("node:http");
+  const {spawn} = await import("node:child_process");
+  let requests=0;
+  const server=createServer(async(req,res)=>{
+    let body="";for await(const chunk of req)body+=chunk;
+    const request=JSON.parse(body);requests++;
+    const context=JSON.stringify(request.messages);
+    assert.match(context,/browser=true, computer=true/);
+    assert.match(context,/host-unified-preflight/);
+    assert.doesNotMatch(context,/host-browser-preflight/);
+    res.setHeader("Content-Type","application/json");
+    res.end(JSON.stringify({choices:[{message:{content:"Unified inventory inspected; no UI action requested."}}]}));
+  });
+  await new Promise<void>(r=>server.listen(0,"127.0.0.1",r));
+  t.after(()=>{server.closeAllConnections();server.close();});
+  const address=server.address();assert(address&&typeof address!=="string");
+  const child=spawn("bash",["scripts/run-deepseek.sh","--unified","Inspect available surfaces; do not open or operate any app or tab."],{
+    cwd:path.resolve("."),env:{PATH:process.env.PATH,HOME:process.env.HOME,TMPDIR:process.env.TMPDIR,
+      CUA_DEBUG:"0",CUA_MODEL_PROVIDER:"openai-compatible",CUA_MODEL_API_KEY:"fixture",CUA_MODEL:"fixture",
+      CUA_MODEL_ENDPOINT:`http://127.0.0.1:${address.port}/model`,
+      CUA_MCP_ENV:JSON.stringify({CORE_CUA_ENDPOINT_FILES:"[]"}),
+    },stdio:["ignore","pipe","pipe"],timeout:80000,
+  });
+  t.after(()=>{if(child.exitCode===null&&child.signalCode===null)child.kill("SIGKILL");});
+  let output="";child.stdout.on("data",b=>output+=b);child.stderr.on("data",b=>output+=b);
+  const code=await new Promise<number|null>((resolve,reject)=>{child.on("error",reject);child.on("close",resolve);});
+  assert.equal(code,0,output);assert.equal(requests,1);
+  assert.match(output,/Unified inventory inspected/);
+  assert.match(output,/browser,computer surface/);
+  assert.doesNotMatch(output,/Chrome startup profile/);
 });

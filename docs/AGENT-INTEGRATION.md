@@ -343,10 +343,26 @@ browser and computer with Promise.all, conditionally attaches browser APIs and l
 and routes macOS getApp to get_app_state with disableDiff:true. This API module does not classify
 natural-language prompts. The reconstructed `create_tinysky_alt.ts` retains that composition.
 
-Current demo gaps: `run-deepseek.sh` still defaults to browser and makes explicit surface flags
-mutually exclusive. Automatic discovery still expects a live authenticated endpoint; it does not
-yet turn a missing browser into an on-demand browser launch after model selection. A complete
-unified CLI and real app-opening acceptance remain pending.
+The CLI now offers `--unified`, which enables browser and computer together. The default remains
+browser-only. In unified mode existing configured browser connections are discovered without eagerly
+launching Chrome; missing host directories or no live endpoints produce an explicit empty browser
+allowlist. Invalid permissions, malformed endpoints and authentication errors remain fatal. With no
+browser host configuration, unified mode explicitly selects the empty allowlist. Native helper and
+Rust supervisor builds follow the existing computer entry.
+
+```bash
+npm run demo:deepseek -- --unified "只检查本机应用列表里是否存在 Multica；不要打开应用，不要访问网站。"
+```
+
+A real DeepSeek run of this prompt identified Multica (`ai.multica.desktop`) as running from the
+native app inventory, then returned a completion summary and final answer. No webpage or app window
+operation was requested or performed. This demonstrates the model receives native app evidence in
+a dual-surface run even with zero browser connections, not general app-operation acceptance.
+The local transcript is ignored by Git and is not part of published artifacts.
+
+Still pending: browser launch after model selection and late endpoint discovery. If Chrome connects
+after a run starts, its socket is not added to that run's fixed allowlist. The unified entry does not
+yet implement that lifecycle. Actual Multica opening, screenshot and input acceptance remain pending.
 
 #### Explicit zero-browser runtime
 
@@ -375,3 +391,9 @@ Two older source-comparison harnesses (`browser-desktop-discovery.test.ts` and t
 case in `browser-service-discovery.test.ts`) currently fail because their pinned minified symbol
 bindings no longer match the installed build (`p` / `dt` undefined). They were not counted as
 passing or rewritten as part of this change. The focused Xle comparison uses the installed symbol.
+
+The unified test suite additionally exercises the CLI through a local model-compatible HTTP endpoint,
+verifies that both surface flags and unified inventory reach the model, and checks that no eager
+Chrome startup occurs. A separate test confirms missing connections are tolerated only in combined
+mode while unsafe directories still fail. These tests do not replace the real DeepSeek observation
+or prove success for native window actions.

@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route.'
+  printf '%s\n' 'Usage: npm run demo -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--unified|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: CUA browser tools (connected backend required). Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route. --unified enables browser and computer together; it discovers existing browser connections without eagerly launching Chrome.'
   exit 0
 fi
 managed_browser=false
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
       if [[ -n "$mode" && "$mode" != computer ]]; then printf '%s\n' 'Swift computer deployment requires computer mode.' >&2; exit 2; fi
       mode=computer; shift
       ;;
-    --browser|--computer|--js)
+    --browser|--computer|--unified|--js)
       requested_mode="${1#--}"
       if [[ -n "$mode" && "$mode" != "$requested_mode" ]]; then printf '%s\n' 'Choose only one surface mode.' >&2; exit 2; fi
       mode="$requested_mode"; shift
@@ -63,13 +63,21 @@ case "$CUA_MODEL_PROVIDER" in
   openai-compatible) credential_name=CUA_MODEL_API_KEY ;;
   *) printf '%s\n' 'Unsupported CUA_MODEL_PROVIDER; use deepseek or openai-compatible.' >&2; exit 2 ;;
 esac
-if [[ "$mode" == computer ]]; then
+if [[ "$mode" == computer || "$mode" == unified ]]; then
   export CUA_RUNTIME_SUPERVISOR=rust CORE_CUA_NATIVE_BACKEND=swift
   # An explicit CLI deployment wins over stale surface/backend fields in .env.
-  CUA_MCP_ENV="$(node --input-type=module -e '
+  CUA_MCP_ENV="$(CUA_DEMO_SELECTED_MODE="$mode" node --input-type=module -e '
     const env=JSON.parse(process.env.CUA_MCP_ENV || "{}");
     if(!env || Array.isArray(env) || typeof env!=="object" || !Object.values(env).every(v=>typeof v==="string")) throw Error("CUA_MCP_ENV must be a JSON string map");
-    env.CUA_REPL_ENABLED_SURFACES="computer";env.CORE_CUA_NATIVE_BACKEND="swift";
+    env.CUA_REPL_ENABLED_SURFACES=process.env.CUA_DEMO_SELECTED_MODE==="unified"?"browser,computer":"computer";
+    env.CORE_CUA_NATIVE_BACKEND="swift";
+    if(process.env.CUA_DEMO_SELECTED_MODE==="unified") {
+      env.CUA_REPL_BROWSER_ENV="codex-app";
+      env.BROWSER_USE_AVAILABLE_BACKENDS??="chrome";
+      if(env.CORE_CUA_HOST_DIRECTORY===undefined && process.env.CORE_CUA_HOST_DIRECTORY!==undefined) env.CORE_CUA_HOST_DIRECTORY=process.env.CORE_CUA_HOST_DIRECTORY;
+      if(env.CORE_CUA_ENDPOINT_FILES===undefined && process.env.CORE_CUA_ENDPOINT_FILES!==undefined) env.CORE_CUA_ENDPOINT_FILES=process.env.CORE_CUA_ENDPOINT_FILES;
+      if(env.CORE_CUA_ENDPOINT_FILES===undefined && env.CORE_CUA_HOST_DIRECTORY===undefined) env.CORE_CUA_ENDPOINT_FILES="[]";
+    }
     process.stdout.write(JSON.stringify(env));
   ')"
   export CUA_MCP_ENV
@@ -78,12 +86,12 @@ if [[ "$mode" == "browser" ]]; then
   export CUA_RUNTIME_SUPERVISOR="${CUA_RUNTIME_SUPERVISOR:-rust}"
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"browser","CUA_REPL_BROWSER_ENV":"codex-app","BROWSER_USE_AVAILABLE_BACKENDS":"chrome"}'; fi
   printf '%s\n' 'Browser mode: checks the selected backend before model requests. Search results depend on live page access.' >&2
-elif [[ "$mode" == "computer" ]]; then
+elif [[ "$mode" == "computer" || "$mode" == "unified" ]]; then
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1","CUA_REPL_ENABLED_SURFACES":"computer"}'; fi
-  unset CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES
+  if [[ "$mode" == computer ]]; then unset CORE_CUA_HOST_DIRECTORY CORE_CUA_ENDPOINT_FILES; fi
   export CORE_CUA_NATIVE_HELPER_PATH="${CORE_CUA_NATIVE_HELPER_PATH:-$PWD/native/macos/.build/debug/cua-helper}"
   if [[ "$CORE_CUA_NATIVE_HELPER_PATH" == "$PWD/native/macos/.build/debug/cua-helper" ]]; then npm run build:native; fi
-  printf '%s\n' "Computer mode: $CORE_CUA_NATIVE_BACKEND backend; app inventory does not verify UI permissions or actions." >&2
+  printf '%s\n' "$mode mode: $CORE_CUA_NATIVE_BACKEND backend; app inventory does not verify UI permissions or actions." >&2
 else
   if [[ -z "${CUA_MCP_ENV:-}" ]]; then export CUA_MCP_ENV='{"NODE_REPL_DISABLE_ANALYTICS":"1"}'; fi
 fi
