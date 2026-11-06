@@ -1,11 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { serviceClassMethod } from "./service-source.ts";
-import { lifecycleMethods } from "../packages/browser/dist/service/cdp/lifecycle_methods.js";
+import { serviceClassMethod, serviceClassWithMethods, serviceSourceSha256 } from "./service-source.ts";
+import { lifecycleMethods } from "../packages/browser/src/service/cdp/lifecycle_methods";
+const sourceClass = serviceClassWithMethods(Object.keys(lifecycleMethods));
 const original = new Function(
   "return {" +
     Object.keys(lifecycleMethods)
-      .map((name) => serviceClassMethod("qh", name))
+      .map((name) => serviceClassMethod(sourceClass, name))
       .join(",") +
     "}",
 )();
@@ -71,7 +72,8 @@ function snapshot(state: any) {
     ),
   );
 }
-test("CDP lifecycle preserves source precedence, frame aliases and dialog cleanup", () => {
+test("CDP lifecycle preserves source precedence, frame aliases and dialog cleanup", (t) => {
+  t.diagnostic(`Installed source ${serviceSourceSha256}; lifecycle class ${sourceClass}`);
   function run(methods: any) {
     const o = owner(methods);
     const session = {

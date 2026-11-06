@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { parse } from "acorn";
 const root =
   process.env.CUA_VENDOR_ROOT ??
@@ -7,6 +8,7 @@ const source = await readFile(
   `${root}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-service.mjs`,
   "utf8",
 );
+export const serviceSourceSha256 = createHash("sha256").update(source).digest("hex");
 const ast = parse(source, { ecmaVersion: "latest", sourceType: "module" });
 const definitions = new Map<string, any>(),
   assignments = new Map<string, any>();
@@ -100,4 +102,22 @@ export function serviceExportTable(name: string): Record<string, string> {
     );
   }
   throw new Error(`Missing export table ${name}`);
+}
+
+/** Locate an inspected class by its full required method surface, not an unstable
+ * minifier binding. Ambiguous or missing matches fail rather than selecting a
+ * different oracle silently. Method bodies still come from the installed file.
+ */
+export function serviceClassWithMethods(methodNames: readonly string[]): string {
+  if (methodNames.length === 0) throw new Error("At least one source method is required");
+  const candidates = [...definitions].filter(([, node]) => {
+    if (node.type !== "ClassExpression" && node.type !== "ClassDeclaration") return false;
+    const methods = new Set(node.body.body
+      .filter((item: any) => item.type === "MethodDefinition" && !item.static)
+      .map((item: any) => item.key.name));
+    return methodNames.every(name => methods.has(name));
+  });
+  if (candidates.length !== 1)
+    throw new Error(`Expected one source class with ${methodNames.join(", ")}; found ${candidates.length}`);
+  return candidates[0][0];
 }
