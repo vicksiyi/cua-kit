@@ -68,6 +68,7 @@ def audit():
     code_ranges = []
     for name, start, end in [
         ('providerCacheAndRefresh', 0x1000a7cbc, 0x1000a81f0),
+        ('jsonRPCReaderInlineEnqueue', 0x100dcd874, 0x100dcda24),
         ('jsonRPCLineBufferFinish', 0x100dd1be8, 0x100dd1e30),
         ('jsonRPCLineBufferNextImmediate', 0x100dd1e90, 0x100dd1fac),
         ('jsonRPCLineBufferWaitRegistration', 0x100dd236c, 0x100dd248c),

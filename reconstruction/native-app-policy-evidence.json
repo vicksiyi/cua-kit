@@ -74,6 +74,12 @@
       "sha256": "eb99ff07be37dc0303f45010965bb32af5880e974a21507b280214357f417af1"
     },
     {
+      "name": "jsonRPCReaderInlineEnqueue",
+      "start": "0x100dcd874",
+      "endExclusive": "0x100dcda24",
+      "sha256": "33af8ef62ee0fdd0e0da0a3cbfc1db2b30c5e9f097a10473513674f81574690d"
+    },
+    {
       "name": "jsonRPCLineBufferFinish",
       "start": "0x100dd1be8",
       "endExclusive": "0x100dd1e30",

@@ -434,3 +434,36 @@ implementing the actor; the audit hashes these ranges without claiming their
 full semantics are restored. This evidence changes the implementation plan:
 preserve explicit queued/terminal/waiter state rather than substituting an
 unverified AsyncStream policy. No production behavior changes in this audit.
+
+## Implemented line-buffer actor
+
+Further tracing located enqueue in the connection reader, inlined at
+`0x100dcd874..<0x100dcda24`. A finished buffer drops incoming lines. Otherwise
+it checks the waiter: absent waiter appends to `lines`; present waiter is
+cleared before resuming it with the incoming String. No line-content filtering
+or queue size cap occurs in this branch.
+
+`nextLine()` creates a UUID only when it must suspend. Its checked continuation
+registration at `0x100dd236c..<0x100dd248c` stores the UUID/continuation pair.
+The surrounding operation installs a cancellation handler that schedules an
+actor operation. That operation (`0x100dd2ba0..<0x100dd329c`) compares the
+request ID with the current waiter, clearing/resuming with CancellationError
+only on a match. It neither finishes the buffer nor replaces the terminal
+error. A cancellation arriving after delivery cannot cancel a newer waiter.
+There is no added eager cancellation check ahead of the queued/error/EOF
+branches in the restored implementation.
+
+`NativeJSONRPCLineBuffer.swift` now implements this actor, including the
+previously documented finish and queue-priority rules. It retains a single
+waiter, matching the original storage; upstream consumer serialization is
+required, rather than inventing support for multiple simultaneous pending
+readers. The internal `pendingWaiterID` property is a host diagnostic for race
+tests, not a claimed original API.
+
+Tests cover FIFO and empty strings, queue draining before errors, first finish
+winning, repeated terminal errors, append-after-finish, direct delivery, clean
+and error finish waking waiters, cancellation followed by further reads, stale
+cancellation IDs and cancellation requested before registration. Swift build
+and the executable tests pass. The earlier pending actor notes are superseded
+by this implementation; byte framing, timed nextMessage orchestration, request
+dispatch and process creation still remain to complete the connection.
