@@ -1717,3 +1717,19 @@ AXMenuBarItem 角色常量。10 组测试验证菜单角色完全跳过属性查
 isFocused 的路径读取缓存 AXFocused 并解码 Bool，失败/缺失为 false；isFocusable
 则包含额外角色判断和系统 settable 分支，不能将两者或 isSelectable 共用成简单布尔
 字段。完整 isFocusable 细节仍待恢复。本轮没有生产接线或真实 UI/模型调用。
+
+## isFocusable 的角色限定错误回退（2026-11-07）
+
+完整核对公开 getter 0x1007abfbc..<0x1007ac238：先检查 AXFocused 是否支持，
+不支持立即 false，不读取 role 或 settable。支持时读取一次 role。特殊角色是
+AXTextArea、AXTextField、AXDateTimeArea（不是滑块）：对这些角色，settable 查询
+成功时原样返回 Bool，只有抛错才回退 isEnabled。其它角色查询错误一律 false。
+所以“查询成功但不可写”不会因为 enabled=true 就被改判可聚焦。
+
+错误回退使用父协议 witness +0xa0，对应 concrete slot 0x101575708 的 isEnabled；
+这也补齐了该槽的语义映射。恢复 UIElementFocusCapability.swift 与三个角色常量，
+60 组组合覆盖支持门槛、五类角色、成功 true/false/抛错及 enabled 两种状态，验证
+分支结果和惰性 getter 次序。相关十项测试及 Swift 构建通过。
+
+getter 的协议/property/provider 边界仍显式注入；没有把成功的 helper 测试当作生产
+可聚焦操作已验收，完整协议和生产观察接线尚未完成。

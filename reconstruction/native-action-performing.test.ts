@@ -136,3 +136,17 @@ test("native selection capability excludes menu roles lazily", {
     assert.match(result.stdout, /native selection capability excludes menu roles before attribute queries/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+test("native focus capability preserves role-specific error fallback", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-selectable-"));
+  try {
+    const output = join(directory, "selectable");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementRole", "UIElementFocusCapability"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementFocusCapabilityTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /native focus capability preserves support gating and role-specific error fallback: 60 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

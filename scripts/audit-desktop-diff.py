@@ -805,6 +805,20 @@ element_storage_evidence['selectionCapability']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementSelectionCapability.swift',
     'limitations':'Role-gated capability helper restored; support/settable callback remains explicit. Focusability has additional role/error branches and is not collapsed to the same helper. Full node protocol pending.',
 }
+for entry in node_slots:
+    if entry['slot']=='0x101575708': entry['meaning']='isEnabled'
+element_storage_evidence['focusCapability']={
+    'entry':'UIElementProtocol.isFocusable at 0x1007abfbc..<0x1007ac238',
+    'gate':'isAttributeSupported(AXFocused) first; false skips role and settable reads',
+    'role':'role read once after support; textArea, textField and dateTimeArea use special throwing query branch',
+    'fallback':'successful settable Bool returned unchanged, including false; only a thrown query falls back to isEnabled for the three special roles',
+    'otherRoles':'isAttributeSettable wrapper returns false on query error; no isEnabled lookup',
+    'enabledWitness':'error branch 0x1007ac140 reads inherited witness +0xa0 -> concrete table 0x101575708 -> 0x1007b0044 -> 0x1007902dc',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007abfbc,0x1007ac238)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementFocusCapability.swift',
+    'limitations':'Original protocol support/role/settable/enabled boundaries remain explicit. Concrete protocol conformance and production observation wiring pending.',
+}
 element_storage_evidence['attributeSupport']={
     'symbol':'UIElementProtocol.attributeIsKnownUnsupported',
     'start':'0x1007b0854','endExclusive':'0x1007b0958',
