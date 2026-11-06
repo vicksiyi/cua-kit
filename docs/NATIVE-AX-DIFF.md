@@ -2252,3 +2252,19 @@ still run before exporting values; the original cold cache may prefetch AXValue.
 empty/malformed/absent values and cached roles/subroles. The collector's old scalar
 value/property path, child traversal and complete transformation renderer are still
 pending; new value/valueDescription getters are not yet substituted for that path.
+
+
+### Typed children integrated into observation
+
+`UIElementProtocol.children` at 0x1007a7ea0 directly forwards AXChildren to the
+typed collection reader. It is separate from childrenPreferringVisible; the
+latter is not a universal replacement for ordinary tree traversal.
+
+Added complete system adapters for both paths. `Target.collect` now recursively
+passes typed UIElement children, retaining their constructed caches rather than
+unwrapping raw AX references and rebuilding caches in the next recursive call.
+Tests verify cached empty arrays avoid OS access, malformed cache falls through,
+non-success statuses are handled by the typed reader, and prefetched child caches
+preserve order, duplicate entries and transaction attributes without live UI reads.
+The collector still applies its existing visited set and node/depth/time limits;
+these are demo policies and not proof of original transformation-tree parity.

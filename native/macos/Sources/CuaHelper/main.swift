@@ -1,6 +1,7 @@
 import Foundation
 import AppKit
 import ApplicationServices
+import os
 
 // Private stdin/stdout transport. No socket, ambient remote caller or vendor IPC.
 struct Failure: Error { let code: String; let message: String }
@@ -47,13 +48,13 @@ final class Target {
         try validate()
         var result: [Node] = [], warnings: [String] = [], visited = Set<AXUIElement>()
         let started = Date()
-        func walk(_ element: AXUIElement, _ parent: Int?, _ depth: Int) {
+        func walk(_ item: UIElement, _ parent: Int?, _ depth: Int) {
+            let element = item.axElement
             if result.count >= 3000 || depth > 80 || Date().timeIntervalSince(started) > 5 { if warnings.isEmpty { warnings.append("AX traversal truncated by node/depth/time budget.") }; return }
             if !visited.insert(element).inserted { return }
             let id = result.count + 1
-            // One recovered cache per observed node. Cached role/subrole/text
-            // and frame share this snapshot; transaction prefetch remains pending.
-            let item = UIElement(systemElement: element, transaction: nil)
+            // The typed children reader constructs each child cache once.
+            // Cached role/subrole/text and frame share that same snapshot.
             let role = item.role.rawValue
             var title = item.title ?? ""
             if title.isEmpty { title = item.description ?? "" }
@@ -76,15 +77,15 @@ final class Target {
             }
             data["properties"] = props
             result.append(Node(element: element, data: data))
-            if let rawChildren = attribute(element, kAXChildrenAttribute),
-               let children = unwrapAXUIElementArray(rawChildren) {
-                for child in children { walk(child, id, depth + 1) }
-            }
+            let children = item.systemChildren(transaction: nil, reportError: { error in
+                Logger(subsystem: "core.cua", category: "Accessibility").error("Children attribute read failed: \(String(describing: error))")
+            })
+            for child in children { walk(child, id, depth + 1) }
         }
         // Distinguish denied/unresponsive AX from an actual empty tree.
         let status = readRawAXAttribute(root, kAXRoleAttribute).error
         guard status == .success else { throw fail(status == .apiDisabled ? "PERMISSION_DENIED" : "PROVIDER_DISCONNECTED", "AX root unavailable: \(status.rawValue)") }
-        walk(root, nil, 0)
+        walk(UIElement(systemElement: root, transaction: nil), nil, 0)
         return (result, warnings)
     }
     func observe() throws -> [String: Any] {

@@ -1157,6 +1157,15 @@ element_storage_evidence['cachedTextProduction']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementCachedText.swift','native/macos/Sources/CuaHelper/main.swift','native/macos/Sources/CuaHelper/WindowSelection.swift'],
     'limitations':'Collector value/scalar properties and child traversal still use older paths; full transformation rendering and transaction-prefetched observation remain incomplete.',
 }
+element_storage_evidence['systemChildrenIntegration']={
+    'ordinaryGetter':'UIElementProtocol.children 0x1007a7ea0..<0x1007a7f04 forwards AXChildren to typed collection reader 0x1007b035c',
+    'selection':'Ordinary children and childrenPreferringVisible are distinct APIs; no blanket replacement of children with visible-only traversal',
+    'production':'Target.collect recurses with typed UIElement children and preserves each constructed cache. Existing traversal caps/visited set remain demo behavior.',
+    'systemAdapters':'Both ordinary children and visible-preferred adapters compose restored raw provider, count, support and collection decoding; transaction remains caller-supplied',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007a7ea0,0x1007a7f04)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
+    'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
