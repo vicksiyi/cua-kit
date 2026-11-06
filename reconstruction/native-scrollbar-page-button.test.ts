@@ -62,6 +62,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementUncachedValue.swift"),
 
         join(root, "native/macos/Sources/CuaHelper/UIElementSystemCollection.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift"),
         join(root, "native/macos/Sources/CuaHelper/ColdCacheAttributeSelection.swift"),
         join(root, "native/macos/Sources/CuaHelper/PrefetchedUIElementCache.swift"),
         join(root, "native/macos/Sources/CuaHelper/FallbackUIElementCache.swift"),

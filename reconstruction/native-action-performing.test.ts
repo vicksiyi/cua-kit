@@ -61,3 +61,18 @@ test("native menu preparation composes with full action dispatch", {
     assert.match(result.stdout, /native menu preparation preserves prefix ordering, first match and error stop: 64 cases/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native visible children selection preserves count and support semantics", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-visible-"));
+  try {
+    const output = join(directory, "visible");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementError", "AXProcessID", "AXAttributeReading", "UIElementAttribute", "UIElementVisibleChildren"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementVisibleChildrenTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /visible children selection preserves fresh support, positive counts, precedence and no reread: 400 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

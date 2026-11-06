@@ -968,6 +968,19 @@ element_storage_evidence['systemActionPerforming']={
     'implementation':'native/macos/Sources/CuaHelper/AXActionPerforming.swift',
     'limitations':'Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; concrete parent-chain traversal, protocol integration and MockProvider dispatch remain incomplete; menu preparation and scrollbar composition are restored separately.',
 }
+element_storage_evidence['childrenPreferringVisible']={
+    'entry':'0x1007a3fd0..<0x1007a409c',
+    'freshSupport':'0x1007a4514 calls uncachedSupportedAttributes once before candidate selection',
+    'priority':'0x1007a4574 constructs ordered [visibleRows, visibleChildren]; 0x100717068 returns first predicate match',
+    'predicate':'0x1007a7494: fresh support contains attribute and hasCount(for:); count only queried for supported candidates',
+    'hasCount':'0x1007b0420: (try? count(for:)) ?? 0 > 0; error, nil, zero and negative are false',
+    'fallback':'when no candidate matches, checks isAttributeSupported(children); false returns empty, true reads children',
+    'read':'selected attribute passes to 0x1007b035c value<[UIElement]>(ignoringTypeMismatch:false), nil becomes []; no retry or fallback after empty value',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007a3fd0,0x1007a409c),(0x1007a44f4,0x1007a4638),(0x1007a7494,0x1007a74f8),(0x1007b0420,0x1007b0468),(0x1007b035c,0x1007b03d4)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift',
+    'limitations':'Count reader remains injected pending original cache/provider count implementation. Concrete collection composition exists; full protocol/TaskLocal and production traversal remain pending.',
+}
 element_storage_evidence['menuActionPreparation']={
     'entry':'UIElementProtocol.perform(action:) at 0x100791a68',
     'parents':'menuItem only; defaultMaximumParentTraversalDepth and parentChain(includingSelf:false) at 0x100791b34',

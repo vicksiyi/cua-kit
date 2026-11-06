@@ -28,3 +28,23 @@ extension UIElement {
         }, reportError: reportError)
     }
 }
+
+extension UIElement {
+    func systemChildrenPreferringVisible(
+        transaction: UIElementTransactionCache?,
+        freshSupportedAttributes: () -> Set<UIElementAttribute>,
+        count: (UIElementAttribute) throws -> Int?,
+        read: (UIElementAttribute) -> (error: AXError, value: AXPartialValue?),
+        reportError: (Error) -> Void
+    ) -> [UIElement] {
+        uiElementChildrenPreferringVisible(
+            freshSupportedAttributes: freshSupportedAttributes, count: count,
+            isAttributeSupported: { attribute in
+                uiElementIsAttributeSupported(attribute, readCache: { cache },
+                    freshSupportedAttributes: freshSupportedAttributes)
+            }, collectionValue: { attribute in
+                systemElementCollectionValue(for: attribute, transaction: transaction,
+                    read: { read(attribute) }, reportError: reportError)
+            })
+    }
+}

@@ -237,6 +237,20 @@ struct ScrollBarPageButtonTests {
                 reportError: { _ in failures += 1 })
             precondition(!handled && failures == (status == .noValue ? 0 : 1))
         }
+        let visibleKey = UIElementAttribute("AXVisibleChildren")
+        let visibleParent = UIElement(axElement: barAX, cache: UIElementCache(
+            supportedAttributes: [visibleKey], attributes: [visibleKey: childrenRaw],
+            transactionAttributes: [visibleKey]))
+        var visibleTrace: [String] = []
+        let visibleChildren = visibleParent.systemChildrenPreferringVisible(
+            transaction: barTransaction,
+            freshSupportedAttributes: { visibleTrace.append("fresh"); return [visibleKey] },
+            count: { key in
+                precondition(key == visibleKey); visibleTrace.append("count"); return 1
+            }, read: { _ in fatalError("selected cached array must not refetch") },
+            reportError: { _ in fatalError("valid selected array must decode") })
+        precondition(visibleTrace == ["fresh", "count"])
+        precondition(visibleChildren.count == 1 && visibleChildren[0].axElement === valid.axElement)
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

@@ -1523,3 +1523,22 @@ childrenPreferringVisible，收集其为空的连续前缀；遇到非空立即�
 父链生成、childrenPreferringVisible、协议 witness、provider 和事务上下文仍是
 显式依赖边界，未连接生产入口；不能据此宣布真实菜单操作已验收。未调用 DeepSeek、
 未操作用户界面、未更改应用策略或 macOS 权限。
+
+## childrenPreferringVisible 的支持与数量筛选（2026-11-07）
+
+核对 0x1007a3fd0 getter、0x1007a44f4 selector、0x1007a7494 predicate 和
+0x1007b0420 hasCount：首先无条件读取一次 uncachedSupportedAttributes，然后按
+AXVisibleRows、AXVisibleChildren 顺序选择第一个“受支持且 count > 0”的属性。
+count 抛错、nil、零或负数都不匹配；未支持的属性不会查询 count。
+若两者都不匹配，再调用 isAttributeSupported(AXChildren)，支持才读，否则返回空。
+选定属性的 value<[UIElement]>(ignoringTypeMismatch:false) 为空时直接返回空数组，
+不会改选另一个可见属性或再次回退 AXChildren。这一区别会影响菜单祖先前缀判断。
+
+恢复 UIElementVisibleChildren.swift，并在 UIElementSystemCollection 中组合现有
+support 检查、缓存集合读取、解码与显式事务初始化。400 组组合验证优先级、查询顺序、
+错误处理及空值不重试；真实 AX 引用和预取缓存的组合验证只读取一次支持列表和数量，
+不重读已缓存数组，解码后保留子元素身份。相关六项测试通过，组合用例新增后复测通过；
+Swift 构建通过。
+
+原始 count 的缓存/provider 实现尚未恢复，因此目前保持显式注入，而不偷换为解码后
+数组长度。完整协议、TaskLocal、父链生成与生产遍历接线仍待完成。没有真实 UI 或模型调用。
