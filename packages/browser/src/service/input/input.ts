@@ -104,7 +104,10 @@ export function createInputClass(dependencies: InputDependencies) {
         this.cdp,
         positiveTabId(request.tabId),
         request.keys,
-        { blockClosedShadowInput: this.blockClosedShadowInput },
+        {
+          blockClosedShadowInput: this.blockClosedShadowInput,
+          durationMs: request.durationMs,
+        },
       );
     }
     async dispatchMouseMove(tabId: number, point: Point, modifiers: number) {

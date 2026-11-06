@@ -45,3 +45,15 @@ CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 nod
 18 组操作参数及错误路径，以及两类命令的原始 payload/延迟解析行为。
 当前 AxClient 行为与本次原构建一致，未为通过测试改写产品逻辑。
 该验收只覆盖客户端协议与结果处理，不代表 native diff 算法或全部真实网站操作已完成。
+
+## CUA keypress 长按链路修复
+
+对照当前 browser-client Gl/Ss 和 browser-service TD/input.dispatchKeyPress，发现
+`cua.keypress` 的 duration 在客户端、命令 schema、服务命令与 BrowserInput 四层遗漏。
+现已按原实现接通：0..30 秒有限数校验、正时长请求超时为 ceil(duration*1000)+2000ms，
+服务侧先授权再校验，正时长转毫秒传给已还原的 held-key dispatcher；0/未传仍保留剪贴板拦截。
+
+`browser-input.test.ts` 现锁定当前客户端 SHA 并直接验证 TS 源码；
+`browser-keypress-duration.test.ts` 对照当前服务命令与输入方法，并在真实 Chromium
+自有页面上通过 CUAAPI → command.parse → service → BrowserInput → keyboard dispatcher → CDP
+观察 keydown/keyup 和实际长按间隔。此测试不包含 MCP 或日常 Chrome 扩展连接。

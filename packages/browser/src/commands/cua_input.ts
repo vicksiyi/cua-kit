@@ -70,16 +70,19 @@ export namespace CuaDoubleClick {
   }
 }
 
-/** Original _n (yn/fn). */
+/** Current client Ss (js/Ts): duration is finite seconds in [0, 30]. */
 export namespace CuaKeypress {
   export const commandType = "cua_keypress";
   export const PayloadSchema = z.object({
     browser_id: z.string(),
     tab_id: z.string(),
     keys: z.array(z.string()),
+    duration: z.number().finite().min(0).max(30).optional(),
   });
   export const ResultSchema = z.object({});
-  export function create(payload: InputTarget & { keys: string[] }) {
+  export function create(
+    payload: InputTarget & { keys: string[]; duration?: number },
+  ) {
     return new Command(commandType, PayloadSchema, payload);
   }
 }

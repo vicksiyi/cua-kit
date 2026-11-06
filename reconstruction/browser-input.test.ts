@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { CUAAPI } from "../packages/browser/dist/cua.js";
-import { DomCUAAPI } from "../packages/browser/dist/dom_cua.js";
-import * as commands from "../packages/browser/dist/commands/cua_input.js";
+import { CUAAPI } from "../packages/browser/src/cua";
+import { DomCUAAPI } from "../packages/browser/src/dom_cua";
+import * as commands from "../packages/browser/src/commands/cua_input";
 const root =
   process.env.CUA_VENDOR_ROOT ??
   "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai";
@@ -11,8 +12,12 @@ const source = await readFile(
   `${root}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js`,
   "utf8",
 );
+assert.equal(
+  createHash("sha256").update(source).digest("hex"),
+  "04d63754bb1134eae351c164e750c7a9b798de2757a734e7a62e14b63edf8de4",
+);
 const original = await import(
-  `data:text/javascript;base64,${Buffer.from(source + "\nexport {Bl as CUAAPI,ql as DomCUAAPI,b as Commands};").toString("base64")}`
+  `data:text/javascript;base64,${Buffer.from(source + "\nexport {Gl as CUAAPI,Wl as DomCUAAPI,d as Commands};").toString("base64")}`
 );
 async function outcome(fn: () => any) {
   try {
@@ -73,6 +78,9 @@ test("CUA input client preserves local checks, field mapping, omitted values and
     { x: "1", y: 2, keys: [], text: "", path: [] },
     { x: 1, y: 2, keys: ["A"], path: [{}], timeoutMs: 0 },
     { path: Array(1), keys: ["Shift"] },
+    ...[undefined, 0, 0.001, 0.25, 30, 31, -1, Infinity, NaN, "1", null].map(
+      (duration) => ({ keys: ["Enter"], duration }),
+    ),
   ];
   for (const method of [
     "click",
@@ -193,5 +201,28 @@ test("input schemas directly extracted from source preserve original command pay
         await outcome(() => vendor.ResultSchema.parse(input)),
       );
     }
+  }
+});
+
+test("keypress duration schema preserves finite 0..30 seconds in both client and service contract", async () => {
+  for (const duration of [
+    undefined,
+    0,
+    0.001,
+    30,
+    31,
+    -1,
+    Infinity,
+    NaN,
+    "1",
+    null,
+  ]) {
+    const payload = { browser_id: "b", tab_id: "t", keys: ["Enter"], duration };
+    assert.deepEqual(
+      await outcome(() => commands.CuaKeypress.PayloadSchema.parse(payload)),
+      await outcome(() =>
+        original.Commands.CuaKeypress.PayloadSchema.parse(payload),
+      ),
+    );
   }
 });

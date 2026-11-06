@@ -10,7 +10,7 @@ import {
 } from "./commands/cua_input";
 import type { ClientTransport } from "./runtime/function_agent_transport";
 type Position = { x: number; y: number };
-/** Original Bl. Local typeof checks deliberately do not replace command schema parsing. */
+/** Original Gl (current installed client). Local typeof checks deliberately do not replace command schema parsing. */
 export class CUAAPI {
   #browserId: string;
   #tabId: string;
@@ -92,15 +92,20 @@ export class CUAAPI {
       }),
     });
   }
-  async keypress(options: { keys: string[] }) {
+  async keypress(options: { keys: string[]; duration?: number }) {
     if (!Array.isArray(options?.keys) || options.keys.length === 0)
       throw new Error("cua.keypress requires a non-empty keys array");
+    const duration = CuaKeypress.PayloadSchema.shape.duration.parse(
+      options.duration,
+    );
     await this.#transport.send({
       command: CuaKeypress.create({
         browser_id: this.#browserId,
         tab_id: this.#tabId,
         keys: options.keys,
+        duration,
       }),
+      timeoutMs: duration ? Math.ceil(1000 * duration) + 2000 : undefined,
     });
   }
   async drag(options: { path: Position[]; keys?: string[] }) {

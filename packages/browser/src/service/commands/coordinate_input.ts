@@ -1,3 +1,4 @@
+import { CuaKeypress } from "../../commands/cua_input";
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
 import { modifierMask } from "../input/keyboard_keys";
@@ -142,19 +143,27 @@ export const CuaScrollCommand = defineCommand(
     return {};
   },
 );
-/** Original XA: key arrays enter clipboard interception, strings bypass it. */
+/** Current TD: only zero/omitted duration enters clipboard interception; held keys use native dispatch. */
 export const CuaKeypressCommand = defineCommand(
   "cua_keypress",
   async (
-    payload: { tab_id: string | number; keys: string[] | string },
+    payload: {
+      tab_id: string | number;
+      keys: string[] | string;
+      duration?: number;
+    },
     context: CoordinateInputContext & ClipboardContext,
   ) => {
     await context
       .acquireAuthority()
       .actInFrame(await context.security.currentTabUrl(Number(payload.tab_id)))
       .assert();
+    const duration = CuaKeypress.PayloadSchema.shape.duration.parse(
+      payload.duration,
+    );
     await context.followSessionTab(Number(payload.tab_id));
     if (
+      !duration &&
       Array.isArray(payload.keys) &&
       (await dispatchClipboardKeypress({
         commandType: "cua_keypress",
@@ -167,6 +176,7 @@ export const CuaKeypressCommand = defineCommand(
     await context.cua.dispatchKeyPress({
       commandName: "cua_keypress",
       keys: payload.keys,
+      durationMs: duration ? duration * 1000 : undefined,
       tabId: payload.tab_id,
     });
     return {};
