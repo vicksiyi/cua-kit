@@ -1895,6 +1895,177 @@
       },
       "interpretation": "A transaction table hit returns a cache whose supported set comes from the stored attribute dictionary keys; attributes and requested transaction set are retained. An empty per-element dictionary is a hit, not a fallback. Requested attributes are neither synthesized into the data nor used to filter existing keys.",
       "limitations": "The extracted helper returns nil on a miss; full construction must still follow the separate locked fallback and attribute collection paths. It does not implement TaskLocal or transaction prefetch creation."
+    },
+    "coldConstruction": {
+      "functions": [
+        {
+          "start": "0x100764678",
+          "endExclusive": "0x100764ba4",
+          "machineCodeSha256": "b17b41e023ab524231259f4b8a16a9fe7a1fc36216cf3989f436abcf4074d427"
+        },
+        {
+          "start": "0x100764ba4",
+          "endExclusive": "0x100764c94",
+          "machineCodeSha256": "6d780dc0ea8330a77e822694a291f5eb97519997880ccdba4de8dcf52080225a"
+        },
+        {
+          "start": "0x100765248",
+          "endExclusive": "0x1007653f8",
+          "machineCodeSha256": "fb5dd33f852e5adea2cd0728b47b02498778366d1ba72c417271efe99ab6c23c"
+        },
+        {
+          "start": "0x1007653f8",
+          "endExclusive": "0x100765844",
+          "machineCodeSha256": "cfaf89820cb3c4abfa26e70302008d0d235a12b04119699be02ee864e9116458"
+        },
+        {
+          "start": "0x100765844",
+          "endExclusive": "0x10076589c",
+          "machineCodeSha256": "d87795c970219563a0ad5be003de13e05f777743d0887b9286211c59f0f4e955"
+        },
+        {
+          "start": "0x10076589c",
+          "endExclusive": "0x1007662ac",
+          "machineCodeSha256": "808994b4a42a9adce132d7cd5168ac378cfe576c5bcf9dd4dc25cbe3da8d3931"
+        }
+      ],
+      "baseAttributeInitializer": "0x100764678",
+      "baseAttributeStorage": "0x1015ca8a8",
+      "baseAttributes": [
+        {
+          "name": "role",
+          "symbolAddress": "0x1015ca8e0",
+          "loadAddressInstruction": "0x1007646c8",
+          "word": "0x91238108"
+        },
+        {
+          "name": "subrole",
+          "symbolAddress": "0x1015ca8e8",
+          "loadAddressInstruction": "0x1007646ec",
+          "word": "0x9123a108"
+        },
+        {
+          "name": "roleDescription",
+          "symbolAddress": "0x1015ca8f0",
+          "loadAddressInstruction": "0x100764710",
+          "word": "0x9123c108"
+        },
+        {
+          "name": "title",
+          "symbolAddress": "0x1015ca8f8",
+          "loadAddressInstruction": "0x100764734",
+          "word": "0x9123e108"
+        },
+        {
+          "name": "description",
+          "symbolAddress": "0x1015ca900",
+          "loadAddressInstruction": "0x100764758",
+          "word": "0x91240108"
+        },
+        {
+          "name": "value",
+          "symbolAddress": "0x1015ca990",
+          "loadAddressInstruction": "0x10076477c",
+          "word": "0x91264108"
+        },
+        {
+          "name": "valueDescription",
+          "symbolAddress": "0x1015ca998",
+          "loadAddressInstruction": "0x1007647a0",
+          "word": "0x91266108"
+        },
+        {
+          "name": "placeholderValue",
+          "symbolAddress": "0x1015ca968",
+          "loadAddressInstruction": "0x1007647c4",
+          "word": "0x9125a108"
+        },
+        {
+          "name": "numberOfCharacters",
+          "symbolAddress": "0x1015ca9e8",
+          "loadAddressInstruction": "0x1007647e8",
+          "word": "0x9127a108"
+        },
+        {
+          "name": "help",
+          "symbolAddress": "0x1015ca908",
+          "loadAddressInstruction": "0x10076480c",
+          "word": "0x91242108"
+        },
+        {
+          "name": "identifier",
+          "symbolAddress": "0x1015ca9a0",
+          "loadAddressInstruction": "0x100764830",
+          "word": "0x91268108"
+        },
+        {
+          "name": "selected",
+          "symbolAddress": "0x1015cabf0",
+          "loadAddressInstruction": "0x100764854",
+          "word": "0x912fc108"
+        },
+        {
+          "name": "focused",
+          "symbolAddress": "0x1015ca978",
+          "loadAddressInstruction": "0x100764878",
+          "word": "0x9125e108"
+        },
+        {
+          "name": "enabled",
+          "symbolAddress": "0x1015ca970",
+          "loadAddressInstruction": "0x10076489c",
+          "word": "0x9125c108"
+        },
+        {
+          "name": "disclosing",
+          "symbolAddress": "0x1015cab58",
+          "loadAddressInstruction": "0x1007648c0",
+          "word": "0x912d6108"
+        },
+        {
+          "name": "url",
+          "symbolAddress": "0x1015cac40",
+          "loadAddressInstruction": "0x1007648e4",
+          "word": "0x91310108"
+        },
+        {
+          "name": "traits",
+          "symbolAddress": "0x1015cad50",
+          "loadAddressInstruction": "0x100764908",
+          "word": "0x91354108"
+        },
+        {
+          "name": "servesAsTitleForUIElements",
+          "symbolAddress": "0x1015ca950",
+          "loadAddressInstruction": "0x10076492c",
+          "word": "0x91254108"
+        },
+        {
+          "name": "rowIndexRange",
+          "symbolAddress": "0x1015cab08",
+          "loadAddressInstruction": "0x100764950",
+          "word": "0x912c2108"
+        },
+        {
+          "name": "columnIndexRange",
+          "symbolAddress": "0x1015cab28",
+          "loadAddressInstruction": "0x100764974",
+          "word": "0x912ca108"
+        }
+      ],
+      "additionalPolicyInitializer": "0x100764ba4",
+      "additionalPolicyStorage": "0x1015ca8b0",
+      "instructionWords": {
+        "0x100765b80": "0x97fe4003",
+        "0x100765be8": "0x97fffd98",
+        "0x100766098": "0x97fe45c9",
+        "0x10076609c": "0xb40007f5",
+        "0x1007660e4": "0x14000036",
+        "0x1007661a8": "0xb5fffbb8",
+        "0x100766158": "0xd2800004"
+      },
+      "interpretation": "Cold collection reads supported names, constructs a set, and combines it with a 20-attribute base set before additional policy and removal passes. Batch failure returns an empty attribute dictionary with supported names retained and skips fallback cache insertion; successful batch or empty request may enter the fallback write path when transaction storage exists.",
+      "limitations": "The base set is not the final request list. Additional app-dependent policy, removal passes, set traversal ordering, MockProvider and full construction remain unresolved; do not wire the base list alone into production."
     }
   },
   "attributeNamesEvidence": {

@@ -999,6 +999,39 @@ element_cache_evidence['prefetchedHit']={
     'interpretation':'A transaction table hit returns a cache whose supported set comes from the stored attribute dictionary keys; attributes and requested transaction set are retained. An empty per-element dictionary is a hit, not a fallback. Requested attributes are neither synthesized into the data nor used to filter existing keys.',
     'limitations':'The extracted helper returns nil on a miss; full construction must still follow the separate locked fallback and attribute collection paths. It does not implement TaskLocal or transaction prefetch creation.',
 }
+# Cold constructor policy is source evidence, not a guessed production selector.
+cold_policy_entries = [(4302718664, 2435023112, 4317817056, 'role'), (4302718700, 2435031304, 4317817064, 'subrole'), (4302718736, 2435039496, 4317817072, 'roleDescription'), (4302718772, 2435047688, 4317817080, 'title'), (4302718808, 2435055880, 4317817088, 'description'), (4302718844, 2435203336, 4317817232, 'value'), (4302718880, 2435211528, 4317817240, 'valueDescription'), (4302718916, 2435162376, 4317817192, 'placeholderValue'), (4302718952, 2435293448, 4317817320, 'numberOfCharacters'), (4302718988, 2435064072, 4317817096, 'help'), (4302719024, 2435219720, 4317817248, 'identifier'), (4302719060, 2435825928, 4317817840, 'selected'), (4302719096, 2435178760, 4317817208, 'focused'), (4302719132, 2435170568, 4317817200, 'enabled'), (4302719168, 2435670280, 4317817688, 'disclosing'), (4302719204, 2435907848, 4317817920, 'url'), (4302719240, 2436186376, 4317818192, 'traits'), (4302719276, 2435137800, 4317817168, 'servesAsTitleForUIElements'), (4302719312, 2435588360, 4317817608, 'rowIndexRange'), (4302719348, 2435621128, 4317817640, 'columnIndexRange')]
+cold_policy_symbols = []
+for site,word,slot,name in cold_policy_entries:
+    if struct.unpack('<I',read_virtual(site,4))[0] != word:
+        raise SystemExit('Cold-cache base attribute initializer changed')
+    match = next((line for line in raw.splitlines() if line.startswith(f'{slot:016x} S ')),None)
+    if match is None: raise SystemExit('Cold-cache attribute symbol missing')
+    cold_policy_symbols.append(match)
+cold_policy_demangled = subprocess.check_output(['xcrun','swift-demangle'],input='\n'.join(cold_policy_symbols),text=True).splitlines()
+for entry,line in zip(cold_policy_entries,cold_policy_demangled):
+    if f'UIElementAttribute.{entry[3]} : ' not in line:
+        raise SystemExit('Cold-cache attribute symbol changed')
+cold_policy_words = {
+    0x100765b80:0x97fe4003, 0x100765be8:0x97fffd98,
+    0x100766098:0x97fe45c9, 0x10076609c:0xb40007f5,
+    0x1007660e4:0x14000036, 0x1007661a8:0xb5fffbb8,
+    0x100766158:0xd2800004,
+}
+for site,word in cold_policy_words.items():
+    if struct.unpack('<I',read_virtual(site,4))[0] != word:
+        raise SystemExit('Cold-cache collection/failure branch changed')
+element_cache_evidence['coldConstruction'] = {
+    'functions':[{'start':hex(address),'endExclusive':hex(starts[starts.index(address)+1]),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,starts[starts.index(address)+1]-address)).hexdigest()}
+        for address in [0x100764678,0x100764ba4,0x100765248,0x1007653f8,0x100765844,0x10076589c]],
+    'baseAttributeInitializer':'0x100764678','baseAttributeStorage':'0x1015ca8a8',
+    'baseAttributes':[{'name':name,'symbolAddress':hex(slot),'loadAddressInstruction':hex(site),'word':hex(word)} for site,word,slot,name in cold_policy_entries],
+    'additionalPolicyInitializer':'0x100764ba4','additionalPolicyStorage':'0x1015ca8b0',
+    'instructionWords':{hex(site):hex(word) for site,word in cold_policy_words.items()},
+    'interpretation':'Cold collection reads supported names, constructs a set, and combines it with a 20-attribute base set before additional policy and removal passes. Batch failure returns an empty attribute dictionary with supported names retained and skips fallback cache insertion; successful batch or empty request may enter the fallback write path when transaction storage exists.',
+    'limitations':'The base set is not the final request list. Additional app-dependent policy, removal passes, set traversal ordering, MockProvider and full construction remain unresolved; do not wire the base list alone into production.',
+}
 multiple_attribute_functions=[]
 for address,name in [(0x1006f77bc,'throwing batch branch'),(0x1006f798c,'attribute-to-name and dictionary adapter'),(0x1006fa640,'system batch read'),(0x1006fb558,'ordered batch dictionary mapping')]:
     boundary=starts[starts.index(address)+1]
