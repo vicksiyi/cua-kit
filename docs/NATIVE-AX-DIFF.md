@@ -2508,3 +2508,23 @@ provider 存在时，原版依次通过 witness +0x8 解析两侧；解析为 ni
 验证使用两个分别创建的同 PID AX application 引用（不同对象地址）及另一 PID；
 同一系统元素的 UIElement 即使持有不同预取 role/cache，仍应相等。该测试不启动
 应用、不请求权限，也不证明真实点击已完成。
+
+
+## 运行中应用查询与 PID 回退（2026-11-07）
+
+0x10071e608..<0x10071e820 调用 NSRunningApplication 的
+runningApplicationsWithBundleIdentifier:，取第一个结果；无结果返回 nil。
+然后调用 resolvingProcessIdentifier，创建 AX application 引用并用事务构造 UIElement。
+该 helper 本身不启动应用，不在第一个候选 PID 解析失败后尝试其它候选。
+
+0x100260b44..<0x100260dc8 的 PID 解析首先返回正 processIdentifier；否则
+检查 isTerminated 和 executableURL。终止或缺 URL 返回 -1。剩余路径按 URL.path
+构造 SAIRunningProcessFilter(name:nil, executablePath:path, options:1)，调用
+SAIRunningProcess.runningProcessesWithFilter:。结果必须恰好一个，才返回其 pid；
+其它情况返回 -1，没有为返回 pid 添加新的正值过滤。类名和 selector 通过 Mach-O
+classrefs/class_ro/selrefs 确认，未执行安装包服务。
+
+RunningApplicationLookup.swift 恢复上述控制流，底层查询保留显式依赖。专项测试
+覆盖提前返回、URL 路径、空/多/单个结果、首候选选择及 -1 原样传入构造器；
+Swift package 构建通过。SAIRunningProcess 底层实现和隐式事务仍待还原，因此本轮
+未把未完成的查询接入真实应用/Chess 路径，也未宣称应用启动或点击验收通过。

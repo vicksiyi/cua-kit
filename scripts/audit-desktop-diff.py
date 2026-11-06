@@ -1166,6 +1166,14 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['runningApplicationLookup']={
+    'lookup':'0x10071e608..<0x10071e820 calls NSRunningApplication.runningApplicationsWithBundleIdentifier:, selects first or nil; resolves PID then AXUIElementCreateApplication and transaction-based UIElement constructor; no launch or alternate-candidate retry',
+    'pid':'0x100260b44..<0x100260dc8 returns positive processIdentifier immediately; otherwise terminated or missing executableURL returns -1; query executableURL.path and accept exactly one result, return its pid without added positivity validation',
+    'nativeQuery':{'filterClass':'SAIRunningProcessFilter','initializer':'initWithName:executablePath:options:','arguments':'nil name, executable path, options 1','processClass':'SAIRunningProcess','query':'runningProcessesWithFilter:','resultPID':'pid'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10071e608,0x10071e820),(0x100260b44,0x100260dc8)]],
+    'implementation':'RunningApplicationLookup.swift preserves selection and PID resolution control flow with explicit native boundaries.',
+    'limitations':'SAIRunningProcess implementation/bridge and TaskLocal transaction acquisition remain incomplete; not connected to production lookup or Chess path yet. Fixture tests do not prove app launch or live UI operation.',
+}
 element_storage_evidence['systemElementEquality']={
     'entry':'0x1006fb9ac..<0x1006fbb74',
     'system':'When TaskLocal provider is absent, CFEqual(lhs, rhs) at 0x1006fba68; normalize nonzero result to true. Does not compare wrapper/cache identity, PID alone, title or frame.',
