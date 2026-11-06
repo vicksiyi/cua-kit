@@ -68,8 +68,9 @@ async fn rust_policy_denies_outside_io_spawn_and_network() {
     let port = listener.local_addr().unwrap().port();
     let code = format!(
         r#"
-import fs from 'node:fs';import net from 'node:net';import cp from 'node:child_process';
+import fs from 'node:fs';import net from 'node:net';import cp from 'node:child_process';import {{WASI}} from 'node:wasi';
 const result={{type:'probe'}};
+result.wasi=typeof new WASI({{version:'preview1',stdout:2,stderr:2}}).getImportObject().wasi_snapshot_preview1==='object';
 fs.writeFileSync('allowed','ok');result.allowed=fs.readFileSync('allowed','utf8');
 try{{fs.readFileSync({});result.outside='unexpected';}}catch(e){{result.outside=e.code;}}
 result.spawn=cp.spawnSync(process.execPath,['-e','0']).error?.code;
@@ -91,7 +92,7 @@ console.log(JSON.stringify(result));
     worker.close().await.unwrap();
     assert_eq!(
         result,
-        json!({"type":"probe","allowed":"ok","outside":"EPERM","spawn":"EPERM","scrubbed":true,"network":"EPERM"})
+        json!({"type":"probe","allowed":"ok","outside":"EPERM","spawn":"EPERM","scrubbed":true,"network":"EPERM","wasi":true})
     );
     assert!(
         tokio::time::timeout(Duration::from_millis(50), listener.accept())

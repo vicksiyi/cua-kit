@@ -127,3 +127,13 @@
 本轮观察到独立 native 扩展 MCP 测试的 getAXState 实际输出是 DOM fallback；此前通用回归不能作为 AX/WASM 已验收证据。新增专门测试，直接使用真实 AccessibilityCaptureManager、构建产物中的 AX WASM、真实 Chromium/CDP（含 iframe）和 TabAXGetStateCommand，验证候选附加、AX snapshotId、主 frame 目标定位、拒绝子 frame/过期目标以及旧 capture 不清理新 capture。
 
 同时发现 StateResultSchema 缺少当前原 x9 的 snapshotId/siwc 字段，会在 parse 时剥离元数据。已补齐，新增 schema 差分并断言真实捕获结果 parse 后完整保留。两项测试、Browser TypeScript 与重建通过。该 AX 专项不覆盖 MCP/native socket 的 AX 命令路径，未改动生产 API 可见性策略。临时观察日志代码已移除。
+
+## 后续恢复：独立部署显式 AX 开关与完整 MCP 路径
+
+当前原 Kle 支持 BROWSER_USE_TINYSKY_ENABLED；默认 capability manifest 的 Tab.ax 对所有后端 unsupportedByDefaultIn，因此默认回退 DOM 并非应强制移除的逻辑。测试显式启用时发现独立部署未把该变量传入 trusted worker。已在 TS 部署层定向传递，并在 Rust worker 环境 key 声明加入同名开关；kernel 及 untrusted env allowlist 不增加此变量，缺省不启用。
+
+随后真实 AX/WASM 初始化报 UVWASI_EPERM。macOS kernel Sandbox 日志确认 /dev/null metadata/read 被拒绝。Rust 自有部署 profile 增加仅 /dev/null literal 的 file-read*/file-write*，未增加目录或通用设备权限。重建后 CUA_TEST_AX=1 的 native 扩展 MCP 端到端通过：断言 liveTab.ax 存在、输出 Browser tab 的真实 AX/WASM 状态，通过观察到的 button index 调用 liveTab.click，验证真实页面结果，再执行原 locator/cursor/screenshot 回归（约 10.3 秒）。
+
+新增配置隔离测试覆盖缺省/0/1，断言开关仅进 trusted worker、测试模型密钥不进入 runtime spec。该修复属于独立 Rust 部署适配，不能宣称恢复了原厂 native sandbox 实现。
+
+Rust supervisor 全套测试以 CUA_TEST_NODE=/opt/homebrew/bin/node 执行：87 项通过（首次未设置该测试依赖时 media 测试报配置缺失，补齐后全套通过）。另扩展 sandbox 实测，在同一受限 worker 初始化 WASI，并同时验证外部文件、进程启动和网络仍为 EPERM。

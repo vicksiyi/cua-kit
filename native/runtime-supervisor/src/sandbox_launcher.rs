@@ -94,6 +94,7 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
                 | "BROWSER_USE_BACKEND_PATHS"
                 | "BROWSER_USE_AVAILABLE_BACKENDS"
                 | "BROWSER_USE_DISABLE_AMBIENT_NETWORK"
+                | "BROWSER_USE_TINYSKY_ENABLED"
                 | "NODE_REPL_TRUSTED_SERVICES"
                 | "NODE_REPL_TRUSTED_CODE_PATHS"
                 | "SKY_CUA_SERVICE_NATIVE_PIPE_PATH"
@@ -113,7 +114,7 @@ pub fn worker_spec(options: SandboxedWorkerOptions) -> Result<ProcessSpec, Strin
             ancestors.insert(ancestor.to_path_buf());
         }
     }
-    let profile=format!("(version 1)(deny default)(allow file-read* {})(allow file-read* file-write* {})(allow file-read-metadata {})(allow sysctl-read)(allow signal (target self))",reads.iter().map(|p|rule("subpath",p)).collect::<Vec<_>>().join(" "),rule("subpath",&directory),ancestors.iter().map(|p|rule("literal",p)).collect::<Vec<_>>().join(" "));
+    let profile=format!("(version 1)(deny default)(allow file-read* file-write* (literal \"/dev/null\"))(allow file-read* {})(allow file-read* file-write* {})(allow file-read-metadata {})(allow sysctl-read)(allow signal (target self))",reads.iter().map(|p|rule("subpath",p)).collect::<Vec<_>>().join(" "),rule("subpath",&directory),ancestors.iter().map(|p|rule("literal",p)).collect::<Vec<_>>().join(" "));
     if profile.len() > 1024 * 1024 {
         return Err("Sandbox profile exceeds 1 MiB".into());
     }

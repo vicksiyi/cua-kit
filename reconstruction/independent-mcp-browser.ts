@@ -51,6 +51,7 @@ export async function verifyIndependentMcpBrowser(
             CUA_REPL_ENABLED_SURFACES: "browser",
             CUA_REPL_BROWSER_ENV: "codex-app",
             BROWSER_USE_AVAILABLE_BACKENDS: backend,
+            ...(process.env.CUA_TEST_AX === "1" ? {BROWSER_USE_TINYSKY_ENABLED:"1"} : {}),
             ...(hostDirectory
               ? { CORE_CUA_HOST_DIRECTORY: hostDirectory }
               : { CORE_CUA_ENDPOINT_FILES: JSON.stringify([endpointFile]) }),
@@ -285,6 +286,16 @@ export async function verifyIndependentMcpBrowser(
       await execute(`await liveTab.goto(${JSON.stringify(pageUrl + "next")});`);
       const navigated = await execute("await liveTab.getAXState();");
       assert.match(navigated, /Navigation target/);
+      if (process.env.CUA_TEST_AX === "1") {
+        const axAvailable = await execute('nodeRepl.write(JSON.stringify({ax: liveTab.ax !== undefined}));');
+        assert.match(axAvailable, /"ax":true/);
+        assert.match(navigated, /Browser tab:/, "AX mode must use the WASM capture, not DOM fallback");
+        const actionIndex = navigated.match(/^\s*(\d+)\s+button Run action\s*$/m)?.[1];
+        assert(actionIndex, "AX snapshot must expose the owned button index");
+        await execute(`await liveTab.click(${Number(actionIndex)});`);
+        const axClicked = await execute("await liveTab.getAXState();");
+        assert.match(axClicked, /action-completed-marker/);
+      }
       await execute(
         'await liveTab.playwright.getByRole("button", {name:"Run action"}).click();',
       );
