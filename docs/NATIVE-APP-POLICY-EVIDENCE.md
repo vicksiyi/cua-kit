@@ -861,3 +861,53 @@ policy results and approval persistence remain unverified.
 Validation: five Rust native-service tests (including real owned helper spawn),
 five host environment/spec tests, AgentLoop typecheck, Rust release build and the
 updated owned-peer MCP integration all pass. Static pinned-binary audit also passes.
+
+## Native AppApprovalStore storage core
+
+This replaces the earlier symbol-only finding for the store's storage methods,
+not the outstanding question of which host approval path uses the store.
+Pinned metadata identifies the actor descriptor at 0x1012e4520 with storageURL,
+sessionApprovedBundleIdentifiers, persistentApprovals and
+persistentApprovalsModificationDate, plus the default actor field. The record
+PersistentApprovals at 0x1012e45f4 has one field, approvedBundleIdentifiers, whose
+mangled type `ShySSG` is Set<String>. Its field descriptor is 0x10133e6d0. Encode
+and decode witness entries resolve to 0x100db8be8 and 0x100db8bc0, forwarding to
+0x100db8a98 and 0x100dbac80 respectively.
+
+Recovered methods and readable Swift implementation:
+
+- Initialization 0x100db8c0c..<0x100db8f30 loads/decodes the optional storage file,
+  substituting an empty record on failure, then records its optional modification
+  date. Session identifiers start empty.
+- Modification-date helper 0x100db8f30..<0x100db9280 uses FileManager attributes,
+  extracts the modification date with a Date cast, and yields nil for missing URL
+  or errors. Selector 0x101543340 resolves to attributesOfItemAtPath:error:.
+- Record 0x100db9280..<0x100db97b4 inserts into the session set first. If persistence
+  is requested it requires a storage URL, inserts into the persistent record,
+  creates parent directories, JSON-encodes and writes the record, then updates
+  modification date. Selector 0x101542280 creates intermediate directories;
+  encoder imports 0x1014626a8/b0/b8 resolve to Foundation JSONEncoder. Data.write
+  at stub 0x10114ead0 binds through 0x1014631f8 and receives options=0. No atomic
+  write, sorted output, merge-before-write or rollback is added.
+- Refresh 0x100db97b4..<0x100db9cb4 compares optional modification dates. Equal
+  dates do nothing. A changed date reloads/replaces the record; a missing file or
+  read/decode failure replaces it with empty and records the new optional date.
+  It does not clear the session set.
+
+`NativeAppApprovalStore.swift` restores this storage core as an actor; the JSON
+record uses the original field name and Set semantics. Tests use only temporary
+fixture paths: session-only storage, nested-directory creation and JSON shape,
+reload into a new actor, external replacement with duplicate IDs, unchanged
+mtime, malformed contents, file removal, missing storage URL and directory-create
+failure. They verify mutation ordering: persistence errors do not undo a session
+entry; errors after persistent insertion do not roll back that insertion either.
+The native missing-storage error's localized representation is not yet restored;
+the component has a clearly named host error carrying the identifier.
+
+The audit now pins the actor/record metadata and these method ranges. Swift build
+and the dedicated store test pass. No vendor service is run, and no real approval
+file or active app policy is read or modified. This component is not wired into
+the terminal/MCP approval responder. Default storage-path selection, membership
+lookup/caller ordering, session lifetime and response metadata must be traced
+before claiming end-to-end persistent approval parity. The existing native policy
+check must still precede approval reuse; persisted entries cannot override denial.

@@ -3,6 +3,30 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "AppApprovalStore",
+      "descriptor": "0x1012e4520",
+      "fieldDescriptor": "0x10133e640",
+      "kind": 1,
+      "fields": [
+        "$defaultActor",
+        "storageURL",
+        "sessionApprovedBundleIdentifiers",
+        "persistentApprovals",
+        "persistentApprovalsModificationDate"
+      ],
+      "fieldMetadataSha256": "7e7d52f7e41d1955038acfc0671963d0f1ad7d87a4d618ad611dcc5ffe7496e3"
+    },
+    {
+      "name": "PersistentApprovals",
+      "descriptor": "0x1012e45f4",
+      "fieldDescriptor": "0x10133e6d0",
+      "kind": 0,
+      "fields": [
+        "approvedBundleIdentifiers"
+      ],
+      "fieldMetadataSha256": "f05b6d71a6c4c812654e2ec5daeecb5fc0f0db10022d9bcbce1d50383002f36d"
+    },
+    {
       "name": "JSONRPCLineBuffer",
       "descriptor": "0x1012e48c8",
       "fieldDescriptor": "0x10133ea68",
@@ -67,6 +91,42 @@
     }
   ],
   "codeRanges": [
+    {
+      "name": "appApprovalStoreInitialization",
+      "start": "0x100db8c0c",
+      "endExclusive": "0x100db8f30",
+      "sha256": "00a47d93386442b79877b8a6e5575970ebbed2374265caab81708ecb7916de72"
+    },
+    {
+      "name": "appApprovalStorageModificationDate",
+      "start": "0x100db8f30",
+      "endExclusive": "0x100db9280",
+      "sha256": "1127f8116a478addd1dccec34033987ccd2adfebcb376ea92abc02f18fbb8ddd"
+    },
+    {
+      "name": "appApprovalStoreRecord",
+      "start": "0x100db9280",
+      "endExclusive": "0x100db97b4",
+      "sha256": "485009248f8904c78326bdef98b23cdcf6749bce22901837012d78dcd7af9c08"
+    },
+    {
+      "name": "appApprovalStoreRefresh",
+      "start": "0x100db97b4",
+      "endExclusive": "0x100db9cb4",
+      "sha256": "a01d20f39a6a34d44e96c54f856efd598927866d7a48872eebdd0058731cee21"
+    },
+    {
+      "name": "persistentApprovalsEncode",
+      "start": "0x100db8a98",
+      "endExclusive": "0x100db8bc0",
+      "sha256": "300532379f4a888e50e1eff519808ac608dea0d2b4573dc4ef28bcf2261f0edd"
+    },
+    {
+      "name": "persistentApprovalsDecode",
+      "start": "0x100dbac80",
+      "endExclusive": "0x100dbadd0",
+      "sha256": "50abd0cf66bf8f4c89f7b8014ed845327ed50eeef5c4a13ebbf0ceba56c9208b"
+    },
     {
       "name": "providerCacheAndRefresh",
       "start": "0x1000a7cbc",
@@ -467,6 +527,14 @@
     "displayName": "first String of CFBundleDisplayName, CFBundleName, otherwise URL deletingPathExtension().lastPathComponent; empty String accepted",
     "order": "policy decision, Bundle(url:), display name, risk and persistence metadata",
     "ipcProjection": "standalone dictionary matching observed Sky client types, not original encoder reconstruction"
+  },
+  "approvalStorage": {
+    "recordType": "PersistentApprovals.approvedBundleIdentifiers: Set<String>",
+    "initialization": "load JSON record or empty; then capture optional file modification date",
+    "recordOrder": "insert session first; when persist=true require storage URL, insert persistent, create parent directories, encode JSON, write with options=0, update optional modification date",
+    "writeFailure": "propagate; do not undo earlier in-memory mutations",
+    "refresh": "only if optional file modification date differs; replace persistent record or empty on read/decode failure; update date; preserve session entries",
+    "wiring": "storage core only; default path, approval lookup/response and demo host integration not yet restored"
   },
   "approvalMetadata": {
     "highRisk": "terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme",

@@ -43,6 +43,10 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e4520, 'AppApprovalStore',
+         ['$defaultActor', 'storageURL', 'sessionApprovedBundleIdentifiers',
+          'persistentApprovals', 'persistentApprovalsModificationDate']),
+        (0x1012e45f4, 'PersistentApprovals', ['approvedBundleIdentifiers']),
         (0x1012e48c8, 'JSONRPCLineBuffer',
          ['$defaultActor', 'lines', 'waiter', 'terminalError', 'finished']),
         (0x1012be3b4, 'CodexAppServerComputerUsePolicyProvider',
@@ -65,8 +69,16 @@ def audit():
         records.append(dict(name=name, descriptor=hex(descriptor),
                             fieldDescriptor=hex(fields), kind=kind, fields=names,
                             fieldMetadataSha256=hashlib.sha256(read(fields, 16 + count * record_size)).hexdigest()))
+    if string(relative(0x10133e6d0 + 20)) != 'ShySSG':
+        raise ValueError('Persistent approval field is not Set<String>')
     code_ranges = []
     for name, start, end in [
+        ('appApprovalStoreInitialization', 0x100db8c0c, 0x100db8f30),
+        ('appApprovalStorageModificationDate', 0x100db8f30, 0x100db9280),
+        ('appApprovalStoreRecord', 0x100db9280, 0x100db97b4),
+        ('appApprovalStoreRefresh', 0x100db97b4, 0x100db9cb4),
+        ('persistentApprovalsEncode', 0x100db8a98, 0x100db8bc0),
+        ('persistentApprovalsDecode', 0x100dbac80, 0x100dbadd0),
         ('providerCacheAndRefresh', 0x1000a7cbc, 0x1000a81f0),
         ('jsonRPCPipeReader', 0x100dcd480, 0x100dcdbec),
         ('jsonRPCReaderInlineEnqueue', 0x100dcd874, 0x100dcda24),
@@ -154,6 +166,13 @@ def audit():
                     displayName='first String of CFBundleDisplayName, CFBundleName, otherwise URL deletingPathExtension().lastPathComponent; empty String accepted',
                     order='policy decision, Bundle(url:), display name, risk and persistence metadata',
                     ipcProjection='standalone dictionary matching observed Sky client types, not original encoder reconstruction'),
+                approvalStorage=dict(
+                    recordType='PersistentApprovals.approvedBundleIdentifiers: Set<String>',
+                    initialization='load JSON record or empty; then capture optional file modification date',
+                    recordOrder='insert session first; when persist=true require storage URL, insert persistent, create parent directories, encode JSON, write with options=0, update optional modification date',
+                    writeFailure='propagate; do not undo earlier in-memory mutations',
+                    refresh='only if optional file modification date differs; replace persistent record or empty on read/decode failure; update date; preserve session entries',
+                    wiring='storage core only; default path, approval lookup/response and demo host integration not yet restored'),
                 approvalMetadata=dict(
                     highRisk='terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme',
                     bundleProbe='lazy after list misses; missing bundle means false',

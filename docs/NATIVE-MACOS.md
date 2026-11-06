@@ -746,3 +746,17 @@ This mode has been verified through the restored Sky client and a project-owned
 app-server fixture, including allow/deny/forbidden outcomes and failure handling.
 Real installed CLI interoperability and complete application-control acceptance
 remain pending. No active local policy configuration was migrated automatically.
+
+### Native approval storage recovery
+
+The previous symbol-only AppApprovalStore note is now supplemented by recovered
+Swift storage methods: initialization, JSON record writing and modification-time
+refresh. `NativeAppApprovalStore` keeps session IDs separate from the persistent
+`approvedBundleIdentifiers` set. Missing/corrupt changed files clear persistent
+state; unchanged modification dates skip reload. Persistence errors retain the
+source's prior in-memory mutations. Tests use temporary fixtures only.
+
+This storage component is not yet connected to the demo approval UI. It does not
+make prompts automatically accepted or weaken native app policy. The original
+storage-path/caller/response flow and full persistent approval integration remain
+open; see NATIVE-APP-POLICY-EVIDENCE.md for addresses and validation boundaries.
