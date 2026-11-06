@@ -1290,3 +1290,30 @@ init(systemElement:transaction:) 系统路径。传 nil 意味着执行已恢复
 
 生产遍历和原版 transaction 生命周期仍待接线。此构造器解决元素级链路所需的真实
 缓存入口，但不能据此声称完整观察器或合成动作的用户体验已经完成。
+
+## 原生动作/缓存接入状态复核（2026-11-07）
+
+对最近的相互依赖改动统一验证，9 个测试文件共 10 项测试通过，覆盖系统动作读取、
+动作描述、动作执行错误策略、可写性、编码属性写入、通用 setter、disclosure 组合、
+缓存构造和属性支持。这里的数量是测试用例，不是端到端成功率或项目完成比例。
+
+纠正机器审计中 6 处历史 limitations：此前仍将已恢复的动作常量、描述映射、数组
+组合和显式缓存初始化列为未完成。现在明确区分：
+
+| 边界 | 当前状态 | 还需完成 |
+|---|---|---|
+| 系统动作名读取 | 已接 Target.collect 和 secondary 检查 | 原动态 provider 分派 |
+| setValue | 通用编码→系统写入已接生产 | 原 provider 分派及其它属性写入路径整合 |
+| 展开/折叠 | 元素级判断→编码→写入组合已恢复 | 生产动作广告、完整动作分派和真实 UI 验收 |
+| 动作描述 | 类型、18 项映射、Scanner、自定义/系统回退及列表已恢复 | 原角色日志和页面状态输出整合 |
+| UIElement 初始化 | 显式 transaction/cache 构造已恢复 | 隐式 TaskLocal.current 与原遍历生命周期 |
+| transaction.perform | 静态确认同步 TaskLocal.withValue，work 在作用域内执行 | 原 element existential、完整 transaction 创建与预取执行 |
+
+不能为了提前接入 production 而将 transaction.current 简化为 process-global cache，
+或把 TaskLocal 的完整 transaction 替换成仅包含缓存的对象。应先恢复该 transaction
+依赖的 UIElementProtocol/AccessibilityNode 类型边界及其 element/cache/roleFrequencyTable
+字段，再连接原构造与 perform。当前系统入口显式接收 transaction，保留这一缺口。
+
+真实应用验收仍受当前宿主辅助功能/录屏权限阻塞；模型驱动多窗口验收仍有此前
+HTTP 402 未解决。本轮没有重试这两个已知外部阻塞，也没有把它们当作整个项目
+无法推进的理由。代码整合与静态审计继续进行。

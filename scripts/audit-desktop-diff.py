@@ -691,7 +691,7 @@ element_storage_evidence={
     'contextGetter':{'stub':'0x1011537e0','got':context_slot,'binding':'libswift_Concurrency/_$ss9TaskLocalC3getxyF'},
     'instructionWords':{hex(a):hex(w) for a,w in context_words.items()},
     'interpretation':'UIElement stores an AX reference plus UIElementCache. The shared initializer and cache initializer read TaskLocal context. The element initializer forwards context components or absent-context zeros to the cache construction helper.',
-    'limitations':'TaskLocal payload semantics, cache population/invalidations and transaction lifetime are not recovered. This does not prove a process-global or per-PID cache, and an AX reference alone cannot stand in for the complete UIElement.',
+    'limitations':'TaskLocal payload layout and synchronous scope are statically established; explicit cache construction is restored. Complete transaction assembly, invalidation and production lifetime remain pending. An AX reference alone cannot stand in for the complete UIElement.',
 }
 element_protocol=0x1012cd46c
 protocol_header=read_virtual(element_protocol,24)
@@ -851,7 +851,7 @@ element_storage_evidence['actionWitnesses']={
         'Decode cached AXDisclosing with Bool specialization 0x10070fc2c; true selects collapse, false or missing selects expand.',
     ],
     'interpretation':'Action witnesses are not raw AX action-name lists. The successful native action read is combined with computed disclosure actions before description mapping.',
-    'limitations':'Bool decoder, action name storage and supplemental disclosure selection are restored. Full action getter/provider wiring, remaining static actions, description mapping and array combination semantics remain pending.',
+    'limitations':'Bool decoder, action constants, supplemental selection, array composition and description policy are restored. Original provider dispatch and full production action/description integration remain pending.',
 }
 bool_binding=next((line for line in fixups.splitlines() if '0x101466880' in line.lower()),'')
 if 'libswiftCore/_$sSbN' not in bool_binding: raise SystemExit('Bool specialization target changed')
@@ -863,7 +863,7 @@ element_storage_evidence['boolDecoder']={
     'ordinaryCast':'0x10070ffe0','optionalNilTag':2,
     'interpretation':'Concrete Bool specialization retains CF dispatch, AXValue error interpretation and Foundation conditional Bool conversion. Do not replace dynamic casting with NSNumber.boolValue or string truthiness.',
     'implementation':'native/macos/Sources/CuaHelper/AXBoolDecoding.swift',
-    'limitations':'Decoder only; complete action data types, description mapping and supplemental-action wiring remain pending.',
+    'limitations':'Decoder restored and reused by disclosure state and action selection. Full provider/protocol dispatch and production synthetic action integration remain pending.',
 }
 element_storage_evidence['actionArrayComposition']={
     'start':'0x10076d304','endExclusive':'0x10076d3f4',
@@ -899,7 +899,7 @@ element_storage_evidence['systemActionDescriptionReader']={
     'block':{'start':'0x1006f9904','endExclusive':'0x1006f99e4',
         'machineCodeSha256':hashlib.sha256(read_virtual(0x1006f9904,0x1006f99e4-0x1006f9904)).hexdigest()},
     'implementation':'native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift',
-    'limitations':'System branch only. TaskLocal MockProvider dispatch, custom description resolver and production descriptor wiring remain pending. Typed CFString output follows the system API contract.',
+    'limitations':'System branch and custom description policy are restored separately. TaskLocal MockProvider dispatch and production descriptor wiring remain pending. Typed CFString output follows the system API contract.',
 }
 action_description_imports={
     '0x101466488':'hasPrefix', '0x101463988':'scanString',
@@ -1040,7 +1040,7 @@ element_storage_evidence['disclosureActionsImplementation']={
     'constants':action_constants,
     'implementation':['native/macos/Sources/CuaHelper/UIElementAction.swift','native/macos/Sources/CuaHelper/UIElementDisclosureActions.swift'],
     'sourceBody':'0x100793f94..0x1007941e0',
-    'limitations':'Supplemental actions only. Full actions getter, native support/settable provider wiring, remaining static actions, description mapping and array combination remain incomplete.',
+    'limitations':'Supplemental selection, static actions, description mapping, action-array composition and element-level system disclosure writes are restored. Original dynamic provider dispatch and production synthetic action advertisement/execution remain incomplete.',
 }
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
@@ -1360,7 +1360,7 @@ parameter_evidence['dynamicDispatch']={
     'fallback':{'call':'0x1006ea654','got':'0x101467f88','symbol':dynamic_bridge_binding},
     'instructionWords':{hex(a):hex(w) for a,w in dynamic_parameter_words.items()},
     'interpretation':'Extract raw UIElement/marker references, encode concrete AX ranges/geometry, otherwise use the Swift runtime object bridge without recursive collection traversal. AXEncodedValue.init(wrapping:) forwards to this encoder.',
-    'limitations':'UIElement/cache immutable fields are restored, but the source AX-element initializer still needs transaction-aware cache construction. This is encoding only, not generic decoding or UI acceptance.',
+    'limitations':'UIElement/cache fields and explicit transaction-aware cache construction are restored. Original implicit TaskLocal acquisition and production traversal remain pending. This encoding evidence does not prove UI acceptance.',
 }
 prefetched_cache_words={
     0x1007658fc:0x9401462f,0x100765900:0x36000f21,
