@@ -6983,3 +6983,7 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-07：冷缓存选择实现与源解释更正
 
 跟踪集合 helper 证实后续操作是插入而非移除，已更正文档和证据。恢复支持属性/基准交集、受支持的可见与选中子项补充，以及指定 bundle ID 的 DOMClassList 规则。原生选择测试通过；身份来源、完整事务构造及生产观察接线仍未完成。
+
+### 2026-11-07：元素缓存构造链路已组合
+
+新增原字段类型的事务缓存快照；将预取、锁内回退、属性选择、批量读取、失败不缓存和成功缓存组合为构造器，并连接直接系统 AX/AppKit 入口。组合测试验证命中顺序、失败重试、成功空缓存及事务隔离；helper 构建通过。生产 Target.collect、TaskLocal 生命周期和真实应用验收仍未完成。
