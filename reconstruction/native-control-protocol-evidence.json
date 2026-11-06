@@ -276,6 +276,60 @@
     ],
     "integrationStatus": "Resolver library only; not yet wired to runtime selection/spawn. Schema-2 registry matching and raw configuration parsing remain open."
   },
+  "manifestValidation": {
+    "implementation": "native/browser-extension-host/src/app_server_manifest.rs",
+    "rootSchemaInstructions": [
+      "10001b96c: 39400008    \tldrb\tw8, [x0]",
+      "10001b970: 7100091f    \tcmp\tw8, #0x2",
+      "10001b974: 5400a581    \tb.ne\t0x10001ce24 <<extension_host::app_server::AppServerHostConfig>::load+0x1960>",
+      "10001b978: f9400408    \tldr\tx8, [x0, #0x8]",
+      "10001b97c: b500a548    \tcbnz\tx8, 0x10001ce24 <<extension_host::app_server::AppServerHostConfig>::load+0x1960>",
+      "10001b980: f9400808    \tldr\tx8, [x0, #0x10]",
+      "10001b984: f100091f    \tcmp\tx8, #0x2",
+      "10001b988: 5400a4e1    \tb.ne\t0x10001ce24 <<extension_host::app_server::AppServerHostConfig>::load+0x1960>"
+    ],
+    "entriesArrayInstructions": [
+      "10001b99c: 94008e17    \tbl\t0x10003f1f8 <<str as serde_json::value::index::Index>::index_into>",
+      "10001b9a0: b400b980    \tcbz\tx0, 0x10001d0d0 <<extension_host::app_server::AppServerHostConfig>::load+0x1c0c>",
+      "10001b9a4: 39400008    \tldrb\tw8, [x0]",
+      "10001b9a8: 7100111f    \tcmp\tw8, #0x4",
+      "10001b9ac: 5400b921    \tb.ne\t0x10001d0d0 <<extension_host::app_server::AppServerHostConfig>::load+0x1c0c>"
+    ],
+    "entrySchemaInstructions": [
+      "10001b9f0: b400b940    \tcbz\tx0, 0x10001d118 <<extension_host::app_server::AppServerHostConfig>::load+0x1c54>",
+      "10001b9f4: 39400008    \tldrb\tw8, [x0]",
+      "10001b9f8: 7100091f    \tcmp\tw8, #0x2",
+      "10001b9fc: 5400b8e1    \tb.ne\t0x10001d118 <<extension_host::app_server::AppServerHostConfig>::load+0x1c54>",
+      "10001ba00: f9400408    \tldr\tx8, [x0, #0x8]",
+      "10001ba04: b500b8a8    \tcbnz\tx8, 0x10001d118 <<extension_host::app_server::AppServerHostConfig>::load+0x1c54>",
+      "10001ba08: f9400808    \tldr\tx8, [x0, #0x10]",
+      "10001ba0c: f100091f    \tcmp\tx8, #0x2",
+      "10001ba10: 5400b841    \tb.ne\t0x10001d118 <<extension_host::app_server::AppServerHostConfig>::load+0x1c54>"
+    ],
+    "schema": "JSON positive integer 2, not floating 2.0 or string 2. Array order and unknown entry fields preserved; candidate failure policy not yet implemented.",
+    "pathTrimInstructions": [
+      "100024918: 94006a38    \tbl\t0x10003f1f8 <<str as serde_json::value::index::Index>::index_into>",
+      "10002491c: b4000140    \tcbz\tx0, 0x100024944 <extension_host::app_server::required_manifest_path_exists+0x78>",
+      "100024920: 39400008    \tldrb\tw8, [x0]",
+      "100024924: 71000d1f    \tcmp\tw8, #0x3",
+      "100024928: 540000e1    \tb.ne\t0x100024944 <extension_host::app_server::required_manifest_path_exists+0x78>",
+      "10002492c: a9410408    \tldp\tx8, x1, [x0, #0x10]",
+      "100024930: aa0803e0    \tmov\tx0, x8",
+      "100024934: 94001107    \tbl\t0x100028d50 <<str>::trim_matches::<<char>::is_whitespace>>",
+      "100024938: f100001f    \tcmp\tx0, #0x0",
+      "10002493c: fa401824    \tccmp\tx1, #0x0, #0x4, ne",
+      "100024940: 540002e1    \tb.ne\t0x10002499c <extension_host::app_server::required_manifest_path_exists+0xd0>"
+    ],
+    "pathMetadataInstructions": [
+      "10002499c: 9102a3e8    \tadd\tx8, sp, #0xa8",
+      "1000249a0: 9400fc15    \tbl\t0x1000639f4 <std::sys::fs::metadata>",
+      "1000249a4: b940abe8    \tldr\tw8, [sp, #0xa8]",
+      "1000249a8: 360002c8    \ttbz\tw8, #0x0, 0x100024a00 <extension_host::app_server::required_manifest_path_exists+0x134>"
+    ],
+    "pathContract": "entry.paths[field] must be a nonempty trimmed string with successful metadata; follows symlinks and accepts directories. No executable or absolute-path requirement in this helper.",
+    "missingPathFormatBytes": "39436f646578206170702d736572766572206d616e696665737420656e747279206973206d697373696e67207265717569726564207061746820c000",
+    "integrationStatus": "Validation primitives only; not wired to selection or process launch. Required-field conditionality and full candidate selection remain open."
+  },
   "remainingUnknowns": [
     "full manifest selection and process launch contract",
     "complete hello/status response schemas",

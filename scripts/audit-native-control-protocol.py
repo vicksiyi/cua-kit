@@ -25,6 +25,7 @@ sanitizer = disassemble(0x100029c24, 0x100029ea8)
 open_file = disassemble(0x100036150, 0x100036858)
 config_load = disassemble(0x10001b4c4, 0x10001fd38)
 env_filter = disassemble(0x1000213e8, 0x100021514)
+required_path = disassemble(0x1000248cc, 0x100024a0c)
 # Decode only straight-line method comparison operands, not arbitrary code semantics.
 # x21 is the method string pointer loaded at 0x100025508. Constants are assembled
 # with MOV/MOVK; string loads include overlapping tails at offsets 11 and 27.
@@ -101,6 +102,14 @@ for symbol in ['<uuid::Uuid>::new_v4', 'base64::engine::Engine::decode',
 for site in ['1000256bc:', '100025e00:']:
     if not any(site in line and 'remove_tab_context_asset>' in line for line in control.splitlines()):
         raise RuntimeError('Missing shared abort/remove dispatch: '+site)
+
+# Rust compact formatting literal: 57-byte prefix followed by one argument.
+missing_path_prefix = b'Codex app-server manifest entry is missing required path '
+if raw[0x8d2f1:0x8d32d] != bytes([len(missing_path_prefix)]) + missing_path_prefix + b'\xc0\x00':
+    raise RuntimeError('Required path diagnostic formatting literal changed')
+for diagnostic in [b'Codex Chrome native host manifest must use schemaVersion 2', b'Manifest entries must be an array', b'Manifest entry must use schemaVersion 2']:
+    if diagnostic not in raw:
+        raise RuntimeError('Missing schema diagnostic literal')
 
 # The JSON Number literal referenced by string_result_response is PosInt(1).
 if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
@@ -186,6 +195,18 @@ result = {
         'port': 'u16 parse accepts zero and a plus sign; invalid/overflow environment input falls back to selected config port then zero.',
         'portFallbackInstructions': evidence(config_load, 0x10001ebcc, 0x10001ebe4, ['csel', 'tst']),
         'integrationStatus': 'Resolver library only; not yet wired to runtime selection/spawn. Schema-2 registry matching and raw configuration parsing remain open.',
+    },
+    'manifestValidation': {
+        'implementation': 'native/browser-extension-host/src/app_server_manifest.rs',
+        'rootSchemaInstructions': evidence(config_load, 0x10001b96c, 0x10001b988, ['#0x2', 'cbnz']),
+        'entriesArrayInstructions': evidence(config_load, 0x10001b99c, 0x10001b9ac, ['#0x4', 'b.ne']),
+        'entrySchemaInstructions': evidence(config_load, 0x10001b9f0, 0x10001ba10, ['#0x2', 'cbnz']),
+        'schema': 'JSON positive integer 2, not floating 2.0 or string 2. Array order and unknown entry fields preserved; candidate failure policy not yet implemented.',
+        'pathTrimInstructions': evidence(required_path, 0x100024918, 0x100024940, ['#0x3', 'trim_matches']),
+        'pathMetadataInstructions': evidence(required_path, 0x10002499c, 0x1000249a8, ['std::sys::fs::metadata', 'tbz']),
+        'pathContract': 'entry.paths[field] must be a nonempty trimmed string with successful metadata; follows symlinks and accepts directories. No executable or absolute-path requirement in this helper.',
+        'missingPathFormatBytes': raw[0x8d2f1:0x8d32d].hex(),
+        'integrationStatus': 'Validation primitives only; not wired to selection or process launch. Required-field conditionality and full candidate selection remain open.',
     },
     'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

@@ -6051,3 +6051,12 @@ Added Rust `app_server_configuration::LaunchFields::resolve`, based on the pinne
 Native environment values are converted from Unicode, trimmed, then ignored if empty. This differs from JS configuration generation, which validates trim but preserves the stored string. Nonempty environment values take precedence; fallback CLI/Node/proxy host values are codex/node/127.0.0.1. Proxy ports use Rust u16 parsing (including plus signs and zero); invalid/overflow values fall back to the configured port, then zero, instead of failing. The pinned evidence extractor verifies each environment literal/call and records trim/fallback instructions.
 
 Two Rust tests pass: all eight field overrides, whitespace/invalid-Unicode fallback without global environment mutation, every one of the 65536 valid u16 ports, and malformed/overflow/default cases. This verifies the reconstructed resolver, not dynamic parity with the original binary. Raw JSON schema validation, schema-2 registry selection, full load precedence and connection to process startup remain unimplemented; the new module is not yet wired into the runtime.
+
+
+### 2026-11-06: native schema-2 validation primitives
+
+Implemented Rust app_server_manifest entries/entry-schema validation and required_manifest_path_exists from pinned ARM64 load/checker instructions. Schema values must be JSON integer 2 (float 2.0 rejected); entries must be an array. The borrowed array preserves order/unknown fields and does not preemptively reject every candidate. Empty arrays pass shape validation, leaving no-compatible-entry handling to the future selector.
+
+Required paths use paths[field], Unicode trim and std::fs::metadata. Directories and valid symlinks pass; missing/non-string/empty paths, broken links and metadata failures share the recovered required-path diagnostic. No invented executable, regular-file or absolute-path condition is added. This helper differs deliberately from the separately evidenced openLocalFile checks.
+
+Two manifest tests and the two existing environment-resolution tests pass. Static extraction verifies schema instructions, trim/metadata calls and literal diagnostics against the installed artifact hash. These are library primitives, not complete configuration loading: candidate matching/ranking, conditional required fields, full precedence and process/proxy startup remain unimplemented. No original binary, daily browser or app-server was launched.
