@@ -49,6 +49,20 @@ struct UIElementDisclosureActionsTests {
                                 precondition(CFGetTypeID(value.value) == CFBooleanGetTypeID())
                                 writes.append(value.value as! Bool)
                             })
+                            var actionTrace: [String] = []
+                            let combinedActions = element.actions(readNativeActions: {
+                                actionTrace.append("native"); return [.press]
+                            }, freshSupportedAttributes: {
+                                actionTrace.append("fresh"); return freshSupports ? [key] : []
+                            }, isAttributeSettable: { attribute in
+                                precondition(attribute == key)
+                                actionTrace.append("writable")
+                                if writable == 2 { throw UIElementError.axError(.cannotComplete) }
+                                return writable == 1
+                            }, reportError: { _ in fatalError("settable failure must not discard native actions") })
+                            precondition(combinedActions == [.press] + expected)
+                            precondition(actionTrace == ["native"] + (useFresh ? ["fresh"] : [])
+                                + (supported ? ["writable"] : []))
                             let expectedWrites: [Bool] = expected.isEmpty ? [] : [(raw as? Bool) != true]
                             precondition(writes == expectedWrites)
                             count += 1

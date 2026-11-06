@@ -1154,7 +1154,8 @@ element_storage_evidence['elementActions']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x1007916b0,0x100791a24),(0x10079446c,0x100794520),(0x10076d304,0x10076d3dc)]],
     'implementation':'native/macos/Sources/CuaHelper/UIElementActions.swift',
-    'limitations':'Protocol property getters and native action read remain injected. Concrete disclosure helpers exist separately; full protocol/provider and production actions wiring remain pending. Logger is an explicit callback, not original os.Logger integration.',
+    'concreteComposition':'native/macos/Sources/CuaHelper/UIElementConcreteActions.swift combines native read with concrete cache support, throwing settable query and cached disclosure state. Native-read failure reports once and skips supplement; settable failure preserves native actions.',
+    'limitations':'Concrete action composition restored; native read/provider and logger remain injected. Full protocol and production observation wiring remain pending. Logger is an explicit callback, not original os.Logger integration.',
 }
 element_storage_evidence['menuActionPreparation']={
     'entry':'UIElementProtocol.perform(action:) at 0x100791a68',

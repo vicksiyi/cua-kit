@@ -1751,3 +1751,19 @@ fresh read 立即失败。测试使用伪 PID 的 AX 引用，不打开应用、
 
 这只恢复元素状态和能力判断，绝不用于修改应用策略、权限或授权。完整父协议
 以及生产观察流程接线仍未完成；不能把本项测试等同于桌面端到端验收。
+
+### 具体元素的动作列表组合入口
+
+本轮先重现 `native-disclosure-actions.test.ts` 编译失败：已有具体对象测试调用
+`UIElement.actions`，但仓库仅有泛型 helper，没有对应实例入口。补入独立文件
+`UIElementConcreteActions.swift`，保持纯泛型 getter 的独立编译能力。
+
+具体入口组合已恢复的原生动作读取、缓存支持查询、throwing settable 查询和
+cached isDisclosing。原生读取抛错只上报一次并立即返回空列表，不做补充查询；
+settable 查询抛错表示不补充动作，仍保留原生列表；成功时追加 expand/collapse，
+不去重。240 组缓存/transaction/support/writability/状态组合同时检查具体入口
+输出和查询顺序；另测原生失败、空列表和重复动作。相关 11 项测试及 Swift 构建
+通过。测试不调用模型、不控制真实桌面。
+
+原生 provider 与日志仍是显式边界；生产观察器尚未整体切换到完整原版协议、
+transaction、transform 和 diff，不能据此宣布原版桌面行为全部对齐。
