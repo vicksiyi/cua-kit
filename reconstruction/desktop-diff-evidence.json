@@ -900,6 +900,44 @@
     "focusedElementPresenceBranch": "0x1006375e0",
     "scope": "Recovered constructor formatting from static ARM64; not a live native-service oracle."
   },
+  "selectionEvidence": {
+    "functions": [
+      {
+        "name": "UIElementProtocol.selectedText.getter",
+        "start": "0x10078e7f0",
+        "endExclusive": "0x10078e994",
+        "machineCodeSha256": "b395407ca33e343264db48064cc42f28c0efadae017381ff1021b198f30ec3af"
+      },
+      {
+        "name": "UIElementProtocol.selectedTextMarkerRange.getter",
+        "start": "0x10078e994",
+        "endExclusive": "0x10078ea18",
+        "machineCodeSha256": "587cfed27e1377d62573677d78e18e3c43f450f40ab7bf0e503324761610a970"
+      },
+      {
+        "name": "AXSelectedText attribute initialization",
+        "start": "0x100799654",
+        "endExclusive": "0x100799690",
+        "machineCodeSha256": "ac240d0630f9aafbca981ff52d1af5107269debf56961aea60191179b26f8a73"
+      },
+      {
+        "name": "string-for-marker-range parameterized attribute initialization",
+        "start": "0x10079c54c",
+        "endExclusive": "0x10079c580",
+        "machineCodeSha256": "b53cc6f5c0054570dd2f14b884ee903c348541319bf99cd9bcfa36a9fa9c9b46"
+      }
+    ],
+    "parameterizedAttribute": {
+      "address": "0x1012579e0",
+      "text": "AXStringForTextMarkerRange"
+    },
+    "directTextEmptyCheck": "0x10078e854..0x10078e864",
+    "markerRangeCall": "0x10078e878",
+    "parameterizedReadCall": "0x10078e8d4",
+    "errorBranch": "0x10078e8d8..0x10078e8f8",
+    "fallbackEmptyCheck": "0x10078e92c..0x10078e94c",
+    "scope": "Getter fallback logic only; original typed AX element/marker wrappers remain unrestored."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -1140,6 +1178,11 @@
       "address": "0000000100232998",
       "mangled": "_$s11ComputerUse16SkyshotOperationV7capture9treeCache9imageSize17includeScreenshot14continuingFrom30performAccessibilityEnablementAC7CaptureV0O7Support20TransformedUIElementV04TreeG0VSg_So6CGSizeVSgSb0aB4Core0tU8RevisionCyANGSgSbtYaKF",
       "signature": "ComputerUse.SkyshotOperation.capture(treeCache: AccessibilitySupport.TransformedUIElement.TreeCache?, imageSize: __C.CGSize?, includeScreenshot: Swift.Bool, continuingFrom: ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>?, performAccessibilityEnablement: Swift.Bool) async throws -> ComputerUse.SkyshotOperation.Capture"
+    },
+    {
+      "address": "00000001000eb280",
+      "mangled": "_$s11ComputerUse20EventStreamSelectionV12selectedTextSSSgvg",
+      "signature": "ComputerUse.EventStreamSelection.selectedText.getter : Swift.String?"
     },
     {
       "address": "0000000100239540",
@@ -1715,6 +1758,26 @@
       "address": "00000001006295f8",
       "mangled": "_$s15ComputerUseCore41AccessibilityDifferenceLineBudgetExceededO21__derived_enum_equalsySbAC_ACtFZ",
       "signature": "static ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded.__derived_enum_equals(ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded, ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded) -> Swift.Bool"
+    },
+    {
+      "address": "000000010078e7f0",
+      "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE12selectedTextSSSgvg",
+      "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.selectedText.getter : Swift.String?"
+    },
+    {
+      "address": "000000010078e994",
+      "mangled": "_$s20AccessibilitySupport17UIElementProtocolPAAE23selectedTextMarkerRangeAA06UITextgH0VSgvg",
+      "signature": "(extension in AccessibilitySupport):AccessibilitySupport.UIElementProtocol.selectedTextMarkerRange.getter : AccessibilitySupport.UITextMarkerRange?"
+    },
+    {
+      "address": "00000001007988bc",
+      "mangled": "_$s20AccessibilitySupport18UIElementAttributeV23selectedTextMarkerRangeACvau",
+      "signature": "AccessibilitySupport.UIElementAttribute.selectedTextMarkerRange.unsafeMutableAddressor : AccessibilitySupport.UIElementAttribute"
+    },
+    {
+      "address": "000000010079c490",
+      "mangled": "_$s20AccessibilitySupport18UIElementAttributeV23selectedTextMarkerRangeACvgZ",
+      "signature": "static AccessibilitySupport.UIElementAttribute.selectedTextMarkerRange.getter : AccessibilitySupport.UIElementAttribute"
     }
   ]
 }

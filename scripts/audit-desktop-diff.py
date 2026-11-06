@@ -24,6 +24,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'disableAXDiffing', 'UIElementTreeRevision', 'RefetchableSkyshotAXTree',
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
+    'selectedTextSSSgvg', 'selectedTextMarkerRange',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -214,6 +215,23 @@ presentation_evidence = {
     'focusedElementPresenceBranch':'0x1006375e0',
     'scope':'Recovered constructor formatting from static ARM64; not a live native-service oracle.',
 }
+selection_functions = []
+for address,name in [(0x10078e7f0,'UIElementProtocol.selectedText.getter'),(0x10078e994,'UIElementProtocol.selectedTextMarkerRange.getter'),(0x100799654,'AXSelectedText attribute initialization'),(0x10079c54c,'string-for-marker-range parameterized attribute initialization')]:
+    boundary = starts[starts.index(address)+1]
+    selection_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+marker_attribute = c_string(0x1012579e0)
+if marker_attribute != 'AXStringForTextMarkerRange':
+    raise SystemExit('Marker range parameterized attribute changed')
+selection_evidence = {
+    'functions':selection_functions,
+    'parameterizedAttribute':{'address':'0x1012579e0','text':marker_attribute},
+    'directTextEmptyCheck':'0x10078e854..0x10078e864',
+    'markerRangeCall':'0x10078e878',
+    'parameterizedReadCall':'0x10078e8d4',
+    'errorBranch':'0x10078e8d8..0x10078e8f8',
+    'fallbackEmptyCheck':'0x10078e92c..0x10078e94c',
+    'scope':'Getter fallback logic only; original typed AX element/marker wrappers remain unrestored.',
+}
 record = {
     'artifact':'@oai/'+relative,
     'sha256':sha,
@@ -222,6 +240,7 @@ record = {
     'implementationEvidence':implementation_evidence,
     'callerEvidence':caller_evidence,
     'presentationEvidence':presentation_evidence,
+    'selectionEvidence':selection_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

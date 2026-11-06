@@ -155,3 +155,25 @@ text/focusedElement/selectedText/selectedElements 字段。依据是固定原生
 
 尚未将格式化器接入 SkyAppState：目前 AX 树采集、选择/焦点映射和 revision 仍是独立实现，
 不能为接入新格式而伪造这些输入。整体 helper 的观察输出因此尚未变化。
+
+## 选择文本读取：空值后的 marker fallback
+
+已读取 `AccessibilitySupport.UIElementProtocol.selectedText` 的实际函数体
+`[0x10078e7f0, 0x10078e994)`，并追踪 selectedTextMarkerRange 属性和参数化读取：
+
+1. 读取 AXSelectedText；非空则直接返回，不再读取 marker。
+2. 缺失或空字符串都会尝试 selectedTextMarkerRange。
+3. marker 不存在则返回 nil；存在则调用 AXStringForTextMarkerRange。
+4. 参数化读取抛错、返回 nil 或空字符串均返回 nil；非空结果保留，不 trim 空白。
+
+新增 `SelectedText.swift` 将上述逻辑留在 Swift。三个闭包是原 typed AX accessor 尚未还原时的接入边界，
+不冒充原 UIElementProtocol 的完整接口；尚未对真实 AXUIElement 自动发起新读取。
+测试使用受控 marker 值验证调用顺序、首选路径短路、空/缺失区别、错误处理、多语言及空白文本。
+另有一例将空选择结果接入恢复的 presentation，确认显示焦点而不是空 selected-text 围栏。
+
+这也解释了两层空值语义为何不同：presentation 对显式非 nil 的空字符串照常呈现；
+原 selection getter 则过滤空内容并回退。不能把其中一层的规则覆盖到另一层。
+
+当前独立 Target.collect 只导出选择范围等信息，尚未具备原 SystemSelection 的 focusTree、
+类型化 marker 及选中元素映射，因此此轮仍未把上述 reader 挂到整棵树上批量读取。
+入口：`node --import tsx --test reconstruction/native-selected-text.test.ts`，包含 10 组 Swift 行为检查。
