@@ -1089,6 +1089,15 @@ element_storage_evidence['bundleWebClassification']={
     'implementation':'native/macos/Sources/CuaHelper/BundleWebClassification.swift',
     'limitations':'Bundle predicates and combination restored. AX PID/running-app resolution and full context constructor integration still pending.',
 }
+element_storage_evidence['applicationWebShape']={
+    'entry':'0x10071e484..<0x10071e608',
+    'resolution':'Throwing AX PID query caught -> false; NSRunningApplication(processIdentifier:) then bundleURL then Bundle(url:); missing at any step -> false',
+    'selectors':{'0x101542c18':'runningApplicationWithProcessIdentifier:','0x1015421e8':'bundleURL','0x101542ad0':'initWithURL:'},
+    'evaluation':'supportsHTTPScheme || isElectronApp || isChromiumApp, preserving lazy order and repeated invocations; no bundle-ID fallback or app launch',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10071e484,0x10071e608)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementApplicationWebShape.swift',
+    'limitations':'Concrete adapter composes direct OS PID read; original MockProvider PID dispatch remains absent. Full transformation context and production observation integration pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

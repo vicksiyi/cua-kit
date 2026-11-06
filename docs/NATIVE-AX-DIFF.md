@@ -2144,3 +2144,16 @@ bundle ID 模糊匹配或类继承推断。
 
 异常元数据、数组转换、大小写和临时真实 .app Bundle 的主类测试通过。AX PID
 到 running app/bundle 的解析及完整 context 构造仍需组合接入。
+
+### 从 AX 应用解析 Web 形态
+
+已组合 0x10071e484..<0x10071e608 的解析顺序：AX PID →
+NSRunningApplication(processIdentifier:) → bundleURL → Bundle(url:) →
+HTTP/Electron/Chromium 惰性判断。选择器槽位 0x101542c18/0x1015421e8/
+0x101542ad0 分别确认 runningApplicationWithProcessIdentifier:、bundleURL、
+initWithURL:。PID 错误和任何缺失步骤返回 false，不启动应用或按 bundle ID 回退。
+
+新增具体 AXUIElement 入口，复用已有 copiedAXProcessID 和真实 Bundle 谓词；
+依赖注入测试覆盖每个失败步骤以及八种谓词组合的调用顺序。此入口目前使用
+直接 OS PID 查询，原版 MockProvider 分派尚未恢复；完整 context 及生产接线
+仍待完成。

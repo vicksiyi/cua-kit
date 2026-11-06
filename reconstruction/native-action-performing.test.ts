@@ -459,3 +459,18 @@ test("native bundle classification preserves metadata predicates", {
     assert.match(result.stdout, /bundle classification preserves exact schemes, typed arrays and principal-class predicates/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native application web shape preserves PID resolution and predicate order", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-app-shape-"));
+  try {
+    const output = join(directory, "shape");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementError", "AXProcessID", "BundleWebClassification", "UIElementApplicationWebShape"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementApplicationWebShapeTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /application classification preserves resolution failures and ordered bundle predicates/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
