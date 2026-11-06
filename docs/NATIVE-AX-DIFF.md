@@ -950,3 +950,15 @@ Swift 测试与 helper 构建通过。没有执行原厂服务；完整泛型 de
 
 两个 Swift 测试通过，覆盖描述信息原样传递、编码对象身份、getter 次数和 fallback 顺序；
 helper 构建通过。未连接生产观察器，也没有用此辅助方法替代完整原生协议。
+
+## 未缓存读取的支持门槛与错误顺序（2026-11-07）
+
+恢复 `uncachedValue` 内层 throwing body `0x1007ad658..0x1007ad938`。
+先调用 attributeIsKnownUnsupported；已知不支持直接返回 nil，连 axElement getter 都不调用。
+否则读取原始 (AXError, AXPartialValue?)。状态先于数据判断：只允许 success、noValue、
+attributeUnsupported（常量 -25212/-25205 固定在 0x101570d18），其它状态无论有无值都抛 AXError。
+允许状态下 nil 返回 nil；存在值时 ignoringTypeMismatch 选择非抛错或抛错部分值 decoder。
+
+`UIElementUncachedValue.swift` 保留这段组合逻辑，read/decode 仍为显式依赖，不捏造 MockProvider。
+40 个支持门槛/状态/存在性/策略组合及严格 decoder 错误传播测试覆盖执行顺序与跳过条件。
+外层日志记录后返回 nil 的 accessor、完整泛型 decoder 与生产观察器接线仍待恢复。

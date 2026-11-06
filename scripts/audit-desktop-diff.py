@@ -797,6 +797,19 @@ element_storage_evidence['cachedValueLookup']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementCachedValue.swift',
     'limitations':'Generic decoder is an explicit dependency; concrete String decoder is connected. Full generic decoder and production observation integration remain incomplete.',
 }
+if struct.unpack('<ii',read_virtual(0x101570d18,8)) != (-25212,-25205):
+    raise SystemExit('Uncached attribute tolerated status constants changed')
+element_storage_evidence['uncachedValueRead']={
+    'start':'0x1007ad658','endExclusive':'0x1007ad938',
+    'machineCodeSha256':hashlib.sha256(read_virtual(0x1007ad658,0x2e0)).hexdigest(),
+    'supportGate':'0x1007ad69c -> 0x1007b0854',
+    'elementGetterWitnessOffset':'0x20','read':'0x1007ad6e4 -> 0x1006f5f88',
+    'toleratedStatusStorage':'0x101570d18','toleratedStatuses':[0,-25212,-25205],
+    'lenientDecode':'0x1007ad7e0 -> 0x1006fac18',
+    'strictDecode':'0x1007ad884 -> 0x1006fac24',
+    'interpretation':'Known-unsupported exits before AX reference acquisition/read. Reject other status codes before examining optional data. On tolerated status, absent data returns nil; present data chooses nonthrowing decode when ignoringTypeMismatch, otherwise throwing decode. Preserve descriptors.',
+    'limitations':'Provider read and generic partial decoders remain explicit dependencies. Outer uncachedValue logger/catch and production integration are separate.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))
