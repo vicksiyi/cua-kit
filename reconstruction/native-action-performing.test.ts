@@ -242,3 +242,21 @@ test("native transformed string append preserves UTF16 offsets", {
       ["SIGTRAP", "SIGILL"].includes(error.signal) && /Precondition failed/.test(error.stderr));
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native source range preserves mapping endpoint semantics", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-source-range-"));
+  try {
+    const output = join(directory, "range");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringAppending", "TransformedUIStringSourceRange"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringSourceRangeTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /source range preserves validation order, nil compaction, endpoint semantics and UTF16 integration/);
+    for (const mode of ["input-overflow", "output-overflow"]) {
+      await assert.rejects(exec(output, [mode]), (error: any) => ["SIGTRAP", "SIGILL"].includes(error.signal));
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

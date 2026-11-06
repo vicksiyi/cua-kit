@@ -935,6 +935,19 @@ element_storage_evidence['transformedStringAppend']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringAppending.swift',
     'limitations':'Single-span and mapped-text mutation restored as composable helpers; interpolation-to-interpolation merging, removeLast, range lookup, and full type/production pipeline remain pending.',
 }
+line=next((line for line in fixups.splitlines() if '0x1014624e8' in line.lower()),'')
+if 'Foundation/_$s10Foundation10NSNotFoundSivg' not in line:
+    raise SystemExit('Source-range NSNotFound lookup changed')
+element_storage_evidence['transformedStringSourceRange']={
+    'entry':'0x10063a300 -> 0x10063bba0..<0x10063bd5c',
+    'validation':'nil sourceOffsets -> nil before checks; negative location, NSNotFound or negative length -> nil; checked location+length; end greater than offsets count -> nil',
+    'mapping':'compactMap nonnil offsets in the requested half-open slice; empty result -> nil; otherwise NSRange(first, last-first+1) using checked arithmetic',
+    'semantics':'Does not sort, use min/max, enforce continuity, reject negative source offsets, or clamp negative resulting lengths. Range is indexed in the existing UTF16 mapping.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10063a300,0x10063a31c),(0x10063bba0,0x10063bd5c)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringSourceRange.swift',
+    'limitations':'Direct range mapping restored; substring occurrence search and prefix/suffix disambiguation remain pending, as does full transformed type integration.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

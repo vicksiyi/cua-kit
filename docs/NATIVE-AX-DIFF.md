@@ -1919,3 +1919,20 @@ UTF-8 字节数。已有映射时按此长度追加 nil；映射原本 nil 则�
 ZWJ 序列、链接/图片边界、映射保留、未映射前缀、nil 与空数组区别、值语义快照；
 独立测试进程验证错误映射长度触发 precondition。测试通过；完整插值合并、删除
 末字符和源范围反查仍未恢复，不据此宣称完整文本定位链路可用。
+
+### 展示文本范围到源范围的直接映射
+
+`sourceRange(forMarkdownRange:)` 从 0x10063a300 调用
+`0x10063bba0..<0x10063bd5c`：sourceOffsets=nil 首先返回 nil，不触发后续范围
+算术；负 location、NSNotFound、负 length 返回 nil。location+length 使用检查
+溢出加法；超过映射数组 count 返回 nil。NSNotFound 的 stub/GOT 绑定已核实。
+
+合法半开区间内 compactMap 非 nil 偏移；空结果（含零长范围）返回 nil。否则
+以 first 和 last 返回 NSRange(location:first,length:last-first+1)，两次算术都
+检查溢出。没有排序、min/max、连续性要求或非负源偏移检查，也不钳制负结果
+长度。保留这些行为，不用自行修正输入的算法替代原版。
+
+恢复直接范围映射 helper。测试 nil/空映射、缺失位置、负输入、越界、空范围、
+全部 nil、内部 nil、非单调映射，以及与 Unicode UTF-16 追加 helper 组合；隔离
+进程检查输入和输出算术溢出 trap。相关测试通过。按 substring 查找和 prefix/
+suffix 消歧仍待恢复，生产文本定位尚未完成。

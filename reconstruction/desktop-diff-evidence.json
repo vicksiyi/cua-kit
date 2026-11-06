@@ -2518,6 +2518,26 @@
       "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringAppending.swift",
       "limitations": "Single-span and mapped-text mutation restored as composable helpers; interpolation-to-interpolation merging, removeLast, range lookup, and full type/production pipeline remain pending."
     },
+    "transformedStringSourceRange": {
+      "entry": "0x10063a300 -> 0x10063bba0..<0x10063bd5c",
+      "validation": "nil sourceOffsets -> nil before checks; negative location, NSNotFound or negative length -> nil; checked location+length; end greater than offsets count -> nil",
+      "mapping": "compactMap nonnil offsets in the requested half-open slice; empty result -> nil; otherwise NSRange(first, last-first+1) using checked arithmetic",
+      "semantics": "Does not sort, use min/max, enforce continuity, reject negative source offsets, or clamp negative resulting lengths. Range is indexed in the existing UTF16 mapping.",
+      "blocks": [
+        {
+          "start": "0x10063a300",
+          "endExclusive": "0x10063a31c",
+          "machineCodeSha256": "64fb3cfaa0a5060a7e2c905462673715d730f717bb9884a278239e5f4193acbd"
+        },
+        {
+          "start": "0x10063bba0",
+          "endExclusive": "0x10063bd5c",
+          "machineCodeSha256": "e53d36c1935a93074e372349c2326bc184e4a801daba603874515cca3545c06d"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringSourceRange.swift",
+      "limitations": "Direct range mapping restored; substring occurrence search and prefix/suffix disambiguation remain pending, as does full transformed type integration."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
