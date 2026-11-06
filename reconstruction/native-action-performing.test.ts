@@ -85,7 +85,7 @@ test("native array count preserves cache and error semantics", {
   try {
     const output = join(directory, "count");
     await exec("xcrun", ["swiftc",
-      ...["UIElementError", "AXStoredValue", "AXValueDescriptors", "UIElementCount"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      ...["UIElementError", "AXStoredValue", "AXValueDescriptors", "UIElementCount", "AXArrayCount", "UIElementAttribute", "AXAttributeReading", "AXProcessID"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
       resolve("native/macos/Tests/UIElementCountTests.swift"), "-o", output]);
     const result = await exec(output);
     assert.match(result.stdout, /native count preserves support gate, subset totals, raw arrays and strict AX errors: 48 cases/);

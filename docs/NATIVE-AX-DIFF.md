@@ -1560,3 +1560,19 @@ systemChildrenPreferringVisible。48 组测试覆盖支持门槛、缓存类型�
 
 底层 arrayCount 的 MockProvider/系统线程调度仍待恢复，保留显式边界；未用完整
 属性读取替代计数 API。生产协议、事务与遍历接线及真实应用验收尚未完成。
+
+## 底层系统数组计数（2026-11-07）
+
+完整核对 AXUIElement.arrayCount(for:) 0x1006f6688..<0x1006f6930：优先检查
+TaskLocal provider 并调用其 witness +0x30；没有 provider 才走系统分支。
+系统分支把 CFIndex 输出初始化为 0，调用 AXUIElementGetAttributeValueCount，
+不筛选错误、不重试，保留原始状态及输出数量。与属性读取相同，目标为自身进程且
+当前不在主线程时切换到主队列同步执行，其它情况直接调用。
+
+恢复 AXArrayCount.swift 的系统适配器，复用现有 PID 与线程调度，并提供
+UIElement.systemElementCount 将支持门槛、缓存计数和系统计数连接。
+16 组底层测试验证输出初始化、成功/错误状态与包括负数在内的输出保持；上层原有
+48 组继续验证错误抛出。相关七项测试与 Swift 构建通过。
+
+该方法明确为 system-only：尚未恢复的 TaskLocal provider 与原 PID 失败日志没有
+被假实现替代。没有调用真实应用 AX 计数、模型或改变权限，生产入口仍待接线。

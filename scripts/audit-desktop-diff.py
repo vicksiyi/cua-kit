@@ -968,6 +968,16 @@ element_storage_evidence['systemActionPerforming']={
     'implementation':'native/macos/Sources/CuaHelper/AXActionPerforming.swift',
     'limitations':'Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; concrete parent-chain traversal, protocol integration and MockProvider dispatch remain incomplete; menu preparation and scrollbar composition are restored separately.',
 }
+element_storage_evidence['systemArrayCount']={
+    'entry':'AXUIElement.arrayCount(for:) 0x1006f6688..<0x1006f6930',
+    'provider':'TaskLocal provider branch calls witness +0x30 at 0x1006f6744 before system path; not implemented by system-only adapter',
+    'system':'out-count initialized to zero at 0x1006f6790; AXUIElementGetAttributeValueCount at 0x1006f6820; status and out-count both returned without filtering',
+    'thread':'0x1006f67cc..0x1006f67fc checks current PID, optional target PID and main thread; same-process off-main uses synchronous main queue, other cases direct',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1006f6688,0x1006f6930)]],
+    'implementation':'native/macos/Sources/CuaHelper/AXArrayCount.swift',
+    'limitations':'Explicit system-only adapter; TaskLocal provider selection and original PID failure logging remain pending. No live AX acceptance.',
+}
 element_storage_evidence['elementArrayCount']={
     'entry':'0x1007b06a0..<0x1007b0828',
     'support':'attributeIsKnownUnsupported checked before cached value; known unsupported returns nil',
@@ -976,7 +986,7 @@ element_storage_evidence['elementArrayCount']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x1007b06a0,0x1007b0828),(0x1007af0d0,0x1007af1c4)]],
     'implementation':'native/macos/Sources/CuaHelper/UIElementCount.swift',
-    'limitations':'Concrete cache/count/visible-selection composition restored; lower AX arrayCount provider and main-thread dispatch, original protocol/TaskLocal and production traversal remain pending.',
+    'limitations':'Concrete cache/count/visible-selection composition restored; system array-count adapter and thread dispatch are restored separately; original provider/protocol/TaskLocal and production traversal remain pending.',
 }
 element_storage_evidence['childrenPreferringVisible']={
     'entry':'0x1007a3fd0..<0x1007a409c',
@@ -989,7 +999,7 @@ element_storage_evidence['childrenPreferringVisible']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x1007a3fd0,0x1007a409c),(0x1007a44f4,0x1007a4638),(0x1007a7494,0x1007a74f8),(0x1007b0420,0x1007b0468),(0x1007b035c,0x1007b03d4)]],
     'implementation':'native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift',
-    'limitations':'Cache count and collection composition are restored; lower AX array-count provider remains injected; full protocol/TaskLocal and production traversal remain pending.',
+    'limitations':'Cache count and collection composition are restored; explicit system array-count adapter exists; original TaskLocal provider remains pending; full protocol/TaskLocal and production traversal remain pending.',
 }
 element_storage_evidence['menuActionPreparation']={
     'entry':'UIElementProtocol.perform(action:) at 0x100791a68',

@@ -35,6 +35,18 @@ struct UIElementCountTests {
                 }
             }
         }
+        for status: AXError in [.success, .cannotComplete, .attributeUnsupported, .noValue] {
+            for assigned: Int? in [nil, 0, -7, 23] {
+                var calls = 0
+                let raw = copiedAXArrayCount { output in
+                    precondition(output == 0)
+                    calls += 1
+                    if let assigned { output = assigned }
+                    return status
+                }
+                precondition(calls == 1 && raw.error == status && raw.count == (assigned ?? 0))
+            }
+        }
         precondition(cases == 48)
         print("native count preserves support gate, subset totals, raw arrays and strict AX errors: 48 cases")
     }
