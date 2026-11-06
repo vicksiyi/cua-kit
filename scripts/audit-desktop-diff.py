@@ -693,6 +693,40 @@ element_storage_evidence={
     'interpretation':'UIElement stores an AX reference plus UIElementCache. The shared initializer and cache initializer read TaskLocal context. The element initializer forwards context components or absent-context zeros to the cache construction helper.',
     'limitations':'TaskLocal payload semantics, cache population/invalidations and transaction lifetime are not recovered. This does not prove a process-global or per-PID cache, and an AX reference alone cannot stand in for the complete UIElement.',
 }
+element_protocol=0x1012cd46c
+protocol_header=read_virtual(element_protocol,24)
+if protocol_header.hex()!='43000100e8eefffffc95ecff040000000c00000000000000':
+    raise SystemExit('UIElementProtocol descriptor changed')
+protocol_signature=read_virtual(element_protocol+24,48)
+if protocol_signature.hex()!='80000000a422fdff75231d00800000009822fdff71231d00010000003e23fdffe00dfdff010000003e23fdff5213fdff':
+    raise SystemExit('UIElementProtocol inherited/associated requirements changed')
+protocol_flags=[0,0,3,0x13,0x13,2,0x13,0x13,0x13,0x13,0x11,0x11]
+for index,flag in enumerate(protocol_flags):
+    if struct.unpack('<II',read_virtual(0x1012cd4b4+index*8,8))!=(flag,0):
+        raise SystemExit('UIElementProtocol witness requirement changed')
+for slot,binding in [('0x10149f800','0x1012c9238'),('0x10149f808','libswiftCore/_$sSHMp'),('0x101462198','0x1012cc16c'),('0x101460d50','0x1012cd598')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if binding.lower() not in line.lower(): raise SystemExit('UIElementProtocol constraint binding changed')
+if c_string(relative_address(0x1012cc16c+8))!='AXUIElement':
+    raise SystemExit('UIElementProtocol ID type changed')
+element_storage_evidence['protocolContract']={
+    'descriptor':hex(element_protocol),'headerBytes':protocol_header.hex(),
+    'signatureRequirementBytes':protocol_signature.hex(),
+    'signatureRequirementCount':4,'witnessRequirementCount':12,
+    'inherits':['ComputerUseCore.AccessibilityNode','Swift.Hashable'],
+    'sameTypes':{'ID':'AXUIElement','Role':'UIElementRole'},
+    'associatedTypeRefs':{'ID':'0x10129e284','Role':'0x10129e802'},
+    'witnessRequirements':[{'descriptor':hex(0x1012cd4b4+i*8),'flags':hex(flag),'defaultImplementation':None} for i,flag in enumerate(protocol_flags)],
+    'elementWitnessTable':'0x10149ed40',
+    'confirmedElementWitnesses':[
+        {'slot':'0x10149ed58','target':'0x10078fbf4','meaning':'static role returns nil for generic UIElement'},
+        {'slot':'0x10149ed60','target':'0x10078fbfc','meaning':'axElement getter'},
+        {'slot':'0x10149ed68','target':'0x10078fc04','meaning':'cache getter'},
+        {'slot':'0x10149ed70','target':'0x10078fc50','meaning':'element initializer forwards to 0x10072187c'},
+    ],
+    'interpretation':'Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.',
+    'limitations':'Six remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))

@@ -6991,3 +6991,7 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-07：事务角色身份类型
 
 确认完整事务的协议根元素、缓存与角色计数字段；恢复 CFString 支撑的 UIElementRole，并与 FrequencyTable 组合验证内容相等角色合并及值复制。原生测试、helper 构建通过。协议根元素及角色发现尚待恢复，未使用简化缓存 TaskLocal 替代完整事务。
+
+### 2026-11-07：UIElementProtocol 约束与身份边界
+
+核实协议继承 AccessibilityNode/Hashable，ID 为 AXUIElement、Role 为 UIElementRole；确认 12 个 witness 要求中的继承项和四个直接实现入口。新增协议 descriptor/签名/witness 审计。剩余六个直接要求及父协议仍待恢复，生产展示 UUID 不能代替原生协议身份。本次为接线依据，无新增 UI 功能验收。
