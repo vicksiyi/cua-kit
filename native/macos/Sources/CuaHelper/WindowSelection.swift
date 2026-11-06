@@ -1,5 +1,6 @@
 import Foundation
 import ApplicationServices
+import os
 
 struct CaptureWindowCandidate {
     let id: Int
@@ -28,12 +29,16 @@ func selectCaptureWindow(_ candidates: [CaptureWindowCandidate], requestedId: In
     throw fail("AMBIGUOUS_TARGET", "Focused window cannot be uniquely matched to a capturable window.")
 }
 func axElementFrame(_ element: AXUIElement) -> CGRect? {
-    guard let rawPoint = attribute(element,kAXPositionAttribute),
-          let rawSize = attribute(element,kAXSizeAttribute),
-          let point = decodedAXTypedAttribute(rawPoint, as: CGPoint.self),
-          let size = decodedAXTypedAttribute(rawSize, as: CGSize.self),
-          point.x.isFinite, point.y.isFinite, size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0 else { return nil }
-    return CGRect(origin:point,size:size)
+    // Use recovered cached/typed AXFrame -> position -> size reads. Capture and
+    // input consumers still require finite positive geometry at this boundary;
+    // this validation is demo behavior, not part of the original frame getter.
+    let item = UIElement(systemElement: element, transaction: nil)
+    guard let frame = item.systemFrameValue(reportError: { error in
+        Logger(subsystem: "core.cua", category: "Accessibility").error("Frame attribute read failed: \(String(describing: error))")
+    }), frame.origin.x.isFinite, frame.origin.y.isFinite,
+        frame.size.width.isFinite, frame.size.height.isFinite,
+        frame.size.width > 0, frame.size.height > 0 else { return nil }
+    return frame
 }
 struct FocusedCaptureWindow {
     let element: AXUIElement

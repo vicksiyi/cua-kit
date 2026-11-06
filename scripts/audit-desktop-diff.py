@@ -1138,6 +1138,16 @@ element_storage_evidence['positionSize']={
     'implementation':['native/macos/Sources/CuaHelper/AXPointDecoding.swift','native/macos/Sources/CuaHelper/AXSizeDecoding.swift','native/macos/Sources/CuaHelper/UIElementGeometry.swift'],
     'limitations':'Provider remains injected; native wrapper types and production observation integration remain incomplete.',
 }
+element_storage_evidence['singleAttributeSystemIntegration']={
+    'entry':'AXUIElementRef.value(for:) 0x1006f5f88..<0x1006f629c',
+    'systemWrapping':'0x1006f61f8..<0x1006f6268 preserves status, wraps non-nil raw object with both descriptors absent; nil output remains nil independently of status',
+    'descriptorConstant':'0x101159da0: 00000000000000000100000000000000; system present-value descriptor nil representation',
+    'production':'WindowSelection.axElementFrame now constructs the recovered system UIElement cache and calls systemFrameValue, preferring AXFrame before position/size.',
+    'consumerBoundary':'Existing finite/positive geometry check retained for capture/input consumers; not claimed as original frame-getter behavior.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1006f5f88,0x1006f629c)]],
+    'implementation':['native/macos/Sources/CuaHelper/AXSingleAttributeReading.swift','native/macos/Sources/CuaHelper/WindowSelection.swift'],
+    'limitations':'System path integrated; original TaskLocal MockProvider and transaction acquisition absent. Native live acceptance remains unverified because required macOS permissions are not granted.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

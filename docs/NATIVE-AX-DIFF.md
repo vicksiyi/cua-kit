@@ -2217,3 +2217,22 @@ geometry types, the cached/fresh/status matrix, unsupported attributes, and comp
 frame fallback including one logged frame error and position-dependent size reads.
 This replaces the previous position/size dependency gap; the raw provider,
 WindowUIElement wrapper and production observation pipeline remain incomplete.
+
+
+### Single-attribute system provider and production frame integration
+
+The non-MockProvider branch of `AXUIElementRef.value(for:)` preserves AXError and
+output presence independently. Static inspection of 0x1006f61f8..<0x1006f6268
+confirms non-nil system objects become AXPartialValue with both descriptors nil.
+`AXSingleAttributeReading` now supplies that result wrapper and the actual system
+adapter using the existing main-thread/PID-aware raw reader.
+
+Production `WindowSelection.axElementFrame` now constructs the restored system
+UIElement cache and uses `systemFrameValue`, so observation, indexed clicks,
+scroll targeting and focused capture window matching prefer AXFrame before the
+position/size fallback. Existing finite/positive capture/input validation stays
+at the consumer boundary; it is not attributed to the original frame getter.
+Tests cover status/output independence, raw-object identity, absent descriptors,
+and typed frame composition including non-success statuses with present output.
+Native build passes. Real app behavior is still unverified pending macOS grants;
+MockProvider routing and TaskLocal transaction ownership remain incomplete.

@@ -2,8 +2,8 @@ import Foundation
 import ApplicationServices
 
 // Direct system-read branch recovered from the pinned native value(for:).
-// PID lookup here uses the OS directly; original MockProvider and
-// AXPartialValue truncation metadata are not reconstructed by this adapter.
+// PID lookup uses the OS directly; original MockProvider routing is pending.
+// AXPartialValue result wrapping lives in AXSingleAttributeReading.
 func onAXAttributeReadThread<Value>(targetPID: pid_t?, read: () throws -> Value) rethrows -> Value {
     if targetPID == getpid() && !Thread.isMainThread {
         return try DispatchQueue.main.sync(execute: read)
