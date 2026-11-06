@@ -176,6 +176,31 @@ struct ScrollBarPageButtonTests {
         precondition(bar.pageButton(.decrement, transaction: barTransaction,
             readChildren: { fatalError("prefetched children must not refetch") },
             reportError: { _ in fatalError() }) == nil)
+        let decodedBar = try decodeAXScrollBar(barAX, throwingOnFailure: true, transaction: barTransaction)!
+        precondition(decodedBar.axElement === barAX)
+        precondition(decodedBar.cache.attributes[childrenKey]!.value.value === childrenRaw.value.value)
+        // The original unwrappedElement helper has no role check, even when the
+        // concrete type has static role metadata. Preserve that distinction.
+        let buttonAsBar = try decodeAXScrollBar(valid.axElement, throwingOnFailure: true, transaction: barTransaction)!
+        precondition(buttonAsBar.axElement === valid.axElement)
+        let sameAX: AXUIElement? = try unwrapAXElement(valid.axElement, throwingOnFailure: true) { _ in
+            fatalError("direct cast must skip initializer")
+        }
+        precondition(sameAX === valid.axElement)
+        for strict in [false, true] {
+            do {
+                let result: ScrollBarUIElement? = try unwrapAXElement("bad" as NSString, throwingOnFailure: strict) { _ in fatalError() }
+                precondition(!strict && result == nil)
+            } catch UIElementError.failedToUnwrapAttributeValue(let target) {
+                precondition(strict && target == AXUIElement.self)
+            }
+            do {
+                let result = try decodeAXScrollBar(NSArray(), throwingOnFailure: strict, transaction: barTransaction)
+                precondition(!strict && result == nil)
+            } catch UIElementError.unexpectedAttributeValueType(let expected, let actual) {
+                precondition(strict && expected == [Any].self && actual == ScrollBarUIElement.self)
+            }
+        }
         print("native page-button discovery preserves role, subrole, first match and cached identity")
     }
 }

@@ -1468,3 +1468,23 @@ getter 0x100726a1c 返回 optional role。ScrollBar 初始化入口与其它类�
 
 完整协议、隐式事务、解码阶段角色约束、其它滚动条属性及生产入口仍待恢复。
 本次没有真实应用操作或模型请求，不能据此判定用户滚动体验已经完成。
+
+## 元素构造解码与角色假设纠正（2026-11-07）
+
+完整检查 unwrappedElementThrowing 0x1006e9e50..<0x1006ea098：验证原始 CF 类型为
+AXUIElement，然后在 0x1006e9f48 尝试直接转换到目标类型；不成功则通过 witness +0x30
+调用目标初始化。没有 AXRole 查询或静态 role 比较。非 AX 输入严格模式错误携带
+AXUIElement.self，而非目标 wrapper 类型；宽松模式 nil。
+
+因此纠正上一节将“解码阶段角色约束”列为待实现的推断：该路径没有此约束，不能
+因为 ScrollBarUIElement.role == .scrollBar 就添加角色过滤。本轮移除了机器审计中
+这个错误待办，现有授权和应用策略没有改变。
+
+恢复 unwrapAXElement 的类型检查/直接转换/初始化顺序，并用于数组元素构造；新增
+具体 ScrollBar 外层解码器，复用 marker、range、AXValue、普通桥接及数组目标拒绝。
+测试确认直接 AX 转换不初始化、错误携带正确 metatype、数组目标类型错误，以及
+带 AXButton 缓存的真实 AX 引用仍能初始化成 ScrollBar wrapper（原路径行为）。
+测试与 Swift 构建通过；未调用模型或 UI。
+
+具体属性读取与原协议/TaskLocal 生产接线仍待完成。通用构造用显式 initializer 依赖，
+并未通过新增不完整 UIElementProtocol 来冒充原协议。

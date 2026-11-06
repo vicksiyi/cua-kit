@@ -41,7 +41,7 @@ func decodeCFUIElementArray(
     let decoded = decodeAXArrayElements(values) { value -> UIElement? in
         let kind = CFGetTypeID(value)
         if kind == AXUIElementGetTypeID() {
-            return initialize(value as! AXUIElement)
+            return try? unwrapAXElement(value, throwingOnFailure: false, initialize: initialize)
         }
         if kind == AXTextMarkerGetTypeID() {
             return try? decodeAXTextMarker(value as! AXTextMarker, throwingOnFailure: false, as: UIElement.self)

@@ -1033,7 +1033,18 @@ element_storage_evidence['scrollBarStorage']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x10071e390,0x10071e46c),(0x100726990,0x100726a70)]],
     'implementation':'native/macos/Sources/CuaHelper/ScrollBarUIElement.swift',
-    'limitations':'Concrete storage, explicit-transaction system initialization and page-button getter composition restored. Original protocol conformances, implicit TaskLocal, decoder role validation, other scrollbar properties and production dispatch remain pending.',
+    'limitations':'Concrete storage, explicit-transaction system initialization and page-button getter composition restored. Original protocol conformances, implicit TaskLocal, other scrollbar properties and production dispatch remain pending.',
+}
+element_storage_evidence['elementConstructionDecoder']={
+    'entry':'0x1006e9e50..<0x1006ea098',
+    'typeCheck':'0x1006e9ef0..0x1006e9f00 CFGetTypeID vs AXUIElementGetTypeID',
+    'directCast':'0x1006e9f48 direct requested-type cast; success skips initializer',
+    'initialize':'0x1006ea030..0x1006ea040 initializer witness +0x30; no role read/check',
+    'failure':'non-AX false -> nil; true -> failedToUnwrapAttributeValue(AXUIElement.self)',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1006e9e50,0x1006ea098),(0x100712f58,0x1007134e8)]],
+    'implementation':['native/macos/Sources/CuaHelper/AXElementConstruction.swift','native/macos/Sources/CuaHelper/AXScrollBarDecoding.swift'],
+    'limitations':'Initializer witness is injected rather than claiming complete original protocol conformance; concrete ScrollBar dispatch restored, implicit TaskLocal and production property wiring pending.',
 }
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
