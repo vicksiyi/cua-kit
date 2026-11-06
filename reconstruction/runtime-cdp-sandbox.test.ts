@@ -1,4 +1,4 @@
-import { discoverLiveEndpointFiles, createBrowserServiceConnector } from "@core/native-host/browserConnector";
+import { discoverLiveEndpointFiles, createBrowserServiceConnector, parseEndpointFiles } from "@core/native-host/browserConnector";
 import { prepareIndependentBrowserRuntime } from "../packages/agent-loop/src/independent-runtime";
 import { randomUUID } from "node:crypto";
 import { loadEnvFile } from "node:process";
@@ -73,7 +73,7 @@ test("independent sandboxed supervisor executes real browser input, click, read 
     frameOrigin = `http://127.0.0.1:${frameAddress.port}`;
     let browserEnvironment: Record<string,string>;
     if (dailyDirectory) {
-      const files=await discoverLiveEndpointFiles(dailyDirectory);
+      const files=process.env.CORE_CUA_ENDPOINT_FILES ? parseEndpointFiles(process.env.CORE_CUA_ENDPOINT_FILES) : await discoverLiveEndpointFiles(dailyDirectory);
       const connector=await createBrowserServiceConnector(files);
       browserEnvironment={CORE_CUA_ENDPOINT_FILES:JSON.stringify(files),...connector.environment};
     } else {
@@ -133,7 +133,7 @@ test("independent sandboxed supervisor executes real browser input, click, read 
       const failures = result.messages.filter(m => m.role === "tool" && m.result.isError);
       assert.deepEqual(failures, []);
       console.error("INDEPENDENT DEEPSEEK ANSWER", result.answer);
-      console.error("INDEPENDENT DEEPSEEK DECISIONS", result.messages.filter(m => m.role === "assistant").length - 3);
+      console.error("INDEPENDENT DEEPSEEK DECISIONS", result.messages.filter(m => m.role === "assistant").length - 1 - initialMessages.filter(m => m.role === "assistant").length);
     } else {
       await execute('await cua.getState();');
       await execute(`var tab = await cua.createBrowserTab("1", ${JSON.stringify(origin)}, {sessionName:"Independent runtime acceptance"});`);

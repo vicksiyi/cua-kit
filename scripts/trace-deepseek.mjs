@@ -9,6 +9,8 @@ import {join} from 'node:path';
 import {discoverLiveEndpointFiles,createBrowserServiceConnector,parseEndpointFiles} from '../packages/native-host/dist/browser-connector.mjs';
 import {createWireObserver} from './lib/browser-wire-trace.mjs';
 const project=fileURLToPath(new URL('../',import.meta.url));
+const ownedFixture=process.argv[2]==='--owned-fixture';
+if(ownedFixture && process.argv.length!==3) throw Error('--owned-fixture does not accept a prompt or additional flags.');
 if(!process.argv.slice(2).length) throw Error('Usage: node scripts/trace-deepseek.mjs "browser task"');
 try{loadEnvFile(join(project,'.env'));}catch(e){if(e.code!=='ENOENT')throw e;}
 if(process.argv.slice(2).some(arg=>['--cdp-browser','--managed-browser','--computer','--cdp-endpoint'].includes(arg)))
@@ -51,8 +53,14 @@ try{
   await fs.chmod(socketPath,0o600);
   await fs.writeFile(proxyDescriptor,JSON.stringify({...endpoint,socketPath}),{mode:0o600});
   console.error(`Local wire metadata: ${join(directory,'wire.jsonl')}`);
-  const child=spawn(process.execPath,[join(project,'scripts/run-deepseek.mjs'),...process.argv.slice(2)],{
-    cwd:project,env:{...process.env,CORE_CUA_ENDPOINT_FILES:JSON.stringify([proxyDescriptor])},stdio:'inherit'});
+  const args=ownedFixture
+    ? ['--import','tsx','--test',join(project,'reconstruction/runtime-cdp-sandbox.test.ts')]
+    : [join(project,'scripts/run-deepseek.mjs'),...process.argv.slice(2)];
+  const child=spawn(process.execPath,args,{
+    cwd:project,env:{...process.env,...ownedFixture?{
+      CUA_TEST_MACOS_SANDBOX:'1',
+      CUA_TEST_DAILY_CHROME_ENDPOINT_DIRECTORY:process.env.CORE_CUA_HOST_DIRECTORY??join(process.env.HOME,'.core-cua/endpoints'),
+    }:{},CORE_CUA_ENDPOINT_FILES:JSON.stringify([proxyDescriptor])},stdio:'inherit'});
   const interrupt=()=>child.kill('SIGINT'),terminate=()=>child.kill('SIGTERM');
   process.on('SIGINT',interrupt);process.on('SIGTERM',terminate);
   try{process.exitCode=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',(code)=>resolve(code??1));});}

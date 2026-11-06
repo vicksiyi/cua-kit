@@ -262,3 +262,14 @@ Build the project first using the normal demo setup. The diagnostic launcher sel
 The printed `artifacts/debug/wire-*/wire.jsonl` contains time, connection number, numeric request ID, RPC/CDP method, tab IDs, error code and a fixed error category (detached-during-command, debugger-unattached, method-not-found or other). Transport records additionally identify connection/end/error/close events and whether close followed a socket error. It excludes authentication messages, tokens, URLs, expressions, response bodies and error text. Correlate numeric IDs and timestamps with the existing private AgentLoop log. Categories are diagnostic text matches, not authority to retry or evidence of the initiating detach cause. The current extension forwards the debugger source in onCDPDetach, not Chrome's detach reason; this trace cannot recover a reason absent from that wire message. Protocol errors are not necessarily task errors: for example, an unsupported cached-expression RPC can trigger the documented ordinary-CDP fallback.
 
 Logs stay in the ignored `artifacts/` directory. Each trace directory is mode 0700 and its metadata file mode 0600. A short private temporary socket directory holds the capability descriptor during the run and is removed on normal completion or handled SIGINT/SIGTERM. Abrupt process termination such as SIGKILL can leave temporary files; do not publish them. The proxy can affect timing, so a successful traced run alone does not disprove an intermittent failure without the proxy.
+
+To trace the owned-page acceptance harness through the same proxy (build first):
+
+```sh
+# Fixed API sequence, including cross-origin iframe and JS-error recovery:
+node scripts/trace-deepseek.mjs --owned-fixture
+# Real model chooses actions on the owned page; requires configured model credentials:
+CUA_LIVE_DEEPSEEK_TEST=1 node scripts/trace-deepseek.mjs --owned-fixture
+```
+
+The fixture approves only its two temporary local origins, never public sites. The live-model branch checks form submission, observed result, screenshot and cleanup; the fixed branch additionally checks iframe and rejected-JS recovery. Existing endpoint selection and metadata privacy rules apply. `--owned-fixture` is a diagnostic/test mode, not an alternative implementation of the CUA API.
