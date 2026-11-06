@@ -48,8 +48,16 @@ import MCP
             ("fixture.session", #"{"action":"accept"}"#),
             ("fixture.saved", #"{"action":"accept","_meta":{"persist":"always"}}"#)
         ] {
-            if case let .accepted(persist) = try interpret(text) {
-                try await store.recordApproval(bundleIdentifier: id, persist: persist)
+            let response = try JSONDecoder().decode(CreateElicitation.Result.self, from: Data(text.utf8))
+            do {
+                try await NativeAppApprovalResponse.record(response, bundleIdentifier: id, store: store)
+                precondition(id == "fixture.session" || id == "fixture.saved")
+            } catch let error as NativeMCPToolError {
+                switch id {
+                case "fixture.declined": equal(error, .appApprovalDenied(bundleIdentifier: id))
+                case "fixture.cancelled": equal(error, .appApprovalCanceled(bundleIdentifier: id))
+                default: throw error
+                }
             }
         }
         let snapshot = await store.snapshot()

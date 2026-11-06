@@ -15,7 +15,7 @@ test("native approval store preserves load, refresh and persistence semantics", 
   try {
     const executable = join(directory, "test");
     await exec("xcrun", ["swiftc", "-o", executable,
-      ...["NativeAppApprovalStore"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),
+      ...["NativeMCPToolError", "NativeAppApprovalStore"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),
       join(root, "native/macos/Tests/NativeAppApprovalStoreTests.swift")]);
     const { stdout } = await exec(executable);
     assert.match(stdout, /native approval store load, refresh, session and persistence failure semantics passed/);

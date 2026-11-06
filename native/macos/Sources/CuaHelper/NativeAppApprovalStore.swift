@@ -9,8 +9,6 @@ struct NativePersistentAppApprovals: Codable, Equatable, Sendable {
 /// Storage core recovered from the pinned AppApprovalStore actor. This is not
 /// wired into the demo's approval UI and does not itself authorize an operation.
 actor NativeAppApprovalStore {
-    /// Host error representation; vendor localized error text is not yet restored.
-    struct MissingStorageURL: Error { let bundleIdentifier: String }
     struct Snapshot: Sendable {
         let session: Set<String>
         let persistent: Set<String>
@@ -34,7 +32,7 @@ actor NativeAppApprovalStore {
     func recordApproval(bundleIdentifier: String, persist: Bool) throws {
         sessionApprovedBundleIdentifiers.insert(bundleIdentifier)
         guard persist else { return }
-        guard let storageURL else { throw MissingStorageURL(bundleIdentifier: bundleIdentifier) }
+        guard let storageURL else { throw NativeMCPToolError.appApprovalPersistenceUnavailable(bundleIdentifier: bundleIdentifier) }
         persistentApprovals.approvedBundleIdentifiers.insert(bundleIdentifier)
         try FileManager.default.createDirectory(at: storageURL.deletingLastPathComponent(),
                                                  withIntermediateDirectories: true)

@@ -20,4 +20,19 @@ enum NativeAppApprovalResponse {
         case .cancel: return .cancelled
         }
     }
+
+    /// Native caller: decline/cancel throw before touching the store; acceptance
+    /// forwards persistence unchanged and propagates storage failures.
+    static func record(_ response: CreateElicitation.Result, bundleIdentifier: String,
+                       store: NativeAppApprovalStore) async throws {
+        switch interpret(response) {
+        case let .accepted(persist):
+            try await store.recordApproval(bundleIdentifier: bundleIdentifier, persist: persist)
+        case .declined:
+            throw NativeMCPToolError.appApprovalDenied(bundleIdentifier: bundleIdentifier)
+        case .cancelled:
+            throw NativeMCPToolError.appApprovalCanceled(bundleIdentifier: bundleIdentifier)
+        }
+    }
+
 }

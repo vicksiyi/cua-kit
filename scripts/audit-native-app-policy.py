@@ -43,6 +43,9 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e6ea4, 'MCPToolError', ['missingArgument', 'invalidArgument', 'unknownTool',
+         'appBlockedByPolicy', 'appNotAllowed', 'appApprovalDenied',
+         'appApprovalCanceled', 'appApprovalPersistenceUnavailable']),
         (0x1012e1274, 'Action', ['accept', 'decline', 'cancel']),
         (0x1012e4520, 'AppApprovalStore',
          ['$defaultActor', 'storageURL', 'sessionApprovedBundleIdentifiers',

@@ -995,3 +995,24 @@ pins the resulting dependency graph. The SDK requires a Swift 6.1-compatible
 toolchain (validated here with Swift 6.1.2).
 The existing owned-peer MCP → Rust → Swift policy integration also passes with
 the new linked dependency, including approval decline and denied/forbidden paths.
+
+### Native MCP approval error identity
+
+The pinned binary's metadata at `0x1014f5ab8` resolves (Mach-O chained
+pointer low 32 bits plus image base) to descriptor `0x1012e6ea4`, named
+`MCPToolError`. Field records at `0x1013426bc` enumerate eight cases, now
+checked by the static audit. The first three carry `String`; the remaining
+five carry `bundleIdentifier: String`. In particular indices 5, 6 and 7 are
+`appApprovalDenied`, `appApprovalCanceled` and
+`appApprovalPersistenceUnavailable`. The response caller writes its error
+case at `0x100e5347c`; the missing-storage branch writes index 7 at
+`0x100db948c`. Both allocate the same metadata type.
+
+`NativeMCPToolError` restores this case/payload identity. The store no longer
+throws an invented `MissingStorageURL` wrapper. Response recording now throws
+the distinct denied/canceled errors without modifying approval state; accept
+forwards the persistence flag and propagates storage failures. Tests check
+these branches and the session mutation retained after persistence failure.
+Localized error descriptions, wire error conversion and live host approval UI
+wiring are not established by this metadata evidence and remain unimplemented.
+This is the native MCP server chain, not proof that the JS host uses its store.

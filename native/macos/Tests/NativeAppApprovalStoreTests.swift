@@ -76,8 +76,8 @@ import Foundation
         do {
             try await missing.recordApproval(bundleIdentifier: "fixture.missing", persist: true)
             fatalError("Missing storage must throw")
-        } catch let error as NativeAppApprovalStore.MissingStorageURL {
-            precondition(error.bundleIdentifier == "fixture.missing")
+        } catch let error as NativeMCPToolError {
+            precondition(error == .appApprovalPersistenceUnavailable(bundleIdentifier: "fixture.missing"))
         }
         let missingState = await missing.snapshot()
         precondition(missingState.session == ["fixture.missing"] && missingState.persistent.isEmpty)
@@ -88,7 +88,7 @@ import Foundation
         do {
             try await failing.recordApproval(bundleIdentifier: "fixture.failed", persist: true)
             fatalError("Directory creation must fail")
-        } catch { precondition(!(error is NativeAppApprovalStore.MissingStorageURL)) }
+        } catch { precondition(!(error is NativeMCPToolError)) }
         let failedState = await failing.snapshot()
         precondition(failedState.session == ["fixture.failed"] && failedState.persistent == ["fixture.failed"])
         precondition(failedState.modificationDate == nil)

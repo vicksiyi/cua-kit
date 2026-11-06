@@ -22,7 +22,7 @@ test("native approval response uses upstream MCP SDK and restored store", {
     const output = join(directory, "actions");
     await exec("xcrun", ["swiftc", "-I", join(build, "Modules"),
       "-Xcc", `-fmodule-map-file=${join(root, ".build/checkouts/swift-system/Sources/CSystem/include/module.modulemap")}`,
-      ...["NativeAppApprovalResponse", "NativeAppApprovalStore"].map(name => join(root, `Sources/CuaHelper/${name}.swift`)),
+      ...["NativeMCPToolError", "NativeAppApprovalResponse", "NativeAppApprovalStore"].map(name => join(root, `Sources/CuaHelper/${name}.swift`)),
       join(root, "Tests/NativeAppApprovalResponseTests.swift"), ...objects, "-o", output], { maxBuffer: 1024 * 1024 });
     const result = await exec(output);
     assert.match(result.stdout, /native MCP SDK approval response and storage composition passed/);

@@ -3,6 +3,23 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "MCPToolError",
+      "descriptor": "0x1012e6ea4",
+      "fieldDescriptor": "0x1013426bc",
+      "kind": 3,
+      "fields": [
+        "missingArgument",
+        "invalidArgument",
+        "unknownTool",
+        "appBlockedByPolicy",
+        "appNotAllowed",
+        "appApprovalDenied",
+        "appApprovalCanceled",
+        "appApprovalPersistenceUnavailable"
+      ],
+      "fieldMetadataSha256": "90dac58a99262d2f61ca0ebe5be36cb01698541aa315a3ef06d8ccb6575bdae4"
+    },
+    {
       "name": "Action",
       "descriptor": "0x1012e1274",
       "fieldDescriptor": "0x10133a8f4",
