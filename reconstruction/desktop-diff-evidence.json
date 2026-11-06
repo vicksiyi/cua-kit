@@ -1790,10 +1790,25 @@
           "slot": "0x10149ed90",
           "target": "0x100792600",
           "meaning": "action-description getter specialization maps the composed action list"
+        },
+        {
+          "slot": "0x10149ed80",
+          "target": "0x1007aff74",
+          "meaning": "isInsideWebView getter specialization -> 0x1007aaf9c; generic getter 0x1007ab2c4"
+        },
+        {
+          "slot": "0x10149ed98",
+          "target": "0x1007b8a04",
+          "meaning": "setValue(_:forAttribute:) throws; witness +0x58 -> 0x1007ad94c"
+        },
+        {
+          "slot": "0x10149eda0",
+          "target": "0x100792670",
+          "meaning": "perform(action:) throws; witness +0x60 -> 0x1007343b8"
         }
       ],
       "interpretation": "Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.",
-      "limitations": "Three remaining direct witness semantics and inherited AccessibilityNode contract still need recovery; complete action descriptor mapping is not implemented."
+      "limitations": "All ten direct witness meanings identified; inherited AccessibilityNode contract, complete conformer implementations, provider/TaskLocal and production integration remain incomplete. No partial same-name protocol is substituted."
     },
     "attributeSupport": {
       "symbol": "UIElementProtocol.attributeIsKnownUnsupported",
@@ -1942,6 +1957,45 @@
       "fallbackInitializerSha256": "424748024b47bccaa4fbcbdfacc2924f604975642216b4a5981e130052ae24ca",
       "interpretation": "Read cache once; decode cached AXRole as String with throwing disabled. Non-nil string bridges into UIElementRole; missing/failed decoding uses AXUnknown. Empty and custom strings are not replaced. No uncached read or static role witness lookup.",
       "limitations": "Concrete UIElement getter restored; full role catalog, presentation mapping and production tree integration remain pending."
+    },
+    "insideWebViewContract": {
+      "witness": "0x10149ed80 -> 0x1007aff74 -> 0x1007aaf9c",
+      "genericGetter": "0x1007ab2c4",
+      "ancestors": "parentChain(maxDepth:300, includingSelf:true); first AXWebArea role returns true",
+      "fallback": "when no web-area ancestor matches, original element bundleIdentifier must have prefix com.openai.atlas; nil returns false",
+      "stringPredicate": {
+        "stub": "0x101150b34",
+        "got": "0x101466488",
+        "binding": "libswiftCore/_$sSS9hasPrefixySbSSF"
+      },
+      "blocks": [
+        {
+          "start": "0x1007aff74",
+          "endExclusive": "0x1007aff80",
+          "machineCodeSha256": "9a8dc276e68d2e016645830a5e786fe7bcb65bc7c5cead4da0139a75b7cf55aa"
+        },
+        {
+          "start": "0x1007aaf9c",
+          "endExclusive": "0x1007ab2c4",
+          "machineCodeSha256": "7939ac6381b06647ca737093078a887bc28f8da431186203dbbe392cf200a1c6"
+        },
+        {
+          "start": "0x1007ab2c4",
+          "endExclusive": "0x1007ab548",
+          "machineCodeSha256": "b3c4bc35f98ca35594867a6645891d808aa635667bd5e30455083e32e4389ff4"
+        },
+        {
+          "start": "0x1007b8a04",
+          "endExclusive": "0x1007b8a18",
+          "machineCodeSha256": "3a2ef5d976666c0dd41733031ee76c605c062316173f88c232041219f90d763a"
+        },
+        {
+          "start": "0x100792670",
+          "endExclusive": "0x10079268c",
+          "machineCodeSha256": "c94c1cbdcaad87dcc6a84d04f755e0e68ca911ef30ff7c81f3838c4f8245a90c"
+        }
+      ],
+      "limitations": "Static contract evidence only; concrete getter and inherited AccessibilityNode protocol remain pending. Prefix semantics are not an app-policy allowlist or permission grant."
     },
     "actionWitnesses": {
       "actions": "0x100790b88",

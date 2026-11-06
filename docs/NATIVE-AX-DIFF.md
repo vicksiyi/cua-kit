@@ -1620,3 +1620,33 @@ AXParent 时结束，全程不触发 raw provider；另验证错误类型的未�
 
 完整协议/provider 与生产动作列表接线仍待完成，未把日志回调当作原 os.Logger 已复原。
 没有模型或真实 UI 操作。
+
+## 十个直接协议要求确认（2026-11-07）
+
+继续追踪具体 UIElement witness table，补齐此前尚未命名的三个直接要求。
+协议共有两个继承 witness 和十个直接要求；当前直接要求映射如下：
+
+| table slot | 直接要求 | concrete witness |
+| --- | --- | --- |
+| 0x10149ed58 | static role | 0x10078fbf4 |
+| 0x10149ed60 | axElement | 0x10078fbfc |
+| 0x10149ed68 | cache | 0x10078fc04 |
+| 0x10149ed70 | init(element:) | 0x10078fc50 |
+| 0x10149ed78 | subrole | 0x1007aff6c |
+| 0x10149ed80 | isInsideWebView | 0x1007aff74 |
+| 0x10149ed88 | actions | 0x1007925f4 |
+| 0x10149ed90 | actionDescriptions | 0x100792600 |
+| 0x10149ed98 | setValue(_:forAttribute:) throws | 0x1007b8a04 |
+| 0x10149eda0 | perform(action:) throws | 0x100792670 |
+
+isInsideWebView 的 specialized getter 0x1007aaf9c 与公开 getter 0x1007ab2c4
+一致：先遍历包含自身、最大深度 300 的父链，找到 AXWebArea 即返回 true；未找到
+才查询原始元素的 bundleIdentifier。这里不是等于 com.openai.atlas，而是 hasPrefix。
+已从调用 stub 0x101150b34 追至 GOT 0x101466488，绑定
+libswiftCore/_$sSS9hasPrefixySbSSF，避免仅凭字符串常量猜测判定方式。
+nil bundleIdentifier 返回 false。此分类不是应用白名单或授权策略。
+
+本轮更新机器审计以检查三个 witness 绑定、上述字符串函数绑定和代码区间哈希。
+十个直接要求已能命名，不再将“还有三个未知直接要求”当作后续阻碍；真正尚未完成的
+是继承 AccessibilityNode 的完整约束/要求、各 conformer、provider/TaskLocal 与生产
+入口接线。此轮是静态协议取证，没有新增不完整同名协议，也没有运行真实 UI 或模型。

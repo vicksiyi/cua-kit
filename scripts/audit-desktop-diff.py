@@ -837,6 +837,29 @@ element_storage_evidence['protocolContract']['confirmedElementWitnesses'].extend
     {'slot':'0x10149ed90','target':'0x100792600','meaning':'action-description getter specialization maps the composed action list'},
 ])
 element_storage_evidence['protocolContract']['limitations']='Three remaining direct witness semantics and inherited AccessibilityNode contract still need recovery; complete action descriptor mapping is not implemented.'
+for slot,target,meaning in [
+    ('0x10149ed80','0x1007aff74','isInsideWebView getter specialization -> 0x1007aaf9c; generic getter 0x1007ab2c4'),
+    ('0x10149ed98','0x1007b8a04','setValue(_:forAttribute:) throws; witness +0x58 -> 0x1007ad94c'),
+    ('0x10149eda0','0x100792670','perform(action:) throws; witness +0x60 -> 0x1007343b8'),
+]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if target not in line.lower(): raise SystemExit('UIElement remaining direct witness changed')
+    element_storage_evidence['protocolContract']['confirmedElementWitnesses'].append({
+        'slot':slot,'target':target,'meaning':meaning})
+element_storage_evidence['protocolContract']['limitations']='All ten direct witness meanings identified; inherited AccessibilityNode contract, complete conformer implementations, provider/TaskLocal and production integration remain incomplete. No partial same-name protocol is substituted.'
+line=next((line for line in fixups.splitlines() if '0x101466488' in line.lower()),'')
+if 'libswiftCore/_$sSS9hasPrefixySbSSF' not in line:
+    raise SystemExit('Web-view bundle identifier predicate changed')
+element_storage_evidence['insideWebViewContract']={
+    'witness':'0x10149ed80 -> 0x1007aff74 -> 0x1007aaf9c',
+    'genericGetter':'0x1007ab2c4',
+    'ancestors':'parentChain(maxDepth:300, includingSelf:true); first AXWebArea role returns true',
+    'fallback':'when no web-area ancestor matches, original element bundleIdentifier must have prefix com.openai.atlas; nil returns false',
+    'stringPredicate':{'stub':'0x101150b34','got':'0x101466488','binding':'libswiftCore/_$sSS9hasPrefixySbSSF'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007aff74,0x1007aff80),(0x1007aaf9c,0x1007ab2c4),(0x1007ab2c4,0x1007ab548),(0x1007b8a04,0x1007b8a18),(0x100792670,0x10079268c)]],
+    'limitations':'Static contract evidence only; concrete getter and inherited AccessibilityNode protocol remain pending. Prefix semantics are not an app-policy allowlist or permission grant.',
+}
 element_storage_evidence['actionWitnesses']={
     'actions':'0x100790b88','nativeActionsCall':'0x100790bf4 -> 0x1006f93a0',
     'supplementalActionsCall':'0x100790d70 -> 0x100793f94',
