@@ -121,6 +121,18 @@ for expected in ['10026c048:', 'resolved_request', '10026c410:', '10026c49c:',
     assert expected in dispatch, expected
 vtable = struct.unpack('<QQQQQ',read(0x100cfb970,40))
 assert vtable[3:] == (0x10022bb10,0x10022bb84)
+claim_helper = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10022b524','--stop-address=0x10022b77c',str(artifact)], text=True)
+for expected in ['10022b570:', '10022b57c:', 'SplitInternal<char>>::next',
+                 '10022b59c:', 'base64::engine::Engine::decode',
+                 '10022b5c0:', 'serde_json::de::from_trait', '10022b620:',
+                 '10022b634:', '10022b640:', '10022b71c:']:
+    assert expected in claim_helper, expected
+claim_namespace = read(0x100a48a0a,27).decode()
+assert claim_namespace == 'https://api.openai.com/auth'
+claim_engine = list(read(0x100a4888e,3))
+assert claim_engine == [0,0,2]
+assert read(0x100a48891,64).decode() == 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -212,6 +224,20 @@ print(json.dumps({
             'second send at 0x10026c1d0 returns via 0x10026c1f0..0x10026c224 without another status retry'
         ],
         'limits': 'Provider/HTTP trait interfaces are independent Rust reconstruction. Test providers use synthetic credentials. Native App Server provider, cache, request context and deployment wiring are not supplied by this orchestration.'
+    },
+    'authClaimHelper': {
+        'range': ['0x10022b524','0x10022b77c'],
+        'instructionTextSha256': hashlib.sha256(claim_helper.encode()).hexdigest(),
+        'namespace': claim_namespace,
+        'engineConfigBytes': claim_engine,
+        'engine': 'base64 0.22.1 URL_SAFE_NO_PAD: padding prohibited, nonzero trailing bits prohibited',
+        'reviewedBehavior': [
+            'two SplitInternal<char>::next calls select second dot-delimited segment; no header/signature/expiry verification or exact segment count check',
+            'decode payload then parse serde_json Value; either error yields None',
+            'index auth namespace then requested key; return only string values, preserving empty strings'
+        ],
+        'implementation': 'native/runtime-supervisor/src/codex_app_server_auth.rs',
+        'limits': 'Only metadata extraction, never JWT verification. Static instruction review and synthetic tests; native provider cache, App Server requests and production wiring remain incomplete.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'

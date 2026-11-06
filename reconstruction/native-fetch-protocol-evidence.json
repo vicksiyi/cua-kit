@@ -148,6 +148,27 @@
     ],
     "limits": "Provider/HTTP trait interfaces are independent Rust reconstruction. Test providers use synthetic credentials. Native App Server provider, cache, request context and deployment wiring are not supplied by this orchestration."
   },
+  "authClaimHelper": {
+    "range": [
+      "0x10022b524",
+      "0x10022b77c"
+    ],
+    "instructionTextSha256": "4a84dfbcf0b0bd08cb8d816d0e0d954a71581d272d4fd85570178a3ace06564d",
+    "namespace": "https://api.openai.com/auth",
+    "engineConfigBytes": [
+      0,
+      0,
+      2
+    ],
+    "engine": "base64 0.22.1 URL_SAFE_NO_PAD: padding prohibited, nonzero trailing bits prohibited",
+    "reviewedBehavior": [
+      "two SplitInternal<char>::next calls select second dot-delimited segment; no header/signature/expiry verification or exact segment count check",
+      "decode payload then parse serde_json Value; either error yields None",
+      "index auth namespace then requested key; return only string values, preserving empty strings"
+    ],
+    "implementation": "native/runtime-supervisor/src/codex_app_server_auth.rs",
+    "limits": "Only metadata extraction, never JWT verification. Static instruction review and synthetic tests; native provider cache, App Server requests and production wiring remain incomplete."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
   "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }

@@ -6530,3 +6530,13 @@ This establishes actual HTTPS transport and normal trust/hostname enforcement, n
 Implemented fetch_with_auth with explicit provider and HTTP-client traits. Resolution precedes provider access. Passthrough (including permitted gaas mode requests) sends without credentials and never refreshes. Authenticated requests obtain current credentials, shape headers and send; only HTTP 401 triggers one refetch and replay of the original prepared request. A second 401 is returned as response data. Initial/refresh provider errors and either send error propagate; no additional attempts occur.
 
 Pinned instructions and the provider vtable establish current_auth/refetch_auth slots and the single-401 retry branch. Fifteen fetch tests pass, covering retained method/URL/body/unrelated headers, fresh credential replacement, account removal on refresh, status/error paths, no provider use for passthrough and resolution errors before side effects, alongside real HTTP/TLS transport tests. These orchestration tests use synthetic providers/transports; they are not original App Server integration. Credential provider/cache/context and production BackgroundHost wiring remain open.
+
+
+### Native App Server auth claim extraction checkpoint (2026-11-06)
+
+- Reconstructed `codex_app_server_auth::chatgpt_auth_claim_from_token` in Rust from the pinned node_repl function at `0x10022b524..0x10022b77c`. This is independent readable reconstruction, not recovered vendor source.
+- Extracts the second dot-delimited segment, decodes with existing base64 0.22.1 URL_SAFE_NO_PAD, parses serde_json, and returns only a string under `https://api.openai.com/auth` and the requested key. Empty strings are retained. Missing/malformed values return None.
+- The observed helper does not validate signature, header, expiry, or require exactly three segments. This helper must never be used as an authorization decision. No personal tokens were read or used.
+- Added pinned assembly/literal/config evidence to `audit-native-fetch-protocol.py` and its JSON output. Tests cover missing/wrong-type claims, Unicode/empty values, two/extra segments, ignored expiry, malformed encoding/JSON, prohibited padding and noncanonical trailing bits.
+- Validation: 3 new synthetic helper tests plus all 15 authenticated-fetch tests passed. This does not prove original-binary differential equivalence.
+- Remaining: full App Server provider/cache/fetch behavior, credential DTO and context mapping, deployment wiring. This checkpoint does not advance daily Chrome/public-search or native UI acceptance.
