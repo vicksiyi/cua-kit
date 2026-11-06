@@ -14,6 +14,24 @@ struct NativeComputerUsePolicy: Sendable, Equatable {
     let macos: MacOS
     let configuredMacOS: MacOS
 
+    /// Recovered from 0x1000a7860..<0x1000a79e0. Each layer resolves an exact
+    /// bundle-ID entry before its own default; both layers must allow access.
+    func allowsApplication(bundleIdentifier: String) -> Bool {
+        guard allowComputerUse else { return false }
+        guard (macos.bundleIDs[bundleIdentifier] ?? macos.defaultAppAccess) == .allow
+        else { return false }
+        return (configuredMacOS.bundleIDs[bundleIdentifier] ?? configuredMacOS.defaultAppAccess) == .allow
+    }
+
+    enum Decision: String { case allowed, denied, forbidden }
+
+    /// Decision branch at 0x100191c60..<0x100191c98. The original forbidden
+    /// target classifier is a separate native dependency, not reproduced here.
+    func decision(bundleIdentifier: String, isForbiddenTarget: (String) -> Bool) -> Decision {
+        guard allowsApplication(bundleIdentifier: bundleIdentifier) else { return .denied }
+        return isForbiddenTarget(bundleIdentifier) ? .forbidden : .allowed
+    }
+
     // Host-local error representation; original throws a native JSON-RPC error.
     enum ParseError: Error { case invalidResponse }
 

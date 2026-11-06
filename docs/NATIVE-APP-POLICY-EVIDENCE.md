@@ -54,8 +54,8 @@ The actor awaits the request; this branch does not add in-flight coalescing.
 and loader and a generic payload. Those are host extraction seams, not original
 API names. Tests cover cache hit, expiry boundary, failed refresh, retained old
 cache after failure, request-start timestamps, and backwards clock changes.
-This component is **not yet wired into production**: native transport and access
-evaluation must be recovered first. The response parser is now restored below. The current
+This component is **not yet wired into production**: native transport and full
+target classification must be recovered first. The parser and access predicate are restored below. The current
 standalone policy remains enforced unchanged.
 
 ## Recovered response parser
@@ -85,15 +85,40 @@ order at `0x10123fa41`. Bundle maps default to empty; each entry must contain an
 access string (null entries are rejected). Keys are retained without invented
 case normalization, trimming, wildcard matching, or nonempty validation.
 
-The parser keeps requirements and configured rule maps separate. It does not
-establish which rule wins for an app, grant access, or override deployment
-policy. The extracted parser uses a local `ParseError.invalidResponse` instead
+The parser keeps requirements and configured rule maps separate. Access is
+evaluated by the recovered predicate below; parsing alone does not grant access
+or override deployment policy. The extracted parser uses a local `ParseError.invalidResponse` instead
 of claiming the full original JSON-RPC error representation is restored.
 
 Tests cover absent/null envelopes, all eight global-flag combinations, strict
 Bool versus NSNumber handling, malformed later flags after an earlier false,
 invalid dictionaries/access values, separate conflicting rule maps, exact key
 spelling, empty bundle keys, and actual JSONSerialization boolean bridging.
+
+## Recovered app access decision
+
+`0x1000a7860..<0x1000a79e0` first checks `allowComputerUse`. If false, it
+returns false immediately. Otherwise, it looks up the supplied bundle ID in
+the requirements `macos.bundleIDs` dictionary, falling back to that layer's
+`defaultAppAccess`. Deny stops evaluation. The configured layer then performs
+the same lookup/default operation. It too must allow the app.
+
+There is no cross-layer override: an explicit allow in one layer cannot undo
+a deny in the other. An explicit entry *can* override its own layer's default.
+Matching uses the ordinary Swift string dictionary lookup, without additional
+case-folding, prefix, wildcard, or whitespace handling in this predicate.
+`allowPersistentApproval` does not participate in this access predicate.
+
+At `0x100191c60..<0x100191c98`, a failed predicate becomes `denied`.
+Only after it succeeds does the caller invoke
+`SystemSoftware.BundleIdentifiers.isForbiddenComputerUseTarget`; true becomes
+`forbidden`, false becomes `allowed`. The extracted decision method takes that
+classifier as an injected dependency, without inventing a target list.
+
+Tests now cover 72 combinations of global enablement, both defaults and both
+optional overrides, plus both forbidden-classifier outcomes and call ordering.
+They also check exact key matching and that a literal wildcard-looking key
+does not match arbitrary bundle IDs. This is not real-app operation acceptance.
 
 ## Current request boundary
 
@@ -108,8 +133,8 @@ approval, and macOS Accessibility/Screen Recording grants remain distinct.
 1. Implement the concrete native connection integration and original error
    representation. Cache timing, parser, request sequence, and cleanup are
    evidenced; the complete original provider is not implemented yet.
-2. Recover app policy evaluation: `macos` versus `configuredMacOS` precedence,
-   bundle-ID matching, risk classification, and persistence application.
+2. Recover full forbidden-target classification, risk classification, and
+   persistence application. The two-layer access predicate is now restored.
 3. Map installed-app resolution and launch to the policy evaluation order.
 4. Implement the recovered native-language logic with tests derived from those
    branches, preserving the independent deployment's explicit policy boundary.

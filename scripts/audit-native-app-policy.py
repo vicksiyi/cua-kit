@@ -71,6 +71,8 @@ def audit():
         ('strictBooleanParser', 0x1000a924c, 0x1000a93d4),
         ('macOSRulesParser', 0x1000a93d4, 0x1000a98f0),
         ('policyResponseParser', 0x1000a98f0, 0x1000aa444),
+        ('appAccessEvaluation', 0x1000a7860, 0x1000a79e0),
+        ('appDecisionBranch', 0x100191c60, 0x100191c98),
     ]:
         code_ranges.append(dict(name=name, start=hex(start), endExclusive=hex(end),
                                 sha256=hashlib.sha256(read(start, end-start)).hexdigest()))
@@ -87,7 +89,8 @@ def audit():
                     configuredMacOS=['config.computer_use.default_app_access', 'config.computer_use.macos.bundle_ids'],
                     defaultAccess='missing/null becomes allow; otherwise exact allow or deny string',
                     bundleEntries='dictionary of exact allow/deny strings; null entry invalid',
-                    evaluation='two rule maps retained separately; app evaluation is not implemented by the parser'),
+                    evaluation='global enabled AND requirements layer allows AND configured layer allows; exact dictionary lookup before each layer default',
+                    decision='denied when policy disallows; otherwise forbidden classifier decides forbidden versus allowed'),
                 recoveredProvider=dict(cacheTTLSeconds=900, requestTimeoutSeconds=30,
                     cacheTimestamp='Date captured before refresh',
                     cacheHit='cached policy and timestamp exist; now.timeIntervalSince(cachedAt) < 900',
@@ -98,7 +101,7 @@ def audit():
                     closesConnectionOn='success, request failure, and policy parsing failure'),
                 limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
-                    'Recovered cache and parser are extracted Swift components; production native transport and app evaluation remain incomplete.',
+                    'Recovered cache, parser and access predicate are extracted Swift components; native transport, forbidden target classification and production integration remain incomplete.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 

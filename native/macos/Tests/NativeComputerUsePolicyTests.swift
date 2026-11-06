@@ -46,6 +46,45 @@ import Foundation
         let json = try JSONSerialization.jsonObject(with: Data("{\"requirements\":{\"allowBrowserAndComputerUse\":false}}".utf8)) as! [String: Any]
         let bridged = try NativeComputerUsePolicy.parse(requirementsResponse: json, configResponse: ["config": [:]])
         precondition(!bridged.allowComputerUse)
+        // Global switch × both defaults × both optional overrides. An explicit
+        // allow only overrides its own layer's default, never the other layer.
+        let accesses: [NativeComputerUsePolicy.AppAccess] = [.allow, .deny]
+        let overrides: [NativeComputerUsePolicy.AppAccess?] = [nil, .allow, .deny]
+        var cases = 0
+        for global in [false, true] {
+            for requiredDefault in accesses { for configuredDefault in accesses {
+                for requiredOverride in overrides { for configuredOverride in overrides {
+                    let requiredRules = requiredOverride.map { ["app.A": $0] } ?? [:]
+                    let configuredRules = configuredOverride.map { ["app.A": $0] } ?? [:]
+                    let policy = NativeComputerUsePolicy(allowComputerUse: global, allowPersistentApproval: false,
+                        macos: .init(defaultAppAccess: requiredDefault, bundleIDs: requiredRules),
+                        configuredMacOS: .init(defaultAppAccess: configuredDefault, bundleIDs: configuredRules))
+                    let expected = global && (requiredOverride ?? requiredDefault) == .allow
+                        && (configuredOverride ?? configuredDefault) == .allow
+                    precondition(policy.allowsApplication(bundleIdentifier: "app.A") == expected)
+                    for forbidden in [false, true] {
+                        var classifierCalls = 0
+                        let decision = policy.decision(bundleIdentifier: "app.A") { identifier in
+                            precondition(identifier == "app.A")
+                            classifierCalls += 1
+                            return forbidden
+                        }
+                        precondition(classifierCalls == (expected ? 1 : 0))
+                        precondition(decision == (expected ? (forbidden ? .forbidden : .allowed) : .denied))
+                    }
+                    cases += 1
+                } }
+            } }
+        }
+        precondition(cases == 72)
+        let exact = NativeComputerUsePolicy(allowComputerUse: true, allowPersistentApproval: true,
+            macos: .init(defaultAppAccess: .deny, bundleIDs: ["app.A": .allow, "app.*": .allow]),
+            configuredMacOS: .init(defaultAppAccess: .allow, bundleIDs: [:]))
+        precondition(exact.allowsApplication(bundleIdentifier: "app.A"))
+        for mismatch in ["app.a", " app.A", "app.A.child", "app.B"] {
+            precondition(!exact.allowsApplication(bundleIdentifier: mismatch))
+        }
         print("native policy parser defaults, conjunction, strict types and separate rule maps passed")
+        print("72 app access combinations and forbidden classifier ordering passed")
     }
 }

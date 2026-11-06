@@ -19,5 +19,6 @@ test("native policy parser preserves strict response decoding", {
       join(root, "native/macos/Tests/NativeComputerUsePolicyTests.swift")]);
     const { stdout } = await exec(executable);
     assert.match(stdout, /native policy parser defaults, conjunction, strict types and separate rule maps passed/);
+    assert.match(stdout, /72 app access combinations and forbidden classifier ordering passed/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
