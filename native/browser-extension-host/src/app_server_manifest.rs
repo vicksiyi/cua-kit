@@ -107,6 +107,91 @@ pub fn identity_score(entry: &Value, constraints: &IdentityConstraints<'_>) -> O
     Some(score)
 }
 
+#[derive(Default)]
+pub struct ProtocolRequirements {
+    pub app_server: Option<u64>,
+    pub native_host: Option<u64>,
+}
+
+/// Descriptive Core names for native mismatch discriminants 1 and 2. Wire
+/// error-code mapping is deliberately not inferred from these discriminants.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ProtocolMismatch {
+    CandidateNewer,
+    CandidateOlderOrMissing,
+}
+
+/// Both supplied requirements demand exact integer matches. A newer candidate
+/// protocol takes precedence over a missing/older value in the other protocol.
+pub fn validate_protocols(
+    entry: &Value,
+    required: &ProtocolRequirements,
+) -> Result<(), ProtocolMismatch> {
+    let mut mismatch = None;
+    for (field, expected) in [
+        ("appServerProtocolVersion", required.app_server),
+        ("nativeHostProtocolVersion", required.native_host),
+    ] {
+        if let Some(expected) = expected {
+            match entry.get(field).and_then(Value::as_u64) {
+                Some(actual) if actual == expected => {}
+                Some(actual) if actual > expected => {
+                    mismatch = Some(ProtocolMismatch::CandidateNewer)
+                }
+                _ if mismatch.is_none() => {
+                    mismatch = Some(ProtocolMismatch::CandidateOlderOrMissing)
+                }
+                _ => {}
+            }
+        }
+    }
+    mismatch.map_or(Ok(()), Err)
+}
+
+/// Observed sequential required paths after identity/protocol acceptance.
+pub fn validate_runtime_paths(entry: &Value) -> Result<(), ManifestError> {
+    for field in ["codexCliPath", "codexHome", "nodePath", "resourcesPath"] {
+        required_manifest_path_exists(entry, field)?;
+    }
+    Ok(())
+}
+
+/// This is only a manifest presence hint: native code checks a u64 PID value,
+/// including zero, and adds one. It does not check whether that PID is alive.
+pub fn presence_bonus(entry: &Value) -> u16 {
+    u16::from(
+        entry
+            .get("presence")
+            .and_then(|presence| presence.get("pid"))
+            .and_then(Value::as_u64)
+            .is_some(),
+    )
+}
+
+/// Ranking after a candidate has passed validation/config extraction. updatedAt
+/// is compared as the original untrimmed string, not parsed as a timestamp.
+/// Equal keys retain the first candidate. Callers supply the identity score;
+/// this helper adds the manifest presence hint once.
+pub fn candidate_is_preferred(
+    candidate: &Value,
+    candidate_identity_score: u16,
+    current: &Value,
+    current_identity_score: u16,
+) -> bool {
+    let candidate_score =
+        u32::from(candidate_identity_score) + u32::from(presence_bonus(candidate));
+    let current_score = u32::from(current_identity_score) + u32::from(presence_bonus(current));
+    let updated_at = |entry: &Value| {
+        entry
+            .get("updatedAt")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_owned()
+    };
+    candidate_score > current_score
+        || (candidate_score == current_score && updated_at(candidate) > updated_at(current))
+}
+
 /// Mirrors required_manifest_path_exists at 0x1000248cc: trim, then metadata.
 /// This is existence validation, not file/executable/absolute-path validation.
 /// Metadata follows symlinks. No filesystem changes or process launch occurs.

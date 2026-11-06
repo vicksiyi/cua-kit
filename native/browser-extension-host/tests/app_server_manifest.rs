@@ -204,3 +204,134 @@ fn identity_path_falls_back_to_canonicalization_without_trimming() {
         Some(100)
     );
 }
+
+#[test]
+fn protocols_require_exact_integers_and_newer_mismatch_takes_priority() {
+    use core_browser_extension_host::app_server_manifest::{
+        validate_protocols, ProtocolMismatch::*, ProtocolRequirements,
+    };
+    let required = ProtocolRequirements {
+        app_server: Some(2),
+        native_host: Some(2),
+    };
+    let values = [
+        json!(null),
+        json!(true),
+        json!("2"),
+        json!(2.0),
+        json!(-1),
+        json!(0),
+        json!(1),
+        json!(2),
+        json!(3),
+        json!(u64::MAX),
+    ];
+    for app in &values {
+        for host in &values {
+            let expected =
+                if app.as_u64().is_some_and(|v| v > 2) || host.as_u64().is_some_and(|v| v > 2) {
+                    Err(CandidateNewer)
+                } else if app.as_u64() == Some(2) && host.as_u64() == Some(2) {
+                    Ok(())
+                } else {
+                    Err(CandidateOlderOrMissing)
+                };
+            assert_eq!(
+                validate_protocols(
+                    &json!({"appServerProtocolVersion":app,"nativeHostProtocolVersion":host}),
+                    &required
+                ),
+                expected
+            );
+        }
+    }
+    assert_eq!(
+        validate_protocols(&Value::Null, &ProtocolRequirements::default()),
+        Ok(())
+    );
+    assert_eq!(
+        validate_protocols(
+            &json!({"nativeHostProtocolVersion":0}),
+            &ProtocolRequirements {
+                app_server: None,
+                native_host: Some(0)
+            }
+        ),
+        Ok(())
+    );
+    assert_eq!(
+        validate_protocols(
+            &json!({"appServerProtocolVersion":u64::MAX}),
+            &ProtocolRequirements {
+                app_server: Some(u64::MAX),
+                native_host: None
+            }
+        ),
+        Ok(())
+    );
+}
+
+#[test]
+fn ranking_uses_pid_shape_then_lexical_timestamp_and_keeps_first_tie() {
+    use core_browser_extension_host::app_server_manifest::{
+        candidate_is_preferred, presence_bonus,
+    };
+    for value in [json!(0), json!(123), json!(u64::MAX)] {
+        assert_eq!(presence_bonus(&json!({"presence":{"pid":value}})), 1);
+    }
+    for value in [
+        json!(null),
+        json!("123"),
+        json!(-1),
+        json!(123.0),
+        json!(true),
+    ] {
+        assert_eq!(presence_bonus(&json!({"presence":{"pid":value}})), 0);
+    }
+    let first = json!({"updatedAt":"9"});
+    let second = json!({"updatedAt":"10"});
+    assert!(!candidate_is_preferred(&second, 100, &first, 100));
+    assert!(candidate_is_preferred(&second, 101, &first, 100));
+    assert!(!candidate_is_preferred(&first, 100, &first, 100));
+    assert!(candidate_is_preferred(
+        &json!({"presence":{"pid":0}}),
+        100,
+        &first,
+        100
+    ));
+    assert!(!candidate_is_preferred(
+        &json!({"updatedAt":999}),
+        100,
+        &Value::Null,
+        100
+    ));
+    assert!(candidate_is_preferred(
+        &json!({"updatedAt":" "}),
+        100,
+        &Value::Null,
+        100
+    ));
+}
+
+#[test]
+fn runtime_paths_validate_all_four_fields_in_native_order() {
+    use core_browser_extension_host::app_server_manifest::validate_runtime_paths;
+    let root = std::env::temp_dir().join(format!("core-manifest-paths-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    let mut entry = json!({"paths":{}});
+    for field in ["codexCliPath", "codexHome", "nodePath", "resourcesPath"] {
+        assert_eq!(
+            validate_runtime_paths(&entry),
+            Err(ManifestError::RequiredPath(field.into()))
+        );
+        entry["paths"][field] = json!(root);
+    }
+    assert_eq!(validate_runtime_paths(&entry), Ok(()));
+}

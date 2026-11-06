@@ -3919,7 +3919,7 @@
     {
       "path": "native/browser-extension-host/src/app_server_manifest.rs",
       "category": "native-implementation-language-not-yet-parity-proof",
-      "sha256": "669a962a1e0f9104a220571b3deb84e7fe105a1468160b348b4411346d0c70ba"
+      "sha256": "3ba5763ba22e013791bdf2f341990466de613a0a920daf716ce3db7e0c065cc3"
     },
     {
       "path": "native/browser-extension-host/src/client_writer.rs",
@@ -4249,7 +4249,7 @@
     {
       "path": "scripts/audit-native-control-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "a5a760038abdc8645d9615a01939cde8ebedaf66b503bfaebbaa17a4c50f64f6"
+      "sha256": "676e365ee7eec5a579169d6f870a67e9b145c778d461906bef99845ea033e4bc"
     },
     {
       "path": "scripts/audit-native-language.py",

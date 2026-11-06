@@ -6069,3 +6069,12 @@ Reconstructed the identity stage of AppServerHostConfig::load in Rust. Supplied 
 Four manifest tests pass, including all 16 combinations of enabled constraints, array shape/type/case/whitespace/duplicate behavior, component-normalized nonexistent paths, actual owned symlinks and broken-link rejection. Pinned static extraction records the comparison calls, membership loops, weights and key literal checks. No original executable or personal browser was invoked.
 
 This is not final manifest selection: protocol compatibility, presence/updatedAt ranking, malformed-entry handling, conditional required paths and runtime integration remain open. The score must not be used alone to launch a candidate.
+
+
+### 2026-11-06: native protocol viability and candidate ranking
+
+Added native manifest helpers for exact u64 protocol requirements, required runtime paths in observed order (codexCliPath, codexHome, nodePath, resourcesPath), presence bonus and candidate ranking. Either protocol being newer takes mismatch priority over an older/missing value in the other protocol. Core mismatch names describe comparisons; native error discriminants are not claimed as wire codes.
+
+Corrected a previous conversational assumption: presence.pid contributes one point when it is a u64, including zero; this is not a process-liveness test. On equal score, native code compares raw updatedAt strings lexically (missing/nonstring becomes empty), without date parsing or trimming. Exact ties retain the first candidate.
+
+All seven manifest tests pass, including 100 protocol-value combinations, optional/zero/u64-max requirements, required-path ordering, PID type cases and lexical/tie behavior. Static evidence captures the actual compare/branch instructions. No original host or GUI process was run. Full config extraction, registry-wide error retention and connection to runtime startup remain open; these helper stages are not yet a complete loader.
