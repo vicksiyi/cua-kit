@@ -6236,3 +6236,10 @@ The complete native/browser-extension-host cargo test suite passed: 73 tests, ze
 Implemented the installed host's single-frame input decoder in Rust, using static evidence at 0x100024ae8..0x100024c0c of the pinned artifact. It preserves opcode extraction, extended big-endian lengths, the inclusive 64 MiB limit, mask requirement and bytewise XOR. It does not invent FIN/RSV, UTF-8, control-size or canonical-length validation absent from this decoder. Four focused WebSocket tests pass (two new input tests plus existing real TCP output tests), including partial/coalesced input, truncation, size/mask error precedence and noncanonical encoding.
 
 This is not an integrated input session: opcode dispatch, initialize handling, stdin forwarding, handshake prefix preservation and production manager/control wiring remain unfinished. Existing TS native replacements remain in the migration queue described in reconstruction/language-migration-review.md.
+
+
+### Native WebSocket input forwarding checkpoint
+
+Added Rust forward_frames based on the pinned forward_websocket_to_app_server implementation. Data/continuation frames preserve bytes, ensure the child is started, and write payload plus newline under the state lock. Exact special initialize requests can replay the cached response without spawning. Ping/pong/close branches and read EOF behavior follow the observed native branches; stdin is cleared after write failure. Two input integration tests pass using real loopback sockets and owned child pipes, including raw binary/malformed JSON and a reaped child producing BrokenPipe.
+
+Full proxy operation still requires handshake/prefixed-reader integration, connection attachment and manager/control routing. These tests do not prove browser or application acceptance.

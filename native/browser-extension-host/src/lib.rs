@@ -3,6 +3,7 @@
 //! A Core socket/stdio executable is implemented; production consumer migration and
 //! original authorization/app-server behavior remain pending.
 pub mod app_server_configuration;
+pub mod app_server_input;
 pub mod app_server_error;
 pub mod app_server_manifest;
 pub mod app_server_status;
