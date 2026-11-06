@@ -2064,3 +2064,19 @@ trim 入口先记录已见 URL，再调用 0x10065fde4 的实际格式化/累计
 已恢复核心 Swift helper。测试 scheme/image 门控、文件旁路、四种 query/fragment
 组合、单条边界、总预算边界和多次超额累计，并在子进程验证 limit+1 溢出。
 完整 shortener 的 URL/domain 状态封装、自动压缩和生产 context 接入仍待完成。
+
+### 有状态 shortener 与自动压缩
+
+已组合 UIElementURLShortener：trim 先记录 URL，再调用核心，返回有效域名时
+累加域名次数；同一 URL 重复 trim 不免除累计。reset 清空状态但保留配置。
+
+compactConfigurationIfNeeded（0x10065fbfc..<0x10065fde4）将 nil totalLimit
+设为 4000，用局部零计数重算 Set 内唯一 URL，且统一 isImage=false，因此
+之前作为图片跳过的 URL 也参加重算。该过程不覆盖原 accumulated/domains。
+超预算时依次关闭 fragment、query，再将 individualLimit 降至 120、110…20
+中首个更小值；原限制低于 20 不调高。每次只改变一项后重新测量，最终返回
+测量值，即使已无可压缩配置而仍超预算。
+
+状态、重复/唯一 URL、图片记录、配置保留、局部计数、压缩下限，以及真实
+shortener 与 URL span refresh 的组合测试通过。尚未恢复完整渲染 context 和
+生产 transformation 接线，不把组件测试作为应用端到端验收。

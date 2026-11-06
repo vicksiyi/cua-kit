@@ -1,5 +1,5 @@
-// Original nested Configuration, descriptor 0x1012c9d3c. Kept under a local
-// name until the full stateful UIElementURLShortener is restored.
+// Original nested Configuration, descriptor 0x1012c9d3c. Exposed through
+// UIElementURLShortener.Configuration; standalone name supports isolated tests.
 struct UIElementURLShortenerConfiguration: Equatable {
     var individualLimit: Int?
     var totalLimit: Int?

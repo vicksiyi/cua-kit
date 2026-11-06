@@ -2743,6 +2743,32 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementURLShortenerCore.swift",
       "limitations": "Formatting and accumulated accounting restored; enclosing URL/domain storage, compaction and production context still pending."
     },
+    "urlShortenerStateful": {
+      "trim": "Insert URL before core call; count returned nonnil domain when text nonnil, including ellipsis; repeated calls still increment accumulated/domain count",
+      "reset": "Clear accumulated, domains, urls; preserve configuration",
+      "compaction": "0x10065fbfc..<0x10065fde4: set nil totalLimit to 4000; measure unique URL Set using core isImage=false and local zero counter; do not update accumulated/domains; if over total limit, compact once and repeat",
+      "compactStep": "0x1006603ec..<0x1006604c8 called with (120,20,10): disable fragment first, then query; otherwise choose first candidate 120...20 by -10 strictly below existing individualLimit (nil accepts 120); no candidate -> stop",
+      "return": "Last locally measured total, even when over budget and no further compaction possible",
+      "blocks": [
+        {
+          "start": "0x10065f7c0",
+          "endExclusive": "0x10065fa58",
+          "machineCodeSha256": "f05d8e04f4e41139112f1939a8da8ce69b754dfc4212bdca7c933533bbdc1354"
+        },
+        {
+          "start": "0x10065fb6c",
+          "endExclusive": "0x10065fde4",
+          "machineCodeSha256": "a1e58bf29c97d78ada84867920c9f7349431b25053ef51f7f58a6542b928d9a2"
+        },
+        {
+          "start": "0x1006603ec",
+          "endExclusive": "0x100660588",
+          "machineCodeSha256": "5580b9c528b1764fa5c9edeb2ac3fdd59831a48b55a4132c2b3dda804dbeecd8"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementURLShortener.swift",
+      "limitations": "Stateful component composed and tested with URL span refresh; rendering context witness and production transformation pipeline still pending. Configuration default arguments not inferred."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

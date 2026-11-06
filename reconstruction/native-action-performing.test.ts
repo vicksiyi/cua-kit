@@ -384,3 +384,18 @@ test("native URL shortening core preserves formatting and budget semantics", {
     await assert.rejects(exec(output, ["overflow"]), (error: any) => ["SIGTRAP", "SIGILL"].includes(error.signal));
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native stateful URL shortener preserves compaction and reset", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-shortener-"));
+  try {
+    const output = join(directory, "shortener");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementURLShortenerConfiguration", "UIElementURLShortenerCore", "UIElementURLShortener", "TransformedUIStringSpan", "TransformedUIStringURLRefresh"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementURLShortenerTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /stateful shortener preserves unique remeasurement, reset, image tracking and compaction floor/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

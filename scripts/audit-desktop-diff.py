@@ -1034,6 +1034,17 @@ element_storage_evidence['urlShortenerCore']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementURLShortenerCore.swift',
     'limitations':'Formatting and accumulated accounting restored; enclosing URL/domain storage, compaction and production context still pending.',
 }
+element_storage_evidence['urlShortenerStateful']={
+    'trim':'Insert URL before core call; count returned nonnil domain when text nonnil, including ellipsis; repeated calls still increment accumulated/domain count',
+    'reset':'Clear accumulated, domains, urls; preserve configuration',
+    'compaction':'0x10065fbfc..<0x10065fde4: set nil totalLimit to 4000; measure unique URL Set using core isImage=false and local zero counter; do not update accumulated/domains; if over total limit, compact once and repeat',
+    'compactStep':'0x1006603ec..<0x1006604c8 called with (120,20,10): disable fragment first, then query; otherwise choose first candidate 120...20 by -10 strictly below existing individualLimit (nil accepts 120); no candidate -> stop',
+    'return':'Last locally measured total, even when over budget and no further compaction possible',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10065f7c0,0x10065fa58),(0x10065fb6c,0x10065fde4),(0x1006603ec,0x100660588)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementURLShortener.swift',
+    'limitations':'Stateful component composed and tested with URL span refresh; rendering context witness and production transformation pipeline still pending. Configuration default arguments not inferred.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
