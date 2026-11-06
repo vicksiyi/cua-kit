@@ -70,3 +70,23 @@ capability through normal SDK evaluation without changing the runtime's gate
 checks or the user's production deployment. Therefore a deployment with that
 gate disabled still cannot offer management; multi-tab bindings alone do not
 prove that window management is available.
+
+## Live-model acceptance entry and current blocker
+
+Run the isolated, actual-provider scenario with the local `.env` credentials:
+
+```sh
+CUA_RUNTIME_SUPERVISOR=rust CUA_LIVE_MULTIWINDOW_TEST=1 node --import tsx --test --test-name-pattern='packaged native' reconstruction/extension-native-controller.test.ts
+```
+
+The user prompt asks for two different windows, A→B and B→A synchronized edits,
+and a reload. The fixture records input, storage-event delivery and reload values
+with random run-specific markers. An independent extension inventory captures
+actual window IDs during those operations. A matching final answer alone cannot
+pass acceptance. The default suite continues to run without a provider request.
+
+Attempt on 2026-11-07: browser preflight passed, then the first model request
+returned HTTP 402. No model-driven page action ran. Live-model acceptance remains
+unverified; the response body and credentials were not printed or published.
+Check the configured provider account's billing status before retrying. This
+failure does not contradict the deterministic browser/MCP acceptance above.

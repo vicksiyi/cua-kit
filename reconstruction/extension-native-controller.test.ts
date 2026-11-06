@@ -113,9 +113,20 @@ for (const deployment of ["native", "full"] as const)
         "The installed browser host must be native Rust",
       );
       const clickedMarkers = new Set<string>();
+      const modelMultiwindow = process.env.CUA_LIVE_MULTIWINDOW_TEST === "1";
+      const modelEditA = `model-A-${randomUUID()}`;
+      const modelEditB = `model-B-${randomUUID()}`;
+      const editorEvents: Array<{window: string; value: string; kind: string}> = [];
+      const windowSamples: Promise<Array<{id?: number; windowId: number; url?: string}>>[] = [];
+      let sampleWindows: (() => Promise<Array<{id?: number; windowId: number; url?: string}>>) | undefined;
       const actionMarker = `action-completed-marker-${randomUUID()}`;
       const pageServer = createServer((request, response) => {
         const incoming = new URL(request.url!, "http://fixture.invalid");
+        if (incoming.pathname === "/edited") {
+          editorEvents.push({ window: incoming.searchParams.get("window") ?? "", value: incoming.searchParams.get("value") ?? "", kind: incoming.searchParams.get("kind") ?? "input" });
+          if (modelMultiwindow && sampleWindows) windowSamples.push(sampleWindows());
+          response.writeHead(204); response.end(); return;
+        }
         if (incoming.pathname === "/clicked" && request.method === "POST") {
           clickedMarkers.add(incoming.searchParams.get("marker") ?? "");
           response.writeHead(204);
@@ -127,8 +138,9 @@ for (const deployment of ["native", "full"] as const)
           response.end(`<title>Two-window editor fixture</title><label>Shared draft<textarea aria-label="Shared draft"></textarea></label>
             <script>const field=document.querySelector('textarea');
             field.value=localStorage.getItem('shared-draft')||'';
-            field.addEventListener('input',()=>localStorage.setItem('shared-draft',field.value));
-            addEventListener('storage',e=>{if(e.key==='shared-draft')field.value=e.newValue||''});</script>`);
+            const report=kind=>fetch('/edited?kind='+kind+'&window='+new URL(location.href).searchParams.get('window')+'&value='+encodeURIComponent(field.value));report('load');
+            field.addEventListener('input',()=>{localStorage.setItem('shared-draft',field.value);report('input')});
+            addEventListener('storage',e=>{if(e.key==='shared-draft'){field.value=e.newValue||'';report('sync')}});</script>`);
           return;
         }
         response.setHeader("Content-Type", "text/html");
@@ -173,6 +185,7 @@ for (const deployment of ["native", "full"] as const)
         const worker =
           context.serviceWorkers()[0] ??
           (await context.waitForEvent("serviceworker"));
+        sampleWindows = () => worker.evaluate(() => chrome.tabs.query({}));
         assert.equal(
           await worker.evaluate(() => chrome.runtime.id),
           extensionId,
@@ -518,7 +531,10 @@ for (const deployment of ["native", "full"] as const)
           pageUrl,
           hostDirectory,
           "chrome",
-          process.env.CUA_LIVE_DEEPSEEK_TEST === "1" &&
+          modelMultiwindow ? {
+            question: `请使用 Chrome 完成双窗口协同编辑验收：在两个不同浏览器窗口分别打开 ${pageUrl}editor?window=a 和 ${pageUrl}editor?window=b。在 A 的 Shared draft 编辑器输入 ${modelEditA}，到 B 核对同步；再在 B 替换为 ${modelEditB}，到 A 核对同步。重新加载 B 确认保留。最后报告两个窗口是否不同、双向同步和持久化是否成功，并返回最后的完整文本。不要只描述步骤，请实际操作。`,
+            expectedAnswer: new RegExp(modelEditB),
+          } : process.env.CUA_LIVE_DEEPSEEK_TEST === "1" &&
             process.env.CUA_LIVE_BAIDU_TEST !== "1" &&
             process.env.CUA_LIVE_SEARCH_TEST !== "1"
             ? {
@@ -530,6 +546,20 @@ for (const deployment of ["native", "full"] as const)
             process.env.CUA_LIVE_SEARCH_TEST !== "1" &&
             process.env.CUA_BROWSER_BAIDU_PROBE !== "1"
             ? async () => {
+                if (modelMultiwindow) {
+                  assert.ok(editorEvents.some(event => event.window === "a" && event.value === modelEditA), "Model must really edit A");
+                  assert.ok(editorEvents.some(event => event.window === "b" && event.value === modelEditB), "Model must really edit B");
+                  assert.ok(editorEvents.some(event => event.kind === "sync" && event.window === "b" && event.value === modelEditA), "B must receive A's actual storage update");
+                  assert.ok(editorEvents.some(event => event.kind === "sync" && event.window === "a" && event.value === modelEditB), "A must receive B's actual storage update");
+                  assert.ok(editorEvents.some(event => event.kind === "load" && event.window === "b" && event.value === modelEditB), "B must actually reload the persisted value");
+                  const samples = await Promise.all(windowSamples);
+                  assert.ok(samples.some(tabs => {
+                    const a = tabs.find(tab => tab.url === pageUrl + "editor?window=a");
+                    const b = tabs.find(tab => tab.url === pageUrl + "editor?window=b");
+                    return a && b && a.windowId !== b.windowId;
+                  }), "Independent browser evidence must show two actual windows during editing");
+                  return;
+                }
                 // Independent HTTP evidence survives tabs created outside Playwright's page inventory.
                 for (
                   let attempt = 0;
