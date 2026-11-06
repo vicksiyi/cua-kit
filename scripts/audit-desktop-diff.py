@@ -1185,6 +1185,16 @@ element_storage_evidence['actionRuntimeIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementActionEnvironment.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Focus special action and other input mechanisms remain separate; no live app acceptance or complete original provider/transaction restoration claimed.',
 }
+element_storage_evidence['focusOperation']={
+    'entry':'UIElementProtocol.focus(in:app:focusEnforcer:) 0x1007b5fc8..<0x1007b6228',
+    'capability':'0x1007b6028 loads inherited AccessibilityNode witness +0x98 (isFocusable); false goes directly to async click',
+    'write':'Focusable -> setValue(true, AXFocused). Write throws immediately; no verification/click after write failure.',
+    'verify':'0x1007b60f4 calls uncachedValue<Bool>(ignoringTypeMismatch:false); only some(true) returns. Cached isFocused is not used.',
+    'fallback':'False/nil uncached result or non-focusable -> async original click(in:app:focusEnforcer:virtualCursor:); failures propagate',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007b5fc8,0x1007b6228)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementFocus.swift','native/macos/Sources/CuaHelper/UIElementFocusComposition.swift'],
+    'limitations':'Native click fallback remains explicit dependency; current demo focus branch is still a direct setter and is not claimed aligned until original click/window/app integration is restored.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

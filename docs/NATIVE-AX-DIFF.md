@@ -2303,3 +2303,19 @@ The native build is included in that test. A nonthrowing system action remains a
 acknowledgement, not evidence of a visible UI change: original tolerated AX statuses
 are preserved. Focus's special demo branch, original transaction/provider ownership,
 and live app acceptance remain incomplete.
+
+
+### Focus requires verification and click fallback
+
+Static inspection of `focus(in:app:focusEnforcer:)` (0x1007b5fc8..<0x1007b6228)
+shows a capability check followed by setValue(true, AXFocused), then a strictly
+decoded **uncached** focus read. Only some(true) returns without a click. A write
+error propagates immediately; failed/false/missing verification or an unfocusable
+node enters the original asynchronous click operation. It does not substitute AXPress.
+
+Restored this branch flow and concrete UIElement composition with an explicit async
+click dependency. Tests cover all capability/write/verification combinations,
+cached-true vs fresh-false, strict decoding errors and propagated click errors.
+The actual original click/window/app/focus-enforcer composition remains pending;
+therefore the demo's current focus shortcut is still a known mismatch, not silently
+replaced with an approximate click implementation.
