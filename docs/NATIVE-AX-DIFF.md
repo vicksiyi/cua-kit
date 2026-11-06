@@ -703,3 +703,24 @@ transactionScopeEvidence 固定该类型引用、字段布局、四个函数哈�
 work 转发指令；同时审计清单加入事务公开方法。仍未由此恢复事务创建/预取策略、cache
 填充与失效、roleFrequencyTable 算法或 tree revision。此轮为静态证据补全，没有创建
 假的事务对象或改动生产观察，也没有运行原厂服务。
+
+## 事务角色频率表的 Swift 实现
+
+事务的 roleFrequencyTable 类型引用指向 `FrequencyTable<UIElementRole>`。反射确认
+FrequencyTable 是只保存 `metricToFrequency: [Metric: Int]` 的 struct（typeref
+`SDyxSiG`），不是同步容器。其原生函数体已逐一读取：初始化、increment、subscript、
+isUnique；审计新增对应字段、四个函数哈希和九条分支/计数指令。
+
+`FrequencyTable.swift` 直接使用 Swift Dictionary，实现原行为：缺失读数为 0；
+首次 increment 写入 1，之后使用有溢出检查的 Int 加法；isUnique 只接受已存在且
+计数恰好为 1 的项。没有出现的角色不算唯一，不能用 count <= 1 代替。保留 struct
+值语义，不新增共享可变全局表或字符串大小写标准化。
+
+编译执行测试覆盖缺失/首次/重复计数、不同角色、大小写区别、复制后独立修改，以及
+相同 hash 但不同键的字典行为。Swift helper 完整构建和扩展后的固定构建审计通过。
+目前该组件尚未接入事务的角色采集，不能据此声称完整角色分析或 tree transaction
+已恢复。
+
+另外查明事务 Cache 存储的三个字段是 attributeTable、requestedAttributes、
+fallbackElements；prefetchEnabled 的 TaskLocal 初始化值为 true。这些观察用于后续
+追踪，并不证明属性表填充、fallbackElements 容器或失效算法已经实现。

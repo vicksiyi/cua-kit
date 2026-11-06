@@ -25,7 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
-    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction',
+    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction', 'FrequencyTable',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -733,6 +733,31 @@ transaction_scope_evidence={
     'interpretation':'current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.',
     'limitations':'Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied.',
 }
+frequency_nominal=0x1012ccd50
+frequency_fields=relative_address(frequency_nominal+16)
+_,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
+if (frequency_kind,frequency_size,frequency_count) != (0,12,1) or c_string(relative_address(frequency_fields+24)) != 'metricToFrequency' or c_string(relative_address(frequency_fields+20)) != 'SDyxSiG':
+    raise SystemExit('FrequencyTable dictionary storage changed')
+frequency_functions=[]
+for address,name in [(0x1006e6be4,'init'),(0x100757414,'increment'),(0x10075751c,'subscript'),(0x100757558,'isUnique')]:
+    boundary=starts[starts.index(address)+1]
+    frequency_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+frequency_words={0x10075748c:0x36000108,0x1007574a4:0x52800028,
+    0x1007574c4:0xb1000728,0x1007574c8:0x54000286,0x100757518:0xd4200020,
+    0x100757548:0x9a8813e0,0x100757580:0xf100051f,
+    0x100757584:0x1a9f17e8,0x100757588:0x0a290100}
+for address,word in frequency_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word: raise SystemExit('Frequency count/uniqueness branch changed')
+if c_string(relative_address(0x1012cd598+8)) != 'UIElementRole': raise SystemExit('Transaction role metric changed')
+frequency_evidence={
+    'nominalDescriptor':hex(frequency_nominal),'fieldDescriptor':hex(frequency_fields),
+    'storage':'metricToFrequency: [Metric: Int]','storageMangledType':'SDyxSiG',
+    'functions':frequency_functions,'instructionWords':{hex(a):hex(w) for a,w in frequency_words.items()},
+    'transactionMetric':'UIElementRole','metricDescriptor':'0x1012cd598',
+    'interpretation':'Dictionary-backed value type; missing subscript is zero, increment initializes to one or uses checked addition, isUnique requires a present count equal to one.',
+    'limitations':'Counter behavior only; role collection, transaction creation and cache invalidation are not reconstructed by this helper.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -788,6 +813,7 @@ record = {
     'arrayTargetEvidence':array_target_evidence,
     'elementStorageEvidence':element_storage_evidence,
     'transactionScopeEvidence':transaction_scope_evidence,
+    'frequencyTableEvidence':frequency_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

@@ -1695,6 +1695,53 @@
     "interpretation": "current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.",
     "limitations": "Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied."
   },
+  "frequencyTableEvidence": {
+    "nominalDescriptor": "0x1012ccd50",
+    "fieldDescriptor": "0x101323894",
+    "storage": "metricToFrequency: [Metric: Int]",
+    "storageMangledType": "SDyxSiG",
+    "functions": [
+      {
+        "name": "init",
+        "start": "0x1006e6be4",
+        "endExclusive": "0x1006e6c44",
+        "machineCodeSha256": "bd07d0f92580c64e615de350535f2b55da34c1d6b980f422f92f53b97488fe68"
+      },
+      {
+        "name": "increment",
+        "start": "0x100757414",
+        "endExclusive": "0x10075751c",
+        "machineCodeSha256": "21e6444b887ad6fd5020220e84ac9c43df590d3e753b34a628f28c750e02a4e1"
+      },
+      {
+        "name": "subscript",
+        "start": "0x10075751c",
+        "endExclusive": "0x100757558",
+        "machineCodeSha256": "a2e62793377598d62161d56aefff5c35e1e457a6fec655e588b9f84b2470c765"
+      },
+      {
+        "name": "isUnique",
+        "start": "0x100757558",
+        "endExclusive": "0x100757598",
+        "machineCodeSha256": "a0d7ea922b33bc2a588005bcfc49ce9c5a7ca122f39d4e63f8527ebb20ec9aa6"
+      }
+    ],
+    "instructionWords": {
+      "0x10075748c": "0x36000108",
+      "0x1007574a4": "0x52800028",
+      "0x1007574c4": "0xb1000728",
+      "0x1007574c8": "0x54000286",
+      "0x100757518": "0xd4200020",
+      "0x100757548": "0x9a8813e0",
+      "0x100757580": "0xf100051f",
+      "0x100757584": "0x1a9f17e8",
+      "0x100757588": "0xa290100"
+    },
+    "transactionMetric": "UIElementRole",
+    "metricDescriptor": "0x1012cd598",
+    "interpretation": "Dictionary-backed value type; missing subscript is zero, increment initializes to one or uses checked addition, isUnique requires a present count equal to one.",
+    "limitations": "Counter behavior only; role collection, transaction creation and cache invalidation are not reconstructed by this helper."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -2600,6 +2647,31 @@
       "address": "0000000100512344",
       "mangled": "_$s20AccessibilitySupport14AXPartialValueV5valueAA09AXEncodedD0Vvg",
       "signature": "AccessibilitySupport.AXPartialValue.value.getter : AccessibilitySupport.AXEncodedValue"
+    },
+    {
+      "address": "00000001006e6be4",
+      "mangled": "_$s20AccessibilitySupport14FrequencyTableV08metricToC033_F7A19897CC352F86D532A4EA1A70F019LLSDyxSiGvpfi",
+      "signature": "variable initialization expression of AccessibilitySupport.FrequencyTable.(metricToFrequency in _F7A19897CC352F86D532A4EA1A70F019) : [A : Swift.Int]"
+    },
+    {
+      "address": "0000000100757558",
+      "mangled": "_$s20AccessibilitySupport14FrequencyTableV8isUniqueySbxF",
+      "signature": "AccessibilitySupport.FrequencyTable.isUnique(A) -> Swift.Bool"
+    },
+    {
+      "address": "0000000100757414",
+      "mangled": "_$s20AccessibilitySupport14FrequencyTableV9incrementyyxF",
+      "signature": "AccessibilitySupport.FrequencyTable.increment(A) -> ()"
+    },
+    {
+      "address": "00000001006e6be4",
+      "mangled": "_$s20AccessibilitySupport14FrequencyTableVACyxGycfC",
+      "signature": "AccessibilitySupport.FrequencyTable.init() -> AccessibilitySupport.FrequencyTable<A>"
+    },
+    {
+      "address": "000000010075751c",
+      "mangled": "_$s20AccessibilitySupport14FrequencyTableVySixcig",
+      "signature": "AccessibilitySupport.FrequencyTable.subscript.getter : (A) -> Swift.Int"
     },
     {
       "address": "00000001007aeea4",

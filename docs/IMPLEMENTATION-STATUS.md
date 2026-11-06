@@ -6914,3 +6914,9 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Resolved the cache initializer's context to TaskLocal<UIElementTreeTransaction?> using its symbolic generic typeref and dyld nominal binding. The transaction stores element/cache/roleFrequencyTable; current initializes to nil.
 - Resolved perform(work:) to synchronous TaskLocal.withValue and inspected its work-forwarding closure. Added transaction public symbols, storage/type evidence, function hashes and scope call/branch assertions to the native audit.
 - Static evidence now distinguishes scoped tree-transaction state from a permanent global cache. Transaction creation/prefetch, cache invalidation and revision behavior are still unrecovered; no runtime feature is claimed from these findings.
+
+### 2026-11-06 Native FrequencyTable restored
+
+- Identified roleFrequencyTable as FrequencyTable<UIElementRole>; reflected storage is [Metric: Int]. Restored its full small counter helper in Swift with standard Dictionary value semantics, zero for absent keys, checked increment and uniqueness only for a present count of one.
+- Added native tests for counts, missing-key uniqueness, independent copies, case-sensitive role keys and hash collisions. The compiled test and full helper build pass. Static audit now includes 206 native signatures plus counter storage/function/branch evidence.
+- Role collection and transaction integration remain incomplete; this helper is not yet used by the production tree collector. Also identified transaction Cache field names and the true prefetch default for follow-up inspection; no full cache/prefetch implementation is claimed.
