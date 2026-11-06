@@ -30,6 +30,8 @@ test(
           root,
           "native/macos/Sources/CuaHelper/AXUIElementArrayDecoding.swift",
         ),
+        join(root, "native/macos/Sources/CuaHelper/TypeErasedArray.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXArrayTargetConversion.swift"),
         join(root, "native/macos/Tests/AXUIElementArrayDecodingTests.swift"),
       ]);
       const { stdout } = await exec(executable);

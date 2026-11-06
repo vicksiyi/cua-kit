@@ -7,7 +7,8 @@ import ApplicationServices
 func unwrapAXUIElementArray(_ value: AnyObject) -> [AXUIElement]? {
     guard CFGetTypeID(value) == CFArrayGetTypeID() else { return nil }
     let encoded = value as! NSArray
-    return decodeAXArrayElements(encoded.map { $0 as AnyObject }) {
+    let elements = decodeAXArrayElements(encoded.map { $0 as AnyObject }) {
         try? unwrapAXUIElement($0, throwingOnFailure: false)
     }
+    return try? convertedAXArray(elements, as: [AXUIElement].self, throwingOnFailure: false)
 }

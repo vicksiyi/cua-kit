@@ -623,3 +623,22 @@ NSNumber，不把它外推到尚未完整组合的特殊 CF 类型 decoder。
 20 组 Swift 行为检查通过。这证明已恢复组件在受控响应边界可组合，不代表缓存、
 AXParameterAttribute 协议分派或生产选择来源已经接通；不会因此自动给真实应用读取
 选区，也不是原厂服务的运行时 oracle。
+
+## 数组最终目标转换接入 AXChildren
+
+`AXArrayTargetConversion.swift` 实现已审计的最终阶段：将已解码数组擦除成 `[Any]`，
+再转换到通过 TypeErasedArray 约束的请求目标。失败时 false 返回 nil；true 抛出
+unexpectedAttributeValueType(expected: target, actual: target)，保留原构建两个相同
+metatype 的载荷，不自行替换为源数组类型。
+
+`unwrapAXUIElementArray` 在既有 compactMap 后调用此阶段。CFArray 输入检查、元素
+AXUIElement type-ID 检查及过滤规则不变，遍历的 visited 去重仍在上层执行。该接入
+没有新增数组递归展开，也不规范化 Optional 或重排引用。
+
+真实 Swift/CF 测试覆盖元素顺序与重复、空数组跨元素类型转换、包含 nil 的 Optional
+数组、Any 元素、AX 引用身份、类型不匹配以及自定义 TypeErasedArray 目标失败。AXChildren
+回归测试和完整 Swift helper 构建通过，固定原构建审计通过。初次测试命令因新增编译文件
+路径拼接错误失败，已改为独立路径并通过重跑；不是被忽略的产品错误。
+
+这只补齐数组解码的最终阶段。CFArray 到中间表示的原厂桥接、动态目标协议检查及完整
+逐元素 generic decoder 仍不等于现有具体 AXChildren 适配器，不能宣称整体原生类型分派完成。

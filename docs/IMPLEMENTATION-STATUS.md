@@ -6889,3 +6889,9 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Extended selected-text coverage beyond integer marker fixtures: ten new cases use genuine system CF markers/ranges with restored marker decoding, parameter encoding, raw AX parameterized status handling, ordinary result decoding and presentation. The ten original getter cases remain.
 - Exact call traces verify early success/whitespace short-circuit, empty/missing text fallback, missing/wrong marker, status failure with a nonempty output, successful nil/empty output and wrong ordinary result type. An AX read failure cannot reach decode; presentation does not invent a selection after failure.
 - The composed Swift test passes. Native status/thread, marker, parameter encoding and ordinary-decoding regressions also pass. This is controlled response composition, not an App UI run or full generic-dispatch equivalence. Production selection-source mapping, cached access and native revisions/diff remain incomplete.
+
+### 2026-11-06 Final native array target conversion integrated
+
+- Added the audited final decoded-array → [Any] → requested target conversion with TypeErasedArray constraint. Failure preserves the source's duplicated requested-type payload and nil/throw policy.
+- Connected the stage after AXChildren compactMap. Real Swift/CF tests verify duplicate/order/identity preservation, empty cross-type arrays, nested Optional values and mismatched/custom target failure. The AXChildren regression, full helper build and pinned 193-signature audit pass. Fixed an initial test compile-path concatenation error before the successful rerun.
+- Original dynamic protocol dispatch, complete generic element decoder and CFArray bridging remain separate unfinished work. No live app UI operation was performed or claimed.
