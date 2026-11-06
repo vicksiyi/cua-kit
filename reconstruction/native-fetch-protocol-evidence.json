@@ -307,6 +307,26 @@
     "implementation": "native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver",
     "limits": "Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete."
   },
+  "kernelExecResult": {
+    "range": [
+      "0x100026aa8",
+      "0x100028694"
+    ],
+    "instructionTextSha256": "fa0cb94ea8e7a16f314c61d081f56a217b8b71ada3dd1dec834588357901167d",
+    "errorKindRange": [
+      "0x1001c15d8",
+      "0x1001c16c8"
+    ],
+    "errorKindInstructionTextSha256": "3ea9ba22e5ec6f350c2ecc430f76b2f7942a432222e481f7a35040b893c116cd",
+    "reviewedBehavior": [
+      "id:String, ok:bool and output:String are required; required checks at 0x100026cf0, 0x100026cf8/0x100026d10 and 0x100027690",
+      "named_outputs and content_items decode as Vec<String>; missing defaults empty, null and non-string elements fail",
+      "error is optional String; error_kind missing is absent, present String preserved, every present non-string JSON value (including null) becomes unknown",
+      "known field duplicates fail before Value projection; unknown fields are ignored"
+    ],
+    "implementation": "native/runtime-supervisor/src/kernel_protocol.rs; ProcessWorker kernel-only exec_result normalization",
+    "limits": "Static source reconstruction plus owned fixtures. Native tracing and other KernelToHost payloads remain incomplete."
+  },
   "kernelVariantTags": {
     "range": [
       "0x1001c9dc8",

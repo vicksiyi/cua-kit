@@ -274,7 +274,7 @@ async fn read_frames(
             // decode failure (0x1000cafd0 -> per-line cleanup 0x1000cf9d4).
             // Keep byte-stream/UTF-8 failures distinct from JSON syntax errors.
             let text = std::str::from_utf8(&line).map_err(|_| "Invalid worker UTF-8")?;
-            let value: Value = match serde_json::from_str::<Value>(text) {
+            let mut value: Value = match serde_json::from_str::<Value>(text) {
                 Ok(value) if value.is_object() => value,
                 _ => {
                     line.clear();
@@ -295,7 +295,7 @@ async fn read_frames(
             // The native reader decodes KernelToHost directly from the JSONL
             // text and drops parse failures before dispatch. Restore that typed
             // boundary for fetch messages without first losing duplicate keys.
-            // Other variants still use the standalone Value-based transport.
+            // ExecResult is normalized below; remaining payloads still use Value.
             if value["type"] == "authenticated_fetch"
                 && serde_json::from_slice::<crate::authenticated_fetch::AuthenticatedFetchMessage>(
                     &line,
@@ -303,6 +303,13 @@ async fn read_frames(
             {
                 line.clear();
                 continue;
+            }
+            if kernel_protocol && value["type"] == "exec_result" {
+                let Ok(decoded) = crate::kernel_protocol::decode_exec_result(&line) else {
+                    line.clear();
+                    continue;
+                };
+                value = decoded;
             }
             let bytes = line.len();
             if queued

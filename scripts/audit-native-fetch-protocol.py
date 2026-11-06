@@ -78,6 +78,23 @@ assert kernel_tag_names == [
     'native_pipe_request', 'trusted_service_request', 'trusted_service_hooks',
 ]
 
+exec_result_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x100026aa8','--stop-address=0x100028694',str(artifact)], text=True)
+error_kind_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1001c15d8','--stop-address=0x1001c16c8',str(artifact)], text=True)
+for address, text in [(0x1009c145e,b'id'),(0x1009c1d28,b'ok'),(0x1009c1d2a,b'output')]:
+    assert read(address,len(text)) == text
+for expected in ['100026cf0:', '0x1000275fc', '100026cf8:', '100026d10:',
+                 '100027690:', '0x10002784c', '100027698:', '1000276bc:',
+                 '100027278:', '100027374:', 'StringVisitor', '1000272f8:',
+                 '10002751c:', 'VecVisitor<alloc::string::String>',
+                 '1000274ac:', 'OptionVisitor<alloc::string::String>',
+                 '1000273ec:', 'deserialize_error_kind', '100028134:', '100028064:', '100028000:']:
+    assert expected in exec_result_decode, expected
+for expected in ['1001c1638:', '#0x3', '1001c1640:', '1001c1654:', '#0x7',
+                 '1001c1668:', '#0x6e77', '1001c1674:', '#0x6e6b']:
+    assert expected in error_kind_decode, expected
+
 sentry_user_update = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
     '--start-address=0x10022c17c','--stop-address=0x10022c380',str(artifact)], text=True)
 for crate in ['sentry-core-0.49.2','sentry-types-0.49.2']:
@@ -472,6 +489,20 @@ print(json.dumps({
         'reviewedBehavior':'configure_scope uses the active hub, projects optional user ID with the second sentry_user argument absent (x2=0), then replaces Scope user. None clears the user; empty string remains present.',
         'implementation':'native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver',
         'limits':'Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete.'
+    },
+    'kernelExecResult': {
+        'range':['0x100026aa8','0x100028694'],
+        'instructionTextSha256':hashlib.sha256(exec_result_decode.encode()).hexdigest(),
+        'errorKindRange':['0x1001c15d8','0x1001c16c8'],
+        'errorKindInstructionTextSha256':hashlib.sha256(error_kind_decode.encode()).hexdigest(),
+        'reviewedBehavior':[
+            'id:String, ok:bool and output:String are required; required checks at 0x100026cf0, 0x100026cf8/0x100026d10 and 0x100027690',
+            'named_outputs and content_items decode as Vec<String>; missing defaults empty, null and non-string elements fail',
+            'error is optional String; error_kind missing is absent, present String preserved, every present non-string JSON value (including null) becomes unknown',
+            'known field duplicates fail before Value projection; unknown fields are ignored'
+        ],
+        'implementation':'native/runtime-supervisor/src/kernel_protocol.rs; ProcessWorker kernel-only exec_result normalization',
+        'limits':'Static source reconstruction plus owned fixtures. Native tracing and other KernelToHost payloads remain incomplete.'
     },
     'kernelVariantTags': {
         'range':['0x1001c9dc8','0x1001ca390'],

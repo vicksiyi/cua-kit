@@ -190,8 +190,8 @@ async fn kernel_protocol_drops_unknown_missing_and_duplicate_tags_before_queuein
     let mut config = spec(r#"
         for(let i=0;i<300;i++) process.stdout.write(
           '{}\n{"type":"future_message"}\n{"type":"exec_result","type":"future_message"}\n{"type":"future_message","type":"exec_result"}\n{"type":"trusted_service_response"}\n');
-        process.stdout.write(JSON.stringify({type:'exec_result',id:'first',ok:true})+'\n');
-        process.stdin.once('data',()=>process.stdout.write(JSON.stringify({type:'exec_result',id:'second',ok:true})+'\n'));
+        process.stdout.write(JSON.stringify({type:'exec_result',id:'first',ok:true,output:''})+'\n');
+        process.stdin.once('data',()=>process.stdout.write(JSON.stringify({type:'exec_result',id:'second',ok:true,output:''})+'\n'));
     "#);
     config.max_frame_bytes = 1024;
     config.max_queued_bytes = 2048;
@@ -199,5 +199,25 @@ async fn kernel_protocol_drops_unknown_missing_and_duplicate_tags_before_queuein
     assert_eq!(timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap()["id"], "first");
     worker.send(&json!({"type":"exec","id":"second"})).await.unwrap();
     assert_eq!(timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap()["id"], "second");
+    worker.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn kernel_exec_result_payload_is_decoded_from_raw_fields_before_dispatch() {
+    let mut worker=ProcessWorker::start_kernel(spec(r#"
+        for(const line of [
+          '{"type":"exec_result","id":"bad","ok":true}',
+          '{"type":"exec_result","id":"bad","ok":"true","output":""}',
+          '{"type":"exec_result","id":"bad","id":"last","ok":true,"output":""}',
+          '{"type":"exec_result","id":"bad","ok":true,"output":"","content_items":[{}]}',
+          '{"type":"exec_result","id":"valid","ok":false,"output":"","error_kind":null,"extra":42}'
+        ]) process.stdout.write(line+'\n');
+    "#)).await.unwrap();
+    let result=timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap();
+    assert_eq!(result["id"],"valid");
+    assert_eq!(result["error_kind"],"unknown");
+    assert_eq!(result["content_items"],json!([]));
+    assert!(result.get("extra").is_none());
+    assert!(worker.next_message().await.unwrap().is_none());
     worker.close().await.unwrap();
 }
