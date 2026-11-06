@@ -1158,8 +1158,44 @@
     "semantics": "Only reached after v2 registry selection succeeds. Parent-of-current-exe sidecar supplies seven missing launch strings and nonzero u16 proxyPort. Reader ignores missing/unreadable/invalid JSON/nonobject; no schemaVersion gate. Registry values precede supplementary values. Does not rescue missing/incompatible v2 registry.",
     "integrationStatus": "File loading and supplementation composed; final environment composition and process launch remain open."
   },
+  "composedConfigurationLoading": {
+    "implementation": "native/browser-extension-host/src/app_server_configuration.rs::load_configuration",
+    "extensionIdSource": [
+      "10001e58c: 94000b97    \tbl\t0x1000213e8 <extension_host::app_server::non_empty_env>",
+      "10001e590: f8438e68    \tldr\tx8, [x19, #0x38]!",
+      "10001e594: b100051f    \tcmn\tx8, #0x1",
+      "10001e598: f9008bf7    \tstr\tx23, [sp, #0x110]",
+      "10001e59c: 540002a0    \tb.eq\t0x10001e5f0 <<extension_host::app_server::AppServerHostConfig>::load+0x312c>",
+      "10001e5a0: 912103e8    \tadd\tx8, sp, #0x840",
+      "10001e5a4: aa1303e0    \tmov\tx0, x19",
+      "10001e5a8: 94016017    \tbl\t0x100076604 <<alloc::string::String as core::clone::Clone>::clone>",
+      "10001e5ac: f94423e1    \tldr\tx1, [sp, #0x840]",
+      "10001e5b0: f94427e0    \tldr\tx0, [sp, #0x848]",
+      "10001e5b4: f9437bf3    \tldr\tx19, [sp, #0x6f0]",
+      "10001e5b8: b100067f    \tcmn\tx19, #0x1",
+      "10001e5bc: 540002a0    \tb.eq\t0x10001e610 <<extension_host::app_server::AppServerHostConfig>::load+0x314c>"
+    ],
+    "extensionIdFallback": [
+      "10001e5f0: f9437be8    \tldr\tx8, [sp, #0x6f0]",
+      "10001e5f4: b100051f    \tcmn\tx8, #0x1",
+      "10001e5f8: 54000140    \tb.eq\t0x10001e620 <<extension_host::app_server::AppServerHostConfig>::load+0x315c>",
+      "10001e5fc: f900b3e8    \tstr\tx8, [sp, #0x160]",
+      "10001e600: f9437fe9    \tldr\tx9, [sp, #0x6f8]",
+      "10001e604: f94383e8    \tldr\tx8, [sp, #0x700]",
+      "10001e608: a90ca7e8    \tstp\tx8, x9, [sp, #0xc8]",
+      "10001e60c: 14000006    \tb\t0x10001e624 <<extension_host::app_server::AppServerHostConfig>::load+0x3160>",
+      "10001e610: f900b3e1    \tstr\tx1, [sp, #0x160]",
+      "10001e614: f9442be8    \tldr\tx8, [sp, #0x850]",
+      "10001e618: a90c83e8    \tstp\tx8, x0, [sp, #0xc8]",
+      "10001e61c: 14000002    \tb\t0x10001e624 <<extension_host::app_server::AppServerHostConfig>::load+0x3160>",
+      "10001e620: f900b3e8    \tstr\tx8, [sp, #0x160]",
+      "10001e624: 52800037    \tmov\tw23, #0x1               ; =1"
+    ],
+    "semantics": "Discovery -> first usable registry -> adjacent missing-field supplementation -> environment resolution. Invocation extension ID filters candidates and is the fallback final ID; nonempty CODEX_EXTENSION_ID changes only final launch ID. Registry failure returns before launch-environment resolution.",
+    "scope": "Composed loader with caller-supplied executable and environment accessor; no runtime manager or process spawn integration yet."
+  },
   "remainingUnknowns": [
-    "final environment composition and process launch contract",
+    "process launch contract and runtime integration",
     "complete hello/status response schemas",
     "filename sanitization edge cases",
     "asset cleanup on all process/session failures",

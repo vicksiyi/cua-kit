@@ -1,7 +1,56 @@
 //! Native launch-field resolution reconstructed from AppServerHostConfig::load
-//! (pinned ARM64 host, 0x10001e4d8..0x10001ebfc). This is the resolution stage,
-//! not a schema-2 registry selector or a raw JSON parser.
+//! (pinned ARM64 host, 0x10001e4d8..0x10001ebfc), composed with registry and
+//! sidecar loading. Runtime process management remains separate.
+use crate::app_server_manifest::{
+    self, IdentityConstraints, LoadedManifestEntry, ManifestError, ProtocolRequirements,
+};
 use std::ffi::OsString;
+use std::path::Path;
+
+/// Selection retains registry metadata and sidecar-supplemented fields before
+/// environment overrides; launch contains the effective process parameters.
+pub struct LoadedLaunchConfiguration {
+    pub selection: LoadedManifestEntry,
+    pub launch: ResolvedLaunchFields,
+}
+
+/// Compose the observed load stages without launching a process. Executable
+/// discovery is supplied by the caller (None represents current_exe failure).
+/// Identity constraints come from the native invocation, not from environment
+/// launch overrides; changing CODEX_EXTENSION_ID must not change selection.
+pub fn load_configuration(
+    executable: Option<&Path>,
+    native_host_name: Option<&str>,
+    extension_id: Option<&str>,
+    extension_build_channel: Option<&str>,
+    protocols: &ProtocolRequirements,
+    mut environment: impl FnMut(&str) -> Option<OsString>,
+) -> Result<LoadedLaunchConfiguration, ManifestError> {
+    let paths = app_server_manifest::registry_paths(&mut environment);
+    let identity = IdentityConstraints {
+        extension_host_path: executable,
+        native_host_name,
+        extension_id,
+        extension_build_channel,
+    };
+    let selection =
+        app_server_manifest::load_configuration(&paths, executable, &identity, protocols)?;
+    let raw = &selection.selected.configuration;
+    let launch = LaunchFields {
+        codex_cli_path: raw.codex_cli_path.clone(),
+        // Native load clones the invocation's extension ID at 0x10001e590,
+        // then gives non_empty_env(CODEX_EXTENSION_ID) precedence.
+        extension_id: extension_id.map(str::to_owned),
+        node_path: raw.node_path.clone(),
+        browser_client_path: raw.browser_client_path.clone(),
+        codex_home: raw.codex_home.clone(),
+        node_repl_path: raw.node_repl_path.clone(),
+        proxy_host: raw.proxy_host.clone(),
+        proxy_port: raw.proxy_port,
+    }
+    .resolve(environment);
+    Ok(LoadedLaunchConfiguration { selection, launch })
+}
 
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct LaunchFields {

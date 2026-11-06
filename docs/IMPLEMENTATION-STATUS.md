@@ -6123,3 +6123,12 @@ The prior pending-work phrase “schema-1 fallback” was imprecise. Native load
 Implemented load_configuration and raw-record supplementation with explicit executable input. Fourteen manifest tests pass, including real owned sidecar files, schemaVersion 999 accepted by the ungated reader, existing registry priority, ignored corrupt/non-UTF8/missing/directory sidecars, inability to rescue registry failure and field whitelist/port cases. Static evidence records early registry error return, adjacent file read and merge branches. No installed configuration or user registry was changed.
 
 Final environment composition, full native runtime/hello/status/ensure/restart and process/proxy integration remain open. This increment composes configuration loading, not process launch.
+
+
+### 2026-11-06: compose configuration loading through environment resolution
+
+Added app_server_configuration::load_configuration, composing registry discovery, file selection, sidecar supplementation and LaunchFields::resolve. The result separates selected metadata/supplemented configuration from effective launch parameters. The caller supplies current executable discovery and a narrow environment accessor; no ambient credentials are enumerated.
+
+The native instruction at 0x10001e590 loads the invocation extension ID, which provides the final ID fallback. CODEX_EXTENSION_ID overrides that final value after selection; it does not replace the ID used to filter manifest candidates. A failed registry load returns before launch environment lookup or sidecar rescue.
+
+Seventeen targeted Rust tests pass. The new owned-file integration test exercises real discovery, invocation identity matching, sidecar REPL/host defaults, registry port priority, environment Node/ID/zero-port overrides, invalid-env fallback and failure before launch-environment access. No original executable, daily browser, user registry or process launch was involved. Runtime manager/hello/status/ensure/restart and process/proxy integration still remain open.

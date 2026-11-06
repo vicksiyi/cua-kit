@@ -88,3 +88,102 @@ fn native_u16_ports_accept_zero_and_plus_and_fall_back_on_invalid() {
     .resolve(|key| (key == "CODEX_APP_SERVER_PROXY_PORT").then(|| " +0 ".into()));
     assert_eq!(actual.proxy_port, 0);
 }
+
+#[test]
+fn real_file_loading_composes_identity_sidecar_and_environment_precedence() {
+    use core_browser_extension_host::{
+        app_server_configuration::load_configuration,
+        app_server_manifest::{ManifestError, ProtocolRequirements},
+    };
+    use serde_json::json;
+    use std::fs;
+    let root = std::env::temp_dir().join(format!("core-load-config-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    let exe = root.join("host");
+    let registry = root.join("chrome-native-hosts-v2.json");
+    let entry = json!({"schemaVersion":2,"extensionIds":["invocation-id"],"nativeHostNames":["host-name"],"extensionBuildChannels":["stable"],"appServerProtocolVersion":2,"channel":"registry","proxyPort":1234,"paths":{"extensionHostPath":exe,"codexCliPath":root,"codexHome":root,"nodePath":root,"resourcesPath":root}});
+    fs::write(
+        &registry,
+        json!({"schemaVersion":2,"entries":[entry]}).to_string(),
+    )
+    .unwrap();
+    fs::write(
+        root.join("extension-host-config.json"),
+        json!({"nodeReplPath":" /sidecar/repl ","proxyHost":" sidecar-host ","proxyPort":5678})
+            .to_string(),
+    )
+    .unwrap();
+    let mut env: BTreeMap<&str, OsString> = [
+        ("CODEX_HOME", root.as_os_str().to_owned()),
+        ("CODEX_EXTENSION_ID", " env-id ".into()),
+        ("CODEX_BROWSER_USE_NODE_PATH", " /env/node ".into()),
+        ("CODEX_APP_SERVER_PROXY_PORT", " +0 ".into()),
+    ]
+    .into_iter()
+    .collect();
+    let protocols = ProtocolRequirements {
+        app_server: Some(2),
+        native_host: None,
+    };
+    let load = |env: &BTreeMap<&str, OsString>| {
+        load_configuration(
+            Some(&exe),
+            Some("host-name"),
+            Some("invocation-id"),
+            Some("stable"),
+            &protocols,
+            |key| env.get(key).cloned(),
+        )
+    };
+    let result = load(&env).unwrap();
+    assert_eq!(result.selection.registry_path, registry);
+    assert_eq!(
+        result.selection.selected.configuration.channel.as_deref(),
+        Some("registry")
+    );
+    assert_eq!(result.launch.extension_id.as_deref(), Some("env-id"));
+    assert_eq!(result.launch.node_path, "/env/node");
+    assert_eq!(
+        result.launch.node_repl_path.as_deref(),
+        Some("/sidecar/repl")
+    );
+    assert_eq!(result.launch.proxy_host, "sidecar-host");
+    assert_eq!(result.launch.proxy_port, 0);
+    env.insert("CODEX_EXTENSION_ID", " \t".into());
+    env.insert("CODEX_APP_SERVER_PROXY_PORT", "invalid".into());
+    let fallback = load(&env).unwrap();
+    assert_eq!(
+        fallback.launch.extension_id.as_deref(),
+        Some("invocation-id")
+    );
+    assert_eq!(fallback.launch.proxy_port, 1234);
+    // Environment ID is a final launch override, not the candidate selector.
+    assert!(matches!(
+        load_configuration(
+            Some(&exe),
+            Some("host-name"),
+            Some("env-id"),
+            Some("stable"),
+            &protocols,
+            |key| env.get(key).cloned()
+        ),
+        Err(ManifestError::NoCompatibleEntry)
+    ));
+    fs::remove_file(&registry).unwrap();
+    let mut seen = Vec::new();
+    let result = load_configuration(Some(&exe), None, None, None, &protocols, |key| {
+        seen.push(key.to_owned());
+        env.get(key).cloned()
+    });
+    assert!(matches!(result, Err(ManifestError::MissingRegistry)));
+    assert!(seen
+        .iter()
+        .all(|key| ["HOME", "USERPROFILE", "CODEX_HOME"].contains(&key.as_str())));
+}
