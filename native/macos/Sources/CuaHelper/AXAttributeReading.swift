@@ -4,11 +4,11 @@ import ApplicationServices
 // Direct system-read branch recovered from the pinned native value(for:).
 // PID lookup here uses the OS directly; original MockProvider and
 // AXPartialValue truncation metadata are not reconstructed by this adapter.
-func onAXAttributeReadThread<Value>(targetPID: pid_t?, read: () -> Value) -> Value {
+func onAXAttributeReadThread<Value>(targetPID: pid_t?, read: () throws -> Value) rethrows -> Value {
     if targetPID == getpid() && !Thread.isMainThread {
-        return DispatchQueue.main.sync(execute: read)
+        return try DispatchQueue.main.sync(execute: read)
     }
-    return read()
+    return try read()
 }
 
 func rawAXAttributeResult(copy: (inout CFTypeRef?) -> AXError) -> (error: AXError, value: CFTypeRef?) {
@@ -22,5 +22,25 @@ func readRawAXAttribute(_ element: AXUIElement, _ name: String) -> (error: AXErr
     let targetPID = resolvedAXProcessID(element)
     return onAXAttributeReadThread(targetPID: targetPID) {
         rawAXAttributeResult { AXUIElementCopyAttributeValue(element, name as CFString, &$0) }
+    }
+}
+
+// Unlike an ordinary attribute read, the parameterized system-call branch at
+// 0x1006f7098 rejects every non-success status, even with a non-nil output.
+// Successful nil remains nil. MockProvider and AXPartialValue metadata are
+// separate layers, not synthesized by this direct system adapter.
+func rawAXParameterizedAttributeResult(copy: (inout CFTypeRef?) -> AXError) throws -> CFTypeRef? {
+    var value: CFTypeRef?
+    let error = copy(&value)
+    guard error == .success else { throw UIElementError.axError(error) }
+    return value
+}
+
+func readRawAXParameterizedAttribute(_ element: AXUIElement, _ name: String, parameter: CFTypeRef) throws -> CFTypeRef? {
+    let targetPID = resolvedAXProcessID(element)
+    return try onAXAttributeReadThread(targetPID: targetPID) {
+        try rawAXParameterizedAttributeResult {
+            AXUIElementCopyParameterizedAttributeValue(element, name as CFString, parameter, &$0)
+        }
     }
 }

@@ -500,3 +500,20 @@ AXUIElementGetPid，不执行原厂服务。失败输出即使写入数字也不
 两项测试通过：注入系统状态验证初始化值/成功值/错误值与可选失败，以及真实创建
 本进程 AX 引用后查询 PID；原有主队列调度测试和完整 helper 构建也通过。审计新增
 processIdentity，固定实际导出符号、三个函数边界/哈希和关键返回分支机器码。
+
+## 参数化属性直接读取的 Swift 实现
+
+`AXAttributeReading.swift` 现在补上 `rawAXParameterizedAttributeResult` 与
+`readRawAXParameterizedAttribute`，依据上述固定构建的直接系统调用分支实现：
+初始化空输出，调用 `AXUIElementCopyParameterizedAttributeValue`，非 success
+抛出 `UIElementError.axError`，success 则原样返回可空输出。即使失败时系统提供了
+非空输出也不能将它当作成功结果。普通 attribute 的 `(error,value)` 契约保持不变。
+
+线程分派 helper 改为 `rethrows`，保留同进程非主线程使用 main.sync 的条件，且让
+参数化读取的错误穿过主队列同步调用原样传播。Swift 测试覆盖四种状态 × 输出有无，
+并在真实后台线程/主 RunLoop 上验证错误传播；完整 helper 构建和 193 项原构建
+签名审计通过。测试不需要也不改变系统权限。
+
+这是直接读取层的恢复。现有 UI 观察还未调用参数化读取入口；MockProvider、
+AXPartialValue 元数据、typed 参数编码与 text marker 包装仍需还原，不能据此
+宣称 selectedText fallback、增量树或真实应用窗口操作已完成。

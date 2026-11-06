@@ -112,7 +112,7 @@ for (const platform of ["mac", "linux", "windows"])
   test(`${platform} binder preserves original observation, input and failure behavior`, async () => {
     const module = `tinysky_alt/bind_${platform}_app`;
     const original = (await vendor(module))[`bind_${platform}_app`];
-    const restored = (await import(`../packages/cua/dist/${module}.js`))[
+    const restored = (await import(`../packages/cua/src/${module}.ts`))[
       `bind_${platform}_app`
     ];
     const common: Call[] = [
@@ -170,7 +170,7 @@ for (const platform of ["mac", "linux", "windows"])
 test("screenshot bytes preserve original data URL and file URL behavior", async () => {
   const original = (await vendor("core/screenshot_bytes")).screenshot_bytes;
   const restored = (
-    await import("../packages/cua/dist/core/screenshot_bytes.js")
+    await import("../packages/cua/src/core/screenshot_bytes.ts")
   ).screenshot_bytes;
   const dir = await mkdtemp(join(tmpdir(), "cua-restored-shot-"));
   const file = join(dir, "fixture");
