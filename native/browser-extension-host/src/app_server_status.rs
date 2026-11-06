@@ -11,3 +11,10 @@ pub fn status(proxy_runtime_session_id: Option<&str>) -> Value {
         Some(id) => json!({"phase": "connected", "runtimeSessionId": id}),
     }
 }
+
+/// Observe the actual proxy handle using its native session accessor. This
+/// intentionally does not inspect the child map or launch/health-check anything.
+pub fn from_proxy(proxy: Option<&crate::app_server_proxy::AppServerProxy>) -> Value {
+    let session = proxy.map(|proxy| proxy.runtime_session_id());
+    status(session.as_deref())
+}

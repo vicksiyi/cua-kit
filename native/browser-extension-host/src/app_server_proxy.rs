@@ -13,6 +13,7 @@ use std::{
 };
 
 pub struct PreparedProxy {
+    pub host: String,
     pub listener: TcpListener,
     pub port: u16,
     pub token: String,
@@ -65,6 +66,7 @@ pub fn prepare(config: &LoadedLaunchConfiguration) -> Result<PreparedProxy, Runt
         .as_ref()
         .map(|id| format!("chrome-extension://{id}"));
     Ok(PreparedProxy {
+        host: config.launch.proxy_host.clone(),
         listener,
         port,
         token,
@@ -78,6 +80,7 @@ pub fn prepare(config: &LoadedLaunchConfiguration) -> Result<PreparedProxy, Runt
 /// dropping this handle does not close the listener. Manager shutdown must be
 /// reconstructed separately; do not infer a listener stop from this Drop.
 pub struct AppServerProxy {
+    pub host: String,
     pub port: u16,
     pub token: String,
     pub origin: SharedOrigin,
@@ -89,6 +92,7 @@ impl PreparedProxy {
     pub fn start(self) -> AppServerProxy {
         let runtime_session_id = Arc::new(Mutex::new(uuid::Uuid::new_v4().to_string()));
         let PreparedProxy {
+            host,
             listener,
             port,
             token,
@@ -110,6 +114,7 @@ impl PreparedProxy {
             );
         }));
         AppServerProxy {
+            host,
             port,
             token,
             origin,
@@ -192,5 +197,20 @@ impl AppServerProxy {
             .map_err(|_| runtime_error("runtime session id mutex poisoned".into()))?;
         *session = uuid::Uuid::new_v4().to_string();
         Ok(())
+    }
+}
+
+impl AppServerProxy {
+    /// Native ensure formats the originally bound host, actual port and token
+    /// directly. It does not add a slash, encode the token or append clientId.
+    pub fn local_app_server_url(&self) -> String {
+        format!("ws://{}:{}?token={}", self.host, self.port, self.token)
+    }
+
+    pub fn runtime_session_id(&self) -> String {
+        self.runtime_session_id
+            .lock()
+            .expect("app-server proxy runtime session id mutex poisoned")
+            .clone()
     }
 }

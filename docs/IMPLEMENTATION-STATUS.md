@@ -17,6 +17,14 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Proxy endpoint/state projection now preserves the originally bound host and actual
+port; URL formatting matches the native `ws://host:port?token=token` template.
+Configuration refresh leaves that endpoint unchanged. Status now has a proxy-handle
+adapter using the native session clone/poison behavior, with restart/shutdown
+transition coverage. Full Rust host regression: 102 tests passed. These tests
+include owned TCP/child fixtures, not production browser/App acceptance. Full
+ensure `selected`/`runtimeConfig` projection and control dispatch remain open.
+
 Explicit proxy restart is now reconstructed as a separate Rust stage. It trims
 `params.clientId` (default for missing/invalid/empty), stops only the selected
 process after releasing the map lock, retains that entry, and rotates the shared

@@ -192,6 +192,7 @@ fn update_fixture() -> (
     // No detached listener is necessary for this shared-state lifecycle fixture.
     let prepared = prepare(&config).unwrap_or_else(|e| panic!("{}", e.message));
     let proxy = core_browser_extension_host::app_server_proxy::AppServerProxy {
+        host: prepared.host,
         port: prepared.port,
         token: prepared.token,
         origin: prepared.origin,
@@ -405,5 +406,70 @@ fn poisoned_restart_map_returns_client_error_before_session_rotation() {
     assert_eq!(
         *proxy.runtime_session_id.lock().unwrap(),
         "existing-session"
+    );
+}
+
+#[test]
+fn endpoint_uses_bound_host_and_port_after_config_refresh() {
+    let (mut config, mut proxy) = update_fixture();
+    proxy.host = "original.example".into();
+    proxy.port = 45678;
+    proxy.token = "fixture-token".into();
+    config.launch.proxy_host = "changed.example".into();
+    config.launch.proxy_port = 123;
+    proxy.update_configuration(&config);
+    assert_eq!(
+        proxy.local_app_server_url(),
+        "ws://original.example:45678?token=fixture-token"
+    );
+    assert_eq!(proxy.runtime_session_id(), "existing-session");
+    // The formatter preserves host text, including brackets provided by caller.
+    proxy.host = "[::1]".into();
+    assert_eq!(
+        proxy.local_app_server_url(),
+        "ws://[::1]:45678?token=fixture-token"
+    );
+}
+
+#[test]
+fn session_accessor_clones_empty_string_and_panics_on_poison() {
+    let (_, proxy) = update_fixture();
+    proxy.runtime_session_id.lock().unwrap().clear();
+    assert_eq!(proxy.runtime_session_id(), "");
+    let session = proxy.runtime_session_id.clone();
+    assert!(std::thread::spawn(move || {
+        let _guard = session.lock().unwrap();
+        panic!("fixture");
+    })
+    .join()
+    .is_err());
+    let error = std::panic::catch_unwind(|| proxy.runtime_session_id()).unwrap_err();
+    let message = error.downcast_ref::<String>().unwrap();
+    assert!(message.starts_with("app-server proxy runtime session id mutex poisoned"));
+}
+
+#[test]
+fn live_proxy_status_tracks_restart_and_shutdown_without_child_health_checks() {
+    use core_browser_extension_host::{
+        app_server_proxy::shutdown_proxy, app_server_status::from_proxy,
+    };
+    let (_, proxy) = update_fixture();
+    let mut slot = Some(proxy);
+    assert_eq!(
+        from_proxy(slot.as_ref()),
+        serde_json::json!({"phase":"connected","runtimeSessionId":"existing-session"})
+    );
+    slot.as_ref()
+        .unwrap()
+        .restart_client(None)
+        .unwrap_or_else(|e| panic!("{}", e.message));
+    let snapshot = from_proxy(slot.as_ref());
+    assert_eq!(snapshot["phase"], "connected");
+    assert_ne!(snapshot["runtimeSessionId"], "existing-session");
+    assert!(slot.as_ref().unwrap().processes.lock().unwrap().is_empty());
+    shutdown_proxy(&mut slot);
+    assert_eq!(
+        from_proxy(slot.as_ref()),
+        serde_json::json!({"phase":"idle"})
     );
 }

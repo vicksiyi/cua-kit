@@ -3900,6 +3900,64 @@
     "contract": "On explicit restart after configuration refresh: trim string params.clientId, use default if absent/nonstring/empty. Clone matching process from map and release map lock before stop; retain entry. Wrap lookup/stop errors with client-specific runtime error and do not rotate session on failure. On success including absent client, replace shared runtime session with hyphenated UUIDv4; session mutex poison returns separate runtime error after stop. No eager replacement child spawn in this stage.",
     "integrationStatus": "Owned real child test proves only selected child stops and entry remains, while sibling lives. Tests cover Unicode trim/default/nonstring/absent client, stop error retaining session and session error occurring after stop. Full manager response/control composition remains open."
   },
+  "proxyEndpointAndStatus": {
+    "implementation": "native/browser-extension-host/src/app_server_proxy.rs; native/browser-extension-host/src/app_server_status.rs",
+    "preserveBoundHost": [
+      "100018474: 9108c3e8    \tadd\tx8, sp, #0x230",
+      "100018478: 9102a340    \tadd\tx0, x26, #0xa8",
+      "10001847c: 94017862    \tbl\t0x100076604 <<alloc::string::String as core::clone::Clone>::clone>",
+      "100018480: b85703a8    \tldur\tw8, [x29, #-0x90]"
+    ],
+    "endpointArguments": [
+      "100018b88: 91014388    \tadd\tx8, x28, #0x50",
+      "100018b8c: 91006389    \tadd\tx9, x28, #0x18",
+      "100018b90: 9000008a    \tadrp\tx10, 0x100028000 <extension_host::app_server::proxy_websocket_to_persistent_app_server+0x99c>",
+      "100018b94: 9134414a    \tadd\tx10, x10, #0xd10",
+      "100018b98: f9011bfc    \tstr\tx28, [sp, #0x230]",
+      "100018b9c: f9011fea    \tstr\tx10, [sp, #0x238]",
+      "100018ba0: f000030b    \tadrp\tx11, 0x10007b000 <<core::fmt::builders::PadAdapter as core::fmt::Write>::write_str+0x158>",
+      "100018ba4: 9121f16b    \tadd\tx11, x11, #0x87c",
+      "100018ba8: f90123e8    \tstr\tx8, [sp, #0x240]",
+      "100018bac: f90127eb    \tstr\tx11, [sp, #0x248]",
+      "100018bb0: f9012be9    \tstr\tx9, [sp, #0x250]",
+      "100018bb4: f9012fea    \tstr\tx10, [sp, #0x258]",
+      "100018bb8: b00003a0    \tadrp\tx0, 0x10008d000 <_anon.7f1658701cef0ae21d4adde03ce618dd.4>",
+      "100018bbc: 910cb400    \tadd\tx0, x0, #0x32d",
+      "100018bc0: 911203e8    \tadd\tx8, sp, #0x480",
+      "100018bc4: 9108c3e1    \tadd\tx1, sp, #0x230",
+      "100018bc8: 9401761c    \tbl\t0x100076438 <alloc::fmt::format::format_inner>",
+      "100018bcc: f94247f4    \tldr\tx20, [sp, #0x488]"
+    ],
+    "formatBytesHex": "0577733a2f2fc0013ac0073f746f6b656e3dc000",
+    "sessionClone": [
+      "10001ff08: 39406288    \tldrb\tw8, [x20, #0x18]",
+      "10001ff0c: 35000368    \tcbnz\tw8, 0x10001ff78 <<extension_host::app_server::AppServerProxy>::runtime_session_id+0xb8>",
+      "10001ff10: 91008280    \tadd\tx0, x20, #0x20",
+      "10001ff14: aa1503e8    \tmov\tx8, x21",
+      "10001ff18: 940159bb    \tbl\t0x100076604 <<alloc::string::String as core::clone::Clone>::clone>",
+      "10001ff1c: 37000096    \ttbnz\tw22, #0x0, 0x10001ff2c <<extension_host::app_server::AppServerProxy>::runtime_session_id+0x6c>",
+      "10001ff20: f94002e8    \tldr\tx8, [x23]",
+      "10001ff24: f240f91f    \ttst\tx8, #0x7fffffffffffffff",
+      "10001ff28: 54000401    \tb.ne\t0x10001ffa8 <<extension_host::app_server::AppServerProxy>::runtime_session_id+0xe8>",
+      "10001ff2c: f9400260    \tldr\tx0, [x19]",
+      "10001ff30: a9447bfd    \tldp\tx29, x30, [sp, #0x40]",
+      "10001ff34: a9434ff4    \tldp\tx20, x19, [sp, #0x30]",
+      "10001ff38: a94257f6    \tldp\tx22, x21, [sp, #0x20]",
+      "10001ff3c: a9415ff8    \tldp\tx24, x23, [sp, #0x10]",
+      "10001ff40: 910143ff    \tadd\tsp, sp, #0x50",
+      "10001ff44: 1400c8a1    \tb\t0x1000521c8 <<std::sys::pal::unix::sync::mutex::Mutex>::unlock>"
+    ],
+    "sessionPoison": "app-server proxy runtime session id mutex poisoned",
+    "statusReadsSession": [
+      "10001a988: 910163e0    \tadd\tx0, sp, #0x58",
+      "10001a98c: aa1403e1    \tmov\tx1, x20",
+      "10001a990: 9400154c    \tbl\t0x10001fec0 <<extension_host::app_server::AppServerProxy>::runtime_session_id>",
+      "10001a994: a9465bf4    \tldp\tx20, x22, [sp, #0x60]",
+      "10001a998: b6f80636    \ttbz\tx22, #0x3f, 0x10001aa5c <<extension_host::app_server::AppServerManager>::status+0x1e0>"
+    ],
+    "contract": "Preserve bound host in proxy; localAppServerUrl formats ws://{host}:{actualPort}?token={token} directly with no slash or clientId. Updating config does not rebind or replace stored host. Session accessor clones under lock, preserves empty string, panics on poison. Status checks proxy presence and session only, not child health.",
+    "integrationStatus": "Endpoint/state tests cover original host after refresh, raw bracketed host, empty/poisoned session, and status transitions across restart and shutdown with no children. Complete ensure response including selected/runtimeConfig remains open."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",
