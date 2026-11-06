@@ -2,6 +2,7 @@ import type { AgentMessage, ModelAdapter, ToolClient } from "./contracts";
 
 export interface AgentRunOptions {
   signal?: AbortSignal;
+  /** Optional caller budget. Omitted means no fixed decision-round limit. */
   maxSteps?: number;
   /** One extra model request without tools; exhaustion still throws. Default false. */
   summarizeOnExhaustion?: boolean;
@@ -54,9 +55,9 @@ export class AgentLoop {
     return result!;
   }
   private async runTurn(question: string, options: AgentRunOptions) {
-    const maxSteps = options.maxSteps ?? 12;
-    if (!Number.isInteger(maxSteps) || maxSteps < 1 || maxSteps > 100)
-      throw new Error("maxSteps must be 1..100.");
+    const maxSteps = options.maxSteps ?? Infinity;
+    if (options.maxSteps !== undefined && (!Number.isSafeInteger(maxSteps) || maxSteps < 1))
+      throw new Error("maxSteps must be a positive safe integer.");
     const messages: AgentMessage[] = [
       { role: "user", content: question },
       ...structuredClone(options.initialMessages ?? []),
@@ -80,7 +81,8 @@ export class AgentLoop {
           (options.runtimeContext
             ? "\nHost runtime context: " + options.runtimeContext
             : "") +
-          `\nDecision budget: ${step + 1} of ${maxSteps}. Return the observed answer as soon as sufficient evidence exists. Avoid redundant observations. If evidence is insufficient, state what remains unresolved; never invent success.`,
+          (Number.isFinite(maxSteps) ? `\nDecision budget: ${step + 1} of ${maxSteps}.` : `\nDecision round: ${step + 1}.`) +
+          " Return the observed answer as soon as sufficient evidence exists. Avoid redundant observations. If evidence is insufficient, state what remains unresolved; never invent success.",
         messages: structuredClone(messages),
         tools: definitions,
         signal: options.signal,

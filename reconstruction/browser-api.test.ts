@@ -322,3 +322,33 @@ test("bind_tab reconstruction preserves mutation, forwarding, emit and sync erro
       await run(originalBind, fallback),
     );
 });
+
+test("two retained tab bindings route alternating edits and observations independently, matching original", async () => {
+  async function run(factory: any) {
+    const trace: unknown[] = [];
+    const records = ["a", "b"].map(id => ({ id, url: `https://fixture.invalid/${id}`, title: id }));
+    const values = new Map(records.map(({ id }) => [id, ""]));
+    const tabs = new Map(records.map(({ id }) => [id, {
+      id,
+      getAXState: async () => { trace.push(["observe", id, values.get(id)]); return values.get(id); },
+      playwright: { getByRole: () => ({ fill: async (text: string) => {
+        trace.push(["fill", id, text]); values.set(id, text);
+      } }) },
+    }]));
+    const browser = { browserId: "chrome", tabs: {
+      list: async () => records, get: async (id: string) => tabs.get(id),
+    } };
+    const api = factory({ get: async () => browser }, {
+      load_browser_documentation: async () => {}, emit: async () => {},
+    });
+    const a = await api.getTab("a", { browser: "chrome" });
+    const b = await api.getTab("b", { browser: "chrome" });
+    assert.notEqual(a, b);
+    await a.playwright.getByRole("textbox").fill("edit A");
+    await b.playwright.getByRole("textbox").fill("edit B");
+    assert.equal(await a.getAXState(), "edit A");
+    assert.equal(await b.getAXState(), "edit B");
+    return trace;
+  }
+  assert.deepEqual(await run(restored), await run(original));
+});

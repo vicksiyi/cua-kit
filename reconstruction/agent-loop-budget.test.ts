@@ -82,3 +82,32 @@ for (const mode of ["calls", "empty", "error", "abort", "disabled"] as const) {
     assert.deepEqual(actions, ["observe", "end"]);
   });
 }
+
+
+test("default loop continues beyond twelve decisions and cleans up on completion", async () => {
+  const { tools, actions } = fixture();
+  let rounds = 0;
+  const model: ModelAdapter = { async decide(input) {
+    assert.doesNotMatch(input.system, /Decision budget:|Infinity/);
+    return ++rounds <= 15 ? { toolCalls: [{ ...call, id: `read-${rounds}` }] } : { text: "Observed completion" };
+  } };
+  const result = await new AgentLoop(model, tools).run("long task");
+  assert.equal(result.status, "completed");
+  assert.equal(rounds, 16);
+  assert.equal(actions.filter(action => action === "observe").length, 15);
+  assert.equal(actions.at(-1), "end");
+});
+
+test("default loop remains cancellable beyond twelve decisions", async () => {
+  const { tools, actions } = fixture();
+  const controller = new AbortController();
+  const reason = new Error("user cancelled");
+  let rounds = 0;
+  const model: ModelAdapter = { async decide() {
+    if (++rounds === 15) controller.abort(reason);
+    return { toolCalls: [{ ...call, id: `read-${rounds}` }] };
+  } };
+  await assert.rejects(new AgentLoop(model, tools).run("long task", { signal: controller.signal }), error => error === reason);
+  assert.equal(rounds, 15);
+  assert.equal(actions.at(-1), "end");
+});

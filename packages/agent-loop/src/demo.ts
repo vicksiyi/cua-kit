@@ -90,7 +90,7 @@ debug?.write("run.start", {
   question,
   provider: process.env.CUA_MODEL_PROVIDER ?? "deepseek",
   model: process.env.CUA_MODEL ?? "deepseek-flash",
-  maxSteps: 12,
+  maxSteps: null, // No fixed decision-round limit.
   summarizeOnExhaustion: true,
   summarizeOnBlocked: true,
   browserEnabled,
