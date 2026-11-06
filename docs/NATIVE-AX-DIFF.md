@@ -1902,3 +1902,20 @@ joined(separator:) 验证了调用目标。
 TransformedUIStringSpan，待完整插值类型恢复后组合。测试空数组/空文本、混合
 链接和图片、Unicode 组合字符与 emoji、顺序和 URL 元数据保留。插值追加/合并、
 映射偏移、源范围反查及 URL 缩短仍需继续恢复，生产变换流程未完成。
+
+### 文本追加与 UTF-16 源映射
+
+普通片段追加 `0x100639134..<0x1006394cc` 仅合并相邻 string/string；URL 与
+文本、URL 与 URL 均保留边界。随后取新片段的文本长度：stub 0x101150af8 的
+GOT 0x101466458 绑定 Swift.String.UTF16View.count，不能用 grapheme count 或
+UTF-8 字节数。已有映射时按此长度追加 nil；映射原本 nil 则保持 nil。
+
+带映射追加 `0x100639bec..<0x100639f08` 在任何写入前检查 offsets.count 等于
+新文本 UTF-16 长度，不等 trap。记录旧 description 的 UTF-16 长度，追加或合并
+普通文本；原映射若 nil，先补旧长度个 nil，然后追加调用方 offsets 原值，不
+重定位数值，也不裁剪负值。空 mapped append 仍激活非 nil 映射并处理空 span。
+
+恢复两个组合 helper（尚非完整插值类型）。测试包含 emoji 代理对、组合字符、
+ZWJ 序列、链接/图片边界、映射保留、未映射前缀、nil 与空数组区别、值语义快照；
+独立测试进程验证错误映射长度触发 precondition。测试通过；完整插值合并、删除
+末字符和源范围反查仍未恢复，不据此宣称完整文本定位链路可用。

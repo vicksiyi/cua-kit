@@ -920,6 +920,21 @@ element_storage_evidence['transformedStringStorage']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringSpan.swift restores enum under a local name and shared description body',
     'limitations':'Full interpolation append/merge, mapped-string offsets and source-range methods, URL shortening and renderer context remain pending. No partial same-name TransformedUIString is substituted.',
 }
+line=next((line for line in fixups.splitlines() if '0x101466458' in line.lower()),'')
+if 'libswiftCore/_$sSS9UTF16ViewV5countSivg' not in line:
+    raise SystemExit('Transformed string offset unit changed')
+element_storage_evidence['transformedStringAppend']={
+    'plain':'0x100639134..<0x1006394cc',
+    'mapped':'0x10063a2fc -> 0x100639bec..<0x100639f08',
+    'unit':'UTF16View.count via stub 0x101150af8 / GOT 0x101466458',
+    'merge':'Only adjacent string/string spans coalesce; URL spans retain boundaries and metadata; empty text is not skipped',
+    'plainOffsets':'nil remains nil; nonnil array receives nil entries equal to incoming span text UTF16 length',
+    'mappedOffsets':'precondition incoming offsets count equals text UTF16 length before mutation; compute old description length; append text; initialize nil map with old-length nil entries; append supplied offsets unchanged',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100639134,0x1006394cc),(0x100639bec,0x100639f08)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringAppending.swift',
+    'limitations':'Single-span and mapped-text mutation restored as composable helpers; interpolation-to-interpolation merging, removeLast, range lookup, and full type/production pipeline remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

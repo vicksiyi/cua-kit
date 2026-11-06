@@ -225,3 +225,20 @@ test("native transformed string description preserves span payloads", {
     assert.match(result.stdout, /transformed string description preserves span text, ordering, Unicode and URL metadata/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed string append preserves UTF16 offsets", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-append-"));
+  try {
+    const output = join(directory, "append");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringAppending"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringAppendingTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /span append preserves UTF16 mapping, merge boundaries, nil distinction and value semantics/);
+    await assert.rejects(exec(output, ["invalid"]), (error: any) =>
+      ["SIGTRAP", "SIGILL"].includes(error.signal) && /Precondition failed/.test(error.stderr));
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

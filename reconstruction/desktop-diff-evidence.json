@@ -2496,6 +2496,28 @@
       "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringSpan.swift restores enum under a local name and shared description body",
       "limitations": "Full interpolation append/merge, mapped-string offsets and source-range methods, URL shortening and renderer context remain pending. No partial same-name TransformedUIString is substituted."
     },
+    "transformedStringAppend": {
+      "plain": "0x100639134..<0x1006394cc",
+      "mapped": "0x10063a2fc -> 0x100639bec..<0x100639f08",
+      "unit": "UTF16View.count via stub 0x101150af8 / GOT 0x101466458",
+      "merge": "Only adjacent string/string spans coalesce; URL spans retain boundaries and metadata; empty text is not skipped",
+      "plainOffsets": "nil remains nil; nonnil array receives nil entries equal to incoming span text UTF16 length",
+      "mappedOffsets": "precondition incoming offsets count equals text UTF16 length before mutation; compute old description length; append text; initialize nil map with old-length nil entries; append supplied offsets unchanged",
+      "blocks": [
+        {
+          "start": "0x100639134",
+          "endExclusive": "0x1006394cc",
+          "machineCodeSha256": "26422a9785cd09ac55c1c6bda3484eb5b63db0af7ddad517541e7202c2575887"
+        },
+        {
+          "start": "0x100639bec",
+          "endExclusive": "0x100639f08",
+          "machineCodeSha256": "7ccd6652c527b71452637354795b0d3a4a3b588d0eca10dc028c24e604857e94"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIStringAppending.swift",
+      "limitations": "Single-span and mapped-text mutation restored as composable helpers; interpolation-to-interpolation merging, removeLast, range lookup, and full type/production pipeline remain pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
