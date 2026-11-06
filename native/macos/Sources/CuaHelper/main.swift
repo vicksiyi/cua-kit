@@ -60,9 +60,12 @@ final class Target {
             // Secure input contents are not exported.
             let secure = string(element, kAXSubroleAttribute) == "AXSecureTextField"
             if !secure, let value = scalar(attribute(element, kAXValueAttribute)) { data["value"] = String(describing: value) }
-            var actions: CFArray?
-            AXUIElementCopyActionNames(element, &actions)
-            var props: [String: Any] = ["secure": secure, "actions": (actions as? [String] ?? []).joined(separator: ",")]
+            // Use the restored system reader: only successful, wholly decoded
+            // action arrays are accepted; preserve first-occurrence uniqueness.
+            // Full provider dispatch and synthetic disclosure actions remain
+            // pending with the original UIElement cache/transaction integration.
+            let actions = (try? readSystemAXActions(element)) ?? []
+            var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
             for name in [kAXEnabledAttribute, kAXFocusedAttribute, kAXSelectedAttribute] { if let value = scalar(attribute(element, name)) { props[name] = value } }
             if let selected = attribute(element,kAXSelectedTextRangeAttribute),
                let range = decodedAXTypedAttribute(selected, as: CFRange.self) {
@@ -109,9 +112,8 @@ final class Target {
             guard let action = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "Secondary action requires a name.") }
             if action == "focus" { status = AXUIElementSetAttributeValue(element,kAXFocusedAttribute as CFString,kCFBooleanTrue) }
             else {
-                var names: CFArray?
-                AXUIElementCopyActionNames(element,&names)
-                guard (names as? [String] ?? []).contains(action) else { throw fail("UNSUPPORTED_CAPABILITY", "Action is not advertised by this AX element.") }
+                let actions = (try? readSystemAXActions(element)) ?? []
+                guard actions.contains(UIElementAction(action)) else { throw fail("UNSUPPORTED_CAPABILITY", "Action is not advertised by this AX element.") }
                 status = AXUIElementPerformAction(element,action as CFString)
             }
         default: throw fail("UNSUPPORTED_CAPABILITY", "Unsupported native action.")

@@ -1131,3 +1131,21 @@ scanUpToString("\n")。fixups 0x101466488/0x101463988/0x101463990 和
 后续项继续读取；空列表不读取描述；动作 getter 仅调用一次；描述实体的等价比较同时
 使用 action 和 description（包括 Swift.String Unicode 相等语义）。测试和构建通过。
 这是已恢复描述层之间的组合，尚未接入完整生产页面状态或原版协议分派。
+
+## 系统动作读取接入生产路径（2026-11-07）
+
+Target.collect 和 Target.action 的 secondary 分支此前仍直接调用
+AXUIElementCopyActionNames，忽略返回状态。现统一使用 readSystemAXActions，
+接受 success 且完整桥接成功的数组，使用原版 Algorithms 唯一化语义。
+读取失败不再可能把错误调用附带的输出当作有效动作；当前调用方仍降级为空列表，
+secondary 保持原有“不在已广告列表则拒绝”的行为。
+
+本次没有改变页面文本协议，也没有把仅有描述的 synthetic 动作广告为可执行能力。
+完整 UIElement 缓存/transaction、MockProvider 分派、synthetic 动作执行、
+描述文本呈现与角色日志尚未整合；主采集器依旧是重建中的简化树遍历。
+
+验证：SwiftPM 构建、原生 observation-text 自检、系统动作读取测试和 native client
+回归共 18 项通过。真实 owned-App 验收再次执行，在宿主权限预检失败：
+accessibility=false、screenRecording=false；未启动测试 App、未执行 UI 操作。
+这是当前 agent 宿主的检查结果，不能推断用户其它终端的权限或宣称真实应用验收成功。
+原始本机验收日志不提交仓库。
