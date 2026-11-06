@@ -318,6 +318,13 @@ async fn read_frames(
                 };
                 value = decoded;
             }
+            if kernel_protocol && value["type"] == "submitted_code_complete" {
+                let Ok(decoded) = crate::kernel_protocol::decode_submitted_code_complete(&line) else {
+                    line.clear();
+                    continue;
+                };
+                value = decoded;
+            }
             let bytes = line.len();
             if queued
                 .fetch_add(bytes, Ordering::AcqRel)

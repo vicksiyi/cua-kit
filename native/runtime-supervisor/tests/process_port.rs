@@ -244,3 +244,24 @@ async fn kernel_drops_invalid_timeout_controls_before_dispatch_and_keeps_worker_
     assert_eq!(result["output"],"still alive");
     worker.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn kernel_completion_notice_rejects_invalid_duration_and_duplicate_identity() {
+    let mut worker=ProcessWorker::start_kernel(spec(r#"
+        for(const line of [
+          '{"type":"submitted_code_complete"}',
+          '{"type":"submitted_code_complete","exec_id":"one","exec_id":"two"}',
+          '{"type":"submitted_code_complete","exec_id":"one","execution_duration_ms":-1}',
+          '{"type":"submitted_code_complete","exec_id":"one","execution_duration_ms":1.5}',
+          '{"type":"submitted_code_complete","exec_id":"one","execution_duration_ms":null,"execution_duration_ms":0}',
+          '{"type":"submitted_code_complete","exec_id":"valid","execution_duration_ms":18446744073709551615,"extra":true}',
+          '{"type":"exec_result","id":"valid","ok":true,"output":"done"}'
+        ]) process.stdout.write(line+'\n');
+    "#)).await.unwrap();
+    let message=timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap();
+    assert_eq!(message,json!({"type":"submitted_code_complete","exec_id":"valid","execution_duration_ms":u64::MAX}));
+    let result=worker.next_message().await.unwrap().unwrap();
+    assert_eq!(result["output"],"done");
+    assert!(worker.next_message().await.unwrap().is_none());
+    worker.close().await.unwrap();
+}

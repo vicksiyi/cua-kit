@@ -109,6 +109,20 @@ for expected in ['100038fdc:', '0x100039420', '10003936c:', '0x1000394d0',
                  '1000394fc:', '#0x977', '100039330:', '100039360:']:
     assert expected in timeout_control_decode, expected
 
+submitted_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x100039728','--stop-address=0x10003a338',str(artifact)], text=True)
+submitted_fields=[]
+for index in range(2):
+    pointer,length=struct.unpack('<QQ',read(0x100cf82a0+index*16,16))
+    submitted_fields.append(read(pointer,length).decode('ascii'))
+assert submitted_fields == ['exec_id','execution_duration_ms']
+assert read(0x1009c1488,21) == b'execution_duration_ms'
+for expected in ['1000397b4:', '0x100039ef0', '1000397c0:', '1000397c4:',
+                 '100039de0:', 'StringVisitor', '100039e5c:', 'OptionVisitor<u64>',
+                 '100039d34:', '0x10003a0c8', '100039da0:', '0x10003a0b4',
+                 '100039f20:', '#0x8fb', '10003a0f8:', '#0x977']:
+    assert expected in submitted_decode, expected
+
 sentry_user_update = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
     '--start-address=0x10022c17c','--stop-address=0x10022c380',str(artifact)], text=True)
 for crate in ['sentry-core-0.49.2','sentry-types-0.49.2']:
@@ -503,6 +517,19 @@ print(json.dumps({
         'reviewedBehavior':'configure_scope uses the active hub, projects optional user ID with the second sentry_user argument absent (x2=0), then replaces Scope user. None clears the user; empty string remains present.',
         'implementation':'native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver',
         'limits':'Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete.'
+    },
+    'kernelSubmittedCodeComplete': {
+        'range':['0x100039728','0x10003a338'],
+        'instructionTextSha256':hashlib.sha256(submitted_decode.encode()).hexdigest(),
+        'fields':submitted_fields,
+        'fieldTableAddress':'0x100cf82a0',
+        'reviewedBehavior':[
+            'exec_id is required String; empty string accepted at DTO boundary',
+            'execution_duration_ms is Option<u64>; absent/null maps None, present unsigned integer is preserved',
+            'duplicates of either known field reject; unknown fields ignored'
+        ],
+        'implementation':'native/runtime-supervisor/src/kernel_protocol.rs; ProcessWorker kernel-only completion notice normalization',
+        'limits':'Payload boundary only, not complete duration telemetry or hook/lifecycle parity.'
     },
     'kernelTimeoutControl': {
         'range':['0x100038f50','0x100039728'],

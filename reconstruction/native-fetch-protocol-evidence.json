@@ -307,6 +307,25 @@
     "implementation": "native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver",
     "limits": "Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete."
   },
+  "kernelSubmittedCodeComplete": {
+    "range": [
+      "0x100039728",
+      "0x10003a338"
+    ],
+    "instructionTextSha256": "f09b9285b0c9b1506cb5022b1f87fdc57ef5c273c65b99e99053778d23410541",
+    "fields": [
+      "exec_id",
+      "execution_duration_ms"
+    ],
+    "fieldTableAddress": "0x100cf82a0",
+    "reviewedBehavior": [
+      "exec_id is required String; empty string accepted at DTO boundary",
+      "execution_duration_ms is Option<u64>; absent/null maps None, present unsigned integer is preserved",
+      "duplicates of either known field reject; unknown fields ignored"
+    ],
+    "implementation": "native/runtime-supervisor/src/kernel_protocol.rs; ProcessWorker kernel-only completion notice normalization",
+    "limits": "Payload boundary only, not complete duration telemetry or hook/lifecycle parity."
+  },
   "kernelTimeoutControl": {
     "range": [
       "0x100038f50",

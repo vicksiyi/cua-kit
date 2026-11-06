@@ -47,10 +47,63 @@ pub(crate) fn decode_timeout_control(line: &[u8]) -> Result<Value, serde_json::E
     serde_json::to_value(serde_json::from_slice::<ExecTimeoutControl>(line)?)
 }
 
+// Native SubmittedCodeCompleteMessage visitor: required identity and optional u64.
+#[derive(Deserialize, Serialize)]
+struct SubmittedCodeComplete {
+    #[serde(rename = "type")]
+    kind: String,
+    exec_id: String,
+    execution_duration_ms: Option<u64>,
+}
+pub(crate) fn decode_submitted_code_complete(line: &[u8]) -> Result<Value, serde_json::Error> {
+    serde_json::to_value(serde_json::from_slice::<SubmittedCodeComplete>(line)?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn submitted_completion_identity_and_duration_match_native_types() {
+        let prefix = r#"{"type":"submitted_code_complete","exec_id":"""#;
+        for suffix in [
+            "}",
+            ",\"execution_duration_ms\":null}",
+            ",\"execution_duration_ms\":0}",
+            ",\"execution_duration_ms\":18446744073709551615}",
+        ] {
+            assert!(decode_submitted_code_complete(format!("{prefix}{suffix}").as_bytes()).is_ok());
+        }
+        for value in [
+            "-1",
+            "1.5",
+            "18446744073709551616",
+            "true",
+            "\"1\"",
+            "[]",
+            "{}",
+        ] {
+            assert!(
+                decode_submitted_code_complete(
+                    format!("{prefix},\"execution_duration_ms\":{value}}}").as_bytes()
+                )
+                .is_err(),
+                "{value}"
+            );
+        }
+        for raw in [
+            r#"{"type":"submitted_code_complete"}"#,
+            r#"{"type":"submitted_code_complete","exec_id":null}"#,
+            r#"{"type":"submitted_code_complete","exec_id":"one","exec_id":"two"}"#,
+            r#"{"type":"submitted_code_complete","exec_id":"one","execution_duration_ms":null,"execution_duration_ms":0}"#,
+        ] {
+            assert!(decode_submitted_code_complete(raw.as_bytes()).is_err());
+        }
+        let value =
+            decode_submitted_code_complete(format!("{prefix},\"unknown\":1}}").as_bytes()).unwrap();
+        assert!(value.get("unknown").is_none());
+        assert!(value["execution_duration_ms"].is_null());
+    }
     #[test]
     fn timeout_control_requires_one_string_identity_and_ignores_unknown_fields() {
         for kind in ["suspend_timeout", "resume_timeout"] {
