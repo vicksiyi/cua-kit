@@ -6569,3 +6569,13 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Four tests passed, including actual owned Python fixture child processes with an executable path containing spaces: exact arguments, bidirectional pipe exchange, explicit termination/reap, drop termination/reap, missing executable error, fallback semantics and gaas rejection before path lookup. No original Codex executable or real credential source was invoked.
 - Added static instruction/literal evidence to the pinned audit, which passes.
 - Still incomplete: initialize/initialized handshake, request/response protocol, request ID allocation, timeout/reconnect, connection sharing, App Server token fetcher and production deployment. A started process with working pipes is not an authenticated App Server connection.
+
+
+### Native App Server request/response protocol checkpoint (2026-11-06)
+
+- Restored `CodexAppServerConnection::send_request` from native `0x10022753c..0x100228224`, plus `app_server_error_message`. IDs start at string "1" and increment before sending. Requests contain id/method and optional params; absent params differs from explicit null. No jsonrpc field is added.
+- JSON bytes and newline are written separately. The original error calls the newline write "flush", although no separate poll_flush is invoked in this function. Stdout now uses Tokio Lines over the original 8192-byte BufReader.
+- A fresh 30-second timeout wraps each next_line. Empty lines and nonmatching IDs are skipped; numeric IDs do not match string IDs. Whitespace-only/non-JSON/invalid-UTF8, EOF and timeout have their own error paths. This preserves the observed per-line deadline, not a stronger whole-request timeout.
+- Matching error-field presence wins over result (including null error). String error.message is returned verbatim, including empty; otherwise use the method-specific native fallback. Missing result returns null.
+- All 8 process/protocol tests passed in 30.01 seconds, including owned executable fixtures, three consecutive requests with optional params, notification/unrelated-ID skipping, error/result precedence, malformed/UTF8/EOF handling, actual 30-second timeout, process drop and pipe exchange. Static audit passed. No vendor CLI or real credential was used.
+- Remaining: initialization handshake, initialized notification, connection sharing/recreation, App Server auth fetcher, diagnostics and production wiring. Cancellation/resumption parity for partially written requests is unproven. Full end-to-end auth and daily-browser acceptance remain incomplete.

@@ -187,6 +187,32 @@ for expected in ['1008bcd74:', '1008bcdc8:', '1008bcdd0:', 'std::sys::pipe::unix
     assert expected in stdio_variants, expected
 for expected in ['100867d74:', '#0xc8', '100867dcc:', '#0x88']:
     assert expected in child_build, expected
+rpc_send = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x10022753c','--stop-address=0x100228224',str(artifact)], text=True)
+rpc_error = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1002bd4d0','--stop-address=0x1002bd5b0',str(artifact)], text=True)
+def format_prefix(address):
+    return read(address+1,read(address,1)[0]).decode()
+rpc_errors = {key:format_prefix(address) for key,address in [
+    ('serialize',0x100b31e56),('write',0x100b31f68),('newline',0x100b31e87),
+    ('timeout',0x100b31eb4),('read',0x100b31ee4),('eof',0x100b31f11),
+    ('json',0x100b31f3d),('rejected',0x100b35a64)]}
+assert rpc_errors == {
+    'serialize':'failed to serialize codex app-server request: ',
+    'write':'failed to write codex app-server request: ',
+    'newline':'failed to flush codex app-server request: ',
+    'timeout':'timed out waiting for ', 'read':'failed to read codex app-server response: ',
+    'eof':'codex app-server exited before returning ', 'json':'codex app-server returned invalid JSON: ',
+    'rejected':'codex app-server rejected '}
+assert read(0x100a48507,1)==b'\n'
+for expected in ['10022759c:', '1002275a0:', '1002275a4:', '1002275b8:', '<usize>::_fmt',
+    '100227838:', '100227840:', '100227958:', '10022799c:', '100227a48:',
+    '100227e24:', '#0x1e', '100227ea4:', 'Lines<', '100227ef0:',
+    '100227f04:', '100227f54:', '100227f78:', '100227f98:',
+    '1002280d8:', '1002280e4:', '100228108:', '100228148:']:
+    assert expected in rpc_send, expected
+for expected in ['1002bd504:', '1002bd510:', '1002bd530:', '1002bd5a0:']:
+    assert expected in rpc_error, expected
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -322,7 +348,23 @@ print(json.dumps({
             'take stdin then stdout; wrap stdout with 8192-byte BufReader'
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
-        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Initialization messages, request IDs, response matching, timeout/reconnect and client caching are not implemented in this spawn boundary. Vendor CLI was not executed.'
+        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Request IDs, response matching and per-line timeout now implemented in send_request. Initialization messages, reconnect and client caching remain pending. Vendor CLI was not executed.'
+    },
+    'appServerRequestProtocol': {
+        'range':['0x10022753c','0x100228224'],
+        'instructionTextSha256':hashlib.sha256(rpc_send.encode()).hexdigest(),
+        'errorHelperRange':['0x1002bd4d0','0x1002bd5b0'],
+        'errorPrefixes':rpc_errors,
+        'reviewedBehavior':[
+            'increment usize request counter before serialization; stringify decimal ID; request contains id/method and params only when Some (including Some Null)',
+            'serialize JSON then write_all payload then separate newline write; newline branch is called flush in error text but no poll_flush invocation',
+            'timeout 30 seconds wraps each Lines::next_line; ignored empty/nonmatching lines return to constructing a fresh timeout',
+            'malformed JSON including whitespace-only line returns error; only string ID equal to requested ID matches',
+            'matching error field presence (including null) takes precedence over result; message string including empty is preserved; fallback rejected-method error',
+            'missing result returns JSON null; read/EOF/timeout failures have distinct errors'
+        ],
+        'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
+        'limits':'Owned subprocess tests, not original-runtime differential execution. Initialization/initialized notification, client connection reuse and production auth integration remain pending. Per-line timeout is not an overall deadline; write cancellation/resumption parity is not proven.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'

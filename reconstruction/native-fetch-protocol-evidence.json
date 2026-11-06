@@ -228,7 +228,38 @@
       "take stdin then stdout; wrap stdout with 8192-byte BufReader"
     ],
     "implementation": "native/runtime-supervisor/src/codex_app_server.rs",
-    "limits": "Owned process fixtures only. Runtime mode parser is supplied by caller. Initialization messages, request IDs, response matching, timeout/reconnect and client caching are not implemented in this spawn boundary. Vendor CLI was not executed."
+    "limits": "Owned process fixtures only. Runtime mode parser is supplied by caller. Request IDs, response matching and per-line timeout now implemented in send_request. Initialization messages, reconnect and client caching remain pending. Vendor CLI was not executed."
+  },
+  "appServerRequestProtocol": {
+    "range": [
+      "0x10022753c",
+      "0x100228224"
+    ],
+    "instructionTextSha256": "eaf30b8596dfd107ba5976f796bcb58dc734c96cc455bceb76f8fe4ad1ef2754",
+    "errorHelperRange": [
+      "0x1002bd4d0",
+      "0x1002bd5b0"
+    ],
+    "errorPrefixes": {
+      "serialize": "failed to serialize codex app-server request: ",
+      "write": "failed to write codex app-server request: ",
+      "newline": "failed to flush codex app-server request: ",
+      "timeout": "timed out waiting for ",
+      "read": "failed to read codex app-server response: ",
+      "eof": "codex app-server exited before returning ",
+      "json": "codex app-server returned invalid JSON: ",
+      "rejected": "codex app-server rejected "
+    },
+    "reviewedBehavior": [
+      "increment usize request counter before serialization; stringify decimal ID; request contains id/method and params only when Some (including Some Null)",
+      "serialize JSON then write_all payload then separate newline write; newline branch is called flush in error text but no poll_flush invocation",
+      "timeout 30 seconds wraps each Lines::next_line; ignored empty/nonmatching lines return to constructing a fresh timeout",
+      "malformed JSON including whitespace-only line returns error; only string ID equal to requested ID matches",
+      "matching error field presence (including null) takes precedence over result; message string including empty is preserved; fallback rejected-method error",
+      "missing result returns JSON null; read/EOF/timeout failures have distinct errors"
+    ],
+    "implementation": "native/runtime-supervisor/src/codex_app_server.rs",
+    "limits": "Owned subprocess tests, not original-runtime differential execution. Initialization/initialized notification, client connection reuse and production auth integration remain pending. Per-line timeout is not an overall deadline; write cancellation/resumption parity is not proven."
   },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
   "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."

@@ -10,7 +10,7 @@ use std::{
     path::PathBuf,
     time::Duration,
 };
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+use tokio::io::AsyncWriteExt;
 
 #[test]
 fn executable_fallback_preserves_present_values() {
@@ -66,14 +66,11 @@ async fn owned_process_has_exact_arguments_and_bidirectional_pipes() {
             Ok(fixture.cli())
         })
         .unwrap();
-    let mut line = String::new();
-    tokio::time::timeout(
-        Duration::from_secs(5),
-        connection.stdout.read_line(&mut line),
-    )
-    .await
-    .unwrap()
-    .unwrap();
+    let line = tokio::time::timeout(Duration::from_secs(5), connection.stdout.next_line())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
     let ready: serde_json::Value = serde_json::from_str(&line).unwrap();
     assert_eq!(
         ready["args"],
@@ -87,15 +84,12 @@ async fn owned_process_has_exact_arguments_and_bidirectional_pipes() {
         .await
         .unwrap();
     connection.stdin.flush().await.unwrap();
-    line.clear();
-    tokio::time::timeout(
-        Duration::from_secs(5),
-        connection.stdout.read_line(&mut line),
-    )
-    .await
-    .unwrap()
-    .unwrap();
-    assert_eq!(line, "owned fixture request\n");
+    let line = tokio::time::timeout(Duration::from_secs(5), connection.stdout.next_line())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    assert_eq!(line, "owned fixture request");
     // Reap only this explicitly owned child.
     connection.child.kill().await.unwrap();
     assert!(connection.child.wait().await.unwrap().code().is_none());
@@ -117,14 +111,13 @@ async fn spawn_errors_keep_native_prefix_and_drop_terminates_owned_child() {
             Ok(fixture.cli())
         })
         .unwrap();
-    let mut line = String::new();
-    tokio::time::timeout(
-        Duration::from_secs(5),
-        connection.stdout.read_line(&mut line),
-    )
-    .await
-    .unwrap()
-    .unwrap();
+    let line = tokio::time::timeout(Duration::from_secs(5), connection.stdout.next_line())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    let ready: serde_json::Value = serde_json::from_str(&line).unwrap();
+    assert_eq!(ready["pid"].as_u64(), connection.child.id().map(u64::from));
     let pid = connection.child.id().unwrap() as i32;
     drop(connection);
     tokio::time::timeout(Duration::from_secs(5), async {
@@ -139,4 +132,129 @@ async fn spawn_errors_keep_native_prefix_and_drop_terminates_owned_child() {
     })
     .await
     .expect("owned child should be killed and reaped after drop");
+}
+
+fn rpc_fixture(body: &str) -> OwnedFixture {
+    let fixture = OwnedFixture::new();
+    std::fs::write(
+        fixture.cli(),
+        format!("#!/usr/bin/python3\nimport json,sys,time\n{body}\n"),
+    )
+    .unwrap();
+    fixture
+}
+fn connect(fixture: &OwnedFixture) -> CodexAppServerConnection {
+    CodexAppServerConnection::spawn_with_cli_lookup(FetchRuntimeMode::Default, || Ok(fixture.cli()))
+        .unwrap()
+}
+
+#[tokio::test]
+async fn rpc_uses_string_ids_optional_params_and_ignores_unrelated_lines() {
+    let fixture = rpc_fixture(
+        r#"
+for line in sys.stdin:
+ r=json.loads(line)
+ print('',flush=True)
+ print(json.dumps({'id':int(r['id']),'result':'wrong-number'}),flush=True)
+ print(json.dumps({'id':'unrelated','error':{'message':'must ignore'}}),flush=True)
+ print(json.dumps({'method':'notification'}),flush=True)
+ print(json.dumps({'id':r['id'],'result':r}),flush=True)
+"#,
+    );
+    let mut connection = connect(&fixture);
+    for (i, params) in [
+        None,
+        Some(serde_json::Value::Null),
+        Some(serde_json::json!({"text":"换行\n内容"})),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let response = connection
+            .send_request("fixture", params.clone())
+            .await
+            .unwrap();
+        assert_eq!(response["id"], (i + 1).to_string());
+        assert_eq!(response["method"], "fixture");
+        assert_eq!(response.get("params"), params.as_ref());
+        assert!(response.get("jsonrpc").is_none());
+    }
+    connection.child.kill().await.unwrap();
+}
+
+#[tokio::test]
+async fn rpc_error_presence_wins_over_result_and_missing_result_is_null() {
+    let fixture = rpc_fixture(
+        r#"
+for line in sys.stdin:
+ r=json.loads(line)
+ out={'id':r['id']}
+ if r['method']=='empty-error': out.update(error={'message':''},result='ignored')
+ elif r['method']=='message': out.update(error={'message':'synthetic rejection','code':42})
+ elif r['method']=='null-error': out.update(error=None,result='ignored')
+ elif r['method']=='wrong-message': out.update(error={'message':42})
+ print(json.dumps(out),flush=True)
+"#,
+    );
+    let mut connection = connect(&fixture);
+    for (method, error) in [
+        ("empty-error", ""),
+        ("message", "synthetic rejection"),
+        ("null-error", "codex app-server rejected null-error"),
+        ("wrong-message", "codex app-server rejected wrong-message"),
+    ] {
+        assert_eq!(
+            connection.send_request(method, None).await.unwrap_err(),
+            error
+        );
+    }
+    assert_eq!(
+        connection.send_request("missing", None).await.unwrap(),
+        serde_json::Value::Null
+    );
+    connection.child.kill().await.unwrap();
+}
+
+#[tokio::test]
+async fn rpc_malformed_json_whitespace_utf8_and_eof_have_distinct_errors() {
+    for (body, prefix) in [
+        (
+            "sys.stdin.readline(); print('not-json',flush=True)",
+            "codex app-server returned invalid JSON: ",
+        ),
+        (
+            "sys.stdin.readline(); print('   ',flush=True)",
+            "codex app-server returned invalid JSON: ",
+        ),
+        (
+            "sys.stdin.readline(); sys.stdout.buffer.write(b'\\xff\\n'); sys.stdout.flush()",
+            "failed to read codex app-server response: ",
+        ),
+        (
+            "sys.stdin.readline()",
+            "codex app-server exited before returning fixture",
+        ),
+    ] {
+        let fixture = rpc_fixture(body);
+        let mut connection = connect(&fixture);
+        assert!(connection
+            .send_request("fixture", None)
+            .await
+            .unwrap_err()
+            .starts_with(prefix));
+        connection.child.wait().await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn rpc_times_out_waiting_for_a_line() {
+    let fixture = rpc_fixture("sys.stdin.readline(); time.sleep(40)");
+    let mut connection = connect(&fixture);
+    let started = std::time::Instant::now();
+    assert_eq!(
+        connection.send_request("fixture", None).await.unwrap_err(),
+        "timed out waiting for fixture from codex app-server"
+    );
+    assert!(started.elapsed() >= Duration::from_secs(30));
+    connection.child.kill().await.unwrap();
 }
