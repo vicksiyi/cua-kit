@@ -17,6 +17,15 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Explicit proxy restart is now reconstructed as a separate Rust stage. It trims
+`params.clientId` (default for missing/invalid/empty), stops only the selected
+process after releasing the map lock, retains that entry, and rotates the shared
+runtime session UUID only after successful stop (also for an absent client).
+Map/stop failures preserve the previous session; a poisoned session mutex fails
+after stop. Owned-child tests verify the sibling stays alive. The ten focused
+proxy tests pass; manager ensure response/control wiring remains incomplete.
+See `proxyClientRestart` in the pinned native evidence.
+
 Latest incremental stage: the existing App Server proxy now supports native-order
 configuration refresh: runtime mutex remains held while the optional extension
 origin is replaced; both poisoned locks panic with the native messages. Refresh

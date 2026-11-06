@@ -158,3 +158,39 @@ impl AppServerProxy {
             .map(|id| format!("chrome-extension://{id}"));
     }
 }
+
+impl AppServerProxy {
+    /// Explicit restart stage of manager ensure, after configuration refresh.
+    /// Retain the selected map entry; the next input starts its replacement child.
+    pub fn restart_client(&self, params: Option<&serde_json::Value>) -> Result<(), RuntimeError> {
+        let client = params
+            .and_then(|v| v.get("clientId"))
+            .and_then(serde_json::Value::as_str)
+            .map(str::trim)
+            .filter(|v| !v.is_empty())
+            .unwrap_or("default");
+        let stopped = (|| -> std::io::Result<()> {
+            let process = self
+                .processes
+                .lock()
+                .map_err(|_| std::io::Error::other("app-server process map mutex poisoned"))?
+                .get(client)
+                .cloned();
+            if let Some(process) = process {
+                crate::app_server_output::stop_process(&process)?;
+            }
+            Ok(())
+        })();
+        stopped.map_err(|error| {
+            runtime_error(format!(
+                "Failed to restart Codex app-server for client {client}: {error}"
+            ))
+        })?;
+        let mut session = self
+            .runtime_session_id
+            .lock()
+            .map_err(|_| runtime_error("runtime session id mutex poisoned".into()))?;
+        *session = uuid::Uuid::new_v4().to_string();
+        Ok(())
+    }
+}

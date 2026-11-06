@@ -265,3 +265,145 @@ fn poisoned_origin_update_panics_after_runtime_replacement_and_poisons_runtime()
         .into_inner();
     assert_eq!(*runtime, ProxyRuntimeState::from(&config));
 }
+
+#[test]
+fn restart_stops_only_trimmed_client_retains_map_and_rotates_session() {
+    use core_browser_extension_host::app_server_output::{stop_process, OutputState};
+    use std::{
+        process::{Command, Stdio},
+        sync::{Arc, Mutex},
+    };
+    let (_, proxy) = update_fixture();
+    let mut children = vec![];
+    for client in ["chosen", "other"] {
+        let mut child = Command::new("/bin/cat")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .spawn()
+            .unwrap();
+        let stdin = child.stdin.take();
+        let child = Arc::new(Mutex::new(child));
+        children.push(child.clone());
+        proxy.processes.lock().unwrap().insert(
+            client.into(),
+            Arc::new(Mutex::new(OutputState {
+                child: Some(child),
+                stdin,
+                ..Default::default()
+            })),
+        );
+    }
+    let selected = proxy.processes.lock().unwrap()["chosen"].clone();
+    proxy
+        .restart_client(Some(&serde_json::json!({"clientId":" \u{2003}chosen\t"})))
+        .unwrap_or_else(|e| panic!("{}", e.message));
+    assert!(children[0].lock().unwrap().try_wait().unwrap().is_some());
+    assert!(children[1].lock().unwrap().try_wait().unwrap().is_none());
+    assert!(Arc::ptr_eq(
+        &selected,
+        &proxy.processes.lock().unwrap()["chosen"]
+    ));
+    assert_eq!(selected.lock().unwrap().generation, 1);
+    let session = proxy.runtime_session_id.lock().unwrap().clone();
+    assert_eq!(
+        uuid::Uuid::parse_str(&session).unwrap().get_version_num(),
+        4
+    );
+    assert_ne!(session, "existing-session");
+    assert_eq!(proxy.processes.lock().unwrap().len(), 2);
+    stop_process(&proxy.processes.lock().unwrap()["other"]).unwrap();
+}
+
+#[test]
+fn absent_client_rotates_session_and_invalid_client_values_select_default() {
+    use core_browser_extension_host::app_server_output::OutputState;
+    use std::sync::{Arc, Mutex};
+    let (_, proxy) = update_fixture();
+    let state = Arc::new(Mutex::new(OutputState::default()));
+    proxy
+        .processes
+        .lock()
+        .unwrap()
+        .insert("default".into(), state.clone());
+    let inputs = [
+        serde_json::Value::Null,
+        serde_json::json!({}),
+        serde_json::json!({"clientId":12}),
+        serde_json::json!({"clientId":" \t"}),
+    ];
+    for (index, input) in inputs.iter().enumerate() {
+        proxy
+            .restart_client(Some(input))
+            .unwrap_or_else(|e| panic!("{}", e.message));
+        assert_eq!(state.lock().unwrap().generation, (index + 1) as u64);
+    }
+    let old = proxy.runtime_session_id.lock().unwrap().clone();
+    proxy
+        .restart_client(Some(&serde_json::json!({"clientId":"missing"})))
+        .unwrap_or_else(|e| panic!("{}", e.message));
+    assert_ne!(*proxy.runtime_session_id.lock().unwrap(), old);
+    assert_eq!(proxy.processes.lock().unwrap().len(), 1);
+}
+
+#[test]
+fn failed_restart_does_not_rotate_session_and_session_failure_follows_stop() {
+    use core_browser_extension_host::app_server_output::OutputState;
+    use std::sync::{Arc, Mutex};
+    let (_, proxy) = update_fixture();
+    let process = Arc::new(Mutex::new(OutputState::default()));
+    proxy
+        .processes
+        .lock()
+        .unwrap()
+        .insert("bad".into(), process.clone());
+    assert!(std::thread::spawn(move || {
+        let _guard = process.lock().unwrap();
+        panic!("fixture");
+    })
+    .join()
+    .is_err());
+    let error = proxy
+        .restart_client(Some(&serde_json::json!({"clientId":"bad"})))
+        .err()
+        .unwrap();
+    assert_eq!(error.message, "Failed to restart Codex app-server for client bad: app-server process state mutex poisoned");
+    assert_eq!(
+        *proxy.runtime_session_id.lock().unwrap(),
+        "existing-session"
+    );
+    let good = Arc::new(Mutex::new(OutputState::default()));
+    proxy
+        .processes
+        .lock()
+        .unwrap()
+        .insert("default".into(), good.clone());
+    let id = proxy.runtime_session_id.clone();
+    assert!(std::thread::spawn(move || {
+        let _guard = id.lock().unwrap();
+        panic!("fixture");
+    })
+    .join()
+    .is_err());
+    let error = proxy.restart_client(None).err().unwrap();
+    assert_eq!(error.message, "runtime session id mutex poisoned");
+    assert_eq!(good.lock().unwrap().generation, 1);
+}
+
+#[test]
+fn poisoned_restart_map_returns_client_error_before_session_rotation() {
+    let (_, proxy) = update_fixture();
+    let map = proxy.processes.clone();
+    assert!(std::thread::spawn(move || {
+        let _guard = map.lock().unwrap();
+        panic!("fixture");
+    })
+    .join()
+    .is_err());
+    let error = proxy.restart_client(None).err().unwrap();
+    assert_eq!(error.message, "Failed to restart Codex app-server for client default: app-server process map mutex poisoned");
+    assert_eq!(error.kind, RuntimeErrorKind::Runtime);
+    assert_eq!(
+        *proxy.runtime_session_id.lock().unwrap(),
+        "existing-session"
+    );
+}
