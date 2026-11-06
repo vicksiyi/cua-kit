@@ -906,3 +906,17 @@ fallbackElements；prefetchEnabled 的 TaskLocal 初始化值为 true。这些�
 新增 Swift `UIElementAttributeSupport.swift`，提供原分支函数与现有具体 UIElement 的方法。
 测试覆盖 12 个支持集合/事务集合组合、读取次数，以及 getter 在连续调用中改变的情况。
 这不是完整 UIElementProtocol 或生产读取器接线；没有用它绕过尚未完成的 decoder/事务构造。
+
+## subrole 协议 witness（2026-11-07）
+
+继续追踪第五个直接要求：`0x10149ed78 → 0x1007aff6c → 0x1007289b0`。
+具体 witness 从 UIElement 的 `+0x10` 取 cache.attributes，查询 AXSubrole；
+公开 `UIElementProtocol.subrole`（`0x1007a8690`）经共享 getter `0x1007ab5dc`
+执行同一缓存查询，缓存由 `+0x28` witness 获取。
+
+两条路径在缺少缓存值时直接返回 nil，不发起 AX 重新读取。存在值时，取 AXPartialValue
+里的编码对象，以 throwingOnFailure=false 调用 `0x100710b44`；解码错误也返回 nil。
+该 decoder 首先检查 CF 类型并分派，不是直接做 `as? String`。
+
+协议直接要求中已确认五项，尚余五项和父协议需要恢复。这里只固化调用与分支证据；
+专门的 String decoder 尚未完整实现，因此没有用普通类型转换冒充，也没有接入生产观察器。

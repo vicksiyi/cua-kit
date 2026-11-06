@@ -741,6 +741,31 @@ element_storage_evidence['attributeSupport']={
     'interpretation':'Missing data is not sufficient evidence that an attribute is unsupported. Preserve nil versus empty transaction set and repeated lazy cache getter calls.',
     'limitations':'Recovered helper and concrete UIElement extension only; full protocol, decoder dispatch and production collector integration remain pending.',
 }
+# Concrete witness specialization and generic subrole extension converge on
+# the same cached attribute and decoder; this is not an uncached AX read.
+subrole_fixup=next((line for line in fixups.splitlines() if '0x10149ed78' in line.lower()),'')
+if '0x1007aff6c' not in subrole_fixup.lower():
+    raise SystemExit('UIElement subrole witness target changed')
+element_storage_evidence['protocolContract']['confirmedElementWitnesses'].append({
+    'slot':'0x10149ed78','target':'0x1007aff6c',
+    'meaning':'subrole getter: cached AXSubrole decoded as optional String, failure returns nil',
+})
+element_storage_evidence['protocolContract']['limitations']='Five remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted.'
+element_storage_evidence['cachedSubrole']={
+    'witness':'0x1007aff6c','specialization':'0x1007289b0',
+    'extension':'0x1007a8690','sharedCachedStringGetter':'0x1007ab5dc',
+    'attributeStorage':'0x1015ca8e8','attribute':'AXSubrole',
+    'decoder':'0x100710b44','throwingOnFailure':False,
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+              for a,b in [(0x1007aff6c,0x1007aff74),(0x1007289b0,0x100728ae0),(0x1007a8690,0x1007a86ac),(0x1007ab5dc,0x1007ab714)]],
+    'branches':[
+        'Concrete witness loads cache.attributes from element offset 0x10; generic extension obtains cache through witness offset 0x28.',
+        'Empty dictionary or missing AXSubrole returns nil; neither path invokes an AX read.',
+        'Present entry passes its encoded AnyObject to specialized decoder 0x100710b44 with throwingOnFailure=false; decoder errors are swallowed and return nil.',
+        'String decoder still performs CF type dispatch before conversion; ordinary String casting alone is not a faithful replacement.',
+    ],
+    'limitations':'Decoder specialization remains unimplemented; do not wire a plain as? String substitute or trigger fresh AX reads from this cached getter.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))

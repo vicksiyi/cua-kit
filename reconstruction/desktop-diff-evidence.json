@@ -1775,10 +1775,15 @@
           "slot": "0x10149ed70",
           "target": "0x10078fc50",
           "meaning": "element initializer forwards to 0x10072187c"
+        },
+        {
+          "slot": "0x10149ed78",
+          "target": "0x1007aff6c",
+          "meaning": "subrole getter: cached AXSubrole decoded as optional String, failure returns nil"
         }
       ],
       "interpretation": "Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.",
-      "limitations": "Six remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted."
+      "limitations": "Five remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted."
     },
     "attributeSupport": {
       "symbol": "UIElementProtocol.attributeIsKnownUnsupported",
@@ -1798,6 +1803,45 @@
       ],
       "interpretation": "Missing data is not sufficient evidence that an attribute is unsupported. Preserve nil versus empty transaction set and repeated lazy cache getter calls.",
       "limitations": "Recovered helper and concrete UIElement extension only; full protocol, decoder dispatch and production collector integration remain pending."
+    },
+    "cachedSubrole": {
+      "witness": "0x1007aff6c",
+      "specialization": "0x1007289b0",
+      "extension": "0x1007a8690",
+      "sharedCachedStringGetter": "0x1007ab5dc",
+      "attributeStorage": "0x1015ca8e8",
+      "attribute": "AXSubrole",
+      "decoder": "0x100710b44",
+      "throwingOnFailure": false,
+      "blocks": [
+        {
+          "start": "0x1007aff6c",
+          "endExclusive": "0x1007aff74",
+          "machineCodeSha256": "36a31ce82f76348cfd931893ec7cff310bc6b370c0efb3cc5ccd43b2c8bbeea2"
+        },
+        {
+          "start": "0x1007289b0",
+          "endExclusive": "0x100728ae0",
+          "machineCodeSha256": "028d6debbeffe41dc739bcc15e9bb4cf443e66ca26435da5b0d45d4c8d6cdf75"
+        },
+        {
+          "start": "0x1007a8690",
+          "endExclusive": "0x1007a86ac",
+          "machineCodeSha256": "9e243760384a3c770689fe84e4076220d0b347942949376cb2ba7791cdae8eb2"
+        },
+        {
+          "start": "0x1007ab5dc",
+          "endExclusive": "0x1007ab714",
+          "machineCodeSha256": "fb1824e51552ad57180060749ba97e97686d6e05a8d45bab32cc1c56ce4d3372"
+        }
+      ],
+      "branches": [
+        "Concrete witness loads cache.attributes from element offset 0x10; generic extension obtains cache through witness offset 0x28.",
+        "Empty dictionary or missing AXSubrole returns nil; neither path invokes an AX read.",
+        "Present entry passes its encoded AnyObject to specialized decoder 0x100710b44 with throwingOnFailure=false; decoder errors are swallowed and return nil.",
+        "String decoder still performs CF type dispatch before conversion; ordinary String casting alone is not a faithful replacement."
+      ],
+      "limitations": "Decoder specialization remains unimplemented; do not wire a plain as? String substitute or trigger fresh AX reads from this cached getter."
     }
   },
   "transactionScopeEvidence": {
