@@ -2284,3 +2284,22 @@ and systemIsSelected from the recovered paths. Tests cover absent vs malformed
 cache, false precedence over selected traits, independent bits, UInt64 maximum,
 negative NSNumber rejection and strict read errors. Full CatalystTraits formatting,
 original transformation rendering and real app acceptance are still pending.
+
+
+### Action discovery and execution integration
+
+Added an explicit standalone environment that composes restored operations; it
+is not presented as the original TaskLocal MockProvider. Observation and named
+secondary-action validation now share the supplemental actions getter, including
+SAIExpand/SAICollapse. Press and named secondary actions enter the full restored
+branch ordering: menu ancestor preparation, disclosure toggle, scrollbar page
+button fallback, then system AX action. Ancestors and page buttons recursively
+use the same dispatcher, and ancestor errors stop target execution.
+
+Combination tests link the project's actual Swift Algorithms dependency and
+exercise discovered disclosure actions, both toggle directions, ancestor-before-
+target order, ancestor failure, missing-scrollbar AX fallback and discovery errors.
+The native build is included in that test. A nonthrowing system action remains an
+acknowledgement, not evidence of a visible UI change: original tolerated AX statuses
+are preserved. Focus's special demo branch, original transaction/provider ownership,
+and live app acceptance remain incomplete.

@@ -1177,6 +1177,14 @@ element_storage_evidence['selectionState']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSelectionState.swift','native/macos/Sources/CuaHelper/AXUInt64Decoding.swift','native/macos/Sources/CuaHelper/UIElementSystemSelectionState.swift'],
     'limitations':'Full CatalystTraits OptionSet description remains pending; raw UInt64 selection bit is explicit. Native live acceptance and full renderer/transaction remain incomplete.',
 }
+element_storage_evidence['actionRuntimeIntegration']={
+    'composition':'Standalone UIElementActionEnvironment wires restored actions, menu preparation, disclosure toggle, scrollbar fallback, and system AX perform. It is not the original MockProvider type.',
+    'production':'Collector action list and secondary-action validation both use supplemental actions; press and named secondary execution use the same recursive dispatcher.',
+    'ordering':'Menu ancestor preparation precedes target dispatch. Ancestor action uses the full dispatcher recursively; errors stop target dispatch. Expand/collapse both toggle disclosure; page scroll tries scrollbar before AX fallback.',
+    'outcome':'System perform tolerates cannotComplete/attributeUnsupported per restored source. Nonthrowing completion is dispatch acknowledgement, not verified UI change.',
+    'implementation':['native/macos/Sources/CuaHelper/UIElementActionEnvironment.swift','native/macos/Sources/CuaHelper/main.swift'],
+    'limitations':'Focus special action and other input mechanisms remain separate; no live app acceptance or complete original provider/transaction restoration claimed.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

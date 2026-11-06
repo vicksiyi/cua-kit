@@ -64,11 +64,9 @@ final class Target {
             // Secure input contents are not exported.
             let secure = item.subrole == "AXSecureTextField"
             if !secure, let value = scalar(attribute(element, kAXValueAttribute)) { data["value"] = String(describing: value) }
-            // Use the restored system reader: only successful, wholly decoded
-            // action arrays are accepted; preserve first-occurrence uniqueness.
-            // Full provider dispatch and synthetic disclosure actions remain
-            // pending with the original UIElement cache/transaction integration.
-            let actions = (try? readSystemAXActions(element)) ?? []
+            let actions = item.actions(in: .system, reportError: { error in
+                Logger(subsystem: "core.cua", category: "Accessibility").error("Action discovery failed: \(String(describing: error))")
+            })
             var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
             props[kAXEnabledAttribute] = item.isEnabled
             props[kAXFocusedAttribute] = item.isFocused
@@ -108,8 +106,17 @@ final class Target {
         let element = nodes[id-1].element
         let operation = params["operation"] as? String ?? ""
         var status: AXError
+        let item = UIElement(systemElement: element, transaction: nil)
+        func perform(_ action: UIElementAction) throws -> AXError {
+            do {
+                try item.performAction(action, transaction: nil, environment: .system, reportError: { error in
+                    Logger(subsystem: "core.cua", category: "Accessibility").error("Action dependency read failed: \(String(describing: error))")
+                })
+                return .success
+            } catch UIElementError.axError(let error) { return error }
+        }
         switch operation {
-        case "press": status = AXUIElementPerformAction(element, kAXPressAction as CFString)
+        case "press": status = try perform(.press)
         case "setValue":
             guard let text = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "setValue requires a string.") }
             guard (try? isSystemAXAttributeSettable(element, UIElementAttribute(kAXValueAttribute))) == true else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
@@ -129,9 +136,11 @@ final class Target {
             guard let action = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "Secondary action requires a name.") }
             if action == "focus" { status = AXUIElementSetAttributeValue(element,kAXFocusedAttribute as CFString,kCFBooleanTrue) }
             else {
-                let actions = (try? readSystemAXActions(element)) ?? []
+                let actions = item.actions(in: .system, reportError: { error in
+                    Logger(subsystem: "core.cua", category: "Accessibility").error("Action discovery failed: \(String(describing: error))")
+                })
                 guard actions.contains(UIElementAction(action)) else { throw fail("UNSUPPORTED_CAPABILITY", "Action is not advertised by this AX element.") }
-                status = AXUIElementPerformAction(element,action as CFString)
+                status = try perform(UIElementAction(action))
             }
         default: throw fail("UNSUPPORTED_CAPABILITY", "Unsupported native action.")
         }
