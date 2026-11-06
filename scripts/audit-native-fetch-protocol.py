@@ -161,6 +161,32 @@ for expected in ['1002272ec:', '100227308:', '100227380:', '10022738c:', '100227
     assert expected in fetch_auth_provider, expected
 for expected in ['10022bb24:', 'strh\twzr', '10022bb98:', '#0x100', '10022bb9c:']:
     assert expected in provider_methods, expected
+app_server_spawn = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1002bada8','--stop-address=0x1002bb388',str(artifact)], text=True)
+stdio_variants = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1008bcd58','--stop-address=0x1008bce90',str(artifact)], text=True)
+child_build = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x100867cf0','--stop-address=0x100867e20',str(artifact)], text=True)
+spawn_literals = {key:read(address,length).decode() for key,address,length in [
+    ('subcommand',0x100a4d851,10),('modeError',0x100a4d85b,60),
+    ('cliEnv',0x100a4d8fd,14),('listenFlag',0x100a4db98,8),('listenValue',0x100a4dba0,8),
+    ('stdinError',0x100a4cfe6,37),('stdoutError',0x100a4cfc0,38),
+    ('spawnErrorPrefix',0x100b359c9,34),('nullDevice',0x100b531dc,9)]}
+assert spawn_literals == {
+    'subcommand':'app-server','modeError':'Codex app-server is unavailable in gaas-browser runtime mode',
+    'cliEnv':'CODEX_CLI_PATH','listenFlag':'--listen','listenValue':'stdio://',
+    'stdinError':'codex app-server stdin is unavailable','stdoutError':'codex app-server stdout is unavailable',
+    'spawnErrorPrefix':'failed to start codex app-server: ', 'nullDevice':'/dev/null'}
+for expected in ['1002badc8:', 'NodeReplRuntimeMode>::from_process_env', '1002bae00:',
+    '1002bae60:', 'std::env::_var', '1002bae70:', '1002bae8c:', '#0x78', '#0x6f63', '#0x6564',
+    '1002baf74:', '1002baf88:', '1002baf9c:', '1002bafa4:', '1002bafb0:',
+    '1002bafc0:', '1002bafc8:', '1002bb1f0:', '#0x2000']:
+    assert expected in app_server_spawn, expected
+for expected in ['1008bcd74:', '1008bcdc8:', '1008bcdd0:', 'std::sys::pipe::unix::pipe',
+    '1008bcdf4:', '1008bce14:', '1008bce20:', 'File>::open_c']:
+    assert expected in stdio_variants, expected
+for expected in ['100867d74:', '#0xc8', '100867dcc:', '#0x88']:
+    assert expected in child_build, expected
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -283,6 +309,20 @@ print(json.dumps({
             'successful token without user claim passes None to diagnostics; provider has no credential cache branch in the reviewed function'
         ],
         'limits': 'Request parameters, result validation, CodexAuth projection and provider refresh delegation implemented. AuthUserObserver is an explicit reconstruction seam for the original Sentry update; backend not implemented and no telemetry emitted. App Server fetcher transport/initialization, error logging and deployment wiring remain incomplete. Any caching below AccessTokenFetcher is not established by this provider review.'
+    },
+    'appServerSpawn': {
+        'range':['0x1002bada8','0x1002bb388'],
+        'instructionTextSha256':hashlib.sha256(app_server_spawn.encode()).hexdigest(),
+        'literals':spawn_literals,
+        'reviewedBehavior':[
+            'parse runtime mode before environment lookup; reject gaas-browser before process creation',
+            'std::env::var CODEX_CLI_PATH; VarError fallback codex, preserve present empty value',
+            'three args app-server --listen stdio://; stdin/stdout Stdio discriminant 2 maps to pipe, stderr discriminant 1 opens /dev/null',
+            'command flag at sp+0x208 (command+0xc8) set true; Tokio build_child copies to child kill-on-drop flag at offset 0x88',
+            'take stdin then stdout; wrap stdout with 8192-byte BufReader'
+        ],
+        'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
+        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Initialization messages, request IDs, response matching, timeout/reconnect and client caching are not implemented in this spawn boundary. Vendor CLI was not executed.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'

@@ -6559,3 +6559,13 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Connected this provider to the reconstructed `fetch_with_auth` interface. Synthetic integration tests check ordered acquisition/user update/HTTP send, one 401 refresh with changed account+token headers, repeated ordinary acquisition, missing user update and initial/refresh error propagation.
 - Validation: 3 provider integration tests + 6 auth contract tests + 15 HTTP/fetch tests passed. Pinned static audit covers provider delegation, error branch, optional user conversion and diagnostic call. Tests use synthetic credentials and scripted HTTP responses; no vendor executable or real account auth was used.
 - Production acceptance remains incomplete: concrete App Server process/connection/RPC, diagnostics backend and deployment wiring still need reconstruction. This checkpoint tests provider-to-fetch composition, not a live App Server login or daily browser operation.
+
+
+### Native App Server process spawn checkpoint (2026-11-06)
+
+- Restored Rust process boundary from pinned `CodexAppServerConnection::spawn` (`0x1002bada8..0x1002bb388`). Runtime mode rejection precedes executable lookup; gaas-browser rejects with the original error. Caller still supplies the parsed runtime mode.
+- `CODEX_CLI_PATH` follows std::env::var semantics: absent/non-Unicode falls back to `codex`; present empty values are preserved. Args are exactly `app-server --listen stdio://`.
+- stdin/stdout are piped; stderr is null. Verified Stdio discriminants against native `to_child_stdio` pipe and `/dev/null` branches rather than guessing enum values. kill-on-drop is enabled; stdout uses an 8192-byte BufReader. Spawn and missing-stream errors retain observed prefixes/text.
+- Four tests passed, including actual owned Python fixture child processes with an executable path containing spaces: exact arguments, bidirectional pipe exchange, explicit termination/reap, drop termination/reap, missing executable error, fallback semantics and gaas rejection before path lookup. No original Codex executable or real credential source was invoked.
+- Added static instruction/literal evidence to the pinned audit, which passes.
+- Still incomplete: initialize/initialized handshake, request/response protocol, request ID allocation, timeout/reconnect, connection sharing, App Server token fetcher and production deployment. A started process with working pipes is not an authenticated App Server connection.

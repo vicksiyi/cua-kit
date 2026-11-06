@@ -203,6 +203,33 @@
     ],
     "limits": "Request parameters, result validation, CodexAuth projection and provider refresh delegation implemented. AuthUserObserver is an explicit reconstruction seam for the original Sentry update; backend not implemented and no telemetry emitted. App Server fetcher transport/initialization, error logging and deployment wiring remain incomplete. Any caching below AccessTokenFetcher is not established by this provider review."
   },
+  "appServerSpawn": {
+    "range": [
+      "0x1002bada8",
+      "0x1002bb388"
+    ],
+    "instructionTextSha256": "20b3045e0d751a880eb90c30b87e918b8f68d14fb9d6dc8242ec75a5bbfa3204",
+    "literals": {
+      "subcommand": "app-server",
+      "modeError": "Codex app-server is unavailable in gaas-browser runtime mode",
+      "cliEnv": "CODEX_CLI_PATH",
+      "listenFlag": "--listen",
+      "listenValue": "stdio://",
+      "stdinError": "codex app-server stdin is unavailable",
+      "stdoutError": "codex app-server stdout is unavailable",
+      "spawnErrorPrefix": "failed to start codex app-server: ",
+      "nullDevice": "/dev/null"
+    },
+    "reviewedBehavior": [
+      "parse runtime mode before environment lookup; reject gaas-browser before process creation",
+      "std::env::var CODEX_CLI_PATH; VarError fallback codex, preserve present empty value",
+      "three args app-server --listen stdio://; stdin/stdout Stdio discriminant 2 maps to pipe, stderr discriminant 1 opens /dev/null",
+      "command flag at sp+0x208 (command+0xc8) set true; Tokio build_child copies to child kill-on-drop flag at offset 0x88",
+      "take stdin then stdout; wrap stdout with 8192-byte BufReader"
+    ],
+    "implementation": "native/runtime-supervisor/src/codex_app_server.rs",
+    "limits": "Owned process fixtures only. Runtime mode parser is supplied by caller. Initialization messages, request IDs, response matching, timeout/reconnect and client caching are not implemented in this spawn boundary. Vendor CLI was not executed."
+  },
   "implementation": "native/runtime-supervisor/src/authenticated_fetch.rs",
   "limits": "Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete."
 }
