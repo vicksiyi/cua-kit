@@ -642,3 +642,23 @@ AXUIElement type-ID 检查及过滤规则不变，遍历的 visited 去重仍在
 
 这只补齐数组解码的最终阶段。CFArray 到中间表示的原厂桥接、动态目标协议检查及完整
 逐元素 generic decoder 仍不等于现有具体 AXChildren 适配器，不能宣称整体原生类型分派完成。
+
+## CFArray 桥接目标与初始资格错误
+
+进一步读取原生类型引用，确认 `0x101193d10` 的 mangled type 为 `SayyXlG`，即
+`[AnyObject]`；`0x101193400` 为 `SayypG`，即 `[Any]`。前者用于 CFArray 动态桥接，
+后者是目标未遵循 TypeErasedArray 时的 expected metatype。审计新增这两个精确
+类型引用、桥接调用及五条分支/错误构造指令。
+
+AXChildren 现在直接使用 `as? [AnyObject]`，替换先强转 NSArray 再逐项 as AnyObject
+的独立适配。前置 CFArray type-ID 检查、后续 compactMap 与最终目标转换均保留。
+
+新增 `resolvedAXArrayTarget` 恢复初始资格判断：符合协议返回其 metatype；不符合时
+false 返回 nil，true 抛 unexpectedAttributeValueType(expected: [Any].self,
+actual: requested)。这与最终转换失败的 target/target 载荷不同。String、Any 和
+Optional<Array<Int>> 都不能绕过初始协议检查；自定义 conformance 可以通过初始检查，
+但最终仍可能转换失败。该动态检查 helper 尚未被完整 generic dispatcher 调用；
+AXChildren 的请求目标固定为 `[AXUIElement]`，由编译期协议约束确定。
+
+数组转换与 AXChildren 两项编译执行回归、完整 helper 构建和固定原生审计通过。
+这不等于完整泛型数组解码已接通；各元素的通用类型分派仍是剩余工作。

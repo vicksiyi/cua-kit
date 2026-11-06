@@ -5,6 +5,20 @@ import ApplicationServices
 struct AXArrayTargetConversionTests {
     struct OtherArray: TypeErasedArray { typealias ElementType = Int }
     static func main() throws {
+        let valid = try resolvedAXArrayTarget([Int].self, throwingOnFailure: true)
+        precondition(valid == [Int].self)
+        let custom = try resolvedAXArrayTarget(OtherArray.self, throwingOnFailure: true)
+        precondition(custom == OtherArray.self)
+        for requested in [String.self, Any.self, Optional<[Int]>.self] as [Any.Type] {
+            for flag in [false, true] {
+                do {
+                    let result = try resolvedAXArrayTarget(requested, throwingOnFailure: flag)
+                    precondition(!flag && result == nil)
+                } catch UIElementError.unexpectedAttributeValueType(let expected, let actual) {
+                    precondition(flag && expected == [Any].self && actual == requested)
+                } catch { preconditionFailure("Wrong array eligibility error: \(error)") }
+            }
+        }
         let ints = try convertedAXArray([0, 2, 2, -1], as: [Int].self, throwingOnFailure: true)
         precondition(ints == [0, 2, 2, -1])
         let empty = try convertedAXArray([Int](), as: [String].self, throwingOnFailure: true)

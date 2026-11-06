@@ -15,3 +15,13 @@ func convertedAXArray<Element, Target: TypeErasedArray>(
     }
     return nil
 }
+
+// Initial eligibility check at 0x1006e9690, before element conversion. A CFArray
+// does not imply that Any, Optional<Array<...>> or an unrelated target qualifies.
+func resolvedAXArrayTarget(_ requested: Any.Type, throwingOnFailure: Bool) throws -> (any TypeErasedArray.Type)? {
+    if let target = requested as? any TypeErasedArray.Type { return target }
+    if throwingOnFailure {
+        throw UIElementError.unexpectedAttributeValueType(expected: [Any].self, actual: requested)
+    }
+    return nil
+}

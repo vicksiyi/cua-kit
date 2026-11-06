@@ -1540,6 +1540,27 @@
     "protocolDescriptor": "0x1012cc42c",
     "associatedType": "ElementType",
     "methodRequirementCount": 0,
+    "bridgeAndEligibilityTypes": [
+      {
+        "descriptor": "0x101193d10",
+        "mangled": "SayyXlG",
+        "meaning": "bridge target [AnyObject]"
+      },
+      {
+        "descriptor": "0x101193400",
+        "mangled": "SayypG",
+        "meaning": "eligibility error expected [Any]"
+      }
+    ],
+    "initialBranchWords": {
+      "0x1006e96a4": "0xb4001900",
+      "0x1006e96dc": "0x528000c4",
+      "0x1006e96e4": "0x34001e20",
+      "0x1006e9a04": "0xa9005c34",
+      "0x1006e9a08": "0x52800028"
+    },
+    "bridgeDynamicCast": "0x1006e96e0",
+    "initialFailureError": "unexpectedAttributeValueType(expected: [Any], actual: requestedType)",
     "arrayConformanceDescriptor": "0x101193450",
     "conformingTypeGotSlot": "0x1014667e8",
     "conformingTypeSymbol": "_$sSaMn",
@@ -1548,7 +1569,7 @@
     "finalDynamicCast": "0x1006e9c78",
     "finalFailureError": "unexpectedAttributeValueType(expected: target, actual: target)",
     "finalFailureConstruction": "0x1006e9d28..0x1006e9d30",
-    "limitations": "Protocol and binding evidence; full CFArray dispatch/bridging not yet connected."
+    "limitations": "Protocol, bridge and conversion evidence; the complete generic element decoder and dynamic dispatch are not yet connected."
   },
   "limitations": [
     "No native service executed and no macOS UI observed.",

@@ -6895,3 +6895,9 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Added the audited final decoded-array → [Any] → requested target conversion with TypeErasedArray constraint. Failure preserves the source's duplicated requested-type payload and nil/throw policy.
 - Connected the stage after AXChildren compactMap. Real Swift/CF tests verify duplicate/order/identity preservation, empty cross-type arrays, nested Optional values and mismatched/custom target failure. The AXChildren regression, full helper build and pinned 193-signature audit pass. Fixed an initial test compile-path concatenation error before the successful rerun.
 - Original dynamic protocol dispatch, complete generic element decoder and CFArray bridging remain separate unfinished work. No live app UI operation was performed or claimed.
+
+### 2026-11-06 Exact CFArray bridge and initial target eligibility
+
+- Resolved native typerefs: the bridge casts to [AnyObject], while an ineligible target reports expected [Any] and actual requestedType. Added exact typeref/call/branch assertions to the audit.
+- Replaced AXChildren's NSArray + map adapter with the inspected conditional [AnyObject] bridge. Added the separate initial TypeErasedArray eligibility helper, preserving its distinct error payload from final conversion failure. The complete generic dispatcher does not yet invoke that helper; AXChildren has a statically known array target.
+- Expanded conversion tests with ordinary/Any/Optional-array rejection and custom protocol conformance eligibility. Both focused tests and full Swift build pass; native audit remains pinned. No live App UI claim or overall completion claim is made.

@@ -622,14 +622,34 @@ if (flags >> 3) & 7 != 1: raise SystemExit('Expected indirect nominal type descr
 for slot,symbol in [('0x1014667e8','_$sSaMn'),('0x101467748','_$ss15_arrayForceCastySayq_GSayxGr0_lF')]:
     line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
     if 'libswiftCore/'+symbol not in line: raise SystemExit('Array target binding changed')
+array_type_refs=[]
+for address, expected, name in [(0x101193d10,b'SayyXlG','bridge target [AnyObject]'),(0x101193400,b'SayypG','eligibility error expected [Any]')]:
+    displacement,length=struct.unpack('<iI',read_virtual(address,8))
+    value=read_virtual(address+displacement,length)
+    if value != expected: raise SystemExit('Array bridge/error target type changed')
+    array_type_refs.append({'descriptor':hex(address),'mangled':value.decode(),'meaning':name})
+array_initial_words={0x1006e96a4:0xb4001900,0x1006e96dc:0x528000c4,
+    0x1006e96e4:0x34001e20,0x1006e9a04:0xa9005c34,0x1006e9a08:0x52800028}
+for address,word in array_initial_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('Array eligibility/bridge branch changed')
+word=struct.unpack('<I',read_virtual(0x1006e96e0,4))[0]
+immediate=word & 0x3ffffff
+if immediate & 0x2000000: immediate -= 0x4000000
+if word >> 26 != 0b100101 or indirect.get(0x1006e96e0+immediate*4) != '_swift_dynamicCast':
+    raise SystemExit('Array bridge dynamic cast changed')
 array_target_evidence={
     'protocolDescriptor':hex(array_protocol),'associatedType':'ElementType','methodRequirementCount':0,
+    'bridgeAndEligibilityTypes':array_type_refs,
+    'initialBranchWords':{hex(a):hex(w) for a,w in array_initial_words.items()},
+    'bridgeDynamicCast':'0x1006e96e0',
+    'initialFailureError':'unexpectedAttributeValueType(expected: [Any], actual: requestedType)',
     'arrayConformanceDescriptor':hex(array_conformance),'conformingTypeGotSlot':'0x1014667e8','conformingTypeSymbol':'_$sSaMn',
     'arrayForceCastGotSlot':'0x101467748','arrayForceCastCall':'0x1006e9c38',
     'finalDynamicCast':'0x1006e9c78',
     'finalFailureError':'unexpectedAttributeValueType(expected: target, actual: target)',
     'finalFailureConstruction':'0x1006e9d28..0x1006e9d30',
-    'limitations':'Protocol and binding evidence; full CFArray dispatch/bridging not yet connected.',
+    'limitations':'Protocol, bridge and conversion evidence; the complete generic element decoder and dynamic dispatch are not yet connected.',
 }
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
