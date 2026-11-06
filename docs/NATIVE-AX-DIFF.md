@@ -1014,3 +1014,20 @@ attributeUnsupported（常量 -25212/-25205 固定在 0x101570d18），其它状
 新增 AXBoolDecoding.swift。测试使用实际 NSNumber（0/1/2/-1/0.5）、布尔对象、字符串、
 空值、字典、数组、元素、文本标记及 AXError，检查 Foundation 转换和严格模式错误类型。
 测试通过；动作数据类型与补充动作接线仍未完成，本次未伪造可操作动作。
+
+
+## 展开/折叠补充动作 Swift 实现（2026-11-07）
+
+静态字段描述 0x1012cd3b4 → 0x101324000 确认 UIElementAction 保存一个不可变
+Swift.String `name`；不是 CFString 属性包装。数据区 0x101575898/0x1015758a8
+确认两个可变静态动作是 `SAIExpand`、`SAICollapse`，不能猜成 AXExpand/AXCollapse。
+审计校验字段、类型引用和完整 16 字节小字符串表示。
+
+新增 UIElementAction.swift 和 uiElementDisclosureActions，按已固定的
+0x100793f94 分支使用缓存/重新读取支持集合，随后才检查属性可写性；失败返回空数组。
+使用缓存 AXPartialValue 及现有 Bool decoder：true 返回 collapse，其余返回 expand。
+测试覆盖 240 种事务集合/支持集合/可写性/缓存值组合，验证懒调用次数和可写性错误吞并，
+另验证合成动作字符串、Swift.String 相等/哈希和静态动作替换行为。
+
+这仍是补充动作组件，尚未接入完整 actions getter。其它静态动作、系统 provider 接线、
+动作数组组合与描述映射待继续恢复，不宣称真实应用展开/折叠操作已经验收。

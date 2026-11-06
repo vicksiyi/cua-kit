@@ -1969,7 +1969,7 @@
         "Decode cached AXDisclosing with Bool specialization 0x10070fc2c; true selects collapse, false or missing selects expand."
       ],
       "interpretation": "Action witnesses are not raw AX action-name lists. The successful native action read is combined with computed disclosure actions before description mapping.",
-      "limitations": "Complete Bool decoder, action storage/description mapping and array combination semantics still need recovery; no fabricated action implementation is installed."
+      "limitations": "Bool decoder, action name storage and supplemental disclosure selection are restored. Full action getter/provider wiring, remaining static actions, description mapping and array combination semantics remain pending."
     },
     "boolDecoder": {
       "start": "0x10070fc2c",
@@ -1989,6 +1989,27 @@
       "interpretation": "Concrete Bool specialization retains CF dispatch, AXValue error interpretation and Foundation conditional Bool conversion. Do not replace dynamic casting with NSNumber.boolValue or string truthiness.",
       "implementation": "native/macos/Sources/CuaHelper/AXBoolDecoding.swift",
       "limitations": "Decoder only; complete action data types, description mapping and supplemental-action wiring remain pending."
+    },
+    "disclosureActionsImplementation": {
+      "actionNominal": "0x1012cd3b4",
+      "fieldDescriptor": "0x101324000",
+      "storage": "immutable name: Swift.String; Hashable/Equatable conformances",
+      "constants": {
+        "0x101575898": {
+          "name": "SAIExpand",
+          "bytes": "534149457870616e64000000000000e9"
+        },
+        "0x1015758a8": {
+          "name": "SAICollapse",
+          "bytes": "534149436f6c6c6170736500000000eb"
+        }
+      },
+      "implementation": [
+        "native/macos/Sources/CuaHelper/UIElementAction.swift",
+        "native/macos/Sources/CuaHelper/UIElementDisclosureActions.swift"
+      ],
+      "sourceBody": "0x100793f94..0x1007941e0",
+      "limitations": "Supplemental actions only. Full actions getter, native support/settable provider wiring, remaining static actions, description mapping and array combination remain incomplete."
     }
   },
   "transactionScopeEvidence": {

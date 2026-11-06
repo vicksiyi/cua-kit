@@ -851,7 +851,7 @@ element_storage_evidence['actionWitnesses']={
         'Decode cached AXDisclosing with Bool specialization 0x10070fc2c; true selects collapse, false or missing selects expand.',
     ],
     'interpretation':'Action witnesses are not raw AX action-name lists. The successful native action read is combined with computed disclosure actions before description mapping.',
-    'limitations':'Complete Bool decoder, action storage/description mapping and array combination semantics still need recovery; no fabricated action implementation is installed.',
+    'limitations':'Bool decoder, action name storage and supplemental disclosure selection are restored. Full action getter/provider wiring, remaining static actions, description mapping and array combination semantics remain pending.',
 }
 bool_binding=next((line for line in fixups.splitlines() if '0x101466880' in line.lower()),'')
 if 'libswiftCore/_$sSbN' not in bool_binding: raise SystemExit('Bool specialization target changed')
@@ -864,6 +864,27 @@ element_storage_evidence['boolDecoder']={
     'interpretation':'Concrete Bool specialization retains CF dispatch, AXValue error interpretation and Foundation conditional Bool conversion. Do not replace dynamic casting with NSNumber.boolValue or string truthiness.',
     'implementation':'native/macos/Sources/CuaHelper/AXBoolDecoding.swift',
     'limitations':'Decoder only; complete action data types, description mapping and supplemental-action wiring remain pending.',
+}
+action_nominal=0x1012cd3b4
+action_fields=relative_address(action_nominal+16)
+_,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))
+action_record=action_fields+16
+if (action_kind,action_size,action_count)!=(0,12,1): raise SystemExit('UIElementAction storage changed')
+if read_virtual(relative_address(action_record+8),5)!=b'name\0' or read_virtual(relative_address(action_record+4),3)!=b'SS\0': raise SystemExit('UIElementAction name is not Swift.String')
+if struct.unpack('<I',read_virtual(action_record,4))[0]!=0: raise SystemExit('UIElementAction name mutability changed')
+action_constants={}
+for address,value in [(0x101575898,'SAIExpand'),(0x1015758a8,'SAICollapse')]:
+    action_raw=read_virtual(address,16)
+    expected=value.encode()+b'\0'*(15-len(value))+bytes([0xe0+len(value)])
+    if action_raw!=expected: raise SystemExit('Synthetic disclosure action string changed')
+    action_constants[hex(address)]={'name':value,'bytes':action_raw.hex()}
+element_storage_evidence['disclosureActionsImplementation']={
+    'actionNominal':hex(action_nominal),'fieldDescriptor':hex(action_fields),
+    'storage':'immutable name: Swift.String; Hashable/Equatable conformances',
+    'constants':action_constants,
+    'implementation':['native/macos/Sources/CuaHelper/UIElementAction.swift','native/macos/Sources/CuaHelper/UIElementDisclosureActions.swift'],
+    'sourceBody':'0x100793f94..0x1007941e0',
+    'limitations':'Supplemental actions only. Full actions getter, native support/settable provider wiring, remaining static actions, description mapping and array combination remain incomplete.',
 }
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
