@@ -165,3 +165,18 @@ test("native web-view classification preserves ancestor and bundle fallback boun
     assert.match(result.stdout, /web-view classification preserves self, depth, lookahead, cycles and lazy prefix fallback/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native descriptive attributes preserve lazy text and image fallback", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-description-"));
+  try {
+    const output = join(directory, "description");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementRole", "UIElementDescriptiveAttributes"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementDescriptiveAttributesTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /descriptive attributes preserve ordered nonempty text and image fallback: 512 cases/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

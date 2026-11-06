@@ -1786,3 +1786,22 @@ bundleIdentifier 并调用 Swift.String.hasPrefix("com.openai.atlas")。nil 为 
 不能假设不读系统；修正为已请求 AXParent 但 supported 不包含它，保留生产逻辑。
 修正后缓存对象测试、网页分类测试及 Swift 构建通过。此项尚未接入生产点击流程，
 也不改变白名单、用户授权或系统权限。
+
+### hasDescriptiveAttributes 的短路判断和图片角色
+
+重新静态反汇编 `AccessibilityNode.hasDescriptiveAttributes`
+`0x100624fec..<0x100625204`，四次 getter 的 witness offset 依次为
+`0x40/0x48/0x50/0xd8`。结合已核实 UIElement witness table，对应缓存 AXTitle、
+AXDescription、AXValue、AXPlaceholderValue。逐项判断 nil/空串，首个非空立即
+true，不 trim、不预先读取全部字段。
+
+全部为空时才读取 role；经 AccessibilityRole witness +0x30 获取对比角色。
+UIElementRole witness table `0x10149f818` 的槽 `0x10149f848` 指向 `0x1007baf90`，
+加载 static image，随后通过 GOT `0x101466228` 的 Swift.Equatable.== 比较。
+因此空描述的 AXImage 仍返回 true，不能把这条回退猜成 staticText 或 unknown。
+具体 node 槽 `0x101575750` → `0x10078fd7c` 跳转到该通用 getter。
+
+恢复纯判断与 UIElement 缓存组合两个 Swift 文件。512 组测试覆盖四字段的
+nil/空/空白/非空与图片/非图片角色，验证返回值和惰性 getter 顺序；具体对象
+检查四个 AX 字段的空白、空串和错误类型，以及图片/按钮角色默认值。两项相关
+测试通过。完整协议、生产节点筛选/transform 接线仍未完成。

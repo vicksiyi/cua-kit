@@ -33,6 +33,8 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementCachedValue.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementRole.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementCachedRole.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementDescriptiveAttributes.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementCachedDescription.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementEnabled.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementFocusCapability.swift"),
         join(root, "native/macos/Tests/UIElementEnabledTests.swift"),

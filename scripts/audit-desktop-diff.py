@@ -795,6 +795,22 @@ node_state_names={
 }
 for entry in node_slots:
     if entry['slot'] in node_state_names: entry['meaning']=node_state_names[entry['slot']]
+for slot,target in [('0x10149f848','0x1007baf90'),('0x101466228','libswiftCore/_$sSQ2eeoiySbx_xtFZTj')]:
+    line=next((line for line in fixups.splitlines() if slot in line.lower()),'')
+    if target.lower() not in line.lower(): raise SystemExit('Descriptive role comparison witness changed')
+for entry in node_slots:
+    if entry['slot']=='0x101575750': entry['meaning']='hasDescriptiveAttributes'
+element_storage_evidence['descriptiveAttributes']={
+    'entry':'AccessibilityNode.hasDescriptiveAttributes at 0x100624fec..<0x100625204',
+    'orderedWitnessOffsets':['0x40','0x48','0x50','0xd8'],
+    'concreteSources':['AXTitle','AXDescription','AXValue','AXPlaceholderValue'],
+    'predicate':'nil or empty string continues; first nonempty string returns true; whitespace is not trimmed; later getters remain unevaluated',
+    'fallback':'role witness +0x30 compared using Equatable.== to AccessibilityRole witness +0x30; UIElementRole table 0x10149f818 slot 0x10149f848 -> 0x1007baf90 loads static image',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100624fec,0x100625204),(0x1007baf90,0x1007baff8),(0x10078fd7c,0x10078fd80)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementDescriptiveAttributes.swift','native/macos/Sources/CuaHelper/UIElementCachedDescription.swift'],
+    'limitations':'Concrete UIElement cached fields composed; no claim to full generic AccessibilityNode conformance or production transform/filter integration.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

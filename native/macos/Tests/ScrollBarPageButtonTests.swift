@@ -19,6 +19,19 @@ struct ScrollBarPageButtonTests {
 
     static func main() throws {
         testCachedEnabledAndFocus()
+        precondition(element("AXImage" as NSString, nil, id: 424238).hasDescriptiveAttributes)
+        precondition(!element("AXButton" as NSString, nil, id: 424239).hasDescriptiveAttributes)
+        for key in ["AXTitle", "AXDescription", "AXValue", "AXPlaceholderValue"] {
+            for (raw, expected): (AnyObject, Bool) in [(" " as NSString, true),
+                ("" as NSString, false), (NSNumber(value: 1), false)] {
+                let cache = UIElementCache(supportedAttributes: [], attributes: [
+                    UIElementAttribute(key): AXPartialValue(value: AXEncodedValue(value: raw),
+                        arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+                ], transactionAttributes: [])
+                let cached = UIElement(axElement: AXUIElementCreateApplication(424238), cache: cache)
+                precondition(cached.hasDescriptiveAttributes == expected)
+            }
+        }
         func rootElement(_ role: NSString, id: Int32) -> UIElement {
             let source = element(role, nil, id: id)
             return UIElement(axElement: source.axElement, cache: UIElementCache(

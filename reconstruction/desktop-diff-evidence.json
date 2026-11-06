@@ -1994,7 +1994,8 @@
         {
           "slot": "0x101575750",
           "target": "0x10078fd7c",
-          "requirementDescriptor": "0x1012c9360"
+          "requirementDescriptor": "0x1012c9360",
+          "meaning": "hasDescriptiveAttributes"
         },
         {
           "slot": "0x101575758",
@@ -2073,6 +2074,45 @@
       ],
       "implementationReuse": "UIElement.cachedStringValue(for:) already supplies the observed decoder/cache-only policy; do not replace with stringValue(for:) which may read uncached attributes.",
       "limitations": "Attribute source and return decoding established for nine slots; original protocol property names are not inferred merely from AX constants, especially the two distinct AXValue slots. Remaining getter mapping and protocol wiring pending."
+    },
+    "descriptiveAttributes": {
+      "entry": "AccessibilityNode.hasDescriptiveAttributes at 0x100624fec..<0x100625204",
+      "orderedWitnessOffsets": [
+        "0x40",
+        "0x48",
+        "0x50",
+        "0xd8"
+      ],
+      "concreteSources": [
+        "AXTitle",
+        "AXDescription",
+        "AXValue",
+        "AXPlaceholderValue"
+      ],
+      "predicate": "nil or empty string continues; first nonempty string returns true; whitespace is not trimmed; later getters remain unevaluated",
+      "fallback": "role witness +0x30 compared using Equatable.== to AccessibilityRole witness +0x30; UIElementRole table 0x10149f818 slot 0x10149f848 -> 0x1007baf90 loads static image",
+      "blocks": [
+        {
+          "start": "0x100624fec",
+          "endExclusive": "0x100625204",
+          "machineCodeSha256": "49b26eca73a08563a3ed3c2c00227f0744a3aa77a4e38e5a6ba37f544a7c171c"
+        },
+        {
+          "start": "0x1007baf90",
+          "endExclusive": "0x1007baff8",
+          "machineCodeSha256": "679e2da9fc1f31c2b6b4750211dd30022bd22413a0d9ef7bf9784abc0760ea4e"
+        },
+        {
+          "start": "0x10078fd7c",
+          "endExclusive": "0x10078fd80",
+          "machineCodeSha256": "507190bfa24ee10d07b086387deddf3fcd3c6c88694afa58481a8440a7632e0d"
+        }
+      ],
+      "implementation": [
+        "native/macos/Sources/CuaHelper/UIElementDescriptiveAttributes.swift",
+        "native/macos/Sources/CuaHelper/UIElementCachedDescription.swift"
+      ],
+      "limitations": "Concrete UIElement cached fields composed; no claim to full generic AccessibilityNode conformance or production transform/filter integration."
     },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
