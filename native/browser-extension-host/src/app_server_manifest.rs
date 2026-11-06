@@ -86,6 +86,25 @@ pub struct LoadedManifestEntry {
     pub selected: SelectedManifestEntry,
 }
 
+/// The adjacent JSON is supplementary, not an alternative to a valid v2
+/// registry. Native load returns registry errors before reaching this stage.
+pub fn load_configuration(
+    paths: &[PathBuf],
+    executable: Option<&Path>,
+    identity: &IdentityConstraints<'_>,
+    protocols: &ProtocolRequirements,
+) -> Result<LoadedManifestEntry, ManifestError> {
+    let mut loaded = load_registries(paths, identity, protocols)?;
+    if let Some(parent) = executable.and_then(Path::parent) {
+        if let Ok(text) = fs::read_to_string(parent.join("extension-host-config.json")) {
+            if let Ok(value) = serde_json::from_str::<Value>(&text) {
+                loaded.selected.configuration.supplement(&value);
+            }
+        }
+    }
+    Ok(loaded)
+}
+
 /// Try registries in discovery order; the first file with a usable selection
 /// wins, rather than comparing scores across files. Missing files are ignored.
 /// Other failures are retained while later files are tried. No schema-1 fallback
@@ -211,6 +230,42 @@ pub struct RawManifestConfiguration {
     pub node_repl_path: Option<String>,
     pub proxy_host: Option<String>,
     pub proxy_port: Option<u16>,
+}
+
+impl RawManifestConfiguration {
+    /// Only the seven observed launch strings and nonzero port fill gaps.
+    /// The native reader does not validate schemaVersion on this sidecar.
+    /// Registry metadata/protocols are never replaced by sidecar fields.
+    pub fn supplement(&mut self, sidecar: &Value) {
+        let text = |key| {
+            sidecar
+                .get(key)
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_owned)
+        };
+        for (target, key) in [
+            (&mut self.browser_client_path, "browserClientPath"),
+            (&mut self.browser_service_path, "browserServicePath"),
+            (&mut self.codex_cli_path, "codexCliPath"),
+            (&mut self.codex_home, "codexHome"),
+            (&mut self.node_path, "nodePath"),
+            (&mut self.node_repl_path, "nodeReplPath"),
+            (&mut self.proxy_host, "proxyHost"),
+        ] {
+            if target.is_none() {
+                *target = text(key);
+            }
+        }
+        if self.proxy_port.is_none() {
+            self.proxy_port = sidecar
+                .get("proxyPort")
+                .and_then(Value::as_u64)
+                .and_then(|p| u16::try_from(p).ok())
+                .filter(|p| *p != 0);
+        }
+    }
 }
 
 pub fn extract_configuration(entry: &Value) -> Result<RawManifestConfiguration, ManifestError> {

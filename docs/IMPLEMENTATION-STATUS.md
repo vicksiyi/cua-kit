@@ -6114,3 +6114,12 @@ Composed read_to_string, serde_json parsing and select_entry in load_registries.
 All 12 manifest tests pass. New real temporary-file cases cover absent files, invalid UTF-8, malformed JSON, schema failure followed by success, first-file success despite a higher-score or unreadable second file, error priority and last-error retention. No actual user registry or vendor process was accessed. Static evidence records file read/parse, missing-file, success exit and error-priority branches.
 
 The schema-2 file-loading stage is available, but schema-1 fallback/load precedence, environment composition and runtime process/proxy integration remain incomplete.
+
+
+### 2026-11-06: correct sidecar precedence and compose supplementation
+
+The prior pending-work phrase “schema-1 fallback” was imprecise. Native load returns v2 registry errors before reading the adjacent extension-host-config.json. Only a successful selection reaches current_exe().parent()/extension-host-config.json. Read/parse failures and nonobjects are ignored; this reader has no schemaVersion gate. It fills absent browserClientPath/browserServicePath/codexCliPath/codexHome/nodePath/nodeReplPath/proxyHost and nonzero u16 proxyPort, preserving existing registry fields. It does not replace a missing or incompatible v2 registry.
+
+Implemented load_configuration and raw-record supplementation with explicit executable input. Fourteen manifest tests pass, including real owned sidecar files, schemaVersion 999 accepted by the ungated reader, existing registry priority, ignored corrupt/non-UTF8/missing/directory sidecars, inability to rescue registry failure and field whitelist/port cases. Static evidence records early registry error return, adjacent file read and merge branches. No installed configuration or user registry was changed.
+
+Final environment composition, full native runtime/hello/status/ensure/restart and process/proxy integration remain open. This increment composes configuration loading, not process launch.

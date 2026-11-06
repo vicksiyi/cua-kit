@@ -705,3 +705,102 @@ fn registry_files_use_first_success_and_preserve_failure_precedence() {
     fs::write(&second, json!({"schemaVersion":2,"entries":[]}).to_string()).unwrap();
     assert_eq!(run().unwrap_err(), ManifestError::NoCompatibleEntry);
 }
+
+#[test]
+fn sidecar_supplements_selected_registry_but_cannot_rescue_registry_failure() {
+    use core_browser_extension_host::app_server_manifest::{
+        load_configuration, IdentityConstraints, ProtocolRequirements,
+    };
+    let root = std::env::temp_dir().join(format!("core-sidecar-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    let registry = root.join("registry.json");
+    let executable = root.join("host");
+    let sidecar = root.join("extension-host-config.json");
+    let run = || {
+        load_configuration(
+            &[registry.clone()],
+            Some(&executable),
+            &IdentityConstraints::default(),
+            &ProtocolRequirements::default(),
+        )
+    };
+    let supplemental = json!({"schemaVersion":999,"nodeReplPath":" /side/repl ","proxyHost":" side-host ","proxyPort":5432,"channel":"wrong","appServerProtocolVersion":99,"codexCliPath":"/side/cli"});
+    fs::write(&sidecar, supplemental.to_string()).unwrap();
+    assert_eq!(run().unwrap_err(), ManifestError::MissingRegistry);
+    let mut entry = json!({"schemaVersion":2,"channel":"registry","appServerProtocolVersion":2,"paths":{"codexCliPath":root,"codexHome":root,"nodePath":root,"resourcesPath":root}});
+    let write = |entry: &Value| {
+        fs::write(
+            &registry,
+            json!({"schemaVersion":2,"entries":[entry]}).to_string(),
+        )
+        .unwrap()
+    };
+    write(&entry);
+    let selected = run().unwrap().selected.configuration;
+    assert_eq!(selected.node_repl_path.as_deref(), Some("/side/repl"));
+    assert_eq!(selected.proxy_host.as_deref(), Some("side-host"));
+    assert_eq!(selected.proxy_port, Some(5432));
+    assert_eq!(selected.codex_cli_path.as_deref(), root.to_str());
+    assert_eq!(selected.channel.as_deref(), Some("registry"));
+    assert_eq!(selected.app_server_protocol_version, Some(2));
+    entry["proxyPort"] = json!(123);
+    entry["paths"]["nodeReplPath"] = json!("/registry/repl");
+    write(&entry);
+    assert_eq!(run().unwrap().selected.configuration.proxy_port, Some(123));
+    assert_eq!(
+        run()
+            .unwrap()
+            .selected
+            .configuration
+            .node_repl_path
+            .as_deref(),
+        Some("/registry/repl")
+    );
+    for content in [b"{".as_slice(), b"null", b"[]", &[0xff]] {
+        fs::write(&sidecar, content).unwrap();
+        assert!(run().is_ok());
+    }
+    fs::remove_file(&sidecar).unwrap();
+    assert!(run().is_ok());
+    fs::create_dir(&sidecar).unwrap();
+    assert!(run().is_ok());
+}
+
+#[test]
+fn sidecar_string_whitelist_and_port_bounds_match_native_reader() {
+    use core_browser_extension_host::app_server_manifest::RawManifestConfiguration;
+    let mut config = RawManifestConfiguration::default();
+    config.supplement(&json!({"browserClientPath":" client ","browserServicePath":" service ","codexCliPath":" cli ","codexHome":" home ","nodePath":" node ","nodeReplPath":" repl ","proxyHost":" host "}));
+    assert_eq!(
+        [
+            config.browser_client_path,
+            config.browser_service_path,
+            config.codex_cli_path,
+            config.codex_home,
+            config.node_path,
+            config.node_repl_path,
+            config.proxy_host
+        ],
+        ["client", "service", "cli", "home", "node", "repl", "host"].map(|s| Some(s.into()))
+    );
+    for port in [0, 1, 65535, 65536, u64::MAX] {
+        let mut config = RawManifestConfiguration::default();
+        config.supplement(&json!({"proxyPort":port,"nodePath":"\u{2003} "}));
+        assert_eq!(
+            config.proxy_port,
+            if (1..=65535).contains(&port) {
+                Some(port as u16)
+            } else {
+                None
+            }
+        );
+        assert!(config.node_path.is_none());
+    }
+}
