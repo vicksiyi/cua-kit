@@ -6167,3 +6167,10 @@ All four process tests pass. New owned-process checks kill and reap a pipe-block
 Restored the native detached stderr worker: 8192-byte BufReader and lines, stop on read/UTF-8 error, skip Unicode-whitespace-only lines and print the original untrimmed line to host stderr with the observed prefix. Trimming is a filter, not a transformation of the emitted text. No invented JSON logging or forwarding into MCP stdout.
 
 Six process tests pass, including long/CRLF/blank/final unterminated lines, invalid UTF-8 termination and >1 MiB of actual child-pipe output drained concurrently to completion. The raw spawn API continues returning all pipes; the lifecycle owner still needs to take stderr and call the worker alongside stdout proxy setup. Full ensure/restart integration remains incomplete.
+
+
+### 2026-11-06: stdout replay bookkeeping and generation checks
+
+Static analysis of forward_app_server_to_attached_client established that stdout is not blindly buffered: native code strips CR/LF only, caches an initialize response by exact reserved ID and field presence, and buffers at most the first 128 method-string messages with an ID when no writer is selected. Null IDs count as present; an initialize result may be null, but a present method field disqualifies the cached response. Generation mismatch prevents stale readers from changing cache/queue state. Raw message text remains unchanged.
+
+Restored the replay bookkeeping in Rust. Two tests cover field presence/types, raw text, stale generations, capacity boundary with no eviction, and line-ending behavior. Full stdout worker must still compose these helpers with locked state, writer selection, frame writes, detach and EOF cleanup. The forwarding thread's disassembly also confirms wait_app_server_child runs only after forwarding returns; do not start a separate wait holding the child lock before stdout completes.

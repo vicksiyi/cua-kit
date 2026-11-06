@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+stdout_forward = disassemble(0x100026bf8, 0x100027664)
 stderr_worker = disassemble(0x10002ca1c, 0x10002cb70)
 child_stop = disassemble(0x100021f8c, 0x100022254)
 child_wait = disassemble(0x100022254, 0x1000224b4)
@@ -409,6 +410,18 @@ result = {
         'formatLiteralHex': raw[0x8d6b4:0x8d6db].hex(),
         'semantics': '8192-byte BufReader, lines iteration; read/UTF-8 errors terminate silently. Whitespace-only lines skipped, original untrimmed String printed with extension-host: app-server stderr: prefix and newline. Worker detached after creation.',
         'integrationStatus': 'Worker and stream consumer implemented, tested with >1 MiB through a real owned child pipe. Lifecycle owner must take stderr and invoke worker; raw spawn still exposes all three pipes.',
+    },
+    'stdoutReplay': {
+        'implementation': 'native/browser-extension-host/src/app_server_output.rs',
+        'crlfOnly': evidence(stdout_forward, 0x100026d14, 0x100026d30, ['#0xd', '#0xa', '0x100026cb4']),
+        'initializeIdComparisons': evidence(stdout_forward, 0x100026d84, 0x100026df4, ['#0x1e', '#0x5f5f', '#0x6973', '#0x5f6c', '#0x6169']),
+        'methodAndResultPresence': evidence(stdout_forward, 0x100026df4, 0x100026e0c, ['#0x883', '0x100026f4c']),
+        'resultLookup': evidence(stdout_forward, 0x100026f4c, 0x100026f70, ['#0x88b', '0x100026e20']),
+        'requestTypeAndIdPresence': evidence(stdout_forward, 0x100026e90, 0x100026ed0, ['#0x883', '#0x3', '0x100026c78']),
+        'generationAndLimit': evidence(stdout_forward, 0x100026f14, 0x100026f30, ['#0x108', '#0x7f', '0x100027024']),
+        'rawInitializeCache': evidence(stdout_forward, 0x100026fac, 0x10002700c, ['#0x108', '#0x38', '#0x48']),
+        'contract': 'Strip trailing CR/LF only. Cache raw initialize result with exact reserved ID, absent method and present result. When unattached buffer first 128 method-string messages with an ID field, including null IDs. Generation mismatch does not mutate replay state. Raw text is retained.',
+        'integrationStatus': 'Replay helpers tested, not a complete stdout worker. Writer selection, websocket writes, error detach and EOF state cleanup remain to be connected.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
