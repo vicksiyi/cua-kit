@@ -1,3 +1,4 @@
+import { standaloneAppPolicyDenialHint } from "./native-permissions";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -18,6 +19,10 @@ export function createTerminalTrace(env: NodeJS.ProcessEnv = process.env, write 
     for (const item of message.result.content) {
       if (item.type === "text") {
         const text = clean(item.text);
+        if (message.result.isError && env.CUA_DEMO_NATIVE_POLICY_CONTEXT) {
+          const hint = standaloneAppPolicyDenialHint(text);
+          if (hint) write(clean(hint));
+        }
         write(env.CUA_DEMO_VERBOSE === "1" || text.length <= 2000 ? text : `${text.slice(0, 2000)}\n[${text.length - 2000} more characters; CUA_DEMO_VERBOSE=1 shows full text]`);
       } else if (item.type === "audio") {
         write(`Audio returned (${item.mimeType}, ${Buffer.byteLength(item.data, "base64")} bytes)`);

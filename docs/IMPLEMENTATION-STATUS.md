@@ -6995,3 +6995,9 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-07：UIElementProtocol 约束与身份边界
 
 核实协议继承 AccessibilityNode/Hashable，ID 为 AXUIElement、Role 为 UIElementRole；确认 12 个 witness 要求中的继承项和四个直接实现入口。新增协议 descriptor/签名/witness 审计。剩余六个直接要求及父协议仍待恢复，生产展示 UUID 不能代替原生协议身份。本次为接线依据，无新增 UI 功能验收。
+
+### 2026-11-07：Multica 本地策略拒绝诊断
+
+检查本地 .env 加载结果与 CUA_MCP_ENV 时，均无 CORE_CUA_APP_POLICY 配置；当前 Swift 独立部署对缺失应用规则默认 denied。还原 Sky 层的 organization policy 文案是通用错误，不能证明组织管理员封禁。未修改策略、未自动批准或绕过被拒操作。
+
+终端 trace 在有独立部署上下文的错误结果中识别该文案并补充本地策略说明，保留原始错误/模型结果；其它部署、成功页面文本不追加此解释。相关 trace 与权限探针共 5 项测试通过。应用仍需配置所有者明确授权，之后还需交互审批和 macOS 权限，不能将诊断修正当作 UI 操作已通过。

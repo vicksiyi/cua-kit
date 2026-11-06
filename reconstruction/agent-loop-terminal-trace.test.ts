@@ -17,3 +17,17 @@ test("terminal tool trace shows requests/results, redacts known credentials and 
   try { assert.equal(readFileSync(file, "utf8"), "fixture-bytes"); }
   finally { rmSync(dirname(file), { recursive: true }); }
 });
+
+test("local policy explanation is limited to standalone error output and preserves original result", () => {
+  const text = "Computer Use is blocked from using the app 'ai.multica.desktop' by your organization's policy.";
+  for (const standalone of [false, true]) for (const isError of [false, true]) {
+    const lines: string[] = [];
+    const trace = createTerminalTrace(standalone ? { CUA_DEMO_NATIVE_POLICY_CONTEXT: "local rules" } : {}, line => lines.push(line));
+    const message = { role: "tool" as const, callId: "denied", name: "js", result: { isError, content: [{ type: "text" as const, text }] } };
+    const before = JSON.stringify(message);
+    trace(message);
+    assert.equal(lines.some(line => line.includes("本独立 demo 使用本地 CORE_CUA_APP_POLICY")), standalone && isError);
+    assert.ok(lines.includes(text));
+    assert.equal(JSON.stringify(message), before);
+  }
+});
