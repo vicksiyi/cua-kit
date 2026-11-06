@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+proxy_state = disassemble(0x10001b268, 0x10001b4c4)
 stdout_thread = disassemble(0x10002c94c, 0x10002ca1c)
 detach_writer = disassemble(0x100021970, 0x100021a94)
 websocket_write = disassemble(0x100024584, 0x100024810)
@@ -461,6 +462,15 @@ result = {
         'runtimeAndWriter': evidence(stdout_forward, 0x100027378, 0x1000273b8, ['ProxyRuntimeState', '#0x100', 'Mutex>::unlock', 'close_websocket_writer']),
         'semantics': 'EOF and read failure converge on same-generation cleanup: child reference, stdin, pending requests, initialize response, runtime state, then take writer and close outside mutex. Generation unchanged.',
         'integrationStatus': 'Represented child/stdin/replay/writer cleanup composed with reader and tested on actual pipe/socket. ProxyRuntimeState representation and clearing remain open; this is not yet all native state fields.',
+    },
+    'proxyRuntimeState': {
+        'implementation': 'native/browser-extension-host/src/app_server_runtime_state.rs',
+        'fieldCloneOffsets': evidence(proxy_state, 0x10001b290, 0x10001b340, ['#0xc0', '#0xd8', '#0x48', '#0xf0', '#0x90', '#0x120', 'String as core::clone::Clone']),
+        'darwinLiteral': evidence(proxy_state, 0x10001b358, 0x10001b36c, ['#0x6e69', '#0x6164', '#0x7772']),
+        'configLayout': evidence(config_load, 0x10001ec30, 0x10001ecc4, ['#0x40', '#0x90', '#0xc0', '#0xd0', '#0xf0', '#0x120']),
+        'mapping': {'0x48':'codexCliPath','0x90':'nodePath','0xc0':'browserClientPath','0xd8':'browserServicePath','0xf0':'codexHome','0x120':'nodeReplPath'},
+        'semantics': 'Clones six configuration strings preserving optional absence, adds platform darwin. Browser service comes from selected/supplemented configuration; other paths use effective environment-resolved launch values. Does not include extension ID or proxy host/port.',
+        'integrationStatus': 'Stored in output state and cleared by same-generation EOF cleanup. Process reuse comparison and lifecycle startup still pending.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

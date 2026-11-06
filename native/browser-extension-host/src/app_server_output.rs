@@ -74,6 +74,7 @@ pub struct OutputState {
     pub writer: Option<SharedWriter>,
     pub child: Option<crate::app_server_process::SharedChild>,
     pub stdin: Option<std::process::ChildStdin>,
+    pub runtime_state: Option<crate::app_server_runtime_state::ProxyRuntimeState>,
 }
 pub type SharedOutput = Arc<Mutex<OutputState>>;
 
@@ -155,7 +156,7 @@ pub fn forward_lines(
 
 /// Clear the currently represented process/output resources only for this reader's
 /// generation, then close the detached websocket outside the state lock.
-/// ProxyRuntimeState will also need clearing when its representation is restored.
+/// This clears the stored runtime configuration with the other process resources.
 /// Unlike explicit stop, native EOF cleanup does not increment generation.
 pub fn finish_output(state: &SharedOutput, generation: u64) {
     let writer = if let Ok(mut state) = state.lock() {
@@ -166,6 +167,7 @@ pub fn finish_output(state: &SharedOutput, generation: u64) {
         state.stdin = None;
         state.replay.pending_requests.clear();
         state.replay.initialize_response = None;
+        state.runtime_state = None;
         state.writer.take()
     } else {
         None

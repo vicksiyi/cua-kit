@@ -6202,3 +6202,10 @@ Five output tests pass. A real owned fake CLI launched through the restored comm
 Added owned child/stdin fields to the output-state subset and composed forward_and_finish. Both EOF and read error clear same-generation child reference, stdin, pending requests and initialize cache, then take/close the websocket outside the state mutex. A stale reader changes nothing; unlike explicit stop, this cleanup does not increment generation.
 
 Six output tests pass. The new real pipe/socket case verifies stale cleanup preserves resources, invalid UTF-8 invokes cleanup, close-frame/EOF reaches the peer, closing stdin lets the owned cat exit naturally, wait reaps it, and repeated cleanup is harmless. Original cleanup also clears ProxyRuntimeState, whose full representation remains pending; no claim of complete native state restoration is made. Manager and attach/handshake integration remain open.
+
+
+### 2026-11-06: restore ProxyRuntimeState projection and cleanup
+
+Traced native config layout through load output stores and proxy_runtime_state clone offsets. The state owns codex CLI and Node paths, optional browser client/service, Codex home and Node REPL paths, plus literal platform darwin. Browser service uses the selected/supplemented registry value; other path fields use effective environment-resolved launch configuration. Extension ID and proxy host/port are not copied into this state.
+
+Added the Rust projection and output-state storage; same-generation EOF cleanup now clears this field as observed. Targeted tests cover effective versus raw values, optional absence, independent snapshots and stale/current generation cleanup. Process reuse comparisons and manager startup still remain open; projection and cleanup alone do not launch or reuse an app-server.

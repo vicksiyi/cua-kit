@@ -199,6 +199,7 @@ fn eof_cleanup_is_generation_guarded_and_closes_owned_resources() {
     let (mut peer, _) = listener.accept().unwrap();
     peer.set_read_timeout(Some(Duration::from_secs(3))).unwrap();
     let state = Arc::new(Mutex::new(OutputState {
+        runtime_state: None,
         generation: 5,
         writer: Some(writer),
         child: Some(child.clone()),
