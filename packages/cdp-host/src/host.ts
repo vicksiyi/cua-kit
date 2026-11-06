@@ -2,7 +2,10 @@ import { attachCdpBrowser } from "./attached-browser";
 /** Reuse @core authenticated local host framing, with a CDP provider instead of an extension. */
 import { mkdtemp, realpath, rm } from "node:fs/promises";
 import { PassThrough } from "node:stream";
-import { startNativeHost } from "@core/native-host";
+import {
+  startRustNativeHost,
+  resolveRustNativeHostExecutable,
+} from "@core/native-host";
 import { BrowserRpcPeer } from "@core/core/browserRpcPeer";
 import {
   NativePipeFrameDecoder,
@@ -13,6 +16,7 @@ import { CdpProvider } from "./provider";
 export async function startCdpHost(
   options: { headless?: boolean; endpoint?: string } = {},
 ) {
+  const executable = await resolveRustNativeHostExecutable();
   const browser = options.endpoint
     ? await attachCdpBrowser(options.endpoint)
     : await startOwnedCdpBrowser(options);
@@ -64,10 +68,11 @@ export async function startCdpHost(
   outgoing.on("data", (bytes) => {
     for (const frame of decoder.push(bytes)) callback(JSON.parse(frame));
   });
-  let host: Awaited<ReturnType<typeof startNativeHost>>;
+  let host: Awaited<ReturnType<typeof startRustNativeHost>>;
   try {
     await provider.installNetworkRouting();
-    host = await startNativeHost(incoming, outgoing, {
+    host = await startRustNativeHost(incoming, outgoing, {
+      executable,
       parentDirectory: directory,
     });
   } catch (error) {

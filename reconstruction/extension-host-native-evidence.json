@@ -129,9 +129,16 @@
   ],
   "consumersRequiringMigration": [
     "packages/native-host/src/main.ts (extension native messaging entry)",
-    "packages/cdp-host/src/host.ts (independent CDP adapter currently embeds the same TS host)",
     "packages/native-host/src/index.ts (public legacy exports)",
     "direct native-host test consumers"
+  ],
+  "migratedConsumers": [
+    {
+      "path": "packages/cdp-host/src/host.ts",
+      "binding": "packages/native-host/src/native_process.ts",
+      "implementation": "native/browser-extension-host",
+      "status": "Core Rust host selected and owned/attached browser fixtures verified; not original host parity"
+    }
   ],
   "priorAuthorizationEvidence": {
     "path": "reconstruction/native-host-auth-evidence.json",

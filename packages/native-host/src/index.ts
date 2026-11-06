@@ -10,5 +10,13 @@ export {
 } from "./installation";
 export { createBrowserServiceConnector } from "./browser_connector";
 export { registerNativeHostForProfile } from "./installation";
-export { inspectChromeExtension, chromeProfileLaunchCommand } from "./chrome_profile";
+export {
+  inspectChromeExtension,
+  chromeProfileLaunchCommand,
+} from "./chrome_profile";
 export { checkNativeHostInstallation } from "./installation_check";
+
+export {
+  startRustNativeHost,
+  resolveRustNativeHostExecutable,
+} from "./native_process";

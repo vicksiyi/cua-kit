@@ -101,6 +101,7 @@ export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Con
 npm run build:reconstruction
 if [[ "${CUA_RUNTIME_SUPERVISOR:-}" == rust || "${CUA_RUNTIME_SUPERVISOR:-}" == independent ]]; then npm run build:rust-runtime; fi
 if [[ "$cdp_browser" == true ]]; then
+  npm run build:rust-browser-host
   exec node --import tsx packages/agent-loop/src/cdp-demo.ts "$@"
 fi
 if [[ "$managed_browser" == true ]]; then

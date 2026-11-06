@@ -27,7 +27,7 @@
     "build:native": "swift build --package-path native/macos",
     "test:native": "npm run build:native && CUA_TEST_NATIVE_ACTIONS=1 tsx --test tests/native.test.ts",
     "build:extension": "node scripts/build-extension.mjs",
-    "test:reconstruction": "npm run build:legacy-runtime && tsx --test reconstruction/*.test.ts",
+    "test:reconstruction": "npm run build:legacy-runtime && npm run build:rust-browser-host && tsx --test reconstruction/*.test.ts",
     "check:reconstruction": "tsc -p reconstruction/tsconfig.core.json && tsc -p reconstruction/tsconfig.browser.json && tsc -p reconstruction/tsconfig.json && tsc -p reconstruction/tsconfig.repl.json && tsc -p reconstruction/tsconfig.desktop.json && tsc -p reconstruction/tsconfig.sky.json && tsc -p reconstruction/tsconfig.node-repl.json && tsc -p reconstruction/tsconfig.extension.json && npm run check -w @core/native-host && tsc -p reconstruction/tsconfig.native-macos.json && tsc -p reconstruction/tsconfig.runtime-supervisor.json",
     "build:reconstruction": "node scripts/build-reconstruction.mjs",
     "demo:deepseek": "node scripts/run-deepseek.mjs",
@@ -37,12 +37,12 @@
     "build:full-extension": "node scripts/build-full-extension.mjs",
     "test:native:restored": "npm run build:native && CUA_NATIVE_LIVE_TEST=1 tsx --test reconstruction/native-macos-live.test.ts",
     "build:sandbox": "node scripts/build-macos-sandbox.mjs",
-    "test:sandbox": "npm run build:sandbox && npm run build:legacy-runtime && CUA_TEST_MACOS_SANDBOX=1 tsx --test --test-concurrency=1 reconstruction/runtime-macos-sandbox.test.ts reconstruction/runtime-cdp-sandbox.test.ts",
+    "test:sandbox": "npm run build:sandbox && npm run build:legacy-runtime && npm run build:rust-browser-host && CUA_TEST_MACOS_SANDBOX=1 tsx --test --test-concurrency=1 reconstruction/runtime-macos-sandbox.test.ts reconstruction/runtime-cdp-sandbox.test.ts",
     "permissions:computer": "npm run build:native && native/macos/.build/debug/cua-helper --request-permissions",
     "check:computer-permissions": "native/macos/.build/debug/cua-helper --permissions",
     "test:native-deepseek": "npm run build:native && npm run build:reconstruction && npm run build:rust-runtime && CUA_NATIVE_DEEPSEEK_TEST=1 node --import tsx --test reconstruction/native-deepseek-live.test.ts",
     "build:rust-runtime": "npm run build:sandbox && node scripts/build-rust-runtime.mjs",
-    "test:rust-browser": "npm run build:reconstruction && npm run build:rust-runtime && CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-concurrency=1 reconstruction/runtime-cdp-sandbox.test.ts reconstruction/extension-native-controller.test.ts",
+    "test:rust-browser": "npm run build:reconstruction && npm run build:rust-runtime && npm run build:rust-browser-host && CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test --test-concurrency=1 reconstruction/runtime-cdp-sandbox.test.ts reconstruction/extension-native-controller.test.ts",
     "test:native-ipc": "npm run build:reconstruction && npm run build:native && npm run build:rust-runtime && CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test reconstruction/native-sky-ipc.test.ts reconstruction/native-deepseek-runtime.test.ts reconstruction/runtime-selection.test.ts reconstruction/restored-mcp-entry.test.ts reconstruction/native-audio-runtime.test.ts reconstruction/runtime-banner.test.ts reconstruction/runtime-tool-overrides.test.ts",
     "test:native-skyshot": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern=\"live owned App skyshot\" reconstruction/native-sky-ipc.test.ts",
     "test:native-app-start": "npm run build:reconstruction && npm run build:native && CUA_TEST_NATIVE_APP_START=1 node --import tsx --test --test-name-pattern=\"owned App launch\" reconstruction/native-sky-ipc.test.ts",
@@ -50,7 +50,8 @@
     "mcp:legacy": "node dist/mcp/stdio.js",
     "demo:legacy": "npm run build && node dist/agent/demo.js",
     "build:legacy-runtime": "node scripts/build-reconstruction.mjs --include-legacy",
-    "test:native-host-router": "node scripts/test-native-host-router.mjs"
+    "test:native-host-router": "node scripts/test-native-host-router.mjs",
+    "build:rust-browser-host": "node scripts/build-rust-browser-host.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

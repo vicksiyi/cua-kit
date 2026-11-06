@@ -1,7 +1,7 @@
 {
   "scope": "Implementation files under packages/*/src, legacy src, native, and scripts; generated outputs/dependencies/test fixtures excluded. Categories define review queues, not proof of source parity. Hashes make this inventory reproducible.",
   "counts": {
-    "build-or-deployment-script-review": 29,
+    "build-or-deployment-script-review": 30,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
     "legacy-node-binding-forwarder": 1,
@@ -10,6 +10,7 @@
     "native-browser-host-role-migrate-to-rust": 3,
     "native-desktop-swift-boundary-review": 6,
     "native-implementation-language-not-yet-parity-proof": 57,
+    "native-process-caller-binding-not-native-service": 1,
     "native-responsibility-migrate-to-rust": 13,
     "node-to-native-binding-not-native-service": 1,
     "original-js-browser-discovery-retain-typescript": 2
@@ -2533,7 +2534,7 @@
     {
       "path": "packages/cdp-host/src/host.ts",
       "category": "caller-or-deployment-code-review-for-native-responsibility",
-      "sha256": "b1c28d86f1b123bdf606e9c5ef48c0995edea49c6b9943109b0d86402f794b94"
+      "sha256": "e1dffa1b471844a820c02af5e04257df59c9e7d9f5ce1e3a6683abd73bca1e6b"
     },
     {
       "path": "packages/cdp-host/src/index.ts",
@@ -2783,7 +2784,7 @@
     {
       "path": "packages/native-host/src/index.ts",
       "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "585e057dbcc8b989e786bfa8986d9a0fd2af5baa7efecf0033261f2b8a09ca99"
+      "sha256": "183a4c3a3d3a59ff70461927a834d41c4fa6b2d716b3f1f525d7f0e11d9c78b5"
     },
     {
       "path": "packages/native-host/src/install_cli.ts",
@@ -2814,6 +2815,11 @@
       "path": "packages/native-host/src/main.ts",
       "category": "native-browser-host-role-migrate-to-rust",
       "sha256": "93f401f91b87f1c43d20d63d35793c3ed95876ca72706ea66e36d8028a96c54b"
+    },
+    {
+      "path": "packages/native-host/src/native_process.ts",
+      "category": "native-process-caller-binding-not-native-service",
+      "sha256": "c8c132c6894e27ba9cb2466ac08decc47c85885c0ecb5ddc6a903f2fcf67ace0"
     },
     {
       "path": "packages/native-host/src/pipe_authentication.ts",
@@ -4188,12 +4194,12 @@
     {
       "path": "scripts/audit-extension-host-language.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "5112eaa937e8d930870b11d98efff5531b99dc04ac57a28a432b12fc63688e6b"
+      "sha256": "99aedf6052b1b95a33d7a6e52de2eb4b1f7f348e7aed7b550b1e9786f4c5a4af"
     },
     {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "8066c37a5c20c586b02a5c18649de53239b9988c761703a209bfe9fc04fa619a"
+      "sha256": "0b0182cf0e3148835f097cc42310e439bedd46428b9404cbf56cd981b2b9970f"
     },
     {
       "path": "scripts/audit-native-language.py",
@@ -4251,6 +4257,11 @@
       "sha256": "f0f684a80f5fd37186846aa37bd1191b3403234ae1126eec90d6dd14350f4db3"
     },
     {
+      "path": "scripts/build-rust-browser-host.mjs",
+      "category": "build-or-deployment-script-review",
+      "sha256": "d522b76796bccdd90566bd65a0f3ecd439ac671eec2d42b057293c7474144f51"
+    },
+    {
       "path": "scripts/build-rust-runtime.mjs",
       "category": "build-or-deployment-script-review",
       "sha256": "297fd45a3fce6b284727bc802f2aaccf96b69bc35a744f206a250429827f947d"
@@ -4298,7 +4309,7 @@
     {
       "path": "scripts/run-deepseek.sh",
       "category": "build-or-deployment-script-review",
-      "sha256": "616fafb53b56788932f3ca6c622d38780d75c04a16d32e21503df4d37a6d6226"
+      "sha256": "4b6a2da58f7ea736611a14470df045b5bf0a0369c7b18246e14a359cd46d8388"
     },
     {
       "path": "scripts/run-demo.mjs",
@@ -4308,7 +4319,7 @@
     {
       "path": "scripts/test-native-host-router.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "ed82cc89e0a519f6f4527af0fbeba8bbed9ebb039cb6dda2d6d27d7065390173"
+      "sha256": "c4f75e1c66eb6067d32c618c08f3041a6e0574851ac9b1759bb7ab66f9be4c76"
     }
   ]
 }

@@ -23,7 +23,7 @@ The extractor reads compiler/source-path literals and `nm --demangle` symbols. I
 
 Two existing native-host files have separate **original JavaScript** evidence: `chrome_profile.ts` and `macos_browser_app.ts`. Those remain readable TS. Three files now have confirmed corresponding Rust roles (`main.ts`, `server.ts`, `router.ts`); ten remaining files still need finer ownership analysis. Native roles are confirmed, not native function bodies.
 
-The current production extension host and the independent CDP adapter both use `startNativeHost` from the TS package. A migration must switch both call paths and validate installation, connection/authentication, multiple clients, framing, cancellation/disconnection and cleanup with owned fixtures. Removing only an export or replacing the demo supervisor leaves this native service in TS.
+The current production extension installer still uses `startNativeHost` through the TS entry. The independent CDP adapter now uses `startRustNativeHost` and the Rust executable. The remaining installation migration must switch the extension call path and validate installation, connection/authentication, multiple clients, framing, cancellation/disconnection and cleanup with owned fixtures. Removing only an export or replacing the demo supervisor leaves this native service in TS.
 
 ## Version-bound authorization evidence
 
@@ -70,3 +70,12 @@ The event loop bounds accepted connections, cross-thread message traffic and ext
 Two macOS integration failures were corrected: accepted sockets inherit the nonblocking listener flag and must be reset for bounded blocking authentication; libuv socketpair stdout signals idle peer closure via readable EOF rather than necessarily POLLHUP. Tests exercise both actual behaviors.
 
 Seven new process-level cases use restored `ExtensionBrowserPeer`, `BrowserRpcPeer` and Core client code against the native executable: colliding request IDs, void replies, notifications, extension errors, wrong-token rejection, a stalled unauthenticated peer, three shutdown paths, invalid origin, truncated input and closed output. They use owned fake-extension streams, not daily Chrome or the original native host. Together with the existing tests, the gate covers 23 Rust cases and 11 cross-language/process cases. This establishes Core-host composition; real extension installation/CDP migration and original behavior parity are still unproven.
+
+
+## CDP consumer migrated to the Rust executable
+
+`packages/cdp-host/src/host.ts` now checks for the Rust binary before launching/attaching a browser and uses `startRustNativeHost`. The new TS `native_process.ts` is a deployment binding: it creates a private Core configuration, starts the owned native process, forwards framed streams with backpressure, reads the private endpoint and reaps the child on close. It does not implement socket listening or RPC routing. Model credentials are not forwarded to the child environment. There is no silent fallback to the TS host.
+
+`npm run build:rust-browser-host` builds/copies the release executable. CDP demo CLI branches now build it automatically; direct callers need this build first. The broad reconstruction and browser/sandbox test commands include the prerequisite. The extension installation launcher remains Node-based and still needs migration.
+
+Validation: three deployment-binding cases cover RPC, idempotent close, child reaping, listener cleanup, startup failure and startup timeout. The root `npm run demo` isolated-browser Loop passes with the Rust browser host and Rust supervisor, using a local deterministic model; it opens/clicks/reads the fixture and returns the marker. The existing attached-browser/provider/MCP test also passes, preserving unrelated tabs and the attached browser on close. The attachment fixture is owned by the test; no daily Chrome instance was touched. CLI routing tests and native-host/CDP type checks pass. No paid DeepSeek run or original-host algorithm parity is claimed.

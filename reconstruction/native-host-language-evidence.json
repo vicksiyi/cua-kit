@@ -1,5 +1,5 @@
 {
-  "scope": "Per-file native-host audit: two original-JS discovery/profile files retained as TS; three server/entry/router roles now evidenced in native Rust; remaining ten adapter files need further responsibility mapping.",
+  "scope": "Per-file native-host audit: two original-JS discovery/profile files retained as TS; three legacy server/entry/router roles correspond to native Rust; one TS process binding deploys the Rust host; remaining ten adapter files need finer mapping.",
   "artifacts": [
     {
       "path": "openai-bundled/browser/26.1027.30824/scripts/check-extension-installed.js",
@@ -59,7 +59,7 @@
     },
     {
       "path": "packages/native-host/src/index.ts",
-      "sha256": "585e057dbcc8b989e786bfa8986d9a0fd2af5baa7efecf0033261f2b8a09ca99",
+      "sha256": "183a4c3a3d3a59ff70461927a834d41c4fa6b2d716b3f1f525d7f0e11d9c78b5",
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."
@@ -135,6 +135,15 @@
         "extension-host-native-evidence.json"
       ],
       "scope": "Native entry/server/router role proven by demangled Rust symbols. Algorithm parity remains unproven; current TS is still reachable."
+    },
+    {
+      "path": "packages/native-host/src/native_process.ts",
+      "sha256": "c8c132c6894e27ba9cb2466ac08decc47c85885c0ecb5ddc6a903f2fcf67ace0",
+      "languageDecision": "retain-typescript-caller-binding",
+      "evidence": [
+        "extension-host-native-evidence.json"
+      ],
+      "scope": "Owns child-process deployment and streams for CDP callers; does not implement native routing or sockets."
     }
   ],
   "validation": {
