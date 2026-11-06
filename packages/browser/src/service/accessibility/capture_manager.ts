@@ -1,3 +1,4 @@
+import { createAccessibilityCoreLoading } from "./core_loading";
 import { AccessibilityTracking, waitAXMilliseconds } from "./tracking";
 import type { AXTrackingCdp, AXPerformanceSpan } from "./tracking";
 import type { AXTabState, AXRevision, AXActionTarget } from "./state_store";
@@ -26,8 +27,8 @@ export interface AXCore {
   ): AXRevision;
 }
 let runtime: AXCore | undefined;
-let runtimePromise: Promise<void> | undefined;
-/** Original Z2/Vre/Q2: shared lazy WASM runtime, including cached load rejection. */
+
+/** Current uF/lF/Wre: shared WASM runtime; initialization and speculative loads share one lifecycle. */
 export const defaultAccessibilityCore: AXCore = {
   buildRevision(previous, snapshot, options) {
     if (runtime == null)
@@ -40,16 +41,19 @@ export const defaultAccessibilityCore: AXCore = {
 export function setAccessibilityCore(core: AXCore) {
   runtime = core;
 }
-export function initializeAccessibilityCore(
-  source?: URL | string | ArrayBuffer | Uint8Array,
-  options?: { env?: Record<string, string | undefined> },
-) {
-  return (runtimePromise ??= Promise.resolve()
-    .then(() => import("./wasm"))
-    .then(async ({ loadBrowserAccessibilityWasm }) =>
-      setAccessibilityCore(await loadBrowserAccessibilityWasm(source, options)),
-    ));
-}
+const coreLoading = createAccessibilityCoreLoading<AXCore>(
+  (source, options) =>
+    Promise.resolve()
+      .then(() => import("./wasm"))
+      .then(({ loadBrowserAccessibilityWasm }) =>
+        loadBrowserAccessibilityWasm(source, options),
+      ),
+  setAccessibilityCore,
+);
+export const initializeAccessibilityCore = coreLoading.initialize;
+export const preloadAccessibilityCore = coreLoading.preload;
+export const cancelAccessibilityPreload = coreLoading.cancel;
+
 interface TabInfo {
   id?: number;
   title?: string | null;

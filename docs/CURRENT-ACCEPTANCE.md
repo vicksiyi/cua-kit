@@ -82,3 +82,14 @@ keyup 失败、keydown 期间取消、预先取消 × 受保护输入开关 × �
 导航 schema 新补 `prepare_accessibility?: true`，原构建只在请求此标记且 orbit+cdp
 HTTP(S) 导航开始时触发 accessibility core 预加载；当前 tab.goto 和服务导航尚未接通
 该预加载流程，本轮仅恢复参数契约，不声称该功能已完成。
+
+## AX core 预加载生命周期还原
+
+新增 `service/accessibility/core_loading.ts`，按当前原构建 lF/cF/Jh 还原
+冻结环境对象限定、环境身份隔离、显式 WASM 路径排除、导航引用计数、取消、
+正式初始化消费预加载 promise、预加载失败回退和正式初始化 promise 缓存。
+`capture_manager` 的正式初始化已使用该状态机；host 与导航触发尚未连接，
+因此此提交不会宣称 orbit 导航预加载功能已对外可用。
+
+源码差分覆盖 8 类路径，真实 Chromium+AX/WASM snapshot 身份测试通过；
+本轮未更改 credentialObservationGate 或放宽导航授权。
