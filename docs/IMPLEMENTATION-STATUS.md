@@ -6250,3 +6250,10 @@ Full proxy operation still requires handshake/prefixed-reader integration, conne
 Reconstructed native 4096-byte HTTP header collection and PrefixedTcpReader. The delimiter search precedes the >64KiB check, matching the installed branch ordering rather than imposing a different strict boundary. Bytes following the first CRLFCRLF are retained and consumed before subsequent socket input. Two tests pass, covering split delimiters, size/EOF precedence and one WebSocket frame split between buffered handshake bytes and a real TCP socket.
 
 HTTP request parsing, authentication, upgrade response, connection attachment and complete production handler integration remain open. This checkpoint does not claim a completed handshake or browser acceptance.
+
+
+### Native HTTP request parser checkpoint
+
+Added read_request composed with header collection, and raw request_query_param. Static evidence establishes lossy UTF-8, CRLF line splitting, two required whitespace-separated request tokens, first-colon header splitting, Unicode whitespace trim, ASCII header-name lowercasing and last-duplicate-wins map insertion. Query extraction returns the first exact key/value pair without URL decoding. Four HTTP tests pass, including two new parser/query tests and existing header/prefix tests.
+
+The HTTP parser is not yet an authenticated upgrade handler: authentication, routing, response handshake and connection manager integration remain outstanding.

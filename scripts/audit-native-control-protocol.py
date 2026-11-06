@@ -19,7 +19,8 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
-http_input = disassemble(0x100022d80, 0x100022ed8)
+http_input = disassemble(0x100022d80, 0x100023f8c)
+query_param = disassemble(0x1000217e4, 0x100021970)
 prefixed_reader = disassemble(0x10002b0a8, 0x10002b1e4)
 websocket_input = disassemble(0x100024a94, 0x100025498)
 process_stop = disassemble(0x100020d54, 0x100021064)
@@ -531,6 +532,19 @@ result = {
         'limitMessage': raw[0x90715:0x90730].decode(),
         'contract': '4096-byte reads, first CRLFCRLF delimiter before >65536 check. Preserve remaining bytes, consume prefix before TCP reads without joining both in one Read call. HTTP read errors propagate; read_exact handles partial prefix/socket reads.',
         'integrationStatus': 'Header byte collection and prefixed TCP reader tested with split delimiters, native boundary order and a frame split across handshake overread and a real socket. HTTP parsing/authentication/upgrade and full connection handler remain open.',
+    },
+    'httpRequestParser': {
+        'implementation': 'native/browser-extension-host/src/app_server_http.rs::read_request/request_query_param',
+        'lossyUtf8': evidence(http_input, 0x100022fc0, 0x100022fd8, ['from_utf8_lossy']),
+        'requestTokens': evidence(http_input, 0x100022f54, 0x100022f88, ['SplitInternal', 'IsWhitespace']),
+        'secondToken': evidence(http_input, 0x1000230dc, 0x1000230f0, ['IsWhitespace', '0x100023194']),
+        'headerColonAndTrim': evidence(http_input, 0x1000232dc, 0x100023360, ['#0x3a', 'CharSearcher', 'trim_matches']),
+        'asciiLowercaseAndValue': evidence(http_input, 0x1000234c0, 0x100023504, ['#0x41', '#0x1a', 'orr', 'trim_matches']),
+        'lastDuplicateWins': evidence(http_input, 0x100023550, 0x100023594, ['HashMap', 'insert', '__rust_dealloc']),
+        'querySeparators': evidence(query_param, 0x100021820, 0x100021874, ['#0x3f', '#0x26', '#0x3d']),
+        'queryKeyComparison': evidence(query_param, 0x1000218e4, 0x100021950, ['CharSearcher', 'cmp', '0x10002187c']),
+        'contract': 'Lossy UTF8 before CRLF split; first two Unicode-whitespace tokens required, no HTTP version validation. Ignore header lines without colon, split first colon, trim both sides, lowercase ASCII name and retain last duplicate. Query returns first exact key with equals, no URL decoding or fragment treatment.',
+        'integrationStatus': 'Parser composed with header collector and tested. Token checking, request routing, upgrade and connection manager remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

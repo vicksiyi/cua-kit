@@ -68,3 +68,52 @@ impl Read for PrefixedTcpReader {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct HttpRequest {
+    pub method: String,
+    pub path: String,
+    pub headers: std::collections::HashMap<String, String>,
+    pub remaining: Vec<u8>,
+}
+
+/// Native parser uses lossy UTF-8 and CRLF splitting, then only the first two
+/// whitespace-separated request-line tokens. HTTP version validation is absent.
+pub fn read_request(reader: &mut impl Read) -> io::Result<HttpRequest> {
+    let collected = read_headers(reader)?;
+    let text = String::from_utf8_lossy(&collected.headers[..collected.headers.len() - 4]);
+    let mut lines = text.split("\r\n");
+    let line = lines
+        .next()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing request line"))?;
+    let mut parts = line.split_whitespace();
+    let method = parts
+        .next()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing request method"))?
+        .to_owned();
+    let path = parts
+        .next()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing request path"))?
+        .to_owned();
+    let mut headers = std::collections::HashMap::new();
+    for line in lines {
+        if let Some((name, value)) = line.split_once(':') {
+            headers.insert(name.trim().to_ascii_lowercase(), value.trim().to_owned());
+        }
+    }
+    Ok(HttpRequest {
+        method,
+        path,
+        headers,
+        remaining: collected.remaining,
+    })
+}
+
+/// First matching query pair, with no percent decoding, plus conversion, case
+/// folding, or fragment stripping (request_query_param, 0x1000217e4..0x100021970).
+pub fn request_query_param<'a>(path: &'a str, name: &str) -> Option<&'a str> {
+    path.split_once('?')?.1.split('&').find_map(|pair| {
+        let (key, value) = pair.split_once('=')?;
+        (key == name).then_some(value)
+    })
+}

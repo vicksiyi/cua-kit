@@ -62,3 +62,38 @@ fn handshake_overread_and_live_socket_form_one_frame_without_loss() {
     sender.write_all(&[0x89, 0x80, 0, 0, 0, 0]).unwrap();
     assert_eq!(read_client_frame(&mut reader).unwrap().opcode, 9);
 }
+
+#[test]
+fn native_request_parser_preserves_permissive_and_duplicate_semantics() {
+    use core_browser_extension_host::app_server_http::read_request;
+    let bytes = b"\tcustom\t/path?token=a\tignored version\r\n Name : first\r\nNAME: last:with:colon \r\nignored malformed line\r\n: empty-name\r\nX-\xff: \xff\r\n\r\n\xff\0";
+    let request = read_request(&mut Cursor::new(bytes)).unwrap();
+    assert_eq!(request.method, "custom");
+    assert_eq!(request.path, "/path?token=a");
+    assert_eq!(request.headers["name"], "last:with:colon");
+    assert_eq!(request.headers[""], "empty-name");
+    assert_eq!(request.headers["x-\u{fffd}"], "\u{fffd}");
+    assert_eq!(request.remaining, b"\xff\0");
+    assert!(read_request(&mut Cursor::new(b"GET /\r\n\r\n")).is_ok());
+    for (bytes, expected) in [
+        (b"\r\n\r\n".as_slice(), "missing request method"),
+        (b"GET\r\n\r\n".as_slice(), "missing request path"),
+    ] {
+        let error = read_request(&mut Cursor::new(bytes)).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(error.to_string(), expected);
+    }
+}
+
+#[test]
+fn query_parameters_are_first_exact_raw_key_value_pair() {
+    use core_browser_extension_host::app_server_http::request_query_param as get;
+    assert_eq!(get("/x?token=first&token=second", "token"), Some("first"));
+    assert_eq!(
+        get("/x?token&token=a=b%20+c#frag", "token"),
+        Some("a=b%20+c#frag")
+    );
+    assert_eq!(get("/x?token=", "token"), Some(""));
+    assert_eq!(get("/x?Token=a&%74oken=b", "token"), None);
+    assert_eq!(get("/x", "token"), None);
+}
