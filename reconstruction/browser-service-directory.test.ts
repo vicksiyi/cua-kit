@@ -5,7 +5,33 @@ import {
   createTurnEndedTrackerClass,
   BrowserClientApi,
 } from "../packages/browser/src/service/runtime/browser_directory";
-import { originalServiceBindings } from "./service-source";
+import {
+  originalServiceBindings,
+  serviceClassWithMethods,
+  serviceSourceSha256,
+} from "./service-source";
+if (
+  serviceSourceSha256 !==
+  "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021"
+)
+  throw Error(
+    "Browser directory source changed; re-audit helper bindings before comparison",
+  );
+const directoryClass = serviceClassWithMethods([
+  "getBrowsers",
+  "getDefault",
+  "getForUrl",
+  "getDotBrowser",
+  "refresh",
+  "connectDotBrowser",
+  "trackBrowser",
+  "dispose",
+]);
+const trackerClass = serviceClassWithMethods([
+  "track",
+  "finishTurn",
+  "dispose",
+]);
 async function run(original: boolean, mode: string) {
   const trace: any[] = [];
   const runtime = { turn: "first" };
@@ -114,25 +140,25 @@ async function run(original: boolean, mode: string) {
       };
     },
   };
-  const { Sx } = originalServiceBindings(["Hy", "Sx"]);
+  const { Cx } = originalServiceBindings(["D_", "Cx"]);
   const map: any = {
-    fb: deps.TurnEndedTracker,
-    mb: deps.ClientApi,
-    id: deps.BrowserApi,
-    M6: deps.discover,
-    Me: deps.turnMetadata,
-    pl: deps.surfaceEnabled,
-    Is: deps.assertSurfaceEnabled,
-    hb: deps.findBrowser,
-    U6: deps.selectDefault,
-    q6: deps.selectForUrl,
-    bb: deps.matchesPreference,
-    Vo: { create: deps.connect },
-    Hx: deps.readInfo,
-    Sx,
+    wb: deps.TurnEndedTracker,
+    yb: deps.ClientApi,
+    ld: deps.BrowserApi,
+    F6: deps.discover,
+    je: deps.turnMetadata,
+    fc: deps.surfaceEnabled,
+    Aa: deps.assertSurfaceEnabled,
+    _b: deps.findBrowser,
+    j6: deps.selectDefault,
+    H6: deps.selectForUrl,
+    Sb: deps.matchesPreference,
+    Wo: { create: deps.connect },
+    Gx: deps.readInfo,
+    Cx,
   };
   const Directory = original
-    ? originalServiceBindings(["yb"], map).yb
+    ? originalServiceBindings([directoryClass], map)[directoryClass]
     : createBrowserDirectoryClass(deps);
   const directory = new Directory(
     runtime,
@@ -229,7 +255,7 @@ test("turn-ended tracker matches original session replacement, drain-before-awai
     let hook: any;
     const report = (error: Error) => trace.push(["report", error.message]);
     const Tracker = original
-      ? originalServiceBindings(["fb"], { Dt: report }).fb
+      ? originalServiceBindings([trackerClass], { dt: report })[trackerClass]
       : createTurnEndedTrackerClass(report);
     const tracker = new Tracker({
       addTurnEndedHandler(value: any) {
@@ -283,34 +309,28 @@ test("URL selection and browser aliases match original ranking and provider fail
     await import("../packages/browser/src/service/browser_family");
   const original = originalServiceBindings(
     [
-      "Hy",
-      "Wy",
-      "NA",
-      "hb",
-      "bb",
-      "U6",
-      "jB",
+      "D_",
+      "M_",
+      "dD",
+      "_b",
+      "Sb",
       "j6",
-      "L6",
-      "nce",
-      "ds",
-      "gb",
-      "rce",
-      "oce",
+      "KM",
+      "W6",
       "q6",
+      "ice",
+      "cs",
+      "vb",
+      "vr",
+      "oce",
+      "sce",
+      "H6",
     ],
     {
-      ky: isBrowserFamily,
-      ece: isIP,
-      Lt: (value: string) => {
-        try {
-          return new URL(value);
-        } catch {
-          return null;
-        }
-      },
-      tce: 1000,
-      Wx: selection.browserBackendDeadline,
+      rw: isBrowserFamily,
+      rce: isIP,
+      nce: 1000,
+      zx: selection.browserBackendDeadline,
     },
   );
   const urls = [
@@ -351,7 +371,7 @@ test("URL selection and browser aliases match original ranking and provider fail
         if (order) candidates.reverse();
         assert.equal(
           selection.chooseBrowserForUrl(candidates, input),
-          original.rce(candidates, input),
+          original.oce(candidates, input),
         );
       }
   for (const left of [
@@ -370,7 +390,7 @@ test("URL selection and browser aliases match original ranking and provider fail
     ])
       assert.equal(
         selection.hostnameHierarchyMatches(left, right),
-        original.nce(left, right),
+        original.ice(left, right),
       );
   const browsers = [
     {
@@ -393,7 +413,7 @@ test("URL selection and browser aliases match original ranking and provider fail
   ])
     assert.equal(
       selection.findDirectoryBrowser(browsers, requested),
-      original.hb(browsers, requested),
+      original._b(browsers, requested),
     );
   for (const list of [browsers, browsers.slice(0, 2), [], browsers.slice(1)])
     for (const preference of [
@@ -403,7 +423,7 @@ test("URL selection and browser aliases match original ranking and provider fail
     ])
       assert.equal(
         selection.selectDefaultBrowser(list, preference),
-        original.U6(list, preference),
+        original.j6(list, preference),
       );
   for (const mode of ["normal", "reject", "sync-error", "invalid-result"])
     for (const type of ["extension", "iab", "cdp"]) {
@@ -429,7 +449,7 @@ test("URL selection and browser aliases match original ranking and provider fail
         try {
           trace.push(
             await (source
-              ? original.oce(api, type)
+              ? original.sce(api, type)
               : selection.openBrowserTabUrls(api, type)),
           );
         } catch (error: any) {
@@ -461,7 +481,7 @@ test("URL selection and browser aliases match original ranking and provider fail
           }));
         try {
           const result = await (source
-            ? original.q6(entries, input, null)
+            ? original.H6(entries, input, null)
             : selection.selectBrowserForUrl(entries, input, null));
           trace.push(["selected", result?.id]);
         } catch (error: any) {

@@ -6,14 +6,21 @@ import {
   createProfileEnrichment,
 } from "../packages/browser/src/service/runtime/browser_handshake";
 import { createBrowserDiscovery } from "../packages/browser/src/service/runtime/browser_discovery";
-import { originalServiceBindings } from "./service-source";
-const base = originalServiceBindings(["dl", "Zt", "zr", "Qt", "Bs", "W1"], {
-  ii: "BROWSER_USE_SECURITY_MODE",
-  np: "BROWSER_USE_FULL_CDP_ACCESS_ENABLED",
-  y5: ["", "gaas-browser-environment"],
-  SC: "",
+import { originalServiceBindings, serviceSourceSha256 } from "./service-source";
+if (
+  serviceSourceSha256 !==
+  "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021"
+)
+  throw Error(
+    "Browser handshake source changed; re-audit helper bindings before comparison",
+  );
+const base = originalServiceBindings(["mc", "Jt", "Zt", "Qr", "Ia", "NI"], {
+  xi: "BROWSER_USE_SECURITY_MODE",
+  EY: ["", "gaas-browser-environment"],
+  HR: "",
+  Em: "BROWSER_USE_FULL_CDP_ACCESS_ENABLED",
 });
-const capability = { id: base.W1.id, info: base.W1 };
+const capability = { id: base.NI.id, info: base.NI };
 test("handshake AX and full CDP capability policies match original matrices and identity", async () => {
   for (const type of ["iab", "extension", "cdp", "mcpapps", "unknown"])
     for (const ax of [undefined, false, true])
@@ -42,12 +49,12 @@ test("handshake AX and full CDP capability policies match original matrices and 
                 return options.enabledByDefault;
               };
               const fn = original
-                ? originalServiceBindings(["Vle"], {
-                    Zt: base.Zt,
-                    vC: "BROWSER_USE_TINYSKY_ENABLED",
-                    hv: enabled,
-                    Po: () => (production ? "production" : "development"),
-                  }).Vle
+                ? originalServiceBindings(["Kle"], {
+                    Jt: base.Jt,
+                    jR: "BROWSER_USE_TINYSKY_ENABLED",
+                    R_: enabled,
+                    mo: () => (production ? "production" : "development"),
+                  }).Kle
                 : createBrowserHandshake({
                     enrichProfile: async (x) => x,
                     reportError() {},
@@ -60,9 +67,9 @@ test("handshake AX and full CDP capability policies match original matrices and 
             }
             assert.deepEqual(await run(false), await run(true));
           }
-  const { Gle } = originalServiceBindings(["Gle"], {
-    Bs: base.Bs,
-    sa: capability,
+  const { Vle } = originalServiceBindings(["Vle"], {
+    Ia: base.Ia,
+    js: capability,
   });
   for (const type of ["iab", "extension", "cdp", "mcpapps", "unknown"])
     for (const mode of ["", "gaas-browser-environment"])
@@ -78,7 +85,7 @@ test("handshake AX and full CDP capability policies match original matrices and 
               type,
               capabilities: {
                 browser: [{ id: "fixture" }],
-                tab: present ? [base.W1] : [],
+                tab: present ? [base.NI] : [],
               },
             };
           for (const permission of [undefined, false, true, "error"]) {
@@ -99,7 +106,7 @@ test("handshake AX and full CDP capability policies match original matrices and 
               };
               try {
                 const result = await (original
-                  ? Gle(runtime, info, options)
+                  ? Vle(runtime, info, options)
                   : addFullCdpCapability(runtime, info, options));
                 return { calls, result, same: result === info };
               } catch (error: any) {
@@ -145,7 +152,7 @@ test("profile enrichment and handshake preserve source failure boundaries and me
         ];
       };
       const enrichment = original
-        ? originalServiceBindings(["C6"], { wle: readProfiles }).C6
+        ? originalServiceBindings(["P6"], { vle: readProfiles }).P6
         : createProfileEnrichment(readProfiles);
       const report = (error: any) => trace.push(["report", error.message]);
       const api = {
@@ -166,17 +173,17 @@ test("profile enrichment and handshake preserve source failure boundaries and me
       const { browserBackendDeadline } =
         await import("../packages/browser/src/service/runtime/browser_selection");
       const fn = original
-        ? originalServiceBindings(["Gle", "Vle", "Hx"], {
-            Wx: browserBackendDeadline,
-            C6: enrichment,
-            Dt: report,
-            Bs: base.Bs,
-            sa: capability,
-            Zt: base.Zt,
-            vC: "BROWSER_USE_TINYSKY_ENABLED",
-            hv: feature,
-            Po: () => "production",
-          }).Hx
+        ? originalServiceBindings(["Vle", "Kle", "Gx"], {
+            zx: browserBackendDeadline,
+            P6: enrichment,
+            dt: report,
+            Ia: base.Ia,
+            js: capability,
+            Jt: base.Jt,
+            jR: "BROWSER_USE_TINYSKY_ENABLED",
+            R_: feature,
+            mo: () => "production",
+          }).Gx
         : createBrowserHandshake({
             enrichProfile: enrichment,
             reportError: report,
