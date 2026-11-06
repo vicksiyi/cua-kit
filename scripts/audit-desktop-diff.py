@@ -1166,6 +1166,15 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clippingFrame']={
+    'entry':'0x10079ffb8..<0x1007a03f8',
+    'initial':'CGRectInfinite via GOT 0x101464b58; self included, no depth limit/lookahead',
+    'order':['application role stops before frame read','missing AXFrame returns nil even for non-clipping roles','scrollArea OR (group AND hasScrollAction) OR window/sheet/menu/popover intersects frame','empty/null intersection returns nil','window/sheet/menu/popover stops after intersection','otherwise parent, uncached iff requested','unchanged CGRectInfinite returns nil'],
+    'predicates':{'scrollContainer':'0x1007a04d4..<0x1007a0654','terminalBoundary':'0x1007a0654..<0x1007a088c','clipsChildren':'0x1007a088c..<0x1007a08d8'},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079ffb8,0x1007a03f8),(0x1007a04d4,0x1007a08d8)]],
+    'implementation':'UIElementClippingFrame.swift preserves lazy role predicates and generic ancestor/geometry flow.',
+    'limitations':'Concrete cached/uncached frame and parent composition and hasScrollAction provider still explicit dependencies. No production replacement or live UI claim.',
+}
 element_storage_evidence['clickablePointFlow']={
     'core':'0x10079e6ac..<0x10079eb20, including scroll continuation',
     'defaultEntry':'0x1007a03f8..<0x1007a04d4 calls core with scrollToVisible:false and discards returned scroll Bool',
@@ -1174,7 +1183,7 @@ element_storage_evidence['clickablePointFlow']={
     'error':'UIElementGeometryError descriptor 0x1012cd450 / field descriptor 0x10132407c: sole no-payload case elementHasNoFrame',
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x10079e6ac,0x10079eb20),(0x10079fe78,0x10079ff78),(0x1007a03f8,0x1007a04d4),(0x1012cd450,0x1012cd46c),(0x10132407c,0x101324098)]],
     'implementation':'UIElementClickablePoint.swift restores async branching and default false entry with explicit geometry/scroll dependencies.',
-    'limitations':'Special preferred-point helper, clipping ancestor algorithm, concrete raw-frame composition and scrollToVisible body remain pending; production center-only click not replaced. Fixture tests are not live app evidence.',
+    'limitations':'Special preferred-point helper, concrete clipping/raw-frame composition and scrollToVisible body remain pending; generic clipping ancestor algorithm restored; production center-only click not replaced. Fixture tests are not live app evidence.',
 }
 element_storage_evidence['clickPointResolution']={
     'pointError':'0x1007b1dc4 checks async error and propagates before point-result handling',

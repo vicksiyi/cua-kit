@@ -3093,6 +3093,38 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "clippingFrame": {
+      "entry": "0x10079ffb8..<0x1007a03f8",
+      "initial": "CGRectInfinite via GOT 0x101464b58; self included, no depth limit/lookahead",
+      "order": [
+        "application role stops before frame read",
+        "missing AXFrame returns nil even for non-clipping roles",
+        "scrollArea OR (group AND hasScrollAction) OR window/sheet/menu/popover intersects frame",
+        "empty/null intersection returns nil",
+        "window/sheet/menu/popover stops after intersection",
+        "otherwise parent, uncached iff requested",
+        "unchanged CGRectInfinite returns nil"
+      ],
+      "predicates": {
+        "scrollContainer": "0x1007a04d4..<0x1007a0654",
+        "terminalBoundary": "0x1007a0654..<0x1007a088c",
+        "clipsChildren": "0x1007a088c..<0x1007a08d8"
+      },
+      "blocks": [
+        {
+          "start": "0x10079ffb8",
+          "endExclusive": "0x1007a03f8",
+          "machineCodeSha256": "34bbdbbc01c7a763ad8a614c77928235131d60768b8888cbb36fb09a9d532831"
+        },
+        {
+          "start": "0x1007a04d4",
+          "endExclusive": "0x1007a08d8",
+          "machineCodeSha256": "143a68f58f000b5b8a41766667c3ce08251978ae58c1ce1f67287a1e56cfc4a7"
+        }
+      ],
+      "implementation": "UIElementClippingFrame.swift preserves lazy role predicates and generic ancestor/geometry flow.",
+      "limitations": "Concrete cached/uncached frame and parent composition and hasScrollAction provider still explicit dependencies. No production replacement or live UI claim."
+    },
     "clickablePointFlow": {
       "core": "0x10079e6ac..<0x10079eb20, including scroll continuation",
       "defaultEntry": "0x1007a03f8..<0x1007a04d4 calls core with scrollToVisible:false and discards returned scroll Bool",
@@ -3133,7 +3165,7 @@
         }
       ],
       "implementation": "UIElementClickablePoint.swift restores async branching and default false entry with explicit geometry/scroll dependencies.",
-      "limitations": "Special preferred-point helper, clipping ancestor algorithm, concrete raw-frame composition and scrollToVisible body remain pending; production center-only click not replaced. Fixture tests are not live app evidence."
+      "limitations": "Special preferred-point helper, concrete clipping/raw-frame composition and scrollToVisible body remain pending; generic clipping ancestor algorithm restored; production center-only click not replaced. Fixture tests are not live app evidence."
     },
     "clickPointResolution": {
       "pointError": "0x1007b1dc4 checks async error and propagates before point-result handling",

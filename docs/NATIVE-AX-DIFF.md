@@ -2422,3 +2422,20 @@ AXFrame 缺失抛同一错误；裁剪区域缺失或不包含 frame 中心点�
 0x10132407c 的唯一无 payload case）。测试验证默认不滚动、特殊位置短路、滚动
 结果控制刷新、缺失 frame 错误、裁剪拒绝及滚动异常原样传播。
 特殊 helper、裁剪祖先遍历、实际滚动实现仍为显式依赖，未伪造成功结果，未接入生产点击。
+
+
+## 可点击裁剪区域的祖先遍历（2026-11-07）
+
+恢复 0x10079ffb8..<0x1007a03f8 的独立遍历：从 self 开始、初值 CGRect.infinite
+（GOT 0x101464b58），没有 parentChain 的 300 深度或 lookahead。application
+在读 frame 前终止；其它节点即便不参与裁剪，也必须能读出 AXFrame，否则返回 nil。
+scrollArea、具有滚动动作的 group，以及 window/sheet/menu/popover 执行矩形交集；
+空或 null 交集立即 nil。window/sheet/menu/popover 在交集后终止。其余继续读 parent，
+刷新标志同时传给 frame 和 parent 读取。最终仍为 infinite 时返回 nil。
+
+UIElementClippingFrame.swift 恢复该算法和三个角色判断的短路顺序，角色 getter
+按原版重复调用，未提前冻结值。补齐六个相关角色常量。测试验证非裁剪节点不缩小
+区域、滚动 group 分支、四类终止边界、缺失 frame、空/无限结果及刷新标志传递。
+
+此处尚未接入具体 AX cached/uncached reader；hasScrollAction 保留显式依赖。
+完整特殊位置与实际滚动仍待恢复。生产点击行为未改变，测试只使用几何与节点 fixture。
