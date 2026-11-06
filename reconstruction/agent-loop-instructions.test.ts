@@ -50,3 +50,11 @@ test('invalid provider guidance fails before a model call and still ends the tur
  await assert.rejects(new AgentLoop({decide:async()=>{throw Error('Model must not run');}},tools).run('fixture'),/instructions must be a string/);
  assert.equal(ended,1);
 });
+
+ test('turn adapter rejects malformed provider guidance instead of coercing it to text',async()=>{
+  let ended=0;
+  const tools:ToolClient={getInstructions:()=>({bad:true}) as unknown as string,listTools:async()=>[],callTool:async call=>{if(call.name==='turn_ended')ended++;return {content:[]};},close:async()=>{}};
+  const wrapped=new NodeReplTurnClient(tools,{hook_event_name:'turn_ended',session_id:'fixture',turn_id:'invalid'});
+  await assert.rejects(new AgentLoop({decide:async()=>{throw Error('Model must not run');}},wrapped).run('fixture'),/instructions must be a string/);
+  assert.equal(ended,1);
+ });

@@ -44,7 +44,17 @@ export class NodeReplTurnClient implements ToolClient {
       );
     this.event = Object.freeze(parseNodeReplTurnEvent(event));
   }
-  getInstructions(): string | undefined { return this.client.getInstructions?.(); }
+  getInstructions(): string {
+    // Host guidance for the native oneOf contract; preserve the server schema
+    // and reject mixed execution/completion arguments in the native parser.
+    const instructions = this.client.getInstructions?.();
+    if (instructions !== undefined && typeof instructions !== "string")
+      throw new Error("Tool provider instructions must be a string or undefined.");
+    return [
+      instructions,
+      "When js offers completion_summary, it is a separate summary-only tool call: pass only {completion_summary: <headline>}, never code, title or timeout_ms alongside it. It acknowledges a completed task; it does not produce the user-facing answer. After a successful summary acknowledgment, return the observed answer to the user without repeating the summary call. Do not report completion while the requested result remains unresolved.",
+    ].filter(Boolean).join("\n");
+  }
   async listTools(signal?: AbortSignal) {
     return (await this.client.listTools(signal)).filter(
       (tool) => tool.name !== "turn_ended",
