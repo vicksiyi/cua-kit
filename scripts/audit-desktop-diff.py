@@ -764,6 +764,31 @@ element_storage_evidence['accessibilityNodeContract']={
     'interpretation':'UIElementProtocol inherits this entire contract. Its ten direct requirements are not the whole node interface. Identifiable supplies ID; Role and PresentationActions are separately constrained.',
     'limitations':'Getter slot addresses fixed, but not all 31 names/semantics mapped. Shared nil/false witness bodies do not uniquely identify property names. Full protocol and production conformances remain pending.',
 }
+node_string_sources={
+    '0x1015756a0':('AXRoleDescription','0x1007c10fc'),
+    '0x1015756a8':('AXTitle','0x1007803f4'),
+    '0x1015756b0':('AXDescription','0x1007c10e0'),
+    '0x1015756b8':('AXValue','0x1007c116c'),
+    '0x1015756c0':('AXValueDescription','0x1007c10c4'),
+    '0x1015756d0':('AXHelp','0x1007c108c'),
+    '0x1015756d8':('AXIdentifier','0x1007c1070'),
+    '0x101575738':('AXValue','0x1007c116c'),
+    '0x101575740':('AXPlaceholderValue','0x1007c10a8'),
+}
+for entry in node_slots:
+    if entry['slot'] in node_string_sources:
+        attribute,reader=node_string_sources[entry['slot']]
+        entry.update({'attributeSource':attribute,'reader':reader,'decodedType':'Swift.String?',
+            'readPolicy':'cached partial only; throwingOnFailure:false; no uncached read'})
+element_storage_evidence['accessibilityNodeCachedStrings']={
+    'slots':list(node_string_sources),
+    'sharedReader':'0x1007c1188 cached dictionary lookup; String decoder 0x100710b44 at 0x1007c120c; missing/failed decode -> nil',
+    'titleReader':'0x1007803f4 separately performs same cache-only String decode for AXTitle',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007c1070,0x1007c1314),(0x1007803f4,0x10078051c),(0x1007aff80,0x1007affe0),(0x10078fd70,0x10078fd78)]],
+    'implementationReuse':'UIElement.cachedStringValue(for:) already supplies the observed decoder/cache-only policy; do not replace with stringValue(for:) which may read uncached attributes.',
+    'limitations':'Attribute source and return decoding established for nine slots; original protocol property names are not inferred merely from AX constants, especially the two distinct AXValue slots. Remaining getter mapping and protocol wiring pending.',
+}
 element_storage_evidence['attributeSupport']={
     'symbol':'UIElementProtocol.attributeIsKnownUnsupported',
     'start':'0x1007b0854','endExclusive':'0x1007b0958',

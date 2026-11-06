@@ -1674,3 +1674,29 @@ nil bundleIdentifier 返回 false。此分类不是应用白名单或授权策�
 后续必须把这 31 个 getter 和相关 Role/PresentationActions 类型纳入协议接线，而不是
 创建只有 AX 引用、cache、actions 的同名简化协议。本轮完成静态约束与表布局取证，
 没有修改生产行为或运行 UI/模型。
+
+## 父协议中九个字符串 getter 的数据来源（2026-11-07）
+
+继续由 concrete witness 跟踪至 AX 常量和 String decoder，确认以下九个 slot 的
+属性来源及返回类型，尚不凭属性常量推断所有协议属性名称：
+
+| slot | 属性来源 | reader |
+| --- | --- | --- |
+| 0x1015756a0 | AXRoleDescription | 0x1007c10fc |
+| 0x1015756a8 | AXTitle | 0x1007803f4 |
+| 0x1015756b0 | AXDescription | 0x1007c10e0 |
+| 0x1015756b8 | AXValue | 0x1007c116c |
+| 0x1015756c0 | AXValueDescription | 0x1007c10c4 |
+| 0x1015756d0 | AXHelp | 0x1007c108c |
+| 0x1015756d8 | AXIdentifier | 0x1007c1070 |
+| 0x101575738 | AXValue | 0x1007c116c |
+| 0x101575740 | AXPlaceholderValue | 0x1007c10a8 |
+
+除 title 的独立 specialization 外，共用 0x1007c1188：查 cache.attributes，
+存在 partial 时用 0x100710b44 解码 String，throwingOnFailure=false；缺失或解码
+失败返回 nil，不重新查询 AX。两个不同 slot 都读取 AXValue，不能因此合并协议要求。
+
+后续接线应复用已有 cachedStringValue(for:)，不能换成可能触发 uncached 读取的
+stringValue(for:)。这也解释为何完整原生快照还需要事务缓存：节点属性 getter 并非
+随读随查系统。机器审计记录九个来源与函数区间，剩余 getter 语义继续核查。
+此轮为静态取证，无生产行为变更或模型/UI 调用。

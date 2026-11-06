@@ -1842,27 +1842,47 @@
         {
           "slot": "0x1015756a0",
           "target": "0x1007affa8",
-          "requirementDescriptor": "0x1012c92b0"
+          "requirementDescriptor": "0x1012c92b0",
+          "attributeSource": "AXRoleDescription",
+          "reader": "0x1007c10fc",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756a8",
           "target": "0x1007affb0",
-          "requirementDescriptor": "0x1012c92b8"
+          "requirementDescriptor": "0x1012c92b8",
+          "attributeSource": "AXTitle",
+          "reader": "0x1007803f4",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756b0",
           "target": "0x1007affb8",
-          "requirementDescriptor": "0x1012c92c0"
+          "requirementDescriptor": "0x1012c92c0",
+          "attributeSource": "AXDescription",
+          "reader": "0x1007c10e0",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756b8",
           "target": "0x1007affc0",
-          "requirementDescriptor": "0x1012c92c8"
+          "requirementDescriptor": "0x1012c92c8",
+          "attributeSource": "AXValue",
+          "reader": "0x1007c116c",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756c0",
           "target": "0x1007affc8",
-          "requirementDescriptor": "0x1012c92d0"
+          "requirementDescriptor": "0x1012c92d0",
+          "attributeSource": "AXValueDescription",
+          "reader": "0x1007c10c4",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756c8",
@@ -1872,12 +1892,20 @@
         {
           "slot": "0x1015756d0",
           "target": "0x1007affd0",
-          "requirementDescriptor": "0x1012c92e0"
+          "requirementDescriptor": "0x1012c92e0",
+          "attributeSource": "AXHelp",
+          "reader": "0x1007c108c",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756d8",
           "target": "0x1007affd8",
-          "requirementDescriptor": "0x1012c92e8"
+          "requirementDescriptor": "0x1012c92e8",
+          "attributeSource": "AXIdentifier",
+          "reader": "0x1007c1070",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x1015756e0",
@@ -1937,12 +1965,20 @@
         {
           "slot": "0x101575738",
           "target": "0x10078fd70",
-          "requirementDescriptor": "0x1012c9348"
+          "requirementDescriptor": "0x1012c9348",
+          "attributeSource": "AXValue",
+          "reader": "0x1007c116c",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x101575740",
           "target": "0x1007b0138",
-          "requirementDescriptor": "0x1012c9350"
+          "requirementDescriptor": "0x1012c9350",
+          "attributeSource": "AXPlaceholderValue",
+          "reader": "0x1007c10a8",
+          "decodedType": "Swift.String?",
+          "readPolicy": "cached partial only; throwingOnFailure:false; no uncached read"
         },
         {
           "slot": "0x101575748",
@@ -1992,6 +2028,45 @@
       ],
       "interpretation": "UIElementProtocol inherits this entire contract. Its ten direct requirements are not the whole node interface. Identifiable supplies ID; Role and PresentationActions are separately constrained.",
       "limitations": "Getter slot addresses fixed, but not all 31 names/semantics mapped. Shared nil/false witness bodies do not uniquely identify property names. Full protocol and production conformances remain pending."
+    },
+    "accessibilityNodeCachedStrings": {
+      "slots": [
+        "0x1015756a0",
+        "0x1015756a8",
+        "0x1015756b0",
+        "0x1015756b8",
+        "0x1015756c0",
+        "0x1015756d0",
+        "0x1015756d8",
+        "0x101575738",
+        "0x101575740"
+      ],
+      "sharedReader": "0x1007c1188 cached dictionary lookup; String decoder 0x100710b44 at 0x1007c120c; missing/failed decode -> nil",
+      "titleReader": "0x1007803f4 separately performs same cache-only String decode for AXTitle",
+      "blocks": [
+        {
+          "start": "0x1007c1070",
+          "endExclusive": "0x1007c1314",
+          "machineCodeSha256": "9474e1184e8315639febda4ef5e28ccc523fc44494b508f21b769fbc7c2ae9e6"
+        },
+        {
+          "start": "0x1007803f4",
+          "endExclusive": "0x10078051c",
+          "machineCodeSha256": "eab134bd127ea8dc1a336ac881b4e81f972e72b4c9e6dfbcf891984e03d59c79"
+        },
+        {
+          "start": "0x1007aff80",
+          "endExclusive": "0x1007affe0",
+          "machineCodeSha256": "bb24d171ffe2b28e5b9243d2e97d7a97e4872b2ddc518583cb331ad28abc9b91"
+        },
+        {
+          "start": "0x10078fd70",
+          "endExclusive": "0x10078fd78",
+          "machineCodeSha256": "3b603c12dc6b0efc2f020b4bdb375d57bd8d86bd4ad7b388fa3d60f6a112705c"
+        }
+      ],
+      "implementationReuse": "UIElement.cachedStringValue(for:) already supplies the observed decoder/cache-only policy; do not replace with stringValue(for:) which may read uncached attributes.",
+      "limitations": "Attribute source and return decoding established for nine slots; original protocol property names are not inferred merely from AX constants, especially the two distinct AXValue slots. Remaining getter mapping and protocol wiring pending."
     },
     "attributeSupport": {
       "symbol": "UIElementProtocol.attributeIsKnownUnsupported",
