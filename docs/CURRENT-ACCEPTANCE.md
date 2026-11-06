@@ -57,3 +57,16 @@ CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 nod
 `browser-keypress-duration.test.ts` 对照当前服务命令与输入方法，并在真实 Chromium
 自有页面上通过 CUAAPI → command.parse → service → BrowserInput → keyboard dispatcher → CDP
 观察 keydown/keyup 和实际长按间隔。此测试不包含 MCP 或日常 Chrome 扩展连接。
+
+## 长按取消与按键释放验收
+
+`browser-held-key-cleanup.test.ts` 对照当前 browser-service 的 yc/U_/ka 及
+原始 token、target、delay 辅助函数，24 种组合验证：成功、焦点检查失败、keydown 失败、
+keyup 失败、keydown 期间取消、预先取消 × 受保护输入开关 × 主/子 frame。
+错误优先级、逆序释放、所有 keyup 均尝试及取消前不发事件与当前原构建一致。
+这组差分共享 key-map helpers，不能用来证明键位映射表与原构建一致。
+
+真实 Chromium 自有页面另行验证 Control+Shift+A 长按期间取消，页面收到三次按下，
+随后按 A/Shift/Control 顺序释放，最终 ctrlKey/shiftKey 都为 false。2 项测试通过。
+该取消测试调用 keyboard dispatcher 的 AbortSignal；不代表公共 cua.keypress 或 MCP
+已暴露/贯通取消参数，也未验收浏览器崩溃或进程强杀时的释放行为。本轮无产品逻辑改动。
