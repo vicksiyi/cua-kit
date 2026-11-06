@@ -2476,3 +2476,19 @@ UIElementChessClickPoint.swift 恢复此控制流与标题规则，保留应用�
 和 provider 元素相等比较为显式依赖。测试覆盖 64 个合法坐标、无效/Unicode 标题、
 精确 bundle gate、中心已命中/无结果，以及完整 4096 次采样顺序、异常跳过和均值。
 尚未完成实际 ApplicationUIElement/provider 接线，也未改变生产点击或调用实际 Chess。
+
+
+## 系统 AX 坐标命中测试（2026-11-07）
+
+AXHitTesting.swift 恢复 0x1006f7a90 的系统分支：按目标 PID 复用现有主线程
+调度规则，将 CGPoint 坐标转换为 Float 后调用 AXUIElementCopyElementAtPosition。
+输出引用先置 nil，仅 success 被接受；noValue、attributeUnsupported、cannotComplete
+等非成功状态均抛出原 AX 错误，即使输出引用非空也不能当作成功。
+成功但无引用返回 nil；成功且有引用使用已有事务构造 UIElement。
+
+测试覆盖状态与有/无结果组合、Float 精度损失、非有限值原样传递、仅成功时构造
+以及预取事务缓存复用；Swift package 构建和测试通过。首次 fixture 编译遇到
+CGFloat/Double.infinity 重载歧义，显式指定 CGFloat 后通过。
+
+此处仅恢复系统适配层，事务仍由调用者传入；原 TaskLocal MockProvider、隐式
+current transaction 获取及完整点击生产接线未完成，没有进行真实 UI 操作验收。

@@ -1166,6 +1166,14 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['systemHitTesting']={
+    'entry':'0x1006f7a90..<0x1006f7ea8; main-thread closure 0x1006f7ea8..<0x1006f7f2c',
+    'systemBranch':'Resolve target PID; same-process off-main reads dispatch to main; convert CGPoint coordinates to Float; initialize output nil; call AXUIElementCopyElementAtPosition',
+    'result':'Only AXError.success accepted; every other status throws axError even if output exists. Success nil returns nil; success element constructs UIElement with current transaction.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1006f7a90,0x1006f7ea8),(0x1006f7ea8,0x1006f7f2c)]],
+    'implementation':'AXHitTesting.swift composes existing PID/main-thread helpers and concrete transaction-based UIElement constructor.',
+    'limitations':'System branch only; TaskLocal MockProvider and automatic current-transaction lookup remain pending. Fixture validation is not live UI acceptance; production clickablePoint integration remains incomplete.',
+}
 element_storage_evidence['chessPreferredPoint']={
     'entry':'0x10079eb20..<0x10079f380',
     'gates':'role button; title predicate 0x1007a3520; exact bundle com.apple.Chess; app lookup, element frame and center hit must exist; center matching target returns nil; parent frame required',

@@ -3093,6 +3093,25 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "systemHitTesting": {
+      "entry": "0x1006f7a90..<0x1006f7ea8; main-thread closure 0x1006f7ea8..<0x1006f7f2c",
+      "systemBranch": "Resolve target PID; same-process off-main reads dispatch to main; convert CGPoint coordinates to Float; initialize output nil; call AXUIElementCopyElementAtPosition",
+      "result": "Only AXError.success accepted; every other status throws axError even if output exists. Success nil returns nil; success element constructs UIElement with current transaction.",
+      "blocks": [
+        {
+          "start": "0x1006f7a90",
+          "endExclusive": "0x1006f7ea8",
+          "machineCodeSha256": "4679c30e58030bcb4a315a1822047f5c693860684168948b6b8f7a4a769383c5"
+        },
+        {
+          "start": "0x1006f7ea8",
+          "endExclusive": "0x1006f7f2c",
+          "machineCodeSha256": "b767a36994447cdc0efbb1dcf177ca8faad71836fff07746798622c14f5a59d5"
+        }
+      ],
+      "implementation": "AXHitTesting.swift composes existing PID/main-thread helpers and concrete transaction-based UIElement constructor.",
+      "limitations": "System branch only; TaskLocal MockProvider and automatic current-transaction lookup remain pending. Fixture validation is not live UI acceptance; production clickablePoint integration remains incomplete."
+    },
     "chessPreferredPoint": {
       "entry": "0x10079eb20..<0x10079f380",
       "gates": "role button; title predicate 0x1007a3520; exact bundle com.apple.Chess; app lookup, element frame and center hit must exist; center matching target returns nil; parent frame required",
