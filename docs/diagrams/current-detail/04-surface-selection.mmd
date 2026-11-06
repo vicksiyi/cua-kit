@@ -1,0 +1,50 @@
+sequenceDiagram
+    actor U as 用户
+    participant D as Demo 部署层
+    participant M as DeepSeek / AgentLoop
+    participant R as Rust MCP / Node REPL
+    participant C as CUA API
+    participant B as Browser service / 扩展
+    participant A as Sky / Swift helper
+    U->>D: prompt + 显式模式参数
+    Note over D: macOS 无参数默认 unified；显式 CDP 参数选择 browser<br/>这是 Demo 部署策略，不是还原出的模型分类器
+    D->>R: initialize / 配置可用 surfaces
+    alt unified
+        D->>R: js: await cua.getState()
+        R->>C: 首次 worker 初始化并执行
+        C->>B: 发现浏览器连接
+        C->>A: 查询应用清单
+        C-->>D: browsers / apps / 各 surface errors
+        Note over C,A: 应用出现在清单中不代表已获 UI 权限
+    else browser 或 computer
+        D->>R: 对所选 surface 执行独立预检
+    end
+    D->>M: prompt + inventory + 文档 + surfaces / policy / permissions
+    Note over M: 根据用户意图和观察选择 API<br/>名称歧义可澄清；应用失败不得自行换成网站
+    alt 用户目标是本机应用，且能力与授权允许
+        M->>R: js: await cua.getApp(应用引用)
+        R->>C: getApp
+        C->>A: get_app_state(app, disableDiff:true)
+        Note over A: 当前 Swift 校验 disableDiff 但尚未还原增量树语义<br/>策略、交互批准、AX/录屏权限仍是独立关口
+        A-->>M: 应用状态或明确失败，经 RPC 原链返回
+    else 用户目标是网页
+        opt Chrome 不在清单且宿主提供 prepare_browser
+            M->>D: prepare_browser(browser:chrome)
+            D->>B: 检查扩展/host配置，必要时启动指定 profile
+            D-->>M: 启动尝试结果
+            M->>R: js: await cua.getState() 重新观察
+        end
+        M->>R: js: 文档中的浏览器入口
+        R->>C: getTab / getBrowser / createBrowserTab
+        C->>B: RPC / 扩展 / CDP
+        B-->>M: 页面观察或明确失败，经 RPC 原链返回
+    else 能力缺失、权限不足、拒绝或目标不清
+        M-->>U: 说明限制或澄清，不假报成功
+    end
+    opt 目标可执行且仍需工具
+        M->>R: 后续工具调用：观察 → 操作 → 再观察
+    end
+    Note over M,R: 错误/拒绝不表示允许切换后端绕过
+    M->>R: endTurn / turn_ended
+    M-->>U: 有证据的回答或未完成说明
+    D->>R: finally 关闭连接及部署资源
