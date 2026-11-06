@@ -447,6 +447,18 @@ for (const deployment of ["native", "full"] as const)
             tabId: created.id,
             status: "deliverable",
           });
+          const backgroundTab = await worker.evaluate(
+            (id) => chrome.tabs.get(id), created.id,
+          );
+          assert.equal(backgroundTab.active, false,
+            "Original createTab creates an inactive tab; grouping must not select it");
+          await peer.sendRequest("focusTab", {
+            session_id: "native-live",
+            tabId: created.id,
+          });
+          assert.equal(await worker.evaluate(
+            (id) => chrome.tabs.get(id).then((tab) => tab.active), created.id,
+          ), true, "Explicit focusTab selects the target tab");
           const disposable = await peer.sendRequest("createTab", {
             session_id: "native-live",
             turn_id: "read-1",

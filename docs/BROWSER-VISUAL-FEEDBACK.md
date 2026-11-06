@@ -50,3 +50,11 @@ native 打包端到端测试通过（约 9.3 秒）；扩展 TypeScript 检查�
 native（约 10.2 秒）与 full（约 16.6 秒）两项真实测试通过。已将证明范围从“直接 moveMouse 可用”扩展至“公共 locator click 经 MCP 能驱动可见光标”；仍不等于所有输入类型、所有模型任务都完成验收。测试会主动激活受控目标标签以检查呈现，不修改产品的自动聚焦策略。
 
 当前原构建 CDP input 类的 clickPoint 方法也先等待 ui.moveMouse，再发 CDP mouse move / down / up，与还原实现的调用顺序一致。
+
+## 2026-11-07：后台建页与显式选中边界
+
+再次核对安装包：`create_browser_api.js` 的 `createBrowserTab` 调用 `tabs.new()` 和导航，并未调用 `focusTab`；扩展 `za` 创建标签使用 `active: false`，`Ad` 创建窗口使用 `focused: false`。单独的 `focusTab` 才执行标签激活和窗口聚焦。`visible` 能力不能直接解释为 Chrome 标签激活。
+
+因此保留原默认后台建页行为。后台未选中标签不会呈现可见光标；读取正文和截图也不等于执行指针移动。最近搜索任务的调用记录只有建页、截图和正文读取，无 click/hover/moveMouse，不能用该任务证明点击光标失效。
+
+真实打包扩展验收增加独立断言：Agent 标签创建及分组后仍为 inactive；显式 `focusTab` 后变为 active。测试使用隔离 Chromium、项目 Rust supervisor 和本地受控页面，不执行原厂 native supervisor，不修改日常 Chrome 的标签。此前已有的公共 MCP locator 点击验收仍检查图片加载、祖先可见性及坐标落在按钮内。它证明受控页面中的扩展链路，不代表用户当前浏览器已重新加载最新扩展，也不代表模型必然产生指针动作。
