@@ -6322,3 +6322,10 @@ PreparedProxy has not yet transferred ownership to the listener thread or manage
 PreparedProxy::start now creates a separate hyphenated UUIDv4 runtime-session ID, moves the bound listener into a detached worker, and retains the shared runtime/origin/process map in AppServerProxy. Static proxy drop glue releases fields but does not close/join the detached listener; this behavior is preserved. Three proxy tests pass, including real TCP authentication rejection before and after dropping the proxy handle. The test's listener terminates with its isolated test executable.
 
 Manager-level shutdown, restart/reuse/update and returned endpoint schema still need reconstruction. A live standalone listener does not establish complete production control wiring or browser acceptance.
+
+
+### Manager proxy shutdown stage checkpoint
+
+Implemented the process portion of native manager shutdown: take optional proxy, take process map under lock, unlock, stop each process ignoring individual errors, and drop proxy. Asset cleanup is a subsequent manager stage and has not been composed here. The existing detached-listener ownership remains unchanged. Four proxy tests pass, including two real owned child processes plus a poisoned process-state entry: shutdown still drains the map, reaps both healthy children, clears the slot and is repeatable.
+
+Full manager shutdown/assets composition, restart/update behavior and production control dispatch remain outstanding.

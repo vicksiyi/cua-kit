@@ -112,3 +112,64 @@ fn started_proxy_serves_rejections_and_handle_drop_does_not_stop_listener() {
     assert!(response.starts_with("HTTP/1.1 403 Forbidden"));
     // The listener is owned by this isolated test executable and ends when it exits.
 }
+
+#[test]
+fn shutdown_takes_proxy_drains_map_and_reaps_children_despite_one_poisoned_state() {
+    use core_browser_extension_host::{
+        app_server_output::OutputState, app_server_proxy::shutdown_proxy,
+    };
+    use std::{
+        process::{Command, Stdio},
+        sync::{Arc, Mutex},
+    };
+    let config = LoadedLaunchConfiguration {
+        launch: LaunchFields::default().resolve(|_| None),
+        selection: LoadedManifestEntry {
+            registry_path: "unused".into(),
+            selected: SelectedManifestEntry {
+                index: 0,
+                configuration: RawManifestConfiguration::default(),
+            },
+        },
+    };
+    let proxy = prepare(&config)
+        .unwrap_or_else(|e| panic!("{}", e.message))
+        .start();
+    let map = proxy.processes.clone();
+    let mut children = vec![];
+    for key in ["one", "two"] {
+        let mut child = Command::new("/bin/cat")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .spawn()
+            .unwrap();
+        let stdin = child.stdin.take();
+        let child = Arc::new(Mutex::new(child));
+        children.push(child.clone());
+        let state = OutputState {
+            child: Some(child),
+            stdin,
+            ..Default::default()
+        };
+        map.lock()
+            .unwrap()
+            .insert(key.into(), Arc::new(Mutex::new(state)));
+    }
+    let poisoned = Arc::new(Mutex::new(OutputState::default()));
+    let fixture = poisoned.clone();
+    assert!(std::thread::spawn(move || {
+        let _guard = fixture.lock().unwrap();
+        panic!("poison fixture")
+    })
+    .join()
+    .is_err());
+    map.lock().unwrap().insert("poisoned".into(), poisoned);
+    let mut slot = Some(proxy);
+    shutdown_proxy(&mut slot);
+    assert!(slot.is_none());
+    assert!(map.lock().unwrap().is_empty());
+    for child in children {
+        assert!(child.lock().unwrap().try_wait().unwrap().is_some());
+    }
+    shutdown_proxy(&mut slot);
+}

@@ -119,3 +119,20 @@ impl PreparedProxy {
         }
     }
 }
+
+/// Process portion of AppServerManager::shutdown. Take the proxy first, take
+/// the entire map under lock, release it, then stop each process best effort.
+/// A poisoned map yields an empty local map; native shutdown does not recover it.
+/// Asset cleanup follows this stage in the manager and is not performed here.
+pub fn shutdown_proxy(slot: &mut Option<AppServerProxy>) {
+    if let Some(proxy) = slot.take() {
+        let processes = proxy
+            .processes
+            .lock()
+            .map(|mut processes| std::mem::take(&mut *processes))
+            .unwrap_or_default();
+        for (_, process) in processes {
+            let _ = crate::app_server_output::stop_process(&process);
+        }
+    }
+}

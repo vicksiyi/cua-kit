@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+manager_shutdown = disassemble(0x10001abec, 0x10001b268)
 proxy_drop = disassemble(0x1000153c0, 0x10001547c)
 manager_ensure = disassemble(0x100017754, 0x10001a87c)
 proxy_listener = disassemble(0x100021514, 0x1000217e4)
@@ -638,6 +639,15 @@ result = {
         'dropFieldsOnly': evidence(proxy_drop, 0x1000153cc, 0x100015478, ['Option<alloc::string::String>', 'HashMap', 'Mutex<alloc::string::String>', 'ProxyRuntimeState', '__rust_dealloc']),
         'contract': 'Create separate hyphenated UUIDv4 runtime session ID in shared String mutex, move listener into detached thread with cloned token/origin/runtime/process map, retain proxy handle. Proxy field Drop does not stop or join listener.',
         'integrationStatus': 'Live listener serves real TCP rejections before and after handle drop inside isolated test executable. Manager shutdown/reuse/update semantics and production control wiring remain open.',
+    },
+    'managerProxyShutdown': {
+        'implementation': 'native/browser-extension-host/src/app_server_proxy.rs::shutdown_proxy',
+        'takeProxy': evidence(manager_shutdown, 0x10001ac0c, 0x10001ac28, ['#-0x1', 'str', '0x10001ae88']),
+        'takeMapUnlock': evidence(manager_shutdown, 0x10001b0b4, 0x10001b100, ['#0x20', '#0x40', 'Mutex>::unlock']),
+        'stopIgnoreErrors': evidence(manager_shutdown, 0x10001ad98, 0x10001add4, ['AppServerProcess>::stop', 'drop_glue::<std::io::error::Error>', 'drop_slow']),
+        'dropProxyThenAssets': evidence(manager_shutdown, 0x10001ae80, 0x10001af40, ['AppServerProxy', 'remove_tab_context_asset_file']),
+        'contract': 'Take optional proxy, replace process map with empty under lock, unlock before stopping each process and ignore stop failures, then drop proxy. Poisoned map falls back to empty local map without recovering stored entries. Manager asset cleanup follows independently.',
+        'integrationStatus': 'Proxy process shutdown stage tested with two owned real children plus one poisoned process state: map drained, both children reaped, slot cleared and repeated shutdown no-op. Full manager/assets composition and restart/update remain open.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
