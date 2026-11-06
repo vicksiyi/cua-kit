@@ -2043,6 +2043,60 @@
       "implementation": "native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift",
       "limitations": "System branch only. TaskLocal MockProvider dispatch, custom description resolver and production descriptor wiring remain pending. Typed CFString output follows the system API contract."
     },
+    "customActionDescriptions": {
+      "orderedCases": [
+        "Press",
+        "Pick",
+        "Increment",
+        "Decrement",
+        "Confirm",
+        "Cancel",
+        "Show Default UI",
+        "Show Alternate UI",
+        "Raise",
+        "Show Menu",
+        "Scroll to Visible",
+        "Scroll Left",
+        "Scroll Right",
+        "Scroll Up",
+        "Scroll Down",
+        "Delete",
+        "Expand",
+        "Collapse"
+      ],
+      "imports": {
+        "0x101466488": "hasPrefix",
+        "0x101463988": "scanString",
+        "0x101463990": "scanUpToString",
+        "0x10151f068": "NSScanner"
+      },
+      "scanner": "Name: prefix gate -> Scanner(string:) -> scanString(Name:) -> scanUpToString(newline); default whitespace settings",
+      "precedence": "mutable static comparison in source order; custom first, native next, name fallback only for nil or logged error",
+      "blocks": [
+        {
+          "start": "0x100794cec",
+          "endExclusive": "0x1007953b4",
+          "machineCodeSha256": "fa3413d372a6630f5c09ec0ea5848320f3895659fc12850f17d77aa319f405d9"
+        },
+        {
+          "start": "0x1007953b4",
+          "endExclusive": "0x100795494",
+          "machineCodeSha256": "a12b2dd04e9355c3275e9c8b595750424ade9c35f25209658732e4a6f86cdbc9"
+        },
+        {
+          "start": "0x100793768",
+          "endExclusive": "0x100793c0c",
+          "machineCodeSha256": "a732a62e9198f70897361beac95fe2ed34c67e87d917a4f5c9c600dd32180bfb"
+        },
+        {
+          "start": "0x10079716c",
+          "endExclusive": "0x10079720c",
+          "machineCodeSha256": "3cdc9581f65a0c79d62c8c0abd437fb253743460316a296b80e1ce51e1ad842a"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementActionDescription.swift",
+      "limitations": "Description policy restored with injected provider/error reporting; original role-aware logger, provider dispatch and production state integration remain pending."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

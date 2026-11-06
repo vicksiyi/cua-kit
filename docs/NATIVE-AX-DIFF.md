@@ -1090,3 +1090,27 @@ NSString 类引用 0x10151efe8 已通过 Mach-O fixups 核查。Swift 实现使�
 该解析器先调用自定义描述函数 0x100794cec，再请求系统描述；目前没有猜测自定义
 文本或将这一层提前接入生产。TaskLocal MockProvider 分派、完整描述解析与
 页面状态输出的接线仍待恢复。
+
+
+## 自定义动作描述与回退顺序（2026-11-07）
+
+继续恢复 `UIElementActionDescription.swift`，不是仅为 expand/collapse 补两个字符串。
+原函数 0x100794cec–0x1007953b4 顺序比较 18 个可变静态动作，返回 Press、Pick、
+Increment、Decrement、Confirm、Cancel、Show Default UI、Show Alternate UI、Raise、
+Show Menu、Scroll to Visible、Scroll Left/Right/Up/Down、Delete、Expand、Collapse。
+已补齐 UIElementAction 对应的静态名称；展开/折叠仍是 SAIExpand/SAICollapse。
+原顺序影响可变常量碰撞时的结果，不能换成固定名称字典或重复键字典。
+
+未匹配动作进入 0x1007953b4–0x100795494：Swift.String.hasPrefix("Name:")，
+创建 Foundation.NSScanner(initWithString:)，scanString("Name:")，然后
+scanUpToString("\n")。fixups 0x101466488/0x101463988/0x101463990 和
+0x10151f068 分别确认这些真实依赖。实现直接用 Foundation.Scanner，保留默认
+跳过空白语义；例如 Name: 后换行再有 Next，会读到 Next，不等同于简单按首行切分。
+
+解析器 0x100793768 先自定义、后系统读取；系统异常记录后返回 nil（0x100793b5c）。
+映射回调 0x10079716c 对 nil 回退原动作名，空字符串则原样保留。
+已恢复此策略的可注入函数，验证全部内置动作绕过系统读取、扫描边界、nil/空/有效系统
+描述、错误传播至记录回调及一次调用，以及 press/pick 常量碰撞时先匹配 press。
+本地 Swift 测试和构建通过；不代表真实应用或完整页面状态输出已经验收。
+
+仍待：原角色感知日志格式、TaskLocal provider 分派、描述列表到生产页面状态的完整接线。

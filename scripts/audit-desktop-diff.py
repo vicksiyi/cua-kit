@@ -901,6 +901,26 @@ element_storage_evidence['systemActionDescriptionReader']={
     'implementation':'native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift',
     'limitations':'System branch only. TaskLocal MockProvider dispatch, custom description resolver and production descriptor wiring remain pending. Typed CFString output follows the system API contract.',
 }
+action_description_imports={
+    '0x101466488':'hasPrefix', '0x101463988':'scanString',
+    '0x101463990':'scanUpToString', '0x10151f068':'NSScanner',
+}
+for address,symbol in action_description_imports.items():
+    line=next((line for line in fixups.splitlines() if address in line.lower()),'')
+    if symbol not in line: raise SystemExit('Action description dependency changed: '+symbol)
+if read_virtual(0x101367513,16)!=b'initWithString:\0': raise SystemExit('Scanner initializer changed')
+element_storage_evidence['customActionDescriptions']={
+    'orderedCases':['Press','Pick','Increment','Decrement','Confirm','Cancel','Show Default UI',
+        'Show Alternate UI','Raise','Show Menu','Scroll to Visible','Scroll Left','Scroll Right',
+        'Scroll Up','Scroll Down','Delete','Expand','Collapse'],
+    'imports':action_description_imports,
+    'scanner':'Name: prefix gate -> Scanner(string:) -> scanString(Name:) -> scanUpToString(newline); default whitespace settings',
+    'precedence':'mutable static comparison in source order; custom first, native next, name fallback only for nil or logged error',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100794cec,0x1007953b4),(0x1007953b4,0x100795494),(0x100793768,0x100793c0c),(0x10079716c,0x10079720c)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementActionDescription.swift',
+    'limitations':'Description policy restored with injected provider/error reporting; original role-aware logger, provider dispatch and production state integration remain pending.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))
