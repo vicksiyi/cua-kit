@@ -1230,6 +1230,49 @@
     "parameterizedSuccessValuePresenceCheck": "0x1006f71e8",
     "limitations": "Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration."
   },
+  "valueDescriptorEvidence": {
+    "descriptors": [
+      {
+        "name": "AXArraySubsetDescriptor",
+        "nominalDescriptor": "0x1012c9454",
+        "fields": [
+          [
+            "count",
+            "Si"
+          ],
+          [
+            "availableRanges",
+            "SaySnySiGGSg"
+          ]
+        ]
+      },
+      {
+        "name": "AXTruncationDescriptor",
+        "nominalDescriptor": "0x1012cc604",
+        "fields": [
+          [
+            "count",
+            "Si"
+          ],
+          [
+            "availableRange",
+            "SnySiGSg"
+          ]
+        ]
+      }
+    ],
+    "isComplete": {
+      "start": "0x10045f8b4",
+      "endExclusive": "0x10045f8c0",
+      "instructionWords": [
+        "0xf100003f",
+        "0x1a9f17e0",
+        "0xd65f03c0"
+      ],
+      "semantics": "availableRanges == nil; count and range coverage are not inspected"
+    },
+    "limitations": "Value metadata only; truncation generation and subset selection algorithms remain separate."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",

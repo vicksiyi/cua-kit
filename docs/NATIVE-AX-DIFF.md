@@ -350,3 +350,21 @@ getpid 与目标进程信息，存在另一执行分支；其线程/调度条件
 新增解码函数塞进这个 helper 就声称对齐。审计记录 rawAttributeEvidence 固定两个函数
 边界/哈希、系统调用位置和 MockProvider 名称。本轮为静态证据补全，没有改变运行时
 属性读取策略，也没有执行原厂服务。
+
+## 数组子集与文本截断描述符
+
+Swift reflection 确认 AXPartialValue 包含 value、arraySubsetDescriptor、
+textTruncationDescriptor 三个字段；后两者的值类型恢复在 `AXValueDescriptors.swift`：
+
+- ComputerUseCore.AXArraySubsetDescriptor：`count: Int`、`availableRanges: [Range<Int>]?`。
+- AccessibilitySupport.AXTruncationDescriptor：`count: Int`、`availableRange: Range<Int>?`。
+
+保留 Swift 半开区间、Optional、可变属性和结构化 Equatable；不把 nil 压成空数组，
+也不引入合并/排序区间或其它原构建未体现的标准化。
+`AXArraySubsetDescriptor.isComplete` 的原函数只有三条指令，直接判断 optional 数组
+指针是否为零。因此 **nil 表示 complete；空数组或覆盖全部 count 的 ranges 都仍非 complete**。
+不能通过区间覆盖量重新计算这个属性。
+
+12 个 Swift 案例覆盖 nil/空数组/全覆盖/分段覆盖、顺序敏感的相等性、属性修改、半开区间。
+原构建结构字段及 getter 指令记录于 valueDescriptorEvidence。尚未恢复子集选择和文本截断
+生成算法，也尚未把这些描述符附加到现有观察输出；只恢复元数据不证明截断链路完成。

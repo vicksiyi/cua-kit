@@ -396,6 +396,31 @@ raw_attribute_evidence={
     'parameterizedSuccessValuePresenceCheck':'0x1006f71e8',
     'limitations':'Direct system-call branches only. Same-process dispatch, mock hooks and AXPartialValue metadata require further restoration.',
 }
+descriptor_records=[]
+for nominal,expected_name,expected_fields in [
+    (0x1012c9454,'AXArraySubsetDescriptor',[('count','Si'),('availableRanges','SaySnySiGGSg')]),
+    (0x1012cc604,'AXTruncationDescriptor',[('count','Si'),('availableRange','SnySiGSg')]),
+]:
+    name=c_string(relative_address(nominal+8))
+    fields=relative_address(nominal+16)
+    _,_,kind,size,count=struct.unpack('<iiHHI',read_virtual(fields,16))
+    if name != expected_name or (kind,size,count) != (0,12,2): raise SystemExit('AX descriptor layout changed')
+    recovered=[]
+    for i in range(count):
+        field=fields+16+i*size
+        recovered.append((c_string(relative_address(field+8)),c_string(relative_address(field+4))))
+    if recovered != expected_fields: raise SystemExit('AX descriptor field types changed')
+    descriptor_records.append({'name':name,'nominalDescriptor':hex(nominal),'fields':recovered})
+complete_address=0x10045f8b4
+complete_end=starts[starts.index(complete_address)+1]
+complete_words=list(struct.unpack('<III',read_virtual(complete_address,12)))
+if complete_end != 0x10045f8c0 or complete_words != [0xf100003f,0x1a9f17e0,0xd65f03c0]:
+    raise SystemExit('AX subset isComplete no longer compares only its optional ranges pointer')
+value_descriptor_evidence={
+    'descriptors':descriptor_records,
+    'isComplete':{'start':hex(complete_address),'endExclusive':hex(complete_end),'instructionWords':[hex(word) for word in complete_words],'semantics':'availableRanges == nil; count and range coverage are not inspected'},
+    'limitations':'Value metadata only; truncation generation and subset selection algorithms remain separate.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -442,6 +467,7 @@ record = {
     'axValueDecodingEvidence':axvalue_decode_evidence,
     'axUIElementDecodingEvidence':element_evidence,
     'rawAttributeEvidence':raw_attribute_evidence,
+    'valueDescriptorEvidence':value_descriptor_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',
