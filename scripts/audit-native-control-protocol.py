@@ -428,7 +428,7 @@ result = {
     'websocketWriter': {
         'implementation': 'native/browser-extension-host/src/app_server_websocket.rs',
         'poisonMessage': raw[0x9015b:0x9017a].decode(),
-        'frameHeader': evidence(websocket_write, 0x100024690, 0x1000246e4, ['#0x80', '#0x7e', '#0x10000', '#0x7f', 'rev']),
+        'frameHeader': evidence(websocket_write, 0x100024690, 0x1000246e4, ['#0x80', '#0x7e', '#0x10, lsl #12', '#0x7f', 'rev']),
         'headerThenPayload': evidence(websocket_write, 0x1000246e4, 0x100024720, ['Write>::write_all', '0x100024710']),
         'closeFrame': evidence(websocket_close, 0x1000224cc, 0x1000224f0, ['#0x8', '#0x0', 'write_shared_websocket_frame', 'drop_glue']),
         'shutdownBoth': evidence(websocket_close, 0x100022554, 0x100022560, ['#0x2', 'shutdown']),

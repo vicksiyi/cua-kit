@@ -4274,7 +4274,7 @@
     {
       "path": "scripts/audit-native-control-protocol.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "ab7bdf51329fbb2c0b09d9c9ba993321c901e3f5b6bc1bd91555e07b9a37c98a"
+      "sha256": "fa30a8ec6c42e3f47372562aa889457237451352ef3a833784b188d132ddcfe0"
     },
     {
       "path": "scripts/audit-native-language.py",
