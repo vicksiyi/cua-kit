@@ -517,3 +517,25 @@ processIdentity，固定实际导出符号、三个函数边界/哈希和关键�
 这是直接读取层的恢复。现有 UI 观察还未调用参数化读取入口；MockProvider、
 AXPartialValue 元数据、typed 参数编码与 text marker 包装仍需还原，不能据此
 宣称 selectedText fallback、增量树或真实应用窗口操作已完成。
+
+## Marker 类型转换与 range 构造的原生边界
+
+继续检查 `unwrappedThrowing` 的 marker 两个分支，新增
+`markerDecodingEvidence` 固定七个导入调用、分支指令、共享失败调用和 range
+构造函数机器码哈希。具体流程如下：
+
+1. 先分别比较 AXTextMarkerGetTypeID / AXTextMarkerRangeGetTypeID；匹配后才调用
+   Swift 的强制 C 引用类型转换。不能从后面的 unconditional cast 推断它接受任意对象。
+2. 使用不同的 Swift wrapper metadata：UITextMarker 位于 `0x10149fe80`，
+   UITextMarkerRange 位于 `0x10149fea8`，再动态转换为调用者请求的泛型类型。
+3. wrapper 转换失败时，构造 `failedToUnwrapAttributeValue(requestedType)`，通过
+   `0x1006e94f4` / `0x1006e9664` 调用共享失败处理 `0x1006e9d38`，传入原 throwing 标志。
+   这不是“CF 类型正确就一定可以当作任意请求类型使用”。
+4. `UITextMarkerRange.init(start:end:)` 的 `[0x1007c1c54,0x1007c1ca4)` 调用
+   `AXTextMarkerRangeCreate(nil,start,end)`，释放输入所有权并返回结果；该局部函数没有
+   单独的 nil/error 分支。此处不能自行补上与原函数不同的错误或空值策略。
+
+这份证据缩小了后续实现范围：需要保留两个独立的 Swift wrapper 及其 C 引用类型，
+然后恢复泛型转换和参数编码；不是把所有 marker 都声明为 AnyObject，也不是把 marker
+内容转换成字符串。尚未确定私有 C 声明/导入方式和完整参数编码，未新增伪兼容 wrapper，
+也没有把这一静态审计宣称为真实 selectedText 回退验收。

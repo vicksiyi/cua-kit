@@ -275,6 +275,52 @@ decoding_evidence = {
     'nonthrowingWrapper':{'argumentFlagZero':'0x1006e8fe8','throwingCall':'0x1006e8ff4','errorCheck':'0x1006e8ff8','nilAssignment':'0x1006e9004..0x1006e9018'},
     'limitations':'Confirms type dispatch and wrapper error handling, not the complete conversion/error algorithm.',
 }
+# Marker wrappers are distinct Swift value types, not arbitrary CF objects.
+marker_calls = []
+for address, expected_symbol in [
+    (0x1006e9248, '_AXTextMarkerGetTypeID'),
+    (0x1006e9270, '_swift_dynamicCastUnknownClassUnconditional'),
+    (0x1006e929c, '_swift_dynamicCast'),
+    (0x1006e930c, '_AXTextMarkerRangeGetTypeID'),
+    (0x1006e9334, '_swift_dynamicCastUnknownClassUnconditional'),
+    (0x1006e9360, '_swift_dynamicCast'),
+    (0x1007c1c78, '_AXTextMarkerRangeCreate'),
+]:
+    word = struct.unpack('<I', read_virtual(address, 4))[0]
+    if word >> 26 != 0b100101: raise SystemExit('Marker direct call changed')
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    destination = address + immediate * 4
+    if indirect.get(destination) != expected_symbol: raise SystemExit('Marker call target changed')
+    marker_calls.append({'address':hex(address),'stub':hex(destination),'symbol':expected_symbol})
+marker_words = {
+    0x1006e9250:0x540005e1, 0x1006e9284:0x913a0042,
+    0x1006e92a0:0x34000f60, 0x1006e9314:0x54000fe1,
+    0x1006e9348:0x913aa042, 0x1006e9364:0x340014c0,
+    0x1006e94dc:0x52800048, 0x1006e94e8:0x12000101,
+    0x1006e964c:0x52800048, 0x1006e9658:0x12000101,
+    0x1007c1c6c:0xd2800000, 0x1007c1c70:0xaa1403e1,
+    0x1007c1c74:0xaa1303e2, 0x1007c1c90:0xaa1503e0,
+}
+for address, expected_word in marker_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != expected_word:
+        raise SystemExit('Marker conversion or constructor branch changed')
+for address in [0x1006e94f4, 0x1006e9664]:
+    word = struct.unpack('<I',read_virtual(address,4))[0]
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    if word >> 26 != 0b100101 or address + immediate * 4 != 0x1006e9d38:
+        raise SystemExit('Marker shared failure policy call changed')
+marker_evidence = {
+    'resolvedCalls':marker_calls,
+    'instructionWords':{hex(a):hex(w) for a,w in marker_words.items()},
+    'wrapperMetadata':{'UITextMarker':'0x10149fe80','UITextMarkerRange':'0x10149fea8'},
+    'failurePolicyCalls':{'marker':'0x1006e94f4','range':'0x1006e9664','sharedTarget':'0x1006e9d38'},
+    'constructor':{'start':'0x1007c1c54','endExclusive':'0x1007c1ca4',
+        'machineCodeSha256':hashlib.sha256(read_virtual(0x1007c1c54,0x50)).hexdigest()},
+    'interpretation':'CF type-ID guards precede forced C-reference casts; distinct Swift wrappers are dynamically cast to the requested generic type. Failed wrapper conversion constructs failedToUnwrapAttributeValue(requestedType) and forwards the throwing flag to shared failure handling. Range construction calls AXTextMarkerRangeCreate(nil,start,end) and returns its result without a local null/error branch.',
+    'limitations':'Static evidence only. Does not establish private C declarations, marker validation outside this branch, marker byte layout, or full typed parameter encoding. Native marker wrappers and observation integration remain unrestored.',
+}
 # The concrete AXValue reader is a separate helper, not the outer decoder.
 unpack_start = 0x1006ea098
 unpack_end = starts[starts.index(unpack_start)+1]
@@ -573,6 +619,7 @@ record = {
     'attributeEvidence':attribute_evidence,
     'decodingEvidence':decoding_evidence,
     'errorEvidence':error_evidence,
+    'markerDecodingEvidence':marker_evidence,
     'axValueUnpackingEvidence':unpack_evidence,
     'axValueDecodingEvidence':axvalue_decode_evidence,
     'axUIElementDecodingEvidence':element_evidence,

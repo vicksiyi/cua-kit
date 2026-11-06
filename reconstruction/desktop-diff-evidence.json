@@ -1094,6 +1094,77 @@
     },
     "limitations": "Recovered enum and local branches; full error-routing algorithm and transport mapping remain incomplete."
   },
+  "markerDecodingEvidence": {
+    "resolvedCalls": [
+      {
+        "address": "0x1006e9248",
+        "stub": "0x101153864",
+        "symbol": "_AXTextMarkerGetTypeID"
+      },
+      {
+        "address": "0x1006e9270",
+        "stub": "0x10115516c",
+        "symbol": "_swift_dynamicCastUnknownClassUnconditional"
+      },
+      {
+        "address": "0x1006e929c",
+        "stub": "0x101155118",
+        "symbol": "_swift_dynamicCast"
+      },
+      {
+        "address": "0x1006e930c",
+        "stub": "0x10115387c",
+        "symbol": "_AXTextMarkerRangeGetTypeID"
+      },
+      {
+        "address": "0x1006e9334",
+        "stub": "0x10115516c",
+        "symbol": "_swift_dynamicCastUnknownClassUnconditional"
+      },
+      {
+        "address": "0x1006e9360",
+        "stub": "0x101155118",
+        "symbol": "_swift_dynamicCast"
+      },
+      {
+        "address": "0x1007c1c78",
+        "stub": "0x101153870",
+        "symbol": "_AXTextMarkerRangeCreate"
+      }
+    ],
+    "instructionWords": {
+      "0x1006e9250": "0x540005e1",
+      "0x1006e9284": "0x913a0042",
+      "0x1006e92a0": "0x34000f60",
+      "0x1006e9314": "0x54000fe1",
+      "0x1006e9348": "0x913aa042",
+      "0x1006e9364": "0x340014c0",
+      "0x1006e94dc": "0x52800048",
+      "0x1006e94e8": "0x12000101",
+      "0x1006e964c": "0x52800048",
+      "0x1006e9658": "0x12000101",
+      "0x1007c1c6c": "0xd2800000",
+      "0x1007c1c70": "0xaa1403e1",
+      "0x1007c1c74": "0xaa1303e2",
+      "0x1007c1c90": "0xaa1503e0"
+    },
+    "wrapperMetadata": {
+      "UITextMarker": "0x10149fe80",
+      "UITextMarkerRange": "0x10149fea8"
+    },
+    "failurePolicyCalls": {
+      "marker": "0x1006e94f4",
+      "range": "0x1006e9664",
+      "sharedTarget": "0x1006e9d38"
+    },
+    "constructor": {
+      "start": "0x1007c1c54",
+      "endExclusive": "0x1007c1ca4",
+      "machineCodeSha256": "9eca71fc50fe29632b5e5f66ef04bc783f31ab3660c1ccef39e526777bec8100"
+    },
+    "interpretation": "CF type-ID guards precede forced C-reference casts; distinct Swift wrappers are dynamically cast to the requested generic type. Failed wrapper conversion constructs failedToUnwrapAttributeValue(requestedType) and forwards the throwing flag to shared failure handling. Range construction calls AXTextMarkerRangeCreate(nil,start,end) and returns its result without a local null/error branch.",
+    "limitations": "Static evidence only. Does not establish private C declarations, marker validation outside this branch, marker byte layout, or full typed parameter encoding. Native marker wrappers and observation integration remain unrestored."
+  },
   "axValueUnpackingEvidence": {
     "start": "0x1006ea098",
     "endExclusive": "0x1006ea28c",
