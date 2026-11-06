@@ -111,6 +111,10 @@ for diagnostic in [b'Codex Chrome native host manifest must use schemaVersion 2'
     if diagnostic not in raw:
         raise RuntimeError('Missing schema diagnostic literal')
 
+for offset, name in [(0x9080a, 'extensionHostPath'), (0x9081b, 'nativeHostNames'), (0x9082a, 'extensionIds'), (0x90836, 'extensionBuildChannels')]:
+    if raw[offset:offset+len(name)] != name.encode():
+        raise RuntimeError('Identity field literal changed: '+name)
+
 # The JSON Number literal referenced by string_result_response is PosInt(1).
 if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
     raise RuntimeError('String-result error code literal changed')
@@ -207,6 +211,22 @@ result = {
         'pathContract': 'entry.paths[field] must be a nonempty trimmed string with successful metadata; follows symlinks and accepts directories. No executable or absolute-path requirement in this helper.',
         'missingPathFormatBytes': raw[0x8d2f1:0x8d32d].hex(),
         'integrationStatus': 'Validation primitives only; not wired to selection or process launch. Required-field conditionality and full candidate selection remain open.',
+    },
+    'manifestIdentityMatching': {
+        'implementation': 'native/browser-extension-host/src/app_server_manifest.rs::identity_score',
+        'hostPathComparison': evidence(config_load, 0x10001bb70, 0x10001bc04, ['Path>::components', 'Iterator>::eq']),
+        'canonicalizationFallback': evidence(config_load, 0x10001bdf4, 0x10001be20, ['std::fs::canonicalize', 'std::sys::fs::canonicalize']),
+        'hostPathWeight': evidence(config_load, 0x10001bc1c, 0x10001bc20, ['#0x64']),
+        'hostNameWeight': evidence(config_load, 0x10001bb54, 0x10001bb5c, ['#0x32']),
+        'extensionIdWeight': evidence(config_load, 0x10001bcc4, 0x10001bccc, ['#0x19']),
+        'buildChannelWeight': evidence(config_load, 0x10001bd60, 0x10001bd68, ['#0xa']),
+        'arrayMemberChecks': {
+            'nativeHostNames': evidence(config_load, 0x10001bb28, 0x10001bb50, ['#0x3', 'ccmp', 'cbnz']),
+            'extensionIds': evidence(config_load, 0x10001bc94, 0x10001bcc0, ['#0x3', 'ccmp', 'cbnz']),
+            'extensionBuildChannels': evidence(config_load, 0x10001bd30, 0x10001bd5c, ['#0x3', 'ccmp', 'cbnz']),
+        },
+        'semantics': 'Only supplied constraints are checked. All supplied constraints must match. String-array membership is exact; nonstrings ignored and duplicate matches add weight once. Paths compare components first, then both canonical paths on mismatch; no trimming.',
+        'integrationStatus': 'Identity stage only. Does not choose a winner or implement schema-error policy, protocol compatibility, presence/updatedAt tie-breaking, or process startup.',
     },
     'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

@@ -94,3 +94,113 @@ fn required_paths_use_trimmed_metadata_and_common_missing_error() {
         );
     }
 }
+
+#[test]
+fn identity_constraints_are_exact_and_add_observed_weights() {
+    use core_browser_extension_host::app_server_manifest::{identity_score, IdentityConstraints};
+    use std::path::Path;
+    let entry = json!({"paths":{"extensionHostPath":"/not-required-to-exist/host"},"nativeHostNames":[false,"host"],"extensionIds":[42,"id"],"extensionBuildChannels":[null,"stable"]});
+    for mask in 0..16 {
+        let constraints = IdentityConstraints {
+            extension_host_path: (mask & 1 != 0)
+                .then_some(Path::new("/not-required-to-exist/./host")),
+            native_host_name: (mask & 2 != 0).then_some("host"),
+            extension_id: (mask & 4 != 0).then_some("id"),
+            extension_build_channel: (mask & 8 != 0).then_some("stable"),
+        };
+        let expected = [100, 50, 25, 10]
+            .iter()
+            .enumerate()
+            .filter(|(bit, _)| mask & (1 << bit) != 0)
+            .map(|(_, weight)| weight)
+            .sum();
+        assert_eq!(identity_score(&entry, &constraints), Some(expected));
+    }
+    assert_eq!(
+        identity_score(&Value::Null, &IdentityConstraints::default()),
+        Some(0)
+    );
+    let constraints = IdentityConstraints {
+        extension_id: Some("id"),
+        ..Default::default()
+    };
+    for field in [
+        json!(null),
+        json!("id"),
+        json!([]),
+        json!(["ID"]),
+        json!([" id "]),
+        json!([1, true]),
+    ] {
+        assert_eq!(
+            identity_score(&json!({"extensionIds":field}), &constraints),
+            None
+        );
+    }
+    assert_eq!(
+        identity_score(&json!({"extensionIds":["id","id"]}), &constraints),
+        Some(25)
+    );
+    assert_eq!(
+        identity_score(
+            &json!({"extensionIds":[""]}),
+            &IdentityConstraints {
+                extension_id: Some(""),
+                ..Default::default()
+            }
+        ),
+        Some(25)
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn identity_path_falls_back_to_canonicalization_without_trimming() {
+    use core_browser_extension_host::app_server_manifest::{identity_score, IdentityConstraints};
+    use std::os::unix::fs::symlink;
+    let root =
+        std::env::temp_dir().join(format!("core-manifest-identity-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    let actual = root.join("host");
+    let alias = root.join("alias");
+    fs::write(&actual, b"fixture").unwrap();
+    symlink(&actual, &alias).unwrap();
+    let constraints = IdentityConstraints {
+        extension_host_path: Some(&actual),
+        ..Default::default()
+    };
+    assert_eq!(
+        identity_score(&json!({"paths":{"extensionHostPath":alias}}), &constraints),
+        Some(100)
+    );
+    assert_eq!(
+        identity_score(
+            &json!({"paths":{"extensionHostPath":format!(" {} ",actual.display())}}),
+            &constraints
+        ),
+        None
+    );
+    for entry in [
+        json!({}),
+        json!({"paths":{"extensionHostPath":false}}),
+        json!({"paths":{"extensionHostPath":root.join("missing")}}),
+    ] {
+        assert_eq!(identity_score(&entry, &constraints), None);
+    }
+    fs::remove_file(&actual).unwrap();
+    assert_eq!(
+        identity_score(&json!({"paths":{"extensionHostPath":alias}}), &constraints),
+        None
+    );
+    assert_eq!(
+        identity_score(&json!({"paths":{"extensionHostPath":actual}}), &constraints),
+        Some(100)
+    );
+}

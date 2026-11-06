@@ -330,6 +330,127 @@
     "missingPathFormatBytes": "39436f646578206170702d736572766572206d616e696665737420656e747279206973206d697373696e67207265717569726564207061746820c000",
     "integrationStatus": "Validation primitives only; not wired to selection or process launch. Required-field conditionality and full candidate selection remain open."
   },
+  "manifestIdentityMatching": {
+    "implementation": "native/browser-extension-host/src/app_server_manifest.rs::identity_score",
+    "hostPathComparison": [
+      "10001bb70: d102a3a8    \tsub\tx8, x29, #0xa8",
+      "10001bb74: aa1803e0    \tmov\tx0, x24",
+      "10001bb78: aa1a03e1    \tmov\tx1, x26",
+      "10001bb7c: 9400ddc0    \tbl\t0x10005327c <<std::path::Path>::components>",
+      "10001bb80: 911bc3e8    \tadd\tx8, sp, #0x6f0",
+      "10001bb84: f94103e0    \tldr\tx0, [sp, #0x200]",
+      "10001bb88: f940e7e1    \tldr\tx1, [sp, #0x1c8]",
+      "10001bb8c: 9400ddbc    \tbl\t0x10005327c <<std::path::Path>::components>",
+      "10001bb90: f85603a2    \tldur\tx2, [x29, #-0xa0]",
+      "10001bb94: f9437fe8    \tldr\tx8, [sp, #0x6f8]",
+      "10001bb98: eb08005f    \tcmp\tx2, x8",
+      "10001bb9c: 540001e1    \tb.ne\t0x10001bbd8 <<extension_host::app_server::AppServerHostConfig>::load+0x714>",
+      "10001bba0: 385903a8    \tldurb\tw8, [x29, #-0x70]",
+      "10001bba4: 395ca3e9    \tldrb\tw9, [sp, #0x728]",
+      "10001bba8: 6b09011f    \tcmp\tw8, w9",
+      "10001bbac: 54000161    \tb.ne\t0x10001bbd8 <<extension_host::app_server::AppServerHostConfig>::load+0x714>",
+      "10001bbb0: 385913a8    \tldurb\tw8, [x29, #-0x6f]",
+      "10001bbb4: 7100091f    \tcmp\tw8, #0x2",
+      "10001bbb8: 54000101    \tb.ne\t0x10001bbd8 <<extension_host::app_server::AppServerHostConfig>::load+0x714>",
+      "10001bbbc: 395ca7e8    \tldrb\tw8, [sp, #0x729]",
+      "10001bbc0: 7100091f    \tcmp\tw8, #0x2",
+      "10001bbc4: 540000a1    \tb.ne\t0x10001bbd8 <<extension_host::app_server::AppServerHostConfig>::load+0x714>",
+      "10001bbc8: f85583a0    \tldur\tx0, [x29, #-0xa8]",
+      "10001bbcc: f9437be1    \tldr\tx1, [sp, #0x6f0]",
+      "10001bbd0: 9401a664    \tbl\t0x100085560 <dyld_stub_binder+0x100085560>",
+      "10001bbd4: 340001a0    \tcbz\tw0, 0x10001bc08 <<extension_host::app_server::AppServerHostConfig>::load+0x744>",
+      "10001bbd8: 3dc1bfe0    \tldr\tq0, [sp, #0x6f0]",
+      "10001bbdc: 3dc1c3e1    \tldr\tq1, [sp, #0x700]",
+      "10001bbe0: 3d8213e0    \tstr\tq0, [sp, #0x840]",
+      "10001bbe4: 3d8217e1    \tstr\tq1, [sp, #0x850]",
+      "10001bbe8: 3dc1c7e0    \tldr\tq0, [sp, #0x710]",
+      "10001bbec: 3dc1cbe1    \tldr\tq1, [sp, #0x720]",
+      "10001bbf0: 3d821be0    \tstr\tq0, [sp, #0x860]",
+      "10001bbf4: 3d821fe1    \tstr\tq1, [sp, #0x870]",
+      "10001bbf8: d102a3a0    \tsub\tx0, x29, #0xa8",
+      "10001bbfc: 912103e1    \tadd\tx1, sp, #0x840",
+      "10001bc00: 94004540    \tbl\t0x10002d100 <<core::iter::adapters::rev::Rev<std::path::Components> as core::iter::traits::iterator::Iterator>::eq_by::<core::iter::adapters::rev::Rev<std::path::Components>, <core::iter::adapters::rev::Rev<std::path::Components> as core::iter::traits::iterator::Iterator>::eq<core::iter::adapters::rev::Rev<std::path::Components>>::{closure#0}>>",
+      "10001bc04: 36000f80    \ttbz\tw0, #0x0, 0x10001bdf4 <<extension_host::app_server::AppServerHostConfig>::load+0x930>"
+    ],
+    "canonicalizationFallback": [
+      "10001bdf4: f900bff7    \tstr\tx23, [sp, #0x178]",
+      "10001bdf8: f90423fa    \tstr\tx26, [sp, #0x840]",
+      "10001bdfc: f90427f8    \tstr\tx24, [sp, #0x848]",
+      "10001be00: f9042bfa    \tstr\tx26, [sp, #0x850]",
+      "10001be04: 911bc3e8    \tadd\tx8, sp, #0x6f0",
+      "10001be08: 912103e0    \tadd\tx0, sp, #0x840",
+      "10001be0c: 940049b6    \tbl\t0x10002e4e4 <std::fs::canonicalize::<std::path::PathBuf>>",
+      "10001be10: f940c3fa    \tldr\tx26, [sp, #0x180]",
+      "10001be14: 912103e8    \tadd\tx8, sp, #0x840",
+      "10001be18: f94103e0    \tldr\tx0, [sp, #0x200]",
+      "10001be1c: f940e7e1    \tldr\tx1, [sp, #0x1c8]",
+      "10001be20: 94011e3a    \tbl\t0x100063708 <std::sys::fs::canonicalize>"
+    ],
+    "hostPathWeight": [
+      "10001bc1c: 52800c88    \tmov\tw8, #0x64               ; =100",
+      "10001bc20: f900bbe8    \tstr\tx8, [sp, #0x170]"
+    ],
+    "hostNameWeight": [
+      "10001bb54: f940bbe8    \tldr\tx8, [sp, #0x170]",
+      "10001bb58: 9100c908    \tadd\tx8, x8, #0x32",
+      "10001bb5c: f900bbe8    \tstr\tx8, [sp, #0x170]"
+    ],
+    "extensionIdWeight": [
+      "10001bcc4: f940bbe8    \tldr\tx8, [sp, #0x170]",
+      "10001bcc8: 91006508    \tadd\tx8, x8, #0x19",
+      "10001bccc: f900bbe8    \tstr\tx8, [sp, #0x170]"
+    ],
+    "buildChannelWeight": [
+      "10001bd60: f940bbe8    \tldr\tx8, [sp, #0x170]",
+      "10001bd64: 91002908    \tadd\tx8, x8, #0xa",
+      "10001bd68: f900bbe8    \tstr\tx8, [sp, #0x170]"
+    ],
+    "arrayMemberChecks": {
+      "nativeHostNames": [
+        "10001bb28: aa1803fa    \tmov\tx26, x24",
+        "10001bb2c: 385f0f48    \tldrb\tw8, [x26, #-0x10]!",
+        "10001bb30: f9400f49    \tldr\tx9, [x26, #0x18]",
+        "10001bb34: 71000d1f    \tcmp\tw8, #0x3",
+        "10001bb38: fa5b0120    \tccmp\tx9, x27, #0x0, eq",
+        "10001bb3c: 54fffee1    \tb.ne\t0x10001bb18 <<extension_host::app_server::AppServerHostConfig>::load+0x654>",
+        "10001bb40: f9400300    \tldr\tx0, [x24]",
+        "10001bb44: f940fbe1    \tldr\tx1, [sp, #0x1f0]",
+        "10001bb48: aa1b03e2    \tmov\tx2, x27",
+        "10001bb4c: 9401a685    \tbl\t0x100085560 <dyld_stub_binder+0x100085560>",
+        "10001bb50: 35fffe40    \tcbnz\tw0, 0x10001bb18 <<extension_host::app_server::AppServerHostConfig>::load+0x654>"
+      ],
+      "extensionIds": [
+        "10001bc94: aa1803fa    \tmov\tx26, x24",
+        "10001bc98: 385f0f48    \tldrb\tw8, [x26, #-0x10]!",
+        "10001bc9c: f9400f49    \tldr\tx9, [x26, #0x18]",
+        "10001bca0: 71000d1f    \tcmp\tw8, #0x3",
+        "10001bca4: f940ffe8    \tldr\tx8, [sp, #0x1f8]",
+        "10001bca8: fa480120    \tccmp\tx9, x8, #0x0, eq",
+        "10001bcac: 54fffec1    \tb.ne\t0x10001bc84 <<extension_host::app_server::AppServerHostConfig>::load+0x7c0>",
+        "10001bcb0: f9400300    \tldr\tx0, [x24]",
+        "10001bcb4: aa1b03e1    \tmov\tx1, x27",
+        "10001bcb8: f940ffe2    \tldr\tx2, [sp, #0x1f8]",
+        "10001bcbc: 9401a629    \tbl\t0x100085560 <dyld_stub_binder+0x100085560>",
+        "10001bcc0: 35fffe20    \tcbnz\tw0, 0x10001bc84 <<extension_host::app_server::AppServerHostConfig>::load+0x7c0>"
+      ],
+      "extensionBuildChannels": [
+        "10001bd30: aa1803fa    \tmov\tx26, x24",
+        "10001bd34: 385f0f48    \tldrb\tw8, [x26, #-0x10]!",
+        "10001bd38: f9400f49    \tldr\tx9, [x26, #0x18]",
+        "10001bd3c: 71000d1f    \tcmp\tw8, #0x3",
+        "10001bd40: f940f3e8    \tldr\tx8, [sp, #0x1e0]",
+        "10001bd44: fa480120    \tccmp\tx9, x8, #0x0, eq",
+        "10001bd48: 54fffec1    \tb.ne\t0x10001bd20 <<extension_host::app_server::AppServerHostConfig>::load+0x85c>",
+        "10001bd4c: f9400300    \tldr\tx0, [x24]",
+        "10001bd50: aa1b03e1    \tmov\tx1, x27",
+        "10001bd54: f940f3e2    \tldr\tx2, [sp, #0x1e0]",
+        "10001bd58: 9401a602    \tbl\t0x100085560 <dyld_stub_binder+0x100085560>",
+        "10001bd5c: 35fffe20    \tcbnz\tw0, 0x10001bd20 <<extension_host::app_server::AppServerHostConfig>::load+0x85c>"
+      ]
+    },
+    "semantics": "Only supplied constraints are checked. All supplied constraints must match. String-array membership is exact; nonstrings ignored and duplicate matches add weight once. Paths compare components first, then both canonical paths on mismatch; no trimming.",
+    "integrationStatus": "Identity stage only. Does not choose a winner or implement schema-error policy, protocol compatibility, presence/updatedAt tie-breaking, or process startup."
+  },
   "remainingUnknowns": [
     "full manifest selection and process launch contract",
     "complete hello/status response schemas",

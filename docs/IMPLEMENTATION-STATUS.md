@@ -6060,3 +6060,12 @@ Implemented Rust app_server_manifest entries/entry-schema validation and require
 Required paths use paths[field], Unicode trim and std::fs::metadata. Directories and valid symlinks pass; missing/non-string/empty paths, broken links and metadata failures share the recovered required-path diagnostic. No invented executable, regular-file or absolute-path condition is added. This helper differs deliberately from the separately evidenced openLocalFile checks.
 
 Two manifest tests and the two existing environment-resolution tests pass. Static extraction verifies schema instructions, trim/metadata calls and literal diagnostics against the installed artifact hash. These are library primitives, not complete configuration loading: candidate matching/ranking, conditional required fields, full precedence and process/proxy startup remain unimplemented. No original binary, daily browser or app-server was launched.
+
+
+### 2026-11-06: native manifest identity filtering and score
+
+Reconstructed the identity stage of AppServerHostConfig::load in Rust. Supplied host-path/native-host-name/extension-ID/build-channel constraints must all match; absent constraints are bypassed. Observed specificity weights are 100/50/25/10. String-array membership is exact, ignores nonstrings and counts duplicates only once. Host path comparison uses Rust Path component equality first, then canonicalizes both sides only on mismatch. This deliberately accepts equal nonexistent paths at the identity stage; separate required-path validation remains necessary. Unlike required-path checks, identity strings are not trimmed.
+
+Four manifest tests pass, including all 16 combinations of enabled constraints, array shape/type/case/whitespace/duplicate behavior, component-normalized nonexistent paths, actual owned symlinks and broken-link rejection. Pinned static extraction records the comparison calls, membership loops, weights and key literal checks. No original executable or personal browser was invoked.
+
+This is not final manifest selection: protocol compatibility, presence/updatedAt ranking, malformed-entry handling, conditional required paths and runtime integration remain open. The score must not be used alone to launch a candidate.
