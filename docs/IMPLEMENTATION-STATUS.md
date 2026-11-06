@@ -6287,3 +6287,10 @@ Added run_session and attach_and_replay in Rust. Ordering follows native evidenc
 Two session tests pass. The composed test sends authenticated HTTP and a masked first frame together over real loopback TCP, launches an owned CLI that echoes through child stdin/stdout, receives 101 and echoed WebSocket payload, then closes and verifies the persistent child remains available after writer detachment. Replacement/replay/failed replay behavior is covered separately.
 
 This is a real local transport/process integration fixture, not browser acceptance. Runtime process-map selection, manager controls and production listener wiring remain unfinished.
+
+
+### Persistent process map and connection handler checkpoint
+
+Added exact raw clientId selection (missing/empty => default), mutex-protected get-or-create shared process state, and handle_connection composing authenticated HTTP validation, process selection and existing session lifecycle. The map lock is released before process startup/handshake; entries persist across detach. A concurrent 12-caller test verifies shared identity for the same key and case-sensitive separation. The real TCP/owned CLI session test now enters through handle_connection instead of manually selecting state. All three focused map/session tests pass.
+
+Proxy listener creation, shared runtime configuration updates, manager control dispatch and full browser/app acceptance remain open.

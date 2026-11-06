@@ -1,9 +1,9 @@
 use core_browser_extension_host::{
     app_server_configuration::{LaunchFields, LoadedLaunchConfiguration},
-    app_server_http::read_validated_request,
     app_server_manifest::{LoadedManifestEntry, RawManifestConfiguration, SelectedManifestEntry},
     app_server_output::{stop_process, OutputState},
-    app_server_session::{attach_and_replay, run_session},
+    app_server_process_map::{handle_connection, ProcessMap},
+    app_server_session::attach_and_replay,
 };
 use std::{
     io::{Read, Write},
@@ -81,14 +81,11 @@ fn authenticated_tcp_session_upgrades_forwards_and_detaches_live_process() {
             },
         },
     };
-    let state = Arc::new(Mutex::new(OutputState::default()));
-    let (mut server, mut client) = pair();
-    let worker_state = state.clone();
+    let processes: ProcessMap = Arc::new(Mutex::new(Default::default()));
+    let (server, mut client) = pair();
+    let worker_processes = processes.clone();
     let worker = std::thread::spawn(move || {
-        let request = read_validated_request(&mut server, "fixture", None)
-            .unwrap()
-            .unwrap();
-        run_session(server, request, &worker_state, &config).unwrap();
+        handle_connection(server, &worker_processes, &config, "fixture", None).unwrap();
     });
     // Coalesced HTTP and masked first frame exercises preserved handshake bytes.
     client.write_all(b"GET /?token=fixture HTTP/1.1\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n\x81\x85\0\0\0\0hello").unwrap();
@@ -107,6 +104,7 @@ fn authenticated_tcp_session_upgrades_forwards_and_detaches_live_process() {
     client.read_exact(&mut close).unwrap();
     assert_eq!(close, [0x88, 0]);
     worker.join().unwrap();
+    let state = processes.lock().unwrap().get("default").unwrap().clone();
     {
         let s = state.lock().unwrap();
         assert!(s.writer.is_none());
