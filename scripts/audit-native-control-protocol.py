@@ -19,6 +19,7 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+stdout_thread = disassemble(0x10002c94c, 0x10002ca1c)
 detach_writer = disassemble(0x100021970, 0x100021a94)
 websocket_write = disassemble(0x100024584, 0x100024810)
 websocket_close = disassemble(0x1000224b4, 0x100022634)
@@ -443,6 +444,14 @@ result = {
         'identityNotSocketAddress': evidence(detach_writer, 0x1000219bc, 0x1000219f0, ['#0x100', 'cmp', '0x1000219f0', 'str']),
         'semantics': 'Cache initialize, then select same-generation writer under state lock; write outside lock. Failed write detaches only pointer-identical Arc and does not requeue that frame. Without selected writer, apply request replay rules. Mutex poison does not recover state.',
         'integrationStatus': 'Per-line composition tested with real TCP and write shutdown. Reader loop, lifecycle EOF cleanup, attach replay and manager integration remain incomplete.',
+    },
+    'stdoutReadLoop': {
+        'implementation': 'native/browser-extension-host/src/app_server_output.rs::forward_lines',
+        'buffer': evidence(stdout_forward, 0x100026c24, 0x100026c44, ['#0x2000']),
+        'clearReadErrorAndEof': evidence(stdout_forward, 0x100026c84, 0x100026ca0, ['str', 'read_line', '0x100027258', '0x100027284']),
+        'forwardBeforeWait': evidence(stdout_thread, 0x10002c974, 0x10002c990, ['forward_app_server_to_attached_client', 'wait_app_server_child']),
+        'contract': 'Reuse a cleared String and 8192-byte BufReader; forward each successful nonzero read, including final unterminated line. Read/UTF-8 failure exits. Native thread waits for child only after forwarding and its cleanup return.',
+        'integrationStatus': 'Real owned child stdout -> Rust line delivery -> TCP websocket frame tested. Reader returns errors to owner; native diagnostic logging and lifecycle EOF cleanup still pending.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

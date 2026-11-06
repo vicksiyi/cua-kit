@@ -1776,6 +1776,42 @@
     "semantics": "Cache initialize, then select same-generation writer under state lock; write outside lock. Failed write detaches only pointer-identical Arc and does not requeue that frame. Without selected writer, apply request replay rules. Mutex poison does not recover state.",
     "integrationStatus": "Per-line composition tested with real TCP and write shutdown. Reader loop, lifecycle EOF cleanup, attach replay and manager integration remain incomplete."
   },
+  "stdoutReadLoop": {
+    "implementation": "native/browser-extension-host/src/app_server_output.rs::forward_lines",
+    "buffer": [
+      "100026c24: 97ffb57d    \tbl\t0x100014218 <__rustc::__rust_no_alloc_shim_is_unstable_v2>",
+      "100026c28: 52800034    \tmov\tw20, #0x1               ; =1",
+      "100026c2c: 52840000    \tmov\tw0, #0x2000             ; =8192",
+      "100026c30: 52800021    \tmov\tw1, #0x1                ; =1",
+      "100026c34: 97ffb575    \tbl\t0x100014208 <__rustc::__rust_alloc>",
+      "100026c38: b40045e0    \tcbz\tx0, 0x1000274f4 <extension_host::app_server::forward_app_server_to_attached_client+0x8fc>",
+      "100026c3c: 52840008    \tmov\tw8, #0x2000             ; =8192",
+      "100026c40: a901a3e0    \tstp\tx0, x8, [sp, #0x18]",
+      "100026c44: a902ffff    \tstp\txzr, xzr, [sp, #0x28]"
+    ],
+    "clearReadErrorAndEof": [
+      "100026c84: f9002fff    \tstr\txzr, [sp, #0x58]",
+      "100026c88: 910123e0    \tadd\tx0, sp, #0x48",
+      "100026c8c: 910063e1    \tadd\tx1, sp, #0x18",
+      "100026c90: 94001037    \tbl\t0x10002ad6c <std::io::append_to_string::<<std::io::buffered::bufreader::BufReader<std::process::ChildStdout> as std::io::BufRead>::read_line::{closure#0}>>",
+      "100026c94: f100041f    \tcmp\tx0, #0x1",
+      "100026c98: 54002e00    \tb.eq\t0x100027258 <extension_host::app_server::forward_app_server_to_attached_client+0x660>",
+      "100026c9c: b4002f41    \tcbz\tx1, 0x100027284 <extension_host::app_server::forward_app_server_to_attached_client+0x68c>",
+      "100026ca0: f9402fe8    \tldr\tx8, [sp, #0x58]"
+    ],
+    "forwardBeforeWait": [
+      "10002c974: f9400a62    \tldr\tx2, [x19, #0x10]",
+      "10002c978: 52800036    \tmov\tw22, #0x1               ; =1",
+      "10002c97c: aa1403e1    \tmov\tx1, x20",
+      "10002c980: 97ffe89e    \tbl\t0x100026bf8 <extension_host::app_server::forward_app_server_to_attached_client>",
+      "10002c984: f9400660    \tldr\tx0, [x19, #0x8]",
+      "10002c988: 52800016    \tmov\tw22, #0x0               ; =0",
+      "10002c98c: 97ffd632    \tbl\t0x100022254 <extension_host::app_server::wait_app_server_child>",
+      "10002c990: b4000060    \tcbz\tx0, 0x10002c99c <std::sys::backtrace::__rust_begin_short_backtrace::<<extension_host::app_server::AppServerProcess>::ensure_started::{closure#3}, ()>+0x50>"
+    ],
+    "contract": "Reuse a cleared String and 8192-byte BufReader; forward each successful nonzero read, including final unterminated line. Read/UTF-8 failure exits. Native thread waits for child only after forwarding and its cleanup return.",
+    "integrationStatus": "Real owned child stdout -> Rust line delivery -> TCP websocket frame tested. Reader returns errors to owner; native diagnostic logging and lifecycle EOF cleanup still pending."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",

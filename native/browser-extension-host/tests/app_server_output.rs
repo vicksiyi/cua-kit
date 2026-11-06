@@ -99,3 +99,75 @@ fn composed_delivery_uses_socket_then_buffers_only_after_disconnect() {
     assert_eq!(deliver_line(&state, 4, request), Delivery::Buffered);
     assert_eq!(state.lock().unwrap().replay.pending_requests, [request]);
 }
+
+#[test]
+fn real_child_stdout_reaches_websocket_before_child_wait() {
+    use core_browser_extension_host::{
+        app_server_configuration::LaunchFields,
+        app_server_output::{forward_lines, OutputState},
+        app_server_process::{spawn, wait_child},
+    };
+    use std::{
+        fs,
+        io::{Read, Write},
+        net::{TcpListener, TcpStream},
+        os::unix::fs::PermissionsExt,
+        sync::{Arc, Mutex},
+        thread,
+        time::Duration,
+    };
+    let root = std::env::temp_dir().join(format!("core-stdout-forward-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    let executable = root.join("fake-codex");
+    fs::write(&executable, b"#!/bin/sh\nexec /bin/cat\n").unwrap();
+    fs::set_permissions(&executable, fs::Permissions::from_mode(0o700)).unwrap();
+    let fields = LaunchFields {
+        codex_cli_path: Some(executable.to_string_lossy().into()),
+        ..Default::default()
+    }
+    .resolve(|_| None);
+    let mut child = spawn(&fields).unwrap();
+    let stdout = child.stdout.take().unwrap();
+    let mut input = child.stdin.take().unwrap();
+    let child = Arc::new(Mutex::new(child));
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let writer = Arc::new(Mutex::new(
+        TcpStream::connect(listener.local_addr().unwrap()).unwrap(),
+    ));
+    let (mut peer, _) = listener.accept().unwrap();
+    peer.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+    let state = Arc::new(Mutex::new(OutputState {
+        generation: 1,
+        writer: Some(writer),
+        ..Default::default()
+    }));
+    let worker = thread::spawn(move || {
+        forward_lines(stdout, &state, 1, |_| {}).unwrap();
+        wait_child(child).unwrap();
+    });
+    input.write_all(b"\r\n{\"result\":1}\r\nfinal").unwrap();
+    drop(input);
+    for expected in [b"{\"result\":1}".as_slice(), b"final".as_slice()] {
+        let mut header = [0; 2];
+        peer.read_exact(&mut header).unwrap();
+        assert_eq!(header, [0x81, expected.len() as u8]);
+        let mut data = vec![0; expected.len()];
+        peer.read_exact(&mut data).unwrap();
+        assert_eq!(data, expected);
+    }
+    worker.join().unwrap();
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn reader_stops_at_invalid_utf8_and_preserves_prior_delivery() {
+    use core_browser_extension_host::app_server_output::{forward_lines, Delivery, OutputState};
+    use std::sync::{Arc, Mutex};
+    let state = Arc::new(Mutex::new(OutputState::default()));
+    let mut deliveries = Vec::new();
+    let input = b"{\"method\":\"a\",\"id\":1}\n\xff\n{\"method\":\"b\",\"id\":2}\n";
+    let error = forward_lines(&input[..], &state, 0, |d| deliveries.push(d)).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+    assert_eq!(deliveries, [Delivery::Buffered]);
+    assert_eq!(state.lock().unwrap().replay.pending_requests.len(), 1);
+}

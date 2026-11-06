@@ -129,3 +129,24 @@ pub fn deliver_line(state: &SharedOutput, generation: u64, line: &str) -> Delive
     }
     Delivery::Dropped
 }
+
+/// Native read loop: one UTF-8 line per frame, including a final unterminated
+/// line. EOF succeeds; read/UTF-8 error ends the loop. Owner handles diagnostics,
+/// generation-guarded lifecycle cleanup and then child wait after this returns.
+pub fn forward_lines(
+    reader: impl std::io::Read,
+    state: &SharedOutput,
+    generation: u64,
+    mut on_delivery: impl FnMut(Delivery),
+) -> std::io::Result<()> {
+    use std::io::BufRead;
+    let mut reader = std::io::BufReader::with_capacity(8192, reader);
+    let mut line = String::new();
+    loop {
+        line.clear();
+        if reader.read_line(&mut line)? == 0 {
+            return Ok(());
+        }
+        on_delivery(deliver_line(state, generation, &line));
+    }
+}

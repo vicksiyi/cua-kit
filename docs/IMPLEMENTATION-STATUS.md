@@ -6188,3 +6188,10 @@ Two real loopback TCP tests pass: payload lengths 0/125/126/65535/65536, close f
 Added output-state generation, replay and shared-writer ownership plus deliver_line. It composes initialize caching, same-generation writer selection, unlocked TCP frame write, identity-checked detach on write error, and unattached request buffering. A failed frame is not requeued by the native branch. Arc identity is checked rather than socket address or descriptor; even a new Arc around try_clone of the same TCP socket must not detach the stored writer.
 
 Three output tests pass, including actual socket delivery of non-JSON text, stale-generation suppression, distinct-Arc detach rejection, forced write failure with no requeue and buffering of the subsequent request. This is now composed per-line behavior, but not a complete stdout thread: read/EOF diagnostics and lifecycle cleanup, attach replay and manager ownership still remain open.
+
+
+### 2026-11-06: compose child stdout reader through TCP websocket delivery
+
+Added forward_lines using an 8192-byte BufReader and cleared reusable String. Each nonzero successful read reaches the existing delivery path, including the final unterminated line; UTF-8/read errors return to the lifecycle owner. No line-size limit or JSON reserialization was invented.
+
+Five output tests pass. A real owned fake CLI launched through the restored command helper now feeds stdout through the Rust reader and delivery state into actual TCP websocket frames, then the worker waits/reaps the child. CRLF-only lines are skipped and a final unterminated line arrives intact. Invalid UTF-8 stops processing after the prior valid delivery. This verifies a composed transport segment, not a full App Server session: owner diagnostics, generation-guarded EOF cleanup, handshake/attach and manager startup still remain.
