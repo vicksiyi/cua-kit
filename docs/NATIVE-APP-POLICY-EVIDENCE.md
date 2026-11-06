@@ -522,3 +522,33 @@ timer while the entire test finishes in seconds, also detecting failure to cance
 the losing timer. Tests compile/run only project-owned Swift code; no vendor
 service, user app, model API or policy setting is used or changed. The connection
 constructor, request dispatch and production policy wiring remain pending.
+
+### Request writing prefix (2026-11-07)
+
+`NativeJSONRPCRequestWriter.send` restores the sending prefix
+`0x100dcdf24..<0x100dce510`. UUID initialization and uuidString use GOT
+`0x101463420` / `0x1014633f8`. The initial dictionary has exactly `id` and
+`method`; `params` is inserted only when non-nil. In particular this source does
+not insert a `jsonrpc` version field. JSONSerialization's
+`dataWithJSONObject:options:error:` selector is at `0x101542950`, with options
+zero. The byte 10 is appended at `0x100dce3b4`; the closed flag is sampled under
+its unfair lock at `0x100dce3f0..<0x100dce408`, after encoding. The closed branch
+constructs appServerExited (enum discriminator 2). Otherwise the input pipe's
+fileHandleForWriting is written through Foundation `write(contentsOf:)` at
+GOT `0x1014638b8`. Write errors propagate.
+
+The cleanup component now exposes a lock-protected isClosed read so the future
+connection can share the same close state. The writer's state callback is a host
+composition seam, not a new upstream configuration. It releases the state lock
+before writing, preserving the original close/write race rather than implying
+an atomic transaction. The complete request function's response dispatch and
+absolute deadline loop still require reconstruction; this prefix is not a
+complete connected app-server client.
+
+The test sends three frames through an owned Foundation Pipe into the restored
+line reader and dictionary decoder. It checks UUIDs, absent versus empty params,
+Unicode/newline escaping, closed-state rejection without a frame, and a closed
+FileHandle failure. A separate disposable executable checks invalid NaN input:
+on this macOS Foundation raises an Objective-C exception before the closed-state
+callback, rather than a catchable Swift serialization error. No preflight
+isValidJSONObject guard or exception conversion is invented in the writer.

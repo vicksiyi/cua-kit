@@ -78,6 +78,7 @@ def audit():
         ('jsonRPCDeferredOutputClose', 0x100dd0bdc, 0x100dd0d9c),
         ('jsonRPCMessageRace', 0x100dd0e34, 0x100dd1264),
         ('jsonRPCMessageTimeout', 0x100dd16c4, 0x100dd1864),
+        ('jsonRPCRequestWritePrefix', 0x100dcdf24, 0x100dce510),
         ('jsonRPCNextMessage', 0x100dd0350, 0x100dd0958),
         ('jsonRPCMessageDecode', 0x100dd0740, 0x100dd0958),
         ('appServerPolicyFetch', 0x1000aa444, 0x1000aab28),

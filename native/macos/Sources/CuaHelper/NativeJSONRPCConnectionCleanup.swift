@@ -12,6 +12,8 @@ final class NativeJSONRPCConnectionCleanup: @unchecked Sendable {
     private let awaitReader: @Sendable () async -> Void
     private let closeOutput: @Sendable () throws -> Void
 
+    var isClosed: Bool { closed.withLock { $0 } }
+
     init(closeInput: @escaping @Sendable () throws -> Void,
          cancelReader: @escaping @Sendable () -> Void,
          isRunning: @escaping @Sendable () -> Bool,

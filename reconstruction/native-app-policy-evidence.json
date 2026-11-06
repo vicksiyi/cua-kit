@@ -134,6 +134,12 @@
       "sha256": "bfef63b204cef19197d46e952eb3a5adb1e5dbb9f5b05b63ebb30526be76bc6e"
     },
     {
+      "name": "jsonRPCRequestWritePrefix",
+      "start": "0x100dcdf24",
+      "endExclusive": "0x100dce510",
+      "sha256": "b113419e5d6e098add5da0861ebdcb9b5de1abb1423eecf6eeb6c0ae7a121038"
+    },
+    {
       "name": "jsonRPCNextMessage",
       "start": "0x100dd0350",
       "endExclusive": "0x100dd0958",

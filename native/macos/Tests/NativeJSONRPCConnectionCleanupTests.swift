@@ -29,7 +29,9 @@ private enum FixtureError: Error { case closeFailed }
                     completedContinuation.finish()
                     if failClose { throw FixtureError.closeFailed }
                 })
+                precondition(!cleanup.isClosed)
                 DispatchQueue.concurrentPerform(iterations: 128) { _ in cleanup.close() }
+                precondition(cleanup.isClosed)
                 let expected = ["input", "cancel", "running"] + (running ? ["terminate"] : [])
                 precondition(events.snapshot == expected)
                 // close() has returned, but the reader has not finished: the
