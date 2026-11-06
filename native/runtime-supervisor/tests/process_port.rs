@@ -31,9 +31,8 @@ async fn fragmented_utf8_exact_env_and_final_frame() {
     worker.close().await.unwrap();
 }
 #[tokio::test]
-async fn malformed_truncated_invalid_utf8_and_overflow_retire_worker() {
+async fn truncated_invalid_utf8_and_overflow_retire_worker() {
     for code in [
-        r#"process.stdout.write('bad\n');setInterval(()=>{},1000)"#,
         r#"process.stdout.write('{"a":1}')"#,
         r#"process.stdout.write(Buffer.from([123,34,97,34,58,34,255,34,125,10]))"#,
         r#"process.stdout.write('x'.repeat(1025));setInterval(()=>{},1000)"#,
@@ -167,5 +166,21 @@ for (const line of [
     assert_eq!(first["id"], "valid");
     assert_eq!(worker.next_message().await.unwrap(), Some(json!({"type":"fixture-end"})));
     assert_eq!(worker.next_message().await.unwrap(), None);
+    worker.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn malformed_json_lines_are_dropped_without_retiring_worker_or_losing_following_frames() {
+    let mut config = spec(r#"
+        process.stdout.write('bad\n{\nnull\n42\n[]\n"text"\n   \n\n'.repeat(300));
+        process.stdout.write(JSON.stringify({ready:true})+'\n');
+        process.stdin.once('data',()=>process.stdout.write('not-json\n'+JSON.stringify({stillAlive:true})+'\n'));
+    "#);
+    config.max_frame_bytes = 1024;
+    config.max_queued_bytes = 2048;
+    let mut worker = ProcessWorker::start(config).await.unwrap();
+    assert_eq!(timeout(Duration::from_secs(5), worker.next_message()).await.unwrap().unwrap(), Some(json!({"ready":true})));
+    worker.send(&json!({"continue":true})).await.unwrap();
+    assert_eq!(timeout(Duration::from_secs(5), worker.next_message()).await.unwrap().unwrap(), Some(json!({"stillAlive":true})));
     worker.close().await.unwrap();
 }

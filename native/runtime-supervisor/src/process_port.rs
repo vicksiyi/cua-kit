@@ -230,10 +230,17 @@ async fn read_frames(
                 line.push(*byte);
                 continue;
             }
-            let value: Value = serde_json::from_slice(&line).map_err(|_| "Invalid worker JSONL")?;
-            if !value.is_object() {
-                return Err("Worker JSONL must contain an object".into());
-            }
+            // The pinned native read_stdout continues after a JSON/variant
+            // decode failure (0x1000cafd0 -> per-line cleanup 0x1000cf9d4).
+            // Keep byte-stream/UTF-8 failures distinct from JSON syntax errors.
+            let text = std::str::from_utf8(&line).map_err(|_| "Invalid worker UTF-8")?;
+            let value: Value = match serde_json::from_str::<Value>(text) {
+                Ok(value) if value.is_object() => value,
+                _ => {
+                    line.clear();
+                    continue;
+                }
+            };
             if value.get("type").is_some() {
                 let Ok(tag) = serde_json::from_slice::<WorkerMessageTag>(&line) else {
                     line.clear();

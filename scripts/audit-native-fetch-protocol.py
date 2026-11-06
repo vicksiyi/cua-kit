@@ -474,7 +474,8 @@ print(json.dumps({
             'failed decoding branches to optional tracing at 0x1000cafd0, drops the error and joins per-line cleanup at 0x1000cf9d4; no fetch dispatch on this branch'
         ],
         'implementation':['native/runtime-supervisor/src/authenticated_fetch.rs','native/runtime-supervisor/src/process_port.rs'],
-        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variants, unknown/missing tags, malformed JSON policy and tracing parity still require full KernelToHost reconstruction; duplicate tags are now checked independently on raw frames. No claim of complete reader parity.'
+        'implementedRecovery':'Malformed UTF-8-valid JSON lines and non-object JSON values are dropped before queueing; subsequent valid frames and bidirectional worker requests continue. UTF-8, EOF framing and resource-limit handling remain separate transport behavior.',
+        'limits':'Incremental typed validation for frames selected as authenticated_fetch. Other variants, unknown/missing tags and tracing parity still require full KernelToHost reconstruction; duplicate tags are checked independently on raw frames. EOF and UTF-8 behavior are not proven equivalent. No claim of complete reader parity.'
     },
     'requestDeserialization': {
         'range':['0x10003cff4','0x10003e1d0'],
