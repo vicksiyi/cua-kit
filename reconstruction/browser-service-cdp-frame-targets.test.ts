@@ -2,27 +2,25 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { frameTargetMethods } from "../packages/browser/dist/service/cdp/frame_target_methods.js";
-import { lifecycleMethods } from "../packages/browser/dist/service/cdp/lifecycle_methods.js";
-const bindings = originalServiceBindings([
-  "Cv",
-  "$t",
-  "Uh",
-  "HN",
-  "xte",
-  "Ete",
-]);
+import { frameTargetMethods } from "../packages/browser/src/service/cdp/frame_target_methods";
+import { lifecycleMethods } from "../packages/browser/src/service/cdp/lifecycle_methods";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit frame helper bindings for changed browser-service artifact");
+const bindings = originalServiceBindings(["Bv", "Ht", "Hh", "QN", "vte", "Ste"]);
 const names = [
   ...Object.keys(frameTargetMethods),
   "setFrameSessionForFrame",
   "setFrameSessionTargetId",
   "rememberAttachedFrameTarget",
 ];
+const sourceClass = serviceClassWithMethods(names);
 const original = new Function(
   ...Object.keys(bindings),
-  "return {" + names.map((n) => serviceClassMethod("qh", n)).join(",") + "}",
+  "return {" + names.map((n) => serviceClassMethod(sourceClass, n)).join(",") + "}",
 )(...Object.values(bindings));
 const rebuilt = { ...lifecycleMethods, ...frameTargetMethods };
 function owner(methods: any, infos: any[] = []) {

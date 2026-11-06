@@ -2,30 +2,22 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   serviceClassMethod,
+  serviceClassWithMethods,
+  serviceSourceSha256,
   originalServiceBindings,
 } from "./service-source.ts";
-import { frameMethods } from "../packages/browser/dist/service/cdp/frame_methods.js";
-import { lifecycleMethods } from "../packages/browser/dist/service/cdp/lifecycle_methods.js";
-const bindings = originalServiceBindings([
-  "Uh",
-  "HN",
-  "Io",
-  "jh",
-  "GN",
-  "VN",
-  "Cv",
-  "$t",
-  "Av",
-  "tu",
-  "jN",
-  "Pv",
-]);
+import { frameMethods } from "../packages/browser/src/service/cdp/frame_methods";
+import { lifecycleMethods } from "../packages/browser/src/service/cdp/lifecycle_methods";
+assert.equal(serviceSourceSha256, "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+  "Re-audit frame helper bindings for changed browser-service artifact");
+const bindings = originalServiceBindings(["Hh", "QN", "Ao", "$h", "r2", "n2", "Bv", "Ht", "Dv", "ou", "ZN", "Mv"]);
+const sourceClass = serviceClassWithMethods(Object.keys(frameMethods).concat(Object.keys(lifecycleMethods)));
 const original = new Function(
   ...Object.keys(bindings),
   "return {" +
     Object.keys(frameMethods)
       .concat(Object.keys(lifecycleMethods))
-      .map((n) => serviceClassMethod("qh", n))
+      .map((n) => serviceClassMethod(sourceClass, n))
       .join(",") +
     "}",
 )(...Object.values(bindings));
