@@ -1056,6 +1056,18 @@ element_storage_evidence['urlRenderingPass']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementURLRenderingPass.swift',
     'limitations':'Generic key-path helper preserves full caller context; original complete context constructors, role protocol and production rendering pipeline are not yet restored.',
 }
+element_storage_evidence['contextType']={
+    'nominal':'0x1012c9590','descriptor':'0x10132134c','header':'50a3f7ff0000000002000c0003000000',
+    'cases':['fullUIContext','eventStreamContext','informationalContext'],
+    'allCases':'Static array 0x10156b800 count=3 capacity word=6, payload bytes 00 01 02',
+    'includesMenuBar':'0x100638a74 tag != 2',
+    'includesActionDescriptions':'0x10048177c tag == 0',
+    'infersInteractionCapabilitiesFromCachedState':'0x100638a84 tag == 1',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100638a74,0x100638ac0),(0x10048177c,0x100481788),(0x10132134c,0x101321380),(0x10156b800,0x10156b823)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementContextType.swift',
+    'limitations':'Enum and mode properties restored; downstream observation/render consumers still pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

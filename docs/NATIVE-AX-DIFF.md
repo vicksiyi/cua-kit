@@ -2097,3 +2097,20 @@ shortenURLsIfNeeded 在 0x1007587b4..<0x100758848 先 reset，执行 body 一次
 已恢复接收完整 context 和 shortener key path 的泛型 helper。测试初始脏状态
 清理、成功收尾、异常保留状态、调用次数、配置压缩后仍返回首次 body 结果。
 这些行为通过真实 shortener 组合验证；生产 render tree 连接仍未完成。
+
+### 观察 context 的三种模式
+
+UIElementContextType 的字段表 0x10132134c（nominal 0x1012c9590）按顺序是
+fullUIContext、eventStreamContext、informationalContext；allCases 静态数组
+0x10156b800 的三个 payload 字节为 00/01/02。已恢复 Swift enum、CaseIterable
+和 Hashable，以及三个独立属性：
+
+| 模式 | includesMenuBar | includesActionDescriptions | infersInteractionCapabilitiesFromCachedState |
+|---|---|---|---|
+| fullUIContext | true | true | false |
+| eventStreamContext | true | false | true |
+| informationalContext | false | false | false |
+
+三个 getter 位于 0x100638a74、0x10048177c、0x100638a84，分别比较 tag !=2、
+==0、==1。不能把“包含菜单”“包含动作说明”“从缓存推断能力”当成一个开关。
+全部模式属性与 case 顺序测试通过。生产观察树的模式消费仍待接入。

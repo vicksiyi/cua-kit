@@ -414,3 +414,18 @@ test("native URL rendering pass preserves success and error ordering", {
     assert.match(result.stdout, /URL rendering pass preserves single execution, success reset and throwing state/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native context types preserve original observation modes", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-context-type-"));
+  try {
+    const output = join(directory, "context");
+    await exec("xcrun", ["swiftc",
+      resolve("native/macos/Sources/CuaHelper/UIElementContextType.swift"),
+      resolve("native/macos/Tests/UIElementContextTypeTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /context types preserve menu, action description and cached-capability modes/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

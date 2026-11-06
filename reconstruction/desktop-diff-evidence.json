@@ -2802,6 +2802,44 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementURLRenderingPass.swift",
       "limitations": "Generic key-path helper preserves full caller context; original complete context constructors, role protocol and production rendering pipeline are not yet restored."
     },
+    "contextType": {
+      "nominal": "0x1012c9590",
+      "descriptor": "0x10132134c",
+      "header": "50a3f7ff0000000002000c0003000000",
+      "cases": [
+        "fullUIContext",
+        "eventStreamContext",
+        "informationalContext"
+      ],
+      "allCases": "Static array 0x10156b800 count=3 capacity word=6, payload bytes 00 01 02",
+      "includesMenuBar": "0x100638a74 tag != 2",
+      "includesActionDescriptions": "0x10048177c tag == 0",
+      "infersInteractionCapabilitiesFromCachedState": "0x100638a84 tag == 1",
+      "blocks": [
+        {
+          "start": "0x100638a74",
+          "endExclusive": "0x100638ac0",
+          "machineCodeSha256": "68df0de968b7c783a6f2fc618b57239689ff3af769e87f35866a49c9cdc106c6"
+        },
+        {
+          "start": "0x10048177c",
+          "endExclusive": "0x100481788",
+          "machineCodeSha256": "1eaab14856001f9345bd4f9148e23816bf506e6e7da8d7bf13242b11b3a795ed"
+        },
+        {
+          "start": "0x10132134c",
+          "endExclusive": "0x101321380",
+          "machineCodeSha256": "eb2daaea7af987ae87a427c341c62fa6c27b725be1966df377da6b59ff7f95df"
+        },
+        {
+          "start": "0x10156b800",
+          "endExclusive": "0x10156b823",
+          "machineCodeSha256": "8b012ad4a947ad0cc3eabe19c2bfbb565368226effbe6f23a22022ea5117bb67"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementContextType.swift",
+      "limitations": "Enum and mode properties restored; downstream observation/render consumers still pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
