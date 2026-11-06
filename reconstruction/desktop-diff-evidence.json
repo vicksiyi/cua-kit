@@ -2168,7 +2168,27 @@
       ],
       "disclosureFinding": "both expand and collapse enter toggleDisclosure at 0x100791e0c; toggle uses protocol getters then negates current Bool and writes AXDisclosing",
       "implementation": "native/macos/Sources/CuaHelper/AXActionPerforming.swift",
-      "limitations": "Explicit system adapter only; not yet wired into production action outcome mapping. Menu ancestry, scroll fallback, disclosure getter witnesses and MockProvider dispatch remain incomplete."
+      "limitations": "Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; menu ancestry, scroll-bar implementation, protocol integration and MockProvider dispatch remain incomplete."
+    },
+    "actionDispatchTail": {
+      "directionMapping": "0x100728f34: ordered mutable action comparisons up/down/left/right; 0/1/2/3 or optional-none tag 4",
+      "disclosure": "0x100791d78..0x100791e14: expand or collapse calls toggleDisclosure before considering scroll",
+      "scroll": "0x100791f10 calls scrollUsingScrollBar; error at 0x100791f18 propagates, true at 0x100791f1c returns, false falls back to AX perform",
+      "ordinary": "0x100791eec calls AXUIElement.perform with unchanged action",
+      "blocks": [
+        {
+          "start": "0x100728f34",
+          "endExclusive": "0x1007290bc",
+          "machineCodeSha256": "3b85b07959c1108e3a41188a428d0d5cf1029b57a3c8ffb13010ac5ad5309faa"
+        },
+        {
+          "start": "0x100791d78",
+          "endExclusive": "0x100791f24",
+          "machineCodeSha256": "3bcda8d73759311b92c53a478e0a00211c146046fdc0e9d5a8733f0df3299cfb"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementActionDispatch.swift",
+      "limitations": "Restored post-menu dispatch with injected execution boundaries only. Original menu ancestry preparation, scroll-bar algorithm, protocol/provider wiring and production entry point remain pending; this function does not replace the complete perform method."
     },
     "toggleDisclosure": {
       "dispatch": "0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure",

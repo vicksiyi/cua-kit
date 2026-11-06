@@ -966,7 +966,17 @@ element_storage_evidence['systemActionPerforming']={
         for a,b in [(0x1006f9b38,0x1006f9cd0),(0x100791d78,0x100791e14),(0x1007b0148,0x1007b0214)]],
     'disclosureFinding':'both expand and collapse enter toggleDisclosure at 0x100791e0c; toggle uses protocol getters then negates current Bool and writes AXDisclosing',
     'implementation':'native/macos/Sources/CuaHelper/AXActionPerforming.swift',
-    'limitations':'Explicit system adapter only; not yet wired into production action outcome mapping. Menu ancestry, scroll fallback, disclosure getter witnesses and MockProvider dispatch remain incomplete.',
+    'limitations':'Explicit system adapter only; not yet wired into production action outcome mapping. Post-menu dispatch and disclosure getter helpers are restored separately; menu ancestry, scroll-bar implementation, protocol integration and MockProvider dispatch remain incomplete.',
+}
+element_storage_evidence['actionDispatchTail']={
+    'directionMapping':'0x100728f34: ordered mutable action comparisons up/down/left/right; 0/1/2/3 or optional-none tag 4',
+    'disclosure':'0x100791d78..0x100791e14: expand or collapse calls toggleDisclosure before considering scroll',
+    'scroll':'0x100791f10 calls scrollUsingScrollBar; error at 0x100791f18 propagates, true at 0x100791f1c returns, false falls back to AX perform',
+    'ordinary':'0x100791eec calls AXUIElement.perform with unchanged action',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100728f34,0x1007290bc),(0x100791d78,0x100791f24)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementActionDispatch.swift',
+    'limitations':'Restored post-menu dispatch with injected execution boundaries only. Original menu ancestry preparation, scroll-bar algorithm, protocol/provider wiring and production entry point remain pending; this function does not replace the complete perform method.',
 }
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',

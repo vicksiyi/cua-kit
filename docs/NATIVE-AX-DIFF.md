@@ -1317,3 +1317,22 @@ init(systemElement:transaction:) 系统路径。传 nil 意味着执行已恢复
 真实应用验收仍受当前宿主辅助功能/录屏权限阻塞；模型驱动多窗口验收仍有此前
 HTTP 402 未解决。本轮没有重试这两个已知外部阻塞，也没有把它们当作整个项目
 无法推进的理由。代码整合与静态审计继续进行。
+
+## 原动作分发后半段与滚动回退（2026-11-07）
+
+静态核对 0x100728f34..<0x1007290bc：按可变动作常量依次比较 up、down、left、right，
+返回对应方向；scrollToVisible 和其它动作不进入此映射。常量别名冲突时先匹配者优先。
+恢复 UIElementScrollDirection 及 dispatchUIElementActionAfterMenuPreparation，保持原
+0x100791d78..<0x100791f24 分支顺序：
+
+1. expand/collapse 都调用 toggleDisclosure，直接返回；不按动作名强制设置 Bool。
+2. 四个翻页滚动动作先调用 scrollUsingScrollBar；true 直接返回，false 才执行原 AX 动作。
+3. 滚动条调用抛错时直接传播，不再执行 AX 回退；其它普通动作直接执行 AX。
+
+测试覆盖四方向的 handled/unhandled 路径、普通动作透传、三个执行分支的错误传播、
+可变动作常量冲突及 disclosure 优先级。系统动作错误策略与新增分发测试均通过。
+
+这是原 perform 的后半段，函数名显式要求先完成菜单祖先准备。尚未恢复的菜单祖先
+准备、滚动条读写算法、完整协议/provider 分派没有用空实现顶替，也未将此函数直接
+接入现有 production 入口。因此本次没有宣称原生滚动或完整 perform 已端到端恢复。
+没有启动原服务、调用模型或执行用户界面操作。
