@@ -1029,8 +1029,35 @@ element_cache_evidence['coldConstruction'] = {
     'baseAttributes':[{'name':name,'symbolAddress':hex(slot),'loadAddressInstruction':hex(site),'word':hex(word)} for site,word,slot,name in cold_policy_entries],
     'additionalPolicyInitializer':'0x100764ba4','additionalPolicyStorage':'0x1015ca8b0',
     'instructionWords':{hex(site):hex(word) for site,word in cold_policy_words.items()},
-    'interpretation':'Cold collection reads supported names, constructs a set, and combines it with a 20-attribute base set before additional policy and removal passes. Batch failure returns an empty attribute dictionary with supported names retained and skips fallback cache insertion; successful batch or empty request may enter the fallback write path when transaction storage exists.',
-    'limitations':'The base set is not the final request list. Additional app-dependent policy, removal passes, set traversal ordering, MockProvider and full construction remain unresolved; do not wire the base list alone into production.',
+    'interpretation':'Cold collection reads supported names, constructs a set, and combines it with a 20-attribute base set before additional policy and insertion passes. Batch failure returns an empty attribute dictionary with supported names retained and skips fallback cache insertion; successful batch or empty request may enter the fallback write path when transaction storage exists.',
+    'limitations':'The base set is not the final request list. Selection is further decoded in coldSelectionPolicy; process identity acquisition, MockProvider, set traversal ordering and full construction remain separate.',
+}
+cold_selection_words = {
+    0x1006eda6c:0x52800020, 0x1006eda90:0x52800000,
+    0x100765f78:0x36000194, 0x100765f88:0x97fe1e6a,
+    0x100765874:0x97fe202f, 0x100765fe4:0x97fffe18,
+    0x100765ffc:0x97fffe12, 0x1007667ac:0xf1000eff,
+    0x1007668d4:0x17ffffb5,
+}
+for site,word in cold_selection_words.items():
+    if struct.unpack('<I',read_virtual(site,4))[0] != word:
+        raise SystemExit('Cold selection insertion or iteration changed')
+if c_string(0x101256260) != 'com.kishanbagaria.jack':
+    raise SystemExit('Cold selection app identifier changed')
+if c_string(0x101368aa8) != 'bundleIdentifier' or c_string(0x10136c892) != 'runningApplicationWithProcessIdentifier:':
+    raise SystemExit('Cold selection application identity selectors changed')
+element_cache_evidence['coldSelectionPolicy'] = {
+    'functions':[{'start':hex(address),'endExclusive':hex(starts[starts.index(address)+1]),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,starts[starts.index(address)+1]-address)).hexdigest()}
+        for address in [0x1006ed930,0x100764d48,0x1007666ec,0x100766448,0x100194fc8,0x10079c688,0x10079cb08]],
+    'instructionWords':{hex(site):hex(word) for site,word in cold_selection_words.items()},
+    'additionalAttribute':'AXDOMClassList','additionalAttributeSymbol':'0x1015cacf8',
+    'bundleIdentifier':'com.kishanbagaria.jack','bundleLiteral':'0x101256260',
+    'visibleGroup':['visibleRows','visibleChildren'],
+    'selectedGroup':['selectedRows','selectedCells','selectedChildren'],
+    'interpretation':'Start with supported/base intersection; insert supported DOM class list only on exact bundle identifier match. Insert every supported visible and selected group member. Identity lookup is guarded by DOM attribute support. The helper at 0x1006ed930 inserts, returning true for new membership and false for existing membership; it does not remove.',
+    'correction':'Earlier coldConstruction notes called these later passes removal; instruction follow-through proves insertion.',
+    'limitations':'Selection helper accepts an identity resolver; original provider/system identity acquisition and full transaction construction are not implemented by it.',
 }
 multiple_attribute_functions=[]
 for address,name in [(0x1006f77bc,'throwing batch branch'),(0x1006f798c,'attribute-to-name and dictionary adapter'),(0x1006fa640,'system batch read'),(0x1006fb558,'ordered batch dictionary mapping')]:

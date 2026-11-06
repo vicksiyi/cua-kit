@@ -2064,8 +2064,74 @@
         "0x1007661a8": "0xb5fffbb8",
         "0x100766158": "0xd2800004"
       },
-      "interpretation": "Cold collection reads supported names, constructs a set, and combines it with a 20-attribute base set before additional policy and removal passes. Batch failure returns an empty attribute dictionary with supported names retained and skips fallback cache insertion; successful batch or empty request may enter the fallback write path when transaction storage exists.",
-      "limitations": "The base set is not the final request list. Additional app-dependent policy, removal passes, set traversal ordering, MockProvider and full construction remain unresolved; do not wire the base list alone into production."
+      "interpretation": "Cold collection reads supported names, constructs a set, and combines it with a 20-attribute base set before additional policy and insertion passes. Batch failure returns an empty attribute dictionary with supported names retained and skips fallback cache insertion; successful batch or empty request may enter the fallback write path when transaction storage exists.",
+      "limitations": "The base set is not the final request list. Selection is further decoded in coldSelectionPolicy; process identity acquisition, MockProvider, set traversal ordering and full construction remain separate."
+    },
+    "coldSelectionPolicy": {
+      "functions": [
+        {
+          "start": "0x1006ed930",
+          "endExclusive": "0x1006edab4",
+          "machineCodeSha256": "d3b2868565a16e2438e25fcb78f61122e0cc60b9315e64782ec1c4514c47abec"
+        },
+        {
+          "start": "0x100764d48",
+          "endExclusive": "0x100765048",
+          "machineCodeSha256": "71ced0cd3046fdc52dee669853560f860be153384e661c82948e7cc772c96e00"
+        },
+        {
+          "start": "0x1007666ec",
+          "endExclusive": "0x100766958",
+          "machineCodeSha256": "c7255713e291c8b386472e594cdeaea6eee507db79f851665e93ac074abc902e"
+        },
+        {
+          "start": "0x100766448",
+          "endExclusive": "0x100766464",
+          "machineCodeSha256": "aa5ffe53c4de8f6468b23fc6bffca2f675df72108ce81e0b8589344d93f0e99d"
+        },
+        {
+          "start": "0x100194fc8",
+          "endExclusive": "0x10019501c",
+          "machineCodeSha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
+        },
+        {
+          "start": "0x10079c688",
+          "endExclusive": "0x10079c6c4",
+          "machineCodeSha256": "687b806e4686b02c08766a72d647abf60419e414983cabcbb3e65f914ec8927b"
+        },
+        {
+          "start": "0x10079cb08",
+          "endExclusive": "0x10079cb38",
+          "machineCodeSha256": "237887b826ec3cfdf29d773955cd7d63558e8883863749805041b40dbde08fef"
+        }
+      ],
+      "instructionWords": {
+        "0x1006eda6c": "0x52800020",
+        "0x1006eda90": "0x52800000",
+        "0x100765f78": "0x36000194",
+        "0x100765f88": "0x97fe1e6a",
+        "0x100765874": "0x97fe202f",
+        "0x100765fe4": "0x97fffe18",
+        "0x100765ffc": "0x97fffe12",
+        "0x1007667ac": "0xf1000eff",
+        "0x1007668d4": "0x17ffffb5"
+      },
+      "additionalAttribute": "AXDOMClassList",
+      "additionalAttributeSymbol": "0x1015cacf8",
+      "bundleIdentifier": "com.kishanbagaria.jack",
+      "bundleLiteral": "0x101256260",
+      "visibleGroup": [
+        "visibleRows",
+        "visibleChildren"
+      ],
+      "selectedGroup": [
+        "selectedRows",
+        "selectedCells",
+        "selectedChildren"
+      ],
+      "interpretation": "Start with supported/base intersection; insert supported DOM class list only on exact bundle identifier match. Insert every supported visible and selected group member. Identity lookup is guarded by DOM attribute support. The helper at 0x1006ed930 inserts, returning true for new membership and false for existing membership; it does not remove.",
+      "correction": "Earlier coldConstruction notes called these later passes removal; instruction follow-through proves insertion.",
+      "limitations": "Selection helper accepts an identity resolver; original provider/system identity acquisition and full transaction construction are not implemented by it."
     }
   },
   "attributeNamesEvidence": {
