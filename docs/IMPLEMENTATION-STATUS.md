@@ -6970,3 +6970,8 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-06：回退缓存系统锁实现
 
 使用原类型 OSAllocatedUnfairLock 恢复独立读取/覆盖写入，保留 nil transactionAttributes、AX 键和字典值语义。真实系统锁并发 fixture（48 键 × 20 次读写）及既有预取测试通过。未新增全局缓存；完整事务与生产构造接线仍待恢复。
+
+
+### 2026-11-06：系统批量 AX 属性读取
+
+恢复原生批量系统调用、总体状态与逐值 AXError 的不同处理、NSNull 保留，以及重复键有序覆盖/删除。批量/既有单属性测试均通过，helper 构建通过；固定来源指令和符号于 multipleAttributeEvidence。未连接生产观察器；完整缓存构造、事务预取、截断与实际应用端到端验收仍未完成。

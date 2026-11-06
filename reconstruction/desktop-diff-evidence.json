@@ -2040,6 +2040,83 @@
     "interpretation": "Encoded storage holds an immutable AnyObject; partial storage holds three immutable fields. valueIsString compares CF type IDs. The public wrapping initializer calls the separate parameter encoder.",
     "limitations": "Storage memberwise construction is not a replacement for init(wrapping: Any), generic unwrapping, truncation generation or the full cache pipeline."
   },
+  "multipleAttributeEvidence": {
+    "functions": [
+      {
+        "name": "throwing batch branch",
+        "start": "0x1006f77bc",
+        "endExclusive": "0x1006f798c",
+        "machineCodeSha256": "7ef3237b867a910689689c9c280e30b2bb05473070ac76bfcf4a484c4145f74e"
+      },
+      {
+        "name": "attribute-to-name and dictionary adapter",
+        "start": "0x1006f798c",
+        "endExclusive": "0x1006f7a90",
+        "machineCodeSha256": "4052e640c92b0407b2462e926a2097f8bf77f7fdb6f861945eb4503d4ece0717"
+      },
+      {
+        "name": "system batch read",
+        "start": "0x1006fa640",
+        "endExclusive": "0x1006fa84c",
+        "machineCodeSha256": "78373b395eb04bb791b77dc6ed99022f203fb62c136b1543f812d742623fc7ea"
+      },
+      {
+        "name": "ordered batch dictionary mapping",
+        "start": "0x1006fb558",
+        "endExclusive": "0x1006fb964",
+        "machineCodeSha256": "4641c383f08d0c927793bf69818831b7c492dad2ecb4910d577ccb82ab464774"
+      }
+    ],
+    "calls": [
+      {
+        "site": "0x1006fa720",
+        "stub": "0x1011538d0",
+        "symbol": "_AXUIElementCopyMultipleAttributeValues"
+      },
+      {
+        "site": "0x1006fb648",
+        "stub": "0x10115396c",
+        "symbol": "_AXValueGetTypeID"
+      },
+      {
+        "site": "0x1006fb678",
+        "stub": "0x101153960",
+        "symbol": "_AXValueGetType"
+      },
+      {
+        "site": "0x1006fb6a8",
+        "stub": "0x101153978",
+        "symbol": "_AXValueGetValue"
+      }
+    ],
+    "instructionWords": {
+      "0x1006fa678": "0xf8010edf",
+      "0x1006fa718": "0x52800002",
+      "0x1006fa7f8": "0xb4000040",
+      "0x1006fa7fc": "0x340000b4",
+      "0x1006fa808": "0xd2800001",
+      "0x1006fb608": "0x540019e2",
+      "0x1006fb638": "0xb5000880",
+      "0x1006fb67c": "0x7100141f",
+      "0x1006fb684": "0xb9002bff",
+      "0x1006fb6b8": "0x128c4f69",
+      "0x1006fb6c4": "0x128c4e89",
+      "0x1006fb6c0": "0x54000480",
+      "0x1006fb6cc": "0x54000420",
+      "0x1006fb6d0": "0x34000408",
+      "0x1006fb740": "0x94002504",
+      "0x1006fb808": "0xf9000118",
+      "0x1006fb944": "0xd4200020"
+    },
+    "permittedOverallStatuses": [
+      0,
+      -25212,
+      -25205
+    ],
+    "options": 0,
+    "interpretation": "Raw system failure discards the output array; success requires a non-nil AnyObject array for mapping. Mapping indexes each requested attribute, retains NSNull and ordinary objects, keeps AXError success/noValue/attributeUnsupported values, and removes the key for other AXError values. Duplicate keys are processed in order; shorter output traps and extra output is unused.",
+    "limitations": "Restores the non-MockProvider system pipeline; not provider overrides, truncation generation, transaction assembly or production UI integration."
+  },
   "frequencyTableEvidence": {
     "nominalDescriptor": "0x1012ccd50",
     "fieldDescriptor": "0x101323894",

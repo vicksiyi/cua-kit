@@ -999,6 +999,45 @@ element_cache_evidence['prefetchedHit']={
     'interpretation':'A transaction table hit returns a cache whose supported set comes from the stored attribute dictionary keys; attributes and requested transaction set are retained. An empty per-element dictionary is a hit, not a fallback. Requested attributes are neither synthesized into the data nor used to filter existing keys.',
     'limitations':'The extracted helper returns nil on a miss; full construction must still follow the separate locked fallback and attribute collection paths. It does not implement TaskLocal or transaction prefetch creation.',
 }
+multiple_attribute_functions=[]
+for address,name in [(0x1006f77bc,'throwing batch branch'),(0x1006f798c,'attribute-to-name and dictionary adapter'),(0x1006fa640,'system batch read'),(0x1006fb558,'ordered batch dictionary mapping')]:
+    boundary=starts[starts.index(address)+1]
+    multiple_attribute_functions.append({'name':name,'start':hex(address),'endExclusive':hex(boundary),
+        'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+if struct.unpack('<ii',read_virtual(0x101570bf8,8))!=(-25212,-25205):
+    raise SystemExit('AX batch permitted status constants changed')
+for slot,binding in [('0x10151ef18','CoreFoundation/_OBJC_CLASS_$_NSNull'),('0x1014688f8','libswiftCore/_$syXlN')]:
+    if binding not in next((line for line in fixups.splitlines() if slot in line.lower()),''):
+        raise SystemExit('AX batch object type binding changed')
+multiple_attribute_calls=[(0x1006fa720,0x1011538d0,'_AXUIElementCopyMultipleAttributeValues'),
+    (0x1006fb648,0x10115396c,'_AXValueGetTypeID'),(0x1006fb678,0x101153960,'_AXValueGetType'),
+    (0x1006fb6a8,0x101153978,'_AXValueGetValue')]
+for site,stub,symbol in multiple_attribute_calls:
+    word=struct.unpack('<I',read_virtual(site,4))[0]
+    immediate=word & 0x3ffffff
+    if immediate & 0x2000000: immediate-=0x4000000
+    if word>>26!=0b100101 or site+immediate*4!=stub or indirect.get(stub)!=symbol:
+        raise SystemExit('AX batch system call changed')
+multiple_attribute_words={
+    0x1006fa678:0xf8010edf,0x1006fa718:0x52800002,
+    0x1006fa7f8:0xb4000040,0x1006fa7fc:0x340000b4,0x1006fa808:0xd2800001,
+    0x1006fb608:0x540019e2,0x1006fb638:0xb5000880,
+    0x1006fb67c:0x7100141f,0x1006fb684:0xb9002bff,
+    0x1006fb6b8:0x128c4f69,0x1006fb6c4:0x128c4e89,
+    0x1006fb6c0:0x54000480,0x1006fb6cc:0x54000420,0x1006fb6d0:0x34000408,
+    0x1006fb740:0x94002504,0x1006fb808:0xf9000118,
+    0x1006fb944:0xd4200020,
+}
+for address,word in multiple_attribute_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0]!=word:
+        raise SystemExit('AX batch status, mapping or bounds branch changed')
+multiple_attribute_evidence={
+    'functions':multiple_attribute_functions,'calls':[{'site':hex(c),'stub':hex(st),'symbol':sy} for c,st,sy in multiple_attribute_calls],
+    'instructionWords':{hex(a):hex(w) for a,w in multiple_attribute_words.items()},
+    'permittedOverallStatuses':[0,-25212,-25205],'options':0,
+    'interpretation':'Raw system failure discards the output array; success requires a non-nil AnyObject array for mapping. Mapping indexes each requested attribute, retains NSNull and ordinary objects, keeps AXError success/noValue/attributeUnsupported values, and removes the key for other AXError values. Duplicate keys are processed in order; shorter output traps and extra output is unused.',
+    'limitations':'Restores the non-MockProvider system pipeline; not provider overrides, truncation generation, transaction assembly or production UI integration.',
+}
 frequency_nominal=0x1012ccd50
 frequency_fields=relative_address(frequency_nominal+16)
 _,_,frequency_kind,frequency_size,frequency_count=struct.unpack('<iiHHI',read_virtual(frequency_fields,16))
@@ -1083,6 +1122,7 @@ record = {
     'elementCacheEvidence':element_cache_evidence,
     'attributeNamesEvidence':attribute_names_evidence,
     'encodedStorageEvidence':encoded_storage_evidence,
+    'multipleAttributeEvidence':multiple_attribute_evidence,
     'frequencyTableEvidence':frequency_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
