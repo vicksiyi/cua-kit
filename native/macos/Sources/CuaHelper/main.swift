@@ -104,8 +104,7 @@ final class Target {
         case "press": status = AXUIElementPerformAction(element, kAXPressAction as CFString)
         case "setValue":
             guard let text = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "setValue requires a string.") }
-            var settable = DarwinBoolean(false)
-            guard AXUIElementIsAttributeSettable(element, kAXValueAttribute as CFString, &settable) == .success, settable.boolValue else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
+            guard (try? isSystemAXAttributeSettable(element, UIElementAttribute(kAXValueAttribute))) == true else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
             status = AXUIElementSetAttributeValue(element, kAXValueAttribute as CFString, text as CFTypeRef)
         case "selectText": status = try selectText(element,params)
         case "secondary":

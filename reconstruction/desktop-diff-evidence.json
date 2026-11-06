@@ -2120,6 +2120,20 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementActionDescription.swift",
       "limitations": "Typed descriptions and ordered composition restored; production UIElementProtocol dispatch and page-state integration remain pending."
     },
+    "systemAttributeSettable": {
+      "call": "0x1006f7444 -> AXUIElementIsAttributeSettable",
+      "initialOutput": "0x1006f7434 writes zero byte",
+      "status": "0x1006f7448 only success continues; non-success throws UIElementError.axError",
+      "bool": "0x1006f7484..0x1006f748c converts nonzero output byte to true",
+      "block": {
+        "start": "0x1006f7434",
+        "endExclusive": "0x1006f7490",
+        "machineCodeSha256": "a118999fe14cbc498527eca61cc05f2c540569fd1410f3e6a3677d22367df5a5"
+      },
+      "implementation": "native/macos/Sources/CuaHelper/AXAttributeSettable.swift",
+      "productionUse": "Target.action setValue uses this system adapter; existing caller rejection policy retained",
+      "limitations": "Original preceding TaskLocal MockProvider selection and full disclosure-action wiring remain pending."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

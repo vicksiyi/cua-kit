@@ -943,6 +943,17 @@ element_storage_evidence['actionDescriptionList']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementActionDescription.swift',
     'limitations':'Typed descriptions and ordered composition restored; production UIElementProtocol dispatch and page-state integration remain pending.',
 }
+element_storage_evidence['systemAttributeSettable']={
+    'call':'0x1006f7444 -> AXUIElementIsAttributeSettable',
+    'initialOutput':'0x1006f7434 writes zero byte',
+    'status':'0x1006f7448 only success continues; non-success throws UIElementError.axError',
+    'bool':'0x1006f7484..0x1006f748c converts nonzero output byte to true',
+    'block':{'start':'0x1006f7434','endExclusive':'0x1006f7490',
+        'machineCodeSha256':hashlib.sha256(read_virtual(0x1006f7434,0x1006f7490-0x1006f7434)).hexdigest()},
+    'implementation':'native/macos/Sources/CuaHelper/AXAttributeSettable.swift',
+    'productionUse':'Target.action setValue uses this system adapter; existing caller rejection policy retained',
+    'limitations':'Original preceding TaskLocal MockProvider selection and full disclosure-action wiring remain pending.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

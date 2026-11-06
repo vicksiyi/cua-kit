@@ -1149,3 +1149,20 @@ secondary 保持原有“不在已广告列表则拒绝”的行为。
 accessibility=false、screenRecording=false；未启动测试 App、未执行 UI 操作。
 这是当前 agent 宿主的检查结果，不能推断用户其它终端的权限或宣称真实应用验收成功。
 原始本机验收日志不提交仓库。
+
+
+## 属性可写性系统分支（2026-11-07）
+
+恢复 `AXAttributeSettable.swift`，对应 isAttributeSettable 系统分支
+0x1006f7434–0x1006f7490。输出 Boolean 初始为零，调用
+AXUIElementIsAttributeSettable 后只有 success 才读取结果；其它错误原样包装为
+UIElementError.axError，不将 noValue/attributeUnsupported 简化成 false。
+原分支直接调用系统 API，没有普通属性读取中的 PID/主线程切换。
+
+Target.action 的 setValue 入口已复用该实现，调用方仍按原有策略将非 true 结果
+拒绝为不可写，不扩大权限、不执行额外写入。辅助函数以 UIElementAttribute 保留
+CFString 名称边界。Swift 测试验证输出未写入、false/true 和七种错误与输出位组合，
+确认一次调用和原始 AXError；构建通过。
+
+原 TaskLocal MockProvider 前置分派及展开/折叠的生产执行仍待恢复。权限阻塞未改变，
+本轮不重复运行真实应用验收，也没有调用模型。
