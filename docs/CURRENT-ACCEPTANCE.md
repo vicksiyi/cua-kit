@@ -108,3 +108,14 @@ HTTP(S) 导航开始时触发 accessibility core 预加载。后续已补齐接�
 以上没有连接真实 orbit 服务：Chrome 扩展回归证明该路径未被新条件误触发，
 不能替代真实 orbit+CDP 环境的预加载耗时与事件竞争验收。旧 credentialObservationGate
 相关差异仍保留，未将此处的对照范围扩大为整个导航实现完全一致。
+
+## 真实 Chromium 导航预加载组合验证
+
+`browser-navigation-preload-live.test.ts` 用自有 HTTP 页面和 Chromium CDP 事件串联
+Tab.goto → 参数解析 → 导航命令 → beforeDispatch/deadline helper → 真实 Page.navigate →
+主 frameStartedLoading → 打包 host 预加载 → 正式 AX 初始化。
+确认预加载只启动一次、早于 DOMContentLoaded，成功导航不取消，event/tabDetached
+监听器在命令退出后清空，页面标题/URL 真实更新，正式 WASM 初始化成功。
+
+该测试使用设置为 orbit/cdp 的 context fixture，以及 Playwright CDPSession 传输适配层；
+不是生产 orbit 部署，也没有验证完整 CdpManager 附着/重试链。测试通过，产品逻辑未改动。
