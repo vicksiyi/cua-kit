@@ -6454,3 +6454,10 @@ Validation: 24 targeted regression tests, agent-loop type checking and library b
 Migrated runtime-cdp-sandbox.test.ts to always launch the shared Rust runtime, deleting the alternate TS stdio launcher and its worker/config/bootstrap setup. The test passes real isolated Chromium form input, submit, random result reading and screenshot without CUA_TEST_RUST_RUNTIME.
 
 The private @core/runtime-supervisor package no longer exports its root or ordinary service subpaths; reference consumers must explicitly choose /legacy paths and the legacy build. A resolution test checks all nine retired paths fail with ERR_PACKAGE_PATH_NOT_EXPORTED and confirms AgentLoop has no dependency on the package. Direct source comparison tests remain; this closes implicit exports and one live consumer, not all TS reference-source retirement. The native implementation remains a contract reconstruction with outstanding parity work.
+
+
+### Native sandbox/config acceptance and legacy host consumer removal
+
+Replaced the TS native-host server in the macOS sandbox comparison test with the production Rust process binding; switched its Node bootstrap to native/runtime-supervisor/dist. All three macOS tests pass, including OS file/process/network denial and restored CUA discovery over the authenticated Rust host connection. The supervisor inside that comparison test remains TS and is explicitly pending migration.
+
+Expanded real Rust rmcp stdio acceptance to verify kernel reads of outside files, trusted-worker scratch and host configuration fail with EPERM, while the trusted JS service can persist a permitted configuration via Rust RPC. Both EOF and SIGTERM variants pass alongside their existing worker reset, cancellation, pipe, media and elicitation checks (2 tests). The native example was rebuilt with the locked dependency graph. These checks use owned fixtures only; they are not original-binary differential parity or desktop UI acceptance.

@@ -55,3 +55,9 @@ This refresh changes the audit record and inventory only. It does not claim that
 ## Rust-only CDP consumer and explicit reference exports
 
 The CDP sandbox acceptance consumer no longer builds or launches TS serveSandboxedStdio, even without CUA_TEST_RUST_RUNTIME. Removed its unused legacy worker/bootstrap/config composition and always launch the shared Rust factory. A real isolated Chromium test passes input, submit, random result observation, screenshot and cleanup with only CUA_TEST_MACOS_SANDBOX=1. Normal @core/runtime-supervisor root/service exports are removed; explicit /legacy exports retain comparison compatibility. Production packages/src contain no imports of this TS package. Remaining direct comparison tests and 13 service implementation files have not been deleted and are not declared fully migrated.
+
+## Sandbox comparison consumer follow-up
+
+`runtime-macos-sandbox.test.ts` now starts the Rust browser host through its process binding and uses the canonical native Node bootstrap; it no longer imports the TS native-host server. Its supervisor remains an explicit TS comparison consumer because its injected authenticated-fetch callback and session-level assertions have not all been migrated.
+
+The real Rust rmcp stdio acceptance now verifies kernel denial of outside/peer scratch/config files and a trusted-worker configuration write persisted by Rust RPC. These checks pass on both EOF and SIGTERM cleanup variants. This moves acceptance evidence for those responsibilities to the native layer; it does not remove the remaining TS supervisor comparison implementation.

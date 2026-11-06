@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { createSandboxedSessionOptions } from "../packages/runtime-supervisor/src/sandbox-runtime";
 import { PassThrough } from "node:stream";
 import { dirname } from "node:path";
-import { startNativeHost } from "../packages/native-host/src/server";
+import { startRustNativeHost } from "../packages/native-host/src/native_process";
 import { NativePipeFrameDecoder, encodeNativePipeFrame } from "../packages/browser/src/service/runtime/native_pipe";
 import { ExtensionBrowserPeer } from "../packages/browser-extension/src/browser_peer";
 import test from "node:test";
@@ -123,7 +123,7 @@ test(
     const workers = await realpath(resolve("packages/node-repl"));
     const dependencies = await realpath(resolve("node_modules"));
     const bootstrap = resolve(
-        "packages/runtime-supervisor/dist/sandbox-bootstrap.js",
+        "native/runtime-supervisor/dist/sandbox-bootstrap.js",
       ),
       addon = resolve("native/macos-sandbox/dist/sandbox.node");
     const policyOptions = {
@@ -159,7 +159,7 @@ test(
       turnEnded() { return {}; },
     });
     output.on("data", bytes => { for (const frame of frames.push(bytes)) receive(JSON.parse(frame)); });
-    const host = await startNativeHost(input, output, { parentDirectory: root });
+    const host = await startRustNativeHost(input, output, { parentDirectory: root });
     t.after(() => host.close());
     const configFile = join(root, "config.toml"), requirementsFile = join(root, "requirements.toml"), browserConfigFile = join(root, "browser.toml");
     await writeFile(configFile, "[browser_use]\nallow_history_access = false\n");

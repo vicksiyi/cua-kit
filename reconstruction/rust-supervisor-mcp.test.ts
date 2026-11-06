@@ -17,12 +17,14 @@ for(const closure of ['eof','sigterm'] as const) test(`Rust rmcp stdio drives re
  const codeDir=join(root,'code'),kernelDir=join(root,'kernel'),trustedDir=join(root,'trusted');
  await Promise.all([codeDir,kernelDir,trustedDir].map(path=>mkdir(path)));
  const marker=join(trustedDir,'started');
+ const outside=join(root,'outside.txt'), privateFile=join(trustedDir,'private.txt');
+ await writeFile(outside,'outside fixture');await writeFile(privateFile,'trusted fixture');
  const socketPath=join(root,'pipe');
  let peer:Socket|undefined;
  const server=createServer(socket=>{peer=socket;});
  server.listen(socketPath);await once(server,'listening');
  let workerPids:number[]=[];
- await writeFile(join(codeDir,'service.mjs'),`let count=0;nodeRepl.addTurnEndedHandler({timeoutMs:1000,run:async()=>{count++;}});export async function handleRpc(x){if(x.listen){const socket=await nodeRepl.nativePipe.createConnection(x.path);socket.on('error',()=>{});socket.on('data',bytes=>socket.write(Buffer.from('pong:'+Buffer.from(bytes).toString())));return 'listening';}if(x.ask)return await nodeRepl.createElicitation({message:'fixture approval',requestedSchema:{type:'object',properties:{}}});if(x.hang){await (await import('node:fs/promises')).writeFile(${JSON.stringify(marker)},'started');await new Promise(()=>{});}nodeRepl.setResponseMeta({fixture:true});return {count,meta:nodeRepl.requestMeta};}`);
+ await writeFile(join(codeDir,'service.mjs'),`let count=0;nodeRepl.addTurnEndedHandler({timeoutMs:1000,run:async()=>{count++;}});export async function handleRpc(x){if(x.save){await nodeRepl.config.writeToml("browser/config.toml",{full_cdp_access_enabled:false,marker:"persisted by Rust RPC"});return "saved";}if(x.listen){const socket=await nodeRepl.nativePipe.createConnection(x.path);socket.on('error',()=>{});socket.on('data',bytes=>socket.write(Buffer.from('pong:'+Buffer.from(bytes).toString())));return 'listening';}if(x.ask)return await nodeRepl.createElicitation({message:'fixture approval',requestedSchema:{type:'object',properties:{}}});if(x.hang){await (await import('node:fs/promises')).writeFile(${JSON.stringify(marker)},'started');await new Promise(()=>{});}nodeRepl.setResponseMeta({fixture:true});return {count,meta:nodeRepl.requestMeta};}`);
  for(const name of ['config','requirements','browser'])await writeFile(join(root,name+'.toml'),'');
  const env={HOME:root,TMPDIR:root,NODE_REPL_TRUSTED_RPC_ENABLED:'1',NODE_REPL_TRUSTED_SERVICES:JSON.stringify({fixture:join(codeDir,'service.mjs')}),NODE_REPL_TRUSTED_CODE_PATHS:root,NODE_REPL_ENABLE_AUDIO:'1'};
  const worker=(entry:string,args:string[])=>({sandbox:{node:process.execPath,bootstrap:resolve('native/runtime-supervisor/dist/sandbox-bootstrap.js'),addon:resolve('native/macos-sandbox/dist/sandbox.node'),entry:resolve('packages/node-repl/dist/'+entry),args,directory:entry==='kernel.js'?kernelDir:trustedDir,read_directories:[codeDir,moduleDir,resolve('packages/node-repl/dist'),resolve('node_modules')],worker_environment:Object.fromEntries(Object.entries(env).filter(([key])=>!['HOME','TMPDIR','NODE_REPL_ENABLE_AUDIO'].includes(key)))}});
@@ -37,6 +39,17 @@ for(const closure of ['eof','sigterm'] as const) test(`Rust rmcp stdio drives re
   const call=(name:string,args:Record<string,unknown>)=>client.callTool({name,arguments:args,_meta:{hostMarker:'trusted-test'}});
   const js=async(code:string)=>{const result=await call('js',{code});assert.equal(result.isError,false,JSON.stringify(result));return result;};
   assert.match(JSON.stringify((await js('let value=40;nodeRepl.write(value+2)')).content),/42/);
+  // Move native-responsibility acceptance off the old TS supervisor baseline.
+  for (const path of [outside,privateFile]) {
+    const result=await js(`try{(await import('node:fs')).readFileSync(${JSON.stringify(path)});nodeRepl.write('unexpected')}catch(error){nodeRepl.write(error.code)}`);
+    assert.match(JSON.stringify(result.content),/EPERM/);
+    assert.ok(!JSON.stringify(result.content).includes('unexpected'));
+  }
+  const saved=await js("nodeRepl.write(await nodeRepl.rpc('fixture',{save:true}))");
+  assert.match(JSON.stringify(saved.content),/saved/);
+  assert.match(await readFile(join(root,'browser.toml'),'utf8'),/persisted by Rust RPC/);
+  const configuration=await js(`try{(await import('node:fs')).readFileSync(${JSON.stringify(join(root,'browser.toml'))});nodeRepl.write('unexpected')}catch(error){nodeRepl.write(error.code)}`);
+  assert.match(JSON.stringify(configuration.content),/EPERM/);
   const named=await js('nodeRepl.write("named docs", "docs")');assert.match(JSON.stringify(named.content),/named docs/);
   assert.equal((await call('js',{code:'1',extra:true})).isError,true);
   assert.equal((await call('js',{code:'1',timeout_ms:null})).isError,true);
