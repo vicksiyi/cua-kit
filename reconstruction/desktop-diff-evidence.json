@@ -1,11 +1,178 @@
 {
   "artifact": "@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService",
   "sha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
-  "evidenceKind": "exported Swift symbols, not recovered implementation bodies",
+  "evidenceKind": "exported Swift symbols and bounded ARM64 call-site/basic-block evidence",
   "commands": [
     "nm -g <artifact>",
-    "xcrun swift-demangle"
+    "xcrun swift-demangle",
+    "xcrun llvm-objdump --macho --function-starts=addrs <artifact>",
+    "xcrun llvm-objdump --disassemble --start-address=<start> --stop-address=<end> <artifact>"
   ],
+  "implementationEvidence": {
+    "function": "ComputerUseCore.UIElementTreeRevision.differenceLines(from: ComputerUseCore.UIElementTreeRevision<A>, options: ComputerUseCore.UIElementRenderLineOptions, summarizesRemovedElementIDs: Swift.Bool, ignoreDifferenceLineBudget: Swift.Bool, onLineBudgetExceeded: (ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded) -> ()) -> [Swift.String]?",
+    "start": "0x100629630",
+    "endExclusive": "0x10062b8dc",
+    "boundarySource": "LC_FUNCTION_STARTS",
+    "instructionCount": 2219,
+    "machineCodeSha256": "24d4baa3248c8ab938030bea5bafccd34276c1824e1d0380d9b55ad04c6fb9f5",
+    "renderTreeSnapshotCalls": [
+      "0x1006298a8",
+      "0x1006298fc"
+    ],
+    "removedElementPrefix": {
+      "address": "0x101255a30",
+      "text": "Removed element IDs: "
+    },
+    "reviewedInstructionExcerpts": [
+      [
+        {
+          "address": "0x1006298a8",
+          "word": "9400abd7",
+          "instruction": "bl 0x100654804"
+        },
+        {
+          "address": "0x1006298ac",
+          "word": "b4000095",
+          "instruction": "cbz x21, 0x1006298bc"
+        },
+        {
+          "address": "0x1006298b0",
+          "word": "aa1503e0",
+          "instruction": "mov x0, x21"
+        },
+        {
+          "address": "0x1006298b4",
+          "word": "942cae34",
+          "instruction": "bl 0x101155184"
+        },
+        {
+          "address": "0x1006298b8",
+          "word": "14000017",
+          "instruction": "b 0x100629914"
+        }
+      ],
+      [
+        {
+          "address": "0x1006298fc",
+          "word": "9400abc2",
+          "instruction": "bl 0x100654804"
+        },
+        {
+          "address": "0x100629900",
+          "word": "b40001f5",
+          "instruction": "cbz x21, 0x10062993c"
+        },
+        {
+          "address": "0x100629904",
+          "word": "aa1503e0",
+          "instruction": "mov x0, x21"
+        },
+        {
+          "address": "0x100629908",
+          "word": "942cae1f",
+          "instruction": "bl 0x101155184"
+        },
+        {
+          "address": "0x10062990c",
+          "word": "aa1603e0",
+          "instruction": "mov x0, x22"
+        },
+        {
+          "address": "0x100629910",
+          "word": "942cadc6",
+          "instruction": "bl 0x101155028"
+        },
+        {
+          "address": "0x100629914",
+          "word": "d2800015",
+          "instruction": "mov x21, #0x0"
+        },
+        {
+          "address": "0x100629918",
+          "word": "aa1503e0",
+          "instruction": "mov x0, x21"
+        },
+        {
+          "address": "0x10062991c",
+          "word": "d10143bf",
+          "instruction": "sub sp, x29, #0x50"
+        },
+        {
+          "address": "0x100629920",
+          "word": "a9457bfd",
+          "instruction": "ldp x29, x30, [sp, #0x50]"
+        },
+        {
+          "address": "0x100629924",
+          "word": "a9444ff4",
+          "instruction": "ldp x20, x19, [sp, #0x40]"
+        },
+        {
+          "address": "0x100629928",
+          "word": "a94357f6",
+          "instruction": "ldp x22, x21, [sp, #0x30]"
+        },
+        {
+          "address": "0x10062992c",
+          "word": "a9425ff8",
+          "instruction": "ldp x24, x23, [sp, #0x20]"
+        },
+        {
+          "address": "0x100629930",
+          "word": "a94167fa",
+          "instruction": "ldp x26, x25, [sp, #0x10]"
+        },
+        {
+          "address": "0x100629934",
+          "word": "a8c66ffc",
+          "instruction": "ldp x28, x27, [sp], #0x60"
+        },
+        {
+          "address": "0x100629938",
+          "word": "d65f03c0",
+          "instruction": "ret"
+        }
+      ],
+      [
+        {
+          "address": "0x10062b6ec",
+          "word": "d0006148",
+          "instruction": "adrp x8, 0x101255000"
+        },
+        {
+          "address": "0x10062b6f0",
+          "word": "9128c108",
+          "instruction": "add x8, x8, #0xa30"
+        },
+        {
+          "address": "0x10062b6f4",
+          "word": "d1008108",
+          "instruction": "sub x8, x8, #0x20"
+        },
+        {
+          "address": "0x10062b6f8",
+          "word": "b2410108",
+          "instruction": "orr x8, x8, #0x8000000000000000"
+        },
+        {
+          "address": "0x10062b6fc",
+          "word": "d28002a9",
+          "instruction": "mov x9, #0x15"
+        },
+        {
+          "address": "0x10062b700",
+          "word": "f2fa0009",
+          "instruction": "movk x9, #0xd000, lsl #48"
+        },
+        {
+          "address": "0x10062b704",
+          "word": "a917a269",
+          "instruction": "stp x9, x8, [x19, #0x178]"
+        }
+      ]
+    ],
+    "scope": "Static call sites and basic blocks only; traversal, budget and identity rules remain unrecovered."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
