@@ -663,3 +663,35 @@ prefix, both plugin flag cases, and actual filesystem executable permissions on
 an owned non-executed fixture. Tests and Swift build pass. Lookup does not execute
 any returned program; the vendor service is never run. Host identity and policy
 provider integration remain pending.
+
+### Cached provider composition and host identity (2026-11-07)
+
+`NativeAppPolicyProvider` composes the original provider's recovered 900-second
+cache / 30-second fetch behavior with launch configuration, subprocess transport,
+initialize/configRequirements/config requests and parsing. Construction is lazy:
+only a cache miss resolves launch configuration and opens a connection. The
+fetch passes disablePlugins=false into the argument composition. Initialization
+identity is evaluated after successful connection creation, preserving the
+observed fetch ordering; failures propagate and do not serve stale policy.
+Actor reentrancy remains that of NativeAppPolicyCache (no new single-flight
+coalescing or global lock).
+
+Client-info initializer `0x100dd1864..<0x100dd1b68` has name/title/version. The
+vendor literals are codex-computer-use / Codex Computer Use. Version selects
+Bundle.main CFBundleShortVersionString as String, then CFBundleVersion as String,
+then "unknown". An empty String is accepted; numeric values are not converted.
+NativeAppServerClientInfo restores that version selection but requires callers
+to supply their own name/title, avoiding vendor identity impersonation. The host
+provider accepts a clientInfo closure; it does not claim to reproduce the
+vendor's global once-initialized current property.
+
+The owned subprocess integration suite now verifies the composed provider:
+no construction-time launch; one launch and initialize on first query; no launch
+at 899 seconds; refresh at 900 seconds; launch failure propagated without stale
+fallback or identity evaluation; successful retry creates another connection.
+Version precedence, strict casts, empty Strings, fallback, and lazy metadata reads
+are covered. These checks use fixture policies and fixture child processes only.
+Swift build passes. Production SkyAppPolicy still uses its existing explicit
+rules: switching that entrypoint and completing approval persistence/real-system
+acceptance remain outstanding. The composed provider is ready for host wiring,
+not proof that those remaining integrations already work.

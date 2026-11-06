@@ -15,9 +15,9 @@ test("native connection owns process and completes policy fetch", {
   try {
     const executable = join(directory, "test");
     await exec("xcrun", ["swiftc", "-o", executable,
-      ...["NativeComputerUsePolicy", "NativeForbiddenTargets", "NativeAppPolicyFetch", "NativeJSONRPCConnection", "NativeJSONRPCConnectionCleanup", "NativeJSONRPCLineBuffer", "NativeJSONRPCPipeReader", "NativeJSONRPCMessageDecoder", "NativeJSONRPCMessageReader", "NativeJSONRPCRequestWriter", "NativeJSONRPCRequestExchange"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),
+      ...["NativeComputerUsePolicy", "NativeForbiddenTargets", "NativeAppPolicyFetch", "NativeAppPolicyProvider", "NativeAppPolicyCache", "NativeCLILaunchConfiguration", "NativeJSONRPCConnection", "NativeJSONRPCConnectionCleanup", "NativeJSONRPCLineBuffer", "NativeJSONRPCPipeReader", "NativeJSONRPCMessageDecoder", "NativeJSONRPCMessageReader", "NativeJSONRPCRequestWriter", "NativeJSONRPCRequestExchange"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),
       join(root, "native/macos/Tests/NativeJSONRPCConnectionTests.swift")]);
     const { stdout } = await exec(executable);
-    assert.match(stdout, /native JSON-RPC connection process lifecycle and policy-fetch integration passed/);
+    assert.match(stdout, /native JSON-RPC connection process lifecycle and cached provider integration passed/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });

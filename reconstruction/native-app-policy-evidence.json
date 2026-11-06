@@ -134,6 +134,12 @@
       "sha256": "bfef63b204cef19197d46e952eb3a5adb1e5dbb9f5b05b63ebb30526be76bc6e"
     },
     {
+      "name": "appServerClientIdentity",
+      "start": "0x100dd1864",
+      "endExclusive": "0x100dd1b68",
+      "sha256": "de9bd33d3ff59bd6273962fbaa4a6dca2a2486dae69f9b72df995ce3a9cce298"
+    },
+    {
       "name": "cliLaunchSelection",
       "start": "0x10025cedc",
       "endExclusive": "0x10025d0e8",

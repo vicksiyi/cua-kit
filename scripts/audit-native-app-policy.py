@@ -78,6 +78,7 @@ def audit():
         ('jsonRPCDeferredOutputClose', 0x100dd0bdc, 0x100dd0d9c),
         ('jsonRPCMessageRace', 0x100dd0e34, 0x100dd1264),
         ('jsonRPCMessageTimeout', 0x100dd16c4, 0x100dd1864),
+        ('appServerClientIdentity', 0x100dd1864, 0x100dd1b68),
         ('cliLaunchSelection', 0x10025cedc, 0x10025d0e8),
         ('cliEnvironmentOverride', 0x10025d0e8, 0x10025d2c0),
         ('cliRunningBundleCandidates', 0x10025d308, 0x10025d71c),

@@ -1,5 +1,16 @@
 import Foundation
 import Darwin
+import os
+private enum FixtureFailure: Error { case launch }
+private final class ProviderState: @unchecked Sendable {
+    struct State {
+        var now = Date(timeIntervalSince1970: 0)
+        var launches = 0
+        var failLaunch = false
+        var identities = 0
+    }
+    let value = OSAllocatedUnfairLock(initialState: State())
+}
 
 @main struct NativeJSONRPCConnectionTests {
     static func peer() throws {
@@ -59,6 +70,44 @@ import Darwin
         precondition(policy.allowsApplication(bundleIdentifier: "example.fixture"))
         precondition(!policy.allowsApplication(bundleIdentifier: "example.other"))
 
+        let state = ProviderState()
+        let provider = NativeAppPolicyProvider(now: { state.value.withLock { $0.now } },
+            resolveLaunch: {
+                try state.value.withLock { value in
+                    value.launches += 1
+                    if value.failLaunch { throw FixtureFailure.launch }
+                }
+                return .init(executableURL: executable, argumentPrefix: ["--peer"])
+            }, clientInfo: {
+                state.value.withLock { $0.identities += 1 }
+                return NativeAppServerClientInfo.make(name: "core-test", title: "Core Fixture", readInfo: { _ in nil })
+            })
+        precondition(state.value.withLock { $0.launches == 0 && $0.identities == 0 })
+        let initial = try await provider.policy()
+        precondition(initial.allowsApplication(bundleIdentifier: "example.fixture"))
+        state.value.withLock { $0.now = Date(timeIntervalSince1970: 899) }
+        _ = try await provider.policy()
+        precondition(state.value.withLock { $0.launches == 1 && $0.identities == 1 })
+        state.value.withLock { $0.now = Date(timeIntervalSince1970: 900); $0.failLaunch = true }
+        do { _ = try await provider.policy(); preconditionFailure("Must not return expired cached policy") }
+        catch { precondition(error is FixtureFailure) }
+        precondition(state.value.withLock { $0.launches == 2 && $0.identities == 1 })
+        state.value.withLock { $0.failLaunch = false }
+        _ = try await provider.policy()
+        precondition(state.value.withLock { $0.launches == 3 && $0.identities == 2 })
+        for (short, build, expected): (Any?, Any?, String) in [
+            ("1.2", "4", "1.2"), ("", "4", ""), (12, "4", "4"),
+            (nil, "", ""), (nil, 4, "unknown"), (nil, nil, "unknown")
+        ] {
+            var reads = [String]()
+            let info = NativeAppServerClientInfo.make(name: "host", title: "Host", readInfo: { key in
+                reads.append(key)
+                return key == "CFBundleShortVersionString" ? short : build
+            })
+            precondition(info == ["name": "host", "title": "Host", "version": expected])
+            precondition(reads.count == (short is String ? 1 : 2))
+        }
+
         var connection: NativeJSONRPCConnection? = try make()
         weak var weakConnection = connection
         let info = try await connection!.request(method: "inspect", params: nil)
@@ -90,6 +139,6 @@ import Darwin
             _ = try NativeJSONRPCConnection(executableURL: executable.appendingPathComponent("missing"), arguments: [], timeout: 1)
             preconditionFailure("Expected launch failure")
         } catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
-        print("native JSON-RPC connection process lifecycle and policy-fetch integration passed")
+        print("native JSON-RPC connection process lifecycle and cached provider integration passed")
     }
 }
