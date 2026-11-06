@@ -834,6 +834,24 @@ element_storage_evidence['flattenedRole']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementFlattenedRole.swift',
     'limitations':'Default node getter and concrete cached UIElement composition only. TransformedUIElement override and complete production rendering remain pending.',
 }
+if struct.unpack('<QQ',read_virtual(0x10115afb0,16))!=(3,6):
+    raise SystemExit('Transformed flattened-role initializer array count changed')
+element_storage_evidence['transformedFlattenedRole']={
+    'getter':'0x10075dd48..<0x10075de70',
+    'initializer':'0x100761364..<0x100761544',
+    'roleSource':'stored transformed role at +0x20; verified role getter 0x10075cd40; not original backing element role',
+    'lookup':'swift_once initializes mutable dictionary; read access, role-key lookup, copy all three strings if found, nil if empty or missing; no default-getter fallback',
+    'entries':[
+        {'role':'AXStaticText','separator':' ','description':'text','targetDescription':'text'},
+        {'role':'AXRadioButton','separator':'; ','description':'radio button','targetDescription':'radio buttons'},
+        {'role':'AXRow','separator':'; ','description':'outline row','targetDescription':'rows'},
+    ],
+    'arrayHeader':{'address':'0x10115afb0','count':3,'capacityAndFlags':6},
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10075dd48,0x10075de70),(0x100761364,0x100761544),(0x10075cd40,0x10075cd48)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIElementFlattenedRole.swift',
+    'limitations':'Mutable map initializer and lookup restored under local reconstruction names. Full transformed element storage, transform pipeline, and production rendering integration remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

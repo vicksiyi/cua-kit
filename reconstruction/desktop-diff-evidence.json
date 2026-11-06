@@ -2158,6 +2158,56 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementFlattenedRole.swift",
       "limitations": "Default node getter and concrete cached UIElement composition only. TransformedUIElement override and complete production rendering remain pending."
     },
+    "transformedFlattenedRole": {
+      "getter": "0x10075dd48..<0x10075de70",
+      "initializer": "0x100761364..<0x100761544",
+      "roleSource": "stored transformed role at +0x20; verified role getter 0x10075cd40; not original backing element role",
+      "lookup": "swift_once initializes mutable dictionary; read access, role-key lookup, copy all three strings if found, nil if empty or missing; no default-getter fallback",
+      "entries": [
+        {
+          "role": "AXStaticText",
+          "separator": " ",
+          "description": "text",
+          "targetDescription": "text"
+        },
+        {
+          "role": "AXRadioButton",
+          "separator": "; ",
+          "description": "radio button",
+          "targetDescription": "radio buttons"
+        },
+        {
+          "role": "AXRow",
+          "separator": "; ",
+          "description": "outline row",
+          "targetDescription": "rows"
+        }
+      ],
+      "arrayHeader": {
+        "address": "0x10115afb0",
+        "count": 3,
+        "capacityAndFlags": 6
+      },
+      "blocks": [
+        {
+          "start": "0x10075dd48",
+          "endExclusive": "0x10075de70",
+          "machineCodeSha256": "5bacc9e4cbc7b9b0a6fba16c5c5573ce3a1e7eb01ef1a6e5549133ab7878f566"
+        },
+        {
+          "start": "0x100761364",
+          "endExclusive": "0x100761544",
+          "machineCodeSha256": "a96d2cbefb179f992bdf1c0814c21274546c82c55ddc5a2258915a5693f77d8c"
+        },
+        {
+          "start": "0x10075cd40",
+          "endExclusive": "0x10075cd48",
+          "machineCodeSha256": "e65c600dd7a72a073930be0a55a608ec2acab8cabc30a7f98066e4e88b5cd5df"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/TransformedUIElementFlattenedRole.swift",
+      "limitations": "Mutable map initializer and lookup restored under local reconstruction names. Full transformed element storage, transform pipeline, and production rendering integration remain pending."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",

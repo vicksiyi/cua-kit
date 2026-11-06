@@ -195,3 +195,18 @@ test("native flattened role preserves static text defaults", {
     assert.match(result.stdout, /flattened role reads once, preserves static text literals and rejects other roles/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("transformed native roles preserve mutable table and missing-entry behavior", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-transformed-role-"));
+  try {
+    const output = join(directory, "role");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementRole", "UIElementFlattenedRole", "TransformedUIElementFlattenedRole"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIElementFlattenedRoleTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /transformed roles preserve three defaults, mutation, removal and no fallback/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

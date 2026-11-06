@@ -1824,3 +1824,25 @@ LLDB 对共享机器码显示的其它类型名称不能取代该类型的符号
 一次，以及三个返回字段和相等语义；具体缓存测试验证角色解码。相关两项测试
 通过。TransformedUIElement 的 override 仍需单独还原，不能把默认实现宣称为
 整个生产角色变换流程。
+
+### TransformedUIElement 的 flattenedRole 覆盖映射
+
+`0x10075dd48..<0x10075de70` 使用 transformed 节点自身 +0x20 保存的 role
+（role getter `0x10075cd40` 验证），查询 lazily initialized 可变字典；字典为空
+或键缺失就返回 nil，不调用默认 AccessibilityNode getter，也不读取原始节点。
+
+初始化器 `0x100761364..<0x100761544` 的 tuple 数组头 count=3，填入：
+
+| role | separator | description | targetDescription |
+| --- | --- | --- | --- |
+| AXStaticText | 单空格 | text | text |
+| AXRadioButton | 分号+空格 | radio button | radio buttons |
+| AXRow | 分号+空格 | outline row | rows |
+
+按机器码的 little-endian Swift small-string 拼接解码，保留大小写、空格和单复数。
+恢复全局可变映射及查询函数，名称是本仓库的还原命名，不宣称原版未导出变量名。
+测试三项默认值、未知角色、运行时替换/新增/删除、清空，以及删除 staticText 后
+不得回退默认 getter。测试通过，未执行供应商服务或控制桌面。
+
+这是覆盖 getter 的查表部分；完整 TransformedUIElement 的存储、构造和变换流程
+仍未恢复，尚不能宣布生产渲染对齐。
