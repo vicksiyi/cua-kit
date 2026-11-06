@@ -134,6 +134,18 @@
       "sha256": "bfef63b204cef19197d46e952eb3a5adb1e5dbb9f5b05b63ebb30526be76bc6e"
     },
     {
+      "name": "jsonRPCConnectionInitializer",
+      "start": "0x100dccf24",
+      "endExclusive": "0x100dcd480",
+      "sha256": "759481c769e3f2004813d3489d700be5bb296cbf653496cf7bf482099bc12a6c"
+    },
+    {
+      "name": "jsonRPCConnectionDeinit",
+      "start": "0x100dd0d9c",
+      "endExclusive": "0x100dd0e34",
+      "sha256": "ba013e7b34c26eaa173d90eba977a935bf39238c5f55757bf875815bbabc420d"
+    },
+    {
       "name": "jsonRPCRequestFull",
       "start": "0x100dcdeac",
       "endExclusive": "0x100dcfe4c",

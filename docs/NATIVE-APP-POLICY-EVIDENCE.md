@@ -593,3 +593,39 @@ async client reader. This changes only the fixture; the vendor peer is a separat
 process. No conclusion about a production scheduling bug is claimed from that
 fixture failure. Process launch/identity, connection ownership, actual policy
 fetch integration and end-to-end app/browser acceptance remain pending.
+
+### Process-owning connection and policy-fetch integration (2026-11-07)
+
+`NativeJSONRPCConnection` now implements NativeAppPolicyConnection and composes
+all restored transport components. The lower initializer
+`0x100dccf24..<0x100dcd480` allocates the line buffer and closed state, constructs
+two Pipes and a Process, sets executableURL and arguments, assigns standardInput
+and standardOutput, and assigns stderr to FileHandle(forWritingAtPath:
+"/dev/null") if it opens successfully. Selector slots are `0x1015421f8`,
+`0x101542200`, `0x101542d80`, `0x101542d88`, `0x101542fa0`, `0x101542d78`.
+Process launchAndReturnError is `0x101542208`; failure propagates. After launch,
+parent input-read and output-write ends are closed with errors ignored; the
+reader then starts with utility priority (GOT `0x101469480`). The task-creation
+helper at `0x100dcdc50` uses detached task flags (0x1000 plus priority) and a
+closure capturing the handle/buffer, not the connection. The reconstructed
+reader likewise cannot keep its owner alive. Deinit calls close at
+`0x100dd0da4`; close uses the previously restored idempotent cleanup.
+
+The initializer takes an explicit resolved executable URL and arguments as a
+host boundary. This restores the lower constructor, not the upper vendor CLI
+path/argument resolution in `0x100dccad4`. It does not silently select the vendor
+service, replace the installed policy provider, or change active policy rules.
+Requests follow the original single-consumer contract; no invented concurrent
+multiplexing queue is added.
+
+A project-owned Swift test executable also acts as a child-process fixture.
+NativeAppPolicyFetch now completes initialize → configRequirements/read →
+config/read through the actual Process/Pipes/reader/timeout/dispatch stack and
+parses the fixture policy. The child verifies method order and relevant payloads.
+Tests also verify deinit releases the connection and terminates its owned child,
+idempotent explicit close, post-close rejection, child EOF, timeout followed by
+successful connection reuse, and Foundation launch failure. This runs no vendor
+service, no model calls and no user apps. Swift build and the subprocess suite
+pass. Real CLI launch configuration, host client identity, production policy
+provider wiring, approval persistence and actual app/browser acceptance remain
+incomplete.

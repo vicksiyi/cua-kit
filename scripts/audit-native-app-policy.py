@@ -78,6 +78,8 @@ def audit():
         ('jsonRPCDeferredOutputClose', 0x100dd0bdc, 0x100dd0d9c),
         ('jsonRPCMessageRace', 0x100dd0e34, 0x100dd1264),
         ('jsonRPCMessageTimeout', 0x100dd16c4, 0x100dd1864),
+        ('jsonRPCConnectionInitializer', 0x100dccf24, 0x100dcd480),
+        ('jsonRPCConnectionDeinit', 0x100dd0d9c, 0x100dd0e34),
         ('jsonRPCRequestFull', 0x100dcdeac, 0x100dcfe4c),
         ('jsonRPCRequestErrorMessage', 0x100dd7f6c, 0x100dd80c8),
         ('jsonRPCRequestWritePrefix', 0x100dcdf24, 0x100dce510),

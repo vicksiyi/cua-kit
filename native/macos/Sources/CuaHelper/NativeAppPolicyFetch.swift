@@ -1,7 +1,8 @@
 import Foundation
 
 /// Host protocol exposing the original connection operations used by policy
-/// fetching. Concrete subprocess/wire transport is reconstructed separately.
+/// fetching. NativeJSONRPCConnection implements the subprocess transport;
+/// launch configuration and client identity remain host responsibilities.
 protocol NativeAppPolicyConnection: AnyObject {
     func request(method: String, params: [String: Any]?) async throws -> [String: Any]
     func close()
