@@ -6153,3 +6153,10 @@ Implemented this projection in Rust and tested absence versus empty/present IDs,
 Implemented the command-construction segment of AppServerProcess::ensure_started in Rust: configured CLI, app-server and --analytics-default-enabled arguments, three piped streams, optional home directory creation and child cwd/CODEX_HOME. One-component executable names preserve PATH lookup; other relative executable paths become host-cwd-relative before changing child cwd. Optional home resolves against host cwd, without canonicalization.
 
 Two targeted tests pass, including a real owned fake executable in a path containing spaces: exact argv, child cwd/home, stdin/stdout/stderr and failure before spawn when home is a file. The test launches no vendor executable or browser and prints no ambient environment. Static evidence pins command/path/stdio/directory/env/spawn instructions. This is a raw child launcher, not complete ensure_started: reuse rules, formatted launch errors, proxy streams, child/thread ownership and stop remain open, and no production dispatcher route has been enabled.
+
+
+### 2026-11-06: native shared-child stop and wait
+
+Restored stop_app_server_child and wait_app_server_child in Rust using Arc<Mutex<Child>>. Stop skips absent/already-exited children, propagates try_wait errors, kills a live child, ignores only InvalidInput from kill, then waits. The pinned Darwin error-kind jump table maps errno 22 to native kind 0x14, confirming the exception rather than guessing its enum meaning. Both helpers preserve the native poison message and wait discards exit status while holding the child mutex.
+
+All four process tests pass. New owned-process checks kill and reap a pipe-blocked cat without descendants, repeat stop, wait on nonzero exit and verify poisoned-lock errors after reaping. Full manager shutdown still needs state clearing, websocket close ordering and worker ownership; these helpers are not a completed lifecycle or wired control endpoint.

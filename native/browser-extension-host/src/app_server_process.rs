@@ -43,3 +43,35 @@ pub fn command(fields: &ResolvedLaunchFields) -> io::Result<Command> {
 pub fn spawn(fields: &ResolvedLaunchFields) -> io::Result<Child> {
     command(fields)?.spawn()
 }
+
+pub type SharedChild = std::sync::Arc<std::sync::Mutex<Child>>;
+
+/// Native stop_app_server_child: absent/already-exited children succeed; a live
+/// child is killed then reaped. Only InvalidInput from kill is ignored.
+pub fn stop_child(child: Option<SharedChild>) -> io::Result<()> {
+    let Some(child) = child else {
+        return Ok(());
+    };
+    let mut child = child
+        .lock()
+        .map_err(|_| io::Error::other("app-server child mutex poisoned"))?;
+    if child.try_wait()?.is_some() {
+        return Ok(());
+    }
+    if let Err(error) = child.kill() {
+        if error.kind() != io::ErrorKind::InvalidInput {
+            return Err(error);
+        }
+    }
+    child.wait().map(|_| ())
+}
+
+/// Native wait_app_server_child holds the child mutex through wait and discards
+/// the exit status. Callers must preserve the original lifecycle ordering.
+pub fn wait_child(child: SharedChild) -> io::Result<()> {
+    child
+        .lock()
+        .map_err(|_| io::Error::other("app-server child mutex poisoned"))?
+        .wait()
+        .map(|_| ())
+}

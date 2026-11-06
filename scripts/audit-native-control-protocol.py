@@ -19,6 +19,9 @@ def disassemble(start, stop):
     return subprocess.check_output(['xcrun', 'llvm-objdump', '--disassemble', '--demangle',
         '--start-address='+hex(start), '--stop-address='+hex(stop), str(artifact)], text=True)
 
+child_stop = disassemble(0x100021f8c, 0x100022254)
+child_wait = disassemble(0x100022254, 0x1000224b4)
+error_kind = disassemble(0x10001fd38, 0x10001fec0)
 process_start = disassemble(0x10001ffec, 0x100020d54)
 manager_status = disassemble(0x10001a87c, 0x10001abec)
 proxy_session = disassemble(0x10001fec0, 0x10001ffec)
@@ -383,6 +386,18 @@ result = {
         'cwdEnvSpawn': evidence(process_start, 0x100020594, 0x1000205e4, ['Command>::cwd', '#0x4e5', 'CommandEnv>::set', 'Command>::spawn']),
         'semantics': 'Bare one-component program retains PATH search; other relative program paths resolve against host cwd. Arguments app-server and --analytics-default-enabled. All three stdio streams piped. Optional codexHome resolves relative to host cwd, create_dir_all, child cwd and CODEX_HOME. Other environment inherited.',
         'integrationStatus': 'Command construction and raw child spawn tested against an owned fake executable. Process reuse, launch-error decoration, stderr drain, proxy/read threads, stop and manager/dispatcher integration remain incomplete.',
+    },
+    'childStopAndWait': {
+        'implementation': 'native/browser-extension-host/src/app_server_process.rs::{stop_child,wait_child}',
+        'poisonMessage': raw[0x9013c:0x9015b].decode(),
+        'absentChild': evidence(child_stop, 0x100021fa4, 0x100021fa8, ['cbz', '0x100022080']),
+        'tryWait': evidence(child_stop, 0x1000220bc, 0x1000220e8, ['Child>::try_wait', '0x100022104']),
+        'killAndWait': evidence(child_stop, 0x100022104, 0x100022140, ['Child>::kill', 'Error>::kind', '#0x14', 'Child>::wait']),
+        'errno22KindBranch': hex(0x10001fd88 + raw[0x8ffa8 + 22 - 1] * 4),
+        'invalidInputDiscriminant': evidence(error_kind, 0x10001fe70, 0x10001fe78, ['#0x14']),
+        'wait': evidence(child_wait, 0x100022378, 0x100022390, ['Child>::wait']),
+        'semantics': 'Option<Arc<Mutex<Child>>> stop: absent succeeds; poisoned lock is an I/O Other error; try_wait error propagates; already exited succeeds; live child kill then wait. Kill InvalidInput (Darwin EINVAL=22 maps to native kind 0x14) is ignored; other kill errors propagate. Wait helper discards exit status and holds child mutex through wait.',
+        'integrationStatus': 'Owned-process tests cover live stop/reap, repeated stop, absent child, nonzero exit and poison error. No production manager wiring or full thread shutdown yet.',
     },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

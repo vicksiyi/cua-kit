@@ -66,3 +66,59 @@ fn owned_child_receives_arguments_home_and_three_pipes() {
     assert!(spawn(&invalid).is_err());
     fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn stop_reaps_only_the_owned_child_and_is_repeatable() {
+    use core_browser_extension_host::app_server_process::{stop_child, wait_child};
+    use std::{
+        process::{Command, Stdio},
+        sync::{Arc, Mutex},
+    };
+    stop_child(None).unwrap();
+    // cat stays blocked on its retained pipe without starting any descendants.
+    let child = Command::new("/bin/cat")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .spawn()
+        .unwrap();
+    let child = Arc::new(Mutex::new(child));
+    assert!(child.lock().unwrap().try_wait().unwrap().is_none());
+    stop_child(Some(child.clone())).unwrap();
+    assert!(child.lock().unwrap().try_wait().unwrap().is_some());
+    stop_child(Some(child.clone())).unwrap();
+    wait_child(child).unwrap();
+
+    let exited = Arc::new(Mutex::new(Command::new("/usr/bin/false").spawn().unwrap()));
+    wait_child(exited.clone()).unwrap(); // nonzero exit is not an I/O error
+    assert!(!exited
+        .lock()
+        .unwrap()
+        .try_wait()
+        .unwrap()
+        .unwrap()
+        .success());
+    stop_child(Some(exited)).unwrap();
+}
+
+#[test]
+fn poisoned_child_lock_returns_the_native_error_without_panicking() {
+    use core_browser_extension_host::app_server_process::{stop_child, wait_child};
+    use std::{
+        process::Command,
+        sync::{Arc, Mutex},
+    };
+    let child = Arc::new(Mutex::new(Command::new("/usr/bin/true").spawn().unwrap()));
+    wait_child(child.clone()).unwrap(); // reap before poisoning to avoid a leak
+    let _ = std::panic::catch_unwind({
+        let child = child.clone();
+        move || {
+            let _guard = child.lock().unwrap();
+            panic!("test-only poison");
+        }
+    });
+    for result in [stop_child(Some(child.clone())), wait_child(child)] {
+        let error = result.unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::Other);
+        assert_eq!(error.to_string(), "app-server child mutex poisoned");
+    }
+}

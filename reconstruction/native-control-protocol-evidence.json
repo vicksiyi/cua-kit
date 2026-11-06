@@ -1410,6 +1410,63 @@
     "semantics": "Bare one-component program retains PATH search; other relative program paths resolve against host cwd. Arguments app-server and --analytics-default-enabled. All three stdio streams piped. Optional codexHome resolves relative to host cwd, create_dir_all, child cwd and CODEX_HOME. Other environment inherited.",
     "integrationStatus": "Command construction and raw child spawn tested against an owned fake executable. Process reuse, launch-error decoration, stderr drain, proxy/read threads, stop and manager/dispatcher integration remain incomplete."
   },
+  "childStopAndWait": {
+    "implementation": "native/browser-extension-host/src/app_server_process.rs::{stop_child,wait_child}",
+    "poisonMessage": "app-server child mutex poisoned",
+    "absentChild": [
+      "100021fa4: b40006e0    \tcbz\tx0, 0x100022080 <extension_host::app_server::stop_app_server_child+0xf4>",
+      "100021fa8: aa0003f3    \tmov\tx19, x0"
+    ],
+    "tryWait": [
+      "1000220bc: 910043e8    \tadd\tx8, sp, #0x10",
+      "1000220c0: 91007260    \tadd\tx0, x19, #0x1c",
+      "1000220c4: 9400da37    \tbl\t0x1000589a0 <<std::process::Child>::try_wait>",
+      "1000220c8: b94013e8    \tldr\tw8, [sp, #0x10]",
+      "1000220cc: 7100051f    \tcmp\tw8, #0x1",
+      "1000220d0: 54000061    \tb.ne\t0x1000220dc <extension_host::app_server::stop_app_server_child+0x150>",
+      "1000220d4: f9400ff5    \tldr\tx21, [sp, #0x18]",
+      "1000220d8: 14000004    \tb\t0x1000220e8 <extension_host::app_server::stop_app_server_child+0x15c>",
+      "1000220dc: b94017e8    \tldr\tw8, [sp, #0x14]",
+      "1000220e0: 34000128    \tcbz\tw8, 0x100022104 <extension_host::app_server::stop_app_server_child+0x178>",
+      "1000220e4: d2800015    \tmov\tx21, #0x0               ; =0",
+      "1000220e8: 37000094    \ttbnz\tw20, #0x0, 0x1000220f8 <extension_host::app_server::stop_app_server_child+0x16c>"
+    ],
+    "killAndWait": [
+      "100022104: 91007260    \tadd\tx0, x19, #0x1c",
+      "100022108: 9400d9d4    \tbl\t0x100058858 <<std::process::Child>::kill>",
+      "10002210c: aa0003f5    \tmov\tx21, x0",
+      "100022110: b4000120    \tcbz\tx0, 0x100022134 <extension_host::app_server::stop_app_server_child+0x1a8>",
+      "100022114: aa1503e0    \tmov\tx0, x21",
+      "100022118: 97fff708    \tbl\t0x10001fd38 <<std::io::error::Error>::kind>",
+      "10002211c: 12001c08    \tand\tw8, w0, #0xff",
+      "100022120: 7100511f    \tcmp\tw8, #0x14",
+      "100022124: 54fffe21    \tb.ne\t0x1000220e8 <extension_host::app_server::stop_app_server_child+0x15c>",
+      "100022128: f9000bf5    \tstr\tx21, [sp, #0x10]",
+      "10002212c: 910043e0    \tadd\tx0, sp, #0x10",
+      "100022130: 97ffce3b    \tbl\t0x100015a1c <core::ptr::drop_glue::<std::io::error::Error>>",
+      "100022134: 910043e8    \tadd\tx8, sp, #0x10",
+      "100022138: 91007260    \tadd\tx0, x19, #0x1c",
+      "10002213c: 9400d9da    \tbl\t0x1000588a4 <<std::process::Child>::wait>",
+      "100022140: b94013e8    \tldr\tw8, [sp, #0x10]"
+    ],
+    "errno22KindBranch": "0x10001fe70",
+    "invalidInputDiscriminant": [
+      "10001fe70: 52800280    \tmov\tw0, #0x14               ; =20",
+      "10001fe74: d65f03c0    \tret",
+      "10001fe78: 52800140    \tmov\tw0, #0xa                ; =10"
+    ],
+    "wait": [
+      "100022378: 910043e8    \tadd\tx8, sp, #0x10",
+      "10002237c: 91007260    \tadd\tx0, x19, #0x1c",
+      "100022380: 9400d949    \tbl\t0x1000588a4 <<std::process::Child>::wait>",
+      "100022384: b94013e8    \tldr\tw8, [sp, #0x10]",
+      "100022388: 7100051f    \tcmp\tw8, #0x1",
+      "10002238c: 54000121    \tb.ne\t0x1000223b0 <extension_host::app_server::wait_app_server_child+0x15c>",
+      "100022390: f9400ff5    \tldr\tx21, [sp, #0x18]"
+    ],
+    "semantics": "Option<Arc<Mutex<Child>>> stop: absent succeeds; poisoned lock is an I/O Other error; try_wait error propagates; already exited succeeds; live child kill then wait. Kill InvalidInput (Darwin EINVAL=22 maps to native kind 0x14) is ignored; other kill errors propagate. Wait helper discards exit status and holds child mutex through wait.",
+    "integrationStatus": "Owned-process tests cover live stop/reap, repeated stop, absent child, nonzero exit and poison error. No production manager wiring or full thread shutdown yet."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",
