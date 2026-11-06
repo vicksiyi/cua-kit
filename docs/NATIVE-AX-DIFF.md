@@ -1336,3 +1336,24 @@ HTTP 402 未解决。本轮没有重试这两个已知外部阻塞，也没有�
 准备、滚动条读写算法、完整协议/provider 分派没有用空实现顶替，也未将此函数直接
 接入现有 production 入口。因此本次没有宣称原生滚动或完整 perform 已端到端恢复。
 没有启动原服务、调用模型或执行用户界面操作。
+
+## 滚动条翻页执行控制流（2026-11-07）
+
+完整静态检查 scrollUsingScrollBar(direction:) 0x1007287d0..<0x10072897c
+及方向选择函数 0x10072897c..<0x1007289b0，确认本路径不计算或写入滚动条数值：
+上下获取 verticalScrollBar，左右获取 horizontalScrollBar；上/左获取 decrementPageButton，
+下/右获取 incrementPageButton。任一对象缺失返回 false，存在按钮时读取可变 .press
+动作常量并通过按钮 perform witness 执行，正常返回 true，错误原样传播。
+
+恢复 UIElementScrollUsingScrollBar.swift，使用泛型 getter/perform 边界保留原类型
+尚未接线的部分。组合测试直接调用已恢复的动作分发尾部，覆盖 4 个方向 × 滚动条
+存在/缺失 × 按钮存在/缺失 × 执行成功/抛错，共 32 组；断言只读取对应轴和按钮、
+仅缺失时 AX 回退、按按钮抛错不重复回退，并验证 .press 常量修改后的行为。
+系统动作错误策略、分发和滚动条组合共 3 项测试通过。
+
+垂直/水平 getter 已追踪到 0x100728690 调用 value<ScrollBarUIElement>(for:,
+ignoringTypeMismatch:false)。增页按钮 getter 从 AXChildren 开始，但其完整子节点筛选
+和减页按钮 getter 尚未恢复。这里没有将任意 children 首项当作翻页按钮，也未以
+直接改 AXValue 或坐标滚轮代替原路径。生产接入仍需具体 ScrollBarUIElement、完整
+value 解码/按钮发现、菜单祖先准备及协议/provider；真实 UI 滚动效果尚未验收。
+本轮未调用模型或执行 UI 操作。

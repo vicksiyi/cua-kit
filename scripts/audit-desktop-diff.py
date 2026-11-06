@@ -976,7 +976,19 @@ element_storage_evidence['actionDispatchTail']={
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x100728f34,0x1007290bc),(0x100791d78,0x100791f24)]],
     'implementation':'native/macos/Sources/CuaHelper/UIElementActionDispatch.swift',
-    'limitations':'Restored post-menu dispatch with injected execution boundaries only. Original menu ancestry preparation, scroll-bar algorithm, protocol/provider wiring and production entry point remain pending; this function does not replace the complete perform method.',
+    'limitations':'Restored post-menu dispatch with injected execution boundaries only. Original menu ancestry preparation, concrete scrollbar/page-button getters, protocol/provider wiring and production entry point remain pending; this function does not replace the complete perform method.',
+}
+element_storage_evidence['scrollUsingScrollBar']={
+    'entry':'0x1007287d0',
+    'axis':'0x10072897c..0x1007289b0: up/down -> verticalScrollBar, left/right -> horizontalScrollBar',
+    'button':'0x100728810..0x100728858: up/left -> decrementPageButton, down/right -> incrementPageButton',
+    'missing':'nil scrollbar returns false at 0x1007287fc; nil button returns false via 0x10072891c..0x100728954',
+    'execution':'0x10072889c reads mutable press constant; 0x1007288dc calls button perform witness +0x60; error register is preserved, otherwise true',
+    'getters':'vertical/horizontal getters call value<ScrollBarUIElement>(for:ignoringTypeMismatch:false) via 0x100728690; page-button getter implementation remains separate work',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x100728658,0x10072870c),(0x1007287d0,0x1007289b0)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift',
+    'limitations':'Control flow restored with injected typed getter/perform boundaries and tested in composition with action dispatch. Concrete ScrollBarUIElement construction, page-button discovery, full protocol wiring and live UI acceptance remain pending.',
 }
 element_storage_evidence['toggleDisclosure']={
     'dispatch':'0x100791e0c: both expand and collapse call UIElementProtocol.toggleDisclosure',
