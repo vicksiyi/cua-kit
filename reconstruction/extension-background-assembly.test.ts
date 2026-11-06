@@ -30,7 +30,7 @@ test("full background factory binds real control, storage, scope and runtime ser
       onInstalled: event("installed"),
       onStartup: event("startup"),
     },
-    tabs: { query: async () => [] },
+    tabs: { query: async () => [{ id: 17, windowId: 3, active: true }] },
     webNavigation: { onCompleted: event("completed") },
     action: {
       setBadgeText: async (value: unknown) => {
@@ -139,8 +139,9 @@ test("full background factory binds real control, storage, scope and runtime ser
   assert.equal(listeners.installed.length, 0);
   assert.equal(listeners.startup.length, 0);
   assert.equal(listeners.completed.length, 0);
-  await assembled.startup.initializeTelemetry();
-  assert.equal(initialized, 1);
+  await assembled.startup.initializeObservedTabs();
+  assert.equal(assembled.foundation.observedTabs.isObserved(17), true);
+  assert.equal(initialized, 0, "observed tab initialization is not telemetry");
   active.dispose();
   assert.throws(
     () => control.displayValue("late"),

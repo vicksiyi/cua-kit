@@ -217,7 +217,7 @@ export function createExtensionBackground<Pdf>(
         },
         config as Parameters<Foundation["registerExtensionLifecycle"]>[1],
       ),
-    initializeTelemetry: options.telemetry.initialize,
+    initializeObservedTabs: () => foundation.observedTabs.initialize(),
     registerHeartbeat: (...pings) =>
       foundation.registerClientHeartbeat(
         {
@@ -234,6 +234,9 @@ export function createExtensionBackground<Pdf>(
     foundation,
     features,
     startup,
-    start: () => startExtensionBackground(startup),
+    start: async () => {
+      await options.telemetry.initialize();
+      return startExtensionBackground(startup);
+    },
   };
 }

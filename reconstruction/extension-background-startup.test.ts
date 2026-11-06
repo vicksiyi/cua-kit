@@ -195,7 +195,7 @@ async function run(restored: boolean, mode: string) {
         options.sidePanelEnabled,
         options.browserPluginInstallation === installation,
       ]),
-    initializeTelemetry: async () => {
+    initializeObservedTabs: async () => {
       trace.push(["telemetry"]);
       if (mode === "telemetry-error") throw Error("telemetry");
     },
@@ -296,7 +296,7 @@ async function run(restored: boolean, mode: string) {
       Yp: filterCdpEvent,
       Be: host.initializeInstanceId,
       Hk: host.registerLifecycle,
-      hi: { initialize: host.initializeTelemetry },
+      hi: { initialize: host.initializeObservedTabs },
       Gk: host.registerHeartbeat,
     }).dR();
   try {

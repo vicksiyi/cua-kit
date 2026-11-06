@@ -129,7 +129,7 @@ export interface BackgroundStartupHost {
     sidePanelEnabled: boolean;
     browserPluginInstallation: Installation;
   }): unknown;
-  initializeTelemetry(): Promise<unknown>;
+  initializeObservedTabs(): Promise<unknown>;
   registerHeartbeat(...pings: (() => Promise<unknown>)[]): Promise<unknown>;
   reportError(error: unknown, stage: string): void;
   console: Pick<Console, "warn" | "error">;
@@ -252,7 +252,7 @@ export async function startExtensionBackground(
     sidePanelEnabled,
     browserPluginInstallation: installation,
   });
-  await host.initializeTelemetry();
+  await host.initializeObservedTabs();
   await host.registerHeartbeat(
     () => peer.ping(),
     () =>

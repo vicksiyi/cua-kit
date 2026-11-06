@@ -53,6 +53,8 @@ export async function startNativeBrowserBackground(
       );
     });
   foundation.registerExtensionUpdates();
+  // Original dR initializes hi (observed tabs) before the heartbeat.
+  await foundation.observedTabs.initialize();
   await foundation.registerClientHeartbeat(options.diagnostics, () =>
     peer.ping(),
   );

@@ -306,12 +306,55 @@ for (const deployment of ["native", "full"] as const)
           assert.equal(captured.title, "Core native page");
           assert.match(captured.text, /native-roundtrip-marker/);
           assert.equal(captured.truncated, false);
+          // A claimed user tab retains its original group; only agent-created
+          // tabs are grouped by the original BrowserSession contract.
+          const priorGroup = await worker.evaluate((id) => chrome.tabs.get(id).then(t => t.groupId), Number(tab.id));
+          await peer.sendRequest("claimUserTab", {
+            session_id: "native-live", turn_id: "read-1", tabId: Number(tab.id),
+          });
+          assert.equal(await worker.evaluate((id) => chrome.tabs.get(id).then(t => t.groupId), Number(tab.id)), priorGroup);
+          await page.bringToFront();
+          await peer.sendRequest("moveMouse", {
+            session_id: "native-live", turn_id: "read-1", tabId: Number(tab.id),
+            x: 140, y: 100, waitForArrival: false,
+          });
+          // Read the extension's isolated world and closed overlay shadow root.
+          // No debug endpoint or test hook is added to the shipped extension.
+          let cursorVisible = false;
+          for (let attempt = 0; attempt < 50; attempt++) {
+            const [observation] = await worker.evaluate(`chrome.scripting.executeScript({
+              target: { tabId: ${Number(tab.id)} }, func: async () => {
+                const state = await chrome.runtime.sendMessage({type: "GET_AGENT_CURSOR_STATE"});
+                const root = document.getElementById("codex-agent-overlay-root");
+                const shadow = root && chrome.dom.openOrClosedShadowRoot(root);
+                const image = shadow && shadow.querySelector("[data-browser-agent-cursor-asset]");
+                const box = image && image.getBoundingClientRect();
+                return {state, loaded: !!image && image.complete && image.naturalWidth > 0,
+                  rendered: !!box && box.width > 0 && box.height > 0};
+              }
+            })`);
+            cursorVisible = observation.result?.state?.state?.isVisible === true &&
+              observation.result?.state?.state?.cursor?.visible === true &&
+              observation.result.loaded && observation.result.rendered;
+            if (cursorVisible) break;
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          assert(cursorVisible, "Active tab must expose a visible cursor state and loaded rendered image");
+          await peer.sendRequest("nameSession", {
+            session_id: "native-live", turn_id: "read-1", name: "Core visual acceptance",
+          });
           const created = await peer.sendRequest("createTab", {
             session_id: "native-live",
             turn_id: "read-1",
           });
           assert.ok(Number.isInteger(created.id));
           assert.notEqual(created.id, tab.id);
+          const group = await worker.evaluate(async (id) => {
+            const current = await chrome.tabs.get(id);
+            return current.groupId >= 0 ? chrome.tabGroups.get(current.groupId) : null;
+          }, created.id);
+          assert.equal(group?.title, "Core visual acceptance", "Agent-created tab must have its named Chrome group");
+
           await peer.sendRequest("turnEnded", {
             session_id: "native-live",
             turn_id: "read-1",
