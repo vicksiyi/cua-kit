@@ -1,0 +1,501 @@
+{
+  "artifact": "@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService",
+  "sha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "evidenceKind": "exported Swift symbols, not recovered implementation bodies",
+  "commands": [
+    "nm -g <artifact>",
+    "xcrun swift-demangle"
+  ],
+  "limitations": [
+    "No native service executed and no macOS UI observed.",
+    "Symbol types establish native Swift ownership and API boundaries only.",
+    "No claim about diff algorithm, element identity stability, line budget values or exact output formatting."
+  ],
+  "symbols": [
+    {
+      "address": "000000010006ef5c",
+      "mangled": "_$s11ComputerUse0aB13AppControllerC13updateSkyshot9treeCache16disableAXDiffing14skipScreenshotAC0F7CaptureV20AccessibilitySupport20TransformedUIElementV04TreeH0VSg_S2btYaKF",
+      "signature": "ComputerUse.ComputerUseAppController.updateSkyshot(treeCache: AccessibilitySupport.TransformedUIElement.TreeCache?, disableAXDiffing: Swift.Bool, skipScreenshot: Swift.Bool) async throws -> ComputerUse.ComputerUseAppController.SkyshotCapture"
+    },
+    {
+      "address": "00000001000735b8",
+      "mangled": "_$s11ComputerUse0aB13AppControllerC15positionElement_27cursorNextInteractionTiming6axTree13animateCursorSb20AccessibilitySupport17UIElementProtocol_p_AA0abN0C0nhiJ0OSgAA24RefetchableSkyshotAXTreeCSbtYaKF",
+      "signature": "ComputerUse.ComputerUseAppController.positionElement(_: AccessibilitySupport.UIElementProtocol, cursorNextInteractionTiming: ComputerUse.ComputerUseCursor.CursorNextInteractionTiming?, axTree: ComputerUse.RefetchableSkyshotAXTree, animateCursor: Swift.Bool) async throws -> Swift.Bool"
+    },
+    {
+      "address": "000000010006c728",
+      "mangled": "_$s11ComputerUse0aB13AppControllerC17applicationTarget6chatID22isAXTreeDiffingEnabledAC14SystemSoftware011ApplicationF0V_SSSgSbtKcfC",
+      "signature": "ComputerUse.ComputerUseAppController.__allocating_init(applicationTarget: SystemSoftware.ApplicationTarget, chatID: Swift.String?, isAXTreeDiffingEnabled: Swift.Bool) throws -> ComputerUse.ComputerUseAppController"
+    },
+    {
+      "address": "0000000100072e44",
+      "mangled": "_$s11ComputerUse0aB13AppControllerC17prepareToInteract4with27cursorNextInteractionTiming15positionElement13animateCursorAA24RefetchableSkyshotAXTreeC_20AccessibilitySupport17UIElementProtocol_ptSi_AA0abP0C0pjkL0OSgS2btYaKF",
+      "signature": "ComputerUse.ComputerUseAppController.prepareToInteract(with: Swift.Int, cursorNextInteractionTiming: ComputerUse.ComputerUseCursor.CursorNextInteractionTiming?, positionElement: Swift.Bool, animateCursor: Swift.Bool) async throws -> (ComputerUse.RefetchableSkyshotAXTree, AccessibilitySupport.UIElementProtocol)"
+    },
+    {
+      "address": "000000010006c618",
+      "mangled": "_$s11ComputerUse0aB13AppControllerC22isAXTreeDiffingEnabledSbvg",
+      "signature": "ComputerUse.ComputerUseAppController.isAXTreeDiffingEnabled.getter : Swift.Bool"
+    },
+    {
+      "address": "0000000100071b74",
+      "mangled": "_$s11ComputerUse0aB13AppControllerC29updateSkyshotSettlingIfNeeded16disableAXDiffingAC0F7CaptureVSb_tYaKF",
+      "signature": "ComputerUse.ComputerUseAppController.updateSkyshotSettlingIfNeeded(disableAXDiffing: Swift.Bool) async throws -> ComputerUse.ComputerUseAppController.SkyshotCapture"
+    },
+    {
+      "address": "00000001000b4254",
+      "mangled": "_$s11ComputerUse0aB17SkyshotAttachmentV29accessibilityInspectorPayload0aB4Core019UIElementRenderTreefG0VSgvg",
+      "signature": "ComputerUse.ComputerUseSkyshotAttachment.accessibilityInspectorPayload.getter : ComputerUseCore.UIElementRenderTreeInspectorPayload?"
+    },
+    {
+      "address": "00000001000b4298",
+      "mangled": "_$s11ComputerUse0aB17SkyshotAttachmentV4text10screenshot0F16NeededForContext29accessibilityInspectorPayloadACSS_8SlimCore14ScreenshotFileVSgSb0abN0019UIElementRenderTreekL0VSgtcfC",
+      "signature": "ComputerUse.ComputerUseSkyshotAttachment.init(text: Swift.String, screenshot: SlimCore.ScreenshotFile?, screenshotNeededForContext: Swift.Bool, accessibilityInspectorPayload: ComputerUseCore.UIElementRenderTreeInspectorPayload?) -> ComputerUse.ComputerUseSkyshotAttachment"
+    },
+    {
+      "address": "000000010023285c",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV10signposter7context0F4Type17axTreeRootElement26overrideScreenshotWindowID010additionalmN3IDs18screenshotEncoding0R14ShouldBeOpaque0r8IncludesN6Shadow15enableAXDiffingAC2os12OSSignposterV_20AccessibilitySupport23FocusedUIElementContextV0aB4Core016UIElementContextG0OAQ17UIElementProtocol_pSgs6UInt32VSgSayAZG8SlimCore0mS0OS3btcfC",
+      "signature": "ComputerUse.SkyshotOperation.init(signposter: os.OSSignposter, context: AccessibilitySupport.FocusedUIElementContext, contextType: ComputerUseCore.UIElementContextType, axTreeRootElement: AccessibilitySupport.UIElementProtocol?, overrideScreenshotWindowID: Swift.UInt32?, additionalScreenshotWindowIDs: [Swift.UInt32], screenshotEncoding: SlimCore.ScreenshotEncoding, screenshotShouldBeOpaque: Swift.Bool, screenshotIncludesWindowShadow: Swift.Bool, enableAXDiffing: Swift.Bool) -> ComputerUse.SkyshotOperation"
+    },
+    {
+      "address": "0000000100233ac0",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV13captureAXTree9treeCache14continuingFrom30performAccessibilityEnablementAA15SystemSelectionV0L7Support20TransformedUIElementV04TreeH0VSg_0aB4Core0rS8RevisionCyALGSgSbtYaKF",
+      "signature": "ComputerUse.SkyshotOperation.captureAXTree(treeCache: AccessibilitySupport.TransformedUIElement.TreeCache?, continuingFrom: ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>?, performAccessibilityEnablement: Swift.Bool) async throws -> ComputerUse.SystemSelection"
+    },
+    {
+      "address": "0000000100234c9c",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV17captureScreenshot9imageSizeSo10CGImageRefaSo6CGSizeVSg_tYaKF",
+      "signature": "ComputerUse.SkyshotOperation.captureScreenshot(imageSize: __C.CGSize?) async throws -> __C.CGImageRef"
+    },
+    {
+      "address": "00000001002338ec",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7CaptureV10attachmentAA0abC10AttachmentVyKF",
+      "signature": "ComputerUse.SkyshotOperation.Capture.attachment() throws -> ComputerUse.ComputerUseSkyshotAttachment"
+    },
+    {
+      "address": "00000001002351f8",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7CaptureV10screenshotSo10CGImageRefaSgvg",
+      "signature": "ComputerUse.SkyshotOperation.Capture.screenshot.getter : __C.CGImageRef?"
+    },
+    {
+      "address": "000000010023522c",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7CaptureV14screenshotFile8SlimCore010ScreenshotG0VSgvg",
+      "signature": "ComputerUse.SkyshotOperation.Capture.screenshotFile.getter : SlimCore.ScreenshotFile?"
+    },
+    {
+      "address": "0000000100235270",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7CaptureV3url10Foundation3URLVSgvg",
+      "signature": "ComputerUse.SkyshotOperation.Capture.url.getter : Foundation.URL?"
+    },
+    {
+      "address": "00000001002351bc",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7CaptureV6axTreeAA15SystemSelectionVvg",
+      "signature": "ComputerUse.SkyshotOperation.Capture.axTree.getter : ComputerUse.SystemSelection"
+    },
+    {
+      "address": "0000000100235160",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7CaptureV7context20AccessibilitySupport23FocusedUIElementContextVvg",
+      "signature": "ComputerUse.SkyshotOperation.Capture.context.getter : AccessibilitySupport.FocusedUIElementContext"
+    },
+    {
+      "address": "0000000100232998",
+      "mangled": "_$s11ComputerUse16SkyshotOperationV7capture9treeCache9imageSize17includeScreenshot14continuingFrom30performAccessibilityEnablementAC7CaptureV0O7Support20TransformedUIElementV04TreeG0VSg_So6CGSizeVSgSb0aB4Core0tU8RevisionCyANGSgSbtYaKF",
+      "signature": "ComputerUse.SkyshotOperation.capture(treeCache: AccessibilitySupport.TransformedUIElement.TreeCache?, imageSize: __C.CGSize?, includeScreenshot: Swift.Bool, continuingFrom: ComputerUseCore.UIElementTreeRevision<AccessibilitySupport.TransformedUIElement>?, performAccessibilityEnablement: Swift.Bool) async throws -> ComputerUse.SkyshotOperation.Capture"
+    },
+    {
+      "address": "000000010022e504",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC02isE14DiffingEnabledSbvg",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.isAXTreeDiffingEnabled.getter : Swift.Bool"
+    },
+    {
+      "address": "00000001002305ec",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC11refetchTreeAA15SystemSelectionVyKF",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.refetchTree() throws -> ComputerUse.SystemSelection"
+    },
+    {
+      "address": "000000010022e39c",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC15systemSelection02isE14DiffingEnabledAcA06SystemG0V_SbtKcfC",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.__allocating_init(systemSelection: ComputerUse.SystemSelection, isAXTreeDiffingEnabled: Swift.Bool) throws -> ComputerUse.RefetchableSkyshotAXTree"
+    },
+    {
+      "address": "000000010022e5e4",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC15systemSelection02isE14DiffingEnabledAcA06SystemG0V_SbtKcfc",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.init(systemSelection: ComputerUse.SystemSelection, isAXTreeDiffingEnabled: Swift.Bool) throws -> ComputerUse.RefetchableSkyshotAXTree"
+    },
+    {
+      "address": "000000010022e4c4",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC15systemSelectionAA06SystemG0VvM",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.systemSelection.modify : ComputerUse.SystemSelection"
+    },
+    {
+      "address": "000000010022e40c",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC15systemSelectionAA06SystemG0Vvg",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.systemSelection.getter : ComputerUse.SystemSelection"
+    },
+    {
+      "address": "000000010022e468",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC15systemSelectionAA06SystemG0Vvs",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.systemSelection.setter : ComputerUse.SystemSelection"
+    },
+    {
+      "address": "000000010022e5a0",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC17applicationWindow20AccessibilitySupport011ApplicationG0Cvg",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.applicationWindow.getter : AccessibilitySupport.ApplicationWindow"
+    },
+    {
+      "address": "000000010022e514",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC19invalidationMonitor20AccessibilitySupport025UIElementTreeInvalidationG0Cvg",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.invalidationMonitor.getter : AccessibilitySupport.UIElementTreeInvalidationMonitor"
+    },
+    {
+      "address": "000000010022e910",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC22refetchElementIfNeeded_08validateG017ignoreValueChangeAA0C9UIElementC20AccessibilitySupport0N8Protocol_p_S2btKF",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.refetchElementIfNeeded(_: AccessibilitySupport.UIElementProtocol, validateElement: Swift.Bool, ignoreValueChange: Swift.Bool) throws -> ComputerUse.RefetchableUIElement"
+    },
+    {
+      "address": "000000010022e6b4",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeC22refetchElementIfNeeded_08validateG0AA0C9UIElementCSi_SbtKF",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.refetchElementIfNeeded(_: Swift.Int, validateElement: Swift.Bool) throws -> ComputerUse.RefetchableUIElement"
+    },
+    {
+      "address": "00000001002312c4",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeCfD",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.__deallocating_deinit"
+    },
+    {
+      "address": "0000000100231298",
+      "mangled": "_$s11ComputerUse24RefetchableSkyshotAXTreeCfd",
+      "signature": "ComputerUse.RefetchableSkyshotAXTree.deinit"
+    },
+    {
+      "address": "000000010063dc28",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV13setElementIDsyyF",
+      "signature": "ComputerUseCore.UIElementRenderTree.setElementIDs() -> ()"
+    },
+    {
+      "address": "000000010063e25c",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV16selectionSubtreeACyxGSgyF",
+      "signature": "ComputerUseCore.UIElementRenderTree.selectionSubtree() -> ComputerUseCore.UIElementRenderTree<A>?"
+    },
+    {
+      "address": "000000010063dba0",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV19depthFirstTraversals16IteratorSequenceVyAA0d5DepthhJ0VyAA0dE0CyxGGGyF",
+      "signature": "ComputerUseCore.UIElementRenderTree.depthFirstTraversal() -> Swift.IteratorSequence<ComputerUseCore.UIElementDepthFirstIterator<ComputerUseCore.UIElementRender<A>>>"
+    },
+    {
+      "address": "00000001000100ec",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV30NextAvailableElementIDIteratorV03maxI2ID031_703D179171D519C1460E2C957AB638P0LLSiSgvpfi",
+      "signature": "variable initialization expression of ComputerUseCore.UIElementRenderTree.NextAvailableElementIDIterator.(maxElementID in _703D179171D519C1460E2C957AB638E2) : Swift.Int?"
+    },
+    {
+      "address": "000000010063ebbc",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV30NextAvailableElementIDIteratorV4nextSiyF",
+      "signature": "ComputerUseCore.UIElementRenderTree.NextAvailableElementIDIterator.next() -> Swift.Int"
+    },
+    {
+      "address": "000000010063deb4",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV30nextAvailableElementIDIteratorAC04NexthiJ0Vyx_GyF",
+      "signature": "ComputerUseCore.UIElementRenderTree.nextAvailableElementIDIterator() -> ComputerUseCore.UIElementRenderTree<A>.NextAvailableElementIDIterator"
+    },
+    {
+      "address": "000000010063deec",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV5lines6indent7optionsSaySSGSJ_AA0dE11LineOptionsVtF",
+      "signature": "ComputerUseCore.UIElementRenderTree.lines(indent: Swift.Character, options: ComputerUseCore.UIElementRenderLineOptions) -> [Swift.String]"
+    },
+    {
+      "address": "000000010025f8f0",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV5rootsSayAA0dE0CyxGGvg",
+      "signature": "ComputerUseCore.UIElementRenderTree.roots.getter : [ComputerUseCore.UIElementRender<A>]"
+    },
+    {
+      "address": "00000001000e6d20",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV7isFocus5rootsACyxGSb_SayAA0dE0CyxGGtcfC",
+      "signature": "ComputerUseCore.UIElementRenderTree.init(isFocus: Swift.Bool, roots: [ComputerUseCore.UIElementRender<A>]) -> ComputerUseCore.UIElementRenderTree<A>"
+    },
+    {
+      "address": "00000001000e6d20",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV7isFocusSbvg",
+      "signature": "ComputerUseCore.UIElementRenderTree.isFocus.getter : Swift.Bool"
+    },
+    {
+      "address": "0000000100641478",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeV8snapshot9subjectIDAA0deF8SnapshotVSS_tAA0defJ5ErrorVYKF",
+      "signature": "ComputerUseCore.UIElementRenderTree.snapshot(subjectID: Swift.String) throws(ComputerUseCore.UIElementRenderTreeSnapshotError) -> ComputerUseCore.UIElementRenderTreeSnapshot"
+    },
+    {
+      "address": "0000000100642a5c",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeVAASiRszrlE5parse4line6indentSi2id_Si5depthSS4texttqd___SJtAA0deF9LineErrorOYKSyRd__lFZ",
+      "signature": "static (extension in ComputerUseCore):ComputerUseCore.UIElementRenderTree< where A == Swift.Int>.parse<A where A1: Swift.StringProtocol>(line: A1, indent: Swift.Character) throws(ComputerUseCore.UIElementRenderTreeLineError) -> (id: Swift.Int, depth: Swift.Int, text: Swift.String)"
+    },
+    {
+      "address": "00000001006430e8",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeVAASiRszrlE7isFocus6indent4textACySiGSb_SJSStAA0deF9LineErrorOYKcfC",
+      "signature": "(extension in ComputerUseCore):ComputerUseCore.UIElementRenderTree< where A == Swift.Int>.init(isFocus: Swift.Bool, indent: Swift.Character, text: Swift.String) throws(ComputerUseCore.UIElementRenderTreeLineError) -> ComputerUseCore.UIElementRenderTree<Swift.Int>"
+    },
+    {
+      "address": "0000000100643750",
+      "mangled": "_$s15ComputerUseCore19UIElementRenderTreeVAASiRszrlE7isFocus6indent5linesACySiGSb_SJqd__tAA0deF9LineErrorOYKcSTRd__Sy7ElementRpd__lufC",
+      "signature": "(extension in ComputerUseCore):ComputerUseCore.UIElementRenderTree< where A == Swift.Int>.init<A where A1: Swift.Sequence, A1.Element: Swift.StringProtocol>(isFocus: Swift.Bool, indent: Swift.Character, lines: A1) throws(ComputerUseCore.UIElementRenderTreeLineError) -> ComputerUseCore.UIElementRenderTree<Swift.Int>"
+    },
+    {
+      "address": "00000001006549cc",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC011focusRenderE0AA0dhE0Vy2IDQzGSgvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.focusRenderTree.getter : ComputerUseCore.UIElementRenderTree<A.ID>?"
+    },
+    {
+      "address": "0000000100656248",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC011focusRenderE8SnapshotAA0dheI0VSgyKF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.focusRenderTreeSnapshot() throws -> ComputerUseCore.UIElementRenderTreeSnapshot?"
+    },
+    {
+      "address": "000000010064986c",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC011lineageRootF0ACyxGvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.lineageRootRevision.getter : ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "0000000100654974",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC05focusE0AA0dE0VyxGSgvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.focusTree.getter : ComputerUseCore.UIElementTree<A>?"
+    },
+    {
+      "address": "0000000100654938",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC06renderE0AA0d6RenderE0Vy2IDQzGvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.renderTree.getter : ComputerUseCore.UIElementRenderTree<A.ID>"
+    },
+    {
+      "address": "00000001006498f4",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC06renderE16InspectorPayloadAA0d6RenderehI0VSgyF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.renderTreeInspectorPayload() -> ComputerUseCore.UIElementRenderTreeInspectorPayload?"
+    },
+    {
+      "address": "0000000100654804",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC06renderE8SnapshotAA0d6RendereH0VyKF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.renderTreeSnapshot() throws -> ComputerUseCore.UIElementRenderTreeSnapshot"
+    },
+    {
+      "address": "0000000100654a6c",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC08previousF0ACyxGSgvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.previousRevision.getter : ComputerUseCore.UIElementTreeRevision<A>?"
+    },
+    {
+      "address": "0000000100629630",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC15differenceLines4from7options27summarizesRemovedElementIDs26ignoreDifferenceLineBudget02onqR8ExceededSaySSGSgACyxG_AA0d6RenderQ7OptionsVS2byAA013AccessibilitypqrT0OXEtF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.differenceLines(from: ComputerUseCore.UIElementTreeRevision<A>, options: ComputerUseCore.UIElementRenderLineOptions, summarizesRemovedElementIDs: Swift.Bool, ignoreDifferenceLineBudget: Swift.Bool, onLineBudgetExceeded: (ComputerUseCore.AccessibilityDifferenceLineBudgetExceeded) -> ()) -> [Swift.String]?"
+    },
+    {
+      "address": "000000010076b838",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC20AccessibilitySupportAD17LMReadableElementRzAD0D8ProtocolRzrlE4root_05focusE07contextACyxGAA0dE0VyxG_AMSgAD0D21TransformationContextVztKFZ",
+      "signature": "static (extension in AccessibilitySupport):ComputerUseCore.UIElementTreeRevision< where A: AccessibilitySupport.LMReadableElement, A: AccessibilitySupport.UIElementProtocol>.root(_: ComputerUseCore.UIElementTree<A>, focusTree: ComputerUseCore.UIElementTree<A>?, context: inout AccessibilitySupport.UIElementTransformationContext) throws -> ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "000000010076ba54",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC20AccessibilitySupportAD17LMReadableElementRzAD0D8ProtocolRzrlE4root_7contextACyxGAA0dE0VyxG_AD0D21TransformationContextVztKFZ",
+      "signature": "static (extension in AccessibilitySupport):ComputerUseCore.UIElementTreeRevision< where A: AccessibilitySupport.LMReadableElement, A: AccessibilitySupport.UIElementProtocol>.root(_: ComputerUseCore.UIElementTree<A>, context: inout AccessibilitySupport.UIElementTransformationContext) throws -> ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "000000010076b6f4",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC20AccessibilitySupportAD17LMReadableElementRzAD0D8ProtocolRzrlE9appending4tree05focusE07contextACyxGAA0dE0VyxG_ANSgAD0D21TransformationContextVztKF",
+      "signature": "(extension in AccessibilitySupport):ComputerUseCore.UIElementTreeRevision< where A: AccessibilitySupport.LMReadableElement, A: AccessibilitySupport.UIElementProtocol>.appending(tree: ComputerUseCore.UIElementTree<A>, focusTree: ComputerUseCore.UIElementTree<A>?, context: inout AccessibilitySupport.UIElementTransformationContext) throws -> ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "000000010076b72c",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC20AccessibilitySupportAD17LMReadableElementRzAD0D8ProtocolRzrlE9appending4tree7contextACyxGAA0dE0VyxG_AD0D21TransformationContextVztKF",
+      "signature": "(extension in AccessibilitySupport):ComputerUseCore.UIElementTreeRevision< where A: AccessibilitySupport.LMReadableElement, A: AccessibilitySupport.UIElementProtocol>.appending(tree: ComputerUseCore.UIElementTree<A>, context: inout AccessibilitySupport.UIElementTransformationContext) throws -> ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "00000001006567c0",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC22MissingSourcePathErrorV11descriptionSSvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.MissingSourcePathError.description.getter : Swift.String"
+    },
+    {
+      "address": "0000000100654a04",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC3idsAA0dE5TableVy2IDQzSiGvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.ids.getter : ComputerUseCore.UIElementTreeTable<A.ID, Swift.Int>"
+    },
+    {
+      "address": "00000001006557a4",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC4item3forAA0dE0V4ItemVyx_GSgSi_tF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.item(for: Swift.Int) -> ComputerUseCore.UIElementTree<A>.Item?"
+    },
+    {
+      "address": "00000001006564b4",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC4root_05focusE09lineageID6renderACyxGAA0dE0VyxG_AKSgSSAA0d6RenderE0Vy0J0QzGAKKXEtKFZ",
+      "signature": "static ComputerUseCore.UIElementTreeRevision.root(_: ComputerUseCore.UIElementTree<A>, focusTree: ComputerUseCore.UIElementTree<A>?, lineageID: Swift.String, render: (ComputerUseCore.UIElementTree<A>) throws -> ComputerUseCore.UIElementRenderTree<A.ID>) throws -> ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "00000001006548ec",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC4treeAA0dE0VyxGvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.tree.getter : ComputerUseCore.UIElementTree<A>"
+    },
+    {
+      "address": "0000000100654a5c",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC7changesSayAA0D16RenderDifferenceV6ChangeOy2IDQz_GGvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.changes.getter : [ComputerUseCore.UIElementRenderDifference<A.ID>.Change]"
+    },
+    {
+      "address": "0000000100655c48",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC7element3forxSgSi_tF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.element(for: Swift.Int) -> A?"
+    },
+    {
+      "address": "0000000100655d5c",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC9appending4tree05focusE06renderACyxGAA0dE0VyxG_AKSgAA0d6RenderE0Vy2IDQzGAKKXEtKF",
+      "signature": "ComputerUseCore.UIElementTreeRevision.appending(tree: ComputerUseCore.UIElementTree<A>, focusTree: ComputerUseCore.UIElementTree<A>?, render: (ComputerUseCore.UIElementTree<A>) throws -> ComputerUseCore.UIElementRenderTree<A.ID>) throws -> ComputerUseCore.UIElementTreeRevision<A>"
+    },
+    {
+      "address": "0000000100049dc0",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionC9lineageIDSSvg",
+      "signature": "ComputerUseCore.UIElementTreeRevision.lineageID.getter : Swift.String"
+    },
+    {
+      "address": "0000000100656490",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionCfD",
+      "signature": "ComputerUseCore.UIElementTreeRevision.__deallocating_deinit"
+    },
+    {
+      "address": "000000010065634c",
+      "mangled": "_$s15ComputerUseCore21UIElementTreeRevisionCfd",
+      "signature": "ComputerUseCore.UIElementTreeRevision.deinit"
+    },
+    {
+      "address": "000000010063cc64",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV06renderF0AA0deF0VySiGyF",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.renderTree() -> ComputerUseCore.UIElementRenderTree<Swift.Int>"
+    },
+    {
+      "address": "00000001001eb374",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V10detailTextSSSgvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.detailText.getter : Swift.String?"
+    },
+    {
+      "address": "0000000100641f48",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V11parentIndexSiSgvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.parentIndex.getter : Swift.Int?"
+    },
+    {
+      "address": "0000000100642054",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V23__derived_struct_equalsySbAE_AEtFZ",
+      "signature": "static ComputerUseCore.UIElementRenderTreeSnapshot.Render.__derived_struct_equals(ComputerUseCore.UIElementRenderTreeSnapshot.Render, ComputerUseCore.UIElementRenderTreeSnapshot.Render) -> Swift.Bool"
+    },
+    {
+      "address": "00000001000e70b8",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V2idSivg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.id.getter : Swift.Int"
+    },
+    {
+      "address": "0000000100642328",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V4fromAEs7Decoder_p_tKcfC",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.init(from: Swift.Decoder) throws -> ComputerUseCore.UIElementRenderTreeSnapshot.Render"
+    },
+    {
+      "address": "00000001006421c8",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V4hash4intoys6HasherVz_tF",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.hash(into: inout Swift.Hasher) -> ()"
+    },
+    {
+      "address": "00000001001eb348",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V4textSSvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.text.getter : Swift.String"
+    },
+    {
+      "address": "0000000100642058",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V6encode2toys7Encoder_p_tKF",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.encode(to: Swift.Encoder) throws -> ()"
+    },
+    {
+      "address": "0000000100642260",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV0E0V9hashValueSivg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.Render.hashValue.getter : Swift.Int"
+    },
+    {
+      "address": "0000000100641a14",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV23__derived_struct_equalsySbAC_ACtFZ",
+      "signature": "static ComputerUseCore.UIElementRenderTreeSnapshot.__derived_struct_equals(ComputerUseCore.UIElementRenderTreeSnapshot, ComputerUseCore.UIElementRenderTreeSnapshot) -> Swift.Bool"
+    },
+    {
+      "address": "0000000100641d10",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV4fromACs7Decoder_p_tKcfC",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.init(from: Swift.Decoder) throws -> ComputerUseCore.UIElementRenderTreeSnapshot"
+    },
+    {
+      "address": "0000000100641c58",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV4hash4intoys6HasherVz_tF",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.hash(into: inout Swift.Hasher) -> ()"
+    },
+    {
+      "address": "0000000100641a8c",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV6encode2toys7Encoder_p_tKF",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.encode(to: Swift.Encoder) throws -> ()"
+    },
+    {
+      "address": "0000000100064ad0",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV7isFocusSbvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.isFocus.getter : Swift.Bool"
+    },
+    {
+      "address": "0000000100641920",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV7rendersSayAC0E0VGvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.renders.getter : [ComputerUseCore.UIElementRenderTreeSnapshot.Render]"
+    },
+    {
+      "address": "0000000100641c9c",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV9hashValueSivg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.hashValue.getter : Swift.Int"
+    },
+    {
+      "address": "0000000100064a8c",
+      "mangled": "_$s15ComputerUseCore27UIElementRenderTreeSnapshotV9subjectIDSSvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshot.subjectID.getter : Swift.String"
+    },
+    {
+      "address": "00000001006425ac",
+      "mangled": "_$s15ComputerUseCore32UIElementRenderTreeSnapshotErrorV11descriptionSSvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeSnapshotError.description.getter : Swift.String"
+    },
+    {
+      "address": "000000010064942c",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV23__derived_struct_equalsySbAC_ACtFZ",
+      "signature": "static ComputerUseCore.UIElementRenderTreeInspectorPayload.__derived_struct_equals(ComputerUseCore.UIElementRenderTreeInspectorPayload, ComputerUseCore.UIElementRenderTreeInspectorPayload) -> Swift.Bool"
+    },
+    {
+      "address": "00000001006496f8",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV4fromACs7Decoder_p_tKcfC",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.init(from: Swift.Decoder) throws -> ComputerUseCore.UIElementRenderTreeInspectorPayload"
+    },
+    {
+      "address": "00000001006495c0",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV4hash4intoys6HasherVz_tF",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.hash(into: inout Swift.Hasher) -> ()"
+    },
+    {
+      "address": "0000000100649214",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV5firstAA0deF8SnapshotVSgvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.first.getter : ComputerUseCore.UIElementRenderTreeSnapshot?"
+    },
+    {
+      "address": "0000000100649430",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV6encode2toys7Encoder_p_tKF",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.encode(to: Swift.Encoder) throws -> ()"
+    },
+    {
+      "address": "0000000100649260",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV7current8previous5firstAcA0deF8SnapshotV_AHSgAItcfC",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.init(current: ComputerUseCore.UIElementRenderTreeSnapshot, previous: ComputerUseCore.UIElementRenderTreeSnapshot?, first: ComputerUseCore.UIElementRenderTreeSnapshot?) -> ComputerUseCore.UIElementRenderTreeInspectorPayload"
+    },
+    {
+      "address": "000000010064914c",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV7currentAA0deF8SnapshotVvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.current.getter : ComputerUseCore.UIElementRenderTreeSnapshot"
+    },
+    {
+      "address": "0000000100649198",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV8previousAA0deF8SnapshotVSgvg",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.previous.getter : ComputerUseCore.UIElementRenderTreeSnapshot?"
+    },
+    {
+      "address": "00000001006496bc",
+      "mangled": "_$s15ComputerUseCore35UIElementRenderTreeInspectorPayloadV9hashValueSivg",
+      "signature": "ComputerUseCore.UIElementRenderTreeInspectorPayload.hashValue.getter : Swift.Int"
+    }
+  ]
+}

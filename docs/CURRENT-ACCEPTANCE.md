@@ -174,3 +174,11 @@ Agent 返回 blocked 并停止，没有取得可验收的搜索结果。此处�
 失败只使用既有 MCP/tool trace，浏览器关闭清理仍在 finally 中执行。
 受控页面 native MCP 回归和 AgentLoop policy-stop 测试用于验证清理与停止行为；
 不把它们当作此次百度搜索成功证据。
+
+## 原生增量树静态证据补充
+
+已新增 `NATIVE-AX-DIFF.md`、静态审计脚本和固定 hash 的 97 条 Swift 导出签名证据。
+明确找到 AppController 的 disableAXDiffing/treeCache、SkyshotOperation 的 continuingFrom、
+Revision 的 previousRevision/lineageRootRevision/differenceLines 及差分行预算接口。
+这推进了原生职责和待实现结构的确认；不是函数体或差分规则恢复，disableDiff 仍未实现。
+helper 权限再次检查仍为 false；本轮没有进行原生 UI 操作。
