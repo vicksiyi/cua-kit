@@ -182,6 +182,24 @@
   ],
   "codeRanges": [
     {
+      "name": "mcpGenericFailureResult",
+      "start": "0x100e5f05c",
+      "endExclusive": "0x100e5f198",
+      "sha256": "55d550e5efc3627bf39822bbf58de01ab31bc01c93cc9d97f6f445bcd2672589"
+    },
+    {
+      "name": "mcpSpecialIPCFailureSelection",
+      "start": "0x100e5ee24",
+      "endExclusive": "0x100e5eeb0",
+      "sha256": "e6481d381525676d30cdc1031e6796b229f84f3c42e4457b9c617b2fca60c6a9"
+    },
+    {
+      "name": "mcpSpecialIPCFailureFallback",
+      "start": "0x100e5f028",
+      "endExclusive": "0x100e5f05c",
+      "sha256": "474577df68a0e622d857b7bb38fe532977fdc5b1d394690887cae5d44f4cc6e7"
+    },
+    {
       "name": "mcpResultCodingKeyStrings",
       "start": "0x100d26318",
       "endExclusive": "0x100d263b8",

@@ -1153,3 +1153,32 @@ whereas the generic error branch writes 1 (true). Both use the no-toolResult
 sentinel. Thus a blanket `isError: true` for every native failure would not
 match the observed implementation. Screenshot extraction and IPC case
 selection must be completed before wiring a complete error boundary.
+
+### Generic error result and selected IPC interruption cases
+
+The generic branch `0x100e5f05c..<0x100e5f198` invokes Swift
+`String(describing:)` (stub `0x10115087c`, imported through `0x101466288`),
+creates one text item, sets isError to true, leaves structuredContent and
+nested toolResult absent, then applies the recovered context merge.
+NativeCallToolResult.genericFailure implements this branch only. It is not
+an all-error dispatcher: the caller must first distinguish special IPC errors.
+Approval tests now compose SDK response decoding, native rejection/persistence
+failure, context resolution, result creation and JSON wire encoding. They
+assert exact message, true error status, absent nested/structured payloads,
+and inferred user-flow context, without running any UI or vendor service.
+
+The preceding IPC selection checks payload cases 6, 7, 9 and 10 using mask
+0x6c0: noActiveSession(app:), userStoppedSession(app:),
+userIntervened(message:), screenLocked(message:). Its tag-16 check additionally
+selects no-payload discriminator 2, permissionsPending. The reflected field
+order includes sixteen payload cases followed by ten empty cases, so treating
+that discriminator as source case index 16 would be incorrect. These paths
+use the IPC Error.description and leave isError nil, unlike generic failures.
+
+Screenshot handling remains under investigation. The selected path stores
+Optional<Screenshot>.none before the downstream optional-image branch; the
+mere presence of Data(contentsOf:) and base64 encoding code does not prove
+these selected errors actually carry screenshots. No screenshot has been
+invented or fetched in the reconstruction. The selection ranges and generic
+assembly are now pinned in the audit; full IPC error representation and live
+handler wiring remain pending.

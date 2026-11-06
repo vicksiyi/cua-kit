@@ -39,3 +39,15 @@ extension NativeMCPResultContext {
         return output
     }
 }
+
+
+extension NativeCallToolResult {
+    /// The native generic failure branch at 0x100e5f05c..<0x100e5f198.
+    /// The caller must first select this branch; interruption IPC errors use a
+    /// different result path. Do not use this as a universal native error mapper.
+    static func genericFailure(_ error: Error, context: NativeMCPErrorContext? = nil) -> Self {
+        let base = Self(result: CallTool.Result(
+            content: [.text(String(describing: error))], isError: true))
+        return NativeMCPResultContext.applying(context, to: base)
+    }
+}

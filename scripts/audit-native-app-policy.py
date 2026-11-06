@@ -101,6 +101,9 @@ def audit():
             raise ValueError('Native MCP error description literal changed')
     code_ranges = []
     for name, start, end in [
+        ('mcpGenericFailureResult', 0x100e5f05c, 0x100e5f198),
+        ('mcpSpecialIPCFailureSelection', 0x100e5ee24, 0x100e5eeb0),
+        ('mcpSpecialIPCFailureFallback', 0x100e5f028, 0x100e5f05c),
         ('mcpResultCodingKeyStrings', 0x100d26318, 0x100d263b8),
         ('mcpResultEncode', 0x100d26478, 0x100d266c0),
         ('mcpResultLayout', 0x100d25d38, 0x100d25e24),

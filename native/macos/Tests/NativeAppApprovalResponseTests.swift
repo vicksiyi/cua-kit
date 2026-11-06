@@ -4,6 +4,7 @@ import MCP
 @main struct NativeAppApprovalResponseTests {
     static func main() async throws {
         let tests = Self()
+        try await tests.testApprovalFailureBecomesNativeWireResult()
         try tests.testVendorToolResultSurvivesCodecAndContextMerge()
         tests.testErrorContextPreservesUserFlowDistinction()
         tests.testErrorContextPrecedenceAndSingleUnwrap()
@@ -121,6 +122,41 @@ import MCP
                 fatalError("Malformed nested result accepted")
             } catch {}
         }
+    }
+
+    func testApprovalFailureBecomesNativeWireResult() async throws {
+        let store = NativeAppApprovalStore(storageURL: nil)
+        for (action, expected) in [
+            ("decline", NativeMCPToolError.appApprovalDenied(bundleIdentifier: "fixture.app")),
+            ("cancel", NativeMCPToolError.appApprovalCanceled(bundleIdentifier: "fixture.app")),
+            ("accept", NativeMCPToolError.appApprovalPersistenceUnavailable(bundleIdentifier: "fixture.app"))
+        ] {
+            let response = try JSONDecoder().decode(CreateElicitation.Result.self,
+                from: Data("{\"action\":\"\(action)\",\"_meta\":{\"persist\":\"always\"}}".utf8))
+            do {
+                try await NativeAppApprovalResponse.record(response, bundleIdentifier: "fixture.app", store: store)
+                fatalError("Approval path should throw")
+            } catch let error as NativeMCPToolError {
+                equal(error, expected)
+                let resolved = NativeMCPErrorResolution.resolve(error)
+                let result = NativeCallToolResult.genericFailure(resolved.error, context: resolved.context)
+                let data = try JSONEncoder().encode(result)
+                let object = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+                precondition(object["isError"] as? Bool == true)
+                precondition(object["toolResult"] == nil && object["structuredContent"] == nil)
+                let content = object["content"] as! [[String: Any]]
+                precondition(content.count == 1 && content[0]["type"] as? String == "text")
+                equal(content[0]["text"] as? String, expected.description)
+                let meta = object["_meta"] as! [String: Any]
+                let span = (meta["codex/telemetry"] as! [String: Any])["span"] as! [String: Any]
+                precondition(span["did_trigger_server_user_flow"] as? Bool == true)
+                equal(try JSONDecoder().decode(NativeCallToolResult.self, from: data), result)
+            }
+        }
+        // A non-contextual argument error has no invented metadata.
+        let result = NativeCallToolResult.genericFailure(NativeMCPToolError.invalidArgument("exact\n原因"))
+        equal(result.result.content, [.text("exact\n原因")])
+        precondition(result.result._meta == nil)
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }
