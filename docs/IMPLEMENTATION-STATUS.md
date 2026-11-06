@@ -7001,3 +7001,7 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 检查本地 .env 加载结果与 CUA_MCP_ENV 时，均无 CORE_CUA_APP_POLICY 配置；当前 Swift 独立部署对缺失应用规则默认 denied。还原 Sky 层的 organization policy 文案是通用错误，不能证明组织管理员封禁。未修改策略、未自动批准或绕过被拒操作。
 
 终端 trace 在有独立部署上下文的错误结果中识别该文案并补充本地策略说明，保留原始错误/模型结果；其它部署、成功页面文本不追加此解释。相关 trace 与权限探针共 5 项测试通过。应用仍需配置所有者明确授权，之后还需交互审批和 macOS 权限，不能将诊断修正当作 UI 操作已通过。
+
+### 2026-11-07 原生属性支持判定
+
+恢复 `UIElementProtocol.attributeIsKnownUnsupported` 的 Swift 分支：区分未知、事务未请求、已请求但不支持和实际支持；保留 lazy cache getter 调用顺序。12 个集合组合及变化 getter 验证通过。完整协议、decoder 和生产原生树观察器接线仍未完成，不将这一辅助函数的通过视为真实应用操作验收。

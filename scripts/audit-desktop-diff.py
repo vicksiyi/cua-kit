@@ -727,6 +727,20 @@ element_storage_evidence['protocolContract']={
     'interpretation':'Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.',
     'limitations':'Six remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted.',
 }
+element_storage_evidence['attributeSupport']={
+    'symbol':'UIElementProtocol.attributeIsKnownUnsupported',
+    'start':'0x1007b0854','endExclusive':'0x1007b0958',
+    'machineCodeSha256':hashlib.sha256(read_virtual(0x1007b0854,0x104)).hexdigest(),
+    'cacheWitnessOffset':'0x28',
+    'membershipThunk':['0x1007209a4','0x100716c64','0x100716c68'],
+    'branches':[
+        'Read cache.transactionAttributes first. If nonnil and missing target, return false without reading supportedAttributes.',
+        'If transactionAttributes is nil, read cache again; empty supportedAttributes returns false (unknown).',
+        'Otherwise read cache again and return NOT supportedAttributes.contains(target).',
+    ],
+    'interpretation':'Missing data is not sufficient evidence that an attribute is unsupported. Preserve nil versus empty transaction set and repeated lazy cache getter calls.',
+    'limitations':'Recovered helper and concrete UIElement extension only; full protocol, decoder dispatch and production collector integration remain pending.',
+}
 transaction_nominal=0x1012cceb4
 transaction_fields=relative_address(transaction_nominal+16)
 _,_,transaction_kind,transaction_size,transaction_count=struct.unpack('<iiHHI',read_virtual(transaction_fields,16))

@@ -1779,6 +1779,25 @@
       ],
       "interpretation": "Two inherited witness requirements plus ten direct requirements; inherited AccessibilityNode identity is AXUIElement and Role is UIElementRole. UI snapshot labels/UUIDs cannot substitute for native element identity. Extensions are not all direct protocol requirements.",
       "limitations": "Six remaining direct witness names/semantics and inherited AccessibilityNode contract still need recovery before declaring the complete protocol. No empty marker protocol or Any root is substituted."
+    },
+    "attributeSupport": {
+      "symbol": "UIElementProtocol.attributeIsKnownUnsupported",
+      "start": "0x1007b0854",
+      "endExclusive": "0x1007b0958",
+      "machineCodeSha256": "a61fcd71bd1b7df9c5425c20f319d936bfb024e0ab7507692d9d9721806fb6ea",
+      "cacheWitnessOffset": "0x28",
+      "membershipThunk": [
+        "0x1007209a4",
+        "0x100716c64",
+        "0x100716c68"
+      ],
+      "branches": [
+        "Read cache.transactionAttributes first. If nonnil and missing target, return false without reading supportedAttributes.",
+        "If transactionAttributes is nil, read cache again; empty supportedAttributes returns false (unknown).",
+        "Otherwise read cache again and return NOT supportedAttributes.contains(target)."
+      ],
+      "interpretation": "Missing data is not sufficient evidence that an attribute is unsupported. Preserve nil versus empty transaction set and repeated lazy cache getter calls.",
+      "limitations": "Recovered helper and concrete UIElement extension only; full protocol, decoder dispatch and production collector integration remain pending."
     }
   },
   "transactionScopeEvidence": {

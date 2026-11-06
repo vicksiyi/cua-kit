@@ -891,3 +891,18 @@ fallbackElements；prefetchEnabled 的 TaskLocal 初始化值为 true。这些�
 具体 UIElement witness table 为 0x10149ed40。目前已逐项跟踪四个直接要求：静态 role 对通用 UIElement 返回 nil；axElement getter 返回原引用；cache getter 返回三字段缓存；init(element:) 转发至已核查的 0x10072187c。其余六个直接要求的完整名称/语义，以及父协议 AccessibilityNode 仍待解码。大量 UIElementProtocol extension（截图之外的动作、文本、子树等）不能仅因导出符号存在就都算成协议直接要求。
 
 这约束后续接线：原生节点身份层应保留 AX 元素引用；当前生产观察器的展示 ID 若继续存在，必须明确是外部映射，不能冒充原协议 ID。事务根元素也不能先用 Any 或空 marker protocol 占位，再宣称完整协议已经恢复。本轮新增 protocolContract 审计证据，未修改生产观察器或创建不完整同名协议。
+
+## 属性“已知不支持”判定（2026-11-07）
+
+静态读取 `UIElementProtocol.attributeIsKnownUnsupported` 的完整函数体
+`0x1007b0854..0x1007b0958`，cache witness 位于 `+0x28`，Set 查询经
+`0x1007209a4 → 0x100716c64 → 0x100716c68`，后者通过哈希桶与 CFEqual 查询成员。
+
+还原分支：先读取 transactionAttributes；非 nil 且不包含目标时返回 false。
+若 transactionAttributes 为 nil，则再次获取 cache，supportedAttributes 为空也返回 false。
+其余情况再次获取 cache，返回 supportedAttributes 不包含目标。这里 false 包含“不知道”，
+不能把缓存 value 缺失直接判为不支持。nil 和空事务请求集合不同，协议 getter 的重复读取顺序也保留。
+
+新增 Swift `UIElementAttributeSupport.swift`，提供原分支函数与现有具体 UIElement 的方法。
+测试覆盖 12 个支持集合/事务集合组合、读取次数，以及 getter 在连续调用中改变的情况。
+这不是完整 UIElementProtocol 或生产读取器接线；没有用它绕过尚未完成的 decoder/事务构造。
