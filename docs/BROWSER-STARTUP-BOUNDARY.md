@@ -66,8 +66,24 @@ Unified mode exposes both surfaces and can discover late registrations in a conf
 directory. It does not eagerly launch Chrome and does not yet start a terminated Chrome process
 when the model chooses a browser. A future implementation must account for that host lifecycle
 without rewriting the source browser selection methods to claim a nonexistent built-in launcher.
-The tested no-window extension path is already restored, but real Chrome window-state acceptance
-remains separate. App getApp has its own policy, approval and macOS permission requirements.
+The tested no-window extension path is already restored. A separate opt-in test now passes
+against an already running daily Chrome for new-tab navigation, observation, click, returned screenshot
+and owned-tab cleanup. It does not cover zero-window or terminated-process startup. App getApp has its own policy, approval and macOS permission requirements.
 
 The inspected methods establish their own boundaries only. They do not prove where every Codex/
 ChatGPT parent-host browser activation occurs, nor rule out launch behavior outside these modules.
+
+
+## Outer plugin troubleshooting workflow
+
+The installed bundled browser plugin `26.1027.30824` also contains a separate documented workflow
+in `docs/chrome-troubleshooting.md`: try an extension-backed operation, wait two seconds and retry
+once, then inspect process/browser installation/extension/native-host state. For a stopped browser
+or a requested profile window, that workflow invokes `scripts/open-chrome-window.js` after user
+authorization. This is evidence of a plugin orchestration path outside getBrowser, not proof that
+every current unified-computer-use activation executes it. The existing standalone startup adapter
+already restores portions of these profile/launch rules; unified invocation still needs integration.
+
+The script supports Chrome/Edge families, profile-root/preference overrides, and dry-run command
+output. Core's present launcher scope remains macOS Chrome and its own extension/host registration.
+Do not equate this narrower deployment support with complete cross-browser/source parity.

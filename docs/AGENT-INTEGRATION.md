@@ -471,3 +471,27 @@ Validation: the permission probe tests cover strict evidence, helper exit status
 malformed output, and the actual Swift permission query. The unified CLI HTTP integration verifies
 both permission facts and local policy context reach the model. Real DeepSeek transcripts remain in
 ignored local artifacts and are not published.
+
+
+#### Existing daily Chrome acceptance
+
+`CUA_TEST_DAILY_CHROME=1 node --import tsx --test reconstruction/unified-daily-chrome.test.ts`
+opts into the user's existing Chrome and creates one owned local-test tab. It is skipped without
+that explicit flag. The test reads the installed Core native-host manifest/configuration, validates
+it against the project extension, and uses the actual registered directory in a unified Rust +
+Swift + MCP session. It does not launch another Chromium profile or repair browser installation.
+
+The live run passed: browser selection, session naming, new tab, local HTTP navigation, accessibility
+state, a Playwright button click, server-observed form submission, resulting state containing a
+unique marker, image content returned by getScreenshot, and explicit owned-tab closure. Cleanup
+also ends the turn and closes the MCP session. Only the local fixture origin is approved by the
+test client; all other elicitation requests are declined. The fixture matches URL pathname rather
+than the raw request target, so a form's empty query delimiter is not mistaken for a failed click.
+Navigation acceptance waits for server evidence and then observes the committed page; it does not
+repeat a click to compensate for asynchronous navigation.
+
+This was a scripted MCP acceptance test, not a DeepSeek decision-loop test. It used the already
+running daily Chrome, not a terminated process. It does not prove cold startup, arbitrary website
+success, or native App observation/input. Screenshot acceptance here checks returned image content;
+no screenshots, daily-tab content, login state or local configuration were published. Existing user
+tabs were not targeted; the newly created fixture tab was closed on completion.
