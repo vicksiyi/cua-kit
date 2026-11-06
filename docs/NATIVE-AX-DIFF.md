@@ -1273,3 +1273,20 @@ toggle 取反、通用值编码、系统属性写入串起来。toggleDisclosure
 测试只替换最后的外部写入边界，没有执行系统 UI 写入；真实 UI 验收仍未通过。
 生产简化采集器尚未获得原版完整缓存，因此未调用此入口或广告 synthetic 动作。
 下一步仍需缓存/provider/动作分派整体整合，而不是在现有树里伪造缓存绕过缺口。
+
+
+## 元素初始化与缓存组合（2026-11-07）
+
+原 UIElement.init(element:) 与其它元素共享 0x1007213dc 入口，跳到
+0x10072187c；只读取一次 UIElementTreeTransaction.current，提取其 cache 或 nil，
+调用 0x10076589c 构造缓存，最后返回原 AX 引用与该缓存。
+
+恢复可注入 transaction 解析器的 UIElement 初始化组合，并提供显式
+init(systemElement:transaction:) 系统路径。传 nil 意味着执行已恢复的冷缓存构造，
+并非创建空缓存；完整原 TaskLocal transaction 类型尚未接入，故不添加隐式默认。
+测试验证 transaction → cache 顺序、AX/缓存值身份保持，以及系统初始化路径直接
+命中真实预取缓存。使用不存在的 PID 仍保留缓存内容，未执行用户界面操作。
+缓存构造及属性支持测试、Swift 构建通过。
+
+生产遍历和原版 transaction 生命周期仍待接线。此构造器解决元素级链路所需的真实
+缓存入口，但不能据此声称完整观察器或合成动作的用户体验已经完成。

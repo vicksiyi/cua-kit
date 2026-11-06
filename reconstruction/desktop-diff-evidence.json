@@ -2254,6 +2254,18 @@
       "productionUse": "Target.action setValue keeps its existing outer guard and outcome mapping",
       "limitations": "Core sequencing restored with provider injection; concrete setSystemValue deliberately uses system adapter, not full MockProvider dispatch."
     },
+    "elementInitializerComposition": {
+      "entry": "UIElement.init(element:) aliases 0x1007213dc -> 0x10072187c",
+      "transaction": "0x1007218b8 reads TaskLocal current; present extracts cache fields, absent uses nil",
+      "construct": "0x100721914 -> 0x10076589c; return original AX reference and constructed cache",
+      "block": {
+        "start": "0x10072187c",
+        "endExclusive": "0x100721960",
+        "machineCodeSha256": "de57cbdbf146fab7859bdc15af316a2374690ca3a02eea4e52e92d72170d2694"
+      },
+      "implementation": "native/macos/Sources/CuaHelper/UIElementCacheConstruction.swift",
+      "limitations": "Transaction resolver is injected; explicit system initializer accepts a transaction argument. Full original TaskLocal ownership and production traversal are not restored."
+    },
     "disclosureActionsImplementation": {
       "actionNominal": "0x1012cd3b4",
       "fieldDescriptor": "0x101324000",

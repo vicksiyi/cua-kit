@@ -24,6 +24,24 @@ struct UIElementCacheConstructionTests {
                     return [role: value]
                 })
         }
+        var initEvents: [String] = []
+        let initialized = UIElement(element: element, readTransaction: {
+            initEvents.append("transaction"); return transaction
+        }, constructCache: { received, snapshot in
+            initEvents.append("cache")
+            precondition(received === element && snapshot?.requestedAttributes == [other])
+            return UIElementCache(supportedAttributes: [role], attributes: [role: value], transactionAttributes: [other])
+        })
+        precondition(initialized.axElement === element && initEvents == ["transaction", "cache"])
+        precondition(initialized.cache.attributes[role]?.value.value === raw)
+        let initializerTransaction = UIElementTransactionCache(attributeTable: [element: [role: value]],
+            requestedAttributes: [role, other], fallbackElements: UIElementFallbackCache(initialState: [:]))
+        let systemInitialized = UIElement(systemElement: element, transaction: initializerTransaction)
+        precondition(systemInitialized.axElement === element)
+        precondition(systemInitialized.cache.attributes[role]?.value.value === raw)
+        precondition(systemInitialized.cache.transactionAttributes == [role, other])
+        // The prefetched initializer used an invalid PID without touching system
+        // attributes: the transaction's cached value must still survive intact.
         let failed = build(transaction)
         precondition(failed.supportedAttributes == [role, other] && failed.attributes.isEmpty && failed.transactionAttributes == nil)
         precondition(events == ["names", "values"])

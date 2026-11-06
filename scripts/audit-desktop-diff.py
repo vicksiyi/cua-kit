@@ -1012,6 +1012,15 @@ element_storage_evidence['genericElementSetter']={
     'productionUse':'Target.action setValue keeps its existing outer guard and outcome mapping',
     'limitations':'Core sequencing restored with provider injection; concrete setSystemValue deliberately uses system adapter, not full MockProvider dispatch.',
 }
+element_storage_evidence['elementInitializerComposition']={
+    'entry':'UIElement.init(element:) aliases 0x1007213dc -> 0x10072187c',
+    'transaction':'0x1007218b8 reads TaskLocal current; present extracts cache fields, absent uses nil',
+    'construct':'0x100721914 -> 0x10076589c; return original AX reference and constructed cache',
+    'block':{'start':'0x10072187c','endExclusive':'0x100721960',
+        'machineCodeSha256':hashlib.sha256(read_virtual(0x10072187c,0x100721960-0x10072187c)).hexdigest()},
+    'implementation':'native/macos/Sources/CuaHelper/UIElementCacheConstruction.swift',
+    'limitations':'Transaction resolver is injected; explicit system initializer accepts a transaction argument. Full original TaskLocal ownership and production traversal are not restored.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))

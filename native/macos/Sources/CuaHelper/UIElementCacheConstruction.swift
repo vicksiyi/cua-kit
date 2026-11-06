@@ -57,3 +57,24 @@ func constructSystemUIElementCache(element: AXUIElement, transaction: UIElementT
         },
         readValues: { try readSystemAXAttributeValues(element, $0) })
 }
+
+extension UIElement {
+    // Original init(element:) resolves the current transaction once, then builds
+    // its cache while retaining the original AX reference (0x10072187c).
+    // Transaction acquisition stays injected until its full TaskLocal owner is restored.
+    init(
+        element: AXUIElement,
+        readTransaction: () -> UIElementTransactionCache?,
+        constructCache: (AXUIElement, UIElementTransactionCache?) -> UIElementCache
+    ) {
+        let transaction = readTransaction()
+        self.init(axElement: element, cache: constructCache(element, transaction))
+    }
+
+    // Explicit system path: nil means a deliberate cold construction, not an
+    // invented empty cache or a replacement for the original TaskLocal lookup.
+    init(systemElement element: AXUIElement, transaction: UIElementTransactionCache?) {
+        self.init(element: element, readTransaction: { transaction },
+            constructCache: { constructSystemUIElementCache(element: $0, transaction: $1) })
+    }
+}
