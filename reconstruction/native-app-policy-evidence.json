@@ -3,6 +3,45 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "Result",
+      "descriptor": "0x1012e27a4",
+      "fieldDescriptor": "0x10133c614",
+      "kind": 0,
+      "fields": [
+        "content",
+        "structuredContent",
+        "isError",
+        "toolResult",
+        "_meta"
+      ],
+      "fieldMetadataSha256": "f3520457a5fb5a4003214576d29f87ab749888d2e008cca32db5e3208bcb4d4d"
+    },
+    {
+      "name": "ToolResult",
+      "descriptor": "0x1012e27c0",
+      "fieldDescriptor": "0x10133c660",
+      "kind": 0,
+      "fields": [
+        "content",
+        "isError"
+      ],
+      "fieldMetadataSha256": "a0f7f6cfd6b47a12e486121dd857820b9e7e3708a53702cef347c6e760027cc8"
+    },
+    {
+      "name": "CodingKeys",
+      "descriptor": "0x1012e2848",
+      "fieldDescriptor": "0x10133c890",
+      "kind": 2,
+      "fields": [
+        "content",
+        "structuredContent",
+        "isError",
+        "toolResult",
+        "_meta"
+      ],
+      "fieldMetadataSha256": "0848fa24a80885e09218ae0470ca4fee4ce5ac68d2b034205c26b418cc0cf3c8"
+    },
+    {
       "name": "ErrorWithCodexSpanTelemetry",
       "descriptor": "0x1012e6e88",
       "fieldDescriptor": "0x10134272c",
@@ -142,6 +181,24 @@
     }
   ],
   "codeRanges": [
+    {
+      "name": "mcpResultCodingKeyStrings",
+      "start": "0x100d26318",
+      "endExclusive": "0x100d263b8",
+      "sha256": "b69092d94fcf1df72df469b7bbc55443b74243a9badcd559b4a32d3572b6812c"
+    },
+    {
+      "name": "mcpResultEncode",
+      "start": "0x100d26478",
+      "endExclusive": "0x100d266c0",
+      "sha256": "880bb345fd0a8d7462dfc55c474650a794666eb9ee2a6e819584e98acab2be7c"
+    },
+    {
+      "name": "mcpResultLayout",
+      "start": "0x100d25d38",
+      "endExclusive": "0x100d25e24",
+      "sha256": "2e78a78b7f563f67a4ccaa10258951e8cbfa501ad447bc836f2e8bb3c8fe7328"
+    },
     {
       "name": "mcpErrorUnwrapAndContextPrecedence",
       "start": "0x100e5ed44",

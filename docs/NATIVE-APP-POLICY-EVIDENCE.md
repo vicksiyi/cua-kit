@@ -1118,3 +1118,38 @@ because the SDK setter deletes the raw key. These tests use synthetic image
 data and perform no screen capture or desktop actions. The pinned merge code
 range was already included in the static audit. Full error result assembly
 and live host wiring remain separate pending work.
+
+### Vendor result extension missing from upstream SDK
+
+Further tracing uncovered a material limitation in the preceding metadata
+merge implementation: the pinned vendor MCP.CallTool.Result has five fields,
+including `toolResult`, whereas upstream swift-sdk 0.12.1 has only four.
+Therefore the earlier preservation tests established preservation of upstream
+SDK fields only, not the complete vendor result. NativeCallToolResult now
+composes with the upstream codec and retains the additional optional field.
+It continues using SDK Tool.Content, Value, Metadata and CallTool.Result for
+all standard fields instead of reimplementing their codecs.
+
+Result descriptor `0x1012e27a4` lists content, structuredContent, isError,
+toolResult and _meta. Nested ToolResult descriptor `0x1012e27c0` contains
+optional content (`[Tool.Content]?`) and optional isError (`Bool?`); field type
+encodings are at `0x1012acdfe` and `0x1012a9716`. CodingKeys descriptor
+`0x1012e2848` lists the same five outer names, and its string getter
+`0x100d26318..<0x100d263b8` confirms the actual wire spelling `toolResult`.
+The outer encoder uses encodeIfPresent for this nested value at
+`0x100d2660c..<0x100d26650`. Result layout getters establish isError at offset
+0x29 and toolResult at offsets 0x30/0x38. The static audit now pins these
+metadata records, key strings, encoder and layout code.
+
+Tests round-trip nested content and an isError different from the outer
+result, then apply context and verify the nested value survives unchanged.
+Absent/null nested values, an empty nested object, invalid types, metadata
+retention and token clearing are also covered. Existing upstream-only merge
+remains available, with an overload for the full vendor result envelope.
+
+The screenshot branch has another distinction still awaiting full assembly:
+its result writes optional isError discriminator 2 (nil) at offset 0x29,
+whereas the generic error branch writes 1 (true). Both use the no-toolResult
+sentinel. Thus a blanket `isError: true` for every native failure would not
+match the observed implementation. Screenshot extraction and IPC case
+selection must be completed before wiring a complete error boundary.

@@ -43,6 +43,9 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e27a4, 'Result', ['content', 'structuredContent', 'isError', 'toolResult', '_meta']),
+        (0x1012e27c0, 'ToolResult', ['content', 'isError']),
+        (0x1012e2848, 'CodingKeys', ['content', 'structuredContent', 'isError', 'toolResult', '_meta']),
         (0x1012e6e88, 'ErrorWithCodexSpanTelemetry', ['underlyingError', 'codexSpanTelemetry']),
         (0x1012e6edc, 'CodexSpanTelemetry', ['targetID', 'didTriggerServerUserFlow']),
         (0x1012e6ea4, 'MCPToolError', ['missingArgument', 'invalidArgument', 'unknownTool',
@@ -98,6 +101,9 @@ def audit():
             raise ValueError('Native MCP error description literal changed')
     code_ranges = []
     for name, start, end in [
+        ('mcpResultCodingKeyStrings', 0x100d26318, 0x100d263b8),
+        ('mcpResultEncode', 0x100d26478, 0x100d266c0),
+        ('mcpResultLayout', 0x100d25d38, 0x100d25e24),
         ('mcpErrorUnwrapAndContextPrecedence', 0x100e5ed44, 0x100e5ee24),
         ('mcpToolHandlerCatch', 0x100e4f8ec, 0x100e4f97c),
         ('mcpErrorContextInference', 0x100e5e7bc, 0x100e5e874),

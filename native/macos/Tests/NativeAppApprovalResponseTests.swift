@@ -4,6 +4,7 @@ import MCP
 @main struct NativeAppApprovalResponseTests {
     static func main() async throws {
         let tests = Self()
+        try tests.testVendorToolResultSurvivesCodecAndContextMerge()
         tests.testErrorContextPreservesUserFlowDistinction()
         tests.testErrorContextPrecedenceAndSingleUnwrap()
         try tests.testResultContextMergePreservesPayloadAndUnknownMetadata()
@@ -87,6 +88,39 @@ import MCP
         let malformed = try JSONDecoder().decode(CallTool.Result.self,
             from: Data(#"{"content":[],"_meta":{"progressToken":{"invalid":true}}}"#.utf8))
         precondition(NativeMCPResultContext.applying(context, to: malformed)._meta?["progressToken"] == nil)
+    }
+
+    func testVendorToolResultSurvivesCodecAndContextMerge() throws {
+        let raw = #"{"content":[{"type":"text","text":"outer"}],"isError":true,"toolResult":{"content":[{"type":"text","text":"inner"}],"isError":false},"_meta":{"progressToken":9,"keep":true}}"#
+        let original = try JSONDecoder().decode(NativeCallToolResult.self, from: Data(raw.utf8))
+        equal(original.toolResult?.isError, false)
+        equal(original.result.isError, true)
+        equal(original.toolResult?.content?.count, 1)
+        equal(NativeMCPResultContext.applying(nil, to: original), original)
+        let updated = NativeMCPResultContext.applying(.init(targetID: nil, didTriggerServerUserFlow: true), to: original)
+        equal(updated.toolResult, original.toolResult)
+        equal(updated.result.content, original.result.content)
+        precondition(updated.result._meta?["progressToken"] == nil)
+        equal(updated.result._meta?["keep"], .bool(true))
+        let encoded = try JSONEncoder().encode(updated)
+        let object = try JSONSerialization.jsonObject(with: encoded) as! [String: Any]
+        let nested = object["toolResult"] as! [String: Any]
+        precondition(nested["isError"] as? Bool == false)
+        equal(try JSONDecoder().decode(NativeCallToolResult.self, from: encoded), updated)
+        for suffix in ["", #", "toolResult":null"#] {
+            let absent = try JSONDecoder().decode(NativeCallToolResult.self, from: Data("{\"content\":[]\(suffix)}".utf8))
+            precondition(absent.toolResult == nil)
+            let object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(absent)) as! [String: Any]
+            precondition(object["toolResult"] == nil)
+        }
+        let empty = try JSONDecoder().decode(NativeCallToolResult.self, from: Data(#"{"content":[],"toolResult":{}}"#.utf8))
+        precondition(empty.toolResult != nil && empty.toolResult?.content == nil && empty.toolResult?.isError == nil)
+        for value in ["[]", "true", #"{"content":false}"#, #"{"isError":"false"}"#] {
+            do {
+                _ = try JSONDecoder().decode(NativeCallToolResult.self, from: Data("{\"content\":[],\"toolResult\":\(value)}".utf8))
+                fatalError("Malformed nested result accepted")
+            } catch {}
+        }
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }
