@@ -962,7 +962,9 @@ element_storage_evidence['insideWebViewContract']={
     'stringPredicate':{'stub':'0x101150b34','got':'0x101466488','binding':'libswiftCore/_$sSS9hasPrefixySbSSF'},
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
         for a,b in [(0x1007aff74,0x1007aff80),(0x1007aaf9c,0x1007ab2c4),(0x1007ab2c4,0x1007ab548),(0x1007b8a04,0x1007b8a18),(0x100792670,0x10079268c)]],
-    'limitations':'Static contract evidence only; concrete getter and inherited AccessibilityNode protocol remain pending. Prefix semantics are not an app-policy allowlist or permission grant.',
+    'implementation':['native/macos/Sources/CuaHelper/UIElementInsideWebView.swift','native/macos/Sources/CuaHelper/UIElementWebViewValue.swift'],
+    'limitsAndOrder':'Self at depth zero; inclusive depth 300; parent lookahead before role check; stop at first WebArea; no cycle deduplication. Bundle lookup runs once on the original element only after no match.',
+    'limitations':'Generic traversal and concrete cache/parent composition restored. Bundle identifier/provider remain injected; inherited AccessibilityNode and production integration pending. Prefix semantics are not an app-policy allowlist or permission grant.',
 }
 element_storage_evidence['actionWitnesses']={
     'actions':'0x100790b88','nativeActionsCall':'0x100790bf4 -> 0x1006f93a0',

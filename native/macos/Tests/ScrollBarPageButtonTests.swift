@@ -19,6 +19,27 @@ struct ScrollBarPageButtonTests {
 
     static func main() throws {
         testCachedEnabledAndFocus()
+        func rootElement(_ role: NSString, id: Int32) -> UIElement {
+            let source = element(role, nil, id: id)
+            return UIElement(axElement: source.axElement, cache: UIElementCache(
+                supportedAttributes: [], attributes: source.cache.attributes,
+                transactionAttributes: [UIElementAttribute("AXParent")]))
+        }
+        let web = rootElement("AXWebArea" as NSString, id: 424240)
+        precondition(web.isInsideWebView(transaction: nil, readParent: { _, _ in
+            fatalError("known unsupported parent must not read AX")
+        }, bundleIdentifier: { _ in fatalError("WebArea must skip bundle lookup") },
+        reportError: { _ in fatalError("cached path") }))
+        let nonWeb = rootElement("AXButton" as NSString, id: 424241)
+        var bundleReads = 0
+        precondition(nonWeb.isInsideWebView(transaction: nil, readParent: { _, _ in
+            fatalError("known unsupported parent must not read AX")
+        }, bundleIdentifier: { ax in
+            precondition(ax === nonWeb.axElement); bundleReads += 1
+            return "com.openai.atlas.beta"
+        }, reportError: { _ in fatalError("cached path") }))
+        precondition(bundleReads == 1)
+
         for selection: ScrollBarPageButton in [.increment, .decrement] {
             let expected = selection.subrole as NSString
             let first = element("AXButton" as NSString, expected, id: 424242)

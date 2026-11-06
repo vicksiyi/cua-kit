@@ -150,3 +150,18 @@ test("native focus capability preserves role-specific error fallback", {
     assert.match(result.stdout, /native focus capability preserves support gating and role-specific error fallback: 60 cases/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native web-view classification preserves ancestor and bundle fallback boundaries", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-webview-"));
+  try {
+    const output = join(directory, "webview");
+    await exec("xcrun", ["swiftc",
+      ...["UIElementRole", "UIElementParentChain", "UIElementInsideWebView"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/UIElementInsideWebViewTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /web-view classification preserves self, depth, lookahead, cycles and lazy prefix fallback/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

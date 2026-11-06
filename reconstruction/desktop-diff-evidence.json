@@ -2323,7 +2323,12 @@
           "machineCodeSha256": "c94c1cbdcaad87dcc6a84d04f755e0e68ca911ef30ff7c81f3838c4f8245a90c"
         }
       ],
-      "limitations": "Static contract evidence only; concrete getter and inherited AccessibilityNode protocol remain pending. Prefix semantics are not an app-policy allowlist or permission grant."
+      "implementation": [
+        "native/macos/Sources/CuaHelper/UIElementInsideWebView.swift",
+        "native/macos/Sources/CuaHelper/UIElementWebViewValue.swift"
+      ],
+      "limitsAndOrder": "Self at depth zero; inclusive depth 300; parent lookahead before role check; stop at first WebArea; no cycle deduplication. Bundle lookup runs once on the original element only after no match.",
+      "limitations": "Generic traversal and concrete cache/parent composition restored. Bundle identifier/provider remain injected; inherited AccessibilityNode and production integration pending. Prefix semantics are not an app-policy allowlist or permission grant."
     },
     "actionWitnesses": {
       "actions": "0x100790b88",

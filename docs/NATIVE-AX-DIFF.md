@@ -1767,3 +1767,22 @@ settable 查询抛错表示不补充动作，仍保留原生列表；成功时�
 
 原生 provider 与日志仍是显式边界；生产观察器尚未整体切换到完整原版协议、
 transaction、transform 和 diff，不能据此宣布原版桌面行为全部对齐。
+
+### isInsideWebView 的父链与 bundle 前缀回退
+
+在此前 witness/GOT 审计基础上，重新读取 generic getter
+`0x1007ab2c4..<0x1007ab548`：调用 `parentChain(maxDepth:300, includingSelf:true)`，
+逐个读取 role，命中 AXWebArea 立即 true；只有全程未命中才读取原始元素的
+bundleIdentifier 并调用 Swift.String.hasPrefix("com.openai.atlas")。nil 为 false，
+不是相等判断，也不是根据浏览器品牌决定放行应用。
+
+恢复 `UIElementInsideWebView.swift` 并在 `UIElementWebViewValue.swift` 接上具体
+缓存 role、parentValue 和 transaction；bundle 查询保留显式 provider 边界。
+父链仍在检查 role 之前读取下一父节点：包含自己、深度 300 包含在内、循环链
+最多检查 301 个节点，不新增去重。测试覆盖第 0/1/299/300/301 层命中、无命中、
+循环、nil/空/大小写/前缀后缀 bundle，验证回退只查询原始元素且只查询一次。
+
+具体对象组合测试初次发现 fixture 的空 requested 集合意味着父属性“尚不确定”，
+不能假设不读系统；修正为已请求 AXParent 但 supported 不包含它，保留生产逻辑。
+修正后缓存对象测试、网页分类测试及 Swift 构建通过。此项尚未接入生产点击流程，
+也不改变白名单、用户授权或系统权限。
