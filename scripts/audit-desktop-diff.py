@@ -444,6 +444,30 @@ partial_array_evidence={
     'semantics':'Nonthrowing array decode; nil fails, empty array succeeds; subset metadata forwarded without count/range reconciliation.',
     'limitations':'Underlying generic CFArray decoding and full AXPartialValue storage are not implemented by this helper.',
 }
+# Some Swift stubs appear as LOCAL ABSOLUTE in the indirect-symbol table.
+# Resolve their GOT binding through dyld fixups instead of guessing from labels.
+fixups=subprocess.check_output(['xcrun','dyld_info','-fixups',str(artifact)],text=True)
+compact_symbol='_$sSTsE10compactMapySayqd__Gqd__Sg7ElementQzKXEKlF'
+compact_line=next((line for line in fixups.splitlines() if '0x1014665a8' in line.lower()),'')
+if 'libswiftCore/'+compact_symbol not in compact_line:
+    raise SystemExit('Array transform Swift binding changed')
+if c_string(relative_address(0x1012cc42c+8)) != 'TypeErasedArray':
+    raise SystemExit('Array conversion protocol changed')
+array_transform_functions=[]
+for address,boundary in [(0x1006ea28c,0x1006ea328),(0x1006ea758,0x1006ea7b4)]:
+    if starts[starts.index(address)+1] != boundary: raise SystemExit('Array transform boundary changed')
+    array_transform_functions.append({'start':hex(address),'endExclusive':hex(boundary),'machineCodeSha256':hashlib.sha256(read_virtual(address,boundary-address)).hexdigest()})
+array_transform_words={0x1006ea310:0x94299a42,0x101150c18:0xd00018b0,0x101150c1c:0xf942d610,0x101150c20:0xd61f0200,0x1006ea79c:0x97fffa0b}
+for address,word in array_transform_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word: raise SystemExit('Array compactMap call chain changed')
+array_transform_evidence={
+    'functions':array_transform_functions,'protocolDescriptor':'0x1012cc42c','protocolName':'TypeErasedArray',
+    'compactMapStub':'0x101150c18','gotSlot':'0x1014665a8','boundSymbol':compact_symbol,
+    'resolution':'dyld_info -fixups + verified ARM64 stub GOT load',
+    'callbackNonthrowingDecodeCall':'0x1006ea79c',
+    'semantics':'compactMap removes nil element decodes, preserving successful element order and duplicates.',
+    'limitations':'CFArray bridging, target protocol conformance and final array cast remain separate parts of the full decoder.',
+}
 error_nominal = 0x1012cd360
 error_fields = relative_address(error_nominal+16)
 _,_,error_kind,error_size,error_count = struct.unpack('<iiHHI',read_virtual(error_fields,16))
@@ -492,6 +516,7 @@ record = {
     'rawAttributeEvidence':raw_attribute_evidence,
     'valueDescriptorEvidence':value_descriptor_evidence,
     'partialArrayEvidence':partial_array_evidence,
+    'arrayTransformEvidence':array_transform_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

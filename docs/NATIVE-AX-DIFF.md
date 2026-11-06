@@ -383,3 +383,23 @@ value 的非抛错 `unwrapped<[Element]>()`，返回 nil 时整项失败；返�
 另核实相邻 decodedThrowing 转发（`0x1006fac24..0x1006fac44`）将标志固定为 true，
 与 decoded → nonthrowing wrapper 的 false/catch 路径不同。审计 partialArrayEvidence
 保存函数哈希及解码调用、nil 分支、描述符读取和该 true 参数的机器指令。
+
+## CFArray 分支的元素转换：确认使用 compactMap
+
+底层数组转换 `0x1006ea28c..0x1006ea328` 通过 TypeErasedArray 的关联元素类型，
+调用 Swift 标准库 `Sequence.compactMap`；回调 `0x1006ea758..0x1006ea7b4` 对每个
+encoded value 调用非抛错 `unwrapped`。因此解码为 nil 的元素会被跳过，成功元素顺序及
+重复值保留。不能把“保留失败占位”或“一个失败导致整个数组失败”作为原行为。
+
+这次使用更完整的符号解析：indirect symbol table 将 `0x101150c18` 标为 LOCAL ABSOLUTE，
+但其 ARM64 stub 加载 GOT `0x1014665a8`，`dyld_info -fixups` 明确该槽绑定到
+`libswiftCore/_$sSTsE10compactMapySayqd__Gqd__Sg7ElementQzKXEKlF`。
+仅看 objdump 最近符号或 indirect table 会遗漏这个真实调用目标。
+
+`AXArrayElementDecoding.swift` 直接复用 Swift compactMap。测试将真实 CGPoint、CGSize、
+AXError 系统值接到已恢复的类型解码，确认不匹配/缺值被跳过，同时验证顺序、重复值、
+空数组、数值零和嵌套 Optional，以及和部分数组描述符的组合。
+
+前一节 decodedArray 的“原样返回数组”描述的是**底层转换之后**的结果组合层；
+它仍保留原始 subsetDescriptor，不因底层过滤而重算 count/ranges。两层行为不同。
+完整 CFArray bridging、目标协议检查、最终数组类型转换仍待恢复，当前 helper 不替代它们。

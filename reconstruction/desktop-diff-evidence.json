@@ -1290,6 +1290,29 @@
     "semantics": "Nonthrowing array decode; nil fails, empty array succeeds; subset metadata forwarded without count/range reconciliation.",
     "limitations": "Underlying generic CFArray decoding and full AXPartialValue storage are not implemented by this helper."
   },
+  "arrayTransformEvidence": {
+    "functions": [
+      {
+        "start": "0x1006ea28c",
+        "endExclusive": "0x1006ea328",
+        "machineCodeSha256": "ee7aa474dfc944830f63c2b2aa3459de3bfc460aea0dc21fda0e1c05580e59ee"
+      },
+      {
+        "start": "0x1006ea758",
+        "endExclusive": "0x1006ea7b4",
+        "machineCodeSha256": "2958de8b83effff2507deb0834c908e807a2d053cbf3a443f0f9d3fa8b8d24a9"
+      }
+    ],
+    "protocolDescriptor": "0x1012cc42c",
+    "protocolName": "TypeErasedArray",
+    "compactMapStub": "0x101150c18",
+    "gotSlot": "0x1014665a8",
+    "boundSymbol": "_$sSTsE10compactMapySayqd__Gqd__Sg7ElementQzKXEKlF",
+    "resolution": "dyld_info -fixups + verified ARM64 stub GOT load",
+    "callbackNonthrowingDecodeCall": "0x1006ea79c",
+    "semantics": "compactMap removes nil element decodes, preserving successful element order and duplicates.",
+    "limitations": "CFArray bridging, target protocol conformance and final array cast remain separate parts of the full decoder."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
