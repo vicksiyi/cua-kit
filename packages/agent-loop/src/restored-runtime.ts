@@ -12,6 +12,7 @@ import {
   restoredPackageSources,
 } from "./runtime-packages";
 import { withHostProxy } from "./system-proxy";
+import { nativeSupervisorEnvironmentKeys } from "./native-supervisor-environment";
 
 export async function readRuntimeEnvironment(
   parent: NodeJS.ProcessEnv = process.env,
@@ -35,6 +36,7 @@ export async function readRuntimeEnvironment(
     parent,
   );
   for (const key of [
+    ...nativeSupervisorEnvironmentKeys,
     "CUA_NATIVE_SUPERVISOR_PATH",
     "NODE_REPL_NODE_PATH",
     "CORE_CUA_ENDPOINT_FILES",

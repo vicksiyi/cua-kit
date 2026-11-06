@@ -2,6 +2,7 @@
 import {mkdtemp,mkdir,writeFile,rm,realpath,access} from 'node:fs/promises';
 import {dirname,join,delimiter} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {nativeSupervisorEnvironment} from './native-supervisor-environment';
 
 export async function prepareIndependentRuntime(env: Record<string,string>, stagedRoot: string, sessionId: string, implementation: "rust" = "rust") {
   if (implementation !== 'rust') throw Error('The TypeScript supervisor deployment has been retired; use rust');
@@ -64,7 +65,7 @@ export async function prepareIndependentRuntime(env: Record<string,string>, stag
     const rustWorker=(value:ReturnType<typeof worker>)=>({sandbox:{node:value.node,bootstrap:value.bootstrap,addon:value.addon,entry:value.entry,args:value.args,directory:value.directory,read_directories:value.readDirectories,worker_environment:value.workerEnvironment}});
     const spec=join(root,'rust-runtime.json');
     await writeFile(spec,JSON.stringify({kernel:rustWorker(worker(false)),trusted:rustWorker(worker(true)),services:Object.keys(services),pipe_paths:pipes,...(env.NODE_REPL_TOOL_OVERRIDES!==undefined?{tool_overrides:JSON.parse(env.NODE_REPL_TOOL_OVERRIDES)}:{}),...(env.NODE_REPL_JS_COMPLETION_SUMMARY!==undefined?{completion_summary:JSON.parse(env.NODE_REPL_JS_COMPLETION_SUMMARY)}:{}),...(computer?{native_service:{helper,directory:nativeDir,app_policy:appPolicy}}:{}),writable_paths:['browser/config.toml',sessionPreference],config:{config:configFile,requirements:requirementsFile,working_directories:[trustedDir],toml_files:{'browser/config.toml':browserFile,[sessionPreference]:sessionFile}}}),{mode:0o600});
-    return {command,args:[spec],environment:{HOME:root,TMPDIR:root,CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
+    return {command,args:[spec],environment:{...nativeSupervisorEnvironment(env,root),CUA_REPL_ENABLED_SURFACES:enabled,...(browser?{BROWSER_USE_AVAILABLE_BACKENDS:env.BROWSER_USE_AVAILABLE_BACKENDS??'chrome'}:{})},dispose:()=>rm(root,{recursive:true,force:true})};
   } catch(error) {await rm(root,{recursive:true,force:true});throw error;}
 }
 
