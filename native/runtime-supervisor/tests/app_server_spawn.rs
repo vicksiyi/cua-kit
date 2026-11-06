@@ -258,3 +258,71 @@ async fn rpc_times_out_waiting_for_a_line() {
     assert!(started.elapsed() >= Duration::from_secs(30));
     connection.child.kill().await.unwrap();
 }
+
+#[tokio::test]
+async fn initialization_precedes_auth_and_does_not_insert_an_extra_notification() {
+    let fixture = rpc_fixture(
+        r#"
+r=json.loads(sys.stdin.readline())
+expected={'id':'1','method':'initialize','params':{'capabilities':{'experimentalApi':True,'optOutNotificationMethods':[]},'clientInfo':{'name':'codex-browser-use','title':'Codex Browser Use','version':'0.1.0'}}}
+if r != expected:
+ print(json.dumps({'id':r.get('id'),'error':{'message':'unexpected handshake'}}),flush=True)
+ sys.exit(0)
+# Any successful result is sufficient; native code discards its value.
+print(json.dumps({'id':'1','result':False}),flush=True)
+r=json.loads(sys.stdin.readline())
+print(json.dumps({'id':r.get('id'),'result':r}),flush=True)
+"#,
+    );
+    let mut connection = CodexAppServerConnection::spawn_initialized_with_cli_lookup(
+        FetchRuntimeMode::Default,
+        || Ok(fixture.cli()),
+    )
+    .await
+    .unwrap();
+    let params = core_runtime_supervisor::codex_app_server_auth::auth_status_params(false);
+    let response = connection
+        .send_request("getAuthStatus", Some(params.clone()))
+        .await
+        .unwrap();
+    assert_eq!(
+        response,
+        serde_json::json!({"id":"2","method":"getAuthStatus","params":params})
+    );
+    connection.child.wait().await.unwrap();
+}
+
+#[tokio::test]
+async fn initialization_rejection_returns_error_and_drops_owned_child() {
+    let fixture = rpc_fixture(
+        r#"
+import os
+with open(os.path.join(os.path.dirname(__file__),'pid'),'w') as f: f.write(str(os.getpid()))
+r=json.loads(sys.stdin.readline())
+print(json.dumps({'id':r['id'],'error':{'message':'synthetic init refusal'}}),flush=True)
+time.sleep(10)
+"#,
+    );
+    let result = CodexAppServerConnection::spawn_initialized_with_cli_lookup(
+        FetchRuntimeMode::Default,
+        || Ok(fixture.cli()),
+    )
+    .await;
+    assert_eq!(result.err().unwrap(), "synthetic init refusal");
+    let pid: i32 = std::fs::read_to_string(fixture.0.join("pid"))
+        .unwrap()
+        .parse()
+        .unwrap();
+    tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            if unsafe { libc::kill(pid, 0) } == -1
+                && std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH)
+            {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .expect("initialization failure must release owned child");
+}

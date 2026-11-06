@@ -213,6 +213,19 @@ for expected in ['10022759c:', '1002275a0:', '1002275a4:', '1002275b8:', '<usize
     assert expected in rpc_send, expected
 for expected in ['1002bd504:', '1002bd510:', '1002bd530:', '1002bd5a0:']:
     assert expected in rpc_error, expected
+initialize_literals = {key:read(address,length).decode() for key,address,length in [
+    ('capabilities',0x100a485c0,12),('experimentalApi',0x100a485cc,15),
+    ('optOut',0x100a485db,25),('clientInfo',0x100a485f4,10),
+    ('name',0x100a485fe,17),('title',0x100a4860f,17),('method',0x100a48624,10)]}
+assert initialize_literals == {'capabilities':'capabilities','experimentalApi':'experimentalApi',
+    'optOut':'optOutNotificationMethods','clientInfo':'clientInfo','name':'codex-browser-use',
+    'title':'Codex Browser Use','method':'initialize'}
+for expected in ['100228894:', '10022896c:', '#0x101', '100228b94:', '100228ba0:',
+    '100228d44:', '100228e40:', '100228f2c:', '100228f30:', '100228f38:', '100228f3c:',
+    '100228f64:', '#0x30', '100228f6c:', '#0x2e30', '100228f70:', '#0x2e31',
+    '100229154:', '1002291cc:', '1002291d4:', '10022947c:',
+    '1002294d8:', '100229508:', '0x1002289d4', '100228a14:']:
+    assert expected in access_token_fetcher, expected
 print(json.dumps({
     'artifact': str(artifact), 'sha256': sha,
     'function': 'node_repl::authenticated_fetch::outbound_passthrough_request',
@@ -348,7 +361,7 @@ print(json.dumps({
             'take stdin then stdout; wrap stdout with 8192-byte BufReader'
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
-        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Request IDs, response matching and per-line timeout now implemented in send_request. Initialization messages, reconnect and client caching remain pending. Vendor CLI was not executed.'
+        'limits':'Owned process fixtures only. Runtime mode parser is supplied by caller. Request IDs, response matching and per-line timeout now implemented in send_request. Initialization implemented; reconnect and client connection reuse remain pending. Vendor CLI was not executed.'
     },
     'appServerRequestProtocol': {
         'range':['0x10022753c','0x100228224'],
@@ -364,7 +377,22 @@ print(json.dumps({
             'missing result returns JSON null; read/EOF/timeout failures have distinct errors'
         ],
         'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
-        'limits':'Owned subprocess tests, not original-runtime differential execution. Initialization/initialized notification, client connection reuse and production auth integration remain pending. Per-line timeout is not an overall deadline; write cancellation/resumption parity is not proven.'
+        'limits':'Owned subprocess tests, not original-runtime differential execution. Initialization implemented; reviewed path has no initialized notification. Client connection reuse and production auth integration remain pending. Per-line timeout is not an overall deadline; write cancellation/resumption parity is not proven.'
+    },
+    'appServerInitialization': {
+        'source':'inlined spawn_initialized in AccessTokenFetcher async body',
+        'instructionTextSha256':hashlib.sha256(access_token_fetcher.encode()).hexdigest(),
+        'literals':initialize_literals,
+        'params':{'capabilities':{'experimentalApi':True,'optOutNotificationMethods':[]},
+                  'clientInfo':{'name':'codex-browser-use','title':'Codex Browser Use','version':'0.1.0'}},
+        'reviewedBehavior':[
+            'spawn at 0x100228894; assemble capabilities and clientInfo, invoke send_request initialize at 0x100229154',
+            'version 0.1.0 assembled by immediate stores at 0x100228f64..0x100228f74',
+            'initialize error branches to connection drop at 0x1002291d4; successful result discarded at 0x10022947c',
+            'successful connection stored at 0x1002294d8; branch 0x100229508 -> 0x1002289d4 -> ordinary request send 0x100228a14; no initialized notification on this path'
+        ],
+        'implementation':'native/runtime-supervisor/src/codex_app_server.rs',
+        'limits':'Pinned-build path only. Client shared-connection lifecycle still pending; no claim that all App Server clients/protocol versions omit initialized. Owned fixture tests, not live vendor auth.'
     },
     'implementation': 'native/runtime-supervisor/src/authenticated_fetch.rs',
     'limits': 'Static reconstruction, no original execution. URL routing and authenticated header shaping are reconstructed; app-server integration remains unimplemented; client construction and HTTP/TLS send have owned fixture coverage. No production handler is wired to this constructor. The client initialization call and panic source location establish reqwest 0.12.28; configuration and deployment integration remain incomplete.'

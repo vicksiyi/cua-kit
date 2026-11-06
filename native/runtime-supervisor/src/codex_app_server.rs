@@ -123,3 +123,31 @@ impl CodexAppServerConnection {
         }
     }
 }
+
+/// Exact initialization payload in the pinned native build. The version is the
+/// protocol client's observed value, not this reconstruction crate's version.
+pub fn initialize_params() -> serde_json::Value {
+    serde_json::json!({
+        "capabilities": {"experimentalApi": true, "optOutNotificationMethods": []},
+        "clientInfo": {"name": "codex-browser-use", "title": "Codex Browser Use", "version": "0.1.0"}
+    })
+}
+
+impl CodexAppServerConnection {
+    pub async fn spawn_initialized(mode: FetchRuntimeMode) -> Result<Self, String> {
+        Self::spawn_initialized_with_cli_lookup(mode, || std::env::var("CODEX_CLI_PATH")).await
+    }
+
+    pub async fn spawn_initialized_with_cli_lookup(
+        mode: FetchRuntimeMode,
+        lookup: impl FnOnce() -> Result<String, VarError>,
+    ) -> Result<Self, String> {
+        let mut connection = Self::spawn_with_cli_lookup(mode, lookup)?;
+        connection
+            .send_request("initialize", Some(initialize_params()))
+            .await?;
+        // The reviewed native path proceeds directly to the caller's request.
+        // It does not send an additional `initialized` notification here.
+        Ok(connection)
+    }
+}

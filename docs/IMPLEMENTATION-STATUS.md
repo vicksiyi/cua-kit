@@ -6579,3 +6579,12 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Matching error-field presence wins over result (including null error). String error.message is returned verbatim, including empty; otherwise use the method-specific native fallback. Missing result returns null.
 - All 8 process/protocol tests passed in 30.01 seconds, including owned executable fixtures, three consecutive requests with optional params, notification/unrelated-ID skipping, error/result precedence, malformed/UTF8/EOF handling, actual 30-second timeout, process drop and pipe exchange. Static audit passed. No vendor CLI or real credential was used.
 - Remaining: initialization handshake, initialized notification, connection sharing/recreation, App Server auth fetcher, diagnostics and production wiring. Cancellation/resumption parity for partially written requests is unproven. Full end-to-end auth and daily-browser acceptance remain incomplete.
+
+
+### Native App Server initialization checkpoint (2026-11-06)
+
+- Reconstructed spawn_initialized from the inlined AccessTokenFetcher path. It spawns the process, sends initialize, discards any successful response value and returns the connection. Failure propagates and drops the child.
+- Exact pinned payload: capabilities.experimentalApi=true, capabilities.optOutNotificationMethods=[], clientInfo name=codex-browser-use, title=Codex Browser Use, version=0.1.0. The version is the observed protocol identity, not inferred from this crate.
+- Correction to prior pending-task notes: the reviewed installed path does NOT send an additional initialized notification. Success stores the connection then branches directly into the ordinary request at 0x100229508 -> 0x1002289d4 -> 0x100228a14. Do not add a notification based on a generic protocol assumption. This is not a claim about every App Server version/client.
+- Two new owned-process tests pass: exact handshake followed immediately by getAuthStatus with ID 2, and initialize rejection with child drop/reap. Successful initialize result false is accepted, matching the ignored result value. Previously existing eight tests were filtered out in this focused run. Static audit passes and records literals, immediate version stores and success/error control flow.
+- Remaining: client shared-connection locking/reuse, invalidation/recreation, concrete auth fetcher, diagnostics and production integration. No real login/credential or vendor CLI was exercised; full browser/app acceptance remains separate and incomplete.
