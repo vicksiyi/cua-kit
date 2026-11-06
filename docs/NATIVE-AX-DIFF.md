@@ -606,3 +606,20 @@ AXValue、marker、数组等不能由它代替专用 decoder。main.swift 的 sc
 Swift 构建、专项测试和 observation-text self-test 通过；这是受控类型与格式验证，
 不是应用 UI 观察验收。marker 回退的完整 typed result dispatch、缓存和选择来源映射
 仍需继续恢复。
+
+## SelectedText 与真实 marker 组件的组合验证
+
+此前 selectedText getter 的 10 组检查使用整数模拟 marker；现在另外增加 10 组组合
+检查，用系统 AXTextMarkerCreate / AXTextMarkerRangeCreate 生成真实 CF 对象，依次
+经过已恢复的 marker 解码、参数编码、raw 参数化读取状态处理、普通字符串结果解码和
+selectedText / presentation。仅系统读取的响应由 fixture 提供，不读取应用 UI。
+
+组合检查覆盖非空/空白直接文本短路、缺失/空直接文本回退、marker 缺失/类型错误、
+带非空输出的原生失败、成功但 nil 输出、空字符串及错误返回类型。特别验证原生失败时
+不会继续解码，即使 output 指针非空；结果为空时 presentation 显示焦点，不生成伪选中文本。
+Unicode 文本进入实际 presentation 时保留内容。普通返回类型 fixture 限于 NSString /
+NSNumber，不把它外推到尚未完整组合的特殊 CF 类型 decoder。
+
+20 组 Swift 行为检查通过。这证明已恢复组件在受控响应边界可组合，不代表缓存、
+AXParameterAttribute 协议分派或生产选择来源已经接通；不会因此自动给真实应用读取
+选区，也不是原厂服务的运行时 oracle。

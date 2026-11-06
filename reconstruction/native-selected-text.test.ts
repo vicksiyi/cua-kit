@@ -10,7 +10,7 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 test(
-  "native selected-text getter preserves fallback, empty values and error handling",
+  "native selected-text getter and real CF marker pipeline preserve fallback and errors",
   { skip: process.platform !== "darwin", timeout: 60_000 },
   async () => {
     const directory = await mkdtemp(join(tmpdir(), "cua-selected-text-"));
@@ -19,6 +19,9 @@ test(
       await exec("xcrun", [
         "swiftc",
         join(root, "native/macos/Sources/CuaHelper/SelectedText.swift"),
+        ...["UIElementError", "AXProcessID", "AXAttributeReading", "AXTextMarkers", "AXParameterEncoding", "AXOrdinaryValueDecoding"].map(
+          name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`),
+        ),
         "-o",
         executable,
         join(
@@ -28,7 +31,7 @@ test(
         join(root, "native/macos/Tests/SelectedTextTests.swift"),
       ]);
       const { stdout } = await exec(executable);
-      assert.match(stdout, /10 native selected-text cases passed/);
+      assert.match(stdout, /10 native selected-text cases and 10 composed marker pipeline cases passed/);
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

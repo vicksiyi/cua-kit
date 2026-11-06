@@ -6883,3 +6883,9 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 - Added AXOrdinaryValueDecoding.swift and connected the collector's scalar helper through an adapter restricted to CFString/CFNumber/CFBoolean. Empty values, false, NSNumber identity and Unicode strings are preserved; specialized CF objects do not accidentally enter this adapter. This is not the complete decoder dispatcher.
 - Compiled Swift tests cover bridges, Optional/AnyObject requests, wrong-type error policy and specialized-object rejection. Full helper build and observation-text self-test pass; the 193-signature audit remains pinned to the inspected native build. No actual application UI was read or operated.
 - Native generic dispatch, selected-text observation integration, cache/revisions/diff and real UI acceptance remain incomplete.
+
+### 2026-11-06 Composed native selected-text pipeline validation
+
+- Extended selected-text coverage beyond integer marker fixtures: ten new cases use genuine system CF markers/ranges with restored marker decoding, parameter encoding, raw AX parameterized status handling, ordinary result decoding and presentation. The ten original getter cases remain.
+- Exact call traces verify early success/whitespace short-circuit, empty/missing text fallback, missing/wrong marker, status failure with a nonempty output, successful nil/empty output and wrong ordinary result type. An AX read failure cannot reach decode; presentation does not invent a selection after failure.
+- The composed Swift test passes. Native status/thread, marker, parameter encoding and ordinary-decoding regressions also pass. This is controlled response composition, not an App UI run or full generic-dispatch equivalence. Production selection-source mapping, cached access and native revisions/diff remain incomplete.

@@ -1,6 +1,7 @@
 // Recovered control flow of AccessibilitySupport.UIElementProtocol.selectedText.
-// Closures stand in for the original typed AX accessors, whose element/marker
-// wrappers are not yet restored. Keep this logic in Swift, not in the JS client.
+// Closures stand in for the original typed AX accessors. Marker wrappers and
+// concrete encoding/decoding are restored separately; cache/protocol dispatch
+// and production selection-source integration remain incomplete.
 func selectedText<MarkerRange>(
     readAttribute: () -> String?,
     readMarkerRange: () -> MarkerRange?,
