@@ -307,6 +307,25 @@
     "implementation": "native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver",
     "limits": "Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete."
   },
+  "kernelTimeoutControl": {
+    "range": [
+      "0x100038f50",
+      "0x100039728"
+    ],
+    "instructionTextSha256": "78ff266f3858b714c7f96175db057eb38169d79bc1293042ff850d1bff47f932",
+    "dispatchCalls": [
+      "0x1001c7b78",
+      "0x1001c7edc"
+    ],
+    "fieldTableAddress": "0x100cf8290",
+    "reviewedBehavior": [
+      "suspend_timeout and resume_timeout share ExecTimeoutControlMessage; one required exec_id:String field",
+      "missing identity branches to missing-field construction; duplicate identity branches to duplicate-field construction before map projection",
+      "non-string identity rejects, empty string accepted by DTO; unknown fields ignored"
+    ],
+    "implementation": "native/runtime-supervisor/src/kernel_protocol.rs; ProcessWorker kernel-only timeout control normalization",
+    "limits": "Payload decode only. Does not establish timeout scheduling, nesting, cancellation or trusted-worker protocol parity."
+  },
   "kernelExecResult": {
     "range": [
       "0x100026aa8",

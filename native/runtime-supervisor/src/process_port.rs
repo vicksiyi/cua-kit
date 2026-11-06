@@ -311,6 +311,13 @@ async fn read_frames(
                 };
                 value = decoded;
             }
+            if kernel_protocol && matches!(value["type"].as_str(), Some("suspend_timeout" | "resume_timeout")) {
+                let Ok(decoded) = crate::kernel_protocol::decode_timeout_control(&line) else {
+                    line.clear();
+                    continue;
+                };
+                value = decoded;
+            }
             let bytes = line.len();
             if queued
                 .fetch_add(bytes, Ordering::AcqRel)

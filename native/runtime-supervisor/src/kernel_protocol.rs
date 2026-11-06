@@ -35,10 +35,43 @@ pub(crate) fn decode_exec_result(line: &[u8]) -> Result<Value, serde_json::Error
     serde_json::to_value(serde_json::from_slice::<ExecResult>(line)?)
 }
 
+// Both native timeout variants share ExecTimeoutControlMessage, whose sole
+// payload field is required exec_id:String (visitor 0x100038f50..0x100039728).
+#[derive(Deserialize, Serialize)]
+struct ExecTimeoutControl {
+    #[serde(rename = "type")]
+    kind: String,
+    exec_id: String,
+}
+pub(crate) fn decode_timeout_control(line: &[u8]) -> Result<Value, serde_json::Error> {
+    serde_json::to_value(serde_json::from_slice::<ExecTimeoutControl>(line)?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn timeout_control_requires_one_string_identity_and_ignores_unknown_fields() {
+        for kind in ["suspend_timeout", "resume_timeout"] {
+            for identity in ["", "execution"] {
+                let raw = json!({"type":kind,"exec_id":identity,"extra":{"value":1}});
+                assert_eq!(
+                    decode_timeout_control(&serde_json::to_vec(&raw).unwrap()).unwrap(),
+                    json!({"type":kind,"exec_id":identity})
+                );
+            }
+            for value in [Value::Null, json!(42), json!(false), json!([]), json!({})] {
+                let raw = json!({"type":kind,"exec_id":value});
+                assert!(decode_timeout_control(&serde_json::to_vec(&raw).unwrap()).is_err());
+            }
+            assert!(decode_timeout_control(format!(r#"{{"type":"{kind}"}}"#).as_bytes()).is_err());
+            assert!(decode_timeout_control(
+                format!(r#"{{"type":"{kind}","exec_id":"first","exec_id":"last"}}"#).as_bytes()
+            )
+            .is_err());
+        }
+    }
     #[test]
     fn exec_result_required_fields_defaults_and_types() {
         let base = json!({"type":"exec_result","id":"","ok":false,"output":""});

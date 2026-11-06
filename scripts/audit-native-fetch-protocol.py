@@ -95,6 +95,20 @@ for expected in ['1001c1638:', '#0x3', '1001c1640:', '1001c1654:', '#0x7',
                  '1001c1668:', '#0x6e77', '1001c1674:', '#0x6e6b']:
     assert expected in error_kind_decode, expected
 
+timeout_control_decode = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x100038f50','--stop-address=0x100039728',str(artifact)], text=True)
+timeout_dispatch = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
+    '--start-address=0x1001c7b58','--stop-address=0x1001c7f14',str(artifact)], text=True)
+assert read(0x1009c1461,7) == b'exec_id'
+field_pointer, field_length = struct.unpack('<QQ',read(0x100cf8290,16))
+assert read(field_pointer,field_length) == b'exec_id'
+for expected in ['1001c7b78:', '1001c7edc:', '0x100038f50', 'ExecTimeoutControlMessage']:
+    assert expected in timeout_dispatch, expected
+for expected in ['100038fdc:', '0x100039420', '10003936c:', '0x1000394d0',
+                 '1000393a8:', 'StringVisitor', '100039450:', '#0x8fb',
+                 '1000394fc:', '#0x977', '100039330:', '100039360:']:
+    assert expected in timeout_control_decode, expected
+
 sentry_user_update = subprocess.check_output(['xcrun','llvm-objdump','--disassemble','--demangle',
     '--start-address=0x10022c17c','--stop-address=0x10022c380',str(artifact)], text=True)
 for crate in ['sentry-core-0.49.2','sentry-types-0.49.2']:
@@ -489,6 +503,19 @@ print(json.dumps({
         'reviewedBehavior':'configure_scope uses the active hub, projects optional user ID with the second sentry_user argument absent (x2=0), then replaces Scope user. None clears the user; empty string remains present.',
         'implementation':'native/runtime-supervisor/src/codex_app_server_auth.rs:SentryAuthUserObserver',
         'limits':'Restores auth-user scope mutation using the original dependency version. No diagnostics initialization, vendor DSN, network transport or event capture is added. Whole diagnostics subsystem remains incomplete.'
+    },
+    'kernelTimeoutControl': {
+        'range':['0x100038f50','0x100039728'],
+        'instructionTextSha256':hashlib.sha256(timeout_control_decode.encode()).hexdigest(),
+        'dispatchCalls':['0x1001c7b78','0x1001c7edc'],
+        'fieldTableAddress':'0x100cf8290',
+        'reviewedBehavior':[
+            'suspend_timeout and resume_timeout share ExecTimeoutControlMessage; one required exec_id:String field',
+            'missing identity branches to missing-field construction; duplicate identity branches to duplicate-field construction before map projection',
+            'non-string identity rejects, empty string accepted by DTO; unknown fields ignored'
+        ],
+        'implementation':'native/runtime-supervisor/src/kernel_protocol.rs; ProcessWorker kernel-only timeout control normalization',
+        'limits':'Payload decode only. Does not establish timeout scheduling, nesting, cancellation or trusted-worker protocol parity.'
     },
     'kernelExecResult': {
         'range':['0x100026aa8','0x100028694'],

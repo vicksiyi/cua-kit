@@ -221,3 +221,26 @@ async fn kernel_exec_result_payload_is_decoded_from_raw_fields_before_dispatch()
     assert!(worker.next_message().await.unwrap().is_none());
     worker.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn kernel_drops_invalid_timeout_controls_before_dispatch_and_keeps_worker_usable() {
+    let mut worker=ProcessWorker::start_kernel(spec(r#"
+        for (const type of ['suspend_timeout','resume_timeout']) {
+          for (const body of ['', ',"exec_id":null', ',"exec_id":42', ',"exec_id":"first","exec_id":"last"'])
+            process.stdout.write('{"type":"'+type+'"'+body+'}\n');
+          process.stdout.write(JSON.stringify({type,exec_id:'valid',extra:true})+'\n');
+        }
+        process.stdin.once('data',()=>{
+          process.stdout.write('{"type":"exec_result","id":"done","ok":true,"output":"still alive"}\n');
+          process.exit(0);
+        });
+    "#)).await.unwrap();
+    for kind in ["suspend_timeout", "resume_timeout"] {
+        let message=timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap();
+        assert_eq!(message,json!({"type":kind,"exec_id":"valid"}));
+    }
+    worker.send(&json!({"type":"ping"})).await.unwrap();
+    let result=timeout(Duration::from_secs(5),worker.next_message()).await.unwrap().unwrap().unwrap();
+    assert_eq!(result["output"],"still alive");
+    worker.close().await.unwrap();
+}
