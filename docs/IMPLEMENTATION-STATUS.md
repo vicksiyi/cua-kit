@@ -6257,3 +6257,10 @@ HTTP request parsing, authentication, upgrade response, connection attachment an
 Added read_request composed with header collection, and raw request_query_param. Static evidence establishes lossy UTF-8, CRLF line splitting, two required whitespace-separated request tokens, first-colon header splitting, Unicode whitespace trim, ASCII header-name lowercasing and last-duplicate-wins map insertion. Query extraction returns the first exact key/value pair without URL decoding. Four HTTP tests pass, including two new parser/query tests and existing header/prefix tests.
 
 The HTTP parser is not yet an authenticated upgrade handler: authentication, routing, response handshake and connection manager integration remain outstanding.
+
+
+### Native HTTP authentication and upgrade gate checkpoint
+
+Added validate_upgrade on parsed requests, retaining native ordering: exact first token query value, optional expected-origin comparison with trailing slashes removed from the received origin, then GET/Connection upgrade token/Upgrade websocket/key presence. Authentication failures are classified Forbidden and upgrade-shape failures NotFound. Five HTTP tests pass, with new coverage of authentication precedence, duplicate tokens, optional origin, comma token matching and empty-versus-missing key.
+
+Expected-origin construction, response serialization, successful upgrade and connection manager integration remain open. This gate is not yet a production listener or a completed browser session.

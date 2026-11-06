@@ -97,3 +97,47 @@ fn query_parameters_are_first_exact_raw_key_value_pair() {
     assert_eq!(get("/x?Token=a&%74oken=b", "token"), None);
     assert_eq!(get("/x", "token"), None);
 }
+
+#[test]
+fn upgrade_gate_authenticates_before_checking_upgrade_shape() {
+    use core_browser_extension_host::app_server_http::{
+        read_request, validate_upgrade, RequestRejection::*,
+    };
+    let mut request=read_request(&mut Cursor::new(b"GET /arbitrary?token=secret\r\nOrigin: chrome-extension://example///\r\nConnection: keep-alive, UpGrAdE\r\nUpgrade: WebSocket\r\nSec-WebSocket-Key: \r\n\r\n")).unwrap();
+    // Presence alone is checked for key; no key decoding or version/path gate.
+    assert_eq!(
+        validate_upgrade(&request, "secret", Some("chrome-extension://example")),
+        Ok("")
+    );
+    request.method = "POST".into();
+    assert_eq!(validate_upgrade(&request, "wrong", None), Err(Forbidden));
+    assert_eq!(validate_upgrade(&request, "secret", None), Err(NotFound));
+    request.method = "GET".into();
+    assert_eq!(
+        validate_upgrade(&request, "secret", Some("chrome-extension://example/")),
+        Err(Forbidden)
+    );
+    request.headers.remove("origin");
+    assert_eq!(
+        validate_upgrade(&request, "secret", Some("chrome-extension://example")),
+        Err(Forbidden)
+    );
+    assert_eq!(validate_upgrade(&request, "secret", None), Ok(""));
+    request.path = "/?token=wrong&token=secret".into();
+    assert_eq!(validate_upgrade(&request, "secret", None), Err(Forbidden));
+    request.path = "/?token=secret".into();
+    request
+        .headers
+        .insert("connection".into(), "xupgrade".into());
+    assert_eq!(validate_upgrade(&request, "secret", None), Err(NotFound));
+    request
+        .headers
+        .insert("connection".into(), "upgrade".into());
+    request
+        .headers
+        .insert("upgrade".into(), "websocket, other".into());
+    assert_eq!(validate_upgrade(&request, "secret", None), Err(NotFound));
+    request.headers.insert("upgrade".into(), "websocket".into());
+    request.headers.remove("sec-websocket-key");
+    assert_eq!(validate_upgrade(&request, "secret", None), Err(NotFound));
+}

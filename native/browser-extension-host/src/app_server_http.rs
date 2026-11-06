@@ -117,3 +117,50 @@ pub fn request_query_param<'a>(path: &'a str, name: &str) -> Option<&'a str> {
         (key == name).then_some(value)
     })
 }
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum RequestRejection {
+    Forbidden,
+    NotFound,
+}
+
+/// Observed handle_proxy_connection checks, in native order. The caller must
+/// supply the runtime's token and optional expected origin, never request values.
+/// Origin normalization here applies only to the received header. Upstream
+/// construction/normalization of the expected origin is a separate responsibility.
+pub fn validate_upgrade<'a>(
+    request: &'a HttpRequest,
+    expected_token: &str,
+    expected_origin: Option<&str>,
+) -> Result<&'a str, RequestRejection> {
+    if request_query_param(&request.path, "token") != Some(expected_token) {
+        return Err(RequestRejection::Forbidden);
+    }
+    if let Some(expected) = expected_origin {
+        if request
+            .headers
+            .get("origin")
+            .map(|origin| origin.trim_end_matches('/'))
+            != Some(expected)
+        {
+            return Err(RequestRejection::Forbidden);
+        }
+    }
+    let connection_upgrade = request.headers.get("connection").is_some_and(|value| {
+        value
+            .split(',')
+            .any(|part| part.trim().eq_ignore_ascii_case("upgrade"))
+    });
+    let websocket_upgrade = request
+        .headers
+        .get("upgrade")
+        .is_some_and(|value| value.eq_ignore_ascii_case("websocket"));
+    if request.method != "GET" || !connection_upgrade || !websocket_upgrade {
+        return Err(RequestRejection::NotFound);
+    }
+    request
+        .headers
+        .get("sec-websocket-key")
+        .map(String::as_str)
+        .ok_or(RequestRejection::NotFound)
+}
