@@ -1166,6 +1166,17 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['selectionState']={
+    'focused':'0x1007abf94 -> 0x1007ac3f0..<0x1007ac52c: cached AXFocused lenient Bool, absent/error/nil false',
+    'selected':'0x1007abc80..<0x1007abde8: present AXSelected entry decoded leniently and returns low Bool bit, even decode nil/error -> false. Only absent entry enters traits fallback.',
+    'traitsFallback':'0x1007abd80 invokes traits then tests raw bit 3 when nonnil; no role or isCatalyst gate',
+    'traitsRead':'0x1007af9d4..<0x1007afa64 requests UInt64 via value(for:ignoringTypeMismatch:false), cached lenient then fresh strict',
+    'traitsTypeBinding':'0x1014686b0 GOT bind libswiftCore/_$ss6UInt64VN',
+    'production':'Collector now uses cached isEnabled/isFocused and systemIsSelected instead of three success-only raw scalar reads.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007abc80,0x1007abde8),(0x1007abf94,0x1007abfb0),(0x1007ac3f0,0x1007ac52c),(0x1007af9d4,0x1007afa64)]],
+    'implementation':['native/macos/Sources/CuaHelper/UIElementSelectionState.swift','native/macos/Sources/CuaHelper/AXUInt64Decoding.swift','native/macos/Sources/CuaHelper/UIElementSystemSelectionState.swift'],
+    'limitations':'Full CatalystTraits OptionSet description remains pending; raw UInt64 selection bit is explicit. Native live acceptance and full renderer/transaction remain incomplete.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',

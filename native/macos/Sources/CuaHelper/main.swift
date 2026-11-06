@@ -70,7 +70,11 @@ final class Target {
             // pending with the original UIElement cache/transaction integration.
             let actions = (try? readSystemAXActions(element)) ?? []
             var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
-            for name in [kAXEnabledAttribute, kAXFocusedAttribute, kAXSelectedAttribute] { if let value = scalar(attribute(element, name)) { props[name] = value } }
+            props[kAXEnabledAttribute] = item.isEnabled
+            props[kAXFocusedAttribute] = item.isFocused
+            props[kAXSelectedAttribute] = item.systemIsSelected(reportError: { error in
+                Logger(subsystem: "core.cua", category: "Accessibility").error("Selection traits read failed: \(String(describing: error))")
+            })
             if let selected = attribute(element,kAXSelectedTextRangeAttribute),
                let range = decodedAXTypedAttribute(selected, as: CFRange.self) {
                 props["selectionStart"] = range.location; props["selectionLength"] = range.length

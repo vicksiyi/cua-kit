@@ -2268,3 +2268,19 @@ non-success statuses are handled by the typed reader, and prefetched child cache
 preserve order, duplicate entries and transaction attributes without live UI reads.
 The collector still applies its existing visited set and node/depth/time limits;
 these are demo policies and not proof of original transformation-tree parity.
+
+
+### Cached state and Catalyst selection fallback
+
+Restored isFocused and isSelected. Missing/invalid AXFocused becomes false.
+AXSelected differs: only an absent cached entry triggers the traits getter;
+a present false, malformed entry, or decoding failure returns false directly.
+The traits getter requests UInt64 (GOT 0x1014686b0 binds UInt64 metadata), and
+selection tests bit 3. Its cached-to-fresh read uses the recovered strictness and
+support gate; no role or Catalyst-app condition is added.
+
+Production observation now emits isEnabled (missing defaults true), isFocused,
+and systemIsSelected from the recovered paths. Tests cover absent vs malformed
+cache, false precedence over selected traits, independent bits, UInt64 maximum,
+negative NSNumber rejection and strict read errors. Full CatalystTraits formatting,
+original transformation rendering and real app acceptance are still pending.

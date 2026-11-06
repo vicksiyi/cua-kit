@@ -3093,6 +3093,42 @@
       ],
       "limitations": "Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified."
     },
+    "selectionState": {
+      "focused": "0x1007abf94 -> 0x1007ac3f0..<0x1007ac52c: cached AXFocused lenient Bool, absent/error/nil false",
+      "selected": "0x1007abc80..<0x1007abde8: present AXSelected entry decoded leniently and returns low Bool bit, even decode nil/error -> false. Only absent entry enters traits fallback.",
+      "traitsFallback": "0x1007abd80 invokes traits then tests raw bit 3 when nonnil; no role or isCatalyst gate",
+      "traitsRead": "0x1007af9d4..<0x1007afa64 requests UInt64 via value(for:ignoringTypeMismatch:false), cached lenient then fresh strict",
+      "traitsTypeBinding": "0x1014686b0 GOT bind libswiftCore/_$ss6UInt64VN",
+      "production": "Collector now uses cached isEnabled/isFocused and systemIsSelected instead of three success-only raw scalar reads.",
+      "blocks": [
+        {
+          "start": "0x1007abc80",
+          "endExclusive": "0x1007abde8",
+          "machineCodeSha256": "6b43efee449e994d3d6a54cbaf67bbb7bc6f761303813e1561390cf5865e473c"
+        },
+        {
+          "start": "0x1007abf94",
+          "endExclusive": "0x1007abfb0",
+          "machineCodeSha256": "be732458d7063282cd20f6a39d539c10c99a041fed0b4fd6afd127fd67f47ebd"
+        },
+        {
+          "start": "0x1007ac3f0",
+          "endExclusive": "0x1007ac52c",
+          "machineCodeSha256": "5bb3536657d104d4e2ef065ab536330197c7c3ef5e4aa4ca8e96ff6dcdda48be"
+        },
+        {
+          "start": "0x1007af9d4",
+          "endExclusive": "0x1007afa64",
+          "machineCodeSha256": "f58fdbd249959cb52ab1f479e38ba73412003fb797d431ce24485294755d51e7"
+        }
+      ],
+      "implementation": [
+        "native/macos/Sources/CuaHelper/UIElementSelectionState.swift",
+        "native/macos/Sources/CuaHelper/AXUInt64Decoding.swift",
+        "native/macos/Sources/CuaHelper/UIElementSystemSelectionState.swift"
+      ],
+      "limitations": "Full CatalystTraits OptionSet description remains pending; raw UInt64 selection bit is explicit. Native live acceptance and full renderer/transaction remain incomplete."
+    },
     "selectionCapability": {
       "slot": "0x1015756f0 -> 0x1007afff8 -> 0x10078ec70",
       "generic": "UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94",
