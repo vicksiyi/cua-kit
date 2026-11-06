@@ -4,8 +4,7 @@ import {
   readPermissionSnapshot,
   approvalMode,
   permissionTable,
-  permissionTarget,
-  tableMatchesPermission,
+  tableMatchesResource,
   validPreferenceSession,
 } from "./persisted_permissions";
 import { guardianOriginCache } from "./guardian_cache";
@@ -46,7 +45,8 @@ export function createAutoAnswerMethod(
     const tableKey = permissionTableKey(request.resource),
       modeKey = approvalModeKey(request.resource);
     const refresh =
-      request.resource.kind === "origin" && request.guardianMode === "v2";
+      request.resource.kind === "siwc" ||
+      (request.resource.kind === "origin" && request.guardianMode === "v2");
     const global = await readPermissionSnapshot(
       this.config.global,
       [
@@ -56,11 +56,10 @@ export function createAutoAnswerMethod(
       refresh,
     );
     const mode = approvalMode(global, request.resource),
-      globalTable = permissionTable(global, tableKey),
-      target = permissionTarget(request.resource);
+      globalTable = permissionTable(global, tableKey);
     if (
       globalTable != null &&
-      tableMatchesPermission(globalTable, "denied", target)
+      tableMatchesResource(globalTable, "denied", request.resource)
     )
       globalDenial = {
         decision: "deny",
@@ -79,7 +78,7 @@ export function createAutoAnswerMethod(
     turns.invalidateGuardianApproval(request);
     if (
       sessionTable != null &&
-      tableMatchesPermission(sessionTable, "denied", target)
+      tableMatchesResource(sessionTable, "denied", request.resource)
     )
       return {
         decision: "deny",
@@ -115,7 +114,7 @@ export function createAutoAnswerMethod(
       };
     if (
       sessionTable != null &&
-      tableMatchesPermission(sessionTable, "allowed", target) &&
+      tableMatchesResource(sessionTable, "allowed", request.resource) &&
       (request.resource.kind !== "origin" ||
         (await accessApprovalLifetime(request.resource.origin, this.config)) ===
           "thread")
@@ -128,7 +127,7 @@ export function createAutoAnswerMethod(
     if (
       persistentAllowed &&
       globalTable != null &&
-      tableMatchesPermission(globalTable, "allowed", target)
+      tableMatchesResource(globalTable, "allowed", request.resource)
     )
       return {
         decision: "approve",

@@ -72,3 +72,11 @@
 从同一 hash 的 `yN/Ja/mte/uw` 恢复检测命令及自包含页面 readiness 函数。检测先检查 capability，再对观察前后各自的当前 URL 做 observeContent 授权；第二次拒绝不会返回已观察内容。点击前检查 control、visible、enabled，滚动后等待一帧并重新检查和 hit-test；自动模式要求唯一候选且 ref 相同。账号比较保留 accountKey、authLifetimeId、authOrigin、pageOrigin 四字段。
 
 新增 3 项源码差分测试通过：包含 capability 缺失、前后授权拒绝、观察失败、无效 tab；readiness 的 8 种情况 × scroll/automatic 组合；逐项账号身份变化。Browser TypeScript 检查通过。这些是命令/页面算法边界测试，不代表真实登录流程验收。检测命令尚未加入公共注册表；完整 authenticate、偏好存储、原生 grant/cookie 编排仍未接通。
+
+## 后续恢复：SIWC 授权偏好存储
+
+从当前 `pu.getSiwcPermission/handleSiwcPromptResult` 以及 `Yoe/Cg/du/xS/jL` 恢复 SIWC 资源。表名为 `siwc`，键为精确 `JSON.stringify([accountKey, origin])`；不做通配符转义、去空白或域名模式匹配。SIWC 无 never_ask 模式，缺少显式 persist 时不默认记住决定；读全局和会话表均要求 refresh snapshot。保留原本的拒绝优先级及持久化策略。
+
+验证：存储/匹配源码差分及实际 Preferences 会话授权、跨账号隔离、全局拒绝优先、cancel 不写入、强制刷新测试通过；Browser TypeScript 与重建通过。测试使用内存配置，无真实账号或授权写入。
+
+本轮真实 native 扩展 MCP 浏览器操作回归通过（约 8.8 秒），包含 locator 点击和光标检查。完整 SIWC authenticate 编排与公开注册仍待完成，不宣称登录能力已可用。

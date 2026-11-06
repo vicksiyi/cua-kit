@@ -138,6 +138,27 @@ export class Preferences {
       turn: preferenceTurn(this.runtime),
     });
   }
+  async getSiwcPermission(target: { accountKey: string; origin: string }) {
+    return this.maybeAutoAnswerBrowserUseRequest({
+      preferenceSessionId: preferenceSessionId(this.runtime),
+      resource: { kind: "siwc", ...target },
+      turn: preferenceTurn(this.runtime),
+    });
+  }
+  async handleSiwcPromptResult(
+    target: { accountKey: string; origin: string },
+    result: ApprovalResult,
+  ) {
+    await promptResultHandler.handlePromptResult(
+      {
+        preferenceSessionId: preferenceSessionId(this.runtime),
+        resource: { kind: "siwc", ...target },
+        turn: preferenceTurn(this.runtime),
+      },
+      result,
+      this.config,
+    );
+  }
   async isFullCdpEnabled() {
     return (await this.fullCdpAccessState()).enabled;
   }

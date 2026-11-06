@@ -11,6 +11,7 @@ export interface PermissionResource {
   kind: string;
   origin: string;
   transferKind?: string;
+  accountKey?: string;
 }
 export interface PermissionTableStore {
   get(key: string, options?: { refresh: boolean }): Promise<unknown>;
@@ -38,6 +39,8 @@ export function permissionTableKey(resource: PermissionResource) {
       return resource.transferKind === "download" ? "downloads" : "uploads";
     case "fullCdp":
       return "full_cdp";
+    case "siwc":
+      return "siwc";
   }
 }
 export function approvalModeKey(resource: PermissionResource) {
@@ -49,6 +52,7 @@ export function approvalModeKey(resource: PermissionResource) {
         ? "download_approval_mode"
         : "upload_approval_mode";
     case "fullCdp":
+    case "siwc":
       return null;
   }
 }
@@ -58,6 +62,8 @@ export function permissionOrigin(resource: PermissionResource) {
     case "fileTransfer":
     case "fullCdp":
       return resource.origin;
+    case "siwc":
+      return JSON.stringify([resource.accountKey, resource.origin]);
   }
 }
 export function canPersistResource(resource: PermissionResource) {
@@ -316,10 +322,26 @@ export async function persistPermission(
             ? ["allowed", "denied"]
             : ["denied", "allowed"];
       const raw = permissionOrigin(request.resource) as string,
-        escaped = escapePermissionPattern(raw);
+        escaped =
+          request.resource.kind === "siwc" ? raw : escapePermissionPattern(raw);
       removeEntry(table, remove, raw);
       if (escaped !== raw) removeEntry(table, remove, escaped);
       addEntry(table, add, escaped);
       return result;
     });
+}
+
+/** SIWC permissions are exact account/origin pairs, never wildcard origin patterns. */
+export function tableMatchesResource(
+  table: Record<string, any>,
+  key: string,
+  resource: PermissionResource,
+) {
+  if (resource.kind === "siwc") {
+    const entries = table[key];
+    return (
+      Array.isArray(entries) && entries.includes(permissionOrigin(resource))
+    );
+  }
+  return tableMatchesPermission(table, key, permissionTarget(resource));
 }
