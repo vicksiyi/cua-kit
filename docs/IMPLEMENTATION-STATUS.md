@@ -6461,3 +6461,10 @@ The private @core/runtime-supervisor package no longer exports its root or ordin
 Replaced the TS native-host server in the macOS sandbox comparison test with the production Rust process binding; switched its Node bootstrap to native/runtime-supervisor/dist. All three macOS tests pass, including OS file/process/network denial and restored CUA discovery over the authenticated Rust host connection. The supervisor inside that comparison test remains TS and is explicitly pending migration.
 
 Expanded real Rust rmcp stdio acceptance to verify kernel reads of outside files, trusted-worker scratch and host configuration fail with EPERM, while the trusted JS service can persist a permitted configuration via Rust RPC. Both EOF and SIGTERM variants pass alongside their existing worker reset, cancellation, pipe, media and elicitation checks (2 tests). The native example was rebuilt with the locked dependency graph. These checks use owned fixtures only; they are not original-binary differential parity or desktop UI acceptance.
+
+
+### Rust authenticated-fetch callback lifecycle audit
+
+Confirmed native ReplManager/BackgroundHost dispatch support and existing worker-level tests for originating metadata and completion between cells. Added an end-to-end callback-lifetime test using actual restored workers: the host callback signals cancellation after receiving nodeRepl.fetch, its pending future is dropped, and the next execution uses fresh worker state. That test and the two existing fetch tests pass. The two Rust sandbox-launcher tests also pass after switching their bootstrap path to the canonical native binding, removing an accidental legacy dist dependency.
+
+The standalone deployment_host does not configure authenticated outbound HTTP. This remains a concrete production gap requiring original transport/credential-authority evidence; generic HTTP or user credentials must not be silently substituted. These tests establish native callback orchestration, not the vendor backend transport or full retirement of the TS comparison suite.

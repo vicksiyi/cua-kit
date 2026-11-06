@@ -61,3 +61,9 @@ The CDP sandbox acceptance consumer no longer builds or launches TS serveSandbox
 `runtime-macos-sandbox.test.ts` now starts the Rust browser host through its process binding and uses the canonical native Node bootstrap; it no longer imports the TS native-host server. Its supervisor remains an explicit TS comparison consumer because its injected authenticated-fetch callback and session-level assertions have not all been migrated.
 
 The real Rust rmcp stdio acceptance now verifies kernel denial of outside/peer scratch/config files and a trusted-worker configuration write persisted by Rust RPC. These checks pass on both EOF and SIGTERM cleanup variants. This moves acceptance evidence for those responsibilities to the native layer; it does not remove the remaining TS supervisor comparison implementation.
+
+## Authenticated-fetch ownership finding
+
+Rust ReplManager and BackgroundHost already own trusted-worker authenticated_fetch dispatch, originating metadata, asynchronous completion and callback cancellation. The standalone deployment_host intentionally has no authenticated HTTP callback; it returns an unconfigured-operation error. Therefore Rust callback infrastructure exists, but the demo does not yet reproduce the vendor authenticated backend transport. Retaining a TS reference callback test does not fill this production gap.
+
+Added a real restored-worker cancellation test: cancel only after nodeRepl.fetch reaches the Rust host handler, verify the handler future is dropped before reuse, and confirm old worker state is gone. Existing originating-context and between-cell fetch tests also pass. Migrated the Rust sandbox-launcher test bootstrap away from the legacy TS package dist directory. The old TS fetch test's actual local HTTP credential forwarding remains separate evidence, not native production acceptance.

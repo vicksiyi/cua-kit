@@ -27,7 +27,7 @@ fn fixture() -> (Fixture, SandboxedWorkerOptions) {
     std::fs::write(&entry, "").unwrap();
     let options = SandboxedWorkerOptions {
         node: std::env::var("CUA_TEST_NODE").unwrap().into(),
-        bootstrap: repo.join("packages/runtime-supervisor/dist/sandbox-bootstrap.js"),
+        bootstrap: repo.join("native/runtime-supervisor/dist/sandbox-bootstrap.js"),
         addon: repo.join("native/macos-sandbox/dist/sandbox.node"),
         entry,
         args: vec![],

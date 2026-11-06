@@ -691,3 +691,41 @@ export async function handleRpc() {{
     assert_eq!(std::fs::read_to_string(marker).unwrap(), "late");
     session.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn cancelling_real_worker_fetch_drops_host_callback_before_reuse() {
+    use core_runtime_supervisor::host::HostHandler;
+    use std::sync::{Arc, Mutex};
+    let (fixture, session) = fixture();
+    std::fs::write(fixture.root.join("service.mjs"), r#"
+export async function handleRpc() { return await (await nodeRepl.fetch('https://fixture.invalid/pending')).text(); }
+"#).unwrap();
+    let (cancel, cancellation) = oneshot::channel();
+    let (dropped, drop_observed) = oneshot::channel();
+    struct DropSignal(Option<oneshot::Sender<()>>);
+    impl Drop for DropSignal {
+        fn drop(&mut self) { if let Some(sender) = self.0.take() { let _ = sender.send(()); } }
+    }
+    let state = Arc::new(Mutex::new(Some((cancel, dropped))));
+    let handler: HostHandler = Arc::new(move |request| {
+        assert_eq!(request.message["type"], "authenticated_fetch");
+        assert_eq!(request.request_meta, json!({"source":"cancel-fixture"}));
+        let (cancel, dropped) = state.lock().unwrap().take().expect("one host request");
+        Box::pin(async move {
+            let _guard = DropSignal(Some(dropped));
+            // Cancel only after the actual worker fetch reached the host callback.
+            let _ = cancel.send(());
+            std::future::pending().await
+        })
+    });
+    let mut session = session.with_host_handler(handler, false);
+    run(&mut session, "let oldFetchState=1").await;
+    let result = timeout(Duration::from_secs(8), session.execute(
+        "await nodeRepl.rpc('fixture',{})", Duration::from_secs(5),
+        json!({"source":"cancel-fixture"}), Some(cancellation),
+    )).await.unwrap();
+    assert!(result.unwrap_err().contains("cancel"));
+    timeout(Duration::from_secs(2), drop_observed).await.unwrap().unwrap();
+    assert_eq!(run(&mut session, "nodeRepl.write(typeof oldFetchState)").await["output"], "undefined");
+    session.close().await.unwrap();
+}
