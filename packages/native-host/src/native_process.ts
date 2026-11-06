@@ -14,7 +14,7 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Readable, Writable } from "node:stream";
 import { assertPrivateEndpointDirectory } from "./endpoint_configuration";
-import type { NativeHostEndpoint } from "./server";
+import type { NativeHostEndpoint } from "./protocol";
 
 export async function resolveRustNativeHostExecutable(
   executable = fileURLToPath(

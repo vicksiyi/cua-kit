@@ -4,10 +4,10 @@
     "build-or-deployment-script-review": 30,
     "caller-or-deployment-code-review-for-native-responsibility": 41,
     "declared-js-restoration-verify-per-file": 671,
-    "legacy-native-host-reference-retirement-pending": 3,
+    "legacy-native-host-reference-retirement-pending": 4,
     "legacy-node-binding-forwarder": 1,
     "legacy-prototype-review-required": 25,
-    "native-boundary-needs-original-language-evidence": 10,
+    "native-boundary-needs-original-language-evidence": 11,
     "native-desktop-swift-boundary-review": 6,
     "native-implementation-language-not-yet-parity-proof": 58,
     "native-process-caller-binding-not-native-service": 1,
@@ -2759,7 +2759,7 @@
     {
       "path": "packages/native-host/src/browser_connector.ts",
       "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "633b063aa60fb0be5d0e1e4ed3382a9560480a61578cc718bc273392b4f46523"
+      "sha256": "90841d8c42b55e5518420777e23673f5c1cdc98b945839a175a5af9fd701502e"
     },
     {
       "path": "packages/native-host/src/browser_service.ts",
@@ -2774,7 +2774,7 @@
     {
       "path": "packages/native-host/src/client.ts",
       "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "dbb3c636547356112468819c57c52f10bee4ee973ac070a306dc89550b58a994"
+      "sha256": "93025409b4011d2ad1b1ada6298d70102b774592d73518e17f4b4fe91717c8ef"
     },
     {
       "path": "packages/native-host/src/endpoint_configuration.ts",
@@ -2784,7 +2784,7 @@
     {
       "path": "packages/native-host/src/index.ts",
       "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "183a4c3a3d3a59ff70461927a834d41c4fa6b2d716b3f1f525d7f0e11d9c78b5"
+      "sha256": "df3c03ec53b6e1a9c0ea8668900140304ffb5fd9bdf1c91336752dcd91ba8919"
     },
     {
       "path": "packages/native-host/src/install_cli.ts",
@@ -2800,6 +2800,11 @@
       "path": "packages/native-host/src/installation_check.ts",
       "category": "native-boundary-needs-original-language-evidence",
       "sha256": "2bfb34313afc00f59ddbc5134214fac050845ac1045920b52a3c353b9d8b301e"
+    },
+    {
+      "path": "packages/native-host/src/legacy.ts",
+      "category": "legacy-native-host-reference-retirement-pending",
+      "sha256": "edea38157d48aa3a53aa85a242645d44e909ca98fcc5ddfd9d171a1c47ec1a0c"
     },
     {
       "path": "packages/native-host/src/lifecycle_log.ts",
@@ -2819,22 +2824,27 @@
     {
       "path": "packages/native-host/src/native_process.ts",
       "category": "native-process-caller-binding-not-native-service",
-      "sha256": "c8c132c6894e27ba9cb2466ac08decc47c85885c0ecb5ddc6a903f2fcf67ace0"
+      "sha256": "4becfbc987b70e2de8c9b9e694b3162715573bd678482737731e5889ec5e5324"
     },
     {
       "path": "packages/native-host/src/pipe_authentication.ts",
       "category": "native-boundary-needs-original-language-evidence",
-      "sha256": "416d174063b193e1f1ae86c9636e9eb5a48c229575f22b0572dcfcc218912ba5"
+      "sha256": "bb2ec5b63985d7457c8d7025bbfe1a07c99e4b91cd14b1321a656de762fb6a86"
+    },
+    {
+      "path": "packages/native-host/src/protocol.ts",
+      "category": "native-boundary-needs-original-language-evidence",
+      "sha256": "a78b38983ea63c6b6c244cc8e541703bdf300c689386763f2c1f5e6cd47d88d5"
     },
     {
       "path": "packages/native-host/src/router.ts",
       "category": "legacy-native-host-reference-retirement-pending",
-      "sha256": "aacbb507ffc199afcdf3f9a46e45d0707a2dfc10d98fbf4c0e5b1b8c1c4e260c"
+      "sha256": "c4a7bcc5ea4219f55b62d2a2c98157625069397cfab50b2a5da1296a96e3882e"
     },
     {
       "path": "packages/native-host/src/server.ts",
       "category": "legacy-native-host-reference-retirement-pending",
-      "sha256": "2dc34277d9940e1abf5bc79978ec3835447e0fbf6585fdb71264e02f86c3134a"
+      "sha256": "ad9714c7425c61835bd88146dfdee19d28a6ab235901991269eee68aff61a9f3"
     },
     {
       "path": "packages/native-macos/src/client.ts",
@@ -4199,12 +4209,12 @@
     {
       "path": "scripts/audit-extension-host-language.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "bb6efc8862e4f4b1174b5919856e60a193a8c7a51f704b339b63e474f12dfc12"
+      "sha256": "637a8f4bf5dfcc3ef9f93e6c6eba6b006014f48d418268852c71f715b5dbf013"
     },
     {
       "path": "scripts/audit-language-boundaries.py",
       "category": "build-or-deployment-script-review",
-      "sha256": "7340677bb85b987994ed5b12ecc1e97873c36e5c9ea1a48935720e29850a7ca2"
+      "sha256": "5044a9308cccfbe43d1ee34834a8f813f530f4ad93d0cffa8de46f15483533a8"
     },
     {
       "path": "scripts/audit-native-language.py",
@@ -4239,7 +4249,7 @@
     {
       "path": "scripts/build-native-host.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "7fe1eed773159577c2bd79d22d3b0748f3decdafe2e61f9f94dbc59068bce292"
+      "sha256": "93fd323bf64c47b750912374b43282657e90993381f7c83193501420ead04987"
     },
     {
       "path": "scripts/build-reconstructed-content.mjs",
@@ -4324,7 +4334,7 @@
     {
       "path": "scripts/test-native-host-router.mjs",
       "category": "build-or-deployment-script-review",
-      "sha256": "7723ee8d5f380242957d773885b44a022c3470be7573fa2f325dafee37057b37"
+      "sha256": "21d818d0e55a85a8677cbd9c6f8c73c4f5ea624a8af2528e7cc2b0d1df15c736"
     }
   ]
 }

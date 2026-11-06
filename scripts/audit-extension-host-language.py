@@ -42,7 +42,7 @@ print(json.dumps({
   for name,evidence in roles.items()
  ],
  'additionalNativeScope':['per-client writer queues and eviction','peer code-identity authorization','app-server process/manifest/version management','WebSocket app-server proxy','tab context asset chunk lifecycle','local file dispatch'],
- 'consumersRequiringMigration':['packages/native-host/src/index.ts (public legacy exports)','direct native-host test consumers'],
+ 'consumersRequiringMigration':['explicit @core/native-host/legacy consumers','remaining direct reference-host test consumers'],
  'migratedConsumers':[{'path':'packages/cdp-host/src/host.ts','binding':'packages/native-host/src/native_process.ts','implementation':'native/browser-extension-host','status':'Core Rust host selected and owned/attached browser fixtures verified; not original host parity'}],
  'installedNativeEntry':{'installer':'packages/native-host/src/install_cli.ts','executable':'native/browser-extension-host','status':'New installs and verified owned-registration upgrades launch Rust; legacy explicit APIs/tests remain'},
  'priorAuthorizationEvidence':{'path':'reconstruction/native-host-auth-evidence.json','sha256':prior_auth['binarySha256'],'matchesCurrentArtifact':prior_auth['binarySha256']==digest,'interpretation':'Historical address/allowlist evidence is version-bound; do not apply offsets or assert the same allowlist for this artifact when hashes differ.'},

@@ -98,7 +98,7 @@
     },
     {
       "path": "packages/native-host/src/server.ts",
-      "sha256": "2dc34277d9940e1abf5bc79978ec3835447e0fbf6585fdb71264e02f86c3134a",
+      "sha256": "ad9714c7425c61835bd88146dfdee19d28a6ab235901991269eee68aff61a9f3",
       "targetLanguage": "Rust",
       "evidencedRoles": [
         "extension_host::transport::unix::UnixSocketServer",
@@ -110,7 +110,7 @@
     },
     {
       "path": "packages/native-host/src/router.ts",
-      "sha256": "aacbb507ffc199afcdf3f9a46e45d0707a2dfc10d98fbf4c0e5b1b8c1c4e260c",
+      "sha256": "c4a7bcc5ea4219f55b62d2a2c98157625069397cfab50b2a5da1296a96e3882e",
       "targetLanguage": "Rust",
       "evidencedRoles": [
         "extension_host::rpc_router::RpcRouter"
@@ -128,8 +128,8 @@
     "local file dispatch"
   ],
   "consumersRequiringMigration": [
-    "packages/native-host/src/index.ts (public legacy exports)",
-    "direct native-host test consumers"
+    "explicit @core/native-host/legacy consumers",
+    "remaining direct reference-host test consumers"
   ],
   "migratedConsumers": [
     {

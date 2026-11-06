@@ -11,12 +11,8 @@ import {
 } from "@core/browser/nativePipe";
 import { NativeHostRouter } from "./router";
 import type { NativeHostLifecycleEvent } from "./lifecycle_log";
-export const MAX_FRAME = 1024 * 1024;
-export interface NativeHostEndpoint {
-  version: 1;
-  socketPath: string;
-  token: string;
-}
+import { MAX_FRAME, type NativeHostEndpoint } from "./protocol";
+export { MAX_FRAME, type NativeHostEndpoint } from "./protocol";
 /** @deprecated Legacy TS reference server. Production callers use startRustNativeHost.
  * Local capability authentication is specific to @core. Original host is untouched. */
 export async function startNativeHost(

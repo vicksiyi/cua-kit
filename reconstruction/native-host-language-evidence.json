@@ -21,7 +21,7 @@
   "files": [
     {
       "path": "packages/native-host/src/browser_connector.ts",
-      "sha256": "633b063aa60fb0be5d0e1e4ed3382a9560480a61578cc718bc273392b4f46523",
+      "sha256": "90841d8c42b55e5518420777e23673f5c1cdc98b945839a175a5af9fd701502e",
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."
@@ -45,7 +45,7 @@
     },
     {
       "path": "packages/native-host/src/client.ts",
-      "sha256": "dbb3c636547356112468819c57c52f10bee4ee973ac070a306dc89550b58a994",
+      "sha256": "93025409b4011d2ad1b1ada6298d70102b774592d73518e17f4b4fe91717c8ef",
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."
@@ -59,7 +59,7 @@
     },
     {
       "path": "packages/native-host/src/index.ts",
-      "sha256": "183a4c3a3d3a59ff70461927a834d41c4fa6b2d716b3f1f525d7f0e11d9c78b5",
+      "sha256": "df3c03ec53b6e1a9c0ea8668900140304ffb5fd9bdf1c91336752dcd91ba8919",
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."
@@ -84,6 +84,13 @@
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."
+    },
+    {
+      "path": "packages/native-host/src/legacy.ts",
+      "sha256": "edea38157d48aa3a53aa85a242645d44e909ca98fcc5ddfd9d171a1c47ec1a0c",
+      "languageDecision": "explicit-legacy-native-host-reference",
+      "evidence": [],
+      "scope": "Opt-in exports for old TS native host reference; excluded from normal public entry."
     },
     {
       "path": "packages/native-host/src/lifecycle_log.ts",
@@ -112,15 +119,31 @@
       "scope": "Core defaults now execute Rust; explicit legacy public exports/tests still reach this TS reference. Original native algorithm parity remains unproven."
     },
     {
+      "path": "packages/native-host/src/native_process.ts",
+      "sha256": "4becfbc987b70e2de8c9b9e694b3162715573bd678482737731e5889ec5e5324",
+      "languageDecision": "retain-typescript-caller-binding",
+      "evidence": [
+        "extension-host-native-evidence.json"
+      ],
+      "scope": "Owns child-process deployment and streams for CDP callers; does not implement native routing or sockets."
+    },
+    {
       "path": "packages/native-host/src/pipe_authentication.ts",
-      "sha256": "416d174063b193e1f1ae86c9636e9eb5a48c229575f22b0572dcfcc218912ba5",
+      "sha256": "bb2ec5b63985d7457c8d7025bbfe1a07c99e4b91cd14b1321a656de762fb6a86",
       "languageDecision": "independent-adapter-original-language-boundary-unresolved",
       "evidence": [],
       "scope": "Do not infer native language from package name or independently authored implementation."
     },
     {
+      "path": "packages/native-host/src/protocol.ts",
+      "sha256": "a78b38983ea63c6b6c244cc8e541703bdf300c689386763f2c1f5e6cd47d88d5",
+      "languageDecision": "core-client-wire-contract-not-native-service",
+      "evidence": [],
+      "scope": "Shared Core frame limit, endpoint type and message validation; no listener/routing execution."
+    },
+    {
       "path": "packages/native-host/src/router.ts",
-      "sha256": "aacbb507ffc199afcdf3f9a46e45d0707a2dfc10d98fbf4c0e5b1b8c1c4e260c",
+      "sha256": "c4a7bcc5ea4219f55b62d2a2c98157625069397cfab50b2a5da1296a96e3882e",
       "languageDecision": "legacy-native-reference-retirement-pending",
       "evidence": [
         "extension-host-native-evidence.json"
@@ -129,21 +152,12 @@
     },
     {
       "path": "packages/native-host/src/server.ts",
-      "sha256": "2dc34277d9940e1abf5bc79978ec3835447e0fbf6585fdb71264e02f86c3134a",
+      "sha256": "ad9714c7425c61835bd88146dfdee19d28a6ab235901991269eee68aff61a9f3",
       "languageDecision": "legacy-native-reference-retirement-pending",
       "evidence": [
         "extension-host-native-evidence.json"
       ],
       "scope": "Core defaults now execute Rust; explicit legacy public exports/tests still reach this TS reference. Original native algorithm parity remains unproven."
-    },
-    {
-      "path": "packages/native-host/src/native_process.ts",
-      "sha256": "c8c132c6894e27ba9cb2466ac08decc47c85885c0ecb5ddc6a903f2fcf67ace0",
-      "languageDecision": "retain-typescript-caller-binding",
-      "evidence": [
-        "extension-host-native-evidence.json"
-      ],
-      "scope": "Owns child-process deployment and streams for CDP callers; does not implement native routing or sockets."
     }
   ],
   "validation": {

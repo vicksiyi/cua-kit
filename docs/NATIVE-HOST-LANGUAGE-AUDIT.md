@@ -101,3 +101,14 @@ After installer migration, both `native` and `full` packaged extension deploymen
 The same tests now close the owned browser and wait for native endpoint withdrawal plus the `input-ended` lifecycle event. This checks actual Native Messaging EOF cleanup rather than only a fake-extension process test. Both cases pass (2/2, no skips). Discovery's explicit `no_endpoints` result is treated as expected shutdown; other discovery failures remain errors.
 
 Reproduce: `CUA_RUNTIME_SUPERVISOR=rust CUA_TEST_MACOS_SANDBOX=1 CUA_TEST_RUST_RUNTIME=1 node --import tsx --test reconstruction/extension-native-controller.test.ts`. This does not prove daily Chrome profile/cold-start behavior, native App screenshot/input, paid DeepSeek reasoning, original host authorization, or source-body parity.
+
+
+### 2026-11-06: isolate the legacy TS host from normal public clients
+
+The normal `@core/native-host` entry no longer exports the old TS `startNativeHost` or `NativeHostRouter`; reference consumers explicitly import `@core/native-host/legacy`. Native callers use `startRustNativeHost(input, output, { parentDirectory })`, with an existing private directory. This is an intentional development-package API change: the Rust binding does not silently emulate old requestTimeoutMs/onLifecycle options. Existing reference source files remain for differential/compatibility tests.
+
+Extracted Core endpoint types, frame limit and JSON-RPC shape validation into `protocol.ts`. Client imports previously pulled `server.ts` for MAX_FRAME and `router.ts` for validation; they now avoid both native-reference implementations. An esbuild module-graph regression checks the normal entry and both client transports exclude server/router/main/lifecycle_log. These are Core contracts, not claimed original native constants.
+
+Default native-host/reconstruction builds no longer generate the old Node `main.mjs`; `--include-legacy`, workspace `build:legacy`, and root `build:legacy-runtime` explicitly build it. Existing local artifacts are preserved rather than deleted. A fresh-output check verified default omission and explicit legacy generation. Discovery/live-discovery integration fixtures now use the actual Rust host, with macOS /tmp canonicalization accounted for.
+
+Validation: native-host/CDP type checks; 10 boundary/discovery/pipe-auth tests; 3 Rust process-binding cases; 6 retained legacy compatibility cases; and the real full-extension Chromium/Rust/MCP navigation/click/read plus EOF cleanup case pass. Native source algorithm parity, peer identity policy, app-server behavior and desktop effects remain incomplete.

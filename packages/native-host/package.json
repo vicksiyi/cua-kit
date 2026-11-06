@@ -10,13 +10,15 @@
       "types": "./src/browser_connector.ts",
       "import": "./dist/browser-connector.mjs",
       "default": "./dist/browser-connector.mjs"
-    }
+    },
+    "./legacy": "./src/legacy.ts"
   },
   "scripts": {
     "check": "tsc -p tsconfig.json",
     "start": "../../native/browser-extension-host/dist/core-browser-extension-host",
     "build": "node ../../scripts/build-native-host.mjs && node ../../scripts/build-rust-browser-host.mjs",
-    "start:legacy": "node dist/main.mjs"
+    "start:legacy": "node dist/main.mjs",
+    "build:legacy": "node ../../scripts/build-native-host.mjs --include-legacy"
   },
   "dependencies": {
     "@core/browser": "0.0.0-reconstructed.0",

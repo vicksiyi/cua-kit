@@ -26,7 +26,7 @@ execFileSync(process.execPath, ["scripts/build-rust-browser-host.mjs"], {
   cwd: root,
   stdio: "inherit",
 });
-execFileSync(process.execPath, ["scripts/build-native-host.mjs"], {
+execFileSync(process.execPath, ["scripts/build-native-host.mjs", "--include-legacy"], {
   cwd: root,
   stdio: "inherit",
 });

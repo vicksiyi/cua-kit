@@ -1,20 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { chmod, mkdtemp, rm, symlink } from "node:fs/promises";
+import { chmod, mkdtemp, rm, symlink, realpath } from "node:fs/promises";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
-import { startNativeHost } from "../packages/native-host/src/server";
+import { startRustNativeHost } from "../packages/native-host/src/native_process";
 import { discoverEndpointFiles } from "../packages/native-host/src/endpoint_configuration";
 import { configureIndependentBrowser } from "../packages/agent-loop/src/independent-browser";
 
 test("configured private directory discovers actual host and cleans up after shutdown", async (t) => {
-  const root = await mkdtemp("/tmp/core-discovery-");
+  const root = await realpath(await mkdtemp("/tmp/core-discovery-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   await assert.rejects(
     discoverEndpointFiles(root),
     /No independent browser host/,
   );
-  const host = await startNativeHost(new PassThrough(), new PassThrough(), {
+  const host = await startRustNativeHost(new PassThrough(), new PassThrough(), {
     parentDirectory: root,
   });
   t.after(() => host.close());
@@ -36,7 +36,7 @@ test("configured private directory discovers actual host and cleans up after shu
 });
 
 test("discovery and host refuse shared or symlinked endpoint roots", async (t) => {
-  const root = await mkdtemp("/tmp/core-discovery-");
+  const root = await realpath(await mkdtemp("/tmp/core-discovery-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const link = join(root, "link");
   await symlink(root, link);
@@ -44,7 +44,7 @@ test("discovery and host refuse shared or symlinked endpoint roots", async (t) =
   await chmod(root, 0o755);
   await assert.rejects(discoverEndpointFiles(root), /private/);
   await assert.rejects(
-    startNativeHost(new PassThrough(), new PassThrough(), {
+    startRustNativeHost(new PassThrough(), new PassThrough(), {
       parentDirectory: root,
     }),
     /private/,

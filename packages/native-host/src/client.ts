@@ -4,9 +4,9 @@ import {
   NativePipeTransport,
   encodeNativePipeFrame,
 } from "@core/browser/nativePipe";
-import type { NativeHostEndpoint } from "./server";
-import { MAX_FRAME } from "./server";
-import { rpcMessage } from "./router";
+import type { NativeHostEndpoint } from "./protocol";
+import { MAX_FRAME } from "./protocol";
+import { rpcMessage } from "./protocol";
 /** Authenticate before exposing the original BrowserRpcTransport contract. */
 export async function authenticateNativeHostSocket(
   endpoint: NativeHostEndpoint,

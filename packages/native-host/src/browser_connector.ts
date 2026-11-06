@@ -3,7 +3,7 @@ import type { NativePipeSocket } from "@core/browser/nativePipe";
 import { lstat, readFile, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, delimiter } from "node:path";
 import { authenticateNativeHostSocket } from "./client";
-import type { NativeHostEndpoint } from "./server";
+import type { NativeHostEndpoint } from "./protocol";
 import { discoverEndpointFiles, IndependentBrowserUnavailableError } from "./endpoint_configuration";
 /** Read a private capability file. Its contents must never enter model context. */
 async function readEndpoint(file: string): Promise<NativeHostEndpoint> {

@@ -3,8 +3,8 @@ import {
   encodeNativePipeFrame,
   type NativePipeSocket,
 } from "@core/browser/nativePipe";
-import type { NativeHostEndpoint } from "./server";
-import { MAX_FRAME } from "./server";
+import type { NativeHostEndpoint } from "./protocol";
+import { MAX_FRAME } from "./protocol";
 
 /** Authenticate over the privileged worker pipe while retaining its execution-context delivery.
  * A raw Node socket captures the setup call's async context and cannot replace this bridge.
