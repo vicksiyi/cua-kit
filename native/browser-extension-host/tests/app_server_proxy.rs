@@ -473,3 +473,47 @@ fn live_proxy_status_tracks_restart_and_shutdown_without_child_health_checks() {
         serde_json::json!({"phase":"idle"})
     );
 }
+
+#[test]
+fn ensure_payload_composes_exact_shape_without_launching_a_child() {
+    use core_browser_extension_host::app_server_response::{
+        ensure_response, SelectedRuntimeMetadata,
+    };
+    let (config, mut proxy) = update_fixture();
+    proxy.host = "fixture.local".into();
+    proxy.port = 12345;
+    proxy.token = "fixture-token".into();
+    let metadata = SelectedRuntimeMetadata {
+        entry_id: "entry-1",
+        app_server_protocol_version: u64::MAX,
+        app_version: "v1",
+        channel: "beta",
+        cli_version: "cli-v2",
+        native_host_protocol_version: 0,
+        native_host_version: "host-v3",
+    };
+    let response = ensure_response(&proxy, &metadata);
+    assert_eq!(
+        response,
+        serde_json::json!({
+            "entryId":"entry-1", "localAppServerUrl":"ws://fixture.local:12345?token=fixture-token",
+            "runtimeSessionId":"existing-session", "selected":{
+                "appServerProtocolVersion":u64::MAX,"appVersion":"v1","channel":"beta",
+                "cliVersion":"cli-v2","nativeHostProtocolVersion":0,"nativeHostVersion":"host-v3"
+            },
+            "runtimeConfig":{
+                "browserClientPath":null,"browserServicePath":null,
+                "codexCliPath":config.launch.codex_cli_path,"desktopAgentModeDefaults":null,
+                "nodePath":config.launch.node_path,"nodeReplPath":null,"platform":"darwin"
+            }
+        })
+    );
+    assert!(proxy.processes.lock().unwrap().is_empty());
+    proxy
+        .restart_client(None)
+        .unwrap_or_else(|e| panic!("{}", e.message));
+    assert_ne!(
+        ensure_response(&proxy, &metadata)["runtimeSessionId"],
+        response["runtimeSessionId"]
+    );
+}

@@ -17,6 +17,14 @@ Validation: three restored-wrapper/adapter contract tests, native-macos TypeScri
 
 ## Current native-protocol checkpoint (latest: 2026-11-06)
 
+Ensure success payload composition now uses the actual proxy endpoint/session and
+runtime snapshot, plus an explicitly materialized metadata record. The five outer
+fields and six selected fields are pinned to native evidence; protocols retain
+u64 values. Fourteen proxy tests pass, including exact shape and session refresh.
+Raw optional registry-to-materialized metadata defaults still need tracing; the
+new boundary deliberately does not guess them. Manager orchestration, JSON-RPC
+control integration and browser/App acceptance remain incomplete.
+
 Runtime configuration response now clones the proxy snapshot under lock and
 projects the native seven fields, preserving raw paths and optional nulls.
 Desktop mode defaults read only two object maps from configured home's persisted
