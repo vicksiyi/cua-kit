@@ -1,4 +1,6 @@
 /** Independently authored convenience entry; the AgentLoop stays transport-neutral. */
+import { fileURLToPath } from "node:url";
+import { readNativePermissions, nativeAppPolicyContext } from "./native-permissions";
 import { randomUUID } from "node:crypto";
 import {
   prepareRestoredRuntime,
@@ -36,6 +38,18 @@ try {
     console.error(
       `Rust independent sandboxed runtime supervisor selected (${runtime.surfaces} surface; no installed supervisor).`,
     );
+  if (runtime.supervisor === "rust" && runtime.surfaces?.split(",").includes("computer")) {
+    const permissions = await readNativePermissions(env.CORE_CUA_NATIVE_HELPER_PATH ?? fileURLToPath(new URL("../../../native/macos/.build/debug/cua-helper", import.meta.url)));
+    process.env.CUA_DEMO_NATIVE_PERMISSIONS = JSON.stringify({...permissions,requested:false});
+    console.error(`Native UI permissions: accessibility=${permissions.accessibility}, screenRecording=${permissions.screenRecording}. App inventory does not verify UI access.`);
+    const policy = JSON.parse(env.CORE_CUA_APP_POLICY ?? "{}");
+    process.env.CUA_DEMO_NATIVE_POLICY_CONTEXT = nativeAppPolicyContext(policy);
+    if (!Object.values(policy).some((rule:any) => rule?.decision === "allowed"))
+      console.error("No native App is allowed by the standalone CORE_CUA_APP_POLICY configuration; inventory is available, but App operations require an explicit policy and interactive approval.");
+  } else {
+    delete process.env.CUA_DEMO_NATIVE_PERMISSIONS;
+    delete process.env.CUA_DEMO_NATIVE_POLICY_CONTEXT;
+  }
   await import("./demo");
 } finally {
   await runtime.dispose();

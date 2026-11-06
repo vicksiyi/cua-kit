@@ -1,3 +1,4 @@
+import { parseNativePermissions, nativePermissionsContext } from "./native-permissions";
 import { unifiedPreflight } from "./unified-preflight";
 import { surfaceContext } from "./surface-context";
 import { BROWSER_INPUT_CONTEXT } from "./browser-guidance";
@@ -56,6 +57,8 @@ if (checkComputer && !computerEnabled)
   throw new Error(
     "--check-computer requires the computer surface in CUA_MCP_ENV.",
   );
+const nativePermissions = computerEnabled && process.env.CUA_DEMO_NATIVE_PERMISSIONS !== undefined
+  ? parseNativePermissions(process.env.CUA_DEMO_NATIVE_PERMISSIONS) : undefined;
 const model = checkBrowser || checkComputer ? undefined : createDemoModel();
 const requestMeta: unknown = JSON.parse(
   process.env.CUA_MCP_REQUEST_META ?? "{}",
@@ -91,6 +94,7 @@ debug?.write("run.start", {
   summarizeOnBlocked: true,
   browserEnabled,
   computerEnabled,
+  nativePermissions,
   node: process.version,
 });
 const terminalElicit = createBrowserOriginApproval({
@@ -180,6 +184,8 @@ try {
       summarizeOnExhaustion: true,
       summarizeOnBlocked: true,
       runtimeContext: [
+        computerEnabled ? process.env.CUA_DEMO_NATIVE_POLICY_CONTEXT : undefined,
+        nativePermissions ? nativePermissionsContext(nativePermissions) : undefined,
         surfaceContext({ browser: !!browserEnabled, computer: !!computerEnabled }),
         browserEnabled ? BROWSER_INPUT_CONTEXT : undefined,
         (serverEnv as Record<string, string>).BROWSER_USE_AVAILABLE_BACKENDS === "cdp"

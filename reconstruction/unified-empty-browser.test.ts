@@ -99,6 +99,8 @@ test("unified CLI starts both surfaces and reaches model without a Chrome connec
     const request=JSON.parse(body);requests++;
     const context=JSON.stringify(request.messages);
     assert.match(context,/browser=true, computer=true/);
+    assert.match(context,/standalone demo uses local CORE_CUA_APP_POLICY/);
+    assert.match(context,/Native helper permission probe: accessibility=(true|false), screenRecording=(true|false)/);
     assert.match(context,/host-unified-preflight/);
     assert.doesNotMatch(context,/host-browser-preflight/);
     res.setHeader("Content-Type","application/json");

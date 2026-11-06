@@ -429,3 +429,44 @@ a controlled extension-protocol peer after startup, observes one browser, shuts 
 observes zero browsers again, all in the same MCP session with app inventory retained. This verifies
 registration/discovery/transport/handshake together; it does not open actual Chrome or perform a page
 operation. Chrome launch-on-selection remains separate work.
+
+
+#### Native UI readiness versus app inventory
+
+The standalone Rust/Swift demo now runs the selected helper with `--permissions` before the model
+request. This checks permissions without displaying a system authorization prompt. Exit 2 means a
+successful probe reporting missing grants; other exit failures or malformed output do not become
+valid readiness evidence. Both boolean flags reach terminal diagnostics, local debug metadata, and
+model runtime context. Programmatic library callers are not forced to run this demo-only probe.
+
+The demo also supplies the actual standalone App-policy context and reports when no App is allowed.
+Source policy error wording mentioning an organization is preserved, but does not establish that
+this standalone installation is organization-managed. No policy is changed, no approval is silently
+accepted, and missing macOS grants are not worked around. Local App policy, both macOS permissions,
+and interactive approval are jointly required for the current native observation implementation.
+
+On this host, the helper probe reported Accessibility=false and ScreenRecording=false. A real
+DeepSeek request to open/read Multica reached the source getApp policy path and was denied with an
+empty local allowlist; it obtained no window state and performed no UI input. The revised context
+made the final explanation identify local policy rather than assume an organization administrator.
+The model still attempted getApp despite readiness guidance; guidance is not a deterministic action
+filter. The policy gate actually stopped the attempt. Model prose is also not authoritative evidence
+of which prerequisites have been satisfied.
+
+To request macOS grants interactively, the user can run the existing helper command in their local
+terminal after reviewing the requested permissions:
+
+```bash
+native/macos/.build/debug/cua-helper --request-permissions
+native/macos/.build/debug/cua-helper --permissions
+```
+
+The first command intentionally requests system prompts; the demo's automatic check only uses the
+second. Granting system permissions does not configure `CORE_CUA_APP_POLICY` or complete native App
+acceptance. A successful inventory or a model final answer likewise does not prove getApp, screenshot,
+or click success. Native action acceptance remains pending.
+
+Validation: the permission probe tests cover strict evidence, helper exit statuses, missing executables,
+malformed output, and the actual Swift permission query. The unified CLI HTTP integration verifies
+both permission facts and local policy context reach the model. Real DeepSeek transcripts remain in
+ignored local artifacts and are not published.
