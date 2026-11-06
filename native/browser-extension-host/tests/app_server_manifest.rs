@@ -455,3 +455,106 @@ fn manifest_ports_are_nonzero_u16_without_coercion() {
         );
     }
 }
+
+#[test]
+fn registry_selection_composes_filters_ranking_and_error_retention() {
+    use core_browser_extension_host::app_server_manifest::{
+        select_entry, IdentityConstraints, ProtocolMismatch::*, ProtocolRequirements,
+    };
+    let root = std::env::temp_dir().join(format!("core-registry-{}", uuid::Uuid::new_v4()));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    let good = json!({"schemaVersion":2,"extensionIds":["id"],"appServerProtocolVersion":2,"paths":{"codexCliPath":root,"codexHome":root,"nodePath":root,"resourcesPath":root},"entryId":" first ","updatedAt":"1"});
+    let identity = IdentityConstraints {
+        extension_id: Some("id"),
+        ..Default::default()
+    };
+    let protocols = ProtocolRequirements {
+        app_server: Some(2),
+        native_host: None,
+    };
+    let run = |values: Vec<Value>| {
+        select_entry(
+            &json!({"schemaVersion":2,"entries":values}),
+            &identity,
+            &protocols,
+        )
+    };
+    let mut wrong_id = good.clone();
+    wrong_id["extensionIds"] = json!(["other"]);
+    wrong_id["updatedAt"] = json!("z");
+    let mut newer = good.clone();
+    newer["appServerProtocolVersion"] = json!(3);
+    let mut older = good.clone();
+    older["appServerProtocolVersion"] = json!(1);
+    let mut missing_cli = good.clone();
+    missing_cli["paths"]["codexCliPath"] = Value::Null;
+    let mut missing_node = good.clone();
+    missing_node["paths"]["nodePath"] = Value::Null;
+    let mut later = good.clone();
+    later["updatedAt"] = json!("2");
+    later["entryId"] = json!(" later ");
+    let selected = run(vec![
+        wrong_id.clone(),
+        newer.clone(),
+        missing_cli.clone(),
+        good.clone(),
+        later.clone(),
+        later.clone(),
+    ])
+    .unwrap();
+    assert_eq!(selected.index, 4);
+    assert_eq!(selected.configuration.entry_id.as_deref(), Some("later"));
+    let mut present = good.clone();
+    present["presence"] = json!({"pid":0});
+    assert_eq!(run(vec![later.clone(), present]).unwrap().index, 1);
+    assert_eq!(
+        run(vec![newer.clone(), older.clone()]).unwrap_err(),
+        ManifestError::Protocol(CandidateNewer)
+    );
+    assert_eq!(
+        run(vec![older.clone(), newer.clone()]).unwrap_err(),
+        ManifestError::Protocol(CandidateNewer)
+    );
+    assert_eq!(
+        run(vec![older]).unwrap_err(),
+        ManifestError::Protocol(CandidateOlderOrMissing)
+    );
+    assert_eq!(
+        run(vec![
+            missing_cli.clone(),
+            newer.clone(),
+            missing_node.clone()
+        ])
+        .unwrap_err(),
+        ManifestError::RequiredPath("nodePath".into())
+    );
+    assert_eq!(
+        run(vec![missing_node, newer.clone(), missing_cli]).unwrap_err(),
+        ManifestError::RequiredPath("codexCliPath".into())
+    );
+    assert_eq!(
+        run(vec![wrong_id]).unwrap_err(),
+        ManifestError::NoCompatibleEntry
+    );
+    assert_eq!(run(vec![]).unwrap_err(), ManifestError::NoCompatibleEntry);
+    // A viable candidate wins over retained nonfatal errors in either order.
+    assert_eq!(run(vec![good.clone(), newer.clone()]).unwrap().index, 0);
+    assert_eq!(run(vec![newer, good.clone()]).unwrap().index, 1);
+    // Schema failures are fatal before identity filtering, even after a winner.
+    let invalid = json!({"schemaVersion":1,"extensionIds":["other"]});
+    assert_eq!(
+        run(vec![good.clone(), invalid.clone()]).unwrap_err(),
+        ManifestError::EntrySchema
+    );
+    assert_eq!(
+        run(vec![invalid, good]).unwrap_err(),
+        ManifestError::EntrySchema
+    );
+}

@@ -328,7 +328,7 @@
     ],
     "pathContract": "entry.paths[field] must be a nonempty trimmed string with successful metadata; follows symlinks and accepts directories. No executable or absolute-path requirement in this helper.",
     "missingPathFormatBytes": "39436f646578206170702d736572766572206d616e696665737420656e747279206973206d697373696e67207265717569726564207061746820c000",
-    "integrationStatus": "Validation primitives only; not wired to selection or process launch. Required-field conditionality and full candidate selection remain open."
+    "integrationStatus": "Validation primitives composed by select_entry; process launch remains separate."
   },
   "manifestIdentityMatching": {
     "implementation": "native/browser-extension-host/src/app_server_manifest.rs::identity_score",
@@ -449,7 +449,7 @@
       ]
     },
     "semantics": "Only supplied constraints are checked. All supplied constraints must match. String-array membership is exact; nonstrings ignored and duplicate matches add weight once. Paths compare components first, then both canonical paths on mismatch; no trimming.",
-    "integrationStatus": "Identity stage only. Does not choose a winner or implement schema-error policy, protocol compatibility, presence/updatedAt tie-breaking, or process startup."
+    "integrationStatus": "Identity stage composed by select_entry with protocol/path checks and ranking; process startup remains separate."
   },
   "manifestViabilityAndRanking": {
     "implementation": "native/browser-extension-host/src/app_server_manifest.rs",
@@ -608,7 +608,7 @@
       "10001ccac: 912103e0    \tadd\tx0, sp, #0x840"
     ],
     "rankingSemantics": "Higher score first; equal score compares untrimmed updatedAt strings lexically, missing/nonstring becomes empty. Equal keys keep first entry. No date parser.",
-    "integrationStatus": "Native helper stages implemented and tested; full raw-config extraction, global error retention and runtime launch integration remain open."
+    "integrationStatus": "Native helper stages composed by select_entry with raw extraction and error retention; runtime launch integration remains open."
   },
   "manifestConfigurationExtraction": {
     "implementation": "native/browser-extension-host/src/app_server_manifest.rs::extract_configuration",
@@ -697,10 +697,88 @@
       "10001cd98: 17ffff4a    \tb\t0x10001cac0 <<extension_host::app_server::AppServerHostConfig>::load+0x15fc>"
     ],
     "proxyPortSemantics": "Only integer 1..65535 retained. Zero becomes absent, unlike the separate environment u16 resolver.",
-    "integrationStatus": "Raw extraction only; not connected to full registry selection, environment resolution or process startup."
+    "integrationStatus": "Raw extraction composed by select_entry; environment resolution and process startup remain separate."
+  },
+  "manifestSelection": {
+    "implementation": "native/browser-extension-host/src/app_server_manifest.rs::select_entry",
+    "schemaAbort": [
+      "10001d150: 52800077    \tmov\tw23, #0x3               ; =3",
+      "10001d154: 528004ea    \tmov\tw10, #0x27              ; =39",
+      "10001d158: 528004fa    \tmov\tw26, #0x27              ; =39",
+      "10001d15c: b946ebe8    \tldr\tw8, [sp, #0x6e8]",
+      "10001d160: b90433e8    \tstr\tw8, [sp, #0x430]",
+      "10001d164: 911b83e8    \tadd\tx8, sp, #0x6e0",
+      "10001d168: b840b108    \tldur\tw8, [x8, #0xb]",
+      "10001d16c: 910f63e9    \tadd\tx9, sp, #0x3d8",
+      "10001d170: b805b128    \tstur\tw8, [x9, #0x5b]",
+      "10001d174: 52800038    \tmov\tw24, #0x1               ; =1",
+      "10001d178: 52800048    \tmov\tw8, #0x2                ; =2",
+      "10001d17c: f9011be8    \tstr\tx8, [sp, #0x230]"
+    ],
+    "pathErrorRetention": [
+      "10001c1c4: 710016ff    \tcmp\tw23, #0x5",
+      "10001c1c8: 54000300    \tb.eq\t0x10001c228 <<extension_host::app_server::AppServerHostConfig>::load+0xd64>",
+      "10001c1cc: 71001aff    \tcmp\tw23, #0x6",
+      "10001c1d0: 54007c61    \tb.ne\t0x10001d15c <<extension_host::app_server::AppServerHostConfig>::load+0x1c98>",
+      "10001c1d4: f9413be1    \tldr\tx1, [sp, #0x270]",
+      "10001c1d8: f100043f    \tcmp\tx1, #0x1",
+      "10001c1dc: 540000cb    \tb.lt\t0x10001c1f4 <<extension_host::app_server::AppServerHostConfig>::load+0xd30>",
+      "10001c1e0: f940b7e0    \tldr\tx0, [sp, #0x168]",
+      "10001c1e4: 52800022    \tmov\tw2, #0x1                ; =1",
+      "10001c1e8: aa0a03f7    \tmov\tx23, x10",
+      "10001c1ec: 97ffe008    \tbl\t0x10001420c <__rustc::__rust_dealloc>",
+      "10001c1f0: aa1703ea    \tmov\tx10, x23",
+      "10001c1f4: b946ebe8    \tldr\tw8, [sp, #0x6e8]",
+      "10001c1f8: b906e3e8    \tstr\tw8, [sp, #0x6e0]",
+      "10001c1fc: 911b83e9    \tadd\tx9, sp, #0x6e0",
+      "10001c200: b840b128    \tldur\tw8, [x9, #0xb]",
+      "10001c204: b8003128    \tstur\tw8, [x9, #0x3]",
+      "10001c208: f900a7fa    \tstr\tx26, [sp, #0x148]",
+      "10001c20c: f900b7fb    \tstr\tx27, [sp, #0x168]",
+      "10001c210: f9013bea    \tstr\tx10, [sp, #0x270]",
+      "10001c214: 9100831a    \tadd\tx26, x24, #0x20",
+      "10001c218: f9411be8    \tldr\tx8, [sp, #0x230]",
+      "10001c21c: eb08035f    \tcmp\tx26, x8",
+      "10001c220: 54ffbde1    \tb.ne\t0x10001b9dc <<extension_host::app_server::AppServerHostConfig>::load+0x518>",
+      "10001c224: 140003e2    \tb\t0x10001d1ac <<extension_host::app_server::AppServerHostConfig>::load+0x1ce8>"
+    ],
+    "protocolErrorPriority": [
+      "100024a0c: f9400008    \tldr\tx8, [x0]",
+      "100024a10: 39406029    \tldrb\tw9, [x1, #0x18]",
+      "100024a14: b100051f    \tcmn\tx8, #0x1",
+      "100024a18: 7a411924    \tccmp\tw9, #0x1, #0x4, ne",
+      "100024a1c: 540000e1    \tb.ne\t0x100024a38 <extension_host::app_server::remember_update_required_error+0x2c>",
+      "100024a20: b100051f    \tcmn\tx8, #0x1",
+      "100024a24: fa401904    \tccmp\tx8, #0x0, #0x4, ne",
+      "100024a28: 54000141    \tb.ne\t0x100024a50 <extension_host::app_server::remember_update_required_error+0x44>",
+      "100024a2c: ad400420    \tldp\tq0, q1, [x1]",
+      "100024a30: ad000400    \tstp\tq0, q1, [x0]",
+      "100024a34: d65f03c0    \tret",
+      "100024a38: f9400028    \tldr\tx8, [x1]"
+    ],
+    "winnerBeforeErrors": [
+      "10001d1ac: f942bfe8    \tldr\tx8, [sp, #0x578]",
+      "10001d1b0: f9011be8    \tstr\tx8, [sp, #0x230]",
+      "10001d1b4: f100091f    \tcmp\tx8, #0x2",
+      "10001d1b8: 54000221    \tb.ne\t0x10001d1fc <<extension_host::app_server::AppServerHostConfig>::load+0x1d38>",
+      "10001d1bc: f9413be8    \tldr\tx8, [sp, #0x270]",
+      "10001d1c0: b100051f    \tcmn\tx8, #0x1",
+      "10001d1c4: 54000680    \tb.eq\t0x10001d294 <<extension_host::app_server::AppServerHostConfig>::load+0x1dd0>"
+    ],
+    "fallbackProtocolError": [
+      "10001d294: f94363e8    \tldr\tx8, [sp, #0x6c0]",
+      "10001d298: f9013be8    \tstr\tx8, [sp, #0x270]",
+      "10001d29c: b100051f    \tcmn\tx8, #0x1",
+      "10001d2a0: 54000220    \tb.eq\t0x10001d2e4 <<extension_host::app_server::AppServerHostConfig>::load+0x1e20>",
+      "10001d2a4: f94367fb    \tldr\tx27, [sp, #0x6c8]",
+      "10001d2a8: f9436bfa    \tldr\tx26, [sp, #0x6d0]",
+      "10001d2ac: 395b63f7    \tldrb\tw23, [sp, #0x6d8]"
+    ],
+    "semantics": "Validate schema before identity filtering. Skip identity misses. Retain protocol mismatch with newer-candidate priority. Retain last required-path failure. Rank successfully extracted candidates. Winner takes precedence over retained nonfatal errors; otherwise last path error, then retained protocol error, then no-compatible-entry. Schema/malformed extraction failures abort immediately.",
+    "integrationStatus": "Composed in-memory schema-2 selection with real path metadata checks. Registry discovery/read, schema-1 fallback, environment precedence and runtime process integration remain open."
   },
   "remainingUnknowns": [
-    "full manifest selection and process launch contract",
+    "registry discovery/fallback and process launch contract",
     "complete hello/status response schemas",
     "filename sanitization edge cases",
     "asset cleanup on all process/session failures",

@@ -6087,3 +6087,12 @@ Added RawManifestConfiguration and extract_configuration in Rust from load instr
 The native raw proxyPort check at 0x10001cd84 accepts only integer 1..65535. Zero becomes absent, unlike the separately observed environment resolver which accepts zero. Tests cover every value 0..65536 plus invalid JSON types and u64-max, all twelve field levels and Unicode/empty behavior. Nine manifest tests plus two existing environment tests pass. Static extraction pins each field literal and trim call along with the port-bound instructions.
 
 Full registry selection/error retention and connection of selected raw fields to environment resolution/process startup remain open. This is static-evidence reconstruction, not invocation parity against the original executable or a new working App Server launch.
+
+
+### 2026-11-06: compose native schema-2 registry selection
+
+Added select_entry over a parsed registry, combining strict schema checks, identity filters, protocol compatibility, ordered path checks, raw extraction and candidate ranking. Invalid entry schema aborts before identity filtering, including after an earlier winner. Identity misses are skipped. Protocol errors are remembered with newer-candidate priority; missing-path failures retain the last failure. A valid winner supersedes remembered nonfatal errors; without a winner, the last path error precedes the retained protocol error, then no-compatible-entry. Malformed raw extraction aborts. These decisions follow the pinned load/remember_update_required_error branches.
+
+Added an owned-directory registry integration test covering mixed candidates, tie stability, presence score, fatal schema errors before/after a winner, protocol ordering and path-error precedence/order. All 45 native-host Rust tests pass, including 10 manifest tests and 2 environment tests. This run does not include browser/GUI acceptance and does not execute the vendor host.
+
+The in-memory selector is now composed rather than isolated helper functions. Filesystem registry discovery/read, schema-1 fallback and load precedence, environment integration, hello/status/ensure/restart and process/proxy startup remain incomplete. No runtime default or user registration was changed.

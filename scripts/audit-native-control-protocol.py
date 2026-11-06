@@ -26,6 +26,7 @@ open_file = disassemble(0x100036150, 0x100036858)
 config_load = disassemble(0x10001b4c4, 0x10001fd38)
 env_filter = disassemble(0x1000213e8, 0x100021514)
 required_path = disassemble(0x1000248cc, 0x100024a0c)
+remember_update = disassemble(0x100024a0c, 0x100024a94)
 # Decode only straight-line method comparison operands, not arbitrary code semantics.
 # x21 is the method string pointer loaded at 0x100025508. Constants are assembled
 # with MOV/MOVK; string loads include overlapping tails at offsets 11 and 27.
@@ -229,7 +230,7 @@ result = {
         'pathMetadataInstructions': evidence(required_path, 0x10002499c, 0x1000249a8, ['std::sys::fs::metadata', 'tbz']),
         'pathContract': 'entry.paths[field] must be a nonempty trimmed string with successful metadata; follows symlinks and accepts directories. No executable or absolute-path requirement in this helper.',
         'missingPathFormatBytes': raw[0x8d2f1:0x8d32d].hex(),
-        'integrationStatus': 'Validation primitives only; not wired to selection or process launch. Required-field conditionality and full candidate selection remain open.',
+        'integrationStatus': 'Validation primitives composed by select_entry; process launch remains separate.',
     },
     'manifestIdentityMatching': {
         'implementation': 'native/browser-extension-host/src/app_server_manifest.rs::identity_score',
@@ -245,7 +246,7 @@ result = {
             'extensionBuildChannels': evidence(config_load, 0x10001bd30, 0x10001bd5c, ['#0x3', 'ccmp', 'cbnz']),
         },
         'semantics': 'Only supplied constraints are checked. All supplied constraints must match. String-array membership is exact; nonstrings ignored and duplicate matches add weight once. Paths compare components first, then both canonical paths on mismatch; no trimming.',
-        'integrationStatus': 'Identity stage only. Does not choose a winner or implement schema-error policy, protocol compatibility, presence/updatedAt tie-breaking, or process startup.',
+        'integrationStatus': 'Identity stage composed by select_entry with protocol/path checks and ranking; process startup remains separate.',
     },
     'manifestViabilityAndRanking': {
         'implementation': 'native/browser-extension-host/src/app_server_manifest.rs',
@@ -261,7 +262,7 @@ result = {
         'timestampRead': evidence(config_load, 0x10001cbe8, 0x10001cc0c, ['#0x3']),
         'rankingInstructions': evidence(config_load, 0x10001cc70, 0x10001ccac, ['b.gt', 'csel', 'b.le']),
         'rankingSemantics': 'Higher score first; equal score compares untrimmed updatedAt strings lexically, missing/nonstring becomes empty. Equal keys keep first entry. No date parser.',
-        'integrationStatus': 'Native helper stages implemented and tested; full raw-config extraction, global error retention and runtime launch integration remain open.',
+        'integrationStatus': 'Native helper stages composed by select_entry with raw extraction and error retention; runtime launch integration remains open.',
     },
     'manifestConfigurationExtraction': {
         'implementation': 'native/browser-extension-host/src/app_server_manifest.rs::extract_configuration',
@@ -270,9 +271,19 @@ result = {
         'protocols': 'Optional u64 protocol values; zero allowed, float/string/negative rejected.',
         'proxyPortInstructions': evidence(config_load, 0x10001cd84, 0x10001cd98, ['#0xffff', '#0x10000', 'ccmp', 'cset']),
         'proxyPortSemantics': 'Only integer 1..65535 retained. Zero becomes absent, unlike the separate environment u16 resolver.',
-        'integrationStatus': 'Raw extraction only; not connected to full registry selection, environment resolution or process startup.',
+        'integrationStatus': 'Raw extraction composed by select_entry; environment resolution and process startup remain separate.',
     },
-    'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
+    'manifestSelection': {
+        'implementation': 'native/browser-extension-host/src/app_server_manifest.rs::select_entry',
+        'schemaAbort': evidence(config_load, 0x10001d150, 0x10001d17c, ['#0x3', '#0x1', '#0x2']),
+        'pathErrorRetention': evidence(config_load, 0x10001c1c4, 0x10001c224, ['#0x6', '0x10001b9dc']),
+        'protocolErrorPriority': evidence(remember_update, 0x100024a0c, 0x100024a38, ['#0x1', 'ccmp', 'b.ne']),
+        'winnerBeforeErrors': evidence(config_load, 0x10001d1ac, 0x10001d1c4, ['#0x2', 'b.ne', '0x10001d294']),
+        'fallbackProtocolError': evidence(config_load, 0x10001d294, 0x10001d2ac, ['0x10001d2e4']),
+        'semantics': 'Validate schema before identity filtering. Skip identity misses. Retain protocol mismatch with newer-candidate priority. Retain last required-path failure. Rank successfully extracted candidates. Winner takes precedence over retained nonfatal errors; otherwise last path error, then retained protocol error, then no-compatible-entry. Schema/malformed extraction failures abort immediately.',
+        'integrationStatus': 'Composed in-memory schema-2 selection with real path metadata checks. Registry discovery/read, schema-1 fallback, environment precedence and runtime process integration remain open.',
+    },
+    'remainingUnknowns': ['registry discovery/fallback and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
         'error codes and full websocket proxy behavior'],
     'limits': 'Static analysis, not native source recovery or runtime parity. No original host, browser, app-server, file opener or network request was executed.',

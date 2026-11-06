@@ -1,5 +1,6 @@
 //! Schema-2 primitives reconstructed from the pinned native AppServerHostConfig
-//! loader. Candidate matching/ranking and startup integration remain separate.
+//! loader. Registry selection is implemented; filesystem discovery, environment
+//! resolution and startup integration remain separate.
 use serde_json::Value;
 use std::{fmt, fs, path::Path};
 
@@ -10,6 +11,8 @@ pub enum ManifestError {
     EntrySchema,
     MalformedEntry,
     RequiredPath(String),
+    Protocol(ProtocolMismatch),
+    NoCompatibleEntry,
 }
 
 impl fmt::Display for ManifestError {
@@ -21,6 +24,12 @@ impl fmt::Display for ManifestError {
             Self::EntriesShape => f.write_str("Manifest entries must be an array"),
             Self::EntrySchema => f.write_str("Manifest entry must use schemaVersion 2"),
             Self::MalformedEntry => f.write_str("Matching manifest entry is malformed"),
+            Self::Protocol(_) => {
+                f.write_str("No Codex app-server entry matches the required protocol version")
+            }
+            Self::NoCompatibleEntry => {
+                f.write_str("No compatible Codex app-server entry was found")
+            }
             Self::RequiredPath(field) => write!(
                 f,
                 "Codex app-server manifest entry is missing required path {field}"
@@ -29,6 +38,59 @@ impl fmt::Display for ManifestError {
     }
 }
 impl std::error::Error for ManifestError {}
+
+#[derive(Debug)]
+pub struct SelectedManifestEntry {
+    pub index: usize,
+    pub configuration: RawManifestConfiguration,
+}
+
+/// Select from a parsed schema-2 registry. An invalid entry schema aborts even
+/// after a valid candidate was found. Identity misses are skipped. Protocol
+/// failures are remembered (newer wins); missing required paths remember the
+/// last failure. If no candidate succeeds, path errors precede protocol errors.
+/// No process is launched and no environment is read.
+pub fn select_entry(
+    document: &Value,
+    identity: &IdentityConstraints<'_>,
+    protocols: &ProtocolRequirements,
+) -> Result<SelectedManifestEntry, ManifestError> {
+    let entries = entries(document)?;
+    let mut best: Option<(usize, u16, RawManifestConfiguration)> = None;
+    let mut path_error = None;
+    let mut protocol_error = None;
+    for (index, entry) in entries.iter().enumerate() {
+        validate_entry_schema(entry)?;
+        let Some(score) = identity_score(entry, identity) else {
+            continue;
+        };
+        if let Err(error) = validate_protocols(entry, protocols) {
+            if protocol_error.is_none() || error == ProtocolMismatch::CandidateNewer {
+                protocol_error = Some(error);
+            }
+            continue;
+        }
+        if let Err(error) = validate_runtime_paths(entry) {
+            path_error = Some(error);
+            continue;
+        }
+        let configuration = extract_configuration(entry)?;
+        if best.as_ref().is_none_or(|(current, current_score, _)| {
+            candidate_is_preferred(entry, score, &entries[*current], *current_score)
+        }) {
+            best = Some((index, score, configuration));
+        }
+    }
+    if let Some((index, _, configuration)) = best {
+        return Ok(SelectedManifestEntry {
+            index,
+            configuration,
+        });
+    }
+    Err(path_error
+        .or_else(|| protocol_error.map(ManifestError::Protocol))
+        .unwrap_or(ManifestError::NoCompatibleEntry))
+}
 
 /// Raw schema-2 extraction, before environment overrides/defaults. Resources
 /// are checked for existence separately, not retained in this native record.
