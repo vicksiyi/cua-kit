@@ -3,9 +3,9 @@
 use crate::{
     app_server_configuration::LoadedLaunchConfiguration,
     app_server_http::{write_upgrade, HttpRequest, PrefixedTcpReader},
-    app_server_input::forward_frames,
+    app_server_input::forward_runtime_frames,
     app_server_output::{detach_writer, SharedOutput},
-    app_server_process::ensure_started,
+    app_server_process::ensure_runtime_started,
     app_server_websocket::{close, write_frame, SharedWriter},
 };
 use std::{
@@ -38,23 +38,37 @@ pub fn attach_and_replay(state: &SharedOutput, writer: &SharedWriter) -> io::Res
 /// Request must already have passed token/origin/upgrade validation. Do not
 /// expose this function directly as an unauthenticated network entry point.
 pub fn run_session(
-    mut stream: TcpStream,
+    stream: TcpStream,
     request: HttpRequest,
     state: &SharedOutput,
     config: &LoadedLaunchConfiguration,
+) -> io::Result<()> {
+    run_runtime_session(
+        stream,
+        request,
+        state,
+        &crate::app_server_runtime_state::ProxyRuntimeState::from(config),
+    )
+}
+
+pub fn run_runtime_session(
+    mut stream: TcpStream,
+    request: HttpRequest,
+    state: &SharedOutput,
+    runtime: &crate::app_server_runtime_state::ProxyRuntimeState,
 ) -> io::Result<()> {
     let key = request
         .headers
         .get("sec-websocket-key")
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing WebSocket key"))?;
-    ensure_started(state, config)?;
+    ensure_runtime_started(state, runtime)?;
     write_upgrade(&mut stream, key)?;
     let writer = Arc::new(Mutex::new(stream.try_clone()?));
     attach_and_replay(state, &writer)?;
-    let result = forward_frames(
+    let result = forward_runtime_frames(
         PrefixedTcpReader::new(stream, request.remaining),
         state,
-        config,
+        runtime,
         &writer,
     );
     detach_writer(state, &writer);

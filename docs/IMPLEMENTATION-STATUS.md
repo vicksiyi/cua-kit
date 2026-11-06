@@ -6294,3 +6294,10 @@ This is a real local transport/process integration fixture, not browser acceptan
 Added exact raw clientId selection (missing/empty => default), mutex-protected get-or-create shared process state, and handle_connection composing authenticated HTTP validation, process selection and existing session lifecycle. The map lock is released before process startup/handshake; entries persist across detach. A concurrent 12-caller test verifies shared identity for the same key and case-sensitive separation. The real TCP/owned CLI session test now enters through handle_connection instead of manually selecting state. All three focused map/session tests pass.
 
 Proxy listener creation, shared runtime configuration updates, manager control dispatch and full browser/app acceptance remain open.
+
+
+### Shared runtime snapshot boundary checkpoint
+
+Static listener/handler inspection showed that each authenticated connection clones ProxyRuntimeState after validation and before process selection. Refactored the process, input and session chain to accept that native snapshot directly; loaded-config entry points remain projection adapters. Added handle_shared_connection, which snapshots under the native expect/poison semantics and releases the lock before selecting/starting the process. Existing sessions retain the snapshot for subsequent frames.
+
+Twelve focused process/input/session tests passed, then the composed real TCP session test passed after switching to the shared-runtime handler. Listener inspection additionally establishes detached per-connection workers and ignored accept errors, but listener/manager implementation and production integration are not yet complete.

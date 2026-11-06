@@ -49,3 +49,26 @@ pub fn handle_connection(
     let state = select_process(processes, &request.path)?;
     run_session(stream, request, &state, config)
 }
+
+pub type SharedRuntime = Arc<Mutex<crate::app_server_runtime_state::ProxyRuntimeState>>;
+
+/// Native request handler snapshots shared runtime after request validation,
+/// before selecting/starting the process. Existing sessions retain their snapshot.
+pub fn handle_shared_connection(
+    mut stream: TcpStream,
+    processes: &ProcessMap,
+    runtime: &SharedRuntime,
+    expected_token: &str,
+    expected_origin: Option<&str>,
+) -> io::Result<()> {
+    let Some(request) = read_validated_request(&mut stream, expected_token, expected_origin)?
+    else {
+        return Ok(());
+    };
+    let snapshot = runtime
+        .lock()
+        .expect("app-server proxy state mutex poisoned")
+        .clone();
+    let state = select_process(processes, &request.path)?;
+    crate::app_server_session::run_runtime_session(stream, request, &state, &snapshot)
+}

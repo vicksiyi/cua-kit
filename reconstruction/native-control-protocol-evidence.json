@@ -3233,6 +3233,31 @@
     "contract": "First raw clientId query value unless empty/absent then default. Exact case-sensitive map key. Create default shared process state or clone existing under map lock; unlock before ensure/handshake. No disconnect eviction.",
     "integrationStatus": "Map selection and authenticated connection handler composed; concurrent same-key identity and real TCP/owned CLI echo tested. Proxy listener and manager/control lifecycle remain open."
   },
+  "connectionRuntimeSnapshot": {
+    "implementation": "native/browser-extension-host/src/app_server_process_map.rs::handle_shared_connection and runtime-specific session/input/process entry points",
+    "snapshotAfterValidation": [
+      "100023cb0: 94001b1b    \tbl\t0x10002a91c <<hashbrown::map::HashMap<alloc::string::String, alloc::string::String, std::hash::random::RandomState>>::contains_key::<str>>",
+      "100023cb4: 34ffd8a0    \tcbz\tw0, 0x1000237c8 <extension_host::app_server::handle_proxy_connection+0xa48>",
+      "100023cb8: f94037e9    \tldr\tx9, [sp, #0x68]",
+      "100023cbc: 910943e8    \tadd\tx8, sp, #0x250",
+      "100023cc0: 91004120    \tadd\tx0, x9, #0x10",
+      "100023cc4: 94002603    \tbl\t0x10002d4d0 <<std::sync::poison::mutex::Mutex<std::net::tcp::TcpStream>>::lock>",
+      "100023cc8: 910943e0    \tadd\tx0, sp, #0x250",
+      "100023ccc: 97ffc8a1    \tbl\t0x100015f50 <<core::result::Result<std::sync::poison::mutex::MutexGuard<extension_host::app_server::ProxyRuntimeState>, std::sync::poison::PoisonError<std::sync::poison::mutex::MutexGuard<extension_host::app_server::ProxyRuntimeState>>>>::expect>",
+      "100023cd0: aa0003f4    \tmov\tx20, x0",
+      "100023cd4: aa0103f5    \tmov\tx21, x1",
+      "100023cd8: 910483e0    \tadd\tx0, sp, #0x120",
+      "100023cdc: 91004281    \tadd\tx1, x20, #0x10",
+      "100023ce0: 94001380    \tbl\t0x100028ae0 <<extension_host::app_server::ProxyRuntimeState as core::clone::Clone>::clone>",
+      "100023ce4: 120002a1    \tand\tw1, w21, #0x1",
+      "100023ce8: aa1403e0    \tmov\tx0, x20",
+      "100023cec: 97ffc42a    \tbl\t0x100014d94 <core::ptr::drop_glue::<std::sync::poison::PoisonError<std::sync::poison::mutex::MutexGuard<std::collections::hash::map::HashMap<alloc::string::String, extension_host::app_server::AppServerProcess>>>>>",
+      "100023cf0: b94067e0    \tldr\tw0, [sp, #0x64]"
+    ],
+    "poisonMessage": "app-server proxy state mutex poisoned",
+    "contract": "After request validation, clone shared ProxyRuntimeState under mutex then unlock before map selection/ensure. Native expect panics on poison. A session keeps this snapshot for initial ensure and subsequent input, rather than retaining registry configuration or rereading global state per frame.",
+    "integrationStatus": "Runtime-specific process/input/session entry points implemented; old config entry points project once as adapters. Authenticated real TCP session test uses shared snapshot handler. Listener, manager updates and complete production integration remain open."
+  },
   "remainingUnknowns": [
     "process launch contract and runtime integration",
     "complete hello response schema and status lifecycle integration",

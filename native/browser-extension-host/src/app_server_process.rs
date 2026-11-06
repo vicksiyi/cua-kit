@@ -114,16 +114,24 @@ pub fn ensure_started(
     state: &crate::app_server_output::SharedOutput,
     config: &crate::app_server_configuration::LoadedLaunchConfiguration,
 ) -> io::Result<()> {
-    use crate::{
-        app_server_output::{finish_output, forward_lines, Delivery},
-        app_server_runtime_state::ProxyRuntimeState,
-    };
+    ensure_runtime_started(
+        state,
+        &crate::app_server_runtime_state::ProxyRuntimeState::from(config),
+    )
+}
+
+/// Native sessions carry a snapshot of ProxyRuntimeState, not the registry or
+/// full launch configuration. Keep that snapshot for every subsequent input.
+pub fn ensure_runtime_started(
+    state: &crate::app_server_output::SharedOutput,
+    requested: &crate::app_server_runtime_state::ProxyRuntimeState,
+) -> io::Result<()> {
+    use crate::app_server_output::{finish_output, forward_lines, Delivery};
     use std::sync::{Arc, Mutex};
-    let requested = ProxyRuntimeState::from(config);
     let mut locked = state
         .lock()
         .map_err(|_| io::Error::other("app-server process state mutex poisoned"))?;
-    if locked.can_reuse(&requested) {
+    if locked.can_reuse(requested) {
         return Ok(());
     }
     let old_child = locked.child.take();
@@ -136,7 +144,16 @@ pub fn ensure_started(
         crate::app_server_websocket::close(&writer);
     }
     stop_child(old_child)?;
-    let mut child = spawn(&config.launch)?;
+    let launch = crate::app_server_configuration::LaunchFields {
+        codex_cli_path: Some(requested.codex_cli_path.clone()),
+        node_path: Some(requested.node_path.clone()),
+        browser_client_path: requested.browser_client_path.clone(),
+        codex_home: requested.codex_home.clone(),
+        node_repl_path: requested.node_repl_path.clone(),
+        ..Default::default()
+    }
+    .resolve(|_| None);
+    let mut child = spawn(&launch)?;
     let stdin = child
         .stdin
         .take()
@@ -151,7 +168,7 @@ pub fn ensure_started(
     let child = Arc::new(Mutex::new(child));
     locked.generation = locked.generation.wrapping_add(1);
     locked.child = Some(child.clone());
-    locked.runtime_state = Some(requested);
+    locked.runtime_state = Some(requested.clone());
     locked.stdin = Some(stdin);
     let generation = locked.generation;
     drop(locked);

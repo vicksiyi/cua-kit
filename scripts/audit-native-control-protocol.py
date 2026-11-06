@@ -601,6 +601,13 @@ result = {
         'contract': 'First raw clientId query value unless empty/absent then default. Exact case-sensitive map key. Create default shared process state or clone existing under map lock; unlock before ensure/handshake. No disconnect eviction.',
         'integrationStatus': 'Map selection and authenticated connection handler composed; concurrent same-key identity and real TCP/owned CLI echo tested. Proxy listener and manager/control lifecycle remain open.',
     },
+    'connectionRuntimeSnapshot': {
+        'implementation': 'native/browser-extension-host/src/app_server_process_map.rs::handle_shared_connection and runtime-specific session/input/process entry points',
+        'snapshotAfterValidation': evidence(http_input, 0x100023cb0, 0x100023cf0, ['contains_key', 'Mutex', 'expect', 'ProxyRuntimeState as core::clone::Clone', 'drop_glue']),
+        'poisonMessage': raw[0x905d5:0x905fa].decode(),
+        'contract': 'After request validation, clone shared ProxyRuntimeState under mutex then unlock before map selection/ensure. Native expect panics on poison. A session keeps this snapshot for initial ensure and subsequent input, rather than retaining registry configuration or rereading global state per frame.',
+        'integrationStatus': 'Runtime-specific process/input/session entry points implemented; old config entry points project once as adapters. Authenticated real TCP session test uses shared snapshot handler. Listener, manager updates and complete production integration remain open.',
+    },
     'remainingUnknowns': ['process launch contract and runtime integration', 'complete hello response schema and status lifecycle integration',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',
         'error codes and full websocket proxy behavior'],

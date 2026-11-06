@@ -2,7 +2,7 @@ use core_browser_extension_host::{
     app_server_configuration::{LaunchFields, LoadedLaunchConfiguration},
     app_server_manifest::{LoadedManifestEntry, RawManifestConfiguration, SelectedManifestEntry},
     app_server_output::{stop_process, OutputState},
-    app_server_process_map::{handle_connection, ProcessMap},
+    app_server_process_map::{handle_shared_connection, ProcessMap},
     app_server_session::attach_and_replay,
 };
 use std::{
@@ -81,11 +81,14 @@ fn authenticated_tcp_session_upgrades_forwards_and_detaches_live_process() {
             },
         },
     };
+    let runtime = Arc::new(Mutex::new(
+        core_browser_extension_host::app_server_runtime_state::ProxyRuntimeState::from(&config),
+    ));
     let processes: ProcessMap = Arc::new(Mutex::new(Default::default()));
     let (server, mut client) = pair();
     let worker_processes = processes.clone();
     let worker = std::thread::spawn(move || {
-        handle_connection(server, &worker_processes, &config, "fixture", None).unwrap();
+        handle_shared_connection(server, &worker_processes, &runtime, "fixture", None).unwrap();
     });
     // Coalesced HTTP and masked first frame exercises preserved handshake bytes.
     client.write_all(b"GET /?token=fixture HTTP/1.1\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n\x81\x85\0\0\0\0hello").unwrap();

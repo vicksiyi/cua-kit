@@ -3,15 +3,29 @@
 use crate::{
     app_server_configuration::LoadedLaunchConfiguration,
     app_server_output::{SharedOutput, INITIALIZE_ID},
-    app_server_process::ensure_started,
+    app_server_process::ensure_runtime_started,
     app_server_websocket::{read_client_frame, write_frame, SharedWriter},
 };
 use std::io::{self, Read, Write};
 
 pub fn forward_frames(
-    mut reader: impl Read,
+    reader: impl Read,
     state: &SharedOutput,
     config: &LoadedLaunchConfiguration,
+    writer: &SharedWriter,
+) -> io::Result<()> {
+    forward_runtime_frames(
+        reader,
+        state,
+        &crate::app_server_runtime_state::ProxyRuntimeState::from(config),
+        writer,
+    )
+}
+
+pub fn forward_runtime_frames(
+    mut reader: impl Read,
+    state: &SharedOutput,
+    runtime: &crate::app_server_runtime_state::ProxyRuntimeState,
     writer: &SharedWriter,
 ) -> io::Result<()> {
     loop {
@@ -40,7 +54,7 @@ pub fn forward_frames(
                         continue;
                     }
                 }
-                ensure_started(state, config)?;
+                ensure_runtime_started(state, runtime)?;
                 let mut state = state
                     .lock()
                     .map_err(|_| io::Error::other("app-server process state mutex poisoned"))?;
