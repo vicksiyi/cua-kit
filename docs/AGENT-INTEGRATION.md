@@ -483,12 +483,16 @@ that explicit flag. The test reads the installed Core native-host manifest/confi
 it against the project extension, and uses the actual registered directory in a unified Rust +
 Swift + MCP session. It does not launch another Chromium profile or repair browser installation.
 
+The click fixture requires a POST containing the button click handler's `event.isTrusted` observation;
+a direct GET to the result route or a no-click POST returns 400 and never exposes the marker. The test
+checks both negative paths before browser execution. This improves the interaction oracle; it is not
+an adversarial security boundary (page code and request bodies can be forged by other mechanisms).
+
 The live run passed: browser selection, session naming, new tab, local HTTP navigation, accessibility
 state, a Playwright button click, server-observed form submission, resulting state containing a
 unique marker, image content returned by getScreenshot, and explicit owned-tab closure. Cleanup
 also ends the turn and closes the MCP session. Only the local fixture origin is approved by the
-test client; all other elicitation requests are declined. The fixture matches URL pathname rather
-than the raw request target, so a form's empty query delimiter is not mistaken for a failed click.
+test client; all other elicitation requests are declined. The fixture matches URL pathname and checks the form method/body.
 Navigation acceptance waits for server evidence and then observes the committed page; it does not
 repeat a click to compensate for asynchronous navigation.
 

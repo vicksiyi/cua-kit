@@ -57,18 +57,42 @@ test(
     });
     const requests: string[] = [];
     const server = createServer((req, res) => {
-      requests.push(req.url ?? "");
+      requests.push(`${req.method} ${req.url ?? ""}`);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
       if (
         new URL(req.url ?? "/", "http://fixture.invalid").pathname === "/done"
       ) {
-        clicked = true;
-        recordClick();
-        res.end(`<h1>${marker}</h1>`);
-      } else
-        res.end(
-          '<h1>Owned CUA acceptance page</h1><form action="/done"><button>Verify click</button></form>',
-        );
+        // A navigation to /done alone must not satisfy the click oracle.
+        let body = "";
+        req.on("data", (chunk) => {
+          body += chunk;
+        });
+        req.on("end", () => {
+          if (
+            req.method !== "POST" ||
+            new URLSearchParams(body).get("trustedClick") !== "true"
+          ) {
+            res.statusCode = 400;
+            res.end("Expected a browser-generated click on the fixture button");
+            return;
+          }
+          clicked = true;
+          recordClick();
+          res.end(`<h1>${marker}</h1>`);
+        });
+      } else {
+        res.end(`<!doctype html><h1>Owned CUA acceptance page</h1>
+          <form action="/done" method="post">
+            <input type="hidden" name="trustedClick" value="false">
+            <button type="submit">Verify click</button>
+          </form>
+          <script>
+            document.querySelector('button').addEventListener('click', event => {
+              document.querySelector('input').value = String(event.isTrusted);
+            });
+          </script>`);
+      }
     });
     await new Promise<void>((resolve) =>
       server.listen(0, "127.0.0.1", resolve),
@@ -109,6 +133,16 @@ test(
         .map((c) => c.text)
         .join("\n");
     try {
+      // Regression: direct navigation and untrusted/no-click submission cannot reveal the result.
+      for (const init of [
+        undefined,
+        { method: "POST", body: "trustedClick=false" },
+      ]) {
+        const response = await fetch(`${origin}/done`, init);
+        assert.equal(response.status, 400);
+        assert(!(await response.text()).includes(marker));
+        assert.equal(clicked, false);
+      }
       runtime = await prepareRestoredRuntime(
         {
           CUA_REPL_ENABLED_SURFACES: "browser,computer",
