@@ -8,13 +8,8 @@ func uiElementDisclosureActions(
     isAttributeSettable: (UIElementAttribute) throws -> Bool
 ) -> [UIElementAction] {
     let disclosing = UIElementAttribute("AXDisclosing")
-    let supported: Set<UIElementAttribute>
-    if let requested = cache.transactionAttributes, !requested.contains(disclosing) {
-        supported = freshSupportedAttributes()
-    } else {
-        supported = cache.supportedAttributes
-    }
-    guard supported.contains(disclosing),
-          (try? isAttributeSettable(disclosing)) == true else { return [] }
+    guard uiElementIsAttributeSupportedAndSettable(disclosing, readCache: { cache },
+        freshSupportedAttributes: freshSupportedAttributes,
+        isAttributeSettable: isAttributeSettable) else { return [] }
     return uiElementIsDisclosing(cache: cache) ? [.collapse] : [.expand]
 }

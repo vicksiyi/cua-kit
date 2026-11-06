@@ -43,6 +43,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementActions.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementDisclosureActions.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementDisclosure.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementAttributeSupport.swift"),
         join(root, "native/macos/Tests/UIElementDisclosureActionsTests.swift"),
       ]);
       const { stdout } = await exec(executable);

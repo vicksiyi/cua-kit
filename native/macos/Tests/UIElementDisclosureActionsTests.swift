@@ -42,6 +42,29 @@ struct UIElementDisclosureActionsTests {
                 }
             }
         }
+        // The support getter must reread cache on its cached branch.
+        var cacheReads = 0
+        let supportedAfterFirstRead = uiElementIsAttributeSupported(key, readCache: {
+            cacheReads += 1
+            return UIElementCache(supportedAttributes: cacheReads == 1 ? [] : [key],
+                attributes: [:], transactionAttributes: nil)
+        }, freshSupportedAttributes: { fatalError("nil transaction uses cache") })
+        precondition(supportedAfterFirstRead && cacheReads == 2)
+        cacheReads = 0
+        let fresh = uiElementIsAttributeSupported(key, readCache: {
+            cacheReads += 1
+            return UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: [])
+        }, freshSupportedAttributes: { [key] })
+        precondition(fresh && cacheReads == 1)
+        var concreteWrites: [Bool] = []
+        let toggleElement = UIElement(axElement: AXUIElementCreateSystemWide(),
+            cache: UIElementCache(supportedAttributes: [key], attributes: [:], transactionAttributes: nil))
+        toggleElement.toggleDisclosure(freshSupportedAttributes: { fatalError("uses cache") },
+            isAttributeSettable: { _ in true }, setDisclosing: { concreteWrites.append($0) })
+        try toggleElement.toggleDisclosure(freshSupportedAttributes: { fatalError("uses cache") },
+            isAttributeSettable: { _ in throw UIElementError.axError(.cannotComplete) },
+            setDisclosing: { _ in fatalError("failed writability must not write") })
+        precondition(concreteWrites == [true])
         for allowed in [false, true] {
             for current in [false, true] {
                 var calls: [String] = []

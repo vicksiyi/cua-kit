@@ -18,3 +18,19 @@ func uiElementIsDisclosing(cache: UIElementCache) -> Bool {
     guard let partial = cache.attributes[UIElementAttribute("AXDisclosing")] else { return false }
     return (try? decodeAXBool(partial.value.value, throwingOnFailure: false)) == true
 }
+
+// Concrete immutable UIElement composition. System/provider writes remain
+// supplied by the caller until the original encoded-value setter is restored.
+extension UIElement {
+    func toggleDisclosure(
+        freshSupportedAttributes: () -> Set<UIElementAttribute>,
+        isAttributeSettable: (UIElementAttribute) throws -> Bool,
+        setDisclosing: (Bool) throws -> Void
+    ) rethrows {
+        try uiElementToggleDisclosure(isDisclosable: {
+            uiElementIsAttributeSupportedAndSettable(UIElementAttribute("AXDisclosing"),
+                readCache: { cache }, freshSupportedAttributes: freshSupportedAttributes,
+                isAttributeSettable: isAttributeSettable)
+        }, isDisclosing: { uiElementIsDisclosing(cache: cache) }, setDisclosing: setDisclosing)
+    }
+}

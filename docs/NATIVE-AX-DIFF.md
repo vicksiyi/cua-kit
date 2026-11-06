@@ -1207,3 +1207,20 @@ isAttributeSupportedAndSettable；isDisclosing 0x1007ac3d4 经 0x1007ac3f0
 缓存状态与 supported/transaction 集合独立的行为；原 240 组合与动作组合测试保持。
 测试与 Swift 构建通过。toggle 当前通过闭包承接 getter/setter，尚未冒充完整协议
 分派；生产采集器仍不广告或执行 synthetic 动作。真实 UI 验收等待宿主权限。
+
+
+## 属性支持/可写性组合与具体元素 toggle（2026-11-07）
+
+恢复 isAttributeSupported 的完整惰性读取：0x1007a7d78 首次读 cache 的
+transactionAttributes；nil 或包含目标属性时再次调用 cache getter 取得 supportedAttributes，
+否则读取 uncachedSupportedAttributes。不能在通用协议实现中把两次 cache 读取合并。
+随后 isAttributeSupportedAndSettable 在不支持时短路，不查询系统可写性；
+可写性查询错误在此上层转为 false，区别于底层保留并抛 AXError。
+
+UIElementDisclosureActions 已复用此组合；具体 UIElement.toggleDisclosure 也连接到
+同一支持/可写性判断和已恢复的缓存 isDisclosing，再由注入 setter 执行取反写入。
+测试增加动态 cache getter（两次返回不同值）、新鲜读取分支调用次数、具体元素
+toggle 组合及查询错误不写入；原 240 组合测试保持通过。Swift 构建通过。
+
+目前仍需要原版编码值 setter、完整 provider/protocol 分派与生产观察器整合，
+不把注入 setter 的测试视作真实应用执行。期间未调用模型或重复尝试缺权限的 UI 验收。

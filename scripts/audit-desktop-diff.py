@@ -980,6 +980,16 @@ element_storage_evidence['toggleDisclosure']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementDisclosure.swift',
     'limitations':'Injected getter/setter dispatch; synthetic actions are not yet advertised or executed by the production simplified collector.',
 }
+element_storage_evidence['supportedAndSettable']={
+    'supportGetter':'0x1007a7d78: read transaction attributes; nil/contains -> reread cache.supportedAttributes; otherwise uncachedSupportedAttributes',
+    'shortCircuit':'0x1007b0328: false support skips writability entirely',
+    'writability':'0x1007b029c: throwing system/provider check errors become false',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007a7d78,0x1007a7e50),(0x1007b029c,0x1007b035c)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementAttributeSupport.swift',
+    'composition':'UIElement disclosure action advertisement and toggle share support/writability policy',
+    'limitations':'Concrete immutable UIElement composition restored; original protocol dynamic dispatch and native encoded setter remain pending.',
+}
 action_nominal=0x1012cd3b4
 action_fields=relative_address(action_nominal+16)
 _,_,action_kind,action_size,action_count=struct.unpack('<iiHHI',read_virtual(action_fields,16))
