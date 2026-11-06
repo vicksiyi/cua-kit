@@ -1166,3 +1166,25 @@ CFString 名称边界。Swift 测试验证输出未写入、false/true 和七种
 
 原 TaskLocal MockProvider 前置分派及展开/折叠的生产执行仍待恢复。权限阻塞未改变，
 本轮不重复运行真实应用验收，也没有调用模型。
+
+
+## 普通动作执行与合成动作分流（2026-11-07）
+
+恢复 `AXActionPerforming.swift` 的系统分支。0x1006f9bb8 调用
+AXUIElementPerformAction；0x101570e00 的两个 Int32 常量是 -25204/-25205，
+即 cannotComplete/attributeUnsupported。原版对 success 及这两种状态不抛异常，
+其它状态抛 UIElementError.axError，无自动重试。测试覆盖三种容忍状态与其余
+13 种 AXError，核查一次调用、错误原样传播。Swift 构建与测试通过。
+
+原版先查询 PID，仅同进程且当前非主线程时同步切到主队列；重建复用已恢复的
+onAXAttributeReadThread 通用同步逻辑。测试本轮只验证错误策略，不声称完成真实
+应用操作或本轮独立验证线程分流。原 TaskLocal MockProvider 选择仍待恢复。
+
+重要执行边界：UIElementProtocol.perform(action:) 不等于直接 AX perform。
+0x100791d78–0x100791e14 对 expand/collapse 都调用 toggleDisclosure；后者
+0x1007b0148 先读取 protocol witness +0xa8 的条件，再读取 +0xb0 的 Bool，
+取反后通过 setValue witness 写 AXDisclosing。尚需核对这些 getter 的完整定义，
+不能直接按动作名分别写 true/false。perform 另含菜单祖先处理、滚动条优先路径。
+
+因此本轮未将底层“容忍错误”接到当前生产 action 的成功结果：非抛错不保证可见效果，
+完整执行分派、结果观察与调用方语义需一起恢复。现有生产拒绝/结果未知行为未更改。
