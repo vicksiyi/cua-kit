@@ -91,3 +91,18 @@ test("native array count preserves cache and error semantics", {
     assert.match(result.stdout, /native count preserves support gate, subset totals, raw arrays and strict AX errors: 48 cases/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native parent chain preserves source traversal boundaries", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-parents-"));
+  try {
+    const output = join(directory, "parents");
+    await exec("xcrun", ["swiftc",
+      resolve("native/macos/Sources/CuaHelper/UIElementParentChain.swift"),
+      resolve("native/macos/Tests/UIElementParentChainTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /native parent chain preserves eager seed, inclusive depth, lookahead and cycle bound/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

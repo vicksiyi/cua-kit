@@ -1576,3 +1576,18 @@ UIElement.systemElementCount 将支持门槛、缓存计数和系统计数连接
 
 该方法明确为 system-only：尚未恢复的 TaskLocal provider 与原 PID 失败日志没有
 被假实现替代。没有调用真实应用 AX 计数、模型或改变权限，生产入口仍待接线。
+
+## 父链的深度与预读行为（2026-11-07）
+
+静态核对 parentChain 0x1007a7fa4、闭包 0x1007b704c，默认深度 getter
+0x1007a7f9c 返回 300。includingSelf=true 从 self/depth=0 开始；false 会在
+构造序列时立即读取 parent，并从 depth=1 开始。迭代在当前节点缺失或 depth > maxDepth
+时结束；否则先读取下一父节点、对 depth 做带溢出检查的加一，再返回当前节点。
+因此深度边界包含 maxDepth，最后一个产出节点也会先读取其父节点；此路径没有去重。
+
+恢复 UIElementParentChain.swift，使用 Swift UnfoldSequence 保留惰性状态机。
+测试覆盖负深度、零深度、包含/排除自身、提前停止的预读次数，以及环形父链在默认
+300 深度边界停止；相关七项动作测试和 Swift 构建通过。
+
+此处 generic Node 表达遍历算法边界，不冒充已经恢复完整 UIElementProtocol。
+原 parent getter、协议 existential 和生产菜单接线仍待完成；未执行真实 UI 或模型。

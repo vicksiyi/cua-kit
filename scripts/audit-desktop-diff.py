@@ -1001,6 +1001,16 @@ element_storage_evidence['childrenPreferringVisible']={
     'implementation':'native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift',
     'limitations':'Cache count and collection composition are restored; explicit system array-count adapter exists; original TaskLocal provider remains pending; full protocol/TaskLocal and production traversal remain pending.',
 }
+element_storage_evidence['parentChain']={
+    'defaultDepth':'0x1007a7f9c returns 300',
+    'construction':'0x1007a7fa4: includingSelf true seeds self at depth 0; false resolves parent immediately and seeds depth 1',
+    'step':'0x1007b704c: nil current or depth > maxDepth returns nil; otherwise resolve parent, increment depth with checked overflow, yield original current',
+    'boundaries':'inclusive depth; lookahead occurs before each yielded element even at maximum depth; no identity deduplication in this path',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x1007a7f9c,0x1007a80f0),(0x1007b704c,0x1007b71a8),(0x1007b7e24,0x1007b7e2c)]],
+    'implementation':'native/macos/Sources/CuaHelper/UIElementParentChain.swift',
+    'limitations':'Traversal restored with generic node and parent boundary; original parent getter, complete existential protocol and production integration remain pending.',
+}
 element_storage_evidence['menuActionPreparation']={
     'entry':'UIElementProtocol.perform(action:) at 0x100791a68',
     'parents':'menuItem only; defaultMaximumParentTraversalDepth and parentChain(includingSelf:false) at 0x100791b34',

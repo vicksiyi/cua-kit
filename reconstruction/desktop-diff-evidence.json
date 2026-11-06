@@ -2243,6 +2243,31 @@
       "implementation": "native/macos/Sources/CuaHelper/UIElementVisibleChildren.swift",
       "limitations": "Cache count and collection composition are restored; explicit system array-count adapter exists; original TaskLocal provider remains pending; full protocol/TaskLocal and production traversal remain pending."
     },
+    "parentChain": {
+      "defaultDepth": "0x1007a7f9c returns 300",
+      "construction": "0x1007a7fa4: includingSelf true seeds self at depth 0; false resolves parent immediately and seeds depth 1",
+      "step": "0x1007b704c: nil current or depth > maxDepth returns nil; otherwise resolve parent, increment depth with checked overflow, yield original current",
+      "boundaries": "inclusive depth; lookahead occurs before each yielded element even at maximum depth; no identity deduplication in this path",
+      "blocks": [
+        {
+          "start": "0x1007a7f9c",
+          "endExclusive": "0x1007a80f0",
+          "machineCodeSha256": "b34b7649de6d09050870c47517990ae151de7f9ec083eaf012623a9b2180c9e3"
+        },
+        {
+          "start": "0x1007b704c",
+          "endExclusive": "0x1007b71a8",
+          "machineCodeSha256": "c1db4fa45a0169db0f1b070467877c0b75d6b6fffaccbe061149f24c9a054428"
+        },
+        {
+          "start": "0x1007b7e24",
+          "endExclusive": "0x1007b7e2c",
+          "machineCodeSha256": "6cff9b1e5baff06e96478024e07456f7a198748edcdf2ed4cf62c4854bcbfad7"
+        }
+      ],
+      "implementation": "native/macos/Sources/CuaHelper/UIElementParentChain.swift",
+      "limitations": "Traversal restored with generic node and parent boundary; original parent getter, complete existential protocol and production integration remain pending."
+    },
     "menuActionPreparation": {
       "entry": "UIElementProtocol.perform(action:) at 0x100791a68",
       "parents": "menuItem only; defaultMaximumParentTraversalDepth and parentChain(includingSelf:false) at 0x100791b34",
