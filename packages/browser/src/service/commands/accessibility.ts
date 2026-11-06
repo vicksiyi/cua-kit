@@ -1,3 +1,4 @@
+import { observeSiwc, formatSiwcObservation } from "../siwc/observation";
 import { defineCommand } from "./define_command";
 import { positiveTabId } from "../tab_id";
 import { captureTabScreenshot } from "./screenshot";
@@ -8,6 +9,7 @@ export interface AccessibilityCommandContext extends ScreenshotContext {
   acquireAuthority(): ReturnType<ScreenshotContext["acquireAuthority"]> & {
     actInFrame(url: unknown): { assert(): Promise<unknown> };
   };
+  supportsTabCapability(id: string): Promise<boolean>;
   followSessionTab(tabId: number): Promise<unknown>;
   getCurrentSessionId(): string;
   ax: {
@@ -18,10 +20,12 @@ export interface AccessibilityCommandContext extends ScreenshotContext {
       options: { disableDiffing?: boolean },
       screenshot?: () => Promise<{ data?: unknown }>,
     ): Promise<{
+      snapshotId?: string;
       state?: string;
       data?: unknown;
       screenshot_unavailable?: string;
     }>;
+    discardCapture(tabId: number, capture: object): void;
     validateCapture(tabId: number, capture: object): void;
   };
 }
@@ -67,8 +71,11 @@ export const TabAXGetStateCommand = defineCommand(
       .assert();
     const sessionId = context.getCurrentSessionId();
     for (let attempt = 0; ; attempt++) {
+      let capture:
+        | Awaited<ReturnType<AccessibilityCommandContext["ax"]["capture"]>>
+        | undefined;
       try {
-        const capture = await context.ax.capture(
+        capture = await context.ax.capture(
           tabId,
           payload.content,
           { disableDiffing: payload.disable_diffing || attempt > 0 },
@@ -85,8 +92,25 @@ export const TabAXGetStateCommand = defineCommand(
           capture.screenshot_unavailable != null
         )
           throw new Error(capture.screenshot_unavailable);
+        if (
+          payload.content !== "screenshot" &&
+          (await context.supportsTabCapability("siwc"))
+        ) {
+          const { siwc } = await observeSiwc(payload, context);
+          await context
+            .acquireAuthority()
+            .observeContent(await context.security.currentTabUrl(tabId))
+            .assert();
+          context.ax.validateCapture(tabId, capture);
+          return {
+            ...capture,
+            siwc,
+            state: `${capture.state}\n\n${formatSiwcObservation(capture.snapshotId, siwc)}`,
+          };
+        }
         return capture;
       } catch (error) {
+        if (capture != null) context.ax.discardCapture(tabId, capture);
         if (
           !(error instanceof StaleAccessibilityCaptureError) ||
           attempt > 0 ||

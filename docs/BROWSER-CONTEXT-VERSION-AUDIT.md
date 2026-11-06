@@ -112,3 +112,12 @@
 当前 `l2` 相比旧版增加 capability 检查、快照生成时的 siwcDocumentId、候选观察、再次授权与 generation 一致性检查。已恢复完整分支：SIWC 开启时保留顶层 ref，附加 snapshotId/siwc 和原说明文本；子 frame 展开内容仍剥离 ref，避免把跨 frame 引用当作顶层目标。发现 generation 变化时只返回 page_changed 状态，不返回旧 DOM 正文。关闭能力时保持不附加 SIWC 的路径。
 
 将旧 alias 的 DOM oracle 更新为当前 hash 下 l2/Gte/c2 等实际函数。3 项差分测试覆盖 15 个命令场景、双模式 normalization 和嵌套 frame；真实 Chromium 注册链测试新增普通 DOM snapshot 返回一致的候选 snapshotId 与 ref。Browser TypeScript、重建通过，native 扩展全 MCP 回归通过（约 9 秒）。AX observation 的 SIWC 附加及 discardCapture 生命周期仍待恢复。
+
+## 后续恢复：AX snapshot 身份、SIWC 附加与丢弃
+
+按当前 Zh.commitCapture/validateCapture/targetForSnapshot/discardCapture 恢复随机 snapshotId：提交 AX candidate 时生成新 UUID，结果带同一 ID；旧 capture 在新 capture 提交后失效；SIWC AX target 必须属于当前快照的主 frame 且不是 JS dialog；丢弃只清理 ID 匹配的当前 revision/targets，不误清理后来提交的快照。
+
+当前 pF 命令在非 screenshot 观察且 SIWC 能力开启时附加候选，再次授权并校验 AX capture。捕获后的任何失败先 discardCapture，然后仅对同会话 stale capture 重试一次。截图分支不触发 SIWC 观察。更新 AX command oracle 为当前源码 nF/pF，而不是旧 alias。
+
+验证：2 项命令差分测试（15 个 get-state 场景与 action 路径）和 snapshot lifecycle 原方法对照通过；Browser TypeScript、重建通过。真实 native 扩展 MCP 通用回归另行执行，不能替代所有 AX 端到端验收。
+本轮 native 扩展全 MCP 回归通过（约 9.8 秒）。

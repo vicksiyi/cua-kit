@@ -1,21 +1,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { originalServiceBindings } from "./service-source";
+import { originalServiceBindings, serviceSourceSha256 } from "./service-source";
 import {
   TabAXActionCommand,
   TabAXGetStateCommand,
 } from "../packages/browser/src/service/commands/accessibility";
+import { inputTimeout } from "../packages/browser/src/service/input/input";
 import { defineCommand } from "../packages/browser/src/service/commands/define_command";
 import { positiveTabId } from "../packages/browser/src/service/tab_id";
 import { captureTabScreenshot } from "../packages/browser/src/service/commands/screenshot";
 import { AccessibilityActionError } from "../packages/browser/src/service/accessibility/dialog_actions";
 import { StaleAccessibilityCaptureError } from "../packages/browser/src/service/accessibility/state_store";
-const original = originalServiceBindings(["z2", "eF"], {
-  F: defineCommand,
-  W: positiveTabId,
-  Ui: captureTabScreenshot,
-  Do: AccessibilityActionError,
-  iu: StaleAccessibilityCaptureError,
+assert.equal(
+  serviceSourceSha256,
+  "396d4bcd890e8e41e336469eb1a050bafd36bb2d91152b75bb22b70b56622021",
+);
+const original = originalServiceBindings(["nF", "pF", "Co", "Dc", "Mc"], {
+  O: defineCommand,
+  H: positiveTabId,
+  Wi: captureTabScreenshot,
+  Ro: AccessibilityActionError,
+  Bo: StaleAccessibilityCaptureError,
+  Oe: inputTimeout,
 });
 function fixture(scenario: string) {
   const trace: any[] = [];
@@ -23,6 +29,22 @@ function fixture(scenario: string) {
     checks = 0,
     session = "session";
   const ctx: any = {
+    supportsTabCapability: async () => scenario.startsWith("siwc"),
+    playwright: {
+      evaluateOnPlaywrightPage: async (_tab: any, fn: any) => {
+        if (scenario === "siwc-unavailable") throw Error("page unavailable");
+        return fn({
+          siwcDocumentId: () => "generation",
+          siwcDetect: () => [
+            {
+              ref: "s1",
+              evidence: "siwc_marker_detected",
+              visibility: "rendered",
+            },
+          ],
+        });
+      },
+    },
     acquireAuthority: () => {
       trace.push("authority");
       const authorize = (kind: string, url: string) => {
@@ -33,7 +55,8 @@ function fixture(scenario: string) {
             trace.push(["assert", checks]);
             if (
               (scenario === "deny" && checks === 1) ||
-              (scenario === "deny-after" && checks === 2)
+              (scenario === "deny-after" && checks === 2) ||
+              (scenario === "siwc-deny-after" && checks === 3)
             )
               throw Error("denied");
             if (scenario === "session-after-check" && checks === 2)
@@ -77,6 +100,8 @@ function fixture(scenario: string) {
       },
     },
     ax: {
+      discardCapture: (id: number, capture: any) =>
+        trace.push(["discard", id, capture]),
       performAction: async (id: number, action: any) => {
         trace.push(["perform", id, action]);
         if (scenario === "action-error")
@@ -130,8 +155,11 @@ async function run(command: any, scenario: string, payload: any) {
   return { trace, result, error };
 }
 test("AX get-state command preserves authority order, one retry, session boundaries and screenshot callback", async () => {
-  assert.equal(TabAXGetStateCommand.type, original.eF.type);
+  assert.equal(TabAXGetStateCommand.type, original.pF.type);
   for (const scenario of [
+    "siwc",
+    "siwc-unavailable",
+    "siwc-deny-after",
     "normal",
     "deny",
     "deny-after",
@@ -154,18 +182,18 @@ test("AX get-state command preserves authority order, one retry, session boundar
     };
     assert.deepEqual(
       await run(TabAXGetStateCommand, scenario, payload),
-      await run(original.eF, scenario, payload),
+      await run(original.pF, scenario, payload),
       scenario,
     );
   }
   for (const tab_id of [0, "invalid"])
     assert.deepEqual(
       await run(TabAXGetStateCommand, "normal", { tab_id, content: "axState" }),
-      await run(original.eF, "normal", { tab_id, content: "axState" }),
+      await run(original.pF, "normal", { tab_id, content: "axState" }),
     );
 });
 test("AX action command enriches only action errors after an authorized validated capture", async () => {
-  assert.equal(TabAXActionCommand.type, original.z2.type);
+  assert.equal(TabAXActionCommand.type, original.nF.type);
   for (const scenario of [
     "normal",
     "deny",
@@ -177,7 +205,7 @@ test("AX action command enriches only action errors after an authorized validate
     const actual = await run(TabAXActionCommand, scenario, payload);
     assert.deepEqual(
       actual,
-      await run(original.z2, scenario, payload),
+      await run(original.nF, scenario, payload),
       scenario,
     );
     if (scenario === "action-error")

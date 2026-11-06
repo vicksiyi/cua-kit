@@ -61,6 +61,7 @@ interface CaptureOptions {
 }
 type CaptureCdp = AXTrackingCdp & AXDocumentCollector["cdp"];
 type CaptureResult = {
+  snapshotId?: string;
   state?: string;
   data?: unknown;
   screenshot_unavailable?: string;

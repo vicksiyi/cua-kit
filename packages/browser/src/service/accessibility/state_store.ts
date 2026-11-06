@@ -36,6 +36,7 @@ export interface AXTabState extends NavigationState {
   mainFrameId?: string;
   loaderId?: string;
   documentKey?: string;
+  snapshotId?: string;
   accessibilityRevision?: AXRevision;
   pendingError?: unknown;
   pendingNavigationState?: NavigationState;
@@ -162,6 +163,23 @@ export class AccessibilityStateStore {
         state.accessibilityRevision?.isValueSettableForElement?.(id),
     };
   }
+  targetForSnapshot(tabId: number, snapshotId: string, elementIndex: number) {
+    const state = this.currentState(tabId);
+    if (state.snapshotId !== snapshotId)
+      throw new StaleAccessibilityCaptureError();
+    const target = this.targetForElement(tabId, elementIndex);
+    if (target.frameId !== state.mainFrameId || target.javaScriptDialog != null)
+      throw new StaleAccessibilityCaptureError();
+    return target;
+  }
+  discardCapture(tabId: number, capture: { snapshotId?: string }) {
+    const state = this.sessions.get(this.getSessionId())?.get(tabId);
+    if (state != null && capture.snapshotId === state.snapshotId) {
+      state.accessibilityRevision = undefined;
+      state.snapshotId = undefined;
+      state.targets.clear();
+    }
+  }
   frameForId(tabId: number, frameId: string) {
     return this.currentState(tabId).frames.get(frameId);
   }
@@ -178,7 +196,7 @@ export class AccessibilityStateStore {
     state.pendingError = undefined;
     throw error;
   }
-  validateCapture(tabId: number, capture: object) {
+  validateCapture(tabId: number, capture: { snapshotId?: string }) {
     const sessionId = this.getSessionId(),
       state = this.sessions.get(sessionId)?.get(tabId);
     if (state != null) this.throwPendingError(tabId);
@@ -188,6 +206,8 @@ export class AccessibilityStateStore {
       (state == null ||
         provenance.state !== state ||
         provenance.sessionId !== sessionId ||
+        (capture.snapshotId != null &&
+          capture.snapshotId !== state.snapshotId) ||
         provenance.documentKey !==
           accessibilityDocumentKey(state.mainFrameId, state.loaderId))
     )
@@ -226,6 +246,7 @@ export class AccessibilityStateStore {
       state.frames = candidate.frames;
       state.targets = candidate.targets;
       state.accessibilityRevision = candidate.accessibilityRevision;
+      state.snapshotId = crypto.randomUUID();
       state.pendingNavigationState = undefined;
     }
     let rendered: string | undefined;
@@ -241,7 +262,9 @@ export class AccessibilityStateStore {
       rendered = `Browser tab: ${tab.id}, Title: ${JSON.stringify(tab.title ?? "Unknown")}, URL: ${JSON.stringify(tab.url ?? "Unknown")}${suffix}.\n${candidate.rendered}`;
     }
     const result = {
-      ...(rendered == null ? {} : { state: rendered }),
+      ...(rendered == null
+        ? {}
+        : { state: rendered, snapshotId: state.snapshotId }),
       ...(capture.data == null ? {} : { data: capture.data }),
       ...(capture.screenshotUnavailable == null
         ? {}
