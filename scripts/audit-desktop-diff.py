@@ -1166,6 +1166,16 @@ element_storage_evidence['systemChildrenIntegration']={
     'implementation':['native/macos/Sources/CuaHelper/UIElementSystemChildren.swift','native/macos/Sources/CuaHelper/main.swift'],
     'limitations':'Full original transformation traversal, TaskLocal transaction prefetch and MockProvider remain incomplete; live native acceptance unverified.',
 }
+element_storage_evidence['clickRoutingProduction']={
+    'routing':'Ineligible preparation -> simulated click. Eligible -> reread insideWebView; if true await hit probe; true probe -> simulation. Otherwise optional cursor.press, focus preparation, performAction. No fallback after thrown cursor/focus/action errors.',
+    'webState':'Simulation receives the initial insideWebView value, not the second eligibility read; the current simplified event sender does not yet consume this original routing context.',
+    'production':'Mouse.swift indexed path now uses prepareUIElementClick and executePreparedUIElementClick; preferred AXPick/AXPress uses actual restored performAction. Absent/zero hold duration remain distinct; modifiers force simulation. Existing host input validation and snapshot/deadline checks retained.',
+    'hostContexts':'Current independent Target has no native cursor/focus-enforcer instances, so explicitly uses nil cursor and original no-enforcer PID/isActive branch. This does not count as implementing those optional subsystems.',
+    'isolation':'Extracted orchestration accepts default #isolation to preserve caller actor across suspension; standalone host adaptation, not an assertion about original function signature.',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1007b1100,0x1007b12c4),(0x1007b17d0,0x1007b18b4),(0x1007b1c88,0x1007b1d7c)]],
+    'validation':'32 routing combinations plus failure-stop/error identity and MainActor resumption tests; preparation7056 cases, web probe and focus preparation tests pass; Swift package builds.',
+    'limitations':'No live GUI action performed. Full focus-enforcer/cursor instances, original simulated event targeting and TaskLocal context remain incomplete. A dispatched AX action is not proof of visible completion.',
+}
 element_storage_evidence['axActionFocusPreparation']={
     'withoutEnforcer':'0x1007b1348 reads AX PID (errors propagate); 0x1007b142c NSRunningApplication lookup then isActive selector at 0x101542af8. Bool discarded; missing app tolerated; no activation call.',
     'withEnforcer':'Read locked state, test byte1 applicationBelievesItHasFocus; if true skip. Otherwise test isCatalystApp; only Catalyst selection-causing target or AXMenuButton calls safelyEnforceActiveState(for:window). Selection true skips role read.',

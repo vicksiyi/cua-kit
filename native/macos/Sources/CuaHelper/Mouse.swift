@@ -76,31 +76,74 @@ extension Target {
     }
     func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
         let held = try heldNanoseconds(params["duration"] as? Double ?? 0)
-        let point: CGPoint
-        if let id = params["elementId"] as? Int {
-            try validateSnapshot(params)
-            guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count else {
-                throw fail("INVALID_ARGUMENT", "Indexed click requires a valid element ID and no coordinates.")
-            }
-            let item = UIElement(systemElement: nodes[id - 1].element, transaction: nil)
-            guard let resolved = try await item.systemClickablePoint(transaction: nil, reportError: { error in
-                Logger(subsystem: "core.cua", category: "Accessibility").error("Clickable geometry read failed: \(String(describing: error))")
-            }) else { throw SynthesizedEvent.Error.cannotClickOffscreenElement }
-            point = resolved
-        } else {
-            point = try await observedInputPoint(params)
+        let button = params["mouseButton"] as? String ?? "left"
+        let count = params["clickCount"] as? Int ?? 1
+        guard (1...10).contains(count) else { throw fail("INVALID_ARGUMENT", "Click count must be 1..10.") }
+        let mouse: CGMouseButton
+        switch button {
+        case "left", "l": mouse = .left
+        case "right", "r": mouse = .right
+        case "middle", "m": mouse = .center
+        default: throw fail("INVALID_ARGUMENT", "Unknown mouse button.")
         }
-        let events = try mouseClickEvents(point:point,button:params["mouseButton"] as? String ?? "left",count:params["clickCount"] as? Int ?? 1,flags:mouseModifiers(params["key"] as? String))
-        // Recheck after async window enumeration and before the first event.
-        try validateSnapshot(params)
-        defer { invalidateInputState() }
-        for index in stride(from:0,to:events.count,by:2) {
+        let flags = try mouseModifiers(params["key"] as? String)
+        let report: (Error) -> Void = { error in
+            Logger(subsystem: "core.cua", category: "Accessibility").error("Click AX read failed: \(String(describing: error))")
+        }
+        func checkDeadline() throws {
             if let deadline = params["deadlineUnixMilliseconds"] as? Double,
                Date().timeIntervalSince1970 * 1000 + Double(held) / 1_000_000 >= deadline {
-                throw fail("INVALID_ARGUMENT", "Click deadline expired before the next mouse-down; earlier clicks may have been dispatched.")
+                throw fail("INVALID_ARGUMENT", "Click deadline expired before dispatch; earlier clicks may have been dispatched.")
             }
-            try await dispatchHeldPair(events[index],events[index+1],nanoseconds:held,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{try await Task.sleep(nanoseconds:$0)})
         }
-        return ["outcome":"dispatched","eventCount":events.count]
+        func simulate(at point: CGPoint) async throws -> [String: Any] {
+            let events = try mouseClickEvents(point: point, button: button, count: count, flags: flags)
+            try validateSnapshot(params)
+            defer { invalidateInputState() }
+            for index in stride(from: 0, to: events.count, by: 2) {
+                try checkDeadline()
+                try await dispatchHeldPair(events[index], events[index+1], nanoseconds: held,
+                    post: { $0.postToPid(self.app.processIdentifier) }, validate: { try self.validateIdentity() },
+                    wait: { try await Task.sleep(nanoseconds: $0) })
+            }
+            return ["outcome": "dispatched", "eventCount": events.count]
+        }
+        guard let id = params["elementId"] as? Int else {
+            return try await simulate(at: observedInputPoint(params))
+        }
+        try validateSnapshot(params)
+        guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count else {
+            throw fail("INVALID_ARGUMENT", "Indexed click requires a valid element ID and no coordinates.")
+        }
+        let item = UIElement(systemElement: nodes[id - 1].element, transaction: nil)
+        let insideWebView: () -> Bool = {
+            item.isInsideWebView(transaction: nil, readParent: readSystemAXAttributeValue,
+                bundleIdentifier: systemAXBundleIdentifier, reportError: report)
+        }
+        let preparation = prepareUIElementClick(mouseButton: mouse, count: count,
+            holdDuration: (params["duration"] as? Double).map { _ in Duration.nanoseconds(Int64(held)) },
+            heldKeyIsPresent: false, flags: flags,
+            alwaysSimulateClick: params["alwaysSimulateClick"] as? Bool ?? false,
+            readActions: { item.actions(in: .system, reportError: report) }, isInsideWebView: insideWebView)
+        // This host currently has no native VirtualCursor or SyntheticAppFocusEnforcer
+        // instance. Exercise the source's nil-context branches, not fake implementations.
+        return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,
+            webClickHitsTarget: {
+                await item.systemWebClickHitsTarget(app: UIElement(systemElement: root, transaction: nil),
+                    transaction: nil, reportError: report)
+            }, cursorPress: nil,
+            prepareActionFocus: { try probeSystemApplicationIsActiveForAXAction(root) },
+            performAction: { action in
+                try validateSnapshot(params)
+                try checkDeadline()
+                defer { invalidateInputState() }
+                try item.performAction(action, transaction: nil, environment: .system, reportError: report)
+                return ["outcome": "dispatched", "eventCount": 0, "action": action.name]
+            }, simulateClick: { _ in
+                guard let point = try await item.systemClickablePoint(transaction: nil, reportError: report) else {
+                    throw SynthesizedEvent.Error.cannotClickOffscreenElement
+                }
+                return try await simulate(at: point)
+            })
     }
 }

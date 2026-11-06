@@ -2628,3 +2628,26 @@ UIElementActionFocusPreparation.swift 提取上述控制流，SystemActionFocusP
 
 仍未实现完整 SyntheticAppFocusEnforcer 状态所有权及其 native enforcement，
 virtual cursor press 也未接齐；没有将回调当成生产成功实现，没有执行实际应用操作。
+
+
+## 点击动作分流接入生产入口（2026-11-07）
+
+UIElementClickRouting.swift 串联动作准备后的流程：不满足 AX 条件直接模拟点击；
+满足时重新读取 insideWebView，为 true 才执行命中探测；探测 true 转模拟分支，
+否则依次执行可选 cursor.press、焦点准备、performAction。模拟回调接收第一次
+insideWebView 值；任一动作/光标/焦点异常均传播，不追加坐标点击重试。
+
+Mouse.swift indexed 路径已接入该流程，优先 AXPick 再 AXPress。保留宿主
+1...10 次点击、按钮及修饰键校验；未传 duration 与显式0保留区别，后者强制模拟。
+AX 动作执行前再次检查 snapshot/deadline，执行后失效输入状态；返回 dispatched
+与 action 名，eventCount=0，不声称视觉效果成功。截图坐标路径仍使用原有事件发送。
+
+当前 Target 没有原版 VirtualCursor/SyntheticAppFocusEnforcer 实例，因此明确使用
+原函数允许的 nil-context 分支：不执行光标回调，焦点准备读取 PID/isActive。
+这不是将可选子系统宣称完成；完整实例及事件目标/窗口处理仍需还原。当前模拟
+事件发送也尚未消费原版 insideWebView 路由上下文。
+
+编排 helper 以 default #isolation 保留宿主 actor，避免跨 await 后丢失 MainActor；
+这是本项目抽取边界适配，不是原函数签名声明。32 组路由、错误停止、actor 恢复
+测试通过；加上7056组准备参数、Web 探测和焦点条件共四项测试通过，Swift 构建
+通过。未实际投递 UI 事件，完整点击验收仍未完成。
