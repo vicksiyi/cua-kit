@@ -1996,3 +1996,20 @@ rangeOfString:options:range:=0x101542ff8、substringWithRange:=0x101542e20。
 
 已恢复 Swift 实现，测试重叠、大小写、上下文边界、跨片段匹配、emoji UTF-16
 偏移、规范等价以及先消歧后映射。完整类型和生产文本处理链仍待接入。
+
+### URL 片段重新缩写
+
+`trimURLs(context:)` 在 0x10063aea8 跳转到 `0x10063ab88..<0x10063aea8`。
+按片段顺序跳过普通 String，对每个 URL 通过 context witness +0x28 获取可变
+shortener，再调用 0x10065f7c0 的 trim(url:isImage:)。返回 nil 转为空字符串，
+只有 Swift String 比较不相等才替换当前片段，保留 URL 和 isImage；返回是否
+发生任何替换。不合并/删除空片段，不读写 sourceOffsets，即使展示长度变化。
+
+已恢复 callback 形式的 Swift helper，测试调用顺序、空结果、元数据、值快照、
+无变化返回值和规范等价文本不替换。实际 shortener/context 仍待还原，不把
+测试 callback 视为生产实现。
+
+同时检查 URL interpolation 0x100638d40：通过 role 与 image role 比较，
+调用相同 shortener，nil 转空字符串后追加 URL span。appendMarkdownLink
+0x10063a574 的标签依次选非空 stringValue/title/description，并对方括号转义；
+后续还有字符集合处理和两种输出分支，尚未完整验证，暂不实现猜测版本。

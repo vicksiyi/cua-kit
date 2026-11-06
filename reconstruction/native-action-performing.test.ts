@@ -323,3 +323,18 @@ test("native transformed substring preserves contextual occurrence semantics", {
     assert.match(result.stdout, /substring search preserves overlaps, context, UTF16 and ambiguity before mapping/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("native transformed URL refresh preserves span identity", {
+  skip: process.platform !== "darwin", timeout: 60000,
+}, async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cua-url-refresh-"));
+  try {
+    const output = join(directory, "refresh");
+    await exec("xcrun", ["swiftc",
+      ...["TransformedUIStringSpan", "TransformedUIStringURLRefresh"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      resolve("native/macos/Tests/TransformedUIStringURLRefreshTests.swift"), "-o", output]);
+    const result = await exec(output);
+    assert.match(result.stdout, /URL refresh preserves call order, metadata, nil conversion and canonical equality/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

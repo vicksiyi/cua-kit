@@ -988,6 +988,16 @@ element_storage_evidence['transformedStringSubstring']={
     'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringSubstring.swift',
     'limitations':'Contextual lookup restored as helpers; full transformed type, URL rendering and production integration remain pending.',
 }
+element_storage_evidence['transformedStringURLRefresh']={
+    'entry':'trimURLs 0x10063aea8 branches to 0x10063ab88..<0x10063aea8',
+    'iteration':'Ordered span traversal; plain String skipped; every URL invokes context shortener trim(url:isImage:) at 0x10065f7c0 through mutable context witness +0x28',
+    'replacement':'nil shortener result becomes empty String; Swift String equality skips unchanged text; changed URL span retains original URL and isImage; return whether any replacement occurred',
+    'mapping':'Body neither reads nor writes sourceOffsets, even when replacement text length changes',
+    'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10063ab88,0x10063aeac)]],
+    'implementation':'native/macos/Sources/CuaHelper/TransformedUIStringURLRefresh.swift',
+    'limitations':'Span refresh restored with explicit shortener callback; actual mutable shortener/context, Markdown link generation and production integration remain pending.',
+}
 element_storage_evidence['selectionCapability']={
     'slot':'0x1015756f0 -> 0x1007afff8 -> 0x10078ec70',
     'generic':'UIElementProtocol.isSelectable at 0x1007abdfc..<0x1007abf94',
