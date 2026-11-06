@@ -283,3 +283,39 @@ Tests cover zero/one/multiple entries, duplicate entries, sorted error paths
 and exact descriptions, and running-target ambiguity propagating without
 installed or name fallback. This does not complete native enumeration or
 change the current production launch/authorization path.
+
+## System enumeration and production resolution integration
+
+`applicationTargets(withBundleIdentifier:)` (`0x1002626a8..<0x100262934`)
+queries `NSWorkspace.urlsForApplications(withBundleIdentifier:)` first, then
+calls the running-target enumerator. It maps those targets to bundle URLs,
+appends the installed URLs, and validates/deduplicates the resulting stream.
+The output order therefore favors running targets even though the installed
+query executes first. Running candidates are validated a second time during
+the merged pass, rather than simply concatenating previously trusted targets.
+
+The running enumerator (`0x100264e58..<0x100265228`) obtains
+`NSRunningApplication.runningApplications(withBundleIdentifier:)`, compactMaps
+`bundleURL`, and applies the same candidate validation with its own seen set.
+Validation (`0x100263040..<0x1002632d0`) constructs a normalized target, reads
+`Bundle(url:).bundleIdentifier`, compares it to the requested ID with Swift
+String equality, then inserts the target identifier into a String set. A
+missing/mismatched bundle ID or duplicate identifier drops the candidate.
+Rejected entries do not occupy the set. Each duplicate is revalidated before
+its set insertion, preserving the original read ordering.
+
+`NativeApplicationEnumeration` restores these operations and
+`NativeApplicationResolution.system()` binds them to AppKit plus the ObjC
+name bridge. `resolveInstalledApp` now uses the ordinary resolver: the original
+policy entry calls that variant at `0x100191b2c`, not the running-preferred
+variant. The standalone host keeps its `TARGET_NOT_FOUND` error-code mapping
+and result dictionary, while preserving native error descriptions. Existing
+policy rules and approval checks are unchanged.
+
+Validation includes real temporary bundles with matching, mismatched and absent
+IDs, symlink duplicates, query/read ordering, rejection-before-dedup behavior,
+and a production helper RPC test of direct/symlink paths and not-found errors.
+The RPC test launches no app and proves resolution only. Full desktop actions,
+policy transport, approvals and end-to-end AgentLoop acceptance remain separate
+requirements. Earlier sections describing pending enumeration or pending
+resolution integration are superseded by this section.

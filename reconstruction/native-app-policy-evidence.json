@@ -114,6 +114,36 @@
       "sha256": "03de0d506cafa079363b095165007896902a2b77691c2f2451b4ffae78c32fc5"
     },
     {
+      "name": "applicationPolicyResolutionEntry",
+      "start": "0x100191ad4",
+      "endExclusive": "0x100191b50",
+      "sha256": "5f7b13fd45c05e71c0a43d570d35277b6b05833100d50b9fb27d1b8f80780e4e"
+    },
+    {
+      "name": "applicationTargetsEnumeration",
+      "start": "0x1002626a8",
+      "endExclusive": "0x100262934",
+      "sha256": "3b8112fdb6d1378b5a9187bad06742840c345876d1971fb6450661cd7a2370f4"
+    },
+    {
+      "name": "runningApplicationTargetsEnumeration",
+      "start": "0x100264e58",
+      "endExclusive": "0x100265228",
+      "sha256": "de6ddc1ea5788fbfcbe4c505ec73ead99cb754b323b64cf9656329b4cd522171"
+    },
+    {
+      "name": "applicationCandidateValidation",
+      "start": "0x100263040",
+      "endExclusive": "0x1002632d0",
+      "sha256": "1ee003811dbd2c579fa757a54940b548db2f09d4404f7be3a9480f2910a794db"
+    },
+    {
+      "name": "applicationCandidateCompactMap",
+      "start": "0x100264c10",
+      "endExclusive": "0x100264e58",
+      "sha256": "53b06b692e760eb23a5b5efdac0aeefe1cf55e79c3e1a3f396a62f6a9fb1ca3f"
+    },
+    {
       "name": "applicationCandidateSelection",
       "start": "0x100262934",
       "endExclusive": "0x100262b64",
@@ -313,7 +343,7 @@
   "limitations": [
     "Field names and enum cases establish structure, not runtime defaults or precedence.",
     "Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.",
-    "Native transport, application resolution and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.",
+    "Native policy transport and policy production integration remain incomplete; application resolution is now wired independently; approval persistence storage is not implemented by these metadata helpers.",
     "No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.",
     "No vendor execution, network requests, policy changes, or approval bypass."
   ]

@@ -75,6 +75,11 @@ def audit():
         ('appDecisionBranch', 0x100191c60, 0x100191c98),
         ('forbiddenClassifier', 0x1002570c0, 0x1002572d4),
         ('forbiddenStringEquality', 0x100194fc8, 0x10019501c),
+        ('applicationPolicyResolutionEntry', 0x100191ad4, 0x100191b50),
+        ('applicationTargetsEnumeration', 0x1002626a8, 0x100262934),
+        ('runningApplicationTargetsEnumeration', 0x100264e58, 0x100265228),
+        ('applicationCandidateValidation', 0x100263040, 0x1002632d0),
+        ('applicationCandidateCompactMap', 0x100264c10, 0x100264e58),
         ('applicationCandidateSelection', 0x100262934, 0x100262b64),
         ('applicationLookupErrorDescription', 0x1002632d0, 0x100263414),
         ('applicationCandidatePathSort', 0x10026353c, 0x100263698),
@@ -149,7 +154,7 @@ def audit():
                 limitations=[
                     'Field names and enum cases establish structure, not runtime defaults or precedence.',
                     'Normal forbidden-target classification is restored; the original process preference override is not read, modified, or exposed by this component.',
-                    'Native transport, application resolution and production integration remain incomplete; approval persistence storage is not implemented by these metadata helpers.',
+                    'Native policy transport and policy production integration remain incomplete; application resolution is now wired independently; approval persistence storage is not implemented by these metadata helpers.',
                     'No claim that the standalone CORE_CUA_APP_POLICY default reproduces vendor policy.',
                     'No vendor execution, network requests, policy changes, or approval bypass.'])
 

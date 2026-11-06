@@ -1,24 +1,21 @@
 import Foundation
 import AppKit
 
-// Independent LaunchServices adapter. Resolving does not start an application;
+// Reconstructed native resolution with a standalone host result/error projection.
+// Resolving does not start an application;
 // the Sky policy/approval path or legacy caller authorizes before launch.
 @MainActor
 func resolveInstalledApp(_ reference: String) throws -> [String: Any] {
-    guard !reference.isEmpty else { throw fail("INVALID_ARGUMENT", "App reference is empty.") }
-    let url: URL?
-    if reference.hasPrefix("/") { url = URL(fileURLWithPath: reference) }
-    else if let byId = NSWorkspace.shared.urlForApplication(withBundleIdentifier: reference) { url = byId }
-    else if let path = NSWorkspace.shared.fullPath(forApplication: reference) { url = URL(fileURLWithPath: path) }
-    else { url = nil }
-    guard let location = url?.resolvingSymlinksInPath(), location.pathExtension == "app",
-          let bundle = Bundle(url: location), let identifier = bundle.bundleIdentifier else {
-        throw fail("TARGET_NOT_FOUND", "Installed application could not be resolved.")
+    let target: NativeApplicationTarget
+    do { target = try NativeApplicationResolution.system().resolve(reference) }
+    catch let error as NativeApplicationResolution.BundleIDLookupError {
+        throw fail("TARGET_NOT_FOUND", error.description)
     }
-    let name = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-        ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
-        ?? location.deletingPathExtension().lastPathComponent
-    return ["pid": 0, "name": name, "bundleId": identifier, "path": location.path, "launchTime": 0]
+    let bundle = Bundle(url: target.bundleURL)
+    let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+        ?? bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String
+        ?? target.bundleURL.deletingPathExtension().lastPathComponent
+    return ["pid": 0, "name": name, "bundleId": target.bundleIdentifier, "path": target.identifier, "launchTime": 0]
 }
 @MainActor
 func launchResolvedApplication(_ params: [String: Any], activates: Bool = true) async throws -> NSRunningApplication {
