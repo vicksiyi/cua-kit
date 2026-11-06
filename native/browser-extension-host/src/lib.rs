@@ -5,6 +5,8 @@
 #[cfg(unix)]
 pub mod client_writer;
 #[cfg(unix)]
+pub mod control;
+#[cfg(unix)]
 pub mod endpoint;
 #[cfg(unix)]
 pub mod lifecycle_log;

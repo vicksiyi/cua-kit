@@ -240,3 +240,27 @@ test(
     await assert.rejects(access(file));
   },
 );
+
+test("native attachment controls write real files without a browser RPC client and clean on EOF", {skip: !enabled, timeout: 10000}, async t => {
+  const host = await start(t);
+  const endpoint = await host.ready();
+  const extension = extensionFor(host.child, {});
+  const call = (method: string, params: unknown) => extension.sendRequest(method as any, params as any) as Promise<any>;
+  const created = await call("codexRuntime/tabContextAsset/create", {fileName:"../evidence.bin"});
+  assert.match(created.assetId, /^[0-9a-f-]{36}$/);
+  assert.ok(created.path.startsWith(join(host.parent, "core-cua-")));
+  assert.deepEqual(await call("codexRuntime/tabContextAsset/appendChunk", {
+    assetId: created.assetId, dataBase64: Buffer.from([0, 255, 128, 65]).toString("base64"),
+  }), {});
+  assert.deepEqual(await readFile(created.path), Buffer.from([0, 255, 128, 65]));
+  assert.deepEqual(await call("codexRuntime/tabContextAsset/finish", {assetId:created.assetId}), created);
+  await assert.rejects(call("codexRuntime/tabContextAsset/appendChunk", {assetId:created.assetId,dataBase64:"YQ=="}), /finished/);
+  assert.deepEqual(await call("codexRuntime/tabContextAsset/abort", {assetId:created.assetId}), {});
+  await assert.rejects(access(created.path), {code:"ENOENT"});
+  assert.deepEqual(await call("codexRuntime/tabContextAsset/remove", {assetId:created.assetId}), {});
+  const retained = await call("codexRuntime/tabContextAsset/create", {fileName:"eof.txt"});
+  host.child.stdin.end();
+  assert.equal(await host.closed, 0);
+  await assert.rejects(access(retained.path), {code:"ENOENT"});
+  await assert.rejects(access(endpoint), {code:"ENOENT"});
+});

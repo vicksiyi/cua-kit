@@ -139,3 +139,16 @@ Added `native/browser-extension-host/src/tab_context_asset.rs` with the native a
 Two native tests pass: exhaustive ASCII checks against the independently decoded bit mask, path/whitespace cases, exact boundary and fallback cases, plus 1196 Unicode/length combinations. No original native function was executed, so this is instruction-supported reconstruction, not dynamic differential parity. The sanitizer deliberately does not introduce unobserved character filtering. It is not sufficient path authorization: the original create operation also prefixes a UUID.
 
 The module is not wired into the runtime yet. Asset storage/create/append/finish/remove, UUID path composition, cleanup ownership and the native control dispatcher remain required; no attachment capability is advertised by this change.
+
+
+### 2026-11-06: native attachment storage and control dispatch implemented
+
+`AssetStore` now owns real private files: UUID-v4 IDs, UUID-name composition, Base64 chunk writes, cumulative 100-MiB checks, 16-entry capacity, finish marking without eviction, idempotent missing-entry removal, and cleanup of tracked files. It reuses the observed `uuid 1.23.0` and `base64 0.22.1` crates. Their transitive dependency versions are Cargo resolutions, not claimed original lockfile recovery. Create/finish return assetId/path; append/remove return an empty object. The source evidence records the UUID-name format literal and the native string-result response error code 1.
+
+`control.rs` intercepts the five evidenced attachment methods on extension stdio input before ordinary router forwarding. Abort and remove share handling. Other methods remain unhandled by this dispatcher; hello/status/ensure/restart/openLocalFile are not advertised or emulated. Known control failures return a response rather than terminating the host.
+
+Core deployment deliberately places attachments under the private owned endpoint's assets directory, rather than the original global temporary codex-tab-context-assets directory. Root/file inode checks, exclusive creation and no-follow append protect the owned deployment; cleanup only removes tracked identities and an empty owned directory. Full vendor parameter/error wording, original cleanup semantics under every failure and control authorization remain unproven. This is a native implementation with explicit deployment differences, not exact recovered source.
+
+Validation: six attachment Rust tests include real binary/Unicode bytes, malformed Base64 with no writes, finished-entry behavior, same-name unique files, capacity including finished entries, a real exactly-100-MiB file plus rejected overflow, and preservation of replacement paths/unrelated files. The restored ExtensionBrowserPeer exchanges real framed stdio with the production debug executable, exercises all five methods without a browser RPC client, checks disk contents and verifies EOF removes files and endpoint. The full gate passes 32 native tests and 17 cross-language/process tests.
+
+After this dispatcher change, both packaged native/full extension deployments also pass actual isolated Chromium navigation/click/read and native EOF cleanup (2/2). No daily Chrome profile or paid model request was used.

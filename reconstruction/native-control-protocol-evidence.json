@@ -133,6 +133,33 @@
     "unknownMethods": "The compare miss returns the unhandled sentinel at 0x100025e98 rather than fabricating a success response.",
     "layer": "handle_native_host_control_message is native host control; it is separate from browser RPC forwarding."
   },
+  "assetImplementation": {
+    "store": "native/browser-extension-host/src/tab_context_asset.rs",
+    "dispatcher": "native/browser-extension-host/src/control.rs",
+    "entry": "Extension stdio input before RpcRouter::from_extension",
+    "implementedMethods": [
+      "create",
+      "appendChunk",
+      "finish",
+      "abort",
+      "remove"
+    ],
+    "errorCode": {
+      "value": 1,
+      "referenceInstruction": "0x1000229fc",
+      "literalAddress": "0x100090cf0"
+    },
+    "pathComposition": {
+      "pattern": "UUID-sanitizedName",
+      "formatLiteralOffset": "0x8d2ec"
+    },
+    "coreDifferences": [
+      "owned per-host endpoint/assets directory instead of global temp/codex-tab-context-assets",
+      "private-root and inode checks protect Core-owned cleanup",
+      "parameter and I/O diagnostic wording not fully matched"
+    ],
+    "validation": "Real stdio process test with restored extension peer; disk byte checks and EOF cleanup. Not dynamic original-host parity."
+  },
   "remainingUnknowns": [
     "full manifest selection and process launch contract",
     "complete hello/status response schemas",

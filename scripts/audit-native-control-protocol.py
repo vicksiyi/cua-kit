@@ -5,6 +5,7 @@ import json
 import re
 import subprocess
 import sys
+import struct
 from pathlib import Path
 
 artifact = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('/Applications/ChatGPT.app/Contents/Resources/plugins/openai-bundled/plugins/chrome/extension-host/macos/arm64/ChatGPT for Chrome')
@@ -98,6 +99,12 @@ for site in ['1000256bc:', '100025e00:']:
     if not any(site in line and 'remove_tab_context_asset>' in line for line in control.splitlines()):
         raise RuntimeError('Missing shared abort/remove dispatch: '+site)
 
+# The JSON Number literal referenced by string_result_response is PosInt(1).
+if struct.unpack('<QQ', raw[0x90cf0:0x90d00]) != (0, 1):
+    raise RuntimeError('String-result error code literal changed')
+if raw[0x8d2ec:0x8d2f1] != b'\xc0\x01-\xc0\x00':
+    raise RuntimeError('UUID/name formatting literal changed')
+
 result = {
     'artifact': str(artifact).removeprefix('/Applications/'), 'sha256': sha,
     'methodExtraction': 'ARM64 method-byte loads and immediate CMP/CCMP operands, including overlapping tail loads; fixed artifact hash required.',
@@ -126,6 +133,17 @@ result = {
         'abortAndRemove': 'Both branch to AppServerManager::remove_tab_context_asset (call sites 0x1000256bc and 0x100025e00).',
         'unknownMethods': 'The compare miss returns the unhandled sentinel at 0x100025e98 rather than fabricating a success response.',
         'layer': 'handle_native_host_control_message is native host control; it is separate from browser RPC forwarding.',
+    },
+    'assetImplementation': {
+        'store': 'native/browser-extension-host/src/tab_context_asset.rs',
+        'dispatcher': 'native/browser-extension-host/src/control.rs',
+        'entry': 'Extension stdio input before RpcRouter::from_extension',
+        'implementedMethods': ['create', 'appendChunk', 'finish', 'abort', 'remove'],
+        'errorCode': {'value': 1, 'referenceInstruction': '0x1000229fc', 'literalAddress': '0x100090cf0'},
+        'pathComposition': {'pattern': 'UUID-sanitizedName', 'formatLiteralOffset': '0x8d2ec'},
+        'coreDifferences': ['owned per-host endpoint/assets directory instead of global temp/codex-tab-context-assets',
+            'private-root and inode checks protect Core-owned cleanup', 'parameter and I/O diagnostic wording not fully matched'],
+        'validation': 'Real stdio process test with restored extension peer; disk byte checks and EOF cleanup. Not dynamic original-host parity.',
     },
     'remainingUnknowns': ['full manifest selection and process launch contract', 'complete hello/status response schemas',
         'filename sanitization edge cases', 'asset cleanup on all process/session failures', 'authorization at control entry',

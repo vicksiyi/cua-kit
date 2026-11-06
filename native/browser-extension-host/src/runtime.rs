@@ -232,6 +232,13 @@ pub fn run_with_lifecycle(
     let (notice_sender, notices) = mpsc::channel::<Disconnect>();
     let mut connections = BTreeMap::new();
     let mut router = RpcRouter::new(30_000, 1024);
+    let mut control = crate::control::NativeControl::new(
+        endpoint
+            .descriptor_path()
+            .parent()
+            .expect("owned endpoint parent")
+            .join("assets"),
+    );
     let mut output = Output::new();
     let mut decoder = Decoder::new(MAX_FRAME);
     let epoch = Instant::now();
@@ -367,6 +374,10 @@ pub fn run_with_lifecycle(
                                 final_event = "invalid-extension-message";
                                 error
                             })? {
+                                if let Some(response) = control.handle(&message) {
+                                    output.enqueue(&response)?;
+                                    continue;
+                                }
                                 let deliveries =
                                     router.from_extension(message, now).map_err(|error| {
                                         final_event = "invalid-extension-message";

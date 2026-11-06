@@ -6015,3 +6015,12 @@ Added a hash-pinned static extractor for the installed ARM64 Native Host. It rec
 ### 2026-11-06: reconstruct attachment filename rules in Rust
 
 The new native tab_context_asset module implements the observed reserved-character mask, slash/backslash component selection and 218-byte UTF-8 truncation with extension preservation. Two native tests cover ASCII, whitespace/path edges and 1196 Unicode/length combinations; the pinned evidence extractor now records the corresponding machine instructions. This is a native implementation increment, not a functioning attachment API yet: storage lifecycle and control dispatch are still pending.
+
+
+### 2026-11-06: native attachment methods now execute through real stdio
+
+Implemented native Rust attachment storage and an extension-input control dispatcher for create/appendChunk/finish/abort/remove. Uses observed UUID/Base64 dependencies, writes private files, enforces recovered capacity/size limits, and cleans owned attachments when the host exits. A real process test using the restored extension peer verifies actual bytes and EOF cleanup; 32 Rust and 17 cross-language/process checks pass.
+
+This is not yet an end-user attachment UI: the five native methods work directly, while hello/status/ensure/restart, original App Server manifest/process/proxy integration, openLocalFile and original authorization are still pending. Core uses per-host private storage and ownership checks instead of the vendor global temporary asset directory; exact error wording and original-host dynamic parity remain unverified.
+
+After this dispatcher change, both packaged native/full extension deployments also pass actual isolated Chromium navigation/click/read and native EOF cleanup (2/2). No daily Chrome profile or paid model request was used.
