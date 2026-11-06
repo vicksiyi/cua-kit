@@ -760,3 +760,10 @@ This storage component is not yet connected to the demo approval UI. It does not
 make prompts automatically accepted or weaken native app policy. The original
 storage-path/caller/response flow and full persistent approval integration remain
 open; see NATIVE-APP-POLICY-EVIDENCE.md for addresses and validation boundaries.
+
+The storage membership sequence is now recovered from the native MCP caller:
+session set first, then (only on a miss) file refresh and persistent set lookup.
+Temporary-file tests cover that short circuit and external deletion/replacement.
+The root command's static storage URL initially contains nil; host assignment
+must still be traced. This is not evidence of a universal default approval-file
+path. The demo responder remains unchanged until the full host flow is restored.

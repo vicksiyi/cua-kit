@@ -23,25 +23,54 @@ import Foundation
 
         // Same timestamp: no reload even if bytes changed. A changed timestamp
         // replaces rather than merges approvals; local session grants remain.
-        let originalDate = state.modificationDate!
+        // Use a whole-second baseline before the actor reads metadata. Reapplying
+        // a freshly observed fractional timestamp can round in Foundation/filesystem
+        // conversion and is not a valid unchanged-mtime fixture.
+        let originalDate = Date(timeIntervalSince1970: 1_700_000_000)
+        try fm.setAttributes([.modificationDate: originalDate], ofItemAtPath: file.path)
+        let cache = NativeAppApprovalStore(storageURL: file)
+        try await cache.recordApproval(bundleIdentifier: "fixture.session", persist: false)
+        try await cache.recordApproval(bundleIdentifier: "fixture.persistent", persist: false)
         try Data(#"{"approvedBundleIdentifiers":["fixture.external","fixture.external"]}"#.utf8).write(to: file)
         try fm.setAttributes([.modificationDate: originalDate], ofItemAtPath: file.path)
-        await store.refreshPersistentApprovals()
-        state = await store.snapshot()
+        await cache.refreshPersistentApprovals()
+        state = await cache.snapshot()
         precondition(state.persistent == ["fixture.persistent"])
         try fm.setAttributes([.modificationDate: originalDate.addingTimeInterval(10)], ofItemAtPath: file.path)
-        await store.refreshPersistentApprovals()
-        state = await store.snapshot()
+        await cache.refreshPersistentApprovals()
+        state = await cache.snapshot()
         precondition(state.persistent == ["fixture.external"] && state.session.count == 2)
         try Data("broken json".utf8).write(to: file)
         try fm.setAttributes([.modificationDate: originalDate.addingTimeInterval(20)], ofItemAtPath: file.path)
-        await store.refreshPersistentApprovals()
-        state = await store.snapshot()
+        await cache.refreshPersistentApprovals()
+        state = await cache.snapshot()
         precondition(state.persistent.isEmpty && state.session.count == 2)
         try fm.removeItem(at: file)
-        await store.refreshPersistentApprovals()
-        state = await store.snapshot()
+        await cache.refreshPersistentApprovals()
+        state = await cache.snapshot()
         precondition(state.persistent.isEmpty && state.modificationDate == nil)
+
+        // The native MCP caller checks session membership before refreshing disk.
+        // Changing the file therefore does not invalidate a session entry, and
+        // querying that entry alone does not refresh unrelated persistent state.
+        let lookupFile = root.appendingPathComponent("lookup.json")
+        try Data(#"{"approvedBundleIdentifiers":["fixture.saved"]}"#.utf8).write(to: lookupFile)
+        let lookup = NativeAppApprovalStore(storageURL: lookupFile)
+        try await lookup.recordApproval(bundleIdentifier: "fixture.session-only", persist: false)
+        try fm.removeItem(at: lookupFile)
+        let sessionHit = await lookup.hasRecordedApproval(bundleIdentifier: "fixture.session-only")
+        precondition(sessionHit)
+        let beforeRefresh = await lookup.snapshot()
+        precondition(beforeRefresh.persistent == ["fixture.saved"])
+        let removedHit = await lookup.hasRecordedApproval(bundleIdentifier: "fixture.saved")
+        precondition(!removedHit)
+        let afterRefresh = await lookup.snapshot()
+        precondition(afterRefresh.persistent.isEmpty && afterRefresh.session == ["fixture.session-only"])
+        try Data(#"{"approvedBundleIdentifiers":["fixture.new"]}"#.utf8).write(to: lookupFile)
+        let newHit = await lookup.hasRecordedApproval(bundleIdentifier: "fixture.new")
+        let wrongCase = await lookup.hasRecordedApproval(bundleIdentifier: "FIXTURE.NEW")
+        let missingHit = await lookup.hasRecordedApproval(bundleIdentifier: "fixture.absent")
+        precondition(newHit && !wrongCase && !missingHit)
 
         let missing = NativeAppApprovalStore(storageURL: nil)
         do {

@@ -52,6 +52,15 @@ actor NativeAppApprovalStore {
         persistentApprovalsModificationDate = date
     }
 
+    /// Storage membership projected from the MCP caller at
+    /// 0x100e527a4..<0x100e52904. Session membership short-circuits disk refresh.
+    /// This is not an application-policy decision or permission to execute.
+    func hasRecordedApproval(bundleIdentifier: String) -> Bool {
+        if sessionApprovedBundleIdentifiers.contains(bundleIdentifier) { return true }
+        refreshPersistentApprovals()
+        return persistentApprovals.approvedBundleIdentifiers.contains(bundleIdentifier)
+    }
+
     /// Test/inspection seam, not a replacement for native policy or host approval.
     func snapshot() -> Snapshot {
         Snapshot(session: sessionApprovedBundleIdentifiers,

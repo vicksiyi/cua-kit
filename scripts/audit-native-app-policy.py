@@ -73,6 +73,10 @@ def audit():
         raise ValueError('Persistent approval field is not Set<String>')
     code_ranges = []
     for name, start, end in [
+        ('appApprovalSessionAndPersistentLookup', 0x100e527a4, 0x100e52904),
+        ('appApprovalPersistedHitReturn', 0x100e52904, 0x100e529a8),
+        ('appApprovalStorageDefaultInitializer', 0x100e67f90, 0x100e67f9c),
+        ('optionalStorageURLNilInitialization', 0x100e68384, 0x100e683f0),
         ('appApprovalStoreInitialization', 0x100db8c0c, 0x100db8f30),
         ('appApprovalStorageModificationDate', 0x100db8f30, 0x100db9280),
         ('appApprovalStoreRecord', 0x100db9280, 0x100db97b4),
@@ -172,7 +176,9 @@ def audit():
                     recordOrder='insert session first; when persist=true require storage URL, insert persistent, create parent directories, encode JSON, write with options=0, update optional modification date',
                     writeFailure='propagate; do not undo earlier in-memory mutations',
                     refresh='only if optional file modification date differs; replace persistent record or empty on read/decode failure; update date; preserve session entries',
-                    wiring='storage core only; default path, approval lookup/response and demo host integration not yet restored'),
+                    lookup='MCP caller checks session set first; on miss refreshes persistent record then checks persistent set',
+                    rootCommandDefault='static appApprovalStorageURL initializes to nil; later setter/configuration remains separate',
+                    wiring='storage and membership only; caller response flow and demo host integration not yet restored'),
                 approvalMetadata=dict(
                     highRisk='terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme',
                     bundleProbe='lazy after list misses; missing bundle means false',

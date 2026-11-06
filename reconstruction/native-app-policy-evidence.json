@@ -92,6 +92,30 @@
   ],
   "codeRanges": [
     {
+      "name": "appApprovalSessionAndPersistentLookup",
+      "start": "0x100e527a4",
+      "endExclusive": "0x100e52904",
+      "sha256": "f1fb1128813506289ea19a890d3bf567f5a13ca2f5a7890a7cb5fb064722a559"
+    },
+    {
+      "name": "appApprovalPersistedHitReturn",
+      "start": "0x100e52904",
+      "endExclusive": "0x100e529a8",
+      "sha256": "81c43c013cf651fa50e1bb0b459778b112c1bbdbeb9198b412d29effa604a0ba"
+    },
+    {
+      "name": "appApprovalStorageDefaultInitializer",
+      "start": "0x100e67f90",
+      "endExclusive": "0x100e67f9c",
+      "sha256": "c90a705aa68c6a0a8750e9b897d2db126fcb9bc1ad1593dfaaa2b9a1d6b3a3e7"
+    },
+    {
+      "name": "optionalStorageURLNilInitialization",
+      "start": "0x100e68384",
+      "endExclusive": "0x100e683f0",
+      "sha256": "971004a5333d2d826233fe031534d85d6e0e57a4ea53195f7df393c85c6faba9"
+    },
+    {
       "name": "appApprovalStoreInitialization",
       "start": "0x100db8c0c",
       "endExclusive": "0x100db8f30",
@@ -534,7 +558,9 @@
     "recordOrder": "insert session first; when persist=true require storage URL, insert persistent, create parent directories, encode JSON, write with options=0, update optional modification date",
     "writeFailure": "propagate; do not undo earlier in-memory mutations",
     "refresh": "only if optional file modification date differs; replace persistent record or empty on read/decode failure; update date; preserve session entries",
-    "wiring": "storage core only; default path, approval lookup/response and demo host integration not yet restored"
+    "lookup": "MCP caller checks session set first; on miss refreshes persistent record then checks persistent set",
+    "rootCommandDefault": "static appApprovalStorageURL initializes to nil; later setter/configuration remains separate",
+    "wiring": "storage and membership only; caller response flow and demo host integration not yet restored"
   },
   "approvalMetadata": {
     "highRisk": "terminal exact match OR elevated-risk exact match OR Bundle.supportsHTTPScheme",

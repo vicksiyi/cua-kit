@@ -911,3 +911,46 @@ the terminal/MCP approval responder. Default storage-path selection, membership
 lookup/caller ordering, session lifetime and response metadata must be traced
 before claiming end-to-end persistent approval parity. The existing native policy
 check must still precede approval reuse; persisted entries cannot override denial.
+
+## Native approval membership caller and initial storage URL
+
+A static ARM64 direct-branch scan of the pinned __text section found the store
+initializer called at 0x100e4ee78 (MCP server construction) and 0x100e6abf8, the
+refresh method called at 0x100e52890, and the record method at 0x100e535c0. These
+locations were disassembled without running the binary.
+
+The native MCP continuation 0x100e527a4..<0x100e52904 first reads the
+sessionApprovedBundleIdentifiers field (ivar slot 0x1015b47e0) and tests exact
+String set membership. A hit returns before refresh. On a miss, it calls refresh
+at 0x100e52890, reads persistentApprovals (slot 0x1015b47e8), and uses the same
+membership helper (0x100018c54). The following continuation returns on a persisted
+hit at 0x100e52904..<0x100e529a8; a miss proceeds into the request/telemetry path.
+Thus this order is established by the caller, not inferred merely from store
+field names. The readable store now exposes hasRecordedApproval as a projection
+of that storage membership sequence. It is not an independent native policy
+check and is not wired as an automatic approval responder.
+
+Tests demonstrate the ordering: after removing the file, a session hit still
+returns true and leaves the cached persistent record untouched; querying a
+non-session identifier then refreshes and clears the deleted-file record. A new
+file becomes visible on subsequent lookup. Case-distinct and missing IDs do not
+match. This does not mean saved approvals bypass a changed application policy:
+policy evaluation is a separate prerequisite, as already verified for the JS path.
+
+The root command's static appApprovalStorageURL getter (0x100e67fb8) uses the lazy
+initializer at 0x100e67f90, which branches to 0x100e68384..<0x100e683f0. That helper
+initializes Optional<URL> to none (enum tag 1, one payload case), not a synthesized
+filesystem location. The property has a setter; its initial nil value does not
+prove it remains nil after host configuration. No default path was invented and
+no existing vendor approval file was read. Later assignment/configuration still
+needs tracing before a default storage location can be claimed.
+
+The pinned audit records the new caller/default-initialization ranges. Extended
+Swift storage tests and the native build pass. Remaining work includes native
+approval-result parsing, host-provided storage location/session lifecycle and
+actual MCP/terminal UI integration. No approval prompts were auto-accepted.
+
+The unchanged-mtime fixture was also corrected: reapplying a freshly observed
+fractional timestamp can round during Foundation/filesystem conversion, causing
+an unintended date change. It now sets a whole-second baseline before constructing
+the actor. This changes only the fixture; native exact Date comparison is retained.
