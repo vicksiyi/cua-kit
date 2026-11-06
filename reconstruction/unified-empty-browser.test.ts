@@ -88,15 +88,19 @@ test("combined discovery tolerates missing connections, never unsafe endpoint di
   await assert.rejects(configureIndependentBrowser(env), /private/);
 });
 
-test("unified CLI starts both surfaces and reaches model without a Chrome connection", {
+for (const dynamic of [false,true])
+test(`unified CLI starts both surfaces and reaches model without a Chrome connection (${dynamic ? "dynamic" : "static"})`, {
   skip: process.platform !== "darwin" || process.env.CUA_TEST_NATIVE_SKY_IPC !== "1", timeout:90000,
 }, async t => {
   const {createServer} = await import("node:http");
   const {spawn} = await import("node:child_process");
+  const hostDirectory=dynamic ? await mkdtemp("/tmp/core-cli-dynamic-") : undefined;
+  if(hostDirectory)t.after(()=>rm(hostDirectory,{recursive:true,force:true}));
   let requests=0;
   const server=createServer(async(req,res)=>{
     let body="";for await(const chunk of req)body+=chunk;
     const request=JSON.parse(body);requests++;
+    assert.equal(request.tools.some((tool:any)=>tool.function.name==="prepare_browser"),dynamic);
     const context=JSON.stringify(request.messages);
     assert.match(context,/browser=true, computer=true/);
     assert.match(context,/standalone demo uses local CORE_CUA_APP_POLICY/);
@@ -113,7 +117,7 @@ test("unified CLI starts both surfaces and reaches model without a Chrome connec
     cwd:path.resolve("."),env:{PATH:process.env.PATH,HOME:process.env.HOME,TMPDIR:process.env.TMPDIR,
       CUA_DEBUG:"0",CUA_MODEL_PROVIDER:"openai-compatible",CUA_MODEL_API_KEY:"fixture",CUA_MODEL:"fixture",
       CUA_MODEL_ENDPOINT:`http://127.0.0.1:${address.port}/model`,
-      CUA_MCP_ENV:JSON.stringify({CORE_CUA_ENDPOINT_FILES:"[]"}),
+      CUA_MCP_ENV:JSON.stringify(dynamic ? {CORE_CUA_HOST_DIRECTORY:hostDirectory} : {CORE_CUA_ENDPOINT_FILES:"[]"}),
     },stdio:["ignore","pipe","pipe"],timeout:80000,
   });
   t.after(()=>{if(child.exitCode===null&&child.signalCode===null)child.kill("SIGKILL");});

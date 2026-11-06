@@ -360,7 +360,8 @@ operation was requested or performed. This demonstrates the model receives nativ
 a dual-surface run even with zero browser connections, not general app-operation acceptance.
 The local transcript is ignored by Git and is not part of published artifacts.
 
-Still pending: browser launch after model selection and daily-Chrome acceptance. Dynamic discovery
+Browser preparation is now available after model selection through a standalone host tool; real
+terminated-process startup acceptance remains pending. Dynamic discovery
 now supports a browser registering after startup when unified mode is configured with an existing
 private host directory. Explicit endpoint-file configurations remain fixed. Actual Multica opening,
 screenshot and input acceptance remain pending.
@@ -429,7 +430,8 @@ starts the real Rust + Swift + MCP runtime with zero connections, registers a Ru
 a controlled extension-protocol peer after startup, observes one browser, shuts down that host, and
 observes zero browsers again, all in the same MCP session with app inventory retained. This verifies
 registration/discovery/transport/handshake together; it does not open actual Chrome or perform a page
-operation. Chrome launch-on-selection remains separate work.
+operation. A later standalone host tool now invokes preparation on model request; actual terminated-Chrome
+acceptance remains pending.
 
 
 #### Native UI readiness versus app inventory
@@ -495,3 +497,40 @@ running daily Chrome, not a terminated process. It does not prove cold startup, 
 success, or native App observation/input. Screenshot acceptance here checks returned image content;
 no screenshots, daily-tab content, login state or local configuration were published. Existing user
 tabs were not targeted; the newly created fixture tab was closed on completion.
+
+
+#### On-demand browser preparation in unified mode
+
+When `--unified` has a validated dynamic host directory, the demo wraps its existing ToolClient with
+`BrowserStartupTools` and advertises `prepare_browser({browser:"chrome"})`. This adapter lives in
+`packages/agent-loop/src/browser-startup-tools.ts`; it is independently authored demo orchestration,
+not an added method on CUA or a recovered vendor MCP command. The installed browser plugin's separate
+troubleshooting/profile-launch workflow motivates this boundary. Source CUA browser methods remain
+unchanged. Other agents using only the original MCP service do not automatically receive this host tool.
+
+The model can request preparation for a user-requested browser task if Chrome is absent, then call
+`cua.getState()` before selecting the newly connected browser. The host uses its configured directory,
+checks connection, retries once after two seconds, validates the selected profile's extension and
+native-host installation, and invokes the existing launcher if required. It waits for authenticated
+registration and never installs/repairs the extension or switches profiles/backends automatically.
+The tool accepts no model-selected path, executable, URL or profile. It is unavailable for fixed
+endpoint lists or installations with no validated directory, where late discovery cannot operate.
+
+One preparation attempt is shared per run, including failures. Closing the adapter or ending the turn
+cancels pending host preparation. Reused results are explicitly labeled
+historical, not a fresh readiness check. End-of-turn cleanup resets that attempt for a subsequent
+caller turn. Cancellation propagates through retry delays and the launch subprocess; cancellation
+after a launch request does not prove Chrome stayed closed. Error messages no longer falsely claim
+that no model request has happened when preparation was invoked by the model.
+
+This is a separate browser workflow, not a way to retry native-App or page-policy denials. Existing
+origin approval, extension checks, App policy and system permissions retain their own enforcement.
+
+Validation: 15 focused startup/adapter tests pass, covering argument constraints, coalescing,
+failures, cancellation, tool-name collisions and an AgentLoop prepare-then-observe sequence. Both
+static and dynamic CLI integrations pass against a local model-compatible HTTP fixture; only dynamic
+mode advertises the new host tool. The real Rust + Swift + MCP late-registration test now starts its
+controlled Rust extension-protocol peer through the adapter and then observes it via CUA in the same
+session. This tests the connection path, not an actual Chrome process launch. Daily Chrome operations
+have separately passed while Chrome was already running. Actual DeepSeek-driven cold startup still
+requires acceptance; the feature's presence alone is not evidence of that completion.

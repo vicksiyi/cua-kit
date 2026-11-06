@@ -1,4 +1,5 @@
 import test from "node:test";
+import {BrowserStartupTools} from "../packages/agent-loop/src/browser-startup-tools";
 import assert from "node:assert/strict";
 import { mkdtemp, realpath, rm } from "node:fs/promises";
 import { PassThrough } from "node:stream";
@@ -37,7 +38,14 @@ test("same Rust + Swift MCP session discovers a registered browser that starts a
     moveMouse(){},getInfo(){return {type:"extension",family:"chrome",name:"Late registered browser fixture",capabilities:{browser:[],tab:[]}};},getUserTabs(){return [];},getTabs(){return [];},turnEnded(){return {};},
   });
   output.on("data",bytes=>{for(const frame of decoder.push(bytes))receive(JSON.parse(frame));});
-  const host=await startRustNativeHost(input,output,{parentDirectory:directory});t.after(()=>host.close());
+  let host!:Awaited<ReturnType<typeof startRustNativeHost>>;
+  const tools=new BrowserStartupTools(client,{directory,prepare:async configured=>{
+    assert.equal(configured,directory);
+    host=await startRustNativeHost(input,output,{parentDirectory:configured});t.after(()=>host.close());
+  }});
+  assert((await tools.listTools()).some(tool=>tool.name==="prepare_browser"));
+  const prepared=await tools.callTool({id:"prepare",name:"prepare_browser",arguments:{browser:"chrome"}});
+  assert.notEqual(prepared.isError,true,JSON.stringify(prepared));
   const connected=await inventory();assert.equal(connected.browserCount,1);assert(connected.appCount>0);assert.deepEqual(connected.errors,[]);
   await host.close();
   const disconnected=await inventory();assert.equal(disconnected.browserCount,0);assert(disconnected.appCount>0);assert.deepEqual(disconnected.errors,[]);

@@ -1,3 +1,4 @@
+import { BrowserStartupTools } from "./browser-startup-tools";
 import { parseNativePermissions, nativePermissionsContext } from "./native-permissions";
 import { unifiedPreflight } from "./unified-preflight";
 import { surfaceContext } from "./surface-context";
@@ -138,7 +139,10 @@ process.once("SIGINT", interrupt);
 const rawTurnClient: import("./contracts").ToolClient = turnEvent
   ? new NodeReplTurnClient(client, turnEvent, { defaultJsTimeoutMs: 60000 })
   : client;
-const turnClient = debug ? debug.tools(rawTurnClient) : rawTurnClient;
+const browserStartupAvailable = browserEnabled && computerEnabled && !!process.env.CUA_DEMO_BROWSER_STARTUP_DIRECTORY;
+const preparedTurnClient = browserStartupAvailable
+  ? new BrowserStartupTools(rawTurnClient, {directory:process.env.CUA_DEMO_BROWSER_STARTUP_DIRECTORY!}) : rawTurnClient;
+const turnClient = debug ? debug.tools(preparedTurnClient) : preparedTurnClient;
 const trace = createTerminalTrace();
 let loopStarted = false;
 try {
@@ -184,6 +188,7 @@ try {
       summarizeOnExhaustion: true,
       summarizeOnBlocked: true,
       runtimeContext: [
+        browserStartupAvailable ? "For a requested web task, if Chrome is absent from inventory, the host prepare_browser tool can check its registered extension and open the selected profile. Re-observe with cua.getState after success. Do not use this tool for native App tasks or retry denied page/App actions through it." : undefined,
         computerEnabled ? process.env.CUA_DEMO_NATIVE_POLICY_CONTEXT : undefined,
         nativePermissions ? nativePermissionsContext(nativePermissions) : undefined,
         surfaceContext({ browser: !!browserEnabled, computer: !!computerEnabled }),

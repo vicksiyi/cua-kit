@@ -129,6 +129,7 @@ export async function prepareRestoredRuntime(
     return {
       supervisor: selection.supervisor,
       surfaces: env.CUA_REPL_ENABLED_SURFACES,
+      dynamicBrowserDirectory: env.CORE_CUA_DYNAMIC_HOST_DIRECTORY,
       stagedRoot: staged.root,
       command: independent?.command ?? process.execPath,
       args: independent?.args ?? [

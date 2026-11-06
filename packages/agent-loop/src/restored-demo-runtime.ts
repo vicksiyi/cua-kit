@@ -50,6 +50,8 @@ try {
     delete process.env.CUA_DEMO_NATIVE_PERMISSIONS;
     delete process.env.CUA_DEMO_NATIVE_POLICY_CONTEXT;
   }
+  if (runtime.dynamicBrowserDirectory) process.env.CUA_DEMO_BROWSER_STARTUP_DIRECTORY = runtime.dynamicBrowserDirectory;
+  else delete process.env.CUA_DEMO_BROWSER_STARTUP_DIRECTORY;
   await import("./demo");
 } finally {
   await runtime.dispose();

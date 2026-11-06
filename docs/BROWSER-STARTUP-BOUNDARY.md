@@ -63,9 +63,10 @@ checks extension/native-host installation, starts the chosen profile if needed, 
 connection before the model request. It is not recovered behavior of getBrowser itself.
 
 Unified mode exposes both surfaces and can discover late registrations in a configured private host
-directory. It does not eagerly launch Chrome and does not yet start a terminated Chrome process
-when the model chooses a browser. A future implementation must account for that host lifecycle
-without rewriting the source browser selection methods to claim a nonexistent built-in launcher.
+directory. It does not eagerly launch Chrome. A separate demo host tool, prepare_browser, is now offered when
+a validated dynamic host directory is configured; the model can request the existing profile-aware
+launcher and then re-observe through CUA. This integration does not rewrite source browser selection
+methods or claim a built-in launcher. Real terminated-process acceptance remains pending.
 The tested no-window extension path is already restored. A separate opt-in test now passes
 against an already running daily Chrome for new-tab navigation, observation, click, returned screenshot
 and owned-tab cleanup. It does not cover zero-window or terminated-process startup. App getApp has its own policy, approval and macOS permission requirements.
@@ -82,7 +83,8 @@ once, then inspect process/browser installation/extension/native-host state. For
 or a requested profile window, that workflow invokes `scripts/open-chrome-window.js` after user
 authorization. This is evidence of a plugin orchestration path outside getBrowser, not proof that
 every current unified-computer-use activation executes it. The existing standalone startup adapter
-already restores portions of these profile/launch rules; unified invocation still needs integration.
+already restores portions of these profile/launch rules; unified invocation is now provided by the separate prepare_browser host tool and still needs real
+terminated-process acceptance.
 
 The script supports Chrome/Edge families, profile-root/preference overrides, and dry-run command
 output. Core's present launcher scope remains macOS Chrome and its own extension/host registration.
