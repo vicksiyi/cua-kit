@@ -2121,3 +2121,24 @@ newest-one subscription behavior. Native build, component checks and expanded
 static audit pass. Subsequent native restoration behavior in the same source
 function is still being analyzed; the guard helper is not yet presented as a
 complete ordering response or connected to production controller observation.
+
+
+## Scoped AXRaise observer and atomic change guard
+
+The restoration action creates a temporary observer over a snapshot of on-screen
+window IDs for workspaceAddWindow (raw enum declaration tag 17). Its callback
+sets a ManagedAtomic<Bool> using a release store; the pre-AXRaise decision reads
+with acquire ordering. If already changed, AXRaise is skipped. Otherwise the
+raise is attempted; errors are reported without skipping the subsequent settle
+wait. The observer stays alive through the final ContinuousClock 5 ms sleep,
+including cleanup when sleep throws/cancels. This is a distinct scope from the
+main didChangeOrder subscription, whose newest-one buffer is unchanged.
+
+WindowOrderingRaiseScope restores those resource/ordering boundaries. The
+existing resolved swift-atomics 1.3.1 dependency is now explicitly declared and
+used as Atomics, matching the source ManagedAtomic implementation rather than
+inventing lock-based replacements. Injected checks cover immediate notification,
+normal raise, reported raise failure, sleep failure and observer lifetime.
+These checks register no live notifications and perform no actual AXRaise.
+The full source action helper/controller owner remains to be composed before
+claiming production ordering-restoration parity.

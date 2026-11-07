@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    try await runWindowOrderingRaiseScopeChecks()
     await runWindowOrderingRestorationContextChecks()
     await runCGWindowEventStreamChecks()
     runCGWindowNotificationChecks()
@@ -6978,4 +6979,35 @@ private func runWindowOrderingRestorationContextChecks() async {
     handler!(1, .didChangeOrder); handler!(2, .didChangeOrder)
     let result = await iterator.next()
     checkEqual(result?.0, 2); checkEqual(result?.1, .didChangeOrder)
+}
+
+
+private func runWindowOrderingRaiseScopeChecks() async throws {
+    final class Observer {}
+    enum Failure: Error { case raise, sleep }
+    for scenario in 0...3 {
+        var trace: [String] = []
+        weak var lifetime: Observer?
+        do {
+            try await performWindowOrderingRaiseScope(onScreenWindowIDs: { trace.append("ids"); return [7, 7, 0] },
+                makeObserver: { ids, events, notify in
+                    checkEqual(ids, [7, 7, 0]); checkEqual(events, [.workspaceAddWindow]); trace.append("observe")
+                    let observer = Observer(); lifetime = observer
+                    if scenario == 1 { notify() }
+                    return observer
+                }, raise: {
+                    checkTrue(lifetime != nil); trace.append("raise")
+                    if scenario == 2 { throw Failure.raise }
+                }, reportRaiseError: { checkTrue($0 is Failure); trace.append("error") },
+                settle: { duration in
+                    checkEqual(duration, .milliseconds(5)); checkTrue(lifetime != nil); trace.append("settle")
+                    if scenario == 3 { throw Failure.sleep }
+                })
+            checkTrue(scenario != 3)
+        } catch { checkTrue(scenario == 3); checkTrue(error is Failure) }
+        checkTrue(lifetime == nil)
+        let expected = scenario == 1 ? ["ids", "observe", "settle"] :
+            scenario == 2 ? ["ids", "observe", "raise", "error", "settle"] : ["ids", "observe", "raise", "settle"]
+        checkEqual(trace, expected)
+    }
 }

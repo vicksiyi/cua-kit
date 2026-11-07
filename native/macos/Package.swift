@@ -5,6 +5,7 @@ let package = Package(
     products: [.executable(name: "cua-helper", targets: ["CuaHelper"]),
         .library(name: "SoftLink", targets: ["SoftLink"])],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.3.1"),
         .package(url: "https://github.com/apple/swift-collections.git", exact: "1.6.0"),
         .package(url: "https://github.com/modelcontextprotocol/swift-sdk.git", exact: "0.12.1"),
         .package(url: "https://github.com/apple/swift-algorithms.git", exact: "1.2.1"),
@@ -14,7 +15,7 @@ let package = Package(
     targets: [
         .target(name: "SoftLink"),
         .target(name: "RunningProcess", publicHeadersPath: "include", cSettings: [.unsafeFlags(["-fobjc-arc"])]),
-        .executableTarget(name: "CuaHelper", dependencies: [.product(name: "DequeModule", package: "swift-collections"), .product(name: "OrderedCollections", package: "swift-collections"), "SoftLink", .product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
+        .executableTarget(name: "CuaHelper", dependencies: [.product(name: "Atomics", package: "swift-atomics"), .product(name: "DequeModule", package: "swift-collections"), .product(name: "OrderedCollections", package: "swift-collections"), "SoftLink", .product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
         .executableTarget(name: "CuaFixture"),
     ], swiftLanguageModes: [.v5]
 )
