@@ -140,6 +140,21 @@
       }
     ]
   },
+  "loggerFactory": {
+    "entry": "0x100622d48",
+    "sharedFactory": "0x100623e00",
+    "category": "String(describing: metatype)",
+    "categoryImportGOT": "0x101466288",
+    "cache": "String-keyed logger dictionary protected by allocated unfair lock",
+    "subsystemConstant": "0x10147c0c8",
+    "subsystem": "inc.software.app",
+    "cacheBodySHA256": "d7c873a944363e204140b10d6359f9cafe57d1a00a825175ed424ac43671ee80",
+    "lockBodySHA256": "ca5d43493d6cae338d42ebc065f55865cab8f90dc41999413aab3713ca78ba6f",
+    "readPIDErrorLevel": "default",
+    "levelImportGOT": "0x101469b50",
+    "errorObject": "NSError",
+    "readPIDFormat": "log[83e5307932ae753eb27e] [0]=%@"
+  },
   "readThreadPID": {
     "helper": "0x1006fa0d4",
     "actualPIDCall": "0x1006fa138",

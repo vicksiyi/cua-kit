@@ -3799,3 +3799,30 @@ resolving closure lifetime/type-inference compile errors. DispatchQueue/AX calls
 are compiled but not exercised against a real app. Other system adapters still
 use their explicit older PID route and need corresponding integration; native
 logger factory parity and full production protocol/collector remain outstanding.
+
+### Native logger factory and default PID error reporting
+
+The logger factory at 0x100622d48 delegates to 0x100623e00. Its import at
+0x101466288 is Swift.String.init(describing:), invoked on the metatype. The
+resulting category String keys a dictionary protected by os_unfair_lock; the
+miss body 0x100622d6c creates Logger(subsystem:category:), inserts it and returns
+it. LoggingSubsystem at 0x10147c0c8 resolves to the CFString `inc.software.app`.
+NativeLogger.swift reproduces that lazy locked factory using OSAllocatedUnfairLock.
+This string is retained as the audited logging constant, not an assertion that
+the standalone executable is an OpenAI application.
+
+The read-PID error path imports os_log_type_t.default at 0x101469b50 and bridges
+the error to NSError. AXReadErrorLogging.swift uses the dynamic AX element type,
+default-level Logger.log and default-privacy object interpolation, retaining the
+opaque native site identifier. It supplies default overloads for the provider
+read-thread, array-count and subset entry points while keeping explicit reporter
+injection available for fixtures. These use local OS logging, with no telemetry
+client or remote reporting. The broader Logging package/opaque-log infrastructure
+is not claimed complete by this narrow factory restoration.
+
+Tests confirm String(describing:) category keys (different metatypes with the
+same short description share an entry), lazy creation, and exactly one creation
+for a category under 32 concurrent accesses. Focused test and Swift package build
+pass. No error record, app operation or model request was emitted by the fixture.
+Other system read/write/hit-test adapters still need to adopt this default
+provider-aware dispatch path before full protocol/production integration.
