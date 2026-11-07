@@ -3394,3 +3394,26 @@ registration maps and native driver callbacks remain to be recovered; this helpe
 is not a fully implemented InterpolatableAnimation class or visible cursor.
 
 Swift build, provider composition checks and pinned static audit pass after setter recovery.
+
+
+## Coordinator transaction-completion state forwarding (2026-11-08)
+
+Source coordinator helper 0x1007c8f68 reads an animation's UUID (metadata import
+_$s10Foundation4UUIDVMa), looks up animationToTransactionID at offset 0x20,
+then transactionCompletionHandlers at offset 0x28. Exported initialization
+symbols confirm [UUID:UUID] and [UUID:(AnimationState)->Void]. Missing either
+entry returns without cleanup. A found completion is retained, dictionary read
+access ends, then callback receives the current state. Only afterward does
+(state | 2) == 3 remove the completion: .retargeted and .ended, not .ready or
+.running. It does not remove animationToTransactionID in this body.
+
+The Animation module's injected forwarding preserves the UUID relationship,
+callback-before-removal and no cleanup on missing handler. Reentrant callback
+replacement is removed too on terminal state, matching the original fresh
+post-callback dictionary mutation; no compare-and-remove identity check is added.
+Tests cover all states, nil mapping, nil completion and replacement during the
+callback. The static audit pins callback/terminal-branch ordering. Driver
+registration/removal and the complete coordinator owner remain outstanding;
+this routine must not be described as deregistering an animation driver.
+
+Swift build, provider checks and pinned static audit pass for transaction completion forwarding.

@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runAnimationTransactionCompletionChecks()
     runAnimationStateStopCompositionChecks()
     runInterpolatableAnimationStopChecks()
     runCursorWindowResetChecks()
@@ -8009,4 +8010,32 @@ private func runAnimationStateStopCompositionChecks() {
             notifyCoordinator: { precondition($0 == next && state == next); events.append("notify") })
     }
     precondition(events == ["notify", "notify", "notify"])
+}
+
+
+private func runAnimationTransactionCompletionChecks() {
+    let animation = UUID(), transaction = UUID()
+    for state in [AnimationState.ready, .retargeted, .running, .ended] {
+        var events: [String] = []
+        var handlers: [UUID: (AnimationState) -> Void] = [:]
+        handlers[transaction] = { value in
+            precondition(value == state)
+            events.append("callback")
+            // A reentrant replacement is also removed by terminal cleanup.
+            handlers[transaction] = { _ in preconditionFailure() }
+        }
+        notifyAnimationTransactionCompletion(animationID: animation, state: state,
+            transactionID: { precondition($0 == animation); events.append("transaction"); return transaction },
+            completion: { events.append("lookup"); return handlers[$0] },
+            removeCompletion: { events.append("remove"); handlers.removeValue(forKey: $0) })
+        let terminal = state == .retargeted || state == .ended
+        precondition(events == ["transaction", "lookup", "callback"] + (terminal ? ["remove"] : []))
+        precondition((handlers[transaction] == nil) == terminal)
+    }
+    notifyAnimationTransactionCompletion(animationID: animation, state: .ended,
+        transactionID: { _ in nil }, completion: { _ in preconditionFailure() },
+        removeCompletion: { _ in preconditionFailure() })
+    notifyAnimationTransactionCompletion(animationID: animation, state: .ended,
+        transactionID: { _ in transaction }, completion: { _ in nil },
+        removeCompletion: { _ in preconditionFailure() })
 }
