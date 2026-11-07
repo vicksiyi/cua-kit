@@ -2732,3 +2732,19 @@ that those effects are already wired to production Target. In particular the
 native callback's thread ownership must still be reconciled with Target's
 MainActor ownership. Branch-order checks cover every route and cleanup after
 subscription-removal failure without native input.
+
+
+## Application attention native binding
+
+The source setApplicationDesiresAttention wrapper at 0x10026d924 uses an
+independent lazy, required SoftLink request, not one of the previously restored
+primary WindowServer slots. ApplicationAttentionSPI now preserves the extracted
+image list (30 encoded words), single symbol request (two words), original salt
+and C ABI (ProcessSerialNumber pointer plus Bool -> Int32). Missing required
+binding traps like the original; it does not silently substitute an AppKit
+request-for-attention operation with different behavior.
+
+The source controller passes false after successful process resolution and
+ignores the setter status. Native binding invocation and controller-side process
+resolution still require validation/integration; this new wrapper is not called
+by production Target yet and no application attention was changed by this work.
