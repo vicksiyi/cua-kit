@@ -3736,6 +3736,7 @@ func runProviderClickChecks() async throws {
     try runMouseEventRoutingSeedChecks()
     runMouseWindowAtPointChecks()
     runNativeWindowDescriptionChecks()
+    try runMouseEventTargetChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5984,4 +5985,125 @@ private func runNativeWindowDescriptionChecks() {
     checkEqual(first?["which"] as? String, "first"); checkEqual(fetches, 1)
     checkTrue(nativeWindowDescription(1, descriptions: { _ in [] }) == nil)
     checkTrue(nativeWindowDescription(1, descriptions: { _ in nil }) == nil)
+}
+
+private func runMouseEventTargetChecks() throws {
+    enum Failure: Error { case id, hit, ancestor, foreign }
+    struct Native { let id: UInt32; let bounds: CGRect }
+    let axBounds = CGRect(x: 10, y: 20, width: 300, height: 200)
+    let nativeBounds = CGRect(x: 100, y: 200, width: 400, height: 500)
+    var calls: [String] = []
+    var axPID: Int32 = 11, hit: Int? = 1, bundle: String? = nil
+    var foreign: [Int: (pid: Int32, windowID: UInt32)] = [:]
+    var nativeAtPoint: Native? = nil, systemHit: Int? = nil, nativeExists = true
+    var elementIDThrows = false, windowIDThrows = false, systemHitThrows = false
+    var systemHitIllegalArgument = false
+    var elementPID: Int32? = 11, ancestorThrows = false, foreignThrows = false
+    var frame: CGRect? = axBounds
+    func resolve() throws -> MouseEventTarget<Int, String> {
+        try resolveMouseEventTarget(at: CGPoint(x: 30, y: 40), accessibilityWindow: "original", hitElement: hit,
+            applicationPID: { calls.append("appPID"); return 11 },
+            windowActualPID: { calls.append("windowPID:\($0)"); return axPID },
+            windowID: { calls.append("axID:\($0)"); if windowIDThrows { throw Failure.id }; return 70 },
+            windowFrame: { calls.append("frame:\($0)"); return frame },
+            children: { calls.append("children:\($0)"); return [2, 3] },
+            bundleIdentifier: { calls.append("bundle"); return bundle },
+            outOfProcessTargetWindow: { element, pid in
+                calls.append("foreign:\(element):\(pid)")
+                if foreignThrows { throw Failure.foreign }; return foreign[element]
+            }, elementWindowID: { calls.append("elementID:\($0)"); if elementIDThrows { throw Failure.id }; return 80 },
+            elementActualPID: { calls.append("elementPID:\($0)"); return elementPID },
+            ancestorWindowID: { element, pid in
+                calls.append("ancestor:\(element):\(pid)"); if ancestorThrows { throw Failure.ancestor }; return 90
+            }, nativeWindowAtPoint: { _ in calls.append("nativeAtPoint"); return nativeAtPoint },
+            nativeWindowID: { calls.append("nativeID"); return $0.id },
+            nativeWindowForID: { id in calls.append("nativeForID:\(id)"); return nativeExists ? Native(id: id, bounds: nativeBounds) : nil },
+            nativeWindowBounds: { calls.append("nativeBounds"); return $0.bounds },
+            systemWideHitTest: { _ in calls.append("systemHit"); if systemHitThrows { throw Failure.hit }; if systemHitIllegalArgument { throw UIElementError.axError(.illegalArgument) }; return systemHit })
+    }
+    // Ordinary hit: child is used only for process discovery; final target
+    // retains the original hit and AX bounds, without consulting WindowServer.
+    let direct = try resolve()
+    checkTrue(direct.pid == 11 && direct.element == 1 && direct.accessibilityWindow == "original" &&
+        direct.windowID == 80 && direct.windowBounds == axBounds && !direct.windowUsesFlippedCoordinates)
+    checkTrue(calls == ["appPID", "windowPID:original", "children:1", "foreign:2:11", "elementID:1", "elementPID:1", "frame:original"])
+    calls = []; elementPID = nil
+    checkTrue(try resolve().windowID == 90)
+    checkTrue(calls.contains("ancestor:1:11"))
+    ancestorThrows = true
+    do { _ = try resolve(); unexpectedFailure() } catch Failure.ancestor {}
+    ancestorThrows = false; elementPID = 11; calls = []; elementIDThrows = true
+    checkTrue(try resolve().windowID == 70)
+    checkTrue(!calls.contains("elementPID:1") && calls.contains("axID:original"))
+    elementIDThrows = false
+
+    // Foreign-window fallback clears the AX hit, keeps original AX window,
+    // and uses supplied destination PID/ID plus WindowServer bounds.
+    calls = []; axPID = 22
+    let fallback = try resolve()
+    checkTrue(fallback.pid == 22 && fallback.element == nil && fallback.windowID == 70 &&
+        fallback.accessibilityWindow == "original" && fallback.windowBounds == nativeBounds)
+    checkTrue(calls == ["appPID", "windowPID:original", "axID:original", "nativeAtPoint", "axID:original", "nativeForID:70", "nativeBounds"])
+    calls = []; nativeExists = false
+    do { _ = try resolve(); unexpectedFailure() }
+    catch MouseEventTargetError.unableToFindWindowID(let id) { checkTrue(id == 70) }
+    nativeExists = true
+
+    // Match triggers system-wide hit-test; mismatch does not. A hit is
+    // rerouted afresh, without applying the initial first-child transformation.
+    calls = []; nativeAtPoint = Native(id: 70, bounds: .zero); systemHit = 9
+    let replacement = try resolve()
+    checkTrue(replacement.element == 9 && replacement.pid == 11 && replacement.windowID == 80)
+    checkTrue(calls.contains("foreign:9:11") && !calls.contains("children:9"))
+    calls = []; foreign[9] = (33, 99)
+    let replacementForeign = try resolve()
+    checkTrue(replacementForeign.pid == 33 && replacementForeign.windowID == 99 &&
+        replacementForeign.element == 9 && replacementForeign.windowBounds == nativeBounds)
+    checkTrue(calls.contains("nativeForID:99") && !calls.contains("elementID:9"))
+    calls = []; nativeAtPoint = Native(id: 71, bounds: .zero)
+    checkTrue(try resolve().element == nil)
+    checkTrue(!calls.contains("systemHit"))
+    calls = []; nativeAtPoint = Native(id: 70, bounds: .zero); systemHitThrows = true
+    do { _ = try resolve(); unexpectedFailure() } catch Failure.hit {}
+    checkTrue(!calls.contains("nativeForID:70"))
+    systemHitThrows = false; systemHitIllegalArgument = true
+    do { _ = try resolve(); unexpectedFailure() }
+    catch UIElementError.axError(let error) { checkTrue(error == .illegalArgument) }
+    systemHitIllegalArgument = false; systemHit = nil
+
+    // No hit outside Atlas has no invented screenshot/focused-window fallback.
+    axPID = 11; hit = nil; nativeAtPoint = nil; calls = []
+    do { _ = try resolve(); unexpectedFailure() } catch MouseEventWindowSelectionError.noWindows {}
+    checkTrue(calls == ["appPID", "windowPID:original", "bundle", "nativeAtPoint", "axID:original"])
+    windowIDThrows = true
+    do { _ = try resolve(); unexpectedFailure() } catch Failure.id {}
+    windowIDThrows = false; bundle = "com.openai.atlas"; frame = nil; calls = []
+    let atlas = try resolve()
+    checkTrue(atlas.windowID == 70 && atlas.element == nil && atlas.windowBounds == .zero)
+    checkTrue(!calls.contains("nativeAtPoint"))
+    hit = 1; bundle = nil; foreign[2] = (44, 111); calls = []
+    checkTrue(try resolve().pid == 44)
+    checkTrue(calls.contains("nativeForID:111") && !calls.contains("elementID:1"))
+    foreignThrows = true
+    do { _ = try resolve(); unexpectedFailure() } catch Failure.foreign {}
+
+    // Ancestor resolver skips missing/different PIDs, accepts ID zero, and
+    // propagates the first matching ancestor's ID error without continuing.
+    var visited: [Int] = [], ids: [Int] = []
+    let ancestorID = try mouseEventWindowID(for: 0, appPID: 11,
+        parent: { $0 < 4 ? $0 + 1 : nil }, actualPID: { visited.append($0); return $0 == 2 ? 11 : nil },
+        windowID: { ids.append($0); return 0 })
+    checkTrue(ancestorID == 0 && visited == [0, 1, 2] && ids == [2])
+    do {
+        _ = try mouseEventWindowID(for: 0, appPID: 11, parent: { $0 + 1 },
+            actualPID: { _ in 11 }, windowID: { _ in throw Failure.id })
+        unexpectedFailure()
+    } catch Failure.id {}
+    visited = []
+    do {
+        _ = try mouseEventWindowID(for: 0, appPID: 11, parent: { $0 + 1 },
+            actualPID: { visited.append($0); return nil }, windowID: { _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch MouseEventWindowSelectionError.noWindows {}
+    checkTrue(visited.count == 301 && visited.first == 0 && visited.last == 300)
 }

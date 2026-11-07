@@ -1783,3 +1783,61 @@ coordinate production integration still remain outstanding.
 
 Validation: native Swift build, provider-click self-test and pinned static audit pass.
 This validates the window-description component, not live Multica clicking.
+
+## Complete mouse-event target resolver composition
+
+Restored target(forMouseEventAt:axWindowAtPoint:axElementAtPoint:)
+0x100705f84..0x100706864 as MouseEventTarget and resolveMouseEventTarget.
+The original app PID is read once. The earlier routing seed is now consumed by
+an actual complete resolver, with native AX/AppKit/CoreGraphics composition in
+UIElementMouseEventTarget:
+
+- Same-process AX hits use the first child only for initial out-of-process
+  discovery, while preserving the original hit for the final target. If no
+  foreign target is selected, try the hit's window ID. Only that first ID read
+  swallows errors. A missing/different actual PID selects the first matching
+  ancestor (including self, depth 300); its ID error propagates immediately.
+  With no usable hit ID, the original AX window ID is required.
+- An original AX window owned by another PID, or a discovered foreign view
+  service, supplies a pending fallback PID/window ID. Native window-at-point
+  is queried, followed by the original AX window ID even when the native
+  lookup returned nil. That AX error takes precedence over fallback errors.
+- A matching native/AX window ID permits a fresh system-wide AX hit test.
+  All errors from this hit test propagate, including illegalArgument; only
+  the separate app-root hit-test wrapper suppresses illegalArgument. A new
+  system-wide hit replaces the old element and undergoes fresh foreign
+  target discovery without the initial first-child transformation.
+- A final foreign target uses its destination ID's native window bounds. A
+  failed/mismatched/nil system-wide hit instead consumes the pending fallback
+  and clears the original element. Both retain the original accessibility
+  window. A missing native description raises unableToFindWindowID(id);
+  absence of a pending fallback raises noWindows.
+- The exact Atlas no-hit exception selects the original AX-window route.
+  Other no-hit applications go through native lookup/system-wide discovery;
+  no screenshot/focused-window substitute is invented.
+- AX-backed targets use the original AX window frame or CGRect.zero. Final
+  targets initialize windowUsesFlippedCoordinates=false (store at 0x100706808,
+  confirmed by the property getter at 0x100705c20). Existing production
+  MouseWindow's true default is a remaining integration discrepancy, not
+  silently changed before caller routing and event construction are aligned.
+
+CGWindow.window(for:) 0x10025b818 is verified to delegate to the same native
+description helper 0x10025c904, so the concrete resolver reuses that boundary.
+The optional actual-PID helper 0x10074ad50 logs an AX failure and returns nil;
+the concrete composition preserves that behavior via the existing error sink.
+
+Injected checks exercise original-hit preservation, child-only discovery,
+ancestor correction/error/depth behavior, foreign fallback clearing, destination
+bounds, original AX-window retention, matching/mismatched native window IDs,
+system-wide replacement, foreign replacement, exact Atlas behavior, missing
+native windows and error precedence. Tests do not post events, create taps,
+activate apps, or perform live window queries.
+
+Production Mouse.swift still uses its older target/window construction and
+coordinate focus path. The resolver is now available as a concrete native
+composition, but wiring it into sendClick, completing that lifecycle and live
+Multica acceptance remain required. Passing resolver checks does not establish
+that the reported app-click problem is fixed.
+
+Validation: native Swift build, provider-click self-test (including system-wide
+illegalArgument propagation) and the expanded pinned static audit pass.
