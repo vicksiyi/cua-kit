@@ -3311,19 +3311,42 @@ Separately traced concrete UIElement witnesses:
 
 | Requirement index | Witness | Observed behavior |
 | --- | --- | --- |
-| 2 | 0x10078fbf4 | Static getter returns zero; semantic name unresolved |
+| 2 | 0x10078fbf4 | static role returns nil for generic UIElement |
 | 3 | 0x10078fbfc | Retains and returns AX element stored at offset 0 |
 | 4 | 0x10078fc04 | Retains and returns three cache fields at offsets 8/16/24 |
 | 5 | 0x10078fc50 | Invokes recovered element initializer 0x10072187c and stores all four return words |
-| 6 | 0x1007aff6c | Passes attribute dictionary to 0x1007289b0 |
-| 7 | 0x1007aff74 | Passes all four storage words to 0x1007aaf9c |
-| 8 | 0x1007925f4 | Passes all four storage words to 0x100790b88 |
-| 9 | 0x100792600 | Calls 0x100790b88 then maps via 0x100790690 |
-| 10 | 0x1007b8a04 | Delegates to 0x1007ad94c |
-| 11 | 0x100792670 | Delegates to 0x1007343b8 with stored element/cache |
+| 6 | 0x1007aff6c | subrole; passes attribute dictionary to 0x1007289b0 |
+| 7 | 0x1007aff74 | isInsideWebView; passes storage to 0x1007aaf9c |
+| 8 | 0x1007925f4 | actions; passes storage to 0x100790b88 |
+| 9 | 0x100792600 | actionDescriptions; maps actions via 0x100790690 |
+| 10 | 0x1007b8a04 | setValue(_:forAttribute:); delegates to 0x1007ad94c |
+| 11 | 0x100792670 | perform(action:); delegates to 0x1007343b8 |
 
 The two zero base-table slots in the on-disk UIElement witness table require
 runtime instantiation; they must not be interpreted as absent inheritance.
-Names/signatures for the remaining witnesses and inherited requirements still
-need tracing before restoring the complete protocol. The read-only audit passed
+All ten direct witness meanings were already established in the earlier audit.
+Inherited getter mapping and full conformance wiring still need completion. The read-only audit passed
 and its emitted JSON was regenerated; no vendor binary or UI operation ran.
+
+
+### Parent-node interactivity defaults and evidence correction
+
+The previous compact witness inventory accidentally described direct names as
+unresolved despite the earlier ten-requirement audit. Its table and JSON now
+carry those existing names. This correction does not count as newly discovered
+protocol behavior or imply the protocol is implemented.
+
+Newly traced defaults: `isFocusableOrSelectable` at `0x100624f30..<0x100624f84`
+reads inherited witness +0x98 (isFocusable), returning true immediately, else
++0x88 (isSelectable). `canBeUserInteractive` at `0x100624f84..<0x100624fec`
+uses the same ordered checks then +0xb8 (isValueSettable). The latter concrete
+slot is `0x101575720 -> 0x1007b0070`: it selects AXValue and delegates via
+0x1007b0094 to the attribute capability specialization; the public
+isValueSettable getter at 0x1007ac550 likewise selects AXValue and delegates to
+isAttributeSupportedAndSettable. These are capabilities, not current focused,
+selected or value states. No extra isEnabled check is added at this layer.
+
+`UIElementInteractivity.swift` restores these two lazy callback compositions.
+All eight Boolean combinations are tested with exact callback order and skipped
+queries; the fixture and Swift build pass. Full protocol conformance remains
+outstanding, so these defaults are not advertised as production UI acceptance.

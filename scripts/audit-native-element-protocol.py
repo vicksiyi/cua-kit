@@ -55,6 +55,11 @@ ui = protocol('AccessibilitySupport.UIElementProtocol', 0x1012cd46c, 0x10149ed40
     [0, 0, 3, 0x13, 0x13, 2, 0x13, 0x13, 0x13, 0x13, 0x11, 0x11],
     [None, None, 0x10078fbf4, 0x10078fbfc, 0x10078fc04, 0x10078fc50,
      0x1007aff6c, 0x1007aff74, 0x1007925f4, 0x100792600, 0x1007b8a04, 0x100792670])
+direct_names = ['AccessibilityNode', 'Hashable', 'static role', 'axElement', 'cache',
+                'init(element:)', 'subrole', 'isInsideWebView', 'actions',
+                'actionDescriptions', 'setValue(_:forAttribute:)', 'perform(action:)']
+for entry, name in zip(ui['requirements'], direct_names):
+    entry['meaning'] = name
 # Inherited protocol is inventoried without pretending unnamed getters are known.
 a = 0x1012c9238
 h = struct.unpack('<6I', read(a, 24))
@@ -62,6 +67,6 @@ assert h[3:5] == (4, 36)
 print(json.dumps(dict(binarySHA256=expected, protocol=ui,
     inherited=dict(name='ComputerUseCore.AccessibilityNode', descriptor=hex(a),
                    signatureRequirements=4, requirementCount=36),
-    limitations=['Witness member names beyond separately traced entries remain unresolved.',
+    limitations=['All ten direct member names are known; inherited getter names and full conformances remain incomplete.',
                  'Zero base-conformance slots require runtime instantiation; they are not missing inheritance.',
                  'This is static evidence, not executable protocol conformance or desktop acceptance.']), indent=2))
