@@ -917,3 +917,23 @@ failure. No real click or application activation was performed in these checks.
 Swift build, provider-click checks, pinned static audit and live read-only
 diagnostic pass. Production focus controller integration and a harmless
 before/after Multica UI click acceptance remain required.
+
+
+## Registered callback scheduling
+
+Restored asynchronous callback scheduling for selected records. Source call
+0x10074dcf4 invokes swift_task_create; TaskPriority metadata/rawValue binds
+resolve through GOT 0x101469490/488 and actor executor through 0x1014693c0.
+The gained path operation resolves through 0x101195058 -> 0x100750fb0 ->
+0x10074ec78/0x10074ec90; lost through 0x101195030 -> 0x100750e20 ->
+0x10074ecdc/0x10074ecf4. Bodies call optional handlers and return true when
+absent. Neither a synchronous inline callback under state lock nor a promise
+of task completion in registration order matches this source.
+
+FocusStealRegistrationCallbacks uses an unstructured Swift Task, preserving
+inherited task context, and reports a missing handler separately. Unchanged
+selection creates no task. Tests await actual tasks and cover gained/lost,
+missing-handler reporting and result semantics. Build/provider-click checks
+and static audit pass. This restores the scheduling boundary, not the full
+changed-focus state update, native runtime flag layout or production controller
+integration. Live Multica click acceptance is still outstanding.

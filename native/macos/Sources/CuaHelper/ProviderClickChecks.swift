@@ -3701,6 +3701,7 @@ func runProviderClickChecks() async throws {
     runFocusStealKeyboardMonitorChecks()
     runFocusStealTakenStateChecks()
     runFocusStealRegistrationTransitionChecks()
+    await runFocusStealRegistrationCallbackChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4716,4 +4717,29 @@ private func runFocusStealRegistrationTransitionChecks() {
     checkEqual(state.registrationTransition(pid: 77, previousOwnerPID: 77, currentOwnerPID: 66), .lost)
     state.update(nil)
     checkEqual(state.registrationTransition(pid: 66, previousOwnerPID: 77, currentOwnerPID: 66), .gained)
+}
+
+private func runFocusStealRegistrationCallbackChecks() async {
+    final class Recorder: @unchecked Sendable {
+        private let lock = NSLock()
+        private var values: [String] = []
+        func append(_ value: String) { lock.lock(); defer { lock.unlock() }; values.append(value) }
+        var snapshot: [String] { lock.lock(); defer { lock.unlock() }; return values }
+    }
+    let recorder = Recorder()
+    let registration = FocusStealRegistrationCallbacks(pid: 88,
+        lost: { recorder.append("lost") }, gained: { recorder.append("gained") })
+    checkTrue(scheduleFocusStealRegistrationCallback(registration, transition: .unchanged) == nil)
+    let gained = scheduleFocusStealRegistrationCallback(registration, transition: .gained)!
+    checkFalse(await gained.value)
+    let lost = scheduleFocusStealRegistrationCallback(registration, transition: .lost)!
+    checkFalse(await lost.value)
+    checkEqual(recorder.snapshot, ["gained", "lost"])
+    let absent = FocusStealRegistrationCallbacks(pid: 77, lost: nil, gained: nil)
+    let missing = scheduleFocusStealRegistrationCallback(absent, transition: .lost,
+        reportMissingHandler: { pid, transition in
+            checkEqual(pid, 77); checkEqual(transition, .lost); recorder.append("missing")
+        })!
+    checkTrue(await missing.value)
+    checkEqual(recorder.snapshot, ["gained", "lost", "missing"])
 }

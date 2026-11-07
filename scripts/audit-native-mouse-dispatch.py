@@ -55,7 +55,8 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x100742c34, 0x10026cba0), (0x100742c80, 0x1007453f8),
          (0x100742c90, 0x1007453f8),
          (0x10074f848, 0x100257e24), (0x10074f8a4, 0x10074f8e4),
-         (0x10074f96c, 0x100257e24), (0x10074fbe0, 0x100258054)]
+         (0x10074f96c, 0x100257e24), (0x10074fbe0, 0x100258054),
+         (0x10074dcf4, 0x1011554e4)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -119,6 +120,11 @@ for site, expected_bytes in [(0x10074d374, '1f01166b'), (0x10074d37c, '1f01136b'
                              (0x10074d398, '691f40b9'), (0x10074d3a4, '1f01136b'),
                              (0x10074d3ac, '1f01166b'), (0x10074d3c0, '68834039'),
                              (0x10074d3c8, '681f40b9')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
+# Callback bodies invoke optional gained/lost handlers and return absence.
+for site, expected_bytes in [(0x10074ecac, '730000b4'), (0x10074ecb4, '60023fd6'),
+                             (0x10074ecbc, 'e8179f1a'), (0x10074ed10, '730000b4'),
+                             (0x10074ed18, '60023fd6'), (0x10074ed20, 'e8179f1a')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
