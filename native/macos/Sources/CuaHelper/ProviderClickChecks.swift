@@ -3729,6 +3729,7 @@ func runProviderClickChecks() async throws {
     try runActivationPointValueChecks()
     try await runApplicationClickFocusCompositionChecks()
     try runApplicationClickEventFlagChecks()
+    runInputSnapshotFocusComparisonChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5764,4 +5765,22 @@ private func runApplicationClickEventFlagChecks() throws {
             for event in events { checkEqual(event.flags.rawValue, expected) }
         }
     }
+}
+
+private func runInputSnapshotFocusComparisonChecks() {
+    let previous: [String: Any] = ["id": 1, "name": "button", "properties": [kAXFocusedAttribute: false, kAXEnabledAttribute: true]]
+    var current: [String: Any] = ["id": 1, "name": "button", "properties": [kAXFocusedAttribute: true, kAXEnabledAttribute: true]]
+    checkFalse(inputSnapshotDataEqual(previous, current, allowingFocusChange: false))
+    checkTrue(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
+    current["name"] = "different"
+    checkFalse(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
+    current["name"] = "button"
+    current["properties"] = [kAXFocusedAttribute: true, kAXEnabledAttribute: false]
+    checkFalse(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
+    current["properties"] = [kAXFocusedAttribute: true, kAXEnabledAttribute: true, kAXSelectedAttribute: true]
+    checkFalse(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
+    current["properties"] = [kAXEnabledAttribute: true]
+    checkTrue(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
+    current["frame"] = ["x": 10, "y": 20]
+    checkFalse(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
 }

@@ -37,13 +37,13 @@ func selectedTextRange(content: String, text: String, options: [String: Any]) th
 @MainActor
 extension Target {
     func invalidateInputState() { snapshot = nil; nodes = []; capturedWindow = nil }
-    func validateSnapshot(_ params: [String: Any]) throws {
+    func validateSnapshot(_ params: [String: Any], allowingFocusChange: Bool = false) throws {
         try validate()
         guard let expected = params["snapshotId"] as? String, expected == snapshot else { throw fail("STALE_OBSERVATION", "Input needs a current observation.") }
         let (current, warnings) = try collect()
         guard warnings.isEmpty, current.count == nodes.count else { throw fail("STALE_OBSERVATION", "Application tree changed or is incomplete; observe again.") }
         for (a,b) in zip(nodes,current) {
-            guard CFEqual(a.element,b.element), NSDictionary(dictionary:a.data).isEqual(to:b.data) else { throw fail("STALE_OBSERVATION", "Application state changed; observe again.") }
+            guard CFEqual(a.element,b.element), inputSnapshotDataEqual(a.data, b.data, allowingFocusChange: allowingFocusChange) else { throw fail("STALE_OBSERVATION", "Application state changed; observe again.") }
         }
     }
     func keyboardInput(_ params: [String: Any]) async throws -> [String: Any] {

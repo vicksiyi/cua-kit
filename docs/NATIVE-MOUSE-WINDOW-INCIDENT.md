@@ -1593,3 +1593,31 @@ complete sendClick/cursor/held-key/drag lifecycle remain unverified.
 
 Validation: Swift build, provider-click checks and pinned native static audit
 pass. The production change has not yet been validated with a live app click.
+
+
+## Production indexed AX-click focus context integration
+
+Mouse.swift's accessibility-action branch now lazily obtains the Target-owned
+enforcer and provides the clicked element's real containing AX window through
+SyntheticActivationWindow. The restored application/action preparer selects
+whether safe enforcement is needed; activation events use existing native
+dispatch with identity, cancellation and deadline checks before every post.
+VirtualCursor remains nil. Simulated and coordinate mouse dispatch still use
+the existing nil-enforcer path and are not yet claimed aligned.
+
+The host's snapshot contract requires a separate adaptation: successful focus
+preparation can intentionally change AXFocused. After this operation actually
+posts focus events, its subsequent AX-action validation permits only that
+property to differ. Snapshot ID, AX object identity, count/order and all other
+observed data remain checked. Without posted focus events, comparison remains
+strict. InputSnapshotComparison centralizes the focused-field-only comparison;
+this is a host protocol adaptation, not a vendor snapshot API.
+
+Tests cover strict focus rejection, permitted focus change/removal, and continued
+rejection of name, enabled, selected and frame changes. Existing enforcer/native
+composition tests cover the dependencies, but full production live AX clicking
+and screenshots before/after remain unverified. The production deadline helper
+now checks Task cancellation too, including after the nonthrowing direct wait.
+
+Validation: Swift build and provider-click composition checks pass. No actual
+application activation, tap installation or AX action was exercised by checks.

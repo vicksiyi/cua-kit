@@ -111,6 +111,7 @@ extension Target {
             Logger(subsystem: "core.cua", category: "Accessibility").error("Click AX read failed: \(String(describing: error))")
         }
         func checkDeadline() throws {
+            try Task.checkCancellation()
             if let deadline = params["deadlineUnixMilliseconds"] as? Double,
                Date().timeIntervalSince1970 * 1000 + Double(held) / 1_000_000 >= deadline {
                 throw fail("INVALID_ARGUMENT", "Click deadline expired before dispatch; earlier clicks may have been dispatched.")
@@ -153,15 +154,38 @@ extension Target {
             heldKeyIsPresent: false, flags: flags,
             alwaysSimulateClick: params["alwaysSimulateClick"] as? Bool ?? false,
             readActions: { item.actions }, isInsideWebView: insideWebView)
-        // This host currently has no native VirtualCursor or SyntheticAppFocusEnforcer
-        // instance. Exercise the source's nil-context branches, not fake implementations.
+        var focusPreparationSentEvents = false
+        // VirtualCursor remains absent. AX actions now use the restored native
+        // enforcer and window context rather than the nil-enforcer probe.
         return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,
             webClickHitsTarget: {
                 await item.webClickHitsTarget(app: UIElement(element: root), reportError: report)
             }, cursorPress: nil,
-            prepareActionFocus: { try probeSystemApplicationIsActiveForAXAction(root) },
-            performAction: { action in
+            prepareActionFocus: {
+                try Task.checkCancellation()
                 try validateSnapshot(params)
+                try checkDeadline()
+                let window: SyntheticActivationWindow?
+                if let raw = attribute(item.axElement, kAXWindowAttribute),
+                   let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) {
+                    window = SyntheticActivationWindow(element: UIElement(element: ax), reportError: report)
+                } else { window = nil }
+                let enforcer = activateFocusEnforcer()
+                try await UIElement(element: root).prepareAccessibilityClickFocus(element: item,
+                    window: window, enforcer: enforcer,
+                    probeApplicationIsActive: { try probeSystemApplicationIsActiveForAXAction(root) },
+                    reportError: report, send: { event in
+                        for cgEvent in event.cgEvents {
+                            try Task.checkCancellation()
+                            try validateIdentity()
+                            try checkDeadline()
+                            dispatchNativeEvent(cgEvent, to: app.processIdentifier)
+                            focusPreparationSentEvents = true
+                        }
+                    })
+            },
+            performAction: { action in
+                try validateSnapshot(params, allowingFocusChange: focusPreparationSentEvents)
                 try checkDeadline()
                 defer { invalidateInputState() }
                 try item.perform(action: action)
