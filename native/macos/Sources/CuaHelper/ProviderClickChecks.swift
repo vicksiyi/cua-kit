@@ -3746,6 +3746,8 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runEnhancedUserInterfaceEnablementChecks()
+    try await runVoiceOverPreferenceEnablementChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -6500,4 +6502,127 @@ private func runAXInitializedApplicationChecks() {
     checkTrue(weakApp != nil) // Initialization history outlives active-count entries.
     tracker = nil
     checkTrue(weakApp == nil)
+}
+
+private func runEnhancedUserInterfaceEnablementChecks() {
+    final class Resource {
+        let released: () -> Void
+        init(released: @escaping () -> Void = {}) { self.released = released }
+        deinit { released() }
+    }
+    enum Failure: Error { case operation }
+    // Nil/already-true reads skip all other work; ordinary apps do not probe
+    // activation or mark changed, even when the write is attempted/fails.
+    for originalChanged in [false, true] {
+        for value: Bool? in [nil, false, true] {
+            for writeFails in [false, true] {
+                var changed = originalChanged, reads = 0, writes: [Bool] = []
+                let result = performEnhancedUserInterfaceEnablement(changed: &changed,
+                    enhancedUserInterface: { reads += 1; return value }, bundleIdentifier: "org.example.App",
+                    applicationIsActive: { unexpectedFailure() }, makeEnforcer: { () -> Resource in unexpectedFailure() },
+                    enforce: { _ in unexpectedFailure() }, deactivate: { _ in unexpectedFailure() },
+                    makeStartDate: { unexpectedFailure() }, currentDate: { unexpectedFailure() }, sleep: { _ in unexpectedFailure() },
+                    setEnhancedUserInterface: { value in writes.append(value); if writeFails { throw Failure.operation } })
+                checkTrue(reads == 1 && changed == originalChanged)
+                checkEqual(result, value == false)
+                checkTrue(writes == (value == false ? [true] : []))
+            }
+        }
+    }
+    do {
+        var changed = false, calls: [String] = []
+        let result = performEnhancedUserInterfaceEnablement(changed: &changed,
+            enhancedUserInterface: { false }, bundleIdentifier: "com.spotify.client",
+            applicationIsActive: { calls.append("active"); return true }, makeEnforcer: { () -> Resource in unexpectedFailure() },
+            enforce: { _ in unexpectedFailure() }, deactivate: { _ in unexpectedFailure() },
+            makeStartDate: { unexpectedFailure() }, currentDate: { unexpectedFailure() }, sleep: { _ in unexpectedFailure() },
+            setEnhancedUserInterface: { value in checkTrue(value); calls.append("write") })
+        checkTrue(result && changed && calls == ["active", "write"])
+    }
+    // Inactive Spotify: create/enforce once, bounded polling, true write,
+    // deactivate and release even when enforcement/write/deactivation fail.
+    do {
+        var changed = false, events: [String] = [], activeReads = 0
+        weak var retained: Resource?
+        var dates = [0.0, 1.0, 1.01]
+        let result = performEnhancedUserInterfaceEnablement(changed: &changed,
+            enhancedUserInterface: { events.append("read"); return false }, bundleIdentifier: "com.spotify.client",
+            applicationIsActive: { activeReads += 1; events.append("active"); return false },
+            makeEnforcer: {
+                events.append("create")
+                let resource = Resource { events.append("released") }; retained = resource; return resource
+            }, enforce: { _ in events.append("enforce"); throw Failure.operation },
+            deactivate: { resource in checkTrue(retained === resource); events.append("deactivate"); throw Failure.operation },
+            makeStartDate: { events.append("start"); return Date(timeIntervalSinceReferenceDate: 0) },
+            currentDate: { let value = dates.removeFirst(); events.append("time:\(value)"); return Date(timeIntervalSinceReferenceDate: value) },
+            sleep: { interval in checkEqual(interval, 0.05); checkTrue(retained != nil); events.append("sleep") },
+            setEnhancedUserInterface: { value in checkTrue(value && retained != nil); events.append("write"); throw Failure.operation })
+        checkTrue(result && changed && activeReads == 3 && retained == nil && dates.isEmpty)
+        checkTrue(events == ["read", "active", "create", "enforce", "start", "time:0.0", "active", "sleep",
+            "time:1.0", "active", "sleep", "time:1.01", "write", "deactivate", "released"])
+    }
+    // A stale start time must bypass further active reads. A first-loop active
+    // state must bypass sleeping. Exact Spotify matching excludes beta IDs.
+    for elapsed in [1.01, 0.0] {
+        var changed = false, activeReads = 0, sleeps = 0, writes = 0, deactivated = 0
+        let result = performEnhancedUserInterfaceEnablement(changed: &changed,
+            enhancedUserInterface: { false }, bundleIdentifier: "com.spotify.client",
+            applicationIsActive: { activeReads += 1; return activeReads > 1 }, makeEnforcer: { Resource() },
+            enforce: { _ in }, deactivate: { _ in deactivated += 1 }, makeStartDate: { Date(timeIntervalSinceReferenceDate: 0) },
+            currentDate: { Date(timeIntervalSinceReferenceDate: elapsed) }, sleep: { _ in sleeps += 1 },
+            setEnhancedUserInterface: { _ in writes += 1 })
+        checkTrue(result && changed && writes == 1 && deactivated == 1 && sleeps == 0)
+        checkEqual(activeReads, elapsed > 1 ? 1 : 2)
+    }
+    var changed = false
+    checkTrue(performEnhancedUserInterfaceEnablement(changed: &changed, enhancedUserInterface: { false },
+        bundleIdentifier: "com.spotify.client.beta", applicationIsActive: { unexpectedFailure() },
+        makeEnforcer: { () -> Resource in unexpectedFailure() }, enforce: { _ in unexpectedFailure() },
+        deactivate: { _ in unexpectedFailure() }, setEnhancedUserInterface: { checkTrue($0) }))
+    checkFalse(changed)
+}
+
+private enum VoiceOverPreferenceTaskCheckContext {
+    @TaskLocal static var value = 0
+}
+
+private func runVoiceOverPreferenceEnablementChecks() async throws {
+    final class Defaults {}
+    let defaults = Defaults()
+    let bundles: [(String, Bool)] = [("com.microsoft.Excel", false), ("com.apple.Music", false),
+        ("company.thebrowser.Browser", true), ("company.thebrowser.dia", true),
+        ("company.thebrowser.Browser.beta", false), ("com.openai.atlas.beta", true),
+        ("org.example.com.openai.atlas", false)]
+    for (bundle, shouldReset) in bundles {
+        for suiteExists in [false, true] {
+            for alreadyEnabled in [false, true] {
+                var events: [String] = []
+                let acquired = enableVoiceOverOnPreference(bundleIdentifier: bundle,
+                    makeDefaults: { suite -> Defaults? in
+                        checkTrue(suite == "com.apple.universalaccess"); events.append("suite"); return suiteExists ? defaults : nil
+                    }, readBoolean: { value, key in
+                        checkTrue(value === defaults && key == "voiceOverOnOffKey"); events.append("read"); return alreadyEnabled
+                    }, setBoolean: { value, enabled, key in
+                        checkTrue(value === defaults && enabled && key == "voiceOverOnOffKey"); events.append("write-true")
+                    }, postNotification: { name in
+                        checkTrue(name == "com.apple.universalaccess.VoiceOverSettingsDidChange"); events.append("notify")
+                    }, startReset: { checkTrue($0 === defaults); events.append("reset-task") })
+                checkEqual(acquired, suiteExists && !alreadyEnabled)
+                checkTrue(events == (!suiteExists ? ["suite"] : alreadyEnabled ? ["suite", "read"] :
+                    shouldReset ? ["suite", "read", "write-true", "notify", "reset-task"] : ["suite", "read", "write-true", "notify"]))
+            }
+        }
+    }
+    var observedContext = 0, writes = 0
+    let task = VoiceOverPreferenceTaskCheckContext.$value.withValue(41) {
+        startVoiceOverPreferenceResetTask(sleep: { duration in
+            checkEqual(duration, .milliseconds(100))
+            observedContext = VoiceOverPreferenceTaskCheckContext.value
+        }, setFalse: { writes += 1 })
+    }
+    try await task.value
+    checkTrue(observedContext == 41 && writes == 1)
+    let cancelled = startVoiceOverPreferenceResetTask(sleep: { _ in throw CancellationError() },
+        setFalse: { unexpectedFailure() })
+    do { try await cancelled.value; unexpectedFailure() } catch is CancellationError {}
 }

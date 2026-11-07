@@ -234,3 +234,34 @@ window initialization eligibility, application initialization, shared tracker
 creation and complete controller activate/deactivate ownership. Window cache,
 notifications, coordinate-click integration and unlocked live acceptance also
 remain outstanding; the full goal remains active.
+
+
+## Enhanced UI and VoiceOver enable operations restored
+
+The enhanced-UI operation (0x100701230..0x1007019f8) now preserves the
+explicit-false attribute guard. Only exact Spotify marks the changed flag;
+when inactive it temporarily enforces focus, polls activation for at most one
+wall-clock second in 50 ms intervals, writes the attribute, and deactivates
+and releases the enforcer. Other applications attempt the write without that
+Spotify-specific focus or changed-flag behavior. Setter failures are ignored,
+as in the pinned implementation.
+
+VoiceOver preference enabling (0x100701b4c..0x100701e04) uses the universalaccess
+UserDefaults suite, only changes an initially false voiceOverOnOffKey, and
+posts VoiceOverSettingsDidChange. Exact Arc/Dia and the Atlas prefix additionally
+start an unstructured task that sleeps 100 ms on ContinuousClock before writing
+false. The delayed write posts no notification. Sleep failure/cancellation skips
+that write; dropping the task handle does not cancel it. This differs from the
+separate assertion-release helper and must not be replaced with its guards.
+
+Both operations have injected checks for guards, ordering, failure behavior,
+resource retention and timing. Task checks verify inherited task-local context
+and cancellation propagation. Native Swift builds, provider-click self-test and
+pinned binary audit pass. These checks send no input, change no real preference,
+and post no distributed notification. Controller ownership and application
+initialization remain to be connected, so this is not proof of working live clicks.
+
+The user's later authorization cancellation followed earlier no-op operations.
+It is not an explanation for those earlier failures, and a canceled action must
+not be retried as if authorized. The current locked desktop is a separate live
+verification prerequisite, not a retrospective diagnosis of the unlocked run.
