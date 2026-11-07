@@ -51,7 +51,7 @@ for i,(name,target,flag) in enumerate(zip(names,targets,flags)):
  raw=struct.unpack('<Q',read(slot,8))[0]
  actual=0x100000000+(raw&0xffffffff) if raw else None
  assert actual==target
- entries.append(dict(index=i,name=name,descriptor=hex(descriptor),witness=hex(target) if target else None, throwingGetter=name in ['pid','actualPID','windowID']))
+ entries.append(dict(index=i,name=name,descriptor=hex(descriptor),witness=hex(target) if target else None, throwingGetter=name in ['pid','actualPID','windowID','actions']))
 mock=struct.unpack('<6I',read(0x1012cc62c,24))
 assert mock[3:5]==(0,1)
 assert struct.unpack('<II',read(0x1012cc644,8))==(0x11,0)
@@ -70,6 +70,16 @@ for address, expected_word in {
  0x1006f7848: 0xd63f0100, # batch provider lookup
  0x1006f786c: 0xf9401308, # values(for:) slot +0x20
  0x1006f787c: 0xd63f0100,
+ 0x1006f9458: 0xf9403308, # actions slot +0x60
+ 0x1006f9468: 0xd63f0100,
+ 0x1006f98b4: 0xf9403748, # description slot +0x68
+ 0x1006f98cc: 0xd63f0100,
+ 0x1006f73ec: 0xf9401f28, # settable slot +0x38
+ 0x1006f7400: 0xd63f0100,
+ 0x1006f759c: 0xf94022e8, # setter slot +0x40
+ 0x1006f75b0: 0xd63f0100,
+ 0x1006f9af8: 0xf9403ac8, # perform slot +0x70
+ 0x1006f9b0c: 0xd63f0100,
 }.items():
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',
@@ -86,5 +96,5 @@ print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProto
  initializerSHA256=hashlib.sha256(init).hexdigest(),
  dispatch='provider lookup at witness +8 with AX reference; nil result uses system path; nonnil result calls AXUIElementProtocol method',
  valueDispatch=dict(lookupCall='0x1006f6018',nilFallback='0x1006f602c',methodSlot='0x18',methodCall='0x1006f6050'),
- limitation='MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Attribute and identity front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete'),
+ limitation='MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Attribute, identity and operation front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete'),
  ),indent=2))

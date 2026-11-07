@@ -37,6 +37,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementAction.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXUIElementProtocol.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXMockProvider.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProviderOperations.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXProviderIdentity.swift"),
         join(root, "native/macos/Tests/AXMockProviderFixture.swift"),
         join(root, "native/macos/Tests/AXMockProviderTests.swift"),

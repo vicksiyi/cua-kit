@@ -15,6 +15,13 @@ enum AXMockProviderFixture {
         var output: (error: AXError, value: AXPartialValue?) = (.success, nil)
         var requested: [UIElementAttribute] = []
         var shouldThrow = false
+        var operationCalls: [String] = []
+        var writtenValue: AnyObject?
+        var lastAction: UIElementAction?
+        func checkOperation(_ name: String) throws {
+            operationCalls.append(name)
+            if shouldThrow { throw Failure.expected }
+        }
         func value(for attribute: UIElementAttribute) -> (error: AXError, value: AXPartialValue?) {
             requested = [attribute]; return output
         }
@@ -29,14 +36,14 @@ enum AXMockProviderFixture {
         func isEqual(to other: any AXUIElementProtocol) -> Bool { self === other }
         func arrayValue(for attribute: UIElementAttribute, index: Int, maxValues: Int, countIfKnown: Int?) -> (error: AXError, value: AXPartialValue?) { preconditionFailure() }
         func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { preconditionFailure() }
-        func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { preconditionFailure() }
-        func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { preconditionFailure() }
+        func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { try checkOperation("settable"); requested = [attribute]; return false }
+        func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { try checkOperation("write"); writtenValue = value.value; requested = [attribute] }
         var supportedParameterizedAttributes: [UIElementAttribute] { preconditionFailure() }
         func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? { preconditionFailure() }
         func element(at point: CGPoint) throws -> UIElement? { preconditionFailure() }
-        var actions: [UIElementAction] { preconditionFailure() }
-        func description(for action: UIElementAction) throws -> String? { preconditionFailure() }
-        func perform(_ action: UIElementAction) throws { preconditionFailure() }
+        var actions: [UIElementAction] { get throws { try checkOperation("actions"); return [.press, .press] } }
+        func description(for action: UIElementAction) throws -> String? { try checkOperation("description"); lastAction = action; return nil }
+        func perform(_ action: UIElementAction) throws { try checkOperation("perform"); lastAction = action }
         var pid: Int32 { get throws { if shouldThrow { throw Failure.expected }; return -3 } }
         var actualPID: Int32 { get throws { if shouldThrow { throw Failure.expected }; return 42 } }
         var windowID: UInt32 { get throws { if shouldThrow { throw Failure.expected }; return UInt32.max } }

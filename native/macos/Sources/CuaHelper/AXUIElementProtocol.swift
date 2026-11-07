@@ -15,7 +15,7 @@ protocol AXUIElementProtocol: AnyObject, Hashable {
     var supportedParameterizedAttributes: [UIElementAttribute] { get }
     func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue?
     func element(at point: CGPoint) throws -> UIElement?
-    var actions: [UIElementAction] { get }
+    var actions: [UIElementAction] { get throws }
     func description(for action: UIElementAction) throws -> String?
     func perform(_ action: UIElementAction) throws
     var pid: Int32 { get throws }

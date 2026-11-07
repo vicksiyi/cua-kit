@@ -3693,3 +3693,32 @@ Swift package build. No real AX request, SPI load, vendor execution or model cal
 is needed for those fixtures. Remaining integration includes concrete protocol
 conformance, provider-aware operation and read-thread identity routing, full
 subtree construction at production callsites and real application acceptance.
+
+### Provider-aware operations and throwing action discovery
+
+Static inspection maps resolved AXUIElementProtocol slots +0x38/+0x40/+0x60/
++0x68/+0x70 to isAttributeSettable, setValue, actions, description(for:) and
+perform. AXProviderOperations now dispatches all five with the same single
+lookup boundary as attribute reads, and AXProviderOperationsSystem connects the
+system-only implementations as fallback. Native thunk/call instructions are
+pinned in the provider audit.
+
+The initial interface declaration also missed `get throws` on actions. Native
+0x1006f93a0 invokes the mock getter with the error register and tests it at
+0x1006f947c; its system path already throws on action-copy failure. The protocol
+and machine-readable throwingGetter evidence are now corrected. This correction
+is required for actual throwing conformers, not just fixture compilation.
+
+Mock results bypass OS normalization: duplicate actions are not deduplicated,
+false settable and nil descriptions remain final, and every thrown error
+propagates without invoking the system operation. Encoded write object identity,
+attribute and action arguments remain intact. System-specific tolerated status
+codes remain confined to the existing system adapters.
+
+Provider tests now cover all five successful calls, all five throwing calls,
+false/nil/duplicates, encoded-object identity and a missing-reference fallback.
+The actual transaction/provider initializer regression also passes with the
+shared fixture changes. Swift package build and static audit pass. No operation
+is sent to an application; these are controlled closure/mock fixtures. Remaining
+work includes parameterized/subset/hit-test routing, concrete protocol completion,
+provider-aware system thread identity and full production subtree integration.

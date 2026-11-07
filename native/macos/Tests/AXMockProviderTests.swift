@@ -72,6 +72,30 @@ import Foundation
             _ = try copiedAXWindowID { $0 = 99; return .cannotComplete }
             preconditionFailure("must not return output after error")
         } catch UIElementError.axError(let error) { precondition(error == .cannotComplete) }
+        mock.shouldThrow = false
+        let settable = try providerAXAttributeSettable(ax, key, system: { preconditionFailure() })
+        precondition(!settable && mock.requested == [key])
+        try providerAXSetAttribute(ax, AXEncodedValue(value: raw), for: key, system: { preconditionFailure() })
+        precondition(mock.writtenValue === raw && mock.requested == [key])
+        let actions = try providerAXActions(ax, system: { preconditionFailure() })
+        precondition(actions == [.press, .press]) // Deduplication belongs to the OS branch only.
+        let description = try providerAXActionDescription(ax, for: .press, system: { preconditionFailure() })
+        precondition(description == nil && mock.lastAction == .press)
+        try providerAXPerform(ax, .press, system: { preconditionFailure() })
+        precondition(mock.operationCalls == ["settable", "write", "actions", "description", "perform"])
+        mock.shouldThrow = true
+        for operation: () throws -> Void in [
+            { _ = try providerAXAttributeSettable(ax, key, system: { preconditionFailure() }) },
+            { try providerAXSetAttribute(ax, AXEncodedValue(value: raw), for: key, system: { preconditionFailure() }) },
+            { _ = try providerAXActions(ax, system: { preconditionFailure() }) },
+            { _ = try providerAXActionDescription(ax, for: .press, system: { preconditionFailure() }) },
+            { try providerAXPerform(ax, .press, system: { preconditionFailure() }) }
+        ] {
+            do { try operation(); preconditionFailure("expected operation failure") } catch Failure.expected {}
+        }
+        var performedFallback = false
+        try providerAXPerform(other, .press, system: { performedFallback = true })
+        precondition(performedFallback)
         print("Provider dispatch preserves misses, nil results, failures, identity and per-call lookup")
     }
 }

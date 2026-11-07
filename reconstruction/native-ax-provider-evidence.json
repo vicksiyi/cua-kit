@@ -87,7 +87,7 @@
         "name": "actions",
         "descriptor": "0x1012cc5a8",
         "witness": "0x1006faa58",
-        "throwingGetter": false
+        "throwingGetter": true
       },
       {
         "index": 12,
@@ -183,6 +183,6 @@
       "methodSlot": "0x18",
       "methodCall": "0x1006f6050"
     },
-    "limitation": "MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Attribute and identity front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete"
+    "limitation": "MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Attribute, identity and operation front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete"
   }
 }
