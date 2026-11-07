@@ -1,3 +1,4 @@
+import Animation
 import DequeModule
 import Carbon
 import ApplicationServices
@@ -3787,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runCursorMotionAnimationResetChecks()
     runCursorWindowVisibilityChecks()
     runCursorCorrespondingWindowChecks()
     await runSoftwareCursorViewChecks()
@@ -7881,4 +7883,37 @@ private func runCursorWindowVisibilityChecks() {
     check(wants: true, reason1: true, expected: ["wants", "present", "id", "reason0", "reason1", "front"])
     check(wants: true, expected: ["wants", "present", "id", "reason0", "reason1", "level", "set", "above"])
     check(wants: true, level: nil, expected: ["wants", "present", "id", "reason0", "reason1", "level", "above"])
+}
+
+
+private func runCursorMotionAnimationResetChecks() {
+    final class Mock { let state: AnimationState; init(_ state: AnimationState) { self.state = state } }
+    for state in [AnimationState.ready, .retargeted, .running, .ended] {
+        let original = Mock(state), replacement = Mock(.running)
+        var progress: Mock? = original, position: Mock? = original
+        var events: [String] = []
+        resetCursorMotionAnimations(progress: { progress }, progressState: { $0.state },
+            stopProgressImmediately: { precondition($0 === original); events.append("stop-progress") },
+            clearProgress: { progress = nil; events.append("clear-progress") },
+            position: { position }, clearPositionCallback: {
+                precondition($0 === original)
+                events.append("clear-callback")
+                position = replacement
+            }, positionState: { $0.state }, stopPositionImmediately: {
+                precondition($0 === replacement)
+                events.append("stop-position")
+            }, clearPosition: { position = nil; events.append("clear-position") })
+        let expected = (state == .ended ? [] : ["stop-progress"]) +
+            ["clear-progress", "clear-callback", "stop-position", "clear-position"]
+        precondition(events == expected && progress == nil && position == nil)
+    }
+    for positionValue: Mock? in [nil, Mock(.ended)] {
+        var clears = 0
+        resetCursorMotionAnimations(progress: { nil as Mock? }, progressState: { _ in preconditionFailure() },
+            stopProgressImmediately: { _ in preconditionFailure() }, clearProgress: { clears += 1 },
+            position: { positionValue }, clearPositionCallback: { precondition($0 === positionValue) },
+            positionState: { $0.state }, stopPositionImmediately: { _ in preconditionFailure() },
+            clearPosition: { clears += 1 })
+        precondition(clears == 2)
+    }
 }

@@ -3299,3 +3299,29 @@ are dependencies because concrete native window/animation ownership is not yet
 restored. The helper has no production caller yet and does not display a window.
 
 Swift build, provider checks and static audit pass after visibility orchestration recovery.
+
+
+## Native motion-reset animation phase recovery (2026-11-08)
+
+Animation.AnimationState descriptor 0x1012cd8a0 / field records 0x101324424
+has cases ready, retargeted, running, ended in declaration order. Tag 3 checked
+by native cursor reset is ended, not canceled. The Swift enum is now restored
+in a separate native Animation target matching the source module boundary;
+it adds no invented RawRepresentable contract or replacement animation engine.
+
+Reset phase 0x10009b364..0x10009b468 stops a present motion-progress animation
+immediately only if not ended, then clears ownership regardless. A present
+position animation first has its update callback cleared (release, never invoke).
+The controller then rereads its position animation because callback destruction
+can change that slot; if the current animation exists and is not ended it is
+stopped immediately, then ownership is always cleared. The injected Swift phase
+preserves that reread and does not stop a captured old value after replacement.
+
+Checks exercise all progress states, ended/nil position, unconditional slot clears
+and replacement during callback clearing. Reflection case order, ended branch,
+callback clear and slot reread are statically pinned. Full reset additionally
+clears overlay reasons, resets scoot animations, drops interaction/completion
+handlers, clears timing state and zeros velocity; those phases are not yet wired.
+No concrete cursor window/animation resources are created by this component.
+
+Swift build, provider checks and pinned static audit pass for the motion-reset phase.

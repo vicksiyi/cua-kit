@@ -598,6 +598,16 @@ assert read(0x10009b1c8, 16).hex() == '1f050071210200549bffff9760030036'
 assert read(0x10009b294, 16).hex() == '2a014039aafa07372905403969fa0737'
 assert read(0x10009b2fc, 8).hex() == '22008052e30313aa'
 
+# AnimationState reflection order establishes that native tag 3 is ended.
+for index, name in enumerate([b'ready', b'retargeted', b'running', b'ended']):
+    field_name = 0x101324424 + 16 + index * 12 + 8
+    target = field_name + struct.unpack('<i', read(field_name, 4))[0]
+    assert read(target, len(name) + 1) == name + b'\0'
+assert read(0x10009b394, 8).hex() == '1f0d0071e0000054'
+# Clear the position callback before reloading the owned position animation.
+assert read(0x10009b3f0, 8).hex() == 'b65e40a9bf7e00a9'
+assert read(0x10009b414, 8).hex() == '746a79f8340200b4'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101
