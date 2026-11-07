@@ -1,4 +1,50 @@
 {
+  "attributedListFormat": {
+    "calls": [
+      {
+        "instruction": "0x100771f74",
+        "target": "0x100248674",
+        "link": true
+      },
+      {
+        "instruction": "0x10024869c",
+        "target": "0x101150b7c",
+        "link": true
+      },
+      {
+        "instruction": "0x100771f94",
+        "target": "0x101150570",
+        "link": true
+      },
+      {
+        "instruction": "0x100772714",
+        "target": "0x101154ba8",
+        "link": true
+      },
+      {
+        "instruction": "0x100772724",
+        "target": "0x101154ba8",
+        "link": true
+      },
+      {
+        "instruction": "0x100773350",
+        "target": "0x101154ba8",
+        "link": true
+      },
+      {
+        "instruction": "0x100773384",
+        "target": "0x101150a2c",
+        "link": true
+      },
+      {
+        "instruction": "0x100772740",
+        "target": "0x100775540",
+        "link": true
+      }
+    ],
+    "behavior": "require NSNumber level/index and NSAttributedString prefix; exact checklist markers; first Character.isNumber chooses index.stringValue plus period, otherwise star; integerValue identity retained without clamping",
+    "limitation": "list extraction only; formatter state transitions and collector integration pending"
+  },
   "attributedFormatBoundaries": {
     "rawStyleNames": [
       "Title",

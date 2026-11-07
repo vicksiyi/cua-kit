@@ -6090,3 +6090,27 @@ list indentation, all inline boundaries, collapsed/fenced blocks and unknown
 name reporting. Host enum names express recovered semantics, not claimed original
 source identifiers. The complete state-diff, line continuation/restart rules,
 list metadata reader and final rich formatter wiring remain outstanding.
+
+### Native attributed list extraction (2026-11-07)
+
+Restored `AttributedTextListFormat.swift` from the pinned binary's
+`0x100771dd4..0x100771fac`, `0x10077267c..0x100772764`, and
+`0x1007732d0..0x100773390` branches. Requires NSNumber level, NSAttributedString
+prefix, and NSNumber index; an ordinary String prefix is not accepted.
+`0x100248674` returns the first Character (String subscript stub
+`0x101150b7c`, GOT `0x101466538`); `0x101150570` binds Character.isNumber
+(GOT `0x1014660c0`). This is Unicode numeric classification, not ASCII digit
+matching or parsing the whole prefix. No whitespace trimming occurs.
+
+Exact checklist names become `* [ ]` and `* [x]`. Other nonnumeric/empty
+prefixes become `*`. A numeric first Character produces NSNumber.stringValue
+plus `.` from the index attribute, regardless of the supplied prefix's number.
+The list identity separately uses integerValue for both level and index;
+negative values are not clamped. Selector `0x101542e18` is `stringValue`.
+
+Build and owned provider self-test passed, including Unicode numbers, whitespace,
+checklists, invalid attribute types, fractional NSNumber index, and negative
+identity values. Static audit checks pinned branch targets and literal/selector
+bytes. These are isolated formatter-component checks, not live App acceptance.
+The full rich-text state machine and production collector integration remain
+unfinished; this change does not affect the browser site-policy refusal.

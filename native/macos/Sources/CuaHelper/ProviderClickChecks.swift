@@ -2360,6 +2360,32 @@ private enum ProviderClickChecks {
             checkEqual(blocks.opening, "<details><summary>\n```\n**")
         }
 
+        do {
+            func list(_ prefix: String, _ index: NSNumber = 7) -> AttributedTextFormat? {
+                attributedTextListFormat([.accessibilityListItemLevel: NSNumber(value: 2),
+                    .accessibilityListItemPrefix: NSAttributedString(string: prefix),
+                    .accessibilityListItemIndex: index])
+            }
+            checkEqual(list("checklist item, incomplete"), .list(level: 2, index: 7, prefix: "* [ ]"))
+            checkEqual(list("checklist item, completed"), .list(level: 2, index: 7, prefix: "* [x]"))
+            for prefix in ["", "•", "a)", " 1.", "Checklist item, completed"] {
+                checkEqual(list(prefix), .list(level: 2, index: 7, prefix: "*"))
+            }
+            for prefix in ["1.", "９)", "Ⅷ", "½"] {
+                checkEqual(list(prefix), .list(level: 2, index: 7, prefix: "7."))
+            }
+            // Native uses NSNumber.stringValue for the marker, integerValue for identity.
+            checkEqual(list("1.", 2.5), .list(level: 2, index: 2, prefix: "2.5."))
+            checkTrue(attributedTextListFormat([:]) == nil)
+            checkTrue(attributedTextListFormat([.accessibilityListItemLevel: 1,
+                .accessibilityListItemPrefix: "1.", .accessibilityListItemIndex: 1]) == nil)
+            checkTrue(attributedTextListFormat([.accessibilityListItemLevel: 1,
+                .accessibilityListItemPrefix: NSAttributedString(string: "1.")]) == nil)
+            checkEqual(attributedTextListFormat([.accessibilityListItemLevel: -1,
+                .accessibilityListItemPrefix: NSAttributedString(string: "•"),
+                .accessibilityListItemIndex: -2]), .list(level: -1, index: -2, prefix: "*"))
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

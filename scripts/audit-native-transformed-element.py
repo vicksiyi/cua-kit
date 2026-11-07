@@ -688,7 +688,23 @@ format_calls = [branch(site, target) for site, target in [
     (0x1007780e4, 0x101150a38), (0x1007781c8, 0x101150a2c),
 ]]
 
-print(json.dumps(dict(attributedFormatBoundaries=dict(
+# List prefix classification: first Character.isNumber, exact checklist names,
+# NSNumber.stringValue for visible ordered prefix (not integerValue).
+assert cstring(0x101256fd0) == 'checklist item, incomplete'
+assert cstring(0x101256ff0) == 'checklist item, completed'
+selector = struct.unpack('<Q', read(0x101542e18, 8))[0]
+assert cstring((selector & 0xfffffffff) + 0x100000000) == 'stringValue'
+list_calls = [branch(site, target) for site, target in [
+    (0x100771f74, 0x100248674), (0x10024869c, 0x101150b7c),
+    (0x100771f94, 0x101150570), (0x100772714, 0x101154ba8),
+    (0x100772724, 0x101154ba8), (0x100773350, 0x101154ba8),
+    (0x100773384, 0x101150a2c), (0x100772740, 0x100775540),
+]]
+
+print(json.dumps(dict(attributedListFormat=dict(
+    calls=list_calls,
+    behavior="require NSNumber level/index and NSAttributedString prefix; exact checklist markers; first Character.isNumber chooses index.stringValue plus period, otherwise star; integerValue identity retained without clamping",
+    limitation="list extraction only; formatter state transitions and collector integration pending"), attributedFormatBoundaries=dict(
     rawStyleNames=style_names, instructions={hex(k): hex(v) for k, v in format_words.items()}, calls=format_calls,
     behavior="caller-ordered closing marks; block opening prefixes inserted at front; inline opening marks appended; exact comma-space named style split and deduplication",
     limitation="does not compute state differences, line restarts, or collector integration"), attributedAttachment=dict(
