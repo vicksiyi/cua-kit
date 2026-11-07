@@ -3712,6 +3712,8 @@ func runProviderClickChecks() async throws {
     runViewBridgeFocusCompensationChecks()
     runViewBridgeReleaseMetadataChecks()
     runFocusStealNewFrontChecks()
+    runSystemFocusNotificationRoutingChecks()
+    runSystemFocusNotificationMonitorChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5059,4 +5061,90 @@ private func runFocusStealNewFrontChecks() {
     // this callback must not clear the release-result metadata.
     checkTrue(suppressing.filterNewFront(event, readFocusPID: { _ in nil }) == nil)
     checkTrue(suppressing.ownershipSnapshot.lastViewBridgeFocusReleaseSucceeded)
+}
+
+private func runSystemFocusNotificationRoutingChecks() {
+    let event = CGEvent(source: nil)!
+    func exercise(destination: Int32, bridge: Int32?, subtypes: [UInt16],
+                  expectedHandler: String?, fields: [UInt32]) {
+        var reads: [UInt32] = [], invoked: [String] = [], subtypeIndex = 0
+        let result = routeSystemFocusNotification(event, viewBridgePID: bridge,
+            readInteger: { received, field in
+                checkTrue(received === event); reads.append(field.rawValue)
+                switch field.rawValue {
+                case 40: return Int64(destination)
+                case 64:
+                    let value = subtypes[subtypeIndex]; subtypeIndex += 1; return Int64(value)
+                case 73: return 88
+                default: unexpectedFailure()
+                }
+            }, taken: { received, pid, dest in
+                checkTrue(received === event); checkEqual(pid, 88); checkEqual(dest, destination)
+                invoked.append("taken"); return nil
+            }, returned: { received, dest in
+                checkTrue(received === event); checkEqual(dest, destination)
+                invoked.append("returned"); return nil
+            }, changed: { received, pid in
+                checkTrue(received === event); checkEqual(pid, 88); invoked.append("changed")
+            }, newFront: { received in checkTrue(received === event); invoked.append("front"); return nil })
+        checkEqual(reads, fields)
+        checkEqual(invoked, expectedHandler.map { [$0] } ?? [])
+        if expectedHandler == nil || expectedHandler == "changed" { checkTrue(result === event) }
+        else { checkTrue(result == nil) }
+    }
+    // Taken/returned are not restricted to ViewBridge destination.
+    exercise(destination: 77, bridge: nil, subtypes: [0x4000], expectedHandler: "taken", fields: [40,64,73])
+    exercise(destination: 77, bridge: 99, subtypes: [0x8000], expectedHandler: "returned", fields: [40,64])
+    exercise(destination: 77, bridge: 99, subtypes: [0xf102], expectedHandler: nil, fields: [40,64])
+    exercise(destination: 77, bridge: nil, subtypes: [2], expectedHandler: nil, fields: [40,64])
+    exercise(destination: 77, bridge: 77, subtypes: [0xf102,0xf102], expectedHandler: "changed", fields: [40,64,64,73])
+    exercise(destination: 77, bridge: 77, subtypes: [2,2], expectedHandler: "front", fields: [40,64,64])
+    exercise(destination: 77, bridge: 77, subtypes: [0,0xf102], expectedHandler: "changed", fields: [40,64,64,73])
+    exercise(destination: 77, bridge: 77, subtypes: [0,0], expectedHandler: nil, fields: [40,64,64])
+    var constants = SystemFocusNotificationConstants()
+    constants.subtypeField = nil; constants.taken = nil
+    var trace: [UInt32] = []
+    let missing = routeSystemFocusNotification(event, viewBridgePID: nil, constants: constants,
+        readInteger: { _, field in trace.append(field.rawValue); return field.rawValue == 40 ? 77 : 88 },
+        taken: { _, pid, destination in checkEqual(pid, 88); checkEqual(destination, 77); return nil },
+        returned: { _, _ in unexpectedFailure() }, changed: { _, _ in unexpectedFailure() },
+        newFront: { _ in unexpectedFailure() })
+    checkTrue(missing == nil); checkEqual(trace, [40,73])
+    constants.focusPIDField = nil
+    let noFocusField = routeSystemFocusNotification(event, viewBridgePID: nil, constants: constants,
+        readInteger: { _, field in checkEqual(field.rawValue, 40); return 77 },
+        taken: { _, _, _ in unexpectedFailure() }, returned: { _, _ in unexpectedFailure() },
+        changed: { _, _ in unexpectedFailure() }, newFront: { _ in unexpectedFailure() })
+    checkTrue(noFocusField === event)
+}
+
+private func runSystemFocusNotificationMonitorChecks() {
+    final class Owner: SystemFocusNotificationHandling {
+        var calls = 0
+        func filterSystemFocusNotification(_ event: CGEvent, viewBridgePID: Int32?) -> CGEvent? {
+            calls += 1; checkEqual(viewBridgePID, 77); return nil
+        }
+    }
+    var callback: CGEventTapCallBack?, info: UnsafeMutableRawPointer?
+    var trace: [String] = []
+    let driver = EventTap.Driver(create: { location, placement, options, mask, cb, context in
+        guard case .session(.cgAnnotatedSessionEventTap) = location else { unexpectedFailure() }
+        checkEqual(placement.rawValue, 1); checkEqual(options.rawValue, 0)
+        checkEqual(mask, CGEventMask(1) << 21)
+        callback = cb; info = context; trace.append("create")
+        var portContext = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &portContext, nil)
+    }, enable: { _, enabled in trace.append(enabled ? "enable" : "disable") },
+        invalidate: { CFMachPortInvalidate($0); trace.append("invalidate") })
+    var owner: Owner? = Owner()
+    weak var weakOwner = owner
+    var monitor: SystemFocusNotificationMonitor? = SystemFocusNotificationMonitor(viewBridgePID: 77,
+        owner: owner!, driver: driver)
+    let event = CGEvent(source: nil)!
+    checkTrue(callback!(OpaquePointer(bitPattern: 1)!, CGEventType(rawValue: 21)!, event, info) == nil)
+    checkEqual(owner!.calls, 1)
+    owner = nil; checkTrue(weakOwner == nil)
+    checkTrue(callback!(OpaquePointer(bitPattern: 1)!, CGEventType(rawValue: 21)!, event, info)?.takeUnretainedValue() === event)
+    checkTrue(monitor != nil); monitor = nil
+    checkEqual(trace, ["create", "enable", "disable", "invalidate"])
 }

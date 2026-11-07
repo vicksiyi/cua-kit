@@ -1201,3 +1201,28 @@ logical owner, matching clear, suppressed output and preserved release byte.
 Build/provider-click checks and static audit pass without OS event taps/input.
 Outer system-notification dispatch, tap/resource ownership, refresh task policy
 and production click-controller integration remain pending.
+
+
+## System notification routing and monitor resources
+
+Restored outer routing 0x10074c724: checked destination PID, unsigned UInt16
+CPS subtype read, taken first then returned for any destination. Only after
+those comparisons does captured ViewBridge PID gate the second subtype read
+and changed/new-front handlers. Changed always returns original event after
+its handler; other handlers may suppress. Missing optional constants preserve
+Swift optional equality (including nil==nil), and missing focus field skips
+taken/changed handling. New-front field reading remains inside its state handler.
+
+SystemFocusNotificationMonitor uses annotated session location 2, tail/default
+and mask 1<<21. Its owner is weak, captured ViewBridge PID fixed at construction;
+a released owner passes events without further processing. Deinit stops the tap.
+It reuses existing EventTap/RunLoopTask resources.
+
+Routing checks cover destination gates, handler priority, original-event
+retention, second-read changes, absent constants and absent focus field.
+Monitor checks cover actual callback invocation, weak lifetime and cleanup
+using an injected local Mach port. Build/provider-click checks and static audit
+pass; no OS tap was installed and no UI input sent. The complete preventer
+owner still must compose these resources with registration/per-process taps,
+refresh task policy and production input controller. Multica acceptance remains
+unverified.
