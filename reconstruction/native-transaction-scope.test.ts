@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,8 +16,14 @@ test(
     const directory = await mkdtemp(join(tmpdir(), "cua-transaction-scope-"));
     try {
       const executable = join(directory, "axvalue-tests");
+      const nativeRoot = join(root, "native/macos");
+      await exec("swift", ["build", "--package-path", nativeRoot, "--target", "SoftLink"], { maxBuffer: 4 * 1024 * 1024 });
+      const build = join(nativeRoot, ".build/debug");
+      const softLinkObjects = (await readdir(join(build, "SoftLink.build")))
+        .filter(name => name.endsWith(".o"))
+        .map(name => join(build, "SoftLink.build", name));
       await exec("xcrun", [
-        "swiftc",
+        "swiftc", "-I", join(build, "Modules"), ...softLinkObjects,
         join(root, "native/macos/Sources/CuaHelper/UIElementError.swift"),
         "-o",
         executable,
@@ -71,9 +77,22 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AXSizeDecoding.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementGeometry.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXProviderReading.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProviderQuerySystem.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXHitTesting.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXProviderIdentitySystem.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementProviderConstruction.swift"),
         join(root, "native/macos/Tests/AXMockProviderFixture.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AccessibilitySPI.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AccessibilitySPIBindings.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AccessibilitySPISymbolRequest.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProviderIdentitySPI.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXReadThreadDispatch.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXArraySubsetReading.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXArraySubsetSystem.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXArrayCount.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProviderCollections.swift"),
+        join(root, "native/macos/Sources/CuaHelper/NativeLogger.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXReadErrorLogging.swift"),
         join(root, "native/macos/Tests/UIElementTreeTransactionTests.swift"),
       ]);
       const { stdout } = await exec(executable);

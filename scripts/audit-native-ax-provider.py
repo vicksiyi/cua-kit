@@ -94,6 +94,13 @@ for address, expected_word in {
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',
  descriptor='0x1012cc520',classBound=True,requirements=entries),
+ querySystem=dict(
+ parameterizedNames=dict(entry='0x1006f6a60',copy='0x1006f6bd8',statusIgnored=True,
+ bridge='whole optional array to CFString names, else empty'),
+ parameterizedValue=dict(entry='0x1006f6ed4',copy='0x1006f7098',nonSuccessThrows=True,
+ partialValue='raw object with nil array/text descriptors; nil output remains nil'),
+ hitTest=dict(entry='0x1006f7a90',postDispatchResult='0x1006f7d80',taskLocalRead='0x1006f7dd0',
+ construction='after synchronous copy returns, on caller thread with current transaction')),
  loggerFactory=dict(entry='0x100622d48',sharedFactory='0x100623e00',
  category='String(describing: metatype)',categoryImportGOT='0x101466288',
  cache='String-keyed logger dictionary protected by allocated unfair lock',

@@ -139,6 +139,12 @@ import os
         mock.supportedAttributes = [role]
         mock.batchOutput = [role: AXPartialValue(value: AXEncodedValue(value: "AXButton" as NSString),
             arraySubsetDescriptor: nil, textTruncationDescriptor: nil)]
+        precondition(readAXSupportedParameterizedAttributes(ax) == [role])
+        let parameter = NSObject()
+        let queried = try! readAXParameterizedValue(ax, for: role, parameter: AXEncodedValue(value: parameter))
+        precondition(queried == nil && mock.writtenValue === parameter)
+        let hit = try! readAXElementAtPoint(CGPoint(x: 0.123456789, y: -9), in: ax)
+        precondition(hit == nil && mock.point == CGPoint(x: 0.123456789, y: -9))
         let cold = UIElement(element: ax)
         precondition(cold.role == .button && mock.supportReads == 1 && mock.batchReads == 1)
         let owner = transaction(12011)

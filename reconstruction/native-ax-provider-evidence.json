@@ -140,6 +140,26 @@
       }
     ]
   },
+  "querySystem": {
+    "parameterizedNames": {
+      "entry": "0x1006f6a60",
+      "copy": "0x1006f6bd8",
+      "statusIgnored": true,
+      "bridge": "whole optional array to CFString names, else empty"
+    },
+    "parameterizedValue": {
+      "entry": "0x1006f6ed4",
+      "copy": "0x1006f7098",
+      "nonSuccessThrows": true,
+      "partialValue": "raw object with nil array/text descriptors; nil output remains nil"
+    },
+    "hitTest": {
+      "entry": "0x1006f7a90",
+      "postDispatchResult": "0x1006f7d80",
+      "taskLocalRead": "0x1006f7dd0",
+      "construction": "after synchronous copy returns, on caller thread with current transaction"
+    }
+  },
   "loggerFactory": {
     "entry": "0x100622d48",
     "sharedFactory": "0x100623e00",

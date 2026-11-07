@@ -3826,3 +3826,35 @@ for a category under 32 concurrent accesses. Focused test and Swift package buil
 pass. No error record, app operation or model request was emitted by the fixture.
 Other system read/write/hit-test adapters still need to adopt this default
 provider-aware dispatch path before full protocol/production integration.
+
+### Unified provider front doors for reads and system query composition
+
+AXProviderReading no longer sends its system branches through the older public-PID
+helpers: single attribute, supported-name and batch reads now dispatch with the
+restored actualPID query and default error reporting. Existing raw-result decoders
+are reused, retaining single-value status/output independence, ignored name-copy
+status and batch validation. The explicit legacy system-only helpers are still
+available; this change is scoped to the provider-aware front doors used by the
+new concrete UIElement initializer.
+
+AXProviderQuerySystem adds supported-parameterized-name enumeration,
+parameterized values and element-at-point entry points. Source name enumeration
+ignores the copy status at 0x1006f6bd8 before whole-array bridging. Parameterized
+values reject non-success, preserve nil output and wrap nonnil raw values without
+subset/truncation descriptors (0x1006f71d0..<0x1006f723c). A Result carries errors
+across the synchronous dispatch boundary without reclassifying them or retrying.
+
+Hit-test construction order matters: the native system copy rejoins at
+0x1006f7d80, then reads TaskLocal current at 0x1006f7dd0. The new front door
+therefore dispatches only the copy closure and constructs UIElement(element:) on
+the caller thread after it returns. The old explicit system helper's different
+construction placement is not reused as a shortcut.
+
+Transaction integration fixtures now compile against the real SoftLink module
+and system-front-door dependencies, rather than substituting a private SPI shim.
+Their mock hits avoid private-library initialization and OS reads. They exercise
+the actual parameterized/name/hit-test front doors in addition to concrete cache
+initialization. Provider, array/thread and transaction tests passed; after query
+wiring, the expanded transaction fixture and full Swift package build also pass.
+These do not constitute live system-query acceptance. Provider-aware writes/actions,
+equality, full UIElement conformance and production collector integration remain.

@@ -1,17 +1,33 @@
 import ApplicationServices
 
-// Source-compatible mock-first front doors. System-only primitives remain
-// explicit so fallback cannot recurse back into provider selection.
+// Provider front doors use actualPID-aware dispatch for the system branch.
+// Legacy explicitly system-only helpers remain available to existing callers.
 func readAXAttributeValue(_ element: AXUIElement, _ attribute: UIElementAttribute)
     -> (error: AXError, value: AXPartialValue?) {
-    providerAXAttributeValue(element, attribute) { readSystemAXAttributeValue(element, attribute) }
+    providerAXAttributeValue(element, attribute) {
+        partialAXAttributeResult(onAXProviderReadThread(element) {
+            rawAXAttributeResult { AXUIElementCopyAttributeValue(element, attribute.name, &$0) }
+        })
+    }
 }
 
 func readAXSupportedAttributes(_ element: AXUIElement) -> [UIElementAttribute] {
-    providerAXSupportedAttributes(element) { decodedAXSupportedAttributes(readRawAXAttributeNames(element)) }
+    providerAXSupportedAttributes(element) {
+        decodedAXSupportedAttributes(onAXProviderReadThread(element) {
+            rawAXAttributeNamesResult { AXUIElementCopyAttributeNames(element, &$0) }
+        })
+    }
 }
 
 func readAXAttributeValues(_ element: AXUIElement, _ attributes: [UIElementAttribute]) throws
     -> [UIElementAttribute: AXPartialValue] {
-    try providerAXAttributeValues(element, attributes) { try readSystemAXAttributeValues(element, attributes) }
+    try providerAXAttributeValues(element, attributes) {
+        let names = attributes.map(\.name) as CFArray
+        let result = onAXProviderReadThread(element) {
+            rawAXMultipleAttributeResult {
+                AXUIElementCopyMultipleAttributeValues(element, names, AXCopyMultipleAttributeOptions(rawValue: 0), &$0)
+            }
+        }
+        return try checkedAXMultipleAttributeValues(attributes, result: result)
+    }
 }
