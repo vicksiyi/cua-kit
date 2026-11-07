@@ -229,6 +229,18 @@
   ],
   "codeRanges": [
     {
+      "name": "axErrorDebugDescription",
+      "start": "0x100255188",
+      "endExclusive": "0x1002553b4",
+      "sha256": "27c0fb1ab616e0ce00d0bc0e09d648c05418e6c61b7a2a4e191ab8683530cfba"
+    },
+    {
+      "name": "axErrorDescriptionJumpTable",
+      "start": "0x10116b5c0",
+      "endExclusive": "0x10116b5cf",
+      "sha256": "7261c56592c33f992c5039766f775638a2bef9d84f5288d3de5d659934ce3762"
+    },
+    {
       "name": "ipcServerErrorMapping",
       "start": "0x100de6d98",
       "endExclusive": "0x100de75bc",

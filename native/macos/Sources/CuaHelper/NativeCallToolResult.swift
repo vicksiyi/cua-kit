@@ -62,3 +62,15 @@ extension NativeCallToolResult {
             Self(result: CallTool.Result(content: [.text(description)])))
     }
 }
+
+
+extension NativeCallToolResult {
+    /// Native builder composition: unwrap/context selection, IPC interruption
+    /// handling, generic description, and result metadata merge.
+    static func failure(_ error: Error, context: NativeMCPErrorContext? = nil) -> Self {
+        let resolved = NativeMCPErrorResolution.resolve(error, context: context)
+        if let ipc = resolved.error as? NativeIPCClientError,
+           let result = interruption(ipc, context: resolved.context) { return result }
+        return genericFailure(resolved.error, context: resolved.context)
+    }
+}

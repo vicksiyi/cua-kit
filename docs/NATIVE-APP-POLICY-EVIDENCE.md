@@ -1238,3 +1238,30 @@ cover every mapped destination, unmapped gaps/range endpoints, special
 payload parsers and preservation of multiline Unicode messages. The audit
 pins the implementation and table. This does not yet wire native IPC decoding
 into a live host, nor restore all non-interruption error descriptions.
+
+### IPC descriptions and composed failure builder
+
+NativeIPCErrorDescription restores all 26 IPC error description cases from
+the pinned getter and its payload/no-payload dispatch. The existing five
+interruption cases retain their exact presentation. Ordinary failures now
+preserve native prefixes, pass-through messages, fixed policy/session texts,
+and send-plan reason distinctions. An already-consumed send plan uses a fixed
+duplicate-delivery warning instead of the missing/expired reason template.
+Server errors include the original numeric code and message.
+
+The native AXError debug formatter at `0x100255188..<0x1002553b4` returns
+AXError.success for zero, named cases for -25214 through -25200 according to
+its jump table at `0x10116b5c0`, and `(undocumented AXError)` for other raw
+values. NativeAXErrorDescription restores this scoped formatting while still
+using the platform enum, avoiding a retroactive SDK protocol conformance.
+
+NativeCallToolResult.failure now composes one-layer error/context resolution,
+the five IPC interruption cases, generic text-error creation and context
+metadata attachment. This makes the previously separate pieces callable as a
+single pure conversion; it does not itself launch a service or manipulate UI.
+Tests cover normal IPC messages, AX names/unknown values, nested context
+precedence, approval-derived context, nil versus true isError, and encoded
+result round-trip. The description and AX dispatch code are statically pinned.
+The special branch's initialized-nil screenshot is preserved. Actual native
+IPC transport integration and real application/browser acceptance remain
+unverified; this builder is not yet a live host replacement.

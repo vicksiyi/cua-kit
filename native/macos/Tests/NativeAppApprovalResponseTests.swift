@@ -4,6 +4,7 @@ import MCP
 @main struct NativeAppApprovalResponseTests {
     static func main() async throws {
         let tests = Self()
+        try tests.testCompleteFailureBuilderAndIPCDescriptions()
         tests.testNativeServerErrorMapping()
         try tests.testIPCInterruptionSelectionAndWireShape()
         try await tests.testApprovalFailureBecomesNativeWireResult()
@@ -240,6 +241,62 @@ import MCP
             equal(NativeIPCClientError.mappedServerError(errorNumber: -10008, errorString: value),
                   .serverError(errorNumber: -10008, errorString: value))
         }
+    }
+
+    func testCompleteFailureBuilderAndIPCDescriptions() throws {
+        let cases: [(NativeIPCClientError, String)] = [
+            (.serverError(errorNumber: -42, errorString: "原始\n说明"), "Computer Use server error -42: 原始\n说明"),
+            (.invalidApp("fixture"), "Invalid app: fixture"),
+            (.ambiguousApp(message: "ambiguous"), "ambiguous"),
+            (.appNotAllowed(bundleIdentifier: "fixture"), "Computer Use is not allowed to use the app 'fixture' for safety reasons."),
+            (.runningApplicationNotFound(bundleIdentifier: "fixture"), "Running application not found: fixture"),
+            (.accessibilityError(.failure), "Accessibility error: AXError.failure"),
+            (.messagesInvalidRequest("invalid"), "Invalid Messages request: invalid"),
+            (.messagesAmbiguousDestination("ambiguous"), "Ambiguous Messages destination: ambiguous"),
+            (.messagesSendPlanUnavailable(.missing), "Messages send plan is unavailable (missing)."),
+            (.messagesSendPlanUnavailable(.expired), "Messages send plan is unavailable (expired)."),
+            (.messagesSendPlanUnavailable(.alreadyConsumed), "Messages send plan was already consumed. Delivery may already have occurred."),
+            (.messagesSendRateLimited(message: "retry later"), "retry later"),
+            (.calendarInvalidRequest("invalid"), "Invalid Calendar request: invalid"),
+            (.permissionsNotGranted, "Computer Use permissions are not granted"),
+            (.messagesPermissionsPending, "Messages permission setup is still open."),
+            (.messagesPermissionsDenied, "Required Messages permissions were not granted."),
+            (.messagesQueryTimedOut, "The Messages database query exceeded its time limit."),
+            (.messagesSendOutcomeUncertain, "Messages could not verify whether the send completed. Sending again could duplicate the message."),
+            (.calendarPermissionsPending, "Calendar permissions are pending"),
+            (.calendarPermissionsDenied, "Calendar permissions are not granted")
+        ]
+        for (error, expected) in cases {
+            equal(String(describing: error), expected)
+            let result = NativeCallToolResult.failure(error)
+            equal(result.result.content, [.text(expected)])
+            equal(result.result.isError, true)
+            precondition(result.toolResult == nil && result.result._meta == nil)
+        }
+        let axNames = ["notEnoughPrecision", "parameterizedAttributeUnsupported", "noValue", "apiDisabled",
+                       "notificationNotRegistered", "notificationAlreadyRegistered", "notImplemented",
+                       "notificationUnsupported", "actionUnsupported", "attributeUnsupported", "cannotComplete",
+                       "invalidUIElementObserver", "invalidUIElement", "illegalArgument", "failure"]
+        for (offset, name) in axNames.enumerated() {
+            equal(NativeAXErrorDescription.describe(.init(rawValue: Int32(-25214 + offset))!), "AXError.\(name)")
+        }
+        equal(NativeAXErrorDescription.describe(.success), "AXError.success")
+        for raw: Int32 in [1, -25215, -25199, Int32.min, Int32.max] {
+            equal(NativeAXErrorDescription.describe(.init(rawValue: raw)!), "(undocumented AXError)")
+        }
+        let wrapperContext = NativeMCPErrorContext(targetID: "wrapped", didTriggerServerUserFlow: true)
+        let explicit = NativeMCPErrorContext(targetID: "explicit", didTriggerServerUserFlow: false)
+        let error = NativeErrorWithCodexSpanTelemetry(underlyingError: NativeIPCClientError.permissionsPending,
+                                                     codexSpanTelemetry: wrapperContext)
+        let result = NativeCallToolResult.failure(error, context: explicit)
+        precondition(result.result.isError == nil)
+        equal(result.result._meta?["codex/telemetry"], explicit.value)
+        equal(result.result.content, [.text(NativeIPCClientError.permissionsPending.description)])
+        let denied = NativeCallToolResult.failure(NativeMCPToolError.appApprovalDenied(bundleIdentifier: "fixture"))
+        equal(denied.result.isError, true)
+        equal(denied.result._meta?["codex/telemetry"], NativeMCPErrorContext(targetID: "fixture", didTriggerServerUserFlow: true).value)
+        let encoded = try JSONEncoder().encode(result)
+        equal(try JSONDecoder().decode(NativeCallToolResult.self, from: encoded), result)
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }

@@ -1,8 +1,7 @@
 import ApplicationServices
 
 /// Field order and associated values recovered from Error descriptor 0x1012e4c10.
-/// Only interruption presentation is restored here. Other native descriptions
-/// still require their own reconstruction. Numeric mapping is in the companion file.
+/// Description and numeric mapping are implemented in companion Swift files.
 enum NativeIPCClientError: Error, Equatable {
     enum SendPlanUnavailableReason: String { case missing, expired, alreadyConsumed = "already_consumed" }
     case serverError(errorNumber: Int32, errorString: String)
