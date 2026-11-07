@@ -2337,3 +2337,25 @@ are verified from imported bindings at 0x101469058 and 0x101464a00. stopMonitori
 source, then releases its RunLoopTask; deinit invokes stopMonitoring first.
 Do not replace this lifecycle with polling or claim that the callback-context
 checks exercise native event delivery.
+
+
+## Concrete AX observer composition
+
+AXNotificationObserver now composes native AXObserverCreateWithInfoCallback,
+the previously checked registration/removal accounting, a lazy retained-observer /
+weak-owner context, and RunLoopTask. Callback events preserve the observer passed
+by the native callback alongside element, notification and bridged info.
+Native AX creation errors propagate as UIElementError.axError; successful creation
+without an observer throws a separate initialization error rather than unwrapping.
+
+startMonitoring is idempotent while its task exists. It obtains the native source,
+retains callback context on the thread, uses the source thread name and requested
+QoS, executes the main-queue startup barrier and installs in default mode.
+stopMonitoring snapshots the thread RunLoop through its existing lock, removes
+an available source, clears the source, then releases the task. It does not
+unregister individual notifications or invalidate the AX source as an invented
+cleanup step. RunLoopTask exposes its existing locked RunLoop for this operation.
+
+This concrete object still needs controller ownership and real AX event-delivery
+acceptance. Compilation and existing injected checks alone do not prove that
+production application operations receive window/menu notifications.

@@ -17,6 +17,8 @@ final class RunLoopTask {
         thread.start()
     }
 
+    var currentRunLoop: CFRunLoop? { thread.currentRunLoop }
+
     deinit { thread.cancel() }
 
     final class RunLoopThread: Thread {
@@ -24,6 +26,12 @@ final class RunLoopTask {
         var contextObject: AnyObject?
         private let runLoopLock = NSLock()
         private var runLoop: CFRunLoop?
+
+        var currentRunLoop: CFRunLoop? {
+            runLoopLock.lock()
+            defer { runLoopLock.unlock() }
+            return runLoop
+        }
 
         override func cancel() {
             super.cancel()
