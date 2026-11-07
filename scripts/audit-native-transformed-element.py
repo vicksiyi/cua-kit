@@ -94,9 +94,23 @@ role_flow_words = {
     0x1007698d0: 0xf9401108,  # ldr x8, [x8, #0x20]
     0x1007698ec: 0xa90027e8,  # stp x8, x9, [sp]
 }
+role_flow_words.update({
+    0x100769114: 0xf9401106,  # generic traversal: node.role -> x6
+    0x100769148: 0xd63f0100,  # invoke supplied recursive specialization
+    0x10076a0ec: 0xf9401108,  # specialized traversal: node.role -> x8
+    0x10076a104: 0xa90027e8,  # role -> stack arg 9 of 0x100769250
+    0x10076a9a8: 0xf9401108,  # expanded traversal: node.role -> x8
+    0x10076a9b0: 0xf8100128,  # save role in recursion scratch slot
+    0x10076aa28: 0xf8500106,  # scratch slot -> x6
+    0x10076a33c: 0xf8100106,  # preserve incoming x6
+    0x100768b00: 0xf8100106,  # generic traversal preserves incoming x6
+    0x100768f8c: 0xaa1a03e4,  # generic traversal forwards saved role to constructor
+    0x10076a7cc: 0xaa1503e4,  # expanded traversal forwards saved role to constructor
+})
 for address, word in role_flow_words.items():
     assert struct.unpack('<I', read(address, 4))[0] == word, hex(address)
-role_flow_branches = [branch(0x1007696f8, 0x10075e160), branch(0x100769914, 0x100769250)]
+role_flow_branches = [branch(0x1007696f8, 0x10075e160), branch(0x100769914, 0x100769250),
+    branch(0x10076a12c, 0x100769250), branch(0x10076aa38, 0x10076a310)]
 value_type_labels = []
 for i in range(6):
     first = read(0x1011955f8 + i * 8, 8)
@@ -120,8 +134,8 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     constructorDirectCallSites=[hex(x) for x in constructor_call_sites],
     traversalRoleFlow=dict(instructions={hex(k): hex(v) for k, v in role_flow_words.items()},
         branches=role_flow_branches,
-        finding="0x100769250 passes current transformed role to recursive child constructor",
-        limitation="Other traversal variants and skipped-node behavior still require tracing"),
+        finding="Four inspected traversal variants propagate current transformed role to accepted children",
+        limitation="Full traversal filtering, subset handling and transform pipeline remain unimplemented"),
     renderingContext=dict(descriptor=hex(rendering_descriptor), flags=rendering_flags,
         requirements=["Role: AccessibilityRole", "Role", "urlShortener.get",
             "urlShortener.set", "urlShortener.modify", "type.get"],

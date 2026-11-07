@@ -1,12 +1,12 @@
-// Predicate 0x100762be4..<0x100762ebc. additionalRole is the optional
-// constructor x4 argument; its traversal-level provenance remains explicit.
+// Predicate 0x100762be4..<0x100762ebc. The constructor x4 argument is
+// the current transformed parent role propagated by tree traversal.
 // Do not replace it with an AXParent read: standalone constructors pass nil.
 func transformedUIElementChromiumAllowsValue(role: UIElementRole, subrole: String?,
-    additionalRole: UIElementRole?
+    traversalParentRole: UIElementRole?
 ) -> Bool {
-    if role == UIElementRole("AXIncrementor"), let additionalRole,
+    if role == UIElementRole("AXIncrementor"), let traversalParentRole,
         [UIElementRole("AXDateField"), UIElementRole("AXDateTimeArea"),
-         UIElementRole("AXTimeField")].contains(additionalRole) {
+         UIElementRole("AXTimeField")].contains(traversalParentRole) {
         return false
     }
     // Set initializer 0x100761544: exactly four roles.
@@ -17,12 +17,12 @@ func transformedUIElementChromiumAllowsValue(role: UIElementRole, subrole: Strin
 
 extension UIElement {
     func transformedValueSettable(contextType: UIElementContextType, isChromium: Bool,
-        additionalRole: UIElementRole?
+        traversalParentRole: UIElementRole?
     ) -> Bool {
         transformedValueSettable(contextType: contextType, isChromium: isChromium,
             chromiumAllowsValue: {
                 transformedUIElementChromiumAllowsValue(role: role, subrole: subrole,
-                    additionalRole: additionalRole)
+                    traversalParentRole: traversalParentRole)
             })
     }
 }

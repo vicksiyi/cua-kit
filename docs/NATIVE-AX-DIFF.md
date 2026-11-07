@@ -4875,3 +4875,28 @@ also records direct-call scan scope; it does not claim absence of indirect calls
 Validation: pinned binary hash, direct-call inventory, instruction-word assertions
 and recursive branch targets pass; generated evidence JSON updated. No native
 runtime behavior or live UI completion is claimed by this static audit.
+
+
+### Parent-role flow across remaining traversal variants (2026-11-07)
+
+The remaining inspected traversal variants also propagate the current transformed
+node's role to accepted children. Generic traversal 0x100768ad8 loads node+0x20
+into x6 at 0x100769114 and invokes its supplied recursive specialization at
+0x100769148. Variant 0x100769a74 loads that field at 0x10076a0ec, places it in
+stack argument 9 and calls 0x100769250 at 0x10076a12c. Expanded traversal
+0x10076a310 loads it at 0x10076a9a8, saves it at 0x10076a9b0, restores it to x6
+at 0x10076aa28 and recurses at 0x10076aa38. Incoming x6 is preserved and forwarded
+to common-constructor x4 in both relevant variants. The static audit now asserts
+these load/store/move instructions and direct recursive targets.
+
+Renamed the local predicate/composition parameter to traversalParentRole now that
+its origin is established across these four variants. It is still supplied by
+the caller: direct standalone constructors supply nil, and there is no AXParent
+lookup. The child-filter false branches inspected in 0x100769250 and
+0x100769a74 return to their child iteration, before recursive invocation; no
+promotion through a rejected child is established in those branches. Other tree
+transforms can still reshape structure and remain separate reconstruction work.
+
+Validation: pinned static audit, Swift helper build and provider selftest pass.
+This closes the identified parameter-origin uncertainty but does not implement
+the full traversal/filter/subset algorithm, transformed owner or collector.
