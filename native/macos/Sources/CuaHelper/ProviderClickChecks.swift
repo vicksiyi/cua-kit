@@ -3675,6 +3675,7 @@ func runProviderClickChecks() async throws {
     runSafeActivationCallbackChecks()
     runTargetActivationObservationChecks()
     runSafeActivationRestorationDecisionChecks()
+    try await runSafeActivationScopeChecks()
     runRunLoopTaskChecks()
     runEventTapLifecycleChecks()
 }
@@ -3940,4 +3941,49 @@ private func runSafeActivationRestorationDecisionChecks() {
     checkEqual(safeActivationRestorationDecision(savedApplicationIsFrontmost: true,
         requiresPairedNotifications: false, requiresQuietPeriod: false,
         observation: observation, elapsed: 3, now: { unexpectedFailure() }), .complete)
+}
+
+private func runSafeActivationScopeChecks() async throws {
+    enum TestFailure: Error, Equatable { case enforce, restore }
+    for enforceFails in [false, true] {
+        for restoreFails in [false, true] {
+            var trace: [String] = []
+            let operations = SafeActivationScopeOperations(
+                startForegroundMonitoring: { trace.append("startForeground") },
+                startTargetMonitoring: { trace.append("startTarget") },
+                installTargetObserver: { trace.append("installObserver") },
+                disableUpdates: { trace.append("disableUpdates") },
+                reenableUpdates: { trace.append("reenableUpdates") },
+                clearTargetObserver: { trace.append("clearObserver") },
+                stopTargetMonitoring: { trace.append("stopTarget") },
+                stopForegroundMonitoring: { trace.append("stopForeground") })
+            var caught: TestFailure?
+            do {
+                try await withSafeActivationRestoration(operations: operations,
+                    enforce: {
+                        trace.append("enforce")
+                        if enforceFails { throw TestFailure.enforce }
+                    }, restore: { originalError in
+                        trace.append("restore")
+                        checkEqual(originalError as? TestFailure, enforceFails ? .enforce : nil)
+                        await Task.yield()
+                        if restoreFails { throw TestFailure.restore }
+                    })
+            } catch { caught = error as? TestFailure; checkTrue(caught != nil) }
+            checkEqual(caught, enforceFails ? .enforce : restoreFails ? .restore : nil)
+            checkEqual(trace, ["startForeground", "startTarget", "installObserver", "disableUpdates",
+                "enforce", "restore", "reenableUpdates", "clearObserver", "stopTarget", "stopForeground"])
+        }
+    }
+    var cleaned: [String] = []
+    let operations = SafeActivationScopeOperations(startForegroundMonitoring: {},
+        startTargetMonitoring: {}, installTargetObserver: {}, disableUpdates: {},
+        reenableUpdates: { cleaned.append("updates") }, clearTargetObserver: { cleaned.append("observer") },
+        stopTargetMonitoring: { cleaned.append("target") }, stopForegroundMonitoring: { cleaned.append("foreground") })
+    do {
+        try await withSafeActivationRestoration(operations: operations, enforce: {},
+            restore: { _ in throw CancellationError() })
+        unexpectedFailure()
+    } catch is CancellationError {} catch { unexpectedFailure() }
+    checkEqual(cleaned, ["updates", "observer", "target", "foreground"])
 }

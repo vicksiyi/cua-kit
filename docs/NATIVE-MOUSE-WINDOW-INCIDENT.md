@@ -358,3 +358,26 @@ The extracted gate receives the prior branch's paired/quiet requirements rather
 than guessing their derivation. Full async loop and error-type mapping are not
 yet connected. Tests cover missing acknowledgments, quiet-period boundary,
 frontmost mismatch, lazy clock reads and completion before timeout.
+
+
+## Safe-activation scope and failure precedence
+
+Restored withSafeActivationRestoration with explicit injected scope operations.
+Order: start foreground tap -> start target tap -> install enforcer observer ->
+disable updates -> enforce -> restore. All exits after disabling run cleanup:
+reenable updates -> clear observer -> stop target tap -> stop foreground tap.
+Source ignores update API return codes, so these dependencies are nonthrowing.
+
+The native enforcement error is saved at async frame+0x238; restoration still
+runs. At 0x100742bf0 and 0x100741fc0, an existing enforcement error takes
+precedence over a restoration timeout/cancellation; success of restoration also
+rethrows a saved enforcement error. Local implementation preserves this rule
+instead of returning early after enforcement failure. The restore closure owns
+post-enforcement observation timestamp setup and the still-pending async loop.
+
+Build/provider checks pass for all four enforcement/restoration success/failure
+combinations, with an actual suspension between setup and cleanup; an explicit
+CancellationError path verifies cleanup and cancellation propagation. Static
+pins cover start/disable/enforce/reenable/stop call sites. This is scope
+orchestration, not an implemented WindowServer SPI adapter or full restoration
+loop. Production app clicks remain outside it until those dependencies are wired.

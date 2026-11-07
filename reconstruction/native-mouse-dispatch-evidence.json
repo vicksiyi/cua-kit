@@ -148,6 +148,34 @@
     {
       "site": "0x1007455e0",
       "target": "0x100257e24"
+    },
+    {
+      "site": "0x100741df4",
+      "target": "0x100732798"
+    },
+    {
+      "site": "0x100741eb0",
+      "target": "0x100732798"
+    },
+    {
+      "site": "0x100741f20",
+      "target": "0x10026cb84"
+    },
+    {
+      "site": "0x100741f28",
+      "target": "0x100740f70"
+    },
+    {
+      "site": "0x100742c34",
+      "target": "0x10026cba0"
+    },
+    {
+      "site": "0x100742c80",
+      "target": "0x1007453f8"
+    },
+    {
+      "site": "0x100742c90",
+      "target": "0x1007453f8"
     }
   ],
   "defaultClickMilliseconds": 50,
