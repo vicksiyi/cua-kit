@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    await runApplicationPrimaryWindowChecks()
     runAXEnablementApplicationGuardChecks()
     runUIElementDescendantChecks()
     try runSynchronousPollingChecks()
@@ -6735,4 +6736,29 @@ private func runAXEnablementApplicationGuardChecks() {
         checkEqual(trace, Array(["pid", "app", "bundle", "operation"].prefix(missing + 1)))
         checkEqual(result, missing == 3 ? "ok" : nil)
     }
+}
+
+
+@MainActor
+private func runApplicationPrimaryWindowChecks() {
+    checkEqual(applicationPrimaryWindow(focusedWindow: { 1 }, mainWindow: { unexpectedFailure() }, windows: { unexpectedFailure() }), 1)
+    checkEqual(applicationPrimaryWindow(focusedWindow: { nil }, mainWindow: { 2 }, windows: { unexpectedFailure() }), 2)
+    checkEqual(applicationPrimaryWindow(focusedWindow: { nil }, mainWindow: { nil }, windows: { [3, 4] }), 4)
+    let missing: Int? = applicationPrimaryWindow(focusedWindow: { nil }, mainWindow: { nil }, windows: { [] })
+    checkTrue(missing == nil)
+    let target = Target(.current)
+    var acquisitions = 0; var releases = 0
+    func make() -> AXEnablementAssertion? {
+        acquisitions += 1
+        return AXEnablementAssertion(kinds: [.enableElectronAccessibility]) { _ in releases += 1 }
+    }
+    target.activateAccessibility(make: make); target.activateAccessibility(make: make)
+    checkEqual(acquisitions, 1); checkEqual(releases, 0)
+    target.deactivateAccessibility(); checkEqual(releases, 1); checkTrue(target.accessibilityAssertion == nil)
+    target.deactivateAccessibility(); checkEqual(releases, 1)
+    target.activateAccessibility(make: make); checkEqual(acquisitions, 2)
+    target.deactivateAccessibility(); checkEqual(releases, 2)
+    target.activateAccessibility(make: { acquisitions += 1; return nil })
+    target.activateAccessibility(make: { acquisitions += 1; return nil })
+    checkEqual(acquisitions, 4)
 }

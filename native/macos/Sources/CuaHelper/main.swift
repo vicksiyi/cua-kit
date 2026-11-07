@@ -33,6 +33,31 @@ final class Target {
     var snapshot: String?
     var capturedWindow: CapturedWindow?
     private(set) var focusEnforcer: SyntheticAppFocusEnforcer?
+    private(set) var accessibilityAssertion: AXEnablementAssertion?
+    // Controller activate 0x10007243c: acquire only when no assertion exists.
+    // Keep the assertion across observations/actions, never around each click.
+    func activateAccessibility(make: (() -> AXEnablementAssertion?)? = nil) {
+        guard accessibilityAssertion == nil else { return }
+        if let make { accessibilityAssertion = make(); return }
+        let application = UIElement(element: root)
+        let report: (Error) -> Void = {
+            Logger(subsystem: "core.cua", category: "AXEnablement").error("AX enablement: \(String(describing: $0))")
+        }
+        accessibilityAssertion = application.enableAccessibilityIfNeeded(
+            window: application.primaryWindowValue(reportError: report), for: .fullUIContext,
+            tracker: NativeAXEnablementTracker.shared, reportError: report,
+            reportInitialized: { app in
+                Logger(subsystem: "core.cua", category: "AXEnablement").debug("Initialized pid=\(app.processIdentifier)")
+            }, reportRelease: { kind in
+                Logger(subsystem: "core.cua", category: "AXEnablement").debug("Release kind=\(String(describing: kind))")
+            })
+    }
+    // Controller deactivate 0x100072b6c: disable before clearing ownership.
+    func deactivateAccessibility() {
+        accessibilityAssertion?.disable()
+        accessibilityAssertion = nil
+    }
+
     // App-controller activateFocusEnforcer at 0x100071fb8: lazy per-target
     // construction and reuse. Creation alone does not enforce or send input.
     func activateFocusEnforcer(make: (Int32) -> SyntheticAppFocusEnforcer = SyntheticAppFocusEnforcer.system) -> SyntheticAppFocusEnforcer {
@@ -154,11 +179,14 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
     case "listApps": return ["apps": NSWorkspace.shared.runningApplications.filter { $0.activationPolicy != .prohibited }.map(info)]
     case "bind":
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
-        let id = UUID().uuidString; targets[id] = Target(app)
+        let id = UUID().uuidString
+        let target = Target(app)
+        target.activateAccessibility()
+        targets[id] = target
         return ["targetId": id, "app": info(app)]
     case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput", "mouseInput", "scrollInput", "dragInput", "pasteWithClipboard", "pasteFormatted":
         guard let id = params["targetId"] as? String, let target = targets[id] else { throw fail("TARGET_NOT_FOUND", "Unknown target handle.") }
-        if method == "release" { targets.removeValue(forKey: id); return [:] }
+        if method == "release" { target.deactivateAccessibility(); targets.removeValue(forKey: id); return [:] }
         if method == "validatePaste" { _ = try target.pasteEditor(params); return [:] }
         if method == "pasteWithClipboard" || method == "pasteFormatted" {
             defer { target.invalidateInputState() }

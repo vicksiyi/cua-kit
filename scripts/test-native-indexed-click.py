@@ -155,14 +155,37 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
         target_id = request('bind', {'pid': target_process.fixture_pid})['targetId']
         def observe():
             return request('observe', {'targetId': target_id})
+        def stable_observation():
+            # LaunchServices/AppKit adds toolbar AX groups asynchronously after
+            # activation. Wait for observed state convergence before first input,
+            # without retrying a dispatched action or relaxing backend checks.
+            end = time.monotonic() + 3
+            previous = None
+            identical = 0
+            while time.monotonic() < end:
+                state = observe()
+                current = json.dumps(state['elements'], sort_keys=True)
+                identical = identical + 1 if current == previous and not state['warnings'] else 0
+                if identical >= 2:
+                    return state
+                previous = current
+                time.sleep(.1)
+            raise RuntimeError('Owned fixture AX state did not settle before input')
         def click_case(name):
             assert target_process.fixture_pid in owned_pids and target_process.poll() is None
             marker = 'owned-' + name + '-' + uuid.uuid4().hex[:6]
-            state = observe()
+            state = stable_observation()
             field = next(item for item in state['elements'] if item['role'] == 'AXTextField')
-            request('action', {'targetId': target_id, 'snapshotId': state['snapshotId'],
-                'elementId': field['id'], 'operation': 'setValue', 'value': marker})
-            state = observe()
+            try:
+                request('action', {'targetId': target_id, 'snapshotId': state['snapshotId'],
+                    'elementId': field['id'], 'operation': 'setValue', 'value': marker})
+            except Exception:
+                # Owned-fixture state only; preserve evidence without retrying
+                # a rejected action or weakening snapshot validation.
+                report['rejectedActionObservation'] = state
+                report['afterRejectedActionObservation'] = observe()
+                raise
+            state = stable_observation()
             button = next(item for item in state['elements'] if item['name'] == 'Save fixture')
             result = request('mouseInput', {'targetId': target_id, 'snapshotId': state['snapshotId'],
                 'elementId': button['id'], 'alwaysSimulateClick': True,

@@ -345,3 +345,57 @@ The owning controller still must provide the shared NSRunningApplication-keyed
 tracker and retain the returned assertion across its active lifetime. This
 operation is not yet called by the production controller. It therefore does
 not establish successful live clicking or complete activate/deactivate parity.
+
+
+## Production Target assertion ownership connected
+
+Target now acquires accessibility enablement on the real helper bind path,
+retains its assertion across observations/actions, and explicitly disables it
+before clearing ownership on release. Acquisition with an already-owned assertion
+is skipped; a nil acquisition remains eligible for a later activation attempt.
+The shared tracker is lazy and MainActor-owned, keyed by NSRunningApplication
+and kind. Per-Target tracker creation would violate shared reference accounting.
+Target destruction also retains the assertion's existing deinit cleanup behavior.
+
+Native primaryWindow selection (0x1007161c4..0x1007162a4) is focused window,
+then main window, then the LAST entry of AXWindows. The concrete implementation
+reuses cached/provider-aware element and collection readers. It does not select
+from screenshot geometry or substitute the first AXWindows entry.
+
+Static controller inspection confirms activation acquires before starting
+WindowOrderingObserver; deactivation invokes assertion.disable, clears its slot,
+and later stops the observer. Target now preserves assertion ownership/order,
+but complete WindowOrderingObserver and other controller teardown behavior are
+still outstanding. Binding is not a claim that those components are restored.
+
+Injected lifecycle checks exercise one acquisition across repeated activation,
+explicit single release, reactivation and retry after nil acquisition; primary
+window tests check short-circuit order, final-entry fallback and absence. These
+checks do not enable accessibility on real applications. Live acceptance remains
+separate and must verify resulting UI changes, rather than dispatch completion.
+
+
+## Unlocked owned-application acceptance after integration
+
+The desktop preflight now reports frontmostIsLoginWindow false. The real
+private-NDJSON bind/observe/action/mouseInput/release path was exercised against
+an exact owned fixture executable launched through LaunchServices.
+Initial input was correctly rejected because AppKit asynchronously added one
+AXGroup after activation (86 observed nodes versus 87 current, zero truncation
+warnings). No click was dispatched on that rejection. The local-only report
+captures before/after owned fixture observations; they are not published.
+
+The fixture gate now waits for two consecutive unchanged AX observation
+comparisons before its inputs, bounded to three seconds. It does not weaken
+production snapshot validation or retry rejected/dispatched actions. Production
+stale-tree errors now include observed/current node and warning counts without
+exposing field contents.
+
+With stable observations, both foreground and background indexed simulated
+click cases PASS: two mouse events were dispatched to the owned target and the
+expected Saved marker was observed in the resulting AX tree in each case. This
+is evidence for the real native indexed-click path and newly connected assertion
+ownership. It is not arbitrary-app/Multica acceptance, coordinate-only acceptance,
+WindowOrderingObserver parity, nor MCP/DeepSeek end-to-end acceptance. Full goal
+completion remains unproven. Native build, provider-click self-tests and pinned
+static audit also pass.
