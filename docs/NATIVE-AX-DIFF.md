@@ -4699,3 +4699,25 @@ the extracted policy with injected dependencies; they do not prove live AX
 visibility retrieval or transformed-node construction. Those provider bindings,
 non-string formatting and the full transformed owner remain incomplete; the
 production collector has not switched to this pipeline.
+
+
+### Visible character range provider composition (2026-11-07)
+
+Restored `0x1007603dc..<0x1007607d8` as UIElement.visibleCharacterRangeValue.
+AXVisibleCharacterRange first consults the partial-value cache and decodes leniently.
+A missing or invalid cached value falls through to the existing known-unsupported
+check and provider read. Fresh decoding is strict; read/decode errors are reported
+once and become nil. CFRange location -1 maps to NSNotFound; length is preserved,
+including zero. Length filtering belongs to truncation, not this accessor.
+
+Added the CFRange decoder specialization reached through `0x1007111c8` and
+`0x100712178`, reusing the restored CF-type dispatch and AXValue unpacker. It does
+not reinterpret AXValue bytes or implement an alternative range representation.
+The accessor includes a concrete axElement.value composition overload, preserving
+the existing provider/mock boundary.
+
+Validation: Swift helper build and provider selftest pass for a cached range with
+no read, invalid cache followed by valid fresh data, strict fresh type mismatch,
+known-unsupported suppression, provider failure, and the -1/NSNotFound conversion.
+These are component tests; no real application was driven. Full transformed
+owner construction and production collector integration are still outstanding.

@@ -51,6 +51,39 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        let visibleKey = UIElementAttribute.visibleCharacterRange
+        let visibleAX = AXUIElementCreateApplication(12504)
+        let encodedVisible = try AXEncodedValue(wrapping: CFRange(location: 7, length: 12))
+        let visiblePartial = AXPartialValue(value: encodedVisible, arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        func visibleElement(_ attributes: [UIElementAttribute: AXPartialValue], supported: Bool = true) -> UIElement {
+            UIElement(axElement: visibleAX, cache: UIElementCache(
+                supportedAttributes: supported ? [visibleKey] : [], attributes: attributes,
+                transactionAttributes: [visibleKey]))
+        }
+        var visibleReads = 0
+        var visibleErrors = 0
+        let cachedVisible = visibleElement([visibleKey: visiblePartial]).visibleCharacterRangeValue(
+            read: { visibleReads += 1; return (.failure, nil) }, reportError: { _ in visibleErrors += 1 })
+        checkEqual(cachedVisible, NSRange(location: 7, length: 12)); checkEqual(visibleReads, 0)
+        let invalidVisible = AXPartialValue(value: AXEncodedValue(value: "bad" as NSString), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        let freshVisible = visibleElement([visibleKey: invalidVisible]).visibleCharacterRangeValue(
+            read: { visibleReads += 1; return (.success, visiblePartial) }, reportError: { _ in visibleErrors += 1 })
+        checkEqual(freshVisible, NSRange(location: 7, length: 12)); checkEqual(visibleReads, 1)
+        checkEqual(visibleErrors, 0)
+        let rejectedVisible = visibleElement([:]).visibleCharacterRangeValue(
+            read: { (.success, invalidVisible) }, reportError: { _ in visibleErrors += 1 })
+        checkTrue(rejectedVisible == nil); checkEqual(visibleErrors, 1)
+        let notFoundPartial = AXPartialValue(value: try AXEncodedValue(wrapping: CFRange(location: -1, length: 0)),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        checkEqual(visibleElement([visibleKey: notFoundPartial]).visibleCharacterRangeValue(
+            read: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }),
+            NSRange(location: NSNotFound, length: 0))
+        checkTrue(visibleElement([:]).visibleCharacterRangeValue(read: { (.failure, nil) },
+            reportError: { _ in visibleErrors += 1 }) == nil)
+        checkEqual(visibleErrors, 2)
+        let absentVisible = visibleElement([:], supported: false).visibleCharacterRangeValue(
+            read: { visibleReads += 1; return (.success, visiblePartial) }, reportError: { _ in visibleErrors += 1 })
+        checkTrue(absentVisible == nil); checkEqual(visibleReads, 1)
         func truncate(_ text: String, count: Int, available: Range<Int>? = nil,
             role: UIElementRole = .textArea, visible: NSRange? = nil,
             reread: String? = nil
