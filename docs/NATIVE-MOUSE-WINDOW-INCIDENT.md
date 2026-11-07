@@ -1939,3 +1939,29 @@ rather than relying on the nearby literal and a call instruction alone. Native
 build, provider-click self-test and expanded static audit pass. This correction
 also informs AX enablement's iWork-prefix and exact Spotify/Excel/Arc/Dia/Music
 comparisons; it is not evidence for Multica's earlier click failure.
+
+
+## Coordinate simulation connected to native target routing
+
+Coordinate mouseInput previously used the captured screenshot's window as its
+destination and only probed app activity. It now retains screenshot identity,
+geometry and pixel validation, then resolves the live AX window/hit element,
+foreign PID and native event window through the same restored resolver used by
+indexed simulated clicks. Focus preparation is shared, including the enforcer,
+original accessibility window, event flags and resolved destination PID. Capture
+metadata is no longer treated as a substitute event target.
+
+The coordinate caller snapshots currently available AX windows into an ID map
+before reading WindowServer ordering with restored onScreenMouseWindowIDs and
+orderedMouseWindows. AX array order is not a stacking-order fallback. Full
+notification-driven controller registry ownership remains outstanding; this
+per-call snapshot does not claim parity for registry history/AX notifications.
+
+Owned live acceptance now includes screenshot pixel coordinate clicks in
+addition to indexed clicks. Both foreground cases and both cases after a second
+owned application becomes active pass: each produces the expected distinct
+Saved marker in the target's observed AX tree. The real helper NDJSON path is
+used. Screenshot PNGs and runtime report data are not published. Native build
+and provider-click component checks pass. This verifies owned-fixture input;
+it does not establish Multica, MCP/DeepSeek, drag/cursor or complete sendClick
+lifecycle acceptance.

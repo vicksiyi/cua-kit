@@ -137,7 +137,7 @@ extension Target {
             try validateSnapshot(params)
             try checkDeadline()
             let application = UIElement(element: root)
-            let target: MouseEventTarget<UIElement, UIElement>?
+            let target: MouseEventTarget<UIElement, UIElement>
             if let element {
                 guard let raw = attribute(element.axElement, kAXWindowAttribute),
                       let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) else {
@@ -145,25 +145,32 @@ extension Target {
                 }
                 target = try application.mouseEventTarget(at: point, accessibilityWindow: UIElement(element: ax),
                     hitElement: element, reportError: report)
-            } else { target = nil }
-            let window = try target?.mouseWindow ?? mouseWindow(params)
-            let destinationPID = target?.pid ?? app.processIdentifier
-            let prepared: Bool
-            if let target {
-                let enforcer = activateFocusEnforcer()
-                prepared = try await application.prepareSyntheticClickFocus(element: target.element,
-                    insideWebView: initiallyInsideWebView, clickingByCoordinate: true,
-                    hasHeldKey: false,
-                    window: SyntheticActivationWindow(element: target.accessibilityWindow, reportError: report), enforcer: enforcer,
-                    applicationIsActive: {
-                        let pid = try self.root.pid
-                        return NSRunningApplication(processIdentifier: pid)?.isActive ?? false
-                    }, reportError: report, send: sendFocusEvent)
             } else {
-                // Coordinate target hit-testing/context restoration is separate.
-                let pid = try root.pid
-                prepared = NSRunningApplication(processIdentifier: pid)?.isActive ?? false
+                // Coordinate input uses the same native hit-test/PID/window
+                // resolver as indexed input. Capture geometry validates the
+                // supplied pixels; it is not itself a mouse event destination.
+                let available = application.elementCollectionValue(for: UIElementAttribute("AXWindows"), reportError: report)
+                // Snapshot the current AX window map before the native order
+                // read. Full notification-driven registry ownership remains
+                // separate; never use AX array order as a stacking fallback.
+                var known: [UInt32: UIElement] = [:]
+                for window in available {
+                    if let id = try? window.axElement.windowID { known[id] = window }
+                }
+                let windows = orderedMouseWindows(windows: { known }, orderedWindowIDs: { onScreenMouseWindowIDs() })
+                target = try application.mouseEventTarget(at: point, windows: windows, reportError: report)
             }
+            let window = target.mouseWindow
+            let destinationPID = target.pid
+            let enforcer = activateFocusEnforcer()
+            let prepared = try await application.prepareSyntheticClickFocus(element: target.element,
+                insideWebView: initiallyInsideWebView, clickingByCoordinate: true,
+                hasHeldKey: false,
+                window: SyntheticActivationWindow(element: target.accessibilityWindow, reportError: report), enforcer: enforcer,
+                applicationIsActive: {
+                    let pid = try self.root.pid
+                    return NSRunningApplication(processIdentifier: pid)?.isActive ?? false
+                }, reportError: report, send: sendFocusEvent)
             let eventFlags = applicationClickEventFlags(flags, applicationBelievesItHasFocus: prepared)
             let events = try mouseClickEvents(point: point, button: button, count: count, flags: eventFlags, window: window)
             try validateSnapshot(params, allowingFocusChange: focusPreparationSentEvents)

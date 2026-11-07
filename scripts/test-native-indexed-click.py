@@ -171,7 +171,7 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
                 previous = current
                 time.sleep(.1)
             raise RuntimeError('Owned fixture AX state did not settle before input')
-        def click_case(name):
+        def click_case(name, coordinate=False):
             assert target_process.fixture_pid in owned_pids and target_process.poll() is None
             marker = 'owned-' + name + '-' + uuid.uuid4().hex[:6]
             state = stable_observation()
@@ -187,9 +187,20 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
                 raise
             state = stable_observation()
             button = next(item for item in state['elements'] if item['name'] == 'Save fixture')
-            result = request('mouseInput', {'targetId': target_id, 'snapshotId': state['snapshotId'],
-                'elementId': button['id'], 'alwaysSimulateClick': True,
-                'deadlineUnixMilliseconds': time.time() * 1000 + 8000})
+            input_params = {'targetId': target_id, 'snapshotId': state['snapshotId'],
+                'alwaysSimulateClick': True, 'deadlineUnixMilliseconds': time.time() * 1000 + 8000}
+            if coordinate:
+                state = request('observeWithScreenshot', {'targetId': target_id})
+                button = next(item for item in state['elements'] if item['name'] == 'Save fixture')
+                frame = button['frame']
+                image = state['screenshot']
+                rect = image['contentRect']
+                input_params.update(snapshotId=state['snapshotId'],
+                    x=(frame['x'] + frame['width'] / 2 - rect['x']) * image['pixelWidth'] / rect['width'],
+                    y=(frame['y'] + frame['height'] / 2 - rect['y']) * image['pixelHeight'] / rect['height'])
+            else:
+                input_params['elementId'] = button['id']
+            result = request('mouseInput', input_params)
             observed = False
             end = time.monotonic() + 3
             while time.monotonic() < end:
@@ -203,12 +214,16 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
                 raise AssertionError(name + ': dispatch returned but saved text did not change')
         report['stage'] = 'foreground-click'
         click_case('foreground')
+        report['stage'] = 'foreground-coordinate-click'
+        click_case('foreground-coordinate', coordinate=True)
         report['stage'] = 'second-fixture-startup'
         foreground, foreground_events = spawn('CuaFixture')
         foreground_events.event(lambda event: event.get('active') is True)
         target_events.event(lambda event: event.get('active') is False)
         report['stage'] = 'background-click'
         click_case('background')
+        report['stage'] = 'background-coordinate-click'
+        click_case('background-coordinate', coordinate=True)
         request('release', {'targetId': target_id})
         report['passed'] = True
         report['stage'] = 'complete'
