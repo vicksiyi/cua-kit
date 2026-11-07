@@ -30,6 +30,18 @@ final class MouseWindowRegistry<Window> {
         }
         return snapshot
     }
+    // Menu-close 0x10006e228..0x10006e884 filters a snapshot by AX
+    // element identity, then removes matching stored keys individually. Each
+    // removal publishes current IDs; it does not reread AX window IDs/prune.
+    func removeWindows(matching matches: (Window) -> Bool) {
+        let snapshot = storage
+        let matchingKeys = snapshot.filter { matches($0.value) }.map { $0.key }
+        for key in matchingKeys {
+            storage.removeValue(forKey: key)
+            observedWindowIDsChanged(Array(storage.keys))
+        }
+    }
+
     func orderedWindows(orderedWindowIDs: () -> [UInt32]) -> [Window] {
         orderedMouseWindows(windows: windows, orderedWindowIDs: orderedWindowIDs)
     }

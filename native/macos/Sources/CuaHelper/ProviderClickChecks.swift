@@ -3750,6 +3750,7 @@ func runProviderClickChecks() async throws {
     runAXNotificationCallbackContextChecks()
     runAXNotificationInfoBridgeChecks()
     runAppControllerMenuOpenChecks()
+    runMouseWindowRegistryRemovalChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7326,4 +7327,28 @@ private func runAppControllerMenuOpenChecks() {
             throw Failed.timeout
         }, registerMenu: { _ in events.append("register") }, menuDidOpen: { events.append("open") })
     precondition(events == ["store", "register", "open"])
+}
+
+private func runMouseWindowRegistryRemovalChecks() {
+    final class Window {
+        let identity: Int
+        var id: UInt32
+        init(_ identity: Int, _ id: UInt32) { self.identity = identity; self.id = id }
+    }
+    var updates: [Set<UInt32>] = []
+    var idReads = 0
+    let registry = MouseWindowRegistry<Window>(windowID: { idReads += 1; return $0.id },
+        observedWindowIDsChanged: { updates.append(Set($0)) })
+    let first = Window(7, 10), second = Window(7, 20), other = Window(8, 30)
+    registry.register(first); registry.register(second); registry.register(other)
+    updates = []; idReads = 0
+    first.id = 99
+    var comparisons = 0
+    registry.removeWindows { comparisons += 1; return $0.identity == 7 }
+    precondition(comparisons == 3 && idReads == 0)
+    precondition(updates.count == 2 && updates[0].count == 2 && updates[1] == [30])
+    updates = []
+    registry.removeWindows { _ in false }
+    precondition(updates.isEmpty && idReads == 0)
+    precondition(Set(registry.windows().keys) == [30])
 }

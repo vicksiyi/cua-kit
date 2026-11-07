@@ -2414,3 +2414,18 @@ polling helper and injectable boundaries. Checks cover exact order, timing,
 zero-ID acceptance and continuation after a timeout. The concrete controller
 still needs its menu state, notification callback and window registry connected;
 this helper alone does not start native listeners or send input.
+
+
+## Menu-close window removal
+
+The callback filters a snapshot of the shared window map by each value's raw
+AX element equality with the closing menu element (0x1000862e0). It collects
+matching stored keys and removes them individually, publishing current observed
+window IDs after each removal. It does not reread AX window IDs, remove every
+menu indiscriminately or batch the observer update into one final publication.
+MouseWindowRegistry.removeWindows(matching:) restores that mutation boundary.
+Checks verify multiple matching records, preserved nonmatching records, stored
+key use after an AX ID changes, zero AX-ID reads during removal, per-removal
+updates and no update when no identity matches. Menu close also first cancels
+the ordering menu task and clears two separately locked controller state slots;
+those state owners still need reconstruction before full callback integration.
