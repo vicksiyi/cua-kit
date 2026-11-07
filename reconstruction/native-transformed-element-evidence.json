@@ -1,4 +1,50 @@
 {
+  "macActionFilter": {
+    "entry": "0x1007597d0",
+    "predicate": "0x1007946b0",
+    "instructions": {
+      "0x1007597d8": "0x39400308",
+      "0x1007597dc": "0x350058e8",
+      "0x1007597e8": "0x39400718",
+      "0x100759350": "0x3607fc80",
+      "0x1007947a4": "0x37000498",
+      "0x100794830": "0x36000734",
+      "0x100794834": "0x52800014",
+      "0x100794968": "0x52000294",
+      "0x100794a34": "0x52800001",
+      "0x100794a50": "0x1a9f07f4",
+      "0x100794c84": "0xf9405c28",
+      "0x100794c94": "0x52000014",
+      "0x100794cb4": "0x52800034"
+    },
+    "calls": [
+      {
+        "instruction": "0x10075986c",
+        "target": "0x100759294",
+        "link": true
+      },
+      {
+        "instruction": "0x10075bb58",
+        "target": "0x1007946b0",
+        "link": true
+      },
+      {
+        "instruction": "0x100794a40",
+        "target": "0x1007a7600",
+        "link": true
+      }
+    ],
+    "context": "fullUIContext only; capture transformed node and isCatalyst",
+    "rules": [
+      "drop showAlternateUI and showDefaultUI",
+      "drop cancel for Catalyst, menuBar or menuItem",
+      "drop pick for menuItem; drop confirm for textField",
+      "retain horizontal/vertical page scroll only with typed corresponding scrollBar element",
+      "drop increment/decrement when isValueSettable; retain other actions"
+    ],
+    "result": "stable filter preserves descriptions and duplicates; full context returns transformed even without changes",
+    "limitation": "extracted typed-reader seam; Mac dispatcher and production collector integration pending"
+  },
   "binarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
   "descriptor": "0x1012ccde4",
   "storedFields": [

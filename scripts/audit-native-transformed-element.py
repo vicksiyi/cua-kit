@@ -473,7 +473,35 @@ for address, instruction in [
 ]:
     assert struct.unpack('<I', read(address, 4))[0] == instruction
 
-print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
+# Mac-only filterActions; pin context gating, predicate polarity and typed read.
+mac_action_filter_words = {
+    0x1007597d8: 0x39400308, 0x1007597dc: 0x350058e8,
+    0x1007597e8: 0x39400718, 0x100759350: 0x3607fc80,
+    0x1007947a4: 0x37000498, 0x100794830: 0x36000734,
+    0x100794834: 0x52800014, 0x100794968: 0x52000294,
+    0x100794a34: 0x52800001, 0x100794a50: 0x1a9f07f4,
+    0x100794c84: 0xf9405c28, 0x100794c94: 0x52000014,
+    0x100794cb4: 0x52800034,
+}
+for address, word in mac_action_filter_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+mac_action_filter_calls = [branch(site, target) for site, target in [
+    (0x10075986c, 0x100759294), (0x10075bb58, 0x1007946b0),
+    (0x100794a40, 0x1007a7600),
+]]
+
+print(json.dumps(dict(macActionFilter=dict(
+    entry="0x1007597d0", predicate="0x1007946b0",
+    instructions={hex(k): hex(v) for k, v in mac_action_filter_words.items()},
+    calls=mac_action_filter_calls,
+    context="fullUIContext only; capture transformed node and isCatalyst",
+    rules=["drop showAlternateUI and showDefaultUI",
+           "drop cancel for Catalyst, menuBar or menuItem",
+           "drop pick for menuItem; drop confirm for textField",
+           "retain horizontal/vertical page scroll only with typed corresponding scrollBar element",
+           "drop increment/decrement when isValueSettable; retain other actions"],
+    result="stable filter preserves descriptions and duplicates; full context returns transformed even without changes",
+    limitation="extracted typed-reader seam; Mac dispatcher and production collector integration pending"), binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
     titleAssociationInvestigation=dict(status="extracted complete tag-0 body; production collector integration pending",
         calls=title_calls,

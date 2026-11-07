@@ -5650,3 +5650,36 @@ merged output, retained identity and captured focus. It does not execute the
 vendor service or a live app. Common rule extraction is now 9/9; production
 native collection/rendering, Mac-specific rules and end-to-end acceptance
 are not thereby complete.
+
+### Mac filterActions predicate and tree branch
+
+Recovered `0x1007597d0` / callback `0x10075bb48` / predicate
+`0x1007946b0..<0x100794cec` into `MacUIElementActionFilter.swift`.
+The wrapper filters only fullUIContext, captures the original transformed node
+and context.isCatalyst, replaces actionDescriptions with a stable filter, and
+returns transformed even for an empty or unchanged array. Other contexts return
+unchanged. The array helper at `0x100759294` discards false predicate results;
+it does not invert the predicate or deduplicate actions.
+
+The ordered predicate removes showAlternateUI and showDefaultUI. Cancel is
+removed for Catalyst without reading role, then for menuBar, then menuItem
+(the latter requires a second role getter call). Pick is removed for menuItem;
+confirm for textField. Horizontal and vertical page scrolling are retained only
+when the matching scroll-bar attribute decodes as UIElement via the typed
+value reader with ignoringTypeMismatch false. Increment/decrement are retained
+only when AccessibilityNode witness slot 23 (isValueSettable) is false. Unknown
+actions pass without reading unrelated attributes. Descriptions and duplicate
+actions survive unchanged.
+
+The predicate exposes lazy getter/typed-reader seams and the extracted tree
+branch uses the captured role/settable fields. It does not fabricate a complete
+TransformedUIElement:UIElementProtocol conformance or wire this partial Mac
+pipeline into the production collector. The remaining Mac calendar/rich-text
+rules, native shared-rule overrides, and production traversal integration are
+still outstanding; this is not a live desktop acceptance result.
+
+Validation: pinned native binary audit passed; Swift build and owned helper
+provider-click self-test passed. Added fixtures cover all predicate branches,
+ordered/lazy getters, both scroll axes, duplicate descriptions, preserved child
+items/identity, context bypass, and the empty-action transformed result. No
+vendor service or external application was launched for these checks.

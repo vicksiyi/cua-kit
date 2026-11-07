@@ -1515,6 +1515,91 @@ private enum ProviderClickChecks {
         checkTrue(CFEqual(pipelineResult.items[0].children[0].element.id, associationA))
         checkTrue(CFEqual(pipelineResult.focusedElement!.id, associationMissing))
 
+        // Native action filtering: exact conditional removals and lazy reads.
+        var filterRole = UIElementRole.button
+        var filterSettable = false
+        var roleReads = 0
+        var settableReads = 0
+        var scrollReads: [String] = []
+        var hasScrollElement = false
+        func keepAction(_ action: UIElementAction, catalyst: Bool = false) -> Bool {
+            macUIElementKeepsAction(action, isCatalyst: catalyst,
+                role: { roleReads += 1; return filterRole },
+                isValueSettable: { settableReads += 1; return filterSettable },
+                readElement: { attribute in
+                    scrollReads.append(attribute.name as String)
+                    return hasScrollElement ? capturedOwner.element : nil
+                })
+        }
+        checkFalse(keepAction(.showAlternateUI))
+        checkFalse(keepAction(.showDefaultUI))
+        checkFalse(keepAction(.cancel, catalyst: true))
+        checkEqual(roleReads, 0)
+        checkEqual(settableReads, 0)
+        checkTrue(scrollReads.isEmpty)
+        filterRole = UIElementRole("AXMenuBar")
+        checkFalse(keepAction(.cancel))
+        checkEqual(roleReads, 1)
+        filterRole = .menuItem
+        checkFalse(keepAction(.cancel))
+        checkEqual(roleReads, 3) // two ordered role getter calls
+        checkFalse(keepAction(.pick))
+        filterRole = .button
+        checkTrue(keepAction(.cancel))
+        checkTrue(keepAction(.pick))
+        filterRole = .textField
+        checkFalse(keepAction(.confirm))
+        filterRole = .textArea
+        checkTrue(keepAction(.confirm))
+        for action in [UIElementAction.increment, .decrement] {
+            filterSettable = false
+            checkTrue(keepAction(action))
+            filterSettable = true
+            checkFalse(keepAction(action))
+        }
+        for action in [UIElementAction.scrollLeftByPage, .scrollRightByPage, .scrollUpByPage, .scrollDownByPage] {
+            hasScrollElement = false
+            checkFalse(keepAction(action))
+            hasScrollElement = true
+            checkTrue(keepAction(action))
+        }
+        checkEqual(scrollReads, Array(repeating: "AXHorizontalScrollBar", count: 4) +
+            Array(repeating: "AXVerticalScrollBar", count: 4))
+        let priorReads = (roleReads, settableReads, scrollReads.count)
+        checkTrue(keepAction(.press))
+        checkTrue(keepAction(UIElementAction("AXCustomAction")))
+        checkEqual(roleReads, priorReads.0)
+        checkEqual(settableReads, priorReads.1)
+        checkEqual(scrollReads.count, priorReads.2)
+        var filterNode = anonymousGroup
+        filterNode.actionDescriptions = [
+            UIElementActionDescription(.press, description: "First"),
+            UIElementActionDescription(.showDefaultUI, description: "Hidden"),
+            UIElementActionDescription(.press, description: "Duplicate"),
+        ]
+        let filterItem = associationItem(filterNode, children: [targetA])
+        for type in [UIElementContextType.eventStreamContext, .informationalContext] {
+            switch MacUIElementTreeTransformation.filterActions(item: filterItem, context: ownerContext(type),
+                readElement: { _ in unexpectedFailure("non-full context must not read attributes") }) {
+            case .unchanged: break
+            default: unexpectedFailure("non-full context should bypass action filtering")
+            }
+        }
+        switch MacUIElementTreeTransformation.filterActions(item: filterItem, context: ownerContext(.fullUIContext),
+            readElement: { _ in unexpectedFailure("these actions must not read attributes") }) {
+        case let .transformed(result):
+            checkEqual(result.element.actionDescriptions.map(\.description), ["First", "Duplicate"])
+            checkTrue(CFEqual(result.element.id, filterItem.element.id))
+            checkEqual(result.children.count, 1)
+        default: unexpectedFailure("full context must return transformed")
+        }
+        filterNode.actionDescriptions = []
+        switch MacUIElementTreeTransformation.filterActions(item: associationItem(filterNode),
+            context: ownerContext(.fullUIContext), readElement: { _ in nil }) {
+        case let .transformed(result): checkTrue(result.element.actionDescriptions.isEmpty)
+        default: unexpectedFailure("empty actions still produce transformed")
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
