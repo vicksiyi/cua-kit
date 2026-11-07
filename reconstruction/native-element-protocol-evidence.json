@@ -210,6 +210,12 @@
       }
     ]
   },
+  "transformedDisclosure": {
+    "entry": "0x1007465fc",
+    "caller": "0x10073492c",
+    "flags": "metadata +0x68 isDisclosable and +0x64 isDisclosing",
+    "behavior": "unsupported no-op; write inverse captured disclosing; preserve captured fields"
+  },
   "transformedSetValue": {
     "witness": "0x1007afad4",
     "encodeCall": "0x1007afb00 -> 0x1006ea3e4",

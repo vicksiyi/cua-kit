@@ -819,6 +819,31 @@ private enum ProviderClickChecks {
             checkEqual(mutableOwner.value, "rendered value")
             ownerProvider.writeValue = nil
         }
+        do {
+            var node = capturedOwner
+            var writes: [Bool] = []
+            ownerProvider.writeValue = { encoded, attribute in
+                checkEqual(attribute, UIElementAttribute("AXDisclosing"))
+                writes.append((encoded.value as! NSNumber).boolValue)
+            }
+            node.isDisclosable = false; node.isDisclosing = true
+            try node.toggleDisclosure()
+            checkTrue(writes.isEmpty)
+            node.isDisclosable = true; node.isDisclosing = false
+            try node.toggleDisclosure()
+            try node.toggleDisclosure()
+            checkEqual(writes, [true, true]) // immutable captured state, no optimistic toggle
+            checkFalse(node.isDisclosing)
+            node.isDisclosing = true
+            try node.toggleDisclosure()
+            checkEqual(writes, [true, true, false])
+            checkEqual(ownerProvider.singleReads, readsBeforeMutation)
+            ownerProvider.writeValue = { _, _ in throw UIElementError.axError(.cannotComplete) }
+            do { try node.toggleDisclosure(); unexpectedFailure() }
+            catch UIElementError.axError(let code) { checkEqual(code, .cannotComplete) }
+            checkTrue(node.isDisclosing)
+            ownerProvider.writeValue = nil
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

@@ -6734,3 +6734,20 @@ retry or field mutation. Build, provider checks and static call audit passed.
 The native perform(action:) witness is a specialized full dispatcher, not a
 simple raw perform forwarding call; it remains to be connected with the captured
 state semantics. No live application write occurred during these tests.
+
+
+### Captured disclosure action (2026-11-07)
+
+The specialized transformed perform dispatcher routes both expand and collapse
+through 0x10073492c to 0x1007465fc. This helper reads captured isDisclosable
+(metadata offset entry +0x68), returns immediately if false, and otherwise
+writes the inverse of captured isDisclosing (+0x64) to AXDisclosing. It uses
+the encoded provider setter and does not mutate the snapshot or query fresh AX
+capabilities. TransformedUIElement.toggleDisclosure now composes that behavior
+with the recovered write path.
+
+Provider tests cover unsupported no-op, false/true state, repeated calls using
+the same snapshot, zero AX reads, and write-error propagation without state
+mutation. Build, tests and static caller/encoder/setter audit passed. The method
+is a dispatcher component: full menu preparation and scroll dispatch wiring
+remain pending. These checks did not operate a live application.
