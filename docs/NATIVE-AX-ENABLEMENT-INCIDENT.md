@@ -114,3 +114,68 @@ so neither result proves or disproves click delivery. All spawned processes were
 terminated by their owned subprocess handles. Local reports/stderr remain under
 gitignored artifacts/debug; no runtime report is part of the published changes.
 Do not mark the live gate green or remove its activation check to conceal this.
+
+## Assertion lifetime and release composition restored
+
+AXEnablementAssertion now owns the acquired kind list and retained release
+operation. Explicit disable marks the assertion disabled before cleanup;
+reentrant disable and later deinit do not run it again. Implicit deinit also
+cleans up once. The captured operation/resources remain retained after explicit
+disable until the assertion itself is destroyed, matching the native fields.
+
+releaseAXEnablementKinds restores 0x10070083c: traverse in acquisition order,
+including duplicates; decrement shared accounting; only final release reports
+and performs native cleanup. Electron/manual and enhanced-UI cleanup attempt
+false writes through the existing encoder/provider setter, discard failures and
+continue to later kinds. The concrete UIElement factory captures the original
+app/root/shared tracker and creates this release lifetime, without acquiring or
+enabling anything on its own.
+
+VoiceOverPreferenceRelease restores the native third-kind release boundary
+0x100705020..0x100705214. A running com.apple.VoiceOver app skips all preference
+work. Otherwise create UserDefaults(suiteName: "com.apple.universalaccess"); a
+missing suite returns without notification. Set false for voiceOverOnOffKey,
+then construct NSDistributedNotificationCenter via init and post
+com.apple.universalaccess.VoiceOverSettingsDidChange with nil object. Selectors
+were checked at 0x101542c28/ac8, 0x1015430d0 and 0x1015420d8/b90; class binds
+confirm NSUserDefaults and NSDistributedNotificationCenter. This is not a
+request to stop VoiceOver or terminate its app. No system preference or
+notification was changed during validation; tests supply isolated callbacks.
+
+Injected checks cover multiple owners, duplicate/order handling, setter errors
+followed by later releases, missing cleanup, explicit/reentrant/deinit release,
+operation retention through cleanup and after explicit disable, plus running-
+VoiceOver and missing-suite short circuits. Native build, provider-click self-
+test and expanded pinned static audit pass.
+
+Controller owner timing is now also located: activate() at 0x10007243c checks
+its existing assertion; if absent, reads primaryWindow (0x100072474), calls
+enableAccessibilityIfNeeded with fullUIContext tag 0 (0x10007249c), stores the
+optional assertion, then starts WindowOrderingObserver (0x1000724d8). Do not
+replace this with unconditional toggles around individual click/read calls.
+Full acquisition policy, enhanced/VoiceOver enable operations, initialized-app
+tracking and controller activation/deactivation integration remain outstanding.
+
+## Locked desktop explains the current live-gate startup failure
+
+A later read-only desktop query confirmed CGSSessionScreenIsLocked=true,
+onConsole=true and loginDone=true, with com.apple.loginwindow as the frontmost
+app. The fixture's native activation probe independently reported a regular
+activation policy, inactive NSApplication/NSRunningApplication state and a false
+return from NSRunningApplication.activate(options: []). The same results occurred
+when LaunchServices launched the temporary fixture bundle. These observations
+explain why the current foreground precondition cannot pass while locked; they
+are not evidence for the cause of the user's earlier unlocked click incident.
+
+The gate now calls CuaFixture --desktop-session-check before launching windows
+or the helper, records only session-state booleans and fails with DESKTOP_LOCKED.
+The verified locked run terminated at desktop-preflight with zero input cases.
+It remains a failed/not-executed live acceptance, never a skipped green check.
+The launcher uses NSWorkspace/LaunchServices and retains its owned child object
+for graceful termination (force termination after a bounded grace period), with
+only exact fixture executable copies accepted. A process inventory found zero
+remaining owned temporary fixture processes after the previous attempts.
+
+Unlocking is required for live frontend/backend acceptance. Code reconstruction
+can proceed while locked; the goal is not complete or globally blocked by this
+single verification prerequisite. Local reports remain gitignored.

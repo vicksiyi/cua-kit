@@ -3741,6 +3741,8 @@ func runProviderClickChecks() async throws {
     runMouseWindowRegistryChecks()
     runAXEnablementAssertionTrackerChecks()
     runElectronAccessibilityEnablementChecks()
+    runAXEnablementAssertionReleaseChecks()
+    runVoiceOverPreferenceReleaseChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -6257,6 +6259,80 @@ private func runElectronAccessibilityEnablementChecks() {
                     checkTrue(changed == originalChanged && writes.isEmpty)
                 }
             }
+        }
+    }
+}
+
+private func runAXEnablementAssertionReleaseChecks() {
+    enum Failure: Error { case write }
+    let tracker = AXEnablementAssertionTracker<String>(reportFirstAcquisition: { _, _ in }, reportMissingRelease: { _ in })
+    let electron = AXEnablementKind.enableElectronAccessibility
+    let enhanced = AXEnablementKind.enableEnhancedUserInterface
+    let voice = AXEnablementKind.enableVoiceOverOnPreference
+    for kind in [electron, enhanced, voice, electron] { _ = tracker.acquire(for: "owned", kind: kind) }
+    var events: [String] = []
+    func release(_ kinds: [AXEnablementKind]) {
+        releaseAXEnablementKinds(kinds, application: "owned", tracker: tracker,
+            reportRelease: { events.append("release:\($0)") }, setManualAccessibility: {
+                checkFalse($0); events.append("manual"); throw Failure.write
+            }, setEnhancedUserInterface: {
+                checkFalse($0); events.append("enhanced"); throw Failure.write
+            }, releaseVoiceOverPreference: { events.append("voice") })
+    }
+    // First electron owner remains, so this traversal must not disable it.
+    // Setter failures do not stop later releases, including a duplicate kind.
+    release([electron, enhanced, voice, electron])
+    checkTrue(events == ["release:enableEnhancedUserInterface", "enhanced",
+        "release:enableVoiceOverOnPreference", "voice", "release:enableElectronAccessibility", "manual"])
+    events = []; release([electron, enhanced, voice])
+    checkTrue(events.isEmpty)
+
+    var cleanups = 0
+    weak var weakAssertion: AXEnablementAssertion?
+    var assertion: AXEnablementAssertion? = AXEnablementAssertion(kinds: [voice, electron, voice]) { kinds in
+        checkTrue(kinds == [voice, electron, voice])
+        cleanups += 1
+        weakAssertion?.disable()
+    }
+    weakAssertion = assertion
+    assertion!.disable(); assertion!.disable()
+    checkTrue(cleanups == 1)
+    assertion = nil
+    checkTrue(cleanups == 1 && weakAssertion == nil)
+
+    final class Resource {}
+    weak var resource: Resource?
+    func makeAssertion() -> AXEnablementAssertion {
+        let retained = Resource(); resource = retained
+        return AXEnablementAssertion(kinds: []) { kinds in
+            checkTrue(kinds.isEmpty && resource === retained)
+            cleanups += 1
+        }
+    }
+    assertion = makeAssertion()
+    checkTrue(resource != nil)
+    assertion = nil
+    checkTrue(cleanups == 2 && resource == nil)
+    assertion = makeAssertion()
+    assertion!.disable()
+    checkTrue(cleanups == 3 && resource != nil)
+    assertion = nil
+    checkTrue(cleanups == 3 && resource == nil)
+}
+
+private func runVoiceOverPreferenceReleaseChecks() {
+    for voiceRunning in [false, true] {
+        for suiteExists in [false, true] {
+            var events: [String] = []
+            releaseVoiceOverOnPreference(isVoiceOverRunning: { events.append("running"); return voiceRunning },
+                makeDefaults: { name -> Int? in
+                    checkTrue(name == "com.apple.universalaccess"); events.append("suite"); return suiteExists ? 17 : nil
+                }, setBoolean: { defaults, value, key in
+                    checkTrue(defaults == 17 && !value && key == "voiceOverOnOffKey"); events.append("write")
+                }, postNotification: { name in
+                    checkTrue(name == "com.apple.universalaccess.VoiceOverSettingsDidChange"); events.append("notify")
+                })
+            checkTrue(events == (voiceRunning ? ["running"] : suiteExists ? ["running", "suite", "write", "notify"] : ["running", "suite"]))
         }
     }
 }

@@ -70,6 +70,24 @@ class Lines:
     def close(self):
         self.selector.close()
 
+class FixtureLines(Lines):
+    def __init__(self, process, path):
+        self.process = process
+        self.file = path.open('r')
+        self.events = []
+    def read(self, timeout=10):
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            line = self.file.readline()
+            if line:
+                return line.rstrip('\n')
+            if self.process.poll() is not None:
+                raise RuntimeError('Owned fixture launcher exited: ' + str(self.process.returncode))
+            time.sleep(.01)
+        raise TimeoutError('Owned fixture output timed out')
+    def close(self):
+        self.file.close()
+
 processes = []
 channels = []
 owned_pids = set()
@@ -87,16 +105,34 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
                 'CFBundlePackageType': 'APPL', 'CFBundleName': 'Cua Kit click fixture',
                 'NSHighResolutionCapable': True,
             }))
-        process = subprocess.Popen([str(executable)], cwd=root,
-            stdin=subprocess.PIPE if name == 'cua-helper' else subprocess.DEVNULL,
+        command = [str(executable)]
+        if name == 'CuaFixture':
+            output = Path(temporary) / ('fixture-' + str(len(owned_pids)) + '.jsonl')
+            output.touch(mode=0o600)
+            command = [str(binary / name), '--launch-owned-fixture', str(bundle.parent), '--report-file', str(output)]
+        process = subprocess.Popen(command, cwd=root, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=errors)
         processes.append(process)
         channel = Lines(process)
-        channels.append(channel)
         if name == 'CuaFixture':
-            owned_pids.add(process.pid)
+            try:
+                launched = json.loads(channel.read())
+                if launched.get('event') != 'launched' or not isinstance(launched.get('pid'), int) or launched['pid'] <= 0:
+                    raise RuntimeError('Owned fixture launch failed: ' + json.dumps(launched))
+                process.fixture_pid = launched['pid']
+                owned_pids.add(process.fixture_pid)
+            finally:
+                channel.close()
+            channel = FixtureLines(process, output)
+        channels.append(channel)
         return process, channel
     try:
+        report['stage'] = 'desktop-preflight'
+        desktop = subprocess.run([str(binary / 'CuaFixture'), '--desktop-session-check'],
+            capture_output=True, text=True, timeout=5, check=True)
+        report['desktopSession'] = json.loads(desktop.stdout)
+        if report['desktopSession'].get('screenLocked') is True:
+            raise RuntimeError('DESKTOP_LOCKED: unlock the desktop before owned-window live acceptance; no input attempted')
         helper, responses = spawn('cua-helper')
         def request(method, params=None):
             identifier = str(uuid.uuid4())
@@ -115,12 +151,12 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
         report['stage'] = 'foreground-fixture-startup'
         target_process, target_events = spawn('CuaFixture')
         target_events.event(lambda event: event.get('active') is True)
-        assert target_process.pid in owned_pids and target_process.poll() is None
-        target_id = request('bind', {'pid': target_process.pid})['targetId']
+        assert target_process.fixture_pid in owned_pids and target_process.poll() is None
+        target_id = request('bind', {'pid': target_process.fixture_pid})['targetId']
         def observe():
             return request('observe', {'targetId': target_id})
         def click_case(name):
-            assert target_process.pid in owned_pids and target_process.poll() is None
+            assert target_process.fixture_pid in owned_pids and target_process.poll() is None
             marker = 'owned-' + name + '-' + uuid.uuid4().hex[:6]
             state = observe()
             field = next(item for item in state['elements'] if item['role'] == 'AXTextField')
@@ -158,8 +194,8 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
     finally:
         # Each handle is owned by this run; never discover or kill by app name.
         for process in reversed(processes):
-            if process.poll() is None:
-                process.terminate()
+            if process.poll() is None and process.stdin and not process.stdin.closed:
+                process.stdin.close()
         for process in reversed(processes):
             try:
                 process.wait(timeout=3)
