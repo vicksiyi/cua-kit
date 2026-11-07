@@ -3475,3 +3475,29 @@ metadata, generic role fallback, stringValue forwarding and inferred presentatio
 action sequence type. The focused fixture and Swift package build pass. These
 are executable protocol defaults, not yet concrete UIElement conformance or
 transaction/desktop acceptance.
+
+### Full transaction value and synchronous TaskLocal scope
+
+With the actual protocol declarations available, `UIElementTreeTransaction.swift`
+now retains all three original immutable fields: `any UIElementProtocol` root,
+UIElementTransactionCache and FrequencyTable<UIElementRole>. It declares current
+as TaskLocal<UIElementTreeTransaction?> default nil and prefetchEnabled as
+TaskLocal<Bool> default true, matching the previously audited initializers.
+`perform(work:)` implements 0x10076c8e8 by installing the complete transaction
+with synchronous throwing TaskLocal.withValue and passing its protocol root to
+work. No global cache, raw-AX-only root, unchecked Sendable marker or detached
+execution is substituted.
+
+The fixture provides a complete test-only UIElementProtocol conformer whose
+operation methods cannot execute UI actions. It checks existential root retention,
+role frequency visibility, returned work result, nested scope restoration after
+an exception, outer throwing restoration, inherited prefetch flag overrides and
+restoration, and shared fallback lock within one transaction versus isolation
+between transactions. Tests and Swift package build pass; there is no vendor
+launch, model call or native UI read.
+
+This restores the owner value/scope but not its production constructor. Enabled
+and disabled subtree construction still need to assemble the root using the
+source-compatible concrete initializer and connect hierarchy selection, role
+frequency creation and the cache. Existing production explicit transaction:nil
+call sites remain unchanged until that construction/provider path is ready.
