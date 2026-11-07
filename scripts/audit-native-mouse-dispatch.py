@@ -131,6 +131,13 @@ for site, expected_bytes in [(0x10074d23c, '680340f9'), (0x10074d240, '69134079'
                              (0x10074d24c, '68c300f8'), (0x10074d258, '692b0079'),
                              (0x10074d264, '780300f9'), (0x10074d270, '73130079')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# Intercepted-focus progress, physical endpoint retention and third-PID clear.
+for site, expected_bytes in [(0x10074dd78, '68a34039'), (0x10074de88, '698341b8'),
+                             (0x10074de94, '3f010a6b'), (0x10074de9c, '88110036'),
+                             (0x10074dff8, '682740b9'), (0x10074dffc, '1f010a6b'),
+                             (0x10074e0dc, '69a30039'), (0x10074e6f8, '7fff01a9'),
+                             (0x10074e700, '68530079')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

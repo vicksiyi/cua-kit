@@ -28,11 +28,21 @@ func focusStealRegistrationTransition(pid: Int32, previousOwnerPID: Int32,
     return .unchanged
 }
 
+// Native route tag: 0 waiting for intercepted focus, 1 observed, 2 absent.
+enum FocusStealRouteObservation: Equatable {
+    case noRoute, firstInterceptedFocus, repeatedInterceptedFocus, recipientFocus, cleared
+}
+struct FocusStealOwnerChange {
+    let tasks: [Task<Bool, Never>]
+    let routeObservation: FocusStealRouteObservation
+}
+
 final class FocusStealKeyboardRoutingState {
     private let lock = NSLock()
     private var ownership: FocusStealOwnershipHistory
     private var route: FocusStealKeyboardRoute?
     private var keyFocusReturnWasSuppressed = false
+    private var interceptedFocusWasObserved = false
     init(initialOwner: KeyFocusOwnerIdentity, route: FocusStealKeyboardRoute? = nil) {
         ownership = FocusStealOwnershipHistory(current: initialOwner)
         self.route = route
@@ -44,6 +54,7 @@ final class FocusStealKeyboardRoutingState {
         lock.lock(); defer { lock.unlock() }
         self.route = route
         keyFocusReturnWasSuppressed = false
+        interceptedFocusWasObserved = false
     }
     func registrationTransition(pid: Int32, previousOwnerPID: Int32,
                                 currentOwnerPID: Int32) -> FocusStealRegistrationTransition {
@@ -56,10 +67,10 @@ final class FocusStealKeyboardRoutingState {
     // Returning task handles is an internal verification seam; production
     // callers may discard them, as the original callback does.
     @discardableResult
-    func recordOwnerAndSchedule(_ owner: KeyFocusOwnerIdentity,
+    func recordOwnerAndSchedule(_ owner: KeyFocusOwnerIdentity, physicalFocusPID: Int32,
         takeRegistrationSnapshot: () -> [FocusStealRegistrationCallbacks],
         reportMissingHandler: @escaping @Sendable (Int32, FocusStealRegistrationTransition) -> Void = { _, _ in }
-    ) -> [Task<Bool, Never>] {
+    ) -> FocusStealOwnerChange {
         lock.lock(); defer { lock.unlock() }
         ownership.record(owner)
         let previousOwnerPID = ownership.previous!.ownerPID
@@ -75,7 +86,28 @@ final class FocusStealKeyboardRoutingState {
                 tasks.append(task)
             }
         }
-        return tasks
+        // Source selects callbacks before updating interception progress.
+        let observation = observePhysicalFocusPIDLocked(physicalFocusPID)
+        return FocusStealOwnerChange(tasks: tasks, routeObservation: observation)
+    }
+    // 0x10074dd78..0x10074e0e4 and 0x10074e6f8: retain a route for
+    // either physical endpoint. Any third PID clears route and both flags.
+    func observePhysicalFocusPID(_ pid: Int32) -> FocusStealRouteObservation {
+        lock.lock(); defer { lock.unlock() }
+        return observePhysicalFocusPIDLocked(pid)
+    }
+    private func observePhysicalFocusPIDLocked(_ pid: Int32) -> FocusStealRouteObservation {
+        guard let route else { return .noRoute }
+        if pid == route.interceptedPID {
+            if interceptedFocusWasObserved { return .repeatedInterceptedFocus }
+            interceptedFocusWasObserved = true
+            return .firstInterceptedFocus
+        }
+        if pid == route.recipientPID { return .recipientFocus }
+        self.route = nil
+        interceptedFocusWasObserved = false
+        keyFocusReturnWasSuppressed = false
+        return .cleared
     }
     // 0x10074c8d0..0x10074c95c. Resolve the incoming physical PID while
     // holding state lock, then test its logical owner against registrations.
@@ -92,6 +124,7 @@ final class FocusStealKeyboardRoutingState {
                                                    recipientPID: destinationPID,
                                                    interceptedOwnerPID: ownerPID) : nil
         keyFocusReturnWasSuppressed = false
+        interceptedFocusWasObserved = false
         return suppress ? nil : event
     }
     // 0x10074cbd0: suppress only the first returned-focus notification

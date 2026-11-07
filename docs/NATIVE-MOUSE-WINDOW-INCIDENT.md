@@ -992,3 +992,23 @@ callback delivery. Swift build/provider-click checks pass. This composes the
 prefix of changed-focus handling; later route/resource effects, complete system
 notification entry points and production controller integration remain pending.
 There is no new claim of live click acceptance.
+
+
+## Physical focus route progress
+
+Restored route progress/retention at 0x10074dd78..0x10074e0e4 and clearing
+at 0x10074e6f8. Native route tag 0 becomes 1 the first time the intercepted
+physical PID is observed; repeated observations retain tag 1. Focus on the
+recipient PID also retains the route. Any other physical PID clears route
+payload and returned-focus flag (tag 2). Logical owner PID is not a substitute
+for these physical endpoints.
+
+recordOwnerAndSchedule now requires the physical focus PID independently
+of the rich logical identity. It selects/enqueues registration callbacks before
+updating route progress, matching the source ordering. Its result exposes tasks
+and the semantic route observation for the remaining changed-focus stages.
+Tests cover no route, both endpoints, repeated intercepted focus, third-PID
+clearing, reset flags and physical/logical PID separation. Build/provider-click
+checks and static audit pass. Later notification/resource effects and
+production controller integration are still incomplete; no live click result
+is claimed.
