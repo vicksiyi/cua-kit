@@ -14,11 +14,10 @@ struct SkyRPCFailure: Error, Equatable {
         let wireCode: Int
         switch code {
         case "PERMISSION_DENIED": wireCode = -10009
-        case "TARGET_NOT_FOUND": wireCode = -10007
-        case "AMBIGUOUS_TARGET": wireCode = -10018
         case "INVALID_ARGUMENT": wireCode = -32602
-        // Stale snapshots and event allocation failures are owned-host errors,
-        // not AXError values. Preserve their message as an unknown server error.
+        // Host target errors also describe windows, text and display devices.
+        // Only application-aware call sites may emit app-specific wire codes.
+        // Preserve these and other owned-host failures as generic server errors.
         default: wireCode = -10005
         }
         return Self(code: wireCode, message: message)

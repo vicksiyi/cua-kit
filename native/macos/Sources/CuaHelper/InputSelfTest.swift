@@ -35,7 +35,12 @@ func runInputChecks() throws {
         ("abc","a",["selectionType":"invalid"],"INVALID_ARGUMENT")
     ] as [(String,String,[String:Any],String)] {
         do { _ = try selectedTextRange(content:content,text:text,options:options); throw fail("SELF_TEST_FAILED","Invalid selection accepted.") }
-        catch let error as Failure { guard error.code == expected else { throw error } }
+        catch let error as Failure {
+            guard error.code == expected else { throw error }
+            if error.code == "AMBIGUOUS_TARGET" {
+                try verifyNonApplicationTargetError(error)
+            }
+        }
     }
     let frameA = CGRect(x:10,y:20,width:300,height:200), frameB = CGRect(x:-500,y:40,width:600,height:400)
     let windows = [CaptureWindowCandidate(id:1,title:"A",frame:frameA),CaptureWindowCandidate(id:2,title:"B",frame:frameB)]
@@ -52,7 +57,10 @@ func runInputChecks() throws {
         (windows,nil,CGRect(x:900,y:900,width:1,height:1),"B","AMBIGUOUS_TARGET")
     ] as [([CaptureWindowCandidate],Int?,CGRect?,String?,String)] {
         do { _ = try selectCaptureWindow(candidates,requestedId:id,focusedFrame:frame,focusedTitle:title); throw fail("SELF_TEST_FAILED","Invalid window selection accepted.") }
-        catch let error as Failure { guard error.code == code else { throw error } }
+        catch let error as Failure {
+            guard error.code == code else { throw error }
+            try verifyNonApplicationTargetError(error)
+        }
     }
     let capture = CapturedWindow(windowId:1,frame:frameB,contentRect:frameB,pixelWidth:1200,pixelHeight:800,scale:2,snapshotId:"test",focus:nil)
     let mapped = try screenshotPoint(CGPoint(x:200,y:100),capture:capture)
@@ -85,4 +93,14 @@ func runInputChecks() throws {
         catch let error as Failure { guard error.code == "INVALID_ARGUMENT" else { throw error } }
     }
 
+}
+
+// Real text/window selection failures must not be decoded as app identity errors.
+private func verifyNonApplicationTargetError(_ error: Failure) throws {
+    let wire = SkyRPCFailure.hostFailure(code: error.code, message: error.message)
+    guard wire.code == -10005, wire.message == error.message,
+          NativeIPCClientError.mappedServerError(errorNumber: Int32(wire.code), errorString: wire.message)
+            == .serverError(errorNumber: -10005, errorString: error.message) else {
+        throw fail("SELF_TEST_FAILED", "Non-application failure was misclassified as an application failure.")
+    }
 }
