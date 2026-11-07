@@ -6039,3 +6039,30 @@ unescaped brackets, empty labels, image exclusion, missing link and string-value
 AXURL rejection. Build/self-test and pinned binary audit passed. This component
 is not yet connected to the complete rich formatter/production collector; default
 transaction capture and real external AX content were not exercised by these mocks.
+
+### Attributed attachment rendering (2026-11-07)
+
+Recovered `0x10077116c..<0x1007717c8` and image arm
+`0x100771fbc..<0x1007721e8`. AXAttachment contains a forced AXUIElement reference;
+it constructs a transaction-backed UIElement. Empty runs and single-Character
+U+FFFC placeholders do not supply captions. The native Character iterator checks
+the first scalar for LF/VT/FF/CR/NEL/line-separator/paragraph-separator; TAB is not
+a newline. Multiline input is retained separately and appended after a generated
+caption with one generated space. Single-line input supplies the caption instead
+of the cached description. Generic output is `[roleDescription: caption]`, with
+`attachment` as the missing-role-description fallback and no colon for an absent
+or empty caption. Generic caption offsets are all nil, even for copied input.
+
+Image role first tries cached URL and the shared shortener with isImage=true.
+When accepted, the trimmed caption becomes `![caption](target)` with mapped input
+positions and nil wrapper positions. When declined/missing, generic rendering is
+used. The current recovered shortener suppresses image URLs; an injected shortener
+in tests exercises the structurally present image arm without changing that default.
+All reads here are cached, not fresh AX fetches. Description and roleDescription
+entry points `0x1007c10e0`/`0x1007c10fc` delegate to cached lenient String decoding.
+
+`AttributedTextAttachmentTransformation.swift` restores this run transform.
+Build, provider self-test and binary audit passed. Tests cover placeholders,
+single-line and multiline text, tabs, image fallback, accepted image mapping and
+absent attributes. It remains a component of the incomplete full formatter; no
+production collector integration or live external App acceptance is claimed.

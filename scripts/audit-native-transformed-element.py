@@ -652,7 +652,26 @@ link_calls = [branch(site, target) for site, target in [
     (0x100773a50, 0x1007a6f04),
 ]]
 
-print(json.dumps(dict(attributedLink=dict(
+# Attachment text classification and rendering. The first scalar is used for
+# each Character's newline check; TAB is intentionally excluded.
+assert struct.unpack('<Q', read(0x101558068, 8))[0] == 0xfffc
+attachment_words = {0x1007712dc: 0xf100041f, 0x10077135c: 0x51003a88,
+    0x100771360: 0x3100151f, 0x100771364: 0x540000c8, 0x10077136c: 0x7100091f,
+    0x100771370: 0x54000063, 0x100771374: 0x7102169f,
+    0x100771378: 0x54fffe01, 0x10077205c: 0x528b6420}
+for address, word in attachment_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+attachment_calls = [branch(site, target) for site, target in [
+    (0x1007711d0, 0x1006e8284), (0x1007712a0, 0x10076589c),
+    (0x10077146c, 0x1007bb140), (0x1007714d8, 0x10065f7c0),
+    (0x10077153c, 0x1007c10fc), (0x100771580, 0x1007c10e0),
+    (0x100771508, 0x100773780),
+]]
+
+print(json.dumps(dict(attributedAttachment=dict(
+    instructions={hex(k): hex(v) for k, v in attachment_words.items()}, calls=attachment_calls,
+    behavior="AX element attachment; empty/object replacement placeholders; cached roleDescription/description; generic caption or image Markdown; multiline original appended with mappings",
+    limitation="run transformation; default shortener suppresses image URLs; full formatter integration pending"), attributedLink=dict(
     instructions={hex(k): hex(v) for k, v in link_words.items()}, calls=link_calls,
     behavior="AXLink AXUIElement reference; transaction-backed cached URL/role; shared shortener; trimmed label; generated wrapper has nil offsets",
     limitation="run transformation only; full rich formatter/collector integration pending"), attributedFontStyles=dict(

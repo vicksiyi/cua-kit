@@ -2291,6 +2291,46 @@ private enum ProviderClickChecks {
         checkTrue(emptyLabelLink.sourceOffsets.allSatisfy { $0 == nil })
 
         }
+        do {
+            let attachmentAX = AXUIElementCreateApplication(12520)
+            func attachmentNode(_ role: String = "AXGroup", _ roleDescription: String? = nil,
+                _ description: String? = nil, _ url: URL? = nil) -> UIElement {
+                var values: [UIElementAttribute: AXPartialValue] = [UIElementAttribute("AXRole"): partial(role as NSString)]
+                for (key, value) in [("AXRoleDescription", roleDescription), ("AXDescription", description)] {
+                    if let value { values[UIElementAttribute(key)] = partial(value as NSString) }
+                }
+                if let url { values[UIElementAttribute("AXURL")] = partial(url as NSURL) }
+                return UIElement(axElement: attachmentAX, cache: UIElementCache(supportedAttributes: [], attributes: values, transactionAttributes: nil))
+            }
+            var context = ownerContext(.fullUIContext)
+            for (text, expected) in [("", "[attachment: cached]"), ("\u{fffc}", "[attachment: cached]"),
+                ("label", "[attachment: label]"), (" ", "[attachment:  ]"),
+                ("a\nb", "[attachment: cached] a\nb"), ("a\tb", "[attachment: a\tb]")] {
+                let input = AttributedTextSourceRun(text: text, range: NSRange(location: 20, length: text.utf16.count))
+                let result = transformAttributedTextAttachment(input, attributes: [.accessibilityAttachment: attachmentAX],
+                    context: &context, makeElement: { _ in attachmentNode("AXGroup", nil, "cached") })
+                checkEqual(result.text, expected)
+                if text.contains("\n") {
+                    checkEqual(Array(result.sourceOffsets.suffix(text.utf16.count)), input.sourceOffsets)
+                } else { checkTrue(result.sourceOffsets.allSatisfy { $0 == nil }) }
+            }
+            let input = AttributedTextSourceRun(text: " 😀 ", range: NSRange(location: 30, length: 4))
+            let imageURL = URL(string: "https://example.invalid/image")!
+            let image = transformAttributedTextAttachment(input, attributes: [.accessibilityAttachment: attachmentAX],
+                context: &context, makeElement: { _ in attachmentNode("AXImage", "image", "ignored", imageURL) },
+                shorten: { url, isImage, _ in
+                    checkEqual(url, imageURL); checkTrue(isImage); return "fixture-target"
+                })
+            checkEqual(image.text, "![😀](fixture-target)")
+            checkEqual(Array(image.sourceOffsets.prefix(4)), [nil, nil, 31, 32])
+            let suppressedImage = transformAttributedTextAttachment(input, attributes: [.accessibilityAttachment: attachmentAX],
+                context: &context, makeElement: { _ in attachmentNode("AXImage", "image", "ignored", imageURL) })
+            checkEqual(suppressedImage.text, "[image:  😀 ]")
+            let absent = transformAttributedTextAttachment(input, attributes: [:], context: &context,
+                makeElement: { _ in unexpectedFailure("missing attachment must not resolve") })
+            checkEqual(absent.sourceOffsets, input.sourceOffsets)
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
