@@ -2872,3 +2872,27 @@ This completes the currently reconstructed image-local path, not all SoftLink:
 image enumeration/search, batch priority binding and remaining overloads still
 need recovery. Accessibility SPI binding, transaction prefetch integration and
 real desktop acceptance remain outside this fixture's evidence.
+
+### SoftLink loaded-image matching and request ordering
+
+Restored `lookUpImages(images:salt:)` (`0x1002496d8..<0x100249eb4`) and the
+C-string `imagePath(_:matchesAnyOf:appending:)` (`0x100250cbc..<0x1002511b0`).
+The pinned image constant at `0x10116b3d0` is `0x00ffffffffffffff`; both requested
+and computed hashes ignore the high byte. Paths are hashed in full as raw bytes
+through strlen followed by salt bytes. No basename, case or filesystem
+normalization is present in this C-string path.
+
+Empty requests return without enumerating dyld. Otherwise the original snapshots
+_dyld_image_count once, reads header before name for each index, skips nils,
+and records only the first loaded header for a requested masked hash. It scans
+all counted images, then produces results in original request order. Duplicate
+requests remain duplicated. ResolvedImage.index is the REQUEST ARRAY position,
+not the dyld image index—important for subsequent batch priority selection.
+
+Fixtures inject those three dyld reads to verify nil handling, first-match
+selection, complete scan, duplicate requests, reordered outputs and high-byte
+masking. A second check reads the owned test process's actual dyld inventory and
+finds its own image by hash; it neither loads a module nor launches vendor code.
+Swift build and the SoftLink tests pass. Filesystem image loading, string-path
+overloads and batch selection remain to be recovered; this change does not yet
+bind Accessibility SPI or establish live desktop acceptance.
