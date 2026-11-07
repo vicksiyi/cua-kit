@@ -3451,3 +3451,27 @@ conformer. Tests and Swift package build pass. Existing CFArray cast warnings
 remain in AXMultipleAttributeReading; no live AX read, vendor launch or model
 request was used. Concrete node conformance, defaults and transaction integration
 remain pending.
+
+### Generic AccessibilityNode defaults connected to the real protocol
+
+`AccessibilityNodeDefaults.swift` supplies the exported original defaults on the
+complete protocol, retaining generic Role and ID rather than binding to concrete
+UIElementRole or raw AX handles. Optional metadata, URL/Bool/ranges, empty title
+targets/presentation actions and default false disclosure/table-row/sender states
+follow their exported default implementations. stringValue dispatches value at
+witness +0x50 (`0x100624f28`). isFocusableOrSelectable and canBeUserInteractive
+preserve the previously recovered lazy capability order.
+
+A newly checked dispatch distinction: hasInterestingActions at
+`0x100625204..<0x10062520c` directly invokes witness +0xe0, canBeUserInteractive.
+It must honor a conformer's override, not hard-code false or recompute capability
+queries. hasDescriptiveAttributes preserves title/description/value/placeholder
+short circuiting and finally compares the generic Role.image. flattenedRole
+compares generic Role.staticText and returns the original three text strings.
+
+Tests use a conformer with a non-AX Role, non-AX ID and an explicit interactivity
+override. They verify actual protocol dispatch, getter order, whitespace, missing
+metadata, generic role fallback, stringValue forwarding and inferred presentation
+action sequence type. The focused fixture and Swift package build pass. These
+are executable protocol defaults, not yet concrete UIElement conformance or
+transaction/desktop acceptance.
