@@ -1902,6 +1902,38 @@ transaction_scope_evidence={
     'interpretation':'current is an optional tree transaction with nil initialization. perform(work:) binds the transaction using synchronous TaskLocal.withValue and forwards the supplied work closure within that scope.',
     'limitations':'Does not establish transaction creation/prefetch policy, cache invalidation, role frequency algorithm or tree revision semantics. No process-global cache replacement is implied.',
 }
+# Pin the prefetch TaskLocal and the actual subtree-construction branch, not just its symbol.
+prefetch_words = {
+    0x10076cdcc: 0x52800028,
+    0x10076cdd0: 0x39003fe8,
+    0x10076cdfc: 0x94279a73,
+    0x10076ce04: 0xf9046100,
+    0x10076be30: 0xf9446114,
+    0x10076be38: 0x94279e6a,
+    0x10076be44: 0x7100051f,
+    0x10076be48: 0x54002ce1,
+}
+for address, word in prefetch_words.items():
+    if struct.unpack('<I', read_virtual(address, 4))[0] != word:
+        raise SystemExit('Transaction prefetch TaskLocal/constructor branch changed')
+for slot, symbol in [('0x101469890', '_$ss9TaskLocalC12wrappedValueAByxGx_tcfc'),
+                     ('0x1014698a8', '_$ss9TaskLocalC3getxyF')]:
+    line = next((line for line in fixups.splitlines() if slot in line.lower()), '')
+    if 'libswift_Concurrency/' + symbol not in line:
+        raise SystemExit('Transaction prefetch TaskLocal import changed')
+transaction_scope_evidence['prefetchControl'] = {
+    'storage': '0x1015ca8c0', 'type': 'TaskLocal<Bool>', 'default': True,
+    'initializer': '0x10076cdbc', 'initializerValue': '0x10076cdcc: mov w8, #1; strb at 0x10076cdd0',
+    'getter': '0x10076ceb4', 'subtreeRead': '0x10076be38',
+    'subtreeBranch': '0x10076be44 compares to true; 0x10076be48 branches to 0x10076c3e4 otherwise',
+    'functions': [
+        {'start': hex(address), 'endExclusive': hex(starts[starts.index(address)+1]),
+         'machineCodeSha256': hashlib.sha256(read_virtual(address, starts[starts.index(address)+1]-address)).hexdigest()}
+        for address in [0x10076bd70, 0x10076cdbc, 0x10076ceb4]],
+    'instructionWords': {hex(a): hex(w) for a,w in prefetch_words.items()},
+    'interpretation': 'The default is true, dynamically read from Swift TaskLocal during subtreeTransaction construction. Disabled prefetch selects a distinct construction branch, not a process-global mutable switch.',
+    'limitations': 'The complete enabled/disabled cache construction and protocol witness dispatch remain to be recovered; no production transaction owner is introduced by this evidence.',
+}
 # Transaction fields retain their original existential/cache/role-counter types.
 transaction_field_types = [
     ('element',0x10129e8e6,'02d9241c005f70','any UIElementProtocol'),

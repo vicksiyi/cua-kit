@@ -2651,3 +2651,24 @@ AX 动作执行前再次检查 snapshot/deadline，执行后失效输入状态�
 这是本项目抽取边界适配，不是原函数签名声明。32 组路由、错误停止、actor 恢复
 测试通过；加上7056组准备参数、Web 探测和焦点条件共四项测试通过，Swift 构建
 通过。未实际投递 UI 事件，完整点击验收仍未完成。
+
+
+### Subtree transaction prefetch control: constructor evidence (2026-11-07)
+
+Earlier notes identified the default-true prefetch flag. The audit now pins its initializer, imported Swift TaskLocal operations, getter, and the constructor branch that consumes it. `0x10076cdcc` loads one and `0x10076cdd0` writes that byte before TaskLocal initialization. `subtreeTransaction(additionalAttributes:maxChildCount:)` reads the task-local value at `0x10076be38`; `0x10076be44` compares it to one, and `0x10076be48` selects the disabled path at `0x10076c3e4` otherwise. This is stronger evidence than the exported getter name alone.
+
+```mermaid
+flowchart TD
+  A["subtreeTransaction(additionalAttributes, maxChildCount)"] --> B["Read TaskLocal prefetchEnabled; default true"]
+  B --> C{"value == true"}
+  C -->|yes| D["Enabled construction path: 0x10076be4c"]
+  C -->|no| E["Disabled construction path: 0x10076c3e4"]
+  D --> F["UIElementTreeTransaction value"]
+  E --> F
+  F --> G["perform(work): synchronous TaskLocal current.withValue"]
+  G --> H["Invoke work inside transaction scope"]
+```
+
+The transaction retains `element`, `cache`, and `roleFrequencyTable`. Current source has the cache projection and role counter, but no restored full transaction owner/protocol. The existing explicit `transaction: nil` call sites therefore do not reproduce this scope or prefetch behavior. The graph describes the native source structure, not the current demo execution path.
+
+Next reconstruction dependency: decode the two construction branches and their protocol witnesses, including the unresolved callee at `0x10076c570 -> 0x1006f7f2c`, before wiring the owner into element construction. The precise constructor semantics and prefetch failure fallback are not proven by this branch audit. No process-global cache or guessed task-local wrapper was introduced. The pinned audit runs statically without executing the vendor service.
