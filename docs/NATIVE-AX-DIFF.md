@@ -2763,3 +2763,30 @@ lookup entry point remain incomplete. Tests inject a simple fixture hash solely
 to observe traversal/filtering, seed export results, exercise numeric rejection,
 and verify pointers and early exit. Swift build and SoftLink fixture tests pass;
 no vendor native process or desktop actions were executed.
+
+### SoftLink fixed-state SipHash streaming core
+
+Restored `SipHashState` in Swift from native init `0x100246bbc`, append
+`0x100247878` (pointer/count) and `0x100246bdc` (buffer), sipRound
+`0x100247d60`, compress `0x100247d9c`, and finalize `0x100246e0c`.
+The pinned image's constant table at `0x10116b380` contains, in order:
+`7469686173716475`, `6b617f6d656e6665`, `6b7f62616d677361`,
+`7b6b696e727e6c7b`. Individual property initializers at `0x100247aa4`,
+`0x100247acc`, `0x100247af4`, `0x100247b24` agree with this table.
+
+Compression XORs the input into v3, performs two rounds, then XORs into v0.
+The round's rotates are 13/32/16/21/17/32 and arithmetic wraps at 64 bits.
+Append consumes little-endian words, carries partial words across calls and
+uses checked signed arithmetic for total length. Nil buffer base is a no-op.
+Finalization merges pending bytes with count shifted left 56, compresses,
+XORs v2 with 0xff, then performs four rounds. The native finalizer mutates all
+four state words without clearing pending/count; reconstruction preserves that.
+The small private UInt64 rotation helper is not a claim of recovering the
+separately exported generic rotateLeft implementation.
+
+Tests cover sixteen fixed-key SipHash-2-4 known-answer vectors and every split
+point across selected lengths through 513, including 7/8, 15/16 and 255/256
+boundaries, nil empty buffers, bytewise input and retained finalization fields.
+These test the reconstructed implementation; the original service is never run.
+The salted/string overloads, image-mask policy and export-trie resolver remain
+pending and are not replaced with an invented hash adapter.
