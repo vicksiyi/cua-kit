@@ -6440,3 +6440,24 @@ witness offsets, nil branch, context comparison and role equality call. This is
 one of the three node-description leaf components; it remains separate until
 the other two and their complete composition are restored. Production collector
 behavior is unchanged; no live app or installed vendor service was executed.
+
+
+### Node state-description component (2026-11-07)
+
+Recovered leaf helper 0x100627090 in AccessibilityStateDescription.swift. Its
+ordered annotations are: selectable (only full UI, selectable and not selected),
+selected, disabled (except informational context and group/staticText roles),
+expanded/collapsed (only disclosable), settable/type (only a present type and
+settable value), and sent by me. Type "string" emits only "settable"; another
+present type emits "settable, " plus that type, even when empty. Missing type
+suppresses the settable annotation. Empty output has no parentheses; otherwise
+parts are joined with comma-space inside parentheses. This is state presentation,
+not an AX action inventory or a permission decision.
+
+Static audit pins eight node getter witness offsets, role comparisons, type
+comparison, missing-type/empty-parts branches and join. Tests cover all contexts,
+selection precedence, disabled group/staticText suppression, annotation ordering,
+expanded/collapsed guards, absent/empty/string/number value types and sender label.
+Swift build and owned provider checks passed; installed service/live apps were
+not executed. The remaining generic node content helper is 0x100626300; full
+composition and production collector integration remain incomplete.

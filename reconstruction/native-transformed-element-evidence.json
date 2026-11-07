@@ -1,4 +1,42 @@
 {
+  "stateDescriptionComponent": {
+    "entry": "0x100627090",
+    "calls": [
+      {
+        "instruction": "0x100627280",
+        "target": "0x101150714",
+        "link": true
+      },
+      {
+        "instruction": "0x1006272ec",
+        "target": "0x101150714",
+        "link": true
+      },
+      {
+        "instruction": "0x100627454",
+        "target": "0x101152ff4",
+        "link": true
+      },
+      {
+        "instruction": "0x1006275e4",
+        "target": "0x10115060c",
+        "link": true
+      }
+    ],
+    "witnesses": {
+      "0x100627138": "isSelectable",
+      "0x100627148": "isSelected",
+      "0x1006271dc": "isEnabled",
+      "0x10062734c": "isDisclosable",
+      "0x100627364": "isDisclosing",
+      "0x1006273ec": "valueTypeName",
+      "0x10062740c": "isValueSettable",
+      "0x10062753c": "isSentByCurrentUser"
+    },
+    "order": "selectable (full UI and not selected), selected, disabled (not informational/group/staticText), expanded/collapsed, settable with optional type, sent by me",
+    "formatting": "empty if no parts; otherwise parentheses and comma-space join; nil type suppresses settable, empty type preserved",
+    "limitation": "state component only; content component/composition and production integration pending"
+  },
   "roleDescriptionComponent": {
     "entry": "0x100625f1c",
     "calls": [

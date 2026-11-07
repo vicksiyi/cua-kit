@@ -816,7 +816,30 @@ for site, word in [(0x100625ffc, 0xf9401ec8), (0x100626018, 0xf9401adb),
                    (0x100626054, 0xf9402008), (0x100626154, 0x7100091f)]:
     assert struct.unpack('<I', read(site, 4))[0] == word
 
-print(json.dumps(dict(roleDescriptionComponent=dict(
+state_witness_reads = {
+    0x100627138: (0x88, "isSelectable"), 0x100627148: (0x80, "isSelected"),
+    0x1006271dc: (0xa0, "isEnabled"), 0x10062734c: (0xa8, "isDisclosable"),
+    0x100627364: (0xb0, "isDisclosing"), 0x1006273ec: (0x60, "valueTypeName"),
+    0x10062740c: (0xb8, "isValueSettable"), 0x10062753c: (0xc0, "isSentByCurrentUser"),
+}
+for site, (offset, name) in state_witness_reads.items():
+    word = struct.unpack('<I', read(site, 4))[0]
+    assert word & 0xffc00000 == 0xf9400000
+    assert (word >> 5) & 31 == 19
+    assert ((word >> 10) & 0xfff) * 8 == offset
+state_calls = [branch(site, target) for site, target in [
+    (0x100627280, 0x101150714), (0x1006272ec, 0x101150714),
+    (0x100627454, 0x101152ff4), (0x1006275e4, 0x10115060c),
+]]
+compare_zero_branch(0x100627400, 1, 0x10062753c)
+compare_zero_branch(0x1006275a0, 8, 0x100627640)
+
+print(json.dumps(dict(stateDescriptionComponent=dict(
+    entry="0x100627090", calls=state_calls,
+    witnesses={hex(site): name for site, (_, name) in state_witness_reads.items()},
+    order="selectable (full UI and not selected), selected, disabled (not informational/group/staticText), expanded/collapsed, settable with optional type, sent by me",
+    formatting="empty if no parts; otherwise parentheses and comma-space join; nil type suppresses settable, empty type preserved",
+    limitation="state component only; content component/composition and production integration pending"), roleDescriptionComponent=dict(
     entry="0x100625f1c", calls=role_description_calls,
     present="suppress menuBarItem/menuItem/radioGroup; row literal; generic empty becomes element; other group becomes container; otherwise preserve",
     missing="menu/menu bar literals; suppress menuBarItem/menuItem/radioGroup; otherwise informational empty, other contexts unknown",

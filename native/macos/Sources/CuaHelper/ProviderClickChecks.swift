@@ -2824,6 +2824,30 @@ private enum ProviderClickChecks {
             }
             checkEqual(accessibilityRoleDescription(role: UIElementRole.generic, roleDescription: "  ", contextType: .fullUIContext), "  ")
         }
+        do {
+            let button = UIElementRole.button
+            checkEqual(accessibilityStateDescription(role: button, contextType: .fullUIContext), "")
+            for type in UIElementContextType.allCases {
+                checkEqual(accessibilityStateDescription(role: button, contextType: type, isSelectable: true), type == .fullUIContext ? "(selectable)" : "")
+                checkEqual(accessibilityStateDescription(role: button, contextType: type, isSelectable: true, isSelected: true), "(selected)")
+                checkEqual(accessibilityStateDescription(role: button, contextType: type, isEnabled: false), type == .informationalContext ? "" : "(disabled)")
+                for role in [UIElementRole.group, .staticText] {
+                    checkEqual(accessibilityStateDescription(role: role, contextType: type, isEnabled: false), "")
+                }
+            }
+            checkEqual(accessibilityStateDescription(role: button, contextType: .fullUIContext,
+                isSelectable: true, isEnabled: false, isDisclosable: true, valueTypeName: "number",
+                isValueSettable: true, isSentByCurrentUser: true), "(selectable, disabled, collapsed, settable, number, sent by me)")
+            checkEqual(accessibilityStateDescription(role: button, contextType: .informationalContext,
+                isSelected: true, isEnabled: false, isDisclosable: true, isDisclosing: true,
+                valueTypeName: "string", isValueSettable: true), "(selected, expanded, settable)")
+            checkEqual(accessibilityStateDescription(role: button, contextType: .fullUIContext,
+                isDisclosing: true, isValueSettable: true), "")
+            checkEqual(accessibilityStateDescription(role: button, contextType: .fullUIContext,
+                valueTypeName: "", isValueSettable: true), "(settable, )")
+            checkEqual(accessibilityStateDescription(role: button, contextType: .fullUIContext,
+                valueTypeName: "number", isValueSettable: false), "")
+        }
         let leafTree = UIElementTree<UIElement>(items: [], focusedElement: nil)
         let childTree = UIElementTree(items: [UIElementTree.Item(element: cachedChildren, subtree: leafTree)], focusedElement: nil)
         var tree = UIElementTree(items: [UIElementTree.Item(element: target, subtree: childTree, availableSubset: subset),
