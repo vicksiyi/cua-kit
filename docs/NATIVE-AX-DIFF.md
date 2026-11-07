@@ -5171,3 +5171,21 @@ verifies transformed text and URL, preserves original copy/AX identity/cache
 role and makes no native reads/actions. This enables source-shaped downstream
 tree transforms; their algorithms, production traversal and live acceptance
 are still outstanding. Hash/equality remain separate work.
+
+
+### Transformed node identity equality and hashing (2026-11-07)
+
+Restored Equatable/Hashable conformance using the existing provider-aware AX
+identity comparator and CFHash. Resilient conformance record 0x1011954dc points
+to equality witness 0x100762784; it loads both stored AX handles and calls
+0x1006fb9ac at 0x1007627b8. Record 0x101195490 points to hash(into:) witness
+0x10076236c, which calls CFHash at 0x10076238c and combines the UInt result.
+Captured/transformed text, role, URL, capabilities and rendering do not affect
+identity. Hashing deliberately does not substitute the mock provider object.
+The binary audit now pins these witness records and calls.
+
+Swift build and provider selftest pass. Checks compare a mutated capture to
+its original, verify equal hashes/Set deduplication, distinguish a different AX
+handle, and compare the hash combination to CFHash directly. No additional
+provider attribute reads occur. This completes the owner's identity contract,
+not downstream tree transformation, rendering or production/live acceptance.

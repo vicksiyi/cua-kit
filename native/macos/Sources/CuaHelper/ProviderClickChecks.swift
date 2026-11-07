@@ -789,6 +789,21 @@ private enum ProviderClickChecks {
         checkTrue(CFEqual(mutableOwner.id, capturedOwner.id))
         checkEqual(ownerProvider.singleReads, readsBeforeMutation)
         checkEqual(ownerActionReads, 1)
+        // Attribute changes affect display, but not native element identity.
+        checkEqual(capturedOwner, mutableOwner)
+        checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)
+        checkEqual(Set([capturedOwner, mutableOwner]).count, 1)
+        var otherIdentityOwner = mutableOwner
+        otherIdentityOwner.element = UIElement(axElement: textAX, cache: mutableOwner.cache)
+        checkFalse(capturedOwner == otherIdentityOwner)
+        checkEqual(Set([capturedOwner, otherIdentityOwner]).count, 2)
+        // Hash combines the original CF identity, not the provider replacement.
+        var expectedHasher = Hasher()
+        expectedHasher.combine(CFHash(capturedOwner.axElement))
+        var actualHasher = Hasher()
+        capturedOwner.hash(into: &actualHasher)
+        checkEqual(actualHasher.finalize(), expectedHasher.finalize())
+        checkEqual(ownerProvider.singleReads, readsBeforeMutation)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

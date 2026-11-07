@@ -134,6 +134,12 @@ rendering_witnesses = [0x100758848, 0x100758854, 0x10075885c, 0x100758870]
 for i, target in enumerate(rendering_witnesses):
     raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
     assert 0x100000000 + (raw & 0xffffffff) == target
+# Resilient Equatable/Hashable witness records and native identity calls.
+assert relative(0x1011954dc) == 0x100762784
+assert relative(0x101195490) == 0x10076236c
+branch(0x1007627b8, 0x1006fb9ac)
+branch(0x10076238c, 0x101153a74)
+
 # MutableAccessibilityNode adds seven inherited setter/modify pairs and a
 # new transformedString getter/setter/modify, after its base conformance.
 assert struct.unpack('<II', read(0x1012c93a0 + 12, 8)) == (1, 18)
