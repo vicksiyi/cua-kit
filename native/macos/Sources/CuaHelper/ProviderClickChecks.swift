@@ -9,6 +9,7 @@ private enum ProviderClickChecks {
         var readResult: (error: AXError, value: AXPartialValue?) = (.success, nil)
         var singleReads = 0
         var arrayReads: [Int] = []
+        var parameterRead: ((UIElementAttribute, AXEncodedValue) throws -> AXPartialValue?)?
         static func == (lhs: Hit, rhs: Hit) -> Bool { lhs === rhs }
         func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
         var supportedAttributes: [UIElementAttribute] = []
@@ -23,7 +24,10 @@ private enum ProviderClickChecks {
         func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { fatalError() }
         func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { fatalError() }
         var supportedParameterizedAttributes: [UIElementAttribute] { fatalError() }
-        func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? { fatalError() }
+        func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? {
+            guard let parameterRead else { fatalError() }
+            return try parameterRead(attribute, parameter)
+        }
         func element(at point: CGPoint) throws -> UIElement? {
             points.append(point)
             if fail { throw UIElementError.axError(.failure) }
@@ -364,6 +368,47 @@ private enum ProviderClickChecks {
         func partial(_ object: AnyObject) -> AXPartialValue {
             AXPartialValue(value: AXEncodedValue(value: object), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
         }
+        let textAX = AXUIElementCreateApplication(12505)
+        let textProvider = Hit()
+        provider.replacements[textAX] = textProvider
+        let textElement = UIElement(axElement: textAX, cache: UIElementCache(
+            supportedAttributes: [UIElementAttribute("AXValue"), .visibleCharacterRange],
+            attributes: [UIElementAttribute("AXRole"): partial("AXTextArea" as NSString)],
+            transactionAttributes: nil))
+        var textErrors = 0
+        textProvider.readResult = (.success, partial("full value" as NSString))
+        let refreshedText = textElement.transformedTextValue("part",
+            descriptor: .init(count: 20, availableRange: 0..<4), reportError: { _ in textErrors += 1 })
+        checkEqual(refreshedText.text, "full value"); checkTrue(refreshedText.truncationRange == nil)
+        checkEqual(textProvider.singleReads, 1)
+        textProvider.readResult = (.failure, nil)
+        let retainedText = textElement.transformedTextValue("part",
+            descriptor: .init(count: 20, availableRange: 6..<10), reportError: { _ in textErrors += 1 })
+        checkEqual(retainedText.text, "part"); checkEqual(retainedText.truncationRange, NSRange(location: 6, length: 4))
+        checkEqual(textErrors, 1); checkEqual(textProvider.singleReads, 2)
+        let synthesizedText = textElement.transformedTextValue("😀", descriptor: nil,
+            reportError: { _ in unexpectedFailure() })
+        checkEqual(synthesizedText.text, "😀"); checkTrue(synthesizedText.truncationRange == nil)
+        checkEqual(textProvider.singleReads, 2)
+        textProvider.readResult = (.success, visiblePartial)
+        let clippedText = textElement.transformedTextValue(String(repeating: "x", count: 100001),
+            descriptor: nil, reportError: { _ in unexpectedFailure() })
+        checkEqual(clippedText.text, String(repeating: "x", count: 12))
+        checkEqual(clippedText.truncationRange, NSRange(location: 7, length: 12))
+        checkEqual(textProvider.singleReads, 3)
+        var rangeRequests = 0
+        textProvider.parameterRead = { attribute, parameter in
+            checkEqual(attribute, UIElementAttribute("AXStringForRange"))
+            let range = try decodeAXRange(parameter.value, throwingOnFailure: true)
+            checkEqual(range?.location, 7); checkEqual(range?.length, 12)
+            rangeRequests += 1
+            return partial("remote slice" as NSString)
+        }
+        let remoteText = textElement.transformedTextValue("short",
+            descriptor: .init(count: 100001, availableRange: 0..<5), reportError: { _ in unexpectedFailure() })
+        checkEqual(remoteText.text, "remote slice")
+        checkEqual(remoteText.truncationRange, NSRange(location: 7, length: 12))
+        checkEqual(rangeRequests, 1); checkEqual(textProvider.singleReads, 4)
         let role = UIElementAttribute("AXRole")
         var rect = CGRect(x: 10, y: 20, width: 80, height: 40)
         let target = UIElement(axElement: targetAX, cache: UIElementCache(supportedAttributes: [role, .frame],

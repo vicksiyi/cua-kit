@@ -4721,3 +4721,27 @@ no read, invalid cache followed by valid fresh data, strict fresh type mismatch,
 known-unsupported suppression, provider failure, and the -1/NSNotFound conversion.
 These are component tests; no real application was driven. Full transformed
 owner construction and production collector integration are still outstanding.
+
+
+### Concrete transformed-text composition (2026-11-07)
+
+Added UIElement.transformedTextValue to compose the previously extracted
+truncation policy with the actual element/provider boundary. Missing descriptors
+are synthesized with CFStringGetLength, matching the constructor String branch.
+The visible range uses the cached/fresh accessor. An incomplete short value is
+reread through the uncached throwing accessor, including the known-unsupported
+check and strict String decoder; it must not return the same cached partial value.
+Large text outside the local buffer invokes AXStringForRange with AXEncodedValue
+CFRange encoding and strict String decoding. The existing range accessor and the
+new composition share this request implementation.
+
+Validation: full Swift build and provider selftest pass. Tests use the real
+AXMockProvider dispatch on a concrete UIElement to verify fresh AXValue success,
+failure with old-range retention, synthesized descriptor for emoji, large local
+text clipped to provider visibility, and an AXStringForRange request whose
+attribute and decoded parameter are checked. Provider call counts ensure a
+complete short string does not trigger a reread. No vendor process or real UI was
+launched. The text composition is ready for the transformed owner; that owner
+must still clear isValueSettable whenever the returned truncation range exists.
+Non-string formatting, remaining constructor fields and collector integration
+are not completed by this change.

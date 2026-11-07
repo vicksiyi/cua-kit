@@ -18,11 +18,13 @@ func transformedUIElementString(in range: NSRange, from text: String,
 
 extension UIElement {
     func stringForTransformedValueRange(_ range: NSRange, from text: String) -> String {
-        transformedUIElementString(in: range, from: text) { requested in
-            let parameter = try AXEncodedValue(wrapping: requested)
-            guard let partial = try axElement.parameterizedValue(
-                for: UIElementAttribute("AXStringForRange"), parameter: parameter) else { return nil }
-            return try decodeAXString(partial.value.value, throwingOnFailure: true)
-        }
+        transformedUIElementString(in: range, from: text, readStringForRange: readTransformedStringRange)
+    }
+
+    func readTransformedStringRange(_ requested: CFRange) throws -> String? {
+        let parameter = try AXEncodedValue(wrapping: requested)
+        guard let partial = try axElement.parameterizedValue(
+            for: UIElementAttribute("AXStringForRange"), parameter: parameter) else { return nil }
+        return try decodeAXString(partial.value.value, throwingOnFailure: true)
     }
 }
