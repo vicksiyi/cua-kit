@@ -182,8 +182,32 @@ assert struct.unpack('<I', read(0x1007627e4, 4))[0] == 0xf9400280
 branch(0x1007afb60, 0x1007acee0, link=False)
 branch(0x1007afb64, 0x1007ad204, link=False)
 
+# Item-level text predicate: key-path getter witnesses differ from the
+# node-level predicate because each field is flattened across the subtree.
+item_fields = []
+for pattern, getter, slot, name in [
+    (0x10118b648, 0x100652500, 9, 'description'),
+    (0x10118b678, 0x100652554, 10, 'value'),
+    (0x10118b6a8, 0x100652598, 8, 'title'),
+    (0x10118b6d8, 0x1006525dc, 27, 'placeholderValue'),
+]:
+    assert relative(pattern + 0x20) == getter
+    # ldr x9, [x1, #slot*8] in each key-path getter.
+    assert struct.unpack('<I', read(getter + 24, 4))[0] == 0xf9400029 | (slot << 10)
+    item_fields.append(dict(field=name, pattern=hex(pattern), getter=hex(getter), witnessSlot=slot))
+for site in [0x10064f7f0, 0x10064f894, 0x10064f930, 0x10064f9cc]:
+    branch(site, 0x10064f3d4)
+branch(0x10064f4dc, 0x101150c18)  # Sequence.compactMap
+branch(0x10064f540, 0x10114dfa8)  # CharacterSet.whitespacesAndNewlines
+branch(0x10064f55c, 0x101151da0)  # trimmingCharacters(in:)
+branch(0x10064f6ec, 0x10115060c)  # joined(separator:)
+assert struct.unpack('<I', read(0x10064f6e0, 4))[0] == 0x52800140  # newline
+assert struct.unpack('<I', read(0x10064fa28, 4))[0] == 0xf9401aE9  # own role
+assert struct.unpack('<I', read(0x10064fa68, 4))[0] == 0xf9401809  # static image
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
-    storedFields=stored, verifiedBranches=calls, valueTypeLabels=value_type_labels,
+    storedFields=stored, verifiedBranches=calls,
+    itemDescriptiveState=dict(fields=item_fields, flatten="self then pre-order descendants; trim whitespacesAndNewlines per string, drop empty, newline join; preserve duplicates", roleFallback="own role equals image only"), valueTypeLabels=value_type_labels,
     constructorDirectCallSites=[hex(x) for x in constructor_call_sites],
     traversalRoleFlow=dict(instructions={hex(k): hex(v) for k, v in role_flow_words.items()},
         branches=role_flow_branches,

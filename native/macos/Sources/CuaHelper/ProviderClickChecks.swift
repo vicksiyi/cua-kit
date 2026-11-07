@@ -857,6 +857,44 @@ private enum ProviderClickChecks {
             .removeElementsUnderCalendarEvents, .retrieveAttributedTextFromTextAreas,
             .retrieveAttributedTextFromWebAreas])
         UIElementTreeTransformation.defaultPipeline = commonPipeline
+        // Item description traverses all descendants, trims each string, and
+        // preserves duplicates/order. An image descendant alone does not count.
+        var textRoot = capturedOwner
+        textRoot.role = .group
+        textRoot.title = nil
+        textRoot.description = "  \n "
+        textRoot.value = nil
+        textRoot.placeholderValue = nil
+        var textChild = textRoot
+        textChild.title = " child "
+        var textGrandchild = textRoot
+        textGrandchild.title = "\n grandchild\t"
+        let grandchildTree = UIElementTree<TransformedUIElement>(items: [
+            .init(element: textGrandchild, subtree: transformedLeaf)], focusedElement: nil)
+        let descriptionTree = UIElementTree<TransformedUIElement>(items: [
+            .init(element: textChild, subtree: grandchildTree),
+            .init(element: textChild, subtree: transformedLeaf)], focusedElement: nil)
+        let descriptionItem = UIElementTree<TransformedUIElement>.Item(
+            element: textRoot, subtree: descriptionTree)
+        checkEqual(descriptionItem.flattenedString { $0.title }, "child\ngrandchild\nchild")
+        checkTrue(descriptionItem.hasDescriptiveAttributes)
+        checkTrue(textRoot.hasDescriptiveAttributes)
+        checkTrue(!UIElementTree<TransformedUIElement>.Item(
+            element: textRoot, subtree: transformedLeaf).hasDescriptiveAttributes)
+        var imageNode = textRoot
+        imageNode.role = .image
+        let imageTree = UIElementTree<TransformedUIElement>(items: [
+            .init(element: imageNode, subtree: transformedLeaf)], focusedElement: nil)
+        checkTrue(!UIElementTree<TransformedUIElement>.Item(
+            element: textRoot, subtree: imageTree).hasDescriptiveAttributes)
+        checkTrue(UIElementTree<TransformedUIElement>.Item(
+            element: imageNode, subtree: transformedLeaf).hasDescriptiveAttributes)
+        for key in [\TransformedUIElement.description, \.value, \.title, \.placeholderValue] {
+            var descriptiveNode = textRoot
+            descriptiveNode[keyPath: key] = " content "
+            checkTrue(UIElementTree<TransformedUIElement>.Item(
+                element: descriptiveNode, subtree: transformedLeaf).hasDescriptiveAttributes)
+        }
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

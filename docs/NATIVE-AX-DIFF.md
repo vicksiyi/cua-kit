@@ -5239,3 +5239,27 @@ verify exact defaults and changes to common defaults, preserving duplicates.
 These enum/configuration definitions DO NOT implement or execute the nine
 shared/four platform policy algorithms yet. Generic driver exists, but policy
 execution/rendering/native traversal/live acceptance are still pending.
+
+
+### Item-level descriptive text (2026-11-07)
+
+Restored `UIElementTree.Item.flattenedString` (0x10064f3d4) and
+`hasDescriptiveAttributes` (0x10064f72c) in Swift. The former evaluates the
+current element, then compactMaps all descendants in tree sequence order,
+trims each string with Foundation whitespacesAndNewlines, removes empty
+strings and joins with newline. Duplicates and internal whitespace survive.
+The latter short-circuits over flattened description, value, title and
+placeholderValue, then compares only the current element role with image.
+Key-path getter witness slots 9/10/8/27 were decoded from patterns
+0x10118b648/678/6a8/6d8; these use value, not stringValue.
+
+This differs from the node predicate: whitespace-only node descriptions can
+be descriptive at node level but not item level; descendant strings count,
+whereas a textless image descendant alone does not. Tests cover those cases,
+three-level ordering, duplicate preservation and each of the four fields.
+The native audit pins the key-path getters and relevant calls against the
+existing binary SHA. No vendor executable was launched.
+
+This supplies a dependency for pruning strategies. Concrete strategy bodies,
+production traversal/rendering integration and live app acceptance remain
+incomplete; this change does not establish end-to-end completion.

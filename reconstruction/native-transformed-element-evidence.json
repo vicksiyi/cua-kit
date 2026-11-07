@@ -51,6 +51,36 @@
       "link": true
     }
   ],
+  "itemDescriptiveState": {
+    "fields": [
+      {
+        "field": "description",
+        "pattern": "0x10118b648",
+        "getter": "0x100652500",
+        "witnessSlot": 9
+      },
+      {
+        "field": "value",
+        "pattern": "0x10118b678",
+        "getter": "0x100652554",
+        "witnessSlot": 10
+      },
+      {
+        "field": "title",
+        "pattern": "0x10118b6a8",
+        "getter": "0x100652598",
+        "witnessSlot": 8
+      },
+      {
+        "field": "placeholderValue",
+        "pattern": "0x10118b6d8",
+        "getter": "0x1006525dc",
+        "witnessSlot": 27
+      }
+    ],
+    "flatten": "self then pre-order descendants; trim whitespacesAndNewlines per string, drop empty, newline join; preserve duplicates",
+    "roleFallback": "own role equals image only"
+  },
   "valueTypeLabels": [
     "float",
     "integer",
