@@ -2,6 +2,7 @@
   "binarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
   "root": "0x1006564b4: render then zero-based setElementIDs then revision constructor",
   "resolver": "0x1006554c0",
+  "table": "full render then optional focus render, depth first; later identity and ID-path writes overwrite; reverse mapping built from final forward dictionary",
   "lookup": "0x1006557a4: require path and reverse identity; focus identity membership selects focus tree, otherwise full tree; use stored path; no fallback after focus path miss",
   "precedence": [
     "require sourcePath",

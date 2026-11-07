@@ -6832,3 +6832,20 @@ Tests cover non-positional display ID 42, focus precedence, no focus, unrelated
 focus identity, missing reverse identity and no fallback after focus path miss.
 Swift build/provider tests and pinned branch audit pass. Revision owner/table
 construction and production use still need integration.
+
+### Revision identity/path table construction
+
+Restored constructor table phase: flatten depth-first traversals of full render
+then optional focus render, resolve each identity/ID/path, overwrite forward
+identity and ID-path entries in encounter order, and construct the reverse map
+from the final forward dictionary. The ID allocator is created from the full
+render tree. Focus nodes reuse established identity IDs; their source paths
+replace full-tree paths, matching focus-first lookup routing. No renumbering
+or transactional rollback is introduced. Previously visited render references
+remain mutated when a later node has no source path and throws.
+
+Pinned constructor/table/resolver calls and tested focus ID reuse with differing
+source paths, fresh focus IDs, no-focus and empty inputs, and partial mutation
+on failure. Build and provider checks pass. This restores the table phase but
+not the full revision owner, root/focus rendering, incremental diff or production
+collector integration.

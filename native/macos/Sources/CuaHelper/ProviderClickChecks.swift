@@ -963,6 +963,33 @@ private enum ProviderClickChecks {
             let unrelatedFocus = UIElementTree(items: [.init(element: other, subtree: leaf)], focusedElement: other)
             checkEqual(revisionTreeItem(for: 42, ids: ids, tree: fullTree, focusTree: unrelatedFocus)?.element.title, "full")
         }
+        do {
+            func render(_ identity: Int, _ id: Int?, _ path: [Int], _ children: [UIElementRender<Int>] = []) -> UIElementRender<Int> {
+                UIElementRender(id: identity, elementID: id, text: "node", detailText: nil,
+                    sourcePath: IndexPath(indexes: path), children: children)
+            }
+            let child = render(2, 1, [0, 3])
+            let main = UIElementRenderTree(isFocus: false, roots: [render(1, 0, [0], [child])])
+            let focusChild = render(2, nil, [0])
+            let added = render(3, nil, [1])
+            let focus = UIElementRenderTree(isFocus: true, roots: [focusChild, added])
+            let table = try makeRevisionTable(renderTree: main, focusRenderTree: focus)
+            checkEqual(table.values, [1: 0, 2: 1, 3: 2])
+            checkEqual(table.path(to: 1), IndexPath(index: 0))
+            checkEqual(focusChild.elementID, 1); checkEqual(added.elementID, 2)
+            checkEqual(child.sourcePath, IndexPath(indexes: [0, 3]))
+            let withoutFocus = try makeRevisionTable(renderTree: main, focusRenderTree: nil)
+            checkEqual(withoutFocus.path(to: 1), IndexPath(indexes: [0, 3]))
+            let empty = UIElementRenderTree<Int>(isFocus: false, roots: [])
+            checkTrue(try makeRevisionTable(renderTree: empty, focusRenderTree: nil).values.isEmpty)
+            let first = render(4, nil, [0])
+            let invalid = UIElementRender(id: 5, elementID: nil, text: "invalid", detailText: nil, sourcePath: nil, children: [])
+            let partial = UIElementRenderTree(isFocus: false, roots: [first, invalid])
+            do { _ = try makeRevisionTable(renderTree: partial, focusRenderTree: nil); unexpectedFailure() }
+            catch is MissingRenderSourcePathError {}
+            checkEqual(first.elementID, 1) // mutations before failure are not rolled back
+            checkTrue(invalid.elementID == nil)
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)
