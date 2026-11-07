@@ -3673,6 +3673,7 @@ func runProviderClickChecks() async throws {
     try runSyntheticFocusEnforcementChecks()
     try runSyntheticWindowActivationChecks()
     runSafeActivationCallbackChecks()
+    runTargetActivationObservationChecks()
     runRunLoopTaskChecks()
     runEventTapLifecycleChecks()
 }
@@ -3886,4 +3887,29 @@ private func runEventTapLifecycleChecks() {
     tap!.startMonitoring { _, event in event }
     tap = nil
     checkEqual(Array(calls.suffix(4)), ["create", "enable", "disable", "invalidate"])
+}
+
+private func runTargetActivationObservationChecks() {
+    var state = SafeActivationObservedEvents()
+    checkFalse(state.observe(type: 20, subtypeValue: nil, time: 1))
+    checkTrue(state.targetRequestsSuppression(type: 19, subtypeValue: nil, time: 2))
+    checkEqual(state.transitionFlags, 0x0101)
+    checkTrue(state.targetResignObserved)
+    state.beginForegroundRestoration(time: 3)
+    checkEqual(state.transitionFlags, 1)
+    checkFalse(state.targetResignObserved)
+    checkEqual(state.lastEventTime, 3)
+    checkFalse(state.targetRequestsSuppression(type: 20, subtypeValue: nil, time: 4))
+    checkFalse(state.targetResignObserved)
+    checkFalse(state.targetRequestsSuppression(type: 13, subtypeValue: 1, time: 5))
+    for subtype: Int64 in [22, 23] {
+        checkTrue(state.targetRequestsSuppression(type: 13, subtypeValue: subtype, time: 6))
+        checkFalse(state.targetResignObserved)
+    }
+    checkFalse(state.targetRequestsSuppression(type: 13, subtypeValue: 65538, time: 7))
+    checkTrue(state.targetRequestsSuppression(type: 13, subtypeValue: 2, time: 8))
+    checkTrue(state.targetResignObserved)
+    // Foreground tap writes only bytes 0/1, preserving target observation.
+    checkFalse(state.observe(type: 20, subtypeValue: nil, time: 9))
+    checkTrue(state.targetResignObserved)
 }

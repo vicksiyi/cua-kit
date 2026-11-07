@@ -5,6 +5,33 @@ import CoreGraphics
 struct SafeActivationObservedEvents {
     private(set) var transitionFlags: UInt16 = 0
     private(set) var lastEventTime: Double = 0
+    // Third native byte, written by the target-side enforcer callback.
+    private(set) var targetResignObserved = false
+
+    // 0x10074553c: target-side callback returns a suppression decision,
+    // unlike the foreground tap's observe() which returns pass-through.
+    mutating func targetRequestsSuppression(type: UInt32, subtypeValue: Int64?, time: Double) -> Bool {
+        lastEventTime = time
+        let subtype = subtypeValue.flatMap(Int16.init(exactly:))
+        if type == 20 {
+            transitionFlags |= 1
+            return false
+        }
+        if type == 19 || (type == 13 && subtype == 2) {
+            transitionFlags |= 1
+            targetResignObserved = true
+            return true
+        }
+        return type == 13 && (subtype == 22 || subtype == 23)
+    }
+
+    // 0x1007421c4 clears bytes 1/2, preserving the first observed flag.
+    mutating func beginForegroundRestoration(time: Double) {
+        transitionFlags &= 0xff
+        targetResignObserved = false
+        lastEventTime = time
+    }
+
 
     mutating func filter(type: CGEventType, event: CGEvent, time: Double) -> CGEvent? {
         // Pinned native optional CGEventField is present and equals 83.

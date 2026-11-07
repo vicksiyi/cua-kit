@@ -315,3 +315,27 @@ suppression, disabled-event distinction, stop idempotence, restart and deinit
 ordering are covered. Production safe-enforcement scope still needs its masks,
 shared-state synchronization, update suppression and async restoration wired;
 real-app acceptance remains unverified.
+
+
+## Target-side restoration observation
+
+Safe enforcement installs an additional callback in the enforcer (0x100745468),
+separate from its two temporary EventTaps. The callback body at 0x10074553c
+updates the same observation record's timestamp and first flag for type 20,
+returning false. Type 19 or AppKit subtype 2 sets first flag plus byte 2 and
+returns true. Appearance subtypes 22/23 return true without flag writes; other
+events return false. Subtypes are exact Int16 conversions. The record therefore
+has THREE byte flags plus timestamp, confirmed by snapshot at 0x1007457e0.
+
+SafeActivationObservedEvents now includes targetResignObserved (byte 2), the
+target callback predicate and beginForegroundRestoration. Reset at 0x1007421c4
+clears bytes 1/2 but preserves byte 0 and writes the new time. Foreground tap
+writes preserve byte 2. Tests exercise cross-callback sequencing, selective reset,
+overflow subtype behavior and differing type-20 results. This expands
+the prior two-byte callback extraction; the full async wait is still pending.
+
+Further loop evidence: it checks frontmost PID, can reactivate the saved app,
+examines AXFrontmost and window ordering, and may raise its prior focused window.
+It has distinct one/two-second bounds and a quiet-period check; exact complete
+branch composition is not yet restored. Neither a fixed sleep nor setting all
+flags true would preserve this behavior.

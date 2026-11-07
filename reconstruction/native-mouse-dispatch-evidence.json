@@ -140,6 +140,14 @@
     {
       "site": "0x100732cbc",
       "target": "0x1002583e8"
+    },
+    {
+      "site": "0x100745518",
+      "target": "0x10074553c"
+    },
+    {
+      "site": "0x1007455e0",
+      "target": "0x100257e24"
     }
   ],
   "defaultClickMilliseconds": 50,
