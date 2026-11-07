@@ -265,3 +265,22 @@ The user's later authorization cancellation followed earlier no-op operations.
 It is not an explanation for those earlier failures, and a canceled action must
 not be retried as if authorized. The current locked desktop is a separate live
 verification prerequisite, not a retrospective diagnosis of the unlocked run.
+
+
+## Application initialization operation boundary
+
+Static inspection of 0x100701e04..0x1007020b4 and its condition thunk
+0x100705a28 -> 0x100704f98 establishes a separate readiness criterion: absent
+window returns false without delay or poll; an available window is retained
+through a 100000-microsecond usleep, followed by pollUntilTrueSync(timeout: 1,
+delay: 0.05). Its condition asks for a WebAreaUIElement descendant through
+UIElementProtocol.descendant(ofType:passingTest:). Success returns true;
+poll errors are reported and return false. Screenshot success is not a
+substitute for this readiness check.
+
+AXApplicationInitialization preserves this operation with explicit injected
+polling and WebArea search boundaries, no successful no-op defaults. Checks cover
+nil-window short circuit, exact timing arguments, window identity, repeated
+condition calls and error ordering. The complete native descendant predicate,
+traversal and polling implementation remain outstanding; this helper must not
+be represented as automatic production initialization until those are composed.

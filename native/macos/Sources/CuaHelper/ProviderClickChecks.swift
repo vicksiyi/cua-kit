@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runAXApplicationInitializationChecks()
     runEnhancedUserInterfaceEnablementChecks()
     try await runVoiceOverPreferenceEnablementChecks()
     try await runSafeActivationNativeResourceChecks()
@@ -6625,4 +6626,38 @@ private func runVoiceOverPreferenceEnablementChecks() async throws {
     let cancelled = startVoiceOverPreferenceResetTask(sleep: { _ in throw CancellationError() },
         setFalse: { unexpectedFailure() })
     do { try await cancelled.value; unexpectedFailure() } catch is CancellationError {}
+}
+
+
+private func runAXApplicationInitializationChecks() {
+    final class Window {}
+    enum Failure: Error { case timeout }
+    let window = Window()
+    var trace: [String] = []
+    let absent: Window? = nil
+    checkTrue(!initializeAXApplication(window: absent,
+        initialDelay: { _ in preconditionFailure("absent window must not sleep") },
+        poll: { _, _, _ in preconditionFailure("absent window must not poll") },
+        hasWebAreaDescendant: { _ in preconditionFailure("absent window must not search") },
+        reportError: { _ in preconditionFailure("absent window is not a poll error") }))
+    let success = initializeAXApplication(window: window,
+        initialDelay: { checkEqual($0, 100_000); trace.append("delay") },
+        poll: { timeout, delay, condition in
+            checkEqual(timeout, 1); checkEqual(delay, 0.05)
+            trace.append("poll")
+            checkTrue(!condition()); checkTrue(condition())
+        }, hasWebAreaDescendant: {
+            checkTrue($0 === window)
+            let ready = trace.last == "search"
+            trace.append("search"); return ready
+        }, reportError: { _ in preconditionFailure("successful poll must not report") })
+    checkTrue(success); checkEqual(trace, ["delay", "poll", "search", "search"])
+    trace = []
+    let failed = initializeAXApplication(window: window,
+        initialDelay: { _ in trace.append("delay") },
+        poll: { _, _, condition in
+            trace.append("poll"); checkTrue(!condition()); throw Failure.timeout
+        }, hasWebAreaDescendant: { _ in trace.append("search"); return false },
+        reportError: { checkTrue($0 is Failure); trace.append("error") })
+    checkTrue(!failed); checkEqual(trace, ["delay", "poll", "search", "error"])
 }
