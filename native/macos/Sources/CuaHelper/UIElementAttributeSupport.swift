@@ -15,7 +15,7 @@ func uiElementAttributeIsKnownUnsupported(
     return !readCache().supportedAttributes.contains(attribute)
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func attributeIsKnownUnsupported(_ attribute: UIElementAttribute) -> Bool {
         uiElementAttributeIsKnownUnsupported(attribute, readCache: { cache })
     }

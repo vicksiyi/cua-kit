@@ -1,4 +1,4 @@
-extension UIElement {
+extension UIElementProtocol {
     var flattenedRole: UIElementFlattenedRole? { uiElementFlattenedRole(role: { role }) }
 
     var hasDescriptiveAttributes: Bool {

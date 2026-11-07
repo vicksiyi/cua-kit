@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // Bool scalar accessor used by the safe-enforcement AXFrontmost read
     // (0x1007422e0..0x1007424d4). Reuse cached/uncached policy and Bool decoder.
     func booleanValue(for attribute: UIElementAttribute, ignoringTypeMismatch: Bool,

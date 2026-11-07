@@ -1,7 +1,7 @@
 import Foundation
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // 0x1007ad338: cached AXValue only, decode leniently, suppress failure.
     var boolValue: Bool? {
         uiElementCachedValue(UIElementAttribute(kAXValueAttribute), readCache: { cache }) {
@@ -16,6 +16,9 @@ extension UIElement {
         }
     }
 
+}
+
+extension UIElement {
     // 0x1007ad0ac: typed UIElement array -> original AX references, in order.
     func titleTargetIdentities(reportError: (Error) -> Void) -> [AXUIElement] {
         elementCollectionValue(for: UIElementAttribute(kAXServesAsTitleForUIElementsAttribute),

@@ -2625,3 +2625,20 @@ wrappers can inherit the actual cache logic. The remaining inherited getters
 and full action behavior still need the same treatment before concrete window
 conformances are complete. Cache/getter regression coverage is in the existing
 provider composition checks; this refactor is not application input acceptance.
+
+
+## Shared typed values, support checks and enabled state
+
+The protocol-extension restoration now also covers cached Bool/URL, flattened
+role, descriptive-attribute classification, isEnabled, the focusability helper,
+known-unsupported attribute checks, the String cached/uncached pipeline and the
+Bool scalar pipeline. Each operation continues to use the original lazy cache
+accesses, provider reads, decoders and supplied error reporter. The cached
+Bool/URL extension is split from titleTargetIdentities because its collection
+read dependency is still being restored; no unsupported forwarding shim was
+added for that remaining path.
+
+These methods are now available through the native UIElementProtocol boundary,
+which is required for window-like concrete conformers to inherit them. Remaining
+collection/state/presentation getters and action witnesses still prevent claiming
+complete window conformance or production application acceptance.

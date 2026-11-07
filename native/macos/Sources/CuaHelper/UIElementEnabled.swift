@@ -8,7 +8,7 @@ func uiElementIsEnabled(cache: UIElementCache) -> Bool {
     return (try? decodeAXBool(partial.value.value, throwingOnFailure: false)) ?? true
 }
 
-extension UIElement {
+extension UIElementProtocol {
     var isEnabled: Bool { uiElementIsEnabled(cache: cache) }
 
     // Composition of restored getters; provider selection stays at the caller.

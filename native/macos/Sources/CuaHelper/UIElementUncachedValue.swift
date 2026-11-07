@@ -29,7 +29,7 @@ func uiElementUncachedValue<Value>(
     catch { reportError(error); return nil }
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // Compose recovered accessors for String without bypassing the provider
     // boundary or pretending a raw OS read supplies partial-value descriptors.
     func stringValue(
