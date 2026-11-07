@@ -156,9 +156,10 @@
       "search helpers use Collection.firstIndex(where:)",
       "subtree items are mutated and their caches invalidated"
     ],
+    "textCandidate": "value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
     "remaining": [
       "recover complete optional working-item flow",
-      "map title/value/description fallback and providerTitle precedence",
+      "map providerTitle presence/absence branches and remaining writeback flow",
       "recover target relocation/removal and rebuild callback branches",
       "only then implement dispatcher branch and fixture acceptance"
     ]

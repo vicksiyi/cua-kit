@@ -1139,6 +1139,30 @@ private enum ProviderClickChecks {
                 .init(element: capturedOwner, subtree: transformedLeaf)], focusedElement: nil))], focusedElement: nil))
         checkTrue(deepIdentity.firstChildIndex(matching: capturedOwner.id) == nil)
         checkTrue(emptyItem.firstChildIndex(matching: capturedOwner.id) == nil)
+        // Title association accepts exactly one present field, rather than
+        // choosing a fallback priority or deduplicating equal strings.
+        for mask in 0..<8 {
+            var candidate = anonymousGroup
+            candidate.value = mask & 1 == 0 ? nil : "value"
+            candidate.title = mask & 2 == 0 ? nil : "title"
+            candidate.description = mask & 4 == 0 ? nil : "description"
+            let expected: String?
+            switch mask {
+            case 1: expected = "value"
+            case 2: expected = "title"
+            case 4: expected = "description"
+            default: expected = nil
+            }
+            checkEqual(soleTitleAssociationText(candidate), expected)
+        }
+        var emptyTitleCandidate = anonymousGroup
+        emptyTitleCandidate.title = ""
+        checkEqual(soleTitleAssociationText(emptyTitleCandidate), "")
+        emptyTitleCandidate.title = "  \n "
+        checkEqual(soleTitleAssociationText(emptyTitleCandidate), "  \n ")
+        emptyTitleCandidate.title = "same"
+        emptyTitleCandidate.value = "same"
+        checkTrue(soleTitleAssociationText(emptyTitleCandidate) == nil)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

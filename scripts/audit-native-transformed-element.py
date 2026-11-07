@@ -307,6 +307,26 @@ title_calls = [branch(site, target) for site, target in [
 ]]
 assert struct.unpack('<I', read(0x100658a88, 4))[0] == 0xf9406428 # titleTargetIdentities
 
+# Title candidate block branches on Optional presence, never String.isEmpty.
+def compare_zero_branch(address, register, target):
+    word = struct.unpack('<I', read(address, 4))[0]
+    assert word & 0xff000000 == 0xb4000000  # cbz xN
+    assert word & 31 == register
+    immediate = (word >> 5) & 0x7ffff
+    if immediate & 0x40000: immediate -= 0x80000
+    assert address + immediate * 4 == target
+for site, register, target in [
+    (0x100658ce0, 21, 0x100658d34),
+    (0x100658cf4, 22, 0x100658d5c),
+    (0x100658d40, 22, 0x100658d94),
+    (0x100658d50, 20, 0x100658dac),
+    (0x100658d6c, 20, 0x100658db4),
+    (0x100658da0, 20, 0x100658d80),
+]:
+    compare_zero_branch(site, register, target)
+for site, slot in [(0x100658c84, 10), (0x100658cac, 8), (0x100658ccc, 9)]:
+    assert struct.unpack('<I', read(site, 4))[0] == 0xf9400328 | (slot << 10)
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
     titleAssociationInvestigation=dict(status="partial evidence, not an implemented rule",
@@ -315,8 +335,9 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
             "target filtering callback inserts IDs into a Set and returns inserted",
             "search helpers use Collection.firstIndex(where:)",
             "subtree items are mutated and their caches invalidated"],
+        textCandidate="value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
         remaining=["recover complete optional working-item flow",
-            "map title/value/description fallback and providerTitle precedence",
+            "map providerTitle presence/absence branches and remaining writeback flow",
             "recover target relocation/removal and rebuild callback branches",
             "only then implement dispatcher branch and fixture acceptance"]),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",

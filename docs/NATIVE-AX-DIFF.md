@@ -5411,3 +5411,26 @@ Collection.firstIndex(where:) at 0x101466b70; ArrayProtocol.filter at
 0x101467528. No vendor process was started and no application policy changed.
 This evidence narrows the next reconstruction work, but does not increase
 the count of implemented strategies or constitute production acceptance.
+
+
+### Title candidate uniqueness (2026-11-07)
+
+The nil-combination block 0x100658ce0..0x100658db4 is now decoded. The three
+getters are evaluated in order value, title, description. Selection requires
+**exactly one non-nil value**, not a priority chain. For value-only it reaches
+0x100658db4 from 0x100658d6c; title-only goes through 0x100658dac;
+description-only goes through 0x100658da4. Zero or multiple present fields
+skip this candidate path. There is no trim, nonempty check or string equality:
+an empty string counts as present, and two identical strings are ambiguous.
+This corrects the earlier unresolved “fallback order” investigation item.
+
+The extracted `soleTitleAssociationText` helper preserves that behavior and
+reads each getter once. All eight presence combinations plus empty strings,
+whitespace and equal duplicated fields are tested. The six Optional-pointer
+CBZ branches and three getter witness slots are pinned in the native audit.
+
+The subsequent optional providerTitle callback maps its result to a nil test
+(callback 0x10065d9d8); its presence is distinguished from no provider callback.
+The complete optional working-item, provider precedence and mutation paths
+still require reconstruction. This helper does not claim title association
+is complete or usable as a standalone production transformation.
