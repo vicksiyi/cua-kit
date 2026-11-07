@@ -3720,6 +3720,7 @@ func runProviderClickChecks() async throws {
     runSystemFocusStealPreventerChecks()
     runMenuDismissalSuppressionChecks()
     try runSyntheticAppFocusEnforcerLifecycleChecks()
+    try await runSyntheticFocusSafeActivationBranchChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5496,4 +5497,35 @@ private func runSyntheticAppFocusEnforcerLifecycleChecks() throws {
     enforcer = nil
     checkTrue(preventionOwner == nil)
     checkEqual(invalidations, 4) // click, activation, process keyboard and system taps
+}
+
+private func runSyntheticFocusSafeActivationBranchChecks() async throws {
+    struct Application { let pid: Int32; let capture: Int }
+    enum Failure: Error { case direct, restoring }
+    var captured: Application? = nil
+    var trace: [String] = [], failDirect = false, failRestore = false
+    func run() async throws {
+        try await safelyEnforceSyntheticFocus(targetPID: 88,
+            frontmostApplication: { trace.append("capture"); return captured },
+            processIdentifier: { trace.append("pid"); return $0.pid }, enforce: {
+                trace.append("enforce"); if failDirect { throw Failure.direct }
+            }, restoreOtherApplication: { saved in
+                checkEqual(saved.capture, 123)
+                trace.append("restore-\(saved.pid)")
+                captured = Application(pid: 99, capture: 456)
+                checkEqual(saved.capture, 123) // original capture survives later frontmost changes
+                if failRestore { throw Failure.restoring }
+            })
+    }
+    try await run(); checkEqual(trace, ["capture", "enforce"])
+    trace = []; captured = Application(pid: 88, capture: 123)
+    try await run(); checkEqual(trace, ["capture", "pid", "enforce"])
+    trace = []; captured = Application(pid: 77, capture: 123)
+    try await run(); checkEqual(trace, ["capture", "pid", "restore-77"])
+    trace = []; captured = nil; failDirect = true
+    do { try await run(); unexpectedFailure() } catch Failure.direct {} catch { unexpectedFailure() }
+    checkEqual(trace, ["capture", "enforce"])
+    trace = []; captured = Application(pid: 77, capture: 123); failRestore = true
+    do { try await run(); unexpectedFailure() } catch Failure.restoring {} catch { unexpectedFailure() }
+    checkEqual(trace, ["capture", "pid", "restore-77"])
 }

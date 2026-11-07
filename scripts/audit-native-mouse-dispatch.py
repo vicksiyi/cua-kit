@@ -241,3 +241,8 @@ print(json.dumps({'binarySha256': expected, 'calls': [
 # Menu event array: nine UInt32 CGEventTypes in constructor order.
 assert struct.unpack("<Q", read(0x101572230, 8))[0] == 9
 assert list(struct.unpack("<9I", read(0x101572240, 36))) == [1, 2, 6, 3, 4, 7, 25, 26, 27]
+
+# Safe activation: nil/same foreground goes directly to enforcement.
+assert read(0x10074195c, 4).hex() == "d30100b4"
+assert read(0x100741988, 4).hex() == "61040054"
+assert read(0x10074199c, 4).hex() == "75fdff97"

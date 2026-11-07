@@ -1,4 +1,6 @@
 import Foundation
+import AppKit
+import CoreGraphics
 
 // Enclosing initialization/teardown at 0x100740624 / 0x100740e14.
 // Safe-activation branch orchestration is restored separately from lifecycle.
@@ -36,6 +38,20 @@ final class SyntheticAppFocusEnforcer {
     var state: SyntheticApplicationFocusState { session.target.state.snapshot }
     func enforceActiveState(for window: SyntheticActivationWindow?, send: (SynthesizedEvent) throws -> Void) throws {
         try session.enforceActiveState(for: window, send: send)
+    }
+    func safelyEnforceActiveState(for window: SyntheticActivationWindow?,
+        send: (SynthesizedEvent) throws -> Void,
+        frontmostApplication: () -> NSRunningApplication? = { NSWorkspace.shared.frontmostApplication },
+        makeRestorationDriver: (NSRunningApplication) throws -> SafeActivationRestorationDriver,
+        tapDriver: EventTap.Driver = .system, updates: WindowUpdateDriver = .system) async throws {
+        try await safelyEnforceSyntheticFocus(targetPID: pid, frontmostApplication: frontmostApplication,
+            processIdentifier: { $0.processIdentifier }, enforce: {
+                try self.session.enforceActiveState(for: window, send: send)
+            }, restoreOtherApplication: { saved in
+                let restoration = try makeRestorationDriver(saved)
+                try await self.session.safelyEnforceWhileRestoring(savedPID: saved.processIdentifier,
+                    window: window, send: send, restoration: restoration, tapDriver: tapDriver, updates: updates)
+            })
     }
     func deactivateFocusEnforcer(send: (SynthesizedEvent) throws -> Void) throws {
         try session.deactivateFocusEnforcer(send: send)

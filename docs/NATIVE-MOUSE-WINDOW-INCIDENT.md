@@ -1384,3 +1384,21 @@ Validation: Swift build, full provider-click composition self-test and pinned
 static callsite audit pass. The added lifecycle check asserts initialization
 order, no observer replay, simulated enforcement and release of all four
 created resources on teardown. Real Multica click acceptance remains pending.
+
+
+## Safe enforcement foreground branch selection
+
+Restored 0x10074195c..0x100741a14: capture the current workspace frontmost
+application once. If missing, or its raw process identifier equals the target,
+enforce directly without constructing restoration resources or querying AX.
+Otherwise retain the saved application across the asynchronous restoration
+branch. No early cached-focus check is inserted before foreground capture.
+SyntheticAppFocusEnforcer now connects this selector to the existing monitoring
+session's safe-enforcement/restoration scope, with a lazy restoration-driver
+factory for the other-application branch only. Concrete native driver capture
+and production Target ownership remain outstanding.
+
+Swift build and provider-click checks pass. Added tests assert single capture,
+PID query skipping for nil, direct/restoration error propagation, no cross-branch
+fallback, and retention of the original saved application across later changes.
+This is dependency-injected validation, not real focus restoration or clicking.
