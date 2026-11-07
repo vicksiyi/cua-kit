@@ -184,6 +184,11 @@ for site, expected_bytes in [(0x10074b9e4, '1f980039'), (0x10074e600, '08209052'
                              (0x10074e60c, '1f01296a'), (0x10074e610, '61000054'),
                              (0x10074e614, '68020012'), (0x10074e618, '685b0039')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# System notification tap: packed placement=1/options=0, NOT listen-only.
+for site, expected_bytes in [(0x10074bc6c, '28008052'), (0x10074bc78, '49008052'),
+                             (0x10074bc84, '081800f9'), (0x10074bc88, '0804a052'),
+                             (0x100732ae0, '810a4629')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

@@ -845,8 +845,8 @@ Multica acceptance remains outstanding.
 
 ## System process notification and returned-focus state audit
 
-The preventer owns an annotated-session tap (location 2), head placement,
-listen-only options, mask 1<<21. Callback thunk 0x100750ca4 dispatches to
+The preventer owns an annotated-session tap (location 2), tail-append placement,
+default options, mask 1<<21. Callback thunk 0x100750ca4 dispatches to
 0x10074c724, rather than the per-registration keyboard callback. It reads CPS
 subtype from private field 64 (initializer 0x100731170), not window subtype
 field 83. Focus-related PID is private field 73 (initializer 0x1007311d0).
@@ -1171,3 +1171,15 @@ and reset on a ViewBridge transition with no release. Build/provider-click
 checks and static audit pass. No live system release was performed.
 Complete refresh-task/error handling, system notification resources/lifecycle,
 production controller integration and Multica UI acceptance remain required.
+
+
+## System notification tap configuration correction
+
+Corrected the earlier head/listen-only description in the system-notification
+section. At 0x10074bc6c x8 is set to 1; 0x10074bc84 stores that 64-bit value
+at EventTap+0x30, encoding placement=1 and options=0. Source EventTap creation
+0x100732ae0 loads w1/w2 from +0x30/+0x34 as placement/options. Therefore the
+system notification tap is tailAppendEventTap/defaultTap, location 2, mask
+1<<21. It can suppress events; listenOnly would ignore suppression results.
+This correction is pinned in the audit before implementing that tap. No
+production system-notification tap has yet been installed by this restoration.
