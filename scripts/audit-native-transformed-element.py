@@ -795,7 +795,24 @@ assert struct.unpack('<I', read(0x10063ec00, 4))[0] == 0x3900629f
 # Key path's final class stored-property component is elementID's metadata offset.
 assert struct.unpack('<I', read(0x10118b1d0 + 36, 4))[0] == 0x68
 
-print(json.dumps(dict(nextAvailableElementID=dict(
+readable_protocol = 0x1012ccda8
+assert struct.unpack('<II', read(readable_protocol + 12, 8)) == (0, 1)
+assert struct.unpack('<I', read(readable_protocol + 24, 4))[0] == 0x11
+readable_witness = struct.unpack('<Q', read(0x10149dbd0, 8))[0]
+assert (readable_witness & 0xfffffffff) + 0x100000000 == 0x1007627f0
+readable_calls = [branch(site, target) for site, target in [
+    (0x100762848, 0x100625d58), (0x10075c5d4, 0x100625d58),
+    (0x100625ee0, 0x10115060c),
+]]
+readable_calls.append(branch(0x100625d68, 0x100625d80, link=False))
+readable_calls.append(branch(0x100625d7c, 0x100625d80, link=False))
+compare_zero_branch(0x100625e20, 9, 0x100625dfc)
+
+print(json.dumps(dict(readableRenderingRoute=dict(
+    descriptor=hex(readable_protocol), requirementCount=1,
+    witness="0x1007627f0", calls=readable_calls,
+    composition="outer helpers 0x100625d6c and 0x100625f1c; inner helpers 0x100626300 and 0x100627090; each pair evaluated first then second but joined second then first; omit empty strings only; separator space",
+    limitation="generic accessibilityDescription helper bodies not yet restored; existing node projection is not an end-to-end node renderer"), nextAvailableElementID=dict(
     calls=next_id_calls,
     behavior="capture tree; lazy first maximum of present node IDs; missing maximum defaults to zero; add one and cache; subsequent calls increment cached value; checked overflow",
     limitation="ID supplier only; incremental difference matching/application not yet restored"), renderOutput=dict(

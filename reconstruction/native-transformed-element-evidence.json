@@ -1,4 +1,38 @@
 {
+  "readableRenderingRoute": {
+    "descriptor": "0x1012ccda8",
+    "requirementCount": 1,
+    "witness": "0x1007627f0",
+    "calls": [
+      {
+        "instruction": "0x100762848",
+        "target": "0x100625d58",
+        "link": true
+      },
+      {
+        "instruction": "0x10075c5d4",
+        "target": "0x100625d58",
+        "link": true
+      },
+      {
+        "instruction": "0x100625ee0",
+        "target": "0x10115060c",
+        "link": true
+      },
+      {
+        "instruction": "0x100625d68",
+        "target": "0x100625d80",
+        "link": false
+      },
+      {
+        "instruction": "0x100625d7c",
+        "target": "0x100625d80",
+        "link": false
+      }
+    ],
+    "composition": "outer helpers 0x100625d6c and 0x100625f1c; inner helpers 0x100626300 and 0x100627090; each pair evaluated first then second but joined second then first; omit empty strings only; separator space",
+    "limitation": "generic accessibilityDescription helper bodies not yet restored; existing node projection is not an end-to-end node renderer"
+  },
   "nextAvailableElementID": {
     "calls": [
       {

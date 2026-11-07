@@ -6385,3 +6385,35 @@ observation, cached behavior, negative maxima and value copies. Static audit
 pins the maximum helper, increment, cache-present store and key-path offset.
 This restores the ID supplier, not incremental diff matching/application or
 production collection integration. No real app or vendor service was executed.
+
+
+### Verified missing production rendering dependency (2026-11-07)
+
+The next integration dependency is now identified precisely. LMReadableElement
+at 0x1012ccda8 has no signature requirements and one method requirement (flags
+0x11). TransformedUIElement's witness at 0x10149dbd0 points to 0x1007627f0,
+whose call at 0x100762848 reaches generic AccessibilityNode.accessibilityDescription
+at 0x100625d58. The named implementation 0x10075c574 reaches the same generic
+renderer at 0x10075c5d4. Therefore the rich attributed-text renderer alone is
+insufficient to supply the complete node renderer used by native tree rendering.
+
+The generic renderer is a nested pair composition. Outer helpers are
+0x100625d6c and 0x100625f1c; the first delegates to another pair at 0x100626300
+and 0x100627090. Common composer 0x100625d80 evaluates the first callback then
+the second with the same context, puts the second result before the first,
+drops empty strings (not whitespace), and joins with a single space. The join
+stub 0x10115060c resolves to String-collection joined(separator:) at GOT
+0x101466148. Exact meanings and branches of those three leaf helper bodies still
+need recovery; no names or role-format assumptions have been assigned to them.
+
+Current repository inspection confirms Target.collect in main.swift still uses
+its raw UIElement walk and 1-based record IDs, while the restored renderer uses
+its own rendered hierarchy and display IDs. Do not wire these IDs together or
+claim native output parity until the node renderer, native traversal/subsets and
+operation lookup mapping are connected. Next work should recover the generic
+leaf helpers, then test Mac dispatch -> concrete node render -> render tree with
+provider-backed fixtures before replacing production collection.
+
+This turn adds reproducible static evidence, not a production behavior change.
+The audit validates the descriptor, witness pointer, call edges, composer branch
+and join call against the pinned binary. The installed service was not executed.
