@@ -413,3 +413,21 @@ run into success or publish another tool-call batch. Host turn cleanup still
 runs once. These checks do not forcibly interrupt a non-cooperative adapter while
 it is pending, roll back actions already executed, or impose a default round cap.
 The compatible HTTP adapter separately passes the signal to fetch.
+
+### Runtime startup diagnostics
+
+The restored demo now creates its local debug trace before importing the runtime
+bootstrap. The same trace is reused by the model/tool loop, so initialization
+failures no longer disappear before `run.start`. `entry.start`, `entry.error`,
+and `entry.closed` distinguish the outer CLI lifetime from model/tool events.
+`entry.closed.failed` describes a thrown error at that boundary; a demo-handled
+error can instead appear as `run.error` and a nonzero `exitCode`.
+The terminal prints `Local debug log: ...` once. Logs remain under ignored
+`artifacts/debug/`, retain the existing credential redaction, and can be disabled
+with `CUA_DEBUG=0`. No environment dump or network log upload is added.
+
+This covers errors after the restored entry module loads, including runtime
+configuration and bootstrap failures. Shell/build failures before Node starts,
+static module-resolution failures, and abrupt process termination cannot be
+caught by this boundary; their terminal output is still needed. Diagnostic
+coverage does not itself fix an underlying browser/app connection or policy error.

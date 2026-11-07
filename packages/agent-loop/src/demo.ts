@@ -4,8 +4,7 @@ import { unifiedPreflight } from "./unified-preflight";
 import { surfaceContext } from "./surface-context";
 import { BROWSER_INPUT_CONTEXT } from "./browser-guidance";
 import { CDP_OPERATION_CONTEXT } from "./cdp-guidance";
-import { createDebugLog } from "./debug-log";
-import { fileURLToPath } from "node:url";
+import { getDemoDebugLog } from "./demo-debug";
 import { computerPreflight } from "./computer-preflight";
 import { browserPreflight } from "./browser-preflight";
 import { createTerminalTrace } from "./terminal-trace";
@@ -75,17 +74,7 @@ const turnEvent =
     ? undefined
     : parseNodeReplTurnEvent(JSON.parse(process.env.CUA_MCP_TURN_EVENT));
 const controller = new AbortController();
-const debug =
-  process.env.CUA_DEBUG === "0"
-    ? undefined
-    : createDebugLog(
-        fileURLToPath(new URL("../../../artifacts/debug/", import.meta.url)),
-        Object.entries(process.env)
-          .filter(([key]) => /(?:KEY|TOKEN|SECRET|PASSWORD)/i.test(key))
-          .map(([, value]) => value ?? "")
-          .filter((value) => value.length >= 8),
-      );
-if (debug) console.error(`Local debug log: ${debug.file}`);
+const debug = getDemoDebugLog();
 debug?.write("run.start", {
   question,
   provider: process.env.CUA_MODEL_PROVIDER ?? "deepseek",

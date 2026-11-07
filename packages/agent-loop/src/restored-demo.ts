@@ -1,3 +1,4 @@
+import { getDemoDebugLog } from "./demo-debug";
 import { SupervisorCompatibilityError } from "./native-supervisor";
 import { BrowserStartupError } from "./browser-startup";
 /** CLI boundary: known connection prerequisites get actionable output. */
@@ -5,9 +6,16 @@ import { ComputerUnavailableError } from "./computer-preflight";
 import { fileURLToPath } from "node:url";
 import { IndependentBrowserUnavailableError } from "@core/native-host/browserConnector";
 
+const debug = getDemoDebugLog();
+debug?.write("entry.start", { entry: "restored-demo", node: process.version });
+let entryFailed = false;
 try {
   await import("./restored-demo-runtime");
 } catch (error) {
+  entryFailed = true;
+  // Keep the original failure even when the diagnostic disk write fails.
+  try { debug?.write("entry.error", { error }); }
+  catch { console.error("Could not write the local startup diagnostic."); }
   if (error instanceof SupervisorCompatibilityError || error instanceof BrowserStartupError) {
     console.error(error.message);
     process.exitCode = 1;
@@ -37,4 +45,7 @@ try {
     process.exitCode = 1;
   }
 
+} finally {
+  try { debug?.write("entry.closed", { failed: entryFailed, exitCode: process.exitCode ?? null }); }
+  catch { console.error("Could not close the local startup diagnostic."); }
 }
