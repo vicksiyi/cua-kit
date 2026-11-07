@@ -5753,3 +5753,38 @@ results, range selection and NSNotFound normalization, context mutation,
 attributed-string identity, value/structured-text updates and subtree retention.
 The test formatter is explicitly injected and does not validate native rich-text
 rendering. No live application or vendor service is executed.
+
+### Web-area rich-text outer transformation
+
+`MacUIElementWebAreaTransformation.swift` restores tag 12's outer control flow
+at `0x100759714`. It runs only in informationalContext, requires webArea and
+absence of chromeNodeID support, then reads start and end markers in order.
+The support check in the original uses the existing supported-attribute
+semantics: fresh support is read only when an explicit transaction-attribute
+set excludes the queried attribute, otherwise captured support is used.
+This branch is not enabled simply by context.isChromium being false.
+
+The nextLineEndTextMarkerForTextMarker probe receives the END marker. Its
+nonnil result triggers diagnostic `log[40259b2602983ac06084]` and unchanged;
+a nil result or parameter-encoding/read/decode error instead proceeds with
+the original start/end range. The recovered UITextMarkerRange constructor
+uses AXTextMarkerRangeCreate, preserving opaque marker objects. Range reads
+call the still-separate `0x10075aed8` helper; nil/errors preserve the input.
+Only successful formatting commits attributedString, transformedString and
+value, then clears subtree.items. No captured value is required, unlike the
+text-area branch.
+
+The extracted function has mandatory provider/formatter callbacks. Their
+production wiring, the full marker-range/options helper and attributed-run
+formatter are still pending; this is not a substitute plain-text renderer.
+The diagnostic callback represents the original logger without inventing a
+user-facing error. Static audit pins context checks, marker branches,
+parameterized read/range creation, formatting and subtree setter calls.
+
+Swift build and owned provider-click self-test pass. New tests use local
+opaque marker bytes (no app or document access), verify range endpoint
+identity/order, short-circuit guards, missing endpoints, diagnostic behavior,
+next-line error recovery, range nil/error preservation and successful subtree
+removal while retaining owner identity. This supersedes the preceding section's
+statement that the web-area outer path is evidence-only; its dependent readers
+and formatter remain incomplete.

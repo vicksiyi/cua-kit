@@ -1761,6 +1761,79 @@ private enum ProviderClickChecks {
         richThrows = true
         richUnchanged(richNode, calls: ["content", "range"])
 
+        // Opaque local marker fixtures: no live document positions or AX reads.
+        func webMarker(_ bytes: [UInt8]) -> UITextMarker {
+            UITextMarker(marker: bytes.withUnsafeBufferPointer { AXTextMarkerCreate(nil, $0.baseAddress!, $0.count) })
+        }
+        let webStart = webMarker([1, 2, 3]), webEnd = webMarker([4, 5, 6])
+        var webNode = anonymousGroup
+        webNode.role = .webArea
+        webNode.value = nil // unlike text areas, captured value is not required
+        var webContext = ownerContext(.informationalContext)
+        var webCalls: [String] = []
+        var webChrome = false, webMissingStart = false, webMissingEnd = false
+        var webNextPresent = false, webNextThrows = false, webReadThrows = false, webReadNil = false
+        func webResult() -> UIElementTreeTransformation.Result<TransformedUIElement> {
+            MacUIElementTreeTransformation.retrieveAttributedTextFromWebAreas(
+                item: associationItem(webNode, children: [targetA]), context: &webContext,
+                supportsChromeNodeID: { webCalls.append("support"); return webChrome },
+                readStartMarker: { webCalls.append("start"); return webMissingStart ? nil : webStart },
+                readEndMarker: { webCalls.append("end"); return webMissingEnd ? nil : webEnd },
+                nextLineEnd: { marker in
+                    webCalls.append("next")
+                    checkTrue(CFEqual(marker.marker, webEnd.marker))
+                    if webNextThrows { throw NSError(domain: "fixture", code: 3) }
+                    return webNextPresent ? webStart : nil
+                }, reportUnexpectedNextLine: { webCalls.append("diagnostic") },
+                readRange: { range in
+                    webCalls.append("range")
+                    checkTrue(CFEqual(AXTextMarkerRangeCopyStartMarker(range.range), webStart.marker))
+                    checkTrue(CFEqual(AXTextMarkerRangeCopyEndMarker(range.range), webEnd.marker))
+                    if webReadThrows { throw NSError(domain: "fixture", code: 4) }
+                    return webReadNil ? nil : richText
+                }, render: { value, context in
+                    webCalls.append("render"); checkTrue(value === richText)
+                    context.isWebShaped = true
+                    return TransformedUIString(stringLiteral: "Web formatted")
+                })
+        }
+        func webUnchanged(_ calls: [String]) {
+            webCalls = []
+            switch webResult() {
+            case .unchanged: break
+            default: unexpectedFailure("web guard/failure should preserve input")
+            }
+            checkEqual(webCalls, calls)
+        }
+        for type in [UIElementContextType.fullUIContext, .eventStreamContext] {
+            webContext.type = type; webUnchanged([])
+        }
+        webContext.type = .informationalContext
+        webNode.role = .textArea; webUnchanged([])
+        webNode.role = .webArea
+        webChrome = true; webUnchanged(["support"]); webChrome = false
+        webMissingStart = true; webUnchanged(["support", "start"]); webMissingStart = false
+        webMissingEnd = true; webUnchanged(["support", "start", "end"]); webMissingEnd = false
+        webNextPresent = true
+        webUnchanged(["support", "start", "end", "next", "diagnostic"])
+        webNextPresent = false
+        webReadNil = true; webUnchanged(["support", "start", "end", "next", "range"]); webReadNil = false
+        webReadThrows = true; webUnchanged(["support", "start", "end", "next", "range"]); webReadThrows = false
+        for nextThrows in [false, true] {
+            webNextThrows = nextThrows; webCalls = []
+            switch webResult() {
+            case let .transformed(result):
+                checkTrue(result.children.isEmpty)
+                checkTrue(result.element.attributedString === richText)
+                checkEqual(result.element.value, "Web formatted")
+                checkEqual(result.element.transformedString?.description, "Web formatted")
+                checkTrue(CFEqual(result.element.id, webNode.id))
+                checkTrue(webContext.isWebShaped)
+            default: unexpectedFailure("nil/failed next-line probe must continue to range formatting")
+            }
+            checkEqual(webCalls, ["support", "start", "end", "next", "range", "render"])
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

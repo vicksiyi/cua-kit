@@ -541,7 +541,31 @@ text_area_calls = [branch(site, target) for site, target in [
 ]]
 branch(0x10075a704, 0x10075988c, False)
 
-print(json.dumps(dict(textAreaRichText=dict(
+# Web-area rich-text outer branch: informational-only and marker probe.
+web_area_words = {
+    0x100759718: 0x7100091f, 0x10075971c: 0x54005ee1,
+    0x100759780: 0x36005bc0, 0x1007597a4: 0xb4000081,
+    0x1007597b0: 0x36002600, 0x1007597c0: 0x36002740,
+    0x100759ca4: 0x370032b4, 0x100759cec: 0xb4003060,
+    0x100759d38: 0xb4002460, 0x10075a3bc: 0xb4ffd799,
+    0x100759f08: 0xb4ffff1b, 0x10075a104: 0xb98072f6,
+    0x10075a11c: 0xb98076e8, 0x10075a174: 0xa906e277,
+}
+for address, word in web_area_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+web_area_calls = [branch(site, target) for site, target in [
+    (0x100759c74, 0x1006f5b8c), (0x100759cd4, 0x10075b440),
+    (0x100759d20, 0x10075b440), (0x100759e80, 0x1006f6ed4),
+    (0x100759ec4, 0x101153870), (0x100759ed0, 0x10075aed8),
+    (0x10075a0cc, 0x100770530), (0x10075a1a8, 0x10064fb6c),
+]]
+
+print(json.dumps(dict(webAreaRichText=dict(
+    instructions={hex(k): hex(v) for k, v in web_area_words.items()}, calls=web_area_calls,
+    guards="informationalContext + webArea + no chromeNodeID support + start/end markers present",
+    probe="nextLineEndTextMarkerForTextMarker(end); nonnil -> diagnostic and unchanged; nil/error -> original marker range",
+    commit="read/format range, assign attributedString/transformedString/value, clear subtree; read nil/error leaves item unchanged",
+    limitations="outer branch extracted; typed readers, range-read helper and attributed-run formatter still require production composition"), textAreaRichText=dict(
     instructions={hex(k): hex(v) for k, v in text_area_words.items()},
     calls=text_area_calls,
     guards="textArea, textualContent != AXTextualContextSourceCode, captured value present",

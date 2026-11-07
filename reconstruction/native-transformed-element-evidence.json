@@ -1,4 +1,68 @@
 {
+  "webAreaRichText": {
+    "instructions": {
+      "0x100759718": "0x7100091f",
+      "0x10075971c": "0x54005ee1",
+      "0x100759780": "0x36005bc0",
+      "0x1007597a4": "0xb4000081",
+      "0x1007597b0": "0x36002600",
+      "0x1007597c0": "0x36002740",
+      "0x100759ca4": "0x370032b4",
+      "0x100759cec": "0xb4003060",
+      "0x100759d38": "0xb4002460",
+      "0x10075a3bc": "0xb4ffd799",
+      "0x100759f08": "0xb4ffff1b",
+      "0x10075a104": "0xb98072f6",
+      "0x10075a11c": "0xb98076e8",
+      "0x10075a174": "0xa906e277"
+    },
+    "calls": [
+      {
+        "instruction": "0x100759c74",
+        "target": "0x1006f5b8c",
+        "link": true
+      },
+      {
+        "instruction": "0x100759cd4",
+        "target": "0x10075b440",
+        "link": true
+      },
+      {
+        "instruction": "0x100759d20",
+        "target": "0x10075b440",
+        "link": true
+      },
+      {
+        "instruction": "0x100759e80",
+        "target": "0x1006f6ed4",
+        "link": true
+      },
+      {
+        "instruction": "0x100759ec4",
+        "target": "0x101153870",
+        "link": true
+      },
+      {
+        "instruction": "0x100759ed0",
+        "target": "0x10075aed8",
+        "link": true
+      },
+      {
+        "instruction": "0x10075a0cc",
+        "target": "0x100770530",
+        "link": true
+      },
+      {
+        "instruction": "0x10075a1a8",
+        "target": "0x10064fb6c",
+        "link": true
+      }
+    ],
+    "guards": "informationalContext + webArea + no chromeNodeID support + start/end markers present",
+    "probe": "nextLineEndTextMarkerForTextMarker(end); nonnil -> diagnostic and unchanged; nil/error -> original marker range",
+    "commit": "read/format range, assign attributedString/transformedString/value, clear subtree; read nil/error leaves item unchanged",
+    "limitations": "outer branch extracted; typed readers, range-read helper and attributed-run formatter still require production composition"
+  },
   "textAreaRichText": {
     "instructions": {
       "0x100759ae4": "0x360040a0",
