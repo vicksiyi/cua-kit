@@ -1357,3 +1357,30 @@ registration callback resource leases. Tests use local Mach ports and injected
 window lookup, covering masks/order, equal target/menu PIDs, unknown windows,
 first-record replacement/removal and create-then-discard for missing records.
 Production controller integration and real application clicking remain unverified.
+
+
+## Enclosing synthetic focus enforcer lifecycle
+
+Restored SyntheticAppFocusEnforcer initialization 0x100740624 and teardown
+0x100740e14 by composing the existing monitoring session and shared preventer
+lifecycle. The inclusive frontmost tracker is created first. Registration of
+weak lost/gained callbacks precedes the active-state read, and the key-focus
+query occurs during the initial state mutation, before starting the target tap.
+The frontmost observer is attached last and receives no initial replay. Lost
+and gained callbacks change only the key-focus belief byte (0x1007409e0 and
+0x100746338); the state store still reconciles click monitoring under its lock.
+Teardown removes the frontmost observer, unregisters prevention, then releases
+the session's remaining taps. No automatic deactivation/input is added to deinit.
+
+The source app controller lazily constructs/reuses its enforcer at 0x100071fb8;
+our production Target controller has not yet adopted that lifecycle. Safe
+activation branch selection and click integration therefore remain outstanding.
+This enforcer exposes current state, enforce/deactivate, action bookkeeping and
+menu suppression, while reusing the existing implementations for each behavior.
+Tests inject event tap drivers, isolated notification centers and event sends;
+no real focus changes or posted input are exercised.
+
+Validation: Swift build, full provider-click composition self-test and pinned
+static callsite audit pass. The added lifecycle check asserts initialization
+order, no observer replay, simulated enforcement and release of all four
+created resources on teardown. Real Multica click acceptance remains pending.

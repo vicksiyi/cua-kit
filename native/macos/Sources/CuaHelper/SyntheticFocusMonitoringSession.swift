@@ -22,7 +22,8 @@ final class SyntheticFocusMonitoringSession {
          tapDriver: EventTap.Driver = .system,
          eventWindowID: @escaping (CGEvent) -> UInt32? = syntheticFocusClickWindowID,
          windowOwnerPID: @escaping (UInt32) -> Int32? = syntheticFocusWindowOwnerPID,
-         activateApplication: @escaping (Int32) -> Void = activateSyntheticFocusClickApplication) {
+         activateApplication: @escaping (Int32) -> Void = activateSyntheticFocusClickApplication,
+         initializeState: ((SyntheticFocusStateStore) -> () -> SyntheticApplicationFocusState)? = nil) {
         self.pid = pid; self.helperPID = helperPID
         let slot = ClickSlot {
             SyntheticFocusClickMonitor(helperPID: helperPID, targetPID: pid,
@@ -34,7 +35,7 @@ final class SyntheticFocusMonitoringSession {
         // after constructing state storage with all three bytes zero.
         target = SyntheticFocusTargetMonitor(pid: pid,
             initialState: initialState,
-            startClickMonitoring: { slot.start() }, stopClickMonitoring: { slot.stop() }, driver: tapDriver)
+            startClickMonitoring: { slot.start() }, stopClickMonitoring: { slot.stop() }, driver: tapDriver, initializeState: initializeState)
     }
     func trackFrontmostApplications(using tracker: InclusiveFrontmostApplicationTracker) {
         if let previous = frontmostTracker, let observer = frontmostObserver {
@@ -74,10 +75,15 @@ final class SyntheticFocusMonitoringSession {
             try self.enforceActiveState(for: window, send: send)
         }, driver: restoration)
     }
-    deinit {
+    func stopTrackingFrontmostApplications() {
         if let frontmostTracker, let frontmostObserver {
             frontmostTracker.observations.removeObserver(frontmostObserver)
         }
+        frontmostObserver = nil
+        frontmostTracker = nil
+    }
+    deinit {
+        stopTrackingFrontmostApplications()
         clickSlot.stop()
     }
 }

@@ -3719,6 +3719,7 @@ func runProviderClickChecks() async throws {
     runFocusStealRegistrationResourceChecks()
     runSystemFocusStealPreventerChecks()
     runMenuDismissalSuppressionChecks()
+    try runSyntheticAppFocusEnforcerLifecycleChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5450,4 +5451,49 @@ private func runMenuDismissalSuppressionChecks() {
     checkEqual(store.snapshot.map { $0.enabled }, [true, false])
     checkTrue(store.mutateFirst(pid: 88) { $0.enabled = false })
     checkEqual(store.snapshot.map { $0.enabled }, [false, false])
+}
+
+private func runSyntheticAppFocusEnforcerLifecycleChecks() throws {
+    let pid = NSRunningApplication.current.processIdentifier
+    var trace: [String] = [], invalidations = 0
+    let center = NotificationCenter()
+    let driver = EventTap.Driver(create: { location, _, _, mask, _, _ in
+        switch location {
+        case .session:
+            trace.append(mask == 2 ? "click-tap" : "system-tap")
+        case .process(let target):
+            checkEqual(target, pid)
+            trace.append(mask == FocusStealKeyboardMonitor.mask ? "keyboard-tap" : "target-tap")
+        }
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
+    weak var preventionOwner: SystemFocusStealPreventer?
+    let dependencies = SystemFocusStealPreventer.Dependencies(resolveOwner: { .ordinary(pid: $0) },
+        releaseFocus: { _ in unexpectedFailure() }, compensateViewBridge: { _, _, _ in unexpectedFailure() })
+    let prevention = FocusStealPreventerLifecycle(makeInstance: { empty in
+        trace.append("prevention")
+        let owner = SystemFocusStealPreventer(initialOwner: { .ordinary(pid: 77) }, viewBridgePID: { nil },
+            dependencies: dependencies, tapDriver: driver, becameEmpty: empty)
+        preventionOwner = owner; return owner
+    }, resolveInitialOwner: { unexpectedFailure() })
+    var enforcer: SyntheticAppFocusEnforcer? = SyntheticAppFocusEnforcer(pid: pid, prevention: prevention,
+        makeTracker: {
+            trace.append("tracker")
+            return InclusiveFrontmostApplicationTracker(center: center, initialApplication: { .current })
+        }, targetIsActive: { trace.append("active-query"); return false }, tapDriver: driver)
+    checkEqual(trace, ["tracker","prevention","system-tap","keyboard-tap","active-query","target-tap"])
+    checkFalse(enforcer!.state.applicationIsActive) // observer does not replay tracker initialization
+    checkFalse(enforcer!.state.applicationBelievesItHasFocus)
+    var sends = 0
+    try enforcer!.enforceActiveState(for: nil) { _ in sends += 1 }
+    checkEqual(sends, 1); checkEqual(trace.last, "click-tap")
+    checkTrue(enforcer!.state.applicationBelievesItIsActive)
+    center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil,
+        userInfo: [NSWorkspace.applicationUserInfoKey: NSRunningApplication.current])
+    // Initial tracker already holds this app, so duplicate notification is suppressed.
+    checkFalse(enforcer!.state.applicationIsActive)
+    enforcer = nil
+    checkTrue(preventionOwner == nil)
+    checkEqual(invalidations, 4) // click, activation, process keyboard and system taps
 }

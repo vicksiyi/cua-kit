@@ -9,14 +9,16 @@ final class SyntheticFocusTargetMonitor {
     init(pid: Int32, initialState: SyntheticApplicationFocusState,
          startClickMonitoring: @escaping () -> Void,
          stopClickMonitoring: @escaping () -> Void,
-         driver: EventTap.Driver = .system) {
+         driver: EventTap.Driver = .system,
+         initializeState: ((SyntheticFocusStateStore) -> () -> SyntheticApplicationFocusState)? = nil) {
         state = SyntheticFocusStateStore(state: SyntheticApplicationFocusState(applicationIsActive: false, applicationHasKeyFocus: false),
             startClickMonitoring: startClickMonitoring, stopClickMonitoring: stopClickMonitoring)
         activationFilter = SyntheticFocusActivationFilter(state: state)
         tap = EventTap(location: .process(pid), placement: .headInsertEventTap,
             options: .defaultTap, eventsOfInterest: SafeActivationNativeResources.foregroundMask,
             driver: driver)
-        state.mutate { $0 = initialState }
+        let selectedState = initializeState?(state) ?? { initialState }
+        state.mutate { $0 = selectedState() }
         let filter = activationFilter
         tap.startMonitoring { type, event in filter.filter(type: type, event: event) }
     }
