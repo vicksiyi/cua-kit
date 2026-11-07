@@ -128,8 +128,7 @@ extension Target {
         // instance. Exercise the source's nil-context branches, not fake implementations.
         return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,
             webClickHitsTarget: {
-                await item.systemWebClickHitsTarget(app: UIElement(systemElement: root, transaction: nil),
-                    transaction: nil, reportError: report)
+                await item.webClickHitsTarget(app: UIElement(element: root), reportError: report)
             }, cursorPress: nil,
             prepareActionFocus: { try probeSystemApplicationIsActiveForAXAction(root) },
             performAction: { action in
@@ -139,7 +138,7 @@ extension Target {
                 try item.performAction(action, transaction: nil, environment: .provider, reportError: report)
                 return ["outcome": "dispatched", "eventCount": 0, "action": action.name]
             }, simulateClick: { _ in
-                guard let point = try await item.systemClickablePoint(transaction: nil, reportError: report) else {
+                guard let point = try await item.clickablePoint(reportError: report) else {
                     throw SynthesizedEvent.Error.cannotClickOffscreenElement
                 }
                 return try await simulate(at: point)

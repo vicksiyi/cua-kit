@@ -4049,3 +4049,30 @@ semantics were not weakened to make that fixture pass.
 This does not yet migrate clickable-point clipping, Chess preferred-point or
 web hit-test compositions. No real user UI operation or vendor service execution
 was performed. Live behavior and overall protocol/subtree fidelity remain open.
+
+### Provider clickable-point, clipping and web-hit composition
+
+The mouse host now resolves no-argument clickablePoint and webClickHitsTarget
+through provider-aware wrappers. Clipping retains its AXFrame-only reads,
+uncached-parent distinction, ancestor intersections and boundary stops. The
+no-argument clickable point still explicitly requests no scrolling. Chess-only
+preferred-point selection keeps the existing role/title/bundle checks, original
+process lookup (lookup only, no launch) and grid algorithm, now with provider
+hit/equality/parent/frame dependencies. Web probing uses provider hit testing,
+provider parent decoding and the recovered provider equality; probe errors
+remain false while direct missing-frame errors propagate.
+
+Full-module verification uses the existing owned-helper self-check pattern:
+`--provider-click-self-test`, automatically invoked by
+`reconstruction/native-provider-click-integration.test.ts`. The machine lacks
+XCTest/Testing in Command Line Tools, so no new test framework dependency or
+unbuildable SwiftPM test target was retained. Checks use mock/prefilled AX
+references: exact center coordinates, parent clipping with a provider-constructed
+window, a center outside the clip returning nil, successful app hit, hit error
+returning false, missing frame throwing directly and suppressing hit requests
+when probing. Unexpected mock operations fail immediately. No real mouse input
+or vendor service is executed. Existing clipping/clickable-point/hit fixtures
+also cover the underlying recovered algorithms.
+
+Full UIElementProtocol conformance, source subtree collection, input-focus/
+cursor completeness and live application/browser acceptance remain outstanding.

@@ -26,12 +26,23 @@ extension UIElement {
         read: () -> (error: AXError, value: AXPartialValue?),
         reportError: (Error) -> Void
     ) -> UIElement? {
-        if !uncached { return parentValue(transaction: transaction, read: read, reportError: reportError) }
+        clippingParent(uncached: uncached,
+            initialize: { UIElement(systemElement: $0, transaction: transaction) },
+            read: read, reportError: reportError)
+    }
+
+    func clippingParent(uncached: Bool, initialize: (AXUIElement) -> UIElement,
+        read: () -> (error: AXError, value: AXPartialValue?), reportError: (Error) -> Void
+    ) -> UIElement? {
+        if !uncached {
+            return elementValue(for: UIElementAttribute(kAXParentAttribute), initialize: initialize,
+                read: read, reportError: reportError)
+        }
         return uiElementUncachedValue(operation: {
             try uiElementUncachedValueThrowing(ignoringTypeMismatch: false,
                 isKnownUnsupported: { attributeIsKnownUnsupported(UIElementAttribute(kAXParentAttribute)) }, read: read,
-                decode: { try? decodeAXUIElement($0.value.value, throwingOnFailure: false, transaction: transaction) },
-                decodeThrowing: { try decodeAXUIElement($0.value.value, throwingOnFailure: true, transaction: transaction) })
+                decode: { try? decodeAXUIElement($0.value.value, throwingOnFailure: false, initialize: initialize) },
+                decodeThrowing: { try decodeAXUIElement($0.value.value, throwingOnFailure: true, initialize: initialize) })
         }, reportError: reportError)
     }
 
