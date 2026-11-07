@@ -1474,3 +1474,26 @@ nonthrowing wait has additional AX/fallback behavior at 0x10070e1b8 and is
 not implemented yet. The selector currently returns after direct enforcement;
 production input must not claim parity until this continuation is restored.
 No real application clicking has been verified.
+
+
+## Direct enforcement's bounded AXFrontmost continuation
+
+Restored waitUntilAppBelievesItIsFrontmost from 0x10070e1b8. The apparent
+extra AX branches are cached/unsupported attribute handling, not a browser or
+activation fallback. It reuses a captured target UIElement, tests monotonic
+elapsed <= timeout before each read, returns on AXFrontmost=true, otherwise
+sleeps 0.1 seconds. Absent/false values keep polling. Sleep failure, including
+cancellation, returns from this nonthrowing wait (0x10070f2c4); no busy retry
+or extra event dispatch is introduced.
+
+The nil/same-foreground selector now calls its async wait only after successful
+direct enforcement. Native wiring constructs a target AX wrapper after that
+enforcement and passes timeout 0.25, matching 0x100741a94..0x100741ca0.
+The other-foreground restoration branch does not use this direct wait.
+Tests exercise inclusive deadline reads, expired deadline skipping reads,
+true short circuit, repeated nil, sleep cancellation, and selector ordering
+including thrown enforcement skipping its wait. Real application input and
+production Target integration remain outstanding.
+
+Validation: Swift build and provider-click self-test pass. Static tail-branch
+pin was checked against the vendor instruction bytes; no live wait/click ran.

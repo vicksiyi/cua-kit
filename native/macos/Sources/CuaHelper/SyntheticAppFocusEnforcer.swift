@@ -43,12 +43,13 @@ final class SyntheticAppFocusEnforcer {
     func safelyEnforceActiveState(for window: SyntheticActivationWindow?,
         send: (SynthesizedEvent) throws -> Void,
         frontmostApplication: () -> NSRunningApplication? = { NSWorkspace.shared.frontmostApplication },
+        waitAfterDirectEnforcement: () async -> Void,
         makeRestorationDriver: (NSRunningApplication) throws -> SafeActivationRestorationDriver,
         tapDriver: EventTap.Driver = .system, updates: WindowUpdateDriver = .system) async throws {
         try await safelyEnforceSyntheticFocus(targetPID: pid, frontmostApplication: frontmostApplication,
             processIdentifier: { $0.processIdentifier }, enforce: {
                 try self.session.enforceActiveState(for: window, send: send)
-            }, restoreOtherApplication: { saved in
+            }, waitAfterDirectEnforcement: waitAfterDirectEnforcement, restoreOtherApplication: { saved in
                 let restoration = try makeRestorationDriver(saved)
                 try await self.session.safelyEnforceWhileRestoring(savedPID: saved.processIdentifier,
                     window: window, send: send, restoration: restoration, tapDriver: tapDriver, updates: updates)
@@ -56,7 +57,11 @@ final class SyntheticAppFocusEnforcer {
     }
     func safelyEnforceActiveState(for window: SyntheticActivationWindow?,
         send: (SynthesizedEvent) throws -> Void, reportError: @escaping (Error) -> Void) async throws {
-        try await safelyEnforceActiveState(for: window, send: send, makeRestorationDriver: { saved in
+        try await safelyEnforceActiveState(for: window, send: send, waitAfterDirectEnforcement: {
+            let application = UIElement(systemElement: AXUIElementCreateApplication(self.pid),
+                transaction: UIElementTreeTransaction.current?.cache)
+            await application.waitUntilAppBelievesItIsFrontmost(timeout: 0.25, reportError: reportError)
+        }, makeRestorationDriver: { saved in
             let transaction = UIElementTreeTransaction.current?.cache
             let application = UIElement(systemElement: AXUIElementCreateApplication(systemResolvedRunningApplicationPID(saved)),
                 transaction: transaction)

@@ -251,3 +251,6 @@ assert read(0x10074199c, 4).hex() == "75fdff97"
 assert read(0x10136b06e, len(b"isTerminated")) == b"isTerminated"
 assert read(0x1013699db, len(b"executableURL")) == b"executableURL"
 assert read(0x10136a931, len(b"initWithName:executablePath:options:")) == b"initWithName:executablePath:options:"
+
+# Direct branch tail-jumps to the nonthrowing frontmost wait.
+assert read(0x100741ca0, 4).hex() == "4631ff17"

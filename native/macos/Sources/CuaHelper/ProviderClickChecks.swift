@@ -3724,6 +3724,7 @@ func runProviderClickChecks() async throws {
     runSafeActivationSavedWindowChecks()
     runUIElementBooleanValueChecks()
     runRunningApplicationPIDResolutionChecks()
+    await runApplicationFrontmostWaitChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5512,7 +5513,7 @@ private func runSyntheticFocusSafeActivationBranchChecks() async throws {
             frontmostApplication: { trace.append("capture"); return captured },
             processIdentifier: { trace.append("pid"); return $0.pid }, enforce: {
                 trace.append("enforce"); if failDirect { throw Failure.direct }
-            }, restoreOtherApplication: { saved in
+            }, waitAfterDirectEnforcement: { trace.append("wait") }, restoreOtherApplication: { saved in
                 checkEqual(saved.capture, 123)
                 trace.append("restore-\(saved.pid)")
                 captured = Application(pid: 99, capture: 456)
@@ -5520,9 +5521,9 @@ private func runSyntheticFocusSafeActivationBranchChecks() async throws {
                 if failRestore { throw Failure.restoring }
             })
     }
-    try await run(); checkEqual(trace, ["capture", "enforce"])
+    try await run(); checkEqual(trace, ["capture", "enforce", "wait"])
     trace = []; captured = Application(pid: 88, capture: 123)
-    try await run(); checkEqual(trace, ["capture", "pid", "enforce"])
+    try await run(); checkEqual(trace, ["capture", "pid", "enforce", "wait"])
     trace = []; captured = Application(pid: 77, capture: 123)
     try await run(); checkEqual(trace, ["capture", "pid", "restore-77"])
     trace = []; captured = nil; failDirect = true
@@ -5625,4 +5626,26 @@ private func runRunningApplicationPIDResolutionChecks() {
     matches = [88,99]; checkEqual(resolve(-1), -1)
     matches = [0]; checkEqual(resolve(-1), 0) // no extra validation of the sole result
     checkEqual(systemResolvedRunningApplicationPID(.current), NSRunningApplication.current.processIdentifier)
+}
+
+private func runApplicationFrontmostWaitChecks() async {
+    var time = 0.0, reads = 0, sleeps = 0
+    var value: Bool? = nil
+    func wait(timeout: Double = 0.25, failSleep: Bool = false) async {
+        await waitUntilApplicationBelievesItIsFrontmost(timeout: timeout, elapsed: { time },
+            readFrontmost: { reads += 1; return value }, sleep: { interval in
+                checkEqual(interval, .milliseconds(100)); sleeps += 1
+                if failSleep { throw CancellationError() }
+                time += 0.1
+            })
+    }
+    await wait(); checkEqual(reads, 3); checkEqual(sleeps, 3)
+    time = 0; reads = 0; sleeps = 0; value = true
+    await wait(); checkEqual(reads, 1); checkEqual(sleeps, 0)
+    time = 0.25; reads = 0; sleeps = 0; value = false
+    await wait(); checkEqual(reads, 1); checkEqual(sleeps, 1) // inclusive timeout boundary
+    time = 0.251; reads = 0; sleeps = 0
+    await wait(); checkEqual(reads, 0); checkEqual(sleeps, 0)
+    time = 0; reads = 0; sleeps = 0
+    await wait(failSleep: true); checkEqual(reads, 1); checkEqual(sleeps, 1)
 }
