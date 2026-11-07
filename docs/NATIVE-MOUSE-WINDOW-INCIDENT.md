@@ -1183,3 +1183,21 @@ system notification tap is tailAppendEventTap/defaultTap, location 2, mask
 1<<21. It can suppress events; listenOnly would ignore suppression results.
 This correction is pinned in the audit before implementing that tap. No
 production system-notification tap has yet been installed by this restoration.
+
+
+## New-front state callback
+
+Restored 0x10074f3c0's state behavior. It reads optional private field 73
+inside the state lock and clears the route only if that physical PID matches
+the intercepted physical endpoint. Unlike changed-focus processing, recipient
+or third-PID new-front notifications do not clear the route. Missing field
+skips that clear. It then suppresses the notification if the last ViewBridge
+release-result byte is true, without resetting the byte.
+
+This method assumes the outer callback already passed the captured ViewBridge
+destination gate; it must not be applied indiscriminately to all application
+new-front notifications. Tests cover absent field, both endpoints, differing
+logical owner, matching clear, suppressed output and preserved release byte.
+Build/provider-click checks and static audit pass without OS event taps/input.
+Outer system-notification dispatch, tap/resource ownership, refresh task policy
+and production click-controller integration remain pending.

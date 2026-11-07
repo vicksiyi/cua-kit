@@ -64,7 +64,8 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x10078e21c, 0x1007a7fa4), (0x10078e370, 0x10074ad50),
          (0x10074adb8, 0x1007a7e50),
          (0x10074e75c, 0x100715d4c), (0x10074e844, 0x10078e178),
-         (0x10074e884, 0x10074c688)]
+         (0x10074e884, 0x10074c688),
+         (0x10074f488, 0x100257e24)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -188,6 +189,12 @@ for site, expected_bytes in [(0x10074b9e4, '1f980039'), (0x10074e600, '08209052'
 for site, expected_bytes in [(0x10074bc6c, '28008052'), (0x10074bc78, '49008052'),
                              (0x10074bc84, '081800f9'), (0x10074bc88, '0804a052'),
                              (0x100732ae0, '810a4629')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
+# New-front clears only a matching intercepted route, then tests release byte.
+for site, expected_bytes in [(0x10074f4ac, '888f41b8'), (0x10074f4b0, '89434039'),
+                             (0x10074f4bc, '1f01166b'), (0x10074f660, '9f7f00a9'),
+                             (0x10074f668, '68530079'), (0x10074f66c, '685b4039'),
+                             (0x10074f674, 'e1040054'), (0x10074f708, '1f0100f9')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000

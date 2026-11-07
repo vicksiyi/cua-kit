@@ -3711,6 +3711,7 @@ func runProviderClickChecks() async throws {
     runUIElementProcessTypeChecks()
     runViewBridgeFocusCompensationChecks()
     runViewBridgeReleaseMetadataChecks()
+    runFocusStealNewFrontChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5031,4 +5032,31 @@ private func runViewBridgeReleaseMetadataChecks() {
         takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() },
         isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
     checkFalse(state.ownershipSnapshot.lastViewBridgeFocusReleaseSucceeded)
+}
+
+private func runFocusStealNewFrontChecks() {
+    let event = CGEvent(source: nil)!
+    event.setIntegerValueField(.eventTargetUnixProcessID, value: 88)
+    let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
+    for pid: Int32? in [nil, 77, 66, 88] {
+        state.update(FocusStealKeyboardRoute(interceptedPID: 88, recipientPID: 77, interceptedOwnerPID: 66))
+        checkTrue(state.filterNewFront(event, readFocusPID: { received in checkTrue(received === event); return pid }) === event)
+        var posts = 0
+        let routed = state.filter(event, post: { _, recipient in checkEqual(recipient, 77); posts += 1 })
+        checkEqual(posts, pid == 88 ? 0 : 1)
+        checkTrue(pid == 88 ? routed === event : routed == nil)
+    }
+    let previous = KeyFocusOwnerIdentity.viewBridge(ViewBridgeFocusIdentities(ownerPID: 77, actualFocusedPID: nil))
+    let suppressing = FocusStealKeyboardRoutingState(initialOwner: previous)
+    _ = suppressing.recordOwnerAndSchedule(.viewBridge(ViewBridgeFocusIdentities(ownerPID: 66, actualFocusedPID: 99)),
+        physicalFocusPID: 99, takeRegistrationSnapshot: { [] },
+        releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in true },
+        compensateViewBridge: { _ in true })
+    suppressing.update(FocusStealKeyboardRoute(interceptedPID: 88, recipientPID: 77))
+    checkTrue(suppressing.filterNewFront(event, readFocusPID: { _ in 88 }) == nil)
+    checkTrue(suppressing.filter(event, post: { _, _ in unexpectedFailure() }) === event)
+    // Missing focus field and subsequent new-front events still suppress;
+    // this callback must not clear the release-result metadata.
+    checkTrue(suppressing.filterNewFront(event, readFocusPID: { _ in nil }) == nil)
+    checkTrue(suppressing.ownershipSnapshot.lastViewBridgeFocusReleaseSucceeded)
 }

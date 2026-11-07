@@ -156,6 +156,23 @@ final class FocusStealKeyboardRoutingState {
         keyFocusReturnWasSuppressed = true
         return nil
     }
+    // 0x10074f3c0: called only after the outer ViewBridge destination
+    // gate. New-front clears a matching intercepted route; a different PID
+    // does not clear it. Release-result suppression does not reset that byte.
+    func filterNewFront(_ event: CGEvent,
+        readFocusPID: (CGEvent) -> Int32? = { event in
+            guard let field = CGEventField(rawValue: 73) else { return nil }
+            return Int32(event.getIntegerValueField(field))
+        }
+    ) -> CGEvent? {
+        lock.lock(); defer { lock.unlock() }
+        if let pid = readFocusPID(event), let route, route.interceptedPID == pid {
+            self.route = nil
+            interceptedFocusWasObserved = false
+            keyFocusReturnWasSuppressed = false
+        }
+        return ownership.lastViewBridgeFocusReleaseSucceeded ? nil : event
+    }
     // Source holds its state lock through postToPid; retain event/timestamp.
     func filter(_ event: CGEvent, post: (CGEvent, Int32) -> Void) -> CGEvent? {
         lock.lock(); defer { lock.unlock() }
