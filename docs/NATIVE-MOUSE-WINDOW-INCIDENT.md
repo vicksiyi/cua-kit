@@ -1080,3 +1080,26 @@ provider-click checks and static audit pass. Concrete focused-element/process
 containment compensation is still unimplemented, along with remaining system
 notification resource lifecycle and production click controller integration.
 No live click acceptance is claimed.
+
+
+## ViewBridge key-focus refresh operation body
+
+Restored operation body 0x10074eda0..0x10074f060: construct a process
+notification with key-focus-taken subtype, refresh its timestamp and post to
+the captured previous owner PID; only then construct key-focus-returned and
+refresh/post it to the same PID. It is not NSRunningApplication.activate.
+ViewBridgeKeyFocusRefresh reuses existing SynthesizedEvent key-focus constructors
+and dispatchNativeEvent instead of reimplementing either.
+
+Checks use actual NSEvent/CGEvent construction with injected posting. They
+verify type 21, subtype order 0x4000/0x8000, same recipient and fresh timestamps.
+Injected construction failures verify no post when the first fails, and one
+already-posted event when the second fails. Build/provider-click checks and
+static audit pass without sending real input.
+
+The operation body deliberately does not claim the enclosing task's complete
+error/context policy or process classification. Repository search found no
+complete UIElement.ProcessType.containingElement implementation; that concrete
+classification/containment prerequisite still needs restoration. It is required
+for selecting this refresh versus focus release. Full notification resources,
+production controller integration and real Multica click acceptance remain open.

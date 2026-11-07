@@ -3707,6 +3707,7 @@ func runProviderClickChecks() async throws {
     runFocusStealPhysicalFocusChecks()
     runSystemKeyFocusReleaseChecks()
     runViewBridgeFocusTransitionEligibilityChecks()
+    try runViewBridgeKeyFocusRefreshChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4907,4 +4908,32 @@ private func runViewBridgeFocusTransitionEligibilityChecks() {
         releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { checkEqual($0, 66); return true })
     checkTrue(changed.requiresViewBridgeFocusInspection)
     checkTrue(changed.firstInterceptedFocusReleaseSucceeded == nil)
+}
+
+private func runViewBridgeKeyFocusRefreshChecks() throws {
+    var events: [CGEvent] = [], timestamps: [CGEventTimestamp] = []
+    var clock: CGEventTimestamp = 100
+    try refreshViewBridgeKeyFocus(for: 77, send: { event, pid in
+        dispatchNativeEvent(event, to: pid, timestamp: { clock += 1; return clock }, post: { posted, destination in
+            checkEqual(destination, 77); events.append(posted); timestamps.append(posted.timestamp)
+        })
+    })
+    checkEqual(events.map { $0.type.rawValue }, [21, 21])
+    let subtypes = events.map { UInt16(bitPattern: NSEvent(cgEvent: $0)!.subtype.rawValue) }
+    checkEqual(subtypes, [0x4000, 0x8000]); checkEqual(timestamps, [101, 102])
+    enum Failure: Error { case construction }
+    var trace: [String] = []
+    let event = CGEvent(source: nil)!
+    do {
+        try refreshViewBridgeKeyFocus(for: 77, makeTaken: { trace.append("taken"); return event },
+            makeReturned: { trace.append("returned"); throw Failure.construction },
+            send: { sent, pid in checkTrue(sent === event); checkEqual(pid, 77); trace.append("send") })
+        unexpectedFailure()
+    } catch Failure.construction {}
+    checkEqual(trace, ["taken", "send", "returned"])
+    do {
+        try refreshViewBridgeKeyFocus(for: 77, makeTaken: { throw Failure.construction },
+            makeReturned: { unexpectedFailure() }, send: { _, _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch Failure.construction {}
 }
