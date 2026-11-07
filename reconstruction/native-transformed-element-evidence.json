@@ -51,6 +51,118 @@
       "link": true
     }
   ],
+  "titleAssociationInvestigation": {
+    "status": "partial evidence, not an implemented rule",
+    "calls": [
+      {
+        "instruction": "0x10065d984",
+        "target": "0x10065c154",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c200",
+        "target": "0x10115219c",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c214",
+        "target": "0x10115219c",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c248",
+        "target": "0x101150714",
+        "link": true
+      },
+      {
+        "instruction": "0x10065d9a8",
+        "target": "0x10065c294",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c380",
+        "target": "0x101151344",
+        "link": true
+      },
+      {
+        "instruction": "0x10065d9cc",
+        "target": "0x10065c3c0",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c468",
+        "target": "0x1011514a0",
+        "link": true
+      },
+      {
+        "instruction": "0x10065f7b0",
+        "target": "0x10065da60",
+        "link": true
+      },
+      {
+        "instruction": "0x10065da68",
+        "target": "0x10065da3c",
+        "link": true
+      },
+      {
+        "instruction": "0x10065da50",
+        "target": "0x10065c498",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c524",
+        "target": "0x10115219c",
+        "link": true
+      },
+      {
+        "instruction": "0x10065c558",
+        "target": "0x101150714",
+        "link": true
+      },
+      {
+        "instruction": "0x100658a1c",
+        "target": "0x1011514a0",
+        "link": true
+      },
+      {
+        "instruction": "0x100658b10",
+        "target": "0x10115234c",
+        "link": true
+      },
+      {
+        "instruction": "0x10065954c",
+        "target": "0x101150c18",
+        "link": true
+      },
+      {
+        "instruction": "0x100659658",
+        "target": "0x10064fac4",
+        "link": true
+      },
+      {
+        "instruction": "0x100659758",
+        "target": "0x10064fac4",
+        "link": true
+      },
+      {
+        "instruction": "0x100659868",
+        "target": "0x10064fac4",
+        "link": true
+      }
+    ],
+    "confirmed": [
+      "candidate comparison uses Identifiable.id equality, not node text",
+      "target filtering callback inserts IDs into a Set and returns inserted",
+      "search helpers use Collection.firstIndex(where:)",
+      "subtree items are mutated and their caches invalidated"
+    ],
+    "remaining": [
+      "recover complete optional working-item flow",
+      "map title/value/description fallback and providerTitle precedence",
+      "recover target relocation/removal and rebuild callback branches",
+      "only then implement dispatcher branch and fixture acceptance"
+    ]
+  },
   "repetitiveText": {
     "entry": "0x100659d8c",
     "helper": "0x10065c5ac",

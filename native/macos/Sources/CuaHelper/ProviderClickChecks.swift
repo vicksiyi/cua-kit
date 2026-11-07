@@ -1128,6 +1128,17 @@ private enum ProviderClickChecks {
             item: incompleteRepeat) else { unexpectedFailure() }
         guard case .unchanged = UIElementTreeTransformation.flattenRepetitiveStaticText(
             item: emptyGroup) else { unexpectedFailure() }
+        let identityChildren = PruneItem(element: capturedOwner, subtree: .init(items: [
+            .init(element: otherIdentityOwner, subtree: transformedLeaf),
+            .init(element: capturedOwner, subtree: transformedLeaf),
+            .init(element: mutableOwner, subtree: transformedLeaf)], focusedElement: nil))
+        checkEqual(identityChildren.firstChildIndex(matching: capturedOwner.id), 1)
+        checkEqual(identityChildren.firstChildIndex(matching: otherIdentityOwner.id), 0)
+        let deepIdentity = PruneItem(element: capturedOwner, subtree: .init(items: [
+            .init(element: otherIdentityOwner, subtree: .init(items: [
+                .init(element: capturedOwner, subtree: transformedLeaf)], focusedElement: nil))], focusedElement: nil))
+        checkTrue(deepIdentity.firstChildIndex(matching: capturedOwner.id) == nil)
+        checkTrue(emptyItem.firstChildIndex(matching: capturedOwner.id) == nil)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

@@ -282,8 +282,43 @@ for address, instruction in [
 ]:
     assert struct.unpack('<I', read(address, 4))[0] == instruction
 
+# Title association investigation: pin identity matching, target dedup,
+# first-index lookup and mutation sites without claiming a complete algorithm.
+title_calls = [branch(site, target) for site, target in [
+    (0x10065d984, 0x10065c154),
+    (0x10065c200, 0x10115219c),
+    (0x10065c214, 0x10115219c),
+    (0x10065c248, 0x101150714),
+    (0x10065d9a8, 0x10065c294),
+    (0x10065c380, 0x101151344),
+    (0x10065d9cc, 0x10065c3c0),
+    (0x10065c468, 0x1011514a0),
+    (0x10065f7b0, 0x10065da60),
+    (0x10065da68, 0x10065da3c),
+    (0x10065da50, 0x10065c498),
+    (0x10065c524, 0x10115219c),
+    (0x10065c558, 0x101150714),
+    (0x100658a1c, 0x1011514a0),
+    (0x100658b10, 0x10115234c),
+    (0x10065954c, 0x101150c18),
+    (0x100659658, 0x10064fac4),
+    (0x100659758, 0x10064fac4),
+    (0x100659868, 0x10064fac4),
+]]
+assert struct.unpack('<I', read(0x100658a88, 4))[0] == 0xf9406428 # titleTargetIdentities
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
+    titleAssociationInvestigation=dict(status="partial evidence, not an implemented rule",
+        calls=title_calls,
+        confirmed=["candidate comparison uses Identifiable.id equality, not node text",
+            "target filtering callback inserts IDs into a Set and returns inserted",
+            "search helpers use Collection.firstIndex(where:)",
+            "subtree items are mutated and their caches invalidated"],
+        remaining=["recover complete optional working-item flow",
+            "map title/value/description fallback and providerTitle precedence",
+            "recover target relocation/removal and rebuild callback branches",
+            "only then implement dispatcher branch and fixture acceptance"]),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
         guard="not focusable/selectable and no canBeUserInteractive descendant",
         matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",

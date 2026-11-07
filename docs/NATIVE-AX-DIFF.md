@@ -5372,3 +5372,42 @@ order, parent interactivity, deep descendant interactivity, whitespace-only
 text, value matching, partial child metadata, empty input and input retention.
 Build/self-test pass; this rule still awaits complete production pipeline
 integration and real application acceptance with the remaining strategies.
+
+
+### Title association investigation — not implemented (2026-11-07)
+
+Tag 0 enters at 0x100658704 and traverses the original direct children in
+ascending order. It carries an optional working item and applies changes to
+a copied subtree. The full control flow spans 0x100658704..0x100659a9c with
+completion at 0x10065a6e8. Do not replace this with a per-node title assignment.
+
+Confirmed dependencies, now pinned in the native audit:
+
+- Candidate predicate 0x10065c154 reads Identifiable.id for both nodes through
+  stub 0x10115219c, then compares IDs with Equatable. Its closure thunk is
+  0x10065d970. The caller 0x100658a1c uses firstIndex(where:), so this is an
+  ordered first-match lookup, not display-title equality.
+- The title target getter is witness slot 25 at 0x100658a88. Filtering at
+  0x100658b10 uses callback thunk 0x10065d994 -> helper 0x10065c294; the helper
+  returns Set.insert's inserted flag (stub 0x101151344), deduplicating identities.
+- Helper 0x10065c3c0 obtains the supplied item's direct child array and performs
+  firstIndex(where:) through closure 0x10065f7a8. This is not an arbitrary deep
+  search. The closure chain 0x10065f7a8 -> 0x10065da60 -> 0x10065da3c calls
+  0x10065c498, comparing the child's Identifiable.id to the supplied ID.
+  This direct-child helper is restored as firstChildIndex(matching:), with
+  tests for duplicate identity first-match, distinct IDs, empty children,
+  and rejection of a match found only at grandchild depth.
+- A single-child candidate path reads value, title and description at
+  0x100658c84/0x100658cac/0x100658ccc. The nil-combination branches must be
+  decoded in full; these getter calls alone do not establish fallback order.
+- Later paths mutate subtree items, optionally invoke rebuild, and invalidate
+  caches at 0x100659658/0x100659758/0x100659868. Removal is therefore part of
+  the algorithm, not merely text enrichment. Exact relocation/removal
+  conditions and providerTitle precedence remain to recover.
+
+Imported symbols verified from read-only Mach-O binding inspection:
+Identifiable.id at GOT 0x101467348; Set.insert at 0x1014669b0;
+Collection.firstIndex(where:) at 0x101466b70; ArrayProtocol.filter at
+0x101467528. No vendor process was started and no application policy changed.
+This evidence narrows the next reconstruction work, but does not increase
+the count of implemented strategies or constitute production acceptance.
