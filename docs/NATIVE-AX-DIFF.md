@@ -3228,3 +3228,34 @@ partial-array metadata. It performs no live AX reads or private SPI calls.
 Swift package build and the composition test pass. Transaction owner/task-local
 prefetch integration and the full PID/mock resolver remain outstanding; this
 is not end-to-end desktop acceptance.
+
+### Transaction role-frequency accumulation and disabled-prefetch branch
+
+The constructor's disabled branch (`0x10076c3e4`) still constructs a transaction:
+an empty attribute table, empty requested-attribute set and fresh locked fallback
+cache are stored at offsets 0x28/0x30/0x38. It computes frequencies from that empty
+table, then calls the element-cache constructor at `0x10076c4d4`. Thus disabling
+prefetch must not be implemented by returning nil transaction or skipping root
+cache construction. The enabled path likewise computes frequencies before
+constructing the root element cache (`0x10076c768`, then `0x10076c7b4`).
+
+`UIElementRoleFrequency.swift` now restores `0x10076cf10..<0x10076d2b4`.
+It iterates attribute-table values, looks up only AXRole, unwraps AXPartialValue's
+raw object, and invokes the String-specialized decoder at `0x100710b44` with
+throwingOnFailure false. Failed/nil decoding skips the entry. A decoded string
+is bridged to the CFString-backed UIElementRole and increments its count; missing
+counts start at one. Ordinary checked Swift addition preserves the overflow trap.
+There is no known-role whitelist, empty-string rejection, cold AX read or AXUnknown
+fallback. Existing counts are accumulated rather than replaced.
+
+The fixture uses the restored String decoder and covers repeated/custom/empty
+roles, missing AXRole, AXSubrole-only data, null data, injected decoding errors,
+empty tables and accumulation into a nonempty count table. It and Swift build
+pass without live AX reads. This supplies the role table computation needed by
+the transaction owner; it does not yet restore the owner's protocol root,
+TaskLocal current/perform scope or enabled attribute selection.
+
+Additional static evidence: `perform(work:)` at `0x10076c8e8` copies the complete
+transaction into the current TaskLocal value and invokes its scoped operation at
+`0x10076c99c`; a cache-only TaskLocal would lose the root and frequency fields.
+The full protocol root must be preserved when implementing that owner.
