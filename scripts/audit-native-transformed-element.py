@@ -754,7 +754,33 @@ render_tree_calls = [branch(site, target) for site, target in [
 compare_zero_branch(0x10064c890, 0, 0x10064c98c)
 compare_zero_branch(0x10064cbcc, 20, 0x10064cc48)
 
-print(json.dumps(dict(renderTreeAssembly=dict(
+line_options = struct.unpack('<4q', read(0x10118a6f0, 32))
+assert line_options == (1, 2, 4, 8)
+line_format_calls = [branch(site, target) for site, target in [
+    (0x10063e164, 0x101150b64), # String.init(repeating: Character, count: Int)
+    (0x10063e1dc, 0x101152ca0), # integer description
+    (0x10063e338, 0x101150f00), # append contents of each root's children
+]]
+for site, reg, bit, target, nonzero in [
+    (0x10063e0e0, 23, 1, 0x10063e13c, True),
+    (0x10063e170, 23, 0, 0x10063e19c, True),
+    (0x10063e278, 0, 0, 0x10063e3a0, False),
+    (0x10063e394, 0, 0, 0x10063e3a4, False),
+]:
+    word = struct.unpack('<I', read(site, 4))[0]
+    assert word & 0x7e000000 == 0x36000000
+    assert bool(word & 0x01000000) == nonzero
+    assert word & 31 == reg
+    assert ((word >> 19) & 31) | ((word >> 26) & 32) == bit
+    displacement = (word >> 5) & 0x3fff
+    if displacement & 0x2000: displacement -= 0x4000
+    assert site + displacement * 4 == target
+
+print(json.dumps(dict(renderLineAndSelection=dict(
+    flags=line_options, calls=line_format_calls,
+    line="repeat supplied Character; optional integer and space; text; optional space plus detail including present empty detail; no per-line indentation",
+    selection="only focus trees; concatenate immediate root children preserving references/order/duplicates; nil if empty; resulting isFocus false",
+    limitation="these presentation methods are not yet wired to production collection"), renderTreeAssembly=dict(
     calls=render_tree_calls,
     behavior="depth-first source paths; nonnil node maps path to itself; nil node inherits surviving ancestor path; attach to mapped ancestor or retain root path; preserve source isFocus; errors propagate",
     limitation="render-specific assembly restored; generic traversable protocol and iterator internals are not exported; line formatting and production collection remain pending"), renderNodeProjection=dict(

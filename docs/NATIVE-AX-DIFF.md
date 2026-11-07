@@ -6319,3 +6319,26 @@ Static branch/call audit passed against the pinned native binary. No live app or
 vendor service was run. Remaining integration includes line formatting, numeric
 ID assignment, Mac protocol rendering witnesses, traversal subset selection and
 production Target.collect replacement.
+
+
+### Render lines and focused selection projection (2026-11-07)
+
+UIElementRenderLine.swift restores line(indent:indentCount:options:) at
+0x10063e0b0. The output is repeated Character indentation, optional decimal ID
+plus a space, text, and optional space plus detailText. Detail presence is an
+Optional check, not an emptiness check: empty detail contributes a trailing
+space. Embedded newlines are unchanged and are not individually indented.
+The raw Int flags at 0x10118a6f0 are 1/2/4/8 for withoutElementID,
+withoutDetailText, withoutInsertionSubtree and withoutRemovalSubtree. The latter
+two do not affect this single-node line function; diff rendering remains separate.
+
+selectionSubtree at 0x10063e25c returns nil for non-focus trees. For a focus tree
+it concatenates immediate root children, preserving references, ordering and
+duplicates. An empty concatenation returns nil; a nonempty result has isFocus
+false. It neither flattens grandchildren nor queries AX selection attributes.
+
+Owned provider tests verify all line flag combinations, missing IDs/details,
+empty details, multiline text, negative IDs, multi-scalar Character indentation,
+and selection aliasing/duplicates/empty cases. Swift build, provider tests and
+static binary audit passed. Production traversal/collection integration, display
+ID assignment and whole-tree line enumeration remain incomplete.

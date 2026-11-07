@@ -2878,6 +2878,23 @@ private enum ProviderClickChecks {
             node.append(child: child)
             node.append(child: child)
             checkEqual(node.children.count, 2)
+            checkEqual(node.line(indent: "·", indentCount: 2, options: []), "··7    (showing 0-2 of 99 items)")
+            checkEqual(node.line(indent: " ", indentCount: 0, options: [.withoutElementID, .withoutDetailText]), "  ")
+            let multiline = UIElementRender(id: 1, elementID: -3, text: "a\nb", detailText: "", sourcePath: nil, children: [])
+            checkEqual(multiline.line(indent: "👩‍💻", indentCount: 2, options: []), "👩‍💻👩‍💻-3 a\nb ")
+            checkEqual(multiline.line(indent: " ", indentCount: 1, options: [.withoutDetailText]), " -3 a\nb")
+            checkEqual(multiline.line(indent: " ", indentCount: 0, options: [.withoutElementID]), "a\nb ")
+            checkEqual(multiline.line(indent: " ", indentCount: 0, options: [.withoutInsertionSubtree, .withoutRemovalSubtree]), "-3 a\nb ")
+            checkEqual(child.line(indent: " ", indentCount: 0, options: []), "child")
+            let selection = UIElementRenderTree(isFocus: true, roots: [node]).selectionSubtree()!
+            checkFalse(selection.isFocus)
+            checkEqual(selection.roots.count, 2)
+            checkTrue(selection.roots[0] === child && selection.roots[1] === child)
+            selection.roots[0].elementID = 12
+            checkEqual(child.elementID, 12)
+            checkTrue(UIElementRenderTree(isFocus: false, roots: [node]).selectionSubtree() == nil)
+            checkTrue(UIElementRenderTree(isFocus: true, roots: [child]).selectionSubtree() == nil)
+            checkTrue(UIElementRenderTree<Int>(isFocus: true, roots: []).selectionSubtree() == nil)
             checkTrue(node.children[0] === child && node.children[1] === child)
             let omitted = tree.items[0].renderNode(sourcePath: path, context: &context) { _, _ in "" }
             checkTrue(omitted == nil)

@@ -1,4 +1,32 @@
 {
+  "renderLineAndSelection": {
+    "flags": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "calls": [
+      {
+        "instruction": "0x10063e164",
+        "target": "0x101150b64",
+        "link": true
+      },
+      {
+        "instruction": "0x10063e1dc",
+        "target": "0x101152ca0",
+        "link": true
+      },
+      {
+        "instruction": "0x10063e338",
+        "target": "0x101150f00",
+        "link": true
+      }
+    ],
+    "line": "repeat supplied Character; optional integer and space; text; optional space plus detail including present empty detail; no per-line indentation",
+    "selection": "only focus trees; concatenate immediate root children preserving references/order/duplicates; nil if empty; resulting isFocus false",
+    "limitation": "these presentation methods are not yet wired to production collection"
+  },
   "renderTreeAssembly": {
     "calls": [
       {
