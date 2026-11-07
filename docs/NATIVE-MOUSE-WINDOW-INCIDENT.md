@@ -975,3 +975,20 @@ owner transitions, plus query/fallback selection. Swift build, provider-click
 checks and static audit pass. This is the history value layer; enclosing
 system-state lifecycle, remaining changed/new-front effects and production
 controller integration remain incomplete.
+
+
+## Shared ownership/route lock composition
+
+The routing-state owner now requires an explicit initial rich focus identity.
+It owns FocusStealOwnershipHistory under the same lock as the keyboard route
+and returned-focus flag. Taken-focus handling compares against the saved
+current identity inside that lock, rather than accepting a separate previous
+PID from the caller.
+
+recordOwnerAndSchedule records history before snapshot acquisition and
+callback enqueue while holding that same state lock. Tests now exercise real
+state transitions and inspect saved current/previous owners in addition to
+callback delivery. Swift build/provider-click checks pass. This composes the
+prefix of changed-focus handling; later route/resource effects, complete system
+notification entry points and production controller integration remain pending.
+There is no new claim of live click acceptance.

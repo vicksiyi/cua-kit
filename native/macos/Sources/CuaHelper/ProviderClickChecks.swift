@@ -4621,7 +4621,7 @@ private func runFocusStealKeyboardMonitorChecks() {
         var portContext = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
         return CFMachPortCreate(nil, { _, _, _, _ in }, &portContext, nil)
     }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
-    var state: FocusStealKeyboardRoutingState? = FocusStealKeyboardRoutingState()
+    var state: FocusStealKeyboardRoutingState? = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
     weak var weakState = state
     var recipients: [Int32] = []
     let event = CGEvent(source: nil)!
@@ -4666,10 +4666,11 @@ private func runFocusStealKeyboardMonitorChecks() {
 
 private func runFocusStealTakenStateChecks() {
     let event = CGEvent(source: nil)!
-    let state = FocusStealKeyboardRoutingState()
+    let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
     var trace: [String] = []
     func taken(previous: Int32, registered: Bool) -> CGEvent? {
-        state.filterKeyFocusTaken(event, previousOwnerPID: previous,
+        state.recordOwnerAndSchedule(.ordinary(pid: previous), takeRegistrationSnapshot: { [] })
+        return state.filterKeyFocusTaken(event,
             incomingFocusPID: 88, destinationPID: 77,
             resolveOwnerPID: { checkEqual($0, 88); trace.append("resolve"); return 66 },
             isRegistered: { checkEqual($0, 66); trace.append("registered"); return registered })
@@ -4698,7 +4699,7 @@ private func runFocusStealRegistrationTransitionChecks() {
     for previous: Int32 in [66, 77] {
         for current: Int32 in [66, 77] {
             for suppressed: Int32? in [nil, 66, 77] {
-                let state = FocusStealKeyboardRoutingState(route: FocusStealKeyboardRoute(
+                let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77), route: FocusStealKeyboardRoute(
                     interceptedPID: 88, recipientPID: 99, interceptedOwnerPID: suppressed))
                 for pid: Int32 in [66, 77, 55] {
                     let actual = state.registrationTransition(pid: pid, previousOwnerPID: previous,
@@ -4711,9 +4712,9 @@ private func runFocusStealRegistrationTransitionChecks() {
             }
         }
     }
-    let state = FocusStealKeyboardRoutingState()
+    let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
     let event = CGEvent(source: nil)!
-    _ = state.filterKeyFocusTaken(event, previousOwnerPID: 77, incomingFocusPID: 88,
+    _ = state.filterKeyFocusTaken(event, incomingFocusPID: 88,
         destinationPID: 77, resolveOwnerPID: { _ in 66 }, isRegistered: { _ in true })
     checkEqual(state.registrationTransition(pid: 66, previousOwnerPID: 77, currentOwnerPID: 66), .unchanged)
     checkEqual(state.registrationTransition(pid: 77, previousOwnerPID: 77, currentOwnerPID: 66), .lost)
@@ -4759,9 +4760,9 @@ private func runFocusStealRegisteredDispatchChecks() async {
     store.append(FocusStealRegistrationCallbacks(pid: 88, lost: nil, gained: { recorder.append("gained-2") }))
     store.append(FocusStealRegistrationCallbacks(pid: 77, lost: { recorder.append("lost") }, gained: nil))
     store.append(FocusStealRegistrationCallbacks(pid: 55, lost: nil, gained: nil))
-    let state = FocusStealKeyboardRoutingState()
+    let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
     var snapshotReads = 0
-    let tasks = state.scheduleRegisteredTransitions(previousOwnerPID: 77, currentOwnerPID: 88,
+    let tasks = state.recordOwnerAndSchedule(.ordinary(pid: 88),
         takeRegistrationSnapshot: {
             snapshotReads += 1
             let snapshot = store.snapshot
@@ -4772,9 +4773,12 @@ private func runFocusStealRegisteredDispatchChecks() async {
     for task in tasks { checkFalse(await task.value) }
     checkEqual(recorder.snapshot.sorted(), ["gained-1", "gained-2", "lost"])
     checkEqual(store.snapshot.map { $0.pid }, [88, 77, 55])
+    checkEqual(state.ownershipSnapshot.current.ownerPID, 88)
+    checkEqual(state.ownershipSnapshot.previous?.ownerPID, 77)
     // The intercepted logical owner does not receive a gained callback.
+    state.recordOwnerAndSchedule(.ordinary(pid: 77), takeRegistrationSnapshot: { [] })
     state.update(FocusStealKeyboardRoute(interceptedPID: 99, recipientPID: 77, interceptedOwnerPID: 88))
-    let suppressed = state.scheduleRegisteredTransitions(previousOwnerPID: 77, currentOwnerPID: 88,
+    let suppressed = state.recordOwnerAndSchedule(.ordinary(pid: 88),
         takeRegistrationSnapshot: { store.snapshot })
     checkEqual(suppressed.count, 1)
     for task in suppressed { checkFalse(await task.value) }

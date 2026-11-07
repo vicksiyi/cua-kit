@@ -30,9 +30,16 @@ func focusStealRegistrationTransition(pid: Int32, previousOwnerPID: Int32,
 
 final class FocusStealKeyboardRoutingState {
     private let lock = NSLock()
+    private var ownership: FocusStealOwnershipHistory
     private var route: FocusStealKeyboardRoute?
     private var keyFocusReturnWasSuppressed = false
-    init(route: FocusStealKeyboardRoute? = nil) { self.route = route }
+    init(initialOwner: KeyFocusOwnerIdentity, route: FocusStealKeyboardRoute? = nil) {
+        ownership = FocusStealOwnershipHistory(current: initialOwner)
+        self.route = route
+    }
+    var ownershipSnapshot: FocusStealOwnershipHistory {
+        lock.lock(); defer { lock.unlock() }; return ownership
+    }
     func update(_ route: FocusStealKeyboardRoute?) {
         lock.lock(); defer { lock.unlock() }
         self.route = route
@@ -49,11 +56,14 @@ final class FocusStealKeyboardRoutingState {
     // Returning task handles is an internal verification seam; production
     // callers may discard them, as the original callback does.
     @discardableResult
-    func scheduleRegisteredTransitions(previousOwnerPID: Int32, currentOwnerPID: Int32,
+    func recordOwnerAndSchedule(_ owner: KeyFocusOwnerIdentity,
         takeRegistrationSnapshot: () -> [FocusStealRegistrationCallbacks],
         reportMissingHandler: @escaping @Sendable (Int32, FocusStealRegistrationTransition) -> Void = { _, _ in }
     ) -> [Task<Bool, Never>] {
         lock.lock(); defer { lock.unlock() }
+        ownership.record(owner)
+        let previousOwnerPID = ownership.previous!.ownerPID
+        let currentOwnerPID = ownership.current.ownerPID
         let registrations = takeRegistrationSnapshot()
         var tasks: [Task<Bool, Never>] = []
         for registration in registrations {
@@ -70,14 +80,14 @@ final class FocusStealKeyboardRoutingState {
     // 0x10074c8d0..0x10074c95c. Resolve the incoming physical PID while
     // holding state lock, then test its logical owner against registrations.
     // Return the original notification if allowed and clear any stale route.
-    func filterKeyFocusTaken(_ event: CGEvent, previousOwnerPID: Int32,
+    func filterKeyFocusTaken(_ event: CGEvent,
                              incomingFocusPID: Int32, destinationPID: Int32,
                              resolveOwnerPID: (Int32) -> Int32,
                              isRegistered: (Int32) -> Bool) -> CGEvent? {
         lock.lock(); defer { lock.unlock() }
         let ownerPID = resolveOwnerPID(incomingFocusPID)
         let registered = isRegistered(ownerPID)
-        let suppress = registered && ownerPID != previousOwnerPID
+        let suppress = registered && ownerPID != ownership.current.ownerPID
         route = suppress ? FocusStealKeyboardRoute(interceptedPID: incomingFocusPID,
                                                    recipientPID: destinationPID,
                                                    interceptedOwnerPID: ownerPID) : nil
