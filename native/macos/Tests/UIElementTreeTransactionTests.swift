@@ -189,7 +189,15 @@ import os
         precondition(actions == [.press, .press])
         try element.perform(.press)
         precondition(mock.operationCalls.last == "perform")
+        let item = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+        let attribute = UIElementAttribute("AXValue")
+        try item.setValue("provider write", forAttribute: attribute)
+        precondition(mock.writtenValue as? String == "provider write")
+        precondition(mock.requested == [attribute] && mock.operationCalls.last == "write")
+        precondition(item.cache.attributes.isEmpty)
         mock.shouldThrow = true
+        do { try item.setValue("failed write", forAttribute: attribute); preconditionFailure() }
+        catch AXMockProviderFixture.Failure.expected {}
         do { _ = try element.actions; preconditionFailure() }
         catch AXMockProviderFixture.Failure.expected {}
         precondition(ax.isEqual(to: ax) && !ax.isEqual(to: other))

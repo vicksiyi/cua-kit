@@ -115,7 +115,7 @@ extension Target {
         guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count else {
             throw fail("INVALID_ARGUMENT", "Indexed click requires a valid element ID and no coordinates.")
         }
-        let item = UIElement(systemElement: nodes[id - 1].element, transaction: nil)
+        let item = UIElement(element: nodes[id - 1].element)
         let insideWebView: () -> Bool = {
             item.isInsideWebView(transaction: nil, readParent: readSystemAXAttributeValue,
                 bundleIdentifier: systemAXBundleIdentifier, reportError: report)
@@ -124,7 +124,7 @@ extension Target {
             holdDuration: (params["duration"] as? Double).map { _ in Duration.nanoseconds(Int64(held)) },
             heldKeyIsPresent: false, flags: flags,
             alwaysSimulateClick: params["alwaysSimulateClick"] as? Bool ?? false,
-            readActions: { item.actions(in: .system, reportError: report) }, isInsideWebView: insideWebView)
+            readActions: { item.actions(in: .provider, reportError: report) }, isInsideWebView: insideWebView)
         // This host currently has no native VirtualCursor or SyntheticAppFocusEnforcer
         // instance. Exercise the source's nil-context branches, not fake implementations.
         return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,
@@ -137,7 +137,7 @@ extension Target {
                 try validateSnapshot(params)
                 try checkDeadline()
                 defer { invalidateInputState() }
-                try item.performAction(action, transaction: nil, environment: .system, reportError: report)
+                try item.performAction(action, transaction: nil, environment: .provider, reportError: report)
                 return ["outcome": "dispatched", "eventCount": 0, "action": action.name]
             }, simulateClick: { _ in
                 guard let point = try await item.systemClickablePoint(transaction: nil, reportError: report) else {

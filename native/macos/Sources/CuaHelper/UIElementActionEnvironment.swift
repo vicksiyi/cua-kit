@@ -1,7 +1,7 @@
 import ApplicationServices
 
 // Explicit composition boundary for the restored action getters/dispatcher.
-// This is standalone wiring, not a replacement for the original TaskLocal provider.
+// This is standalone wiring, not a replacement for the original static optional MockProvider.
 struct UIElementActionEnvironment {
     var read: (AXUIElement, UIElementAttribute) -> (error: AXError, value: AXPartialValue?)
     var supported: (AXUIElement) -> Set<UIElementAttribute>

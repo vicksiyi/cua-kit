@@ -3904,3 +3904,25 @@ and changing global provider storage during the first lookup. No vendor service,
 real AX query or UI mutation is needed by these mock-driven checks. Full owned
 Swift helper compilation also succeeds. Higher-level UIElement conformance and
 production subtree integration remain unfinished.
+
+### Host action entry points use restored provider front doors
+
+Added `UIElementActionEnvironment.provider`, an explicitly project-authored
+composition of the recovered read/support/action/settable/write/perform/count
+front doors. The standalone host's observation action enumeration, element
+operation dispatch and mouse AX-action branch now select it. Element operation
+and mouse target construction use `UIElement(element:)`, preserving the current
+transaction lookup and provider-aware cache initializer.
+
+Added concrete `UIElement.setValue(_:forAttribute:)` following 0x1007a7cd4:
+encode first, obtain the AX reference, invoke the recovered AX protocol setter
+once. The host's value/focus writes use it, retaining host snapshot/deadline
+checks and the existing writable-value preflight. The cache is not mutated on
+success or failure. The injected setter fixture verifies forwarded encoded
+text, original errors and unchanged cache without a real OS write.
+
+Validation: complete helper build and both transaction/conformance and action
+environment fixtures pass. This is partial production integration: collection
+traversal, parent-value decoding, web hit-test helpers and clickable-point
+geometry still have explicit legacy system adapters. Full UIElementProtocol
+conformance, original subtree collector and live UI acceptance remain open.

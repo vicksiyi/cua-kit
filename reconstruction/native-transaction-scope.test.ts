@@ -98,6 +98,10 @@ test(
         join(root, "native/macos/Sources/CuaHelper/NativeLogger.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXReadErrorLogging.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXUIElementConformance.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementSetValue.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementProviderSetValue.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXDynamicParameterEncoding.swift"),
+
         join(root, "native/macos/Sources/CuaHelper/AXProviderOperations.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXProviderOperationsSystem.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXAttributeSettable.swift"),
