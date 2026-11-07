@@ -3671,6 +3671,7 @@ func runProviderClickChecks() async throws {
     try await runApplicationClickActivationChecks()
     try runSyntheticFocusDeactivationChecks()
     try runSyntheticFocusEnforcementChecks()
+    try runSyntheticWindowActivationChecks()
 }
 
 private func runSyntheticFocusDeactivationChecks() throws {
@@ -3728,4 +3729,38 @@ private func runSyntheticFocusEnforcementChecks() throws {
         } catch { checkFalse(initial.applicationBelievesItHasFocus) }
         checkEqual(state, initial)
     }
+}
+
+private func runSyntheticWindowActivationChecks() throws {
+    for hasPoint in [false, true] {
+        for idFails in [false, true] {
+            for hasFrame in [false, true] {
+                var reads: [String] = []
+                let window = SyntheticActivationWindow(
+                    activationPoint: { reads.append("point"); return hasPoint ? CGPoint(x: 20, y: 30) : nil },
+                    windowID: { reads.append("id"); if idFails { throw UIElementError.axError(.failure) }; return 91 },
+                    frame: { reads.append("frame"); return hasFrame ? CGRect(x: 10, y: 10, width: 100, height: 100) : nil })
+                var state = SyntheticApplicationFocusState(applicationBelievesItIsActive: false,
+                    applicationBelievesItHasFocus: false, applicationIsActive: false)
+                var counts: [Int] = []
+                try state.enforceActiveState(for: window) { counts.append($0.cgEvents.count) }
+                checkEqual(reads, !hasPoint ? ["point"] : idFails ? ["point", "id"] : ["point", "id", "frame"])
+                checkEqual(counts, [hasPoint && !idFails && hasFrame ? 3 : 1])
+                checkTrue(state.applicationBelievesItIsActive)
+                checkTrue(state.applicationBelievesItHasFocus)
+                reads = []
+                try state.enforceActiveState(for: window) { _ in unexpectedFailure() }
+                checkTrue(reads.isEmpty)
+                state.applicationBelievesItHasFocus = false
+                try state.enforceActiveState(for: window) { event in
+                    checkEqual(event.cgEvents.count, 1)
+                    let native = NSEvent(cgEvent: event.cgEvents[0])!
+                    checkEqual(native.type.rawValue, 21)
+                    checkEqual(native.subtype.rawValue, Int16.min)
+                }
+                checkTrue(reads.isEmpty)
+            }
+        }
+    }
+    checkEqual(try syntheticWindowActivationEvent(nil).cgEvents.count, 1)
 }

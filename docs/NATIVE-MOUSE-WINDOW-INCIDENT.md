@@ -222,3 +222,23 @@ builder (0x100730374). Safe enforcement wraps this with additional foreground
 checks and asynchronous handling, still to be restored. This extracted state
 component remains outside the production event-tap lifecycle; it does not yet
 resolve the observed Multica click failure.
+
+
+## Window activation composition and safe-enforce scope
+
+`SyntheticActivationWindow` supplies the three lazy window reads from
+0x1007414c8; `syntheticWindowActivationEvent` preserves point -> ID -> frame
+order, nil-point short circuit, and ID-error fallback to windowless activation.
+The state component now composes this builder and key-focus notifications with
+an injected event sender. Tests inspect actual CG/NSEvent payloads and read order
+for point/ID-error/frame combinations, plus no-window and repeated enforcement.
+Build and provider-click checks pass without posting any OS event.
+
+Further static inspection of safelyEnforceActiveState reveals the other-frontmost
+application branch creates two EventTap instances and starts monitoring at
+0x100741df4 and 0x100741eb0. It obtains WindowServer main connection at
+0x100741f18, disables updates at 0x100741f20, then calls enforceActiveState at
+0x100741f28. Success/error cleanup has reenableUpdate call sites, including
+0x100742b40, 0x100742c34 and 0x100742ed4. Exact callback filtering and async
+restoration are not yet fully decoded. The simple state composition is therefore
+not a substitute for this scope and remains unconnected to production clicks.
