@@ -5976,3 +5976,17 @@ and the mandatory final callback including empty input. Swift build and provider
 self-test passed. This is not yet integrated as the production renderer: the
 formatting state machine remains required and unresolved; no plain-text fallback
 was introduced. No vendor executable or real UI operation was run.
+
+### Numeric attributed styles (2026-11-07)
+
+The formatter uses NSNumber casts (class reference `0x10151ee98`) for AX
+underline, strikethrough and superscript attributes. GOT slots `0x101464498`,
+`0x101464480`, `0x101464490` identify the AppKit keys. The selector references
+`0x101542ae0`/`0x101543018` are integerValue/boolValue respectively.
+Underline tests integerValue >= 1; strikethrough tests boolValue; superscript
+positive/negative selects superscript/subscript (zero neither). Wrong-type or
+missing attributes skip these styles. `AttributedTextNumericStyles.swift`
+restores these input predicates using AppKit constants. It does not yet assemble
+the ordered style set or emit format transitions. Tests cover positive/negative,
+zero, fractional NSNumber and wrong-type values. Build and mock self-test pass;
+static audit pins the predicates. Real runtime acceptance remains outstanding.

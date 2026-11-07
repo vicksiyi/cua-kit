@@ -1,4 +1,17 @@
 {
+  "attributedNumericStyles": {
+    "instructions": {
+      "0x100770854": "0xf100041f",
+      "0x100770858": "0x5400170b",
+      "0x100770974": "0x340011a0",
+      "0x100770c48": "0xf100041f",
+      "0x100770c4c": "0x540001eb",
+      "0x100770c94": "0xb7f898c0",
+      "0x100771fac": "0x528000e8"
+    },
+    "behavior": "NSNumber casts; underline integerValue > 0; strikethrough boolValue; superscript integerValue sign",
+    "limitation": "only numeric attribute extraction, not the full style set or formatter"
+  },
   "attributedRunTraversal": {
     "callback": "0x10077045c",
     "sourceRun": "0x100777ce0",

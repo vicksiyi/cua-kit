@@ -611,7 +611,21 @@ rich_run_calls = [branch(site, target) for site, target in [
     (0x100777d1c, 0x101150af8),
 ]]
 
-print(json.dumps(dict(attributedRunTraversal=dict(
+# Numeric decoration decisions in the rich formatter; NSNumber integer/bool
+# selectors differ, so generic truthiness would not reproduce the branches.
+for address, expected_selector in [(0x101542ae0, "integerValue"), (0x101543018, "boolValue")]:
+    pointer = (struct.unpack('<Q', read(address, 8))[0] & 0xfffffffff) + 0x100000000
+    assert cstring(pointer) == expected_selector
+numeric_style_words = {0x100770854: 0xf100041f, 0x100770858: 0x5400170b,
+    0x100770974: 0x340011a0, 0x100770c48: 0xf100041f, 0x100770c4c: 0x540001eb,
+    0x100770c94: 0xb7f898c0, 0x100771fac: 0x528000e8}
+for address, word in numeric_style_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+
+print(json.dumps(dict(attributedNumericStyles=dict(
+    instructions={hex(k): hex(v) for k, v in numeric_style_words.items()},
+    behavior="NSNumber casts; underline integerValue > 0; strikethrough boolValue; superscript integerValue sign",
+    limitation="only numeric attribute extraction, not the full style set or formatter"), attributedRunTraversal=dict(
     callback="0x10077045c", sourceRun="0x100777ce0", calls=rich_run_calls,
     behavior="enumerate all attributes; attributed substring string; UTF16 source offsets; empty terminal run with empty attributes",
     limitation="formatter state machine at 0x100770530 still pending; callback is required"), macDispatch=dict(

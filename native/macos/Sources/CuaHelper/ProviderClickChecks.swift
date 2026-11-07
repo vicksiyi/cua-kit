@@ -1,4 +1,5 @@
 import ApplicationServices
+import AppKit
 
 private enum ProviderClickChecks {
     final class Hit: AXUIElementProtocol {
@@ -2195,6 +2196,26 @@ private enum ProviderClickChecks {
             checkTrue(run.sourceOffsets.isEmpty && attributes.isEmpty)
         }
         checkEqual(emptyRunCount, 1)
+
+        // Numeric AX decorations are not interchangeable truthiness checks.
+        let underlineKey = NSAttributedString.Key.accessibilityUnderline
+        let strikeKey = NSAttributedString.Key.accessibilityStrikethrough
+        let baselineKey = NSAttributedString.Key.accessibilitySuperscript
+        for (number, underline, strike, baseline) in [
+            (NSNumber(value: 2), true, true, AttributedTextNumericStyles.Baseline.superscript),
+            (NSNumber(value: -2), false, true, .subscript),
+            (NSNumber(value: 0), false, false, .normal),
+            (NSNumber(value: 0.5), false, true, .normal)
+        ] {
+            let style = AttributedTextNumericStyles(attributes: [underlineKey: number,
+                strikeKey: number, baselineKey: number])
+            checkEqual(style.underline, underline)
+            checkEqual(style.strikethrough, strike)
+            checkEqual(style.baseline, baseline)
+        }
+        let emptyStyles = AttributedTextNumericStyles(attributes: [:])
+        checkEqual(AttributedTextNumericStyles(attributes: [underlineKey: "1",
+            strikeKey: "true" as NSString, baselineKey: NSNull()]), emptyStyles)
 
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
