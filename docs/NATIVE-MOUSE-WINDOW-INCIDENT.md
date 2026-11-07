@@ -766,3 +766,21 @@ query ordering. A real read-only GetProcessPID(kCurrentProcess) call returned
 this helper's PID, verifying the C bridge ABI. Private key-focus SPI invocation
 has not yet been exercised; query selection tests inject native boundaries.
 Full preventer state/lifecycle and production app input remain pending.
+
+
+## Live read-only key-focus probe
+
+Added cua-helper --key-focus-query-check, which invokes only registry focus/PID
+queries and reports a JSON result. First execution in this agent environment
+returned focusStatus=1003, pidStatus=-600, keyFocusPID=null. This is direct
+runtime evidence, not a mocked boundary test. It does not identify the cause
+of 1003 or establish an accessibility permission failure. No input/activation
+was posted. Under the source selection rules, this missing query result causes
+workspace fallback unless a preventer cache already supplies the owner.
+
+KeyFocusOwnerSystem composes registry results with ordinary/restricted/
+ViewBridge identities and initial state selection. It preserves source PID and
+ViewBridge secondary actual PID in a semantic enum; packed native encoding is
+not exposed. Preventer cache remains an explicit dependency. The diagnostic
+result does not prove real app input acceptance; full preventer/controller and
+production input integration are still incomplete.

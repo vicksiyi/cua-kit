@@ -214,6 +214,17 @@ if CommandLine.arguments.contains("--graphics-init-self-test") {
     print("{\"graphicsInitialized\":true,\"idempotent\":true}")
     exit(0)
 }
+if CommandLine.arguments.contains("--key-focus-query-check") {
+    var failure: [String: Any]?
+    let pid = systemRegistryKeyFocusPID { focus, conversion in
+        failure = ["focusStatus": focus, "pidStatus": conversion]
+    }
+    var result: [String: Any] = ["readOnly": true, "keyFocusPID": pid.map { $0 as Any } ?? NSNull()]
+    if let failure { result["failure"] = failure }
+    let data = try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys])
+    print(String(decoding: data, as: UTF8.self))
+    exit(0)
+}
 if CommandLine.arguments.contains("--provider-click-self-test") {
     do { try await runProviderClickChecks(); print("Provider click composition checks passed"); exit(0) }
     catch { fputs("Provider click checks failed: \(error)\n", stderr); exit(1) }
