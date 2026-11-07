@@ -1044,6 +1044,26 @@ private enum ProviderClickChecks {
             checkTrue(revision.renderTree.roots.isEmpty)
             checkEqual(context.type, .fullUIContext)
         }
+        do {
+            typealias Change = UIElementRenderDifference<Int>.Change
+            let old = UIElementRender(id: 1, elementID: 9, text: "old", detailText: nil, sourcePath: nil, children: [])
+            let new = UIElementRender(id: 2, elementID: 5, text: "new", detailText: nil, sourcePath: nil, children: [])
+            let before = Change.Cursor(item: old, path: IndexPath(indexes: [0, 1]))
+            let after = Change.Cursor(item: new, path: IndexPath(index: 0))
+            Change.none(offset: 20, new: after, old: before).inheritElementID()
+            checkEqual(new.elementID, 9); checkEqual(old.elementID, 9)
+            new.elementID = 5; old.elementID = nil
+            Change.update(offset: 0, new: after, old: before).inheritElementID()
+            checkEqual(new.elementID, 5)
+            old.elementID = 0
+            Change.update(offset: 0, new: after, old: before).inheritElementID()
+            checkEqual(new.elementID, 0)
+            new.elementID = nil
+            Change.insert(offset: 0, new: after).inheritElementID()
+            Change.remove(offset: 0, old: before).inheritElementID()
+            checkTrue(new.elementID == nil); checkEqual(old.elementID, 0)
+            checkEqual(before.depth, 1); checkEqual(after.depth, 0)
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

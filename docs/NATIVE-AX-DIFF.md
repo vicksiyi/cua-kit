@@ -6884,3 +6884,18 @@ Build/provider checks pass, including deterministic timestamp/bit vectors and
 the actual context-root entry with lowercase v7 lineage and nil focus. This
 closes the root convenience entry; appended revisions, differences, snapshots
 and production observation wiring remain outstanding.
+
+### Incremental difference ID inheritance
+
+Append entry 0x100655d5c constructs a render difference, buffers it, invokes
+Change.inheritElementID on changes, then renders optional focus and constructs
+the next revision. Restored difference storage and the four payload cases
+(none, insert, update, remove) from field descriptor 0x1013214e8.
+
+inheritElementID at 0x10063f3b8 copies a present old elementID to the new render
+only for none/update. It neither compares identities nor clears the new ID
+when old ID is nil; insert/remove do nothing. Cursor item/path storage and
+path.count-1 depth are restored, but its full traversable constraints/helpers
+remain outstanding. Build/provider tests pass for overwrite, nil preservation,
+zero ID and insert/remove no-op. The matching iterator/buffer is not implemented,
+so appending revisions is deliberately not exposed as working yet.

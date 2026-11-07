@@ -38,15 +38,24 @@ for site, target in [(0x100656600, 0x10063dc28), (0x100656740, 0x100654b9c),
                      (0x1006554a0, 0x10063dba0), (0x10076b91c, 0x100624738),
                      (0x10076b944, 0x101150888), (0x10076b99c, 0x1006564b4),
                      (0x10076ba38, 0x10076ad18), (0x10076bb04, 0x10076b838),
-                     (0x10062476c, 0x101154578), (0x100624770, 0x10114ec38)]:
+                     (0x10062476c, 0x101154578), (0x100624770, 0x10114ec38),
+                     (0x100655ee0, 0x10063cc70), (0x100655f04, 0x1006413c0),
+                     (0x100656200, 0x10063f3b8)]:
     word = struct.unpack('<I', read(site, 4))[0]
     assert word & 0x7c000000 == 0x14000000
     displacement = word & 0x3ffffff
     if displacement & 0x2000000: displacement -= 0x4000000
     assert site + displacement * 4 == target
+field = 0x1013214e8
+assert struct.unpack('<I', read(field + 12, 4))[0] == 4
+for i, name in enumerate(['none', 'insert', 'update', 'remove']):
+    address = field + 16 + i * 12 + 8
+    target = address + struct.unpack('<i', read(address, 4))[0]
+    assert read(target, len(name) + 1) == name.encode() + b'\0'
 print(json.dumps(dict(binarySHA256=expected,
     root='0x1006564b4: render then zero-based setElementIDs then revision constructor',
     resolver='0x1006554c0',
+    changes='0x1013214e8: none, insert, update, remove; inheritElementID copies present old ID only for none/update',
     contextRoot='0x10076b838 generates timestamp UUID and lowercases it; shares inout context; 0x10076ba54 supplies nil focus',
     lineageUUID='0x100624738: arc4random_buf 16 bytes, UInt64 Unix milliseconds truncated to 48 bits, version 7 and RFC variant',
     table='full render then optional focus render, depth first; later identity and ID-path writes overwrite; reverse mapping built from final forward dictionary',
