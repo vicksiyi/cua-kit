@@ -6817,3 +6817,18 @@ production 1-based collector is unchanged until the complete revision owner,
 focus path handling and operation lookup are recovered. The local error type
 is provisional; native MissingSourcePathError nesting/description still need
 restoration with the revision owner.
+
+### Revision lookup routing
+
+Recovered item(for:) at 0x1006557a4. It requires both the revision table path
+and reverse identity before looking at source trees. If the optional focus
+tree contains that identity, lookup uses the revision's stored path in that
+focus tree. Otherwise it uses the same path in the full tree. A focus path
+miss returns nil; it does not retry the full tree. The focus-local numeric ID
+is used only to establish membership, not to replace the stored path.
+
+Restored revisionTreeItem as the constructor-independent lookup implementation.
+Tests cover non-positional display ID 42, focus precedence, no focus, unrelated
+focus identity, missing reverse identity and no fallback after focus path miss.
+Swift build/provider tests and pinned branch audit pass. Revision owner/table
+construction and production use still need integration.

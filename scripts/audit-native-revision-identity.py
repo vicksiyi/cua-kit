@@ -30,7 +30,10 @@ def read(address, size):
 
 
 for site, target in [(0x100656600, 0x10063dc28), (0x100656740, 0x100654b9c),
-                     (0x1006555e4, 0x1006568e4), (0x1006556d0, 0x10063ebbc)]:
+                     (0x1006555e4, 0x1006568e4), (0x1006556d0, 0x10063ebbc),
+                     (0x100655a18, 0x100656948), (0x100655a90, 0x100656fb8),
+                     (0x100655b90, 0x10065030c), (0x100655bc8, 0x10064e088),
+                     (0x100655bdc, 0x10064e088)]:
     word = struct.unpack('<I', read(site, 4))[0]
     assert word & 0x7c000000 == 0x14000000
     displacement = word & 0x3ffffff
@@ -39,6 +42,7 @@ for site, target in [(0x100656600, 0x10063dc28), (0x100656740, 0x100654b9c),
 print(json.dumps(dict(binarySHA256=expected,
     root='0x1006564b4: render then zero-based setElementIDs then revision constructor',
     resolver='0x1006554c0',
+    lookup='0x1006557a4: require path and reverse identity; focus identity membership selects focus tree, otherwise full tree; use stored path; no fallback after focus path miss',
     precedence=['require sourcePath', 'existing elementID', 'identity dictionary', 'next available ID'],
     mutation='assign node elementID then identity dictionary; return identity, ID, source path',
     limitations=['Revision constructor, focus mapping and incremental changes are not yet integrated.']), indent=2))

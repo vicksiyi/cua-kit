@@ -943,6 +943,26 @@ private enum ProviderClickChecks {
             checkEqual(fresh.elementID, 8)
             checkEqual(identities, [1: 7, 2: 6, 3: 8])
         }
+        do {
+            var full = capturedOwner; full.title = "full"
+            var focused = full; focused.title = "focus"
+            let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+            let fullTree = UIElementTree(items: [.init(element: full, subtree: leaf)], focusedElement: nil)
+            let focusTree = UIElementTree(items: [.init(element: focused, subtree: leaf)], focusedElement: focused)
+            let ids = UIElementTreeTable(values: [full.id: 42], paths: [42: IndexPath(index: 0)])
+            checkEqual(revisionTreeItem(for: 42, ids: ids, tree: fullTree, focusTree: focusTree)?.element.title, "focus")
+            checkEqual(revisionTreeItem(for: 42, ids: ids, tree: fullTree, focusTree: nil)?.element.title, "full")
+            checkTrue(revisionTreeItem(for: 0, ids: ids, tree: fullTree, focusTree: focusTree) == nil)
+            let invalid = UIElementTreeTable(values: [full.id: 42], paths: [42: IndexPath(index: 1)])
+            let largerFull = UIElementTree(items: [.init(element: full, subtree: leaf), .init(element: full, subtree: leaf)], focusedElement: nil)
+            checkTrue(revisionTreeItem(for: 42, ids: invalid, tree: largerFull, focusTree: focusTree) == nil)
+            let noIdentity = UIElementTreeTable<AXUIElement, Int>(values: [:], paths: [42: IndexPath(index: 0)])
+            checkTrue(revisionTreeItem(for: 42, ids: noIdentity, tree: fullTree, focusTree: nil) == nil)
+            var other = focused
+            other.element = UIElement(axElement: textAX, cache: focused.cache)
+            let unrelatedFocus = UIElementTree(items: [.init(element: other, subtree: leaf)], focusedElement: other)
+            checkEqual(revisionTreeItem(for: 42, ids: ids, tree: fullTree, focusTree: unrelatedFocus)?.element.title, "full")
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)
