@@ -122,7 +122,7 @@ extension Target {
             for index in stride(from: 0, to: events.count, by: 2) {
                 try checkDeadline()
                 try await dispatchHeldPair(events[index], events[index+1], nanoseconds: held,
-                    post: { $0.postToPid(self.app.processIdentifier) }, validate: { try self.validateIdentity() },
+                    post: { dispatchNativeEvent($0, to: self.app.processIdentifier) }, validate: { try self.validateIdentity() },
                     wait: { try await Task.sleep(nanoseconds: $0) })
             }
             return ["outcome": "dispatched", "eventCount": events.count, "windowId": Int(window.id), "point": ["x": point.x, "y": point.y]]

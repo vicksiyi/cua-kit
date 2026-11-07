@@ -1,0 +1,27 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "calls": [
+    {
+      "site": "0x100753970",
+      "target": "0x1002581ac"
+    },
+    {
+      "site": "0x10075397c",
+      "target": "0x100258054"
+    },
+    {
+      "site": "0x100754904",
+      "target": "0x1002580d0"
+    },
+    {
+      "site": "0x100754914",
+      "target": "0x1002580d0"
+    },
+    {
+      "site": "0x1007549c8",
+      "target": "0x10026cc8c"
+    }
+  ],
+  "interpretation": "setTimestamp precedes postToPid; mouse construction sets window fields and local location",
+  "limits": "Static call-site evidence; does not prove live app acceptance or complete send-loop parity."
+}

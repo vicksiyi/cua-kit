@@ -87,7 +87,7 @@ extension Target {
                Date().timeIntervalSince1970 * 1000 >= deadline {
                 throw fail("INVALID_ARGUMENT", "Scroll deadline expired; earlier wheel events may have been dispatched.")
             }
-            event.postToPid(app.processIdentifier)
+            dispatchNativeEvent(event, to: app.processIdentifier)
         }
         return ["outcome":"dispatched","eventCount":events.count]
     }

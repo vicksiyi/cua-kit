@@ -39,6 +39,29 @@ func runHeldInputChecks() async throws {
         } catch let error as Failure { guard interrupted, error.code == "ACTION_OUTCOME_UNKNOWN" else { throw error } }
         guard waited == 125_000_000, posted == [.leftMouseDown,.leftMouseUp] else { throw fail("SELF_TEST_FAILED","Held input did not release.") }
     }
+    // Events are allocated together, but must be stamped at actual dispatch,
+    // including the deferred release after a cancelled wait.
+    for interrupted in [false, true] {
+        var now: UInt64 = 100
+        var timestamps: [UInt64] = []
+        do {
+            try await dispatchHeldPair(events[0], events[1], nanoseconds: 1,
+                post: { event in
+                    dispatchNativeEvent(event, to: 123, timestamp: { now }, post: { sent, pid in
+                        precondition(pid == 123)
+                        timestamps.append(sent.timestamp)
+                    })
+                }, validate: {}, wait: { _ in
+                    now = 250
+                    if interrupted { throw CancellationError() }
+                })
+        } catch let error as Failure {
+            guard interrupted, error.code == "ACTION_OUTCOME_UNKNOWN" else { throw error }
+        }
+        guard timestamps == [100, 250] else {
+            throw fail("SELF_TEST_FAILED", "Event timestamps were not refreshed at dispatch/release.")
+        }
+    }
     var posted=0,checks=0
     do {
         try await dispatchHeldPair(events[0],events[1],nanoseconds:1,post:{_ in posted += 1},validate:{checks += 1;if checks>1{throw fail("TARGET_NOT_FOUND","reused")}},wait:{_ in})

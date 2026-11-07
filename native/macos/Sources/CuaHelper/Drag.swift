@@ -69,7 +69,7 @@ extension Target {
             }
         }
         try checkDeadline()
-        try await dispatchDrag(events,post:{$0.postToPid(self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{
+        try await dispatchDrag(events,post:{dispatchNativeEvent($0, to: self.app.processIdentifier)},validate:{try self.validateIdentity()},wait:{
             try checkDeadline()
             try await Task.sleep(nanoseconds:10_000_000)
             try checkDeadline()
