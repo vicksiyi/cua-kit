@@ -118,7 +118,12 @@ extension Target {
         }
         func simulate(at point: CGPoint) async throws -> [String: Any] {
             let window = try mouseWindow(params)
-            let events = try mouseClickEvents(point: point, button: button, count: count, flags: flags, window: window)
+            // Preserve the current nil-enforcer branch while consuming its
+            // source Bool result instead of discarding background-click flags.
+            let pid = try root.pid
+            let prepared = NSRunningApplication(processIdentifier: pid)?.isActive ?? false
+            let eventFlags = applicationClickEventFlags(flags, applicationBelievesItHasFocus: prepared)
+            let events = try mouseClickEvents(point: point, button: button, count: count, flags: eventFlags, window: window)
             try validateSnapshot(params)
             defer { invalidateInputState() }
             for index in stride(from: 0, to: events.count, by: 2) {

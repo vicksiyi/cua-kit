@@ -1568,3 +1568,28 @@ result in its source-compatible event dispatch. Real clicking is unverified.
 
 Validation: Swift build, provider-click composition checks and pinned source
 audit pass. These adapters remain independent of the production mouse sender.
+
+
+## Production nil-enforcer mouse flags consume preparation result
+
+Source sendClick selects event flags from the preparation Bool. The false path
+at 0x1006fcd28 supplies callerFlags | 0x100000 to the click constructor
+(0x1006fcd74 / 0x1006fcd7c); the prepared continuation at 0x1006fd658 /
+0x1006fd6a0 uses the caller flags unchanged. Existing command flags are never
+removed. ApplicationClickEventFlags restores this mapping.
+
+Mouse.swift now consumes the existing nil-enforcer branch's real active query:
+provider-aware root.pid, NSRunningApplication lookup, then isActive if present
+(false when absent), matching 0x1006fc95c..0x1006fca34. It applies the selected
+flags before constructing all down/up pairs and retains existing snapshot,
+identity, hold and deadline handling. No additional root-cache construction,
+forced activation or input is introduced during preparation. This is an actual
+production sender correction, but enforcer creation/preparation remains pending.
+
+Tests check both preparation states with empty, shift, command and alternate/
+control input flags, then inspect every event in a double-click batch. These
+checks construct CG events without posting them. Real application behavior and
+complete sendClick/cursor/held-key/drag lifecycle remain unverified.
+
+Validation: Swift build, provider-click checks and pinned native static audit
+pass. The production change has not yet been validated with a live app click.

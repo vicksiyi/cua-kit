@@ -3728,6 +3728,7 @@ func runProviderClickChecks() async throws {
     await runTargetFocusEnforcerOwnershipChecks()
     try runActivationPointValueChecks()
     try await runApplicationClickFocusCompositionChecks()
+    try runApplicationClickEventFlagChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5750,4 +5751,17 @@ private func runApplicationClickFocusCompositionChecks() async throws {
     checkTrue(focused)
     try await app.prepareAccessibilityClickFocus(element: app, window: nil, enforcer: enforcer,
         probeApplicationIsActive: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }, send: { _ in unexpectedFailure() })
+}
+
+private func runApplicationClickEventFlagChecks() throws {
+    for input in [CGEventFlags(), .maskShift, .maskCommand, [.maskAlternate, .maskControl]] {
+        for prepared in [false, true] {
+            let flags = applicationClickEventFlags(input, applicationBelievesItHasFocus: prepared)
+            let expected = prepared ? input.rawValue : input.rawValue | 0x100000
+            checkEqual(flags.rawValue, expected)
+            let events = try mouseClickEvents(point: CGPoint(x: 12, y: 23), button: "left", count: 2, flags: flags)
+            checkEqual(events.count, 4)
+            for event in events { checkEqual(event.flags.rawValue, expected) }
+        }
+    }
 }
