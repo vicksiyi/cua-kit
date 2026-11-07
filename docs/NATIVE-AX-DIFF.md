@@ -6717,3 +6717,20 @@ The audit pins all twelve transformed witness slots plus the action forwarding
 branch. Swift build and existing provider/action regression checks passed.
 Remaining transformed conformance work includes initializer semantics and the
 other provider/transaction witnesses; production integration is not complete.
+
+
+### Transformed-node provider write (2026-11-07)
+
+Recovered setValue witness 0x1007afad4: dynamic encoding at 0x1007afb00 precedes
+loading the stored AX identity at 0x1007afb18; the single provider-aware setter
+call is at 0x1007afb30 -> 0x1006f74e4. Encoding failure branches past the write.
+No captured value/cache update is performed. UIElementProtocol's generic
+setValue implementation now sits on the protocol extension; TransformedUIElement
+has the matching concrete operation while its remaining conformance is pending.
+
+Owned provider tests verify one write, encoded text and attribute, unchanged
+captured display value, no AX reads, and propagation of AX cannotComplete without
+retry or field mutation. Build, provider checks and static call audit passed.
+The native perform(action:) witness is a specialized full dispatcher, not a
+simple raw perform forwarding call; it remains to be connected with the captured
+state semantics. No live application write occurred during these tests.

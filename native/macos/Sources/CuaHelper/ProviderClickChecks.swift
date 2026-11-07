@@ -23,7 +23,11 @@ private enum ProviderClickChecks {
         }
         func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { fatalError() }
         func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { fatalError() }
-        func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { fatalError() }
+        var writeValue: ((AXEncodedValue, UIElementAttribute) throws -> Void)?
+        func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws {
+            guard let writeValue else { fatalError() }
+            try writeValue(value, attribute)
+        }
         var parameterSupport: (() -> [UIElementAttribute])?
         var supportedParameterizedAttributes: [UIElementAttribute] {
             guard let parameterSupport else { fatalError() }; return parameterSupport()
@@ -793,6 +797,28 @@ private enum ProviderClickChecks {
         checkTrue(CFEqual(mutableOwner.id, capturedOwner.id))
         checkEqual(ownerProvider.singleReads, readsBeforeMutation)
         checkEqual(ownerActionReads, 1)
+        do {
+            var writes = 0
+            ownerProvider.writeValue = { encoded, attribute in
+                writes += 1
+                checkEqual(encoded.value as? String, "native edit")
+                checkEqual(attribute, UIElementAttribute("AXValue"))
+            }
+            try mutableOwner.setValue("native edit", forAttribute: UIElementAttribute("AXValue"))
+            checkEqual(writes, 1)
+            checkEqual(mutableOwner.value, "rendered value")
+            checkEqual(ownerProvider.singleReads, readsBeforeMutation)
+            ownerProvider.writeValue = { _, _ in
+                writes += 1; throw UIElementError.axError(.cannotComplete)
+            }
+            do {
+                try mutableOwner.setValue("native edit", forAttribute: UIElementAttribute("AXValue"))
+                unexpectedFailure()
+            } catch UIElementError.axError(let code) { checkEqual(code, .cannotComplete) }
+            checkEqual(writes, 2)
+            checkEqual(mutableOwner.value, "rendered value")
+            ownerProvider.writeValue = nil
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

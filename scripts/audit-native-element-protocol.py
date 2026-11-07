@@ -99,7 +99,8 @@ for i, (name, target) in enumerate(zip(node_names, transformed_targets)):
         elementSlot=hex(concrete_slot), elementWitness=hex(0x100000000 + (concrete & 0xffffffff))))
 # Pin the concrete/default getter distinction, beyond descriptor slot counts.
 for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
-                     (0x100792648, 0x100790690), (0x1007925dc, 0x1007907fc)]:
+                     (0x100792648, 0x100790690), (0x1007925dc, 0x1007907fc),
+                     (0x1007afb00, 0x1006ea3e4), (0x1007afb30, 0x1006f74e4)]:
     word = struct.unpack('<I', read(site, 4))[0]
     assert word & 0x7c000000 == 0x14000000
     displacement = word & 0x3ffffff
@@ -108,6 +109,7 @@ for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
 assert struct.unpack('<I', read(0x10079258c, 4))[0] == 0xf9402428
 
 print(json.dumps(dict(binarySHA256=expected, protocol=ui, transformedProtocol=transformed_ui,
+    transformedSetValue=dict(witness='0x1007afad4', encodeCall='0x1007afb00 -> 0x1006ea3e4', writeCall='0x1007afb30 -> 0x1006f74e4', behavior='encode before AX identity resolution; single provider write; no captured field mutation'),
     actionBoundary=dict(
         transformedActions='0x10075d2f8 returns Optional<Array<UIElementAction>> from captured actionDescriptions',
         protocolExtensionActions='0x1007916b0 returns Array<UIElementAction>',

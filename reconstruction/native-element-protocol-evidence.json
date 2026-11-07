@@ -210,6 +210,12 @@
       }
     ]
   },
+  "transformedSetValue": {
+    "witness": "0x1007afad4",
+    "encodeCall": "0x1007afb00 -> 0x1006ea3e4",
+    "writeCall": "0x1007afb30 -> 0x1006f74e4",
+    "behavior": "encode before AX identity resolution; single provider write; no captured field mutation"
+  },
   "actionBoundary": {
     "transformedActions": "0x10075d2f8 returns Optional<Array<UIElementAction>> from captured actionDescriptions",
     "protocolExtensionActions": "0x1007916b0 returns Array<UIElementAction>",
