@@ -534,3 +534,51 @@ mutation wrapper. Event sending is injected; the full native send transport,
 frontmost tracker, focus-steal preventer, safely-enforce branch selection and
 production input integration remain pending. Tests use local Mach ports and
 injected send operations, with no real application activation or input tap.
+
+
+## Frontmost tracker audit for enforcer integration
+
+Pinned init 0x100740660 calls SystemFrontmostApplicationTracker with
+excludeCurrentApp=false. Tracker init 0x100785018 allocates distinct observer
+and current-app locks, seeds current app before registering workspace activation
+notifications, and stores a weak-self notification handler. Native import binding
+0x101464688 is AppKit/NSWorkspaceDidActivateApplicationNotification.
+
+Update entry 0x100785248 mutates current app under its lock via 0x1007858fc;
+it releases that lock before observer delivery. The false-exclusion branch at
+0x100785ab0 selects the supplied application directly; the true-exclusion branch
+has substantial alternative-application resolution and must not be approximated
+by simply dropping the helper PID. The enforcer uses the false branch, so its
+integration can preserve this behavior without inventing exclusion fallback.
+Remaining audit: deduplication/observer snapshot ordering, notification payload
+extraction, and teardown registration removal before implementing the tracker.
+
+The monitoring session now composes the other-foreground restoration scope
+with the target activation filter and the same locked enforcement state.
+A controlled-clock integration test confirms resign events are suppressed during
+restoration (synthetic-active belief preserved), then processed normally after
+cleanup. Swift build and provider-click checks pass. Production Mouse.swift
+still does not use this session; actual Multica input remains unverified.
+
+
+## Inclusive frontmost notification implementation
+
+InclusiveFrontmostApplicationTracker implements the false-exclusion branch.
+Initializer selector at 0x101543090 rebases to menuBarOwningApplication, not
+frontmostApplication. Notification payload key import at 0x101464680 is
+NSWorkspaceApplicationKey; notification import 0x101464688 is the activation
+notification. A weak registration handler reads/casts the application payload;
+deinit removes the stored registration. No missing-payload fallback is invented.
+
+FrontmostApplicationObservationStore deduplicates equal applications, stores
+current state under one lock, then snapshots observers under another lock and
+delivers outside locks. Removal uses observer identity. Session registration
+updates actual-active via the target monitor, retains tracker/observer, and
+removes the observer on replacement/destruction. Initial focus beliefs still
+come from the enforcer initialization inputs, not a synthetic observer replay.
+
+Swift build and provider-click checks pass, including invalid/missing payload,
+duplicate notification, tracker deallocation, and removing an observer during
+snapshot delivery. Tests use an isolated NotificationCenter and current app
+identity only; no OS focus/input was changed. Full exclusion branch,
+focus-steal preventer and production input integration remain incomplete.

@@ -29,7 +29,7 @@ def read(address, size):
     raise ValueError(hex(address))
 
 # Source send(to:delay:) stamps each event immediately before postToPid.
-calls = [(0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
+calls = [(0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x100754904, 0x1002580d0), (0x100754914, 0x1002580d0),
          (0x1007549c8, 0x10026cc8c),
          (0x100754ab4, 0x100258288), (0x100754b00, 0x100257d88),

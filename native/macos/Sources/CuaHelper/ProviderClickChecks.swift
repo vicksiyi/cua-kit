@@ -3681,6 +3681,9 @@ func runProviderClickChecks() async throws {
     runSyntheticFocusTargetMonitorChecks()
     runSyntheticFocusExternalClickChecks()
     try runSyntheticFocusMonitoringSessionChecks()
+    try await runSyntheticFocusSessionRestorationChecks()
+    runFrontmostApplicationObservationStoreChecks()
+    runInclusiveFrontmostTrackerChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4272,4 +4275,81 @@ private func runSyntheticFocusMonitoringSessionChecks() throws {
     checkTrue(!session!.target.state.snapshot.applicationBelievesItIsActive)
     session = nil
     checkTrue(lifetime == nil); checkEqual(invalidations, 3)
+}
+
+
+private func runSyntheticFocusSessionRestorationChecks() async throws {
+    // No OS taps or screen-update changes: exercise the real filter/store/scope
+    // composition with controlled time and injected native boundaries.
+    let tapDriver = EventTap.Driver(create: { _, _, _, _, _, _ in nil },
+        enable: { _, _ in unexpectedFailure() }, invalidate: { _ in unexpectedFailure() })
+    let session = SyntheticFocusMonitoringSession(pid: 88,
+        initialState: SyntheticApplicationFocusState(applicationIsActive: false, applicationHasKeyFocus: false),
+        tapDriver: tapDriver)
+    let resign = try SynthesizedEvent.notifyAppDeactivated().cgEvents[0]
+    var time = 10.0, sends = 0
+    var observedResign = false
+    var updates: [String] = []
+    let restoration = SafeActivationRestorationDriver(now: { time }, frontmostPID: { 77 },
+        activateSavedApplication: { unexpectedFailure() },
+        targetBelievesItIsFrontmost: {
+            if !observedResign {
+                observedResign = true
+                checkTrue(session.target.activationFilter.filter(type: CGEventType(rawValue: 19)!, event: resign) == nil)
+            }
+            checkTrue(session.target.state.snapshot.applicationBelievesItIsActive)
+            return true
+        }, restoreSavedWindowIfObscured: { false }, sleep: { _ in time += 0.01 })
+    try await session.safelyEnforceWhileRestoring(savedPID: 77, window: nil,
+        send: { _ in sends += 1 }, restoration: restoration, tapDriver: tapDriver,
+        updates: WindowUpdateDriver(mainConnection: { nil },
+            disable: { _ in updates.append("disable"); return .success },
+            reenable: { _ in updates.append("reenable"); return .success }))
+    checkEqual(sends, 1); checkEqual(updates, ["disable", "reenable"])
+    checkTrue(session.target.state.snapshot.applicationBelievesItIsActive)
+    // Temporary suppression was removed by cleanup.
+    checkTrue(session.target.activationFilter.filter(type: CGEventType(rawValue: 19)!, event: resign) === resign)
+    checkTrue(!session.target.state.snapshot.applicationBelievesItIsActive)
+}
+
+
+private func runFrontmostApplicationObservationStoreChecks() {
+    let store = FrontmostApplicationObservationStore<Int32>()
+    var delivered: [Int32] = []
+    var second: FrontmostApplicationObservationStore<Int32>.Observer?
+    let first = store.addObserver { value in
+        checkEqual(store.frontmostApplication, value)
+        delivered.append(value)
+        if let second { store.removeObserver(second) }
+    }
+    second = store.addObserver { delivered.append($0 + 100) }
+    store.observe(88); store.observe(88); store.observe(77)
+    // Snapshot delivery survives observer removal within another callback.
+    checkEqual(delivered, [88, 188, 77])
+    store.removeObserver(first); store.observe(99)
+    checkEqual(store.frontmostApplication, 99)
+    checkEqual(delivered, [88, 188, 77])
+}
+
+
+private func runInclusiveFrontmostTrackerChecks() {
+    let center = NotificationCenter()
+    let app = NSRunningApplication.current
+    var tracker: InclusiveFrontmostApplicationTracker? = InclusiveFrontmostApplicationTracker(
+        center: center, initialApplication: { nil })
+    weak var lifetime = tracker
+    let store = tracker!.observations
+    var delivered = 0
+    let observer = store.addObserver { checkTrue($0 == app); delivered += 1 }
+    center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil)
+    center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil,
+        userInfo: [NSWorkspace.applicationUserInfoKey: "invalid"])
+    checkEqual(delivered, 0)
+    center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil,
+        userInfo: [NSWorkspace.applicationUserInfoKey: app])
+    center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil,
+        userInfo: [NSWorkspace.applicationUserInfoKey: app])
+    checkEqual(delivered, 1); checkTrue(store.frontmostApplication == app)
+    tracker = nil; checkTrue(lifetime == nil)
+    store.removeObserver(observer)
 }
