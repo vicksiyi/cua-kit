@@ -56,7 +56,9 @@ private enum ProviderClickChecks {
         var pid: Int32 { get throws { fatalError() } }
         var actualPID: Int32 { get throws { fatalError() } }
         var windowID: UInt32 { get throws { fatalError() } }
-        var bundleIdentifier: String? { fatalError() }
+        var testBundleIdentifier: String?
+        var bundleReads = 0
+        var bundleIdentifier: String? { bundleReads += 1; return testBundleIdentifier }
         func isEqual(to other: any AXUIElementProtocol) -> Bool { self === other }
     }
     final class Provider: AXMockProvider {
@@ -873,6 +875,24 @@ private enum ProviderClickChecks {
             catch UIElementError.axError(let code) { checkEqual(code, .failure) }
             checkEqual(performProvider.performed.count, 3)
             performProvider.fail = false; performProvider.writeValue = nil
+        }
+        do {
+            let webAX = AXUIElementCreateApplication(12510)
+            let webProvider = Hit()
+            provider.replacements[webAX] = webProvider
+            var node = capturedOwner
+            node.element = UIElement(axElement: webAX, cache: UIElementCache(
+                supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+            node.role = .webArea
+            checkTrue(node.isInsideWebView)
+            checkEqual(webProvider.bundleReads, 0)
+            node.role = .button
+            checkFalse(node.isInsideWebView)
+            checkEqual(webProvider.bundleReads, 1)
+            webProvider.testBundleIdentifier = "com.openai.atlas.beta"
+            checkTrue(node.isInsideWebView)
+            webProvider.testBundleIdentifier = "org.example.com.openai.atlas"
+            checkFalse(node.isInsideWebView)
         }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)

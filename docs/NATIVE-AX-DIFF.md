@@ -6762,3 +6762,18 @@ The implementation reuses existing parent/cache/scroll readers. Static branch
 audit, Swift build and isolated provider checks pass (raw action, both disclosure
 actions, scroll fallback and failure propagation). This does not establish live
 app acceptance or complete transformed protocol conformance.
+
+### Transformed WebView classification
+
+Restored specialized getter 0x1007aac98. It checks the including-self parent
+sequence with maxDepth 300 for webArea, then tests the original AX identity's
+bundle identifier for the com.openai.atlas prefix. The first role is the
+captured transformed role; subsequent parents use live UIElement getters.
+The existing sequence preserves next-parent resolution before yielding the
+current node. This classifies click handling inside applications; it does not
+choose a browser, launch an application, or alter app permissions.
+
+Swift build and provider checks pass for captured webArea short circuit, nil
+bundle, Atlas prefix and non-prefix rejection. Static audit pins bundle lookup
+and prefix comparison calls. Full protocol conformance/production observation
+wiring remains incomplete; no live application acceptance is claimed.
