@@ -3735,6 +3735,7 @@ func runProviderClickChecks() async throws {
     try runOutOfProcessMouseWindowIDChecks()
     try runMouseEventRoutingSeedChecks()
     runMouseWindowAtPointChecks()
+    runNativeWindowDescriptionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5952,4 +5953,35 @@ private func runMouseWindowAtPointChecks() {
         checkEqual(seen, CGPoint(x: 120, y: 280)); checkEqual(below, 91); return Int(UInt32.max)
     }, lookupWindow: { id in checkEqual(id, UInt32.max); return nil })
     checkTrue(missing == nil); checkEqual(selectedReads, 2) // no retry on another screen after failed description
+}
+
+private func runNativeWindowDescriptionChecks() {
+    let minimal = NativeWindowDescription([kCGWindowNumber as String: UInt32(91)])
+    checkEqual(minimal.id, 91); checkEqual(minimal.ownerPID, -1); checkEqual(minimal.level, 0)
+    checkEqual(minimal.bounds, .zero); checkTrue(minimal.name == nil); checkTrue(minimal.ownerName == nil)
+    checkTrue(minimal.isOnscreen == nil)
+    let frame = CGRect(x: 10, y: -20, width: 300, height: 400)
+    let complete = NativeWindowDescription([kCGWindowNumber as String: NSNumber(value: UInt32(123)),
+        kCGWindowOwnerPID as String: NSNumber(value: Int32(88)), kCGWindowLayer as String: NSNumber(value: Int32(3)),
+        kCGWindowBounds as String: frame.dictionaryRepresentation, kCGWindowName as String: "window",
+        kCGWindowOwnerName as String: "owner", kCGWindowIsOnscreen as String: NSNumber(value: false)])
+    checkEqual(complete.id, 123); checkEqual(complete.ownerPID, 88); checkEqual(complete.level, 3)
+    checkEqual(complete.bounds, frame); checkEqual(complete.name, "window"); checkEqual(complete.ownerName, "owner")
+    checkEqual(complete.isOnscreen, false)
+    let malformed = NativeWindowDescription([kCGWindowNumber as String: UInt32.max,
+        kCGWindowOwnerPID as String: "bad", kCGWindowLayer as String: "bad",
+        kCGWindowBounds as String: ["bad": "data"], kCGWindowName as String: 1,
+        kCGWindowOwnerName as String: 1, kCGWindowIsOnscreen as String: "bad"])
+    checkEqual(malformed.ownerPID, -1); checkEqual(malformed.level, 0); checkEqual(malformed.bounds, .zero)
+    checkTrue(malformed.isOnscreen == nil); checkTrue(malformed.name == nil); checkTrue(malformed.ownerName == nil)
+    checkTrue(nativeWindowDescription(0, descriptions: { _ in unexpectedFailure() }) == nil)
+    var fetches = 0
+    let first = nativeWindowDescription(123, descriptions: { ids in
+        fetches += 1; checkEqual(CFArrayGetCount(ids), 1)
+        checkEqual(UInt(bitPattern: CFArrayGetValueAtIndex(ids, 0)), 123)
+        return [["which": "first"], ["which": "second"]]
+    })
+    checkEqual(first?["which"] as? String, "first"); checkEqual(fetches, 1)
+    checkTrue(nativeWindowDescription(1, descriptions: { _ in [] }) == nil)
+    checkTrue(nativeWindowDescription(1, descriptions: { _ in nil }) == nil)
 }

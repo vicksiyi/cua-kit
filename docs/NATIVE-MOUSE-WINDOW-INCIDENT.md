@@ -1757,3 +1757,29 @@ description callbacks; they cover screen/read order, second-frame-read effects,
 nonzero screen origins, below-window preservation, zero/max IDs, empty/no-match
 screens and no retry after missing description. Swift build, provider-click
 checks and static source audit pass. No live window-number lookup or click ran.
+
+
+## Native window description read/decode composition
+
+Restored shared description boundary 0x10025c904: window ID zero skips the
+CoreGraphics call, a numeric pointer-sized ID is placed in a nonretaining
+CFArray, and CGWindowListCreateDescriptionFromArray supplies the first row.
+Missing/empty rows produce nil. syntheticFocusWindowOwnerPID now reuses this
+shared boundary while retaining its owner-only extraction policy.
+
+NativeWindowDescription restores the source payload decoder 0x10025c488:
+mandatory forced UInt32 window number; owner PID cast to Int32 or -1; bounds
+decoded by CGRect(dictionaryRepresentation:) or zero; Int32 layer or zero;
+optional window/owner names; optional onscreen Bool. Exact CoreGraphics keys
+were confirmed through bind entries 0x101464c00..0x101464c30. No new geometry
+heuristic or window enumeration is introduced. systemNativeWindow composes
+this with the restored AppKit point lookup.
+
+Tests use supplied rows and callbacks to check ID-zero gating, the exact CFArray
+entry, first-row selection, absent rows, metadata defaults, malformed optional
+metadata, CGRect decoding and NSNumber bridging. No live CoreGraphics window
+lookup, activation or input is invoked. Full mouse-routing assembly and
+coordinate production integration still remain outstanding.
+
+Validation: native Swift build, provider-click self-test and pinned static audit pass.
+This validates the window-description component, not live Multica clicking.

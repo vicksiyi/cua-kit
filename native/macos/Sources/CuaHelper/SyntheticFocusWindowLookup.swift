@@ -6,11 +6,7 @@ import AppKit
 // as a pointer-sized entry, then calls CGWindowListCreateDescriptionFromArray.
 // This adapter extracts only owner PID needed by the external-click callback.
 func syntheticFocusWindowOwnerPID(_ id: UInt32) -> Int32? {
-    guard id != 0 else { return nil }
-    var item = UnsafeRawPointer(bitPattern: UInt(id))
-    let ids = CFArrayCreate(nil, &item, 1, nil)!
-    guard let rows = CGWindowListCreateDescriptionFromArray(ids) as? [[String: Any]],
-          let first = rows.first,
+    guard let first = nativeWindowDescription(id),
           let owner = first[kCGWindowOwnerPID as String] as? NSNumber else { return nil }
     return owner.int32Value
 }
