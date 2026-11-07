@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runAXEnablementApplicationGuardChecks()
     runUIElementDescendantChecks()
     try runSynchronousPollingChecks()
     runAXApplicationInitializationChecks()
@@ -6715,4 +6716,23 @@ private func runUIElementDescendantChecks() {
     let empty = uiElementDescendant(of: 0, children: { _ in [] as [Int] },
         matchesType: { _ in preconditionFailure("root is not a descendant") }, passingTest: { _ in true })
     checkTrue(empty == nil)
+}
+
+
+private func runAXEnablementApplicationGuardChecks() {
+    enum Failure: Error { case missingPID }
+    for missing in 0...3 {
+        var trace: [String] = []
+        let result: String? = withAXEnablementApplication(pid: {
+            trace.append("pid"); if missing == 0 { throw Failure.missingPID }; return 42
+        }, runningApplication: { pid -> Int32? in
+            checkEqual(pid, 42); trace.append("app"); return missing == 1 ? nil : pid
+        }, bundleIdentifier: { app in
+            checkEqual(app, 42); trace.append("bundle"); return missing == 2 ? nil : ""
+        }, operation: { app, bundle in
+            checkEqual(app, 42); checkEqual(bundle, ""); trace.append("operation"); return "ok"
+        })
+        checkEqual(trace, Array(["pid", "app", "bundle", "operation"].prefix(missing + 1)))
+        checkEqual(result, missing == 3 ? "ok" : nil)
+    }
 }

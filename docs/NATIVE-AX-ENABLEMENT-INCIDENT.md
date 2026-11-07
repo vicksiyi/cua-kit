@@ -324,3 +324,24 @@ Checks exercise breadth-first preference over deeper matches, predicate
 short-circuiting, no expansion after a successful match, duplicate candidates
 and exclusion of the root. Native build, provider-click checks and pinned static
 audit pass. These checks have not established unlocked live-app acceptance.
+
+
+## Native enablement operation composed
+
+AXEnablementOperation now combines the outer guard at 0x1007000cc with the
+existing acquisition policy, native Electron/enhanced/VoiceOver operations,
+readiness initialization and assertion release. PID lookup errors, missing
+NSRunningApplication and missing bundleIdentifier return nil before acquisition.
+An empty but present bundle identifier is preserved. Guard checks cover each
+short-circuit and ordering without looking up or operating a real application.
+
+Window eligibility at 0x100758cb4 directly reads AXChildren array index 0,
+maxValues 1, countIfKnown nil. It decodes a supplied partial even when paired
+with an AX error, and inspects only the first raw child's supportedAttributes.
+It neither reads the window UIElement cache nor constructs child UIElement
+caches. The composition reuses unwrapAXUIElementArray for decoding.
+
+The owning controller still must provide the shared NSRunningApplication-keyed
+tracker and retain the returned assertion across its active lifetime. This
+operation is not yet called by the production controller. It therefore does
+not establish successful live clicking or complete activate/deactivate parity.
