@@ -2902,6 +2902,27 @@ private enum ProviderClickChecks {
             checkTrue(content.contains(text: "0-2"))
         }
         do {
+            var roleReads = 0
+            var descriptionReads = 0
+            func readRole(_ value: UIElementRole) -> UIElementRole { roleReads += 1; return value }
+            func readDescription(_ value: Bool) -> Bool { descriptionReads += 1; return value }
+            for context in UIElementContextType.allCases {
+                for role: UIElementRole in [.button, .checkBox, .menuButton, .menu, .menuBar,
+                                           .menuBarItem, .menuItem, .radioGroup, .row, .generic, .group] {
+                    for descriptive in [false, true] {
+                        roleReads = 0; descriptionReads = 0
+                        let result = shouldCollectAccessibilityContent(contextType: context,
+                            role: readRole(role), hasDescriptiveAttributes: readDescription(descriptive))
+                        let conditional = [UIElementRole.button, .checkBox, .menuButton].contains(role)
+                        let suppressed = [UIElementRole.menu, .menuBar].contains(role)
+                        checkEqual(result, context != .informationalContext || (!suppressed && (!conditional || descriptive)))
+                        checkEqual(roleReads, context == .informationalContext ? 1 : 0)
+                        checkEqual(descriptionReads, context == .informationalContext && conditional ? 1 : 0)
+                    }
+                }
+            }
+        }
+        do {
             checkEqual(formatAccessibilityContent([]), "")
             checkEqual(formatAccessibilityContent([.init(label: "Description", text: "only")]), "only")
             checkEqual(formatAccessibilityContent([.init(label: "", text: "only")]), "only")

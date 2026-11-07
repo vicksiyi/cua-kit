@@ -1,4 +1,16 @@
 {
+  "contentEligibility": {
+    "calls": [
+      {
+        "instruction": "0x1006264b4",
+        "target": "0x1006277fc",
+        "link": true
+      }
+    ],
+    "behavior": "informational only: button/checkBox/menuButton require hasDescriptiveAttributes; menu/menuBar false; all others true",
+    "getters": "node role +0x30; role presentationKind +0x40; node hasDescriptiveAttributes +0xe8",
+    "limitation": "standalone recovered guard; production content collector integration pending"
+  },
   "contentFormatting": {
     "calls": [
       {

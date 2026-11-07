@@ -864,7 +864,19 @@ content_format_calls = [branch(site, target) for site, target in [
 compare_zero_branch(0x100626dfc, 9, 0x100626f6c)
 compare_zero_branch(0x100626e10, 1, 0x100626ff0)
 
-print(json.dumps(dict(contentFormatting=dict(
+content_eligibility_calls = [branch(0x1006264b4, 0x1006277fc)]
+# Role getter, presentation kind getter, descriptive-attributes getter.
+for site, word in [(0x10062786c, 0xf9401a69),
+                   (0x1006278a0, 0xf9402008),
+                   (0x1006278e4, 0xf9407668),
+                   (0x1006278d8, 0x52800469)]:
+    assert struct.unpack('<I', read(site, 4))[0] == word
+
+print(json.dumps(dict(contentEligibility=dict(
+    calls=content_eligibility_calls,
+    behavior="informational only: button/checkBox/menuButton require hasDescriptiveAttributes; menu/menuBar false; all others true",
+    getters="node role +0x30; role presentationKind +0x40; node hasDescriptiveAttributes +0xe8",
+    limitation="standalone recovered guard; production content collector integration pending"), contentFormatting=dict(
     calls=content_format_calls,
     behavior="zero entries empty; single non-Secondary-Actions entry text only; otherwise stable short-before-long ordering, optional label-colon-space, comma-space join",
     sorting="0x100627d70 insertion comparator; 0x100628bc0 merge selects left on equal flags",

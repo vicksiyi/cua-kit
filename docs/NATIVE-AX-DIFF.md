@@ -6554,3 +6554,21 @@ accumulator -> range entry -> deduplication -> formatting chain. Static audit
 pins single-entry branches, label comparison and sort call paths. Full content
 collection guards, action/URL treatment, whole-node composition and production
 collection integration remain incomplete; no live app was executed.
+
+
+### Informational content eligibility (2026-11-07)
+
+Recovered the content guard at 0x1006264a0 and helper 0x1006277fc in
+AccessibilityContentEligibility.swift. Only informational context applies it.
+Button, checkBox and menuButton require hasDescriptiveAttributes; menu and
+menuBar suppress content; all remaining presentation kinds permit collection.
+The native bit masks are 0x23 (kinds 0, 1, 5) and 0x0c (kinds 2, 3).
+The conditional getter is node witness +0xe8, not isEnabled or an app policy.
+
+Autoclosures preserve lazy getter access: other contexts never read role;
+only the three conditional kinds read hasDescriptiveAttributes. Tests cover
+all eleven presentation kinds, every context and both attribute outcomes,
+including getter counts. Swift build, provider checks and the pinned static
+audit passed. This suppresses content only: it is not a rule to drop a whole
+node or its children. Whole-node role/state composition and production
+collector integration are still pending; no live app execution was performed.
