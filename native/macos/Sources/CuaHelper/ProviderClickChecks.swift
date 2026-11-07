@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    await runWindowOrderingRestorationContextChecks()
     await runCGWindowEventStreamChecks()
     runCGWindowNotificationChecks()
     runCGWindowCallbackRegistryChecks()
@@ -6953,4 +6954,28 @@ private func runCGWindowEventStreamChecks() async {
     }
     task.cancel()
     checkTrue(await task.value); checkEqual(made, 3); checkEqual(released, 3)
+}
+
+
+private func runWindowOrderingRestorationContextChecks() async {
+    for scenario in 0...4 {
+        var trace: [String] = []
+        let context = windowOrderingRestorationContext(windowID: 7, ownerPID: 42,
+            observedWindowIDs: { trace.append("ids"); return scenario == 0 ? [] : [7, 7] },
+            frontmostApplication: { () -> Int? in trace.append("app"); return scenario == 1 ? nil : 8 },
+            processIdentifier: { app in checkEqual(app, 8); trace.append("pid"); return scenario == 2 ? 42 : 43 },
+            focusedWindow: { app -> String? in checkEqual(app, 8); trace.append("focused"); return scenario == 3 ? nil : "focused" })
+        checkEqual(trace, Array(["ids", "app", "pid", "focused"].prefix(min(scenario + 1, 4))))
+        if scenario == 4 { checkEqual(context?.application, 8); checkEqual(context?.window, "focused") }
+        else { checkTrue(context == nil) }
+    }
+    var handler: ((Int, WindowServerEvent) -> Void)?
+    let stream = orderingWindowEventStream(observedWindowIDs: [3, 3], makeObserver: {
+        windows, events, callback -> Int in
+        checkEqual(windows, [3, 3]); checkEqual(events, [.didChangeOrder]); handler = callback; return 0
+    })
+    var iterator = stream.makeAsyncIterator()
+    handler!(1, .didChangeOrder); handler!(2, .didChangeOrder)
+    let result = await iterator.next()
+    checkEqual(result?.0, 2); checkEqual(result?.1, .didChangeOrder)
 }

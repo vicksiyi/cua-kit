@@ -2098,3 +2098,26 @@ retention of the final two events, tuple forwarding, observer retention across
 iterator copies, release after final copy disposal, and cancellation of an empty
 stream task. They perform no live WindowServer subscription. Full ordering response
 logic/menu tasks and production controller integration remain outstanding.
+
+
+## Ordering subscription policy and restoration eligibility
+
+The main ordering subscription reads current observed IDs, subscribes only to
+WindowServerEvent.didChangeOrder, and uses bufferingNewest(1). This is verified
+from the static event-array count/tag and the actual imported bufferingNewest
+enum-case metadata, rather than guessing Swift enum tag meanings. The shared
+orderingWindowEventStream factory now preserves those call-site choices.
+
+The event reaction begins by taking the current observed-ID list and ignoring
+an event window not present in it. It then reads the foreground application,
+ignores a window owned by that foreground PID, and asks only for that other
+application's focused AX window. Missing foreground/focused window ends the
+reaction; primaryWindow's main/last fallbacks do not apply here. The restored
+windowOrderingRestorationContext isolates this selection boundary while retaining
+its selected application/window for later restoration operations.
+
+Injected tests cover short-circuit order at every guard and the one-event,
+newest-one subscription behavior. Native build, component checks and expanded
+static audit pass. Subsequent native restoration behavior in the same source
+function is still being analyzed; the guard helper is not yet presented as a
+complete ordering response or connected to production controller observation.
