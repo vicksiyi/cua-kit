@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // isFocused 0x1007abf94 -> shared cached Bool getter 0x1007ac3f0.
     var isFocused: Bool {
         guard let partial = cache.attributes[UIElementAttribute(kAXFocusedAttribute)] else { return false }

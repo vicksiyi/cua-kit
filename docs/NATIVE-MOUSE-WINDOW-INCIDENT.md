@@ -2659,3 +2659,20 @@ returning original AX references in source order. Existing provider composition
 checks cover cache/fresh-read policy, subset descriptors, child selection and
 transaction construction. Remaining state/presentation and action witnesses
 are still required for concrete window-type conformance and Target wiring.
+
+
+## Shared selection, disclosure and typed error reporting
+
+Provider capability checks, focused/selected cache state, Catalyst traits reads,
+disclosure state/toggle composition and explicit action-list composition now
+use UIElementProtocol extensions. The public default isSelected and
+titleTargetIdentities getters also use that boundary. Their shared attribute
+error reporter preserves NativeLogger.logger(for: Self.self), so future window
+conformers report under their concrete type instead of a forwarded UIElement.
+The existing UIElement action dispatcher continues using the same inherited
+reporter; no AX action routing was replaced by a simpler implementation.
+
+Cache-first selection semantics, missing-vs-malformed AXSelected distinctions,
+traits fallback, support-and-settable checks and decoder error handling remain
+unchanged. Full perform(action:) and web-view ancestry composition are still
+concrete and require further restoration before full window conformance.

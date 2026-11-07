@@ -1,6 +1,6 @@
 // Concrete UIElement composition of the restored actions getter and cached
 // disclosure capabilities. Read/provider and logger boundaries stay explicit.
-extension UIElement {
+extension UIElementProtocol {
     func actions(
         readNativeActions: () throws -> [UIElementAction],
         freshSupportedAttributes: () -> Set<UIElementAttribute>,

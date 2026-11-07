@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     func isAttributeSupportedAndSettable(_ attribute: UIElementAttribute) -> Bool {
         uiElementIsAttributeSupportedAndSettable(attribute, readCache: { cache },
             freshSupportedAttributes: { Set(axElement.supportedAttributes) },
