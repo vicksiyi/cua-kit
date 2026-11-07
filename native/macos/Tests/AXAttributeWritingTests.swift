@@ -29,6 +29,11 @@ struct AXAttributeWritingTests {
                 fatalError("write must throw every non-success status")
             } catch UIElementError.axError(let actual) {
                 precondition(actual == status && calls == 1)
+                // Compose the production strict writer with the IPC projection
+                // and native client mapping; the raw status must survive.
+                let wire = SkyRPCFailure.accessibility(actual)
+                precondition(NativeIPCClientError.mappedServerError(
+                    errorNumber: Int32(wire.code), errorString: wire.message) == .accessibilityError(status))
             }
         }
         print("native writes preserve encoded identity and reject every AX error")

@@ -1307,3 +1307,14 @@ The installed Sky JS `targets/mac/errors.js` identifies `-10008` as `accessibili
 `SkyRPCFailure.swift` centralizes the owned error projection. When a restored AX operation throws `UIElementError.axError(status)`, `skyReply` now sends `-10008` plus the decimal raw AX status instead of flattening it into the generic localized NSError text. Other UIElementError cases remain on the generic path. Existing input operations that already flatten AX statuses before reaching IPC are not restored by this change.
 
 Validation: Swift build; the new native Sky error projection test composes wire encoding with the recovered native client decoder, including unknown/raw Int32 extrema and host failure text; three existing owned IPC tests exercise restored/installed JS clients and the policy peer. No real AX input, model request, or vendor native process was executed. Actual runtime reproduction of AX errors still requires desktop acceptance.
+
+
+### Preserve AX errors through owned input dispatch (2026-11-07)
+
+`Target.action` caught restored AX exceptions, converted them back into status values, then flattened them into host error strings. It now lets typed AX failures reach the IPC projection. Writable-attribute query failures also propagate rather than being suppressed by `try?`. Successful/tolerated action semantics remain those of the restored action dispatcher.
+
+Focus and selected-text-range writes now use the recovered system attribute writer (including AX thread routing and its strict success-only policy), rather than calling AXUIElementSetAttributeValue directly. Selection range encoding errors remain typed instead of being renamed as provider disconnections. Text matching/range selection is still the existing host implementation; this change does not claim to restore the entire original selection algorithm.
+
+Input observation invalidation is now deferred around the action switch, so throwing writes and actions also retire snapshot, element nodes and captured-window coordinates. This is owned-host lifecycle handling, not a reconstructed original snapshot algorithm. Policy and deadline validation still precede dispatch.
+
+Validation includes the strict attribute writer's fifteen non-success AX statuses composed through wire projection and native client decoding, existing setter/encoding/action tests, Swift build, and restored/installed JS client IPC fixtures. Desktop input success remains unverified without real app acceptance.

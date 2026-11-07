@@ -13,7 +13,7 @@ test("native writes preserve encoded values and strict error policy", {
   try {
     const output = join(directory, "settable");
     await exec("xcrun", ["swiftc",
-      ...["UIElementError", "UIElementAttribute", "AXAttributeReading", "AXProcessID", "AXAttributeWriting", "AXStoredValue", "AXValueDescriptors"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
+      ...["SkyRPCFailure", "NativeIPCClientError", "NativeIPCServerErrorMapping", "UIElementError", "UIElementAttribute", "AXAttributeReading", "AXProcessID", "AXAttributeWriting", "AXStoredValue", "AXValueDescriptors"].map(name => resolve(`native/macos/Sources/CuaHelper/${name}.swift`)),
       resolve("native/macos/Tests/AXAttributeWritingTests.swift"), "-o", output]);
     const result = await exec(output);
     assert.match(result.stdout, /native writes preserve encoded identity and reject every AX error/);

@@ -105,48 +105,32 @@ final class Target {
         guard let id = params["elementId"] as? Int, id > 0, id <= nodes.count else { throw fail("STALE_OBSERVATION", "Element is absent from current snapshot.") }
         let element = nodes[id-1].element
         let operation = params["operation"] as? String ?? ""
-        var status: AXError
         let item = UIElement(systemElement: element, transaction: nil)
-        func perform(_ action: UIElementAction) throws -> AXError {
-            do {
-                try item.performAction(action, transaction: nil, environment: .system, reportError: { error in
-                    Logger(subsystem: "core.cua", category: "Accessibility").error("Action dependency read failed: \(String(describing: error))")
-                })
-                return .success
-            } catch UIElementError.axError(let error) { return error }
+        // All attempted AX operations retire the observation, including throws.
+        defer { invalidateInputState() }
+        func perform(_ action: UIElementAction) throws {
+            try item.performAction(action, transaction: nil, environment: .system, reportError: { error in
+                Logger(subsystem: "core.cua", category: "Accessibility").error("Action dependency read failed: \(String(describing: error))")
+            })
         }
         switch operation {
-        case "press": status = try perform(.press)
+        case "press": try perform(.press)
         case "setValue":
             guard let text = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "setValue requires a string.") }
-            guard (try? isSystemAXAttributeSettable(element, UIElementAttribute(kAXValueAttribute))) == true else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
-            do {
-                try uiElementSetValue(text, forAttribute: UIElementAttribute(kAXValueAttribute),
-                    readAXElement: { element }, write: { target, encoded, attribute in
-                        try setSystemAXAttribute(target, encoded, for: attribute)
-                    })
-                status = .success
-            } catch UIElementError.axError(let error) {
-                // Preserve the existing snapshot invalidation and transport
-                // outcome mapping below, including failed system writes.
-                status = error
-            }
-        case "selectText": status = try selectText(element,params)
+            guard try isSystemAXAttributeSettable(element, UIElementAttribute(kAXValueAttribute)) else { throw fail("UNSUPPORTED_CAPABILITY", "Element has no writable AXValue.") }
+            try item.setSystemValue(text, forAttribute: UIElementAttribute(kAXValueAttribute))
+        case "selectText": try selectText(element,params)
         case "secondary":
             guard let action = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "Secondary action requires a name.") }
-            if action == "focus" { status = AXUIElementSetAttributeValue(element,kAXFocusedAttribute as CFString,kCFBooleanTrue) }
+            if action == "focus" { try item.setSystemValue(true, forAttribute: UIElementAttribute(kAXFocusedAttribute)) }
             else {
                 let actions = item.actions(in: .system, reportError: { error in
                     Logger(subsystem: "core.cua", category: "Accessibility").error("Action discovery failed: \(String(describing: error))")
                 })
                 guard actions.contains(UIElementAction(action)) else { throw fail("UNSUPPORTED_CAPABILITY", "Action is not advertised by this AX element.") }
-                status = try perform(UIElementAction(action))
+                try perform(UIElementAction(action))
             }
         default: throw fail("UNSUPPORTED_CAPABILITY", "Unsupported native action.")
-        }
-        snapshot = nil; nodes = []
-        guard status == .success else {
-            throw fail(status == .actionUnsupported || status == .attributeUnsupported ? "UNSUPPORTED_CAPABILITY" : "ACTION_OUTCOME_UNKNOWN", "Native action returned AX error \(status.rawValue); observe before retrying.")
         }
         return ["outcome": "completed"]
     }
