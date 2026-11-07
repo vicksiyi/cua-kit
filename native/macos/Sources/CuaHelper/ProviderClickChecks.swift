@@ -51,6 +51,58 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        func truncate(_ text: String, count: Int, available: Range<Int>? = nil,
+            role: UIElementRole = .textArea, visible: NSRange? = nil,
+            reread: String? = nil
+        ) -> (text: String, truncationRange: NSRange?) {
+            transformedUIElementText(text, descriptor: .init(count: count, availableRange: available),
+                role: role, visibleCharacterRange: { visible },
+                readStringForRange: { _ in "remote" }, rereadValue: { reread },
+                reportError: { _ in unexpectedFailure() })
+        }
+        let completeText = truncate("full", count: 4)
+        checkEqual(completeText.text, "full"); checkTrue(completeText.truncationRange == nil)
+        let partialText = truncate("part", count: 20, available: 6..<10)
+        checkEqual(partialText.text, "part")
+        checkEqual(partialText.truncationRange, NSRange(location: 6, length: 4))
+        let rereadEmpty = truncate("part", count: 20, available: 6..<10, reread: "")
+        checkEqual(rereadEmpty.text, ""); checkTrue(rereadEmpty.truncationRange == nil)
+        let boundaryText = String(repeating: "b", count: 100_000)
+        let boundary = transformedUIElementText(boundaryText,
+            descriptor: .init(count: 100_000, availableRange: 0..<100_000), role: .textField,
+            visibleCharacterRange: { unexpectedFailure() },
+            readStringForRange: { _ in unexpectedFailure() },
+            rereadValue: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+        checkEqual(boundary.text, boundaryText); checkTrue(boundary.truncationRange == nil)
+        let huge = String(repeating: "a", count: 100_001)
+        let defaultSlice = truncate(huge, count: 100_001)
+        checkEqual(defaultSlice.text.count, 100_000)
+        checkEqual(defaultSlice.truncationRange, NSRange(location: 0, length: 100_000))
+        let zeroVisible = truncate(huge, count: 100_001, visible: NSRange(location: 20, length: 0))
+        checkEqual(zeroVisible.truncationRange, NSRange(location: 0, length: 100_000))
+        let visibleSlice = truncate(huge, count: 100_001, visible: NSRange(location: 10, length: 3))
+        checkEqual(visibleSlice.text, "aaa")
+        checkEqual(visibleSlice.truncationRange, NSRange(location: 10, length: 3))
+        let remoteSlice = truncate("cached", count: 100_001, visible: NSRange(location: 20, length: 5))
+        checkEqual(remoteSlice.text, "remote")
+        checkEqual(remoteSlice.truncationRange, NSRange(location: 20, length: 5))
+        for role in [UIElementRole.button, .unknown] {
+            let untouched = transformedUIElementText("cached",
+                descriptor: .init(count: 100_001, availableRange: 0..<6), role: role,
+                visibleCharacterRange: { unexpectedFailure() },
+                readStringForRange: { _ in unexpectedFailure() },
+                rereadValue: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+            checkEqual(untouched.text, "cached"); checkTrue(untouched.truncationRange == nil)
+        }
+        var truncationErrors = 0
+        let failedReread = transformedUIElementText("part",
+            descriptor: .init(count: 20, availableRange: 6..<10), role: .staticText,
+            visibleCharacterRange: { unexpectedFailure() },
+            readStringForRange: { _ in unexpectedFailure() },
+            rereadValue: { throw UIElementError.axError(.failure) },
+            reportError: { _ in truncationErrors += 1 })
+        checkEqual(failedReread.truncationRange, NSRange(location: 6, length: 4))
+        checkEqual(truncationErrors, 1)
         checkEqual(transformedUIElementString(in: NSRange(location: 1, length: 2), from: "abcd",
             readStringForRange: { _ in unexpectedFailure() }), "bc")
         // A UTF-16 range fitting the local text can still use AX because the

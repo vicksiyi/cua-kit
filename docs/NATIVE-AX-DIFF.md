@@ -4671,3 +4671,31 @@ Follow-up construction evidence resolves the earlier initial-false uncertainty:
 `0x10075f26c..0x10075f278` clears it when a truncation range is present. Initial false
 therefore must NOT be used as the whole implementation. Full truncation policy,
 value rendering and the transformed owner remain pending.
+
+
+### Transformed text truncation policy (2026-11-07)
+
+Restored `0x10075ff8c..<0x1007603dc` in
+`TransformedUIElementTextTruncation.swift`. Only textArea, textField and staticText
+enter truncation. When max(String.count, descriptor.count) exceeds 100,000, the
+policy reads the visible character range once; absent or zero-length visibility
+falls back to NSRange(0,100000). It delegates extraction to the restored range
+helper and retains the selected range even when extraction returns empty text.
+At exactly 100,000 the large-text branch is not entered.
+
+For shorter text, an absent available range or a range whose length reaches the
+descriptor count returns the original text without truncation. An incomplete
+range triggers a fresh value read: any decoded String, including empty, clears
+the old range. Nil or an error retains the original text and available range;
+errors are reported once. The fresh value's own descriptor is ignored by this
+source branch. The constructor synthesizes absent descriptors using
+CFStringGetLength, whereas this helper's local comparison uses String.count.
+
+Validation: complete Swift helper build and provider composition selftest pass.
+Cases cover role exclusion with no provider probes, the exact threshold, large
+text, visible and zero-length visible ranges, provider extraction, incomplete
+cached ranges, empty successful rereads, nil rereads and errors. The tests call
+the extracted policy with injected dependencies; they do not prove live AX
+visibility retrieval or transformed-node construction. Those provider bindings,
+non-string formatting and the full transformed owner remain incomplete; the
+production collector has not switched to this pipeline.
