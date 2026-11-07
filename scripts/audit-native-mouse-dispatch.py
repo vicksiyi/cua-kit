@@ -503,3 +503,10 @@ assert pinned_imported_symbol(0x101463730) == "_$sSD10FoundationE34_conditionall
 assert struct.unpack("<I", read(0x10006d790, 4))[0] == 0x52800324  # mov w4, #25 (userInitiated)
 
 assert struct.unpack("<d", read(0x10116b0a8, 8))[0] == 0.01  # menu readiness polling delay
+
+# AX controller callback forwards synchronously through a tail branch.
+callback_branch = struct.unpack("<I", read(0x10008a400, 4))[0]
+assert callback_branch >> 26 == 0b000101
+callback_offset = callback_branch & 0x3ffffff
+if callback_offset & 0x2000000: callback_offset -= 0x4000000
+assert 0x10008a400 + callback_offset * 4 == 0x10006da8c

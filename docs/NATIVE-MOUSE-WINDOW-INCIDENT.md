@@ -2429,3 +2429,22 @@ key use after an AX ID changes, zero AX-ID reads during removal, per-removal
 updates and no update when no identity matches. Menu close also first cancels
 the ordering menu task and clears two separately locked controller state slots;
 those state owners still need reconstruction before full callback integration.
+
+
+## Controller menu state ownership
+
+Symbols at 0x1000477e8 and 0x100047824 identify two independent
+OSAllocatedUnfairLock optional slots: currentlyOpenedMenu and
+currentlyFocusedMenuBarItem. AppControllerMenuState restores separate storage,
+reads and assignment. Its menuDidClose sequence first calls the ordering
+observer, clears opened menu under its lock, then focused menu-bar item under
+its lock, then invokes matching-window removal outside both locks.
+Checks verify the ordering callback sees the previous state, removal sees both
+slots cleared, independent assignment and callback re-entry without a held lock.
+
+The callback trampoline 0x10008a3fc directly forwards to 0x10006da8c; it does
+not introduce a main-queue hop. Production Target is MainActor-isolated, so its
+integration requires an explicit ownership decision rather than assuming the
+native callback is already running on the main thread. The original dictionary
+has no extra lock, while these two menu slots have their own native locks.
+This outstanding concurrency boundary must be resolved during controller wiring.

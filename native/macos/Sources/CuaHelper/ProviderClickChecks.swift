@@ -3751,6 +3751,7 @@ func runProviderClickChecks() async throws {
     runAXNotificationInfoBridgeChecks()
     runAppControllerMenuOpenChecks()
     runMouseWindowRegistryRemovalChecks()
+    runAppControllerMenuStateChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7351,4 +7352,26 @@ private func runMouseWindowRegistryRemovalChecks() {
     registry.removeWindows { _ in false }
     precondition(updates.isEmpty && idReads == 0)
     precondition(Set(registry.windows().keys) == [30])
+}
+
+private func runAppControllerMenuStateChecks() {
+    let state = AppControllerMenuState<Int, String>()
+    precondition(state.openedMenu == nil && state.focusedMenuBarItem == nil)
+    state.setOpenedMenu(7); state.setFocusedMenuBarItem("File")
+    var events: [String] = []
+    state.menuDidClose(notifyOrdering: {
+        precondition(state.openedMenu == 7 && state.focusedMenuBarItem == "File")
+        events.append("ordering")
+    }, removeWindows: {
+        precondition(state.openedMenu == nil && state.focusedMenuBarItem == nil)
+        events.append("remove")
+        // The external callback runs outside both state locks.
+        state.setOpenedMenu(8)
+    })
+    precondition(events == ["ordering", "remove"] && state.openedMenu == 8)
+    state.setFocusedMenuBarItem("Edit")
+    state.setOpenedMenu(nil)
+    precondition(state.focusedMenuBarItem == "Edit")
+    state.menuDidClose(notifyOrdering: {}, removeWindows: {})
+    precondition(state.openedMenu == nil && state.focusedMenuBarItem == nil)
 }
