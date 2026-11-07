@@ -6,8 +6,8 @@ private struct ExportTraversalNode {
     var hash: SipHashState
 }
 
-/// Recovered iterative traversal at 0x10024c4f4. Dynamic re-export resolution
-/// remains injected until its loader adapter is restored. The resolver receives
+/// Recovered iterative traversal at 0x10024c4f4. The caller supplies the native
+/// dynamic-loader adapter or a fixture resolver. The resolver receives
 /// the original name or a nonempty, terminated imported name.
 func collectExportTrie(image: UnsafeRawPointer, bytes: UnsafePointer<UInt8>, size: Int,
                        requested: Set<UInt64>, salt: UnsafeBufferPointer<UInt8>,

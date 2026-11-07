@@ -2843,3 +2843,32 @@ Fixtures cover shared-node traversal order, a self-cycle, whole-trie ordinary
 address bounds, re-export imported-name selection and unterminated-name fallback,
 and truncated inputs. Tests execute only reconstructed Swift and fixture
 resolvers; no vendor native code or dynamic symbol resolution is executed.
+
+### SoftLink image-local lookup entry point and dynamic re-export adapter
+
+Restored public `lookUpSymbols(image:symbols:salt:)` from `0x100249078`.
+It rejects absent/non-64-bit images and empty requests, collects load commands,
+computes the linkedit base, visits a nonempty export trie first, then fills
+remaining requested hashes from the symbol table. Complete export matches return
+before the symbol-table fallback. Partial results survive malformed export nodes.
+This entry point is now connected to the recovered salted hashing implementation.
+
+The re-export adapter follows `0x10024cc7c..<0x10024ce2c`: repair the name as UTF-8,
+open the current process with `dlopen(nil, RTLD_LAZY)`, try the entire name, and
+only if needed try dropping one leading underscore. The observed branch has no
+dlclose; reconstruction does not add an unload. The import ordinal is not used
+to select an image in this path. Fixture injection remains at the traversal and
+name-lookup boundaries to test without loading vendor code.
+
+Integration fixtures build a synthetic mapped Mach-O image with both an export
+trie and symbol table. They verify export priority, symbol-table completion,
+fallback after a malformed trie, nil/empty/invalid-magic entry behavior, repairing
+name decoding and underscore fallback order. A separate assertion resolves the
+public system `_malloc` name through the owned adapter without invoking the
+returned pointer. This is not execution of the vendor native service. Swift
+build and the SoftLink suite pass.
+
+This completes the currently reconstructed image-local path, not all SoftLink:
+image enumeration/search, batch priority binding and remaining overloads still
+need recovery. Accessibility SPI binding, transaction prefetch integration and
+real desktop acceptance remain outside this fixture's evidence.
