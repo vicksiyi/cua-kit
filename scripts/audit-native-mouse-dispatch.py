@@ -648,6 +648,15 @@ assert [value & 0xffffffff for value in struct.unpack('<5Q', read(0x1014a03d8 + 
 # Update timing uses un-clamped subtraction/addition; no synthesized duration.
 assert read(0x1007c2b90, 32).hex() == '0000679e4038601e0800669e210000720010889ac0035fd60228611ec0035fd6'
 
+# Class vtable header offset=19 words; reset is method index 29, hence
+# witness slot 0x180 is the exported reset descriptor/implementation.
+assert struct.unpack('<II', read(0x1012cda80, 8)) == (19, 34)
+assert (19 + (0x1012cdb70 - 0x1012cda88) // 8) * 8 == 0x180
+assert 0x1012cdb74 + struct.unpack('<i', read(0x1012cdb74, 4))[0] == 0x1007c5b14
+# Field vector starts at metadata word 12; field 6 is startTime (word 18).
+assert struct.unpack('<II', read(0x1012cda34 + 36, 8)) == (7, 12)
+assert read(0x1007c5b14, 32).hex() == '880240f9084940f98802088b1f0100f929008052092100390000805237ffff17'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

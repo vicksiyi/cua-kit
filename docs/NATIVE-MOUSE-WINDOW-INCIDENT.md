@@ -3488,3 +3488,24 @@ fixture; the generic InterpolatableAnimation engine is still incomplete. DriverS
 coordinator ownership, timing/physics and the production cursor window remain open.
 
 Swift build, provider protocol/composition checks and pinned static audit pass.
+
+
+## Reset witness and native reset body confirmation (2026-11-08)
+
+The previous protocol reset mapping is now confirmed by class metadata rather
+than the remaining-method inference: class vtable header 0x1012cda80 has offset
+19 words and 34 methods; reset descriptor 0x1012cdb70 is index 29, giving slot
+(19+29)*8 = 0x180 used by the protocol witness. Its relative implementation
+points to exported reset 0x1007c5b14. All are statically pinned.
+
+That body clears the optional startTime (metadata field-offset word 18), then
+tail-calls the common state setter with .ready. Descriptor fields are id, _value,
+_targetValue, eventHandler, state, _initialValue, startTime; vector base word 12
+plus index 6 confirms the startTime slot. Reset does not change current/target/
+initial value or clear eventHandler here. The recovered reset helper is now used
+in the existing native Animation protocol fixture with the real state setter;
+checks verify the coordinator observes ready only after startTime is nil and
+existing tick evidence remains untouched. The fixture remains a fixture,
+not the complete generic InterpolatableAnimation engine.
+
+Swift build, provider protocol/composition checks and pinned static audit pass after reset recovery.

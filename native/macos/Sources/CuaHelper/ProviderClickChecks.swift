@@ -8089,10 +8089,16 @@ private func runNativeAnimationProtocolCompositionChecks() {
     final class Mock: Animation {
         let id = UUID()
         var state: AnimationState = .running
+        var startTime: Double? = 10
         var ticks: [AnimationUpdate] = []
         var stopped: [Bool] = []
         func stop(immediately: Bool) { stopped.append(immediately); state = .ended }
-        func reset() { state = .ready }
+        func reset() {
+            resetInterpolatableAnimation(clearStartTime: { startTime = nil }, setState: { requested in
+                setInterpolatableAnimationState(requested, read: { state }, write: { state = $0 },
+                    notifyCoordinator: { precondition($0 == .ready && startTime == nil) })
+            })
+        }
         func performTick(with update: AnimationUpdate) { ticks.append(update) }
     }
     let concrete = Mock()
@@ -8101,7 +8107,7 @@ private func runNativeAnimationProtocolCompositionChecks() {
     precondition(update.targetTimestamp == 10.25 && update.targetRunningTime(from: 11) == -0.75)
     precondition(update.targetRunningTime(from: nil) == nil)
     animation.performTick(with: update); animation.stop(); animation.reset()
-    precondition(concrete.ticks == [update] && concrete.stopped == [true] && animation.state == .ready)
+    precondition(concrete.ticks == [update] && concrete.stopped == [true] && animation.state == .ready && concrete.startTime == nil)
     var records: [UUID: any Animation] = [animation.id: animation]
     stopAnimationDriverAnimations(keys: { [animation.id] }, lookup: { records[$0] },
         remove: { records.removeValue(forKey: $0) })
