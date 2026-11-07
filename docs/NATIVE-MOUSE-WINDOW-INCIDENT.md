@@ -2554,3 +2554,23 @@ matching window selection, missing-match failure and PID error short-circuit.
 Production menu wrappers still need to use this path when the full controller
 is connected. Treating a menu's raw AX ID as its dispatch window would be a
 behavioral mismatch, even if basic fixture-window clicks succeed.
+
+
+## Window protocol witness boundary: raw and menu-specific paths
+
+Additional protocol metadata inspection changes the planned wrapper declaration:
+WindowUIElementProtocol at 0x1012cc9c0 has one generic signature constraint and
+three witness requirements: a base conformance plus two getter slots. Declaring
+it as just UIElementProtocol plus one windowID getter would lose a source slot.
+The named extension windowID getter at 0x10072cea8 forwards through witness
++16. In both WindowUIElement and MenuUIElement tables that slot reaches
+0x10072dd08, which reads the raw AX windowID. The +24 slot reaches the same raw
+helper for WindowUIElement, but MenuUIElement reaches 0x1007259c8 and then its
+special native-menu resolution at 0x100725a5c.
+
+Therefore raw protocol forwarding and concrete menu lookup must remain distinct;
+replacing every window-ID access with systemMenuWindowID would also be wrong.
+The exact source naming/contract for both getter requirements remains to be
+recovered before declaring the wrapper protocol. The witness table pointers,
+forwarding instructions and call targets are now pinned by the static audit.
+No speculative one-getter protocol or wrapper conformance was introduced.
