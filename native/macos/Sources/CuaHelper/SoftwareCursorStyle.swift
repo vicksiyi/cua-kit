@@ -1,11 +1,12 @@
 import AppKit
 
 // Recovered makeView portion of SoftwareCursorStyle (0x10009bf40).
-// Full native Style state/animation inheritance is still being recovered.
+// Native Style storage is shared; motion and window ownership remain separate.
 @MainActor
-final class SoftwareCursorStyle {
+final class SoftwareCursorStyle: ComputerUseCursorStyle {
     private var view: NSImageView?
-    func makeView() -> NSView {
+    override var hotSpot: CGPoint { CGPoint(x: 4, y: 4) }
+    override func makeView() -> NSView {
         if let view { return view }
         let imageView = NSImageView()
         let image = Bundle.module.url(forResource: "SoftwareCursor", withExtension: "png")

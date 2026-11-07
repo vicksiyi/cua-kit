@@ -7824,6 +7824,16 @@ private func runAppControllerObservationDeliveryChecks() throws {
 
 @MainActor private func runSoftwareCursorViewChecks() {
     let style = SoftwareCursorStyle()
+    precondition(style.hotSpot == CGPoint(x: 4, y: 4))
+    precondition(style.isAttached && !style.isPressed && style.activityState == .idle)
+    precondition(style.velocityX == 0 && style.velocityY == 0 && style.angle == .zero)
+    precondition(style.scootStretchXScale == 1 && style.scootStretchScale == 1 && style.scootStretchPivotX == 0.5)
+    precondition(style.scootStretchAngle == .zero && style.scootTiltAngle == .zero)
+    let oldFactory = ComputerUseCursorStyle.current
+    defer { ComputerUseCursorStyle.current = oldFactory }
+    ComputerUseCursorStyle.current = { style }
+    precondition(ComputerUseCursorStyle.current() === style)
+    precondition(ComputerUseCursorStyle.software !== ComputerUseCursorStyle.software)
     let first = style.makeView()
     precondition(first === style.makeView())
     guard let imageView = first as? NSImageView, let image = imageView.image else { preconditionFailure() }

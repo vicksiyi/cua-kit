@@ -3204,3 +3204,30 @@ identity reuse, without presenting any window. Static pins cover initial factory
 and size instructions. This is not yet an on-screen cursor or click integration.
 
 Swift build, provider/resource view checks and pinned static audit pass for this component.
+
+
+## Native cursor style state/default recovery (2026-11-08)
+
+Base Style's native storage is now shared with SoftwareCursorStyle: velocities
+zero, isPressed=false, activityState=.idle, isAttached=true, Angle.zero,
+scootStretchXScale=1, scootStretchScale=1, scootStretchPivotX=0.5 and zero
+stretch/tilt angles. Source initializer 0x10009be9c zeroes the storage and loads
+four doubles (0,1,1,0.5) from 0x10115bed0. ActivityState reflection descriptor
+0x1013162e8 records idle/loading/paused. Writable current is a MainActor factory,
+initially constructing a fresh software style; software getter also constructs
+fresh instances. The recovery uses standalone Swift names for the native nested
+Style/ActivityState until the full ComputerUseCursor owner is restored.
+
+SoftwareCursorStyle overrides hotSpot with (4,4) exactly as 0x10009bf34 and
+inherits stored style state. There are no SoftwareCursorStyle state overrides
+that swap the image or apply an extra pressed-state transform. Such behavior is
+not added speculatively. The native base hotSpot and makeView both trap with the
+same "makeView has not been implemented" message; concrete software overrides
+both. Source constants/hotspot are statically pinned.
+
+Checks cover defaults, fresh software factory identity, replacing/restoring the
+current factory, and the concrete hotspot alongside existing resource/view checks.
+This recovers style storage, not animation, drawing of alternate Fog style,
+window management, cursor positioning or live input integration.
+
+Swift build, provider/resource view checks and static audit pass after style recovery.
