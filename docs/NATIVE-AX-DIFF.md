@@ -4474,3 +4474,33 @@ but incorrectly imply that transformation semantics had been restored.
 Validation: the audit runs successfully against the pinned installed binary and
 asserts descriptor kind, field order, field-offset-vector placement, and four
 constructor branch destinations. This is static source evidence, not a live app test.
+
+### Context-sensitive transformed interaction capabilities (2026-11-07)
+
+Restored the paired selection/focus inference branch of the common transformed
+constructor in `TransformedUIElementCapabilities.swift`. Source range
+`0x10075f860..0x10075fa78` distinguishes eventStreamContext (tag 1) from full and
+informational contexts. Context metadata `0x10149d8e0` places type at byte 0 and
+isCatalyst at byte 1; the branch is NOT a web-shaped/browser check.
+
+Non-event contexts query ordinary selectable then focusable capabilities. Event
+contexts only read traits when Catalyst is true. A traits selection mask of
+`0x10100008` skips the supported-selection-attribute scan when matched; otherwise
+that scan tests selectedRows/selectedCells/selectedChildren support, not whether
+anything is currently selected. The final selectable flag is role membership
+(cell, radioButton, row, tabGroup) OR a group with that candidate flag. Focus is
+traits mask `0x0030810011141403`, OR membership of the 22-role focus set, OR a
+selectable group. The role sets were recovered from initializers
+`0x10076190c` and `0x100761a78` respectively.
+
+The extracted function preserves lazy probes and the normal-query ordering. Its
+inputs are explicit pending complete transformed-node construction; it is not yet
+substituted into the production flat collector. Disclosable/value-settable state,
+string conversion and action-description construction remain separate branches.
+
+Validation: complete Swift helper build and owned provider selftest pass. Added
+cases cover full/informational versus event contexts, non-Catalyst probe exclusion,
+Catalyst missing/present traits, selection-trait short circuit, selection-capable
+group, ordinary focus-only text field, row, and an unknown role that must not become
+selectable merely because selection attributes are supported. No vendor process
+or live AgentLoop was launched.

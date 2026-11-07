@@ -51,6 +51,50 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        // Constructor context branches must not issue live capability reads in
+        // event-stream mode, or read Catalyst traits in other contexts.
+        var capabilityReads: [String] = []
+        for context in [UIElementContextType.fullUIContext, .informationalContext] {
+            capabilityReads = []
+            let flags = transformedUIElementInteractionCapabilities(contextType: context,
+                isCatalyst: true, role: .group, readTraits: { unexpectedFailure() },
+                hasSupportedSelectionAttributes: { unexpectedFailure() },
+                readSelectable: { capabilityReads.append("selected"); return true },
+                readFocusable: { capabilityReads.append("focused"); return false })
+            checkTrue(flags.isSelectable)
+            checkFalse(flags.isFocusable)
+            checkEqual(capabilityReads, ["selected", "focused"])
+        }
+        func inferred(_ role: UIElementRole, catalyst: Bool = false,
+            traits: UInt64? = nil, selectionAttributes: Bool = false
+        ) -> (isSelectable: Bool, isFocusable: Bool) {
+            transformedUIElementInteractionCapabilities(contextType: .eventStreamContext,
+                isCatalyst: catalyst, role: role,
+                readTraits: { capabilityReads.append("traits"); return traits },
+                hasSupportedSelectionAttributes: {
+                    capabilityReads.append("selectionAttributes"); return selectionAttributes
+                }, readSelectable: { unexpectedFailure() }, readFocusable: { unexpectedFailure() })
+        }
+        capabilityReads = []
+        let group = inferred(.group, selectionAttributes: true)
+        checkTrue(group.isSelectable && group.isFocusable)
+        checkEqual(capabilityReads, ["selectionAttributes"])
+        let text = inferred(.textField)
+        checkTrue(text.isFocusable)
+        checkFalse(text.isSelectable)
+        let row = inferred(.row)
+        checkTrue(row.isSelectable && row.isFocusable)
+        let unknown = inferred(.unknown, selectionAttributes: true)
+        checkFalse(unknown.isSelectable || unknown.isFocusable)
+        capabilityReads = []
+        let traitGroup = inferred(.group, catalyst: true, traits: 1 << 3)
+        checkTrue(traitGroup.isSelectable && traitGroup.isFocusable)
+        checkEqual(capabilityReads, ["traits"])
+        let traitUnknown = inferred(.unknown, catalyst: true, traits: 1)
+        checkTrue(traitUnknown.isFocusable)
+        checkFalse(traitUnknown.isSelectable)
+        let absentTraits = inferred(.group, catalyst: true)
+        checkFalse(absentTraits.isSelectable || absentTraits.isFocusable)
         // Source role exceptions: selection alone makes static text interactive,
         // but does not make a group or text area interactive.
         for focusable in [false, true] {
