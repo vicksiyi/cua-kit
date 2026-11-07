@@ -3603,3 +3603,32 @@ instructions. It emits reconstruction/native-ax-provider-evidence.json. Audit
 and full Swift build pass without loading or executing vendor code. The next
 implementation boundary is the static provider lookup plus concrete AX interface
 routing, rather than the previously assumed TaskLocal provider lifecycle.
+
+### Mock-first read front doors
+
+AXMockProvider.swift implements the established single-method optional provider
+shape, nil static storage, and per-operation lookup. `lookup`,
+`AXMockProviderStorage.current` and `withAXProvider` are explicit reconstructed
+internal names, not claims about stripped original method/property spellings.
+The dispatch captures the replacement once. Missing provider/replacement invokes
+the system closure; a present replacement's nil/error/throw is the final result.
+No task-local storage, cached resolution, retry-after-error or external provider
+configuration is introduced. The original external setter's synchronization is
+still unverified; this internal storage is used by serial fixtures only so far.
+
+Native supportedAttributes (0x1006f5b8c) and values(for:) (0x1006f77bc) were also
+inspected. Their provider lookups call at 0x1006f5c14/0x1006f7848; object dispatch
+uses slots +0x10/+0x20 at 0x1006f5c3c/0x1006f787c. The read-only audit pins those
+instructions along with the prior value(for:) evidence.
+AXProviderReading.swift now exposes mock-first single, supported and multiple
+attribute reads with explicit system-only fallback primitives. Existing production
+system-only callsites have not yet been silently swapped: complete provider PID,
+identity, actions and cache wiring remain pending.
+
+The focused fixture uses a full class-bound AXUIElementProtocol conformer and
+per-reference provider. It verifies absent provider, unresolved references,
+per-call resolution, nil values with success/failure/unsupported status, a
+non-success status carrying a live object plus subset/truncation descriptors,
+ordered duplicate names, empty batch success, and thrown errors without fallback.
+All unused fixture operations fail immediately. Focused test and full Swift build
+pass; no real AX read, application operation, vendor service or model call occurs.

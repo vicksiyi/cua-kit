@@ -135,6 +135,6 @@
       "methodSlot": "0x18",
       "methodCall": "0x1006f6050"
     },
-    "limitation": "MockProvider method source spelling and setter synchronization remain unverified; concrete AXUIElement conformance and routing not implemented"
+    "limitation": "MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Three read front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete"
   }
 }

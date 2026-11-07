@@ -64,6 +64,12 @@ for address, expected_word in {
  0x1006f6018: 0xd63f0100, # provider lookup witness call
  0x1006f603c: 0xf9400ee9, # resolved object's value(for:) slot +0x18
  0x1006f6050: 0xd63f0120, # invoke that method
+ 0x1006f5c14: 0xd63f0100, # supported-attributes provider lookup
+ 0x1006f5c34: 0xf9400a68, # supportedAttributes slot +0x10
+ 0x1006f5c3c: 0xd63f0100,
+ 0x1006f7848: 0xd63f0100, # batch provider lookup
+ 0x1006f786c: 0xf9401308, # values(for:) slot +0x20
+ 0x1006f787c: 0xd63f0100,
 }.items():
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',
@@ -74,5 +80,5 @@ print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProto
  initializerSHA256=hashlib.sha256(init).hexdigest(),
  dispatch='provider lookup at witness +8 with AX reference; nil result uses system path; nonnil result calls AXUIElementProtocol method',
  valueDispatch=dict(lookupCall='0x1006f6018',nilFallback='0x1006f602c',methodSlot='0x18',methodCall='0x1006f6050'),
- limitation='MockProvider method source spelling and setter synchronization remain unverified; concrete AXUIElement conformance and routing not implemented'),
+ limitation='MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Three read front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete'),
  ),indent=2))
