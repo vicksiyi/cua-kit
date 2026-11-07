@@ -7,3 +7,12 @@ struct UIElementTraversalCursor<Item> {
     let path: IndexPath
     var depth: Int { path.count - 1 }
 }
+
+extension UIElementTraversalCursor {
+    func childCursors<Identity>() -> [UIElementTraversalCursor<Item>]
+        where Item == UIElementRender<Identity> {
+        item.children.enumerated().map { index, child in
+            UIElementTraversalCursor(item: child, path: path.appending(index))
+        }
+    }
+}

@@ -14,7 +14,7 @@ let package = Package(
     targets: [
         .target(name: "SoftLink"),
         .target(name: "RunningProcess", publicHeadersPath: "include", cSettings: [.unsafeFlags(["-fobjc-arc"])]),
-        .executableTarget(name: "CuaHelper", dependencies: [.product(name: "OrderedCollections", package: "swift-collections"), "SoftLink", .product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
+        .executableTarget(name: "CuaHelper", dependencies: [.product(name: "DequeModule", package: "swift-collections"), .product(name: "OrderedCollections", package: "swift-collections"), "SoftLink", .product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
         .executableTarget(name: "CuaFixture"),
     ], swiftLanguageModes: [.v5]
 )

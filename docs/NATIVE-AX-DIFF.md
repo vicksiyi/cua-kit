@@ -6899,3 +6899,18 @@ path.count-1 depth are restored, but its full traversable constraints/helpers
 remain outstanding. Build/provider tests pass for overwrite, nil preservation,
 zero ID and insert/remove no-op. The matching iterator/buffer is not implemented,
 so appending revisions is deliberately not exposed as working yet.
+
+### Matched render change callback
+
+Recovered 0x1006409e4: if either matched cursor has children, append the pair
+of old/new child-cursor arrays to a Deque. Then compare only rendered text to
+produce none or update. detailText, elementID, sourcePath and child count do
+not participate in that text comparison. Child cursor paths append enumerated
+child offsets to the traversal path, not the render sourcePath.
+
+Implementation uses DequeModule from the already pinned swift-collections
+dependency, matching the native Deque.append symbol; no custom queue. Tests
+verify different detail text with canonically equivalent text stays none,
+one-sided children are queued, paths and object identity are preserved, and
+changed leaf text yields update without queueing. Build/provider tests pass.
+Sibling matching and the complete difference iterator remain unfinished.

@@ -1,3 +1,4 @@
+import DequeModule
 import ApplicationServices
 import AppKit
 
@@ -1063,6 +1064,32 @@ private enum ProviderClickChecks {
             Change.remove(offset: 0, old: before).inheritElementID()
             checkTrue(new.elementID == nil); checkEqual(old.elementID, 0)
             checkEqual(before.depth, 1); checkEqual(after.depth, 0)
+        }
+        do {
+            typealias Difference = UIElementRenderDifference<Int>
+            func node(_ id: Int, _ text: String, _ detail: String?, _ children: [UIElementRender<Int>] = []) -> UIElementRender<Int> {
+                UIElementRender(id: id, elementID: id, text: text, detailText: detail,
+                    sourcePath: nil, children: children)
+            }
+            let child = node(3, "child", nil)
+            let old = Difference.Cursor(item: node(1, "é", "old", [child]), path: IndexPath(index: 2))
+            let new = Difference.Cursor(item: node(1, "e\u{301}", "new"), path: IndexPath(index: 5))
+            var pending: Deque<Difference.PendingChildren> = []
+            switch Difference.matchedChange(offset: 7, new: new, old: old, pending: &pending) {
+            case .none(let offset, let after, let before):
+                checkEqual(offset, 7); checkTrue(after.item === new.item); checkTrue(before.item === old.item)
+            default: unexpectedFailure()
+            }
+            checkEqual(pending.count, 1)
+            let pair = pending.popFirst()!
+            checkEqual(pair.old[0].path, IndexPath(indexes: [2, 0]))
+            checkTrue(pair.old[0].item === child); checkTrue(pair.new.isEmpty)
+            let changed = Difference.Cursor(item: node(1, "changed", nil), path: IndexPath(index: 0))
+            switch Difference.matchedChange(offset: 8, new: changed, old: new, pending: &pending) {
+            case .update(let offset, _, _): checkEqual(offset, 8)
+            default: unexpectedFailure()
+            }
+            checkTrue(pending.isEmpty)
         }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
