@@ -415,3 +415,10 @@ assert read(0x10026bbf4, 4).hex() == '039542f9'
 assert read(0x100259ac8, 4).hex() == 'e0023fd6'  # register callback invocation
 assert read(0x100259afc, 4).hex() == '00013fd6'  # request windows invocation
 assert read(0x100258658, 4).hex() == '20033fd6'  # removal invocation
+
+# Registry starts with zero counter. Unsigned checked increment is stored
+# before insertion; the newly allocated ID is returned after insertion.
+assert read(0x100258990, 4).hex() == '1f5001a9'
+assert read(0x1002587d4, 8).hex() == '180500b122040054'
+assert read(0x1002587f0, 4).hex() == '180000f9'
+assert read(0x100258838, 4).hex() == 'd80200f9'

@@ -2032,3 +2032,21 @@ Initial window-description mapping, callback-ID registry, raw event payload
 interpretation and AsyncStream ownership remain explicit required work. The
 component has no default fake callback source and is not yet used to claim a
 production ordering observer.
+
+
+## Callback registry identity and retained resources
+
+CGWindowCallbackRegistry restores the locked registry's checked UInt counter
+and dictionary insertion/removal boundaries. The singleton initializer starts
+its counter at zero (0x100258990); registration increments and stores it before
+inserting the retained entry, returning the new ID (0x1002587b0). IDs begin at
+one and are not reused after removal. Overflow retains the source's trap behavior.
+
+Removal (0x100258860) returns the removed optional entry, rather than destroying
+it under the registry lock. This matches the observer caller unlocking before
+releasing the handler and initial window-description map. Missing keys return
+nil. The generic entry is an explicit seam for that still-pending concrete data.
+Checks cover monotonic identity, missing/zero IDs, retained entries, ownership
+transfer and destruction that safely reacquires the registry lock. They do not
+register a native callback. Callback payload interpretation and full event-stream
+composition remain outstanding.

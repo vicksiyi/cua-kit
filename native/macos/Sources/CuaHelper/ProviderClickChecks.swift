@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runCGWindowCallbackRegistryChecks()
     runCGWindowObserverRegistrationChecks()
     runWindowServerEventChecks()
     runWindowOrderingObserverTaskStoreChecks()
@@ -6838,4 +6839,35 @@ private func runCGWindowObserverRegistrationChecks() {
         requestWindows: { _, ids, count in checkTrue(ids.isEmpty); checkEqual(count, 0); trace.append("request") })
     checkTrue(empty != nil); empty = nil
     checkEqual(trace, ["callback+", "connection", "request", "callback-", "connection"])
+}
+
+
+private func runCGWindowCallbackRegistryChecks() {
+    final class Entry {
+        let released: () -> Void
+        init(_ released: @escaping () -> Void) { self.released = released }
+        deinit { released() }
+    }
+    let registry = CGWindowCallbackRegistry<Entry>()
+    var releases = 0
+    weak var lifetime: Entry?
+    var entry: Entry? = Entry { releases += 1 }
+    lifetime = entry
+    let first = registry.register(entry!)
+    checkEqual(first, 1); entry = nil; checkTrue(lifetime != nil)
+    let second = registry.register(Entry { releases += 1 })
+    checkEqual(second, 2)
+    registry.withState { state in checkEqual(state.lastID, 2); checkTrue(state.entries[first] === lifetime) }
+    var removed = registry.remove(first)
+    checkTrue(removed === lifetime); checkEqual(releases, 0)
+    checkTrue(registry.remove(first) == nil); checkTrue(registry.remove(0) == nil)
+    removed = nil; checkEqual(releases, 1); checkTrue(lifetime == nil)
+    let third = registry.register(Entry { releases += 1 })
+    checkEqual(third, 3)
+    _ = registry.remove(second); _ = registry.remove(third); checkEqual(releases, 3)
+    registry.withState { checkEqual($0.lastID, 3); checkTrue($0.entries.isEmpty) }
+    // Removal returns ownership; destruction can safely acquire this same lock.
+    let reentrant = registry.register(Entry { registry.withState { checkTrue($0.entries.isEmpty) } })
+    var final = registry.remove(reentrant)
+    checkTrue(final != nil); final = nil
 }
