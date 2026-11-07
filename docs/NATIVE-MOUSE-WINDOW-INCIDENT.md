@@ -1422,3 +1422,29 @@ and successful zero/max IDs without querying or changing actual window state.
 The captured payload also feeds systemSafeActivationWindowOrder, reusing the
 existing on-screen window ordering check and AXRaise. Swift build, provider-click
 self-test and static callsite audit pass; no live raise was performed.
+
+
+## Native restoration driver boundaries and AXFrontmost
+
+UIElement.booleanValue reuses the typed cache policy, existing Bool decoder
+(0x10070fc2c), unsupported-attribute handling and provider-aware reads. False
+is a valid cached value. Cached decode mismatch falls through to uncached;
+uncached mismatch honors the supplied ignore flag, while other AX failures
+are reported once and converted to nil. Source restoration reads AXFrontmost
+(0x1007422e0), discards failed cached decoding then ignores raw type mismatch
+(0x100742484 passes 1 to the Bool decoder), and treats absence as false.
+
+systemSafeActivationRestorationDriver connects current workspace PID, saved
+NSRunningApplication.activate(options: []), fresh target-wrapper AXFrontmost
+and the captured-window order restoration to the existing timed/cancellable
+loop. No new polling/retry policy is introduced. The caller still must capture
+the saved application's AX wrapper using resolvingProcessIdentifier semantics;
+that process fallback and production Target integration remain incomplete.
+
+Tests cover cached true/false, raw values, absent values, read/decode errors,
+ignored mismatch, unsupported attributes, lazy target construction on every
+query, and no-ID window restoration skipping native queries. Tests do not call
+actual application activation or raise windows.
+
+Validation: Swift build, provider-click self-test and pinned native static audit
+pass. This establishes driver boundary composition, not live click acceptance.

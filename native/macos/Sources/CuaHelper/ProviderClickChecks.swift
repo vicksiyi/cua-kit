@@ -3722,6 +3722,7 @@ func runProviderClickChecks() async throws {
     try runSyntheticAppFocusEnforcerLifecycleChecks()
     try await runSyntheticFocusSafeActivationBranchChecks()
     runSafeActivationSavedWindowChecks()
+    runUIElementBooleanValueChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5554,4 +5555,48 @@ private func runSafeActivationSavedWindowChecks() {
         let saved = captureSafeActivationSavedWindow(focusedWindow: { valid }, windowID: { _ in id })
         checkTrue(saved.window === valid); checkEqual(saved.id, id)
     }
+}
+
+private func runUIElementBooleanValueChecks() {
+    let attribute = UIElementAttribute("AXFrontmost")
+    let ax = AXUIElementCreateApplication(Int32.max)
+    func partial(_ value: AnyObject) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    func item(_ attributes: [UIElementAttribute: AXPartialValue], supported: Set<UIElementAttribute> = []) -> UIElement {
+        UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: supported, attributes: attributes, transactionAttributes: nil))
+    }
+    for flag in [false, true] {
+        let cached = item([attribute: partial(NSNumber(value: flag))])
+        checkEqual(cached.booleanValue(for: attribute, ignoringTypeMismatch: false,
+            read: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }), flag)
+    }
+    let uncached = item([:], supported: [attribute])
+    var reads = 0, errors = 0
+    func read(_ value: AXPartialValue?, _ error: AXError = .success, ignore: Bool = false) -> Bool? {
+        uncached.booleanValue(for: attribute, ignoringTypeMismatch: ignore,
+            read: { reads += 1; return (error, value) }, reportError: { _ in errors += 1 })
+    }
+    checkEqual(read(partial(NSNumber(value: false))), false)
+    checkEqual(read(partial(NSNumber(value: true))), true)
+    checkTrue(read(nil) == nil)
+    checkTrue(read(nil, .cannotComplete) == nil); checkEqual(errors, 1)
+    checkTrue(read(partial("bad" as NSString)) == nil); checkEqual(errors, 2)
+    checkTrue(read(partial("bad" as NSString), ignore: true) == nil); checkEqual(errors, 2)
+    checkEqual(reads, 6)
+    var constructions = 0, frontmost = false
+    let driver = systemSafeActivationRestorationDriver(savedApplication: .current,
+        savedWindow: SafeActivationSavedWindow<UIElement>(window: nil, id: nil), targetPID: Int32.max,
+        targetApplication: {
+            constructions += 1; return item([attribute: partial(NSNumber(value: frontmost))])
+        }, reportError: { _ in unexpectedFailure() })
+    checkEqual(constructions, 0)
+    checkFalse(driver.targetBelievesItIsFrontmost())
+    frontmost = true
+    checkTrue(driver.targetBelievesItIsFrontmost()); checkEqual(constructions, 2)
+    do { checkFalse(try driver.restoreSavedWindowIfObscured()) } catch { unexpectedFailure() }
+    // No saved ID: no WindowServer query, AXRaise or activation is performed.
+    let unsupported = item([:], supported: [UIElementAttribute("AXTitle")])
+    checkTrue(unsupported.booleanValue(for: attribute, ignoringTypeMismatch: false,
+        read: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }) == nil)
 }
