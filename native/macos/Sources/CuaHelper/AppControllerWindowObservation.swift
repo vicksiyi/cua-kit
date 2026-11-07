@@ -1,0 +1,35 @@
+import ApplicationServices
+
+// Native controller resource owner. AX monitoring starts during construction;
+// ordering starts only on activation, after the caller's AX enablement step.
+// Dictionary operations and handle delivery require owner serialization. This
+// class does not assert that Target/MainActor integration is already complete.
+final class AppControllerWindowObservation<FocusedMenuBarItem> {
+    let windows: AppControllerWindows<FocusedMenuBarItem>
+    let orderingObserver: NativeWindowOrderingObserver
+    private(set) var windowObserver: AXNotificationObserver?
+    private var eventHandler: AppControllerAXEventHandler<FocusedMenuBarItem>?
+
+    init(application: AXUIElement, processID: Int32, bundleIdentifier: String,
+        focusEnforcer: @escaping () -> SyntheticAppFocusEnforcer?,
+        reportError: @escaping (Error) -> Void) throws {
+        let ordering = NativeWindowOrderingObserver(observedWindowIDs: [], reportError: reportError)
+        orderingObserver = ordering
+        windows = AppControllerWindows(observedWindowIDsChanged: { ordering.observedWindowIDs = $0 },
+            menuDidOpen: { ordering.menuDidOpen() }, menuDidClose: { ordering.menuDidClose() })
+        eventHandler = AppControllerAXEventHandler(application: application, bundleIdentifier: bundleIdentifier,
+            windows: windows, observer: { [weak self] in self?.windowObserver }, focusEnforcer: focusEnforcer)
+        windows.initialize(application: UIElement(element: application), reportError: reportError)
+        windowObserver = try AXNotificationObserver(monitoringNotifications: AppControllerAXNotifications.root,
+            processID: processID, element: application, qos: AppControllerAXNotifications.qualityOfService,
+            handler: { [weak self] event in self?.eventHandler?.handle(event) })
+    }
+    func activateOrdering() { orderingObserver.start() }
+    func deactivateOrdering() { orderingObserver.stop() }
+    deinit {
+        // Ordering can also be retained by window-state callbacks; stop it
+        // explicitly before releasing native AX monitoring resources.
+        orderingObserver.stop()
+        windowObserver?.stopMonitoring()
+    }
+}

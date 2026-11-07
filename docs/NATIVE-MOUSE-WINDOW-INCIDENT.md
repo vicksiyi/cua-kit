@@ -2838,3 +2838,28 @@ Checks cover geometry publication, unknown-event no-op, destroyed-resource looku
 and menu-close resource sequencing with absent optional resources. They invoke no
 native attention setter or UI input. Owner serialization, production Target wiring
 and unlocked real composition acceptance remain outstanding.
+
+
+## Native controller window-observation resource owner
+
+AppControllerWindowObservation now composes NativeWindowOrderingObserver,
+AppControllerWindows, AppControllerAXEventHandler and the concrete six-root-
+notification AX observer. Initial window/sheet registration precedes AX monitor
+construction, matching the recovered controller initializer. Native AX monitoring
+starts during construction; activateOrdering is separate so callers can preserve
+AX-enable-before-ordering-start semantics. Deactivation stops ordering without
+inventing root-notification re-registration for each action.
+
+Callback closures and event-handler observer lookup capture the observation
+owner weakly. Window state callbacks retain the ordering observer, so deinit
+explicitly stops it before stopping AX monitoring. This owner does not acquire
+an accessibility assertion or create a focus enforcer; those remain controller
+lifecycle responsibilities. The external enforcer lookup must capture its
+controller weakly when integration is performed.
+
+This is not yet connected to production Target. Native callback delivery remains
+synchronous on the AX thread, while existing Target operations use MainActor.
+That serialization boundary must be resolved before calling window dictionary
+operations from both domains. The resource owner has only been compiled at this
+stage; current locked-desktop state prevents live owner acceptance. Earlier
+component/event-delivery tests do not prove the new combined owner.
