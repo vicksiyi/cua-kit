@@ -63,7 +63,7 @@ final class SyntheticAppFocusEnforcer {
             await application.waitUntilAppBelievesItIsFrontmost(timeout: 0.25, reportError: reportError)
         }, makeRestorationDriver: { saved in
             let transaction = UIElementTreeTransaction.current?.cache
-            let application = UIElement(systemElement: AXUIElementCreateApplication(systemResolvedRunningApplicationPID(saved)),
+            let application = UIElement(systemElement: AXUIElementCreateApplication(systemResolvedProcessIdentifier(saved)),
                 transaction: transaction)
             let savedWindow = systemSafeActivationSavedWindow(application: application,
                 transaction: transaction, reportError: reportError)

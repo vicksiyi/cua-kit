@@ -2,7 +2,7 @@ import Foundation
 
 // 0x100260b44..<0x100260dc8. The process-query callback represents
 // SAIRunningProcess.runningProcessesWithFilter with name:nil, executablePath
-// from URL.path, options:1. Its native bridge remains to be restored.
+// from URL.path, options:1. SystemRunningApplicationLookup supplies the native bridge.
 func resolvingApplicationProcessIdentifier(
     processIdentifier: () -> Int32,
     isTerminated: () -> Bool,

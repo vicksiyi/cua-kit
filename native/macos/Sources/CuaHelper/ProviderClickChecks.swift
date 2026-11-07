@@ -5624,9 +5624,9 @@ private func runRunningApplicationPIDResolutionChecks() {
     var trace: [String] = [], terminated = false, path: String? = "/test/app"
     var matches: [Int32]? = [88]
     func resolve(_ raw: Int32) -> Int32 {
-        resolveRunningApplicationProcessIdentifier(rawPID: raw, isTerminated: {
+        resolvingApplicationProcessIdentifier(processIdentifier: { raw }, isTerminated: {
             trace.append("terminated"); return terminated
-        }, executablePath: { trace.append("path"); return path }, matchingProcessIDs: {
+        }, executableURL: { trace.append("path"); return path.map { URL(fileURLWithPath: $0) } }, matchingProcessIdentifiers: {
             trace.append("matches"); checkEqual($0, "/test/app"); return matches
         })
     }
@@ -5642,7 +5642,7 @@ private func runRunningApplicationPIDResolutionChecks() {
     matches = [88,88]; checkEqual(resolve(-1), -1) // cardinality, not unique PID count
     matches = [88,99]; checkEqual(resolve(-1), -1)
     matches = [0]; checkEqual(resolve(-1), 0) // no extra validation of the sole result
-    checkEqual(systemResolvedRunningApplicationPID(.current), NSRunningApplication.current.processIdentifier)
+    checkEqual(systemResolvedProcessIdentifier(.current), NSRunningApplication.current.processIdentifier)
 }
 
 private func runApplicationFrontmostWaitChecks() async {

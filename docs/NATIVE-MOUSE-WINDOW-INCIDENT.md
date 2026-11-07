@@ -1621,3 +1621,27 @@ now checks Task cancellation too, including after the nonthrowing direct wait.
 
 Validation: Swift build and provider-click composition checks pass. No actual
 application activation, tap installation or AX action was exercised by checks.
+
+
+## Indexed simulated clicks use native focus preparation
+
+Mouse.swift now passes the indexed element and the click preparer's original
+inside-WebView result through the simulated-click continuation. That path
+obtains the Target-owned enforcer, derives activation context from the real
+containing AX window, calls prepareSyntheticClickFocus with clickingByCoordinate
+=false, and uses its Bool to select the event flags. Shared focus-event dispatch
+checks cancellation/identity/deadline before posting. Post-preparation snapshot
+validation uses the same narrowly scoped AXFocused allowance as the AX action
+branch, only when focus events were actually sent.
+
+Coordinate-only clicks retain the prior nil-enforcer branch until hit-element
+and accessibility-window resolution is restored; no synthetic element/window
+is invented from a screenshot rectangle. Cursor/held-key/drag/full sender
+lifecycle and live Multica acceptance remain outstanding. Swift build and
+provider-click checks pass, without real input or native tap installation.
+
+A repository reuse audit also found resolvingApplicationProcessIdentifier and
+SystemRunningApplicationLookup already implemented the exact native process
+resolution. The later duplicate RunningApplicationProcessIdentifier implementation
+was removed, enforcer capture now uses systemResolvedProcessIdentifier, and
+the new edge-case tests exercise the original shared implementation instead.

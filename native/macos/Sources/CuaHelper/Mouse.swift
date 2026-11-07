@@ -110,6 +110,7 @@ extension Target {
         let report: (Error) -> Void = { error in
             Logger(subsystem: "core.cua", category: "Accessibility").error("Click AX read failed: \(String(describing: error))")
         }
+        var focusPreparationSentEvents = false
         func checkDeadline() throws {
             try Task.checkCancellation()
             if let deadline = params["deadlineUnixMilliseconds"] as? Double,
@@ -117,15 +118,42 @@ extension Target {
                 throw fail("INVALID_ARGUMENT", "Click deadline expired before dispatch; earlier clicks may have been dispatched.")
             }
         }
-        func simulate(at point: CGPoint) async throws -> [String: Any] {
+        func activationWindow(for element: UIElement) throws -> SyntheticActivationWindow? {
+            guard let raw = attribute(element.axElement, kAXWindowAttribute),
+                  let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) else { return nil }
+            return SyntheticActivationWindow(element: UIElement(element: ax), reportError: report)
+        }
+        func sendFocusEvent(_ event: SynthesizedEvent) throws {
+            for cgEvent in event.cgEvents {
+                try Task.checkCancellation()
+                try validateIdentity()
+                try checkDeadline()
+                dispatchNativeEvent(cgEvent, to: app.processIdentifier)
+                focusPreparationSentEvents = true
+            }
+        }
+        func simulate(at point: CGPoint, element: UIElement? = nil,
+                      initiallyInsideWebView: Bool = false) async throws -> [String: Any] {
             let window = try mouseWindow(params)
-            // Preserve the current nil-enforcer branch while consuming its
-            // source Bool result instead of discarding background-click flags.
-            let pid = try root.pid
-            let prepared = NSRunningApplication(processIdentifier: pid)?.isActive ?? false
+            try checkDeadline()
+            let prepared: Bool
+            if let element {
+                let enforcer = activateFocusEnforcer()
+                prepared = try await UIElement(element: root).prepareSyntheticClickFocus(element: element,
+                    insideWebView: initiallyInsideWebView, clickingByCoordinate: false,
+                    hasHeldKey: false, window: activationWindow(for: element), enforcer: enforcer,
+                    applicationIsActive: {
+                        let pid = try self.root.pid
+                        return NSRunningApplication(processIdentifier: pid)?.isActive ?? false
+                    }, reportError: report, send: sendFocusEvent)
+            } else {
+                // Coordinate target hit-testing/context restoration is separate.
+                let pid = try root.pid
+                prepared = NSRunningApplication(processIdentifier: pid)?.isActive ?? false
+            }
             let eventFlags = applicationClickEventFlags(flags, applicationBelievesItHasFocus: prepared)
             let events = try mouseClickEvents(point: point, button: button, count: count, flags: eventFlags, window: window)
-            try validateSnapshot(params)
+            try validateSnapshot(params, allowingFocusChange: focusPreparationSentEvents)
             defer { invalidateInputState() }
             for index in stride(from: 0, to: events.count, by: 2) {
                 try checkDeadline()
@@ -154,7 +182,6 @@ extension Target {
             heldKeyIsPresent: false, flags: flags,
             alwaysSimulateClick: params["alwaysSimulateClick"] as? Bool ?? false,
             readActions: { item.actions }, isInsideWebView: insideWebView)
-        var focusPreparationSentEvents = false
         // VirtualCursor remains absent. AX actions now use the restored native
         // enforcer and window context rather than the nil-enforcer probe.
         return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,
@@ -165,24 +192,12 @@ extension Target {
                 try Task.checkCancellation()
                 try validateSnapshot(params)
                 try checkDeadline()
-                let window: SyntheticActivationWindow?
-                if let raw = attribute(item.axElement, kAXWindowAttribute),
-                   let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) {
-                    window = SyntheticActivationWindow(element: UIElement(element: ax), reportError: report)
-                } else { window = nil }
+                let window = try activationWindow(for: item)
                 let enforcer = activateFocusEnforcer()
                 try await UIElement(element: root).prepareAccessibilityClickFocus(element: item,
                     window: window, enforcer: enforcer,
                     probeApplicationIsActive: { try probeSystemApplicationIsActiveForAXAction(root) },
-                    reportError: report, send: { event in
-                        for cgEvent in event.cgEvents {
-                            try Task.checkCancellation()
-                            try validateIdentity()
-                            try checkDeadline()
-                            dispatchNativeEvent(cgEvent, to: app.processIdentifier)
-                            focusPreparationSentEvents = true
-                        }
-                    })
+                    reportError: report, send: sendFocusEvent)
             },
             performAction: { action in
                 try validateSnapshot(params, allowingFocusChange: focusPreparationSentEvents)
@@ -190,11 +205,11 @@ extension Target {
                 defer { invalidateInputState() }
                 try item.perform(action: action)
                 return ["outcome": "dispatched", "eventCount": 0, "action": action.name]
-            }, simulateClick: { _ in
+            }, simulateClick: { initiallyInsideWebView in
                 guard let point = try await item.clickablePoint(reportError: report) else {
                     throw SynthesizedEvent.Error.cannotClickOffscreenElement
                 }
-                return try await simulate(at: point)
+                return try await simulate(at: point, element: item, initiallyInsideWebView: initiallyInsideWebView)
             })
     }
 }
