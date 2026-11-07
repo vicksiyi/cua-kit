@@ -1497,3 +1497,26 @@ production Target integration remain outstanding.
 
 Validation: Swift build and provider-click self-test pass. Static tail-branch
 pin was checked against the vendor instruction bytes; no live wait/click ran.
+
+
+## Production Target ownership and system factory
+
+Target now owns an optional SyntheticAppFocusEnforcer and exposes lazy
+activateFocusEnforcer creation/reuse, matching app controller 0x100071fb8.
+Construction alone does not enforce focus or send events. Target destruction
+releases its owner and unregisters shared prevention via the restored enforcer
+deinit. FocusStealPreventerLifecycle.system composes the native registry,
+ViewBridge, current-transaction resolver and real event tap boundaries; each
+system enforcer creates its own inclusive frontmost tracker and reads the
+target application's actual active flag after registering prevention.
+
+The ownership test creates a Target for the current process, supplies a factory
+with nil-port drivers and an isolated notification center, verifies no eager
+construction, one factory invocation across repeated access, retention until
+Target destruction and release of both enforcer/preventer afterward. No actual
+taps, activation or input are performed. Swift build/provider-click tests pass.
+
+Mouse.swift does not call activateFocusEnforcer yet. Click preparation still
+needs source-compatible window activation data and remaining application-click
+composition before switching from its nil-context path. This change establishes
+production ownership and native construction, not a completed click fix.

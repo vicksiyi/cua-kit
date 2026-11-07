@@ -32,6 +32,15 @@ final class Target {
     var nodes: [Node] = []
     var snapshot: String?
     var capturedWindow: CapturedWindow?
+    private(set) var focusEnforcer: SyntheticAppFocusEnforcer?
+    // App-controller activateFocusEnforcer at 0x100071fb8: lazy per-target
+    // construction and reuse. Creation alone does not enforce or send input.
+    func activateFocusEnforcer(make: (Int32) -> SyntheticAppFocusEnforcer = SyntheticAppFocusEnforcer.system) -> SyntheticAppFocusEnforcer {
+        if let focusEnforcer { return focusEnforcer }
+        let created = make(app.processIdentifier)
+        focusEnforcer = created
+        return created
+    }
     init(_ app: NSRunningApplication) {
         self.app = app; launch = app.launchDate
         root = AXUIElementCreateApplication(app.processIdentifier)

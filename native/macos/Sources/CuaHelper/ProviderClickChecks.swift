@@ -3725,6 +3725,7 @@ func runProviderClickChecks() async throws {
     runUIElementBooleanValueChecks()
     runRunningApplicationPIDResolutionChecks()
     await runApplicationFrontmostWaitChecks()
+    await runTargetFocusEnforcerOwnershipChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5648,4 +5649,32 @@ private func runApplicationFrontmostWaitChecks() async {
     await wait(); checkEqual(reads, 0); checkEqual(sleeps, 0)
     time = 0; reads = 0; sleeps = 0
     await wait(failSleep: true); checkEqual(reads, 1); checkEqual(sleeps, 1)
+}
+
+@MainActor private func runTargetFocusEnforcerOwnershipChecks() {
+    let pid = NSRunningApplication.current.processIdentifier
+    let driver = EventTap.Driver(create: { _, _, _, _, _, _ in nil },
+        enable: { _, _ in unexpectedFailure() }, invalidate: { _ in unexpectedFailure() })
+    let dependencies = SystemFocusStealPreventer.Dependencies(resolveOwner: { .ordinary(pid: $0) },
+        releaseFocus: { _ in unexpectedFailure() }, compensateViewBridge: { _, _, _ in unexpectedFailure() })
+    weak var preventionOwner: SystemFocusStealPreventer?
+    let prevention = FocusStealPreventerLifecycle(makeInstance: { empty in
+        let owner = SystemFocusStealPreventer(initialOwner: { .ordinary(pid: pid) }, viewBridgePID: { nil },
+            dependencies: dependencies, tapDriver: driver, becameEmpty: empty)
+        preventionOwner = owner; return owner
+    }, resolveInitialOwner: { unexpectedFailure() })
+    var constructions = 0
+    var target: Target? = Target(.current)
+    checkTrue(target!.focusEnforcer == nil); checkEqual(constructions, 0)
+    var first: SyntheticAppFocusEnforcer? = target!.activateFocusEnforcer { seenPID in
+        checkEqual(seenPID, pid); constructions += 1
+        return SyntheticAppFocusEnforcer(pid: pid, prevention: prevention,
+            makeTracker: { InclusiveFrontmostApplicationTracker(center: NotificationCenter(), initialApplication: { nil }) },
+            targetIsActive: { false }, tapDriver: driver)
+    }
+    weak var lifetime = first
+    checkTrue(target!.activateFocusEnforcer(make: { _ in unexpectedFailure() }) === first)
+    checkEqual(constructions, 1)
+    first = nil; checkTrue(lifetime != nil); checkTrue(preventionOwner != nil)
+    target = nil; checkTrue(lifetime == nil); checkTrue(preventionOwner == nil)
 }
