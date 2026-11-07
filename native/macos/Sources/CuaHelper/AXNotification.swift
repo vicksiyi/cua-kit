@@ -12,5 +12,8 @@ struct AXNotification: Hashable {
     static let focusedWindowChanged = AXNotification(kAXFocusedWindowChangedNotification)
     static let uiElementDestroyed = AXNotification(kAXUIElementDestroyedNotification)
     static let menuOpened = AXNotification(kAXMenuOpenedNotification)
+    static let sheetCreated = AXNotification(kAXSheetCreatedNotification)
+    static let windowMoved = AXNotification(kAXWindowMovedNotification)
+    static let windowResized = AXNotification(kAXWindowResizedNotification)
     static let menuClosed = AXNotification(kAXMenuClosedNotification)
 }

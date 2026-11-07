@@ -2378,3 +2378,22 @@ The callback also removes/registers uiElementDestroyed on individual elements
 and calls WindowOrderingObserver.menuDidOpen/menuDidClose. Exact event branches
 and controller callbacks are still being reconstructed before production wiring.
 The static dump is /tmp/cua-controller-init-full.asm; no vendor process ran.
+
+
+## Root notification configuration and monitoring constructor
+
+AppControllerAXNotifications preserves the source six-notification order and
+userInitiated QoS (raw 25 at 0x10006d790). Constants for sheetCreated, windowMoved
+and windowResized now use their native SDK names. The observer monitoring
+constructor mirrors 0x1006ec20c: create observer, register in array order, then
+start monitoring. Registration failure propagates before monitoring starts.
+The root list and QoS are checked and source call sites are pinned in the audit.
+This configuration is not yet installed on Target; event callback semantics and
+actual native notification-delivery acceptance remain required.
+
+The callback branch at 0x10006db84 constructs a window wrapper on windowCreated
+and registers it through 0x100085730. uiElementDestroyed at 0x10006dcbc attempts
+native unregistration and swallows that branch's error. menuClosed invokes
+WindowOrderingObserver.menuDidClose before clearing other controller state.
+Do not infer that destruction directly erases the window dictionary: its actual
+window getter prunes invalid AX IDs. More menu-state handling remains to map.

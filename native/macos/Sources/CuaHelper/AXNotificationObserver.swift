@@ -37,6 +37,16 @@ final class AXNotificationObserver {
         onNotificationReceived = handler
     }
 
+    // 0x1006ec20c: create, register every notification in order, then monitor.
+    // A registration error escapes before the monitoring task is started.
+    convenience init(monitoringNotifications notifications: [AXNotification],
+        ignoringErrors: [AXError] = [], processID: pid_t, element: AXUIElement,
+        qos: QualityOfService, handler: @escaping (NotificationEvent) -> Void) throws {
+        try self.init(processID: processID, handler: handler)
+        try register(notifications, ignoringErrors: ignoringErrors, for: element)
+        startMonitoring(qos: qos)
+    }
+
     func register(_ notification: AXNotification, ignoringErrors: [AXError] = [],
         for element: AXUIElement) throws {
         try installedTargets.register(notification, ignoringErrors: ignoringErrors, for: element) {

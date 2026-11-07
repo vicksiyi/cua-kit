@@ -3749,6 +3749,8 @@ func runProviderClickChecks() async throws {
     try runAXNotificationRemovalChecks()
     runAXNotificationCallbackContextChecks()
     runAXNotificationInfoBridgeChecks()
+    precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
+    precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
     runMouseWindowRegistryOwnershipChecks()
     await runWindowOrderingObserverCompositionChecks()
