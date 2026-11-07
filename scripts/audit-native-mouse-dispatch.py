@@ -107,6 +107,12 @@ for site, expected_bytes in [(0x100731178, '09088052'), (0x1007311d8, '29098052'
                              (0x10074cd44, '282740b9'), (0x10074cf88, '28008052'),
                              (0x10074cf8c, '28a70039')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# Taken-focus predicate branches and route payload writes.
+for site, expected_bytes in [(0x10074be2c, '95067837'), (0x10074be30, 'c00c0036'),
+                             (0x10074be38, '1f01136b'), (0x10074bf04, '3f01136b'),
+                             (0x10074c930, 'f57e60b3'), (0x10074c934, 'c97e60d3'),
+                             (0x10074c950, '15a702a9'), (0x10074c954, '08730079')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

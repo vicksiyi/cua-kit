@@ -864,3 +864,22 @@ vs repeated notification, keyboard routing after suppression and route removal.
 Swift build, provider-click checks and pinned binary audit pass. No real input
 was sent; production controller integration and Multica UI acceptance remain
 unfulfilled.
+
+
+## Taken-focus route producer
+
+Restored the concrete taken-focus route mutation at 0x10074c8d0..0x10074c95c.
+While holding the system-state lock, resolve incoming focus PID (field 73)
+to its logical owner, then query whether that owner is registered. Predicate
+0x10074bd20 returns true only for a registered owner differing from the previous
+owner PID; its ordinary/restricted branches differ in logging but have the same
+Boolean condition. It does the registration read before the owner comparison.
+
+On true, consume the notification and set the route to intercept the physical
+incoming focus PID and repost to the notification destination (field 40).
+On false, return the original event and clear any stale route. Both paths reset
+returned-focus suppression. Tests cover differing physical/logical PIDs, read
+order, registered same-owner acceptance, unregistered acceptance, route reuse
+and suppression reset. Build and provider-click checks pass with injected
+callbacks, without actual input. Previous-owner storage, full changed/new-front
+notification handling and production controller ownership remain incomplete.

@@ -3,7 +3,7 @@ import CoreGraphics
 
 // Semantic projection of the fields read by 0x10074f8e4: state+0x18 is
 // the intercepted destination, state+0x24 the repost PID. Native tag 2
-// means no route. Producers of this projection still require reconstruction.
+// means no route. Full system notification/controller ownership is separate.
 struct FocusStealKeyboardRoute {
     let interceptedPID: Int32
     let recipientPID: Int32
@@ -18,6 +18,22 @@ final class FocusStealKeyboardRoutingState {
         lock.lock(); defer { lock.unlock() }
         self.route = route
         keyFocusReturnWasSuppressed = false
+    }
+    // 0x10074c8d0..0x10074c95c. Resolve the incoming physical PID while
+    // holding state lock, then test its logical owner against registrations.
+    // Return the original notification if allowed and clear any stale route.
+    func filterKeyFocusTaken(_ event: CGEvent, previousOwnerPID: Int32,
+                             incomingFocusPID: Int32, destinationPID: Int32,
+                             resolveOwnerPID: (Int32) -> Int32,
+                             isRegistered: (Int32) -> Bool) -> CGEvent? {
+        lock.lock(); defer { lock.unlock() }
+        let ownerPID = resolveOwnerPID(incomingFocusPID)
+        let registered = isRegistered(ownerPID)
+        let suppress = registered && ownerPID != previousOwnerPID
+        route = suppress ? FocusStealKeyboardRoute(interceptedPID: incomingFocusPID,
+                                                   recipientPID: destinationPID) : nil
+        keyFocusReturnWasSuppressed = false
+        return suppress ? nil : event
     }
     // 0x10074cbd0: suppress only the first returned-focus notification
     // for the route recipient. Native byte state+0x29 records suppression;

@@ -3699,6 +3699,7 @@ func runProviderClickChecks() async throws {
     runKeyFocusRegistryQueryChecks()
     runFocusStealRegistrationStoreChecks()
     runFocusStealKeyboardMonitorChecks()
+    runFocusStealTakenStateChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4657,4 +4658,32 @@ private func runFocusStealKeyboardMonitorChecks() {
     checkTrue(invoke(source: 77, target: 88, type: .keyDown) === event)
     checkTrue(monitor != nil); monitor = nil
     checkEqual(invalidations, 1)
+}
+
+private func runFocusStealTakenStateChecks() {
+    let event = CGEvent(source: nil)!
+    let state = FocusStealKeyboardRoutingState()
+    var trace: [String] = []
+    func taken(previous: Int32, registered: Bool) -> CGEvent? {
+        state.filterKeyFocusTaken(event, previousOwnerPID: previous,
+            incomingFocusPID: 88, destinationPID: 77,
+            resolveOwnerPID: { checkEqual($0, 88); trace.append("resolve"); return 66 },
+            isRegistered: { checkEqual($0, 66); trace.append("registered"); return registered })
+    }
+    event.setIntegerValueField(.eventTargetUnixProcessID, value: 88)
+    checkTrue(taken(previous: 77, registered: true) == nil)
+    checkEqual(trace, ["resolve", "registered"])
+    var posts: [Int32] = []
+    checkTrue(state.filter(event, post: { sent, pid in checkTrue(sent === event); posts.append(pid) }) == nil)
+    checkEqual(posts, [77])
+    checkTrue(state.filterKeyFocusReturned(event, destinationPID: 77) == nil)
+    // A new taken notification resets the returned-focus one-shot flag.
+    checkTrue(taken(previous: 77, registered: true) == nil)
+    checkTrue(state.filterKeyFocusReturned(event, destinationPID: 77) == nil)
+    // Same logical owner is allowed, even if the physical PID differs.
+    checkTrue(taken(previous: 66, registered: true) === event)
+    checkTrue(state.filter(event, post: { _, _ in unexpectedFailure() }) === event)
+    checkTrue(taken(previous: 77, registered: false) === event)
+    checkTrue(state.filterKeyFocusReturned(event, destinationPID: 77) === event)
+    checkEqual(trace.count, 8)
 }
