@@ -43,6 +43,14 @@ def audit():
         raise ValueError('Unterminated metadata string')
 
     definitions = [
+        (0x1012e4c10, 'Error', ['serverError', 'invalidApp', 'ambiguousApp', 'appNotAllowed',
+         'runningApplicationNotFound', 'accessibilityError', 'noActiveSession', 'userStoppedSession',
+         'blockedURL', 'userIntervened', 'screenLocked', 'messagesInvalidRequest',
+         'messagesAmbiguousDestination', 'messagesSendPlanUnavailable', 'messagesSendRateLimited',
+         'calendarInvalidRequest', 'couldNotFindServiceApp', 'permissionsNotGranted',
+         'permissionsPending', 'turnEnded', 'messagesPermissionsPending', 'messagesPermissionsDenied',
+         'messagesQueryTimedOut', 'messagesSendOutcomeUncertain', 'calendarPermissionsPending', 'calendarPermissionsDenied']),
+        (0x1012e52e4, 'ComputerUseIPCMessagesSendPlanUnavailableReason', ['missing', 'expired', 'alreadyConsumed']),
         (0x1012e27a4, 'Result', ['content', 'structuredContent', 'isError', 'toolResult', '_meta']),
         (0x1012e27c0, 'ToolResult', ['content', 'isError']),
         (0x1012e2848, 'CodingKeys', ['content', 'structuredContent', 'isError', 'toolResult', '_meta']),
@@ -101,6 +109,10 @@ def audit():
             raise ValueError('Native MCP error description literal changed')
     code_ranges = []
     for name, start, end in [
+        ('ipcErrorDescription', 0x100de4b20, 0x100de50c4),
+        ('ipcSendPlanReasonRawValue', 0x100dfc16c, 0x100dfc1c8),
+        ('mcpInterruptionEmptyScreenshot', 0x100e5eeb0, 0x100e5eed0),
+        ('mcpInterruptionResultAssembly', 0x100e5f280, 0x100e5f370),
         ('mcpGenericFailureResult', 0x100e5f05c, 0x100e5f198),
         ('mcpSpecialIPCFailureSelection', 0x100e5ee24, 0x100e5eeb0),
         ('mcpSpecialIPCFailureFallback', 0x100e5f028, 0x100e5f05c),

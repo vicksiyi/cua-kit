@@ -51,3 +51,14 @@ extension NativeCallToolResult {
         return NativeMCPResultContext.applying(context, to: base)
     }
 }
+
+
+extension NativeCallToolResult {
+    /// Selected interruption branch. The pinned path starts with no screenshot
+    /// and leaves isError absent. nil means the caller must select another path.
+    static func interruption(_ error: NativeIPCClientError, context: NativeMCPErrorContext? = nil) -> Self? {
+        guard let description = error.interruptionDescription else { return nil }
+        return NativeMCPResultContext.applying(context, to:
+            Self(result: CallTool.Result(content: [.text(description)])))
+    }
+}

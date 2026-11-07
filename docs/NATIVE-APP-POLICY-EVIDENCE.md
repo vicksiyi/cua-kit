@@ -1182,3 +1182,32 @@ these selected errors actually carry screenshots. No screenshot has been
 invented or fetched in the reconstruction. The selection ranges and generic
 assembly are now pinned in the audit; full IPC error representation and live
 handler wiring remain pending.
+
+### IPC interruption type and result branch
+
+NativeIPCClientError now restores all 26 reflected case names and associated
+value shapes. serverError carries Int32/errorString; accessibilityError uses
+the platform AXError type; the send-plan reason uses the reflected three-case
+string enum (missing, expired, already_consumed). This is not yet a complete
+replacement for the native IPC client's error decoder: numeric error mapping
+and non-interruption descriptions still need restoration.
+
+Its interruptionDescription follows the native description jump table at
+`0x10120da90` and getter `0x100de4b20..<0x100de50c4`. noActiveSession
+interpolates the app into the original get_app_state guidance; userStoppedSession
+returns the fixed user-stop message (ignoring its app payload); userIntervened
+and screenLocked return the supplied message unchanged; permissionsPending
+returns the fixed permission-setup guidance. The same five cases alone select
+NativeCallToolResult.interruption, preserving nil isError, no nested toolResult,
+one text content item, and optional caller-provided result context.
+
+The native selected path explicitly initializes Optional<Screenshot>.none at
+`0x100e5eeb0..<0x100e5eed0`, so this branch does not fabricate an image. The
+later generic optional-image code remains visible in the compiled function,
+but is not justification for adding screenshot acquisition here. Tests cover
+selection across all 26 cases, pass-through messages, fixed user-stop wording,
+absent isError on encoded results, and context attachment without changing the
+status. Platform AXError is reused rather than introducing a custom TS error.
+The audit pins the original enum metadata, reason enum/raw strings,
+description function and result assembly ranges. Live IPC decoding/dispatch
+and end-to-end application acceptance remain pending.

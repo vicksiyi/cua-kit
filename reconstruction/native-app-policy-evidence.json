@@ -3,6 +3,53 @@
   "method": "Static Mach-O Swift metadata and pinned disassembly analysis",
   "types": [
     {
+      "name": "Error",
+      "descriptor": "0x1012e4c10",
+      "fieldDescriptor": "0x10133ef54",
+      "kind": 3,
+      "fields": [
+        "serverError",
+        "invalidApp",
+        "ambiguousApp",
+        "appNotAllowed",
+        "runningApplicationNotFound",
+        "accessibilityError",
+        "noActiveSession",
+        "userStoppedSession",
+        "blockedURL",
+        "userIntervened",
+        "screenLocked",
+        "messagesInvalidRequest",
+        "messagesAmbiguousDestination",
+        "messagesSendPlanUnavailable",
+        "messagesSendRateLimited",
+        "calendarInvalidRequest",
+        "couldNotFindServiceApp",
+        "permissionsNotGranted",
+        "permissionsPending",
+        "turnEnded",
+        "messagesPermissionsPending",
+        "messagesPermissionsDenied",
+        "messagesQueryTimedOut",
+        "messagesSendOutcomeUncertain",
+        "calendarPermissionsPending",
+        "calendarPermissionsDenied"
+      ],
+      "fieldMetadataSha256": "463e0e900bb7c38d8908ff713f3d7ad9cf6116ad21bf30e1c8c076245a26e708"
+    },
+    {
+      "name": "ComputerUseIPCMessagesSendPlanUnavailableReason",
+      "descriptor": "0x1012e52e4",
+      "fieldDescriptor": "0x10133fe70",
+      "kind": 2,
+      "fields": [
+        "missing",
+        "expired",
+        "alreadyConsumed"
+      ],
+      "fieldMetadataSha256": "2bb1f0c883e73508a3b34e8f0a98544291e5cb50de254ac274b00e8b9332a2f5"
+    },
+    {
       "name": "Result",
       "descriptor": "0x1012e27a4",
       "fieldDescriptor": "0x10133c614",
@@ -181,6 +228,30 @@
     }
   ],
   "codeRanges": [
+    {
+      "name": "ipcErrorDescription",
+      "start": "0x100de4b20",
+      "endExclusive": "0x100de50c4",
+      "sha256": "2b05a6e07bcab2590b21898becffc975964cc2cb83a3a91cac304833d421155d"
+    },
+    {
+      "name": "ipcSendPlanReasonRawValue",
+      "start": "0x100dfc16c",
+      "endExclusive": "0x100dfc1c8",
+      "sha256": "567caebf36952d221297562afd5c0367b7ea5c5056fb1438c67188c8ae1a0ccf"
+    },
+    {
+      "name": "mcpInterruptionEmptyScreenshot",
+      "start": "0x100e5eeb0",
+      "endExclusive": "0x100e5eed0",
+      "sha256": "e3420d66aa989cefc159cef9575d614b3fe4b8d30d71eea6881ac3b001873578"
+    },
+    {
+      "name": "mcpInterruptionResultAssembly",
+      "start": "0x100e5f280",
+      "endExclusive": "0x100e5f370",
+      "sha256": "ba350586db363dd6f44b525869a88db62100573ff73f15ce03d207105ff68f4f"
+    },
     {
       "name": "mcpGenericFailureResult",
       "start": "0x100e5f05c",

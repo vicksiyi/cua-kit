@@ -4,6 +4,7 @@ import MCP
 @main struct NativeAppApprovalResponseTests {
     static func main() async throws {
         let tests = Self()
+        try tests.testIPCInterruptionSelectionAndWireShape()
         try await tests.testApprovalFailureBecomesNativeWireResult()
         try tests.testVendorToolResultSurvivesCodecAndContextMerge()
         tests.testErrorContextPreservesUserFlowDistinction()
@@ -157,6 +158,43 @@ import MCP
         let result = NativeCallToolResult.genericFailure(NativeMCPToolError.invalidArgument("exact\n原因"))
         equal(result.result.content, [.text("exact\n原因")])
         precondition(result.result._meta == nil)
+    }
+
+    func testIPCInterruptionSelectionAndWireShape() throws {
+        let selected: [NativeIPCClientError] = [
+            .noActiveSession(app: "fixture.app"), .userStoppedSession(app: "fixture.app"),
+            .userIntervened(message: "user\n介入"), .screenLocked(message: "locked"), .permissionsPending
+        ]
+        for error in selected {
+            let result = NativeCallToolResult.interruption(error)!
+            let object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(result)) as! [String: Any]
+            precondition(object["isError"] == nil && object["toolResult"] == nil && object["_meta"] == nil)
+            let content = object["content"] as! [[String: Any]]
+            precondition(content.count == 1 && content[0]["type"] as? String == "text")
+            equal(content[0]["text"] as? String, error.interruptionDescription)
+        }
+        equal(selected[2].interruptionDescription, "user\n介入")
+        equal(selected[3].interruptionDescription, "locked")
+        precondition(selected[0].interruptionDescription!.contains("'fixture.app'"))
+        equal(NativeIPCClientError.userStoppedSession(app: "different").interruptionDescription,
+              selected[1].interruptionDescription)
+        let excluded: [NativeIPCClientError] = [
+            .serverError(errorNumber: -1, errorString: "failure"), .invalidApp("fixture"),
+            .ambiguousApp(message: "ambiguous"), .appNotAllowed(bundleIdentifier: "fixture"),
+            .runningApplicationNotFound(bundleIdentifier: "fixture"), .accessibilityError(.failure),
+            .blockedURL(url: "https://example.test"), .messagesInvalidRequest("invalid"),
+            .messagesAmbiguousDestination("ambiguous"), .messagesSendPlanUnavailable(.missing),
+            .messagesSendRateLimited(message: "limited"), .calendarInvalidRequest("invalid"),
+            .couldNotFindServiceApp, .permissionsNotGranted, .turnEnded, .messagesPermissionsPending,
+            .messagesPermissionsDenied, .messagesQueryTimedOut, .messagesSendOutcomeUncertain,
+            .calendarPermissionsPending, .calendarPermissionsDenied
+        ]
+        for error in excluded { precondition(NativeCallToolResult.interruption(error) == nil) }
+        let context = NativeMCPErrorContext(targetID: "fixture", didTriggerServerUserFlow: true)
+        let withContext = NativeCallToolResult.interruption(.permissionsPending, context: context)!
+        equal(withContext.result._meta?["codex/telemetry"], context.value)
+        precondition(withContext.result.isError == nil)
+        equal(NativeIPCClientError.SendPlanUnavailableReason.alreadyConsumed.rawValue, "already_consumed")
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }
