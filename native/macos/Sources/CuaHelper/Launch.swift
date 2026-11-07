@@ -9,7 +9,10 @@ func resolveInstalledApp(_ reference: String) throws -> [String: Any] {
     let target: NativeApplicationTarget
     do { target = try NativeApplicationResolution.system().resolve(reference) }
     catch let error as NativeApplicationResolution.BundleIDLookupError {
-        throw fail("TARGET_NOT_FOUND", error.description)
+        switch error {
+        case .notFound: throw fail("TARGET_NOT_FOUND", error.description)
+        case .ambiguous: throw fail("AMBIGUOUS_TARGET", error.description)
+        }
     }
     let bundle = Bundle(url: target.bundleURL)
     let name = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String

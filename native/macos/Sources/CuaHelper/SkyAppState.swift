@@ -22,7 +22,7 @@ final class SkyAppState {
         }
         defer { target.invalidateInputState() }
         guard target.app.bundleIdentifier == identity["bundleIdentifier"] as? String else {
-            throw SkyRPCFailure(code: -10010, message: "Application identity changed since observation")
+            throw SkyRPCFailure(code: -10010, message: reference)
         }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before input")
@@ -97,7 +97,7 @@ final class SkyAppState {
             guard Date().timeIntervalSince1970 * 1000 < deadline else {
                 throw SkyRPCFailure(code: -10005, message: "Background launch completed after the request deadline; application may be running")
             }
-            guard !app.isTerminated else { throw SkyRPCFailure(code: -10007, message: "Application terminated after launch") }
+            guard !app.isTerminated else { throw SkyRPCFailure(code: -10007, message: identifier) }
             running = [app]
         }
         guard running.count == 1 else { throw SkyRPCFailure(code: -10018, message: "Multiple running applications match the target") }

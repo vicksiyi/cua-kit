@@ -1289,3 +1289,12 @@ Sky JavaScript clients passed against the rebuilt owned Swift helper. Fixtures
 use temporary application bundles without executables; no genuine application
 was controlled and the vendor native service was not executed. Full browser
 and desktop end-to-end acceptance remains pending.
+
+
+### Resolution error payload preservation (2026-11-07)
+
+The owned helper previously flattened both missing and ambiguous application resolution into `-10010` with a generic sentence. This contradicted the recovered client mapping: `-10010` carries the application reference, whereas `-10018` carries the ambiguity description. Both policy sources now preserve those contracts. The standalone launch projection retains `AMBIGUOUS_TARGET` separately from `TARGET_NOT_FOUND`; the app-server policy branch switches on the native resolution error directly. Provider failures remain outside that typed resolution catch.
+
+Related owned-helper branches now send the reference for identity-change `-10010` and the bundle identifier for terminated-application `-10007`. These changes align payload interpretation; they do not establish that the original server uses the identical lifecycle checks. They do not change app allow rules or approval behavior.
+
+Validation: Swift build; three owned IPC tests (restored JS client, installed JS client, and owned app-server policy peer) checking missing-reference payloads and preserving provider errors; native resolution unit and production-helper path tests. The duplicate installed-application ambiguity branch is covered by resolver fixtures, not by registering duplicate apps in the user's LaunchServices database. No vendor native service, model request, or real application launch was used for acceptance.

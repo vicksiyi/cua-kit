@@ -40,13 +40,19 @@ struct SkyAppPolicy {
     func evaluate(_ reference: String) async throws -> [String: Any] {
         if let nativeEvaluation {
             do { return try await nativeEvaluation.evaluate(reference).ipcObject }
-            catch is NativeApplicationResolution.BundleIDLookupError {
-                throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved")
+            catch let error as NativeApplicationResolution.BundleIDLookupError {
+                switch error {
+                case .notFound: throw SkyRPCFailure(code: -10010, message: reference)
+                case .ambiguous: throw SkyRPCFailure(code: -10018, message: error.description)
+                }
             }
         }
         let app: [String: Any]
         do { app = try resolveInstalledApp(reference) }
-        catch { throw SkyRPCFailure(code: -10010, message: "Installed application could not be resolved") }
+        catch let error as Failure where error.code == "AMBIGUOUS_TARGET" {
+            throw SkyRPCFailure(code: -10018, message: error.message)
+        }
+        catch { throw SkyRPCFailure(code: -10010, message: reference) }
         let identifier = app["bundleId"] as! String
         let rule = rules[identifier] ?? SkyAppRule(decision: "denied", risk: "high", allowPersistentApproval: false, warningSubtitle: nil)
         var target: [String: Any] = ["appPath": app["path"]!, "bundleIdentifier": identifier,
