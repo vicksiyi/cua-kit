@@ -2003,6 +2003,61 @@ private enum ProviderClickChecks {
         }
         ownerProvider.parameterSupport = nil; ownerProvider.parameterRead = nil
 
+        let textualAttribute = UIElementAttribute("AXTextualContext")
+        var contextNode = capturedOwner
+        contextNode.role = .textArea
+        contextNode.value = "Context fixture"
+        contextNode.truncationRange = NSRange(location: 0, length: 3)
+        func contextCache(_ attributes: [UIElementAttribute: AXPartialValue], supported: Set<UIElementAttribute> = []) {
+            contextNode.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+                supportedAttributes: supported, attributes: attributes, transactionAttributes: nil))
+        }
+        var textualErrors = 0
+        ownerProvider.readResult = (.success, partial("AXTextualContextSourceCode" as NSString))
+        let textualReadsBefore = ownerProvider.singleReads
+        contextCache([textualAttribute: partial("AXTextualContextSourceCode" as NSString)])
+        checkEqual(contextNode.textualContext { _ in textualErrors += 1 }, "AXTextualContextSourceCode")
+        checkEqual(ownerProvider.singleReads, textualReadsBefore) // valid cached value wins
+        contextCache([textualAttribute: partial(42 as NSNumber)])
+        checkEqual(contextNode.textualContext { _ in textualErrors += 1 }, "AXTextualContextSourceCode")
+        checkEqual(ownerProvider.singleReads, textualReadsBefore + 1) // failed cached decode falls through
+        checkEqual(textualErrors, 0)
+        contextCache([:])
+        ownerProvider.readResult = (.success, partial(42 as NSNumber))
+        checkTrue(contextNode.textualContext { _ in textualErrors += 1 } == nil)
+        checkEqual(textualErrors, 1)
+        ownerProvider.readResult = (.failure, nil)
+        checkTrue(contextNode.textualContext { _ in textualErrors += 1 } == nil)
+        checkEqual(textualErrors, 2)
+        let readsBeforeUnsupported = ownerProvider.singleReads
+        contextCache([:], supported: [UIElementAttribute("AXRole")])
+        checkTrue(contextNode.textualContext { _ in textualErrors += 1 } == nil)
+        checkEqual(ownerProvider.singleReads, readsBeforeUnsupported)
+        contextCache([textualAttribute: partial("AXTextualContextSourceCode" as NSString)])
+        ownerProvider.parameterRead = { _, _ in unexpectedFailure("source code context must not read rich text") }
+        switch MacUIElementTreeTransformation.retrieveAttributedTextFromTextAreas(
+            item: associationItem(contextNode), context: &richContext,
+            reportAttributeError: { _ in unexpectedFailure("cached string should decode") },
+            render: { _, _ in unexpectedFailure("source code context must skip render") }) {
+        case .unchanged: break
+        default: unexpectedFailure("provider-composed source-code guard must preserve item")
+        }
+        contextCache([:])
+        ownerProvider.readResult = (.failure, nil)
+        var contextParameterReads = 0
+        ownerProvider.parameterRead = { _, _ in contextParameterReads += 1; return partial(richText) }
+        switch MacUIElementTreeTransformation.retrieveAttributedTextFromTextAreas(
+            item: associationItem(contextNode), context: &richContext,
+            reportAttributeError: { _ in textualErrors += 1 },
+            render: { _, _ in TransformedUIString(stringLiteral: "Context read failed, rich text available") }) {
+        case let .transformed(result):
+            checkEqual(result.element.value, "Context read failed, rich text available")
+        default: unexpectedFailure("context lookup failure becomes nil and does not abort later rich-text read")
+        }
+        checkEqual(contextParameterReads, 1)
+        checkEqual(textualErrors, 3)
+        ownerProvider.parameterRead = nil
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

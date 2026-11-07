@@ -1,6 +1,19 @@
 import Foundation
 
 extension MacUIElementTreeTransformation {
+    // All native reads are composed; the attributed-run renderer and logger
+    // remain injected. The role guard still runs before the textual AX lookup.
+    static func retrieveAttributedTextFromTextAreas(
+        item: UIElementTree<TransformedUIElement>.Item,
+        context: inout UIElementTransformationContext,
+        reportAttributeError: (Error) -> Void,
+        render: (NSAttributedString, inout UIElementTransformationContext) -> TransformedUIString
+    ) -> UIElementTreeTransformation.Result<TransformedUIElement> {
+        retrieveAttributedTextFromTextAreas(item: item, context: &context,
+            readTextualContent: { item.element.textualContext(reportError: reportAttributeError) },
+            render: render)
+    }
+
     // Provider-backed composition. Textual-context lookup and attributed-run
     // rendering remain explicit until their native composition is recovered.
     static func retrieveAttributedTextFromTextAreas(

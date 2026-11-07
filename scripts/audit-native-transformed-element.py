@@ -585,7 +585,18 @@ full_text_calls = [branch(site, target) for site, target in [
     (0x10075ad6c, 0x10075c780),
 ]]
 
-print(json.dumps(dict(fullAttributedText=dict(
+# Textual content uses AXTextualContext, cached String then uncached reader.
+assert cstring(0x101257b10) == 'AXTextualContext'
+textual_context_calls = [branch(site, target) for site, target in [
+    (0x100759b0c, 0x10075b530), (0x100759b1c, 0x10072bd3c),
+    (0x10072bda4, 0x10072b068), (0x10072b0d4, 0x1006f5f88),
+    (0x10072b20c, 0x100710b44),
+]]
+
+print(json.dumps(dict(textualContext=dict(
+    attribute="AXTextualContext", initializer="0x10079c6e0", calls=textual_context_calls,
+    behavior="cached string first, uncached strict string read on nil; known unsupported skips AX; uncached read/decode errors reported then converted to nil",
+    integration="text-area overload now composes contextual guard plus full/range reads; attributed formatter remains explicit"), fullAttributedText=dict(
     instructions={hex(k): hex(v) for k, v in full_text_words.items()}, calls=full_text_calls,
     options="construct UIElement using current transaction, read AXTextMarkerRangeForUIElement, strict marker decode, direct WithOptions read without second support probe",
     fallback="captured value nil -> nil; otherwise AXAttributedStringForRange with CFRange(0, value.utf16.count)",
@@ -606,7 +617,7 @@ print(json.dumps(dict(fullAttributedText=dict(
     guards="textArea, textualContent != AXTextualContextSourceCode, captured value present",
     read="captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
     commit="store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
-    integration="provider-backed text-area overload composes full/range reads and strict decode; textual-context read and attributed formatter remain explicit",
+    integration="provider-backed text-area overload composes full/range reads and strict decode; textual-context read is provider-backed; attributed formatter remains explicit",
     limitations="complete Mac dispatcher and production collector integration pending"), macTreePruning=dict(
     instructions={hex(k): hex(v) for k, v in mac_pruning_words.items()},
     calls=mac_pruning_calls, selectors=mac_calendar_selectors,

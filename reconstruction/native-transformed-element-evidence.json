@@ -1,4 +1,37 @@
 {
+  "textualContext": {
+    "attribute": "AXTextualContext",
+    "initializer": "0x10079c6e0",
+    "calls": [
+      {
+        "instruction": "0x100759b0c",
+        "target": "0x10075b530",
+        "link": true
+      },
+      {
+        "instruction": "0x100759b1c",
+        "target": "0x10072bd3c",
+        "link": true
+      },
+      {
+        "instruction": "0x10072bda4",
+        "target": "0x10072b068",
+        "link": true
+      },
+      {
+        "instruction": "0x10072b0d4",
+        "target": "0x1006f5f88",
+        "link": true
+      },
+      {
+        "instruction": "0x10072b20c",
+        "target": "0x100710b44",
+        "link": true
+      }
+    ],
+    "behavior": "cached string first, uncached strict string read on nil; known unsupported skips AX; uncached read/decode errors reported then converted to nil",
+    "integration": "text-area overload now composes contextual guard plus full/range reads; attributed formatter remains explicit"
+  },
   "fullAttributedText": {
     "instructions": {
       "0x10075ac94": "0x36000458",
@@ -216,7 +249,7 @@
     "guards": "textArea, textualContent != AXTextualContextSourceCode, captured value present",
     "read": "captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
     "commit": "store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
-    "integration": "provider-backed text-area overload composes full/range reads and strict decode; textual-context read and attributed formatter remain explicit",
+    "integration": "provider-backed text-area overload composes full/range reads and strict decode; textual-context read is provider-backed; attributed formatter remains explicit",
     "limitations": "complete Mac dispatcher and production collector integration pending"
   },
   "macTreePruning": {

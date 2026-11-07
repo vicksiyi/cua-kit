@@ -5879,3 +5879,28 @@ initializer `0x10079c6e0` encodes AXTextualContext, not AXTextualContent; future
 provider composition must use the former spelling. No application was opened,
 no system AX operation was posted, and the production collector is not yet
 switched to this transformation pipeline.
+
+### Provider-backed textual-context guard
+
+`TransformedUIElementTextualContext.swift` composes the existing typed String
+reader using AXTextualContext, matching native textualContent's initializer
+`0x10079c6e0`. The outer rule's cached lookup (`0x10075b530`) precedes uncached
+lookup (`0x10072bd3c` -> `0x10072b068`). A cached non-string decodes to nil and
+falls through; the uncached path uses strict String decoding, reports any
+read/decode error and returns nil. Known-unsupported attributes bypass AX reads.
+An absent/failed contextual lookup does not by itself abort rich-text reading;
+only the exact AXTextualContextSourceCode string activates the skip guard.
+
+The additional text-area overload now composes this guard and the full/range
+readers, leaving only attributed-run rendering and logging as injected
+behavior. Existing role checks still precede contextual lookup. This narrows
+the unfinished work without supplying an invented formatter or changing the
+production collector before the complete pipeline is ready.
+
+Validation: pinned audit, Swift build and provider-click self-test pass.
+Fixtures exercise cached-hit suppression, wrong cached type falling through,
+uncached mismatch/error logging, known-unsupported suppression, the composed
+source-code skip, and continuation to successful rich-text reading after a
+context lookup error. They use the owned AX provider and do not operate an
+external app. Attributed formatting, full Mac dispatch and live acceptance
+remain incomplete.
