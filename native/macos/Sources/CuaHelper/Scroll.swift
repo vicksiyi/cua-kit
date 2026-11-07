@@ -1,9 +1,10 @@
 import Foundation
 import ApplicationServices
 
-// Independent page-distance policy. The installed native implementation is opaque.
+// Independent page-distance policy. The source low-level factory is restored
+// separately; its one-wheel signature needs caller tracing before routing horizontal input.
 // One page is the observed scroll viewport's extent along the chosen axis.
-func scrollEvents(point: CGPoint, viewport: CGRect, direction: String, pages: Double) throws -> [CGEvent] {
+func scrollEvents(point: CGPoint, viewport: CGRect, direction: String, pages: Double, window: MouseWindow? = nil) throws -> [CGEvent] {
     let vertical: Bool, sign: Double
     switch direction {
     case "up", "u": vertical = true; sign = 1
@@ -29,6 +30,7 @@ func scrollEvents(point: CGPoint, viewport: CGRect, direction: String, pages: Do
             throw fail("PROVIDER_DISCONNECTED","Cannot allocate scroll event.")
         }
         event.location = point
+        if let window { try applyMouseWindow(window, to: event) }
         events.append(event); remaining -= amount
     }
     return events
@@ -78,7 +80,7 @@ extension Target {
     func scrollInput(_ params: [String: Any]) async throws -> [String: Any] {
         let point = try await observedInputPoint(params)
         let viewport = try scrollViewport(params,point:point)
-        let events = try scrollEvents(point:point,viewport:viewport,direction:params["direction"] as? String ?? "",pages:params["pages"] as? Double ?? 1)
+        let events = try scrollEvents(point:point,viewport:viewport,direction:params["direction"] as? String ?? "",pages:params["pages"] as? Double ?? 1,window:try mouseWindow(params))
         try validateSnapshot(params)
         defer { invalidateInputState() }
         for event in events {

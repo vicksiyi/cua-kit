@@ -20,6 +20,18 @@
     {
       "site": "0x1007549c8",
       "target": "0x10026cc8c"
+    },
+    {
+      "site": "0x100754ab4",
+      "target": "0x100258288"
+    },
+    {
+      "site": "0x100754b00",
+      "target": "0x100257d88"
+    },
+    {
+      "site": "0x100754c90",
+      "target": "0x10026cc8c"
     }
   ],
   "clickNumber": "zero-initialized process counter; down/up reuse x24; clickCount uses x25",

@@ -66,3 +66,24 @@ clicks followed by a separate command: event numbers [n,n,n+1,n+1,n+2,n+2], clic
 counts [1,1,2,2,1,1]. Input, held-input and provider-click checks pass. Static audit
 pins the initializer and both down/up argument sites. Drag numbering and complete
 source event construction remain separate work; this is not full parity.
+
+## Scroll construction audit (partial)
+
+The source scroll factory at 0x100754a60 creates a HID-system-source pixel event
+with wheelCount=1, deltaY as wheel1, deltaX as wheel2. A readable Swift factory now
+captures this construction, global location and window-local conversion. Native
+scroll also optionally sets a dynamically resolved window field before fields
+91/92; that extra field is not restored yet.
+
+Two direct CoreGraphics observations constrain integration:
+- With wheelCount=1, horizontal page-scroll regression failed. The existing
+  two-axis demo page-distance adapter therefore remains until higher-level native
+  callers are traced. The source factory is not misrepresented as its replacement.
+- Wheel events read back zero for mouse fields 91/92 after setting them, whereas
+  CGEventGetWindowLocation returns the supplied local point. Merely applying the
+  mouse-window helper does not demonstrate successful scroll-window targeting.
+
+The production adapter now supplies the observed window context and local point;
+full wheel-event window routing remains unverified and incomplete. Regression
+covers global/local coordinate preservation, source vertical delta, and the
+existing four-direction page-distance behavior. No live app scroll was tested.

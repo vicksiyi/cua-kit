@@ -118,6 +118,20 @@ func runInputChecks() throws {
             throw fail("SELF_TEST_FAILED","Scroll axis, direction, page distance or event location differs.")
         }
     }
+    let scrollWindow = MouseWindow(id: 123, frame: frameB)
+    let targetedScroll = try scrollEvents(point: mapped, viewport: frameB, direction: "down", pages: 0.5, window: scrollWindow)
+    for event in targetedScroll {
+        guard getLocation(event) == CGPoint(x: 100, y: 350), event.location == mapped else {
+            throw fail("SELF_TEST_FAILED", "Scroll event lost its window routing.")
+        }
+    }
+    let sourceScroll = try SynthesizedEvent.scroll(at: mapped, deltaX: 0, deltaY: -5, inWindow: scrollWindow)
+    guard sourceScroll.cgEvents.count == 1, let sourceEvent = sourceScroll.cgEvents.first,
+          sourceEvent.type == .scrollWheel, sourceEvent.location == mapped,
+          sourceEvent.getIntegerValueField(.scrollWheelEventPointDeltaAxis1) == -5,
+          getLocation(sourceEvent) == CGPoint(x: 100, y: 350) else {
+        throw fail("SELF_TEST_FAILED", "Source scroll factory geometry or vertical delta differs.")
+    }
     for (direction,pages) in [("invalid",1.0),("down",0.0),("down",-1.0),("down",Double.nan),("down",Double.infinity),("down",100000.0)] {
         do { _ = try scrollEvents(point:mapped,viewport:frameB,direction:direction,pages:pages); throw fail("SELF_TEST_FAILED","Invalid scroll accepted.") }
         catch let error as Failure { guard error.code == "INVALID_ARGUMENT" else { throw error } }
