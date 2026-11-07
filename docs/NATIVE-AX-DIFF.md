@@ -4975,3 +4975,27 @@ not known-unsupported; the unsupported fixture uses a nonempty set excluding
 AXDocument. This accessor is ready for full owner assembly; the production
 collector is still not using the complete transformed owner/tree pipeline.
 DOM classes, action descriptions and owner integration remain outstanding.
+
+
+### Constructor DOM class list (2026-11-07)
+
+Added the Swift [String] decoder specialization and cached-only
+`UIElement.transformedDOMClassList`. Constructor 0x10075f460..0x10075f514
+looks up AXDOMClassList in cached partial values, calls 0x100711208 with
+throwingOnFailure=false, suppresses decode errors and stores an optional array.
+It does not fetch a fresh attribute or reconstruct missing array segments.
+
+Static specialization evidence: 0x100711218..0x10071121c passes the type
+reference at 0x101194cc0; its relative target 0x10129e564 contains SaySSG,
+Swift.Array<Swift.String>. The generic body 0x1007118f0 dispatches CF types,
+bridges CFArray to object values, calls the recovered compactMap transform
+0x1006ea28c at 0x100712064, then erases/casts the resulting array to the
+requested target. Element decoding remains lenient even when outer decoding
+is strict. Reused existing String decoder, array-element transform and final
+array conversion rather than using a whole-array cast that rejects mixed types.
+
+Swift build and provider selftest pass. Cases cover nil/scalar cache entries,
+empty arrays, mixed/nested/number/null entries, retained order/duplicates/empty
+strings, all-invalid arrays, strict outer mismatch and no provider reads.
+This closes the DOM class field branch, not full owner or production pipeline
+integration. Action descriptions and full constructor assembly remain next.

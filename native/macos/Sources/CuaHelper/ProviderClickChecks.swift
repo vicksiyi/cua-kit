@@ -557,6 +557,24 @@ private enum ProviderClickChecks {
         checkTrue(badStrings.title == nil); checkTrue(badStrings.description == nil)
         checkEqual(badStrings.help, "")
         checkEqual(textProvider.singleReads, readsBeforeValueState)
+        let classAttribute = UIElementAttribute("AXDOMClassList")
+        func classList(_ object: AnyObject?) -> [String]? {
+            UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
+                attributes: object.map { [classAttribute: partial($0)] } ?? [:],
+                transactionAttributes: nil)).transformedDOMClassList
+        }
+        checkTrue(classList(nil) == nil)
+        checkTrue(classList("not an array" as NSString) == nil)
+        checkEqual(classList([] as NSArray), [])
+        let mixedClasses: NSArray = ["button", NSNumber(value: 7), "", "button", ["nested"], NSNull(), "active"]
+        checkEqual(classList(mixedClasses), ["button", "", "button", "active"])
+        checkEqual(classList([NSNumber(value: 2), NSNull()] as NSArray), [])
+        checkEqual(try decodeAXStringArray(mixedClasses, throwingOnFailure: true), ["button", "", "button", "active"])
+        do {
+            _ = try decodeAXStringArray("bad" as NSString, throwingOnFailure: true)
+            unexpectedFailure("strict outer String-array mismatch must throw")
+        } catch is UIElementError {}
+        checkEqual(textProvider.singleReads, readsBeforeValueState)
         let urlAX = AXUIElementCreateApplication(12507)
         let urlProvider = Hit()
         provider.replacements[urlAX] = urlProvider
