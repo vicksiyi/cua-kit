@@ -623,6 +623,11 @@ assert read(0x1007c6128, 12).hex() == 'f60240f9960300b4f70640f9'
 assert read(0x1007c614c, 4).hex() == '22008052'
 assert read(0x1007c617c, 16).hex() == 'e80317aa7ffbff97e00317aafe000094'
 
+# State assignment always writes; didSet compares old/current before lazy
+# shared-coordinator access. Repeated immediate stop still emits finished.
+assert read(0x1007c5840, 12).hex() == '806a7538936a3538b1010094'
+assert read(0x1007c5f44, 12).hex() == '936a77387f02356b60020054'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

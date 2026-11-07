@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runAnimationStateStopCompositionChecks()
     runInterpolatableAnimationStopChecks()
     runCursorWindowResetChecks()
     runCursorMotionAnimationResetChecks()
@@ -7980,4 +7981,32 @@ private func runInterpolatableAnimationStopChecks() {
         handler: { preconditionFailure() }, value: { events.append("value"); return 9 },
         retarget: { precondition($0 == 9); events.append("retarget") })
     precondition(events == ["value", "retarget"])
+}
+
+
+private func runAnimationStateStopCompositionChecks() {
+    var state: AnimationState = .running
+    var events: [String] = []
+    func stop() {
+        stopInterpolatableAnimation(immediately: true, setState: { requested in
+            setInterpolatableAnimationState(requested, read: { state }, write: {
+                state = $0; events.append("write")
+            }, notifyCoordinator: {
+                precondition($0 == .ended && state == .ended)
+                events.append("coordinator")
+            })
+        }, handler: { { (event: InterpolatableAnimationEvent<Int>) in
+            guard case .finished(3) = event else { preconditionFailure() }
+            precondition(state == .ended)
+            events.append("finished")
+        } }, value: { 3 }, retarget: { _ in preconditionFailure() })
+    }
+    stop(); stop()
+    precondition(events == ["write", "coordinator", "finished", "write", "finished"])
+    events = []
+    for next in [AnimationState.ready, .retargeted, .running] {
+        setInterpolatableAnimationState(next, read: { state }, write: { state = $0 },
+            notifyCoordinator: { precondition($0 == next && state == next); events.append("notify") })
+    }
+    precondition(events == ["notify", "notify", "notify"])
 }

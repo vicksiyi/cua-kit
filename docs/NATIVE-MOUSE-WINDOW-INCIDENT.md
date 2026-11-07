@@ -3373,3 +3373,24 @@ since immediate stop otherwise emits a finished event. Concrete animations and
 production cursor integration remain outstanding.
 
 Swift build, provider checks and pinned static audit pass for the stop semantics.
+
+
+## Animation state setter/stop composition (2026-11-08)
+
+Setter 0x1007c580c reads old state, writes the requested state unconditionally,
+then invokes observer 0x1007c5f0c. The observer reads current state and exits if
+equal to old; only changes reach the lazily initialized shared coordinator and
+forward current state with the animation identity. The recovered injected setter
+preserves write-before-notify and unchanged-state suppression. It does not infer
+that .ended simply removes a timer: coordinator bookkeeping is a separate body.
+
+A composition check joins the real restored setter and stop helpers. First
+running->ended produces write/coordinator notification/finished; a second
+ended->ended produces write/finished only. This guards against adding a blanket
+ended guard to stop or emitting duplicate coordinator notifications. Other state
+transitions also notify after storage reflects the new state. Static pins cover
+the write and observer equality guard. Shared-coordinator initialization,
+registration maps and native driver callbacks remain to be recovered; this helper
+is not a fully implemented InterpolatableAnimation class or visible cursor.
+
+Swift build, provider composition checks and pinned static audit pass after setter recovery.
