@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runCGWindowObserverRegistrationChecks()
     runWindowServerEventChecks()
     runWindowOrderingObserverTaskStoreChecks()
     await runApplicationPrimaryWindowChecks()
@@ -6801,4 +6802,40 @@ private func runWindowServerEventChecks() {
     checkEqual(WindowServerEvent.allCases.map(\.rawValue), expected)
     for event in WindowServerEvent.allCases { checkEqual(WindowServerEvent(rawValue: event.rawValue), event) }
     for invalid: UInt32 in [0, 799, 817, 1324, 1329, .max] { checkTrue(WindowServerEvent(rawValue: invalid) == nil) }
+}
+
+
+private func runCGWindowObserverRegistrationChecks() {
+    var trace: [String] = []
+    let events: [WindowServerEvent] = [.didMove, .didMove, .didChangeOrder]
+    var connectionReads = 0
+    var owner: CGWindowObserverRegistration<Int>? = .init(windowIDs: [7, 0, 7], events: events,
+        registerCallback: { trace.append("callback+"); return 42 },
+        removeCallback: { checkEqual($0, 42); trace.append("callback-") },
+        mainConnection: { connectionReads += 1; trace.append("connection"); return nil },
+        registerNotification: { connection, event, id in
+            checkTrue(connection == nil); checkEqual(id, 42)
+            trace.append("register-\(event.rawValue)"); return .failure
+        }, removeNotification: { connection, event, id in
+            checkTrue(connection == nil); checkEqual(id, 42)
+            trace.append("remove-\(event.rawValue)"); return .failure
+        }, requestWindows: { connection, windows, count in
+            checkTrue(connection == nil); checkEqual(windows, [7, 0, 7]); checkEqual(count, 3)
+            trace.append("request")
+        })
+    checkTrue(owner != nil)
+    checkEqual(trace, ["callback+", "connection", "register-806", "register-806", "register-808", "request"])
+    owner = nil
+    checkEqual(Array(trace.suffix(5)), ["callback-", "connection", "remove-806", "remove-806", "remove-808"])
+    checkEqual(connectionReads, 2)
+    trace = []
+    var empty: CGWindowObserverRegistration<Int>? = .init(windowIDs: [], events: [],
+        registerCallback: { trace.append("callback+"); return 0 },
+        removeCallback: { checkEqual($0, 0); trace.append("callback-") },
+        mainConnection: { trace.append("connection"); return nil },
+        registerNotification: { _, _, _ in unexpectedFailure() },
+        removeNotification: { _, _, _ in unexpectedFailure() },
+        requestWindows: { _, ids, count in checkTrue(ids.isEmpty); checkEqual(count, 0); trace.append("request") })
+    checkTrue(empty != nil); empty = nil
+    checkEqual(trace, ["callback+", "connection", "request", "callback-", "connection"])
 }

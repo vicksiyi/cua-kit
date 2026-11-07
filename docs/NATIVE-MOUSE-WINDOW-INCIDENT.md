@@ -2009,3 +2009,26 @@ Enum checks use only static values. No real notify registration, subscription
 or removal occurs in this verification. Callback context retention, observer
 registration order/cleanup and AsyncStream iteration remain to be restored and
 integrated before claiming production WindowOrderingObserver completion.
+
+
+## CGWindow.Observer registration and destruction ordering
+
+CGWindowObserverRegistration restores the registration tail at
+0x1002599f4..0x100259b00 and resource teardown at 0x100258580..0x100258680.
+It first registers its callback registry entry, then reads the main connection
+once, registers each requested event in input order, and requests notifications
+for the original window-ID array with checked UInt32 count. Duplicate events,
+duplicate/zero window IDs and empty arrays are preserved. CGError results are
+ignored and do not suppress later registration or window subscription.
+
+On destruction it removes/releases the callback registry entry first, reads
+the current main connection again, then removes every event in original order.
+No registration rollback, skipped empty subscription or unregister-error throw
+was introduced. Injected checks exercise these orderings, failed CGError results,
+context identity and empty/duplicate inputs without registering real callbacks.
+
+This is a registration resource component, not the full CGWindow.Observer.
+Initial window-description mapping, callback-ID registry, raw event payload
+interpretation and AsyncStream ownership remain explicit required work. The
+component has no default fake callback source and is not yet used to claim a
+production ordering observer.
