@@ -4640,9 +4640,19 @@ private func runFocusStealKeyboardMonitorChecks() {
         checkTrue(invoke(source: 77, target: 88, type: type) == nil)
     }
     checkEqual(recipients, [66, 66, 66])
+    checkTrue(state!.filterKeyFocusReturned(event, destinationPID: 44) === event)
+    checkTrue(state!.filterKeyFocusReturned(event, destinationPID: 66) == nil)
+    checkTrue(state!.filterKeyFocusReturned(event, destinationPID: 66) === event)
+    // One-shot notification suppression must leave keyboard routing active.
+    checkTrue(invoke(source: 77, target: 88, type: .keyDown) == nil)
+    checkEqual(recipients.count, 4)
     state!.update(FocusStealKeyboardRoute(interceptedPID: 88, recipientPID: 55))
     checkTrue(invoke(source: 77, target: 88, type: .keyDown) == nil)
     checkEqual(recipients.last, 55)
+    checkTrue(state!.filterKeyFocusReturned(event, destinationPID: 55) == nil)
+    state!.update(nil)
+    checkTrue(state!.filterKeyFocusReturned(event, destinationPID: 55) === event)
+    checkTrue(invoke(source: 77, target: 88, type: .keyDown) === event)
     state = nil; checkTrue(weakState == nil)
     checkTrue(invoke(source: 77, target: 88, type: .keyDown) === event)
     checkTrue(monitor != nil); monitor = nil

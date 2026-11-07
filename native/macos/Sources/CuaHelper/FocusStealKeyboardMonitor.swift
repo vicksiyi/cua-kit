@@ -12,9 +12,22 @@ struct FocusStealKeyboardRoute {
 final class FocusStealKeyboardRoutingState {
     private let lock = NSLock()
     private var route: FocusStealKeyboardRoute?
+    private var keyFocusReturnWasSuppressed = false
     init(route: FocusStealKeyboardRoute? = nil) { self.route = route }
     func update(_ route: FocusStealKeyboardRoute?) {
-        lock.lock(); defer { lock.unlock() }; self.route = route
+        lock.lock(); defer { lock.unlock() }
+        self.route = route
+        keyFocusReturnWasSuppressed = false
+    }
+    // 0x10074cbd0: suppress only the first returned-focus notification
+    // for the route recipient. Native byte state+0x29 records suppression;
+    // it does not clear the keyboard route or change either PID.
+    func filterKeyFocusReturned(_ event: CGEvent, destinationPID: Int32) -> CGEvent? {
+        lock.lock(); defer { lock.unlock() }
+        guard let route, !keyFocusReturnWasSuppressed,
+              route.recipientPID == destinationPID else { return event }
+        keyFocusReturnWasSuppressed = true
+        return nil
     }
     // Source holds its state lock through postToPid; retain event/timestamp.
     func filter(_ event: CGEvent, post: (CGEvent, Int32) -> Void) -> CGEvent? {

@@ -841,3 +841,26 @@ event identity/timestamp retention, weak owner lifetime and cleanup. Swift build
 and provider-click checks pass. These checks install no OS event tap and post no
 real input. The monitor is not yet wired to the production focus controller;
 Multica acceptance remains outstanding.
+
+
+## System process notification and returned-focus state audit
+
+The preventer owns an annotated-session tap (location 2), head placement,
+listen-only options, mask 1<<21. Callback thunk 0x100750ca4 dispatches to
+0x10074c724, rather than the per-registration keyboard callback. It reads CPS
+subtype from private field 64 (initializer 0x100731170), not window subtype
+field 83. Focus-related PID is private field 73 (initializer 0x1007311d0).
+Key-focus-changed subtype is unsigned 0xf102; new-front is 2. Taken/returned
+notifications use 0x4000/0x8000. Changed/new-front handling is gated by the
+captured ViewBridge destination PID; taken/returned paths precede that gate.
+Full notification dispatch/state production remains to be integrated.
+
+Restored the concrete returned-focus state mutation from 0x10074cbd0:
+pass if route tag is absent, byte state+0x29 is already set, or destination
+is not route recipient (state+0x24). Otherwise set byte+0x29 and consume
+that notification. This does not clear the route. Route replacement resets
+the suppression flag. Component checks cover mismatching destination, first
+vs repeated notification, keyboard routing after suppression and route removal.
+Swift build, provider-click checks and pinned binary audit pass. No real input
+was sent; production controller integration and Multica UI acceptance remain
+unfulfilled.

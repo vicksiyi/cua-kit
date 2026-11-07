@@ -100,6 +100,13 @@ assert struct.unpack("<I", read(0x100752f58, 4))[0] == 0xf100313f
 # Per-registration preventer keyboard tap differs from activation monitor.
 assert struct.unpack('<III', read(0x101571578, 12)) == (10, 11, 12)
 assert struct.unpack('<II', read(0x1011727f0, 8)) == (1, 0)
+# Process-notification private fields/subtypes, distinct from AX/window subtype.
+for site, expected_bytes in [(0x100731178, '09088052'), (0x1007311d8, '29098052'),
+                             (0x10072f5c8, '49008052'), (0x10072f728, '49209e52'),
+                             (0x10074cc5c, '28534079'), (0x10074cd40, '68f94737'),
+                             (0x10074cd44, '282740b9'), (0x10074cf88, '28008052'),
+                             (0x10074cf8c, '28a70039')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
