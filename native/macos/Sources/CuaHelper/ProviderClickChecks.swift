@@ -51,6 +51,40 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        struct RenderingContext: AccessibilityRenderingContext {
+            typealias Role = UIElementRole
+            let type = UIElementContextType.fullUIContext
+            var urlShortener = UIElementURLShortener(configuration: .init(
+                individualLimit: nil, totalLimit: nil, includeQuery: true,
+                includeFragment: true, baseHost: nil))
+        }
+        var renderingContext = RenderingContext()
+        let renderURL = URL(string: "https://example.invalid/path?query=one#fragment")!
+        var interpolation = TransformedUIString.StringInterpolation(literalCapacity: 0, interpolationCount: 1)
+        interpolation.appendInterpolation(renderURL, role: nil, context: &renderingContext)
+        var renderedURL = TransformedUIString(stringInterpolation: interpolation)
+        checkTrue(renderedURL.description.contains("query=one"))
+        renderingContext.urlShortener.configuration.includeQuery = false
+        renderingContext.urlShortener.configuration.includeFragment = false
+        checkTrue(renderedURL.trimURLs(context: &renderingContext))
+        checkFalse(renderedURL.description.contains("query=one"))
+        checkFalse(renderedURL.description.contains("fragment"))
+        checkFalse(renderedURL.trimURLs(context: &renderingContext))
+        var linked = TransformedUIString.StringInterpolation(literalCapacity: 0, interpolationCount: 1)
+        linked.appendMarkdownLink(url: renderURL, role: .link, stringValue: "[label]",
+            title: "ignored", description: nil, context: &renderingContext)
+        let renderedLink = TransformedUIString(stringInterpolation: linked)
+        checkTrue(renderedLink.description.hasPrefix("[\\[label\\]]("))
+        checkTrue(renderedLink.description.hasSuffix(")"))
+        var imageInterpolation = TransformedUIString.StringInterpolation(literalCapacity: 0, interpolationCount: 2)
+        imageInterpolation.appendInterpolation(renderURL, role: .image, context: &renderingContext)
+        imageInterpolation.appendInterpolation(renderURL, role: .image, context: &renderingContext)
+        var imageText = TransformedUIString(stringInterpolation: imageInterpolation)
+        checkEqual(imageText.description, "")
+        checkFalse(imageText.isEmpty) // Two retained empty URL spans, not zero spans.
+        checkFalse(imageText.trimURLs(context: &renderingContext))
+        let compilerURL: TransformedUIString = "URL: \(renderURL, role: UIElementRole.link, context: &renderingContext)"
+        checkEqual(compilerURL.description, "URL: " + renderedURL.description)
         var mappedText = TransformedUIString()
         mappedText.appendMappedString("🙂a", sourceOffsets: [10, 11, 12])
         checkEqual(mappedText.description, "🙂a")

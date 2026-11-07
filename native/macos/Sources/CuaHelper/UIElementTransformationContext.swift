@@ -1,8 +1,8 @@
 import Foundation
 import CoreGraphics
 
-// Six stored fields from descriptor 0x1013238b0. The original rendering protocol
-// conformance is pending; do not substitute a reduced AccessibilityRenderingContext.
+// Six stored fields from descriptor 0x1013238b0. Full rendering-context
+// conformance is declared separately in AccessibilityRenderingContext.swift.
 struct UIElementTransformationContext {
     var type: UIElementContextType
     var isCatalyst: Bool

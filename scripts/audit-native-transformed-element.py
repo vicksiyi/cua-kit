@@ -68,8 +68,23 @@ calls = [branch(0x10075c570, 0x10075e160, False),
          branch(0x10075e0f8, 0x10076589c),
          branch(0x10075e124, 0x10075e160),
          branch(0x10075debC, 0x10065fb6c)]
+rendering_descriptor = 0x1012c95ac
+header = struct.unpack('<6I', read(rendering_descriptor, 24))
+assert header[3:5] == (1, 6)
+requirement_start = rendering_descriptor + 24 + 12
+rendering_flags = [8, 7, 0x13, 0x14, 0x16, 0x13]
+for i, flag in enumerate(rendering_flags):
+    assert struct.unpack('<II', read(requirement_start + 8 * i, 8)) == (flag, 0)
+rendering_witnesses = [0x100758848, 0x100758854, 0x10075885c, 0x100758870]
+for i, target in enumerate(rendering_witnesses):
+    raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
+    assert 0x100000000 + (raw & 0xffffffff) == target
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
+    renderingContext=dict(descriptor=hex(rendering_descriptor), flags=rendering_flags,
+        requirements=["Role: AccessibilityRole", "Role", "urlShortener.get",
+            "urlShortener.set", "urlShortener.modify", "type.get"],
+        concreteWitnesses=[hex(x) for x in rendering_witnesses]),
     constructionFindings=[
         'UIElement/context initializer tail-branches into common constructor.',
         'AX/context initializer constructs provider cache before common constructor.',

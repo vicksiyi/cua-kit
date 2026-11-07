@@ -2,7 +2,7 @@ import Foundation
 
 // Original descriptors 0x1012c9600/0x1012c961c: the outer struct stores one
 // StringInterpolation, which owns spans and optional UTF-16 source offsets.
-// Rendering-context URL overloads remain pending the full rendering protocol.
+// URL overloads use the restored generic rendering context contract.
 struct TransformedUIString: ExpressibleByStringInterpolation, CustomStringConvertible {
     private var stringInterpolation: StringInterpolation
 
@@ -31,6 +31,27 @@ struct TransformedUIString: ExpressibleByStringInterpolation, CustomStringConver
         mutating func appendInterpolation(_ value: String) {
             appendTransformedUIStringSpan(.string(value), spans: &spans,
                 sourceOffsets: &sourceOffsets)
+        }
+
+        // 0x100638d40: optional role comparison, mutate the context shortener,
+        // and preserve the URL span even when trimming produces nil/empty text.
+        mutating func appendInterpolation<Context: AccessibilityRenderingContext>(
+            _ url: URL, role: Context.Role?, context: inout Context
+        ) {
+            let isImage = role == Context.Role.image
+            let text = context.urlShortener.trim(url: url, isImage: isImage) ?? ""
+            appendTransformedUIStringSpan(.url(text, url: url, isImage: isImage),
+                spans: &spans, sourceOffsets: &sourceOffsets)
+        }
+
+        mutating func appendMarkdownLink<Context: AccessibilityRenderingContext>(
+            url: URL, role: Context.Role, stringValue: String?, title: String?,
+            description: String?, context: inout Context
+        ) {
+            appendTransformedUIStringMarkdownLink(url: url, isImage: role == Context.Role.image,
+                stringValue: stringValue, title: title, description: description,
+                trimURL: { context.urlShortener.trim(url: $0, isImage: $1) },
+                spans: &spans, sourceOffsets: &sourceOffsets)
         }
 
         mutating func appendInterpolation(_ value: TransformedUIString) {
@@ -72,6 +93,12 @@ struct TransformedUIString: ExpressibleByStringInterpolation, CustomStringConver
         transformedUIStringSourceRange(ofMarkdownSubstring: substring, prefix: prefix,
             suffix: suffix, spans: stringInterpolation.spans,
             sourceOffsets: stringInterpolation.sourceOffsets)
+    }
+
+    mutating func trimURLs<Context: AccessibilityRenderingContext>(context: inout Context) -> Bool {
+        refreshTransformedUIStringURLs(spans: &stringInterpolation.spans) {
+            context.urlShortener.trim(url: $0, isImage: $1)
+        }
     }
 
     static func += (lhs: inout Self, rhs: String) {

@@ -51,6 +51,31 @@
       "link": true
     }
   ],
+  "renderingContext": {
+    "descriptor": "0x1012c95ac",
+    "flags": [
+      8,
+      7,
+      19,
+      20,
+      22,
+      19
+    ],
+    "requirements": [
+      "Role: AccessibilityRole",
+      "Role",
+      "urlShortener.get",
+      "urlShortener.set",
+      "urlShortener.modify",
+      "type.get"
+    ],
+    "concreteWitnesses": [
+      "0x100758848",
+      "0x100758854",
+      "0x10075885c",
+      "0x100758870"
+    ]
+  },
   "constructionFindings": [
     "UIElement/context initializer tail-branches into common constructor.",
     "AX/context initializer constructs provider cache before common constructor.",

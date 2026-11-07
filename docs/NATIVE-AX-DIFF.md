@@ -4561,3 +4561,29 @@ complete. URL interpolation/Markdown link generic overloads still need the origi
 AccessibilityRenderingContext contract; their existing extracted algorithms remain
 separate. Sequence joining and full transformed-node construction also remain to
 be connected. No live browser/application acceptance was performed in this change.
+
+### Rendering context contract and URL interpolation wiring (2026-11-07)
+
+Restored the complete `AccessibilityRenderingContext` protocol, not a reduced
+URL-only substitute. Descriptor `0x1012c95ac` has one signature requirement and six
+requirements: Role conformance/type, URL-shortener get/set/modify, and context-type
+getter. Witnesses `0x100758848/54/5c` access the concrete shortener at +48;
+`0x100758870` reads type at +0. The static transformed-element audit now asserts
+this descriptor shape and all four concrete witness targets. Added the actual
+UIElementTransformationContext conformance in the protocol file, retaining isolated
+constructor fixtures' existing compilation boundary.
+
+TransformedUIString now provides generic URL interpolation, appendMarkdownLink,
+and trimURLs(context:) using this protocol. URL interpolation at
+`0x100638d40..0x100639134` compares the optional role with Role.image, mutates the
+context's shortener, converts nil text to an empty string, and still appends a URL
+span carrying the original URL and image flag. Markdown links and URL refresh use
+the existing restored algorithms; refresh does not rewrite source-offset storage.
+
+Validation: pinned static audit, full helper build, and owned provider selftest all
+pass. A separate conforming context (not the application context) exercises generic
+calls and compiler-driven URL interpolation. Tests verify query/fragment refresh,
+unchanged refresh, bracket escaping, and two image URLs retained as two empty spans
+(description empty but structural isEmpty false). This supplies the previously
+missing rendering-protocol wiring. Full transformed-node construction, attributed
+text conversion and production tree collector integration remain outstanding.
