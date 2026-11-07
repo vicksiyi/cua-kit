@@ -24,8 +24,10 @@ final class CGWindowCallbackRegistry<Entry> {
     func remove(_ id: UInt) -> Entry? {
         storage.withLock { $0.entries.removeValue(forKey: id) }
     }
-    // Raw event handling mutates the retained entry under the same lock. Its
-    // payload interpretation remains a separate native callback boundary.
+    // 0x10025a9d0: copy/retain an entry while locked; native window lookup
+    // and handler invocation run after this method has unlocked.
+    func entry(_ id: UInt) -> Entry? { storage.withLock { $0.entries[id] } }
+    // Explicit state seam for isolated ownership checks.
     func withState<Result>(_ operation: (inout State) -> Result) -> Result {
         storage.withLock(operation)
     }

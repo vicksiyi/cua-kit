@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runCGWindowNotificationChecks()
     runCGWindowCallbackRegistryChecks()
     runCGWindowObserverRegistrationChecks()
     runWindowServerEventChecks()
@@ -6870,4 +6871,41 @@ private func runCGWindowCallbackRegistryChecks() {
     let reentrant = registry.register(Entry { registry.withState { checkTrue($0.entries.isEmpty) } })
     var final = registry.remove(reentrant)
     checkTrue(final != nil); final = nil
+}
+
+
+private func runCGWindowNotificationChecks() {
+    var rawID: UInt32 = 42
+    let context = UnsafeMutableRawPointer(bitPattern: 7)!
+    var trace: [String] = []
+    withUnsafeMutablePointer(to: &rawID) { pointer in
+        func send(_ event: UInt32 = 804, _ data: UnsafeMutableRawPointer? = nil,
+            _ context: UnsafeMutableRawPointer? = context, fresh: String? = nil, cached: String? = nil) {
+            dispatchCGWindowNotification(rawEvent: event, data: data, context: context,
+                entry: { id in
+                    checkEqual(id, 7); trace.append("entry")
+                    return CGWindowNotificationEntry(handler: { window, event in
+                        checkEqual(event, .isTerminated); trace.append(window)
+                    }, initialWindows: cached.map { [42: $0] } ?? [:])
+                }, window: { id in checkEqual(id, 42); trace.append("fresh"); return fresh })
+        }
+        send(799, UnsafeMutableRawPointer(bitPattern: 1)); checkTrue(trace.isEmpty)
+        send(); checkTrue(trace.isEmpty)
+        send(804, UnsafeMutableRawPointer(pointer), nil); checkTrue(trace.isEmpty)
+        send(804, UnsafeMutableRawPointer(pointer), fresh: "current", cached: "initial")
+        checkEqual(trace, ["entry", "fresh", "current"]); trace = []
+        send(804, UnsafeMutableRawPointer(pointer), cached: "initial")
+        checkEqual(trace, ["entry", "fresh", "initial"]); trace = []
+        send(804, UnsafeMutableRawPointer(pointer)); checkEqual(trace, ["entry", "fresh"])
+        let registry = CGWindowCallbackRegistry<CGWindowNotificationEntry<Int>>()
+        let id = registry.register(.init(handler: { window, _ in
+            checkEqual(window, 42); _ = registry.remove(1)
+        }, initialWindows: [:]))
+        dispatchCGWindowNotification(rawEvent: 804, data: UnsafeMutableRawPointer(pointer),
+            context: UnsafeMutableRawPointer(bitPattern: id), entry: registry.entry, window: { Int($0) })
+        checkTrue(registry.entry(id) == nil)
+        dispatchCGWindowNotification(rawEvent: 804, data: UnsafeMutableRawPointer(pointer),
+            context: context, entry: { _ -> CGWindowNotificationEntry<Int>? in nil },
+            window: { _ in preconditionFailure("missing entry skips native lookup") })
+    }
 }

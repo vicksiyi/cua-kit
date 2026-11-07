@@ -2050,3 +2050,28 @@ Checks cover monotonic identity, missing/zero IDs, retained entries, ownership
 transfer and destruction that safely reacquires the registry lock. They do not
 register a native callback. Callback payload interpretation and full event-stream
 composition remain outstanding.
+
+
+## Native raw callback and concrete observer connected
+
+CGWindowNotification restores trampoline 0x1002589ac and callback body
+0x10025a964: unknown events, nil data and nil callback context are dropped;
+the first payload UInt32 is a window ID and context bits are the callback ID.
+The source trampoline discards the length argument. It snapshots/retains the
+registry entry while locked, then unlocks before live window lookup or handler
+execution. Contrary to a tentative earlier code comment, this path does not
+mutate the registry's initial window map during event delivery.
+
+Live NativeWindowDescription lookup takes precedence. If it is unavailable,
+use the initial description for that ID; if both are unavailable, drop the event.
+This allows termination/ordered-out notifications to retain useful descriptions.
+The handler runs outside the registry lock and may unregister itself. Tests
+cover invalid/nil guards, fresh-over-initial preference, initial fallback, missing
+entry/window drops and handler reentry into registry removal.
+
+NativeCGWindowObserver now snapshots initial descriptions for supplied IDs,
+registers its concrete handler/map entry and composes the existing SPI wrappers
+with CGWindowObserverRegistration. Its lifetime therefore owns actual native
+registration and cleanup, ready for the remaining AsyncStream adapter. Injected
+verification does not construct this concrete observer or register live callbacks.
+Full ordering reactions/menu tasks/controller integration remain outstanding.
