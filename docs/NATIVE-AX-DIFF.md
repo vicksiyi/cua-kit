@@ -3418,3 +3418,36 @@ The read-only audit passes for the pinned binary. Getter-name discovery is no
 longer an outstanding prerequisite for the parent protocol; complete declarations,
 associated-type conformances, executable implementations and transaction scope
 remain incomplete. This turn adds evidence, not live desktop functionality.
+
+### Executable protocol declarations and role conformance
+
+Added complete AccessibilityNode (31 getters, Identifiable and the two constrained
+associated types) and UIElementProtocol (the ten direct requirements plus Hashable,
+ID == AXUIElement and Role == UIElementRole) declarations. No concrete UIElement
+conformance is claimed yet: its initializer and operations still need the original
+transaction/provider routing. This replaces the declaration gap without inventing
+an empty marker protocol or narrowing inherited requirements.
+
+AccessibilityRole descriptor 0x1012c919c has one signature constraint and eight
+witness requirements: Hashable; static group/staticText/link/table/image; instance
+isGrouping/presentationKind. The UIElementRole table at 0x10149f818 maps those
+static roles through 0x1007baf20/3c/58/74/90, isGrouping through 0x1007baff8 and
+presentationKind through 0x100762900 -> 0x10075c8f4. The generic grouping default
+at 0x100624de4 compares Self.group; generic presentationKind at 0x100624e84
+returns other. UIElementRole now conforms using the recovered ordered comparisons:
+button/checkBox/menu/menuBar/menuBarItem/menuButton/menuItem/radioGroup/row/generic,
+then other. Generic means AXGenericElement (initializer 0x1007bad10), not AXGroup.
+AccessibilityRoleKind metadata has eleven payload-free cases in that order.
+
+AccessibilityPresentationAction metadata 0x10132117c has mutable kind and
+description fields; nested Kind at 0x1013211a4 has payload-free press/showMenu/
+scrollToVisible/other cases and Hashable conformance. Those types are restored,
+so PresentationActions remains a Sequence of the actual presentation type rather
+than an alias for native AX actions.
+
+Role tests exercise all mapped categories, unsupported and similar names,
+generic protocol dispatch, and default grouping/presentation behavior on a second
+conformer. Tests and Swift package build pass. Existing CFArray cast warnings
+remain in AXMultipleAttributeReading; no live AX read, vendor launch or model
+request was used. Concrete node conformance, defaults and transaction integration
+remain pending.
