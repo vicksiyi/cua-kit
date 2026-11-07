@@ -2819,3 +2819,22 @@ AX-delivery success does not prove this new composition. The check now refuses
 to launch its owned fixture when the desktop is locked. Compilation/component
 verification can proceed independently while unlocked UI acceptance remains
 pending. No user-app action or canceled operation was retried.
+
+
+## Concrete AX event handler composition
+
+AppControllerAXEventHandler now connects notification routing to
+AppControllerWindows, native attention clearing, existing AX observer subscription
+removal/Control Center registration and the existing SyntheticAppFocusEnforcer.
+Menu open completes state/window/ordering preparation before reading menu actualPID
+and starting suppression. Destruction and menu close stop existing suppression;
+geometry/unknown events do not touch observer or focus-enforcer lookups.
+Control Center observer lookup occurs only after exact bundle matching.
+
+The handler receives resource lookup closures, so it uses current resources and
+does not create or directly own observers/enforcers. Lookup closures must weakly
+capture their controller when production ownership is connected.
+Checks cover geometry publication, unknown-event no-op, destroyed-resource lookup
+and menu-close resource sequencing with absent optional resources. They invoke no
+native attention setter or UI input. Owner serialization, production Target wiring
+and unlocked real composition acceptance remain outstanding.

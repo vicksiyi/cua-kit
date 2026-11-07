@@ -3773,6 +3773,7 @@ func runProviderClickChecks() async throws {
     runAppControllerAttentionChecks()
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
+    runAppControllerAXEventHandlerChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7575,4 +7576,23 @@ private func runAppControllerWindowsCompositionChecks() {
     context.republishObservedWindowIDs()
     precondition(updates.last == [30])
     precondition(context.orderedWindows { [30, 30] }.count == 2)
+}
+
+private func runAppControllerAXEventHandlerChecks() {
+    let ax = AXUIElementCreateApplication(getpid())
+    var publications = 0, observerReads = 0, enforcerReads = 0, menuCloses = 0
+    let windows = AppControllerWindows<UIElement>(observedWindowIDsChanged: { _ in publications += 1 },
+        menuDidOpen: { preconditionFailure() }, menuDidClose: { menuCloses += 1 })
+    let handler = AppControllerAXEventHandler(application: ax, bundleIdentifier: "owned-check",
+        windows: windows, observer: { observerReads += 1; return nil },
+        focusEnforcer: { enforcerReads += 1; return nil })
+    handler.handle(.windowMoved, element: ax)
+    handler.handle(.windowResized, element: ax)
+    precondition(publications == 2 && observerReads == 0 && enforcerReads == 0)
+    handler.handle(AXNotification("unknown"), element: ax)
+    precondition(publications == 2 && observerReads == 0 && enforcerReads == 0)
+    handler.handle(.uiElementDestroyed, element: ax)
+    precondition(observerReads == 1 && enforcerReads == 1)
+    handler.handle(.menuClosed, element: ax)
+    precondition(menuCloses == 1 && enforcerReads == 2 && observerReads == 1)
 }
