@@ -51,6 +51,14 @@
       "link": true
     }
   ],
+  "valueTypeLabels": [
+    "float",
+    "integer",
+    "boolean",
+    "string",
+    "date",
+    "unknown"
+  ],
   "renderingContext": {
     "descriptor": "0x1012c95ac",
     "flags": [

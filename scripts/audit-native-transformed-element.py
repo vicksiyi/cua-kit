@@ -68,6 +68,13 @@ calls = [branch(0x10075c570, 0x10075e160, False),
          branch(0x10075e0f8, 0x10076589c),
          branch(0x10075e124, 0x10075e160),
          branch(0x10075debC, 0x10065fb6c)]
+value_type_labels = []
+for i in range(6):
+    first = read(0x1011955f8 + i * 8, 8)
+    second = read(0x101195628 + i * 8, 8)
+    assert second[7] & 0xf0 == 0xe0
+    value_type_labels.append((first + second[:7])[:second[7] & 0xf].decode())
+assert value_type_labels == ['float', 'integer', 'boolean', 'string', 'date', 'unknown']
 rendering_descriptor = 0x1012c95ac
 header = struct.unpack('<6I', read(rendering_descriptor, 24))
 assert header[3:5] == (1, 6)
@@ -80,7 +87,7 @@ for i, target in enumerate(rendering_witnesses):
     raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
     assert 0x100000000 + (raw & 0xffffffff) == target
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
-    storedFields=stored, verifiedBranches=calls,
+    storedFields=stored, verifiedBranches=calls, valueTypeLabels=value_type_labels,
     renderingContext=dict(descriptor=hex(rendering_descriptor), flags=rendering_flags,
         requirements=["Role: AccessibilityRole", "Role", "urlShortener.get",
             "urlShortener.set", "urlShortener.modify", "type.get"],

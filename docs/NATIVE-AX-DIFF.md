@@ -4617,3 +4617,26 @@ input. The focused context test passes all 384 constructor/composition cases plu
 a throwing callback case that proves one invocation, unchanged accounting, and
 retained URL state. No live AgentLoop or vendor service was launched. Full node
 construction and production tree collection remain outstanding.
+
+### Cached transformed value classification (2026-11-07)
+
+Restored classifier `0x10075bbf0..<0x10075bffc` in
+`TransformedUIElementValueType.swift`, with a UIElement composition method. The
+local enum's tag order and labels are verified from constructor lookup tables
+`0x1011955f8` / `0x101195628`: float, integer, boolean, string, date, unknown.
+The static audit now checks all six encoded strings against the pinned binary.
+
+Classification inspects cached AXValue only. When it is absent, textField and
+textArea imply string; other roles imply unknown. With a value present, a checkBox
+whose subrole is AXSwitch or AXToggle forces boolean before CF type inspection.
+Other values distinguish CFNumber float/integer, CFBoolean, CFString, CFDate, then
+unknown. Text-field role does not override the CF type of a present value. Role
+and subrole evaluation preserves short circuit and repeated getter reads; the
+second subrole read is not memoized into the first. This classifier does not fetch
+AXValue or change raw UIElement's protocol default for valueTypeName.
+
+Validation: full Swift helper build, provider selftest, and pinned static audit
+pass. Cases cover numeric/boolean identity, string/date/array types, missing values,
+switch/toggle role gating, and a subrole changing between the two reads. This
+completes classification, not value rendering/truncation or node construction;
+those remaining branches still prevent production tree integration.

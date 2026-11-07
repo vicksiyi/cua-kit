@@ -51,6 +51,31 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        func valueType(_ value: AnyObject?, role: UIElementRole = .unknown,
+            subrole: String? = nil) -> TransformedUIElementValueType {
+            transformedUIElementValueType(cachedValue: value, role: { role }, subrole: { subrole })
+        }
+        checkEqual(valueType(NSNumber(value: 7)), .integer)
+        checkEqual(valueType(NSNumber(value: 7.5)), .float)
+        checkEqual(valueType(kCFBooleanTrue), .boolean)
+        checkEqual(valueType("hello" as NSString), .string)
+        checkEqual(valueType(NSDate(timeIntervalSince1970: 0)), .date)
+        checkEqual(valueType([] as NSArray), .unknown)
+        checkEqual(valueType(nil, role: .textField), .string)
+        checkEqual(valueType(nil, role: .textArea), .string)
+        checkEqual(valueType(nil, role: .checkBox, subrole: "AXSwitch"), .unknown)
+        checkEqual(valueType("yes" as NSString, role: .checkBox, subrole: "AXSwitch"), .boolean)
+        checkEqual(valueType("yes" as NSString, role: .checkBox, subrole: "AXToggle"), .boolean)
+        checkEqual(valueType("yes" as NSString, role: .button, subrole: "AXSwitch"), .string)
+        var valueTypeReads: [String] = []
+        let changingSubrole = transformedUIElementValueType(cachedValue: "yes" as NSString,
+            role: { valueTypeReads.append("role"); return .checkBox }, subrole: {
+                valueTypeReads.append("subrole")
+                return valueTypeReads.count == 2 ? "other" : "AXToggle"
+            })
+        checkEqual(changingSubrole, .boolean)
+        checkEqual(valueTypeReads, ["role", "subrole", "subrole"])
+        checkEqual(TransformedUIElementValueType.integer.name, "integer")
         struct RenderingContext: AccessibilityRenderingContext {
             typealias Role = UIElementRole
             let type = UIElementContextType.fullUIContext
