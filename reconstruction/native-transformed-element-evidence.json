@@ -1,4 +1,54 @@
 {
+  "fullAttributedText": {
+    "instructions": {
+      "0x10075ac94": "0x36000458",
+      "0x10075ad20": "0xb4000981",
+      "0x10075ad58": "0xa937d3bf",
+      "0x10075ae24": "0xb4000177",
+      "0x10075ae50": "0xd2800014"
+    },
+    "calls": [
+      {
+        "instruction": "0x10075ac1c",
+        "target": "0x1006f6a60",
+        "link": true
+      },
+      {
+        "instruction": "0x10075ace4",
+        "target": "0x1011537e0",
+        "link": true
+      },
+      {
+        "instruction": "0x10075adbc",
+        "target": "0x10076589c",
+        "link": true
+      },
+      {
+        "instruction": "0x10075ae08",
+        "target": "0x10075c79c",
+        "link": true
+      },
+      {
+        "instruction": "0x10075ae34",
+        "target": "0x10075b620",
+        "link": true
+      },
+      {
+        "instruction": "0x10075ad28",
+        "target": "0x101150af8",
+        "link": true
+      },
+      {
+        "instruction": "0x10075ad6c",
+        "target": "0x10075c780",
+        "link": true
+      }
+    ],
+    "options": "construct UIElement using current transaction, read AXTextMarkerRangeForUIElement, strict marker decode, direct WithOptions read without second support probe",
+    "fallback": "captured value nil -> nil; otherwise AXAttributedStringForRange with CFRange(0, value.utf16.count)",
+    "lengthImport": "0x101150af8 -> GOT 0x101466458 -> libswiftCore String.UTF16View.count",
+    "integration": "concrete TransformedUIElement.fullAttributedText uses existing provider constructor and AX reads; formatter and complete pipeline pending"
+  },
   "attributedRangeReader": {
     "instructions": {
       "0x10075af78": "0x360000f8",

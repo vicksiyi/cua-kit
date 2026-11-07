@@ -5820,3 +5820,36 @@ or errors. Special-object/type-mismatch decoding is also covered. No system AX
 read, vendor launch or external app operation is needed for these tests.
 This completes the concrete marker-range read helper, not the full-text
 selection helper or attributed-run renderer; final pipeline integration remains.
+
+### Full attributed-text range selection
+
+Recovered `0x10075abf4` into uiElementFullAttributedText and the concrete
+TransformedUIElement.fullAttributedText adapter. It reads parameterized support
+before inspecting captured value. When the WithOptions attribute is supported,
+it constructs UIElement from the original AX identity using the existing
+current-transaction-aware constructor, passes that element through the dynamic
+encoder to AXTextMarkerRangeForUIElement, strictly decodes UITextMarkerRange,
+and calls the shared options reader directly. There is no second support
+query and no fallback when marker lookup returns nil or throws.
+
+Without WithOptions support, nil captured value returns nil; any present value,
+including empty, is read via AXAttributedStringForRange with CFRange(location:0,
+length:value.utf16.count). The count call at `0x10075ad28` targets stub
+0x101150af8, whose GOT 0x101466458 resolves to String.UTF16View.count, so replacing
+it with String.count would truncate Unicode text. The original generic encoder
+uses CFRange. The previously extracted outer text-area NSRange seam already
+normalizes NSNotFound to -1; a production range adapter must convert it to
+CFRange before encoding rather than bridging NSRange as an ordinary object.
+
+AXMarkerRangeDecoding restores the concrete specialization at 0x100715324,
+using the existing outer CF dispatch and strict decoding semantics. The options
+dictionary reader is now shared by both full and marker-range paths without
+changing their support-query count.
+
+Validation: pinned audit, Swift build and provider-click self-test pass. Added
+fixtures verify a three-grapheme/five-UTF16-unit string, empty/nil values,
+capability-before-value ordering, lazy element construction, encoded identity,
+marker nil/type/provider failures and exactly one capability query. The helper
+uses existing initializer/transport production components; tests inject the
+constructor and reads to avoid external app operations. The native rich-text
+formatter and complete transform/collector integration remain unfinished.

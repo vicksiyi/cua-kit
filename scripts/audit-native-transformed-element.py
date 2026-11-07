@@ -572,7 +572,25 @@ range_reader_calls = [branch(site, target) for site, target in [
 ]]
 assert cstring(0x101256f30) == 'AXTextMarkerRange'
 
-print(json.dumps(dict(attributedRangeReader=dict(
+# Full attributed text: capability branch and UTF-16 fallback.
+full_text_words = {0x10075ac94: 0x36000458, 0x10075ad20: 0xb4000981,
+                   0x10075ad58: 0xa937d3bf, 0x10075ae24: 0xb4000177,
+                   0x10075ae50: 0xd2800014}
+for address, word in full_text_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+full_text_calls = [branch(site, target) for site, target in [
+    (0x10075ac1c, 0x1006f6a60), (0x10075ace4, 0x1011537e0),
+    (0x10075adbc, 0x10076589c), (0x10075ae08, 0x10075c79c),
+    (0x10075ae34, 0x10075b620), (0x10075ad28, 0x101150af8),
+    (0x10075ad6c, 0x10075c780),
+]]
+
+print(json.dumps(dict(fullAttributedText=dict(
+    instructions={hex(k): hex(v) for k, v in full_text_words.items()}, calls=full_text_calls,
+    options="construct UIElement using current transaction, read AXTextMarkerRangeForUIElement, strict marker decode, direct WithOptions read without second support probe",
+    fallback="captured value nil -> nil; otherwise AXAttributedStringForRange with CFRange(0, value.utf16.count)",
+    lengthImport="0x101150af8 -> GOT 0x101466458 -> libswiftCore String.UTF16View.count",
+    integration="concrete TransformedUIElement.fullAttributedText uses existing provider constructor and AX reads; formatter and complete pipeline pending"), attributedRangeReader=dict(
     instructions={hex(k): hex(v) for k, v in range_reader_words.items()}, calls=range_reader_calls,
     selection="fresh supportedParameterizedAttributes chooses WithOptions, otherwise plain marker range",
     options={"AXTextMarkerRange": "raw CF marker range", "AXSpellCheck": False},

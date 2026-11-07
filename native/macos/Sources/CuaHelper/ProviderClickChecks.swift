@@ -1892,6 +1892,67 @@ private enum ProviderClickChecks {
         ownerProvider.parameterSupport = nil
         ownerProvider.parameterRead = nil
 
+        var fullTextCalls: [String] = []
+        var fullTextOptions = false
+        var fullTextMarkerMissing = false
+        var fullTextMarkerWrongType = false
+        var fullTextReadThrows = false
+        var capturedFullValue: String? = "A😀e\u{301}"
+        func fullTextResult() throws -> NSAttributedString? {
+            try uiElementFullAttributedText(capturedValue: capturedFullValue,
+                supportedParameterizedAttributes: {
+                    fullTextCalls.append("support")
+                    return fullTextOptions ? [optionsAttribute] : []
+                }, makeElement: { fullTextCalls.append("construct"); return capturedOwner.element },
+                read: { attribute, encoded in
+                    fullTextCalls.append(attribute.name as String)
+                    if fullTextReadThrows { throw UIElementError.axError(.failure) }
+                    if attribute == UIElementAttribute("AXTextMarkerRangeForUIElement") {
+                        checkTrue(CFEqual(encoded.value as! AXUIElement, capturedOwner.axElement))
+                        if fullTextMarkerWrongType { return partial("wrong" as NSString) }
+                        return fullTextMarkerMissing ? nil : partial(attributedRange.range)
+                    }
+                    if attribute == optionsAttribute {
+                        let options = encoded.value as! NSDictionary
+                        checkTrue(CFEqual(options["AXTextMarkerRange"] as! AXTextMarkerRange, attributedRange.range))
+                        checkFalse((options["AXSpellCheck"] as! NSNumber).boolValue)
+                    } else {
+                        checkTrue(attribute == UIElementAttribute("AXAttributedStringForRange"))
+                        var range = CFRange()
+                        checkTrue(AXValueGetValue(encoded.value as! AXValue, .cfRange, &range))
+                        checkEqual(range.location, 0)
+                        checkEqual(range.length, capturedFullValue!.utf16.count)
+                    }
+                    return partial(richText)
+                })
+        }
+        checkEqual(capturedFullValue!.count, 3)
+        checkEqual(capturedFullValue!.utf16.count, 5)
+        checkTrue(try fullTextResult() === richText)
+        checkEqual(fullTextCalls, ["support", "AXAttributedStringForRange"])
+        capturedFullValue = nil; fullTextCalls = []
+        checkTrue(try fullTextResult() == nil)
+        checkEqual(fullTextCalls, ["support"])
+        capturedFullValue = ""; fullTextCalls = []
+        checkTrue(try fullTextResult() === richText)
+        checkEqual(fullTextCalls, ["support", "AXAttributedStringForRange"])
+        fullTextOptions = true; capturedFullValue = nil; fullTextCalls = []
+        checkTrue(try fullTextResult() === richText)
+        checkEqual(fullTextCalls, ["support", "construct", "AXTextMarkerRangeForUIElement", "AXAttributedStringForTextMarkerRangeWithOptions"])
+        fullTextMarkerMissing = true; fullTextCalls = []
+        checkTrue(try fullTextResult() == nil)
+        checkEqual(fullTextCalls, ["support", "construct", "AXTextMarkerRangeForUIElement"])
+        fullTextMarkerMissing = false; fullTextMarkerWrongType = true; fullTextCalls = []
+        do {
+            _ = try fullTextResult(); unexpectedFailure("invalid marker range must throw")
+        } catch UIElementError.failedToUnwrapAttributeValue { }
+        checkEqual(fullTextCalls, ["support", "construct", "AXTextMarkerRangeForUIElement"])
+        fullTextMarkerWrongType = false; fullTextReadThrows = true; fullTextCalls = []
+        do {
+            _ = try fullTextResult(); unexpectedFailure("full-text provider failure must propagate")
+        } catch UIElementError.axError(let error) { checkTrue(error == .failure) }
+        checkEqual(fullTextCalls, ["support", "construct", "AXTextMarkerRangeForUIElement"])
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
