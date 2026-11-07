@@ -94,6 +94,10 @@ for address, expected_word in {
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',
  descriptor='0x1012cc520',classBound=True,requirements=entries),
+ readThreadPID=dict(helper='0x1006fa0d4',actualPIDCall='0x1006fa138',
+ machineCodeSHA256=hashlib.sha256(read(0x1006fa0d4,0x1006fa28c-0x1006fa0d4)).hexdigest(),
+ failure='report error through os.Logger then return nil; no public PID fallback',
+ selection='getpid first; actualPID second; main-thread check only when target equals own PID; synchronous main dispatch only off-main'),
  arraySubsetSystem=dict(entry='0x1006f63ec',endExclusive='0x1006f6648',
  machineCodeSHA256=hashlib.sha256(read(0x1006f63ec,0x1006f6648-0x1006f63ec)).hexdigest(),
  knownCount='skip count query; forward signed count unchanged',

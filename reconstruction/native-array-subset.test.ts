@@ -19,6 +19,7 @@ test(
       await exec("xcrun", [
         "swiftc",
         "-o", executable,
+        join(root, "native/macos/Sources/CuaHelper/AXReadThreadDispatch.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXAttributeReading.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXProcessID.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementError.swift"),

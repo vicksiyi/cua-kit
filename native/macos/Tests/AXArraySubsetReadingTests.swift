@@ -2,7 +2,34 @@ import ApplicationServices
 import Foundation
 
 @main struct Test {
+    enum Failure: Error { case expected }
+    static func checkDispatch() {
+        for target: Int32? in [nil, 50, 51] {
+            for main in [true, false] {
+                var events: [String] = []
+                let value: Int = dispatchAXRead(currentPID: { events.append("own"); return 50 },
+                    readActualPID: { events.append("actual"); guard let target else { throw Failure.expected }; return target },
+                    reportError: { error in guard case Failure.expected = error else { preconditionFailure() }; events.append("error") },
+                    isMainThread: { events.append("thread"); return main },
+                    onMain: { work in events.append("dispatch"); return work() },
+                    read: { events.append("copy"); return 19 })
+                var expected = ["own", "actual"]
+                if target == nil { expected.append("error") }
+                if target == 50 { expected.append("thread"); if !main { expected.append("dispatch") } }
+                expected.append("copy")
+                precondition(value == 19 && events == expected)
+            }
+        }
+        // Count failure must occur before even determining a copy thread.
+        _ = copiedAXArraySubset(index: 0, maxValues: 2, countIfKnown: nil,
+            readCount: { (.failure, 0) }, copy: { _, _, _ in
+                dispatchAXRead(currentPID: { preconditionFailure() }, readActualPID: { preconditionFailure() },
+                    reportError: { _ in preconditionFailure() }, isMainThread: { preconditionFailure() },
+                    onMain: { _ in preconditionFailure() }, read: { preconditionFailure() })
+            })
+    }
     static func main() {
+        checkDispatch()
         var countReads = 0, copyReads = 0
         let array = ["a", "b"] as CFArray
         let partial = copiedAXArraySubset(index: 3, maxValues: 2, countIfKnown: nil,

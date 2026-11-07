@@ -3769,6 +3769,33 @@ AXArraySubsetReading.swift implements this flow with injected count and copy
 boundaries. It deliberately does not pretend the still-pending provider-aware
 thread dispatch is complete. Tests cover lazy count queries, three failing count
 statuses, output plus copy failure, nil output with success/failure, known negative
-and zero counts, duplicate/unchanged ranges and raw CFArray identity. The first
+and zero counts, offset/empty ranges and raw CFArray identity. The first
 fixture compile exposed missing dependency declarations, which were added; the
 focused test and full Swift build now pass. No real AX read was executed.
+
+### Provider-aware actualPID thread routing and array system adapter
+
+The optional PID helper 0x1006fa0d4 was traced end-to-end. Its call at
+0x1006fa138 targets the throwing actualPID getter, not public pid. On error it
+reports through os.Logger (opaque native log identifier 83e5307932ae753eb27e)
+and returns nil; it does not substitute public AXUIElementGetPid. Array copying
+calls getpid before that helper, checks Thread.isMainThread only for matching
+known PIDs, and synchronously dispatches to main only when needed.
+
+AXReadThreadDispatch.swift restores the query/report/nil and routing sequence
+with explicit dependencies. Error reporting remains a required callback rather
+than an invented no-op logger default. A synchronous withoutActuallyEscaping
+scope satisfies Swift's higher-order closure exclusivity rules without allowing
+read work to escape or become asynchronous.
+AXArraySubsetSystem.swift connects provider-aware array count and subset entry
+points to their actual system calls, using readAXActualProcessID for dispatch.
+The subset's count query re-enters the provider-aware count front door; a known
+count skips it. A failed count terminates before copy-thread determination.
+
+The fixture covers every known-same/different/failed-PID and main/off-main
+combination, lazy main-thread checks, error callback ordering, result forwarding
+and count-failure early exit. The focused test and full Swift build pass after
+resolving closure lifetime/type-inference compile errors. DispatchQueue/AX calls
+are compiled but not exercised against a real app. Other system adapters still
+use their explicit older PID route and need corresponding integration; native
+logger factory parity and full production protocol/collector remain outstanding.

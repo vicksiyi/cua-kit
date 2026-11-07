@@ -140,6 +140,13 @@
       }
     ]
   },
+  "readThreadPID": {
+    "helper": "0x1006fa0d4",
+    "actualPIDCall": "0x1006fa138",
+    "machineCodeSHA256": "f47cde303cd11f51060b1971b7e9f8dd4d8675d7dc90740a0f42fbbb4b4c205b",
+    "failure": "report error through os.Logger then return nil; no public PID fallback",
+    "selection": "getpid first; actualPID second; main-thread check only when target equals own PID; synchronous main dispatch only off-main"
+  },
   "arraySubsetSystem": {
     "entry": "0x1006f63ec",
     "endExclusive": "0x1006f6648",
