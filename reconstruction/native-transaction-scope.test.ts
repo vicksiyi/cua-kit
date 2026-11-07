@@ -45,6 +45,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/UIElementActionDescription.swift"),
         join(root, "native/macos/Sources/CuaHelper/FrequencyTable.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementTreeTransaction.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementScopedConstruction.swift"),
         join(root, "native/macos/Tests/UIElementTreeTransactionTests.swift"),
       ]);
       const { stdout } = await exec(executable);

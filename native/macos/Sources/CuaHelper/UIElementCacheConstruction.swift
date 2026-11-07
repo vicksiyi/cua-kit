@@ -61,7 +61,7 @@ func constructSystemUIElementCache(element: AXUIElement, transaction: UIElementT
 extension UIElement {
     // Original init(element:) resolves the current transaction once, then builds
     // its cache while retaining the original AX reference (0x10072187c).
-    // Transaction acquisition stays injected until its full TaskLocal owner is restored.
+    // The scoped overload supplies TaskLocal acquisition; this seam also permits isolated tests.
     init(
         element: AXUIElement,
         readTransaction: () -> UIElementTransactionCache?,

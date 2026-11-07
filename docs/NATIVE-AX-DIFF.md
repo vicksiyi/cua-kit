@@ -3501,3 +3501,21 @@ and disabled subtree construction still need to assemble the root using the
 source-compatible concrete initializer and connect hierarchy selection, role
 frequency creation and the cache. Existing production explicit transaction:nil
 call sites remain unchanged until that construction/provider path is ready.
+
+### Concrete element construction reads the scoped transaction
+
+`UIElementScopedConstruction.swift` now supplies the actual TaskLocal lookup to
+concrete UIElement construction. This follows the audited 0x10072187c flow:
+read current once, select its cache or nil, then construct the element cache
+while retaining the supplied AX reference. Provider-dependent cache construction
+remains an explicit closure; this does not falsely identify the system-only
+reader as the original MockProvider dispatcher or claim full protocol conformance.
+
+The transaction fixture now constructs concrete UIElements through the restored
+cache algorithm. It verifies no fallback sharing outside a transaction, reuse
+inside a transaction, independent nested transaction caches, restoration of the
+outer cache, and snapshot selection before a constructor enters another scope.
+Both the scope and cache-construction tests pass, as does the Swift package build.
+No model requests, native UI reads, vendor execution or policy changes occurred.
+Production traversal and the subtree constructor still await the provider and
+concrete protocol integration described above.

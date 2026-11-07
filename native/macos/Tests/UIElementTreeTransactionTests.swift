@@ -37,7 +37,48 @@ import os
             cache: UIElementTransactionCache(attributeTable: [:], requestedAttributes: [],
                 fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: frequencies)
     }
+    static func checkScopedConstruction() {
+        let ax = AXUIElementCreateApplication(11002)
+        let first = transaction(11003), second = transaction(11004)
+        var reads = 0
+        func construct() -> UIElement {
+            UIElement(element: ax) { element, snapshot in
+                constructUIElementCache(element: element, transaction: snapshot,
+                    readSupported: { reads += 1; return [] },
+                    bundleIdentifier: { preconditionFailure("empty support cannot query bundle") },
+                    readValues: { _ in preconditionFailure("empty support cannot read values") })
+            }
+        }
+        _ = construct(); _ = construct()
+        precondition(reads == 2) // Outside a transaction there is no shared fallback.
+        first.perform { _ in
+            let firstElement = construct()
+            precondition(CFEqual(firstElement.axElement, ax) && reads == 3)
+            _ = construct(); precondition(reads == 3)
+            second.perform { _ in
+                _ = construct(); precondition(reads == 4)
+                _ = construct(); precondition(reads == 4)
+            }
+            _ = construct(); precondition(reads == 4)
+            // Reading the owner precedes cache construction. A nested scope in
+            // the constructor must not change the snapshot already selected.
+            _ = UIElement(element: ax) { element, snapshot in
+                second.perform { _ in
+                    precondition(fallbackUIElementCache(element: element, in: snapshot!.fallbackElements) != nil)
+                    let other = AXUIElementCreateApplication(11005)
+                    storeFallbackUIElementCache(element: other, supportedAttributes: [],
+                        attributes: [:], in: snapshot!.fallbackElements)
+                    precondition(fallbackUIElementCache(element: other, in: first.cache.fallbackElements) != nil)
+                    precondition(fallbackUIElementCache(element: other, in: second.cache.fallbackElements) == nil)
+                }
+                return firstElement.cache
+            }
+        }
+        _ = construct(); precondition(reads == 5)
+        precondition(UIElementTreeTransaction.current == nil)
+    }
     static func main() throws {
+        checkScopedConstruction()
         let outer = transaction(11000), inner = transaction(11001)
         precondition(UIElementTreeTransaction.current == nil && UIElementTreeTransaction.prefetchEnabled)
         let value = outer.perform { element in
