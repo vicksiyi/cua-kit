@@ -51,6 +51,25 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        // Source role exceptions: selection alone makes static text interactive,
+        // but does not make a group or text area interactive.
+        for focusable in [false, true] {
+            for selectable in [false, true] {
+                checkEqual(transformedUIElementCanBeUserInteractive(role: .staticText,
+                    isFocusable: focusable, isSelectable: selectable), focusable || selectable)
+                for role: UIElementRole in [.group, .textArea] {
+                    checkEqual(transformedUIElementCanBeUserInteractive(role: role,
+                        isFocusable: focusable, isSelectable: selectable), focusable)
+                }
+                checkTrue(transformedUIElementCanBeUserInteractive(role: .button,
+                    isFocusable: focusable, isSelectable: selectable))
+            }
+        }
+        checkFalse(transformedUIElementHasInterestingActions(nil))
+        checkFalse(transformedUIElementHasInterestingActions([]))
+        checkFalse(transformedUIElementHasInterestingActions([.showMenu, .scrollToVisible, .showMenu]))
+        checkTrue(transformedUIElementHasInterestingActions([.showMenu, .press]))
+        checkTrue(transformedUIElementHasInterestingActions([UIElementAction("custom")]))
         let appAX = AXUIElementCreateApplication(12501), targetAX = AXUIElementCreateApplication(12502)
         let provider = Provider(app: appAX)
         AXMockProviderStorage.current = provider

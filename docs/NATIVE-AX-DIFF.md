@@ -4420,3 +4420,25 @@ identity, absent focus and multiple roots. The higher-level transformed-tree
 focusTree(context:) beginning at 0x100766958 is a distinct, still-incomplete
 selection/transformation pipeline. No real UI/model request occurred and this
 change does not switch the standalone observation renderer.
+
+### Transformed node interactivity predicates (2026-11-07)
+
+Static inspection of pinned SkyComputerUseService SHA256
+`b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862`
+restored three extracted Swift predicates in `TransformedUIElementInteractivity.swift`:
+
+- `0x100760f2c`: focusable OR selectable. Getter bodies at `0x10075d4d0`
+  and `0x10075d5c0` identify metadata field offsets 0x54 and 0x5c.
+- `0x100760f64` through helper `0x100761078`: actions are interesting unless
+  all are members of `{scrollToVisible, showMenu}`. Nil/empty lists return false;
+  unknown actions count, duplicates do not alter membership. Constants are mutable
+  source statics, read on every invocation.
+- `0x1007611cc`: static text requires focusable OR selectable; text area and group
+  require focusable; every other role returns true. It does not inspect enabled
+  state or action availability, and does not itself authorize an action.
+
+Validation: full Swift helper builds and owned provider selftest passes, including
+all focus/selection combinations for the exceptional roles, a default-role case,
+and nil/empty/excluded/mixed/unknown action cases. Vendor executable was inspected
+statically, not launched. These predicates await the full TransformedUIElement
+owner and tree transformation integration; this is not production UI acceptance.
