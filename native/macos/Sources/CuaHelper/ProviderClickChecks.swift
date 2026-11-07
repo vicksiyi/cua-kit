@@ -3721,6 +3721,7 @@ func runProviderClickChecks() async throws {
     runMenuDismissalSuppressionChecks()
     try runSyntheticAppFocusEnforcerLifecycleChecks()
     try await runSyntheticFocusSafeActivationBranchChecks()
+    runSafeActivationSavedWindowChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5528,4 +5529,29 @@ private func runSyntheticFocusSafeActivationBranchChecks() async throws {
     trace = []; captured = Application(pid: 77, capture: 123); failRestore = true
     do { try await run(); unexpectedFailure() } catch Failure.restoring {} catch { unexpectedFailure() }
     checkEqual(trace, ["capture", "pid", "restore-77"])
+}
+
+private func runSafeActivationSavedWindowChecks() {
+    final class Window {}
+    enum Failure: Error { case missingID }
+    var window: Window? = nil
+    var reads = 0
+    let absent: SafeActivationSavedWindow<Window> = captureSafeActivationSavedWindow(focusedWindow: {
+        reads += 1; return nil
+    }, windowID: { _ in unexpectedFailure() })
+    checkEqual(reads, 1); checkTrue(absent.window == nil); checkTrue(absent.id == nil)
+    window = Window()
+    weak var lifetime = window
+    var failed: SafeActivationSavedWindow<Window>? = captureSafeActivationSavedWindow(focusedWindow: {
+        reads += 1; return window
+    }, windowID: { seen in checkTrue(seen === window); throw Failure.missingID })
+    window = nil
+    checkTrue(failed?.window != nil); checkTrue(failed?.id == nil)
+    checkTrue(lifetime != nil) // retained for possible later AXRaise, despite failed ID
+    failed = nil; checkTrue(lifetime == nil)
+    let valid = Window()
+    for id in [UInt32(0), UInt32.max] {
+        let saved = captureSafeActivationSavedWindow(focusedWindow: { valid }, windowID: { _ in id })
+        checkTrue(saved.window === valid); checkEqual(saved.id, id)
+    }
 }

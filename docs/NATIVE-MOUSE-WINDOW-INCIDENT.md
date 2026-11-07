@@ -1402,3 +1402,23 @@ Swift build and provider-click checks pass. Added tests assert single capture,
 PID query skipping for nil, direct/restoration error propagation, no cross-branch
 fallback, and retention of the original saved application across later changes.
 This is dependency-injected validation, not real focus restoration or clicking.
+
+
+## Saved foreground application's focused-window capture
+
+Static source 0x100741b60..0x100741cc8 captures the focused window once,
+retains its AX wrapper and tries its WindowServer ID. Missing focused window
+skips the ID read. A throwing ID lookup is discarded and produces nil ID while
+the AX window reference remains retained. Zero remains a valid UInt32 ID.
+There is no fallback to any other visible window. SafeActivationSavedWindow
+implements this payload and systemSafeActivationSavedWindow reuses AX provider
+windowID, transaction-aware UIElement element-value decoding and AXFocusedWindow.
+The source getter at 0x100718904 is pinned separately. Concrete restoration
+driver capture and production input integration are still pending.
+
+Tests exercise missing focus, skipped ID reads, failed ID retention/release,
+and successful zero/max IDs without querying or changing actual window state.
+
+The captured payload also feeds systemSafeActivationWindowOrder, reusing the
+existing on-screen window ordering check and AXRaise. Swift build, provider-click
+self-test and static callsite audit pass; no live raise was performed.
