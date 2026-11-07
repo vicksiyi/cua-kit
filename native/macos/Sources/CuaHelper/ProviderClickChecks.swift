@@ -51,6 +51,26 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        checkEqual(transformedUIElementString(in: NSRange(location: 1, length: 2), from: "abcd",
+            readStringForRange: { _ in unexpectedFailure() }), "bc")
+        // A UTF-16 range fitting the local text can still use AX because the
+        // original first compares its end against grapheme count, not UTF-16.
+        var rangeReads = 0
+        checkEqual(transformedUIElementString(in: NSRange(location: 0, length: 2), from: "🙂") {
+            checkEqual($0.location, 0); checkEqual($0.length, 2)
+            rangeReads += 1
+            return "provider"
+        }, "provider")
+        checkEqual(rangeReads, 1)
+        checkEqual(transformedUIElementString(in: NSRange(location: 1, length: 0), from: "🙂",
+            readStringForRange: { _ in unexpectedFailure() }), "")
+        checkEqual(transformedUIElementString(in: NSRange(location: NSNotFound, length: 0), from: "") {
+            checkEqual($0.location, -1); checkEqual($0.length, 0)
+            return nil
+        }, "")
+        checkEqual(transformedUIElementString(in: NSRange(location: 0, length: 20), from: "short") {
+            _ in throw UIElementError.axError(.failure)
+        }, "")
         func valueType(_ value: AnyObject?, role: UIElementRole = .unknown,
             subrole: String? = nil) -> TransformedUIElementValueType {
             transformedUIElementValueType(cachedValue: value, role: { role }, subrole: { subrole })

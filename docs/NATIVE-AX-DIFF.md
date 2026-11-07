@@ -4640,3 +4640,34 @@ pass. Cases cover numeric/boolean identity, string/date/array types, missing val
 switch/toggle role gating, and a subrole changing between the two reads. This
 completes classification, not value rendering/truncation or node construction;
 those remaining branches still prevent production tree integration.
+
+### Transformed string range extraction (2026-11-07)
+
+Restored range helper `0x100763000..<0x100763150` and concrete UIElement composition
+in `TransformedUIElementStringRange.swift`. It uses checked location+length
+arithmetic, then compares the result with Swift String.count. When the end exceeds
+that count it requests AXStringForRange with a CFRange (NSNotFound maps to -1),
+strictly decodes the result, and returns empty text for nil/error. Otherwise it
+uses Foundation Range(NSRange, in: text) and returns the local substring or empty
+text for a nil conversion. The source deliberately mixes grapheme-count bounds
+with UTF-16 range conversion; the reconstruction preserves this, including emoji
+ranges that cause a provider read despite fitting the local UTF-16 buffer.
+
+Imported-call evidence: stub `0x1011509b4` binds to String.count at GOT
+`0x101466370`; `0x1011516e0` binds to Foundation Range(NSRange,in:) at
+`0x101463868`; `0x10114dda4` binds to NSNotFound at `0x1014624e8`. Remote helper
+`0x100762ebc` uses the existing dynamic AX encoder, parameterizedValue and strict
+String decoder. No unverified alternate substring algorithm was introduced.
+
+Validation: full helper build and provider selftest pass for local ASCII slicing,
+emoji-triggered provider reads, invalid UTF-16 boundaries, NSNotFound encoding,
+and provider errors/nil. An exploratory negative-location case trapped inside
+Foundation StringUTF16View; it was removed from the successful-return cases, and
+no guard that changes the source behavior was introduced. As with source checked
+arithmetic, invalid caller ranges can trap; this helper is not an input validator.
+
+Follow-up construction evidence resolves the earlier initial-false uncertainty:
+`0x10075f130..0x10075f13c` writes the computed writable flag into isValueSettable;
+`0x10075f26c..0x10075f278` clears it when a truncation range is present. Initial false
+therefore must NOT be used as the whole implementation. Full truncation policy,
+value rendering and the transformed owner remain pending.
