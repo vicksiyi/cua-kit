@@ -16,3 +16,18 @@ struct MenuBarItemUIElement: UIElementProtocol {
         self.axElement = axElement; self.cache = cache
     }
 }
+
+extension MenuBarItemUIElement {
+    // 0x100722ae0: take only the first direct child, then decode that child's
+    // AXChildren as MenuItemUIElement. No role filter or sibling traversal.
+    var items: [MenuItemUIElement] {
+        itemsValue(reportError: reportAttributeReadError)
+    }
+    func itemsValue(reportError: (Error) -> Void,
+        reportChildError: (UIElement, Error) -> Void = { $0.reportAttributeReadError($1) }
+    ) -> [MenuItemUIElement] {
+        guard let menu = childrenValue(reportError: reportError).first else { return [] }
+        return menu.elementCollectionValue(for: UIElementAttribute(kAXChildrenAttribute),
+            as: MenuItemUIElement.self, reportError: { reportChildError(menu, $0) })
+    }
+}

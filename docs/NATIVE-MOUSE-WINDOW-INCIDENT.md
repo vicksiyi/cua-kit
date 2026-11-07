@@ -3068,3 +3068,33 @@ items/copyItem/useSelectionForFindItem and the controller logic that discovers
 and sets the focused menu-bar item still require separate source recovery.
 No evidence ties this storage difference to the user's previous click failure.
 The current locked desktop still prevents full-owner/live clicking acceptance.
+
+
+## Menu-bar item child collection recovery (2026-11-08)
+
+Static items getter 0x100722ae0 calls the shared UIElement child-array reader at
+0x100724514, checks count and takes only the first direct child (0x100722bb0..bc4).
+It then reads that child's AXChildren and decodes MenuItemUIElement arrays;
+cached decode uses strict=false (0x100722c48), fresh decode strict=true
+(0x100722d6c), with failures logged through UIElement's logger and empty output.
+There is no sibling traversal, recursive search or role filtering after decode.
+
+MenuItemUIElement's storage initializer shares 0x100721e3c; its static role
+initializer 0x100721db8 loads .menuItem. The new Swift wrapper retains the AX
+reference and provider/transaction cache, with shared inherited protocol behavior.
+MenuBarItemUIElement.items now follows the recovered two-level lookup. The
+existing collection decoder/reader is generalized over the output wrapper type;
+UIElement callers keep their previous signatures and default target. CF kind
+checks, cached empty hits, per-element compact mapping, strict outer conversion,
+ignored AX statuses and failure reporting remain in the same shared functions.
+First-level reporting uses MenuBarItem's logger; second-level reporting uses the
+first child's UIElement logger as in the pinned instructions.
+
+Transaction-backed checks cover duplicate child items, preserved output cache,
+exact first-child selection despite a populated second sibling, empty first menu,
+and absent menu. They use only cached synthetic AX references and send no input.
+Static audit pins the first-child extraction, strict decode call and MenuItem role
+initialization. This does not restore copyItem/useSelectionForFindItem or controller
+focused-item discovery, nor prove real application clicking.
+
+Swift build, provider composition checks and the pinned static audit pass after this recovery.

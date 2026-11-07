@@ -4,11 +4,17 @@ extension UIElementProtocol {
     func elementCollectionValue(for attribute: UIElementAttribute,
         reportError: (Error) -> Void
     ) -> [UIElement] {
+        elementCollectionValue(for: attribute, as: UIElement.self, reportError: reportError)
+    }
+
+    func elementCollectionValue<Element: UIElementProtocol>(for attribute: UIElementAttribute,
+        as type: Element.Type, reportError: (Error) -> Void
+    ) -> [Element] {
         elementCollectionValue(for: attribute,
             read: { axElement.value(for: attribute) },
             decode: { partial, strict in
                 try decodeUIElementArray(partial.value.value, throwingOnFailure: strict) {
-                    UIElement(element: $0)
+                    Element(element: $0)
                 }
             }, reportError: reportError)
     }

@@ -5,12 +5,12 @@ extension UIElementProtocol {
     // Cached decoding suppresses errors; uncached decoding is strict, reports
     // errors once, and yields [] on absent/failed results. An empty cached array
     // is a hit. The decoder boundary retains full AXPartialValue descriptors.
-    func elementCollectionValue(
+    func elementCollectionValue<Element>(
         for attribute: UIElementAttribute,
         read: () -> (error: AXError, value: AXPartialValue?),
-        decode: (AXPartialValue, Bool) throws -> [UIElement]?,
+        decode: (AXPartialValue, Bool) throws -> [Element]?,
         reportError: (Error) -> Void
-    ) -> [UIElement] {
+    ) -> [Element] {
         if let partial = cache.attributes[attribute],
            let cached = try? decode(partial, false) { return cached }
         return uiElementUncachedValue(operation: {

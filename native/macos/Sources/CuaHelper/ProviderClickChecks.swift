@@ -7501,6 +7501,33 @@ private func runWindowWrapperStorageChecks() {
         precondition(WindowUIElement.role == .window && SheetUIElement.role == .sheet && MenuUIElement.role == .menu)
     }
     precondition(UIElementTreeTransaction.current == nil)
+    let first = AXUIElementCreateApplication(1)
+    let second = AXUIElementCreateApplication(2)
+    let item = AXUIElementCreateSystemWide()
+    let children = UIElementAttribute(kAXChildrenAttribute)
+    func partial(_ values: [AnyObject]) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: values as NSArray),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    for (roots, nested, expected) in [
+        ([first, second], [item, item], 2),
+        ([first, second], [], 0),
+        ([], [item], 0)
+    ] {
+        let table: [AXUIElement: [UIElementAttribute: AXPartialValue]] = [
+            ax: [children: partial(roots)], first: [children: partial(nested)],
+            second: [children: partial([second])], item: [:]]
+        let scope = UIElementTreeTransaction(element: root,
+            cache: UIElementTransactionCache(attributeTable: table, requestedAttributes: [children],
+                fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable<UIElementRole>())
+        scope.perform { _ in
+            let results = MenuBarItemUIElement(element: ax).itemsValue(reportError: { _ in preconditionFailure() })
+            precondition(results.count == expected)
+            precondition(results.allSatisfy { $0.id == item && $0.cache.transactionAttributes == [children] })
+            precondition(MenuItemUIElement.role == .menuItem)
+        }
+    }
 }
 
 private func runAppControllerWindowEventDispatchChecks() {

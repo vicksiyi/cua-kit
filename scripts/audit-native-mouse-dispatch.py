@@ -536,6 +536,13 @@ assert 0x100724de0 + wrapper_offset * 4 == 0x100721e3c
 # the optional role at 0x1015ca7c8. Pin both ADRP+ADD pairs.
 assert read(0x1007229d4, 16).hex() == '4275009042403a914375009063201f91'
 
+# Menu-bar items read the first direct child (offsets 0x20..0x38 of
+# the UIElement array), then strictly decode that child's AXChildren.
+assert read(0x100722bb0, 20).hex() == '080840f9880600b4bc0315f8136042a9176843a9'
+assert read(0x100722d6c, 12).hex() == '20008052e10313aa2bc4ff97'
+# MenuItem's static .menuItem role and shared initialization path.
+assert read(0x100721db8, 36).hex() == '617200f021602b91427500b042803a91437500b063001f91c40400b084f00f9106030014'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101
