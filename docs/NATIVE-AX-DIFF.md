@@ -6655,3 +6655,21 @@ Build, owned provider tests and static route audit passed.
 The generic description is callable on AccessibilityNode fixtures. Wiring the
 LMReadableElement witness/render-tree entry and production collector remains
 pending. No live browser/app workflow was executed in these checks.
+
+
+### LMReadableElement protocol route (2026-11-07)
+
+Restored LMReadableElement's single throwing lmReadableDescription(for: inout
+UIElementTransformationContext) requirement and TransformedUIElement witness,
+which invokes generic node description just as 0x10075c574/0x1007627f0 do.
+The render(with:) overload at 0x10076ad18 retains both native constraints:
+LMReadableElement and UIElementProtocol. Its callback invokes witness slot +8.
+
+A captured transformed-node fixture now travels through a protocol existential,
+then the generic tree renderer via the readable method, retaining source path,
+leaving IDs unallocated until setElementIDs, and producing the expected line
+with role, disabled state and title. Build, provider checks and static audit pass.
+The constrained convenience overload compiles but is not yet exercised with
+TransformedUIElement because that type's complete UIElementProtocol conformance
+is still pending. Constraints were not weakened to conceal that missing work.
+Production observation and actual application acceptance remain incomplete.

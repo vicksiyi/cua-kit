@@ -2999,6 +2999,17 @@ private enum ProviderClickChecks {
             node.isSelected = false; node.isDisclosable = false; node.valueTypeName = nil
             context.type = .fullUIContext
             checkEqual(node.accessibilityDescription(context: &context), "button (disabled) Save")
+            let readable: any LMReadableElement = node
+            checkEqual(try readable.lmReadableDescription(for: &context), "button (disabled) Save")
+            let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+            let tree = UIElementTree(items: [.init(element: node, subtree: empty)], focusedElement: nil)
+            let rendered = try tree.render(with: &context) { element, context in
+                try element.lmReadableDescription(for: &context)
+            }
+            checkTrue(rendered.roots[0].elementID == nil)
+            checkEqual(rendered.roots[0].sourcePath, IndexPath(index: 0))
+            rendered.setElementIDs()
+            checkEqual(rendered.lines(indent: " ", options: []), ["0 button (disabled) Save"])
             node.role = .menu; node.roleDescription = nil
             context.type = .informationalContext
             checkEqual(node.accessibilityDescription(context: &context), "menu")

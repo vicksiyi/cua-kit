@@ -802,8 +802,9 @@ readable_witness = struct.unpack('<Q', read(0x10149dbd0, 8))[0]
 assert (readable_witness & 0xfffffffff) + 0x100000000 == 0x1007627f0
 readable_calls = [branch(site, target) for site, target in [
     (0x100762848, 0x100625d58), (0x10075c5d4, 0x100625d58),
-    (0x100625ee0, 0x10115060c),
+    (0x100625ee0, 0x10115060c), (0x10076ad6c, 0x10064e090),
 ]]
+assert struct.unpack('<I', read(0x10076ada0, 4))[0] == 0xf940044a # witness +8
 readable_calls.append(branch(0x100625d68, 0x100625d80, link=False))
 readable_calls.append(branch(0x100625d7c, 0x100625d80, link=False))
 compare_zero_branch(0x100625e20, 9, 0x100625dfc)
