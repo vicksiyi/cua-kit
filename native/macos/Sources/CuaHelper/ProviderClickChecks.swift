@@ -3709,6 +3709,7 @@ func runProviderClickChecks() async throws {
     runViewBridgeFocusTransitionEligibilityChecks()
     try runViewBridgeKeyFocusRefreshChecks()
     runUIElementProcessTypeChecks()
+    runViewBridgeFocusCompensationChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4674,7 +4675,7 @@ private func runFocusStealTakenStateChecks() {
     let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
     var trace: [String] = []
     func taken(previous: Int32, registered: Bool) -> CGEvent? {
-        state.recordOwnerAndSchedule(.ordinary(pid: previous), physicalFocusPID: previous, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
+        state.recordOwnerAndSchedule(.ordinary(pid: previous), physicalFocusPID: previous, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
         return state.filterKeyFocusTaken(event,
             incomingFocusPID: 88, destinationPID: 77,
             resolveOwnerPID: { checkEqual($0, 88); trace.append("resolve"); return 66 },
@@ -4773,7 +4774,7 @@ private func runFocusStealRegisteredDispatchChecks() async {
             let snapshot = store.snapshot
             _ = store.removeFirst(pid: 88)
             return snapshot
-        }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() },
+        }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() },
         reportMissingHandler: { _, _ in unexpectedFailure() })
     checkEqual(snapshotReads, 1); checkEqual(tasks.tasks.count, 3)
     for task in tasks.tasks { checkFalse(await task.value) }
@@ -4782,10 +4783,10 @@ private func runFocusStealRegisteredDispatchChecks() async {
     checkEqual(state.ownershipSnapshot.current.ownerPID, 88)
     checkEqual(state.ownershipSnapshot.previous?.ownerPID, 77)
     // The intercepted logical owner does not receive a gained callback.
-    state.recordOwnerAndSchedule(.ordinary(pid: 77), physicalFocusPID: 77, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
+    state.recordOwnerAndSchedule(.ordinary(pid: 77), physicalFocusPID: 77, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
     state.update(FocusStealKeyboardRoute(interceptedPID: 99, recipientPID: 77, interceptedOwnerPID: 88))
     let suppressed = state.recordOwnerAndSchedule(.ordinary(pid: 88), physicalFocusPID: 88,
-        takeRegistrationSnapshot: { store.snapshot }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
+        takeRegistrationSnapshot: { store.snapshot }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
     checkEqual(suppressed.tasks.count, 1)
     for task in suppressed.tasks { checkFalse(await task.value) }
     checkEqual(recorder.snapshot.filter { $0 == "lost" }.count, 2)
@@ -4834,7 +4835,7 @@ private func runFocusStealPhysicalFocusChecks() {
     checkEqual(state.observePhysicalFocusPID(88), .firstInterceptedFocus)
     checkTrue(state.filterKeyFocusReturned(event, destinationPID: 77) == nil)
     let change = state.recordOwnerAndSchedule(.restricted(ownerPID: 66, sourcePID: 88),
-        physicalFocusPID: 88, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
+        physicalFocusPID: 88, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
     checkEqual(change.routeObservation, .repeatedInterceptedFocus)
     checkEqual(state.ownershipSnapshot.current.ownerPID, 66)
     checkTrue(change.firstInterceptedFocusReleaseSucceeded == nil)
@@ -4843,12 +4844,12 @@ private func runFocusStealPhysicalFocusChecks() {
         var calls = 0
         let first = state.recordOwnerAndSchedule(.restricted(ownerPID: 66, sourcePID: 88),
             physicalFocusPID: 88, takeRegistrationSnapshot: { [] },
-            releaseFirstInterceptedFocus: { calls += 1; return succeeds }, isRegisteredOwner: { _ in unexpectedFailure() })
+            releaseFirstInterceptedFocus: { calls += 1; return succeeds }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
         checkEqual(first.routeObservation, .firstInterceptedFocus)
         checkEqual(first.firstInterceptedFocusReleaseSucceeded, succeeds)
         let repeated = state.recordOwnerAndSchedule(.restricted(ownerPID: 66, sourcePID: 88),
             physicalFocusPID: 88, takeRegistrationSnapshot: { [] },
-            releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
+            releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
         checkTrue(repeated.firstInterceptedFocusReleaseSucceeded == nil)
         checkEqual(calls, 1)
     }
@@ -4906,8 +4907,9 @@ private func runViewBridgeFocusTransitionEligibilityChecks() {
     let state = FocusStealKeyboardRoutingState(initialOwner: previous)
     let changed = state.recordOwnerAndSchedule(.viewBridge(ViewBridgeFocusIdentities(ownerPID: 66, actualFocusedPID: 99)),
         physicalFocusPID: 99, takeRegistrationSnapshot: { [] },
-        releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { checkEqual($0, 66); return true })
-    checkTrue(changed.requiresViewBridgeFocusInspection)
+        releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { checkEqual($0, 66); return true },
+        compensateViewBridge: { checkEqual($0, 77); return false })
+    checkTrue(changed.didAttemptViewBridgeCompensation)
     checkTrue(changed.firstInterceptedFocusReleaseSucceeded == nil)
 }
 
@@ -4968,4 +4970,34 @@ private func runUIElementProcessTypeChecks() {
         classify: { _ in classifications += 1; return .regularApp }, reportError: { _ in unexpectedFailure() })
     checkTrue(empty == nil)
     checkEqual(parents, 301); checkEqual(reads, 301); checkEqual(classifications, 301)
+}
+
+private func runViewBridgeFocusCompensationChecks() {
+    for hasElement in [false, true] {
+        for type: UIElement.ProcessType? in [nil, .regularApp, .viewService] {
+            for registered in [false, true] {
+                for released in [false, true] {
+                    var trace: [String] = []
+                    let result = compensateViewBridgeFocus(previousOwnerPID: 77,
+                        focusedElement: { trace.append("focus"); return hasElement ? 123 : nil },
+                        containingProcess: { element, types in
+                            checkEqual(element, 123); checkEqual(types, [.regularApp, .viewService])
+                            trace.append("contain"); return type
+                        }, isRegisteredOwner: { checkEqual($0, 77); trace.append("registered"); return registered },
+                        releaseFocus: { trace.append("release"); return released },
+                        scheduleRefresh: { checkEqual($0, 77); trace.append("refresh") })
+                    var expected = ["focus"]
+                    if hasElement {
+                        expected.append("contain")
+                        if let type {
+                            expected.append("registered")
+                            if !registered { expected.append(type == .regularApp ? "release" : "refresh") }
+                        }
+                    }
+                    checkEqual(trace, expected)
+                    checkEqual(result, hasElement && type == .regularApp && !registered && released)
+                }
+            }
+        }
+    }
 }

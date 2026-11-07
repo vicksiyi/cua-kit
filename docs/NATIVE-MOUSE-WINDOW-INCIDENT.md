@@ -1129,3 +1129,27 @@ for the inclusive depth cap even with an empty type set. Build/provider-click
 checks and static audit pass. These are component checks; concrete ViewBridge
 compensation composition, system notification lifecycle, production click
 controller integration and live Multica acceptance remain required.
+
+
+## Concrete ViewBridge compensation composition
+
+Composed the eligible branch from 0x10074e3f0..0x10074ec50. It reads the
+previous logical owner's focused element, searches containment for exactly
+regularApp/viewService, then freshly checks previous-owner registration.
+Missing focus/containment or a registered previous owner ends compensation.
+For regularApp it releases the current notification's focus ID. For viewService
+it schedules the taken/returned refresh to the previous logical owner PID,
+not to the containing element's PID.
+
+ViewBridgeFocusCompensation provides both dependency-injected control flow and
+concrete AX/AppKit composition, reusing focused-element, containing-process and
+release primitives. The state owner now invokes this compensation dependency
+under its shared lock when eligibility passes and preserves its release result.
+The result now distinguishes attempted compensation from pending inspection.
+Matrix checks verify lazy call order, both process cases, registration and
+release success/failure. Build/provider-click checks and static audit pass.
+All release/post actions were injected in checks; none changed actual UI.
+
+The enclosing refresh task lifecycle/error policy, release-dependent history
+metadata, complete system notification tap dispatch/resources and production
+input-controller integration remain open. No end-to-end Multica fix is claimed.

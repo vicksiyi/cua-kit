@@ -62,7 +62,9 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x10074ef20, 0x1002581ac), (0x10074ef2c, 0x100258054),
          (0x10074f038, 0x1002581ac), (0x10074f044, 0x100258054),
          (0x10078e21c, 0x1007a7fa4), (0x10078e370, 0x10074ad50),
-         (0x10074adb8, 0x1007a7e50)]
+         (0x10074adb8, 0x1007a7e50),
+         (0x10074e75c, 0x100715d4c), (0x10074e844, 0x10078e178),
+         (0x10074e884, 0x10074c688)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -172,6 +174,11 @@ for site, expected_bytes in [(0x10078e20c, '21008052'), (0x10078e3cc, 'ff0a00f1'
 assert struct.unpack('<Q', read(0x1015722b0, 8))[0] == 2
 assert read(0x1015722c0, 2) == bytes([1, 0])
 assert read(0x10136afc8, len(b'isFinishedLaunching')) == b'isFinishedLaunching'
+# Compensation: missing focused/containing element, prior registration, kind.
+for site, expected_bytes in [(0x10074e79c, 'bad8ffb4'), (0x10074e85c, '080700b4'),
+                             (0x10074e888, '20080036'), (0x10074e98c, '170e0034'),
+                             (0x10074ec50, '9bfdff17')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
