@@ -5,7 +5,6 @@ import Darwin
 // Independent server for the observed Sky JS wire protocol, not recovered native source.
 private let skyVersion = "CodexComputerUseIPC-5"
 private let skyFrameLimit = 8_388_608
-struct SkyRPCFailure: Error { let code: Int; let message: String }
 private func rpcFailure(_ code: Int, _ message: String) -> SkyRPCFailure { SkyRPCFailure(code: code, message: message) }
 
 @MainActor
@@ -88,17 +87,12 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
         return ["id": id, "jsonrpc": "2.0", "result": result]
     } catch let error as SkyRPCFailure {
         return ["id": id, "jsonrpc": "2.0", "error": ["code": error.code, "message": error.message]]
+    } catch UIElementError.axError(let status) {
+        let error = SkyRPCFailure.accessibility(status)
+        return ["id": id, "jsonrpc": "2.0", "error": ["code": error.code, "message": error.message]]
     } catch let error as Failure {
-        let code: Int
-        switch error.code {
-        case "PERMISSION_DENIED": code = -10009
-        case "TARGET_NOT_FOUND": code = -10007
-        case "AMBIGUOUS_TARGET": code = -10018
-        case "INVALID_ARGUMENT": code = -32602
-        case "STALE_OBSERVATION", "PROVIDER_DISCONNECTED": code = -10008
-        default: code = -10005
-        }
-        return ["id": id, "jsonrpc": "2.0", "error": ["code": code, "message": error.message]]
+        let mapped = SkyRPCFailure.hostFailure(code: error.code, message: error.message)
+        return ["id": id, "jsonrpc": "2.0", "error": ["code": mapped.code, "message": mapped.message]]
     } catch {
         return ["id": id, "jsonrpc": "2.0", "error": ["code": -10005, "message": "Native request failed: \(error.localizedDescription)"]]
     }

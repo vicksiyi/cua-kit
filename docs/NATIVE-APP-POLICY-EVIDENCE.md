@@ -1298,3 +1298,12 @@ The owned helper previously flattened both missing and ambiguous application res
 Related owned-helper branches now send the reference for identity-change `-10010` and the bundle identifier for terminated-application `-10007`. These changes align payload interpretation; they do not establish that the original server uses the identical lifecycle checks. They do not change app allow rules or approval behavior.
 
 Validation: Swift build; three owned IPC tests (restored JS client, installed JS client, and owned app-server policy peer) checking missing-reference payloads and preserving provider errors; native resolution unit and production-helper path tests. The duplicate installed-application ambiguity branch is covered by resolver fixtures, not by registering duplicate apps in the user's LaunchServices database. No vendor native service, model request, or real application launch was used for acceptance.
+
+
+### Owned IPC accessibility error projection (2026-11-07)
+
+The installed Sky JS `targets/mac/errors.js` identifies `-10008` as `accessibilityError`; the recovered native client mapping additionally expects its payload to parse as an Int32 AXError raw value. The owned service incorrectly used that code for text-only `STALE_OBSERVATION` and `PROVIDER_DISCONNECTED` failures. Those are not AX errors. They now retain their explanatory text under the generic server-error code `-10005`. This is a host-specific fallback, not a claim that native CUA has these host-specific error cases.
+
+`SkyRPCFailure.swift` centralizes the owned error projection. When a restored AX operation throws `UIElementError.axError(status)`, `skyReply` now sends `-10008` plus the decimal raw AX status instead of flattening it into the generic localized NSError text. Other UIElementError cases remain on the generic path. Existing input operations that already flatten AX statuses before reaching IPC are not restored by this change.
+
+Validation: Swift build; the new native Sky error projection test composes wire encoding with the recovered native client decoder, including unknown/raw Int32 extrema and host failure text; three existing owned IPC tests exercise restored/installed JS clients and the policy peer. No real AX input, model request, or vendor native process was executed. Actual runtime reproduction of AX errors still requires desktop acceptance.
