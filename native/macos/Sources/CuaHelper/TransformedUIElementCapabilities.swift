@@ -53,3 +53,24 @@ func transformedUIElementInteractionCapabilities(
         || (role == .group && selectable)
     return (selectable, focusable)
 }
+
+// Common-constructor disclosure branch: ordinary contexts require support AND
+// writability (0x10075f8e4..0x10075f928, fallback 0x10075fabc). Event streams
+// use current disclosure OR support, without querying writability
+// (0x10075fa7c..0x10075fab8, fallback 0x10075fc38).
+func transformedUIElementIsDisclosable(
+    contextType: UIElementContextType,
+    isDisclosing: Bool,
+    cache: UIElementCache,
+    freshSupportedAttributes: () -> Set<UIElementAttribute>,
+    isAttributeSettable: (UIElementAttribute) throws -> Bool
+) -> Bool {
+    let attribute = UIElementAttribute("AXDisclosing")
+    if contextType.infersInteractionCapabilitiesFromCachedState && isDisclosing {
+        return true
+    }
+    guard uiElementIsAttributeSupported(attribute, readCache: { cache },
+        freshSupportedAttributes: freshSupportedAttributes) else { return false }
+    if contextType.infersInteractionCapabilitiesFromCachedState { return true }
+    return (try? isAttributeSettable(attribute)) == true
+}

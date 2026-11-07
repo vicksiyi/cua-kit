@@ -4504,3 +4504,30 @@ Catalyst missing/present traits, selection-trait short circuit, selection-capabl
 group, ordinary focus-only text field, row, and an unknown role that must not become
 selectable merely because selection attributes are supported. No vendor process
 or live AgentLoop was launched.
+
+### Transformed disclosure capability (2026-11-07)
+
+Extended `TransformedUIElementCapabilities.swift` with the constructor's
+context-sensitive disclosable calculation. In event-stream context, an already
+disclosing node immediately counts as disclosable. Otherwise attribute support
+alone suffices. No writability query occurs in this context. Full/informational
+contexts require AXDisclosing support and a successful true writability query,
+even if the current disclosing state is true. Writability errors become false.
+
+Evidence: ordinary branch `0x10075f8e4..0x10075f928`, fresh-support fallback
+`0x10075fabc..0x10075faf8`; event branch `0x10075fa7c..0x10075fab8` and fresh-support
+fallback `0x10075fc38..0x10075fc98`. A transaction that did not request this attribute
+forces a fresh supported-attribute read; a transaction that did request it uses
+cached support, including an authoritative empty set. This reuses the restored
+attribute-support helper with a fixed constructor cache snapshot.
+
+Validation: full helper builds and provider selftest passes. Tests distinguish
+support from writability, check event-mode short circuit, prove no fresh support
+probe for a requested-but-absent attribute, verify fresh-support-before-writability
+ordering for an unrequested attribute, and cover writability errors.
+
+Separate finding: common construction explicitly zeroes isValueSettable at
+`0x10075e30c..0x10075e318`. This alone does not prove its final value: value-conversion
+helpers still need auditing for mutations. No unconditional-false implementation
+has been added on that incomplete evidence. The full transformed owner and
+production collector integration remain pending.

@@ -51,6 +51,44 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        let disclosureAttribute = UIElementAttribute("AXDisclosing")
+        let supportCache = UIElementCache(supportedAttributes: [disclosureAttribute],
+            attributes: [:], transactionAttributes: nil)
+        let unsupportedCache = UIElementCache(supportedAttributes: [],
+            attributes: [:], transactionAttributes: [disclosureAttribute])
+        let unrequestedCache = UIElementCache(supportedAttributes: [],
+            attributes: [:], transactionAttributes: [])
+        var disclosureReads: [String] = []
+        for context in UIElementContextType.allCases {
+            disclosureReads = []
+            let supported = transformedUIElementIsDisclosable(contextType: context,
+                isDisclosing: false, cache: supportCache,
+                freshSupportedAttributes: { unexpectedFailure() }, isAttributeSettable: {
+                    checkEqual($0, disclosureAttribute)
+                    disclosureReads.append("settable")
+                    return false
+                })
+            checkEqual(supported, context == .eventStreamContext)
+            checkEqual(disclosureReads, context == .eventStreamContext ? [] : ["settable"])
+            checkFalse(transformedUIElementIsDisclosable(contextType: context,
+                isDisclosing: false, cache: unsupportedCache,
+                freshSupportedAttributes: { unexpectedFailure() },
+                isAttributeSettable: { _ in unexpectedFailure() }))
+        }
+        checkTrue(transformedUIElementIsDisclosable(contextType: .eventStreamContext,
+            isDisclosing: true, cache: unrequestedCache,
+            freshSupportedAttributes: { unexpectedFailure() },
+            isAttributeSettable: { _ in unexpectedFailure() }))
+        disclosureReads = []
+        checkTrue(transformedUIElementIsDisclosable(contextType: .fullUIContext,
+            isDisclosing: true, cache: unrequestedCache,
+            freshSupportedAttributes: { disclosureReads.append("support"); return [disclosureAttribute] },
+            isAttributeSettable: { _ in disclosureReads.append("settable"); return true }))
+        checkEqual(disclosureReads, ["support", "settable"])
+        checkFalse(transformedUIElementIsDisclosable(contextType: .fullUIContext,
+            isDisclosing: true, cache: supportCache,
+            freshSupportedAttributes: { unexpectedFailure() },
+            isAttributeSettable: { _ in throw UIElementError.axError(.failure) }))
         // Constructor context branches must not issue live capability reads in
         // event-stream mode, or read Catalyst traits in other contexts.
         var capabilityReads: [String] = []
