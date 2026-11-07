@@ -2739,3 +2739,27 @@ command strides. Fixtures cover missing segments, invalid magic/header size,
 exports, and symbol-table fields. They execute only reconstructed Swift, not the
 vendor native service. This is a loader dependency restoration, not desktop
 end-to-end acceptance or completed hierarchy SPI integration.
+
+### SoftLink linkedit address and symbol-table fallback
+
+Recovered `lookUpSymbols` address computation (`0x10024939c..<0x1002493bc`)
+and symbol-table fallback (`0x100249510..<0x1002496c8`) into
+`Sources/SoftLink/SymbolTable.swift`. These are extracted helpers, not claimed
+separate vendor symbols. The mapped linkedit base is image +
+(linkedit.vmaddr - text.vmaddr - linkedit.fileoff). Fields must fit signed Int;
+the final signed subtraction retains Swift's overflow trap behavior.
+
+The fallback walks 16-byte nlist_64 records. A zero string index is skipped;
+the native type test requires all low four bits, without rejecting upper bits.
+It hashes the raw NUL-terminated name, checks the requested set and existing
+matches, then requires n_value >= text.vmaddr and an Int-representable difference.
+Existing export results and the first accepted duplicate are preserved. Scanning
+returns early once the match count equals the request count. The string table
+size is not used as a bound, matching the original mapped-image contract.
+
+Salted SipHash remains an injected dependency pending its native reconstruction;
+no substitute hash is wired into production. Export-trie traversal and the full
+lookup entry point remain incomplete. Tests inject a simple fixture hash solely
+to observe traversal/filtering, seed export results, exercise numeric rejection,
+and verify pointers and early exit. Swift build and SoftLink fixture tests pass;
+no vendor native process or desktop actions were executed.
