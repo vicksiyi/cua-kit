@@ -44,6 +44,9 @@ for site, target in calls:
     displacement = instruction & 0x3ffffff
     if displacement & 0x2000000: displacement -= 0x4000000
     assert site + displacement * 4 == target, hex(site)
+# Source focus notification constants (mov w9, immediate).
+for site, opcode in [(0x10072f568, 0x528002a9), (0x10072f6b8, 0x52880009), (0x10072f6f0, 0x52900009)]:
+    assert struct.unpack('<I', read(site, 4))[0] == opcode, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

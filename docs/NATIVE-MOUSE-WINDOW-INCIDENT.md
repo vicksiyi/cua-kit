@@ -170,3 +170,19 @@ Eight presence combinations and the notification/click metadata are checked by
 are pinned. These primitives remain outside production until focus state,
 notifications, enforcement ownership and restoration are connected; they are
 not a claim that synthetic focus or Multica interaction is complete.
+
+## Window key-focus notification primitives
+
+The source does not use AppKit activation subtype 1/2 for key-focus changes.
+Its processNotification initializer at 0x10072f560 sets event type 21; initializers
+0x10072f6b0 and 0x10072f6e8 set key-focus taken=0x4000 and returned=0x8000.
+The common builder (0x100754554) constructs an otherEvent with zero flags, window,
+time, location and data fields. The returned subtype is signed Int16(-32768),
+not a positive out-of-range conversion.
+
+Restored both event constructors and verified their round trip through NSEvent
+on this host. Build and --self-test pass. The static audit pins all three constant
+instructions. Tests do not post events or alter focus. The original optional
+constant guards have present values in this pinned build; local construction
+still fails explicitly if the API cannot produce an event. Integration with the
+enforcer's state transitions and cleanup remains outstanding.

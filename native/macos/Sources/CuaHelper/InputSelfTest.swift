@@ -156,6 +156,18 @@ func runInputChecks() throws {
             }
         }
     }
+    for (notification, subtype) in [
+        (try SynthesizedEvent.notifyWindowKeyFocusRemoved(), Int16(0x4000)),
+        (try SynthesizedEvent.notifyWindowKeyFocusReturned(), Int16(bitPattern: 0x8000))
+    ] {
+        guard notification.cgEvents.count == 1,
+              let event = NSEvent(cgEvent: notification.cgEvents[0]),
+              event.type.rawValue == 21, event.subtype.rawValue == subtype,
+              event.windowNumber == 0, event.modifierFlags.isEmpty,
+              event.data1 == 0, event.data2 == 0 else {
+            throw fail("SELF_TEST_FAILED", "Process key-focus notification fields differ")
+        }
+    }
     let deactivation = try SynthesizedEvent.notifyAppDeactivated()
     guard deactivation.cgEvents.count == 1,
           NSEvent(cgEvent: deactivation.cgEvents[0])?.subtype.rawValue == 2 else {
