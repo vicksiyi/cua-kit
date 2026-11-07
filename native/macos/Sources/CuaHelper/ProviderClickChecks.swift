@@ -668,6 +668,40 @@ private enum ProviderClickChecks {
         computedOwner.role = .group
         checkFalse(computedOwner.canBeUserInteractive)
         checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
+        computedOwner.role = .row; computedOwner.subrole = nil
+        checkFalse(computedOwner.isTableRow)
+        computedOwner.role = .group; computedOwner.subrole = "AXTableRow"
+        checkTrue(computedOwner.isTableRow)
+        computedOwner.subrole = "AXOutlineRow"
+        checkFalse(computedOwner.isTableRow)
+        for classes in [nil, [], ["is-sender-extra"], ["IS-SENDER"]] as [[String]?] {
+            computedOwner.domClassList = classes
+            checkFalse(computedOwner.isSentByCurrentUser)
+        }
+        computedOwner.domClassList = ["message", "is-sender"]
+        checkTrue(computedOwner.isSentByCurrentUser)
+        checkTrue(computedOwner.rowIndexRange == nil)
+        for (location, length, expected) in [
+            (0, 2, Optional(0...1)), (4, 3, Optional(4...6)),
+            (4, 1, nil), (4, 0, nil), (4, -1, nil), (-1, 2, nil),
+            (Int.max, 2, nil), (Int.max - 1, 2, Optional((Int.max - 1)...Int.max))
+        ] {
+            var range = CFRange(location: location, length: length)
+            let encodedRange = AXValueCreate(.cfRange, &range)!
+            computedOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+                supportedAttributes: [], attributes: [
+                    UIElementAttribute("AXRowIndexRange"): partial(encodedRange),
+                    UIElementAttribute("AXColumnIndexRange"): partial(encodedRange)
+                ], transactionAttributes: nil))
+            checkEqual(computedOwner.rowIndexRange, expected)
+            checkEqual(computedOwner.columnIndexRange, expected)
+        }
+        computedOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [], attributes: [UIElementAttribute("AXRowIndexRange"): partial("bad" as NSString)],
+            transactionAttributes: nil))
+        checkTrue(computedOwner.rowIndexRange == nil)
+        checkTrue(computedOwner.columnIndexRange == nil)
+        checkEqual(ownerProvider.singleReads, 0)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

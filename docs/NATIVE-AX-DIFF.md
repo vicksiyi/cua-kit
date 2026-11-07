@@ -5078,3 +5078,27 @@ and predicate changes after mutating captured fields. This is a subset of the
 computed contract: remaining AccessibilityNode properties, equality/hash,
 root constructors, downstream transforms and tree/production integration are
 still pending. No full protocol or live UI acceptance is claimed.
+
+
+### Transformed table ranges and sender classification (2026-11-07)
+
+Connected isTableRow, isSentByCurrentUser and row/columnIndexRange directly on
+the restored owner. isTableRow (0x10075d964) compares captured subrole with
+AXTableRow and does not test role == AXRow. isSentByCurrentUser (0x10075d9b4)
+searches captured DOM classes for exact is-sender membership: callback
+0x100762908 forwards to String equality at 0x100194fc8, not substring matching.
+
+Row/column entries 0x10075da54/0x10075da70 share 0x10075da8c, decode cached
+CFRange leniently and never perform fresh provider reads. The endpoint branch
+0x10075db98 rejects negative locations. `subs length, #1; b.le` at
+0x10075db9c..0x10075dba0 excludes length <= 1, including singletons. The
+checked addition at 0x10075dba4 rejects overflow before constructing a closed
+range. Preserved this observed singleton exclusion rather than substituting a
+conventional nonempty-range conversion.
+
+Swift build and provider selftest pass: role/subrole distinction, exact sender
+class matching, absent/malformed cache, empty/singleton/negative ranges,
+ordinary multi-index ranges, Int.max boundary and overflowing endpoint. Both
+row and column getter paths are exercised with zero provider reads. Remaining
+protocol/rendering and production tree integration are not covered by these
+checks and remain pending.
