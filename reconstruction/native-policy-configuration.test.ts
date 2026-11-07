@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
 import {join} from 'node:path';
-import {nativePolicyConfiguration} from '../packages/agent-loop/src/native-policy-configuration';
+import {nativePolicyConfiguration, NativePolicyConfigurationError} from '../packages/agent-loop/src/native-policy-configuration';
 import {nativeAppServerPolicyContext} from '../packages/agent-loop/src/native-permissions';
 import {readRuntimeEnvironment} from '../packages/agent-loop/src/restored-runtime';
 import {prepareIndependentRuntime} from '../packages/agent-loop/src/independent-runtime';
@@ -37,4 +37,19 @@ test('production spec selects provider without leaking policy or CLI path into w
  assert.equal(Object.hasOwn(spec.native_service,'app_policy'),false);
  for(const worker of [spec.kernel,spec.trusted]) for(const key of ['CORE_CUA_POLICY_SOURCE','CORE_CUA_APP_POLICY','CODEX_CLI_PATH','DEEPSEEK_API_KEY','HOME','CODEX_HOME','PATH','HTTPS_PROXY']) assert.equal(worker.sandbox.worker_environment[key],undefined);
  assert.doesNotMatch(JSON.stringify(spec),/fixture-model-secret/);
+});
+
+
+test('invalid app policy reports JSON and map requirements without echoing input',()=>{
+ for(const encoded of ["['ai.multica.desktop']", '["ai.multica.desktop"]', '{private-input']) {
+  assert.throws(()=>nativePolicyConfiguration({CORE_CUA_APP_POLICY:encoded}), error=>{
+   assert.ok(error instanceof NativePolicyConfigurationError);
+   assert.match(error.message,/rule map/);
+   assert.doesNotMatch(error.message,/ai\.multica|private-input/);
+   return true;
+  });
+ }
+ const rules={"fixture.app":{decision:"denied",risk:"high",allowPersistentApproval:false}};
+ assert.deepEqual(nativePolicyConfiguration({CORE_CUA_APP_POLICY:JSON.stringify(rules)}),
+  {policy_source:"standalone",app_policy:rules});
 });
