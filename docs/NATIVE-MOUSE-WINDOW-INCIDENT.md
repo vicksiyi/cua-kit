@@ -1737,3 +1737,23 @@ reads. No live AX or input is invoked.
 
 Validation: Swift build, provider-click self-test and pinned static audit pass.
 The full routing/coordinate integration and live behavior remain unverified.
+
+
+## AppKit-backed WindowServer point lookup boundary
+
+CGWindow.window(at:belowWindowID:) 0x10025ba5c..0x10025bc94 uses NSScreen
+order and NSMouseInRect(flipped:false) to select a screen. It reads the selected
+screen frame again, transforms y to frame.height - point.y (without adding an
+origin offset), and invokes NSWindow.windowNumber(at:belowWindowWithWindowNumber:).
+The resulting Int is checked as UInt32 before window description lookup. No
+matching screen returns nil without calling AppKit window-number or description
+lookups. A missing description does not retry with another screen.
+
+MouseWindowAtPoint restores this orchestration and systemMouseWindowNumber
+uses the actual AppKit class method, rather than inventing a private SPI or
+scanning rectangles from CGWindowList. Complete native description decoding
+remains a later dependency. Tests inject screen frames, window-number and
+description callbacks; they cover screen/read order, second-frame-read effects,
+nonzero screen origins, below-window preservation, zero/max IDs, empty/no-match
+screens and no retry after missing description. Swift build, provider-click
+checks and static source audit pass. No live window-number lookup or click ran.

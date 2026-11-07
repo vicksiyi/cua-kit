@@ -3734,6 +3734,7 @@ func runProviderClickChecks() async throws {
     runOutOfProcessMouseTargetChecks()
     try runOutOfProcessMouseWindowIDChecks()
     try runMouseEventRoutingSeedChecks()
+    runMouseWindowAtPointChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5925,4 +5926,30 @@ private func runMouseEventRoutingSeedChecks() throws {
             children: { _ in unexpectedFailure() }, bundleIdentifier: { unexpectedFailure() })
         unexpectedFailure()
     } catch Failure.pid {} catch { unexpectedFailure() }
+}
+
+private func runMouseWindowAtPointChecks() {
+    let point = CGPoint(x: 120, y: 120)
+    var reads: [Int] = [], lookups: [UInt32] = []
+    let result: String? = mouseWindowAtPoint(point, belowWindowID: UInt32.max, screens: [0,1,2], frame: { screen in
+        reads.append(screen)
+        return screen == 0 ? CGRect(x: 0, y: 0, width: 20, height: 20) : CGRect(x: 100, y: 100, width: 200, height: 300)
+    }, windowNumber: { seen, below in
+        checkEqual(seen, CGPoint(x: 120, y: 180)); checkEqual(below, Int(UInt32.max)); return 0
+    }, lookupWindow: { id in lookups.append(id); return "selected" })
+    checkEqual(result, "selected"); checkEqual(reads, [0,1,1]); checkEqual(lookups, [0])
+    let absent: Int? = mouseWindowAtPoint(point, belowWindowID: 0, screens: [Int](),
+        frame: { _ in unexpectedFailure() }, windowNumber: { _, _ in unexpectedFailure() }, lookupWindow: { _ in unexpectedFailure() })
+    checkTrue(absent == nil)
+    let outside: Int? = mouseWindowAtPoint(point, belowWindowID: 0, screens: [0],
+        frame: { _ in .zero }, windowNumber: { _, _ in unexpectedFailure() }, lookupWindow: { _ in unexpectedFailure() })
+    checkTrue(outside == nil)
+    var selectedReads = 0
+    let missing: UInt32? = mouseWindowAtPoint(point, belowWindowID: 91, screens: [0,1], frame: { screen in
+        checkEqual(screen, 0); selectedReads += 1
+        return CGRect(x: 100, y: 100, width: 200, height: selectedReads == 1 ? 300 : 400)
+    }, windowNumber: { seen, below in
+        checkEqual(seen, CGPoint(x: 120, y: 280)); checkEqual(below, 91); return Int(UInt32.max)
+    }, lookupWindow: { id in checkEqual(id, UInt32.max); return nil })
+    checkTrue(missing == nil); checkEqual(selectedReads, 2) // no retry on another screen after failed description
 }
