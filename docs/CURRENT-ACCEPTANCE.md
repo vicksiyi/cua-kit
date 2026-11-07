@@ -24,6 +24,23 @@
 7. **历史材料同步**：飞书旧架构文档、早期状态段落与全部源码变更尚未逐项同步。
 
 
+## 当前构建的外层协议复核（2026-11-08）
+
+运行当前 Swift helper，分别由还原 Sky 客户端与安装包 JS 客户端完成握手、应用清单读取，
+并验证协商、截止时间、帧长度和未知操作错误：3 项通过、0 跳过。执行命令：
+
+```sh
+CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test --test-name-pattern='handshake and app inventory|enforces negotiation' reconstruction/native-sky-ipc.test.ts
+```
+
+用例包含临时虚构应用的策略拒绝/无有效可执行文件的启动失败，未点击用户应用；
+没有运行 opt-in 的真实 skyshot 或应用启动用例。这个结果说明当前外层客户端/Swift 协议仍可用，
+不能证明 Target 窗口观察、真实截图点击或模型决策成功。
+
+Swift 资源访问器已检查：默认运行入口直接使用 `.build/debug/cua-helper`，资源包
+`CuaHelper_CuaHelper.bundle` 位于同一构建目录；当前没有发现默认入口遗漏复制资源的步骤。
+这不是独立可分发安装包的验收。可见光标目前仍未接入生产输入。
+
 ## 最近原生集成证据与复现顺序
 
 当前生产 Target 已在 private bind 与 Sky 状态入口准备 AppControllerWindowObservation，
