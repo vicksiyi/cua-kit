@@ -922,7 +922,7 @@ print(json.dumps(dict(contentCollection=dict(
     fieldReads={hex(site): dict(offset=offset, field=name) for site,(offset,name) in content_field_reads.items()},
     calls=content_collection_calls,
     behavior="ordered field collection, shared mutable URL shortener with role==image, nonempty text fields, range bypass, identifier/actions filters, final formatting",
-    limitation="generic component assembled; role/state composition and production observation integration pending"), contentIdentifier=dict(
+    limitation="generic content and node composition assembled; rendering route and production observation integration pending"), contentIdentifier=dict(
     calls=identifier_calls,
     behavior="omit nil/empty and Swift String prefixes underscore or NS; appendUnique with ID label",
     prefixStub="0x101150b34 -> GOT 0x101466488 Swift.String.hasPrefix",
@@ -953,7 +953,7 @@ print(json.dumps(dict(contentCollection=dict(
     witnesses={hex(site): name for site, (_, name) in state_witness_reads.items()},
     order="selectable (full UI and not selected), selected, disabled (not informational/group/staticText), expanded/collapsed, settable with optional type, sent by me",
     formatting="empty if no parts; otherwise parentheses and comma-space join; nil type suppresses settable, empty type preserved",
-    limitation="state component only; content component/composition and production integration pending"), roleDescriptionComponent=dict(
+    limitation="state component uses lazy getter evaluation; production integration pending"), roleDescriptionComponent=dict(
     entry="0x100625f1c", calls=role_description_calls,
     present="suppress menuBarItem/menuItem/radioGroup; row literal; generic empty becomes element; other group becomes container; otherwise preserve",
     missing="menu/menu bar literals; suppress menuBarItem/menuItem/radioGroup; otherwise informational empty, other contexts unknown",

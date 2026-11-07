@@ -6634,3 +6634,24 @@ This completes the standalone generic content component, not the entire native
 rendering route. Role/state/content composition, protocol routing into the
 render tree and production observation integration still require work. No live
 app acceptance or model-provider recovery is claimed by these local tests.
+
+
+### Generic node description composition (2026-11-07)
+
+AccessibilityNodeDescription.swift joins the recovered content/state/role
+components according to 0x100625d58 and 0x100625d6c: evaluate content first,
+then state, then role; output role, state, content separated by a single space.
+Only empty strings are removed; whitespace-only content is retained. URL
+shortener mutations from content therefore precede all later components.
+
+State and role helper parameters now use autoclosures where native getters
+are conditional. State reads selected twice when selectable, skips disclosing
+when not disclosable, and skips settable when valueTypeName is nil. Enabled
+nodes do not read role for disabled-state formatting. Tests verify this getter
+sequence as well as assembled button/disabled/title output, informational
+menu role despite suppressed content, and retained whitespace-only content.
+Build, owned provider tests and static route audit passed.
+
+The generic description is callable on AccessibilityNode fixtures. Wiring the
+LMReadableElement witness/render-tree entry and production collector remains
+pending. No live browser/app workflow was executed in these checks.

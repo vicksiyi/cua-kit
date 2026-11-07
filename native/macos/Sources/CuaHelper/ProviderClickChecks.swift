@@ -2994,6 +2994,29 @@ private enum ProviderClickChecks {
             node.role = .menu
             context.type = .informationalContext
             checkEqual(node.accessibilityContentDescription(context: &context), "")
+            node.url = nil; node.role = .button; node.roleDescription = "button"
+            node.title = "Save"; node.isEnabled = false; node.isSelectable = false
+            node.isSelected = false; node.isDisclosable = false; node.valueTypeName = nil
+            context.type = .fullUIContext
+            checkEqual(node.accessibilityDescription(context: &context), "button (disabled) Save")
+            node.role = .menu; node.roleDescription = nil
+            context.type = .informationalContext
+            checkEqual(node.accessibilityDescription(context: &context), "menu")
+            node.role = .group; node.roleDescription = nil; node.title = " "
+            node.isEnabled = true
+            checkEqual(node.accessibilityDescription(context: &context), " ")
+        }
+        do {
+            var reads: [String] = []
+            func flag(_ key: String, _ value: Bool) -> Bool { reads.append(key); return value }
+            func role() -> UIElementRole { reads.append("role"); return .button }
+            let rendered = accessibilityStateDescription(role: role(), contextType: .fullUIContext,
+                isSelectable: flag("selectable", true), isSelected: flag("selected", false),
+                isEnabled: flag("enabled", true), isDisclosable: flag("disclosable", false),
+                isDisclosing: flag("disclosing", true), valueTypeName: nil,
+                isValueSettable: flag("settable", true), isSentByCurrentUser: flag("sent", false))
+            checkEqual(rendered, "(selectable)")
+            checkEqual(reads, ["selectable", "selected", "selected", "enabled", "disclosable", "sent"])
         }
         do {
             checkEqual(formatAccessibilityContent([]), "")

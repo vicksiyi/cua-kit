@@ -59,7 +59,7 @@
       }
     ],
     "behavior": "ordered field collection, shared mutable URL shortener with role==image, nonempty text fields, range bypass, identifier/actions filters, final formatting",
-    "limitation": "generic component assembled; role/state composition and production observation integration pending"
+    "limitation": "generic content and node composition assembled; rendering route and production observation integration pending"
   },
   "contentIdentifier": {
     "calls": [
@@ -274,7 +274,7 @@
     },
     "order": "selectable (full UI and not selected), selected, disabled (not informational/group/staticText), expanded/collapsed, settable with optional type, sent by me",
     "formatting": "empty if no parts; otherwise parentheses and comma-space join; nil type suppresses settable, empty type preserved",
-    "limitation": "state component only; content component/composition and production integration pending"
+    "limitation": "state component uses lazy getter evaluation; production integration pending"
   },
   "roleDescriptionComponent": {
     "entry": "0x100625f1c",
