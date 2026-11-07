@@ -42,6 +42,12 @@ final class MouseWindowRegistry<Window> {
         }
     }
 
+    // 0x10006e944..0x10006ea38: moved/resized republishes the current
+    // stored keys without an AX-ID refresh or dictionary mutation.
+    func republishObservedWindowIDs() {
+        observedWindowIDsChanged(Array(storage.keys))
+    }
+
     func orderedWindows(orderedWindowIDs: () -> [UInt32]) -> [Window] {
         orderedMouseWindows(windows: windows, orderedWindowIDs: orderedWindowIDs)
     }

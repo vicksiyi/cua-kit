@@ -2484,3 +2484,21 @@ than the earlier no-subscription lifecycle check, but does not cover every
 notification type, Target integration, MCP/DeepSeek or arbitrary app clicks.
 The flag requires explicit --allow-owned-ui; no existing app PID can be supplied.
 Swift build, provider component checks and the pinned static audit also pass.
+
+
+## Full root subscriptions and move/resize refresh behavior
+
+The real owned-window delivery check now registers all six controller root
+notifications, then unregisters all six after receiving the owned windowMoved
+event. It passed on an unlocked desktop with a 20-second process bound and
+owned-process cleanup. This verifies native acceptance of the full root list
+and continued event delivery, not delivery of each of the six event types.
+Registration failure diagnostics retain the last native error.
+
+The source move/resize branch at 0x10006e944 republishes the current stored
+window keys through observedWindowIDs.setter at 0x10006ea38. It does not prune
+invalid windows or reread AX IDs in that branch. MouseWindowRegistry now exposes
+republishObservedWindowIDs for this exact operation. Checks verify keys retain
+their stored identity after the AX ID changes and publication performs no AX
+read. This operation still awaits production callback integration; no new
+click success is implied by the notification acceptance result.

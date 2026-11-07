@@ -34,19 +34,20 @@ func runAXNotificationDeliveryChecks() async throws {
     let deadline = ContinuousClock.now.advanced(by: .seconds(8))
     // Wait only for our child application to finish exposing its AX root.
     var registered = false
+    var lastRegistrationError: Error?
     while ContinuousClock.now < deadline, child.isRunning {
         if !registered {
-            do { try observer.register(.windowMoved, for: root); registered = true
+            do { try observer.register(AppControllerAXNotifications.root, for: root); registered = true
                 observer.startMonitoring(qos: .utility)
-            } catch { try await Task.sleep(for: .milliseconds(50)); continue }
+            } catch { lastRegistrationError = error; try await Task.sleep(for: .milliseconds(50)); continue }
         }
         if events.withLock({ $0 }) > 0 { break }
         try await Task.sleep(for: .milliseconds(20))
     }
     guard events.withLock({ $0 }) > 0 else {
-        throw UIElementError.failedInit("No owned windowMoved notification received")
+        throw UIElementError.failedInit("No owned windowMoved notification received; registration error: \(String(describing: lastRegistrationError))")
     }
-    try observer.remove(.windowMoved, for: root)
+    try observer.remove(AppControllerAXNotifications.root, for: root)
     observer.stopMonitoring()
     child.terminate()
     let cleanupDeadline = ContinuousClock.now.advanced(by: .seconds(2))

@@ -7344,6 +7344,9 @@ private func runMouseWindowRegistryRemovalChecks() {
     registry.register(first); registry.register(second); registry.register(other)
     updates = []; idReads = 0
     first.id = 99
+    registry.republishObservedWindowIDs()
+    precondition(updates == [[10, 20, 30]] && idReads == 0)
+    updates = []
     var comparisons = 0
     registry.removeWindows { comparisons += 1; return $0.identity == 7 }
     precondition(comparisons == 3 && idReads == 0)
