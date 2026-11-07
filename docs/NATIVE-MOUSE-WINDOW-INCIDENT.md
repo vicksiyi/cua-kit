@@ -2574,3 +2574,18 @@ The exact source naming/contract for both getter requirements remains to be
 recovered before declaring the wrapper protocol. The witness table pointers,
 forwarding instructions and call targets are now pinned by the static audit.
 No speculative one-getter protocol or wrapper conformance was introduced.
+
+
+## Reconstructed two-getter window protocol contract
+
+WindowUIElementProtocol now explicitly preserves both throwing UInt32 getters
+and inherits the complete UIElementProtocol contract. The first is named
+rawWindowID as a descriptive reconstruction name; the binary does not provide
+its private spelling. Its default reads axElement.windowID, matching the common
+raw witness. windowID defaults to forwarding through rawWindowID, matching the
+named extension's witness call, while concrete menu implementations can override
+it with menu-level native resolution. No unrelated UIElement is declared to be
+a window merely to satisfy this contract. Concrete wrappers and controller use
+remain outstanding; preserving the two operations avoids collapsing an observed
+source distinction while allowing implementation to proceed without inventing
+an assertion about an unavailable private symbol name.
