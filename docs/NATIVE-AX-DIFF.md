@@ -2971,3 +2971,29 @@ The currently recovered preparation is not yet wired as a complete filesystem
 loader. Main-function disassembly also shows Foundation directory enumeration
 and several closure helpers; candidate collection and actual loading remain
 under analysis, not replaced with a guessed global filesystem search.
+
+### SoftLink filesystem candidate loading and result assembly
+
+Recovered callback `0x10024e36c..<0x10024eea0` as
+loadFilesystemImageCandidate. It looks up the selected strategy before hashing
+candidate UTF-8 followed by salt bytes, masks the hash to 56 bits, and only opens
+a requested candidate. `0x10024e4e8` passes flag 2 (`RTLD_NOW`) to dlopen.
+A nil handle exits without consuming the request. The handle is not treated as
+a Mach-O header, and there is no dlclose in this callback.
+
+After successful opening, each unresolved original request index independently
+snapshots dyld's image count and scans names with the original requested hash
+and salt. Already populated result slots are skipped. Header is read before
+name; a missing name continues. A hash match ends this scan even when its header
+is nil (`0x10024eba0..<0x10024ebe0`). The matching strategy/hash is removed after
+all indices are visited, including when no headers were found. Other strategies
+remain intact. The helper at `0x10024d5a0..<0x10024d744` assembles present results
+in ascending original request order, independently of dictionary iteration.
+
+Fixtures cover unmatched candidates, absent strategy, failed open followed by
+retry, duplicate requests, preservation of existing results, separate strategy
+groups, consumption after successful open without a header, and output ordering.
+All loading and dyld reads in these fixtures are injected: no vendor service or
+private library is executed. The production dependency uses Darwin dlopen and
+the existing dyld wrappers. This callback still needs the main directory
+candidate enumeration to be recovered before full filesystem fallback wiring.
