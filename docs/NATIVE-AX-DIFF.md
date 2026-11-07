@@ -4926,3 +4926,28 @@ range and cleared writability), and slider numeric formatting. Provider counts
 verify these cases do not perform unexpected reads. The composition is ready for
 the full owner; remaining fields, attributed text and collector wiring remain
 outstanding and no live application behavior is claimed.
+
+
+### Cached constructor strings and rich-text initialization boundary (2026-11-07)
+
+Restored the eight cached String fields as a local grouping:
+subrole, roleDescription, title, description, valueDescription, placeholderValue,
+help and identifier. The corresponding constructor branches decode cached partial
+values leniently; absent or mismatched entries stay nil and do not issue a fresh
+attribute read. Empty strings remain present. The grouping reuses
+UIElement.cachedStringValue and is not claimed as an original vendor type.
+
+Inspection also corrects the anticipated rich-text dependency of construction:
+the common initializer sets attributedString to nil through metadata offset
+0x70 at 0x10075e31c..0x10075e320, and transformedString to nil through offset
+0x74 at 0x10075e324..0x10075e32c. No subsequent write to those fields is present
+in the inspected constructor. Rich-text population/conversion must be traced in
+the later transformation paths rather than inserted as a new constructor AX
+request. The exported NSAttributedString.axAttributedStringAsMarkdown entry at
+0x10077023c is a separate downstream investigation.
+
+Validation: full Swift helper build and provider selftest pass for all eight
+field mappings, absent entries, wrong-type cache entries, empty strings, and no
+additional provider reads. Remaining constructor work includes URL/DOM classes,
+actions and full owner assembly; rich-text transforms and production collection
+are still outstanding. No live application acceptance is claimed.

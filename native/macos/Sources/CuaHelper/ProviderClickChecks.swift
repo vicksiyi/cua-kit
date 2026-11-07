@@ -541,6 +541,22 @@ private enum ProviderClickChecks {
         checkEqual(numberValueState.value, "42"); checkEqual(numberValueState.valueTypeName, "integer")
         checkTrue(numberValueState.isValueSettable)
         checkEqual(textProvider.singleReads, readsBeforeValueState)
+        let cachedStringKeys = ["AXSubrole", "AXRoleDescription", "AXTitle", "AXDescription",
+            "AXValueDescription", "AXPlaceholderValue", "AXHelp", "AXIdentifier"]
+        let stringsElement = UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [],
+            attributes: Dictionary(uniqueKeysWithValues: cachedStringKeys.map {
+                (UIElementAttribute($0), partial(($0 + " value") as NSString))
+            }), transactionAttributes: nil))
+        let strings = stringsElement.transformedCachedStrings()
+        checkEqual([strings.subrole, strings.roleDescription, strings.title, strings.description,
+            strings.valueDescription, strings.placeholderValue, strings.help, strings.identifier],
+            cachedStringKeys.map { Optional($0 + " value") })
+        let badStrings = UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [],
+            attributes: [UIElementAttribute("AXTitle"): partial(NSNumber(value: 1)),
+                UIElementAttribute("AXHelp"): partial("" as NSString)], transactionAttributes: nil)).transformedCachedStrings()
+        checkTrue(badStrings.title == nil); checkTrue(badStrings.description == nil)
+        checkEqual(badStrings.help, "")
+        checkEqual(textProvider.singleReads, readsBeforeValueState)
         let role = UIElementAttribute("AXRole")
         var rect = CGRect(x: 10, y: 20, width: 80, height: 40)
         let target = UIElement(axElement: targetAX, cache: UIElementCache(supportedAttributes: [role, .frame],
