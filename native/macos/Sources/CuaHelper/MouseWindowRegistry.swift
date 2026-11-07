@@ -13,6 +13,11 @@ final class MouseWindowRegistry<Window> {
     }
     func register(_ window: Window) {
         guard let id = try? windowID(window) else { return }
+        register(window, windowID: id)
+    }
+    // Initial descendant-sheet scan reads the raw AX ID before entering the
+    // dictionary insertion helper (0x10006cf58 -> 0x100085a68). Do not reread it.
+    func register(_ window: Window, windowID id: UInt32) {
         var changed: [UInt32]?
         registerMouseWindow(window, windows: &storage, windowID: { _ in id },
             observedWindowIDsChanged: { changed = $0 })

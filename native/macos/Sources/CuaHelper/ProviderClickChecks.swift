@@ -3753,6 +3753,7 @@ func runProviderClickChecks() async throws {
     runMouseWindowRegistryRemovalChecks()
     runAppControllerMenuStateChecks()
     runAppControllerInitialWindowsChecks()
+    runResolvedWindowRegistrationChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7394,4 +7395,19 @@ private func runAppControllerInitialWindowsChecks() {
             return element == 2 ? [3] : []
         })
     precondition(events == ["window:9", "role:1", "children:1", "role:2", "sheet:2", "children:2", "role:1", "children:1", "role:3", "sheet:3", "children:3"])
+}
+
+private func runResolvedWindowRegistrationChecks() {
+    var reads = 0
+    var updates: [Set<UInt32>] = []
+    let registry = MouseWindowRegistry<String>(windowID: { _ in reads += 1; return 99 },
+        observedWindowIDsChanged: { updates.append(Set($0)) })
+    registry.register("sheet", windowID: 7)
+    registry.register("replacement", windowID: 7)
+    registry.register("zero", windowID: 0)
+    precondition(reads == 0 && updates == [[7], [7], [0, 7]])
+    // Read through orderedWindows: the existing prune policy keeps nonzero
+    // changed IDs under their stored key. Here the current IDs are all nonzero.
+    let ordered = registry.orderedWindows { [7] }
+    precondition(ordered == ["replacement"])
 }

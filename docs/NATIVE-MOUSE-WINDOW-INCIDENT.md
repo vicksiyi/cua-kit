@@ -2519,3 +2519,20 @@ window/sheet operations. Checks cover absent primary short-circuit, primary
 registration before traversal, FIFO ordering, duplicate preservation and nested
 sheet traversal. Sheet-specific registration internals and production lifecycle
 ownership remain outstanding; this traversal alone does not populate Target.
+
+
+## Resolved sheet-window insertion
+
+Further disassembly shows 0x100085a68 is the specialized dictionary insertion
+operation for a SheetUIElement value, not an additional AX lookup or a separate
+sheet observer policy. The caller already reads raw AX windowID at
+0x10006cf58, skips insertion on read failure and passes the resolved key into
+the helper at 0x10006d080. Existing keys are replaced; absent keys are inserted.
+The caller later updates the observed key array.
+
+MouseWindowRegistry now supports registration with an already-resolved window
+ID. The ordinary registration path still reads once and delegates to this
+operation, preserving publication after mutation. Checks cover no extra AX read,
+replacement publication, zero-ID insertion and stored-key lookup. Production
+initialization still needs to compose this with the descendant scan and its
+publication boundaries; this overload is not itself full Target integration.
