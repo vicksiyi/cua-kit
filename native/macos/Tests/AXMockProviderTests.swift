@@ -29,10 +29,10 @@ import Foundation
         var actions: [UIElementAction] { preconditionFailure() }
         func description(for action: UIElementAction) throws -> String? { preconditionFailure() }
         func perform(_ action: UIElementAction) throws { preconditionFailure() }
-        var pid: Int32 { preconditionFailure() }
-        var actualPID: Int32 { preconditionFailure() }
-        var windowID: UInt32 { preconditionFailure() }
-        var bundleIdentifier: String? { preconditionFailure() }
+        var pid: Int32 { get throws { if shouldThrow { throw Failure.expected }; return -3 } }
+        var actualPID: Int32 { get throws { if shouldThrow { throw Failure.expected }; return 42 } }
+        var windowID: UInt32 { get throws { if shouldThrow { throw Failure.expected }; return UInt32.max } }
+        var bundleIdentifier: String? { nil }
     }
     final class Provider: AXMockProvider {
         let target: AXUIElement
@@ -85,6 +85,32 @@ import Foundation
         AXMockProviderStorage.current = nil
         _ = providerAXAttributeValue(ax, key, system: system)
         precondition(systemCalls == 3 && provider.lookups == 8)
+        AXMockProviderStorage.current = provider
+        mock.shouldThrow = false
+        let pid = try providerAXProcessID(ax, system: { preconditionFailure() })
+        let actual = try providerAXActualProcessID(ax, system: { preconditionFailure() })
+        let window = try providerAXWindowID(ax, system: { preconditionFailure() })
+        precondition(pid == -3 && actual == 42 && window == UInt32.max)
+        precondition(providerAXBundleIdentifier(ax, readPID: { preconditionFailure() },
+            applicationBundleIdentifier: { _ in preconditionFailure() }) == nil)
+        mock.shouldThrow = true
+        for read: () throws -> Void in [
+            { _ = try providerAXProcessID(ax, system: { preconditionFailure() }) },
+            { _ = try providerAXActualProcessID(ax, system: { preconditionFailure() }) },
+            { _ = try providerAXWindowID(ax, system: { preconditionFailure() }) }
+        ] {
+            do { try read(); preconditionFailure("expected getter error") } catch Failure.expected {}
+        }
+        precondition(providerAXBundleIdentifier(other, readPID: { throw Failure.expected },
+            applicationBundleIdentifier: { _ in preconditionFailure() }) == nil)
+        precondition(providerAXBundleIdentifier(other, readPID: { -7 },
+            applicationBundleIdentifier: { precondition($0 == -7); return "" }) == "")
+        let copied = try copiedAXWindowID { precondition($0 == 0); $0 = 99; return .success }
+        precondition(copied == 99)
+        do {
+            _ = try copiedAXWindowID { $0 = 99; return .cannotComplete }
+            preconditionFailure("must not return output after error")
+        } catch UIElementError.axError(let error) { precondition(error == .cannotComplete) }
         print("Provider dispatch preserves misses, nil results, failures, identity and per-call lookup")
     }
 }

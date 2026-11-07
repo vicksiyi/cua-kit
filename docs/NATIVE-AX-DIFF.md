@@ -3632,3 +3632,34 @@ non-success status carrying a live object plus subset/truncation descriptors,
 ordered duplicate names, empty batch success, and thrown errors without fallback.
 All unused fixture operations fail immediately. Focused test and full Swift build
 pass; no real AX read, application operation, vendor service or model call occurs.
+
+### Throwing identity getters and provider dispatch
+
+Body inspection corrects a declaration error in the initial AXUIElementProtocol
+restoration: pid, actualPID and windowID require `get throws`. Their demangled
+getter labels do not print that effect. pid 0x1006f9d8c propagates x21 from mock
+slot +0x78 and calls swift_willThrow on failed AXUIElementGetPid. actualPID
+0x1006f9f30 follows slot +0x80 and AccessibilitySPI.getActualPID; windowID
+0x1006fa28c uses slot +0x88 and AccessibilitySPI.getWindowID. These are distinct
+system calls, not interchangeable PID approximations. Protocol declarations and
+audited evidence now record the throwing getter effect explicitly.
+
+AXProviderIdentity implements these three mock-first queries without suppressing
+errors. AXProviderIdentitySystem connects them to the existing public PID and
+restored SPI functions. Window output starts at zero and is returned only after
+success; PID output starts at -1 via the existing checked helper. Neither
+negative successful PIDs nor zero/max window IDs are silently normalized.
+
+bundleIdentifier 0x1006fa49c uses its own mock slot +0x90; a mock nil is final.
+Its system branch invokes the provider-aware PID getter again (0x1006fa584),
+catches any error and returns nil without creating a running-application object.
+On success it reads NSRunningApplication(processIdentifier:).bundleIdentifier.
+The new wrapper preserves this lazy sequence, including empty strings and nil.
+
+Expanded provider tests use genuinely throwing protocol getters to verify
+success values and error propagation from all three identity getters, no system
+retry, nil mock bundle identity, skipped application lookup on PID failure,
+unchanged PID forwarding, and zero initialization/error handling for window ID.
+Focused test and Swift build pass. These are component tests; no SPI/private
+library was loaded, no actual AX query was executed and production cache/collector
+integration remains pending.

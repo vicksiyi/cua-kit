@@ -51,7 +51,7 @@ for i,(name,target,flag) in enumerate(zip(names,targets,flags)):
  raw=struct.unpack('<Q',read(slot,8))[0]
  actual=0x100000000+(raw&0xffffffff) if raw else None
  assert actual==target
- entries.append(dict(index=i,name=name,descriptor=hex(descriptor),witness=hex(target) if target else None))
+ entries.append(dict(index=i,name=name,descriptor=hex(descriptor),witness=hex(target) if target else None, throwingGetter=name in ['pid','actualPID','windowID']))
 mock=struct.unpack('<6I',read(0x1012cc62c,24))
 assert mock[3:5]==(0,1)
 assert struct.unpack('<II',read(0x1012cc644,8))==(0x11,0)
@@ -74,11 +74,17 @@ for address, expected_word in {
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',
  descriptor='0x1012cc520',classBound=True,requirements=entries),
+ identityGetters=dict(
+ pid=dict(entry='0x1006f9d8c',mockSlot='0x78',systemCall='AXUIElementGetPid',errorRegister='x21',throwCall='0x1006f9ed0'),
+ actualPID=dict(entry='0x1006f9f30',mockSlot='0x80',systemCall='AccessibilitySPI.getActualPID',errorRegister='x21',throwCall='0x1006fa074'),
+ windowID=dict(entry='0x1006fa28c',mockSlot='0x88',systemCall='AccessibilitySPI.getWindowID',errorRegister='x21',throwCall='0x1006fa3cc'),
+ bundleIdentifier=dict(entry='0x1006fa49c',mockSlot='0x90',pidFailureReturnsNil=True,
+ fallback='PID getter followed by NSRunningApplication(processIdentifier:).bundleIdentifier')),
  mockProvider=dict(descriptor='0x1012cc62c',requirementCount=1,
  storage='0x1015ca768',initialization='0x1006fab7c',
  storageKind='static optional existential, nil by default; not TaskLocal',
  initializerSHA256=hashlib.sha256(init).hexdigest(),
  dispatch='provider lookup at witness +8 with AX reference; nil result uses system path; nonnil result calls AXUIElementProtocol method',
  valueDispatch=dict(lookupCall='0x1006f6018',nilFallback='0x1006f602c',methodSlot='0x18',methodCall='0x1006f6050'),
- limitation='MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Three read front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete'),
+ limitation='MockProvider lookup/storage use documented reconstructed names; source setter synchronization remains unverified. Attribute and identity front doors restored; concrete AXUIElement conformance and remaining operation routing incomplete'),
  ),indent=2))

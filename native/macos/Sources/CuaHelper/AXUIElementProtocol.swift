@@ -18,9 +18,9 @@ protocol AXUIElementProtocol: AnyObject, Hashable {
     var actions: [UIElementAction] { get }
     func description(for action: UIElementAction) throws -> String?
     func perform(_ action: UIElementAction) throws
-    var pid: Int32 { get }
-    var actualPID: Int32 { get }
-    var windowID: UInt32 { get }
+    var pid: Int32 { get throws }
+    var actualPID: Int32 { get throws }
+    var windowID: UInt32 { get throws }
     var bundleIdentifier: String? { get }
     func isEqual(to other: any AXUIElementProtocol) -> Bool
 }
