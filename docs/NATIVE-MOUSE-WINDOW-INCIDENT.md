@@ -381,3 +381,27 @@ CancellationError path verifies cleanup and cancellation propagation. Static
 pins cover start/disable/enforce/reenable/stop call sites. This is scope
 orchestration, not an implemented WindowServer SPI adapter or full restoration
 loop. Production app clicks remain outside it until those dependencies are wired.
+
+
+## WindowServer symbol binding
+
+Recovered the 13-slot primary function batch at 0x10026c044 and separate lazy
+update symbol requests at 0x10026df84/0x10026e010. Persisted exact image hashes,
+prioritized symbol hashes, salts and source VAs in
+reconstruction/native-windowserver-symbol-evidence.json, and generated readable
+WindowServerSPISymbolRequest. Reused the existing restored SoftLink rather than
+introducing a guessed dlsym lookup or substitute screen-update mechanism.
+
+A standalone local probe linked our SoftLink and resolved every primary slot;
+slot 0 resolved to _SLSMainConnectionID. Independent requests resolved to
+_SLSDisableUpdate and _SLSReenableUpdate. Other primary slots include connection
+notifications, window geometry, event window location, key-focus/front-process
+APIs and window levels. These other APIs are not yet exposed by this wrapper.
+The probe only resolves addresses/names; it does not invoke the resolved APIs.
+
+WindowServerSPI implements the three source signatures (optional OpaquePointer
+connection; CGError update return) and lazy binding, trapping on an unavailable
+required symbol like the pinned source. Swift build and provider checks pass.
+Production safe activation still needs to capture one connection, pair update
+calls through its scope, and compose the complete restoration loop. No live
+window update suppression or real-app interaction was tested here.
