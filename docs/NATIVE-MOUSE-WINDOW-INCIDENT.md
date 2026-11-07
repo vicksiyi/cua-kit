@@ -1965,3 +1965,24 @@ used. Screenshot PNGs and runtime report data are not published. Native build
 and provider-click component checks pass. This verifies owned-fixture input;
 it does not establish Multica, MCP/DeepSeek, drag/cursor or complete sendClick
 lifecycle acceptance.
+
+
+## Window ordering task ownership restored
+
+WindowOrderingObserverTaskStore mirrors lock-protected observedWindowIDs,
+main task and menu task storage from 0x100787f70. start (0x100789008,
+0x100789058) creates the main task only when absent. stop (0x100788060)
+and deinit cancel/clear the main task before canceling/clearing the menu task,
+inside the same unfair lock. menuDidClose (0x100788fac) only cancels/clears
+the menu task. Task.cancel is verified through its actual imported binding.
+Observed IDs preserve array order and duplicates; replacement does not restart
+a task. Injected checks cover repeated start/stop, restart, menu-only cleanup,
+resource release and destruction order. Native build, provider-click checks and
+expanded pinned static audit pass; these checks start no real observer task.
+
+This task store is not yet connected as a complete production observer. Static
+inspection of the main async entry establishes SystemSoftware.CGWindow.EventStream
+and its AsyncIterator as the event source (0x1007891f0, 0x100789214,
+0x1007893bc), so an invented periodic AX/window poll would not reproduce it.
+The event stream adapter, event filters, ordering reactions, menuDidOpen task
+and full observer/controller composition still require restoration.

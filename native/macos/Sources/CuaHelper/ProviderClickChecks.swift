@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runWindowOrderingObserverTaskStoreChecks()
     await runApplicationPrimaryWindowChecks()
     runAXEnablementApplicationGuardChecks()
     runUIElementDescendantChecks()
@@ -6761,4 +6762,34 @@ private func runApplicationPrimaryWindowChecks() {
     target.activateAccessibility(make: { acquisitions += 1; return nil })
     target.activateAccessibility(make: { acquisitions += 1; return nil })
     checkEqual(acquisitions, 4)
+}
+
+
+private func runWindowOrderingObserverTaskStoreChecks() {
+    final class Handle {
+        let name: String
+        init(_ name: String) { self.name = name }
+    }
+    var trace: [String] = []
+    var owner: WindowOrderingObserverTaskStore<Handle>? = .init(observedWindowIDs: [7, 7, 2],
+        cancel: { trace.append("cancel-" + $0.name) })
+    checkEqual(owner!.observedWindowIDs, [7, 7, 2])
+    owner!.start { trace.append("make"); return Handle("main") }
+    owner!.start { preconditionFailure("duplicate start must not replace task") }
+    owner!.observedWindowIDs = [3, 0]
+    checkEqual(owner!.observedWindowIDs, [3, 0]); checkEqual(trace, ["make"])
+    weak var menuLifetime: Handle?
+    owner!.withState { state in
+        let handle = Handle("menu"); menuLifetime = handle; state.menuTask = handle
+    }
+    owner!.menuDidClose(); checkTrue(menuLifetime == nil)
+    checkEqual(trace, ["make", "cancel-menu"])
+    owner!.withState { checkTrue($0.task != nil); $0.menuTask = Handle("menu2") }
+    owner!.stop(); checkEqual(trace, ["make", "cancel-menu", "cancel-main", "cancel-menu2"])
+    owner!.withState { checkTrue($0.task == nil && $0.menuTask == nil) }
+    owner!.stop(); owner!.menuDidClose(); checkEqual(trace.count, 4)
+    owner!.start { Handle("restart") }
+    owner!.withState { $0.menuTask = Handle("final-menu") }
+    owner = nil
+    checkEqual(Array(trace.suffix(2)), ["cancel-restart", "cancel-final-menu"])
 }
