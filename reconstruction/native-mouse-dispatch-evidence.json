@@ -56,6 +56,30 @@
     {
       "site": "0x100730724",
       "target": "0x10026cc8c"
+    },
+    {
+      "site": "0x100741398",
+      "target": "0x100754280"
+    },
+    {
+      "site": "0x100741430",
+      "target": "0x1007414c8"
+    },
+    {
+      "site": "0x1007416a8",
+      "target": "0x100754280"
+    },
+    {
+      "site": "0x1007417d8",
+      "target": "0x100754280"
+    },
+    {
+      "site": "0x10074ad3c",
+      "target": "0x100746338"
+    },
+    {
+      "site": "0x100745a8c",
+      "target": "0x100754280"
     }
   ],
   "defaultClickMilliseconds": 50,

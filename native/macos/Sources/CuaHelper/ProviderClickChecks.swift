@@ -3670,6 +3670,7 @@ func runProviderClickChecks() async throws {
     try await ProviderClickChecks.run()
     try await runApplicationClickActivationChecks()
     try runSyntheticFocusDeactivationChecks()
+    try runSyntheticFocusEnforcementChecks()
 }
 
 private func runSyntheticFocusDeactivationChecks() throws {
@@ -3695,6 +3696,36 @@ private func runSyntheticFocusDeactivationChecks() throws {
         } catch {
             checkTrue(shouldSend)
         }
+        checkEqual(state, initial)
+    }
+}
+
+private func runSyntheticFocusEnforcementChecks() throws {
+    for bits in 0..<8 {
+        let initial = SyntheticApplicationFocusState(
+            applicationBelievesItIsActive: bits & 1 != 0,
+            applicationBelievesItHasFocus: bits & 2 != 0,
+            applicationIsActive: bits & 4 != 0)
+        let expected = initial.applicationBelievesItHasFocus ? [] :
+            [initial.applicationBelievesItIsActive ? "focus" : "activation"]
+        var state = initial
+        var events: [String] = []
+        try state.enforceActiveState(sendKeyFocusReturned: { events.append("focus") },
+            sendAppActivated: { events.append("activation") })
+        checkEqual(events, expected)
+        checkEqual(state.applicationIsActive, initial.applicationIsActive)
+        checkTrue(state.applicationBelievesItHasFocus)
+        checkEqual(state.applicationBelievesItIsActive,
+            initial.applicationBelievesItIsActive || !initial.applicationBelievesItHasFocus)
+        try state.enforceActiveState(sendKeyFocusReturned: { unexpectedFailure() },
+            sendAppActivated: { unexpectedFailure() })
+        state = initial
+        do {
+            try state.enforceActiveState(
+                sendKeyFocusReturned: { throw UIElementError.axError(.failure) },
+                sendAppActivated: { throw UIElementError.axError(.failure) })
+            checkTrue(initial.applicationBelievesItHasFocus)
+        } catch { checkFalse(initial.applicationBelievesItHasFocus) }
         checkEqual(state, initial)
     }
 }

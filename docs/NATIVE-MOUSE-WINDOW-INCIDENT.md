@@ -200,3 +200,25 @@ Static inspection of 0x100745848 confirms cleanup sends deactivation only when
 to production dispatch: event-tap and observer ownership, actual/synthetic focus
 updates and safe-enforce lifecycle remain missing. Do not report the Multica
 incident resolved based on these pure-state checks.
+
+
+## Focus enforcement branch restoration
+
+`enforceActiveState(for:)` (0x100740f70) branches on the belief snapshot, not
+on actual frontmost state: if focus is already believed held it returns without
+reading the supplied window. If active but unfocused, it sends only process
+key-focus-returned, then sets byte 1 (0x10074ad34 -> 0x100746338). Otherwise it
+calls the activation helper (0x1007414c8), then sets both belief bytes to true
+(0x100746344). All paths preserve byte 2, actual active state. Failed sends leave
+state unchanged. `SyntheticApplicationFocusState.enforceActiveState` now
+preserves these decisions and lazy callback evaluation. Eight combinations,
+idempotence and failure preservation pass provider-click checks; Swift build
+passes. Static audit pins the send call sites and all three state writes.
+
+The activation helper reads optional window activationPoint before windowID;
+missing activationPoint or a thrown windowID read falls back to windowless
+activation. With a readable ID it reads frame and calls the existing activation
+builder (0x100730374). Safe enforcement wraps this with additional foreground
+checks and asynchronous handling, still to be restored. This extracted state
+component remains outside the production event-tap lifecycle; it does not yet
+resolve the observed Multica click failure.

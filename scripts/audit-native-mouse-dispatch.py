@@ -37,7 +37,10 @@ calls = [(0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x1006fc334, 0x1007a7790), (0x1006fc420, 0x100715974),
          (0x1006fc46c, 0x1007a7790),
          (0x100754414, 0x100730374), (0x1007305e0, 0x10026cc8c),
-         (0x100730724, 0x10026cc8c)]
+         (0x100730724, 0x10026cc8c),
+         (0x100741398, 0x100754280), (0x100741430, 0x1007414c8),
+         (0x1007416a8, 0x100754280), (0x1007417d8, 0x100754280),
+         (0x10074ad3c, 0x100746338), (0x100745a8c, 0x100754280)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -47,6 +50,10 @@ for site, target in calls:
 # Source focus notification constants (mov w9, immediate).
 for site, opcode in [(0x10072f568, 0x528002a9), (0x10072f6b8, 0x52880009), (0x10072f6f0, 0x52900009)]:
     assert struct.unpack('<I', read(site, 4))[0] == opcode, hex(site)
+# Focus state writes: focus-only byte1, both belief bytes, cleanup both bytes.
+assert read(0x100746338, 12).hex() == '2800805208040039c0035fd6'
+assert read(0x100746344, 12).hex() == '2820805208000079c0035fd6'
+assert read(0x100746350, 8).hex() == '1f000079c0035fd6'
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
