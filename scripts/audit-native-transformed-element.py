@@ -719,7 +719,19 @@ format_state_calls = [branch(site, target) for site, target in [
 assert struct.unpack('<I', read(0x100774c6c, 4))[0] == 0x52800021
 assert struct.unpack('<I', read(0x100774c74, 4))[0] == 0x52800001
 
-print(json.dumps(dict(attributedFormatState=dict(
+boundary_renderer_calls = [branch(site, target) for site, target in [
+    (0x100772a8c, 0x10063a1c8), (0x100772ae0, 0x10063a2f8),
+    (0x100772c60, 0x100773aec), (0x100772c78, 0x100777e7c),
+    (0x100772d04, 0x100639b70), (0x100772d34, 0x1007742c0),
+    (0x100772e10, 0x100773bb0), (0x100772ecc, 0x100777e7c),
+    (0x100773088, 0x100777e7c), (0x100773210, 0x10063a38c),
+    (0x100773250, 0x10063a2fc),
+]]
+
+print(json.dumps(dict(attributedBoundaryRenderer=dict(
+    calls=boundary_renderer_calls,
+    behavior="move trailing output LF to incoming unmapped prefix; remove leading LF only if more than one Character; block runs reopen marks across interior LF; preserve trailing LF as generated; apply old/new or delta boundaries; append mapped run",
+    limitation="composition tail recovered; input attribute assembly and production collector integration pending"), attributedFormatState=dict(
     calls=format_state_calls,
     behavior="ordered old-minus-new closing and new-minus-old opening; remove closing then append opening; retain surviving old order and full list identity",
     dependency="Apple swift-collections OrderedSet; local resolved version 1.6.0, vendor library version not established",

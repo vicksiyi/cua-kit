@@ -1,4 +1,65 @@
 {
+  "attributedBoundaryRenderer": {
+    "calls": [
+      {
+        "instruction": "0x100772a8c",
+        "target": "0x10063a1c8",
+        "link": true
+      },
+      {
+        "instruction": "0x100772ae0",
+        "target": "0x10063a2f8",
+        "link": true
+      },
+      {
+        "instruction": "0x100772c60",
+        "target": "0x100773aec",
+        "link": true
+      },
+      {
+        "instruction": "0x100772c78",
+        "target": "0x100777e7c",
+        "link": true
+      },
+      {
+        "instruction": "0x100772d04",
+        "target": "0x100639b70",
+        "link": true
+      },
+      {
+        "instruction": "0x100772d34",
+        "target": "0x1007742c0",
+        "link": true
+      },
+      {
+        "instruction": "0x100772e10",
+        "target": "0x100773bb0",
+        "link": true
+      },
+      {
+        "instruction": "0x100772ecc",
+        "target": "0x100777e7c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773088",
+        "target": "0x100777e7c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773210",
+        "target": "0x10063a38c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773250",
+        "target": "0x10063a2fc",
+        "link": true
+      }
+    ],
+    "behavior": "move trailing output LF to incoming unmapped prefix; remove leading LF only if more than one Character; block runs reopen marks across interior LF; preserve trailing LF as generated; apply old/new or delta boundaries; append mapped run",
+    "limitation": "composition tail recovered; input attribute assembly and production collector integration pending"
+  },
   "attributedFormatState": {
     "calls": [
       {

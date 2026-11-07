@@ -6174,3 +6174,32 @@ style assembly, final composition and production collector integration remain.
 
 Validation: Swift build, owned provider self-test, and pinned native static audit
 passed after the fixture isolation correction. No model or UI operations ran.
+
+### Attributed boundary/composition tail (2026-11-07)
+
+`AttributedTextBoundaryRenderer` now connects ordered format transitions,
+boundary strings, LF replacement and TransformedUIString mapping. This follows
+`0x100772764..0x100773254`, after link/attachment/attribute processing:
+
+- An exact trailing LF in accumulated output is removed and prepended to the
+  incoming mapped run with nil mapping, even for the terminal empty callback.
+- A leading LF is removed only when the run contains more than one Character.
+- Heading/quote/list/code/collapsed styles make a block run. Its interior LF
+  becomes close(requested) + LF + open(requested), with nil mappings. An exact
+  trailing LF is removed before replacement and re-appended with nil mapping.
+- A block run with a removed leading LF receives close(previous) + LF +
+  open(requested). Otherwise use closing/opening differences; a removed leading
+  LF goes between them. Without that leading LF, marks append directly to output.
+- Finally append the mapped run, retaining unaffected UTF-16 source offsets.
+
+This intentionally retains native Character-based LF handling and boundary order;
+it does not normalize CRLF or impose a different Markdown nesting algorithm.
+Tests combine several attributed runs, heading/underline line restarts, emoji
+source ranges, inline transitions, terminal flushing and CRLF preservation.
+Swift build, owned provider self-test and static call-site audit passed. No
+external UI or model calls were made.
+
+Input assembly is still pending. In particular the font component's booleans
+are not sufficient to recover insertion order when italic comes from font traits
+but bold is added by AXFontBold; the assembler must preserve that distinction.
+No production collector integration or live-app acceptance is claimed here.

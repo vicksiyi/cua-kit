@@ -2436,6 +2436,36 @@ private enum ProviderClickChecks {
             checkEqual(Array(state.active), Array(many.suffix(50)))
         }
 
+        do {
+            var renderer = AttributedTextBoundaryRenderer()
+            func run(_ text: String, _ start: Int) -> AttributedTextSourceRun {
+                AttributedTextSourceRun(text: text, range: NSRange(location: start, length: text.utf16.count))
+            }
+            renderer.append(run("Hello", 0), formats: [.bold])
+            renderer.append(run(" world", 5), formats: [.bold, .italic])
+            renderer.append(run("", 11), formats: [])
+            checkEqual(renderer.output.description, "**Hello* world***")
+            checkEqual(renderer.output.sourceRange(ofMarkdownSubstring: "Hello"), NSRange(location: 0, length: 5))
+            checkEqual(renderer.output.sourceRange(ofMarkdownSubstring: " world"), NSRange(location: 5, length: 6))
+            renderer = AttributedTextBoundaryRenderer()
+            renderer.append(run("😀\nB\n", 30), formats: [.heading(1), .underline])
+            renderer.append(run("C", 35), formats: [.heading(1), .underline])
+            renderer.append(run("", 36), formats: [])
+            checkEqual(renderer.output.description, "# <u>😀</u>\n# <u>B</u>\n# <u>C</u>")
+            checkEqual(renderer.output.sourceRange(ofMarkdownSubstring: "😀"), NSRange(location: 30, length: 2))
+            checkEqual(renderer.output.sourceRange(ofMarkdownSubstring: "C"), NSRange(location: 35, length: 1))
+            renderer = AttributedTextBoundaryRenderer()
+            renderer.append(run("A\n", 0), formats: [.bold])
+            renderer.append(run("", 2), formats: [])
+            checkEqual(renderer.output.description, "**A**\n")
+            checkTrue(renderer.output.sourceRange(ofMarkdownSubstring: "\n") == nil)
+            renderer = AttributedTextBoundaryRenderer()
+            renderer.append(run("A\r\nB", 0), formats: [.heading(1)])
+            renderer.append(run("", 4), formats: [])
+            checkEqual(renderer.output.description, "# A\r\nB")
+            checkEqual(renderer.output.sourceRange(ofMarkdownSubstring: "\r\n"), NSRange(location: 1, length: 2))
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
