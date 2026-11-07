@@ -385,7 +385,42 @@ import os
         mock.bundleIdentifier = "org.example.com.openai.atlas"
         precondition(!notWeb.isInsideWebView(reportError: { _ in preconditionFailure() }))
     }
+    static func checkProviderCapabilities() {
+        let ax = AXUIElementCreateApplication(12601)
+        let mock = AXMockProviderFixture.Mock(), provider = AXMockProviderFixture.Provider(ax, AXMockProviderFixture.Mock())
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        let role = UIElementAttribute("AXRole"), focused = UIElementAttribute("AXFocused")
+        let selected = UIElementAttribute("AXSelected"), traits = UIElementAttribute("AXTraits")
+        let value = UIElementAttribute("AXValue"), disclosing = UIElementAttribute("AXDisclosing")
+        func partial(_ object: AnyObject) -> AXPartialValue {
+            AXPartialValue(value: AXEncodedValue(value: object), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        }
+        func item(_ roleName: String, _ extra: [UIElementAttribute: AXPartialValue] = [:]) -> UIElement {
+            var data = extra; data[role] = partial(roleName as NSString)
+            return UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [role, focused, selected, traits, value, disclosing], attributes: data, transactionAttributes: nil))
+        }
+        provider.mock.settableResult = true
+        let button = item("AXButton")
+        precondition(button.isFocusable && button.isSelectable && button.isValueSettable && button.isDisclosable)
+        let before = provider.lookups
+        precondition(!item("AXMenuItem").isSelectable && !item("AXMenuBarItem").isSelectable)
+        precondition(provider.lookups == before)
+        provider.mock.shouldThrow = true
+        precondition(item("AXTextField").isFocusable) // Missing enabled defaults true on writability error.
+        precondition(!button.isFocusable && !button.isValueSettable && !button.isDisclosable)
+        provider.mock.output = (.success, partial(NSNumber(value: UInt64(8))))
+        precondition(button.isSelected(reportError: { _ in preconditionFailure() }))
+        let beforeSelected = provider.lookups
+        precondition(!item("AXButton", [selected: partial("bad value" as NSString)]).isSelected(reportError: { _ in preconditionFailure() }))
+        precondition(provider.lookups == beforeSelected)
+        AXMockProviderStorage.current = AXMockProviderFixture.Provider(ax, mock)
+        let absent = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [role], attributes: [role: partial("AXButton" as NSString)], transactionAttributes: nil))
+        precondition(!absent.isFocusable && !absent.isValueSettable && !absent.isDisclosable)
+        precondition(mock.operationCalls.isEmpty)
+    }
     static func main() throws {
+        checkProviderCapabilities()
         try checkProviderGeometry()
         try checkProviderScrollBar()
         try checkProviderCollections()

@@ -15,6 +15,7 @@ enum AXMockProviderFixture {
         var output: (error: AXError, value: AXPartialValue?) = (.success, nil)
         var requested: [UIElementAttribute] = []
         var shouldThrow = false
+        var settableResult = false
         var operationCalls: [String] = []
         var arrayArguments: (index: Int, maxValues: Int, count: Int?)?
         var point: CGPoint?
@@ -41,7 +42,7 @@ enum AXMockProviderFixture {
             requested = [attribute]; arrayArguments = (index, maxValues, countIfKnown); return output
         }
         func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { requested = [attribute]; return (.cannotComplete, -9) }
-        func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { try checkOperation("settable"); requested = [attribute]; return false }
+        func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { try checkOperation("settable"); requested = [attribute]; return settableResult }
         func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { try checkOperation("write"); writtenValue = value.value; requested = [attribute] }
         var supportedParameterizedAttributes: [UIElementAttribute] { support }
         func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? { try checkOperation("parameterized"); requested = [attribute]; writtenValue = parameter.value; return output.value }

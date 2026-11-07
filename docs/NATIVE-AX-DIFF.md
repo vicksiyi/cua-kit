@@ -4076,3 +4076,26 @@ also cover the underlying recovered algorithms.
 
 Full UIElementProtocol conformance, source subtree collection, input-focus/
 cursor completeness and live application/browser acceptance remain outstanding.
+
+### Provider capability getters and selected-state reads
+
+Added concrete isFocusable/isSelectable/isValueSettable/isDisclosable getters
+through the AX protocol provider front doors and recovered support/writability
+helpers. Static inspection reconfirms isDisclosable 0x1007ac3b8 and
+isValueSettable 0x1007ac550 load their respective attributes and share the tail
+at 0x1007ac56c -> isAttributeSupportedAndSettable 0x1007b0308. No fresh support
+read is invented for known cached support. Text-input focus-query errors retain
+the source enabled fallback; menu/menu-bar items short-circuit selectability.
+
+The host observation selected flag now uses the provider traits fallback.
+A present malformed/false AXSelected remains final and does not read AXTraits;
+only an absent cached AXSelected enters the recovered typed UInt64 accessor.
+
+Validation: complete helper build and provider/transaction fixtures pass.
+The tests exercise all four positive capabilities, no-query menu exclusions,
+throwing writability with text-field enabled fallback, button/write/disclosure
+false on errors, selected traits bit, malformed selected no-fallback and known
+unsupported capabilities with zero writability calls. The shared mock gained
+only a configurable writability result with the previous false default.
+No real UI action or vendor service execution occurred. This supplies additional
+concrete requirements, not yet the complete UIElementProtocol conformance.

@@ -52,6 +52,13 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AccessibilityNodeDefaults.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementProtocol.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementIdentity.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementProviderCapabilities.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementSelectionState.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXUInt64Decoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementEnabled.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementFocusCapability.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementSelectionCapability.swift"),
+
         join(root, "native/macos/Sources/CuaHelper/UIElementProviderGeometry.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementInsideWebView.swift"),
 

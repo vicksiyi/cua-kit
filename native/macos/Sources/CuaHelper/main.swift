@@ -70,7 +70,7 @@ final class Target {
             var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
             props[kAXEnabledAttribute] = item.isEnabled
             props[kAXFocusedAttribute] = item.isFocused
-            props[kAXSelectedAttribute] = item.systemIsSelected(reportError: { error in
+            props[kAXSelectedAttribute] = item.isSelected(reportError: { error in
                 Logger(subsystem: "core.cua", category: "Accessibility").error("Selection traits read failed: \(String(describing: error))")
             })
             if let selected = attribute(element,kAXSelectedTextRangeAttribute),
