@@ -1,4 +1,40 @@
 {
+  "renderNodeProjection": {
+    "calls": [
+      {
+        "instruction": "0x10076ad6c",
+        "target": "0x10064e090",
+        "link": true
+      },
+      {
+        "instruction": "0x10064e1c0",
+        "target": "0x10064c280",
+        "link": true
+      },
+      {
+        "instruction": "0x10064e470",
+        "target": "0x10064e220",
+        "link": true
+      },
+      {
+        "instruction": "0x10064e380",
+        "target": "0x10064ea74",
+        "link": true
+      },
+      {
+        "instruction": "0x10064e41c",
+        "target": "0x10063e644",
+        "link": true
+      },
+      {
+        "instruction": "0x10063e6c0",
+        "target": "0x10063e6e8",
+        "link": true
+      }
+    ],
+    "behavior": "invoke supplied renderer; propagate errors; empty string returns nil; preserve whitespace; identity, subset detail and source cursor path; elementID nil; children initially empty",
+    "limitation": "compactTreeMap empty-parent behavior and whole-tree assembly not reconstructed by this callback"
+  },
   "providerTreeLookup": {
     "calls": [
       {

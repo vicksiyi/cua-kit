@@ -2814,6 +2814,42 @@ private enum ProviderClickChecks {
             UIElementTree.Item(element: target, subtree: leafTree)], focusedElement: target)
         checkEqual(tree.items[0].children.count, 1)
         checkEqual(tree.items[0].availableSubsetDescription, "(showing 0-2 of 99 items)")
+        do {
+            var context = ownerContext(.fullUIContext)
+            var visits = 0
+            let path = IndexPath(indexes: [2, 0])
+            let node = tree.items[0].renderNode(sourcePath: path, context: &context) { _, _ in
+                visits += 1
+                return "  "
+            }!
+            checkEqual(visits, 1)
+            checkEqual(node.text, "  ") // no trimming of the renderer's result
+            checkEqual(node.id, tree.items[0].element.id)
+            checkTrue(node.elementID == nil)
+            checkEqual(node.sourcePath, path)
+            checkEqual(node.detailText, "(showing 0-2 of 99 items)")
+            checkTrue(node.children.isEmpty) // assembly is a separate pass
+            let alias = node
+            alias.elementID = 7
+            checkEqual(node.elementID, 7)
+            let child = UIElementRender(id: node.id, elementID: nil, text: "child",
+                detailText: nil, sourcePath: nil, children: [])
+            node.append(child: child)
+            node.append(child: child)
+            checkEqual(node.children.count, 2)
+            checkTrue(node.children[0] === child && node.children[1] === child)
+            let omitted = tree.items[0].renderNode(sourcePath: path, context: &context) { _, _ in "" }
+            checkTrue(omitted == nil)
+            enum ProjectionFailure: Error { case expected }
+            do {
+                _ = try tree.items[0].renderNode(sourcePath: path, context: &context) { _, _ in
+                    visits += 1
+                    throw ProjectionFailure.expected
+                }
+                unexpectedFailure("render errors must propagate")
+            } catch ProjectionFailure.expected {}
+            checkEqual(visits, 2)
+        }
         checkEqual(tree.focusedElement?.role, .window)
         let iterator = tree.makeIterator()
         let shared = iterator

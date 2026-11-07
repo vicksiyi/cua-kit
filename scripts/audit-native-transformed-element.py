@@ -734,7 +734,19 @@ provider_lookup_calls = [branch(site, target) for site, target in [
 ]]
 provider_lookup_calls.append(branch(0x10076ac0c, 0x1006501ec, link=False))
 
-print(json.dumps(dict(providerTreeLookup=dict(
+render_projection_calls = [branch(site, target) for site, target in [
+    (0x10076ad6c, 0x10064e090), (0x10064e1c0, 0x10064c280),
+    (0x10064e470, 0x10064e220), (0x10064e380, 0x10064ea74),
+    (0x10064e41c, 0x10063e644), (0x10063e6c0, 0x10063e6e8),
+]]
+compare_zero_branch(0x10064e31c, 8, 0x10064e428)
+assert struct.unpack('<I', read(0x10064e400, 4))[0] == 0xd2800001
+assert struct.unpack('<I', read(0x10064e404, 4))[0] == 0x52800022
+
+print(json.dumps(dict(renderNodeProjection=dict(
+    calls=render_projection_calls,
+    behavior="invoke supplied renderer; propagate errors; empty string returns nil; preserve whitespace; identity, subset detail and source cursor path; elementID nil; children initially empty",
+    limitation="compactTreeMap empty-parent behavior and whole-tree assembly not reconstructed by this callback"), providerTreeLookup=dict(
     calls=provider_lookup_calls,
     behavior="extract provider AX handle; use identity ID/path table; return captured tree node; focus lookup misses clear focus",
     limitation="UIElementProtocol-constrained overloads only; complete native traversal and production integration pending"), attributedRendering=dict(

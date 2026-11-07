@@ -6266,3 +6266,28 @@ collection must not be presented as equivalent native tree traversal. Four
 native traversal variants at 0x100768b00/0x100769250/0x100769.../0x10076a310
 already have parent-role evidence; their full filters and selection behavior
 still require recovery before replacement.
+
+
+### Render-node projection boundary (2026-11-07)
+
+Static inspection of 0x10076ad18 confirms that the Mac render overload delegates
+through a protocol rendering witness to generic UIElementTree.render at
+0x10064e090. That generic entry uses compactTreeMap (0x10064c280), not the raw
+collector's flattened text enumeration. Its callback 0x10064e220 first invokes
+the supplied renderer, propagates a thrown error, and returns nil for an empty
+string. Whitespace-only strings are retained. Nonempty results construct a
+reference UIElementRender with the original identity, nil elementID, rendered
+text, availableSubsetDescription, source cursor IndexPath, and empty children.
+The separate tree mapper assembles children; this callback does not allocate
+numeric element IDs or copy source subtrees.
+
+UIElementRender.swift restores this projection and node storage/append semantics.
+Owned provider checks cover whitespace vs empty text, subset/source metadata,
+error propagation, nil IDs, shared references and repeated child appends. Swift
+build and provider checks passed. The static audit pins the delegation, mapping,
+constructor and empty-string branch instructions against the known binary hash.
+
+This is not yet a full tree renderer or production collector integration.
+compactTreeMap's treatment of omitted ancestors, subsequent element-ID assignment,
+line formatting, and native traversal/subset selection remain separate work.
+No installed vendor service or live app was executed for this evidence.
