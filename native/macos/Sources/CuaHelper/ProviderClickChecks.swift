@@ -33,8 +33,14 @@ private enum ProviderClickChecks {
             if fail { throw UIElementError.axError(.failure) }
             return result
         }
-        var actions: [UIElementAction] { get throws { fatalError() } }
-        func description(for action: UIElementAction) throws -> String? { fatalError() }
+        var actionRead: (() throws -> [UIElementAction])?
+        var descriptionRead: ((UIElementAction) throws -> String?)?
+        var actions: [UIElementAction] { get throws {
+            guard let actionRead else { fatalError() }; return try actionRead()
+        } }
+        func description(for action: UIElementAction) throws -> String? {
+            guard let descriptionRead else { fatalError() }; return try descriptionRead(action)
+        }
         func perform(_ action: UIElementAction) throws {
             performed.append(action)
             if fail { throw UIElementError.axError(.failure) }
@@ -556,6 +562,41 @@ private enum ProviderClickChecks {
                 UIElementAttribute("AXHelp"): partial("" as NSString)], transactionAttributes: nil)).transformedCachedStrings()
         checkTrue(badStrings.title == nil); checkTrue(badStrings.description == nil)
         checkEqual(badStrings.help, "")
+        checkEqual(textProvider.singleReads, readsBeforeValueState)
+        var actionReads = 0
+        var descriptionReads: [UIElementAction] = []
+        var actionErrors = 0
+        let unknownAction = UIElementAction("CustomAction")
+        textProvider.actionRead = {
+            actionReads += 1
+            return [.press, unknownAction, .expand, .press]
+        }
+        textProvider.descriptionRead = { action in
+            descriptionReads.append(action)
+            return "Native description"
+        }
+        func capturedActions(_ context: UIElementContextType, disclosing: Bool = false) -> [UIElementActionDescription] {
+            textElement.transformedActionDescriptions(contextType: context,
+                capturedIsDisclosable: true, capturedIsDisclosing: disclosing,
+                reportError: { _ in actionErrors += 1 })
+        }
+        checkEqual(capturedActions(.eventStreamContext), [])
+        checkEqual(capturedActions(.informationalContext), [])
+        checkEqual(actionReads, 0)
+        let fullActions = capturedActions(.fullUIContext)
+        checkEqual(fullActions.map(\.action), [.press, unknownAction, .expand, .press, .expand])
+        checkEqual(fullActions.map(\.description), ["Press", "Native description", "Expand", "Press", "Expand"])
+        checkEqual(actionReads, 1); checkEqual(descriptionReads, [unknownAction])
+        textProvider.descriptionRead = { _ in throw UIElementError.axError(.failure) }
+        let failedDescription = capturedActions(.fullUIContext, disclosing: true)
+        checkEqual(failedDescription[1].description, "CustomAction")
+        checkEqual(failedDescription.last?.action, .collapse)
+        checkEqual(actionErrors, 1)
+        textProvider.descriptionRead = { _ in nil }
+        checkEqual(capturedActions(.fullUIContext)[1].description, "CustomAction")
+        textProvider.actionRead = { actionReads += 1; throw UIElementError.axError(.failure) }
+        checkEqual(capturedActions(.fullUIContext), [])
+        checkEqual(actionErrors, 2)
         checkEqual(textProvider.singleReads, readsBeforeValueState)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {

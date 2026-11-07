@@ -4999,3 +4999,31 @@ empty arrays, mixed/nested/number/null entries, retained order/duplicates/empty
 strings, all-invalid arrays, strict outer mismatch and no provider reads.
 This closes the DOM class field branch, not full owner or production pipeline
 integration. Action descriptions and full constructor assembly remain next.
+
+
+### Constructor action descriptions (2026-11-07)
+
+Added `UIElement.transformedActionDescriptions` with captured disclosure flags.
+The constructor initializes an empty description array at 0x10075fbc4, and
+reads/maps actions only in the fullUIContext branch (0x10075fbd4..0x10075fc34).
+Other context paths leave the empty array. The transformed action getter
+0x1007907fc reads native AX actions once at 0x1007908d0. On success its
+0x100790a88..0x100790aa0 branch reads stored isDisclosable/isDisclosing
+(metadata offsets 0x68/0x64), appending expand/collapse without deduplication.
+It must not use UIElement.actions here, because that would recompute disclosure
+capabilities instead of using the transformed node's captured state.
+
+The map callback address is **0x100764570**, not 0x100765570: ADRP at
+0x10075fc08 is page-relative. It forwards to 0x100762b78, which invokes the
+transformed description resolver 0x10079312c and falls back to the action name
+on nil. The resolver prioritizes custom descriptions (0x100793204), otherwise
+calls AXUIElement.description (0x100793224), reporting native failures.
+Reused the recovered common action list/map/description implementations;
+logging remains an explicit callback until the full owner exists.
+
+Swift build and provider selftest pass for both skipped contexts, ordered
+native/custom descriptions, duplicate actions, synthetic expand/collapse,
+missing/throwing native descriptions, action enumeration failure, and no fresh
+attribute reads during this composition. Existing CFArray cast warnings remain.
+Full owner assembly, downstream transformations and production collection
+integration are still incomplete; no live UI acceptance is claimed.
