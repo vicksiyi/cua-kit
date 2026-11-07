@@ -1,4 +1,47 @@
 {
+  "attributedFormatBoundaries": {
+    "rawStyleNames": [
+      "Title",
+      "Heading",
+      "Subheading",
+      "Body",
+      "Fixed width",
+      "Contains paragraphs",
+      "Expanded",
+      "Collapsed"
+    ],
+    "instructions": {
+      "0x1007780dc": "0x528001e1",
+      "0x100777f18": "0x71000d1f",
+      "0x100778090": "0x528007c0",
+      "0x100778024": "0x52800460",
+      "0x100778048": "0xd37ef442"
+    },
+    "calls": [
+      {
+        "instruction": "0x100771964",
+        "target": "0x101151d70",
+        "link": true
+      },
+      {
+        "instruction": "0x100771a04",
+        "target": "0x100777e18",
+        "link": true
+      },
+      {
+        "instruction": "0x1007780e4",
+        "target": "0x101150a38",
+        "link": true
+      },
+      {
+        "instruction": "0x1007781c8",
+        "target": "0x101150a2c",
+        "link": true
+      }
+    ],
+    "behavior": "caller-ordered closing marks; block opening prefixes inserted at front; inline opening marks appended; exact comma-space named style split and deduplication",
+    "limitation": "does not compute state differences, line restarts, or collector integration"
+  },
   "attributedAttachment": {
     "instructions": {
       "0x1007712dc": "0xf100041f",

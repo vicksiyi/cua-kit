@@ -2331,6 +2331,35 @@ private enum ProviderClickChecks {
             checkEqual(absent.sourceOffsets, input.sourceOffsets)
         }
 
+        do {
+            var unknownStyles: [String] = []
+            let formats = attributedTextNamedFormats([
+                NSAttributedString.Key("AXBlockQuoteLevel"): NSNumber(value: 2),
+                NSAttributedString.Key("AXStyleName"): "Title, Fixed width, Body, Collapsed, Title, mystery, Expanded"
+            ], reportUnknownStyle: { unknownStyles.append($0) })
+            checkEqual(formats, [.blockQuote(2), .heading(1), .codeBlock, .collapsed])
+            checkEqual(unknownStyles, ["mystery"])
+            let exactSplit = attributedTextNamedFormats([NSAttributedString.Key("AXStyleName"): "Title,Heading"],
+                reportUnknownStyle: { unknownStyles.append($0) })
+            checkTrue(exactSplit.isEmpty)
+            checkEqual(unknownStyles.last, "Title,Heading")
+            checkTrue(attributedTextNamedFormats([NSAttributedString.Key("AXBlockQuoteLevel"): -1],
+                reportUnknownStyle: { _ in unexpectedFailure() }).isEmpty)
+            let boundaries = attributedTextFormatBoundaries(
+                closing: [.italic, .bold, .heading(1), .underline, .codeBlock, .collapsed],
+                opening: [.bold, .heading(2), .blockQuote(1), .italic])
+            checkEqual(boundaries.closing, "***</u>\n```\n</summary>(collapsed content is hidden)</details>")
+            checkEqual(boundaries.opening, "> ## ***")
+            let listBoundaries = attributedTextFormatBoundaries(closing: [.list(level: 1, index: 4, prefix: "4.")],
+                opening: [.list(level: 1, index: 4, prefix: "4."), .underline, .strikethrough, .superscript, .subscript])
+            checkEqual(listBoundaries.closing, "")
+            checkEqual(listBoundaries.opening, "    4. <u>~~<sup><sub>")
+            let blocks = attributedTextFormatBoundaries(closing: [.superscript, .subscript, .strikethrough],
+                opening: [.bold, .codeBlock, .collapsed])
+            checkEqual(blocks.closing, "</sup></sub>~~")
+            checkEqual(blocks.opening, "<details><summary>\n```\n**")
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

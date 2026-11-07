@@ -6066,3 +6066,27 @@ Build, provider self-test and binary audit passed. Tests cover placeholders,
 single-line and multiline text, tabs, image fallback, accepted image mapping and
 absent attributes. It remains a component of the incomplete full formatter; no
 production collector integration or live external App acceptance is claimed.
+
+### Attributed format names and boundary rendering (2026-11-07)
+
+`AttributedTextFormat.swift` restores `0x100777e7c..<0x100778208` as a pure
+boundary renderer. Closing arrays are consumed in caller order; heading, quote
+and list emit no closing text. Code fences, collapsed details, bold, italic,
+underline, strike and superscript/subscript emit the native closing strings.
+Opening heading/quote/list/code/collapsed strings are inserted at the front of
+the accumulated opening string, whereas inline marks append. List indentation
+is four spaces per level and the supplied prefix gets one following space.
+The helper does not reverse input arrays or compute the state difference.
+
+Also restored AXBlockQuoteLevel (positive NSNumber integer) and AXStyleName:
+exact comma-space splitting; Title/Heading/Subheading -> headings 1/2/3;
+Fixed width -> code block; Collapsed -> details; Body/Contains paragraphs/Expanded
+are known ignored entries; unknown names are reported individually. Repeated
+formats retain first insertion order. Names are pinned from the static table at
+`0x1015722d0`; literal details markup and block-quote key are audited as well.
+
+Build and provider self-test passed, including mixed block/inline ordering,
+list indentation, all inline boundaries, collapsed/fenced blocks and unknown
+name reporting. Host enum names express recovered semantics, not claimed original
+source identifiers. The complete state-diff, line continuation/restart rules,
+list metadata reader and final rich formatter wiring remain outstanding.

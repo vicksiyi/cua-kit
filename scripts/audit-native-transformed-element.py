@@ -668,7 +668,30 @@ attachment_calls = [branch(site, target) for site, target in [
     (0x100771508, 0x100773780),
 ]]
 
-print(json.dumps(dict(attributedAttachment=dict(
+# The raw-name table is a static array of (rebased C string, length, flags).
+style_names = []
+for index in range(8):
+    pointer, length, flags = struct.unpack('<QQQ', read(0x1015722d0 + 32 + index * 24, 24))
+    assert flags == 2
+    style_names.append(read((pointer & 0xfffffffff) + 0x100000000, length).decode())
+assert style_names == ['Title', 'Heading', 'Subheading', 'Body', 'Fixed width',
+                       'Contains paragraphs', 'Expanded', 'Collapsed']
+assert cstring(0x101257010) == '<details><summary>\n'
+assert cstring(0x101257030) == '\n</summary>(collapsed content is hidden)</details>'
+assert cstring(0x101257070) == 'AXBlockQuoteLevel'
+format_words = {0x1007780dc: 0x528001e1, 0x100777f18: 0x71000d1f,
+    0x100778090: 0x528007c0, 0x100778024: 0x52800460, 0x100778048: 0xd37ef442}
+for address, word in format_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+format_calls = [branch(site, target) for site, target in [
+    (0x100771964, 0x101151d70), (0x100771a04, 0x100777e18),
+    (0x1007780e4, 0x101150a38), (0x1007781c8, 0x101150a2c),
+]]
+
+print(json.dumps(dict(attributedFormatBoundaries=dict(
+    rawStyleNames=style_names, instructions={hex(k): hex(v) for k, v in format_words.items()}, calls=format_calls,
+    behavior="caller-ordered closing marks; block opening prefixes inserted at front; inline opening marks appended; exact comma-space named style split and deduplication",
+    limitation="does not compute state differences, line restarts, or collector integration"), attributedAttachment=dict(
     instructions={hex(k): hex(v) for k, v in attachment_words.items()}, calls=attachment_calls,
     behavior="AX element attachment; empty/object replacement placeholders; cached roleDescription/description; generic caption or image Markdown; multiline original appended with mappings",
     limitation="run transformation; default shortener suppresses image URLs; full formatter integration pending"), attributedLink=dict(
