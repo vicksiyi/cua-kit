@@ -6243,3 +6243,26 @@ children remain, web-area children clear, and unknown styles reach the reporter.
 Swift build and owned provider self-test passed. Production Target.collect still
 uses its existing raw walk; whole-tree construction/render integration must be
 completed before claiming live collection uses this dispatch.
+
+### Provider-to-tree identity and focus lookup (2026-11-07)
+
+Recovered native overloads at 0x10076abb0, 0x10076ac10 and 0x10076ac98 in
+UIElementTreeProviderLookup.swift, retaining the UIElementProtocol constraint.
+The existential provider supplies its AX handle, then the existing generic
+identity/path table resolves the index and captured node. Focus delegates to
+the generic identity setter, including clearing focus on a missing identity.
+No AX attributes are fetched and titles are not compared. This does not declare
+TransformedUIElement conformance to a different provider protocol.
+
+Tests use two captured nodes sharing an identity and an empty-cache lookup
+provider: the table's last duplicate wins, focus returns that stored node's
+title, missing identities return nil/clear focus, and replacing items invalidates
+the cached table. Build, owned provider self-test and static branch audit passed.
+
+Production integration audit: Target.collect remains a raw UIElement walk;
+Mac dispatch now has the concrete rich renderer, but collector tree construction,
+subset filtering and final rendered-tree projection remain to connect. Raw
+collection must not be presented as equivalent native tree traversal. Four
+native traversal variants at 0x100768b00/0x100769250/0x100769.../0x10076a310
+already have parent-role evidence; their full filters and selection behavior
+still require recovery before replacement.

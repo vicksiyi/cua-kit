@@ -1,4 +1,30 @@
 {
+  "providerTreeLookup": {
+    "calls": [
+      {
+        "instruction": "0x10076abc8",
+        "target": "0x10076ac10",
+        "link": true
+      },
+      {
+        "instruction": "0x10076ac64",
+        "target": "0x10065030c",
+        "link": true
+      },
+      {
+        "instruction": "0x10076acf4",
+        "target": "0x100650908",
+        "link": true
+      },
+      {
+        "instruction": "0x10076ac0c",
+        "target": "0x1006501ec",
+        "link": false
+      }
+    ],
+    "behavior": "extract provider AX handle; use identity ID/path table; return captured tree node; focus lookup misses clear focus",
+    "limitation": "UIElementProtocol-constrained overloads only; complete native traversal and production integration pending"
+  },
   "attributedRendering": {
     "entry": "0x100770530",
     "traversal": "0x10077045c",

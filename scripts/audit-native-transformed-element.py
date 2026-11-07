@@ -728,7 +728,16 @@ boundary_renderer_calls = [branch(site, target) for site, target in [
     (0x100773250, 0x10063a2fc),
 ]]
 
-print(json.dumps(dict(attributedRendering=dict(
+provider_lookup_calls = [branch(site, target) for site, target in [
+    (0x10076abc8, 0x10076ac10), (0x10076ac64, 0x10065030c),
+    (0x10076acf4, 0x100650908),
+]]
+provider_lookup_calls.append(branch(0x10076ac0c, 0x1006501ec, link=False))
+
+print(json.dumps(dict(providerTreeLookup=dict(
+    calls=provider_lookup_calls,
+    behavior="extract provider AX handle; use identity ID/path table; return captured tree node; focus lookup misses clear focus",
+    limitation="UIElementProtocol-constrained overloads only; complete native traversal and production integration pending"), attributedRendering=dict(
     entry="0x100770530", traversal="0x10077045c",
     composition="font trait bold then italic then additive AXFontBold; numeric styles; link followed by attachment; quote/style names then list; mapped boundary rendering including terminal empty run",
     limitation="composed formatter uses cached element factory and shared URL context; production collector not yet wired; vendor runtime not executed"), attributedBoundaryRenderer=dict(

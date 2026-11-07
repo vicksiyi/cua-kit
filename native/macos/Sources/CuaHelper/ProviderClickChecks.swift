@@ -2882,6 +2882,28 @@ private enum ProviderClickChecks {
         checkTrue(["one", "two"].contains(collisions[value: 7]!))
         checkEqual(collisions.values.count, 2)
         checkEqual(collisions.elements.count, 1)
+        do {
+            var tree = UIElementTree<UIElement>(items: [
+                .init(element: cachedChildren, subtree: UIElementTree(items: [], focusedElement: nil)),
+                .init(element: titled, subtree: UIElementTree(items: [], focusedElement: nil))
+            ], focusedElement: nil)
+            let providerReference: any UIElementProtocol = UIElement(axElement: cachedChildren.axElement,
+                cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+            checkEqual(tree.id(for: providerReference), 1)
+            checkEqual(tree.element(for: providerReference)?.id, cachedChildren.id)
+            // Return the captured tree element, not the lookup provider's empty cache.
+            checkEqual(tree.setFocusedElement(providerReference)?.title, titled.title)
+            checkEqual(tree.focusedElement?.id, cachedChildren.id)
+            let missing: any UIElementProtocol = UIElement(axElement: AXUIElementCreateApplication(12522),
+                cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+            checkTrue(tree.id(for: missing) == nil)
+            checkTrue(tree.element(for: missing) == nil)
+            checkTrue(tree.setFocusedElement(missing) == nil)
+            checkTrue(tree.focusedElement == nil)
+            tree.items.removeAll()
+            checkTrue(tree.id(for: providerReference) == nil)
+        }
+
         let selectedItem = UIElementTree<UIElement>.Item(element: cachedChildren, subtree: childTree, availableSubset: subset)
         checkTrue(indexed.focusTree(selectedItems: [selectedItem]) == nil)
         let focusedSource = UIElementTree<UIElement>(items: [], focusedElement: titled)
