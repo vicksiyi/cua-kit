@@ -3755,6 +3755,7 @@ func runProviderClickChecks() async throws {
     runAppControllerInitialWindowsChecks()
     runResolvedWindowRegistrationChecks()
     try runMenuWindowIDChecks()
+    runWindowWrapperStorageChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7436,4 +7437,26 @@ private func runMenuWindowIDChecks() throws {
             ownerPID: { $0.pid }, level: { $0.level }, windowID: { $0.id })
         preconditionFailure()
     } catch Failed.pid {}
+}
+
+private func runWindowWrapperStorageChecks() {
+    let ax = AXUIElementCreateApplication(getpid())
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let root = UIElement(axElement: ax, cache: cache)
+    let requested: Set<UIElementAttribute> = [.frame]
+    let transaction = UIElementTreeTransaction(element: root,
+        cache: UIElementTransactionCache(attributeTable: [ax: [:]], requestedAttributes: requested,
+            fallbackElements: UIElementFallbackCache(initialState: [:])),
+        roleFrequencyTable: FrequencyTable<UIElementRole>())
+    transaction.perform { _ in
+        let window = WindowUIElement(element: ax)
+        let sheet = SheetUIElement(element: ax)
+        let menu = MenuUIElement(element: ax)
+        precondition(CFEqual(window.axElement, ax) && CFEqual(sheet.axElement, ax) && CFEqual(menu.axElement, ax))
+        precondition(window.cache.transactionAttributes == requested)
+        precondition(sheet.cache.transactionAttributes == requested)
+        precondition(menu.cache.transactionAttributes == requested)
+        precondition(WindowUIElement.role == .window && SheetUIElement.role == .sheet && MenuUIElement.role == .menu)
+    }
+    precondition(UIElementTreeTransaction.current == nil)
 }

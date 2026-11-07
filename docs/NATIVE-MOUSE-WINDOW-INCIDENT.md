@@ -2589,3 +2589,21 @@ a window merely to satisfy this contract. Concrete wrappers and controller use
 remain outstanding; preserving the two operations avoids collapsing an observed
 source distinction while allowing implementation to proceed without inventing
 an assertion about an unavailable private symbol name.
+
+
+## Concrete window-wrapper storage and construction
+
+WindowUIElement, SheetUIElement and MenuUIElement now have their native AX
+reference plus immutable UIElementCache storage and their respective static
+roles. Source WindowUIElement.init at 0x100724de0 tail-branches to the shared
+Menu/Sheet initializer at 0x100721e3c, which acquires the current transaction and
+calls the existing cache constructor at 0x10076589c. Reconstruction reuses
+UIElement(element:) for that same provider-aware transaction/cache construction;
+it does not introduce a second cache or direct AX attribute-reading subsystem.
+
+Ordinary window/sheet ID access uses raw AX windowID; menu storage exposes both
+raw ID and the recovered native-menu resolver. A scoped-transaction check covers
+original AX identity, prefetched-cache propagation and restoration of TaskLocal
+state. These types intentionally do not yet declare full UIElementProtocol /
+WindowUIElementProtocol conformance: their complete inherited getter/action
+witnesses still need to be restored before registry/Target integration.
