@@ -3106,3 +3106,35 @@ key order/indirection. It never calls private OS SPI or launches the vendor
 service. Swift build and this binding test pass. The production SPI boundary is
 now available, but the hierarchy decoding and transaction prefetch caller are
 not yet connected; real desktop acceptance remains outstanding.
+
+### Hierarchy attribute-record partial-value decoding
+
+AXHierarchyPartialValue.swift restores `0x1006f8e0c..<0x1006f93a0`, the helper
+called for individual attribute records at `0x1006f8820`. It receives an attribute
+name, its result dictionary, the caller's requested attribute array, and the
+whole element's attribute-record dictionary. The value-key lookup is bridged
+using Optional<Any>._bridgeToObjectiveC (stub 0x101151b84, GOT 0x101466d90), so
+missing becomes NSNull rather than dropping the attribute. Count is conditionally
+cast to Swift.Int (metadata GOT 0x101466a30), not parsed from text.
+
+For CFArray values it reads the actual count. If the requested attribute array
+contains the attribute and the reported count exceeds that actual count, the
+array descriptor stores the reported total and [0..<actualCount]. Otherwise
+it stores actualCount with nil availableRanges. It does not discard the array
+descriptor for complete arrays. Membership walks the array via 0x1007a836c and
+uses the CFString equality closure 0x1006fbf80 -> 0x1006fb4e4. Other value types
+have no array descriptor.
+
+Only AXValue with a CFString value consults the sibling AXNumberOfCharacters
+record's result-value field. If that value casts to Int, text metadata stores
+that total and 0..<CFStringGetLength(value). Thus available length is UTF-16,
+not grapheme count. No comparison, clamping or normalization of the reported
+text total occurs here, even when the total is smaller than the available
+length. Other attributes, missing or non-Int sibling values omit text metadata.
+
+Tests cover identity retention, missing/null values, requested versus other
+arrays, empty partial arrays, complete/inconsistent/malformed counts, UTF-16
+emoji/combining characters, sibling selection, and negative text totals. Build
+and focused fixture pass without private SPI calls. The surrounding hierarchy
+bridge, incomplete-result recursion and transaction owner are still outstanding;
+this helper alone does not enable production hierarchy collection.
