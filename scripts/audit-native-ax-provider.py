@@ -80,6 +80,16 @@ for address, expected_word in {
  0x1006f75b0: 0xd63f0100,
  0x1006f9af8: 0xf9403ac8, # perform slot +0x70
  0x1006f9b0c: 0xd63f0100,
+ 0x1006f6380: 0xf9401729, # array subset slot +0x28
+ 0x1006f63a4: 0xd63f0120,
+ 0x1006f6734: 0xf9401ac8, # array count slot +0x30
+ 0x1006f6744: 0xd63f0100,
+ 0x1006f6b08: 0xf9402668, # supported parameterized slot +0x48
+ 0x1006f6b10: 0xd63f0100,
+ 0x1006f6f94: 0xf9402b29, # parameterized value slot +0x50
+ 0x1006f6fb0: 0xd63f0120,
+ 0x1006f7b48: 0xf9402ee8, # element-at-point slot +0x58
+ 0x1006f7b60: 0xd63f0100,
 }.items():
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',

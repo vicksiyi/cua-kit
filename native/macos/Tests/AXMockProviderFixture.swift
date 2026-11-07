@@ -16,6 +16,9 @@ enum AXMockProviderFixture {
         var requested: [UIElementAttribute] = []
         var shouldThrow = false
         var operationCalls: [String] = []
+        var arrayArguments: (index: Int, maxValues: Int, count: Int?)?
+        var point: CGPoint?
+        var hit: UIElement?
         var writtenValue: AnyObject?
         var lastAction: UIElementAction?
         func checkOperation(_ name: String) throws {
@@ -34,13 +37,15 @@ enum AXMockProviderFixture {
         static func == (a: Mock, b: Mock) -> Bool { a === b }
         func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
         func isEqual(to other: any AXUIElementProtocol) -> Bool { self === other }
-        func arrayValue(for attribute: UIElementAttribute, index: Int, maxValues: Int, countIfKnown: Int?) -> (error: AXError, value: AXPartialValue?) { preconditionFailure() }
-        func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { preconditionFailure() }
+        func arrayValue(for attribute: UIElementAttribute, index: Int, maxValues: Int, countIfKnown: Int?) -> (error: AXError, value: AXPartialValue?) {
+            requested = [attribute]; arrayArguments = (index, maxValues, countIfKnown); return output
+        }
+        func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { requested = [attribute]; return (.cannotComplete, -9) }
         func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { try checkOperation("settable"); requested = [attribute]; return false }
         func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { try checkOperation("write"); writtenValue = value.value; requested = [attribute] }
-        var supportedParameterizedAttributes: [UIElementAttribute] { preconditionFailure() }
-        func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? { preconditionFailure() }
-        func element(at point: CGPoint) throws -> UIElement? { preconditionFailure() }
+        var supportedParameterizedAttributes: [UIElementAttribute] { support }
+        func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? { try checkOperation("parameterized"); requested = [attribute]; writtenValue = parameter.value; return output.value }
+        func element(at point: CGPoint) throws -> UIElement? { try checkOperation("hit"); self.point = point; return hit }
         var actions: [UIElementAction] { get throws { try checkOperation("actions"); return [.press, .press] } }
         func description(for action: UIElementAction) throws -> String? { try checkOperation("description"); lastAction = action; return nil }
         func perform(_ action: UIElementAction) throws { try checkOperation("perform"); lastAction = action }

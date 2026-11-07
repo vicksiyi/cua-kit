@@ -3722,3 +3722,28 @@ shared fixture changes. Swift package build and static audit pass. No operation
 is sent to an application; these are controlled closure/mock fixtures. Remaining
 work includes parameterized/subset/hit-test routing, concrete protocol completion,
 provider-aware system thread identity and full production subtree integration.
+
+### Provider collections, parameterized values and hit testing
+
+AXProviderCollections restores the resolved-object branches for arrayValue
+(slot +0x28), arrayCount (+0x30), supportedParameterizedAttributes (+0x48),
+parameterizedValue (+0x50) and element(at:) (+0x58). The exact native slot loads
+and indirect call sites are now pinned in audit-native-ax-provider.py. Each
+function retains an explicit system fallback closure; this is not a claim that
+all corresponding system bodies or production wrappers have been completed.
+
+The source dispatch precedes OS-only transformations. Therefore index,
+maxValues and countIfKnown are forwarded unchanged (including nil/zero/negative
+values); the provider's error/count or error/partial-value tuple is returned as
+is. Parameter objects and partial descriptors are retained. Hit testing passes
+the original CGPoint without the Float conversion needed by the OS API and
+returns the provider's already constructed UIElement/cache directly. Nil
+parameter values or nil hit results never cause a second system query.
+
+Expanded fixtures verify those boundaries, duplicate parameterized names,
+precise coordinates beyond Float precision, preserved cache/requested attributes,
+and both throwing query paths. Provider and transaction regressions pass, as
+does the Swift package build. No app/system UI operation was performed.
+Outstanding system work includes native array-subset result construction,
+parameterized supported-name enumeration, exact hit-test root construction,
+provider-aware thread identity and remaining equality/production integration.

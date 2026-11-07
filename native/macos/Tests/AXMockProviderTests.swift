@@ -96,6 +96,36 @@ import Foundation
         var performedFallback = false
         try providerAXPerform(other, .press, system: { performedFallback = true })
         precondition(performedFallback)
+        for count: Int? in [nil, 0, -4, 10] {
+            let subset = providerAXArrayValue(ax, for: key, index: -2, maxValues: -5, countIfKnown: count,
+                system: { preconditionFailure() })
+            precondition(subset.error == .failure && subset.value!.value.value === raw)
+            precondition(subset.value!.arraySubsetDescriptor == result.value!.arraySubsetDescriptor)
+            precondition(mock.arrayArguments!.index == -2 && mock.arrayArguments!.maxValues == -5 && mock.arrayArguments!.count == count)
+        }
+        let count = providerAXArrayCount(ax, for: key, system: { preconditionFailure() })
+        precondition(count.error == .cannotComplete && count.count == -9)
+        precondition(providerAXSupportedParameterizedAttributes(ax, system: { preconditionFailure() }) == [key, key])
+        mock.shouldThrow = false
+        let parameterized = try providerAXParameterizedValue(ax, for: key, parameter: AXEncodedValue(value: raw),
+            system: { preconditionFailure() })
+        precondition(parameterized!.value.value === raw && mock.writtenValue === raw)
+        let precisePoint = CGPoint(x: 1.0000000001, y: -3.0000000001)
+        let noHit = try providerAXElementAtPoint(precisePoint, in: ax, system: { preconditionFailure() })
+        precondition(noHit == nil && mock.point == precisePoint) // No Float truncation on mock path.
+        mock.hit = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [key], attributes: [:], transactionAttributes: [key]))
+        let hit = try providerAXElementAtPoint(precisePoint, in: ax, system: { preconditionFailure() })
+        precondition(CFEqual(hit!.axElement, ax) && hit!.cache.transactionAttributes == [key])
+        mock.output = (.success, nil)
+        let noValue = try providerAXParameterizedValue(ax, for: key, parameter: AXEncodedValue(value: raw), system: { preconditionFailure() })
+        precondition(noValue == nil)
+        mock.shouldThrow = true
+        for query: () throws -> Void in [
+            { _ = try providerAXParameterizedValue(ax, for: key, parameter: AXEncodedValue(value: raw), system: { preconditionFailure() }) },
+            { _ = try providerAXElementAtPoint(precisePoint, in: ax, system: { preconditionFailure() }) }
+        ] {
+            do { try query(); preconditionFailure("expected query error") } catch Failure.expected {}
+        }
         print("Provider dispatch preserves misses, nil results, failures, identity and per-call lookup")
     }
 }
