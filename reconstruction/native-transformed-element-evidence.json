@@ -1,4 +1,20 @@
 {
+  "macDispatch": {
+    "entry": "0x1007595fc",
+    "shared": "0x100759c58 -> 0x100657c10",
+    "behavior": "13-case default pipeline; native action/calendar/rich-text cases and non-full leaf override; remaining shared cases delegate to common dispatcher",
+    "requiredDependencies": [
+      "traversal rebuild",
+      "provider title",
+      "owning bundle lookup",
+      "node renderer",
+      "attributed renderer",
+      "attribute logger",
+      "unexpected-next-line diagnostic"
+    ],
+    "validation": "all 13 rules visited in order through recursive tree driver; Mac override and action filter dispatched",
+    "limitation": "test renderer/rebuild fixtures do not prove native formatting or production collector integration"
+  },
   "webTextProvider": {
     "chromeAttribute": "ChromeAXNodeId",
     "initializer": "0x10079c8e0",
@@ -258,7 +274,7 @@
     "read": "captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
     "commit": "store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
     "integration": "provider-backed text-area overload composes full/range reads and strict decode; textual-context read is provider-backed; attributed formatter remains explicit",
-    "limitations": "complete Mac dispatcher and production collector integration pending"
+    "limitations": "Mac dispatcher composed; production collector integration pending"
   },
   "macTreePruning": {
     "instructions": {
@@ -306,7 +322,7 @@
     },
     "calendar": "staticText role + Event roleDescription + exactly one staticText child + owning com.apple.iCal; clear child items, retain owner",
     "leafOverride": "non-full context, leaf, no own description/focus/selection/disclosure -> removed; otherwise common pruning",
-    "limitation": "extracted branches; complete Mac pipeline/production collector wiring pending"
+    "limitation": "extracted branches; Mac dispatcher composed; production collector wiring pending"
   },
   "macActionFilter": {
     "entry": "0x1007597d0",

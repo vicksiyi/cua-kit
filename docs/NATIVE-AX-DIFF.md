@@ -5932,3 +5932,28 @@ parameterized support ordering, strict-decode failure recovery, successful
 subtree clearing, the diagnostic/nonempty-probe path and Chrome bypass. The
 production collector and attributed formatter are still not complete; these
 are owned-provider tests with opaque local markers, not live browser acceptance.
+
+### Unified Mac transformation dispatch
+
+`MacUIElementTreeDispatch.swift` composes the recovered entry at `0x1007595fc`.
+It dispatches all native enum cases, routes shared pruneNonDescriptiveSubtrees
+through the Mac non-full-context override, and delegates remaining shared
+cases to the common nine-rule dispatcher. Action filtering now composes the
+existing typed UIElement attribute reader for scroll-bar checks. Text-area and
+web-area cases use their provider-backed overloads. Calendar ownership lookup,
+traversal rebuild, provider title, node/attributed renderers and logger callbacks
+are mandatory dependencies rather than silent placeholder defaults.
+
+The common API's optional callbacks are temporarily escaped only for the
+synchronous common-rule call, using withoutActuallyEscaping; the Mac entry
+cannot retain caller callbacks. The existing recursive driver continues to own
+transformed/replaced/removed/unchanged semantics and focused-element capture.
+
+Validation: pinned native audit, Swift build and provider-click self-test pass.
+The complete computed default Mac pipeline visits all 13 rules in order through
+the real recursive driver and produces the expected sibling merge with focused
+capture retained. Targeted dispatch tests verify the native non-full leaf
+pruning override and action filtering rather than just invoking their helper
+functions. These fixtures use explicit test renderers and rebuild behavior;
+they do not prove native rich-text formatting, complete traversal rebuild or
+live collector integration. Those remain outstanding.

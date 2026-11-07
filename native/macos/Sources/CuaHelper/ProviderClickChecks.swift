@@ -2139,6 +2139,42 @@ private enum ProviderClickChecks {
         checkEqual(webMarkerErrors, 1)
         ownerProvider.parameterSupport = nil; ownerProvider.parameterRead = nil
 
+        // Exercise the complete Mac rule order through the real recursive driver.
+        var macPipelineContext = ownerContext(.fullUIContext)
+        var macVisited: [MacUIElementTreeTransformation] = []
+        func dispatchMac(_ rule: MacUIElementTreeTransformation, _ item: PruneItem,
+            _ context: inout UIElementTransformationContext) -> UIElementTreeTransformation.Result<TransformedUIElement> {
+            if !macVisited.contains(rule) { macVisited.append(rule) }
+            return rule.transform(item: item, context: &context,
+                rebuild: { tree, child, _ in tree.items.append(child) },
+                providerTitle: { _ in nil },
+                owningBundleIdentifier: { _ in unexpectedFailure("non-calendar fixture must not resolve app") },
+                renderNode: { node, _ in node.title ?? node.value ?? "" },
+                renderAttributed: { _, _ in unexpectedFailure("non-rich fixture must not format attributed text") },
+                reportAttributeError: { _ in unexpectedFailure("fixture must not read uncached attributes") },
+                reportUnexpectedNextLine: { unexpectedFailure("fixture must not probe text markers") })
+        }
+        let macPipelineResult = pipelineTree.transformed(using: MacUIElementTreeTransformation.defaultPipeline,
+            in: &macPipelineContext, apply: dispatchMac)
+        checkEqual(macVisited.count, 13)
+        checkTrue(macVisited == MacUIElementTreeTransformation.defaultPipeline)
+        checkEqual(macPipelineResult.items.count, 1)
+        checkEqual(macPipelineResult.items[0].children.count, 1)
+        checkEqual(macPipelineResult.items[0].children[0].element.value, " A   B ")
+        checkTrue(CFEqual(macPipelineResult.focusedElement!.id, pipelineRoot.id))
+        var macInformational = ownerContext(.informationalContext)
+        switch dispatchMac(.shared(.pruneNonDescriptiveSubtrees), associationItem(macLeaf), &macInformational) {
+        case .removed: break
+        default: unexpectedFailure("Mac dispatcher must use native override, not generic pruning")
+        }
+        var actionDispatch = anonymousGroup
+        actionDispatch.actionDescriptions = [UIElementActionDescription(.showDefaultUI, description: "Hide"),
+            UIElementActionDescription(.press, description: "Keep")]
+        switch dispatchMac(.filterActions, associationItem(actionDispatch), &macPipelineContext) {
+        case let .transformed(result): checkEqual(result.element.actionDescriptions.map(\.description), ["Keep"])
+        default: unexpectedFailure("Mac dispatcher must filter action descriptions")
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

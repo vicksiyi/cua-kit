@@ -601,7 +601,12 @@ for index, word in enumerate(chrome_attribute_words):
 chrome_attribute_name = struct.pack('<QQ', 0x5841656d6f726843, 0xee00644965646f4e)[:14].decode()
 assert chrome_attribute_name == 'ChromeAXNodeId'
 
-print(json.dumps(dict(webTextProvider=dict(
+print(json.dumps(dict(macDispatch=dict(
+    entry="0x1007595fc", shared="0x100759c58 -> 0x100657c10",
+    behavior="13-case default pipeline; native action/calendar/rich-text cases and non-full leaf override; remaining shared cases delegate to common dispatcher",
+    requiredDependencies=["traversal rebuild", "provider title", "owning bundle lookup", "node renderer", "attributed renderer", "attribute logger", "unexpected-next-line diagnostic"],
+    validation="all 13 rules visited in order through recursive tree driver; Mac override and action filter dispatched",
+    limitation="test renderer/rebuild fixtures do not prove native formatting or production collector integration"), webTextProvider=dict(
     chromeAttribute=chrome_attribute_name, initializer="0x10079c8e0",
     attributePolicy="cached support unless explicit transaction set excludes attribute, then fresh support",
     markerReads="cached typed marker then strict uncached fallback; errors logged -> nil",
@@ -631,12 +636,12 @@ print(json.dumps(dict(webTextProvider=dict(
     read="captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
     commit="store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
     integration="provider-backed text-area overload composes full/range reads and strict decode; textual-context read is provider-backed; attributed formatter remains explicit",
-    limitations="complete Mac dispatcher and production collector integration pending"), macTreePruning=dict(
+    limitations="Mac dispatcher composed; production collector integration pending"), macTreePruning=dict(
     instructions={hex(k): hex(v) for k, v in mac_pruning_words.items()},
     calls=mac_pruning_calls, selectors=mac_calendar_selectors,
     calendar="staticText role + Event roleDescription + exactly one staticText child + owning com.apple.iCal; clear child items, retain owner",
     leafOverride="non-full context, leaf, no own description/focus/selection/disclosure -> removed; otherwise common pruning",
-    limitation="extracted branches; complete Mac pipeline/production collector wiring pending"), macActionFilter=dict(
+    limitation="extracted branches; Mac dispatcher composed; production collector wiring pending"), macActionFilter=dict(
     entry="0x1007597d0", predicate="0x1007946b0",
     instructions={hex(k): hex(v) for k, v in mac_action_filter_words.items()},
     calls=mac_action_filter_calls,
