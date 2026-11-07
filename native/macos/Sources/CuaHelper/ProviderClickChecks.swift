@@ -3731,6 +3731,8 @@ func runProviderClickChecks() async throws {
     try runApplicationClickEventFlagChecks()
     runInputSnapshotFocusComparisonChecks()
     try runMouseEventWindowSelectionChecks()
+    runOutOfProcessMouseTargetChecks()
+    try runOutOfProcessMouseWindowIDChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5829,4 +5831,64 @@ private func runMouseEventWindowSelectionChecks() throws {
             hitTest: { () -> Int? in nil }, makeTarget: { _, element in checkTrue(element == nil); throw Failure.target })
         unexpectedFailure()
     } catch Failure.target {} catch { unexpectedFailure() }
+}
+
+private func runOutOfProcessMouseTargetChecks() {
+    var requested: Set<UIElement.ProcessType> = [], missing = 0
+    var selected: (element: Int, processType: UIElement.ProcessType, pid: Int32)? = nil
+    func resolve() -> (pid: Int32, effectiveElement: Int)? {
+        selectOutOfProcessMouseTarget(for: 7, appPID: 88, containingElement: { element, types in
+            checkEqual(element, 7); requested = types; return selected
+        }, reportMissingContainer: { missing += 1 })
+    }
+    checkTrue(resolve() == nil)
+    checkEqual(requested, [.regularApp, .viewService]); checkEqual(missing, 1)
+    selected = (9, .regularApp, 99)
+    checkTrue(resolve() == nil); checkEqual(missing, 1)
+    selected = (9, .viewService, 88)
+    checkTrue(resolve() == nil)
+    selected = (9, .viewService, 99)
+    let found = resolve()
+    checkEqual(found?.pid, 99); checkEqual(found?.effectiveElement, 9); checkEqual(missing, 1)
+    var classified: [Int32] = []
+    let blockedByRegular = selectOutOfProcessMouseTarget(for: 0, appPID: 88, containingElement: { start, types in
+        containingProcessElement(for: start, ofTypes: types, parent: { $0 < 2 ? $0 + 1 : nil },
+            actualPID: { Int32($0 + 10) }, classify: { pid in
+                classified.append(pid)
+                return pid == 10 ? .regularApp : .viewService
+            }, reportError: { _ in unexpectedFailure() })
+    }, reportMissingContainer: { unexpectedFailure() })
+    checkTrue(blockedByRegular == nil); checkEqual(classified, [10])
+}
+
+private func runOutOfProcessMouseWindowIDChecks() throws {
+    var ids: [Int] = [], roles: [Int] = [], parents: [Int] = []
+    let id = try outOfProcessMouseWindowID(for: 0, parent: { parents.append($0); return $0 < 3 ? $0 + 1 : nil },
+        windowID: { node in ids.append(node); if node == 1 { return 0 }; throw UIElementError.axError(.illegalArgument) },
+        role: { roles.append($0); return .group })
+    checkEqual(id, 0); checkEqual(ids, [0,1]); checkEqual(roles, [0,0]); checkEqual(parents, [0,1])
+    for boundary in [UIElementRole.window, .sheet] {
+        ids = []; roles = []
+        do {
+            _ = try outOfProcessMouseWindowID(for: 0, parent: { $0 + 1 }, windowID: { node in
+                ids.append(node); throw UIElementError.axError(.illegalArgument)
+            }, role: { roles.append($0); return boundary })
+            unexpectedFailure()
+        } catch MouseEventWindowSelectionError.noWindows {} catch { unexpectedFailure() }
+        checkEqual(ids, [0]); checkEqual(roles.count, boundary == .window ? 1 : 2)
+    }
+    do {
+        _ = try outOfProcessMouseWindowID(for: 0, parent: { _ in nil }, windowID: { _ in throw UIElementError.axError(.cannotComplete) },
+            role: { _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch UIElementError.axError(let error) { checkEqual(error.rawValue, AXError.cannotComplete.rawValue) }
+    catch { unexpectedFailure() }
+    var visited = 0
+    do {
+        _ = try outOfProcessMouseWindowID(for: 0, parent: { $0 + 1 }, windowID: { _ in
+            visited += 1; throw UIElementError.axError(.illegalArgument)
+        }, role: { _ in .group })
+        unexpectedFailure()
+    } catch MouseEventWindowSelectionError.noWindows {} catch { unexpectedFailure() }
+    checkEqual(visited, 301)
 }

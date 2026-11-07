@@ -1671,3 +1671,43 @@ integration remain outstanding; no live clicks or AX hit tests ran.
 
 Validation: Swift build, provider-click checks and pinned static audit pass.
 This selection layer is not yet called by the coordinate production sender.
+
+
+## Out-of-process effective mouse target selection
+
+Restored outOfProcessTarget(for:appPID:) 0x100706df0..0x100706fa0 by reusing
+UIElement.ProcessType.containingElement with its source regularApp/viewService
+set (static array 0x101571590, bytes [1,0]). A missing container reports once
+and returns nil. A first regular app returns nil immediately, without looking
+for a later foreign service. A service whose PID equals the application also
+returns nil. Otherwise return that container's PID and effective element, not
+the original hit element. Existing parent traversal, actual-PID reads/errors
+and process classification remain the shared implementation.
+
+Tests cover requested types, missing reporting, regular-app termination, same
+PID service, foreign service payload and stopping traversal at the first regular
+app. Source guard/callsite/static-array pins accompany the implementation.
+Window-ID resolution and the enclosing MouseEventTarget routing remain pending;
+coordinate production clicks have not yet adopted this selector.
+
+
+## Out-of-process effective target's window ID
+
+The outOfProcessTargetWindow wrapper (0x100706864) now composes the selector
+with the ID search at 0x100706fa4. Search begins at the selected effective
+element, uses the shared inclusive parent chain/depth 300, and returns the
+first successful AX window ID, including zero. The per-node ID reader at
+0x1007072b4 converts only UIElementError.axError(illegalArgument) into absence;
+other errors propagate immediately. A missing ID on a window or sheet stops
+the search and produces the same semantic no-windows error as exhaustion.
+Role reads preserve the source's window-then-sheet short circuit.
+
+Tests cover a skipped illegal-argument node followed by ID zero, lookahead
+ordering, role-read counts, early window/sheet boundaries, other AX error
+propagation and the exact 301 inclusive traversal limit. The enclosing complete
+MouseEventTarget still needs native/window-server fallback and final payload
+assembly before coordinate production integration. No live input is exercised.
+
+Validation: Swift build, provider-click self-tests and pinned native static
+audit pass for effective-process selection and ID search. Live coordinate
+click acceptance and full target routing remain unproven.
