@@ -2919,3 +2919,21 @@ Any production adapter must use the same executor for dictionary reads/writes
 and event handling, preserve FIFO delivery, and document its scheduling difference
 from the original synchronous native callback. Unlocked native owner/application
 acceptance remains outstanding.
+
+
+## Production Sky state activation omission fixed
+
+Inspection of SkyAppState.get found a real entry-point difference: private
+native bind already called Target.activateAccessibility before observations,
+but the Sky/MCP path constructed/reused Target and went directly to capture.
+SkyAppState.get now invokes the same idempotent AX enablement acquisition before
+invalidation/capture. This happens after policy evaluation, application identity
+resolution and accessibility/screen-capture permission checks, so it does not
+move activation ahead of authorization or launch resolution.
+
+Existing Target acquisition/refcount/ownership checks cover its idempotent
+assertion lifetime and failure behavior; the Swift build verifies Sky composition.
+The specific Sky/MCP live application path still requires unlocked end-to-end
+acceptance. This omission could affect native interaction preparation but is not
+proof that it caused every previously observed click failure. Production window
+observation ownership remains to be integrated separately.

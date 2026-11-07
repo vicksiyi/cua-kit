@@ -109,6 +109,9 @@ final class SkyAppState {
         if let cached = targets[path], cached.app.processIdentifier == app.processIdentifier, cached.launch == app.launchDate {
             target = cached
         } else { target = Target(app); targets[path] = target }
+        // Sky/MCP state reads enter the same controller activation as private
+        // bind. Acquire/reuse AX enablement before capture and later input.
+        target.activateAccessibility()
         target.invalidateInputState()
         do {
             let state = try await target.observeWithScreenshot([:])
