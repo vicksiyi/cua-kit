@@ -3697,6 +3697,8 @@ func runProviderClickChecks() async throws {
     runRestrictedFocusOwnerSelectionChecks()
     runFocusOwnerApplicationMatchChecks()
     runKeyFocusRegistryQueryChecks()
+    runFocusStealRegistrationStoreChecks()
+    runFocusStealKeyboardMonitorChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4586,4 +4588,63 @@ private func runKeyFocusRegistryQueryChecks() {
     var pid: Int32 = 0
     checkEqual(ApplicationRegistrySPI.getProcessPID(&process, pid: &pid), 0)
     checkEqual(pid, ProcessInfo.processInfo.processIdentifier)
+}
+
+
+private func runFocusStealRegistrationStoreChecks() {
+    struct Registration { let pid: Int32; let token: Int }
+    var emptyTransitions = 0
+    let store = FocusStealRegistrationStore<Registration>(pid: { $0.pid }, becameEmpty: { emptyTransitions += 1 })
+    store.append(Registration(pid: 88, token: 1)); store.append(Registration(pid: 88, token: 2))
+    store.append(Registration(pid: 77, token: 3))
+    checkTrue(!store.removeFirst(pid: 99)); checkEqual(emptyTransitions, 0)
+    checkTrue(store.removeFirst(pid: 88)); checkEqual(store.snapshot.map { $0.token }, [2, 3])
+    checkTrue(store.removeFirst(pid: 77)); checkEqual(emptyTransitions, 0)
+    checkTrue(store.removeFirst(pid: 88)); checkEqual(emptyTransitions, 1)
+    checkTrue(!store.removeFirst(pid: 88)); checkEqual(emptyTransitions, 1)
+}
+
+private func runFocusStealKeyboardMonitorChecks() {
+    var callback: CGEventTapCallBack?
+    var info: UnsafeMutableRawPointer?
+    var invalidations = 0
+    let driver = EventTap.Driver(create: { location, placement, options, mask, cb, context in
+        guard case .process(88) = location else { unexpectedFailure() }
+        checkEqual(placement.rawValue, 1); checkEqual(options.rawValue, 0)
+        checkEqual(mask, CGEventMask(0x1c00))
+        callback = cb; info = context
+        var portContext = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &portContext, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
+    var state: FocusStealKeyboardRoutingState? = FocusStealKeyboardRoutingState()
+    weak var weakState = state
+    var recipients: [Int32] = []
+    let event = CGEvent(source: nil)!
+    event.timestamp = 123456
+    var monitor: FocusStealKeyboardMonitor? = FocusStealKeyboardMonitor(pid: 88, helperPID: 99,
+        state: state!, post: { sent, pid in
+            checkTrue(sent === event); checkEqual(sent.timestamp, 123456)
+            recipients.append(pid)
+        }, driver: driver)
+    func invoke(source: Int64, target: Int64, type: CGEventType) -> CGEvent? {
+        event.setIntegerValueField(.eventSourceUnixProcessID, value: source)
+        event.setIntegerValueField(.eventTargetUnixProcessID, value: target)
+        return callback!(OpaquePointer(bitPattern: 1)!, type, event, info)?.takeUnretainedValue()
+    }
+    checkTrue(invoke(source: 77, target: 88, type: .keyDown) === event)
+    state!.update(FocusStealKeyboardRoute(interceptedPID: 88, recipientPID: 66))
+    checkTrue(invoke(source: 99, target: 88, type: .keyDown) === event)
+    checkTrue(invoke(source: 77, target: 44, type: .keyDown) === event)
+    checkTrue(recipients.isEmpty)
+    for type in [CGEventType.keyDown, .keyUp, .flagsChanged] {
+        checkTrue(invoke(source: 77, target: 88, type: type) == nil)
+    }
+    checkEqual(recipients, [66, 66, 66])
+    state!.update(FocusStealKeyboardRoute(interceptedPID: 88, recipientPID: 55))
+    checkTrue(invoke(source: 77, target: 88, type: .keyDown) == nil)
+    checkEqual(recipients.last, 55)
+    state = nil; checkTrue(weakState == nil)
+    checkTrue(invoke(source: 77, target: 88, type: .keyDown) === event)
+    checkTrue(monitor != nil); monitor = nil
+    checkEqual(invalidations, 1)
 }

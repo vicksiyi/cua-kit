@@ -784,3 +784,60 @@ ViewBridge secondary actual PID in a semantic enum; packed native encoding is
 not exposed. Preventer cache remains an explicit dependency. The diagnostic
 result does not prove real app input acceptance; full preventer/controller and
 production input integration are still incomplete.
+
+
+## Preventer registration keyboard resource
+
+Audited record tap constructor 0x10074b1cc. Despite nearby mouseEventTaps
+property names, this constructor watches keyboard event types 10/11/12, from
+static array 0x101571558. It targets the registered process, uses placement=1
+(tailAppendEventTap), options=0, as packed at 0x1011727f0. This differs from the
+head placement used by the temporary safe-activation keyboard tap. Callback
+thunk 0x100750c70 forwards to 0x10074f7f4 with weak preventer context, helper PID,
+and captured metadata; its routing/suppression logic still needs reconstruction.
+Static audit pins the event list and packed configuration. Do not substitute
+the safe-activation keyboard router: their contexts/order are distinct.
+
+FocusStealRegistrationStore preserves append/first-match-removal behavior and
+empty-list transition. Swift build/provider-click checks passed for duplicate
+registrations and missing/last removal. It does not itself prevent focus theft;
+record taps, singleton initialization and cached focus state remain incomplete.
+
+
+## User clarification and newer accepted-click evidence (2026-11-07)
+
+The user intentionally cancelled authorization after observing repeated no-op
+clicks. Cancellation is a stopping action, not an explanation for earlier
+authorized input failures. Preserve that cancellation boundary.
+
+Local run 2026-11-07T11-08-26-398Z (d9155aa6) independently reproduces the
+problem without any cancellation: getApp succeeds; app.click(42) at request
+16 receives accept at sequences 18/20 and a non-error result at 21; app.click(33)
+at request 24 receives accept at 26/28 and a non-error result at 29. Both
+observations still show AXFocused=false. That field alone does not prove which
+focus mechanism failed, and successful tool return does not prove input delivery.
+
+Production mouseInput.simulate still dispatches down/up directly through
+dispatchNativeEvent. SyntheticFocusMonitoringSession is referenced by component
+checks but not by this production input path. Thus reconstructed focus components
+are not an end-to-end fix. Next acceptance must include production controller
+integration and a before/after observable UI change on a permitted harmless
+Multica action; component checks alone cannot close this incident.
+
+
+## Persistent keyboard routing callback reconstruction
+
+Restored FocusStealKeyboardMonitor and its locked routing state from
+0x10074f7f4/0x10074f8e4. A released weak owner or helper-origin event passes
+through. Under the state lock, native tag 2 passes through; otherwise a matching
+destination (state+0x18) is reposted unchanged to state+0x24 and consumed.
+Nonmatching destinations pass through. Posting keeps the original timestamp.
+The semantic route projection intentionally leaves native state production
+unimplemented rather than guessing which app should receive keyboard input.
+
+Injected tap checks verify tail/default keyboard-only configuration, helper
+bypass, destination mismatch, all three keyboard types, current route changes,
+event identity/timestamp retention, weak owner lifetime and cleanup. Swift build
+and provider-click checks pass. These checks install no OS event tap and post no
+real input. The monitor is not yet wired to the production focus controller;
+Multica acceptance remains outstanding.

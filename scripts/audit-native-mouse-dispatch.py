@@ -53,7 +53,9 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x100741df4, 0x100732798), (0x100741eb0, 0x100732798),
          (0x100741f20, 0x10026cb84), (0x100741f28, 0x100740f70),
          (0x100742c34, 0x10026cba0), (0x100742c80, 0x1007453f8),
-         (0x100742c90, 0x1007453f8)]
+         (0x100742c90, 0x1007453f8),
+         (0x10074f848, 0x100257e24), (0x10074f8a4, 0x10074f8e4),
+         (0x10074f96c, 0x100257e24), (0x10074fbe0, 0x100258054)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -95,6 +97,9 @@ assert read(0x10136c8f8, len(b'runningProcessesWithFilter:')) == b'runningProces
 # ViewBridge focused-element retry constants.
 assert struct.unpack("<I", read(0x1007529dc, 4))[0] == 0x52875300
 assert struct.unpack("<I", read(0x100752f58, 4))[0] == 0xf100313f
+# Per-registration preventer keyboard tap differs from activation monitor.
+assert struct.unpack('<III', read(0x101571578, 12)) == (10, 11, 12)
+assert struct.unpack('<II', read(0x1011727f0, 8)) == (1, 0)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
