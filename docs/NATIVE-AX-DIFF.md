@@ -4776,3 +4776,29 @@ settings, and lazy date selection. Date text is compared with a separately
 constructed matching formatter in the same environment, not a fixed locale
 assumption. These components do not yet complete transformed-node construction
 or production collector integration.
+
+
+### AXDateTimeComponents and value formatter composition (2026-11-07)
+
+Added the concrete UIElement AXDateTimeComponents accessor and composed it with
+the date-format decision and transformed value formatter. Source
+`0x10075bffc..<0x10075c408` decodes cached values leniently and retries missing or
+invalid cached values through a strict native read. The fresh call at
+`0x10075c208` uses `0x100711234` with throwingOnFailure=1; its metadata binding
+`0x101466A30` is Swift.Int, not UInt64. Added that Int decoder specialization by
+reusing the existing CF dispatch, AXValue unpacking and ordinary-value decoder.
+The existing support check and error-to-nil logging behavior remain in the path.
+
+UIElement.formattedTransformedValue derives classification from cached AXValue
+and requests date components only in its date branch. It leaves locale and time
+zone selection to the system formatter as the source does. Read/decode errors
+and unknown valid component masks have separate reporting callbacks, preserving
+the two distinct source logging paths.
+
+Validation: full Swift build and provider selftest pass. A concrete UIElement with
+a mock-dispatched native provider covers cached month/year formatting without a
+provider read, invalid cache followed by a valid fresh time mask, invalid fresh
+type producing one error and the date+time default, and unknown masks producing
+a separate report. This completes the date accessor composition, not the full
+transformed owner or production collector integration. No live application
+success is inferred from these component checks.

@@ -447,6 +447,35 @@ private enum ProviderClickChecks {
         checkEqual(remoteText.text, "remote slice")
         checkEqual(remoteText.truncationRange, NSRange(location: 7, length: 12))
         checkEqual(rangeRequests, 1); checkEqual(textProvider.singleReads, 4)
+        let dateAX = AXUIElementCreateApplication(12506)
+        let dateProvider = Hit()
+        provider.replacements[dateAX] = dateProvider
+        let dateKey = UIElementAttribute.dateTimeComponents
+        func dateElement(_ component: AXPartialValue?) -> UIElement {
+            var attributes = [UIElementAttribute("AXValue"): partial(sampleDate)]
+            attributes[dateKey] = component
+            return UIElement(axElement: dateAX, cache: UIElementCache(
+                supportedAttributes: [dateKey], attributes: attributes, transactionAttributes: [dateKey]))
+        }
+        var dateErrors = 0
+        let cachedDateElement = dateElement(partial(NSNumber(value: 0xc0)))
+        checkEqual(cachedDateElement.formattedTransformedValue(sampleDate,
+            reportError: { _ in dateErrors += 1 }, reportUnknownDateComponents: { _ in unexpectedFailure() }),
+            monthYear.string(from: sampleDate as Date))
+        checkEqual(dateProvider.singleReads, 0)
+        dateProvider.readResult = (.success, partial(NSNumber(value: 0x0c)))
+        checkEqual(dateElement(partial("invalid" as NSString)).transformedDateFormat(
+            reportError: { _ in dateErrors += 1 }, reportUnknown: { _ in unexpectedFailure() }), .time)
+        checkEqual(dateProvider.singleReads, 1); checkEqual(dateErrors, 0)
+        dateProvider.readResult = (.success, partial("invalid" as NSString))
+        checkEqual(dateElement(nil).transformedDateFormat(reportError: { _ in dateErrors += 1 },
+            reportUnknown: { _ in unexpectedFailure() }), .dateAndTime)
+        checkEqual(dateErrors, 1)
+        dateProvider.readResult = (.success, partial(NSNumber(value: 1)))
+        var unknownDateValues: [UInt] = []
+        checkEqual(dateElement(nil).transformedDateFormat(reportError: { _ in dateErrors += 1 },
+            reportUnknown: { unknownDateValues.append($0) }), .dateAndTime)
+        checkEqual(unknownDateValues, [1]); checkEqual(dateErrors, 1)
         let role = UIElementAttribute("AXRole")
         var rect = CGRect(x: 10, y: 20, width: 80, height: 40)
         let target = UIElement(axElement: targetAX, cache: UIElementCache(supportedAttributes: [role, .frame],
