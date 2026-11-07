@@ -701,7 +701,18 @@ list_calls = [branch(site, target) for site, target in [
     (0x100773384, 0x101150a2c), (0x100772740, 0x100775540),
 ]]
 
-print(json.dumps(dict(attributedListFormat=dict(
+line_replacement_calls = [branch(site, target) for site, target in [
+    (0x100772e10, 0x100773bb0), (0x100773ca0, 0x101150a5c),
+    (0x100773cf4, 0x101150a5c), (0x100773d80, 0x101152ff4),
+    (0x100773cdc, 0x101150a2c), (0x100773cec, 0x10076d6b8),
+    (0x100773dcc, 0x101150a2c), (0x100773e7c, 0x101154b0c),
+]]
+assert struct.unpack('<I', read(0x100773d74, 4))[0] == 0x52800142  # LF comparison
+
+print(json.dumps(dict(attributedLineReplacement=dict(
+    calls=line_replacement_calls,
+    behavior="iterate Character; replace exact LF with caller text and source offsets; retain other Character UTF16 slices including CRLF; replacement is not recursively scanned",
+    limitation="state-machine primitive only; full line-boundary handling pending"), attributedListFormat=dict(
     calls=list_calls,
     behavior="require NSNumber level/index and NSAttributedString prefix; exact checklist markers; first Character.isNumber chooses index.stringValue plus period, otherwise star; integerValue identity retained without clamping",
     limitation="list extraction only; formatter state transitions and collector integration pending"), attributedFormatBoundaries=dict(

@@ -1,4 +1,50 @@
 {
+  "attributedLineReplacement": {
+    "calls": [
+      {
+        "instruction": "0x100772e10",
+        "target": "0x100773bb0",
+        "link": true
+      },
+      {
+        "instruction": "0x100773ca0",
+        "target": "0x101150a5c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773cf4",
+        "target": "0x101150a5c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773d80",
+        "target": "0x101152ff4",
+        "link": true
+      },
+      {
+        "instruction": "0x100773cdc",
+        "target": "0x101150a2c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773cec",
+        "target": "0x10076d6b8",
+        "link": true
+      },
+      {
+        "instruction": "0x100773dcc",
+        "target": "0x101150a2c",
+        "link": true
+      },
+      {
+        "instruction": "0x100773e7c",
+        "target": "0x101154b0c",
+        "link": true
+      }
+    ],
+    "behavior": "iterate Character; replace exact LF with caller text and source offsets; retain other Character UTF16 slices including CRLF; replacement is not recursively scanned",
+    "limitation": "state-machine primitive only; full line-boundary handling pending"
+  },
   "attributedListFormat": {
     "calls": [
       {

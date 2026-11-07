@@ -6114,3 +6114,32 @@ identity values. Static audit checks pinned branch targets and literal/selector
 bytes. These are isolated formatter-component checks, not live App acceptance.
 The full rich-text state machine and production collector integration remain
 unfinished; this change does not affect the browser site-policy refusal.
+
+### Mapped LF replacement used by the formatter state machine (2026-11-07)
+
+Recovered `0x100773bb0..<0x100773ee0` as
+`AttributedTextSourceRun.replacingLineFeeds(with:)`. The caller at `0x100772e10`
+passes generated closing marks + LF + opening marks with nil source offsets.
+The helper iterates Swift Character, measures each Character in UTF-16, and
+slices the original source-offset array accordingly. Exact LF is replaced by
+the supplied text/mapping pair. Non-LF characters keep their original slices.
+Replacement text is appended directly, never rescanned. CRLF is a single
+non-LF Character and is preserved, as are CR, NEL, U+2028 and U+2029. This
+must not be implemented as a raw byte/scalar LF replacement or generic newline
+normalization. Tests cover emoji, combining marks, LF adjacent to CRLF,
+consecutive LF, mapped/generated/empty replacements and empty input.
+
+Swift build, owned provider self-test and pinned-binary static audit passed.
+No real application or model was invoked. This is a state-machine dependency;
+end-to-end attributed rendering and collector wiring remain unfinished.
+
+Further static findings to carry into the full state machine: the old/new
+format filters at 0x1007727bc and 0x100772800 invoke closures 0x1007784e4 and
+0x100778500. Helpers 0x100773ee0 and 0x100773f8c perform full format-identity
+membership checks (including list level, index and prefix). Do not infer the
+returned optional-index tag's meaning from register naming alone. The later
+0x10077302c/0x100773074 filters have separate closures and still need tracing.
+The state machine also removes a trailing LF from accumulated output and
+prepends an unmapped LF to the incoming run before boundary processing
+(0x100772a88..0x100772b88). These findings are not yet exposed as a complete
+formatter implementation.

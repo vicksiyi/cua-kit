@@ -2386,6 +2386,24 @@ private enum ProviderClickChecks {
                 .accessibilityListItemIndex: -2]), .list(level: -1, index: -2, prefix: "*"))
         }
 
+        do {
+            let original = AttributedTextSourceRun(text: "😀\ne\u{301}\r\nZ\u{2028}\n", range: NSRange(location: 20, length: 10))
+            let marker = AttributedTextSourceRun(text: "</u>\n<u>", sourceOffsets: Array(repeating: nil, count: 8))
+            let replaced = original.replacingLineFeeds(with: marker)
+            checkEqual(replaced.text, "😀</u>\n<u>e\u{301}\r\nZ\u{2028}</u>\n<u>")
+            checkEqual(replaced.sourceOffsets, [20, 21] + Array(repeating: nil, count: 8)
+                + [23, 24, 25, 26, 27, 28] + Array(repeating: nil, count: 8))
+            let mapped = AttributedTextSourceRun(text: "x", sourceOffsets: [100])
+            let consecutive = AttributedTextSourceRun(text: "\n\n", range: NSRange(location: 0, length: 2))
+            checkEqual(consecutive.replacingLineFeeds(with: mapped).sourceOffsets, [100, 100])
+            let empty = AttributedTextSourceRun(text: "", sourceOffsets: [])
+            checkEqual(consecutive.replacingLineFeeds(with: empty).text, "")
+            checkEqual(empty.replacingLineFeeds(with: marker).sourceOffsets, [])
+            let unchanged = AttributedTextSourceRun(text: "\r\n\r\u{85}\u{2028}\u{2029}", range: NSRange(location: 3, length: 6))
+            checkEqual(unchanged.replacingLineFeeds(with: marker).sourceOffsets, unchanged.sourceOffsets)
+            checkEqual(unchanged.replacingLineFeeds(with: marker).text, unchanged.text)
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
