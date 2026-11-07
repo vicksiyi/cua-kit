@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import ApplicationServices
 import Carbon.HIToolbox
 
@@ -75,6 +76,27 @@ func runInputChecks() throws {
               events[2].getIntegerValueField(.mouseEventClickState) == 2,
               events[0].getIntegerValueField(.mouseEventButtonNumber) == button,
               events.allSatisfy({$0.location == mapped && $0.flags.contains(.maskControl) && $0.flags.contains(.maskShift)}) else { throw fail("SELF_TEST_FAILED","Mouse event sequence differs.") }
+    }
+    // Non-origin, Retina-independent global -> AppKit window-local mapping.
+    // Previously windowNumber was 0, so postToPid could silently miss the view.
+    typealias GetWindowLocation = @convention(c) (CGEvent) -> CGPoint
+    guard let getLocationPointer = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "CGEventGetWindowLocation") else {
+        throw fail("SELF_TEST_FAILED", "Cannot inspect the window-local event location.")
+    }
+    let getLocation = unsafeBitCast(getLocationPointer, to: GetWindowLocation.self)
+    for flipped in [true, false] {
+        let target = MouseWindow(id: 123, frame: frameB, usesFlippedCoordinates: flipped)
+        let events = try mouseClickEvents(point: mapped, button: "left", count: 1, flags: [], window: target)
+        for event in events {
+            guard let appKit = NSEvent(cgEvent: event), appKit.windowNumber == 123,
+                  getLocation(event) == CGPoint(x: 100, y: flipped ? 350 : 50),
+                  event.location == mapped,
+                  event.getIntegerValueField(.mouseEventWindowUnderMousePointer) == 123,
+                  event.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) == 123,
+                  event.getIntegerValueField(.mouseEventSubtype) == 3 else {
+                throw fail("SELF_TEST_FAILED", "Mouse event lost its target window or local coordinates.")
+            }
+        }
     }
     do { _ = try mouseModifiers("a"); throw fail("SELF_TEST_FAILED","Unsupported mouse key accepted.") }
     catch let error as Failure { guard error.code == "UNSUPPORTED_CAPABILITY" else { throw error } }
