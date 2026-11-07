@@ -3737,6 +3737,8 @@ func runProviderClickChecks() async throws {
     runMouseWindowAtPointChecks()
     runNativeWindowDescriptionChecks()
     try runMouseEventTargetChecks()
+    runOrderedMouseWindowChecks()
+    runMouseWindowRegistryChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -6114,4 +6116,63 @@ private func runMouseEventTargetChecks() throws {
         unexpectedFailure()
     } catch MouseEventWindowSelectionError.noWindows {}
     checkTrue(visited.count == 301 && visited.first == 0 && visited.last == 300)
+}
+
+private func runOrderedMouseWindowChecks() {
+    var order: [String] = [], windows: [UInt32: String] = [10: "back", 20: "front", 30: "offscreen"]
+    let ordered = orderedMouseWindows(windows: { order.append("windows"); return windows },
+        orderedWindowIDs: {
+            order.append("native")
+            // Concurrent cache changes cannot change the captured map.
+            windows[20] = "replaced"
+            windows[40] = "added"
+            return [20, 99, 10, 20, 40]
+        })
+    checkTrue(order == ["windows", "native"] && ordered == ["front", "back", "front"])
+    let empty: [String] = orderedMouseWindows(windows: { windows }, orderedWindowIDs: { [] })
+    checkTrue(empty.isEmpty)
+    let unknown: [String] = orderedMouseWindows(windows: { [:] }, orderedWindowIDs: { [10] })
+    checkTrue(unknown.isEmpty)
+    var queries = 0
+    checkTrue(onScreenMouseWindowIDs(createList: { options, relative in
+        queries += 1
+        checkTrue(options.rawValue == 0x11 && relative == 0)
+        return nil
+    }).isEmpty)
+    var entries: [UnsafeRawPointer?] = [nil, UnsafeRawPointer(bitPattern: 12), UnsafeRawPointer(bitPattern: UInt(UInt32.max))]
+    let list = entries.withUnsafeMutableBufferPointer { CFArrayCreate(nil, $0.baseAddress, $0.count, nil)! }
+    checkTrue(onScreenMouseWindowIDs(createList: { options, relative in
+        queries += 1; checkTrue(options.rawValue == 0x11 && relative == 0); return list
+    }) == [0, 12, UInt32.max])
+    checkTrue(queries == 2)
+}
+
+private func runMouseWindowRegistryChecks() {
+    enum Failure: Error { case id }
+    var windows: [UInt32: String] = [10: "valid", 20: "zero", 30: "error"]
+    var reads: [String] = [], notifications: [[UInt32]] = []
+    pruneMouseWindows(&windows, accessibilityWindowID: { value in
+        reads.append(value)
+        if value == "error" { throw Failure.id }
+        return value == "zero" ? 0 : 99
+    }, observedWindowIDsChanged: { notifications.append($0) })
+    checkTrue(Set(reads) == ["valid", "zero", "error"] && reads.count == 3)
+    checkTrue(windows == [10: "valid"] && notifications == [[10]])
+    pruneMouseWindows(&windows, accessibilityWindowID: { _ in 99 },
+        observedWindowIDsChanged: { _ in unexpectedFailure() })
+    checkTrue(windows == [10: "valid"])
+    registerMouseWindow("ignored", windows: &windows, windowID: { _ in throw Failure.id },
+        observedWindowIDsChanged: { _ in unexpectedFailure() })
+    checkTrue(windows == [10: "valid"])
+    registerMouseWindow("new", windows: &windows, windowID: { _ in 10 },
+        observedWindowIDsChanged: { notifications.append($0) })
+    checkTrue(windows == [10: "new"] && notifications.count == 2)
+    registerMouseWindow("zero", windows: &windows, windowID: { _ in 0 },
+        observedWindowIDsChanged: { notifications.append($0) })
+    checkTrue(windows[0] == "zero" && Set(notifications.last!) == [0, 10])
+    pruneMouseWindows(&windows, accessibilityWindowID: { _ in 0 },
+        observedWindowIDsChanged: { notifications.append($0) })
+    checkTrue(windows.isEmpty && notifications.last! == [])
+    pruneMouseWindows(&windows, accessibilityWindowID: { _ in unexpectedFailure() },
+        observedWindowIDsChanged: { _ in unexpectedFailure() })
 }

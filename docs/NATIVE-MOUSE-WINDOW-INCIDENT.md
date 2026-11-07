@@ -1877,3 +1877,43 @@ Coordinate-only clicks still use the older captured-window route and active-app
 probe; source orderedWindows/controller context and complete sendClick scope
 remain to be integrated. AX-action and synthetic-event delivery to Multica still
 need harmless live verification. This is not a claim that real app clicks work.
+
+## Window ordering and registry boundaries restored
+
+OrderedMouseWindows restores orderedWindows() 0x100082100..0x1000823f4:
+obtain the controller's window dictionary first, query CGWindowListCreate with
+options 0x11 and relative ID zero, and compact-map that native ID order through
+the captured dictionary. Unknown IDs are skipped; there is no focused-window,
+screenshot-window or AX-array-order fallback. A nil native list yields no
+ordered windows. Duplicate native IDs are not deduplicated.
+
+The C list holds numeric pointer-sized window IDs, not CFNumber objects.
+Swift's SDK importer marks CGWindowListCreate unavailable, so the native adapter
+binds that same exported C symbol with its C calling convention and consumes
+the retained CFArray. It does not substitute CopyWindowInfo. An isolated
+read-only executable using this production adapter returned 43 nonzero window
+IDs (43 entries total); no window titles, images or input were requested.
+
+Also restored registry operations used by the controller:
+
+- Registration 0x100085730 discards a failing window-ID read, inserts successful
+  zero IDs too, overwrites an existing key, and refreshes observed IDs even on
+  replacement.
+- Getter pruning 0x100086068/filter 0x10008548c retains windows only when their
+  throwing AX ID read succeeds and returns nonzero. Witnesses for window, menu
+  and sheet all forward to 0x10072dd08, which reads the native AX window ID.
+  It does not compare that ID with the stored key, inspect geometry or query
+  WindowServer. Only a changed count replaces the dictionary and notifies the
+  WindowOrderingObserver.
+
+Injected checks cover snapshot-before-native-read ordering, unknown/offscreen
+IDs, duplicates, nil lists, actual numeric CFArray format, zero/max IDs,
+registration errors/replacement, pruning errors/zero IDs and observer update
+conditions. Native build, provider-click checks and pinned static audit pass.
+The read-only C-boundary check is separate from injected checks.
+
+The current Target still lacks the original controller's full window registry
+initialization, AX-notification registration and WindowOrderingObserver owner.
+These restored operations are not yet a replacement for that owner. Pure
+coordinate clicks remain on the older capture-based route pending that
+integration; this section does not claim they have been fixed.
