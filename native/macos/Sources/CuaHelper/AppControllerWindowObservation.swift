@@ -13,6 +13,7 @@ final class AppControllerWindowObservation<FocusedMenuBarItem> {
     init(application: AXUIElement, processID: Int32, bundleIdentifier: String,
         focusEnforcer: @escaping () -> SyntheticAppFocusEnforcer?,
         reportError: @escaping (Error) -> Void,
+        deliverEvent: @escaping (@escaping () -> Void) -> Void = { $0() },
         initializeWindows: ((AppControllerWindows<FocusedMenuBarItem>) -> Void)? = nil,
         makeObserver: ((@escaping (AXNotificationObserver.NotificationEvent) -> Void) throws -> AXNotificationObserver)? = nil) throws {
         let ordering = NativeWindowOrderingObserver(observedWindowIDs: [], reportError: reportError)
@@ -24,7 +25,10 @@ final class AppControllerWindowObservation<FocusedMenuBarItem> {
         if let initializeWindows { initializeWindows(windows) }
         else { windows.initialize(application: UIElement(element: application), reportError: reportError) }
         let callback: (AXNotificationObserver.NotificationEvent) -> Void = { [weak self] event in
-            self?.eventHandler?.handle(event)
+            // Default is the source synchronous AX-thread delivery. An adapter
+            // may provide its owner's serial executor; queued work must not
+            // retain the controller while waiting for that executor.
+            deliverEvent { [weak self] in self?.eventHandler?.handle(event) }
         }
         if let makeObserver { windowObserver = try makeObserver(callback) }
         else {

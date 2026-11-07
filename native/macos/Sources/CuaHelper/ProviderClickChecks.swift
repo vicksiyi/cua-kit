@@ -3775,6 +3775,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
     try runAppControllerWindowObservationLifetimeChecks()
+    try runAppControllerObservationDeliveryChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7626,4 +7627,43 @@ private func runAppControllerWindowObservationLifetimeChecks() throws {
     precondition(weakOwner == nil)
     callback?(event)
     precondition(calls == ["seed", "factory", "focus"])
+}
+
+private func runAppControllerObservationDeliveryChecks() throws {
+    enum Failed: Error { case construction }
+    let ax = AXUIElementCreateApplication(getpid())
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let observer = try AXNotificationObserver(processID: getpid(), handler: { _ in })
+    let event = AXNotificationObserver.NotificationEvent(observer: observer.axObserver,
+        element: ax, notification: .menuClosed, info: [:])
+    var retainedCallback: ((AXNotificationObserver.NotificationEvent) -> Void)?
+    var queued: [() -> Void] = []
+    var focusReads = 0
+    var owner: AppControllerWindowObservation<UIElement>? = try AppControllerWindowObservation(
+        application: ax, processID: getpid(), bundleIdentifier: "owned-check",
+        focusEnforcer: { focusReads += 1; return nil }, reportError: { _ in preconditionFailure() },
+        deliverEvent: { queued.append($0) }, initializeWindows: {
+            $0.menuState.setOpenedMenu(MenuUIElement(axElement: ax, cache: cache))
+        }, makeObserver: { callback in retainedCallback = callback; callback(event); return observer })
+    precondition(queued.count == 1 && focusReads == 0 && owner?.windows.menuState.openedMenu != nil)
+    queued.removeFirst()()
+    precondition(focusReads == 1 && owner?.windows.menuState.openedMenu == nil)
+    retainedCallback?(event)
+    weak var weakOwner = owner
+    owner = nil
+    precondition(weakOwner == nil && queued.count == 1)
+    queued.removeFirst()()
+    precondition(focusReads == 1)
+    weak var failedWindows: AppControllerWindows<UIElement>?
+    do {
+        let _: AppControllerWindowObservation<UIElement> = try AppControllerWindowObservation(
+            application: ax, processID: getpid(), bundleIdentifier: "owned-check",
+            focusEnforcer: { preconditionFailure() }, reportError: { _ in preconditionFailure() },
+            initializeWindows: { failedWindows = $0 }, makeObserver: { callback in
+                retainedCallback = callback; throw Failed.construction
+            })
+        preconditionFailure("Observer construction failure must escape")
+    } catch Failed.construction {}
+    precondition(failedWindows == nil)
+    retainedCallback?(event)
 }

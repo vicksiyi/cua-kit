@@ -2896,3 +2896,26 @@ native observer retained independently, demonstrating that it is the weak owner
 boundary that prevents continued controller access. No AX subscription, monitoring,
 UI event or attention change is involved. Native production construction and
 MainActor integration remain separate acceptance requirements.
+
+
+## Explicit owner-executor delivery boundary
+
+The observation owner now accepts a deliverEvent boundary, defaulting to the
+source synchronous call on the AX callback thread. An integration adapter may
+supply its owner's serial executor (such as Target's MainActor queue) without
+silently changing the native default. Both the retained native callback and
+queued operation capture the observation owner weakly; queued work retains the
+native event payload but must not keep a released controller alive.
+
+Checks inject a controlled executor: a callback during construction queues work
+without changing menu state, delivery after construction clears it, and owner
+release before a later queued delivery skips all controller access. A separate
+factory-throw case verifies error propagation, release of seeded window state
+and inert retained callbacks after failed construction. These checks allocate
+only an unsubscribed observer for the helper's own PID and send no UI input.
+
+The boundary makes Target serialization explicit but does not itself wire Target.
+Any production adapter must use the same executor for dictionary reads/writes
+and event handling, preserve FIFO delivery, and document its scheduling difference
+from the original synchronous native callback. Unlocked native owner/application
+acceptance remains outstanding.
