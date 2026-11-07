@@ -6,13 +6,19 @@ private enum ProviderClickChecks {
         var points: [CGPoint] = []
         var fail = false
         var performed: [UIElementAction] = []
+        var readResult: (error: AXError, value: AXPartialValue?) = (.success, nil)
+        var singleReads = 0
+        var arrayReads: [Int] = []
         static func == (lhs: Hit, rhs: Hit) -> Bool { lhs === rhs }
         func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
         var supportedAttributes: [UIElementAttribute] = []
         var attributes: [UIElementAttribute: AXPartialValue] = [:]
-        func value(for attribute: UIElementAttribute) -> (error: AXError, value: AXPartialValue?) { fatalError() }
+        func value(for attribute: UIElementAttribute) -> (error: AXError, value: AXPartialValue?) { singleReads += 1; return readResult }
         func values(for attributes: [UIElementAttribute]) throws -> [UIElementAttribute: AXPartialValue] { self.attributes }
-        func arrayValue(for attribute: UIElementAttribute, index: Int, maxValues: Int, countIfKnown: Int?) -> (error: AXError, value: AXPartialValue?) { fatalError() }
+        func arrayValue(for attribute: UIElementAttribute, index: Int, maxValues: Int, countIfKnown: Int?) -> (error: AXError, value: AXPartialValue?) {
+            checkEqual(index, 0); checkTrue(countIfKnown == nil)
+            arrayReads.append(maxValues); return readResult
+        }
         func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { fatalError() }
         func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { fatalError() }
         func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { fatalError() }
@@ -189,6 +195,41 @@ private enum ProviderClickChecks {
         }
         checkEqual(hierarchyCopies, 4)
         checkTrue(UIElementTreeTransaction.current == nil)
+        let childrenKey = UIElementAttribute("AXChildren")
+        let subset = AXArraySubsetDescriptor(count: 99, availableRanges: [0..<2])
+        checkTrue(uiElementAvailableSubsetDescription(nil) == nil)
+        checkTrue(uiElementAvailableSubsetDescription(.init(count: 99)) == nil)
+        checkEqual(uiElementAvailableSubsetDescription(subset), "(showing 0-2 of 99 items)")
+        checkEqual(uiElementAvailableSubsetDescription(.init(count: 9, availableRanges: [])), "(showing  of 9 items)")
+        checkEqual(uiElementAvailableSubsetDescription(.init(count: 9, availableRanges: [5..<7, 0..<2])),
+            "(showing 5-7, 0-2 of 9 items)")
+        let childrenPartial = AXPartialValue(value: AXEncodedValue(value: [targetAX, targetAX] as NSArray),
+            arraySubsetDescriptor: subset, textTruncationDescriptor: nil)
+        let cachedChildren = UIElement(axElement: targetAX,
+            cache: UIElementCache(supportedAttributes: [childrenKey], attributes: [childrenKey: childrenPartial], transactionAttributes: nil))
+        let cachedPartial = try cachedChildren.partialArrayValue(for: childrenKey, maxCount: 1)
+        checkEqual(cachedPartial?.array.count, 2)
+        checkEqual(cachedPartial?.subsetDescriptor, subset)
+        checkEqual(targetMock.singleReads, 0)
+        checkTrue(targetMock.arrayReads.isEmpty)
+        let badChildren = UIElement(axElement: targetAX,
+            cache: UIElementCache(supportedAttributes: [childrenKey], attributes: [childrenKey: partial("wrong type" as NSString)], transactionAttributes: nil))
+        checkTrue(try badChildren.partialArrayValue(for: childrenKey, maxCount: 2) == nil)
+        checkTrue(targetMock.arrayReads.isEmpty)
+        let uncachedChildren = UIElement(axElement: targetAX,
+            cache: UIElementCache(supportedAttributes: [childrenKey], attributes: [:], transactionAttributes: nil))
+        targetMock.readResult = (.noValue, childrenPartial)
+        let tolerated = try uncachedChildren.partialArrayValue(for: childrenKey, maxCount: -3)
+        checkEqual(tolerated?.subsetDescriptor, subset)
+        checkEqual(targetMock.arrayReads, [-3])
+        targetMock.readResult = (.attributeUnsupported, childrenPartial)
+        checkEqual(try uncachedChildren.partialArrayValue(for: childrenKey, maxCount: nil)?.array.count, 2)
+        checkEqual(targetMock.singleReads, 1)
+        targetMock.readResult = (.failure, childrenPartial)
+        do {
+            _ = try uncachedChildren.partialArrayValue(for: childrenKey, maxCount: 2)
+            unexpectedFailure("unexpected AX failures must propagate")
+        } catch UIElementError.axError(.failure) {}
         let app = UIElement(axElement: appAX, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
         let point = try await target.clickablePoint(reportError: { _ in unexpectedFailure("unexpected read failure") })
         checkEqual(point, CGPoint(x: 50, y: 40))

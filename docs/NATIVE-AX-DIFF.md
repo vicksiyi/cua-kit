@@ -4270,3 +4270,36 @@ The remaining integration must preserve partial-array metadata and the original
 capture/render/refetch lifecycle. Simply installing this prefetch limit in the
 legacy flat DFS could discard children without describing the available subset;
 that is not accepted as equivalent collection behavior.
+
+
+## Partial-array reader and subset presentation
+
+Recovered UIElementProtocol.partialArrayValue at 0x1007b04f4..0x1007b06a0
+and its uncached helper 0x1007b0958..0x1007b0af8. The new reader preserves a
+present cached AXPartialValue as final, including a failed decode; it does not
+retry a malformed cached value or trim a cached array to maxCount. On cache miss,
+known unsupported attributes return nil. No maxCount uses value(for:); a supplied
+count uses arrayValue(index:0,maxValues:count,countIfKnown:nil) unchanged.
+Both native tolerated-error tables at 0x1015717f0 and 0x1015717c0 contain
+-25212 (noValue) and -25205 (attributeUnsupported). Either tolerated status can
+retain a supplied partial value; other errors throw before decoding. Decoding is
+lenient and preserves the original arraySubsetDescriptor without normalization.
+
+UIElementPartialArrayValue.swift includes the generic control-flow composition
+and a concrete [UIElement] provider specialization. It does not claim to restore
+all generic AXEncodedValue decoder targets. The full helper fixture checks
+cached duplicates/ranges with a smaller requested limit, no re-read on malformed
+cached data, unchanged negative uncached limit, tolerated error/value pairs,
+raw-read selection for nil limits and thrown AX failures.
+
+The tree item's availableSubsetDescription getter at 0x10064ea74..0x10064ecc4
+is extracted in UIElementSubsetDescription.swift. Nil descriptor or nil ranges
+returns nil; present ranges render stored lower and upper bounds in order,
+joined by comma-space, followed by the total: (showing 0-2 of 99 items).
+It does not decrement half-open upper bounds, reorder ranges or treat an empty
+ranges array as complete. Those edge cases are covered in the full helper check.
+
+Complete helper build/self-test pass using injected providers only. Neither the
+generic UIElementTree owner nor its transformation/render collector is complete;
+these restored readers/formatting primitives are not yet connected to the legacy
+flat observation renderer, and no real UI acceptance is claimed.
