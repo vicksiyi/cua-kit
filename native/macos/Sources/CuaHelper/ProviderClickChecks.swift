@@ -1429,6 +1429,92 @@ private enum ProviderClickChecks {
         siblingLink.role = .button
         checkTrue(siblingMergeText(element: siblingLink, context: &informativeContext) == nil)
 
+        func mergeTextNode(_ ax: AXUIElement, _ value: String) -> PruneItem {
+            var node = associationNode(ax, [], title: "Keep first title")
+            node.role = .staticText; node.value = value
+            return associationItem(node, children: [targetA])
+        }
+        let mergeA = mergeTextNode(associationA, " A ")
+        let mergeB = mergeTextNode(associationB, " B ")
+        let mergeBlank = mergeTextNode(associationLabel, " \n\t")
+        var mergeBarrier = associationNode(associationMissing, [])
+        mergeBarrier.role = .button
+        let mergeParent = associationItem(anonymousGroup, children: [
+            mergeA, mergeBlank, mergeB, associationItem(mergeBarrier), mergeB, mergeA
+        ])
+        switch UIElementTreeTransformation.mergeTextOnlySiblings(item: mergeParent, context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.children.count, 3)
+            checkEqual(result.children[0].element.value, " A   B ")
+            checkEqual(result.children[2].element.value, " B   A ")
+            checkTrue(CFEqual(result.children[0].element.id, associationA))
+            checkTrue(CFEqual(result.children[1].element.id, associationMissing))
+            checkTrue(CFEqual(result.children[2].element.id, associationB))
+            checkEqual(result.children[0].element.roleDescription, "text")
+            checkEqual(result.children[0].element.title, "Keep first title")
+            checkTrue(result.children[0].children.isEmpty)
+            checkEqual(result.children[0].element.transformedString?.description, " A   B ")
+        default: unexpectedFailure("sibling ranges were not merged in reverse order")
+        }
+        for flag in 0..<2 {
+            var blocked = mergeParent
+            if flag == 0 { blocked.element.isSelectable = true }
+            else { blocked.element.isFocusable = true }
+            switch UIElementTreeTransformation.mergeTextOnlySiblings(item: blocked, context: &associationContext) {
+            case .unchanged: break
+            default: unexpectedFailure("interactive parent must reject sibling merge")
+            }
+        }
+        switch UIElementTreeTransformation.mergeTextOnlySiblings(item: associationItem(anonymousGroup, children: [mergeA]), context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.children.count, 1)
+            checkEqual(result.children[0].children.count, 1) // singleton is not rewritten
+        default: unexpectedFailure("singleton candidate must yield transformed")
+        }
+        switch UIElementTreeTransformation.mergeTextOnlySiblings(item: associationItem(anonymousGroup, children: [associationItem(mergeBarrier)]), context: &associationContext) {
+        case .unchanged: break
+        default: unexpectedFailure("no candidate must yield unchanged")
+        }
+        switch UIElementTreeTransformation.mergeTextOnlySiblings(item: associationItem(anonymousGroup, children: [mergeBlank, mergeBlank]), context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.children.count, 1)
+            checkEqual(result.children[0].element.value, "")
+        default: unexpectedFailure("whitespace run must merge to empty text")
+        }
+        var realLink = linkNode
+        realLink.value = "Link label"
+        let linkLeadingRun = associationItem(anonymousGroup, children: [associationItem(realLink), mergeA])
+        switch UIElementTreeTransformation.mergeTextOnlySiblings(item: linkLeadingRun, context: &informativeContext) {
+        case .transformed(let result): checkEqual(result.children.count, 2) // link has no flattenedRole
+        default: unexpectedFailure("descriptorless run must still yield transformed")
+        }
+        let textLeadingRun = associationItem(anonymousGroup, children: [mergeA, associationItem(realLink)])
+        switch UIElementTreeTransformation.mergeTextOnlySiblings(item: textLeadingRun, context: &informativeContext) {
+        case .transformed(let result):
+            checkEqual(result.children.count, 1)
+            checkTrue(result.children[0].element.value?.contains("[Link label](") == true)
+        default: unexpectedFailure("mixed-role candidate run should merge when first descriptor exists")
+        }
+
+        var pipelineRoot = associationNode(associationMissing, [], title: "Parent")
+        pipelineRoot.isEnabled = true
+        let pipelineTree = UIElementTree<TransformedUIElement>(items: [
+            associationItem(pipelineRoot, children: [mergeA, mergeB])
+        ], focusedElement: pipelineRoot)
+        var pipelineContext = ownerContext(.fullUIContext)
+        var dispatched: Set<UIElementTreeTransformation> = []
+        let pipelineResult = pipelineTree.transformed(using: UIElementTreeTransformation.defaultPipeline, in: &pipelineContext) {
+            rule, item, context in
+            dispatched.insert(rule)
+            return rule.transform(item: item, context: &context, render: { node, _ in node.title ?? node.value ?? "" })
+        }
+        checkEqual(dispatched.count, 9)
+        checkEqual(pipelineResult.items.count, 1)
+        checkEqual(pipelineResult.items[0].children.count, 1)
+        checkEqual(pipelineResult.items[0].children[0].element.value, " A   B ")
+        checkTrue(CFEqual(pipelineResult.items[0].children[0].element.id, associationA))
+        checkTrue(CFEqual(pipelineResult.focusedElement!.id, associationMissing))
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

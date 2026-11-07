@@ -5602,3 +5602,51 @@ escaping, query retention, missing URL and rejected roles. The helper is
 complete, but this does not raise the completed common rule count above 8/9:
 contiguous candidate grouping, joining and final sibling replacement remain
 under analysis. Production integration/live app acceptance also remain open.
+
+### Complete sibling merge and common dispatcher (2026-11-07)
+
+Recovered common tag 8 `mergeTextOnlySiblings` and connected all nine common
+strategy bodies through the generic `transform(item:context:rebuild:providerTitle:render:)`
+dispatcher. This supersedes earlier notes that the common dispatcher and full
+sibling rule are missing; the production collector and Mac strategies remain
+separate, unfinished integration work.
+
+The sibling rule rejects a selectable/focusable parent. It classifies original
+direct children once, caches candidate tuples by index, and records every
+contiguous candidate run regardless of differing candidate roles. No runs
+returns unchanged. Runs longer than one are processed in reverse index order;
+singleton runs still make the final result transformed. Each merge requires
+the first current child to have flattenedRole; a missing descriptor skips that
+run without changing the final transformed result. A copy of the first child
+keeps its identity, subset and unmodified node fields. It receives the first
+candidate's captured role and flattenedRole.targetDescription, and its subtree
+is cleared. Candidate texts whose descriptions trim to empty are discarded;
+other texts are retained verbatim, including surrounding whitespace. Joining
+uses flattenedRole.separator and structural-empty/plain-tail semantics, just
+like the already restored TransformedUIString.joined reducer. The first
+structurally nonempty item retains structured spans, subsequent descriptions
+are appended as plain text. The merged structured text is assigned, then its
+description is written to value when stringValue is non-nil, otherwise to
+node description. The original run is replaced by this one item.
+
+Evidence: parent guards 0x10065a5c8/65a5f0; candidate helper 0x10065abf8;
+range length > 1 at 0x10065b11c/65b120 and reverse decrement 0x10065b1fc;
+first flattenedRole slot 33 at 0x10065b34c; role/roleDescription setters at
+0x10065b3d8/65b3f0; first subtree removal 0x10065b43c; whitespace test
+0x10065b664/65b680; join helper 0x100657778 called at 0x10065b82c;
+transformedString assignment 0x10065b86c; stringValue nil selects description
+setter instead of value at 0x10065b8bc; range replacement 0x10065b9c4.
+No-range unchanged tag at 0x10065ba64 differs from candidate-run transformed
+tag at 0x10065be68, including the singleton-only branch via 0x10065bfc8.
+Audit pins those control flow and mutation sites.
+
+Validation: Swift build, own provider mock checks and read-only binary audit
+pass. Fixtures cover multiple reverse-processed runs, intervening non-text,
+whitespace filtering without trimming retained strings, first-node identity,
+subtree removal, interactive-parent rejection, singleton/no-candidate/all-blank
+cases, mixed-role runs and missing first descriptors. An integrated fixture
+executes all nine strategies via the recursive tree driver and verifies the
+merged output, retained identity and captured focus. It does not execute the
+vendor service or a live app. Common rule extraction is now 9/9; production
+native collection/rendering, Mac-specific rules and end-to-end acceptance
+are not thereby complete.

@@ -424,6 +424,35 @@ branch(0x10065cef0, 0x101150714)
 branch(0x10065d1b8, 0x10063a574) # Markdown label helper, unlike tag 7
 compare_zero_branch(0x10065cdd8, 1, 0x10065cec4)
 
+# Complete sibling merge: capture candidates/ranges, discard singleton
+# ranges, process reverse indices, use first node's flattened-role descriptor.
+for address, instruction in [
+    (0x10065a5c8, 0xf9404708), # parent isSelectable
+    (0x10065a5f0, 0xf9404f08), # parent isFocusable
+    (0x10065b11c, 0xf100051f), # run length compared with 1
+    (0x10065b120, 0x54fffead), # skip length <= 1
+    (0x10065b1fc, 0xd1000718), # reverse range index decrement
+    (0x10065b34c, 0xf9408429), # flattenedRole getter slot 33
+    (0x10065b3d8, 0xf9400b28), # role setter
+    (0x10065b3f0, 0xf9401333), # roleDescription setter
+    (0x10065b86c, 0xf9404735), # transformedString setter
+    (0x10065ba64, 0x52800062), # no candidate ranges: unchanged
+    (0x10065be68, 0x52800002), # any candidate ranges: transformed
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+for site, target in [
+    (0x10065abf8, 0x10065cb8c), (0x10065b43c, 0x101150f3c),
+    (0x10065b664, 0x10114dfa8), (0x10065b680, 0x101151da0),
+    (0x10065b82c, 0x100657778), (0x10065b9c4, 0x101150e40),
+    (0x10065b9d4, 0x10064fac4),
+    # Join specializes the existing structural-empty/plain-tail reducer.
+    (0x100657934, 0x10063b5f8), (0x100657940, 0x101150a2c),
+    (0x100657984, 0x100639134),
+]:
+    branch(site, target)
+compare_zero_branch(0x10065b370, 8, 0x10065b79c)
+compare_zero_branch(0x10065b8bc, 1, 0x10065b8d0)
+
 # Full title mutation paths: setter before source removal; relocation appends
 # (or invokes rebuild) before sorting target indices and removing siblings.
 for site, target in [
@@ -446,7 +475,7 @@ for address, instruction in [
 
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
-    titleAssociationInvestigation=dict(status="extracted complete tag-0 body; production dispatcher integration pending",
+    titleAssociationInvestigation=dict(status="extracted complete tag-0 body; production collector integration pending",
         calls=title_calls,
         confirmed=["candidate comparison uses Identifiable.id equality, not node text",
             "target filtering callback inserts IDs into a Set and returns inserted",
@@ -455,12 +484,12 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
         providerGuard="present provider is authoritative; only absent provider searches original direct children by ID; nil title permits candidate, empty title blocks",
         textCandidate="value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
         mutation="single eligible target: set title then remove source; otherwise empty source: require all targets, rebuild/append in target order, remove descending indices",
-        remaining=["integrate complete transformation dispatcher and native production collector",
+        remaining=["integrate native production collector",
             "live application acceptance"]),
     selectableAncestor=dict(entry="0x100659e58", keyPaths=selectable_fields,
         guards="selectable, not focused/table/table-row; no value-settable or selectable descendant",
         mutation="flatten description/stringValue/title; overwrite own focusability with descendant predicate; retain full Boolean-valued items in depth-first order using optional rebuild",
-        limitation="extracted body; complete dispatcher and production integration pending"),
+        limitation="extracted body; production integration pending"),
     linksIntoMarkdownText=dict(entry="0x10065856c", mutation="0x10065a7ec",
         guard="link role and non-nil URL; nonempty rendered URL description",
         text="empty literal + URL interpolation with own role/context + empty literal; no node-title link label",
@@ -469,7 +498,15 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     siblingTextCandidate=dict(entry="0x10065cb8c",
         staticText="present stringValue becomes one plain span verbatim; no title fallback or old transformedString reuse",
         link="only informationalContext; nil URL returns empty plain span, otherwise Markdown-link interpolation using stringValue/title/description",
-        limitation="candidate helper implemented; complete sibling grouping, joining and replacement rule still pending"),
+        limitation="candidate helper and complete sibling rule implemented; production integration pending"),
+    siblingMerge=dict(entry="0x10065a5c8", candidates="0x10065aaec",
+        guards="parent not selectable/focusable; absent candidate runs unchanged",
+        ranges="all consecutive candidates across roles; only length > 1 rewritten in reverse order",
+        replacement="first child identity/subset retained; require first flattenedRole, set captured role and targetDescription, clear subtree",
+        text="discard whitespace-only descriptions without trimming retained spans; join with first flattenedRole separator using structural-empty/plain-tail semantics",
+        writes="transformedString then value if stringValue is non-nil else description; replace whole run by first-item copy",
+        result="transformed when any candidate run exists, even singleton/descriptorless"),
+    commonDispatcher=dict(strategies=9, fixture="all nine rules through recursive tree driver", limitation="Mac-specific strategies and production collector still pending"),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
         guard="not focusable/selectable and no canBeUserInteractive descendant",
         matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",
@@ -483,7 +520,7 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     singleItemGroup=dict(entry="0x100659c10", replacement="0x10065be7c",
         guard="role.isGrouping and not selectable/focused/node.hasDescriptiveAttributes",
         action="replace with sole child only if child subset ranges absent; otherwise remove empty or keep",
-        limitation="extracted body; complete transform dispatcher and production integration pending"),
+        limitation="extracted body; production integration pending"),
     pruning=dict(emptyDisabled="remove iff disabled, not focused, no stored children and no item description",
         nonDescriptive="retain own focusability/selectability, interesting actions or item description; then retain descendant focusability/selectability or interesting actions; otherwise remove",
         integration="concrete branches tested through tree driver; full production pipeline remains pending"),

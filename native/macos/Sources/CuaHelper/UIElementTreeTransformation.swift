@@ -61,3 +61,35 @@ extension UIElementTree where Element: MutableAccessibilityNode {
         return item
     }
 }
+
+extension UIElementTreeTransformation {
+    // Common transform entry 0x100657c10. Mac-specific strategies and the
+    // production collector are separate consumers of this complete dispatch.
+    func transform<Element: MutableAccessibilityNode, Context: AccessibilityRenderingContext>(
+        item: UIElementTree<Element>.Item, context: inout Context,
+        rebuild: ((inout UIElementTree<Element>, UIElementTree<Element>.Item, inout Context) -> Void)? = nil,
+        providerTitle: ((Element.ID) -> String?)? = nil,
+        render: (Element, inout Context) throws -> String
+    ) -> Result<Element> where Element.Role == Context.Role {
+        switch self {
+        case .associateTitleUIElements:
+            return Self.associateTitleUIElements(item: item, context: &context, rebuild: rebuild, providerTitle: providerTitle)
+        case .flattenIntoSelectableAncestor:
+            return Self.flattenIntoSelectableAncestor(item: item, context: &context, rebuild: rebuild)
+        case .pruneNonDescriptiveSubtrees:
+            return Self.pruneNonDescriptiveSubtrees(item: item)
+        case .pruneEmptyDisabledElements:
+            return Self.pruneEmptyDisabledElements(item: item)
+        case .mergeSingleItemGroups:
+            return Self.mergeSingleItemGroups(item: item)
+        case .flattenRedundantHierarchy:
+            return Self.flattenRedundantHierarchy(item: item, context: &context, render: render)
+        case .flattenRepetitiveStaticText:
+            return Self.flattenRepetitiveStaticText(item: item)
+        case .flattenLinksIntoMarkdownText:
+            return Self.flattenLinksIntoMarkdownText(item: item, context: &context)
+        case .mergeTextOnlySiblings:
+            return Self.mergeTextOnlySiblings(item: item, context: &context)
+        }
+    }
+}

@@ -52,7 +52,7 @@
     }
   ],
   "titleAssociationInvestigation": {
-    "status": "extracted complete tag-0 body; production dispatcher integration pending",
+    "status": "extracted complete tag-0 body; production collector integration pending",
     "calls": [
       {
         "instruction": "0x10065d984",
@@ -190,7 +190,7 @@
     "textCandidate": "value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
     "mutation": "single eligible target: set title then remove source; otherwise empty source: require all targets, rebuild/append in target order, remove descending indices",
     "remaining": [
-      "integrate complete transformation dispatcher and native production collector",
+      "integrate native production collector",
       "live application acceptance"
     ]
   },
@@ -230,7 +230,7 @@
     ],
     "guards": "selectable, not focused/table/table-row; no value-settable or selectable descendant",
     "mutation": "flatten description/stringValue/title; overwrite own focusability with descendant predicate; retain full Boolean-valued items in depth-first order using optional rebuild",
-    "limitation": "extracted body; complete dispatcher and production integration pending"
+    "limitation": "extracted body; production integration pending"
   },
   "linksIntoMarkdownText": {
     "entry": "0x10065856c",
@@ -244,7 +244,22 @@
     "entry": "0x10065cb8c",
     "staticText": "present stringValue becomes one plain span verbatim; no title fallback or old transformedString reuse",
     "link": "only informationalContext; nil URL returns empty plain span, otherwise Markdown-link interpolation using stringValue/title/description",
-    "limitation": "candidate helper implemented; complete sibling grouping, joining and replacement rule still pending"
+    "limitation": "candidate helper and complete sibling rule implemented; production integration pending"
+  },
+  "siblingMerge": {
+    "entry": "0x10065a5c8",
+    "candidates": "0x10065aaec",
+    "guards": "parent not selectable/focusable; absent candidate runs unchanged",
+    "ranges": "all consecutive candidates across roles; only length > 1 rewritten in reverse order",
+    "replacement": "first child identity/subset retained; require first flattenedRole, set captured role and targetDescription, clear subtree",
+    "text": "discard whitespace-only descriptions without trimming retained spans; join with first flattenedRole separator using structural-empty/plain-tail semantics",
+    "writes": "transformedString then value if stringValue is non-nil else description; replace whole run by first-item copy",
+    "result": "transformed when any candidate run exists, even singleton/descriptorless"
+  },
+  "commonDispatcher": {
+    "strategies": 9,
+    "fixture": "all nine rules through recursive tree driver",
+    "limitation": "Mac-specific strategies and production collector still pending"
   },
   "repetitiveText": {
     "entry": "0x100659d8c",
@@ -267,7 +282,7 @@
     "replacement": "0x10065be7c",
     "guard": "role.isGrouping and not selectable/focused/node.hasDescriptiveAttributes",
     "action": "replace with sole child only if child subset ranges absent; otherwise remove empty or keep",
-    "limitation": "extracted body; complete transform dispatcher and production integration pending"
+    "limitation": "extracted body; production integration pending"
   },
   "pruning": {
     "emptyDisabled": "remove iff disabled, not focused, no stored children and no item description",
