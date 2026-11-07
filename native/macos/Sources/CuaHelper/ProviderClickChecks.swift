@@ -3771,6 +3771,7 @@ func runProviderClickChecks() async throws {
     runWindowWrapperStorageChecks()
     runAppControllerWindowEventDispatchChecks()
     runAppControllerAttentionChecks()
+    runAppControllerWindowCreatedFocusChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7518,4 +7519,23 @@ private func runAppControllerAttentionChecks() {
             calls.append("clear"); return -1
         })
     precondition(calls == ["pid", "lookup", "clear"])
+}
+
+private func runAppControllerWindowCreatedFocusChecks() {
+    enum Failed: Error { case subscription, pid }
+    var calls: [String] = []
+    prepareAppControllerWindowCreatedFocus(bundleIdentifier: "com.apple.controlcenter.extra",
+        registerDestroyed: { preconditionFailure() }, actualPID: { preconditionFailure() },
+        startSuppressingMenuDismissal: { _ in preconditionFailure() })
+    prepareAppControllerWindowCreatedFocus(bundleIdentifier: "com.apple.controlcenter",
+        registerDestroyed: { calls.append("register"); throw Failed.subscription },
+        actualPID: { calls.append("pid"); return 7 }, startSuppressingMenuDismissal: {
+            precondition($0 == 7); calls.append("suppress")
+        })
+    precondition(calls == ["register", "pid", "suppress"])
+    calls = []
+    prepareAppControllerWindowCreatedFocus(bundleIdentifier: "com.apple.controlcenter",
+        registerDestroyed: nil, actualPID: { calls.append("pid"); throw Failed.pid },
+        startSuppressingMenuDismissal: { precondition($0 == nil); calls.append("suppress") })
+    precondition(calls == ["pid", "suppress"])
 }

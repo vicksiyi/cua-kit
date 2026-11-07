@@ -2764,3 +2764,20 @@ Injected checks cover PID failure, lookup failure, original zero-initialized
 PSN, pointer output reuse, false attention value and ignored setter status.
 The native composition is ready for the controller callback, but has not yet
 been invoked on a user application or wired into production Target.
+
+
+## Control Center window-created focus branch
+
+The window-created callback's extra focus handling applies only to the exact
+bundle ID com.apple.controlcenter. If its existing AX observer is present it
+attempts uiElementDestroyed registration for the created window and ignores
+registration failure. It then reads the created window's actualPID; a thrown
+read becomes nil. Finally the existing focus enforcer, if present, starts menu
+dismissal suppression using that optional PID. No observer or focus enforcer
+is constructed by this branch, and a missing observer does not skip the PID read.
+
+prepareAppControllerWindowCreatedFocus restores this sequencing with explicit
+optional observer registration and an enforcer boundary. Checks cover exact
+bundle matching, ignored subscription failure, missing observer and PID failure
+continuing with nil. It is not invoked on the real Control Center by these checks;
+production callback composition remains required.
