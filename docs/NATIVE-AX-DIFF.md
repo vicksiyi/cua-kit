@@ -5462,3 +5462,40 @@ despite missing captured nodes, empty strings, absent providers, no match,
 duplicate first-match order and one provider invocation with the correct ID.
 This is eligibility only; complete title writeback/relocation/rebuild and the
 full production dispatcher remain incomplete.
+
+### Complete title association body (2026-11-07)
+
+Restored tag 0 as `UIElementTreeTransformation.associateTitleUIElements` in
+Swift, preserving the native language and generic node/context contracts.
+This supersedes the earlier outstanding writeback/relocation investigation.
+The outer loop visits captured original children; each source is located again
+by identity in the current direct children. Removed sources are skipped.
+Target identities are deduplicated in encounter order. A single eligible
+candidate writes the target title before removing the source label. Eligibility
+still consults the provider or original captured children, not newly written
+working titles. Empty associated strings remain valid.
+
+For the remaining path, the captured source must have no children. Every
+unique target must resolve to a current direct child, or nothing is moved.
+Targets are appended to the source subtree in target order, or passed to the
+optional rebuild callback with that subtree and the shared inout context.
+Only after all appends/callbacks are complete are target siblings removed,
+using descending indices. No additional role, subset or self-ID guard is
+invented. Working mutations use the existing tree setters/cache invalidation.
+
+Evidence: 0x1006593f0 tests captured source child emptiness; 0x100659578 checks
+found-index count against target count; 0x100659644 calls Array.append;
+0x10065973c invokes rebuild with subtree/item/context; 0x1006597f0 sorts
+indices using descending comparator 0x10065c598; 0x100659850 removes siblings.
+The fast path uses MutableAccessibilityNode title setter slot 6 at
+0x10065998c/0x1006599a0, then removes source at 0x1006599e0.
+Read-only import bindings confirm append/remove/sorted at GOT
+0x1014667b8/0x1014667c8/0x101466600. The audit pins these branches and calls.
+
+Validation: Swift build and own mock provider composition checks pass.
+New fixtures exercise target-before/after-label, empty title assignment,
+duplicate target IDs, relocation order, callback-controlled insertion, missing
+targets and nonempty captured source subtrees. No vendor executable was run,
+no live application was controlled and no policy was modified. This is the
+sixth extracted common rule body, not a claim that the production collector,
+complete nine-rule dispatcher or live app acceptance is finished.

@@ -341,9 +341,29 @@ for address, instruction in [
 ]:
     assert struct.unpack('<I', read(address, 4))[0] == instruction
 
+# Full title mutation paths: setter before source removal; relocation appends
+# (or invokes rebuild) before sorting target indices and removing siblings.
+for site, target in [
+    (0x1006593f0, 0x101151500),
+    (0x100659644, 0x101150f0c),
+    (0x1006597f0, 0x101150c9c),
+    (0x100659850, 0x101150f24),
+    (0x1006599e0, 0x101150f24),
+    (0x100659a00, 0x10064fac4),
+]:
+    title_calls.append(branch(site, target))
+for address, instruction in [
+    (0x10065998c, 0xf9401868), # MutableAccessibilityNode title setter slot 6
+    (0x1006599a0, 0xd63f0100), # invoke title setter
+    (0x10065973c, 0xd63f0300), # invoke optional rebuild
+    (0x100659578, 0xeb08001f), # found-index count equals target count
+    (0x10065957c, 0x54000f81), # mismatch skips mutation
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
-    titleAssociationInvestigation=dict(status="partial evidence, not an implemented rule",
+    titleAssociationInvestigation=dict(status="extracted complete tag-0 body; production dispatcher integration pending",
         calls=title_calls,
         confirmed=["candidate comparison uses Identifiable.id equality, not node text",
             "target filtering callback inserts IDs into a Set and returns inserted",
@@ -351,10 +371,9 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
             "subtree items are mutated and their caches invalidated"],
         providerGuard="present provider is authoritative; only absent provider searches original direct children by ID; nil title permits candidate, empty title blocks",
         textCandidate="value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
-        remaining=["recover complete optional working-item flow",
-            "recover remaining title writeback flow after eligibility guard",
-            "recover target relocation/removal and rebuild callback branches",
-            "only then implement dispatcher branch and fixture acceptance"]),
+        mutation="single eligible target: set title then remove source; otherwise empty source: require all targets, rebuild/append in target order, remove descending indices",
+        remaining=["integrate complete transformation dispatcher and native production collector",
+            "live application acceptance"]),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
         guard="not focusable/selectable and no canBeUserInteractive descendant",
         matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",

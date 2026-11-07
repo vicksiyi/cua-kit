@@ -52,7 +52,7 @@
     }
   ],
   "titleAssociationInvestigation": {
-    "status": "partial evidence, not an implemented rule",
+    "status": "extracted complete tag-0 body; production dispatcher integration pending",
     "calls": [
       {
         "instruction": "0x10065d984",
@@ -148,6 +148,36 @@
         "instruction": "0x100659868",
         "target": "0x10064fac4",
         "link": true
+      },
+      {
+        "instruction": "0x1006593f0",
+        "target": "0x101151500",
+        "link": true
+      },
+      {
+        "instruction": "0x100659644",
+        "target": "0x101150f0c",
+        "link": true
+      },
+      {
+        "instruction": "0x1006597f0",
+        "target": "0x101150c9c",
+        "link": true
+      },
+      {
+        "instruction": "0x100659850",
+        "target": "0x101150f24",
+        "link": true
+      },
+      {
+        "instruction": "0x1006599e0",
+        "target": "0x101150f24",
+        "link": true
+      },
+      {
+        "instruction": "0x100659a00",
+        "target": "0x10064fac4",
+        "link": true
       }
     ],
     "confirmed": [
@@ -158,11 +188,10 @@
     ],
     "providerGuard": "present provider is authoritative; only absent provider searches original direct children by ID; nil title permits candidate, empty title blocks",
     "textCandidate": "value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
+    "mutation": "single eligible target: set title then remove source; otherwise empty source: require all targets, rebuild/append in target order, remove descending indices",
     "remaining": [
-      "recover complete optional working-item flow",
-      "recover remaining title writeback flow after eligibility guard",
-      "recover target relocation/removal and rebuild callback branches",
-      "only then implement dispatcher branch and fixture acceptance"
+      "integrate complete transformation dispatcher and native production collector",
+      "live application acceptance"
     ]
   },
   "repetitiveText": {

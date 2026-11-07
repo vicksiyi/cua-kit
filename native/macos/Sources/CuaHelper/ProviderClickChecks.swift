@@ -1189,6 +1189,73 @@ private enum ProviderClickChecks {
         emptyExistingTitle.title = ""
         checkFalse(titleAssociationTargetLacksTitle(identity: capturedOwner.id,
             in: [PruneItem(element: emptyExistingTitle, subtree: transformedLeaf)]))
+        // Title association: captured order, duplicate targets, relocation and callbacks.
+        func associationNode(_ ax: AXUIElement, _ targets: [AXUIElement], title: String? = nil) -> TransformedUIElement {
+            var node = anonymousGroup
+            node.title = title; node.value = nil; node.description = nil
+            node.element = UIElement(axElement: ax, cache: UIElementCache(
+                supportedAttributes: [titleLinks], attributes: [titleLinks: partial(targets as NSArray)],
+                transactionAttributes: nil))
+            return node
+        }
+        let associationA = AXUIElementCreateApplication(13201)
+        let associationB = AXUIElementCreateApplication(13202)
+        let associationLabel = AXUIElementCreateApplication(13203)
+        let associationMissing = AXUIElementCreateApplication(13204)
+        func associationItem(_ node: TransformedUIElement, children: [PruneItem] = []) -> PruneItem {
+            .init(element: node, subtree: .init(items: children, focusedElement: nil))
+        }
+        let targetA = associationItem(associationNode(associationA, []))
+        let targetB = associationItem(associationNode(associationB, []))
+        for labelFirst in [true, false] {
+            let label = associationItem(associationNode(associationLabel, [associationA, associationA], title: ""))
+            let parent = associationItem(anonymousGroup, children: labelFirst ? [label, targetA] : [targetA, label])
+            var context = ownerContext(.fullUIContext)
+            switch UIElementTreeTransformation.associateTitleUIElements(item: parent, context: &context) {
+            case .transformed(let result):
+                checkEqual(result.children.count, 1)
+                checkTrue(CFEqual(result.children[0].element.id, associationA))
+                checkEqual(result.children[0].element.title, "")
+            default: unexpectedFailure("title association did not assign/remove label")
+            }
+        }
+        let multiLabel = associationItem(associationNode(associationLabel, [associationB, associationA, associationB], title: "Group"))
+        let multiParent = associationItem(anonymousGroup, children: [targetA, multiLabel, targetB])
+        var associationContext = ownerContext(.fullUIContext)
+        switch UIElementTreeTransformation.associateTitleUIElements(item: multiParent, context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.children.count, 1)
+            checkTrue(CFEqual(result.children[0].element.id, associationLabel))
+            checkEqual(result.children[0].children.count, 2)
+            checkTrue(CFEqual(result.children[0].children[0].element.id, associationB))
+            checkTrue(CFEqual(result.children[0].children[1].element.id, associationA))
+        default: unexpectedFailure("title association did not relocate targets")
+        }
+        var rebuildIDs: [AXUIElement] = []
+        switch UIElementTreeTransformation.associateTitleUIElements(item: multiParent, context: &associationContext,
+            rebuild: { tree, child, _ in
+                rebuildIDs.append(child.element.id)
+                tree.items.insert(child, at: 0)
+            }) {
+        case .transformed(let result):
+            checkEqual(rebuildIDs.count, 2)
+            checkTrue(CFEqual(rebuildIDs[0], associationB))
+            checkTrue(CFEqual(rebuildIDs[1], associationA))
+            checkEqual(result.children[0].children.count, 2)
+            checkTrue(CFEqual(result.children[0].children[0].element.id, associationA))
+        default: unexpectedFailure("title association omitted rebuild callback")
+        }
+        for label in [
+            associationItem(associationNode(associationLabel, [associationA, associationMissing])),
+            associationItem(associationNode(associationLabel, [associationA, associationB]), children: [targetA])
+        ] {
+            let parent = associationItem(anonymousGroup, children: [targetA, label, targetB])
+            switch UIElementTreeTransformation.associateTitleUIElements(item: parent, context: &associationContext) {
+            case .unchanged: break
+            default: unexpectedFailure("incomplete target set or nonempty label must remain unchanged")
+            }
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
