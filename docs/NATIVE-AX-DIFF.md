@@ -6530,3 +6530,27 @@ canonically equivalent Unicode, empty text and mixed range/text insertion.
 Swift build, owned provider checks and static call/offset audit passed.
 Full content assembly/formatting and production collection remain incomplete;
 this component was not substituted for a live node renderer.
+
+
+### Final content formatting (2026-11-07)
+
+Recovered finalization at 0x100626ddc in AccessibilityContentFormatting.swift.
+No entries produce empty output. One entry produces its text alone, discarding
+its label, unless the label is exactly "Secondary Actions". Multiple entries
+(and that exception) use optional label + ": " + text, joined by comma-space.
+A present empty label is distinct from nil and emits ": ".
+
+Before joining, the original sorts entries by their long/multiline flag: short
+entries first, stable order within each category. The insertion path at
+0x100627e0c swaps only true-before-false pairs; the merge path at 0x100628bc0
+chooses the left entry on equal flags. The reconstruction uses an equivalent
+stable partition. The flag does not cause truncation or inserted newlines;
+existing newlines stay in the text. Input accumulator order is retained by the
+standalone formatter rather than mutating its input value.
+
+Swift build and provider tests passed for zero/single/multiple entries, the
+Secondary Actions exception, empty labels, mixed long/multiline text, and the
+accumulator -> range entry -> deduplication -> formatting chain. Static audit
+pins single-entry branches, label comparison and sort call paths. Full content
+collection guards, action/URL treatment, whole-node composition and production
+collection integration remain incomplete; no live app was executed.

@@ -856,7 +856,19 @@ content_accumulator_calls = [branch(site, target) for site, target in [
 # entry.text (+16), not entry.label (+0), supplies both membership and insertion.
 assert struct.unpack('<I', read(0x100627970, 4))[0] == 0xa9415ab7
 
-print(json.dumps(dict(contentAccumulator=dict(
+content_format_calls = [branch(site, target) for site, target in [
+    (0x100626e4c, 0x101152ff4), (0x100626e6c, 0x100627d70),
+    (0x100627e88, 0x100628548), (0x100628870, 0x100628bc0),
+    (0x100626ee8, 0x101150a2c),
+]]
+compare_zero_branch(0x100626dfc, 9, 0x100626f6c)
+compare_zero_branch(0x100626e10, 1, 0x100626ff0)
+
+print(json.dumps(dict(contentFormatting=dict(
+    calls=content_format_calls,
+    behavior="zero entries empty; single non-Secondary-Actions entry text only; otherwise stable short-before-long ordering, optional label-colon-space, comma-space join",
+    sorting="0x100627d70 insertion comparator; 0x100628bc0 merge selects left on equal flags",
+    limitation="content collection guards/actions/URL handling and full node integration remain pending"), contentAccumulator=dict(
     calls=content_accumulator_calls,
     behavior="ordered entries plus separate Swift String set; appendUnique preserves first label by text equality; no trimming/casefold; range helper bypasses set",
     limitation="full content call ordering, formatting and production integration pending"), contentEntryConstructor=dict(

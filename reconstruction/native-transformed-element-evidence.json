@@ -1,4 +1,36 @@
 {
+  "contentFormatting": {
+    "calls": [
+      {
+        "instruction": "0x100626e4c",
+        "target": "0x101152ff4",
+        "link": true
+      },
+      {
+        "instruction": "0x100626e6c",
+        "target": "0x100627d70",
+        "link": true
+      },
+      {
+        "instruction": "0x100627e88",
+        "target": "0x100628548",
+        "link": true
+      },
+      {
+        "instruction": "0x100628870",
+        "target": "0x100628bc0",
+        "link": true
+      },
+      {
+        "instruction": "0x100626ee8",
+        "target": "0x101150a2c",
+        "link": true
+      }
+    ],
+    "behavior": "zero entries empty; single non-Secondary-Actions entry text only; otherwise stable short-before-long ordering, optional label-colon-space, comma-space join",
+    "sorting": "0x100627d70 insertion comparator; 0x100628bc0 merge selects left on equal flags",
+    "limitation": "content collection guards/actions/URL handling and full node integration remain pending"
+  },
   "contentAccumulator": {
     "calls": [
       {

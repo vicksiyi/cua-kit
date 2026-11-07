@@ -2901,6 +2901,24 @@ private enum ProviderClickChecks {
             checkEqual(content.entries.suffix(4).map(\.label), ["Rows", "Columns", "Value", "Rows"])
             checkTrue(content.contains(text: "0-2"))
         }
+        do {
+            checkEqual(formatAccessibilityContent([]), "")
+            checkEqual(formatAccessibilityContent([.init(label: "Description", text: "only")]), "only")
+            checkEqual(formatAccessibilityContent([.init(label: "", text: "only")]), "only")
+            checkEqual(formatAccessibilityContent([.init(label: "Secondary Actions", text: "More")]), "Secondary Actions: More")
+            checkEqual(formatAccessibilityContent([.init(label: "secondary actions", text: "More")]), "More")
+            let long = String(repeating: "x", count: 101)
+            let entries: [AccessibilityContentEntry] = [.init(label: "Long", text: long),
+                .init(label: nil, text: "title"), .init(label: "Multiline", text: "a\nb"),
+                .init(label: "", text: "empty label"), .init(label: "Last", text: "short")]
+            checkEqual(formatAccessibilityContent(entries), "title, : empty label, Last: short, Long: " + long + ", Multiline: a\nb")
+            checkEqual(entries[0].label, "Long") // no mutation of source accumulation
+            var content = AccessibilityContentAccumulator()
+            content.appendUnique(.init(label: nil, text: "table"))
+            content.appendIndexRange(label: "Rows", range: 0...3)
+            content.appendUnique(.init(label: "Description", text: "table"))
+            checkEqual(formatAccessibilityContent(content.entries), "table, Rows: 0-3")
+        }
         let leafTree = UIElementTree<UIElement>(items: [], focusedElement: nil)
         let childTree = UIElementTree(items: [UIElementTree.Item(element: cachedChildren, subtree: leafTree)], focusedElement: nil)
         var tree = UIElementTree(items: [UIElementTree.Item(element: target, subtree: childTree, availableSubset: subset),
