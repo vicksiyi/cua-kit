@@ -2075,3 +2075,26 @@ with CGWindowObserverRegistration. Its lifetime therefore owns actual native
 registration and cleanup, ready for the remaining AsyncStream adapter. Injected
 verification does not construct this concrete observer or register live callbacks.
 Full ordering reactions/menu tasks/controller integration remain outstanding.
+
+
+## CGWindow.EventStream AsyncSequence composition
+
+CGWindowEventStream restores value configuration windowIDs/events/bufferingPolicy
+and per-iterator stream/observer/iterator storage, verified through both source
+field descriptors. Each makeAsyncIterator creates its own standard Swift
+AsyncStream pair, constructs its iterator, and subscribes a NativeCGWindowObserver.
+The observer callback captures the continuation and yields the window/event tuple;
+the source ignores yield results. Merely creating the sequence starts no native
+subscription. next forwards to the standard AsyncStream iterator.
+
+The observer is retained by iterator lifetime. No invented onTermination closure
+releases it immediately when next returns nil; cancellation and buffering behavior
+come from Swift AsyncStream. The native specialization now composes the restored
+concrete observer/SPI/registry chain. Buffering policy is required explicitly until
+source call-site policies are supplied, avoiding a guessed default.
+
+Injected checks verify lazy creation, independent subscriptions, bufferingNewest
+retention of the final two events, tuple forwarding, observer retention across
+iterator copies, release after final copy disposal, and cancellation of an empty
+stream task. They perform no live WindowServer subscription. Full ordering response
+logic/menu tasks and production controller integration remain outstanding.

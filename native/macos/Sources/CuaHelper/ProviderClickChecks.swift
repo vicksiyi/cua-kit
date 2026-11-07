@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    await runCGWindowEventStreamChecks()
     runCGWindowNotificationChecks()
     runCGWindowCallbackRegistryChecks()
     runCGWindowObserverRegistrationChecks()
@@ -6908,4 +6909,48 @@ private func runCGWindowNotificationChecks() {
             context: context, entry: { _ -> CGWindowNotificationEntry<Int>? in nil },
             window: { _ in preconditionFailure("missing entry skips native lookup") })
     }
+}
+
+
+private func runCGWindowEventStreamChecks() async {
+    final class Observer {
+        let release: () -> Void
+        init(_ release: @escaping () -> Void) { self.release = release }
+        deinit { release() }
+    }
+    typealias Stream = CGWindowEventStream<Int, Observer>
+    var made = 0; var released = 0
+    var handlers: [(Int, WindowServerEvent) -> Void] = []
+    var references: [WeakObserver] = []
+    struct WeakObserver { weak var value: Observer? }
+    let sequence = Stream(windowIDs: [7, 7], events: [.didMove], bufferingPolicy: .bufferingNewest(2),
+        makeObserver: { windows, events, handler in
+            checkEqual(windows, [7, 7]); checkEqual(events, [.didMove]); made += 1
+            handlers.append(handler)
+            let observer = Observer { released += 1 }
+            references.append(WeakObserver(value: observer)); return observer
+        })
+    checkEqual(made, 0)
+    var first: Stream.AsyncIterator? = sequence.makeAsyncIterator()
+    checkEqual(made, 1); checkTrue(references[0].value != nil)
+    handlers[0](1, .didMove); handlers[0](2, .didMove); handlers[0](3, .didMove)
+    let two = await first!.next(); let three = await first!.next()
+    checkEqual(two?.0, 2); checkEqual(three?.0, 3)
+    var copy = first
+    checkTrue(copy != nil)
+    first = nil; checkEqual(released, 0)
+    copy = nil; checkEqual(released, 1); checkTrue(references[0].value == nil)
+    var second: Stream.AsyncIterator? = sequence.makeAsyncIterator()
+    checkEqual(made, 2)
+    handlers[1](4, .didMove)
+    checkEqual(await second!.next()?.0, 4)
+    second = nil; checkEqual(released, 2)
+    // Cancel a task awaiting an empty standard AsyncStream. Subscription
+    // resources are released when its iterator leaves task scope.
+    let task = Task { () -> Bool in
+        var iterator = sequence.makeAsyncIterator()
+        return await iterator.next() == nil
+    }
+    task.cancel()
+    checkTrue(await task.value); checkEqual(made, 3); checkEqual(released, 3)
 }
