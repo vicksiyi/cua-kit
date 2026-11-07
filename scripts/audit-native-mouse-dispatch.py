@@ -549,3 +549,6 @@ assert pid_psn_branch >> 26 == 0b000101
 pid_psn_offset = pid_psn_branch & 0x3ffffff
 if pid_psn_offset & 0x2000000: pid_psn_offset -= 0x4000000
 assert 0x10026d7f8 + pid_psn_offset * 4 == 0x101154020
+
+# Window pruning uses the raw-window getter witness at +16.
+assert struct.unpack("<I", read(0x100085574, 4))[0] == 0xf9400b68

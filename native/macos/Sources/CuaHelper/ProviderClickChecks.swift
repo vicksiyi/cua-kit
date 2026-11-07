@@ -7560,12 +7560,12 @@ private func runAppControllerWindowsCompositionChecks() {
     var closeCalls = 0
     let context = AppControllerWindows<UIElement>(observedWindowIDsChanged: { updates.append(Set($0)) },
         menuDidOpen: { preconditionFailure() }, menuDidClose: { closeCalls += 1 })
-    var first = Window(element: firstAX); first.rawWindowID = 99; first.windowID = 10
-    var second = first; second.windowID = 20
-    var other = Window(element: otherAX); other.windowID = 30
+    var first = Window(element: firstAX); first.rawWindowID = 10; first.windowID = 999
+    var second = first; second.rawWindowID = 20
+    var other = Window(element: otherAX); other.rawWindowID = 30; other.windowID = 999
     var invalid = other; invalid.windowID = 40; invalid.rawWindowID = 0
     context.register(first); context.register(second); context.register(other); context.register(invalid)
-    precondition(updates.last == [10, 20, 30, 40])
+    precondition(updates.last == [0, 10, 20, 30])
     precondition(Set(context.windows().keys) == [10, 20, 30])
     precondition(updates.last == [10, 20, 30])
     updates = []

@@ -17,8 +17,12 @@ final class AppControllerWindows<FocusedMenuBarItem> {
         self.menuDidOpen = menuDidOpen; self.menuDidClose = menuDidClose
     }
     func register(_ window: any WindowUIElementProtocol) {
-        guard let id = try? window.windowID else { return }
+        guard let id = try? window.rawWindowID else { return }
         registry.register(window, windowID: id)
+    }
+    private func registerMenu(_ menu: MenuUIElement) {
+        guard let id = try? menu.windowID else { return }
+        registry.register(menu, windowID: id)
     }
     func registerWindow(_ element: AXUIElement) { register(WindowUIElement(element: element)) }
     func registerSheet(_ element: AXUIElement) { register(SheetUIElement(element: element)) }
@@ -38,7 +42,7 @@ final class AppControllerWindows<FocusedMenuBarItem> {
     func openMenu(_ element: AXUIElement) {
         let menu = MenuUIElement(element: element)
         prepareAppControllerMenuOpen(menu, storeMenu: menuState.setOpenedMenu,
-            windowID: { try $0.windowID }, registerMenu: { self.register($0) },
+            windowID: { try $0.windowID }, registerMenu: { self.registerMenu($0) },
             menuDidOpen: menuDidOpen)
     }
     func closeMenu(_ element: AXUIElement) {

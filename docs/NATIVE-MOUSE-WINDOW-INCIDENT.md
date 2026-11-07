@@ -2787,8 +2787,8 @@ production callback composition remains required.
 
 AppControllerWindows now composes the restored window-protocol existentials,
 MouseWindowRegistry, separate menu state, initial primary/sheet traversal and
-menu open/close operations. Registration uses the concrete windowID witness,
-while pruning validates rawWindowID; these remain distinct for menus. Initial
+menu open/close operations. Ordinary window/sheet registration and pruning use rawWindowID. Explicit menu
+registration uses the separate menu-resolved windowID path. Initial
 sheet registration passes the previously resolved AX ID into the registry.
 Menu open records/waits/registers before notifying ordering; menu close notifies
 ordering, clears menu state and removes records matching the native AX element.
@@ -2863,3 +2863,19 @@ That serialization boundary must be resolved before calling window dictionary
 operations from both domains. The resource owner has only been compiled at this
 stage; current locked-desktop state prevents live owner acceptance. Earlier
 component/event-delivery tests do not prove the new combined owner.
+
+
+## Ordinary registration versus explicit menu registration correction
+
+Re-reading 0x100085730 confirms ordinary registration directly reads raw AX
+windowID at 0x1000857b8. The separate menu helper at 0x1000858c0 calls the
+concrete MenuUIElement.windowID. Pruning at 0x100085574 calls protocol witness
++16, the raw getter. AppControllerWindows now keeps ordinary register and private
+registerMenu distinct instead of using the overridable windowID for both.
+This fixes a composition discrepancy discovered before production integration.
+
+Updated composition checks intentionally give ordinary test windows different
+raw and overridden IDs and require registration to use raw IDs, including raw
+zero followed by pruning. Menu-open still uses the concrete menu resolver for
+both readiness and its separate registration path. Build/component/static checks
+are required after this correction; locked live acceptance remains pending.
