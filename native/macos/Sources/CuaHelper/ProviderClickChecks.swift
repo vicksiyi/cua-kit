@@ -1028,6 +1028,22 @@ private enum ProviderClickChecks {
             checkEqual(calls, ["full", "focus"])
             checkEqual(mainRender?.elementID, 0)
         }
+        do {
+            let bytes = [UInt8](repeating: 0xff, count: 16)
+            checkEqual(timestampUUID(Date(timeIntervalSince1970: 0), randomBytes: bytes).uuidString,
+                "00000000-0000-7FFF-BFFF-FFFFFFFFFFFF")
+            checkEqual(timestampUUID(Date(timeIntervalSince1970: 1.2349), randomBytes: bytes).uuidString,
+                "00000000-04D2-7FFF-BFFF-FFFFFFFFFFFF")
+            let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+            var context = ownerContext(.fullUIContext)
+            let revision = try UIElementTreeRevision.root(empty, context: &context)
+            checkTrue(UUID(uuidString: revision.lineageID) != nil)
+            checkEqual(revision.lineageID, revision.lineageID.lowercased())
+            checkEqual(Array(revision.lineageID)[14], "7")
+            checkTrue(revision.focusTree == nil); checkTrue(revision.focusRenderTree == nil)
+            checkTrue(revision.renderTree.roots.isEmpty)
+            checkEqual(context.type, .fullUIContext)
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

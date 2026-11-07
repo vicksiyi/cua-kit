@@ -6866,3 +6866,21 @@ error propagation with existing render mutations retained. Swift build and
 provider checks pass. Prior notes saying no revision owner exists are superseded
 for the root path only: appended revisions, change arrays, snapshot encoding,
 and production collection/operation integration remain unfinished.
+
+### Context-based root entry and timestamp UUID
+
+Restored root(tree,focusTree,context:) at 0x10076b838: timestamp UUID, lowercase
+string, shared inout context passed through the existing constrained render
+overload. The overload without focus at 0x10076ba54 passes nil explicitly; it
+does not infer selection/focus from the source.
+
+UUID(timestamp:) at 0x100624738 fills 16 random bytes with arc4random_buf, writes
+the low 48 bits of UInt64 Unix milliseconds big-endian, sets version 7 and RFC
+variant bits, and preserves other random bits. Swift numeric conversion traps
+remain; no clamping or monotonic counter is introduced. Pinned calls and GOT
+inspection identify Unix epoch getter and lowercased(), respectively.
+
+Build/provider checks pass, including deterministic timestamp/bit vectors and
+the actual context-root entry with lowercase v7 lineage and nil focus. This
+closes the root convenience entry; appended revisions, differences, snapshots
+and production observation wiring remain outstanding.
