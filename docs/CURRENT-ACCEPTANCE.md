@@ -1,4 +1,4 @@
-# 当前验收边界（2026-11-06）
+# 当前验收边界（更新至 2026-11-08）
 
 本页用于区分已运行的路径和未完成的还原工作，不是完成率。总体目标仍未完成。历史文档中的“未实现/已通过”可能对应不同版本，以下以本轮运行证据和实际源码为准。
 
@@ -11,17 +11,37 @@
 | SIWC authenticate → context → provider → Cookie/DOM | 独立 Chromium 中受控账号/grant/审批 fixture 成功；账号变化回滚通过 | 线上认证服务或真实账号登录已验收 |
 | Rust → 原 Sky JS/还原 TS → Swift IPC | 本轮 12 项通过，包含协议、列表、策略、终止、剪贴板恢复、背压清理；6 项 opt-in 测试跳过 | 已取得屏幕/辅助功能权限、能实际操作应用 UI |
 | Swift 显式/观察时后台启动 owned App | 单独启用启动专项，本轮 4 项通过；还原/安装包客户端 × 两种启动方式 | Skyshot 截图/AX 成功；权限错误不算观察成功 |
-| 原生 macOS AX/截图/输入 | helper 当前报告 accessibility=false、screenRecording=false | 不能验收实际 UI 观察或输入效果 |
+| 原生 macOS AX/截图/输入 | 2026-11-08 只读检查：accessibility=true、screenRecording=true；旧版 owned fixture 四种点击验收通过；新增生产窗口观察/注册表路径尚未真实验收 | 权限开启、组合检查或旧路径通过不能证明当前 Sky/MCP/DeepSeek 应用操作已修复 |
 
 ## 当前明确未完成
 
-1. **原生 UI 验收**：当前 helper 权限不足；不能从应用发现/启动结果推断键鼠、AX、截图或粘贴效果。
+1. **原生 UI 验收**：当前 helper 的辅助功能与录屏权限均为 true，但 2026-11-08 桌面检查为 screenLocked=true、frontmostIsLoginWindow=true。旧版 owned fixture 前台/后台 × 索引/坐标点击成功，不覆盖随后接入的生产 Target 窗口观察、维护中的窗口注册表及 Sky/MCP/DeepSeek 链路；这些仍须解锁后的实际验收。不能从应用发现、启动、截图或离线组合检查推断点击效果。
 2. **Native disableDiff**：SkyIPC.swift 校验 disableDiff 类型，但调用 SkyAppState.get 时未传入；get 本身也无该参数。当前没有还原原生增量树语义，不能宣称该选项已完整实现。JS 声明说明 true 应返回完整树；原生具体差分算法尚缺证据。
 3. **真实认证联调**：SIWC 线上账号/grant/cookie 流程未验收；受控 fixture 不代表真实登录。
 4. **整体源码版本审计**：当前 browser-service 的部分核心链路已更新 oracle，许多历史测试仍依赖旧压缩符号。没有全仓“全部测试绿”的证据；旧测试通过记录不能证明当前构建整体一致。
 5. **原生语言/算法还原**：Rust/Swift 路径与语言边界已迁移一部分；仍有 native-host、supervisor、legacy exports 等差异。独立实现和协议兼容不能冒充原厂函数体还原，详见 LANGUAGE-MIGRATION-AUDIT.md 和 NATIVE-HOST-LANGUAGE-AUDIT.md。
 6. **真实模型与公开网站稳定性**：曾观察 debugger detach、步数耗尽和最终回答与工具证据不一致，尚无覆盖性修复验收。本轮自有页面测试未解决这些问题。
 7. **历史材料同步**：飞书旧架构文档、早期状态段落与全部源码变更尚未逐项同步。
+
+
+## 最近原生集成证据与复现顺序
+
+当前生产 Target 已在 private bind 与 Sky 状态入口准备 AppControllerWindowObservation，
+在 AX enablement 后启动 ordering，在停用时释放 AX assertion 并停止 ordering。
+坐标点击已读取维护中的窗口注册表，索引点击保留 WindowUIElementProtocol 包装。
+这些是源码接通事实，不能替代真实效果验收。
+
+2026-11-08 再次运行 `cua-helper --provider-click-self-test` 通过；该检查不发送真实输入。
+`--window-observer-binding-check` 的五项只读符号解析已有通过记录，仍不证明原生通知回调、
+窗口顺序恢复或真实输入成功。完整事件归属、源码证据及调度适配见
+[NATIVE-MOUSE-WINDOW-INCIDENT.md](NATIVE-MOUSE-WINDOW-INCIDENT.md)。
+
+用户确认事件顺序为：应用长期没有操作 → 用户取消授权。
+因此之后的拒绝/取消不能作为之前点击无效的根因。排查必须比较取消之前的操作请求、
+输入派发与实际界面变化；取消后的操作不得自动重试。
+
+当前本地最新模型 JSONL 是 2026-11-07T11-11-49 的浏览器任务，终止于模型 HTTP 402；
+它不是最近原生应用点击失败的直接证据，不能用它替代应用链路复现。
 
 ## 本轮复现入口
 
@@ -181,4 +201,4 @@ Agent 返回 blocked 并停止，没有取得可验收的搜索结果。此处�
 明确找到 AppController 的 disableAXDiffing/treeCache、SkyshotOperation 的 continuingFrom、
 Revision 的 previousRevision/lineageRootRevision/differenceLines 及差分行预算接口。
 这推进了原生职责和待实现结构的确认；不是函数体或差分规则恢复，disableDiff 仍未实现。
-helper 权限再次检查仍为 false；本轮没有进行原生 UI 操作。
+该历史检查时 helper 权限为 false；2026-11-08 权限已为 true，最新状态以本页开头为准。该历史轮次没有进行原生 UI 操作。
