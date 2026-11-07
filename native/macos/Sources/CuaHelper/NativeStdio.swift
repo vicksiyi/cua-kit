@@ -21,7 +21,10 @@ func serveNativeStdio() async throws {
         var id: Any = NSNull()
         var response: [String:Any]
         do {
-            guard let request = try JSONSerialization.jsonObject(with:line) as? [String:Any],
+            let decoded: Any
+            do { decoded = try JSONSerialization.jsonObject(with: line) }
+            catch { throw fail("INVALID_ARGUMENT", "Invalid JSON request.") }
+            guard let request = decoded as? [String:Any],
                   let requestId = request["id"] as? String, let method = request["method"] as? String else {
                 throw fail("INVALID_ARGUMENT","Expected JSON request with string id/method.")
             }
@@ -29,7 +32,11 @@ func serveNativeStdio() async throws {
             response = ["id":id,"result":try await handle(method,request["params"] as? [String:Any] ?? [:])]
         } catch is CancellationError { throw CancellationError() }
           catch let error as Failure { response = ["id":id,"error":["code":error.code,"message":error.message]] }
-          catch { response = ["id":id,"error":["code":"INVALID_ARGUMENT","message":"Invalid native request"]] }
+          catch UIElementError.axError(let status) {
+            response = ["id": id, "error": ["code": "ACCESSIBILITY_ERROR",
+                "message": "Accessibility error: \(NativeAXErrorDescription.describe(status)) (\(status.rawValue))"]]
+          }
+          catch { response = ["id":id,"error":["code":"NATIVE_ERROR","message":String(describing: error)]] }
         var bytes = try JSONSerialization.data(withJSONObject:response,options:[.sortedKeys]); bytes.append(10)
         var offset = 0
         while offset < bytes.count {

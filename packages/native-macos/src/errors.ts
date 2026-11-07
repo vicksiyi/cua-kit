@@ -3,7 +3,8 @@ export type ErrorCode =
   | 'TARGET_NOT_FOUND' | 'AMBIGUOUS_TARGET' | 'STALE_OBSERVATION'
   | 'PERMISSION_DENIED' | 'UNSUPPORTED_CAPABILITY' | 'INVALID_ARGUMENT'
   | 'CANCELLED' | 'ACTION_OUTCOME_UNKNOWN' | 'SESSION_CLOSED'
-  | 'ELEMENT_NOT_INTERACTABLE' | 'PROVIDER_DISCONNECTED';
+  | 'ELEMENT_NOT_INTERACTABLE' | 'PROVIDER_DISCONNECTED'
+  | 'ACCESSIBILITY_ERROR' | 'NATIVE_ERROR';
 
 export class CuaError extends Error {
   constructor(public readonly code: ErrorCode, message: string, options?: ErrorOptions) {
