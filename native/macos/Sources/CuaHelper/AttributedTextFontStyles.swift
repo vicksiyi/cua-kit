@@ -6,6 +6,7 @@ import CoreText
 struct AttributedTextFontStyles: Equatable {
     let bold: Bool
     let italic: Bool
+    let orderedFormats: [AttributedTextFormat]
 
     init(attributes: [NSAttributedString.Key: Any],
          resolveTraits: ([NSFontDescriptor.AttributeName: Any], Double) -> CTFontSymbolicTraits? = {
@@ -17,6 +18,7 @@ struct AttributedTextFontStyles: Equatable {
         guard let font = attributes[.accessibilityFont] as? [String: Any] else {
             bold = false
             italic = false
+            orderedFormats = []
             return
         }
         var traits: CTFontSymbolicTraits = []
@@ -32,5 +34,10 @@ struct AttributedTextFontStyles: Equatable {
         // AXFontBold is additive, including when name/size/resolution failed.
         bold = traits.contains(.traitBold) || (font["AXFontBold"] as? Bool == true)
         italic = traits.contains(.traitItalic)
+        var ordered: [AttributedTextFormat] = []
+        if traits.contains(.traitBold) { ordered.append(.bold) }
+        if italic { ordered.append(.italic) }
+        if bold && !ordered.contains(.bold) { ordered.append(.bold) }
+        orderedFormats = ordered
     }
 }

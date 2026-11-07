@@ -1,4 +1,10 @@
 {
+  "attributedRendering": {
+    "entry": "0x100770530",
+    "traversal": "0x10077045c",
+    "composition": "font trait bold then italic then additive AXFontBold; numeric styles; link followed by attachment; quote/style names then list; mapped boundary rendering including terminal empty run",
+    "limitation": "composed formatter uses cached element factory and shared URL context; production collector not yet wired; vendor runtime not executed"
+  },
   "attributedBoundaryRenderer": {
     "calls": [
       {

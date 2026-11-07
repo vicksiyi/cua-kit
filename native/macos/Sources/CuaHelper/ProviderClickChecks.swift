@@ -2466,6 +2466,55 @@ private enum ProviderClickChecks {
             checkEqual(renderer.output.sourceRange(ofMarkdownSubstring: "\r\n"), NSRange(location: 1, length: 2))
         }
 
+        do {
+            let override = AttributedTextFontStyles(attributes: [.accessibilityFont: [
+                NSAccessibility.FontAttributeKey.fontName.rawValue: "fixture",
+                NSAccessibility.FontAttributeKey.fontSize.rawValue: 12.0,
+                "AXFontBold": true]], resolveTraits: { _, _ in [.traitItalic] })
+            checkEqual(override.orderedFormats, [.italic, .bold])
+            let traits = AttributedTextFontStyles(attributes: [.accessibilityFont: [
+                NSAccessibility.FontAttributeKey.fontName.rawValue: "fixture",
+                NSAccessibility.FontAttributeKey.fontSize.rawValue: 12.0,
+                "AXFontBold": true]], resolveTraits: { _, _ in [.traitItalic, .traitBold] })
+            checkEqual(traits.orderedFormats, [.bold, .italic])
+            var context = ownerContext(.fullUIContext)
+            let input = NSMutableAttributedString(string: "Title\n😀 item")
+            input.addAttributes([NSAttributedString.Key("AXStyleName"): "Title",
+                .accessibilityUnderline: NSNumber(value: 1)], range: NSRange(location: 0, length: 6))
+            input.addAttributes([.accessibilityListItemLevel: 0,
+                .accessibilityListItemPrefix: NSAttributedString(string: "checklist item, completed"),
+                .accessibilityListItemIndex: 1], range: NSRange(location: 6, length: 7))
+            let result = renderNativeAttributedText(input, context: &context,
+                reportUnknownStyle: { _ in unexpectedFailure() }, makeElement: { _ in unexpectedFailure() })
+            checkEqual(result.description, "# <u>Title</u>\n* [x] 😀 item")
+            checkEqual(result.sourceRange(ofMarkdownSubstring: "😀 item"), NSRange(location: 6, length: 7))
+            checkTrue(result.sourceRange(ofMarkdownSubstring: "* [x]") == nil)
+            let ax = AXUIElementCreateApplication(12521)
+            let url = URL(string: "https://example.invalid/path")!
+            let node = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [], attributes: [
+                UIElementAttribute("AXRole"): partial("AXLink" as NSString),
+                UIElementAttribute("AXURL"): partial(url as NSURL)], transactionAttributes: nil))
+            context.urlShortener = UIElementURLShortener(configuration: .init(
+                individualLimit: nil, totalLimit: nil, includeQuery: true, includeFragment: true, baseHost: nil))
+            let linkText = NSAttributedString(string: " A ", attributes: [.accessibilityLink: ax, .accessibilityUnderline: 1])
+            let linkResult = renderNativeAttributedText(linkText, context: &context,
+                reportUnknownStyle: { _ in unexpectedFailure() }, makeElement: { _ in node })
+            checkEqual(linkResult.description, "<u>[A](example.invalid/path)</u>")
+            checkEqual(linkResult.sourceRange(ofMarkdownSubstring: "A"), NSRange(location: 1, length: 1))
+            let combined = NSAttributedString(string: " A ", attributes: [.accessibilityLink: ax, .accessibilityAttachment: ax])
+            let combinedResult = renderNativeAttributedText(combined, context: &context,
+                reportUnknownStyle: { _ in unexpectedFailure() }, makeElement: { _ in node })
+            checkEqual(combinedResult.description, "[attachment: [A](example.invalid/path)]")
+            checkTrue(combinedResult.sourceRange(ofMarkdownSubstring: "A") == nil)
+            var unknown: [String] = []
+            let unknownText = NSAttributedString(string: "plain", attributes: [NSAttributedString.Key("AXStyleName"): "custom"])
+            checkEqual(renderNativeAttributedText(unknownText, context: &context,
+                reportUnknownStyle: { unknown.append($0) }).description, "plain")
+            checkEqual(unknown, ["custom"])
+            checkEqual(renderNativeAttributedText(NSAttributedString(string: ""), context: &context,
+                reportUnknownStyle: { _ in unexpectedFailure() }).description, "")
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

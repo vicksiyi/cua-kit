@@ -728,7 +728,10 @@ boundary_renderer_calls = [branch(site, target) for site, target in [
     (0x100773250, 0x10063a2fc),
 ]]
 
-print(json.dumps(dict(attributedBoundaryRenderer=dict(
+print(json.dumps(dict(attributedRendering=dict(
+    entry="0x100770530", traversal="0x10077045c",
+    composition="font trait bold then italic then additive AXFontBold; numeric styles; link followed by attachment; quote/style names then list; mapped boundary rendering including terminal empty run",
+    limitation="composed formatter uses cached element factory and shared URL context; production collector not yet wired; vendor runtime not executed"), attributedBoundaryRenderer=dict(
     calls=boundary_renderer_calls,
     behavior="move trailing output LF to incoming unmapped prefix; remove leading LF only if more than one Character; block runs reopen marks across interior LF; preserve trailing LF as generated; apply old/new or delta boundaries; append mapped run",
     limitation="composition tail recovered; input attribute assembly and production collector integration pending"), attributedFormatState=dict(

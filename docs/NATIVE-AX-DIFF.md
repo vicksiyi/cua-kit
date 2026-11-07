@@ -6203,3 +6203,31 @@ Input assembly is still pending. In particular the font component's booleans
 are not sufficient to recover insertion order when italic comes from font traits
 but bold is added by AXFontBold; the assembler must preserve that distinction.
 No production collector integration or live-app acceptance is claimed here.
+
+### Composed attributed text formatter (2026-11-07)
+
+`renderNativeAttributedText` now connects the recovered enumeration, attribute
+extraction, link/attachment transforms and boundary renderer. Composition follows
+0x100770530: font traits and explicit bold; numeric styles; link; attachment;
+quote/style names; list; boundary/mapped output. The terminal empty enumeration
+callback closes outstanding formats. The cached-element factory and shared URL
+shortener context remain explicit; unknown style reporting is required.
+
+Font extraction now exposes ordered formats as well as booleans. Native trait
+bold precedes trait italic; an additive AXFontBold is appended afterward only
+when not already present. Thus trait-italic plus explicit bold yields italic,
+bold, while two font traits yield bold,italic. The previous two booleans alone
+lost this ordering distinction.
+
+Tests exercise actual NSAttributedString enumeration through the composed
+formatter: title/underline into checked list, source mapping across emoji,
+generated markers without source positions, empty input, unknown-style reporting,
+underlined link label trimming and mapping, and both link and attachment
+attributes in one run (attachment receives the link-transformed text, generic
+caption loses its original mapping). Font-order tests inject trait resolution.
+Build, owned provider self-test and static evidence audit passed. All element
+references in these checks are mocks; no live model or UI operation was invoked.
+
+The native formatter is now composed as a callable implementation. It remains
+to wire it into the production Mac tree/collector flow and validate real App
+observations. Isolated integration tests do not prove complete native parity.
