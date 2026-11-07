@@ -3171,3 +3171,34 @@ NSDictionary literal, whose NSCopying requirement crashes for AXUIElement keys.
 No AX reads, private SPI invocation or vendor executable launch occur. These
 helpers are not yet connected to production hierarchy collection: output ownership,
 same-process/main-thread execution and the transaction owner remain to be restored.
+
+### Hierarchy copy execution and output ownership
+
+`AXHierarchyCopy.swift` restores the routing at `0x1006f80a8..<0x1006f80e0`:
+resolve the element PID, compare it with getpid, and only for a known same-process
+PID check NSThread.isMainThread. Same-process off-main calls synchronously execute
+on DispatchQueue.main; unknown/other PID or already-main calls execute directly.
+The dispatch imports are confirmed by stubs `0x10115195c` / `0x101151974` and GOT
+`0x101469058` / `0x101469068` (main getter / generic sync(execute:)).
+The closure trampoline `0x1006fbf40` forwards captured element, attribute arrays,
+maxChildCount and the output box to `0x1006f8c28`. That closure constructs the
+same four options as the direct path, invokes copyHierarchy at `0x1006f8dc0`,
+and returns AXError through its result slot. The outer caller does not branch
+on either direct or dispatched AXError before inspecting the output box.
+
+The result is a Copy-owned optional unmanaged CFDictionary. Native loads it at
+`0x1006f8334`, temporarily retains/releases for bridging at `0x1006f83ac` /
+`0x1006f83d8`, and releases the owned result at `0x1006f8bbc`. The restored
+boundary uses takeRetainedValue once, allowing Swift lifetime management across
+subsequent decode success or failure. Nil output remains nil regardless of status.
+
+Tests exercise unknown/same/other PID, main/off-main, success/failure status,
+non-nil identity and nil output, and verify exactly one call and the short-circuit
+main-thread query. An injected synchronous dispatcher checks routing without UI
+access. The system overload uses getpid, Thread.isMainThread and
+DispatchQueue.main.sync; tests do not claim live private SPI or UI acceptance.
+
+Still pending: composition with SPI options and outer decoder in the transaction
+owner, plus the source PID resolver's MockProvider/logging branches. The new
+boundary deliberately accepts a resolved PID rather than silently replacing that
+resolver with a different production policy.
