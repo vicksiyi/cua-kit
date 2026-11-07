@@ -3068,3 +3068,41 @@ is executed. BatchSymbolSystem.swift now supplies the recovered production
 implementations for all three batch stages and exposes the public batch entry.
 This completes that composition, not AccessibilitySPI key binding, transaction
 prefetch wiring, or desktop end-to-end acceptance.
+
+### AccessibilitySPI production symbol binding
+
+AccessibilitySPISymbolRequest.swift contains the actual static request arrays,
+not guessed symbol names. Run `python3 scripts/audit-accessibility-spi-requests.py`
+to verify the pinned native SHA-256, parse its Mach-O segments, read the arrays
+and salt bytes, and compare the entire generated declaration with the checked-in
+source. Function initializer `0x10025587c` uses the 30-image array at
+`0x101558368`, three two-alternative requests at 0x101558480/4b8/4f0, and a
+126-byte salt. Key initializer `0x100255bac` uses a separate 30-image array at
+`0x101558528`, seven two-alternative requests at 0x101558640 through 790 in
+0x38-byte increments, and a different 128-byte salt. The salts are static hash
+suffixes embedded in the executable, not user credentials.
+
+`0x100269554` projects batch results to pointers, preserving optional slots.
+Function slots are getActualPID, getWindowID and copyHierarchy, confirmed by
+wrappers at 0x100256028, 0x100256034 and 0x1002560b0. The generic binder at
+`0x10026b0f0` requires a present nonzero pointer, valid index and 8-byte target
+representation; failures trap rather than return a fabricated implementation.
+AccessibilitySPIFunctions retains those preconditions and C calling conventions.
+
+Key conversion `0x100255f34` dereferences each nonnil symbol address once before
+key binding. The symbols point to global CFString storage, not directly to the
+CFString. Subsequent binding requires all seven values and retains them in
+order: skipInspectionForAttributes, arrayAttributes, truncateStrings,
+maxArrayCount, resultValue, resultCount, incompleteResult. Getter addresses
+0x100256128 through 0x100256170 confirm that order. AccessibilitySPIKeys restores
+that indirection and ownership. AccessibilitySPI uses independent lazy static
+function/key tables, matching the two separate swift_once tokens, and delegates
+resolution to the recovered SoftLink production batch implementation.
+
+A local fixture resolves owned C-compatible stub functions and allocated global
+pointer storage. It checks function argument/output forwarding, AXError values,
+optional hierarchy output, retained output ownership, request dimensions and
+key order/indirection. It never calls private OS SPI or launches the vendor
+service. Swift build and this binding test pass. The production SPI boundary is
+now available, but the hierarchy decoding and transaction prefetch caller are
+not yet connected; real desktop acceptance remains outstanding.
