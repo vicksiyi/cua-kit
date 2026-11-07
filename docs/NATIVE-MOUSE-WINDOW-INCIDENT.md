@@ -3231,3 +3231,25 @@ This recovers style storage, not animation, drawing of alternate Fog style,
 window management, cursor positioning or live input integration.
 
 Swift build, provider/resource view checks and static audit pass after style recovery.
+
+
+## Cursor Window constructor evidence before implementation (2026-11-08)
+
+Static constructor 0x1000940c0 initializes its animation/motion bookkeeping,
+retains style/configuration, then calls NSWindow super with zero CGRect,
+styleMask=0 (borderless), backing=2 (buffered), defer=true. It sets title
+"Software Cursor", collectionBehavior raw 0x40048, isReleasedWhenClosed=false,
+ignoresMouseEvents=true. It creates an NSViewController, asks the supplied style
+for makeView, sets that view's wantsLayer=true, assigns controller.view and
+window.contentViewController, sets clear background and delegate=self. Then it
+subscribes through NSWorkspace.shared.notificationCenter, with object=nil.
+The destructor removes that observer from the same workspace notification center.
+The override constrainFrameRect:toScreen: at 0x1000946b0 is a single ret: no screen
+clamping is performed. These constants and that override are now statically pinned.
+
+No setLevel: or setOpaque: call exists in this constructor. A fixed floating
+level or an invented opaque flag must not be added as if recovered here. Window
+level reasons, active-space/occlusion callbacks and motion ownership require
+separate recovery before the actual subclass is connected. The known configuration
+is recorded here rather than shipping a partially subscribed window with guessed
+callback behavior. No cursor window has been created or presented by this audit.

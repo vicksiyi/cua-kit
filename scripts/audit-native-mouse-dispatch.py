@@ -576,6 +576,16 @@ assert read(0x10009c00c, 8).hex() == '0090661e01f0661e'
 assert struct.unpack('<4d', read(0x10115bed0, 32)) == (0.0, 1.0, 1.0, 0.5)
 assert read(0x10009bf34, 12).hex() == '0010621e0110621ec0035fd6'
 
+# Cursor Window native initializer: zero frame, borderless, buffered, defer;
+# collection flags 0x40048, no release-on-close, input-transparent, layer view.
+assert read(0x100094268, 32).hex() == '00e4002f01e4002f02e4002f03e4002fe10313aa020080d24300805224008052'
+assert read(0x1000942ec, 8).hex() == '020980528200a072'
+assert read(0x100094304, 4).hex() == '02008052'
+assert read(0x100094318, 4).hex() == '22008052'
+assert read(0x100094358, 4).hex() == '22008052'
+# constrainFrameRect:toScreen: returns the incoming CGRect untouched.
+assert read(0x1000946b0, 4).hex() == 'c0035fd6'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101
