@@ -1,4 +1,27 @@
 {
+  "attributedRunTraversal": {
+    "callback": "0x10077045c",
+    "sourceRun": "0x100777ce0",
+    "calls": [
+      {
+        "instruction": "0x1007704f4",
+        "target": "0x100777ce0",
+        "link": true
+      },
+      {
+        "instruction": "0x100770508",
+        "target": "0x100770530",
+        "link": true
+      },
+      {
+        "instruction": "0x100777d1c",
+        "target": "0x101150af8",
+        "link": true
+      }
+    ],
+    "behavior": "enumerate all attributes; attributed substring string; UTF16 source offsets; empty terminal run with empty attributes",
+    "limitation": "formatter state machine at 0x100770530 still pending; callback is required"
+  },
   "macDispatch": {
     "entry": "0x1007595fc",
     "shared": "0x100759c58 -> 0x100657c10",

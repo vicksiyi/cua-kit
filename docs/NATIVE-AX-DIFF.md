@@ -5957,3 +5957,22 @@ pruning override and action filtering rather than just invoking their helper
 functions. These fixtures use explicit test renderers and rebuild behavior;
 they do not prove native rich-text formatting, complete traversal rebuild or
 live collector integration. Those remain outstanding.
+
+### Attributed run traversal and source positions (2026-11-07)
+
+Recovered the shared attribute callback at `0x10077045c`: it invokes
+`attributedSubstringFromRange:`, reads `string`, constructs a mapped run at
+`0x100777ce0`, then calls the formatter at `0x100770530`. Selector references
+`0x101543010` and `0x101543e28` and the call sites are now pinned by the audit.
+The constructor asserts string UTF-16 count equals range length, uses checked
+range-end addition, and emits one non-nil source offset per UTF-16 code unit.
+The outer webarea/textarea drivers enumerate the entire attributed string with
+options zero, then send empty text/attributes at its end to flush state.
+
+`AttributedTextRunTraversal.swift` restores this synchronous driver and mapped
+run in Swift (host type names, not claimed recovered vendor type names). Mock
+checks cover multiple attribute runs, emoji surrogate pairs, combining marks,
+and the mandatory final callback including empty input. Swift build and provider
+self-test passed. This is not yet integrated as the production renderer: the
+formatting state machine remains required and unresolved; no plain-text fallback
+was introduced. No vendor executable or real UI operation was run.

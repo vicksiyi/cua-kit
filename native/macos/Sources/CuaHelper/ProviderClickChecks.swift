@@ -2175,6 +2175,27 @@ private enum ProviderClickChecks {
         default: unexpectedFailure("Mac dispatcher must filter action descriptions")
         }
 
+        // Rich runs preserve UTF-16 offsets and emit a terminal flush callback.
+        let runKey = NSAttributedString.Key("fixture-format")
+        let runText = NSMutableAttributedString(string: "A😀e\u{301}")
+        runText.addAttribute(runKey, value: "accent", range: NSRange(location: 3, length: 2))
+        var runTexts: [String] = [], runOffsets: [[Int?]] = [], runAttributes: [Bool] = []
+        traverseAttributedTextRuns(runText) { run, attributes in
+            runTexts.append(run.text)
+            runOffsets.append(run.sourceOffsets)
+            runAttributes.append(attributes[runKey] != nil)
+        }
+        checkEqual(runTexts, ["A😀", "e\u{301}", ""])
+        checkEqual(runOffsets, [[0, 1, 2], [3, 4], []])
+        checkEqual(runAttributes, [false, true, false])
+        var emptyRunCount = 0
+        traverseAttributedTextRuns(NSAttributedString(string: "")) { run, attributes in
+            emptyRunCount += 1
+            checkEqual(run.text, "")
+            checkTrue(run.sourceOffsets.isEmpty && attributes.isEmpty)
+        }
+        checkEqual(emptyRunCount, 1)
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

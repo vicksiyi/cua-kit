@@ -601,7 +601,20 @@ for index, word in enumerate(chrome_attribute_words):
 chrome_attribute_name = struct.pack('<QQ', 0x5841656d6f726843, 0xee00644965646f4e)[:14].decode()
 assert chrome_attribute_name == 'ChromeAXNodeId'
 
-print(json.dumps(dict(macDispatch=dict(
+# Attribute callback extracts attributed substring, then string, then source run.
+for address, expected_selector in [(0x101543010, "attributedSubstringFromRange:"),
+                                   (0x101543e28, "string")]:
+    pointer = (struct.unpack('<Q', read(address, 8))[0] & 0xfffffffff) + 0x100000000
+    assert cstring(pointer) == expected_selector
+rich_run_calls = [branch(site, target) for site, target in [
+    (0x1007704f4, 0x100777ce0), (0x100770508, 0x100770530),
+    (0x100777d1c, 0x101150af8),
+]]
+
+print(json.dumps(dict(attributedRunTraversal=dict(
+    callback="0x10077045c", sourceRun="0x100777ce0", calls=rich_run_calls,
+    behavior="enumerate all attributes; attributed substring string; UTF16 source offsets; empty terminal run with empty attributes",
+    limitation="formatter state machine at 0x100770530 still pending; callback is required"), macDispatch=dict(
     entry="0x1007595fc", shared="0x100759c58 -> 0x100657c10",
     behavior="13-case default pipeline; native action/calendar/rich-text cases and non-full leaf override; remaining shared cases delegate to common dispatcher",
     requiredDependencies=["traversal rebuild", "provider title", "owning bundle lookup", "node renderer", "attributed renderer", "attribute logger", "unexpected-next-line diagnostic"],
