@@ -7,7 +7,9 @@ import Darwin
 // availability, window activation, or successful screenshot capture.
 func initializeAXApplication<Window>(window: Window?,
     initialDelay: (UInt32) -> Void = { _ = usleep($0) },
-    poll: (_ timeout: Double, _ delay: Double, _ condition: () -> Bool) throws -> Void,
+    poll: (_ timeout: Double, _ delay: Double, _ condition: () -> Bool) throws -> Void = {
+        try pollUntilTrueSync(timeout: $0, delay: $1, condition: $2)
+    },
     hasWebAreaDescendant: @escaping (Window) -> Bool,
     reportError: (Error) -> Void) -> Bool {
     guard let window else { return false }

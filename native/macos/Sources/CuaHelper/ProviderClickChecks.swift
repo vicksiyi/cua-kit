@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    try runSynchronousPollingChecks()
     runAXApplicationInitializationChecks()
     runEnhancedUserInterfaceEnablementChecks()
     try await runVoiceOverPreferenceEnablementChecks()
@@ -6660,4 +6661,36 @@ private func runAXApplicationInitializationChecks() {
         }, hasWebAreaDescendant: { _ in trace.append("search"); return false },
         reportError: { checkTrue($0 is Failure); trace.append("error") })
     checkTrue(!failed); checkEqual(trace, ["delay", "poll", "search", "error"])
+}
+
+
+private func runSynchronousPollingChecks() throws {
+    let start = Date(timeIntervalSince1970: 100)
+    var times = [0.0, 1.0, 1.01]
+    var sleeps: [Double] = []
+    var reads = 0
+    do {
+        try pollUntilTrueSync(timeout: 1, delay: 0.05, makeStartDate: { start },
+            currentDate: { start.addingTimeInterval(times.removeFirst()) },
+            sleep: { sleeps.append($0) }, condition: { reads += 1; return false })
+        preconditionFailure("expected polling timeout")
+    } catch { checkTrue(error as? PollError == .timeoutReached) }
+    checkEqual(reads, 2); checkEqual(sleeps, [0.05, 0.05]); checkTrue(times.isEmpty)
+    reads = 0
+    try pollUntilTrueSync(timeout: 0, delay: 0.05, makeStartDate: { start },
+        currentDate: { start }, sleep: { _ in preconditionFailure("success must not sleep") },
+        condition: { reads += 1; return true })
+    checkEqual(reads, 1)
+    do {
+        try pollUntilTrueSync(timeout: -1, delay: 0.05, makeStartDate: { start },
+            currentDate: { start }, sleep: { _ in preconditionFailure("expired before first condition") },
+            condition: { preconditionFailure("expired before first condition") })
+        preconditionFailure("negative timeout must expire")
+    } catch { checkTrue(error as? PollError == .timeoutReached) }
+    // A backward wall-clock jump extends eligibility, matching Date semantics.
+    times = [0, -2, 1]; reads = 0; sleeps = []
+    try pollUntilTrueSync(timeout: 1, delay: 0.05, makeStartDate: { start },
+        currentDate: { start.addingTimeInterval(times.removeFirst()) }, sleep: { sleeps.append($0) },
+        condition: { reads += 1; return reads == 3 })
+    checkEqual(reads, 3); checkEqual(sleeps, [0.05, 0.05])
 }

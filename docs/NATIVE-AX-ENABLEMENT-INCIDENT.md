@@ -284,3 +284,21 @@ nil-window short circuit, exact timing arguments, window identity, repeated
 condition calls and error ordering. The complete native descendant predicate,
 traversal and polling implementation remain outstanding; this helper must not
 be represented as automatic production initialization until those are composed.
+
+
+## Synchronous polling clock and timeout restored
+
+pollUntilTrueSync (0x10077d320..0x10077d4b0) now uses Foundation Date
+wall-clock elapsed time, verified through the actual imported Date constructor,
+now accessor, timeIntervalSince and metadata bindings. The condition runs only
+while elapsed <= timeout, including the exact deadline; a failed condition
+sleeps before rereading the clock. Expiry before the first condition skips it.
+The source PollError reflection record identifies the case as timeoutReached.
+A backward wall-clock jump can extend polling, so a monotonic-clock replacement
+would change behavior. No cancellation checks or iteration caps were added.
+
+Application initialization now defaults to this polling implementation. Its
+WebArea descendant search remains an explicit required dependency. Deterministic
+checks cover inclusive deadlines, failed-condition sleeps, zero/negative timeout,
+early success and backward clock movement. They use injected dates/sleep and
+perform no live native input.
