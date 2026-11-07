@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // vertical/horizontalScrollBar call value<ScrollBarUIElement> with
     // ignoringTypeMismatch=false (0x100728658..<0x10072870c).
     func scrollBarValue(

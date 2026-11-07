@@ -2973,6 +2973,19 @@ private enum ProviderClickChecks {
         }
         checkTrue(UIElementTreeTransaction.current == nil)
         checkEqual(targetMock.performed, [.press, .press, .press])
+        let windowConformers: [any WindowUIElementProtocol] = [
+            WindowUIElement(axElement: targetAX, cache: target.cache),
+            SheetUIElement(axElement: targetAX, cache: target.cache),
+            MenuUIElement(axElement: targetAX, cache: target.cache),
+        ]
+        for wrapped in windowConformers {
+            checkTrue(CFEqual(wrapped.id, targetAX))
+            checkEqual(wrapped.role, .window) // instance cache, not static type role
+            checkTrue(wrapped.isEnabled)
+            checkTrue(wrapped.presentationActions.isEmpty)
+            try wrapped.perform(action: .press)
+        }
+        checkEqual(targetMock.performed, Array(repeating: .press, count: 6))
         var hierarchyCopies = 0
         let reader = AXHierarchyReader(resolvePID: { element in
                 checkTrue(CFEqual(element, targetAX)); return 99999

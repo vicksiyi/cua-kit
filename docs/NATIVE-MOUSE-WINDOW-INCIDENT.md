@@ -2695,3 +2695,22 @@ before yielding, preserves the original depth semantics and retains the Atlas
 bundle-prefix fallback. Explicit system-transaction helper overloads remain
 concrete where their existing callers require concrete UIElement sequences.
 Full generic action dispatch and scrollbar dependencies remain outstanding.
+
+
+## Concrete window protocol conformance and full action dispatch
+
+The scrollbar value decoder and provider scrollbar composition now live on
+UIElementProtocol. The full perform(action:) default also uses that extension,
+retaining menu-ancestor preparation, disclosure toggling, scrollbar-page routing,
+provider-aware native action fallback and concrete-type error reporting.
+UIElement's own conformance now supplies only its static nil role and inherits
+the shared dispatcher.
+
+WindowUIElement, SheetUIElement and MenuUIElement now declare
+WindowUIElementProtocol conformance and satisfy its full inherited contract
+through the recovered shared defaults and their stored cache/reference. Mock
+provider checks exercise all three through window-protocol existentials,
+verify AX identity, cache-derived instance role (distinct from static type role),
+enabled/presentation defaults and full press dispatch. No native input is sent.
+Production registry/controller wiring and real application acceptance remain
+outstanding; compiler conformance and mocked actions do not prove those paths.

@@ -12,7 +12,7 @@ extension ScrollBarUIElement {
     }
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func scrollBarValue(for attribute: UIElementAttribute, reportError: (Error) -> Void) -> ScrollBarUIElement? {
         scrollBarValue(for: attribute, initialize: { ScrollBarUIElement(element: $0) },
             read: { axElement.value(for: attribute) }, reportError: reportError)
