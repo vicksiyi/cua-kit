@@ -1,9 +1,22 @@
 import Foundation
 
+// This lease only retains immutable object references; it never invokes or
+// mutates resources from the task. ARC retention/release can cross executors.
+private final class FocusStealCallbackResourceLease: @unchecked Sendable {
+    private let resources: [AnyObject]
+    init(_ resources: [AnyObject]) { self.resources = resources }
+}
+
 struct FocusStealRegistrationCallbacks: Sendable {
     let pid: Int32
     let lost: (@Sendable () -> Void)?
     let gained: (@Sendable () -> Void)?
+    private let resourceLease: FocusStealCallbackResourceLease
+    init(pid: Int32, lost: (@Sendable () -> Void)?, gained: (@Sendable () -> Void)?,
+         retaining resources: [AnyObject] = []) {
+        self.pid = pid; self.lost = lost; self.gained = gained
+        resourceLease = FocusStealCallbackResourceLease(resources)
+    }
 }
 
 // 0x10074d7e0..0x10074dd2c creates an unstructured task for each selected
@@ -23,12 +36,16 @@ func scheduleFocusStealRegistrationCallback(
     case .lost: callback = registration.lost
     }
     return Task {
-        // 0x10074ec90/0x10074ecf4 return true when the handler is absent.
-        guard let callback else {
-            reportMissingHandler(registration.pid, transition)
-            return true
+        // Native task context copies the whole registration (including taps).
+        // Retain that snapshot even if the callback unregisters itself.
+        withExtendedLifetime(registration) {
+            // 0x10074ec90/0x10074ecf4 return true when the handler is absent.
+            guard let callback else {
+                reportMissingHandler(registration.pid, transition)
+                return true
+            }
+            callback()
+            return false
         }
-        callback()
-        return false
     }
 }

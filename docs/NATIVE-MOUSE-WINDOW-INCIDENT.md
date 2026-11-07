@@ -1245,3 +1245,25 @@ and static audit pass without real event posting. A complete preventer owner
 still needs to wire task scheduling, state routing, registration tap lifetime
 and notification resources to production input. Multica click acceptance
 remains outstanding.
+
+
+## Registration callback resource lifetime
+
+Source gained/lost task contexts copy the complete registration payload at
+0x10074d82c..0x10074d844 and 0x10074db14..0x10074db2c. A callback-only
+projection would drop tap/menu-tap references too early when unregistering
+while a task still owns the snapshot.
+
+FocusStealRegistrationCallbacks now accepts an explicit immutable resource
+lease and keeps the entire snapshot alive through callback/missing-handler
+reporting. The lease performs only ARC retention/release; tasks do not mutate
+its resources. Actual task checks unregister the record and drop the original
+resource owner inside the callback, assert the resource remains alive there,
+and verify release after completion/context cleanup. Both present/missing
+handler cases pass. Swift build/provider-click checks and static audit pass.
+The first build needed an explicit Sendable closure type in the test fixture;
+no runtime workaround was added. No real OS tap/input was used in checks.
+
+The full registration record/resource constructor, singleton lifecycle and
+production controller still must supply those leases and compose the restored
+monitors/state. Live Multica acceptance remains outstanding.

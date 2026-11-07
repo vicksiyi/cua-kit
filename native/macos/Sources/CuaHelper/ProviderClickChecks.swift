@@ -3715,6 +3715,7 @@ func runProviderClickChecks() async throws {
     runSystemFocusNotificationRoutingChecks()
     runSystemFocusNotificationMonitorChecks()
     try await runViewBridgeRefreshTaskChecks()
+    await runFocusStealCallbackResourceLifetimeChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5174,4 +5175,44 @@ private func runViewBridgeRefreshTaskChecks() async throws {
     do { try await failed.value; unexpectedFailure() }
     catch Failure.construction {}
     checkEqual(counter.value, 1)
+}
+
+private func runFocusStealCallbackResourceLifetimeChecks() async {
+    final class Resource {}
+    final class Fixture: @unchecked Sendable {
+        let store = FocusStealRegistrationStore<FocusStealRegistrationCallbacks>(pid: { $0.pid }, becameEmpty: {})
+        private let lock = NSLock()
+        private var resource: Resource? = Resource()
+        weak var observed: Resource?
+        init() { observed = resource }
+        var retained: Resource { lock.lock(); defer { lock.unlock() }; return resource! }
+        func unregisterAndDropOwner() {
+            checkTrue(store.removeFirst(pid: 88))
+            lock.lock(); resource = nil; lock.unlock()
+            checkTrue(observed != nil)
+        }
+    }
+    for missing in [false, true] {
+        let fixture = Fixture()
+        let lostHandler: (@Sendable () -> Void)?
+        if missing { lostHandler = nil }
+        else { lostHandler = { fixture.unregisterAndDropOwner() } }
+        fixture.store.append(FocusStealRegistrationCallbacks(pid: 88,
+            lost: lostHandler, gained: nil,
+            retaining: [fixture.retained]))
+        var task: Task<Bool, Never>? = {
+            let registration = fixture.store.snapshot[0]
+            return scheduleFocusStealRegistrationCallback(registration, transition: .lost,
+                reportMissingHandler: { _, _ in fixture.unregisterAndDropOwner() })!
+        }()
+        checkEqual(await task!.value, missing)
+        task = nil
+        // Allow a resumed waiter to run before task-context ARC cleanup.
+        for _ in 0..<1000 {
+            if fixture.observed == nil { break }
+            await Task.yield()
+        }
+        checkTrue(fixture.observed == nil)
+        checkTrue(fixture.store.snapshot.isEmpty)
+    }
 }

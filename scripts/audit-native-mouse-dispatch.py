@@ -209,6 +209,12 @@ for site, expected_bytes in [(0x10074c828, '770200b7'), (0x10074c82c, 'df02176b'
 for site, expected_bytes in [(0x1006ffb24, '18808352'), (0x1006ffb44, '18808352'),
                              (0x1006ffc64, '09000014')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# Gained/lost task contexts copy complete registration payloads, including taps.
+for site, expected_bytes in [(0x10074d82c, 'a0077bad'), (0x10074d830, '000401ad'),
+                             (0x10074d838, '0010803d'), (0x10074d844, '0090843c'),
+                             (0x10074db14, 'a0077bad'), (0x10074db18, '000401ad'),
+                             (0x10074db20, '0010803d'), (0x10074db2c, '0090843c')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
