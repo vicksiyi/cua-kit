@@ -530,3 +530,10 @@ assert wrapper_init_branch >> 26 == 0b000101
 wrapper_offset = wrapper_init_branch & 0x3ffffff
 if wrapper_offset & 0x2000000: wrapper_offset -= 0x4000000
 assert 0x100724de0 + wrapper_offset * 4 == 0x100721e3c
+
+# Move/resize rejoins after the stop-suppression branch, not before it.
+geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
+assert geometry_tail >> 26 == 0b000101
+geometry_offset = geometry_tail & 0x3ffffff
+if geometry_offset & 0x2000000: geometry_offset -= 0x4000000
+assert 0x10006ea3c + geometry_offset * 4 == 0x10006e8cc

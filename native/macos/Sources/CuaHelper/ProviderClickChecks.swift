@@ -3769,6 +3769,7 @@ func runProviderClickChecks() async throws {
     runResolvedWindowRegistrationChecks()
     try runMenuWindowIDChecks()
     runWindowWrapperStorageChecks()
+    runAppControllerWindowEventDispatchChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7472,4 +7473,27 @@ private func runWindowWrapperStorageChecks() {
         precondition(WindowUIElement.role == .window && SheetUIElement.role == .sheet && MenuUIElement.role == .menu)
     }
     precondition(UIElementTreeTransaction.current == nil)
+}
+
+private func runAppControllerWindowEventDispatchChecks() {
+    enum Failed: Error { case removal }
+    var events: [String] = []
+    func dispatch(_ name: AXNotification) {
+        dispatchAppControllerWindowEvent(name, element: 7,
+            registerWindow: { precondition($0 == 7); events.append("window") },
+            registerSheet: { _ in events.append("sheet") },
+            clearApplicationAttention: { events.append("attention") },
+            windowCreatedFocusHandling: { _ in events.append("focus") },
+            removeDestroyedSubscription: { _ in events.append("remove"); throw Failed.removal },
+            menuOpened: { _ in events.append("menu-open") }, menuClosed: { _ in events.append("menu-close") },
+            stopSuppressingMenuDismissal: { events.append("stop") },
+            republishObservedWindowIDs: { events.append("ids") })
+    }
+    for (name, expected) in [(AXNotification.windowCreated, ["window", "attention", "focus"]),
+        (.sheetCreated, ["sheet", "attention"]), (.uiElementDestroyed, ["remove", "stop"]),
+        (.menuOpened, ["menu-open"]), (.menuClosed, ["menu-close", "stop"]),
+        (.windowMoved, ["ids"]), (.windowResized, ["ids"]),
+        (AXNotification("UnrecognizedNotification"), [])] {
+        events = []; dispatch(name); precondition(events == expected)
+    }
 }

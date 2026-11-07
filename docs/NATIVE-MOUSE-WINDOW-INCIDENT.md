@@ -2714,3 +2714,21 @@ verify AX identity, cache-derived instance role (distinct from static type role)
 enabled/presentation defaults and full press dispatch. No native input is sent.
 Production registry/controller wiring and real application acceptance remain
 outstanding; compiler conformance and mocked actions do not prove those paths.
+
+
+## Controller notification routing composition
+
+The recovered callback routes windowCreated to registration, application-attention
+clearing and the window-created focus branch; sheetCreated registers then clears
+attention. Destruction attempts subscription removal with swallowed errors before
+ending menu-dismissal suppression. Menu-open and menu-close enter their distinct
+state handlers, with close ending suppression after state/window cleanup.
+Move/resize republishes stored IDs and returns without ending suppression.
+Unrecognized notifications have no effect.
+
+The shared routing function keeps concrete wrappers, attention SPI, focus and
+menu-state boundaries injected. It is an orchestration component, not a claim
+that those effects are already wired to production Target. In particular the
+native callback's thread ownership must still be reconciled with Target's
+MainActor ownership. Branch-order checks cover every route and cleanup after
+subscription-removal failure without native input.
