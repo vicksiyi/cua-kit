@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    try runAXNotificationRegistrationChecks()
     runMouseWindowRegistryOwnershipChecks()
     await runWindowOrderingObserverCompositionChecks()
     await runWindowOrderingMenuTaskChecks()
@@ -7200,4 +7201,29 @@ private func runMouseWindowRegistryOwnershipChecks() {
     checkTrue(secondOrdering[0] === later && secondOrdering[1] === replacement)
     replacement.id = 0
     checkTrue(registry.windows()[7] == nil); checkEqual(updates.last, Set([9]))
+}
+
+
+private func runAXNotificationRegistrationChecks() throws {
+    checkEqual(AXNotification("AXMenuOpened"), .menuOpened)
+    checkEqual(AXNotification("AXMenuClosed"), .menuClosed)
+    checkEqual(AXNotification("AXWindowCreated"), .windowCreated)
+    let targets = AXNotificationRegistrationTargets<Int>()
+    var calls = 0
+    for error in [AXError.success, .notificationAlreadyRegistered] {
+        try targets.register(.windowCreated, ignoringErrors: [], for: 7,
+            addNotification: { calls += 1; return error })
+    }
+    checkEqual(calls, 2); checkEqual(targets.targets[.windowCreated], Set([7]))
+    try targets.register(.windowCreated, ignoringErrors: [], for: 8, addNotification: { .success })
+    checkEqual(targets.targets[.windowCreated], Set([7, 8]))
+    for error in [AXError.success, .notificationAlreadyRegistered, .notificationUnsupported] {
+        try targets.register(.menuOpened, ignoringErrors: [error], for: 9, addNotification: { error })
+    }
+    checkTrue(targets.targets[.menuOpened] == nil)
+    do {
+        try targets.register(.menuClosed, ignoringErrors: [], for: 9, addNotification: { .failure })
+        preconditionFailure("unexpected AX error must propagate")
+    } catch UIElementError.axError(let error) { checkEqual(error, .failure) }
+    checkTrue(targets.targets[.menuClosed] == nil)
 }

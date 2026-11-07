@@ -2275,3 +2275,26 @@ Ownership checks exercise replacement, zero-ID pruning, unchanged getter reads,
 stored-key preservation and registration after a map snapshot. AX notification
 registration and production controller ownership remain to be connected; this
 registry does not invent a periodic refresh in place of native notifications.
+
+
+## AX notification identity and registration accounting
+
+AXNotification restores distinct CFString identity/hash semantics with the
+window-created, focused-window, destroyed and menu names needed by controller
+integration. Menu name construction is checked against the pinned native small
+string initializers. This initial constant surface does not claim every original
+AXNotification convenience constant has been restored.
+
+Registration at 0x1006ecab8 always calls AXObserverAddNotification first. Its
+explicit ignoringErrors list is checked before success/duplicate handling: an
+ignored result returns without recording a target, even when .success itself is
+in that list. Otherwise success and notificationAlreadyRegistered (-25209) both
+record the target in notification -> Set<Element>; other errors throw
+UIElementError.axError. Existing records do not suppress another native add call.
+
+AXNotificationRegistrationTargets composes this policy and the source plain map.
+Checks cover repeat native calls, set membership, ignored success/duplicate/
+unsupported results and error propagation without installing any real AX
+notification. AXObserver creation uses AXObserverCreateWithInfoCallback in the
+source; callback context, removal and RunLoopTask monitoring still require
+restoration before production notification ownership can be declared complete.
