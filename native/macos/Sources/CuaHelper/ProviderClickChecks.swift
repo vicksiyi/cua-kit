@@ -3726,6 +3726,7 @@ func runProviderClickChecks() async throws {
     runRunningApplicationPIDResolutionChecks()
     await runApplicationFrontmostWaitChecks()
     await runTargetFocusEnforcerOwnershipChecks()
+    try runActivationPointValueChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -3790,12 +3791,24 @@ private func runSyntheticFocusEnforcementChecks() throws {
 }
 
 private func runSyntheticWindowActivationChecks() throws {
+    var nilPointReads: [String] = []
+    let decodedNilPoint = SyntheticActivationWindow(activationPoint: { nilPointReads.append("point"); return .some(nil) },
+        windowID: { nilPointReads.append("id"); return 91 },
+        frame: { nilPointReads.append("frame"); return CGRect(x: 0, y: 0, width: 100, height: 100) })
+    let nilPointEvent = try syntheticWindowActivationEvent(decodedNilPoint)
+    checkEqual(nilPointReads, ["point", "id", "frame"])
+    checkEqual(nilPointEvent.cgEvents.count, 1)
+    checkEqual(NSEvent(cgEvent: nilPointEvent.cgEvents[0])!.windowNumber, 91)
+    let missingPoint = SyntheticActivationWindow(activationPoint: { nil },
+        windowID: { unexpectedFailure() }, frame: { unexpectedFailure() })
+    let missingPointEvent = try syntheticWindowActivationEvent(missingPoint)
+    checkEqual(NSEvent(cgEvent: missingPointEvent.cgEvents[0])!.windowNumber, 0)
     for hasPoint in [false, true] {
         for idFails in [false, true] {
             for hasFrame in [false, true] {
                 var reads: [String] = []
                 let window = SyntheticActivationWindow(
-                    activationPoint: { reads.append("point"); return hasPoint ? CGPoint(x: 20, y: 30) : nil },
+                    activationPoint: { reads.append("point"); return hasPoint ? .some(.some(CGPoint(x: 20, y: 30))) : .none },
                     windowID: { reads.append("id"); if idFails { throw UIElementError.axError(.failure) }; return 91 },
                     frame: { reads.append("frame"); return hasFrame ? CGRect(x: 10, y: 10, width: 100, height: 100) : nil })
                 var state = SyntheticApplicationFocusState(applicationBelievesItIsActive: false,
@@ -5677,4 +5690,25 @@ private func runApplicationFrontmostWaitChecks() async {
     checkEqual(constructions, 1)
     first = nil; checkTrue(lifetime != nil); checkTrue(preventionOwner != nil)
     target = nil; checkTrue(lifetime == nil); checkTrue(preventionOwner == nil)
+}
+
+private func runActivationPointValueChecks() throws {
+    let attribute = UIElementAttribute("AXActivationPoint")
+    var point = CGPoint(x: 20, y: 30)
+    let value = AXValueCreate(.cgPoint, &point)!
+    let partial = AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    let ax = AXUIElementCreateApplication(Int32.max)
+    let cached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [],
+        attributes: [attribute: partial], transactionAttributes: nil))
+    let decoded = cached.activationPointValue(read: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+    guard case .some(.some(let actual)) = decoded else { unexpectedFailure() }
+    checkEqual(actual, point)
+    let innerNil: CGPoint?? = try decodeUnpackedAXValue(throwingOnFailure: true, as: CGPoint?.self, unpack: { nil })
+    guard case .some(.none) = innerNil else { unexpectedFailure() }
+    let uncached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [attribute], attributes: [:], transactionAttributes: nil))
+    var errors = 0
+    let bad = AXPartialValue(value: AXEncodedValue(value: "bad" as NSString), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    let missing = uncached.activationPointValue(read: { (.success, bad) }, reportError: { _ in errors += 1 })
+    guard case .none = missing else { unexpectedFailure() }
+    checkEqual(errors, 1)
 }

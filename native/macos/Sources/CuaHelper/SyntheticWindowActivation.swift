@@ -3,7 +3,9 @@ import CoreGraphics
 // Read dependencies of the WindowUIElementProtocol existential used at
 // 0x1007414c8. The host's full window protocol is not restored yet.
 struct SyntheticActivationWindow {
-    var activationPoint: () -> CGPoint?
+    // The source requests Optional<CGPoint> through value<T> returning T?.
+    // Outer nil means unavailable; .some(nil) preserves a decoded nil point.
+    var activationPoint: () -> CGPoint??
     var windowID: () throws -> UInt32
     var frame: () -> CGRect?
 }

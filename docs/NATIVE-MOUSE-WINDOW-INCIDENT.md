@@ -1520,3 +1520,29 @@ Mouse.swift does not call activateFocusEnforcer yet. Click preparation still
 needs source-compatible window activation data and remaining application-click
 composition before switching from its nil-context path. This change establishes
 production ownership and native construction, not a completed click fix.
+
+
+## Activation-point nested optional fidelity correction
+
+Source 0x100741578 requests value<Optional<CGPoint>>, whose accessor returns
+T?, so the result is CGPoint??. Symbolic type at 0x10129edec references
+CGPoint's descriptor 0x1012cc0bc and appends Sg. The outer availability flag
+is read at stack+0x49; inner point absence at +0x48 is forwarded separately
+to the activation-event constructor at 0x100741798. The attribute comes from
+AppKit NSAccessibilityActivationPointAttribute (bind at 0x101464410).
+
+SyntheticActivationWindow previously collapsed these two cases. It now keeps
+CGPoint??: outer nil takes windowless activation; .some(nil) still reads the
+window ID and frame and sends a window-targeted notification without synthetic
+activation clicks. Point decoding reuses the existing CF dispatch with an
+Optional<CGPoint> target and preserves optional nil unpacking. The UIElement
+adapter reuses typed AXActivationPoint, AX windowID and frame readers without
+substituting a guessed center point.
+
+Tests check missing versus decoded-nil payloads, retained window number, lazy
+ID/frame ordering, valid cached point decoding, optional-nil unpacking and
+strict malformed-value reporting. Production click preparation remains pending.
+
+Validation: Swift build, provider-click self-test and static audit pass. The
+existing test fixture now explicitly constructs outer .none; implicit Swift
+optional promotion had instead produced .some(nil). No live activation ran.
