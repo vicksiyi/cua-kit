@@ -13,7 +13,8 @@
         "flags": "0x0",
         "defaultImplementation": null,
         "witness": null,
-        "meaning": "AccessibilityNode"
+        "meaning": "AccessibilityNode",
+        "meaningStatus": "mapped"
       },
       {
         "index": 1,
@@ -21,7 +22,8 @@
         "flags": "0x0",
         "defaultImplementation": null,
         "witness": null,
-        "meaning": "Hashable"
+        "meaning": "Hashable",
+        "meaningStatus": "mapped"
       },
       {
         "index": 2,
@@ -29,7 +31,8 @@
         "flags": "0x3",
         "defaultImplementation": null,
         "witness": "0x10078fbf4",
-        "meaning": "static role"
+        "meaning": "static role",
+        "meaningStatus": "mapped"
       },
       {
         "index": 3,
@@ -37,7 +40,8 @@
         "flags": "0x13",
         "defaultImplementation": null,
         "witness": "0x10078fbfc",
-        "meaning": "axElement"
+        "meaning": "axElement",
+        "meaningStatus": "mapped"
       },
       {
         "index": 4,
@@ -45,7 +49,8 @@
         "flags": "0x13",
         "defaultImplementation": null,
         "witness": "0x10078fc04",
-        "meaning": "cache"
+        "meaning": "cache",
+        "meaningStatus": "mapped"
       },
       {
         "index": 5,
@@ -53,7 +58,8 @@
         "flags": "0x2",
         "defaultImplementation": null,
         "witness": "0x10078fc50",
-        "meaning": "init(element:)"
+        "meaning": "init(element:)",
+        "meaningStatus": "mapped"
       },
       {
         "index": 6,
@@ -61,7 +67,8 @@
         "flags": "0x13",
         "defaultImplementation": null,
         "witness": "0x1007aff6c",
-        "meaning": "subrole"
+        "meaning": "subrole",
+        "meaningStatus": "mapped"
       },
       {
         "index": 7,
@@ -69,7 +76,8 @@
         "flags": "0x13",
         "defaultImplementation": null,
         "witness": "0x1007aff74",
-        "meaning": "isInsideWebView"
+        "meaning": "isInsideWebView",
+        "meaningStatus": "mapped"
       },
       {
         "index": 8,
@@ -77,7 +85,8 @@
         "flags": "0x13",
         "defaultImplementation": null,
         "witness": "0x1007925f4",
-        "meaning": "actions"
+        "meaning": "actions",
+        "meaningStatus": "provisional; distinguish concrete member from protocol witness"
       },
       {
         "index": 9,
@@ -85,7 +94,8 @@
         "flags": "0x13",
         "defaultImplementation": null,
         "witness": "0x100792600",
-        "meaning": "actionDescriptions"
+        "meaning": "actionDescriptions",
+        "meaningStatus": "provisional; distinguish concrete member from protocol witness"
       },
       {
         "index": 10,
@@ -93,7 +103,8 @@
         "flags": "0x11",
         "defaultImplementation": null,
         "witness": "0x1007b8a04",
-        "meaning": "setValue(_:forAttribute:)"
+        "meaning": "setValue(_:forAttribute:)",
+        "meaningStatus": "mapped"
       },
       {
         "index": 11,
@@ -101,9 +112,20 @@
         "flags": "0x11",
         "defaultImplementation": null,
         "witness": "0x100792670",
-        "meaning": "perform(action:)"
+        "meaning": "perform(action:)",
+        "meaningStatus": "mapped"
       }
     ]
+  },
+  "actionBoundary": {
+    "transformedActions": "0x10075d2f8 returns Optional<Array<UIElementAction>> from captured actionDescriptions",
+    "protocolExtensionActions": "0x1007916b0 returns Array<UIElementAction>",
+    "protocolExtensionActionDescriptions": "0x100792570 is named _actionDescriptions and calls witness +0x48",
+    "concreteWitnessRoutes": {
+      "0x1007925f4": "0x100790b88",
+      "0x100792600": "0x100790b88 then 0x100790690"
+    },
+    "unresolved": "Do not assert nonoptional actions requirement matches transformed optional property; audit exact witness contract before conforming."
   },
   "inherited": {
     "name": "ComputerUseCore.AccessibilityNode",

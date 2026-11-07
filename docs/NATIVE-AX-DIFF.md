@@ -6673,3 +6673,26 @@ The constrained convenience overload compiles but is not yet exercised with
 TransformedUIElement because that type's complete UIElementProtocol conformance
 is still pending. Constraints were not weakened to conceal that missing work.
 Production observation and actual application acceptance remain incomplete.
+
+
+### Action protocol boundary discrepancy (2026-11-07)
+
+Before declaring TransformedUIElement's UIElementProtocol conformance, a new
+check found an unresolved mismatch: its native actions getter at 0x10075d2f8
+has Optional<Array<UIElementAction>> return type (and maps captured descriptions),
+whereas the native protocol extension actions at 0x1007916b0 returns a plain
+Array. The current reconstructed UIElementProtocol declares nonoptional actions.
+The original extension also has _actionDescriptions at 0x100792570, which calls
+witness +0x48; this must not be conflated with the transformed stored property.
+
+Concrete witness 0x1007925f4 forwards to 0x100790b88. The following witness at
+0x100792600 calls that same routine and then 0x100790690. Descriptor counts and
+addresses alone do not prove the prior semantic labels. The protocol audit now
+marks actions/actionDescriptions labels provisional and records these separate
+routes, with instruction assertions for the calls and witness offset.
+
+The audit passes. Runtime declarations are intentionally not changed until the
+exact witness types/default resolution have been recovered. In particular, no
+optional captured array is force-unwrapped and no fresh provider action list is
+substituted just to make the render overload compile. This finding changes the
+next integration step: resolve the action protocol contract before conformance.

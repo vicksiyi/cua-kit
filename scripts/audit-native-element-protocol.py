@@ -60,6 +60,7 @@ direct_names = ['AccessibilityNode', 'Hashable', 'static role', 'axElement', 'ca
                 'actionDescriptions', 'setValue(_:forAttribute:)', 'perform(action:)']
 for entry, name in zip(ui['requirements'], direct_names):
     entry['meaning'] = name
+    entry['meaningStatus'] = 'provisional; distinguish concrete member from protocol witness' if name in ('actions', 'actionDescriptions') else 'mapped'
 # Cross-conformer table: names come from transformed stored fields / named getters,
 # not from generic UIElement's shared false/nil bodies.
 node_names = ['role', 'roleDescription', 'title', 'description', 'value',
@@ -92,7 +93,23 @@ for i, (name, target) in enumerate(zip(node_names, transformed_targets)):
     getters.append(dict(name=name, descriptor=hex(descriptor),
         transformedSlot=hex(transformed_slot), transformedWitness=hex(target),
         elementSlot=hex(concrete_slot), elementWitness=hex(0x100000000 + (concrete & 0xffffffff))))
+# Pin the concrete/default getter distinction, beyond descriptor slot counts.
+for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
+                     (0x100792648, 0x100790690)]:
+    word = struct.unpack('<I', read(site, 4))[0]
+    assert word & 0x7c000000 == 0x14000000
+    displacement = word & 0x3ffffff
+    if displacement & 0x2000000: displacement -= 0x4000000
+    assert site + displacement * 4 == target
+assert struct.unpack('<I', read(0x10079258c, 4))[0] == 0xf9402428
+
 print(json.dumps(dict(binarySHA256=expected, protocol=ui,
+    actionBoundary=dict(
+        transformedActions='0x10075d2f8 returns Optional<Array<UIElementAction>> from captured actionDescriptions',
+        protocolExtensionActions='0x1007916b0 returns Array<UIElementAction>',
+        protocolExtensionActionDescriptions='0x100792570 is named _actionDescriptions and calls witness +0x48',
+        concreteWitnessRoutes={'0x1007925f4': '0x100790b88', '0x100792600': '0x100790b88 then 0x100790690'},
+        unresolved='Do not assert nonoptional actions requirement matches transformed optional property; audit exact witness contract before conforming.'),
     inherited=dict(name='ComputerUseCore.AccessibilityNode', descriptor=hex(a),
                    signatureRequirements=4, requirementCount=36, getters=getters),
     limitations=['Member mapping is static evidence, not complete conformer implementation.',
