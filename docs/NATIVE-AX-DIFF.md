@@ -2701,3 +2701,12 @@ A separate Swift `SoftLink` target now starts restoring this original module bou
 The unsafe pointer API retains its caller contract: valid declared memory and nonnegative offset/size. Tests do not exercise undefined memory access. The test covers all 65,536 two-byte inputs, all 256 tenth-byte cases, known multi-byte values, embedded offsets and truncation. Swift package build and the static evidence check pass. No vendor binary or system SPI was executed.
 
 Remaining SoftLink work includes salted hashing, image matching, Mach-O/export traversal and batch lookup; SPI binding, seven key values, hierarchy decoding and transaction integration remain incomplete. Adding the target does not make production hierarchy prefetch available yet.
+
+
+### SoftLink raw symbol bytes and segment names (2026-11-07)
+
+Restored `readCStringBytes` from `0x10024d4a4..<0x10024d594`. The function advances the caller offset for each consumed byte, including the terminating zero; the returned array omits that zero. An immediate terminator returns an empty array, while missing termination returns nil after consuming the available bytes. An initial offset at or beyond the declared size is unchanged. The result is raw bytes, so invalid UTF-8 is preserved rather than decoded/replaced.
+
+Restored `segmentName(_:matches:)` and the ten-byte `__LINKEDIT` name in the Swift SoftLink target. The native wrapper copies the fixed 16-byte segment name, then compares the expected byte array. More than sixteen bytes cannot match. Shorter matching names require a zero immediately afterward; later padding is not inspected. A full sixteen-byte match does not need a terminator. These details come from `0x10024c1f4..<0x10024c31c`, not a generic C-string interpretation.
+
+Tests cover raw high-bit bytes, absent/empty strings, explicit buffer limits, all single-byte nonzero values, composed ULEB/string/ULEB offsets, segment lengths zero through sixteen, mismatches, embedded NULs and nonzero trailing padding. Both SoftLink test executables and the Swift package build pass; the static audit pins the source branches and initializer. All buffers are owned fixtures. Image discovery, export traversal, hashing and production SPI resolution remain incomplete.

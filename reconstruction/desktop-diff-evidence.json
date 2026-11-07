@@ -5482,7 +5482,49 @@
       "behavior": "Consumes at most ten bytes; initial out-of-range offset unchanged; truncated input consumes available bytes; tenth continuation returns nil at offset+10; terminating tenth byte contributes only its low bit and does not reject excess payload bits; noncanonical encodings accepted.",
       "callerContract": "Unsafe pointer must address the declared buffer; offset and size are nonnegative. No invalid-memory behavior is redefined."
     },
-    "limitations": "Only ULEB128 is implemented. Image lookup, salted hashing, symbol/export traversal, pointer binding, key loading and CUA transaction integration remain incomplete."
+    "limitations": "ULEB128, raw C-string byte reading and segment-name matching are implemented. Image lookup, salted hashing, symbol/export traversal, pointer binding, key loading and CUA transaction integration remain incomplete.",
+    "byteReaders": {
+      "functions": [
+        {
+          "start": "0x10024d4a4",
+          "endExclusive": "0x10024d594",
+          "machineCodeSha256": "4e4cf48e4f2c9f08ccee4278388ee5deeeec426febf368ef52602055ed675783"
+        },
+        {
+          "start": "0x10024b8e8",
+          "endExclusive": "0x10024b95c",
+          "machineCodeSha256": "d6a5e0e3e8b65ad90b125725eb42108e3e86005e2a97461146561def8dcfe37f"
+        },
+        {
+          "start": "0x10024c18c",
+          "endExclusive": "0x10024c1f4",
+          "machineCodeSha256": "cfdebdb0bea1e202200acd311ea5f85b101da74a483921b5b36f551bd7d71d44"
+        },
+        {
+          "start": "0x10024c1f4",
+          "endExclusive": "0x10024c31c",
+          "machineCodeSha256": "5ef3d103df1a19619f68f18c2e7b517db556501aef5293abdf58478af303cab7"
+        }
+      ],
+      "instructionWords": {
+        "0x10024d4c4": "0x5400050a",
+        "0x10024d4e4": "0xf9000288",
+        "0x10024d4e8": "0x34000498",
+        "0x10024d51c": "0x54fffe0b",
+        "0x10024d574": "0xd2800013",
+        "0x10024c220": "0x5400006a",
+        "0x10024c254": "0x540000a1",
+        "0x10024c268": "0x38766a88",
+        "0x10024c270": "0x1a9f17e8"
+      },
+      "cstring": "Reads raw UInt8 bytes; consumes NUL but omits it from output; missing terminator returns nil after advancing to size; initial offset >= size remains unchanged; no UTF-8 decoding.",
+      "segmentName": "Compare the expected byte array with the fixed 16-byte name prefix; reject longer arrays; for a shorter match require a NUL at the next byte, without checking the remaining padding; full 16-byte matches need no NUL.",
+      "linkeditName": "__LINKEDIT (ten bytes)",
+      "implementations": [
+        "native/macos/Sources/SoftLink/CStringBytes.swift",
+        "native/macos/Sources/SoftLink/SegmentName.swift"
+      ]
+    }
   },
   "limitations": [
     "No native service executed and no macOS UI observed.",
@@ -6509,6 +6551,16 @@
       "address": "000000010024d34c",
       "mangled": "_$s8SoftLink11readULEB1284from4size6offsets6UInt64VSgSPys5UInt8VG_S2iztF",
       "signature": "SoftLink.readULEB128(from: Swift.UnsafePointer<Swift.UInt8>, size: Swift.Int, offset: inout Swift.Int) -> Swift.UInt64?"
+    },
+    {
+      "address": "000000010024b8e8",
+      "mangled": "_$s8SoftLink11segmentName_7matchesSbSo0C11_command_64V_Says5UInt8VGtF",
+      "signature": "SoftLink.segmentName(_: __C.segment_command_64, matches: [Swift.UInt8]) -> Swift.Bool"
+    },
+    {
+      "address": "000000010024d4a4",
+      "mangled": "_$s8SoftLink16readCStringBytes4from4size6offsetSays5UInt8VGSgSPyAGG_S2iztF",
+      "signature": "SoftLink.readCStringBytes(from: Swift.UnsafePointer<Swift.UInt8>, size: Swift.Int, offset: inout Swift.Int) -> [Swift.UInt8]?"
     },
     {
       "address": "00000001006f5f88",

@@ -25,7 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
-    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction', 'FrequencyTable', 'readULEB128',
+    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction', 'FrequencyTable', 'readULEB128', 'readCStringBytes', 'segmentName',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -2449,7 +2449,30 @@ softlink_evidence = {
         'behavior':'Consumes at most ten bytes; initial out-of-range offset unchanged; truncated input consumes available bytes; tenth continuation returns nil at offset+10; terminating tenth byte contributes only its low bit and does not reject excess payload bits; noncanonical encodings accepted.',
         'callerContract':'Unsafe pointer must address the declared buffer; offset and size are nonnegative. No invalid-memory behavior is redefined.',
     },
-    'limitations':'Only ULEB128 is implemented. Image lookup, salted hashing, symbol/export traversal, pointer binding, key loading and CUA transaction integration remain incomplete.',
+    'limitations':'ULEB128, raw C-string byte reading and segment-name matching are implemented. Image lookup, salted hashing, symbol/export traversal, pointer binding, key loading and CUA transaction integration remain incomplete.',
+}
+softlink_byte_words = {
+    0x10024d4c4: 0x5400050a,
+    0x10024d4e4: 0xf9000288,
+    0x10024d4e8: 0x34000498,
+    0x10024d51c: 0x54fffe0b,
+    0x10024d574: 0xd2800013,
+    0x10024c220: 0x5400006a,
+    0x10024c254: 0x540000a1,
+    0x10024c268: 0x38766a88,
+    0x10024c270: 0x1a9f17e8,
+}
+for address, word in softlink_byte_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('SoftLink byte reader/segment matching changed')
+softlink_evidence['byteReaders'] = {
+    'functions': [{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10024d4a4,0x10024d594),(0x10024b8e8,0x10024b95c),(0x10024c18c,0x10024c1f4),(0x10024c1f4,0x10024c31c)]],
+    'instructionWords':{hex(a):hex(w) for a,w in softlink_byte_words.items()},
+    'cstring':'Reads raw UInt8 bytes; consumes NUL but omits it from output; missing terminator returns nil after advancing to size; initial offset >= size remains unchanged; no UTF-8 decoding.',
+    'segmentName':'Compare the expected byte array with the fixed 16-byte name prefix; reject longer arrays; for a shorter match require a NUL at the next byte, without checking the remaining padding; full 16-byte matches need no NUL.',
+    'linkeditName':'__LINKEDIT (ten bytes)',
+    'implementations':['native/macos/Sources/SoftLink/CStringBytes.swift','native/macos/Sources/SoftLink/SegmentName.swift'],
 }
 record = {
     'artifact':'@oai/'+relative,
