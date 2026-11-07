@@ -470,3 +470,42 @@ missing acknowledgments timing out, window obstruction/layer/ordering,
 cancellation, and concrete-resource cleanup preserving the original enforcement
 error. All use controlled clocks/ports/operations; no real app click or system
 screen-update suppression was performed. Multica acceptance remains pending.
+
+
+## Latest run after execution connection recovery
+
+Inspected local debug run 2026-11-07T09-58-59-582Z. Indexed clicks 42/33
+and coordinate clicks returned observations without a tool error; sequence 73
+still shows AXHeading 收件箱. Multiple preceding elicitation results are accept.
+Only sequence 78 is cancel; its tool result 79 is the not-approved error.
+The model's final claim that subsequent clicks were all blocked by approval
+is therefore unsupported. Preserve the cancellation; diagnose the earlier
+accepted input path independently. This run still does not prove native app
+input acceptance. The proposed focus-state edit during the tool outage never
+landed; it was reconstructed only after connection recovery.
+
+Added native initialization/activation/frontmost state mutations and click-tap
+transition selection from 0x100746270. Full enforcer lifecycle, target callback,
+focus-steal prevention and production Mouse.swift integration remain pending.
+
+
+## Target process focus observation composition
+
+SyntheticFocusStateStore restores the locked state mutation wrapper, including
+click-monitor start/stop selection after successful mutation and no reconciliation
+after a throwing mutation. Accepted activation events update both belief bytes;
+frontmost tracking updates actual-active only. SyntheticFocusActivationFilter
+runs the temporary suppression callback under its own lock before mutation;
+suppressed events do not change state. Raw types 20/19 and AppKit 13 subtype 1/2
+map to active/inactive. Native subtype conversion is exact Int16.
+
+SyntheticFocusTargetMonitor owns the target process EventTap and composes this
+filter/store, with injected click-monitor lifecycle hooks. Its handler retains
+the filter, not the monitor, avoiding a monitor/tap callback cycle. The full
+enforcer still needs real click monitoring, frontmost tracker ownership,
+SystemFocusStealPreventer and safe-enforce branch composition before Mouse.swift
+integration. This component alone does not repair production clicks.
+
+The activation-filter test initially assumed CGEvent field 83 retained 65537;
+macOS truncated that subtype. Removed that invalid test construction. The
+corrected filter/store tests and Swift build passed before monitor composition.

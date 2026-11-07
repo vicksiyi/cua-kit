@@ -35,3 +35,33 @@ struct SyntheticApplicationFocusState: Equatable {
         applicationBelievesItHasFocus = false
     }
 }
+
+
+// Mutation wrapper 0x100746270: reconcile click monitoring after a successful
+// mutation. Focus-only changes do not restart monitoring.
+enum SyntheticFocusClickMonitoringChange: Equatable { case unchanged, start, stop }
+func syntheticFocusClickMonitoringChange(before: SyntheticApplicationFocusState,
+                                         after: SyntheticApplicationFocusState) -> SyntheticFocusClickMonitoringChange {
+    let wasSyntheticActive = before.applicationBelievesItIsActive && !before.applicationIsActive
+    if after.applicationIsActive { return wasSyntheticActive ? .stop : .unchanged }
+    guard wasSyntheticActive != after.applicationBelievesItIsActive else { return .unchanged }
+    return after.applicationBelievesItIsActive ? .start : .stop
+}
+
+extension SyntheticApplicationFocusState {
+    // 0x10074a1e0 seeds belief/actual active together; key focus is independent.
+    init(applicationIsActive: Bool, applicationHasKeyFocus: Bool) {
+        self.init(applicationBelievesItIsActive: applicationIsActive,
+                  applicationBelievesItHasFocus: applicationHasKeyFocus,
+                  applicationIsActive: applicationIsActive)
+    }
+    // Accepted activation events write both belief bytes (0x10074ab70).
+    mutating func observeApplicationActivation(_ active: Bool) {
+        applicationBelievesItIsActive = active
+        applicationBelievesItHasFocus = active
+    }
+    // Frontmost tracker updates actual-active only (0x10074ab24).
+    mutating func observeFrontmostPID(_ frontmostPID: Int32?, targetPID: Int32) {
+        applicationIsActive = frontmostPID == targetPID
+    }
+}

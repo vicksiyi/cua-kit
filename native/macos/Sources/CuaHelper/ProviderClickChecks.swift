@@ -3676,6 +3676,9 @@ func runProviderClickChecks() async throws {
     runTargetActivationObservationChecks()
     runSafeActivationRestorationDecisionChecks()
     try await runSafeActivationScopeChecks()
+    try runSyntheticFocusStateStoreChecks()
+    try runSyntheticFocusActivationFilterChecks()
+    runSyntheticFocusTargetMonitorChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4134,4 +4137,79 @@ private func runSafeActivationRestorationLoopChecks() async throws {
             enforcementFailed: false, observations: store, driver: driver)
         fatalError("Expected cancellation")
     } catch { checkTrue(error is CancellationError) }
+}
+
+
+private func runSyntheticFocusStateStoreChecks() throws {
+    var lifecycle: [String] = []
+    let store = SyntheticFocusStateStore(
+        state: SyntheticApplicationFocusState(applicationIsActive: false, applicationHasKeyFocus: false),
+        startClickMonitoring: { lifecycle.append("start") },
+        stopClickMonitoring: { lifecycle.append("stop") })
+    store.mutate { $0.observeApplicationActivation(true) }
+    checkEqual(lifecycle, ["start"])
+    store.mutate { $0.applicationBelievesItHasFocus = false }
+    checkEqual(lifecycle, ["start"])
+    store.mutate { $0.observeFrontmostPID(88, targetPID: 88) }
+    checkEqual(lifecycle, ["start", "stop"])
+    store.mutate { $0.observeFrontmostPID(77, targetPID: 88) }
+    checkEqual(lifecycle, ["start", "stop", "start"])
+    store.mutate { $0.observeApplicationActivation(false) }
+    checkEqual(lifecycle, ["start", "stop", "start", "stop"])
+    do {
+        try store.mutate { state in
+            state.applicationBelievesItIsActive = true
+            throw SafeActivationRestoreError.activationFailed
+        }
+        fatalError("Expected mutation error")
+    } catch { checkEqual(error as? SafeActivationRestoreError, .activationFailed) }
+    checkTrue(store.snapshot.applicationBelievesItIsActive)
+    checkEqual(lifecycle, ["start", "stop", "start", "stop"])
+}
+
+
+private func runSyntheticFocusActivationFilterChecks() throws {
+    var starts = 0, stops = 0
+    let state = SyntheticFocusStateStore(
+        state: SyntheticApplicationFocusState(applicationIsActive: false, applicationHasKeyFocus: false),
+        startClickMonitoring: { starts += 1 }, stopClickMonitoring: { stops += 1 })
+    let filter = SyntheticFocusActivationFilter(state: state)
+    let activation = try SynthesizedEvent.notifyAppActivated(windowID: 0,
+        windowBounds: nil, activationPoint: nil).cgEvents[0]
+    checkTrue(filter.filter(type: CGEventType(rawValue: 13)!, event: activation) === activation)
+    checkTrue(state.snapshot.applicationBelievesItHasFocus); checkEqual(starts, 1)
+    filter.setSuppression { _, _ in true }
+    let deactivation = try SynthesizedEvent.notifyAppDeactivated().cgEvents[0]
+    checkTrue(filter.filter(type: CGEventType(rawValue: 13)!, event: deactivation) == nil)
+    checkTrue(state.snapshot.applicationBelievesItIsActive); checkEqual(stops, 0)
+    filter.setSuppression(nil)
+    checkTrue(filter.filter(type: CGEventType(rawValue: 13)!, event: deactivation) === deactivation)
+    checkTrue(!state.snapshot.applicationBelievesItHasFocus); checkEqual(stops, 1)
+    _ = filter.filter(type: CGEventType(rawValue: 20)!, event: activation)
+    checkTrue(state.snapshot.applicationBelievesItIsActive); checkEqual(starts, 2)
+}
+
+
+private func runSyntheticFocusTargetMonitorChecks() {
+    var trace: [String] = []
+    let driver = EventTap.Driver(create: { location, placement, options, mask, _, _ in
+        guard case .process(88) = location else { unexpectedFailure() }
+        checkEqual(placement.rawValue, 0); checkEqual(options.rawValue, 0)
+        checkEqual(mask, SafeActivationNativeResources.foregroundMask)
+        trace.append("create")
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, enabled in trace.append(enabled ? "enable" : "disable") },
+        invalidate: { CFMachPortInvalidate($0); trace.append("invalidate") })
+    var monitor: SyntheticFocusTargetMonitor? = SyntheticFocusTargetMonitor(pid: 88,
+        initialState: SyntheticApplicationFocusState(applicationIsActive: false, applicationHasKeyFocus: false),
+        startClickMonitoring: { trace.append("click-start") },
+        stopClickMonitoring: { trace.append("click-stop") }, driver: driver)
+    weak var lifetime = monitor
+    monitor!.state.mutate { $0.observeApplicationActivation(true) }
+    monitor!.observeFrontmostPID(88, targetPID: 88)
+    checkEqual(trace, ["create", "enable", "click-start", "click-stop"])
+    monitor = nil
+    checkTrue(lifetime == nil)
+    checkEqual(trace, ["create", "enable", "click-start", "click-stop", "disable", "invalidate"])
 }
