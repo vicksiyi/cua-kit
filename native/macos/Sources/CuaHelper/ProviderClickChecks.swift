@@ -90,6 +90,46 @@ private enum ProviderClickChecks {
         }
         checkTrue(UIElementTreeTransaction.current == nil)
         checkEqual(targetMock.performed, [.press, .press, .press])
+        var hierarchyCopies = 0
+        let reader = AXHierarchyReader(resolvePID: { element in
+                checkTrue(CFEqual(element, targetAX)); return 99999
+            }, currentPID: { 1 }, isMainThread: { unexpectedFailure() },
+            onMain: { _ in unexpectedFailure() },
+            optionKeys: { AXHierarchyOptionKeys(skipInspectionForAttributes: "skip" as CFString,
+                arrayAttributes: "arrays" as CFString, truncateStrings: "truncate" as CFString,
+                maxArrayCount: "max" as CFString) },
+            resultKeys: { AXHierarchyResultKeys(value: "value", count: "count") },
+            incompleteResultKey: { "incomplete" },
+            decodeBoolean: { try decodeAXBool($0, throwingOnFailure: false) },
+            copy: { element, _, options, output in
+                hierarchyCopies += 1
+                checkEqual((options as NSDictionary)["max"] as? Int, -7)
+                let raw: [AXUIElement: NSDictionary] = [element: ["AXRole": ["value": "AXButton"]]]
+                output = .passRetained((raw as NSDictionary) as CFDictionary)
+                return .success
+            })
+        let prefetched = target.subtreeTransaction(additionalAttributes: [role],
+            maxChildCount: -7, reader: reader)
+        checkEqual(hierarchyCopies, 1)
+        checkTrue(prefetched.element is UIElement)
+        checkEqual(prefetched.element.role, .button)
+        checkEqual(prefetched.roleFrequencyTable[.button], 1)
+        checkTrue(UIElementTreeTransaction.current == nil)
+        prefetched.perform { root in
+            checkEqual(UIElement(element: root.axElement).role, .button)
+            // No prefetch means no hierarchy calls. Its root must be constructed
+            // against the new empty cache, not inherit this outer prefetched role.
+            let cold = UIElementTreeTransaction.$prefetchEnabled.withValue(false) {
+                target.subtreeTransaction(additionalAttributes: [], maxChildCount: 2, reader: reader)
+            }
+            checkTrue(cold.element is UIElement)
+            checkTrue(cold.cache.attributeTable.isEmpty)
+            checkTrue(cold.cache.requestedAttributes.isEmpty)
+            checkEqual(hierarchyCopies, 1)
+            checkTrue(cold.element.cache.attributes.isEmpty)
+            checkEqual(UIElement(element: root.axElement).role, .button)
+        }
+        checkTrue(UIElementTreeTransaction.current == nil)
         let app = UIElement(axElement: appAX, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
         let point = try await target.clickablePoint(reportError: { _ in unexpectedFailure("unexpected read failure") })
         checkEqual(point, CGPoint(x: 50, y: 40))
@@ -132,6 +172,6 @@ private enum ProviderClickChecks {
 private func checkEqual<T: Equatable>(_ lhs: T, _ rhs: T) { precondition(lhs == rhs) }
 private func checkTrue(_ value: Bool) { precondition(value) }
 private func checkFalse(_ value: Bool) { precondition(!value) }
-private func unexpectedFailure(_ message: String = "unexpected failure") { preconditionFailure(message) }
+private func unexpectedFailure(_ message: String = "unexpected failure") -> Never { preconditionFailure(message) }
 
 func runProviderClickChecks() async throws { try await ProviderClickChecks.run() }

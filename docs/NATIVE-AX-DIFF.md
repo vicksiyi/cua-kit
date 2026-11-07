@@ -4178,3 +4178,35 @@ check pass. Separate transaction scope and action-environment regression fixture
 pass, covering nested/throwing scope restoration and action composition. Production subtree collector integration and real
 desktop/browser acceptance remain outstanding; this conformance alone does not
 prove them complete.
+
+
+## Provider-backed concrete subtree transaction entry
+
+UIElementProtocol.subtreeTransaction now supplies the recovered hierarchy reader
+and concrete UIElement cache/root constructor to the existing transaction
+assembly. Its source support getter at 0x1007aff30 invokes the cache witness at
++0x28 and retains its first field, confirming cached supportedAttributes rather
+than an invented fresh AX query. Bundle resolution uses the AX provider getter.
+AXHierarchyReader.provider resolves actualPID through the provider and original
+PID error logging; the existing system reader retains lazy SPI key loading,
+copy ownership, result decoding and recursive incomplete-result rereads.
+
+Root construction explicitly uses the newly allocated transaction cache, as the
+native cache-constructor calls at 0x10076c4d4 and 0x10076c7b4 do. It must not
+construct the root through init(element:) and accidentally adopt an enclosing
+TaskLocal transaction. Construction itself leaves current untouched.
+
+Validation: complete-helper build and self-test pass. The self-test exercises
+the production composition with an injected hierarchy copy: unchanged negative
+maxChildCount, decoded prefetched root role, role frequency, concrete root type,
+scoped reconstruction and disabled-prefetch construction within an outer
+transaction. Disabled prefetch makes no hierarchy copy and obtains a fresh cold
+root rather than the outer prefetched role. The fixture's initial NSDictionary
+literal attempted NSCopying on AXUIElement; a typed Swift dictionary bridged to
+NSDictionary correctly models the system result and fixes the fixture crash.
+No vendor service, private hierarchy SPI, model call or UI input was executed.
+
+The standalone Target.collect still uses its earlier traversal. Switching that
+caller requires recovering the original collection call site's parameters and
+lifecycle, not inventing a maxChildCount from the demo's node budget. This change
+finishes the concrete subtree API composition, not end-to-end collector parity.
