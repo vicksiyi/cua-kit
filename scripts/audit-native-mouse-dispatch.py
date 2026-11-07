@@ -392,3 +392,20 @@ assert pinned_imported_symbol(0x101469578) == '_$sScT6cancelyyF'
 assert read(0x1007880a4, 4).hex() == '7f0e00f9'  # clear main task
 assert read(0x1007880d0, 4).hex() == '7f1200f9'  # clear menu task
 assert read(0x100788ff0, 4).hex() == '7f1200f9'  # menu close clears only menu
+
+# WindowServerEvent raw values and matching reflected case names.
+window_event_names = ['isObscured', 'isUnobscured', 'isOrderedIn', 'isOrderedOut',
+    'isTerminated', 'isChangingScreens', 'didMove', 'didResize', 'didChangeOrder',
+    'geometryDidChange', 'monitorDataPending', 'didCreate', 'rightsGrantOffered',
+    'rightsGrantCompleted', 'recordForTermination', 'isVisible', 'isInvisible',
+    'workspaceAddWindow', 'workspaceRemoveWindow', 'workspaceCreated', 'workspaceDestroyed']
+assert struct.unpack('<I', read(0x10131bb78 + 12, 4))[0] == len(window_event_names)
+assert list(struct.unpack('<21I', read(0x10116c6bc, 84))) == list(range(800, 817)) + list(range(1325, 1329))
+for index, name in enumerate(window_event_names):
+    reference = 0x10131bb78 + 16 + index * 12 + 8
+    address = reference + struct.unpack('<i', read(reference, 4))[0]
+    assert read(address, len(name)) == name.encode()
+# Primary SPI binding slots 1/2/3: 0x10155b518, 520, 528.
+assert read(0x10026bb84, 4).hex() == '048d42f9'
+assert read(0x10026bc78, 4).hex() == '049142f9'
+assert read(0x10026bbf4, 4).hex() == '039542f9'

@@ -1986,3 +1986,26 @@ and its AsyncIterator as the event source (0x1007891f0, 0x100789214,
 0x1007893bc), so an invented periodic AX/window poll would not reproduce it.
 The event stream adapter, event filters, ordering reactions, menuDidOpen task
 and full observer/controller composition still require restoration.
+
+
+## WindowServer event vocabulary and SPI bindings
+
+WindowServerEvent restores all 21 declaration cases and UInt32 raw values
+from field descriptor 0x10131bb78 and raw table 0x10116c6bc: the 800..816
+window events and 1325..1328 workspace events. Unknown raw values remain nil.
+The expanded pinned audit checks every reflected name and value, rather than
+inferring event meanings from nearby strings.
+
+WindowServerSPI now reuses the existing source SoftLink primary binding array
+for registerConnectionNotifyProc (slot 1, 0x10026bb5c),
+removeConnectionNotifyProc (slot 2, 0x10026bc50), and
+requestNotificationsForWindows (slot 3, 0x10026bbe0). The C callback ABI is
+(UInt32, pointer?, UInt32, context?) -> Void. Register/remove return CGError;
+window subscription takes a UInt32 pointer/count and returns Void. No alternate
+AX notifications or polling implementation was substituted. Required missing
+symbols retain the source's trap behavior.
+
+Enum checks use only static values. No real notify registration, subscription
+or removal occurs in this verification. Callback context retention, observer
+registration order/cleanup and AsyncStream iteration remain to be restored and
+integrated before claiming production WindowOrderingObserver completion.

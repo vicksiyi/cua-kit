@@ -9,6 +9,11 @@ enum WindowServerSPI {
     private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
     private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
     private typealias Update = @convention(c) (OpaquePointer?) -> CGError
+    private typealias ConnectionNotify = @convention(c)
+        (OpaquePointer?, WindowServerNotificationCallback, UInt32, UnsafeMutableRawPointer?) -> CGError
+    private typealias RequestWindowNotifications = @convention(c)
+        (OpaquePointer?, UnsafePointer<UInt32>, UInt32) -> Void
+
 
     private static func resolve(_ request: WindowServerSPISymbolRequest) -> [UnsafeRawPointer?] {
         lookUpBatchSymbolPointers(images: request.images,
@@ -32,6 +37,25 @@ enum WindowServerSPI {
     // 0x10026d860 tails through global 0x10155b550: primary slot 8.
     private static let releaseFocus = unsafeBitCast(required(functions[8]), to: ReleaseKeyFocus.self)
     static func releaseKeyFocus(withID id: UInt32) -> Int32 { releaseFocus(id) }
+    // Source wrappers 0x10026bb5c / 0x10026bc50 / 0x10026bbe0.
+    // Primary binding slots 1, 2, 3, shared with mainConnection's slot 0.
+    private static let registerNotify = unsafeBitCast(required(functions[1]), to: ConnectionNotify.self)
+    private static let removeNotify = unsafeBitCast(required(functions[2]), to: ConnectionNotify.self)
+    private static let requestWindowNotifications = unsafeBitCast(required(functions[3]), to: RequestWindowNotifications.self)
+    static func registerConnectionNotifyProc(_ connection: OpaquePointer?,
+        callback: WindowServerNotificationCallback, event: WindowServerEvent,
+        context: UnsafeMutableRawPointer?) -> CGError {
+        registerNotify(connection, callback, event.rawValue, context)
+    }
+    static func removeConnectionNotifyProc(_ connection: OpaquePointer?,
+        callback: WindowServerNotificationCallback, event: WindowServerEvent,
+        context: UnsafeMutableRawPointer?) -> CGError {
+        removeNotify(connection, callback, event.rawValue, context)
+    }
+    static func requestNotificationsForWindows(_ connection: OpaquePointer?,
+        windows: UnsafePointer<UInt32>, count: UInt32) {
+        requestWindowNotifications(connection, windows, count)
+    }
     static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }
     static func reenableUpdate(_ connection: OpaquePointer?) -> CGError { reenable(connection) }

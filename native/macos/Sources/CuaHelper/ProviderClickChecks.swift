@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runWindowServerEventChecks()
     runWindowOrderingObserverTaskStoreChecks()
     await runApplicationPrimaryWindowChecks()
     runAXEnablementApplicationGuardChecks()
@@ -6792,4 +6793,12 @@ private func runWindowOrderingObserverTaskStoreChecks() {
     owner!.withState { $0.menuTask = Handle("final-menu") }
     owner = nil
     checkEqual(Array(trace.suffix(2)), ["cancel-restart", "cancel-final-menu"])
+}
+
+
+private func runWindowServerEventChecks() {
+    let expected: [UInt32] = Array(800...816) + Array(1325...1328)
+    checkEqual(WindowServerEvent.allCases.map(\.rawValue), expected)
+    for event in WindowServerEvent.allCases { checkEqual(WindowServerEvent(rawValue: event.rawValue), event) }
+    for invalid: UInt32 in [0, 799, 817, 1324, 1329, .max] { checkTrue(WindowServerEvent(rawValue: invalid) == nil) }
 }
