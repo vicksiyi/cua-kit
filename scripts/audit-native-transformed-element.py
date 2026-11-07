@@ -134,6 +134,12 @@ rendering_witnesses = [0x100758848, 0x100758854, 0x10075885c, 0x100758870]
 for i, target in enumerate(rendering_witnesses):
     raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
     assert 0x100000000 + (raw & 0xffffffff) == target
+# Generic tree transformation result cases and recursion edges.
+assert fields(0x1012c9ce4) == ['transformed', 'replaced', 'removed', 'unchanged']
+branch(0x100651620, 0x100651728)
+branch(0x1006516a8, 0x100651398)
+branch(0x1006519e0, 0x100651728)
+
 # Resilient Equatable/Hashable witness records and native identity calls.
 assert relative(0x1011954dc) == 0x100762784
 assert relative(0x101195490) == 0x10076236c

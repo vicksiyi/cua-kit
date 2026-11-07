@@ -5189,3 +5189,28 @@ its original, verify equal hashes/Set deduplication, distinguish a different AX
 handle, and compare the hash combination to CFHash directly. No additional
 provider attribute reads occur. This completes the owner's identity contract,
 not downstream tree transformation, rendering or production/live acceptance.
+
+
+### Generic tree transformation driver (2026-11-07)
+
+Restored the generic `UIElementTree.transformed(using:in:apply:)` path at
+0x100651398 and item helper 0x100651728. Result descriptor 0x1012c9ce4 has
+transformed(Item), replaced(Item), removed, unchanged in that order. Payload
+type reference 0x10129bef4 resolves through 0x1014607f8 to Item descriptor
+0x1012c9b50. The binary audit pins result cases and three recursion edges.
+
+Rules execute in order on each item. transformed installs the changed item and
+advances; unchanged advances; removed returns nil without processing children;
+replaced recursively restarts the same rule list on its replacement at
+0x1006519e0. After retaining an item, 0x1006516a8 recursively transforms its
+subtree. Top-level compactMap drops nil items and constructs a new tree with
+its original focusedElement capture, rather than substituting a newly mutated
+focus. Rebuilding tree storage clears its derived caches. This is not a
+flatten/promote-children-on-removal policy.
+
+Build and provider selftest pass with real transformed nodes: ordered callback
+trace proves replacement restart, transformed-next-rule, parent-before-child,
+removed subtree skip and context mutation; output/focus/input-copy assertions
+and empty-rule traversal also pass. This is the generic execution driver only:
+UIElementTreeTransformation's concrete policy cases, rendering overload, native
+traversal integration and live application acceptance remain incomplete.

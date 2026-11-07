@@ -804,6 +804,44 @@ private enum ProviderClickChecks {
         capturedOwner.hash(into: &actualHasher)
         checkEqual(actualHasher.finalize(), expectedHasher.finalize())
         checkEqual(ownerProvider.singleReads, readsBeforeMutation)
+        var parentNode = capturedOwner; parentNode.title = "parent"
+        var childNode = capturedOwner; childNode.title = "child"
+        var removedNode = capturedOwner; removedNode.title = "remove"
+        var hiddenNode = capturedOwner; hiddenNode.title = "hidden"
+        let childrenTree = UIElementTree<TransformedUIElement>(items: [
+            .init(element: childNode, subtree: transformedLeaf)], focusedElement: childNode)
+        let hiddenTree = UIElementTree<TransformedUIElement>(items: [
+            .init(element: hiddenNode, subtree: transformedLeaf)], focusedElement: nil)
+        let transformInput = UIElementTree<TransformedUIElement>(items: [
+            .init(element: parentNode, subtree: childrenTree),
+            .init(element: removedNode, subtree: hiddenTree)], focusedElement: parentNode)
+        var transformTrace: [String] = []
+        let transformedOutput = transformInput.transformed(using: [0, 1], in: &transformTrace) { rule, item, trace in
+            let title = item.element.title!
+            trace.append("\(rule):\(title)")
+            if title == "remove" { return .removed }
+            var changed = item
+            if rule == 0 && title == "parent" {
+                changed.element.title = "replacement"
+                return .replaced(changed)
+            }
+            if rule == 0 && title == "replacement" {
+                changed.element.title = "changed"
+                return .transformed(changed)
+            }
+            return .unchanged
+        }
+        checkEqual(transformTrace, ["0:parent", "0:replacement", "1:changed", "0:child", "1:child", "0:remove"])
+        checkEqual(transformedOutput.items.count, 1)
+        checkEqual(transformedOutput.items[0].element.title, "changed")
+        checkEqual(transformedOutput.items[0].children[0].element.title, "child")
+        checkEqual(transformedOutput.focusedElement?.title, "parent")
+        checkEqual(transformedOutput.items[0].subtree.focusedElement?.title, "child")
+        checkEqual(transformInput.items.count, 2)
+        var noRules = 0
+        let unchangedTree = transformInput.transformed(using: [Int](), in: &noRules) { _, _, _ in unexpectedFailure() }
+        checkEqual(unchangedTree.items.count, 2)
+        checkEqual(unchangedTree.items[1].children[0].element.title, "hidden")
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
