@@ -613,6 +613,16 @@ assert read(0x10009b414, 8).hex() == '746a79f8340200b4'
 assert read(0x10009b338, 24).hex() == '1805403909014039090100391f050039e9000037d8000034'
 assert read(0x10009b4fc, 44).hex() == '78010034a8a500b008e143f9686a68381f050071c1000054f40313aac9feff9760000036f40313aa21ffff97'
 
+# InterpolatableAnimation.Event payload cases and stop sequencing.
+for index, name in enumerate([b'valueChanged', b'finished', b'retargeted']):
+    field_name = 0x1013245b8 + 16 + index * 12 + 8
+    target = field_name + struct.unpack('<i', read(field_name, 4))[0]
+    assert read(target, len(name) + 1) == name + b'\0'
+assert read(0x1007c60fc, 12).hex() == '1804003660008052c2fdff97'
+assert read(0x1007c6128, 12).hex() == 'f60240f9960300b4f70640f9'
+assert read(0x1007c614c, 4).hex() == '22008052'
+assert read(0x1007c617c, 16).hex() == 'e80317aa7ffbff97e00317aafe000094'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

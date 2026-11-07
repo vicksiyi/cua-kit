@@ -3347,3 +3347,29 @@ clear and final visibility gating. Concrete window, callbacks and native animati
 ownership are still not connected; this is not production cursor availability.
 
 Swift build, provider checks and pinned static audit pass after outer reset recovery.
+
+
+## InterpolatableAnimation stop semantics recovery (2026-11-08)
+
+Source stop(immediately:) 0x1007c606c has two branches. Immediate stop first
+sets state to .ended using the original state setter (which runs its change
+notification), then rereads the event handler. A present handler receives
+.finished(currentValue); with no handler the current value is not read. There is
+no existing-ended guard inside stop itself. Non-immediate stop reads current value
+and retargets to that value; it does not immediately assign ended or call finished.
+
+The Animation module now contains the recovered injected stop body and event
+payload enum. Reflection descriptor 0x1012cdb98 / fields 0x1013245b8 records
+valueChanged(oldValue:newValue:), finished(Value), retargeted(fromValue:toValue:).
+Standalone event naming is temporary until the generic native owner is restored.
+State setter and retarget remain explicit boundaries; their full algorithms are
+not replaced by invented timer or spring implementations.
+
+Checks exercise handler replacement during state change, state-before-callback
+ordering, lazy value access with nil handler, and non-immediate retarget-only
+behavior. Static pins cover event case names and stop branches. This also supports
+the earlier source finding that reset must clear position's handler before stop,
+since immediate stop otherwise emits a finished event. Concrete animations and
+production cursor integration remain outstanding.
+
+Swift build, provider checks and pinned static audit pass for the stop semantics.

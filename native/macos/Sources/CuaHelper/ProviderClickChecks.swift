@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runInterpolatableAnimationStopChecks()
     runCursorWindowResetChecks()
     runCursorMotionAnimationResetChecks()
     runCursorWindowVisibilityChecks()
@@ -7956,4 +7957,27 @@ private func runCursorWindowResetChecks() {
             }
         }
     }
+}
+
+
+private func runInterpolatableAnimationStopChecks() {
+    var events: [String] = []
+    var callback: ((InterpolatableAnimationEvent<Int>) -> Void)? = { _ in preconditionFailure() }
+    stopInterpolatableAnimation(immediately: true, setState: {
+        precondition($0 == .ended); events.append("ended")
+        callback = { event in
+            guard case .finished(7) = event else { preconditionFailure() }
+            events.append("finished")
+        }
+    }, handler: { events.append("handler"); return callback },
+        value: { events.append("value"); return 7 }, retarget: { _ in preconditionFailure() })
+    precondition(events == ["ended", "handler", "value", "finished"])
+    stopInterpolatableAnimation(immediately: true, setState: { precondition($0 == .ended) },
+        handler: { nil as ((InterpolatableAnimationEvent<Int>) -> Void)? },
+        value: { preconditionFailure() }, retarget: { _ in preconditionFailure() })
+    events = []
+    stopInterpolatableAnimation(immediately: false, setState: { _ in preconditionFailure() },
+        handler: { preconditionFailure() }, value: { events.append("value"); return 9 },
+        retarget: { precondition($0 == 9); events.append("retarget") })
+    precondition(events == ["value", "retarget"])
 }
