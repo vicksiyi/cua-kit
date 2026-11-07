@@ -3202,3 +3202,29 @@ Still pending: composition with SPI options and outer decoder in the transaction
 owner, plus the source PID resolver's MockProvider/logging branches. The new
 boundary deliberately accepts a resolved PID rather than silently replacing that
 resolver with a different production policy.
+
+### Hierarchy reader composition
+
+`AXHierarchyReader.read` now composes the recovered function `0x1006f7f2c`:
+current PID then element PID resolution, conditional synchronous dispatch,
+four-option construction, copyHierarchy with the requested attribute array,
+Copy-owned output consumption, outer dictionary decoding and recursive rereads.
+The options are constructed inside the dispatched operation, matching the
+separate native closure at `0x1006f8c28`. Recursive reads target the incomplete
+element, retain both original attribute arrays and maxChildCount, and re-evaluate
+PID/thread routing on each call. No new recursion budget is introduced.
+
+`AXHierarchyReadingSystem.swift` wires this composition to AccessibilitySPI's
+resolved keys/function, DispatchQueue.main.sync and the restored decodeAXBool
+with throwingOnFailure false. A source-compatible PID resolver remains an
+explicit owner dependency. Creating the reader does not initialize SPI or read
+UI. The system adapter compiles, but is not invoked by the current collector.
+
+The composition fixture exercises a same-process initial root and an incomplete
+child with another PID, verifying only the first copy dispatches, both queries
+retain their options (including repeated names and negative caller count), both
+non-success AX statuses still yield usable data, and the recursive result carries
+partial-array metadata. It performs no live AX reads or private SPI calls.
+Swift package build and the composition test pass. Transaction owner/task-local
+prefetch integration and the full PID/mock resolver remain outstanding; this
+is not end-to-end desktop acceptance.
