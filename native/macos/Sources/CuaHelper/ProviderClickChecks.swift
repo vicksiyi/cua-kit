@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runInterpolatableAnimationValueChangeChecks()
     runInterpolatableAnimationFinishChecks()
     runInterpolatableAnimationTickChecks()
     runNativeAnimationProtocolCompositionChecks()
@@ -8092,6 +8093,7 @@ private func runNativeAnimationProtocolCompositionChecks() {
         let id = UUID()
         var state: AnimationState = .running
         var startTime: Double? = 10
+        var currentValue = 0.0
         var ticks: [AnimationUpdate] = []
         var stopped: [Bool] = []
         func stop(immediately: Bool) { stopped.append(immediately); state = .ended }
@@ -8104,7 +8106,9 @@ private func runNativeAnimationProtocolCompositionChecks() {
         func performTick(with update: AnimationUpdate) {
             performInterpolatableAnimationTick(with: update, state: { state },
                 initialize: { startTime = $0 }, setState: { state = $0 },
-                interpolate: { ticks.append($0); return 1.0 }, applyValue: { _ in },
+                interpolate: { ticks.append($0); return 1.0 }, applyValue: { value in
+                    changeInterpolatableAnimationValue(readValue: { currentValue }, mutate: { currentValue = value }, handler: { nil })
+                },
                 finish: { preconditionFailure() })
         }
     }
@@ -8114,7 +8118,7 @@ private func runNativeAnimationProtocolCompositionChecks() {
     precondition(update.targetTimestamp == 10.25 && update.targetRunningTime(from: 11) == -0.75)
     precondition(update.targetRunningTime(from: nil) == nil)
     animation.performTick(with: update); animation.stop(); animation.reset()
-    precondition(concrete.ticks == [update] && concrete.stopped == [true] && animation.state == .ready && concrete.startTime == nil)
+    precondition(concrete.ticks == [update] && concrete.stopped == [true] && animation.state == .ready && concrete.startTime == nil && concrete.currentValue == 1)
     var records: [UUID: any Animation] = [animation.id: animation]
     stopAnimationDriverAnimations(keys: { [animation.id] }, lookup: { records[$0] },
         remove: { records.removeValue(forKey: $0) })
@@ -8163,4 +8167,32 @@ private func runInterpolatableAnimationFinishChecks() {
     finishInterpolatableAnimation(applyTarget: {},
         handler: { nil as ((InterpolatableAnimationEvent<Int>) -> Void)? },
         targetValue: { preconditionFailure() }, setState: { precondition($0 == .ended) })
+}
+
+
+private func runInterpolatableAnimationValueChangeChecks() {
+    final class Trace { var events: [String] = [] }
+    struct Value: Equatable {
+        let number: Int; let trace: Trace
+        static func == (a: Self, b: Self) -> Bool { a.trace.events.append("equal-\(a.number)-\(b.number)"); return a.number == b.number }
+    }
+    let trace = Trace()
+    var value = Value(number: 1, trace: trace)
+    var callback: ((InterpolatableAnimationEvent<Value>) -> Void)? = { _ in preconditionFailure() }
+    changeInterpolatableAnimationValue(readValue: { trace.events.append("read"); return value }, mutate: {
+        trace.events.append("mutate"); value = Value(number: 2, trace: trace)
+        callback = { event in
+            guard case let .valueChanged(oldValue: old, newValue: new) = event else { preconditionFailure() }
+            precondition(old.number == 1 && new.number == 2 && value.number == 2)
+            trace.events.append("callback")
+        }
+    }, handler: { trace.events.append("handler"); return callback })
+    precondition(trace.events == ["read", "mutate", "read", "handler", "equal-2-1", "callback"])
+    trace.events = []
+    changeInterpolatableAnimationValue(readValue: { trace.events.append("read"); return value },
+        mutate: { trace.events.append("mutate") }, handler: { nil })
+    precondition(trace.events == ["read", "mutate", "read"])
+    trace.events = []
+    changeInterpolatableAnimationValue(readValue: { value }, mutate: {}, handler: { { _ in preconditionFailure() } })
+    precondition(trace.events == ["equal-2-2"])
 }

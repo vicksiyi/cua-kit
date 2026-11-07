@@ -665,6 +665,12 @@ assert read(0x1007c62d8, 32).hex() == '1f040071e1000054280740f9e00317aae10316aa0
 assert read(0x1007c5ca8, 4).hex() == 'e0023fd6'
 assert read(0x1007c5cc8, 12).hex() == '60008052f40313aacffeff97'
 
+# Value-change wrapper reads old, invokes mutation, reads new, then gets
+# handler; equality compares new first, old second only for a present handler.
+assert read(0x1007c59d4, 28).hex() == 'e80318aa69fdff97f4031baa80033fd6e80316aaf4031aaa64fdff97'
+assert read(0x1007c5a10, 8).hex() == '9a0240f93a0600b4'
+assert read(0x1007c5a28, 28).hex() == 'e00316aae10318aaf40313aae20313aae30319aa362b2694a0000036'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

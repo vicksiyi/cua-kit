@@ -3536,3 +3536,24 @@ InterpolatableAnimation owner remain outstanding. Static pins cover tick branche
 and natural-completion state order; production cursor/input is not enabled yet.
 
 Swift build, provider flow/composition checks and pinned static audit pass for tick/finish recovery.
+
+
+## Shared animation value-change wrapper recovery (2026-11-08)
+
+Body 0x1007c591c reads old value, runs the supplied nonthrowing mutation, then
+reads new value, regardless of event handler availability. Only afterward does
+it obtain the current handler. With a handler it evaluates Equatable.== using
+new first / old second (import _$sSQ2eeoiySbx_xtFZTj); equal values suppress the
+event. Unequal values emit valueChanged(oldValue:newValue:). No handler means
+no equality evaluation, but mutation and both value reads still occur. No !=
+overload, reference-identity comparison or numeric tolerance is substituted.
+
+This common body is now restored in Animation. It is consumed by the native
+protocol fixture's tick apply-value boundary, so a nil handler still updates
+its value. Checks record read/mutate/handler/equality/callback order, handler
+replacement during mutation, unchanged value and nil-handler equality suppression,
+including new-before-old operands. Source instructions are statically pinned.
+Concrete SIMD storage and value-wrapper initialization remain unimplemented;
+this does not enable the production cursor or establish app clicking success.
+
+Swift build, provider value-flow/composition checks and pinned static audit pass.
