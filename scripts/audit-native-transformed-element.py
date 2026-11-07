@@ -636,7 +636,26 @@ for address, word in font_style_words.items():
 font_trait_call = branch(0x10077252c, 0x101153f6c)
 assert struct.pack('<QQ', 0x6f42746e6f465841, 0xea0000000000646c)[:10].decode() == 'AXFontBold'
 
-print(json.dumps(dict(attributedFontStyles=dict(
+# AXLink holds an AXUIElement (forced cast); cache URL -> shortener -> mapped
+# Markdown wrapper. Text trim helper uses NSString rangeOfString for offsets.
+assert cstring(relative(0x1012cc16c + 8)) == 'AXUIElement'
+pointer = (struct.unpack('<Q', read(0x1015430b8, 8))[0] & 0xfffffffff) + 0x100000000
+assert cstring(pointer) == 'rangeOfString:'
+link_words = {0x100770d24: 0x528000e4, 0x100770f20: 0xb4001041,
+    0x100770f2c: 0x52800b60, 0x100771000: 0x52850ba8, 0x100771028: 0x52800520}
+for address, word in link_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+link_calls = [branch(site, target) for site, target in [
+    (0x100770d08, 0x1006e8284), (0x100770ddc, 0x10076589c),
+    (0x100770e04, 0x1007bb140), (0x100770f18, 0x10065f7c0),
+    (0x100770f7c, 0x100773780), (0x1007737e0, 0x101151da0),
+    (0x100773a50, 0x1007a6f04),
+]]
+
+print(json.dumps(dict(attributedLink=dict(
+    instructions={hex(k): hex(v) for k, v in link_words.items()}, calls=link_calls,
+    behavior="AXLink AXUIElement reference; transaction-backed cached URL/role; shared shortener; trimmed label; generated wrapper has nil offsets",
+    limitation="run transformation only; full rich formatter/collector integration pending"), attributedFontStyles=dict(
     instructions={hex(k): hex(v) for k, v in font_style_words.items()},
     coreTextCall=font_trait_call,
     behavior="AXFont String/Any dictionary; String name plus Double size; optional uncast family; NSFontDescriptor/NSFont; CTFont traits bold bit1 italic bit0; additive Bool AXFontBold",

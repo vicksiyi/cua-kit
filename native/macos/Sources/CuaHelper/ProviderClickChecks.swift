@@ -2253,6 +2253,44 @@ private enum ProviderClickChecks {
         ]])
         checkTrue(realFont.bold)
 
+        do {
+        let attributedLinkAX = AXUIElementCreateApplication(12519)
+        let sourceLink = AttributedTextSourceRun(text: "  😀[x] ", range: NSRange(location: 10, length: 8))
+        var linkContext = ownerContext(.fullUIContext)
+        linkContext.urlShortener = UIElementURLShortener(configuration: .init(
+            individualLimit: nil, totalLimit: nil, includeQuery: true, includeFragment: true, baseHost: nil))
+        let targetLinkURL = URL(string: "https://example.invalid/path")!
+        func attributedLinkNode(_ roleName: String, _ url: AnyObject?) -> UIElement {
+            var attributes: [UIElementAttribute: AXPartialValue] = [UIElementAttribute("AXRole"): partial(roleName as NSString)]
+            if let url { attributes[UIElementAttribute("AXURL")] = partial(url) }
+            return UIElement(axElement: attributedLinkAX, cache: UIElementCache(supportedAttributes: [],
+                attributes: attributes, transactionAttributes: nil))
+        }
+        let mappedLink = transformAttributedTextLink(sourceLink, attributes: [.accessibilityLink: attributedLinkAX],
+            context: &linkContext, makeElement: { identity in
+                checkTrue(CFEqual(identity, attributedLinkAX))
+                return attributedLinkNode("AXLink", targetLinkURL as NSURL)
+            })
+        checkEqual(mappedLink.text, "[😀[x]](example.invalid/path)")
+        checkEqual(Array(mappedLink.sourceOffsets.prefix(6)), [nil, 12, 13, 14, 15, 16])
+        checkTrue(mappedLink.sourceOffsets.dropFirst(6).allSatisfy { $0 == nil })
+        let imageLink = transformAttributedTextLink(sourceLink, attributes: [.accessibilityLink: attributedLinkAX],
+            context: &linkContext, makeElement: { _ in attributedLinkNode("AXImage", targetLinkURL as NSURL) })
+        checkEqual(imageLink.text, sourceLink.text)
+        checkEqual(imageLink.sourceOffsets, sourceLink.sourceOffsets)
+        let stringURLLink = transformAttributedTextLink(sourceLink, attributes: [.accessibilityLink: attributedLinkAX],
+            context: &linkContext, makeElement: { _ in attributedLinkNode("AXLink", "https://example.invalid/ignored" as NSString) })
+        checkEqual(stringURLLink.text, sourceLink.text)
+        let noLink = transformAttributedTextLink(sourceLink, attributes: [:], context: &linkContext,
+            makeElement: { _ in unexpectedFailure("absent link must not create an element") })
+        checkEqual(noLink.text, sourceLink.text)
+        let whitespaceRun = AttributedTextSourceRun(text: " \n", range: NSRange(location: 1, length: 2))
+        let emptyLabelLink = transformAttributedTextLink(whitespaceRun, attributes: [.accessibilityLink: attributedLinkAX],
+            context: &linkContext, makeElement: { _ in attributedLinkNode("AXLink", targetLinkURL as NSURL) })
+        checkEqual(emptyLabelLink.text, "[](example.invalid/path)")
+        checkTrue(emptyLabelLink.sourceOffsets.allSatisfy { $0 == nil })
+
+        }
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

@@ -6011,3 +6011,31 @@ font. Swift build and provider self-test passed. Static audit pins selectors,
 trait branches and the inline AXFontBold key. This is a formatter input component;
 style ordering/transitions and production rich-text integration remain incomplete.
 No vendor service, model call, browser or external application action was executed.
+
+### Mapped attributed links (2026-11-07)
+
+Recovered AXLink run transformation at `0x100770ca4..<0x10077116c`.
+The native attribute is force-cast to AXUIElement (metadata accessor
+`0x1006e8284`, descriptor `0x1012cc16c`), then constructs UIElement through the
+current transaction and reads cached AXURL via `0x1007bb140`. Missing/invalid URL
+leaves the run unchanged. Role is read only after a URL exists; image role is
+passed to the shared URL shortener, which can decline the link. Declining does
+not undo the shortener's bookkeeping. This path does not parse URL strings from
+AXLink or cached AXURL.
+
+For an accepted target, `0x100773780` trims the label using Foundation's
+whitespacesAndNewlines, locates the trimmed substring with NSString
+rangeOfString:, and slices the UTF-16 source offsets. Empty labels have empty
+maps; unlocatable transformed text receives nil offsets. Prefix `[` and suffix
+`](target)` also have nil offsets. The native branch adds no Markdown escaping
+here (unlike other independently recovered link renderers). The resulting run
+continues through the remaining formatter logic.
+
+`AttributedTextLinkTransformation.swift` restores the run transformation,
+transaction-aware default element construction and mapped trim operation. A CF
+identity precondition precedes the forced opaque-element cast; wrong outer types
+are not silently interpreted as URLs. Mock checks cover emoji offsets, whitespace,
+unescaped brackets, empty labels, image exclusion, missing link and string-valued
+AXURL rejection. Build/self-test and pinned binary audit passed. This component
+is not yet connected to the complete rich formatter/production collector; default
+transaction capture and real external AX content were not exercised by these mocks.

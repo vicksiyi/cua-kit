@@ -1,4 +1,52 @@
 {
+  "attributedLink": {
+    "instructions": {
+      "0x100770d24": "0x528000e4",
+      "0x100770f20": "0xb4001041",
+      "0x100770f2c": "0x52800b60",
+      "0x100771000": "0x52850ba8",
+      "0x100771028": "0x52800520"
+    },
+    "calls": [
+      {
+        "instruction": "0x100770d08",
+        "target": "0x1006e8284",
+        "link": true
+      },
+      {
+        "instruction": "0x100770ddc",
+        "target": "0x10076589c",
+        "link": true
+      },
+      {
+        "instruction": "0x100770e04",
+        "target": "0x1007bb140",
+        "link": true
+      },
+      {
+        "instruction": "0x100770f18",
+        "target": "0x10065f7c0",
+        "link": true
+      },
+      {
+        "instruction": "0x100770f7c",
+        "target": "0x100773780",
+        "link": true
+      },
+      {
+        "instruction": "0x1007737e0",
+        "target": "0x101151da0",
+        "link": true
+      },
+      {
+        "instruction": "0x100773a50",
+        "target": "0x1007a6f04",
+        "link": true
+      }
+    ],
+    "behavior": "AXLink AXUIElement reference; transaction-backed cached URL/role; shared shortener; trimmed label; generated wrapper has nil offsets",
+    "limitation": "run transformation only; full rich formatter/collector integration pending"
+  },
   "attributedFontStyles": {
     "instructions": {
       "0x100772530": "0x36080160",
