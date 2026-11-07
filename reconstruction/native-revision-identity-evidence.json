@@ -12,6 +12,6 @@
   ],
   "mutation": "assign node elementID then identity dictionary; return identity, ID, source path",
   "limitations": [
-    "Revision constructor, focus mapping and incremental changes are not yet integrated."
+    "Root revision assembled; appended revisions, diff and production integration remain incomplete."
   ]
 }

@@ -990,6 +990,44 @@ private enum ProviderClickChecks {
             checkEqual(first.elementID, 1) // mutations before failure are not rolled back
             checkTrue(invalid.elementID == nil)
         }
+        do {
+            var source = capturedOwner; source.title = "full"
+            var focus = source; focus.title = "focus"
+            let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+            let fullTree = UIElementTree(items: [.init(element: source, subtree: empty)], focusedElement: nil)
+            let focusTree = UIElementTree(items: [.init(element: focus, subtree: empty)], focusedElement: focus)
+            var calls: [String] = []
+            var mainRender: UIElementRender<AXUIElement>?
+            let revision = try UIElementTreeRevision.root(fullTree, focusTree: focusTree, lineageID: "lineage") { input in
+                let name = input.items[0].element.title!
+                calls.append(name)
+                if name == "focus" { checkEqual(mainRender?.elementID, 0) }
+                let node = UIElementRender(id: source.id, elementID: nil, text: name, detailText: nil,
+                    sourcePath: IndexPath(index: 0), children: [])
+                if name == "full" { mainRender = node }
+                return UIElementRenderTree(isFocus: name == "focus", roots: [node])
+            }
+            checkEqual(calls, ["full", "focus"])
+            checkEqual(revision.lineageID, "lineage")
+            checkTrue(revision.previousRevision == nil)
+            checkTrue(revision.lineageRootRevision === revision)
+            checkEqual(revision.focusRenderTree?.roots[0].elementID, 0)
+            checkEqual(revision.element(for: 0)?.title, "focus")
+            checkTrue(revision.element(for: 1) == nil)
+            enum RenderFailure: Error { case expected }
+            calls = []
+            do {
+                _ = try UIElementTreeRevision.root(fullTree, focusTree: focusTree, lineageID: "failed") { input in
+                    calls.append(input.items[0].element.title!)
+                    if calls.count == 2 { throw RenderFailure.expected }
+                    mainRender!.elementID = nil
+                    return UIElementRenderTree(isFocus: false, roots: [mainRender!])
+                }
+                unexpectedFailure()
+            } catch RenderFailure.expected {}
+            checkEqual(calls, ["full", "focus"])
+            checkEqual(mainRender?.elementID, 0)
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

@@ -48,4 +48,4 @@ print(json.dumps(dict(binarySHA256=expected,
     lookup='0x1006557a4: require path and reverse identity; focus identity membership selects focus tree, otherwise full tree; use stored path; no fallback after focus path miss',
     precedence=['require sourcePath', 'existing elementID', 'identity dictionary', 'next available ID'],
     mutation='assign node elementID then identity dictionary; return identity, ID, source path',
-    limitations=['Revision constructor, focus mapping and incremental changes are not yet integrated.']), indent=2))
+    limitations=['Root revision assembled; appended revisions, diff and production integration remain incomplete.']), indent=2))

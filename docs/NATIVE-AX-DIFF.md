@@ -6849,3 +6849,20 @@ source paths, fresh focus IDs, no-focus and empty inputs, and partial mutation
 on failure. Build and provider checks pass. This restores the table phase but
 not the full revision owner, root/focus rendering, incremental diff or production
 collector integration.
+
+### Root revision owner integration
+
+UIElementTreeRevision now restores the reference owner for root construction:
+render full source tree, assign display IDs, render optional focus tree, then
+construct the merged table. Stored source trees and render references remain
+separate. item/element lookup delegates to the audited focus/path routing.
+lineageRootRevision follows previous references; root has no previous revision.
+The missing-source-path error now has the original description and is exposed
+through the revision's nested type alias.
+
+Integrated tests verify render order, full IDs assigned before focus rendering,
+focus ID reuse and source lookup, lineage reference identity, absent IDs, and
+error propagation with existing render mutations retained. Swift build and
+provider checks pass. Prior notes saying no revision owner exists are superseded
+for the root path only: appended revisions, change arrays, snapshot encoding,
+and production collection/operation integration remain unfinished.

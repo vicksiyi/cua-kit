@@ -1,6 +1,9 @@
 import Foundation
 
-struct MissingRenderSourcePathError: Error {}
+struct MissingRenderSourcePathError: Error, CustomStringConvertible {
+    // Native description getter 0x1006567c0.
+    var description: String { "Revision render trees must have source paths referencing the element tree." }
+}
 
 // Revision constructor callback 0x1006554c0. Display IDs are independent from
 // source-tree traversal offsets. A focus render can reuse an existing identity.
