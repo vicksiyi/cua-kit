@@ -1,4 +1,22 @@
 {
+  "roleDescriptionComponent": {
+    "entry": "0x100625f1c",
+    "calls": [
+      {
+        "instruction": "0x1006261dc",
+        "target": "0x101150714",
+        "link": true
+      },
+      {
+        "instruction": "0x1006262a4",
+        "target": "0x101152ff4",
+        "link": true
+      }
+    ],
+    "present": "suppress menuBarItem/menuItem/radioGroup; row literal; generic empty becomes element; other group becomes container; otherwise preserve",
+    "missing": "menu/menu bar literals; suppress menuBarItem/menuItem/radioGroup; otherwise informational empty, other contexts unknown",
+    "limitation": "one component only; complete node renderer and collector integration pending"
+  },
   "readableRenderingRoute": {
     "descriptor": "0x1012ccda8",
     "requirementCount": 1,

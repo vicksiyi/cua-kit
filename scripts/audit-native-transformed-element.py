@@ -808,7 +808,19 @@ readable_calls.append(branch(0x100625d68, 0x100625d80, link=False))
 readable_calls.append(branch(0x100625d7c, 0x100625d80, link=False))
 compare_zero_branch(0x100625e20, 9, 0x100625dfc)
 
-print(json.dumps(dict(readableRenderingRoute=dict(
+compare_zero_branch(0x10062600c, 1, 0x1006260b0)
+role_description_calls = [branch(site, target) for site, target in [
+    (0x1006261dc, 0x101150714), (0x1006262a4, 0x101152ff4),
+]]
+for site, word in [(0x100625ffc, 0xf9401ec8), (0x100626018, 0xf9401adb),
+                   (0x100626054, 0xf9402008), (0x100626154, 0x7100091f)]:
+    assert struct.unpack('<I', read(site, 4))[0] == word
+
+print(json.dumps(dict(roleDescriptionComponent=dict(
+    entry="0x100625f1c", calls=role_description_calls,
+    present="suppress menuBarItem/menuItem/radioGroup; row literal; generic empty becomes element; other group becomes container; otherwise preserve",
+    missing="menu/menu bar literals; suppress menuBarItem/menuItem/radioGroup; otherwise informational empty, other contexts unknown",
+    limitation="one component only; complete node renderer and collector integration pending"), readableRenderingRoute=dict(
     descriptor=hex(readable_protocol), requirementCount=1,
     witness="0x1007627f0", calls=readable_calls,
     composition="outer helpers 0x100625d6c and 0x100625f1c; inner helpers 0x100626300 and 0x100627090; each pair evaluated first then second but joined second then first; omit empty strings only; separator space",

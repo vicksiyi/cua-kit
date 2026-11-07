@@ -6417,3 +6417,26 @@ provider-backed fixtures before replacing production collection.
 This turn adds reproducible static evidence, not a production behavior change.
 The audit validates the descriptor, witness pointer, call edges, composer branch
 and join call against the pinned binary. The installed service was not executed.
+
+
+### Generic role-description component (2026-11-07)
+
+Recovered leaf helper 0x100625f1c in AccessibilityRoleDescription.swift. It reads
+node.roleDescription (witness +0x38), node.role (+0x30), and role.presentationKind
+(+0x40). A present description is suppressed for menuBarItem/menuItem/radioGroup;
+row becomes "row"; an empty generic description becomes "element"; other/group
+becomes "container"; all other descriptions are preserved verbatim.
+
+Missing descriptions follow a different branch: menu and menuBar become "menu"
+and "menu bar"; menuBarItem/menuItem/radioGroup are empty; all other kinds are
+"unknown" except informationalContext, which yields empty. Notably absent row
+and group descriptions do not receive their present-description labels. Whitespace
+is preserved rather than trimmed. UIElementRole presentation kinds were already
+recovered; this helper uses that existing abstraction.
+
+Swift build and owned provider checks passed across 12 roles, three context
+types, present/empty/missing descriptions, and whitespace. Static audit validates
+witness offsets, nil branch, context comparison and role equality call. This is
+one of the three node-description leaf components; it remains separate until
+the other two and their complete composition are restored. Production collector
+behavior is unchanged; no live app or installed vendor service was executed.

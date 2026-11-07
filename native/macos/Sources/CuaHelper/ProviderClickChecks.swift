@@ -2808,6 +2808,22 @@ private enum ProviderClickChecks {
             _ = try uncachedChildren.partialArrayValue(for: childrenKey, maxCount: 2)
             unexpectedFailure("unexpected AX failures must propagate")
         } catch UIElementError.axError(.failure) {}
+        do {
+            let roles: [UIElementRole] = [.button, .checkBox, .menu, .menuBar, .menuBarItem,
+                .menuButton, .menuItem, .radioGroup, .row, .generic, .group, .image]
+            let present = ["custom", "custom", "custom", "custom", "", "custom", "", "", "row", "custom", "container", "custom"]
+            let empty = ["", "", "", "", "", "", "", "", "row", "element", "container", ""]
+            let missing = ["unknown", "unknown", "menu", "menu bar", "", "unknown", "", "", "unknown", "unknown", "unknown", "unknown"]
+            for (index, role) in roles.enumerated() {
+                for type in UIElementContextType.allCases {
+                    checkEqual(accessibilityRoleDescription(role: role, roleDescription: "custom", contextType: type), present[index])
+                    checkEqual(accessibilityRoleDescription(role: role, roleDescription: "", contextType: type), empty[index])
+                    let fallback = type == .informationalContext && missing[index] == "unknown" ? "" : missing[index]
+                    checkEqual(accessibilityRoleDescription(role: role, roleDescription: nil, contextType: type), fallback)
+                }
+            }
+            checkEqual(accessibilityRoleDescription(role: UIElementRole.generic, roleDescription: "  ", contextType: .fullUIContext), "  ")
+        }
         let leafTree = UIElementTree<UIElement>(items: [], focusedElement: nil)
         let childTree = UIElementTree(items: [UIElementTree.Item(element: cachedChildren, subtree: leafTree)], focusedElement: nil)
         var tree = UIElementTree(items: [UIElementTree.Item(element: target, subtree: childTree, availableSubset: subset),
