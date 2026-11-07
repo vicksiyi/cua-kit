@@ -3774,6 +3774,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    try runAppControllerWindowObservationLifetimeChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7595,4 +7596,34 @@ private func runAppControllerAXEventHandlerChecks() {
     precondition(observerReads == 1 && enforcerReads == 1)
     handler.handle(.menuClosed, element: ax)
     precondition(menuCloses == 1 && enforcerReads == 2 && observerReads == 1)
+}
+
+private func runAppControllerWindowObservationLifetimeChecks() throws {
+    let ax = AXUIElementCreateApplication(getpid())
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    // Real AX observer allocation only: no subscriptions, monitoring or UI input.
+    let nativeObserver = try AXNotificationObserver(processID: getpid(), handler: { _ in })
+    let event = AXNotificationObserver.NotificationEvent(observer: nativeObserver.axObserver,
+        element: ax, notification: .menuClosed, info: [:])
+    var callback: ((AXNotificationObserver.NotificationEvent) -> Void)?
+    var calls: [String] = []
+    var owner: AppControllerWindowObservation<UIElement>? = try AppControllerWindowObservation(
+        application: ax, processID: getpid(), bundleIdentifier: "owned-check",
+        focusEnforcer: { calls.append("focus"); return nil }, reportError: { _ in preconditionFailure() },
+        initializeWindows: { windows in
+            calls.append("seed")
+            windows.menuState.setOpenedMenu(MenuUIElement(axElement: ax, cache: cache))
+        }, makeObserver: { handler in
+            calls.append("factory")
+            callback = handler
+            handler(event) // may arrive before windowObserver is assigned
+            return nativeObserver
+        })
+    precondition(calls == ["seed", "factory", "focus"])
+    precondition(owner?.windows.menuState.openedMenu == nil)
+    weak var weakOwner = owner
+    owner = nil
+    precondition(weakOwner == nil)
+    callback?(event)
+    precondition(calls == ["seed", "factory", "focus"])
 }

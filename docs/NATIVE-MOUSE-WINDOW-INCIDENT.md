@@ -2879,3 +2879,20 @@ raw and overridden IDs and require registration to use raw IDs, including raw
 zero followed by pruning. Menu-open still uses the concrete menu resolver for
 both readiness and its separate registration path. Build/component/static checks
 are required after this correction; locked live acceptance remains pending.
+
+
+## Observation owner early-callback and release checks
+
+The resource owner now exposes explicit construction seams for initial-window
+setup and AX observer construction, while default construction retains the native
+path. Checks inject only those boundaries, allocate a real unsubscribed AXObserver
+for the helper's own process and deliver menuClosed from inside the factory,
+before assignment of windowObserver. The handler is already installed: it clears
+the seeded menu state and performs the optional focus lookup in order.
+
+After the owner is released, its externally retained callback must not retain or
+revive it and must not perform another focus lookup. The check also leaves the
+native observer retained independently, demonstrating that it is the weak owner
+boundary that prevents continued controller access. No AX subscription, monitoring,
+UI event or attention change is involved. Native production construction and
+MainActor integration remain separate acceptance requirements.
