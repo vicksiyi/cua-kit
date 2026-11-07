@@ -186,3 +186,17 @@ instructions. Tests do not post events or alter focus. The original optional
 constant guards have present values in this pinned build; local construction
 still fails explicitly if the API cannot produce an event. Integration with the
 enforcer's state transitions and cleanup remains outstanding.
+
+## Focus cleanup state transition
+
+Static inspection of 0x100745848 confirms cleanup sends deactivation only when
+`applicationBelievesItIsActive && !applicationIsActive`. Its snapshot getter
+(0x1007409dc -> 0x10074a2e0) reads the three state bytes. After successful send
+(0x100745a8c -> 0x100754280), mutation at 0x100746350 clears only bytes 0 and 1
+(`strh wzr, [x0]`), preserving actual active state. Failed sends do not mutate.
+
+`SyntheticApplicationFocusState` extracts this transition. Checks cover all
+8 state combinations, repeated cleanup and send failure. It is not connected
+to production dispatch: event-tap and observer ownership, actual/synthetic focus
+updates and safe-enforce lifecycle remain missing. Do not report the Multica
+incident resolved based on these pure-state checks.

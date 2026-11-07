@@ -3669,4 +3669,32 @@ private func runApplicationClickActivationChecks() async throws {
 func runProviderClickChecks() async throws {
     try await ProviderClickChecks.run()
     try await runApplicationClickActivationChecks()
+    try runSyntheticFocusDeactivationChecks()
+}
+
+private func runSyntheticFocusDeactivationChecks() throws {
+    for bits in 0..<8 {
+        let initial = SyntheticApplicationFocusState(
+            applicationBelievesItIsActive: bits & 1 != 0,
+            applicationBelievesItHasFocus: bits & 2 != 0,
+            applicationIsActive: bits & 4 != 0)
+        let shouldSend = initial.applicationBelievesItIsActive && !initial.applicationIsActive
+        var state = initial
+        var sends = 0
+        try state.deactivateFocusEnforcer { sends += 1 }
+        checkEqual(sends, shouldSend ? 1 : 0)
+        checkEqual(state.applicationIsActive, initial.applicationIsActive)
+        checkEqual(state.applicationBelievesItIsActive, shouldSend ? false : initial.applicationBelievesItIsActive)
+        checkEqual(state.applicationBelievesItHasFocus, shouldSend ? false : initial.applicationBelievesItHasFocus)
+        try state.deactivateFocusEnforcer { sends += 1 }
+        checkEqual(sends, shouldSend ? 1 : 0)
+        state = initial
+        do {
+            try state.deactivateFocusEnforcer { throw UIElementError.axError(.failure) }
+            checkFalse(shouldSend)
+        } catch {
+            checkTrue(shouldSend)
+        }
+        checkEqual(state, initial)
+    }
 }
