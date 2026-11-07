@@ -5152,3 +5152,22 @@ an actual transformed node in UIElementTree for iteration, descendant-property
 queries and focus identity. This establishes generic-tree compatibility, not
 production traversal or final rendering. Mutable protocol, equality/hash,
 root overloads and downstream transform/production acceptance remain pending.
+
+
+### Mutable node protocol for downstream transforms (2026-11-07)
+
+Restored MutableAccessibilityNode (descriptor 0x1012c93a0) and the transformed
+owner conformance. Its 18 requirements consist of one AccessibilityNode base,
+setter/modify pairs for role, roleDescription, title, description, value,
+isFocusable and url, then getter/setter/modify for transformedString. It does
+not require setters for every readable AccessibilityNode property. Witnesses
+0x1007620f8..0x100762324 address those stored fields directly; URL uses metadata
+offset 0x44, focusability 0x5c, transformedString 0x74.
+
+The binary audit pins the requirement flags and all 17 non-base witnesses.
+Swift build and provider selftest pass. A generic MutableAccessibilityNode
+mutation exercises every property plus inout optional String modification,
+verifies transformed text and URL, preserves original copy/AX identity/cache
+role and makes no native reads/actions. This enables source-shaped downstream
+tree transforms; their algorithms, production traversal and live acceptance
+are still outstanding. Hash/equality remain separate work.

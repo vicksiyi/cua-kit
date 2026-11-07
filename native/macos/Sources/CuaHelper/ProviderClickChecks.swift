@@ -762,6 +762,33 @@ private enum ProviderClickChecks {
         checkEqual(Array(transformedTree).count, 1)
         checkTrue(transformedTree.hasDescendant(where: \TransformedUIElement.hasDescriptiveAttributes))
         checkTrue(CFEqual(transformedTree.focusedElement!.id, ownerAX))
+        func mutateCapturedNode<Node: MutableAccessibilityNode>(_ node: inout Node, role: Node.Role) {
+            node.role = role
+            node.roleDescription = "flattened"
+            node.title = "joined"
+            node.title?.append(" title")
+            node.description = "description"
+            node.value = "rendered value"
+            node.isFocusable = true
+            node.url = URL(string: "https://example.com/transform")
+            node.transformedString = TransformedUIString(stringLiteral: "rendered")
+        }
+        var mutableOwner = capturedOwner
+        let readsBeforeMutation = ownerProvider.singleReads
+        mutateCapturedNode(&mutableOwner, role: .staticText)
+        checkEqual(mutableOwner.role, .staticText)
+        checkEqual(mutableOwner.roleDescription, "flattened")
+        checkEqual(mutableOwner.title, "joined title")
+        checkEqual(mutableOwner.description, "description")
+        checkEqual(mutableOwner.value, "rendered value")
+        checkTrue(mutableOwner.isFocusable)
+        checkEqual(mutableOwner.url?.absoluteString, "https://example.com/transform")
+        checkEqual(mutableOwner.transformedString?.description, "rendered")
+        checkEqual(capturedOwner.title, "Captured group")
+        checkEqual(mutableOwner.element.role, .group)
+        checkTrue(CFEqual(mutableOwner.id, capturedOwner.id))
+        checkEqual(ownerProvider.singleReads, readsBeforeMutation)
+        checkEqual(ownerActionReads, 1)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

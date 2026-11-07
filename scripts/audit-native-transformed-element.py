@@ -134,6 +134,19 @@ rendering_witnesses = [0x100758848, 0x100758854, 0x10075885c, 0x100758870]
 for i, target in enumerate(rendering_witnesses):
     raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
     assert 0x100000000 + (raw & 0xffffffff) == target
+# MutableAccessibilityNode adds seven inherited setter/modify pairs and a
+# new transformedString getter/setter/modify, after its base conformance.
+assert struct.unpack('<II', read(0x1012c93a0 + 12, 8)) == (1, 18)
+mutable_flags = [struct.unpack('<I', read(0x1012c93c4 + i * 8, 4))[0] for i in range(18)]
+assert mutable_flags == [0] + [0x14, 0x16] * 7 + [0x13, 0x14, 0x16]
+mutable_targets = [0x1007620f8, 0x100762120, 0x100762134, 0x100762168,
+    0x10076217c, 0x1007621b0, 0x1007621c4, 0x1007621f8,
+    0x10076220c, 0x100762240, 0x100762254, 0x100762260,
+    0x100762278, 0x100762284, 0x10076229c, 0x1007622d4, 0x100762310]
+for i, target in enumerate(mutable_targets, start=2):
+    word = struct.unpack('<Q', read(0x10149db30 + i * 8, 8))[0]
+    assert 0x100000000 + (word & 0xffffffff) == target
+
 # Chained witness pointers: address payload is the low 32 bits plus image base.
 node_witnesses = {}
 for slot, target in [(25, 0x1007afb60), (31, 0x1007afb64)]:
@@ -157,6 +170,7 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
             "urlShortener.set", "urlShortener.modify", "type.get"],
         concreteWitnesses=[hex(x) for x in rendering_witnesses]),
     nodeWitnesses=node_witnesses,
+    mutableNode=dict(requirementFlags=mutable_flags, witnesses=[hex(x) for x in mutable_targets]),
     constructionFindings=[
         'UIElement/context initializer tail-branches into common constructor.',
         'AX/context initializer constructs provider cache before common constructor.',
