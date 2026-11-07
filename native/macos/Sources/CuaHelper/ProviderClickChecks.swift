@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    await runWindowOrderingMenuTaskChecks()
     runWindowOrderingMenuOpenChecks()
     await runWindowOrderingEventLoopChecks()
     try await runWindowOrderingRestorationChecks()
@@ -7105,4 +7106,30 @@ private func runWindowOrderingMenuOpenChecks() {
         processIdentifier: { _ in 43 }, makeTask: { _, ids in checkEqual(ids, [7, 7, 8]); return 11 })
     checkEqual(trace, ["cancel-10"])
     store.stop()
+}
+
+
+private func runWindowOrderingMenuTaskChecks() async {
+    enum Failure: Error { case native }
+    var sleeps = 0; var reads = 0; var raises = 0; var focusReads = 0
+    await runWindowOrderingMenuTask(observedWindowIDs: [7, 7],
+        focusedWindow: { focusReads += 1; return "focused" }, windowID: { _ in 8 },
+        onScreenWindowIDs: { reads += 1; return reads == 1 ? [99, 8, 7] : [7, 8] },
+        raise: { checkEqual($0, "focused"); raises += 1; throw Failure.native },
+        sleep: { checkEqual($0, .milliseconds(5)); sleeps += 1 })
+    checkEqual(focusReads, 1); checkEqual(sleeps, 2); checkEqual(reads, 2); checkEqual(raises, 1)
+    sleeps = 0; reads = 0
+    await runWindowOrderingMenuTask(observedWindowIDs: [7], focusedWindow: { 1 }, windowID: { _ in 8 },
+        onScreenWindowIDs: { reads += 1; return [7] }, raise: { _ in unexpectedFailure() },
+        sleep: { _ in sleeps += 1 })
+    checkEqual(sleeps, 20); checkEqual(reads, 20)
+    await runWindowOrderingMenuTask(observedWindowIDs: [7], focusedWindow: { () -> Int? in nil },
+        windowID: { _ in unexpectedFailure() }, onScreenWindowIDs: { unexpectedFailure() },
+        raise: { _ in unexpectedFailure() }, sleep: { _ in unexpectedFailure() })
+    await runWindowOrderingMenuTask(observedWindowIDs: [7], focusedWindow: { 1 },
+        windowID: { _ in throw Failure.native }, onScreenWindowIDs: { unexpectedFailure() },
+        raise: { _ in unexpectedFailure() }, sleep: { _ in unexpectedFailure() })
+    await runWindowOrderingMenuTask(observedWindowIDs: [7], focusedWindow: { 1 }, windowID: { _ in 8 },
+        onScreenWindowIDs: { unexpectedFailure() }, raise: { _ in unexpectedFailure() },
+        sleep: { _ in throw CancellationError() })
 }

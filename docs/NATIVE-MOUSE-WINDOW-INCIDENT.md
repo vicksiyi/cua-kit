@@ -2206,3 +2206,27 @@ Injected checks cover cancellation on every early exit, unchanged main task,
 duplicate lookup ordering, two PID reads on success, current-ID changes during
 unlocked lookup and preserved captured IDs. The concrete menu task body remains
 to be restored before production menu observer composition.
+
+
+## Menu task ordering polling and single raise
+
+The menu task is a distinct short polling routine, not a second CGWindow event
+subscription. It builds the captured foreground PID's AX application and reads
+its focused window and throwing window ID once. Missing focused window or ID
+error ends the task; no primary-window fallback is used.
+
+runWindowOrderingMenuTask restores twenty iterations of ContinuousClock 5ms
+sleep followed by current on-screen ordering. Missing focused ID in that ordering
+continues polling. If any originally observed window's first index precedes the
+focused window's first index, it attempts the full raise action once and exits,
+including when the action throws. Sleep errors/cancellation end the task quietly.
+The source routine has this native twenty-attempt bound; it is unrelated to the
+removed AgentLoop step cap. No new foreground PID recheck was invented inside
+this routine; the PID/window captured by menuDidOpen determine its scope.
+
+The concrete native method composes existing AX window selection, WindowServer
+ordering and full UIElement action dispatch. Injected checks verify one-time
+focus selection, sleep-before-ordering, watched-versus-unrelated window ordering,
+raise failure exit, twenty missing-window attempts, absent/failed AX selection
+and cancellation. No real AXRaise or desktop notification is used by these tests.
+Production observer/controller composition and live menu acceptance remain.
