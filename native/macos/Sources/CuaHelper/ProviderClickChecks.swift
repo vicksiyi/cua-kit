@@ -2058,6 +2058,87 @@ private enum ProviderClickChecks {
         checkEqual(textualErrors, 3)
         ownerProvider.parameterRead = nil
 
+        var composedWeb = capturedOwner
+        composedWeb.role = .webArea
+        let chromeID = UIElementAttribute("ChromeAXNodeId")
+        let startAttribute = UIElementAttribute("AXStartTextMarker")
+        let endAttribute = UIElementAttribute("AXEndTextMarker")
+        let webMarkerCache = [startAttribute: partial(webStart.marker), endAttribute: partial(webEnd.marker)]
+        func webCache(supported: Set<UIElementAttribute>, requested: Set<UIElementAttribute>?) {
+            composedWeb.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+                supportedAttributes: supported, attributes: webMarkerCache, transactionAttributes: requested))
+        }
+        ownerProvider.supportedAttributes = [chromeID]
+        webCache(supported: [], requested: nil)
+        checkFalse(composedWeb.supportsChromeNodeID()) // no transaction restriction: use captured support
+        webCache(supported: [], requested: [])
+        checkTrue(composedWeb.supportsChromeNodeID()) // excluded by transaction: fresh support
+        webCache(supported: [chromeID], requested: [chromeID])
+        ownerProvider.supportedAttributes = []
+        checkTrue(composedWeb.supportsChromeNodeID()) // explicitly requested: cache is authoritative
+        webCache(supported: [], requested: nil)
+        let webSingleReadsBefore = ownerProvider.singleReads
+        checkTrue(CFEqual(composedWeb.textMarker(for: startAttribute, reportError: { _ in unexpectedFailure() })!.marker, webStart.marker))
+        checkEqual(ownerProvider.singleReads, webSingleReadsBefore)
+        var composedWebCalls: [String] = []
+        var composedWebProbeWrong = false
+        var composedWebProbePresent = false
+        ownerProvider.parameterSupport = { composedWebCalls.append("support"); return [] }
+        ownerProvider.parameterRead = { attribute, parameter in
+            composedWebCalls.append(attribute.name as String)
+            if attribute == UIElementAttribute("AXNextLineEndTextMarkerForTextMarker") {
+                checkTrue(CFEqual(parameter.value as! AXTextMarker, webEnd.marker))
+                if composedWebProbeWrong { return partial("invalid marker" as NSString) }
+                return composedWebProbePresent ? partial(webStart.marker) : nil
+            }
+            checkTrue(attribute == UIElementAttribute("AXAttributedStringForTextMarkerRange"))
+            let range = parameter.value as! AXTextMarkerRange
+            checkTrue(CFEqual(AXTextMarkerRangeCopyStartMarker(range), webStart.marker))
+            checkTrue(CFEqual(AXTextMarkerRangeCopyEndMarker(range), webEnd.marker))
+            return partial(richText)
+        }
+        var composedWebContext = ownerContext(.informationalContext)
+        func composedWebResult() -> UIElementTreeTransformation.Result<TransformedUIElement> {
+            MacUIElementTreeTransformation.retrieveAttributedTextFromWebAreas(
+                item: associationItem(composedWeb, children: [targetA]), context: &composedWebContext,
+                reportAttributeError: { _ in unexpectedFailure("cached markers should decode") },
+                reportUnexpectedNextLine: { composedWebCalls.append("diagnostic") },
+                render: { value, _ in
+                    checkTrue(value === richText); composedWebCalls.append("render")
+                    return TransformedUIString(stringLiteral: "Composed web")
+                })
+        }
+        for wrong in [false, true] {
+            composedWebProbeWrong = wrong; composedWebCalls = []
+            switch composedWebResult() {
+            case let .transformed(result):
+                checkEqual(result.element.value, "Composed web"); checkTrue(result.children.isEmpty)
+            default: unexpectedFailure("nil/invalid next-line marker should continue")
+            }
+            checkEqual(composedWebCalls, ["AXNextLineEndTextMarkerForTextMarker", "support", "AXAttributedStringForTextMarkerRange", "render"])
+        }
+        composedWebProbeWrong = false; composedWebProbePresent = true; composedWebCalls = []
+        switch composedWebResult() {
+        case .unchanged: break
+        default: unexpectedFailure("present next-line marker should preserve web tree")
+        }
+        checkEqual(composedWebCalls, ["AXNextLineEndTextMarkerForTextMarker", "diagnostic"])
+        webCache(supported: [chromeID], requested: nil); composedWebCalls = []
+        switch composedWebResult() {
+        case .unchanged: break
+        default: unexpectedFailure("Chrome capability must bypass marker reads")
+        }
+        checkTrue(composedWebCalls.isEmpty)
+        composedWeb.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+        ownerProvider.readResult = (.success, partial(webStart.marker))
+        checkTrue(CFEqual(composedWeb.textMarker(for: startAttribute, reportError: { _ in unexpectedFailure() })!.marker, webStart.marker))
+        ownerProvider.readResult = (.success, partial("wrong" as NSString))
+        var webMarkerErrors = 0
+        checkTrue(composedWeb.textMarker(for: startAttribute, reportError: { _ in webMarkerErrors += 1 }) == nil)
+        checkEqual(webMarkerErrors, 1)
+        ownerProvider.parameterSupport = nil; ownerProvider.parameterRead = nil
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

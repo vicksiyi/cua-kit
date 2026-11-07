@@ -1,4 +1,12 @@
 {
+  "webTextProvider": {
+    "chromeAttribute": "ChromeAXNodeId",
+    "initializer": "0x10079c8e0",
+    "attributePolicy": "cached support unless explicit transaction set excludes attribute, then fresh support",
+    "markerReads": "cached typed marker then strict uncached fallback; errors logged -> nil",
+    "nextLine": "encode raw end marker, parameterized read, strict marker decode; outer probe suppresses errors",
+    "integration": "web-area overload now uses provider-backed support/marker/probe/range readers; formatter remains explicit"
+  },
   "textualContext": {
     "attribute": "AXTextualContext",
     "initializer": "0x10079c6e0",
@@ -191,7 +199,7 @@
     "guards": "informationalContext + webArea + no chromeNodeID support + start/end markers present",
     "probe": "nextLineEndTextMarkerForTextMarker(end); nonnil -> diagnostic and unchanged; nil/error -> original marker range",
     "commit": "read/format range, assign attributedString/transformedString/value, clear subtree; read nil/error leaves item unchanged",
-    "limitations": "outer branch extracted; typed readers, range-read helper and attributed-run formatter still require production composition"
+    "limitations": "provider-backed readers composed; attributed-run formatter and production collector integration still pending"
   },
   "textAreaRichText": {
     "instructions": {

@@ -593,7 +593,20 @@ textual_context_calls = [branch(site, target) for site, target in [
     (0x10072b20c, 0x100710b44),
 ]]
 
-print(json.dumps(dict(textualContext=dict(
+# Native small-string initializer spells ChromeAXNodeId (not AXChromeNodeID).
+chrome_attribute_words = [0xd28d0860, 0xf2adee40, 0xf2ccada0, 0xf2eb0820,
+                          0xd28de9c1, 0xf2acac81, 0xf2cc8921, 0xf2fdc001]
+for index, word in enumerate(chrome_attribute_words):
+    assert struct.unpack('<I', read(0x10079c8e8 + index * 4, 4))[0] == word
+chrome_attribute_name = struct.pack('<QQ', 0x5841656d6f726843, 0xee00644965646f4e)[:14].decode()
+assert chrome_attribute_name == 'ChromeAXNodeId'
+
+print(json.dumps(dict(webTextProvider=dict(
+    chromeAttribute=chrome_attribute_name, initializer="0x10079c8e0",
+    attributePolicy="cached support unless explicit transaction set excludes attribute, then fresh support",
+    markerReads="cached typed marker then strict uncached fallback; errors logged -> nil",
+    nextLine="encode raw end marker, parameterized read, strict marker decode; outer probe suppresses errors",
+    integration="web-area overload now uses provider-backed support/marker/probe/range readers; formatter remains explicit"), textualContext=dict(
     attribute="AXTextualContext", initializer="0x10079c6e0", calls=textual_context_calls,
     behavior="cached string first, uncached strict string read on nil; known unsupported skips AX; uncached read/decode errors reported then converted to nil",
     integration="text-area overload now composes contextual guard plus full/range reads; attributed formatter remains explicit"), fullAttributedText=dict(
@@ -611,7 +624,7 @@ print(json.dumps(dict(textualContext=dict(
     guards="informationalContext + webArea + no chromeNodeID support + start/end markers present",
     probe="nextLineEndTextMarkerForTextMarker(end); nonnil -> diagnostic and unchanged; nil/error -> original marker range",
     commit="read/format range, assign attributedString/transformedString/value, clear subtree; read nil/error leaves item unchanged",
-    limitations="outer branch extracted; typed readers, range-read helper and attributed-run formatter still require production composition"), textAreaRichText=dict(
+    limitations="provider-backed readers composed; attributed-run formatter and production collector integration still pending"), textAreaRichText=dict(
     instructions={hex(k): hex(v) for k, v in text_area_words.items()},
     calls=text_area_calls,
     guards="textArea, textualContent != AXTextualContextSourceCode, captured value present",

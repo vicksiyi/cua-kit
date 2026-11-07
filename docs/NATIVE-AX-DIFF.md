@@ -5904,3 +5904,31 @@ source-code skip, and continuation to successful rich-text reading after a
 context lookup error. They use the owned AX provider and do not operate an
 external app. Attributed formatting, full Mac dispatch and live acceptance
 remain incomplete.
+
+### Web-area provider composition
+
+`TransformedUIElementWebTextReading.swift` and the provider-backed web-area
+transform overload connect the previously extracted rule to existing AX
+provider dispatch. Chrome capability checks use the native initializer's exact
+ChromeAXNodeId key (`0x10079c8e0`), not a guessed AX-prefixed spelling. Existing
+support semantics preserve cached support when the attribute was requested or
+there is no transaction-attribute restriction, and use fresh support when an
+explicit transaction set excludes the attribute. An empty captured support set
+alone does not force discovery.
+
+Start/end marker reads use cached typed values then nonthrowing strict uncached
+fallback, reporting read/decode errors once. AXMarkerDecoding supplies the
+UITextMarker concrete decoder corresponding to `0x100714cd4`, keeping all
+special CF branches. The next-line probe encodes the raw end marker and strictly
+decodes the parameterized result. Its error remains visible to the outer
+rule's existing try?-equivalent behavior; there is no extra logging/retry here.
+The full web-area overload now composes support, marker, probe and marker-range
+reads, while the attributed-run renderer and diagnostic logger remain explicit.
+
+Validation: pinned audit, Swift build and owned provider-click self-test pass.
+Tests cover all three cache/transaction capability paths, cached and fresh
+marker reads, wrong-type reporting, exact probe argument and range endpoints,
+parameterized support ordering, strict-decode failure recovery, successful
+subtree clearing, the diagnostic/nonempty-probe path and Chrome bypass. The
+production collector and attributed formatter are still not complete; these
+are owned-provider tests with opaque local markers, not live browser acceptance.

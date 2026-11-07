@@ -1,6 +1,22 @@
 import Foundation
 
 extension MacUIElementTreeTransformation {
+    static func retrieveAttributedTextFromWebAreas(
+        item: UIElementTree<TransformedUIElement>.Item,
+        context: inout UIElementTransformationContext,
+        reportAttributeError: (Error) -> Void,
+        reportUnexpectedNextLine: () -> Void,
+        render: (NSAttributedString, inout UIElementTransformationContext) -> TransformedUIString
+    ) -> UIElementTreeTransformation.Result<TransformedUIElement> {
+        retrieveAttributedTextFromWebAreas(item: item, context: &context,
+            supportsChromeNodeID: { item.element.supportsChromeNodeID() },
+            readStartMarker: { item.element.textMarker(for: UIElementAttribute("AXStartTextMarker"), reportError: reportAttributeError) },
+            readEndMarker: { item.element.textMarker(for: UIElementAttribute("AXEndTextMarker"), reportError: reportAttributeError) },
+            nextLineEnd: { try item.element.nextLineEndTextMarker(after: $0) },
+            reportUnexpectedNextLine: reportUnexpectedNextLine,
+            readRange: { try item.element.attributedText(for: $0) }, render: render)
+    }
+
     // Tag 12 at 0x100759714. Provider closures preserve the native typed
     // reads and parameterized-value boundaries; formatting is still supplied
     // by the attributed-run renderer, not an invented plain-text fallback.
