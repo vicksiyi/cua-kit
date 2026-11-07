@@ -892,7 +892,21 @@ for index in range(4):
     secondary_excluded.append(text)
 assert secondary_excluded == ['Add comment', 'Remove unused rows', 'Remove unused columns', 'Remove unused rows and columns']
 
-print(json.dumps(dict(secondaryActions=dict(
+identifier_calls = [branch(site, target) for site, target in [
+    (0x100626b48, 0x101150b34), (0x100626b60, 0x101150b34),
+    (0x100627044, 0x100628e10), (0x100627054, 0x100627930),
+]]
+compare_zero_branch(0x100626b18, 1, 0x100626b70)
+compare_zero_branch(0x100626b34, 8, 0x100626b68)
+assert struct.unpack('<I', read(0x100626b38, 4))[0] == 0x52800be0 # underscore
+assert struct.unpack('<I', read(0x100626b50, 4))[0] == 0x528a69c0 # NS
+assert struct.unpack('<I', read(0x100627034, 4))[0] == 0x52888920 # ID
+
+print(json.dumps(dict(contentIdentifier=dict(
+    calls=identifier_calls,
+    behavior="omit nil/empty and Swift String prefixes underscore or NS; appendUnique with ID label",
+    prefixStub="0x101150b34 -> GOT 0x101466488 Swift.String.hasPrefix",
+    limitation="full content assembly and live integration pending"), secondaryActions=dict(
     calls=secondary_action_calls, excludedKinds=['press', 'showMenu', 'scrollToVisible'],
     excludedDescriptions=secondary_excluded,
     behavior="filter static exclusions, preserve duplicates/order/empty descriptions, comma-space join, appendUnique joined entry",

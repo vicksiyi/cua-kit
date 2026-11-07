@@ -6593,3 +6593,20 @@ Build, owned provider tests and static audit passed, including all exclusions,
 duplicate actions, prior identical content, case differences and empty text.
 Full content collection, node composition and live collector integration are
 still pending; this is not an end-to-end app acceptance claim.
+
+
+### Content identifier filtering (2026-11-07)
+
+Restored 0x100626b04..0x100626b68 and append branch 0x100627030 in
+AccessibilityContentIdentifier.swift. Nil/empty identifiers and identifiers
+with Swift String prefixes underscore or NS are omitted. All others retain
+original text and appendUnique with ID label; a prior identical text wins.
+The call stub 0x101150b34 resolves through GOT 0x101466488 to String.hasPrefix.
+No trimming or case folding is applied. A leading space is preserved, lowercase
+ns is accepted, and underscore plus a combining acute is a distinct Character
+from the standalone underscore prefix on the tested Swift runtime.
+
+Build, owned provider checks and static audit passed. Tests cover nil/empty,
+exact/prefixed exclusions, prior text deduplication, whitespace, casing and
+combining-character behavior. This remains a recovered content component;
+complete node composition and production collector integration are pending.

@@ -1,4 +1,31 @@
 {
+  "contentIdentifier": {
+    "calls": [
+      {
+        "instruction": "0x100626b48",
+        "target": "0x101150b34",
+        "link": true
+      },
+      {
+        "instruction": "0x100626b60",
+        "target": "0x101150b34",
+        "link": true
+      },
+      {
+        "instruction": "0x100627044",
+        "target": "0x100628e10",
+        "link": true
+      },
+      {
+        "instruction": "0x100627054",
+        "target": "0x100627930",
+        "link": true
+      }
+    ],
+    "behavior": "omit nil/empty and Swift String prefixes underscore or NS; appendUnique with ID label",
+    "prefixStub": "0x101150b34 -> GOT 0x101466488 Swift.String.hasPrefix",
+    "limitation": "full content assembly and live integration pending"
+  },
   "secondaryActions": {
     "calls": [
       {

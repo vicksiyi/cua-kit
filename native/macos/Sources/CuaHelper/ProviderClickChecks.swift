@@ -2951,6 +2951,23 @@ private enum ProviderClickChecks {
             checkEqual(formatAccessibilityContent(empty.entries), "Secondary Actions: ")
         }
         do {
+            var content = AccessibilityContentAccumulator()
+            for identifier: String? in [nil, "", "_", "_private", "NS", "NSInternal"] {
+                content.appendIdentifier(identifier)
+            }
+            checkTrue(content.entries.isEmpty)
+            content.appendUnique(.init(label: "Description", text: "existing"))
+            content.appendIdentifier("existing")
+            checkEqual(content.entries.count, 1)
+            for identifier in ["nsInternal", " NSInternal", "_\u{301}private", "some_NS", " "] {
+                content.appendIdentifier(identifier)
+            }
+            // Swift hasPrefix matches Characters, not bytes; underscore plus
+            // combining acute is not the standalone underscore Character.
+            checkEqual(content.entries.dropFirst().map(\.text), ["nsInternal", " NSInternal", "_\u{301}private", "some_NS", " "])
+            checkTrue(content.entries.dropFirst().allSatisfy { $0.label == "ID" })
+        }
+        do {
             checkEqual(formatAccessibilityContent([]), "")
             checkEqual(formatAccessibilityContent([.init(label: "Description", text: "only")]), "only")
             checkEqual(formatAccessibilityContent([.init(label: "", text: "only")]), "only")
