@@ -210,6 +210,13 @@
       }
     ]
   },
+  "transformedConstructors": {
+    "default": "0x10075de70",
+    "contextual": "0x10075e040",
+    "cache": "0x10076589c",
+    "capture": "0x10075e160",
+    "behavior": "current transaction; nil traversal parent; default full context without application or window"
+  },
   "transformedWebView": {
     "entry": "0x1007aac98",
     "behavior": "including-self parent chain maxDepth 300; dynamic role equals webArea; fallback original AX bundleIdentifier prefix com.openai.atlas"

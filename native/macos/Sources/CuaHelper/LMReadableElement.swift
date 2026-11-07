@@ -12,8 +12,8 @@ extension TransformedUIElement: LMReadableElement {
 }
 
 // 0x10076ad18 -> generic render with the protocol witness callback.
-// Keep both native constraints; do not invent UIElementProtocol conformance
-// merely to make TransformedUIElement fit this overload.
+// Both native constraints are retained; transformed nodes now provide the
+// audited UIElementProtocol constructors and action witnesses.
 extension UIElementTree where Element: LMReadableElement & UIElementProtocol {
     func render(with context: inout UIElementTransformationContext) throws -> UIElementRenderTree<Element.ID> {
         try render(with: &context) { element, context in

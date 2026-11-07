@@ -651,8 +651,8 @@ private enum ProviderClickChecks {
         checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
         checkTrue(CFEqual(capturedOwner.axElement, ownerAX))
         checkEqual(capturedOwner.cache.supportedAttributes, ownerElement.cache.supportedAttributes)
-        checkEqual(capturedOwner.actions, [.press])
-        checkEqual(eventOwner.actions, [])
+        checkEqual(capturedOwner.actions, Optional<[UIElementAction]>.some([.press]))
+        checkEqual(eventOwner.actions, Optional<[UIElementAction]>.some([]))
         checkTrue(eventOwner.actions != nil)
         checkTrue(capturedOwner.hasInterestingActions)
         checkFalse(eventOwner.hasInterestingActions)
@@ -893,6 +893,32 @@ private enum ProviderClickChecks {
             checkTrue(node.isInsideWebView)
             webProvider.testBundleIdentifier = "org.example.com.openai.atlas"
             checkFalse(node.isInsideWebView)
+        }
+        do {
+            let initAX = AXUIElementCreateApplication(12511)
+            let initProvider = Hit()
+            provider.replacements[initAX] = initProvider
+            let roleAttribute = UIElementAttribute("AXRole")
+            initProvider.supportedAttributes = [roleAttribute]
+            initProvider.attributes = [roleAttribute: partial("AXButton" as NSString)]
+            initProvider.actionRead = { [.press] }
+            initProvider.descriptionRead = { _ in "Press" }
+            let node = TransformedUIElement(element: initAX)
+            checkTrue(TransformedUIElement.role == nil)
+            checkEqual(node.role, .button)
+            checkEqual(node.actionDescriptions.map(\.action), [.press])
+            var snapshot = node
+            snapshot.actionDescriptions = []
+            snapshot.isDisclosable = false
+            checkEqual(snapshot.actions, Optional<[UIElementAction]>.some([]))
+            let protocolNode: any UIElementProtocol = snapshot
+            checkEqual(protocolNode.actions, [.press])
+            checkEqual(protocolNode.actionDescriptions, [])
+            var context = ownerContext(.informationalContext)
+            let informational = TransformedUIElement(element: initAX, context: &context)
+            checkEqual(informational.role, .button)
+            checkTrue(informational.actionDescriptions.isEmpty)
+            checkEqual(context.type, .informationalContext)
         }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
@@ -3104,9 +3130,7 @@ private enum ProviderClickChecks {
             checkEqual(try readable.lmReadableDescription(for: &context), "button (disabled) Save")
             let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
             let tree = UIElementTree(items: [.init(element: node, subtree: empty)], focusedElement: nil)
-            let rendered = try tree.render(with: &context) { element, context in
-                try element.lmReadableDescription(for: &context)
-            }
+            let rendered = try tree.render(with: &context)
             checkTrue(rendered.roots[0].elementID == nil)
             checkEqual(rendered.roots[0].sourcePath, IndexPath(index: 0))
             rendered.setElementIDs()
@@ -3434,9 +3458,9 @@ private enum ProviderClickChecks {
     }
 }
 
-private func checkEqual<T: Equatable>(_ lhs: T, _ rhs: T) { precondition(lhs == rhs) }
-private func checkTrue(_ value: Bool) { precondition(value) }
-private func checkFalse(_ value: Bool) { precondition(!value) }
+private func checkEqual<T: Equatable>(_ lhs: T, _ rhs: T, file: StaticString = #filePath, line: UInt = #line) { precondition(lhs == rhs, "Values differ", file: file, line: line) }
+private func checkTrue(_ value: Bool, file: StaticString = #filePath, line: UInt = #line) { precondition(value, "Expected true", file: file, line: line) }
+private func checkFalse(_ value: Bool, file: StaticString = #filePath, line: UInt = #line) { precondition(!value, "Expected false", file: file, line: line) }
 private func unexpectedFailure(_ message: String = "unexpected failure") -> Never { preconditionFailure(message) }
 
 func runProviderClickChecks() async throws { try await ProviderClickChecks.run() }

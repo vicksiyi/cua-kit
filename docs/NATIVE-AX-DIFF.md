@@ -6777,3 +6777,25 @@ Swift build and provider checks pass for captured webArea short circuit, nil
 bundle, Atlas prefix and non-prefix rejection. Static audit pins bundle lookup
 and prefix comparison calls. Full protocol conformance/production observation
 wiring remains incomplete; no live application acceptance is claimed.
+
+### Transformed protocol conformance and constructors
+
+TransformedUIElement now conforms to UIElementProtocol. Static role is nil;
+both AX constructors use current transaction-aware UIElement construction,
+then the captured-state initializer with nil traversal parent. The default
+constructor uses fullUIContext and no application/window; the contextual
+overload preserves supplied context. Static calls are pinned in protocol audit.
+
+Owned provider tests exercise both constructors and witness dispatch: concrete
+optional actions use captured descriptions, while protocol nonoptional actions
+read the native provider. Swift contextual overload resolution matters: tests
+request Optional explicitly when asserting the captured getter. Stored action
+descriptions remain the protocol witness. The LMReadableElement tree-render
+convenience overload is now compiled and exercised directly. WebView traversal
+uses protocol existentials instead of a temporary two-case wrapper.
+
+Build and provider tests pass. Earlier notes saying transformed conformance is
+missing are superseded by this section. Production collector/operation ID
+wiring and live app acceptance remain incomplete. Unknown date-component
+diagnostics currently use a readable local message rather than the vendor's
+exact logger payload; diagnostic fidelity is not claimed.
