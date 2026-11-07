@@ -9,18 +9,29 @@ extension UIElement {
         read: () -> (error: AXError, value: AXPartialValue?),
         reportError: (Error) -> Void
     ) -> UIElement? {
+        elementValue(for: attribute,
+            initialize: { UIElement(systemElement: $0, transaction: transaction) },
+            read: read, reportError: reportError)
+    }
+
+    func elementValue(
+        for attribute: UIElementAttribute,
+        initialize: (AXUIElement) -> UIElement,
+        read: () -> (error: AXError, value: AXPartialValue?),
+        reportError: (Error) -> Void
+    ) -> UIElement? {
         uiElementAttributeValue(ignoringTypeMismatch: false,
             cachedValue: {
                 uiElementCachedValue(attribute, readCache: { cache }) {
-                    try? decodeAXUIElement($0.value.value, throwingOnFailure: false, transaction: transaction)
+                    try? decodeAXUIElement($0.value.value, throwingOnFailure: false, initialize: initialize)
                 }
             }, uncachedValue: { ignore in
                 uiElementUncachedValue(operation: {
                     try uiElementUncachedValueThrowing(ignoringTypeMismatch: ignore,
                         isKnownUnsupported: { attributeIsKnownUnsupported(attribute) },
                         read: read,
-                        decode: { try? decodeAXUIElement($0.value.value, throwingOnFailure: false, transaction: transaction) },
-                        decodeThrowing: { try decodeAXUIElement($0.value.value, throwingOnFailure: true, transaction: transaction) })
+                        decode: { try? decodeAXUIElement($0.value.value, throwingOnFailure: false, initialize: initialize) },
+                        decodeThrowing: { try decodeAXUIElement($0.value.value, throwingOnFailure: true, initialize: initialize) })
                 }, reportError: reportError)
             })
     }

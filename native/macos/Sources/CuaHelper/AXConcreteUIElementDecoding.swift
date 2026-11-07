@@ -7,11 +7,20 @@ func decodeAXUIElement(
     throwingOnFailure: Bool,
     transaction: UIElementTransactionCache?
 ) throws -> UIElement? {
+    try decodeAXUIElement(raw, throwingOnFailure: throwingOnFailure,
+        initialize: { UIElement(systemElement: $0, transaction: transaction) })
+}
+
+// Shared type-dispatch body. The original generic decoder calls the target
+// initializer witness; the legacy explicit transaction adapter above is separate.
+func decodeAXUIElement(
+    _ raw: AnyObject,
+    throwingOnFailure: Bool,
+    initialize: (AXUIElement) -> UIElement
+) throws -> UIElement? {
     let kind = CFGetTypeID(raw)
     if kind == AXUIElementGetTypeID() {
-        return try unwrapAXElement(raw, throwingOnFailure: throwingOnFailure) {
-            UIElement(systemElement: $0, transaction: transaction)
-        }
+        return try unwrapAXElement(raw, throwingOnFailure: throwingOnFailure, initialize: initialize)
     }
     if kind == AXTextMarkerGetTypeID() {
         return try decodeAXTextMarker(raw as! AXTextMarker, throwingOnFailure: throwingOnFailure, as: UIElement.self)

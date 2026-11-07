@@ -52,6 +52,12 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AccessibilityNodeDefaults.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementProtocol.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementIdentity.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXConcreteUIElementDecoding.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXElementConstruction.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementParentValue.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementParentChain.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementProviderParent.swift"),
+
         join(root, "native/macos/Sources/CuaHelper/UIElementAction.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementActionDescription.swift"),
         join(root, "native/macos/Sources/CuaHelper/FrequencyTable.swift"),

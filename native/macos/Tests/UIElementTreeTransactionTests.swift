@@ -231,7 +231,42 @@ import os
         AXMockProviderStorage.current = nil
         precondition(providerAXElementsEqual(ax, ax) && !providerAXElementsEqual(ax, other))
     }
+    static func checkProviderParent() throws {
+        let ax = AXUIElementCreateApplication(12101), parent = AXUIElementCreateApplication(12102)
+        let key = UIElementAttribute("AXParent"), title = UIElementAttribute("AXTitle")
+        let mock = AXMockProviderFixture.Mock()
+        let provider = AXMockProviderFixture.Provider(ax, mock)
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        func partial(_ value: AnyObject) -> AXPartialValue {
+            AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        }
+        let owner = UIElementTreeTransaction(element: Element(element: ax),
+            cache: UIElementTransactionCache(attributeTable: [parent: [title: partial("cached parent" as NSString)]],
+                requestedAttributes: [title], fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable<UIElementRole>())
+        let cached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [key],
+            attributes: [key: partial(parent)], transactionAttributes: nil))
+        let uncached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [key],
+            attributes: [:], transactionAttributes: nil))
+        owner.perform { _ in
+            let value = cached.parentValue(reportError: { _ in preconditionFailure() })!
+            precondition(CFEqual(value.axElement, parent) && value.cachedStringValue(for: title) == "cached parent")
+            precondition(provider.lookups == 0)
+            mock.output = (.success, partial(parent))
+            let fetched = uncached.parentValue(reportError: { _ in preconditionFailure() })!
+            precondition(fetched.cachedStringValue(for: title) == "cached parent" && provider.lookups == 1)
+            mock.output = (.failure, partial(parent))
+            var errors = 0
+            precondition(uncached.parentValue(reportError: { _ in errors += 1 }) == nil && errors == 1)
+        }
+        mock.output = (.success, nil)
+        precondition(uncached.parentValue(reportError: { _ in preconditionFailure() }) == nil)
+        let ordinary = try decodeAXUIElement("not an element" as NSString, throwingOnFailure: false)
+        precondition(ordinary == nil)
+    }
     static func main() throws {
+        try checkProviderParent()
         try checkAXConformance()
         checkProviderInitializer()
         checkSubtreeConstruction()

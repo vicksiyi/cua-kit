@@ -43,6 +43,18 @@ struct UIElementActionEnvironmentTests {
         events = []
         try menu.performAction(.press, transaction: transaction, environment: environment, reportError: { _ in fatalError() })
         precondition(events == ["supported", "actions", "perform:parent:AXPress", "perform:self:AXPress"])
+        var parentReads = 0
+        environment.parent = { node, _ in
+            parentReads += 1
+            return node.axElement === ax
+                ? UIElement(axElement: parentAX, cache: UIElementCache(supportedAttributes: Set(parentAttributes.keys), attributes: parentAttributes, transactionAttributes: nil))
+                : nil
+        }
+        events = []
+        try menu.performAction(.press, transaction: nil, environment: environment, reportError: { _ in fatalError() })
+        precondition(parentReads > 0)
+        precondition(events == ["supported", "actions", "perform:parent:AXPress", "perform:self:AXPress"])
+        environment.parent = nil
         let ordinary = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [role], attributes: [role: partial("AXButton" as NSString)], transactionAttributes: nil))
         events = []
         try ordinary.performAction(.scrollDownByPage, transaction: nil, environment: environment, reportError: { _ in fatalError() })

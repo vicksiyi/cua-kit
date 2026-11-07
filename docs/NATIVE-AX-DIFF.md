@@ -3950,3 +3950,27 @@ Parent and child decoders still construct explicit system-only elements; they
 must be migrated together with transaction propagation rather than silently
 changing existing explicit-transaction test and compatibility paths. This
 identity change prepares the full protocol conformance but does not complete it.
+
+### Provider parent decoding and ancestor traversal
+
+The UIElement decoder's CF-type dispatch now takes an explicit initializer
+closure, matching the recovered generic initializer-witness boundary. Existing
+explicit-transaction system adapters delegate to that body. The new overload
+without a transaction parameter constructs `UIElement(element:)`, acquiring the
+current full transaction when the AX reference is actually decoded.
+
+`parentValue(reportError:)` composes the existing cached/uncached accessor,
+provider-aware AXParent read and that initializer. `parentChain` retains the
+recovered traversal helper and depth default. The provider action environment
+supplies this parent resolver to menu ancestor preparation; the optional resolver
+is a project composition dependency, not a new claimed native API. Legacy
+explicit system environments keep their old explicit transaction resolver.
+
+Regression checks cover cached AXParent and prefetched parent attributes with
+zero provider lookups; uncached AXParent with exactly one lookup and reuse of
+the transaction's parent cache; rejected AX status with exactly one report;
+nil result; permissive non-element decoding; and injected parent resolution
+through the full menu-action composition. Full helper build and transaction /
+action environment fixtures pass. No live UI or installed native service ran.
+Child-array and scrollbar decoding still require analogous migration; the full
+UIElementProtocol and production subtree integration remain incomplete.

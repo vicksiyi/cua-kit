@@ -10,6 +10,7 @@ extension UIElementActionEnvironment {
             settable: isAXAttributeSettable,
             write: setAXAttribute,
             perform: performAXAction,
-            count: { readAXArrayCount($0, for: $1) })
+            count: { readAXArrayCount($0, for: $1) },
+            parent: { $0.parentValue(reportError: $1) })
     }
 }
