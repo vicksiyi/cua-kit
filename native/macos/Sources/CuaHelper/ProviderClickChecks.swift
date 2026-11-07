@@ -3743,6 +3743,9 @@ func runProviderClickChecks() async throws {
     runElectronAccessibilityEnablementChecks()
     runAXEnablementAssertionReleaseChecks()
     runVoiceOverPreferenceReleaseChecks()
+    runAXEnablementPolicyChecks()
+    runAXEnablementAcquisitionChecks()
+    runAXInitializedApplicationChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5924,6 +5927,15 @@ private func runMouseEventRoutingSeedChecks() throws {
     hit = nil; trace = []
     guard case .noHit(let owner, let useAX) = try seed() else { unexpectedFailure() }
     checkEqual(owner, 88); checkTrue(useAX); checkEqual(trace, ["app","window-pid","bundle"])
+    for (identifier, expected) in [("com.openai.atlas.beta", true), ("com.openai.atlasAnything", true),
+        ("org.example.com.openai.atlas", false), ("COM.OPENAI.ATLAS", false), ("com.openai.atla", false)] {
+        bundle = identifier
+        guard case .noHit(_, let useAX) = try seed() else { unexpectedFailure() }
+        checkEqual(useAX, expected)
+    }
+    bundle = nil
+    guard case .noHit(_, let missingBundle) = try seed() else { unexpectedFailure() }
+    checkFalse(missingBundle)
     bundle = "com.google.Chrome"
     guard case .noHit(_, let ordinary) = try seed() else { unexpectedFailure() }
     checkFalse(ordinary)
@@ -6094,6 +6106,9 @@ private func runMouseEventTargetChecks() throws {
     windowIDThrows = false; bundle = "com.openai.atlas"; frame = nil; calls = []
     let atlas = try resolve()
     checkTrue(atlas.windowID == 70 && atlas.element == nil && atlas.windowBounds == .zero)
+    checkTrue(!calls.contains("nativeAtPoint"))
+    bundle = "com.openai.atlas.beta"; calls = []
+    checkTrue(try resolve().windowID == 70)
     checkTrue(!calls.contains("nativeAtPoint"))
     hit = 1; bundle = nil; foreign[2] = (44, 111); calls = []
     checkTrue(try resolve().pid == 44)
@@ -6335,4 +6350,154 @@ private func runVoiceOverPreferenceReleaseChecks() {
             checkTrue(events == (voiceRunning ? ["running"] : suiteExists ? ["running", "suite", "write", "notify"] : ["running", "suite"]))
         }
     }
+}
+
+private func runAXEnablementPolicyChecks() {
+    typealias Kind = AXEnablementKind
+    let primaryCases: [(String, Kind?, Kind?, Kind?)] = [
+        ("org.example.App", .enableElectronAccessibility, .enableEnhancedUserInterface, nil),
+        ("com.apple.iWork.Pages", .enableElectronAccessibility, .enableEnhancedUserInterface, .enableEnhancedUserInterface),
+        ("com.apple.iWorkAnything", .enableElectronAccessibility, .enableEnhancedUserInterface, .enableEnhancedUserInterface),
+        ("com.spotify.client", .enableElectronAccessibility, .enableEnhancedUserInterface, .enableEnhancedUserInterface),
+        ("com.spotify.client.beta", .enableElectronAccessibility, .enableEnhancedUserInterface, nil),
+        ("org.example.com.apple.iWork", .enableElectronAccessibility, .enableEnhancedUserInterface, nil),
+    ]
+    for (bundle, fullSupported, fullUnsupported, other) in primaryCases {
+        for context in UIElementContextType.allCases {
+            for supported in [false, true] {
+                var reads = 0
+                let result = primaryAXEnablementKind(context: context, bundleIdentifier: bundle,
+                    supportsManualAccessibility: { reads += 1; return supported })
+                checkEqual(result, context == .fullUIContext ? (supported ? fullSupported : fullUnsupported) : other)
+                checkEqual(reads, 1)
+            }
+        }
+    }
+    let voiceCases: [(String, [Bool])] = [
+        ("com.microsoft.Excel", [true, true, true]), ("com.microsoft.Excel.beta", [false, false, false]),
+        ("com.apple.Music", [true, true, true]), ("com.apple.Music.beta", [false, false, false]),
+        ("company.thebrowser.Browser", [true, false, false]), ("company.thebrowser.dia", [true, false, false]),
+        ("company.thebrowser.Browser.beta", [false, false, false]),
+        ("com.openai.atlas", [true, true, true]), ("com.openai.atlas.beta", [true, true, true]),
+        ("com.openai.atlasAnything", [true, true, true]), ("org.example.com.openai.atlas", [false, false, false]),
+        ("COM.OPENAI.ATLAS", [false, false, false]), ("ai.multica.desktop", [false, false, false]),
+    ]
+    for (bundle, expected) in voiceCases {
+        for (context, value) in zip(UIElementContextType.allCases, expected) {
+            checkEqual(shouldEnableVoiceOverOnPreference(context: context, bundleIdentifier: bundle), value)
+        }
+    }
+}
+
+private func runAXEnablementAcquisitionChecks() {
+    let manual = AXEnablementKind.enableElectronAccessibility
+    let voice = AXEnablementKind.enableVoiceOverOnPreference
+    do {
+        var events: [String] = []
+        let tracker = AXEnablementAssertionTracker<String>(reportFirstAcquisition: { _, kind in events.append("acquire:\(kind)") },
+            reportMissingRelease: { _ in events.append("missing") })
+        var owner = acquireAXEnablementAssertion(application: "Atlas", tracker: tracker, context: .fullUIContext,
+            bundleIdentifier: "com.openai.atlas.beta", supportsManualAccessibility: { events.append("support"); return true },
+            enableElectron: { changed in changed = true; events.append("manual"); return true },
+            enableEnhancedUI: { _ in unexpectedFailure() }, enableVoiceOverPreference: { events.append("voice-failed"); return false },
+            windowInitializationEligibility: { unexpectedFailure() }, initializeApplication: { events.append("initialize"); return true },
+            reportInitialized: { app in checkFalse(tracker.hasInitialized(app)); events.append("mark") },
+            makeAssertion: { kinds in
+                checkTrue(kinds == [manual, voice] && tracker.hasInitialized("Atlas")); events.append("assertion")
+                return AXEnablementAssertion(kinds: kinds) { kinds in
+                    releaseAXEnablementKinds(kinds, application: "Atlas", tracker: tracker,
+                        reportRelease: { events.append("release:\($0)") }, setManualAccessibility: { value in
+                            checkFalse(value); events.append("disable-manual")
+                        }, setEnhancedUserInterface: { _ in unexpectedFailure() }, releaseVoiceOverPreference: { unexpectedFailure() })
+                }
+            })
+        checkTrue(owner != nil)
+        checkTrue(events == ["support", "acquire:enableElectronAccessibility", "manual", "acquire:enableVoiceOverOnPreference",
+            "voice-failed", "initialize", "mark", "assertion"])
+        owner!.disable(); owner = nil
+        checkTrue(Array(events.suffix(3)) == ["release:enableElectronAccessibility", "disable-manual", "missing"])
+    }
+    do {
+        let tracker = AXEnablementAssertionTracker<String>(reportFirstAcquisition: { _, _ in }, reportMissingRelease: { _ in unexpectedFailure() })
+        var enabled = 0, initialized = 0, marked = 0, disabled = 0, eligibleReads = 0
+        func acquire() -> AXEnablementAssertion? {
+            acquireAXEnablementAssertion(application: "Multica", tracker: tracker, context: .fullUIContext,
+                bundleIdentifier: "ai.multica.desktop", supportsManualAccessibility: { true },
+                enableElectron: { changed in enabled += 1; changed = true; return true },
+                enableEnhancedUI: { _ in unexpectedFailure() }, enableVoiceOverPreference: { unexpectedFailure() },
+                windowInitializationEligibility: { eligibleReads += 1; return true },
+                initializeApplication: { initialized += 1; return true }, reportInitialized: { _ in marked += 1 },
+                makeAssertion: { kinds in
+                    AXEnablementAssertion(kinds: kinds) { kinds in
+                        releaseAXEnablementKinds(kinds, application: "Multica", tracker: tracker,
+                            reportRelease: { checkEqual($0, manual) }, setManualAccessibility: { value in checkFalse(value); disabled += 1 },
+                            setEnhancedUserInterface: { _ in unexpectedFailure() }, releaseVoiceOverPreference: { unexpectedFailure() })
+                    }
+                })
+        }
+        let first = acquire()!, second = acquire()!
+        checkTrue(enabled == 1 && initialized == 2 && marked == 2 && eligibleReads == 1)
+        first.disable(); checkEqual(disabled, 0)
+        second.disable(); checkEqual(disabled, 1)
+    }
+    do {
+        let tracker = AXEnablementAssertionTracker<String>(reportFirstAcquisition: { _, _ in }, reportMissingRelease: { _ in })
+        tracker.markInitialized("Pages", report: { _ in })
+        let owner = acquireAXEnablementAssertion(application: "Pages", tracker: tracker, context: .eventStreamContext,
+            bundleIdentifier: "com.apple.iWork.Pages", supportsManualAccessibility: { false },
+            enableElectron: { _ in unexpectedFailure() }, enableEnhancedUI: { changed in changed = true; return true },
+            enableVoiceOverPreference: { unexpectedFailure() }, windowInitializationEligibility: { unexpectedFailure() },
+            initializeApplication: { unexpectedFailure() }, reportInitialized: { _ in unexpectedFailure() },
+            makeAssertion: { AXEnablementAssertion(kinds: $0, release: { _ in }) })
+        checkTrue(owner != nil)
+    }
+    do {
+        let tracker = AXEnablementAssertionTracker<String>(reportFirstAcquisition: { _, _ in unexpectedFailure() }, reportMissingRelease: { _ in })
+        var initializationSucceeds = false, initialized = 0, eligibility = 0, marked = 0
+        func acquire() -> AXEnablementAssertion? {
+            acquireAXEnablementAssertion(application: "Other", tracker: tracker, context: .eventStreamContext,
+                bundleIdentifier: "org.example.App", supportsManualAccessibility: { false },
+                enableElectron: { _ in unexpectedFailure() }, enableEnhancedUI: { _ in unexpectedFailure() },
+                enableVoiceOverPreference: { unexpectedFailure() }, windowInitializationEligibility: { eligibility += 1; return true },
+                initializeApplication: { initialized += 1; return initializationSucceeds }, reportInitialized: { _ in marked += 1 },
+                makeAssertion: { _ in unexpectedFailure() })
+        }
+        checkTrue(acquire() == nil && !tracker.hasInitialized("Other"))
+        initializationSucceeds = true
+        checkTrue(acquire() == nil && tracker.hasInitialized("Other"))
+        checkTrue(acquire() == nil && initialized == 2 && marked == 1 && eligibility == 3)
+    }
+    do {
+        let tracker = AXEnablementAssertionTracker<String>(reportFirstAcquisition: { _, _ in }, reportMissingRelease: { _ in })
+        var eligibility = 0
+        let owner = acquireAXEnablementAssertion(application: "AlreadyEnabled", tracker: tracker, context: .fullUIContext,
+            bundleIdentifier: "org.example.App", supportsManualAccessibility: { true },
+            enableElectron: { _ in false }, enableEnhancedUI: { _ in unexpectedFailure() },
+            enableVoiceOverPreference: { unexpectedFailure() }, windowInitializationEligibility: { eligibility += 1; return false },
+            initializeApplication: { unexpectedFailure() }, reportInitialized: { _ in unexpectedFailure() },
+            makeAssertion: { kinds in checkTrue(kinds == [manual]); return AXEnablementAssertion(kinds: kinds, release: { _ in }) })
+        checkTrue(owner != nil && eligibility == 1)
+        checkTrue(tracker.acquire(for: "AlreadyEnabled", kind: manual)) // Failed enable rolled back to zero.
+        checkTrue(tracker.release(for: "AlreadyEnabled", kind: manual))
+    }
+}
+
+private func runAXInitializedApplicationChecks() {
+    final class Application: Hashable {
+        static func == (lhs: Application, rhs: Application) -> Bool { lhs === rhs }
+        func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
+    }
+    var tracker: AXEnablementAssertionTracker<Application>? = AXEnablementAssertionTracker(
+        reportFirstAcquisition: { _, _ in }, reportMissingRelease: { _ in unexpectedFailure() })
+    var app: Application? = Application()
+    weak var weakApp = app
+    checkFalse(tracker!.hasInitialized(app!))
+    tracker!.markInitialized(app!, report: { checkFalse(tracker!.hasInitialized($0)) })
+    tracker!.markInitialized(app!, report: { checkTrue(tracker!.hasInitialized($0)) })
+    checkTrue(tracker!.acquire(for: app!, kind: .enableElectronAccessibility))
+    checkTrue(tracker!.release(for: app!, kind: .enableElectronAccessibility))
+    app = nil
+    checkTrue(weakApp != nil) // Initialization history outlives active-count entries.
+    tracker = nil
+    checkTrue(weakApp == nil)
 }

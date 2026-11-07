@@ -14,6 +14,6 @@ func mouseEventRoutingSeed<Element>(applicationPID: () throws -> Int32,
     let windowPID = try windowActualPID()
     if windowPID != appPID { return .foreignWindow(pid: windowPID, windowID: try windowID()) }
     if let hitElement { return .hitElement(appPID: appPID, effectiveElement: children(hitElement).first ?? hitElement) }
-    // Exact source-specific exception, not a general browser heuristic.
-    return .noHit(appPID: appPID, useAccessibilityWindowID: bundleIdentifier() == "com.openai.atlas")
+    // Source String.hasPrefix import (0x101150b34), not exact equality.
+    return .noHit(appPID: appPID, useAccessibilityWindowID: bundleIdentifier()?.hasPrefix("com.openai.atlas") ?? false)
 }

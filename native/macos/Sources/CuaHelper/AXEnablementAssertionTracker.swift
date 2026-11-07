@@ -18,6 +18,7 @@ final class AXEnablementAssertionTracker<Application: Hashable> {
         let kind: AXEnablementKind
     }
     private var activeAssertions: [Key: Int] = [:]
+    private var initializedApplications: [Application] = []
     private let reportFirstAcquisition: (Application, AXEnablementKind) -> Void
     private let reportMissingRelease: (Application) -> Void
 
@@ -25,6 +26,16 @@ final class AXEnablementAssertionTracker<Application: Hashable> {
          reportMissingRelease: @escaping (Application) -> Void) {
         self.reportFirstAcquisition = reportFirstAcquisition
         self.reportMissingRelease = reportMissingRelease
+    }
+
+    // Source stores an array, retaining duplicate initialized-app entries.
+    // Marking reports BEFORE appending (0x1007030f4), unlike acquisition.
+    func hasInitialized(_ application: Application) -> Bool {
+        initializedApplications.contains(application)
+    }
+    func markInitialized(_ application: Application, report: (Application) -> Void) {
+        report(application)
+        initializedApplications.append(application)
     }
 
     // True only on 0 -> 1: only that owner attempts the native enable.

@@ -179,3 +179,58 @@ remaining owned temporary fixture processes after the previous attempts.
 Unlocking is required for live frontend/backend acceptance. Code reconstruction
 can proceed while locked; the goal is not complete or globally blocked by this
 single verification prerequisite. Local reports remain gitignored.
+
+
+## Acquisition-policy orchestration restored
+
+AXEnablementAcquisition restores the operation body at
+0x1007002a0..0x10070067c, with explicit native operation/initialization boundaries
+and no no-op fallbacks. The outer PID/running-app/bundle lookup and native
+operations still require integration; this is not automatic controller enabling.
+
+Primary kind selection always queries manual-attribute support first. When
+supported in fullUIContext, select Electron/manual. Otherwise select enhanced
+UI for bundle identifiers starting with com.apple.iWork, exact
+com.spotify.client, or fullUIContext. Other contexts/apps have no primary kind.
+Native manual-support composition reuses uiElementIsAttributeSupported and its
+existing cache/fresh-attribute policy.
+
+VoiceOver preference eligibility at 0x1007019f8 uses exact Excel and Music IDs
+in all contexts; exact Arc and Dia only in fullUIContext; and the Atlas prefix
+in every context. The actual Swift imports were verified through chained-fixup
+bindings: String.hasPrefix differs from _stringCompareWithSmolCheck equality.
+These are source-specific application rules, not generic browser heuristics.
+
+Acquisition appends each selected kind BEFORE incrementing its shared count.
+Only the first holder invokes that native enable operation. A false enable
+result rolls the count back, but does not delete the kind from the assertion's
+list. VoiceOver selection follows the primary kind. This preserves the source's
+possible missing-release report on later teardown of a rolled-back kind; it
+does not invent a successful assertion or disable an already-enabled setting.
+
+Initialization then evaluates changed || windowEligibility (lazy OR). If eligible,
+a selected Electron kind permits initialization again even for a known app;
+other kinds require absence from initialization history. Successful initialization
+marks the app. This can happen even if no kind was selected, in which case no
+assertion is returned. The final assertion factory runs only for nonempty kinds,
+after initialization. Native windowEligibility and initializeApplication helpers
+remain required dependencies, not guessed geometry/browser fallbacks.
+
+AssertionTracker now also preserves initializedApplications as an array. Source
+0x1007030f4 reports before appending; duplicate entries are retained. This history
+outlives active-count entries and retains its app objects until tracker teardown.
+It is not a Set or a flag reset by the last active assertion release.
+
+Tests cover explicit bundle/context tables and prefix boundaries, support-read
+ordering, failed enable rollback with retained kind list, independent VoiceOver
+acquisition, repeated owners, Electron reinitialization, known non-Electron init
+suppression, init failure/retry, initialization with no returned assertion, and
+initialized-app retention. Native Swift build, provider-click self-test and
+expanded pinned audit pass. No native enable/initialization, input or preference
+operation was invoked by these injected tests.
+
+Remaining native boundaries: enhanced-UI enabling, VoiceOver preference enabling,
+window initialization eligibility, application initialization, shared tracker
+creation and complete controller activate/deactivate ownership. Window cache,
+notifications, coordinate-click integration and unlocked live acceptance also
+remain outstanding; the full goal remains active.

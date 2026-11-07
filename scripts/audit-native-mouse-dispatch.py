@@ -14,9 +14,12 @@ expected = 'b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862'
 if hashlib.sha256(data).hexdigest() != expected:
     raise SystemExit('Unrecognized native build; re-audit protocol descriptors before updating pins')
 segments = []
+fixup_offset = None
 offset = 32
 for _ in range(struct.unpack_from('<I', data, 16)[0]):
     command, size = struct.unpack_from('<II', data, offset)
+    if command == 0x80000034:
+        fixup_offset = struct.unpack_from("<I", data, offset + 8)[0]
     if command == 0x19:
         _, address, _, file_offset, file_size = struct.unpack_from('<16sQQQQ', data, offset + 8)
         segments.append((address, address + file_size, file_offset))
@@ -28,8 +31,25 @@ def read(address, size):
             return data[file_offset + address - low:file_offset + address - low + size]
     raise ValueError(hex(address))
 
+def pinned_imported_symbol(address):
+    # This pinned image uses 24-bit ordinals and DYLD_CHAINED_IMPORT records.
+    # Resolve the bind itself: a nearby string literal does not prove equality.
+    assert fixup_offset is not None
+    version, _, imports, symbols, count, import_format, symbol_format = struct.unpack_from('<7I', data, fixup_offset)
+    assert version == 0 and import_format == 1 and symbol_format == 0
+    pointer = struct.unpack('<Q', read(address, 8))[0]
+    assert pointer >> 63 == 1
+    ordinal = pointer & 0xffffff
+    assert ordinal < count
+    record = struct.unpack_from('<I', data, fixup_offset + imports + ordinal * 4)[0]
+    start = fixup_offset + symbols + (record >> 9)
+    return data[start:data.index(b'\0', start)].decode()
+
+assert pinned_imported_symbol(0x101466488) == '_$sSS9hasPrefixySbSSF'
+assert pinned_imported_symbol(0x101467f90) == '_$ss27_stringCompareWithSmolCheck__9expectingSbs11_StringGutsV_ADs01_G16ComparisonResultOtF'
+
 # Source send(to:delay:) stamps each event immediately before postToPid.
-calls = [(0x100072474, 0x1007161c4), (0x10007249c, 0x1007000cc), (0x1000724d8, 0x100789008), (0x100700908, 0x1007036a8), (0x100700ba4, 0x1006f74e4), (0x1007008ec, 0x100705020), (0x100703418, 0x1007b72a0), (0x10070348c, 0x1007046e4), (0x10070375c, 0x1007b72a0), (0x1007037a4, 0x100704510), (0x1007039a8, 0x1007046e4), (0x100700110, 0x1006f9d8c), (0x100700828, 0x10070083c), (0x100700c88, 0x10070083c), (0x1007011e8, 0x1006f74e4), (0x100082124, 0x100086068), (0x100082138, 0x101153edc), (0x100082158, 0x101153a08), (0x100082174, 0x101153a20), (0x1000860b8, 0x100085318), (0x1000857b8, 0x1006fa28c), (0x10072dd2c, 0x1006fa28c), (0x1007b1f94, 0x100705f84), (0x1006fcf44, 0x100258054), (0x10025b830, 0x10025c904), (0x100706230, 0x100706864), (0x1007062cc, 0x1007a7f4c), (0x10070630c, 0x10025ba5c), (0x1007063a4, 0x101153900), (0x100706488, 0x10074ad50), (0x1007064a4, 0x10070694c), (0x1007064e0, 0x10079d310), (0x10070655c, 0x1006f7a90), (0x1007066ac, 0x100706864), (0x100706764, 0x10025b818), (0x1007069e8, 0x1007a7fa4), (0x100706afc, 0x10074ad50), (0x100706b30, 0x1007a7f4c), (0x10025c958, 0x1011539fc), (0x10025c960, 0x101153ee8), (0x10025c9e8, 0x10025c488), (0x10025bb68, 0x10115414c), (0x10025bbac, 0x101153dc8), (0x10025bbe8, 0x10025c904), (0x100705fe4, 0x1006f9d8c), (0x10070601c, 0x1007a7e50), (0x1007060b8, 0x1007a7ea0), (0x100706888, 0x100706df0), (0x1007068e0, 0x100706fa4), (0x100706fe4, 0x1007a7fa4), (0x10070705c, 0x1007072b4), (0x1007072c4, 0x1007a7f4c), (0x100706e84, 0x10078e178), (0x100705c90, 0x100705e5c), (0x100705cc0, 0x100707390), (0x100705e1c, 0x100705f84), (0x1007073a4, 0x1006f7a90), (0x1006fcd7c, 0x100755a4c), (0x1006fd6a0, 0x100755a4c), (0x100741a28, 0x100260b44), (0x100742350, 0x10070fc2c), (0x100742490, 0x10070fc2c), (0x100741b60, 0x100718904), (0x100741bcc, 0x1006fa28c), (0x100072024, 0x100740624), (0x1007407b0, 0x10075044c), (0x1007408bc, 0x100732798), (0x100740ee4, 0x10074b40c), (0x10074b064, 0x10074b4c8), (0x10074b090, 0x10074b6f8), (0x10074b12c, 0x10074b7cc), (0x10074b5c0, 0x100732798), (0x10074b664, 0x100732798), (0x10074fd78, 0x10025b818), (0x1007504a8, 0x10074b88c), (0x1007504d8, 0x10074b1cc), (0x100750538, 0x10074b2f4), (0x10074afe0, 0x10074b40c), (0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0x100715d4c), (0x1007531f4, 0x1007526d0), (0x10075029c, 0x10075246c), (0x1007502b0, 0x10075128c), (0x1007503dc, 0x1007513e4), (0x100751484, 0x100715d4c), (0x1007514ec, 0x1007526d0), (0x10074a204, 0x100750594), (0x100750634, 0x10074ffcc), (0x10075063c, 0x10075027c), (0x10075005c, 0x10026d800), (0x100750070, 0x10026d7fc), (0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
+calls = [(0x100700374, 0x101150b34), (0x1007003b8, 0x101152ff4), (0x1007061e0, 0x101150b34), (0x100701a48, 0x101152ff4), (0x100701a80, 0x101152ff4), (0x100701ab8, 0x101152ff4), (0x100701b04, 0x101152ff4), (0x1007004c4, 0x1007019f8), (0x100700494, 0x100703360), (0x1007004a4, 0x100700d78), (0x1007004b8, 0x1007036a8), (0x10070050c, 0x100703360), (0x100700518, 0x100701b4c), (0x10070052c, 0x1007036a8), (0x1007005f0, 0x100701e04), (0x100700600, 0x1007030f4), (0x100072474, 0x1007161c4), (0x10007249c, 0x1007000cc), (0x1000724d8, 0x100789008), (0x100700908, 0x1007036a8), (0x100700ba4, 0x1006f74e4), (0x1007008ec, 0x100705020), (0x100703418, 0x1007b72a0), (0x10070348c, 0x1007046e4), (0x10070375c, 0x1007b72a0), (0x1007037a4, 0x100704510), (0x1007039a8, 0x1007046e4), (0x100700110, 0x1006f9d8c), (0x100700828, 0x10070083c), (0x100700c88, 0x10070083c), (0x1007011e8, 0x1006f74e4), (0x100082124, 0x100086068), (0x100082138, 0x101153edc), (0x100082158, 0x101153a08), (0x100082174, 0x101153a20), (0x1000860b8, 0x100085318), (0x1000857b8, 0x1006fa28c), (0x10072dd2c, 0x1006fa28c), (0x1007b1f94, 0x100705f84), (0x1006fcf44, 0x100258054), (0x10025b830, 0x10025c904), (0x100706230, 0x100706864), (0x1007062cc, 0x1007a7f4c), (0x10070630c, 0x10025ba5c), (0x1007063a4, 0x101153900), (0x100706488, 0x10074ad50), (0x1007064a4, 0x10070694c), (0x1007064e0, 0x10079d310), (0x10070655c, 0x1006f7a90), (0x1007066ac, 0x100706864), (0x100706764, 0x10025b818), (0x1007069e8, 0x1007a7fa4), (0x100706afc, 0x10074ad50), (0x100706b30, 0x1007a7f4c), (0x10025c958, 0x1011539fc), (0x10025c960, 0x101153ee8), (0x10025c9e8, 0x10025c488), (0x10025bb68, 0x10115414c), (0x10025bbac, 0x101153dc8), (0x10025bbe8, 0x10025c904), (0x100705fe4, 0x1006f9d8c), (0x10070601c, 0x1007a7e50), (0x1007060b8, 0x1007a7ea0), (0x100706888, 0x100706df0), (0x1007068e0, 0x100706fa4), (0x100706fe4, 0x1007a7fa4), (0x10070705c, 0x1007072b4), (0x1007072c4, 0x1007a7f4c), (0x100706e84, 0x10078e178), (0x100705c90, 0x100705e5c), (0x100705cc0, 0x100707390), (0x100705e1c, 0x100705f84), (0x1007073a4, 0x1006f7a90), (0x1006fcd7c, 0x100755a4c), (0x1006fd6a0, 0x100755a4c), (0x100741a28, 0x100260b44), (0x100742350, 0x10070fc2c), (0x100742490, 0x10070fc2c), (0x100741b60, 0x100718904), (0x100741bcc, 0x1006fa28c), (0x100072024, 0x100740624), (0x1007407b0, 0x10075044c), (0x1007408bc, 0x100732798), (0x100740ee4, 0x10074b40c), (0x10074b064, 0x10074b4c8), (0x10074b090, 0x10074b6f8), (0x10074b12c, 0x10074b7cc), (0x10074b5c0, 0x100732798), (0x10074b664, 0x100732798), (0x10074fd78, 0x10025b818), (0x1007504a8, 0x10074b88c), (0x1007504d8, 0x10074b1cc), (0x100750538, 0x10074b2f4), (0x10074afe0, 0x10074b40c), (0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0x100715d4c), (0x1007531f4, 0x1007526d0), (0x10075029c, 0x10075246c), (0x1007502b0, 0x10075128c), (0x1007503dc, 0x1007513e4), (0x100751484, 0x100715d4c), (0x1007514ec, 0x1007526d0), (0x10074a204, 0x100750594), (0x100750634, 0x10074ffcc), (0x10075063c, 0x10075027c), (0x10075005c, 0x10026d800), (0x100750070, 0x10026d7fc), (0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x100754904, 0x1002580d0), (0x100754914, 0x1002580d0),
          (0x1007549c8, 0x10026cc8c),
          (0x100754ab4, 0x100258288), (0x100754b00, 0x100257d88),
@@ -274,7 +294,7 @@ assert read(0x100706eac, 4).hex() == "75000034"
 assert read(0x100706eb0, 4).hex() == "9f02166b"
 assert read(0x100706eb4, 4).hex() == "e1060054"
 
-# No-hit special case compares the exact Atlas bundle identifier.
+# No-hit special case uses the Atlas prefix; imported function verified above.
 assert read(0x1012494f0, 16) == b"com.openai.atlas"
 
 # AppKit window lookup selector used after screen-relative y conversion.
@@ -312,3 +332,10 @@ for address, value in [(0x1012569d0, b"com.apple.VoiceOver"),
                        (0x101256a30, b"com.apple.universalaccess.VoiceOverSettingsDidChange")]:
     assert read(address, len(value)) == value
 assert struct.unpack("<I", read(0x10070518c, 4))[0] == 0x52800002
+
+# Third-kind policy tail-calls String.hasPrefix for Atlas.
+instruction = struct.unpack('<I', read(0x100701b48, 4))[0]
+assert instruction >> 26 == 0b000101
+branch = instruction & 0x3ffffff
+if branch & 0x2000000: branch -= 0x4000000
+assert 0x100701b48 + branch * 4 == 0x101150b34

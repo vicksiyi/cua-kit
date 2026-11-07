@@ -1722,8 +1722,8 @@ bundle lookup. Otherwise a present hit contributes its first child, falling
 back to the original hit only for an empty children list. Child order is kept;
 there is no role filter or alternate-candidate retry in this prefix.
 
-A missing hit reads the app bundle identifier and only the exact source
-com.openai.atlas case requests the AX-window-ID fallback. This remains a
+A missing hit reads the app bundle identifier and the source
+com.openai.atlas prefix requests the AX-window-ID fallback. This remains a
 source-specific case, not a generic browser categorization. The intermediate
 no-hit case deliberately defers actual ID lookup to its later branch so the
 source's swallowed-ID-error behavior can be restored there. WindowServer
@@ -1732,7 +1732,7 @@ remain outstanding. This seed is not a final MouseEventTarget or a production
 coordinate-click fallback.
 
 Tests assert read order, foreign PID short circuit, first-child and empty-child
-behavior, lazy exact bundle matching and PID-error propagation before later
+behavior, lazy bundle-prefix matching and PID-error propagation before later
 reads. No live AX or input is invoked.
 
 Validation: Swift build, provider-click self-test and pinned static audit pass.
@@ -1812,7 +1812,7 @@ UIElementMouseEventTarget:
   and clears the original element. Both retain the original accessibility
   window. A missing native description raises unableToFindWindowID(id);
   absence of a pending fallback raises noWindows.
-- The exact Atlas no-hit exception selects the original AX-window route.
+- The Atlas-prefix no-hit exception selects the original AX-window route.
   Other no-hit applications go through native lookup/system-wide discovery;
   no screenshot/focused-window substitute is invented.
 - AX-backed targets use the original AX window frame or CGRect.zero. Final
@@ -1829,7 +1829,7 @@ the concrete composition preserves that behavior via the existing error sink.
 Injected checks exercise original-hit preservation, child-only discovery,
 ancestor correction/error/depth behavior, foreign fallback clearing, destination
 bounds, original AX-window retention, matching/mismatched native window IDs,
-system-wide replacement, foreign replacement, exact Atlas behavior, missing
+system-wide replacement, foreign replacement, Atlas-prefix behavior, missing
 native windows and error precedence. Tests do not post events, create taps,
 activate apps, or perform live window queries.
 
@@ -1917,3 +1917,25 @@ initialization, AX-notification registration and WindowOrderingObserver owner.
 These restored operations are not yet a replacement for that owner. Pure
 coordinate clicks remain on the older capture-based route pending that
 integration; this section does not claim they have been fixed.
+
+
+## Correction: Atlas branch is a prefix test
+
+The earlier interpretation of the Atlas literal as exact equality was wrong.
+The call at 0x1007061e0 reaches stub 0x101150b34, whose GOT entry 0x101466488
+binds libswiftCore._$sSS9hasPrefixySbSSF (String.hasPrefix). This is distinct
+from stub 0x101152ff4/GOT 0x101467f90, which binds
+_stringCompareWithSmolCheck(_:_:expecting:) for equality comparisons.
+
+MouseEventRoutingSeed now uses hasPrefix, so com.openai.atlas.beta and other
+strings starting with that exact prefix take the AX-window route too. A
+substring later in the bundle identifier, a case-changed prefix, a shorter
+identifier, or a missing identifier do not. Resolver checks cover both the seed
+and the final beta no-hit route without WindowServer lookup.
+
+The static audit now resolves DYLD_CHAINED_IMPORT records from this pinned
+Mach-O's chained-fixups table and verifies the actual imported symbol names,
+rather than relying on the nearby literal and a call instruction alone. Native
+build, provider-click self-test and expanded static audit pass. This correction
+also informs AX enablement's iWork-prefix and exact Spotify/Excel/Arc/Dia/Music
+comparisons; it is not evidence for Multica's earlier click failure.
