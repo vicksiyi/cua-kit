@@ -54,6 +54,15 @@ struct UIElementActionEnvironmentTests {
         try menu.performAction(.press, transaction: nil, environment: environment, reportError: { _ in fatalError() })
         precondition(parentReads > 0)
         precondition(events == ["supported", "actions", "perform:parent:AXPress", "perform:self:AXPress"])
+        environment.visibleChildren = { node, _ in
+            precondition(node.axElement === parentAX)
+            events.append("visible-children")
+            return []
+        }
+        events = []
+        try menu.performAction(.press, transaction: nil, environment: environment, reportError: { _ in fatalError() })
+        precondition(events == ["visible-children", "actions", "perform:parent:AXPress", "perform:self:AXPress"])
+        environment.visibleChildren = nil
         environment.parent = nil
         let ordinary = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [role], attributes: [role: partial("AXButton" as NSString)], transactionAttributes: nil))
         events = []

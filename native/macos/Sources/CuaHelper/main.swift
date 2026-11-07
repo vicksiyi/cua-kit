@@ -79,7 +79,7 @@ final class Target {
             }
             data["properties"] = props
             result.append(Node(element: element, data: data))
-            let children = item.systemChildren(transaction: nil, reportError: { error in
+            let children = item.childrenValue(reportError: { error in
                 Logger(subsystem: "core.cua", category: "Accessibility").error("Children attribute read failed: \(String(describing: error))")
             })
             for child in children { walk(child, id, depth + 1) }
@@ -87,7 +87,7 @@ final class Target {
         // Distinguish denied/unresponsive AX from an actual empty tree.
         let status = readRawAXAttribute(root, kAXRoleAttribute).error
         guard status == .success else { throw UIElementError.axError(status) }
-        walk(UIElement(systemElement: root, transaction: nil), nil, 0)
+        walk(UIElement(element: root), nil, 0)
         return (result, warnings)
     }
     func observe() throws -> [String: Any] {

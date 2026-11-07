@@ -3974,3 +3974,29 @@ through the full menu-action composition. Full helper build and transaction /
 action environment fixtures pass. No live UI or installed native service ran.
 Child-array and scrollbar decoding still require analogous migration; the full
 UIElementProtocol and production subtree integration remain incomplete.
+
+### Provider collection/count/visible-child integration
+
+`UIElementProviderCollection.swift` composes the recovered collection reader
+(0x100724514), count (0x1007b06a0) and visible-child selector (0x1007a3fd0)
+with the concrete AX protocol front doors and `UIElement(element:)`. Each
+successfully decoded child acquires the current transaction at construction.
+The original permissive per-item conversion, duplicate order, cached-empty
+hit, strict uncached outer decode and one-error-report behavior are retained.
+
+The provider action environment now supplies visible children for menu ancestor
+checks. The host observation collector uses provider children and a provider
+root initializer. Its existing node/depth/time budget, scalar reads and snapshot
+validation remain host behavior, not claims of full original subtree fidelity.
+The optional visible-child callback is project composition, not a recovered
+native field. Legacy explicit system adapters remain available.
+
+Validation: full helper build; transaction fixture verifies mixed-type child
+arrays skip invalid members, preserve repeated references and reuse prefetched
+child caches without provider reads; uncached arrays use one provider read;
+error results report once; subset counts avoid AX reads; a positive visible
+count with empty decoded array does not fall back to AXChildren. The full menu
+action fixture also checks the injected visible-child callback and ancestor /
+self execution order. No real UI actions or vendor binary execution occurred.
+Scrollbar decoding, remaining geometry/hit-test paths, complete UIElement
+conformance and source subtree collector are still outstanding.

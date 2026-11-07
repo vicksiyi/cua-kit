@@ -13,6 +13,8 @@ struct UIElementActionEnvironment {
 
     var parent: ((UIElement, (Error) -> Void) -> UIElement?)? = nil
 
+    var visibleChildren: ((UIElement, (Error) -> Void) -> [UIElement])? = nil
+
     static var system: Self {
         Self(read: readSystemAXAttributeValue,
             supported: { Set(decodedAXSupportedAttributes(readRawAXAttributeNames($0))) },
@@ -45,7 +47,10 @@ extension UIElement {
                 return systemParentChain(includingSelf: false, transaction: transaction,
                     read: environment.read, reportError: reportError)
             }, childrenAreEmpty: { parent in
-                parent.systemChildrenPreferringVisible(transaction: transaction,
+                if let children = environment.visibleChildren {
+                    return children(parent, reportError).isEmpty
+                }
+                return parent.systemChildrenPreferringVisible(transaction: transaction,
                     freshSupportedAttributes: { environment.supported(parent.axElement) },
                     readArrayCount: { environment.count(parent.axElement, $0) },
                     read: { environment.read(parent.axElement, $0) }, reportError: reportError).isEmpty

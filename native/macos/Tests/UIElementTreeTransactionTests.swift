@@ -265,7 +265,46 @@ import os
         let ordinary = try decodeAXUIElement("not an element" as NSString, throwingOnFailure: false)
         precondition(ordinary == nil)
     }
+    static func checkProviderCollections() throws {
+        let ax = AXUIElementCreateApplication(12201), child = AXUIElementCreateApplication(12202)
+        let children = UIElementAttribute("AXChildren"), visible = UIElementAttribute("AXVisibleRows")
+        let mock = AXMockProviderFixture.Mock()
+        let provider = AXMockProviderFixture.Provider(ax, mock)
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        func partial(_ value: AnyObject, count: Int? = nil) -> AXPartialValue {
+            AXPartialValue(value: AXEncodedValue(value: value),
+                arraySubsetDescriptor: count.map { AXArraySubsetDescriptor(count: $0, availableRanges: nil) },
+                textTruncationDescriptor: nil)
+        }
+        let owner = UIElementTreeTransaction(element: Element(element: ax),
+            cache: UIElementTransactionCache(attributeTable: [child: [:]], requestedAttributes: [],
+                fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: FrequencyTable())
+        let raw = partial([child, "skip me" as NSString, child] as NSArray)
+        let cached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [children], attributes: [children: raw], transactionAttributes: nil))
+        let uncached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [children], attributes: [:], transactionAttributes: nil))
+        owner.perform { _ in
+            let result = cached.childrenValue(reportError: { _ in preconditionFailure() })
+            precondition(result.count == 2 && result.allSatisfy { CFEqual($0.axElement, child) })
+            precondition(provider.lookups == 0)
+            mock.output = (.success, raw)
+            precondition(uncached.childrenValue(reportError: { _ in preconditionFailure() }).count == 2)
+            precondition(provider.lookups == 1)
+            mock.output = (.failure, raw)
+            var errors = 0
+            precondition(uncached.childrenValue(reportError: { _ in errors += 1 }).isEmpty && errors == 1)
+        }
+        mock.support = [visible, children]
+        let selectedEmpty = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [visible, children],
+            attributes: [visible: partial([] as NSArray, count: 2), children: raw], transactionAttributes: nil))
+        let before = provider.lookups
+        let count = try selectedEmpty.count(for: visible)
+        precondition(count == 2 && provider.lookups == before)
+        precondition(selectedEmpty.childrenPreferringVisible(reportError: { _ in preconditionFailure() }).isEmpty)
+        precondition(provider.lookups == before + 1) // Fresh support only, no fallback to AXChildren.
+    }
     static func main() throws {
+        try checkProviderCollections()
         try checkProviderParent()
         try checkAXConformance()
         checkProviderInitializer()
