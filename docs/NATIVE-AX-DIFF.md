@@ -4244,3 +4244,29 @@ The reader is injected and all data are synthetic; no native hierarchy SPI or
 vendor process runs. The entry is ready for source-compatible callers, but the
 standalone collector and original RefetchableSkyshotAXTree lifecycle are not yet
 equivalent. That integration remains explicit outstanding work.
+
+
+## Capture-path prefetch limit resolved
+
+The condition previously left unidentified at 0x1002347ac is now resolved.
+SkyshotOperation's struct descriptor 0x1012c1710 has field-offset vector word
+2; field 2 is contextType. The continuation loads that byte through metadata
++0x18 at 0x10023425c..0x100234260, preserves it, then compares it to 1.
+UIElementContextType's descriptor 0x1012c9590 declares tags fullUIContext=0,
+eventStreamContext=1, informationalContext=2. The other tested bit comes from
+ApplicationUIElement.isWebShaped at 0x100234784. Thus the selected child count
+is 20 only for eventStreamContext AND a web-shaped app; all other combinations
+select 100. This is hierarchy prefetch sizing, not an AgentLoop step budget.
+
+SkyshotAXPrefetchPolicy.swift extracts that inline expression under a locally
+named helper. It is not an invented original exported API and is not yet called
+by standalone Target.collect. The read-only audit-native-subtree-callers.py pins
+the binary hash, resolves field descriptors, verifies enum ordering and scans
+direct branch call sites. Its JSON output records the evidence and limitations.
+Context-mode checks cover all six combinations. Swift helper build and the
+focused context-mode fixture pass. No native UI or model requests occurred.
+
+The remaining integration must preserve partial-array metadata and the original
+capture/render/refetch lifecycle. Simply installing this prefetch limit in the
+legacy flat DFS could discard children without describing the available subset;
+that is not accepted as equivalent collection behavior.

@@ -424,6 +424,7 @@ test("native context types preserve original observation modes", {
     const output = join(directory, "context");
     await exec("xcrun", ["swiftc",
       resolve("native/macos/Sources/CuaHelper/UIElementContextType.swift"),
+      resolve("native/macos/Sources/CuaHelper/SkyshotAXPrefetchPolicy.swift"),
       resolve("native/macos/Tests/UIElementContextTypeTests.swift"), "-o", output]);
     const result = await exec(output);
     assert.match(result.stdout, /context types preserve menu, action description and cached-capability modes/);

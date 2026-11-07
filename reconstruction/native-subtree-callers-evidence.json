@@ -1,0 +1,39 @@
+{
+  "binarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "operationFields": [
+    "signposter",
+    "context",
+    "contextType",
+    "axTreeRootElement",
+    "overrideScreenshotWindowID",
+    "additionalScreenshotWindowIDs",
+    "screenshotEncoding",
+    "screenshotShouldBeOpaque",
+    "screenshotIncludesWindowShadow",
+    "enableAXDiffing"
+  ],
+  "contextCases": [
+    "fullUIContext",
+    "eventStreamContext",
+    "informationalContext"
+  ],
+  "directSubtreeCalls": [
+    "0x10021f550",
+    "0x100230d74",
+    "0x100234808",
+    "0x100238774",
+    "0x10023a250",
+    "0x10076cc14"
+  ],
+  "condition": {
+    "contextFieldLoad": "0x10023425c..0x100234260",
+    "webShapeGetterCall": "0x100234784",
+    "select": "0x1002347ac..0x1002347c0",
+    "rule": "eventStreamContext && isWebShaped ? 20 : 100"
+  },
+  "limitations": [
+    "Static capture-path evidence; not a universal subtree default.",
+    "Original collector rendering, invalidation and refetch lifecycle remain to be integrated.",
+    "Direct-branch scan does not enumerate indirect calls."
+  ]
+}
