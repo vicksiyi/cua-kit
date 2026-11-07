@@ -657,6 +657,14 @@ assert 0x1012cdb74 + struct.unpack('<i', read(0x1012cdb74, 4))[0] == 0x1007c5b14
 assert struct.unpack('<II', read(0x1012cda34 + 36, 8)) == (7, 12)
 assert read(0x1007c5b14, 32).hex() == '880240f9084940f98802088b1f0100f929008052092100390000805237ffff17'
 
+# Tick initializes any non-running state then always assigns running;
+# nil projected result enters natural completion, not immediate stop.
+assert read(0x1007c6288, 32).hex() == '1f090071a0000054880240f908c540f94041601e00013fd6400080525afdff97'
+assert read(0x1007c62d8, 32).hex() == '1f040071e1000054280740f9e00317aae10316aa00013fd633feff9717000014'
+# Natural finished callback precedes the ended state setter.
+assert read(0x1007c5ca8, 4).hex() == 'e0023fd6'
+assert read(0x1007c5cc8, 12).hex() == '60008052f40313aacffeff97'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

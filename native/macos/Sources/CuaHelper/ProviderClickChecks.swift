@@ -3788,6 +3788,8 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runInterpolatableAnimationFinishChecks()
+    runInterpolatableAnimationTickChecks()
     runNativeAnimationProtocolCompositionChecks()
     runAnimationDriverStopAnimationsChecks()
     runAnimationDriverRemovalChecks()
@@ -8099,7 +8101,12 @@ private func runNativeAnimationProtocolCompositionChecks() {
                     notifyCoordinator: { precondition($0 == .ready && startTime == nil) })
             })
         }
-        func performTick(with update: AnimationUpdate) { ticks.append(update) }
+        func performTick(with update: AnimationUpdate) {
+            performInterpolatableAnimationTick(with: update, state: { state },
+                initialize: { startTime = $0 }, setState: { state = $0 },
+                interpolate: { ticks.append($0); return 1.0 }, applyValue: { _ in },
+                finish: { preconditionFailure() })
+        }
     }
     let concrete = Mock()
     let animation: any Animation = concrete
@@ -8112,4 +8119,48 @@ private func runNativeAnimationProtocolCompositionChecks() {
     stopAnimationDriverAnimations(keys: { [animation.id] }, lookup: { records[$0] },
         remove: { records.removeValue(forKey: $0) })
     precondition(records.isEmpty && concrete.stopped == [true, true] && animation.state == .ended)
+}
+
+
+private func runInterpolatableAnimationTickChecks() {
+    let update = AnimationUpdate(timestamp: 10, duration: 0.1, targetTimestamp: 10.3)
+    for initial in [AnimationState.ready, .retargeted, .running, .ended] {
+        for sample: Double? in [nil, 7] {
+            var current = initial
+            var events: [String] = []
+            performInterpolatableAnimationTick(with: update, state: { current }, initialize: {
+                precondition($0 == 10); events.append("initialize")
+            }, setState: { current = $0; events.append("state") }, interpolate: {
+                precondition(current == .running && $0 == update)
+                events.append("interpolate"); return sample
+            }, applyValue: { precondition($0 == 7); events.append("value") },
+                finish: { events.append("finish") })
+            let expected = (initial == .running ? [] : ["initialize"]) +
+                ["state", "interpolate", sample == nil ? "finish" : "value"]
+            precondition(events == expected)
+        }
+    }
+}
+
+
+private func runInterpolatableAnimationFinishChecks() {
+    var state: AnimationState = .running
+    var target = 7
+    var events: [String] = []
+    var callback: ((InterpolatableAnimationEvent<Int>) -> Void)? = { _ in preconditionFailure() }
+    finishInterpolatableAnimation(applyTarget: {
+        events.append("apply-target")
+        target = 8
+        callback = { event in
+            guard case .finished(8) = event else { preconditionFailure() }
+            precondition(state == .running)
+            events.append("finished")
+        }
+    }, handler: { events.append("handler"); return callback },
+        targetValue: { events.append("target"); return target },
+        setState: { state = $0; events.append("ended") })
+    precondition(events == ["apply-target", "handler", "target", "finished", "ended"] && state == .ended)
+    finishInterpolatableAnimation(applyTarget: {},
+        handler: { nil as ((InterpolatableAnimationEvent<Int>) -> Void)? },
+        targetValue: { preconditionFailure() }, setState: { precondition($0 == .ended) })
 }

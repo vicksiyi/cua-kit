@@ -3509,3 +3509,30 @@ existing tick evidence remains untouched. The fixture remains a fixture,
 not the complete generic InterpolatableAnimation engine.
 
 Swift build, provider protocol/composition checks and pinned static audit pass after reset recovery.
+
+
+## Tick entry and natural completion sequencing (2026-11-08)
+
+performTick 0x1007c61b8 reads state once. Every state except running calls the
+initialization virtual method with update.timestamp, including an explicit tick
+on ended. It then always uses the common setter for running and invokes the
+interpolation kernel with the full AnimationUpdate. A projected value goes through
+the value-change path; nil enters natural completion 0x1007c5bbc. No ended guard,
+frame-count cap or invented interpolation kernel is added by the recovered entry.
+
+Natural completion first applies projected target through the value-change path
+(closure 0x1007c78b4 -> 0x1007c6374, which reads $targetValue). It then rereads the
+handler; if present, reads current targetValue and emits finished. Only afterward
+is state set to ended. This differs from immediate stop, which sets ended before
+finished. Reentrant value/handler changes therefore require fresh handler/target
+reads. No-handler completion skips the final target read but still assigns ended.
+
+The Animation module now restores both injected bodies. Checks cover all four
+entry states with value/nil results, exact update forwarding, handler replacement,
+late target read and callback-before-ended. The native Animation protocol fixture
+now calls the restored tick entry instead of merely recording a tick. It still
+uses a fixture interpolation result: SIMD conversion, physics and the concrete
+InterpolatableAnimation owner remain outstanding. Static pins cover tick branches
+and natural-completion state order; production cursor/input is not enabled yet.
+
+Swift build, provider flow/composition checks and pinned static audit pass for tick/finish recovery.
