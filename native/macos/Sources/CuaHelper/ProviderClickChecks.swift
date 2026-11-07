@@ -3787,6 +3787,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runCursorWindowVisibilityChecks()
     runCursorCorrespondingWindowChecks()
     await runSoftwareCursorViewChecks()
     try await runVirtualCursorContractChecks()
@@ -7853,4 +7854,31 @@ private func runCursorCorrespondingWindowChecks() {
     precondition(cursorCorrespondingWindowIsPresent(0, windowNumbers: { [0] }))
     // Source compares NSNumber.unsignedIntValue, not signed NSNumber identity.
     precondition(cursorCorrespondingWindowIsPresent(UInt32.max, windowNumbers: { [-1] }))
+}
+
+
+private func runCursorWindowVisibilityChecks() {
+    func check(wants: Bool, present: Bool = true, id: UInt32? = 7,
+        reason0: Bool = false, reason1: Bool = false, visible: Bool = true,
+        level: Int32? = 3, expected: [String]) {
+        var events: [String] = []
+        updateCursorWindowVisibility(wantsToBeVisible: { events.append("wants"); return wants },
+            correspondingWindowIsPresent: { events.append("present"); return present },
+            correspondingWindowID: { events.append("id"); return id },
+            overlayLevelReason0: { events.append("reason0"); return reason0 },
+            overlayLevelReason1: { events.append("reason1"); return reason1 },
+            reset: { events.append("reset") }, isVisible: { events.append("visible"); return visible },
+            orderOut: { events.append("out") }, orderFront: { events.append("front") },
+            windowLevel: { precondition($0 == id); events.append("level"); return level },
+            setLevel: { precondition($0 == level); events.append("set") },
+            orderAbove: { precondition($0 == id); events.append("above") })
+        precondition(events == expected)
+    }
+    check(wants: false, expected: ["wants", "reset", "visible", "out"])
+    check(wants: true, present: false, visible: false, expected: ["wants", "present", "reset", "visible"])
+    check(wants: true, id: nil, expected: ["wants", "present", "id", "front"])
+    check(wants: true, reason0: true, expected: ["wants", "present", "id", "reason0", "front"])
+    check(wants: true, reason1: true, expected: ["wants", "present", "id", "reason0", "reason1", "front"])
+    check(wants: true, expected: ["wants", "present", "id", "reason0", "reason1", "level", "set", "above"])
+    check(wants: true, level: nil, expected: ["wants", "present", "id", "reason0", "reason1", "level", "above"])
 }

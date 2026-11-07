@@ -592,6 +592,12 @@ assert read(0x10009b064, 16).hex() == '09114039690000363500805240000014'
 assert read(0x10009b08c, 4).hex() == '22008052'
 assert read(0x10009b13c, 8).hex() == '1f03196b81fdff54'
 
+# Cursor visibility: wants gate precedes corresponding-window query;
+# either overlay reason short-circuits to orderFront, otherwise order above ID.
+assert read(0x10009b1c8, 16).hex() == '1f050071210200549bffff9760030036'
+assert read(0x10009b294, 16).hex() == '2a014039aafa07372905403969fa0737'
+assert read(0x10009b2fc, 8).hex() == '22008052e30313aa'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

@@ -3275,3 +3275,27 @@ level-reason behavior continue to require recovery. No on-screen cursor or UI
 input is produced by these component checks.
 
 Swift build, provider checks and pinned static audit pass for this helper.
+
+
+## Cursor window visibility orchestration recovery (2026-11-08)
+
+Helper 0x10009b1a8 first reads wantsToBeVisible, then (only when true) queries
+corresponding-window presence. Either false path resets motion/visibility state
+through 0x10009b30c before checking isVisible, then invokes superclass orderOut
+only if currently visible. It does not query target IDs or overlay reasons there.
+When allowed, it rereads correspondingWindowID: nil invokes orderFront(nil).
+For a present ID, either of two stored overlay-level reason bytes also invokes
+orderFront, with short-circuit evaluation. Otherwise it looks up the CGWindow,
+sets its own level from the target's signed Int32 level if found, and always
+orders above that ID (orderingMode=1), even if lookup yields no window.
+The level field is verified by CGWindow.level getter 0x10025bcb4 (offset 0x28).
+
+The injected Swift orchestration now preserves these exact branch/read/action
+orders, without hardcoded floating level or retry. Tests cover both hide paths,
+already-hidden state, nil target ID, each overlay reason with short-circuit,
+known level and missing CGWindow level. Static audit pins wants/eligibility,
+overlay branches and above-order arguments. The reset and superclass boundaries
+are dependencies because concrete native window/animation ownership is not yet
+restored. The helper has no production caller yet and does not display a window.
+
+Swift build, provider checks and static audit pass after visibility orchestration recovery.
