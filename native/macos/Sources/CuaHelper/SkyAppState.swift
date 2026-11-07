@@ -8,6 +8,14 @@ import ApplicationServices
 final class SkyAppState {
     private let clipboard = ClipboardStore()
     private var targets: [String: Target] = [:]
+    // Retire explicitly even when an in-flight observation still retains the
+    // old Target across await. ARC destruction alone may otherwise be delayed.
+    private func retireTarget(at path: String) {
+        guard let target = targets[path] else { return }
+        target.deactivateAccessibility()
+        target.invalidateInputState()
+        targets.removeValue(forKey: path)
+    }
     func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) async throws {
         let evaluated = try await policy.evaluate(reference)
         let identity = evaluated["target"] as! [String: Any]
@@ -58,7 +66,7 @@ final class SkyAppState {
             throw SkyRPCFailure(code: -10006, message: identity["bundleIdentifier"] as! String)
         }
         let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
-        targets.removeValue(forKey: path)?.invalidateInputState()
+        retireTarget(at: path)
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before launch")
         }
@@ -72,7 +80,8 @@ final class SkyAppState {
         return ["app": ["bundleIdentifier": identifier, "pid": pid]]
     }
     func get(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
-        targets = targets.filter { !$0.value.app.isTerminated }
+        let terminatedPaths = targets.compactMap { $0.value.app.isTerminated ? $0.key : nil }
+        for path in terminatedPaths { retireTarget(at: path) }
         let evaluated = try await policy.evaluate(reference)
         let identity = evaluated["target"] as! [String: Any]
         let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
@@ -108,7 +117,10 @@ final class SkyAppState {
         let target: Target
         if let cached = targets[path], cached.app.processIdentifier == app.processIdentifier, cached.launch == app.launchDate {
             target = cached
-        } else { target = Target(app); targets[path] = target }
+        } else {
+            retireTarget(at: path)
+            target = Target(app); targets[path] = target
+        }
         // Sky/MCP state reads enter the same controller activation as private
         // bind. Acquire/reuse AX enablement before capture and later input.
         target.activateAccessibility()

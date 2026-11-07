@@ -2937,3 +2937,19 @@ The specific Sky/MCP live application path still requires unlocked end-to-end
 acceptance. This omission could affect native interaction preparation but is not
 proof that it caused every previously observed click failure. Production window
 observation ownership remains to be integrated separately.
+
+
+## Sky cached Target retirement after AX activation parity
+
+Now that Sky state reads acquire AX enablement, cache retirement explicitly
+calls deactivateAccessibility and invalidates input state before removing a
+Target. This applies to explicit application start, terminated cached apps and
+replacement after PID/launch identity changes. It preserves the existing policy,
+launch and deadline ordering; it does not add an input retry.
+
+Explicit deactivation matters when an in-flight observation still holds the old
+Target across await: removing the cache reference alone would postpone ARC and
+assertion release. Existing Target lifecycle checks verify deactivation releases
+the assertion while the Target itself remains alive and is idempotent. The
+retirement helper is a Sky adapter lifecycle correction; production window
+observation ownership and live Sky application acceptance remain outstanding.
