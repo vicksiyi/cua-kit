@@ -2948,3 +2948,26 @@ existing library suffixes, empty names and unchanged Unicode/NUL/path strings.
 Swift build and the path fixture pass. The surrounding filesystem inventory,
 request-strategy decoding, dlopen and header rediscovery still need restoration
 before providing the production BatchSymbolSources.filesystem dependency.
+
+### SoftLink filesystem request strategy decoding
+
+Recovered request preparation at `0x100249ff8..<0x10024a330` into
+filesystemImageRequests. `0x10024a01c` shifts each encoded request right 58 and
+skips it when nonzero. `0x10024a024` then shifts right 56 to obtain the strategy;
+`0x10024a124` masks identity to 56 bits. Requests are grouped by strategy and
+masked identity, with an ordered array of original request positions retained
+for each group (`0x10024a270` appends the current outer index).
+
+Swift enum descriptor `0x1012c19e0` points to field descriptor `0x10131b6c8`,
+whose four no-payload cases are framework, privateFramework, library, path.
+These correspond to accepted strategy bytes 0, 1, 2, 3. Exhaustive fixtures
+check all 256 high-byte values, duplicate indices, invalid entries between valid
+requests, and identical low hashes under separate strategies.
+
+This explains why high-byte masking alone is insufficient for filesystem
+fallback. Loaded-image discovery accepts a matching low hash regardless of the
+high byte, whereas filesystem loading ignores unrecognized strategy bytes.
+The currently recovered preparation is not yet wired as a complete filesystem
+loader. Main-function disassembly also shows Foundation directory enumeration
+and several closure helpers; candidate collection and actual loading remain
+under analysis, not replaced with a guessed global filesystem search.
