@@ -240,6 +240,12 @@
     "writes": "staticText role, literal roleDescription link, transformedString, value description, nil URL, empty subtree",
     "preserves": "title, description, focusability and other unmodified fields; context changes survive empty result"
   },
+  "siblingTextCandidate": {
+    "entry": "0x10065cb8c",
+    "staticText": "present stringValue becomes one plain span verbatim; no title fallback or old transformedString reuse",
+    "link": "only informationalContext; nil URL returns empty plain span, otherwise Markdown-link interpolation using stringValue/title/description",
+    "limitation": "candidate helper implemented; complete sibling grouping, joining and replacement rule still pending"
+  },
   "repetitiveText": {
     "entry": "0x100659d8c",
     "helper": "0x10065c5ac",

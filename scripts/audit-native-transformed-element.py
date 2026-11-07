@@ -404,6 +404,26 @@ for site, target in [
     branch(site, target)
 compare_zero_branch(0x10065a948, 8, 0x10065afe8)
 
+# Sibling text candidate helper: static text stringValue, or link Markdown
+# restricted to informational context (tag 2). No candidate child mutation.
+for address, instruction in [
+    (0x10065cd2c, 0xf9401b69), # role getter
+    (0x10065cd70, 0xf9400c09), # staticText role
+    (0x10065cdc4, 0xf9406b68), # stringValue getter
+    (0x10065cec4, 0xf9401329), # link role
+    (0x10065cf24, 0xf9401828), # context type getter
+    (0x10065cf48, 0x71000a9f), # informationalContext tag 2
+    (0x10065cf54, 0xf9403f69), # URL getter
+    (0x10065d130, 0xf9406b68), # stringValue
+    (0x10065d14c, 0xf9402368), # title
+    (0x10065d164, 0xf9402768), # description
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+branch(0x10065cda4, 0x101150714)
+branch(0x10065cef0, 0x101150714)
+branch(0x10065d1b8, 0x10063a574) # Markdown label helper, unlike tag 7
+compare_zero_branch(0x10065cdd8, 1, 0x10065cec4)
+
 # Full title mutation paths: setter before source removal; relocation appends
 # (or invokes rebuild) before sorting target indices and removing siblings.
 for site, target in [
@@ -446,6 +466,10 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
         text="empty literal + URL interpolation with own role/context + empty literal; no node-title link label",
         writes="staticText role, literal roleDescription link, transformedString, value description, nil URL, empty subtree",
         preserves="title, description, focusability and other unmodified fields; context changes survive empty result"),
+    siblingTextCandidate=dict(entry="0x10065cb8c",
+        staticText="present stringValue becomes one plain span verbatim; no title fallback or old transformedString reuse",
+        link="only informationalContext; nil URL returns empty plain span, otherwise Markdown-link interpolation using stringValue/title/description",
+        limitation="candidate helper implemented; complete sibling grouping, joining and replacement rule still pending"),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
         guard="not focusable/selectable and no canBeUserInteractive descendant",
         matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",

@@ -1390,6 +1390,45 @@ private enum ProviderClickChecks {
         default: unexpectedFailure("empty rendered URL must not erase the original link subtree")
         }
 
+        var siblingTextNode = associationNode(associationA, [], title: "Not a fallback")
+        siblingTextNode.role = .staticText
+        siblingTextNode.isFocusable = true
+        siblingTextNode.isSelectable = true
+        siblingTextNode.value = "  plain\ntext  "
+        siblingTextNode.transformedString = TransformedUIString("Ignored previous transform")
+        for type in UIElementContextType.allCases {
+            var context = ownerContext(type)
+            let candidate = siblingMergeText(element: siblingTextNode, context: &context)
+            checkEqual(candidate?.text.description, "  plain\ntext  ")
+            checkEqual(candidate?.role, .staticText)
+        }
+        siblingTextNode.value = ""
+        checkEqual(siblingMergeText(element: siblingTextNode, context: &associationContext)?.text.description, "")
+        siblingTextNode.value = nil
+        checkTrue(siblingMergeText(element: siblingTextNode, context: &associationContext) == nil)
+        siblingTextNode.value = "false"
+        siblingTextNode.element = boolChild.element
+        checkTrue(siblingMergeText(element: siblingTextNode, context: &associationContext) == nil)
+        var siblingLink = linkNode
+        siblingLink.value = "[Label]"
+        for type in [UIElementContextType.fullUIContext, .eventStreamContext] {
+            var context = ownerContext(type)
+            checkTrue(siblingMergeText(element: siblingLink, context: &context) == nil)
+        }
+        var informativeContext = ownerContext(.informationalContext)
+        informativeContext.urlShortener.configuration = .init(individualLimit: nil, totalLimit: nil,
+            includeQuery: true, includeFragment: true, baseHost: nil)
+        let informativeLink = siblingMergeText(element: siblingLink, context: &informativeContext)
+        checkEqual(informativeLink?.role, .link)
+        checkTrue(informativeLink?.text.description.hasPrefix("[\\[Label\\]](") == true)
+        checkTrue(informativeLink?.text.description.contains("query=one") == true)
+        siblingLink.url = nil
+        let missingLink = siblingMergeText(element: siblingLink, context: &informativeContext)
+        checkEqual(missingLink?.text.description, "")
+        checkEqual(missingLink?.role, .link)
+        siblingLink.role = .button
+        checkTrue(siblingMergeText(element: siblingLink, context: &informativeContext) == nil)
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

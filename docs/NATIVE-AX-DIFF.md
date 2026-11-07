@@ -5571,3 +5571,34 @@ URL-only output, structured URL refresh and data-URL empty-output rejection.
 This is the eighth extracted common rule body. The final common sibling-text
 merge rule, Mac-specific strategies, full dispatcher and production collection
 integration remain; these tests do not prove live app operation acceptance.
+
+### Sibling merge text classification (2026-11-07)
+
+Recovered helper 0x10065cb8c as `siblingMergeText`, returning an optional tuple
+of structured text and the captured role. StaticText with a non-nil
+stringValue produces exactly one plain span, preserving empty strings and
+whitespace verbatim. It does not read old transformedString, trim text, fall
+back to title/description, or test interaction flags. StaticText with nil
+stringValue is not a candidate, including Boolean-backed static text whose
+stringValue is nil.
+
+The other accepted role is link, only in informationalContext (tag 2).
+A missing URL returns a present tuple containing one empty plain span; it
+is not a rejected candidate. A present URL calls the separate Markdown-link
+interpolation helper with stringValue, title and description, and the inout
+context. This differs from tag 7's URL-only interpolation and must not be
+replaced with it. Other roles/contexts return nil.
+
+Evidence: role/staticText/stringValue reads at 0x10065cd2c/65cd70/65cdc4;
+link comparison 0x10065cef0, context.type at 0x10065cf24 and tag 2 comparison
+at 0x10065cf48; URL getter at 0x10065cf54. Nil URL constructs one empty string
+span at 0x10065d028..65d03c and returns Some. Non-nil URL reads text fields at
+0x10065d130/65d14c/65d164 and calls appendMarkdownLink at 0x10065d1b8.
+The binary audit pins these reads, comparisons and helper invocation.
+
+Swift build and own mock checks pass for all three contexts, empty/nil text,
+Boolean-backed text, ignored prior transformedString, informational link label
+escaping, query retention, missing URL and rejected roles. The helper is
+complete, but this does not raise the completed common rule count above 8/9:
+contiguous candidate grouping, joining and final sibling replacement remain
+under analysis. Production integration/live app acceptance also remain open.
