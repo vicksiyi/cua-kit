@@ -94,6 +94,13 @@ for address, expected_word in {
  assert struct.unpack('<I',read(address,4))[0]==expected_word, hex(address)
 print(json.dumps(dict(binarySHA256=expected,protocol=dict(name='AXUIElementProtocol',
  descriptor='0x1012cc520',classBound=True,requirements=entries),
+ arraySubsetSystem=dict(entry='0x1006f63ec',endExclusive='0x1006f6648',
+ machineCodeSHA256=hashlib.sha256(read(0x1006f63ec,0x1006f6648-0x1006f63ec)).hexdigest(),
+ knownCount='skip count query; forward signed count unchanged',
+ unknownCount='arrayCount(for:) at 0x1006f63f8; non-success immediately returns error/nil',
+ copy='AXUIElementCopyAttributeValues at 0x1006f64c8; status and returned array independent',
+ descriptor='count remains total; availableRanges is [index..<index+actual] only if actual < total, otherwise nil',
+ checkedRange='checked addition at 0x1006f65e0, overflow/invalid bounds trap; no clamping'),
  identityGetters=dict(
  pid=dict(entry='0x1006f9d8c',mockSlot='0x78',systemCall='AXUIElementGetPid',errorRegister='x21',throwCall='0x1006f9ed0'),
  actualPID=dict(entry='0x1006f9f30',mockSlot='0x80',systemCall='AccessibilitySPI.getActualPID',errorRegister='x21',throwCall='0x1006fa074'),

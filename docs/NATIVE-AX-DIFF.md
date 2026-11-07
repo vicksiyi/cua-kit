@@ -3747,3 +3747,28 @@ does the Swift package build. No app/system UI operation was performed.
 Outstanding system work includes native array-subset result construction,
 parameterized supported-name enumeration, exact hit-test root construction,
 provider-aware thread identity and remaining equality/production integration.
+
+### Native array-subset system result construction
+
+The system branch of arrayValue(for:index:maxValues:countIfKnown:) was traced
+through 0x1006f63ec..<0x1006f6648. A present countIfKnown skips arrayCount entirely.
+Otherwise arrayCount is called at 0x1006f63f8; every non-success status stops with
+that status and nil before any array copy. Supplied indices, maximum values and
+known counts are not clamped or normalized.
+
+After AXUIElementCopyAttributeValues, the native branch tests the output pointer,
+not the status. An array returned with an error remains an AXPartialValue, carrying
+that same error separately. It always carries an AXArraySubsetDescriptor whose
+count is the supplied/queried total. Only when CFArrayGetCount(output) < total
+are availableRanges set to [index..<index+actual]; otherwise the ranges are nil.
+The comparison does not use index+actual, and count is not replaced by actual.
+Empty partial results retain an empty half-open range. Arithmetic is checked as
+in the original overflow/bounds traps. Text truncation remains absent.
+
+AXArraySubsetReading.swift implements this flow with injected count and copy
+boundaries. It deliberately does not pretend the still-pending provider-aware
+thread dispatch is complete. Tests cover lazy count queries, three failing count
+statuses, output plus copy failure, nil output with success/failure, known negative
+and zero counts, duplicate/unchanged ranges and raw CFArray identity. The first
+fixture compile exposed missing dependency declarations, which were added; the
+focused test and full Swift build now pass. No real AX read was executed.

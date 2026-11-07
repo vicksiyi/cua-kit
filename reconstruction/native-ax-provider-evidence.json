@@ -140,6 +140,16 @@
       }
     ]
   },
+  "arraySubsetSystem": {
+    "entry": "0x1006f63ec",
+    "endExclusive": "0x1006f6648",
+    "machineCodeSHA256": "49ddf12914256b0a411e15bd47e26ccfa75f7bc0143483b2dba1428c0cdf1112",
+    "knownCount": "skip count query; forward signed count unchanged",
+    "unknownCount": "arrayCount(for:) at 0x1006f63f8; non-success immediately returns error/nil",
+    "copy": "AXUIElementCopyAttributeValues at 0x1006f64c8; status and returned array independent",
+    "descriptor": "count remains total; availableRanges is [index..<index+actual] only if actual < total, otherwise nil",
+    "checkedRange": "checked addition at 0x1006f65e0, overflow/invalid bounds trap; no clamping"
+  },
   "identityGetters": {
     "pid": {
       "entry": "0x1006f9d8c",
