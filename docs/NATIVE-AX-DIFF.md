@@ -5990,3 +5990,24 @@ restores these input predicates using AppKit constants. It does not yet assemble
 the ordered style set or emit format transitions. Tests cover positive/negative,
 zero, fractional NSNumber and wrong-type values. Build and mock self-test pass;
 static audit pins the predicates. Real runtime acceptance remains outstanding.
+
+### Font style recovery (2026-11-07)
+
+Font parsing in `0x100770530` casts AXFont to a String/Any dictionary. It requires
+String fontName and Double fontSize to construct a descriptor; optional fontFamily
+is copied as Any, without a String validation. `initWithFontAttributes:` and
+`fontWithDescriptor:size:` selectors are at `0x101543058`/`0x101543048`.
+`0x10077252c` calls CTFontGetSymbolicTraits; bits 1/0 supply bold/italic. A separate
+Bool cast of `AXFontBold` adds bold even if descriptor resolution is unavailable.
+False does not remove bold inferred from the font. There is no corresponding
+AXFontItalic override in this recovered branch. These are native font traits,
+not substring matching on font names.
+
+`AttributedTextFontStyles.swift` implements this branch with AppKit/CoreText
+as its default resolver and an injectable resolver for edge-case checks. Validation
+covers exact descriptor/size forwarding, untyped family forwarding, failed
+resolution, invalid size/name containers, additive bold and a real system bold
+font. Swift build and provider self-test passed. Static audit pins selectors,
+trait branches and the inline AXFontBold key. This is a formatter input component;
+style ordering/transitions and production rich-text integration remain incomplete.
+No vendor service, model call, browser or external application action was executed.

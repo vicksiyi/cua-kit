@@ -622,7 +622,25 @@ numeric_style_words = {0x100770854: 0xf100041f, 0x100770858: 0x5400170b,
 for address, word in numeric_style_words.items():
     assert struct.unpack('<I', read(address, 4))[0] == word
 
-print(json.dumps(dict(attributedNumericStyles=dict(
+# Font descriptor construction and CoreText symbolic trait tests.
+for address, expected_selector in [(0x101543058, "initWithFontAttributes:"),
+                                   (0x101543048, "fontWithDescriptor:size:")]:
+    pointer = (struct.unpack('<Q', read(address, 8))[0] & 0xfffffffff) + 0x100000000
+    assert cstring(pointer) == expected_selector
+font_style_words = {0x100772530: 0x36080160, 0x10077255c: 0x36000100,
+    0x100772628: 0x34ff0ca0, 0x100772630: 0x36070c68,
+    0x100772594: 0xd28b0820, 0x100772598: 0xf2ade8c0, 0x10077259c: 0xf2ce8dc0,
+    0x1007725a0: 0xf2ede840, 0x1007725a4: 0xd28c8d81, 0x1007725a8: 0xf2fd4001}
+for address, word in font_style_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+font_trait_call = branch(0x10077252c, 0x101153f6c)
+assert struct.pack('<QQ', 0x6f42746e6f465841, 0xea0000000000646c)[:10].decode() == 'AXFontBold'
+
+print(json.dumps(dict(attributedFontStyles=dict(
+    instructions={hex(k): hex(v) for k, v in font_style_words.items()},
+    coreTextCall=font_trait_call,
+    behavior="AXFont String/Any dictionary; String name plus Double size; optional uncast family; NSFontDescriptor/NSFont; CTFont traits bold bit1 italic bit0; additive Bool AXFontBold",
+    limitation="font predicates only, not full formatter transitions or collector integration"), attributedNumericStyles=dict(
     instructions={hex(k): hex(v) for k, v in numeric_style_words.items()},
     behavior="NSNumber casts; underline integerValue > 0; strikethrough boolValue; superscript integerValue sign",
     limitation="only numeric attribute extraction, not the full style set or formatter"), attributedRunTraversal=dict(

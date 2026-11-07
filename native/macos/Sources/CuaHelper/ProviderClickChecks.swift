@@ -2217,6 +2217,42 @@ private enum ProviderClickChecks {
         checkEqual(AttributedTextNumericStyles(attributes: [underlineKey: "1",
             strikeKey: "true" as NSString, baselineKey: NSNull()]), emptyStyles)
 
+        let fontNameKey = NSAccessibility.FontAttributeKey.fontName.rawValue
+        let fontSizeKey = NSAccessibility.FontAttributeKey.fontSize.rawValue
+        let fontFamilyKey = NSAccessibility.FontAttributeKey.fontFamily.rawValue
+        var resolvedFonts = 0
+        let fontStyle = AttributedTextFontStyles(attributes: [.accessibilityFont: [
+            fontNameKey: "Fixture", fontSizeKey: 13.5, fontFamilyKey: 42, "AXFontBold": false
+        ]]) { descriptor, size in
+            resolvedFonts += 1
+            checkEqual(descriptor[.name] as? String, "Fixture")
+            checkEqual(descriptor[.family] as? Int, 42)
+            checkEqual(size, 13.5)
+            return [.traitBold, .traitItalic]
+        }
+        checkEqual(resolvedFonts, 1)
+        checkTrue(fontStyle.bold && fontStyle.italic)
+        let explicitBold = AttributedTextFontStyles(attributes: [.accessibilityFont: [
+            fontNameKey: "Fixture", fontSizeKey: "13", "AXFontBold": true
+        ]]) { _, _ in unexpectedFailure("invalid size must not resolve font") }
+        checkTrue(explicitBold.bold)
+        checkFalse(explicitBold.italic)
+        let failedFont = AttributedTextFontStyles(attributes: [.accessibilityFont: [
+            fontNameKey: "Fixture", fontSizeKey: 12.0, "AXFontBold": true
+        ]]) { _, _ in nil }
+        checkTrue(failedFont.bold)
+        checkFalse(failedFont.italic)
+        let noFont = AttributedTextFontStyles(attributes: [.accessibilityFont: "invalid"])
+        checkFalse(noFont.bold || noFont.italic)
+        let invalidBold = AttributedTextFontStyles(attributes: [.accessibilityFont: ["AXFontBold": "true"]])
+        checkFalse(invalidBold.bold || invalidBold.italic)
+        // Exercise the actual AppKit/CoreText resolver with a system-provided font.
+        let systemBold = NSFont.boldSystemFont(ofSize: 13)
+        let realFont = AttributedTextFontStyles(attributes: [.accessibilityFont: [
+            fontNameKey: systemBold.fontName, fontSizeKey: 13.0
+        ]])
+        checkTrue(realFont.bold)
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

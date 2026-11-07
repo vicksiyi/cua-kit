@@ -1,4 +1,25 @@
 {
+  "attributedFontStyles": {
+    "instructions": {
+      "0x100772530": "0x36080160",
+      "0x10077255c": "0x36000100",
+      "0x100772628": "0x34ff0ca0",
+      "0x100772630": "0x36070c68",
+      "0x100772594": "0xd28b0820",
+      "0x100772598": "0xf2ade8c0",
+      "0x10077259c": "0xf2ce8dc0",
+      "0x1007725a0": "0xf2ede840",
+      "0x1007725a4": "0xd28c8d81",
+      "0x1007725a8": "0xf2fd4001"
+    },
+    "coreTextCall": {
+      "instruction": "0x10077252c",
+      "target": "0x101153f6c",
+      "link": true
+    },
+    "behavior": "AXFont String/Any dictionary; String name plus Double size; optional uncast family; NSFontDescriptor/NSFont; CTFont traits bold bit1 italic bit0; additive Bool AXFontBold",
+    "limitation": "font predicates only, not full formatter transitions or collector integration"
+  },
   "attributedNumericStyles": {
     "instructions": {
       "0x100770854": "0xf100041f",
