@@ -3679,6 +3679,8 @@ func runProviderClickChecks() async throws {
     try runSyntheticFocusStateStoreChecks()
     try runSyntheticFocusActivationFilterChecks()
     runSyntheticFocusTargetMonitorChecks()
+    runSyntheticFocusExternalClickChecks()
+    try runSyntheticFocusMonitoringSessionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4212,4 +4214,62 @@ private func runSyntheticFocusTargetMonitorChecks() {
     monitor = nil
     checkTrue(lifetime == nil)
     checkEqual(trace, ["create", "enable", "click-start", "click-stop", "disable", "invalidate"])
+}
+
+
+private func runSyntheticFocusExternalClickChecks() {
+    let event = CGEvent(source: nil)!
+    var reads = 0, activations: [Int32] = []
+    func observe(source: Int64, destination: Int64, owner: Int32?) {
+        event.setIntegerValueField(.eventSourceUnixProcessID, value: source)
+        event.setIntegerValueField(.eventTargetUnixProcessID, value: destination)
+        let result = observeSyntheticFocusExternalClick(event, helperPID: 99, targetPID: 88,
+            eventWindowID: { reads += 1; return 123 },
+            windowOwnerPID: { checkEqual($0, 123); return owner },
+            activateApplication: { activations.append($0) })
+        checkTrue(result === event)
+    }
+    observe(source: 99, destination: 77, owner: 88)
+    observe(source: 77, destination: 88, owner: 88)
+    checkEqual(reads, 0)
+    observe(source: 77, destination: 77, owner: nil)
+    observe(source: 77, destination: 77, owner: 66)
+    checkTrue(activations.isEmpty)
+    observe(source: 77, destination: 77, owner: 88)
+    checkEqual(activations, [88]); checkEqual(reads, 3)
+}
+
+
+private func runSyntheticFocusMonitoringSessionChecks() throws {
+    var locations: [String] = [], invalidations = 0
+    let driver = EventTap.Driver(create: { location, _, options, mask, _, _ in
+        switch location {
+        case .process(let pid): checkEqual(pid, 88); locations.append("target")
+        case .session(let tap):
+            checkEqual(tap.rawValue, 2); checkEqual(options.rawValue, 1)
+            checkEqual(mask, 2); locations.append("click")
+        }
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
+    var session: SyntheticFocusMonitoringSession? = SyntheticFocusMonitoringSession(pid: 88,
+        initialState: SyntheticApplicationFocusState(applicationIsActive: false, applicationHasKeyFocus: false),
+        tapDriver: driver, windowOwnerPID: { _ in unexpectedFailure() },
+        activateApplication: { _ in unexpectedFailure() })
+    weak var lifetime = session
+    checkEqual(locations, ["target"])
+    var sent = 0
+    try session!.enforceActiveState(for: nil, send: { _ in sent += 1 })
+    checkEqual(sent, 1)
+    try session!.enforceActiveState(for: nil, send: { _ in unexpectedFailure() })
+    checkEqual(locations, ["target", "click"])
+    session!.target.observeFrontmostPID(88, targetPID: 88)
+    checkEqual(invalidations, 1)
+    session!.target.observeFrontmostPID(77, targetPID: 88)
+    checkEqual(locations, ["target", "click", "click"])
+    try session!.deactivateFocusEnforcer(send: { _ in sent += 1 })
+    checkEqual(sent, 2); checkEqual(invalidations, 2)
+    checkTrue(!session!.target.state.snapshot.applicationBelievesItIsActive)
+    session = nil
+    checkTrue(lifetime == nil); checkEqual(invalidations, 3)
 }

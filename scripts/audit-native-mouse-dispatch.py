@@ -83,6 +83,12 @@ for site, opcode in [(0x10074265c, 0x52800220),  # list options 0x11
                      (0x1007426bc, 0x6b0a019f),  # owner PID equality
                      (0x1007426cc, 0x6b0d019f)]: # matching layer
     assert struct.unpack('<I', read(site, 4))[0] == opcode, hex(site)
+# Click monitor window field initializer and static event list.
+assert struct.unpack("<I", read(0x100731148, 4))[0] == 0x52800669
+# Packed placement/options.
+assert struct.unpack('<Q', read(0x101572280, 8))[0] == 1
+assert struct.unpack('<I', read(0x101572290, 4))[0] == 1
+assert struct.unpack('<II', read(0x1011921b0, 8)) == (0, 1)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

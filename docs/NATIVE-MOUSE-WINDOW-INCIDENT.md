@@ -509,3 +509,28 @@ integration. This component alone does not repair production clicks.
 The activation-filter test initially assumed CGEvent field 83 retained 65537;
 macOS truncated that subtype. Removed that invalid test construction. The
 corrected filter/store tests and Swift build passed before monitor composition.
+
+
+## Click-monitor dependencies and session ownership
+
+Recovered the single leftMouseDown event array at 0x101572270 and packed
+placement/options (0,1) at 0x1011921b0. Click monitoring uses annotated-session
+location 2 and listen-only options. The external-click callback ignores helper
+input and events already routed to the target, reads optional event-window
+field 51 (initializer 0x100731140), looks up that window's owner, and normally
+activates the target only when ownership matches. It always passes the event.
+
+Window lookup uses the native CFArrayCreate with nonretaining pointer-sized
+window ID entries, followed by CGWindowListCreateDescriptionFromArray, rather
+than enumerating all windows. The adapter extracts owner PID only; it does not
+claim to restore the entire native CGWindow parser. Activation uses
+NSRunningApplication.activate(options: []). Static audit pins the event array,
+packed options and field initializer. Source checked numeric conversions remain.
+
+SyntheticFocusMonitoringSession owns target and optional click monitors through
+a slot captured by state lifecycle callbacks. It applies initial state before
+starting target observation, and exposes enforce/deactivate through the locked
+mutation wrapper. Event sending is injected; the full native send transport,
+frontmost tracker, focus-steal preventer, safely-enforce branch selection and
+production input integration remain pending. Tests use local Mach ports and
+injected send operations, with no real application activation or input tap.
