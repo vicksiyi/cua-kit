@@ -2140,6 +2140,71 @@ private enum ProviderClickChecks {
         checkEqual(webMarkerErrors, 1)
         ownerProvider.parameterSupport = nil; ownerProvider.parameterRead = nil
 
+        // Provider parameter read -> Mac dispatch -> concrete rich formatter.
+        do {
+            let text = NSAttributedString(string: "Hi 😀", attributes: [
+                .accessibilityUnderline: 1, NSAttributedString.Key("AXStyleName"): "Heading, custom"])
+            var node = capturedOwner
+            node.role = .textArea
+            node.value = text.string
+            node.truncationRange = NSRange(location: 0, length: text.length)
+            node.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+                supportedAttributes: [UIElementAttribute("AXRole")], attributes: [:], transactionAttributes: nil))
+            var reads = 0, unknown: [String] = []
+            ownerProvider.parameterRead = { attribute, _ in
+                checkEqual(attribute, UIElementAttribute("AXAttributedStringForRange"))
+                reads += 1
+                return partial(text)
+            }
+            var context = ownerContext(.fullUIContext)
+            let result = MacUIElementTreeTransformation.retrieveAttributedTextFromTextAreas.transform(
+                item: associationItem(node, children: [targetA]), context: &context,
+                rebuild: { _, _, _ in unexpectedFailure("rich branch must not rebuild") },
+                providerTitle: { _ in unexpectedFailure() },
+                owningBundleIdentifier: { _ in unexpectedFailure() },
+                renderNode: { _, _ in unexpectedFailure() },
+                reportUnknownAttributedStyle: { unknown.append($0) },
+                reportAttributeError: { _ in unexpectedFailure() },
+                reportUnexpectedNextLine: { unexpectedFailure() })
+            switch result {
+            case .transformed(let item):
+                checkEqual(item.element.value, "## <u>Hi 😀</u>")
+                checkEqual(item.element.transformedString?.sourceRange(ofMarkdownSubstring: "😀"), NSRange(location: 3, length: 2))
+                checkTrue(item.element.attributedString === text)
+                checkEqual(item.children.count, 1)
+            default: unexpectedFailure("native dispatch must format parameterized rich text")
+            }
+            checkEqual(reads, 1)
+            checkEqual(unknown, ["custom"])
+            webCache(supported: [], requested: nil)
+            var webReads: [String] = []
+            ownerProvider.parameterSupport = { [] }
+            ownerProvider.parameterRead = { attribute, _ in
+                webReads.append(attribute.name as String)
+                if attribute == UIElementAttribute("AXNextLineEndTextMarkerForTextMarker") { return nil }
+                checkEqual(attribute, UIElementAttribute("AXAttributedStringForTextMarkerRange"))
+                return partial(text)
+            }
+            context = ownerContext(.informationalContext)
+            let webResult = MacUIElementTreeTransformation.retrieveAttributedTextFromWebAreas.transform(
+                item: associationItem(composedWeb, children: [targetA]), context: &context,
+                rebuild: { _, _, _ in unexpectedFailure() }, providerTitle: { _ in unexpectedFailure() },
+                owningBundleIdentifier: { _ in unexpectedFailure() }, renderNode: { _, _ in unexpectedFailure() },
+                reportUnknownAttributedStyle: { unknown.append($0) },
+                reportAttributeError: { _ in unexpectedFailure() }, reportUnexpectedNextLine: { unexpectedFailure() })
+            switch webResult {
+            case .transformed(let item):
+                checkEqual(item.element.value, "## <u>Hi 😀</u>")
+                checkTrue(item.children.isEmpty)
+                checkEqual(item.element.transformedString?.sourceRange(ofMarkdownSubstring: "😀"), NSRange(location: 3, length: 2))
+            default: unexpectedFailure("web marker dispatch must use concrete rich formatter")
+            }
+            checkEqual(webReads, ["AXNextLineEndTextMarkerForTextMarker", "AXAttributedStringForTextMarkerRange"])
+            checkEqual(unknown, ["custom", "custom"])
+            ownerProvider.parameterRead = nil
+            ownerProvider.parameterSupport = nil
+        }
+
         // Exercise the complete Mac rule order through the real recursive driver.
         var macPipelineContext = ownerContext(.fullUIContext)
         var macVisited: [MacUIElementTreeTransformation] = []
@@ -2151,7 +2216,7 @@ private enum ProviderClickChecks {
                 providerTitle: { _ in nil },
                 owningBundleIdentifier: { _ in unexpectedFailure("non-calendar fixture must not resolve app") },
                 renderNode: { node, _ in node.title ?? node.value ?? "" },
-                renderAttributed: { _, _ in unexpectedFailure("non-rich fixture must not format attributed text") },
+                reportUnknownAttributedStyle: { _ in unexpectedFailure("non-rich fixture has no attributed styles") },
                 reportAttributeError: { _ in unexpectedFailure("fixture must not read uncached attributes") },
                 reportUnexpectedNextLine: { unexpectedFailure("fixture must not probe text markers") })
         }

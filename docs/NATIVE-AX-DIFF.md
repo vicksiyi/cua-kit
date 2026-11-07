@@ -6231,3 +6231,15 @@ references in these checks are mocks; no live model or UI operation was invoked.
 The native formatter is now composed as a callable implementation. It remains
 to wire it into the production Mac tree/collector flow and validate real App
 observations. Isolated integration tests do not prove complete native parity.
+
+### Concrete rich rendering in Mac dispatch (2026-11-07)
+
+The Mac dispatcher now invokes renderNativeAttributedText for both text-area
+and web-area branches, replacing its caller-supplied rich-render callback with
+an explicit unknown-style diagnostic callback. Lower-level extraction seams
+remain for read-path tests. Provider-backed integration checks exercise actual
+NSAttributedString -> Markdown/source mapping through the dispatcher: text-area
+children remain, web-area children clear, and unknown styles reach the reporter.
+Swift build and owned provider self-test passed. Production Target.collect still
+uses its existing raw walk; whole-tree construction/render integration must be
+completed before claiming live collection uses this dispatch.

@@ -4,7 +4,8 @@ import ApplicationServices
 extension MacUIElementTreeTransformation {
     // Entry 0x1007595fc: Mac-specific branches surround common dispatch.
     // The traversal rebuild, provider-title lookup, owning-app lookup and
-    // renderers are required host compositions, never silent no-op defaults.
+    // node renderer are required host compositions, never silent no-op defaults.
+    // Attributed rendering now uses the recovered native implementation.
     func transform(
         item: UIElementTree<TransformedUIElement>.Item,
         context: inout UIElementTransformationContext,
@@ -12,7 +13,7 @@ extension MacUIElementTreeTransformation {
         providerTitle: (AXUIElement) -> String?,
         owningBundleIdentifier: (TransformedUIElement) -> String?,
         renderNode: (TransformedUIElement, inout UIElementTransformationContext) throws -> String,
-        renderAttributed: (NSAttributedString, inout UIElementTransformationContext) -> TransformedUIString,
+        reportUnknownAttributedStyle: (String) -> Void,
         reportAttributeError: (Error) -> Void,
         reportUnexpectedNextLine: () -> Void
     ) -> UIElementTreeTransformation.Result<TransformedUIElement> {
@@ -29,11 +30,17 @@ extension MacUIElementTreeTransformation {
                 owningBundleIdentifier: { owningBundleIdentifier(item.element) })
         case .retrieveAttributedTextFromTextAreas:
             return Self.retrieveAttributedTextFromTextAreas(item: item, context: &context,
-                reportAttributeError: reportAttributeError, render: renderAttributed)
+                reportAttributeError: reportAttributeError, render: { text, context in
+                    renderNativeAttributedText(text, context: &context,
+                        reportUnknownStyle: reportUnknownAttributedStyle)
+                })
         case .retrieveAttributedTextFromWebAreas:
             return Self.retrieveAttributedTextFromWebAreas(item: item, context: &context,
                 reportAttributeError: reportAttributeError,
-                reportUnexpectedNextLine: reportUnexpectedNextLine, render: renderAttributed)
+                reportUnexpectedNextLine: reportUnexpectedNextLine, render: { text, context in
+                    renderNativeAttributedText(text, context: &context,
+                        reportUnknownStyle: reportUnknownAttributedStyle)
+                })
         case .shared(.pruneNonDescriptiveSubtrees):
             return Self.pruneNonDescriptiveSubtrees(item: item, context: context)
         case .shared(let rule):
