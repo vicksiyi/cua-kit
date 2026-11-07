@@ -2254,3 +2254,24 @@ then drops the parent and requires observer cleanup. A bounded test deadline
 prevents a retention-cycle regression from hanging verification. No real desktop
 subscription, raise or menu operation occurs in that check. Live native event
 acceptance and full production controller parity remain unproven.
+
+
+## Controller window registry ownership
+
+MouseWindowRegistry now owns the controller dictionary and composes the restored
+registration, pruning and native ordering helpers. Source registration at
+0x100085730 reads the throwing AX window ID before beginning dictionary mutation,
+ends mutation access, then publishes observed IDs to the ordering observer. This
+is a plain controller dictionary, distinct from the observer's unfair-locked task
+state; no extra registry lock was introduced. The owner must serialize access.
+
+Successful zero IDs are inserted and later pruned by the getter. Replacement at
+an existing key still publishes observed IDs. Pruning only publishes when the
+map count changes; a successful changed nonzero AX ID does not rewrite its stored
+key. The complete map is captured before native ordering is queried, so a window
+registered during that query appears only in a later ordering read.
+
+Ownership checks exercise replacement, zero-ID pruning, unchanged getter reads,
+stored-key preservation and registration after a map snapshot. AX notification
+registration and production controller ownership remain to be connected; this
+registry does not invent a periodic refresh in place of native notifications.

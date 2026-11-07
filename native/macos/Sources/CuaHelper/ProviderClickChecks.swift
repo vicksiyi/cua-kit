@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runMouseWindowRegistryOwnershipChecks()
     await runWindowOrderingObserverCompositionChecks()
     await runWindowOrderingMenuTaskChecks()
     runWindowOrderingMenuOpenChecks()
@@ -7171,4 +7172,32 @@ private func runWindowOrderingObserverCompositionChecks() async {
     var disposedIterator = disposed.stream.makeAsyncIterator()
     checkEqual(await disposedIterator.next(), true)
     checkTrue(lifetime == nil)
+}
+
+
+private func runMouseWindowRegistryOwnershipChecks() {
+    final class Window { var id: UInt32; init(_ id: UInt32) { self.id = id } }
+    var updates: [Set<UInt32>] = []
+    let registry = MouseWindowRegistry<Window>(windowID: { $0.id }, observedWindowIDsChanged: { updates.append(Set($0)) })
+    let first = Window(7), replacement = Window(7), zero = Window(0)
+    registry.register(first); registry.register(replacement)
+    checkEqual(updates, [Set([7]), Set([7])])
+    registry.register(zero); checkEqual(updates.last, Set([7, 0]))
+    let snapshot = registry.windows()
+    checkTrue(snapshot[7] === replacement); checkTrue(snapshot[0] == nil)
+    checkEqual(updates.last, Set([7])); let notifications = updates.count
+    _ = registry.windows(); checkEqual(updates.count, notifications)
+    // A changed but nonzero AX ID does not rewrite the stored map key.
+    replacement.id = 8
+    checkTrue(registry.windows()[7] === replacement)
+    let later = Window(9)
+    let firstOrdering = registry.orderedWindows(orderedWindowIDs: {
+        registry.register(later) // occurs after the controller map snapshot
+        return [9, 7, 7, 123]
+    })
+    checkEqual(firstOrdering.count, 2); checkTrue(firstOrdering.allSatisfy { $0 === replacement })
+    let secondOrdering = registry.orderedWindows(orderedWindowIDs: { [9, 7] })
+    checkTrue(secondOrdering[0] === later && secondOrdering[1] === replacement)
+    replacement.id = 0
+    checkTrue(registry.windows()[7] == nil); checkEqual(updates.last, Set([9]))
 }
