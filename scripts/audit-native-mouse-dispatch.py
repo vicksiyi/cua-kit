@@ -149,6 +149,12 @@ for site, expected_bytes in [(0x10026c068, '08411491'), (0x10026d874, '01a942f9'
 for site, expected_bytes in [(0x10074e288, 'e83e0013'), (0x10074e294, '08b59f1a'),
                              (0x10074e2a0, '88000037'), (0x10074e2b8, '28070036')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# ViewBridge transition guards and identity flags (actual PID optional bit).
+for site, expected_bytes in [(0x10074e2ac, 'a8087837'), (0x10074e3c0, '97f74736'),
+                             (0x10074e3cc, '28f74736'), (0x10074e3ec, '20f60736'),
+                             (0x1007513a4, '01ff60d3'), (0x1007513a8, '08109852'),
+                             (0x1007513b0, '01791f33')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

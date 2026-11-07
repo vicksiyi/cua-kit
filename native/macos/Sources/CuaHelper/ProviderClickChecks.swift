@@ -3706,6 +3706,7 @@ func runProviderClickChecks() async throws {
     runFocusStealOwnershipHistoryChecks()
     runFocusStealPhysicalFocusChecks()
     runSystemKeyFocusReleaseChecks()
+    runViewBridgeFocusTransitionEligibilityChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4671,7 +4672,7 @@ private func runFocusStealTakenStateChecks() {
     let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
     var trace: [String] = []
     func taken(previous: Int32, registered: Bool) -> CGEvent? {
-        state.recordOwnerAndSchedule(.ordinary(pid: previous), physicalFocusPID: previous, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() })
+        state.recordOwnerAndSchedule(.ordinary(pid: previous), physicalFocusPID: previous, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
         return state.filterKeyFocusTaken(event,
             incomingFocusPID: 88, destinationPID: 77,
             resolveOwnerPID: { checkEqual($0, 88); trace.append("resolve"); return 66 },
@@ -4770,7 +4771,7 @@ private func runFocusStealRegisteredDispatchChecks() async {
             let snapshot = store.snapshot
             _ = store.removeFirst(pid: 88)
             return snapshot
-        }, releaseFirstInterceptedFocus: { unexpectedFailure() },
+        }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() },
         reportMissingHandler: { _, _ in unexpectedFailure() })
     checkEqual(snapshotReads, 1); checkEqual(tasks.tasks.count, 3)
     for task in tasks.tasks { checkFalse(await task.value) }
@@ -4779,10 +4780,10 @@ private func runFocusStealRegisteredDispatchChecks() async {
     checkEqual(state.ownershipSnapshot.current.ownerPID, 88)
     checkEqual(state.ownershipSnapshot.previous?.ownerPID, 77)
     // The intercepted logical owner does not receive a gained callback.
-    state.recordOwnerAndSchedule(.ordinary(pid: 77), physicalFocusPID: 77, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() })
+    state.recordOwnerAndSchedule(.ordinary(pid: 77), physicalFocusPID: 77, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
     state.update(FocusStealKeyboardRoute(interceptedPID: 99, recipientPID: 77, interceptedOwnerPID: 88))
     let suppressed = state.recordOwnerAndSchedule(.ordinary(pid: 88), physicalFocusPID: 88,
-        takeRegistrationSnapshot: { store.snapshot }, releaseFirstInterceptedFocus: { unexpectedFailure() })
+        takeRegistrationSnapshot: { store.snapshot }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
     checkEqual(suppressed.tasks.count, 1)
     for task in suppressed.tasks { checkFalse(await task.value) }
     checkEqual(recorder.snapshot.filter { $0 == "lost" }.count, 2)
@@ -4831,7 +4832,7 @@ private func runFocusStealPhysicalFocusChecks() {
     checkEqual(state.observePhysicalFocusPID(88), .firstInterceptedFocus)
     checkTrue(state.filterKeyFocusReturned(event, destinationPID: 77) == nil)
     let change = state.recordOwnerAndSchedule(.restricted(ownerPID: 66, sourcePID: 88),
-        physicalFocusPID: 88, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() })
+        physicalFocusPID: 88, takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
     checkEqual(change.routeObservation, .repeatedInterceptedFocus)
     checkEqual(state.ownershipSnapshot.current.ownerPID, 66)
     checkTrue(change.firstInterceptedFocusReleaseSucceeded == nil)
@@ -4840,12 +4841,12 @@ private func runFocusStealPhysicalFocusChecks() {
         var calls = 0
         let first = state.recordOwnerAndSchedule(.restricted(ownerPID: 66, sourcePID: 88),
             physicalFocusPID: 88, takeRegistrationSnapshot: { [] },
-            releaseFirstInterceptedFocus: { calls += 1; return succeeds })
+            releaseFirstInterceptedFocus: { calls += 1; return succeeds }, isRegisteredOwner: { _ in unexpectedFailure() })
         checkEqual(first.routeObservation, .firstInterceptedFocus)
         checkEqual(first.firstInterceptedFocusReleaseSucceeded, succeeds)
         let repeated = state.recordOwnerAndSchedule(.restricted(ownerPID: 66, sourcePID: 88),
             physicalFocusPID: 88, takeRegistrationSnapshot: { [] },
-            releaseFirstInterceptedFocus: { unexpectedFailure() })
+            releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in unexpectedFailure() })
         checkTrue(repeated.firstInterceptedFocusReleaseSucceeded == nil)
         checkEqual(calls, 1)
     }
@@ -4871,4 +4872,39 @@ private func runSystemKeyFocusReleaseChecks() {
             checkEqual(event.timestamp, 98765)
         }
     }
+}
+
+private func runViewBridgeFocusTransitionEligibilityChecks() {
+    let ordinary = KeyFocusOwnerIdentity.ordinary(pid: 77)
+    let restricted = KeyFocusOwnerIdentity.restricted(ownerPID: 77, sourcePID: 88)
+    let previous = KeyFocusOwnerIdentity.viewBridge(ViewBridgeFocusIdentities(ownerPID: 77, actualFocusedPID: nil))
+    for old in [ordinary, restricted, previous] {
+        for owner: Int32 in [77, 66] {
+            for actual: Int32? in [nil, 99] {
+                let current = KeyFocusOwnerIdentity.viewBridge(ViewBridgeFocusIdentities(ownerPID: owner, actualFocusedPID: actual))
+                for observation: FocusStealRouteObservation in [.noRoute, .firstInterceptedFocus, .repeatedInterceptedFocus, .recipientFocus, .cleared] {
+                    for registered in [false, true] {
+                        var reads = 0
+                        let result = viewBridgeFocusTransitionNeedsInspection(previous: old,
+                            current: current, routeObservation: observation, isRegistered: {
+                                reads += 1; checkEqual($0, owner); return registered
+                            })
+                        let eligibleType: Bool
+                        if case .viewBridge = old { eligibleType = true } else { eligibleType = false }
+                        let eligibleRoute = observation != .firstInterceptedFocus && observation != .repeatedInterceptedFocus
+                        checkEqual(reads, eligibleType && eligibleRoute ? 1 : 0)
+                        checkEqual(result, eligibleType && eligibleRoute && registered && owner != 77)
+                    }
+                }
+            }
+        }
+        checkFalse(viewBridgeFocusTransitionNeedsInspection(previous: old, current: ordinary,
+            routeObservation: .noRoute, isRegistered: { _ in unexpectedFailure() }))
+    }
+    let state = FocusStealKeyboardRoutingState(initialOwner: previous)
+    let changed = state.recordOwnerAndSchedule(.viewBridge(ViewBridgeFocusIdentities(ownerPID: 66, actualFocusedPID: 99)),
+        physicalFocusPID: 99, takeRegistrationSnapshot: { [] },
+        releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { checkEqual($0, 66); return true })
+    checkTrue(changed.requiresViewBridgeFocusInspection)
+    checkTrue(changed.firstInterceptedFocusReleaseSucceeded == nil)
 }

@@ -78,3 +78,18 @@ struct FocusStealOwnershipHistory {
         current = owner
     }
 }
+
+// 0x10074e288..0x10074e3ec: ViewBridge compensation eligibility.
+// This selects the later focused-element inspection; it is not itself a
+// release/activation operation. Registration is read before PID comparison.
+func viewBridgeFocusTransitionNeedsInspection(previous: KeyFocusOwnerIdentity,
+    current: KeyFocusOwnerIdentity, routeObservation: FocusStealRouteObservation,
+    isRegistered: (Int32) -> Bool) -> Bool {
+    switch routeObservation {
+    case .firstInterceptedFocus, .repeatedInterceptedFocus: return false
+    case .noRoute, .recipientFocus, .cleared: break
+    }
+    guard case .viewBridge = previous, case .viewBridge = current else { return false }
+    let registered = isRegistered(current.ownerPID)
+    return registered && current.ownerPID != previous.ownerPID
+}

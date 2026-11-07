@@ -35,6 +35,7 @@ enum FocusStealRouteObservation: Equatable {
 struct FocusStealOwnerChange {
     let tasks: [Task<Bool, Never>]
     let routeObservation: FocusStealRouteObservation
+    let requiresViewBridgeFocusInspection: Bool
     let firstInterceptedFocusReleaseSucceeded: Bool?
 }
 
@@ -71,6 +72,7 @@ final class FocusStealKeyboardRoutingState {
     func recordOwnerAndSchedule(_ owner: KeyFocusOwnerIdentity, physicalFocusPID: Int32,
         takeRegistrationSnapshot: () -> [FocusStealRegistrationCallbacks],
         releaseFirstInterceptedFocus: () -> Bool,
+        isRegisteredOwner: (Int32) -> Bool,
         reportMissingHandler: @escaping @Sendable (Int32, FocusStealRegistrationTransition) -> Void = { _, _ in }
     ) -> FocusStealOwnerChange {
         lock.lock(); defer { lock.unlock() }
@@ -92,8 +94,12 @@ final class FocusStealKeyboardRoutingState {
         let observation = observePhysicalFocusPIDLocked(physicalFocusPID)
         // 0x10074e2b0..0x10074e2c8: only tag 0 -> 1 reaches this
         // direct release path. Other observations need separate handling.
+        let inspectViewBridge = viewBridgeFocusTransitionNeedsInspection(
+            previous: ownership.previous!, current: ownership.current,
+            routeObservation: observation, isRegistered: isRegisteredOwner)
         let released = observation == .firstInterceptedFocus ? releaseFirstInterceptedFocus() : nil
         return FocusStealOwnerChange(tasks: tasks, routeObservation: observation,
+            requiresViewBridgeFocusInspection: inspectViewBridge,
             firstInterceptedFocusReleaseSucceeded: released)
     }
     // 0x10074dd78..0x10074e0e4 and 0x10074e6f8: retain a route for

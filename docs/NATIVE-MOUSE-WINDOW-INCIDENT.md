@@ -1056,3 +1056,27 @@ notifications with no second release. Build/provider-click checks and static
 audit pass with injected release operations only. ViewBridge compensation,
 result-dependent previous identity metadata, system notification resources and
 production click integration remain unfinished.
+
+
+## ViewBridge compensation eligibility
+
+Restored eligibility at 0x10074e288..0x10074e3ec. Both prior/current identities
+must be ViewBridge; current logical owner must be registered and differ from
+the prior owner. First/repeated intercepted physical-focus observations skip
+this alternative. Registration is queried before owner PID comparison, using
+a fresh source boundary rather than reusing the earlier callback snapshot.
+
+Layout evidence: ordinary identity flags are 0, prohibited/restricted flags
+0x8000, and ViewBridge flags 0x8100 plus the optional actual-PID absence bit.
+ViewBridge constructor 0x10075139c..0x1007513b0 packs logical owner and actual
+PID separately. The eligibility uses case membership, independent of actual
+PID presence. No packed encoding is added to the external protocol.
+
+State results now explicitly indicate when later ViewBridge focused-element
+inspection is required. Matrix checks cover prior type, equal/different owners,
+actual PID presence, all route observations, registration status and lazy
+registration reads; state composition also exercises the flag. Build,
+provider-click checks and static audit pass. Concrete focused-element/process
+containment compensation is still unimplemented, along with remaining system
+notification resource lifecycle and production click controller integration.
+No live click acceptance is claimed.
