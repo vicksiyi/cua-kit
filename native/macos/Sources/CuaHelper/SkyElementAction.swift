@@ -61,8 +61,14 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
         let count = try number(value["clickCount"], "clickCount")
         guard count.rounded() == count, (1...10).contains(count) else { throw SkyRPCFailure(code: -32602, message: "Click count must be 1..10") }
         params["clickCount"] = Int(count)
-        let duration = try value["duration"].map { try number($0,"duration") } ?? 0
-        _ = try heldNanoseconds(duration); params["duration"] = duration
+        // Omitted duration must stay nil: click preparation uses nil to allow
+        // AXPress/AXPick. Inserting zero here forced every ordinary click into
+        // synthetic mouse dispatch, even when the model requested no hold.
+        if let rawDuration = value["duration"] {
+            let duration = try number(rawDuration, "duration")
+            _ = try heldNanoseconds(duration)
+            params["duration"] = duration
+        }
         if let key = value["key"] {
             guard let key = key as? String else { throw SkyRPCFailure(code: -32602, message: "Click key must be a modifier chord") }
             _ = try mouseModifiers(key); params["key"] = key
@@ -139,6 +145,19 @@ func runSkyActionChecks() throws {
     let events = try mouseClickEvents(point: CGPoint(x: click["x"] as! Double,y:click["y"] as! Double),button:click["mouseButton"] as! String,count:click["clickCount"] as! Int,flags:mouseModifiers(click["key"] as? String))
     guard events.count == 4, events[0].type == .otherMouseDown, events[3].type == .otherMouseUp else { throw fail("SELF_TEST_FAILED", "Mapped click produced incorrect events") }
 
+    for duration in [nil, 0.0, 0.125] as [Double?] {
+        var payload: [String: Any] = ["at": ["elementID": ["_0": "42"]], "mouseButton": 0, "clickCount": 1]
+        if let duration { payload["duration"] = duration }
+        let decoded = try decodeSkyElementAction(["click": payload])
+        let hold = (decoded["duration"] as? Double).map { Duration.nanoseconds(Int64($0 * 1_000_000_000)) }
+        let preparation = prepareUIElementClick(mouseButton: .left, count: 1,
+            holdDuration: hold, heldKeyIsPresent: false, flags: [], alwaysSimulateClick: false,
+            readActions: { [.press] }, isInsideWebView: { false })
+        guard preparation.useAccessibilityAction == (duration == nil),
+              (decoded["duration"] as? Double) == duration else {
+            throw fail("SELF_TEST_FAILED", "Wire decoding changed optional hold semantics and click routing")
+        }
+    }
     let selected = try decodeSkyElementAction(["selectText": ["elementID": "2", "text": "🌍", "selection": "text", "prefix": "hello "]])
     guard let text = selected["value"] as? String else { throw fail("SELF_TEST_FAILED", "Selection text did not reach native value field") }
     let range = try selectedTextRange(content: "hello 🌍 world", text: text, options: selected)

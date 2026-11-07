@@ -87,3 +87,31 @@ The production adapter now supplies the observed window context and local point;
 full wheel-event window routing remains unverified and incomplete. Regression
 covers global/local coordinate preservation, source vertical delta, and the
 existing four-direction page-distance behavior. No live app scroll was tested.
+
+## 08:56 run: wire decoding forced synthetic clicks
+
+The latest local run started at 08:56 UTC. Model calls continued normally;
+getApp initially timed out while waiting for terminal approval. After acceptance,
+indexed clicks on task links and later coordinate clicks returned without a tool
+error, while heading observations stayed on Inbox. The final double-click was
+cancelled by the user and must not be counted as an executed click.
+
+A concrete routing defect was found in decodeSkyElementAction: omitted duration
+was materialized as zero. The restored JS client sends an optional duration and
+JSON omits undefined. The restored native preparation only permits AXPress/AXPick
+when holdDuration is nil. Thus the adapter systematically disabled AX actions for
+ordinary clicks, even though the model requested no hold. This defect lay between
+the previously tested decoder and the previously tested click-routing component.
+
+The decoder now preserves absence. Explicit zero remains present (and preserves
+the source's synthetic-input selection). Added a cross-component regression for
+omitted, zero and nonzero durations. Build and sky-action, provider-click, input,
+held-input checks pass. This restores eligibility, not unconditional AXPress:
+web-view hit testing may still choose synthetic input as in the source.
+
+Remaining incident limits: actual Multica acceptance is not yet demonstrated;
+background focus enforcement is still absent; the log does not record the chosen
+native route; the running helper's binary fingerprint is not in the run log.
+Rebuilding the executable does not replace an already running process. A fresh
+CLI run is required to test this fix. Approval waiting/countdown behavior is a
+separate observed issue and was not changed or bypassed here.
