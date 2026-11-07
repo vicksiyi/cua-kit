@@ -1103,3 +1103,29 @@ complete UIElement.ProcessType.containingElement implementation; that concrete
 classification/containment prerequisite still needs restoration. It is required
 for selecting this refresh versus focus release. Full notification resources,
 production controller integration and real Multica click acceptance remain open.
+
+
+## ProcessType classification and containing-element search
+
+Recovered enum field descriptor 0x101323fa4: regularApp, viewService,
+nonEventHandlingProcess (native tags 0/1/2). Classifier 0x10078e4c4 returns
+nonEventHandlingProcess for missing NSRunningApplication or unfinished launch.
+For finished applications, prohibited activation policy 2 means viewService,
+otherwise regularApp. It reads activationPolicy before isFinishedLaunching;
+selector 0x101543070 -> 0x10136afc8 confirms the latter property.
+
+Restored UIElement.ProcessType and containingProcessElement from 0x10078e178.
+It reuses the existing parentChain, including self, depth 300 and parent
+lookahead. For each node it reads actualPID, reports/skips PID failures,
+classifies that PID and returns the first requested type. Empty sets still
+traverse/classify, and repeated PIDs are not cached/deduplicated. Concrete
+UIElement wiring reuses provider-aware actualPID and parent readers.
+The ViewBridge call site set at 0x1015722a0 contains tags [1,0], confirming
+viewService/regularApp selection.
+
+Checks cover all launch/policy combinations, missing app, lazy property reads,
+PID error continuation, first match and parent lookahead, and 301 visited nodes
+for the inclusive depth cap even with an empty type set. Build/provider-click
+checks and static audit pass. These are component checks; concrete ViewBridge
+compensation composition, system notification lifecycle, production click
+controller integration and live Multica acceptance remain required.

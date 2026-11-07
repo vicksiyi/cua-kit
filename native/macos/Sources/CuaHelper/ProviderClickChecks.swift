@@ -3708,6 +3708,7 @@ func runProviderClickChecks() async throws {
     runSystemKeyFocusReleaseChecks()
     runViewBridgeFocusTransitionEligibilityChecks()
     try runViewBridgeKeyFocusRefreshChecks()
+    runUIElementProcessTypeChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4936,4 +4937,35 @@ private func runViewBridgeKeyFocusRefreshChecks() throws {
             makeReturned: { unexpectedFailure() }, send: { _, _ in unexpectedFailure() })
         unexpectedFailure()
     } catch Failure.construction {}
+}
+
+private func runUIElementProcessTypeChecks() {
+    for policy in [0, 1, 2] {
+        for finished in [false, true] {
+            var trace: [String] = []
+            let type = uiElementProcessType(application: { 88 }, activationPolicy: {
+                checkEqual($0, 88); trace.append("policy"); return policy
+            }, isFinishedLaunching: { checkEqual($0, 88); trace.append("finished"); return finished })
+            checkEqual(trace, ["policy", "finished"])
+            checkEqual(type, finished ? (policy == 2 ? .viewService : .regularApp) : .nonEventHandlingProcess)
+        }
+    }
+    checkEqual(uiElementProcessType(application: { Optional<Int>.none },
+        activationPolicy: { _ in unexpectedFailure() }, isFinishedLaunching: { _ in unexpectedFailure() }), .nonEventHandlingProcess)
+    enum Failure: Error { case pid }
+    var trace: [String] = []
+    let found = containingProcessElement(for: 0, ofTypes: [.regularApp, .viewService],
+        parent: { trace.append("parent-\($0)"); return $0 < 3 ? $0 + 1 : nil },
+        actualPID: { trace.append("pid-\($0)"); if $0 == 1 { throw Failure.pid }; return Int32($0) },
+        classify: { trace.append("type-\($0)"); return $0 == 2 ? .viewService : .nonEventHandlingProcess },
+        reportError: { _ in trace.append("error") })
+    checkEqual(found?.element, 2); checkEqual(found?.pid, 2); checkEqual(found?.processType, .viewService)
+    checkEqual(trace, ["parent-0", "pid-0", "type-0", "parent-1", "pid-1", "error", "parent-2", "pid-2", "type-2"])
+    var parents = 0, reads = 0, classifications = 0
+    let empty = containingProcessElement(for: 0, ofTypes: [],
+        parent: { node in parents += 1; return node + 1 },
+        actualPID: { _ in reads += 1; return 88 },
+        classify: { _ in classifications += 1; return .regularApp }, reportError: { _ in unexpectedFailure() })
+    checkTrue(empty == nil)
+    checkEqual(parents, 301); checkEqual(reads, 301); checkEqual(classifications, 301)
 }
