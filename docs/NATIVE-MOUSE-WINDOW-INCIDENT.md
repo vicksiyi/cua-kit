@@ -2185,3 +2185,24 @@ continuation, cancellation cleanup, duplicate/order-only updates and an absent
 weak owner. This connects the previously restored subscription policy and event
 stream into the main loop boundary. Full concrete observer/menu/controller
 composition and live event acceptance are still outstanding.
+
+
+## Menu-open task selection and replacement
+
+openWindowOrderingMenu restores menuDidOpen 0x100788190..0x1007884ac.
+Every invocation first cancels/clears the prior menu task, even if later guards
+fail. It then snapshots observed IDs in a separate lock scope, resolves each
+window's current owner PID and builds a Set of owners. Duplicate observed IDs
+still cause separate native window lookups. Missing windows are ignored; -1 is
+not silently excluded from an otherwise present owner value.
+
+Only a nonempty owner set and an available foreground application whose PID is
+outside that set create a menu task. Its PID is read again for task capture,
+matching the source. The task stores that PID and the original ID array. Creation
+and assignment occur under the state lock; no main-task-active guard is added.
+The prior cancellation and selection lookups are not held inside one lock.
+
+Injected checks cover cancellation on every early exit, unchanged main task,
+duplicate lookup ordering, two PID reads on success, current-ID changes during
+unlocked lookup and preserved captured IDs. The concrete menu task body remains
+to be restored before production menu observer composition.

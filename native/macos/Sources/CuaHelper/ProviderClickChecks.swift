@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runWindowOrderingMenuOpenChecks()
     await runWindowOrderingEventLoopChecks()
     try await runWindowOrderingRestorationChecks()
     try await runWindowOrderingRaiseScopeChecks()
@@ -7074,4 +7075,34 @@ private func runWindowOrderingEventLoopChecks() async {
         makeObserver: { _, _, _ -> Observer in unexpectedFailure() },
         handle: { (_: Owner, _: Int, _: WindowServerEvent) in unexpectedFailure() },
         reportError: { _ in unexpectedFailure() })
+}
+
+
+private func runWindowOrderingMenuOpenChecks() {
+    var trace: [String] = []
+    let store = WindowOrderingObserverTaskStore<Int>(observedWindowIDs: [7, 7, 8], cancel: { trace.append("cancel-\($0)") })
+    store.start { 100 }
+    for scenario in 0...3 {
+        trace = []
+        store.withState { $0.menuTask = 9 }
+        openWindowOrderingMenu(store: store,
+            windowOwnerPID: { id in trace.append("window-\(id)"); return scenario == 0 ? nil : 42 },
+            frontmostApplication: { () -> Int? in trace.append("front"); return scenario == 1 ? nil : 3 },
+            processIdentifier: { app in checkEqual(app, 3); trace.append("pid"); return scenario == 2 ? 42 : 43 },
+            makeTask: { pid, ids in
+                checkEqual(pid, 43); checkEqual(ids, [7, 7, 8]); trace.append("task"); return 10
+            })
+        let base = ["cancel-9", "window-7", "window-7", "window-8"]
+        let extra = scenario == 0 ? [] : scenario == 1 ? ["front"] : scenario == 2 ? ["front", "pid"] : ["front", "pid", "pid", "task"]
+        checkEqual(trace, base + extra)
+        store.withState { state in checkEqual(state.task, 100); checkEqual(state.menuTask, scenario == 3 ? 10 : nil) }
+    }
+    // Lookups happen unlocked after capturing IDs: mutation does not replace
+    // the captured task IDs, and no owner comparison filters an otherwise valid -1 PID.
+    trace = []
+    openWindowOrderingMenu(store: store, windowOwnerPID: { _ in -1 },
+        frontmostApplication: { store.observedWindowIDs = [99]; return 3 },
+        processIdentifier: { _ in 43 }, makeTask: { _, ids in checkEqual(ids, [7, 7, 8]); return 11 })
+    checkEqual(trace, ["cancel-10"])
+    store.stop()
 }
