@@ -3519,3 +3519,32 @@ Both the scope and cache-construction tests pass, as does the Swift package buil
 No model requests, native UI reads, vendor execution or policy changes occurred.
 Production traversal and the subtree constructor still await the provider and
 concrete protocol integration described above.
+
+### Subtree transaction assembly across restored components
+
+`UIElementSubtreeTransaction.swift` composes the previously recovered constructor
+branches (0x10076bd70). It reads TaskLocal prefetchEnabled, selects original
+attributes and forwards the unchanged maxChildCount only when enabled, then
+allocates a fresh fallback cache, counts roles and constructs the root with that
+cache. Disabled prefetch skips support/bundle/hierarchy queries entirely, but
+still constructs the root with a real empty transaction cache so cold reads can
+populate its fallback entries. Construction does not itself install current;
+perform(work:) remains the scope boundary.
+
+The role census now returns the recovered FrequencyTable<UIElementRole> directly
+and uses its checked increment, replacing the interim dictionary return type.
+No dictionary conversion initializer or duplicated counting algorithm was added.
+The constructor takes explicit hierarchy-reading and root-wrapping closures.
+These are reconstruction seams: production must supply original provider dispatch
+and a freshly constructed concrete UIElement once its complete conformance is
+ready. A test-only protocol conformer is not a production substitute.
+
+Integration tests exercise enabled prefetch hits, exact array attributes,
+duplicate extras, unchanged negative max count, root cache/requested-set identity,
+role counts, disabled prefetch cold fallback, independent cache storage and
+absence of an implicit current scope. Role decoding tests also cover failed and
+missing values, custom/empty roles, accumulation and FrequencyTable uniqueness.
+Tests pass and the Swift helper builds. The initial fixture compile failed on
+CFString versus String comparison; explicit bridging corrected the assertion.
+No vendor service, UI operation or model request was executed. Production
+provider/concrete-root wiring and end-to-end acceptance remain incomplete.

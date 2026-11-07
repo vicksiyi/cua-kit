@@ -5,21 +5,21 @@ import ApplicationServices
 /// AXRole values; never performs a cold read or substitutes AXUnknown.
 func accumulateUIElementRoleFrequencies(
     _ table: [AXUIElement: [UIElementAttribute: AXPartialValue]],
-    into counts: inout [UIElementRole: Int],
+    into counts: inout FrequencyTable<UIElementRole>,
     decodeString: (AnyObject) throws -> String?
 ) {
     for attributes in table.values {
         guard let value = attributes[UIElementAttribute("AXRole")],
               let name = try? decodeString(value.value.value) else { continue }
         let role = UIElementRole(name)
-        counts[role, default: 0] += 1
+        counts.increment(role)
     }
 }
 
 func uiElementRoleFrequencies(
     _ table: [AXUIElement: [UIElementAttribute: AXPartialValue]]
-) -> [UIElementRole: Int] {
-    var counts: [UIElementRole: Int] = [:]
+) -> FrequencyTable<UIElementRole> {
+    var counts = FrequencyTable<UIElementRole>()
     accumulateUIElementRoleFrequencies(table, into: &counts,
         decodeString: { try decodeAXString($0, throwingOnFailure: false) })
     return counts

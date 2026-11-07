@@ -6,8 +6,14 @@ import os
     enum Failure: Error { case expected }
     struct Element: UIElementProtocol {
         let axElement: AXUIElement
-        let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
-        init(element: AXUIElement) { axElement = element }
+        let cache: UIElementCache
+        init(element: AXUIElement) {
+            axElement = element
+            cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+        }
+        init(element: AXUIElement, cache: UIElementCache) {
+            axElement = element; self.cache = cache
+        }
         static var role: UIElementRole? { nil }
         var role: UIElementRole { .group }
         var id: AXUIElement { axElement }
@@ -77,7 +83,53 @@ import os
         _ = construct(); precondition(reads == 5)
         precondition(UIElementTreeTransaction.current == nil)
     }
+    static func checkSubtreeConstruction() {
+        let ax = AXUIElementCreateApplication(11006)
+        let child = AXUIElementCreateApplication(11007)
+        let role = UIElementAttribute("AXRole"), extra = UIElementAttribute("AXExtra")
+        let roleValue = AXPartialValue(value: AXEncodedValue(value: "AXButton" as NSString),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        var events: [String] = []
+        func construct() -> UIElementTreeTransaction {
+            constructUIElementSubtreeTransaction(element: ax, additionalAttributes: [extra, extra],
+                maxChildCount: -3,
+                supportedAttributes: { events.append("support"); return [] },
+                bundleIdentifier: { preconditionFailure("DOM class not supported") },
+                readHierarchy: { element, arrays, requested, limit in
+                    events.append("hierarchy")
+                    precondition(UIElementTreeTransaction.current == nil)
+                    precondition(CFEqual(element, ax) && limit == -3)
+                    precondition(arrays.map { $0.name as String } == ["AXChildren", "AXSelectedRows", "AXSelectedCells", "AXSelectedChildren"])
+                    precondition(requested.filter { $0 == extra }.count == 2)
+                    return [ax: [role: roleValue], child: [role: roleValue]]
+                }, makeElement: { element, cache in
+                    events.append("root")
+                    precondition(UIElementTreeTransaction.current == nil)
+                    let concreteCache = constructUIElementCache(element: element, transaction: cache,
+                        readSupported: { events.append("cold"); return [] },
+                        bundleIdentifier: { preconditionFailure() }, readValues: { _ in preconditionFailure() })
+                    return Element(element: element, cache: concreteCache)
+                })
+        }
+        let enabled = construct()
+        precondition(events == ["support", "hierarchy", "root"])
+        precondition(enabled.roleFrequencyTable[.button] == 2)
+        precondition(enabled.cache.requestedAttributes.contains(extra))
+        precondition(enabled.element.cache.transactionAttributes == enabled.cache.requestedAttributes)
+        precondition(enabled.element.cache.attributes[role] != nil)
+        precondition(enabled.cache.requestedAttributes.contains(UIElementAttribute("AXChildren")))
+        events = []
+        let disabled = UIElementTreeTransaction.$prefetchEnabled.withValue(false) { construct() }
+        precondition(events == ["root", "cold"])
+        precondition(disabled.cache.attributeTable.isEmpty && disabled.cache.requestedAttributes.isEmpty)
+        precondition(disabled.roleFrequencyTable[.button] == 0)
+        precondition(disabled.element.cache.transactionAttributes == nil)
+        precondition(fallbackUIElementCache(element: ax, in: disabled.cache.fallbackElements) != nil)
+        precondition(fallbackUIElementCache(element: ax, in: enabled.cache.fallbackElements) == nil)
+        precondition(UIElementTreeTransaction.prefetchEnabled)
+    }
     static func main() throws {
+        checkSubtreeConstruction()
         checkScopedConstruction()
         let outer = transaction(11000), inner = transaction(11001)
         precondition(UIElementTreeTransaction.current == nil && UIElementTreeTransaction.prefetchEnabled)

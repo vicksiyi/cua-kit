@@ -40,6 +40,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AXArrayTargetConversion.swift"),
         join(root, "native/macos/Sources/CuaHelper/TypeErasedArray.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementRoleFrequency.swift"),
+        join(root, "native/macos/Sources/CuaHelper/FrequencyTable.swift"),
         join(root, "native/macos/Tests/UIElementRoleFrequencyTests.swift"),
       ]);
       const { stdout } = await exec(executable);
