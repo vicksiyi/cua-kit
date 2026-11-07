@@ -598,6 +598,47 @@ private enum ProviderClickChecks {
         checkEqual(capturedActions(.fullUIContext), [])
         checkEqual(actionErrors, 2)
         checkEqual(textProvider.singleReads, readsBeforeValueState)
+        let ownerAX = AXUIElementCreateApplication(12508)
+        let ownerProvider = Hit()
+        provider.replacements[ownerAX] = ownerProvider
+        var ownerActionReads = 0
+        ownerProvider.actionRead = { ownerActionReads += 1; return [.press] }
+        ownerProvider.descriptionRead = { _ in unexpectedFailure() }
+        let ownerElement = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [UIElementAttribute("AXRole")], attributes: [
+                UIElementAttribute("AXRole"): partial("AXGroup" as NSString),
+                UIElementAttribute("AXTitle"): partial("Captured group" as NSString),
+                UIElementAttribute("AXSelected"): partial(kCFBooleanTrue),
+                UIElementAttribute("AXFocused"): partial(kCFBooleanTrue),
+                UIElementAttribute("AXEnabled"): partial(kCFBooleanFalse),
+                UIElementAttribute("AXDisclosing"): partial(kCFBooleanTrue),
+                UIElementAttribute("AXDOMClassList"): partial(["group", 7] as NSArray)
+            ], transactionAttributes: nil))
+        func ownerContext(_ type: UIElementContextType) -> UIElementTransformationContext {
+            UIElementTransformationContext(type: type, application: Optional<Int>.none,
+                window: Optional<Int>.none, urlConfiguration: nil,
+                isCatalystApp: { _ in unexpectedFailure() },
+                applicationIsWebShaped: { _ in unexpectedFailure() },
+                windowHasChromeNode: { _ in unexpectedFailure() }, frame: { _ in unexpectedFailure() })
+        }
+        let capturedOwner = TransformedUIElement(element: ownerElement,
+            context: ownerContext(.fullUIContext), traversalParentRole: nil,
+            reportError: { _ in unexpectedFailure() }, reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkTrue(CFEqual(capturedOwner.element.axElement, ownerAX))
+        checkEqual(capturedOwner.role, .group); checkEqual(capturedOwner.title, "Captured group")
+        checkTrue(capturedOwner.isSelected); checkTrue(capturedOwner.isFocused)
+        checkFalse(capturedOwner.isEnabled); checkTrue(capturedOwner.isDisclosing)
+        checkFalse(capturedOwner.isDisclosable); checkFalse(capturedOwner.isFocusable)
+        checkFalse(capturedOwner.isSelectable); checkFalse(capturedOwner.isValueSettable)
+        checkTrue(capturedOwner.value == nil); checkTrue(capturedOwner.valueTypeName == nil)
+        checkTrue(capturedOwner.attributedString == nil); checkTrue(capturedOwner.transformedString == nil)
+        checkEqual(capturedOwner.domClassList, ["group"])
+        checkEqual(capturedOwner.actionDescriptions.map(\.action), [.press])
+        let eventOwner = TransformedUIElement(element: ownerElement,
+            context: ownerContext(.eventStreamContext), traversalParentRole: nil,
+            reportError: { _ in unexpectedFailure() }, reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkTrue(eventOwner.isDisclosable); checkEqual(eventOwner.actionDescriptions, [])
+        checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

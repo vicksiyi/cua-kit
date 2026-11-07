@@ -52,6 +52,11 @@ expected_fields = [
     'isValueSettable', 'attributedString', 'transformedString',
 ]
 assert stored == expected_fields
+# Verify the restored Swift owner has exactly the recovered stored field names.
+import re
+owner = Path(__file__).resolve().parents[1] / 'native/macos/Sources/CuaHelper/TransformedUIElement.swift'
+owner_fields = re.findall(r'^    var (\w+):', owner.read_text(), re.MULTILINE)
+assert owner_fields == stored
 # Swift struct descriptor: kind 17, field-offset vector at metadata word 2.
 assert struct.unpack('<I', read(descriptor, 4))[0] & 0x1f == 17
 assert struct.unpack('<I', read(descriptor + 24, 4))[0] == 2
@@ -148,6 +153,6 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     ],
     limitations=[
         'Stored field discovery does not establish their full initialization semantics.',
-        'Common initializer 0x10075e160..0x10075ff54 still requires complete branch reconstruction.',
-        'No full transformed owner or production collector integration is claimed.',
+        'Common constructor is assembled from recovered components; broader branch and traversal integration remain to verify.',
+        'Owner field inventory is verified; downstream transforms and production collector integration are not complete.',
     ]), indent=2))

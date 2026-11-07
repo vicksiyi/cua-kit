@@ -5027,3 +5027,29 @@ missing/throwing native descriptions, action enumeration failure, and no fresh
 attribute reads during this composition. Existing CFArray cast warnings remain.
 Full owner assembly, downstream transformations and production collection
 integration are still incomplete; no live UI acceptance is claimed.
+
+
+### Assembled transformed node owner (2026-11-07)
+
+Added the Swift `TransformedUIElement` struct with all 26 stored fields in
+native descriptor order. Its UIElement/context initializer composes recovered
+cached strings, value/truncation/writability, window URL, DOM classes, selected
+traits fallback, focus/enabled/disclosure, context-specific capabilities and
+action descriptions. It passes traversalParentRole through to Chromium value
+eligibility. Selected/focused/enabled/disclosing are captured before capability
+calculation; action descriptions use the captured disclosure flags. Rich-text
+fields start nil, matching the constructor instead of reading them eagerly.
+
+The binary audit now also checks the Swift owner's stored field names against
+the native descriptor. Swift build, pinned binary audit and provider composition
+selftest pass. New owner tests use a captured disabled/focused/selected/disclosing
+group and verify state, identity, title, class filtering, absent value defaults,
+initial nil rich text, action reads only for full UI context, and event context's
+current-disclosure override without fresh AX reads. Earlier component checks
+continue covering value/range/URL and error branches.
+
+This is constructor integration, not final production integration: downstream
+node mutation/rendering, protocol conformance, tree transformation/traversal,
+root overloads and real application acceptance still need completion. The
+existing flat production collector has not been silently switched to an
+unfinished rendering pipeline. Logger callbacks remain explicit dependencies.

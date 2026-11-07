@@ -149,7 +149,7 @@
   ],
   "limitations": [
     "Stored field discovery does not establish their full initialization semantics.",
-    "Common initializer 0x10075e160..0x10075ff54 still requires complete branch reconstruction.",
-    "No full transformed owner or production collector integration is claimed."
+    "Common constructor is assembled from recovered components; broader branch and traversal integration remain to verify.",
+    "Owner field inventory is verified; downstream transforms and production collector integration are not complete."
   ]
 }
