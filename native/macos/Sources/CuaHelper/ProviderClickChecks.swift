@@ -1256,6 +1256,94 @@ private enum ProviderClickChecks {
             }
         }
 
+        var selectableRoot = anonymousGroup
+        selectableRoot.isSelectable = true
+        selectableRoot.isFocusable = true
+        selectableRoot.title = " root "
+        selectableRoot.description = " root description "
+        selectableRoot.value = " root value "
+        var plainChild = associationNode(associationA, [], title: " child ")
+        plainChild.description = " child description "
+        plainChild.value = " child value "
+        var boolChild = associationNode(associationB, [], title: " boolean ")
+        boolChild.value = "false"
+        boolChild.element = UIElement(axElement: associationB, cache: UIElementCache(
+            supportedAttributes: [], attributes: [UIElementAttribute("AXValue"): partial(kCFBooleanFalse)],
+            transactionAttributes: nil))
+        let selectableItem = associationItem(selectableRoot, children: [
+            associationItem(plainChild, children: [associationItem(boolChild)])
+        ])
+        switch UIElementTreeTransformation.flattenIntoSelectableAncestor(item: selectableItem, context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.element.title, "root\nchild\nboolean")
+            checkEqual(result.element.description, "root description\nchild description")
+            checkEqual(result.element.value, "root value\nchild value")
+            checkFalse(result.element.isFocusable) // replaces own true, uses descendants only
+            checkEqual(result.children.count, 1)
+            checkTrue(CFEqual(result.children[0].element.id, associationB))
+            checkEqual(result.children[0].element.boolValue, false) // false is retained too
+        default: unexpectedFailure("selectable ancestor did not flatten text and preserve Boolean item")
+        }
+        for guardIndex in 0..<6 {
+            var root = selectableRoot
+            var child = plainChild
+            if guardIndex == 0 { root.isSelectable = false }
+            if guardIndex == 1 { root.isFocused = true }
+            if guardIndex == 2 { root.role = .table }
+            if guardIndex == 3 { root.subrole = "AXTableRow" }
+            if guardIndex == 4 { child.isValueSettable = true }
+            if guardIndex == 5 { child.isSelectable = true }
+            let parent = associationItem(root, children: [associationItem(anonymousGroup, children: [associationItem(child)])])
+            switch UIElementTreeTransformation.flattenIntoSelectableAncestor(item: parent, context: &associationContext) {
+            case .unchanged: break
+            default: unexpectedFailure("selectable ancestor guard was ignored")
+            }
+        }
+        var focusableChild = plainChild
+        focusableChild.isFocusable = true
+        var booleanCallbacks = 0
+        let callbackParent = associationItem(selectableRoot, children: [associationItem(focusableChild), associationItem(boolChild)])
+        switch UIElementTreeTransformation.flattenIntoSelectableAncestor(item: callbackParent, context: &associationContext,
+            rebuild: { tree, child, _ in
+                checkTrue(tree.items.isEmpty)
+                checkTrue(CFEqual(child.element.id, associationB))
+                booleanCallbacks += 1
+                // The callback owns insertion; the rule must not append again.
+            }) {
+        case .transformed(let result):
+            checkTrue(result.element.isFocusable)
+            checkTrue(result.children.isEmpty)
+            checkEqual(booleanCallbacks, 1)
+        default: unexpectedFailure("selectable ancestor rebuild was not invoked")
+        }
+        // Filtering the traversal retains full items; a nested Boolean is
+        // present both within its retained parent and as its own retained item.
+        var nestedBool = boolChild
+        nestedBool.element = UIElement(axElement: associationLabel, cache: UIElementCache(
+            supportedAttributes: [], attributes: [UIElementAttribute("AXValue"): partial(kCFBooleanTrue)],
+            transactionAttributes: nil))
+        let booleanParent = associationItem(selectableRoot, children: [
+            associationItem(boolChild, children: [associationItem(nestedBool)])
+        ])
+        switch UIElementTreeTransformation.flattenIntoSelectableAncestor(item: booleanParent, context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.children.count, 2)
+            checkTrue(CFEqual(result.children[0].element.id, associationB))
+            checkTrue(CFEqual(result.children[1].element.id, associationLabel))
+            checkEqual(result.children[0].children.count, 1)
+            checkEqual(result.children[1].element.boolValue, true)
+        default: unexpectedFailure("Boolean traversal must preserve full captured items")
+        }
+        var emptySelectable = anonymousGroup
+        emptySelectable.isSelectable = true
+        switch UIElementTreeTransformation.flattenIntoSelectableAncestor(item: associationItem(emptySelectable), context: &associationContext) {
+        case .transformed(let result):
+            checkEqual(result.element.title, "")
+            checkEqual(result.element.description, "")
+            checkEqual(result.element.value, "")
+        default: unexpectedFailure("selectable leaf should still transform")
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

@@ -5499,3 +5499,43 @@ targets and nonempty captured source subtrees. No vendor executable was run,
 no live application was controlled and no policy was modified. This is the
 sixth extracted common rule body, not a claim that the production collector,
 complete nine-rule dispatcher or live app acceptance is finished.
+
+### Selectable ancestor flattening (2026-11-07)
+
+Recovered common tag 1 (`flattenIntoSelectableAncestor`) as a Swift generic
+rule body. Entry 0x100659e58 requires own isSelectable and not isFocused,
+excludes role == table and own isTableRow, then rejects any descendant with
+isValueSettable or isSelectable. It does not reject a merely focusable
+child, an enabled/disabled state, or a subset descriptor.
+
+Before mutation it flattens description, stringValue and title separately,
+using the existing item-level whitespace/newline rules. `stringValue` is
+intentional, not raw value, so Boolean control values are excluded from the
+aggregated textual value. It then overwrites own isFocusable with whether any
+descendant isFocusable (own true can become false), followed by value,
+description and title assignment. Missing text becomes a present empty
+string. The remaining subtree is the depth-first list of full captured items
+whose boolValue is non-nil; both true and false qualify. Entire subtrees are
+preserved in these items, so a nested Boolean item can remain inside its
+retained parent and also appear as a retained direct child. No deduplication
+or leaf-only rule is added. The subtree is cleared before optional rebuild
+callbacks, or ordinary append when no callback exists. Result is transformed,
+even for an empty source subtree.
+
+Evidence: key-path patterns 0x10118bb18/bb48 resolve to getter witness slots
+23/17 (value-settable/selectable). Patterns bb78/bbb0/bbe0/bc18 resolve to
+slots 9/26/8/19 (description/stringValue/title/focusable). Mutator slots
+12/10/8/6 occur at 0x10065a2a8/2c0/2e0/2f8. The traversal filter callback
+0x10065d900 reads boolValue slot 31 and compares the Optional Bool tag to 2,
+returning non-equality. Filtering at 0x10065a3cc is Swift Sequence.filter;
+map uses the cursor item key path, then removeAll at 0x10065a4e4 and the
+shared rebuild/append loop 0x10065af6c. Result tag 0 at 0x10065bf40 confirms
+transformed rather than replaced. Audit pins these getters, setters and calls.
+
+Validation: Swift build and own provider mock checks pass. Fixtures cover all
+six rejection conditions (including nested descendants), Boolean false/true,
+text aggregation, focusability overwrite, callback-owned insertion, nested
+Boolean subtree preservation and empty text. No live app or vendor service
+execution was performed. Seven common strategy bodies are now extracted;
+link markdown flattening and text-only sibling merging, Mac-specific rules,
+complete dispatcher and production collector integration still remain.

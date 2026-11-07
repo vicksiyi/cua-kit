@@ -341,6 +341,45 @@ for address, instruction in [
 ]:
     assert struct.unpack('<I', read(address, 4))[0] == instruction
 
+# Selectable-ancestor flattening: guard key paths and captured text fields.
+selectable_fields = []
+for pattern, getter, slot, name in [
+    (0x10118bb18, 0x10065d610, 23, 'isValueSettable'),
+    (0x10118bb48, 0x10065d660, 17, 'isSelectable'),
+    (0x10118bb78, 0x10065d6b0, 9, 'description'),
+    (0x10118bbb0, 0x10065d75c, 26, 'stringValue'),
+    (0x10118bbe0, 0x10065d7a8, 8, 'title'),
+    (0x10118bc18, 0x10065d878, 19, 'isFocusable'),
+]:
+    assert relative(pattern + 32) == getter
+    assert struct.unpack('<I', read(getter + 32, 4))[0] == 0xf9400029 | (slot << 10)
+    selectable_fields.append(dict(field=name, pattern=hex(pattern), getter=hex(getter)))
+for address, instruction in [
+    (0x100659e60, 0xf94046a8), # own selectable
+    (0x100659e84, 0xf9404aa8), # own focused
+    (0x100659ef0, 0xf9401409), # AccessibilityRole.table static requirement
+    (0x100659f54, 0xf94082a8), # own isTableRow
+    (0x10065a2a8, 0xf9403268), # mutable isFocusable setter
+    (0x10065a2c0, 0xf9402a68), # value setter
+    (0x10065a2e0, 0xf9402268), # description setter
+    (0x10065a2f8, 0xf9401a68), # title setter
+    (0x10065d91c, 0xf9407c29), # boolValue filter getter
+    (0x10065d930, 0x7100091f), # Optional<Bool>.none tag 2
+    (0x10065d934, 0x1a9f07e0), # keep iff non-nil (false included)
+    (0x10065afd4, 0xd63f0320), # rebuild callback
+    (0x10065bf40, 0x52800002), # transformed result tag 0
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+for site, target in [
+    (0x100659f24, 0x101150714), # role equality
+    (0x100659fd4, 0x100650d50), (0x10065a048, 0x100650d50),
+    (0x10065a0fc, 0x10064f3d4), (0x10065a194, 0x10064f3d4),
+    (0x10065a22c, 0x10064f3d4), (0x10065a298, 0x100650d50),
+    (0x10065a31c, 0x10064dfbc), (0x10065a3cc, 0x101150c78),
+    (0x10065a4e4, 0x101150f3c), (0x10065af1c, 0x101150f0c),
+]:
+    branch(site, target)
+
 # Full title mutation paths: setter before source removal; relocation appends
 # (or invokes rebuild) before sorting target indices and removing siblings.
 for site, target in [
@@ -374,6 +413,10 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
         mutation="single eligible target: set title then remove source; otherwise empty source: require all targets, rebuild/append in target order, remove descending indices",
         remaining=["integrate complete transformation dispatcher and native production collector",
             "live application acceptance"]),
+    selectableAncestor=dict(entry="0x100659e58", keyPaths=selectable_fields,
+        guards="selectable, not focused/table/table-row; no value-settable or selectable descendant",
+        mutation="flatten description/stringValue/title; overwrite own focusability with descendant predicate; retain full Boolean-valued items in depth-first order using optional rebuild",
+        limitation="extracted body; complete dispatcher and production integration pending"),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
         guard="not focusable/selectable and no canBeUserInteractive descendant",
         matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",

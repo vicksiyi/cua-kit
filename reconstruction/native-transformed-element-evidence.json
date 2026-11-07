@@ -194,6 +194,44 @@
       "live application acceptance"
     ]
   },
+  "selectableAncestor": {
+    "entry": "0x100659e58",
+    "keyPaths": [
+      {
+        "field": "isValueSettable",
+        "pattern": "0x10118bb18",
+        "getter": "0x10065d610"
+      },
+      {
+        "field": "isSelectable",
+        "pattern": "0x10118bb48",
+        "getter": "0x10065d660"
+      },
+      {
+        "field": "description",
+        "pattern": "0x10118bb78",
+        "getter": "0x10065d6b0"
+      },
+      {
+        "field": "stringValue",
+        "pattern": "0x10118bbb0",
+        "getter": "0x10065d75c"
+      },
+      {
+        "field": "title",
+        "pattern": "0x10118bbe0",
+        "getter": "0x10065d7a8"
+      },
+      {
+        "field": "isFocusable",
+        "pattern": "0x10118bc18",
+        "getter": "0x10065d878"
+      }
+    ],
+    "guards": "selectable, not focused/table/table-row; no value-settable or selectable descendant",
+    "mutation": "flatten description/stringValue/title; overwrite own focusability with descendant predicate; retain full Boolean-valued items in depth-first order using optional rebuild",
+    "limitation": "extracted body; complete dispatcher and production integration pending"
+  },
   "repetitiveText": {
     "entry": "0x100659d8c",
     "helper": "0x10065c5ac",
