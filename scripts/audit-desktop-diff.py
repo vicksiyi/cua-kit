@@ -1934,6 +1934,34 @@ transaction_scope_evidence['prefetchControl'] = {
     'interpretation': 'The default is true, dynamically read from Swift TaskLocal during subtreeTransaction construction. Disabled prefetch selects a distinct construction branch, not a process-global mutable switch.',
     'limitations': 'The complete enabled/disabled cache construction and protocol witness dispatch remain to be recovered; no production transaction owner is introduced by this evidence.',
 }
+hierarchy_option_words = {
+    0x1006f8134: 0xf8020f60,
+    0x1006f8158: 0xf9001799,
+    0x1006f8164: 0xa904eb80,
+    0x1006f8184: 0x52800028,
+    0x1006f8188: 0x3901e388,
+    0x1006f819c: 0xf9403e68,
+    0x1006f81a0: 0xa909a380,
+    0x1006f8254: 0x97ed7797,
+}
+for address, word in hierarchy_option_words.items():
+    if struct.unpack('<I', read_virtual(address, 4))[0] != word:
+        raise SystemExit('Hierarchy option construction changed')
+transaction_scope_evidence['hierarchyOptions'] = {
+    'caller': '0x10076c570 -> 0x1006f7f2c',
+    'systemCall': '0x1006f8254 -> 0x1002560b0 (AccessibilitySPI.copyHierarchy)',
+    'entries': [
+        {'keyGetter': '0x100256128', 'name': 'copyHierarchySkipInspectionForAttributesKey', 'value': 'requested attribute names'},
+        {'keyGetter': '0x100256134', 'name': 'copyHierarchyArrayAttributesKey', 'value': 'array attribute names'},
+        {'keyGetter': '0x100256140', 'name': 'copyHierarchyTruncateStringsKey', 'value': True},
+        {'keyGetter': '0x10025614c', 'name': 'copyHierarchyMaxArrayCountKey', 'value': 'caller maxChildCount, unchanged'},
+    ],
+    'blocks': [{'start': hex(a), 'endExclusive': hex(b), 'machineCodeSha256': hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+               for a,b in [(0x1006f7f2c,0x1006f8060),(0x1006f812c,0x1006f81ac),(0x1006f8244,0x1006f8258),(0x1002560b0,0x100256158)]],
+    'instructionWords': {hex(a): hex(w) for a,w in hierarchy_option_words.items()},
+    'implementation': 'native/macos/Sources/CuaHelper/AXHierarchyOptions.swift',
+    'limitations': 'Option construction only. SPI symbol/key resolution, hierarchy ownership/decoding and transaction integration remain separate. No call to private system SPI is made by this helper.',
+}
 # Transaction fields retain their original existential/cache/role-counter types.
 transaction_field_types = [
     ('element',0x10129e8e6,'02d9241c005f70','any UIElementProtocol'),

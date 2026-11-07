@@ -2672,3 +2672,21 @@ flowchart TD
 The transaction retains `element`, `cache`, and `roleFrequencyTable`. Current source has the cache projection and role counter, but no restored full transaction owner/protocol. The existing explicit `transaction: nil` call sites therefore do not reproduce this scope or prefetch behavior. The graph describes the native source structure, not the current demo execution path.
 
 Next reconstruction dependency: decode the two construction branches and their protocol witnesses, including the unresolved callee at `0x10076c570 -> 0x1006f7f2c`, before wiring the owner into element construction. The precise constructor semantics and prefetch failure fallback are not proven by this branch audit. No process-global cache or guessed task-local wrapper was introduced. The pinned audit runs statically without executing the vendor service.
+
+
+### Hierarchy prefetch option construction (2026-11-07)
+
+The previously unresolved constructor callee `0x1006f7f2c` reaches `SystemSoftware.AccessibilitySPI.copyHierarchy` at `0x1006f8254`. This establishes an actual batch hierarchy boundary; ordinary per-element CopyAttributeValue traversal is not its equivalent. Its direct-call option dictionary contains four entries:
+
+| Native key getter | Value |
+| --- | --- |
+| copyHierarchySkipInspectionForAttributesKey | Requested attribute names |
+| copyHierarchyArrayAttributesKey | Array attribute names |
+| copyHierarchyTruncateStringsKey | Boolean true |
+| copyHierarchyMaxArrayCountKey | Caller maxChildCount, unchanged |
+
+`AXHierarchyOptions.swift` reconstructs this dictionary construction with resolved CFString keys supplied by the SPI boundary. It retains array order/duplicates and does not substitute the demo's node/depth/time budgets. The boundary is injected because native SPI loading and key resolution are still being traced; no guessed key string or vendor process is used.
+
+The direct native path calls copyHierarchy and proceeds to inspect the output pointer; no AX status branch is present between the call and output lookup. The output ownership, dictionary bridging, partial-value decoding and same-process main-thread closure still require reconstruction before this can become the production transaction prefetch path. Do not infer that a nonzero AX status must always throw here from the stricter single-attribute write helpers.
+
+Validation: Swift build, the standalone option test using fixture keys (including empty/duplicate arrays, CFBoolean identity, and signed count extremes), and static audit generation/check. This adds a source-derived construction helper and evidence, not a working hierarchy collector or desktop acceptance.
