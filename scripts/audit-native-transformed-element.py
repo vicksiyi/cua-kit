@@ -134,6 +134,18 @@ rendering_witnesses = [0x100758848, 0x100758854, 0x10075885c, 0x100758870]
 for i, target in enumerate(rendering_witnesses):
     raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
     assert 0x100000000 + (raw & 0xffffffff) == target
+# Common and platform transformation inventories/default static arrays.
+assert fields(0x1012c9cc8) == ['associateTitleUIElements', 'flattenIntoSelectableAncestor',
+    'pruneNonDescriptiveSubtrees', 'pruneEmptyDisabledElements', 'mergeSingleItemGroups',
+    'flattenRedundantHierarchy', 'flattenRepetitiveStaticText', 'flattenLinksIntoMarkdownText',
+    'mergeTextOnlySiblings']
+assert fields(0x1012ccdc8) == ['shared', 'filterActions', 'removeElementsUnderCalendarEvents',
+    'retrieveAttributedTextFromTextAreas', 'retrieveAttributedTextFromWebAreas']
+for address, tags in [(0x10156b860, bytes(range(9))),
+                      (0x1015721c0, bytes([9])), (0x1015721f0, bytes([10, 11, 12]))]:
+    assert struct.unpack('<Q', read(address + 16, 8))[0] == len(tags)
+    assert read(address + 32, len(tags)) == tags
+
 # Generic tree transformation result cases and recursion edges.
 assert fields(0x1012c9ce4) == ['transformed', 'replaced', 'removed', 'unchanged']
 branch(0x100651620, 0x100651728)

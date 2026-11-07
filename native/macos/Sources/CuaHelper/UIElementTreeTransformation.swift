@@ -1,6 +1,24 @@
-// Transformation cases/individual policies are restored separately. This
-// namespace currently carries the recovered result contract (0x1012c9ce4).
-enum UIElementTreeTransformation {
+// Original descriptor 0x1012c9cc8, declaration order preserved. Individual
+// transform policy implementations remain separate from this configuration.
+enum UIElementTreeTransformation: Hashable {
+    case associateTitleUIElements
+    case flattenIntoSelectableAncestor
+    case pruneNonDescriptiveSubtrees
+    case pruneEmptyDisabledElements
+    case mergeSingleItemGroups
+    case flattenRedundantHierarchy
+    case flattenRepetitiveStaticText
+    case flattenLinksIntoMarkdownText
+    case mergeTextOnlySiblings
+
+    // Mutable source static, initialized at 0x10065c030 from 0x10156b860.
+    static var defaultPipeline: [Self] = [
+        .associateTitleUIElements, .flattenIntoSelectableAncestor,
+        .pruneNonDescriptiveSubtrees, .pruneEmptyDisabledElements,
+        .mergeSingleItemGroups, .flattenRedundantHierarchy,
+        .flattenRepetitiveStaticText, .flattenLinksIntoMarkdownText,
+        .mergeTextOnlySiblings,
+    ]
     enum Result<Element: AccessibilityNode> {
         case transformed(UIElementTree<Element>.Item)
         case replaced(UIElementTree<Element>.Item)

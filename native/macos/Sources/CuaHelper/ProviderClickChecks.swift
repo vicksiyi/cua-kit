@@ -842,6 +842,21 @@ private enum ProviderClickChecks {
         let unchangedTree = transformInput.transformed(using: [Int](), in: &noRules) { _, _, _ in unexpectedFailure() }
         checkEqual(unchangedTree.items.count, 2)
         checkEqual(unchangedTree.items[1].children[0].element.title, "hidden")
+        let commonPipeline = UIElementTreeTransformation.defaultPipeline
+        checkEqual(commonPipeline, [.associateTitleUIElements, .flattenIntoSelectableAncestor,
+            .pruneNonDescriptiveSubtrees, .pruneEmptyDisabledElements, .mergeSingleItemGroups,
+            .flattenRedundantHierarchy, .flattenRepetitiveStaticText, .flattenLinksIntoMarkdownText,
+            .mergeTextOnlySiblings])
+        checkEqual(MacUIElementTreeTransformation.defaultPipeline,
+            [.filterActions] + commonPipeline.map(MacUIElementTreeTransformation.shared) + [
+                .removeElementsUnderCalendarEvents, .retrieveAttributedTextFromTextAreas,
+                .retrieveAttributedTextFromWebAreas])
+        UIElementTreeTransformation.defaultPipeline = [.mergeTextOnlySiblings, .mergeTextOnlySiblings]
+        checkEqual(MacUIElementTreeTransformation.defaultPipeline, [.filterActions,
+            .shared(.mergeTextOnlySiblings), .shared(.mergeTextOnlySiblings),
+            .removeElementsUnderCalendarEvents, .retrieveAttributedTextFromTextAreas,
+            .retrieveAttributedTextFromWebAreas])
+        UIElementTreeTransformation.defaultPipeline = commonPipeline
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

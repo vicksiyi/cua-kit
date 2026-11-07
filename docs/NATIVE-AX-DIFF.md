@@ -5214,3 +5214,28 @@ removed subtree skip and context mutation; output/focus/input-copy assertions
 and empty-rule traversal also pass. This is the generic execution driver only:
 UIElementTreeTransformation's concrete policy cases, rendering overload, native
 traversal integration and live application acceptance remain incomplete.
+
+
+### Complete transformation inventory and default pipeline (2026-11-07)
+
+Recovered all nine common policy cases from descriptor 0x1012c9cc8 in order:
+associateTitleUIElements, flattenIntoSelectableAncestor,
+pruneNonDescriptiveSubtrees, pruneEmptyDisabledElements, mergeSingleItemGroups,
+flattenRedundantHierarchy, flattenRepetitiveStaticText,
+flattenLinksIntoMarkdownText, mergeTextOnlySiblings. Default initialization
+0x10065c030 points to static array 0x10156b860 containing tags 0..8.
+The common defaultPipeline remains mutable, as the native addressor exposes it.
+
+Mac descriptor 0x1012ccdc8 contains shared(common), filterActions,
+removeElementsUnderCalendarEvents, retrieveAttributedTextFromTextAreas and
+retrieveAttributedTextFromWebAreas. Mac getter 0x10075b7a0 maps the current
+common array into shared wrappers. It starts with static [9] at 0x1015721c0,
+appends the wrapped common list, then static [10,11,12] at 0x1015721f0 using
+0x10076d5d0. Thus filterActions precedes shared policies and calendar/rich-text
+policies follow them. Getter reads the current common list on each call.
+
+Build/provider selftest and binary inventory/static-array audit pass. Tests
+verify exact defaults and changes to common defaults, preserving duplicates.
+These enum/configuration definitions DO NOT implement or execute the nine
+shared/four platform policy algorithms yet. Generic driver exists, but policy
+execution/rendering/native traversal/live acceptance are still pending.
