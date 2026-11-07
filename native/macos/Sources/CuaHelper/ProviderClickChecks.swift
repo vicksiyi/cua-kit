@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runAnimationDriverRemovalChecks()
     runAnimationTransactionCompletionChecks()
     runAnimationStateStopCompositionChecks()
     runInterpolatableAnimationStopChecks()
@@ -8038,4 +8039,26 @@ private func runAnimationTransactionCompletionChecks() {
     notifyAnimationTransactionCompletion(animationID: animation, state: .ended,
         transactionID: { _ in transaction }, completion: { _ in nil },
         removeCompletion: { _ in preconditionFailure() })
+}
+
+
+private func runAnimationDriverRemovalChecks() {
+    final class Source {}
+    final class Handler { let name: String; let released: (String) -> Void
+        init(_ name: String, released: @escaping (String) -> Void) { self.name = name; self.released = released }
+        deinit { released(name) }
+    }
+    let source = Source(), otherSource = Source()
+    var events: [String] = []
+    let id = ObjectIdentifier(source)
+    var registry = [id: Handler("old", released: { events.append($0) })]
+    removeAnimationDriver(source: otherSource, lookup: { registry[$0] },
+        invalidate: { _ in preconditionFailure() }, remove: { _ in preconditionFailure() })
+    removeAnimationDriver(source: source, lookup: { registry[$0] }, invalidate: { handler in
+        precondition(registry[id] === handler)
+        events.append("invalidate")
+        registry[id] = Handler("replacement", released: { events.append($0) })
+    }, remove: { key in events.append("remove"); return registry.removeValue(forKey: key) })
+    precondition(registry.isEmpty)
+    precondition(events == ["invalidate", "remove", "old", "replacement"])
 }

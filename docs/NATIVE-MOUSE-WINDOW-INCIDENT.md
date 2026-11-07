@@ -3417,3 +3417,24 @@ registration/removal and the complete coordinator owner remain outstanding;
 this routine must not be described as deregistering an animation driver.
 
 Swift build, provider checks and pinned static audit pass for transaction completion forwarding.
+
+
+## Coordinator driver-source removal sequencing (2026-11-08)
+
+Exported remove(driverSource:) at 0x1007cadac uses the source object's identity
+as driverHandlers key. Missing entry returns. A found handler is retained after
+dictionary read access ends, then invalidated through 0x1007ca4dc. Only after
+that callback returns does it remove the current entry by key, then release the
+old retained handler and the removed entry in that order. It does not remove
+first, hold a dictionary inout access during invalidation, or conditionally keep
+a replacement installed by reentrant invalidation.
+
+The injected Swift removal preserves ObjectIdentifier lookup, callback outside
+dictionary access, fresh key removal and explicit lifetime ordering. A resource
+check replaces the entry during invalidation and verifies old-handler release
+occurs after removal but before replacement release. Missing source is a no-op.
+Static pins cover invalidate-before-removal. Handler invalidation's full running
+animation and driver cleanup is a separate body still being recovered; this
+routine does not substitute for a complete coordinator or animation driver.
+
+Swift build, provider lifetime/composition checks and pinned static audit pass for driver removal.

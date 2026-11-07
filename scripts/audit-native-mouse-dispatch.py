@@ -632,6 +632,10 @@ assert read(0x1007c5f44, 12).hex() == '936a77387f02356b60020054'
 # (state | 2) == 3: retargeted/ended then remove the completion entry.
 assert read(0x1007c90fc, 40).hex() == 'b7831938a0a301d1f40318aa40033fd6e00318aac2302694e8021f32081d00121f0d0071c1030054'
 
+# Coordinator remove(driverSource:) ends dictionary read access, retains
+# old handler and invalidates it, then removes the fresh entry by identity key.
+assert read(0x1007cae1c, 48).hex() == 'e00316aa84292694f40316aaadfdff9760620091e123009122048052030080d27828269474620091e00315aaee010094'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101
