@@ -2162,3 +2162,26 @@ Injected orchestration checks verify selection gates and error propagation.
 This native action method is ready for the main event-loop composition but is
 not yet called by a complete production ordering observer. No native raise or
 notification subscription was performed by these checks.
+
+
+## Main event loop subscription updates and error behavior
+
+WindowOrderingEventLoop restores weak owner lookup before subscription and
+before each event. The source retains its owner through handling/comparison,
+then releases it before the idle next() await. Task cancellation stops the
+outer loop; a handler CancellationError exits without logging. Other errors
+are reported and follow the same membership comparison as successful handling.
+The CancellationError metadata and Task.isCancelled imports are pinned.
+
+After handling, it compares Set(subscribedIDs) with Set(current observed IDs).
+Array reordering and duplicate count changes preserve the existing subscription.
+A membership change disposes the old iterator/stream/observer first, then reads
+current IDs again for a new subscription. The source does not synthesize an
+event when the property is set, or rebuild immediately just because its array
+order changed. Normal stream exhaustion also returns to the outer loop.
+
+Injected checks verify old-observer destruction before replacement, error
+continuation, cancellation cleanup, duplicate/order-only updates and an absent
+weak owner. This connects the previously restored subscription policy and event
+stream into the main loop boundary. Full concrete observer/menu/controller
+composition and live event acceptance are still outstanding.

@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    await runWindowOrderingEventLoopChecks()
     try await runWindowOrderingRestorationChecks()
     try await runWindowOrderingRaiseScopeChecks()
     await runWindowOrderingRestorationContextChecks()
@@ -7031,4 +7032,46 @@ private func runWindowOrderingRestorationChecks() async throws {
             restore: { _ in throw Failure.restore })
         preconditionFailure("restoration cancellation/error must propagate to event loop")
     } catch { checkTrue(error is Failure) }
+}
+
+
+private func runWindowOrderingEventLoopChecks() async {
+    final class Owner { var ids: [UInt32] = [1, 1] }
+    final class Observer {
+        let release: () -> Void
+        init(_ release: @escaping () -> Void) { self.release = release }
+        deinit { release() }
+    }
+    enum Failure: Error { case action }
+    let owner = Owner()
+    var trace: [String] = []; var count = 0
+    var latest: ((Int, WindowServerEvent) -> Void)?
+    await runWindowOrderingEventLoop(weakOwner: { [weak owner] in owner }, observedWindowIDs: { $0.ids },
+        makeObserver: { ids, events, callback in
+            count += 1; checkEqual(events, [.didChangeOrder])
+            checkEqual(ids, count == 1 ? [1, 1] : [2])
+            let number = count; trace.append("make-\(number)")
+            latest = callback; callback(number * 10, .didChangeOrder)
+            return Observer { trace.append("drop-\(number)") }
+        }, handle: { current, value, _ in
+            trace.append("handle-\(value)")
+            if value == 10 { current.ids = [2] }
+            else if value == 20 { latest!(21, .didChangeOrder); throw Failure.action }
+            else { throw CancellationError() }
+        }, reportError: { checkTrue($0 is Failure); trace.append("error") })
+    checkEqual(trace, ["make-1", "handle-10", "drop-1", "make-2", "handle-20", "error", "handle-21", "drop-2"])
+    // Reordering/removing duplicates keeps the same subscription.
+    count = 0; owner.ids = [1, 2, 1]
+    await runWindowOrderingEventLoop(weakOwner: { [weak owner] in owner }, observedWindowIDs: { $0.ids },
+        makeObserver: { _, _, callback in
+            count += 1; latest = callback; callback(1, .didChangeOrder); return Observer {}
+        }, handle: { current, value, _ in
+            if value == 1 { current.ids = [2, 1]; latest!(2, .didChangeOrder) }
+            else { throw CancellationError() }
+        }, reportError: { _ in unexpectedFailure() })
+    checkEqual(count, 1)
+    await runWindowOrderingEventLoop(weakOwner: { () -> Owner? in nil }, observedWindowIDs: { _ in unexpectedFailure() },
+        makeObserver: { _, _, _ -> Observer in unexpectedFailure() },
+        handle: { (_: Owner, _: Int, _: WindowServerEvent) in unexpectedFailure() },
+        reportError: { _ in unexpectedFailure() })
 }
