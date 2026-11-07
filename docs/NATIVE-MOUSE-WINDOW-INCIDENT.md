@@ -290,3 +290,28 @@ before startup. No event taps or desktop input are installed by these tests.
 EventTap start/stop inspection also confirms idempotent-start guard, per-PID vs
 global creation, weak-owner callback context and dedicated RunLoopTask ownership.
 The actual EventTap class remains to be restored and connected.
+
+
+## EventTap lifecycle implementation
+
+Implemented EventTap from 0x100732798..0x10073387c. Start is ignored when a
+monitoring task already exists, without replacing its handler. A failed create
+returns with no monitoring task and allows retry. Location dispatch chooses
+CGEvent.tapCreate or tapCreateForPid. Successful create installs a common-mode
+Mach-port source on RunLoopTask, with a context retaining a weak owner box.
+Options.rawValue == 1 selects background QoS; otherwise userInteractive (native
+constants 9 and 33). Stop disables and invalidates the port before releasing
+the run-loop task; deinit performs the same cleanup.
+
+Callback dispatch preserves special events: timeout may reenable if configured;
+user-input disable only passes through, without reenabling or invoking the
+user handler. Other events delegate to the handler, whose nil suppresses them.
+The native logging strings are hashed; diagnostic log formatting is not copied.
+The static AsyncStream events convenience API is still outside this change.
+
+Swift build and provider checks pass. Tests use an injected driver with local
+CFMachPorts, not OS event taps: create failure/retry, duplicate start, callback
+suppression, disabled-event distinction, stop idempotence, restart and deinit
+ordering are covered. Production safe-enforcement scope still needs its masks,
+shared-state synchronization, update suppression and async restoration wired;
+real-app acceptance remains unverified.

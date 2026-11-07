@@ -3674,6 +3674,7 @@ func runProviderClickChecks() async throws {
     try runSyntheticWindowActivationChecks()
     runSafeActivationCallbackChecks()
     runRunLoopTaskChecks()
+    runEventTapLifecycleChecks()
 }
 
 private func runSyntheticFocusDeactivationChecks() throws {
@@ -3835,4 +3836,54 @@ private func runRunLoopTaskChecks() {
     let deadline = Date().addingTimeInterval(5)
     while !thread.isFinished && Date() < deadline { Thread.sleep(forTimeInterval: 0.001) }
     checkTrue(thread.isFinished)
+}
+
+private func runEventTapLifecycleChecks() {
+    var calls: [String] = []
+    var shouldFail = true
+    let driver = EventTap.Driver(create: { location, place, options, mask, _, _ in
+        calls.append("create")
+        guard case .process(345) = location else { unexpectedFailure() }
+        checkEqual(place, .headInsertEventTap)
+        checkEqual(options, .defaultTap)
+        checkEqual(mask, 1 << 10)
+        if shouldFail { return nil }
+        // A local Mach port, not a system input tap. No TCC or interception.
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil,
+            release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, enabled in calls.append(enabled ? "enable" : "disable") },
+       invalidate: { port in calls.append("invalidate"); CFMachPortInvalidate(port) })
+    var tap: EventTap? = EventTap(location: .process(345), placement: .headInsertEventTap,
+        options: .defaultTap, eventsOfInterest: 1 << 10, driver: driver)
+    tap!.startMonitoring { _, event in event }
+    checkFalse(tap!.isMonitoring)
+    checkEqual(calls, ["create"])
+    shouldFail = false
+    var handled = 0
+    tap!.startMonitoring { _, _ in handled += 1; return nil }
+    checkTrue(tap!.isMonitoring)
+    checkEqual(calls, ["create", "create", "enable"])
+    tap!.startMonitoring { _, _ in unexpectedFailure() }
+    let event = CGEvent(source: nil)!
+    checkTrue(tap!.handle(type: .keyDown, event: event) == nil)
+    checkEqual(handled, 1)
+    checkTrue(tap!.handle(type: .tapDisabledByTimeout, event: event) === event)
+    checkEqual(calls.last, "enable")
+    let count = calls.count
+    tap!.shouldAutoreenable = false
+    checkTrue(tap!.handle(type: .tapDisabledByTimeout, event: event) === event)
+    tap!.shouldAutoreenable = true
+    checkTrue(tap!.handle(type: .tapDisabledByUserInput, event: event) === event)
+    checkEqual(calls.count, count)
+    checkEqual(handled, 1)
+    tap!.stopMonitoring()
+    checkFalse(tap!.isMonitoring)
+    checkEqual(Array(calls.suffix(2)), ["disable", "invalidate"])
+    let stoppedCount = calls.count
+    tap!.stopMonitoring()
+    checkEqual(calls.count, stoppedCount)
+    tap!.startMonitoring { _, event in event }
+    tap = nil
+    checkEqual(Array(calls.suffix(4)), ["create", "enable", "disable", "invalidate"])
 }
