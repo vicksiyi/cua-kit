@@ -4099,3 +4099,24 @@ unsupported capabilities with zero writability calls. The shared mock gained
 only a configurable writability result with the previous false default.
 No real UI action or vendor service execution occurred. This supplies additional
 concrete requirements, not yet the complete UIElementProtocol conformance.
+
+### Cached Bool/URL and title target identities
+
+Static disassembly confirms boolValue 0x1007ad338 reads cached AXValue and calls
+Bool decoder 0x10070fc2c with throwingOnFailure=false; missing/decode failure
+returns nil. URL 0x1007ab808 likewise uses cached AXURL and URL specialization
+0x1007102c8. The new URL decoder preserves CF element/marker/AXValue/array
+branches followed by ordinary Foundation bridging; it does not parse strings.
+`UIElementCachedTypedValues.swift` supplies these concrete cache-only getters.
+
+TitleTargetIdentities at 0x1007ad0ac loads AXServesAsTitleForUIElements, calls
+typed value(for:) at 0x1007a7600, then maps the decoded UIElement array to AX
+references in order. The explicit-reporting adapter uses the recovered provider
+collection reader, retaining duplicates and current-transaction construction.
+Exact no-argument logging/witness integration is still pending.
+
+Validation: full helper build and transaction fixture; cached true/false, nil
+and mismatched Bool; NSURL bridging, string rejection and missing URL; strict
+URL decode failure; non-URL AX reference; and duplicate title targets decoded
+from a prefetched child cache with no provider reads. These are local fixtures,
+not evidence of completed protocol conformance or live UI acceptance.

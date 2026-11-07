@@ -287,6 +287,11 @@ import os
             let result = cached.childrenValue(reportError: { _ in preconditionFailure() })
             precondition(result.count == 2 && result.allSatisfy { CFEqual($0.axElement, child) })
             precondition(provider.lookups == 0)
+            let titleTargets = UIElementAttribute("AXServesAsTitleForUIElements")
+            let label = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [titleTargets], attributes: [titleTargets: raw], transactionAttributes: nil))
+            let identities = label.titleTargetIdentities(reportError: { _ in preconditionFailure() })
+            precondition(identities.count == 2 && identities.allSatisfy { CFEqual($0, child) })
+            precondition(provider.lookups == 0)
             mock.output = (.success, raw)
             precondition(uncached.childrenValue(reportError: { _ in preconditionFailure() }).count == 2)
             precondition(provider.lookups == 1)
@@ -419,7 +424,34 @@ import os
         precondition(!absent.isFocusable && !absent.isValueSettable && !absent.isDisclosable)
         precondition(mock.operationCalls.isEmpty)
     }
+    static func checkCachedTypedValues() throws {
+        let ax = AXUIElementCreateApplication(12701)
+        let provider = AXMockProviderFixture.Provider(ax, AXMockProviderFixture.Mock())
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        let value = UIElementAttribute("AXValue"), urlKey = UIElementAttribute("AXURL")
+        func item(_ key: UIElementAttribute, _ object: AnyObject?) -> UIElement {
+            let partial = object.map { AXPartialValue(value: AXEncodedValue(value: $0), arraySubsetDescriptor: nil, textTruncationDescriptor: nil) }
+            return UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [key],
+                attributes: partial.map { [key: $0] } ?? [:], transactionAttributes: nil))
+        }
+        precondition(item(value, NSNumber(value: true)).boolValue == true)
+        precondition(item(value, NSNumber(value: false)).boolValue == false)
+        precondition(item(value, "false" as NSString).boolValue == nil)
+        precondition(item(value, nil).boolValue == nil)
+        let url = URL(string: "https://example.com/path?q=1")!
+        precondition(item(urlKey, url as NSURL).url == url)
+        precondition(item(urlKey, url.absoluteString as NSString).url == nil)
+        precondition(item(urlKey, nil).url == nil && provider.lookups == 0)
+        do {
+            _ = try decodeAXURL("https://example.com" as NSString, throwingOnFailure: true)
+            preconditionFailure()
+        } catch UIElementError.failedToUnwrapAttributeValue(let type) { precondition(type == URL.self) }
+        let invalid = try decodeAXURL(ax, throwingOnFailure: false)
+        precondition(invalid == nil)
+    }
     static func main() throws {
+        try checkCachedTypedValues()
         checkProviderCapabilities()
         try checkProviderGeometry()
         try checkProviderScrollBar()
