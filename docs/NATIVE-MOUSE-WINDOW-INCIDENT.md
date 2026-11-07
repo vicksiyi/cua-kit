@@ -3585,3 +3585,33 @@ start evidence enables production cursor movement; concrete display-link lifetim
 coordinator and cursor ownership remain pending.
 
 Swift build, provider driver-contract checks and pinned static audit pass after base/source recovery.
+
+
+## Concrete AppKit display-link driver and partial live acceptance (2026-11-08)
+
+DisplayLinkAnimationDriver now owns a real CADisplayLink constructed with its
+selector target. NSWindow, NSView and NSScreen implement the recovered factory
+contract through their system displayLink(target:selector:) API. The public Swift
+factory closure is a reconstruction seam for the source's private generic factory;
+AppKit adapters require MainActor explicitly rather than dispatching silently.
+Start (0x1007d790c) checks inactive, sets active and adds to RunLoop.current in
+common mode. Stop (0x1007d757c) checks active, clears active then invalidates;
+it retains the invalidated link and does not recreate one on later start.
+Deinit asserts MainActor and invalidates only when active, as the native body.
+Frame delivery (0x1007d79c4) checks callback first, then reads link.timestamp,
+duration and targetTimestamp directly. It adds no separate isActive guard,
+retiming, frame filtering or timer fallback. Static guards/common-mode are pinned.
+
+New CLI `cua-helper --display-link-lifecycle-check` creates no window or input.
+It creates a screen-based link, calls start twice and stop twice, pumps the current
+RunLoop for bounded acceptance, checks post-stop silence and verifies driver release.
+The current real result is:
+`{"finiteFrameReceived":false,"frames":0,"mainRunLoop":true,"mainThread":true,"noWindowsOrInput":true,"startStopReleasePassed":true}`.
+The command exits 1 because real frame delivery is not accepted. Resources did
+activate, stop and release; callbacks produced zero frames. Desktop is locked,
+but this observation alone does not establish that lock caused the zero frames.
+No user application was touched or canceled action retried. The diagnostic reports
+resources and frame availability separately so this cannot become a false pass.
+Concrete interpolation/coordinator ownership and production cursor remain unfinished.
+
+Swift build, provider regression checks and pinned static audit pass; native frame acceptance remains incomplete as reported.

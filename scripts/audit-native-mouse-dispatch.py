@@ -681,6 +681,13 @@ for descriptor in [0x1012cdea8, 0x1012cdeb0]:
     assert relative + struct.unpack('<i', read(relative, 4))[0] == 0x100009888
 assert read(0x100009888, 4).hex() == 'c0035fd6'
 
+# Display-link start/stop guard and mutation; frame reads are skipped with
+# nil callback. Native run-loop mode is common, not a periodic timer.
+assert read(0x1007d7934, 16).hex() == '88824039c803003793820039931640f9'
+assert read(0x1007d759c, 20).hex() == '888240391f050071e10000549f820039801640f9'
+assert read(0x1007d79f4, 16).hex() == '930a40f9330400b4951640f9d50400b4'
+assert pinned_imported_symbol((0x1007d7980 & ~4095) + 3213 * 4096 + 0x988) == '_NSRunLoopCommonModes'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

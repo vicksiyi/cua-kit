@@ -294,6 +294,14 @@ if CommandLine.arguments.contains("--key-focus-query-check") {
     print(String(decoding: data, as: UTF8.self))
     exit(0)
 }
+if CommandLine.arguments.contains("--display-link-lifecycle-check") {
+    do {
+        let report = try await runDisplayLinkLifecycleChecks()
+        let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+        print(String(decoding: data, as: UTF8.self))
+        exit(report["finiteFrameReceived"] as? Bool == true ? 0 : 1)
+    } catch { fputs("Display-link lifecycle failed: \(error)\n", stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--window-observer-binding-check") {
     let windows = WindowServerSPI.observerBindingStatus
     let attention = ApplicationAttentionSPI.bindingAvailable
