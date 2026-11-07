@@ -834,7 +834,18 @@ state_calls = [branch(site, target) for site, target in [
 compare_zero_branch(0x100627400, 1, 0x10062753c)
 compare_zero_branch(0x1006275a0, 8, 0x100627640)
 
-print(json.dumps(dict(stateDescriptionComponent=dict(
+index_range_calls = [branch(site, target) for site, target in [
+    (0x100626678, 0x100627b88), (0x100627be4, 0x101152ca0),
+    (0x100627c0c, 0x101152ca0), (0x100627c44, 0x100628e10),
+]]
+for site, word in [(0x100627b88, 0x370009e2), (0x100627b8c, 0xb7f809c0),
+                   (0x100627b90, 0xeb01001f), (0x100627b94, 0x5400098a)]:
+    assert struct.unpack('<I', read(site, 4))[0] == word
+
+print(json.dumps(dict(contentIndexRange=dict(
+    calls=index_range_calls,
+    behavior="nil/negative lower/equal bounds omitted; otherwise lower-upper decimal payload; no one-based conversion or upper-bound adjustment",
+    limitation="payload restored only; labeled-entry constructor and full content accumulation pending"), stateDescriptionComponent=dict(
     entry="0x100627090", calls=state_calls,
     witnesses={hex(site): name for site, (_, name) in state_witness_reads.items()},
     order="selectable (full UI and not selected), selected, disabled (not informational/group/staticText), expanded/collapsed, settable with optional type, sent by me",

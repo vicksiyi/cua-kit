@@ -6461,3 +6461,27 @@ expanded/collapsed guards, absent/empty/string/number value types and sender lab
 Swift build and owned provider checks passed; installed service/live apps were
 not executed. The remaining generic node content helper is 0x100626300; full
 composition and production collector integration remain incomplete.
+
+
+### Content branch and row/column range payload (2026-11-07)
+
+Inspection of 0x100626300 confirms content is accumulated as labeled entries,
+not merely title plus value. Observed fields include title, description,
+row/column ranges, value description, placeholder, identifier and presentation
+actions; each has separate guards. Entries pass through constructor 0x100628e10
+and accumulator 0x100627930; range entries use 0x100627b88. The entry's trailing
+Boolean and accumulation/formatting semantics remain under investigation, so no
+replacement of the whole content renderer is claimed.
+
+AccessibilityIndexRangeText.swift restores the range helper's numeric payload:
+missing range, negative lower bound or equal bounds produce no entry. Otherwise
+it renders the unchanged decimal lower bound, hyphen and unchanged upper bound.
+There is no one-based adjustment or single-index shorthand. The native helper
+then invokes the labeled-entry constructor and appends its result directly.
+This reconstruction currently exposes the payload only, leaving that dependency
+explicit until the constructor is recovered.
+
+Swift build and owned provider checks passed for nil, singleton, negative,
+normal and Int.max upper ranges; static audit pins the four initial guards,
+integer formatting calls and entry-constructor edge. Full content generation,
+node-description composition and production integration remain incomplete.

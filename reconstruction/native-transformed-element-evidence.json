@@ -1,4 +1,30 @@
 {
+  "contentIndexRange": {
+    "calls": [
+      {
+        "instruction": "0x100626678",
+        "target": "0x100627b88",
+        "link": true
+      },
+      {
+        "instruction": "0x100627be4",
+        "target": "0x101152ca0",
+        "link": true
+      },
+      {
+        "instruction": "0x100627c0c",
+        "target": "0x101152ca0",
+        "link": true
+      },
+      {
+        "instruction": "0x100627c44",
+        "target": "0x100628e10",
+        "link": true
+      }
+    ],
+    "behavior": "nil/negative lower/equal bounds omitted; otherwise lower-upper decimal payload; no one-based conversion or upper-bound adjustment",
+    "limitation": "payload restored only; labeled-entry constructor and full content accumulation pending"
+  },
   "stateDescriptionComponent": {
     "entry": "0x100627090",
     "calls": [

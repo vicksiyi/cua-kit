@@ -2848,6 +2848,16 @@ private enum ProviderClickChecks {
             checkEqual(accessibilityStateDescription(role: button, contextType: .fullUIContext,
                 valueTypeName: "number", isValueSettable: false), "")
         }
+        do {
+            checkTrue(accessibilityIndexRangeText(nil) == nil)
+            checkTrue(accessibilityIndexRangeText(0...0) == nil)
+            checkTrue(accessibilityIndexRangeText(3...3) == nil)
+            checkTrue(accessibilityIndexRangeText(-1...5) == nil)
+            checkTrue(accessibilityIndexRangeText(Int.min ... -1) == nil)
+            checkEqual(accessibilityIndexRangeText(0...1), "0-1")
+            checkEqual(accessibilityIndexRangeText(3...8), "3-8")
+            checkEqual(accessibilityIndexRangeText(0...Int.max), "0-" + String(Int.max))
+        }
         let leafTree = UIElementTree<UIElement>(items: [], focusedElement: nil)
         let childTree = UIElementTree(items: [UIElementTree.Item(element: cachedChildren, subtree: leafTree)], focusedElement: nil)
         var tree = UIElementTree(items: [UIElementTree.Item(element: target, subtree: childTree, availableSubset: subset),
