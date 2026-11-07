@@ -3747,6 +3747,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
     try runAXNotificationRemovalChecks()
+    runAXNotificationCallbackContextChecks()
     try runAXNotificationRegistrationChecks()
     runMouseWindowRegistryOwnershipChecks()
     await runWindowOrderingObserverCompositionChecks()
@@ -7264,4 +7265,31 @@ private func runAXNotificationRemovalChecks() throws {
     checkEqual(targets.targets[.menuOpened], Set([99]))
     try targets.remove(notifications: [.menuOpened, .menuOpened], removeNotification: { _, _ in .success })
     checkEqual(targets.targets[.menuOpened], Set<Int>())
+}
+
+private func runAXNotificationCallbackContextChecks() {
+    final class Observer {}
+    final class Owner {}
+    typealias Context = AXNotificationCallbackContext<Observer, Owner>
+    var observer: Observer? = Observer()
+    var owner: Owner? = Owner()
+    weak var weakObserver = observer
+    weak var weakOwner = owner
+    var context: Context? = Context(axObserver: observer!, owner: owner!)
+    observer = nil
+    precondition(weakObserver != nil)
+    var deliveries = 0
+    Context.deliver(context: nil, info: 1) { _, _ in deliveries += 1 }
+    Context.deliver(context: context, info: Optional<Int>.none) { _, _ in deliveries += 1 }
+    Context.deliver(context: context, info: 7) { receivedOwner, info in
+        precondition(receivedOwner === owner && info == 7)
+        deliveries += 1
+    }
+    precondition(deliveries == 1)
+    owner = nil
+    precondition(weakOwner == nil)
+    Context.deliver(context: context, info: 8) { _, _ in deliveries += 1 }
+    precondition(deliveries == 1)
+    context = nil
+    precondition(weakObserver == nil)
 }

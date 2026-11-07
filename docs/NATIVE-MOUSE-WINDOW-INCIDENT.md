@@ -2315,3 +2315,25 @@ record preservation, retained empty sets, empty bulk removal and ordered batch
 failure. The Swift build and provider checks pass. No native notification was
 installed by these checks. Callback context and RunLoop monitoring, followed by
 production controller ownership, remain outstanding.
+
+
+## AX callback context ownership evidence
+
+The lazy context constructor at 0x1006ec998 retains its AXObserver and uses
+swift_weakAssign for the owner (0x1006ec9e8). Callback forwarding at
+0x1006ed670 first rejects a missing refcon or absent bridged info dictionary,
+then loads the weak owner strongly at 0x1006ed6e4 for synchronous delivery.
+The delivered event uses the callback's observer, element, notification and info;
+it does not substitute the context's retained observer for the callback argument.
+AXNotificationCallbackContext restores this ownership and delivery gate, with
+checks for missing context/info, owner release, observer retention and release.
+It is a component for the pending concrete C callback, not production integration.
+
+Monitoring evidence now identifies an important startup barrier: configuration
+at 0x1006ed390 synchronously dispatches a no-op to DispatchQueue.main before
+CFRunLoopAddSource (0x1006ed460), using kCFRunLoopDefaultMode. These identities
+are verified from imported bindings at 0x101469058 and 0x101464a00. stopMonitoring at
+0x1006ed4a0 removes the source from an available thread RunLoop, clears the
+source, then releases its RunLoopTask; deinit invokes stopMonitoring first.
+Do not replace this lifecycle with polling or claim that the callback-context
+checks exercise native event delivery.
