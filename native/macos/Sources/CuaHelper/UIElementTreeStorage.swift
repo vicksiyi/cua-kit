@@ -63,6 +63,25 @@ struct UIElementTree<Element: AccessibilityNode>: Sequence {
         return found
     }
 
+    // 0x100650ff4: only nodes with an empty stored subtree are candidates.
+    // availableSubset is deliberately not consulted by this original predicate.
+    mutating func hasLeafDescendant(where property: KeyPath<Element, Bool> & Sendable) -> Bool {
+        if let cached = leafProperties[property] { return cached }
+        var found = false
+        for index in items.indices {
+            if items[index].subtree.items.isEmpty && items[index].element[keyPath: property] {
+                found = true
+                break
+            }
+            if items[index].subtree.hasLeafDescendant(where: property) {
+                found = true
+                break
+            }
+        }
+        leafProperties[property] = found
+        return found
+    }
+
     // Native Iterator is a class (descriptor 0x1012c9b8c), eagerly populated by
     // pre-order enumeration at construction. Aliases share a cursor; each call
     // to makeIterator creates an independent snapshot. No identity deduplication.

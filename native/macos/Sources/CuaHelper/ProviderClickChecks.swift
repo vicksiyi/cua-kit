@@ -258,6 +258,26 @@ private enum ProviderClickChecks {
         checkTrue(tree.hasDescendant(where: \UIElement.hasDescriptiveAttributes))
         tree.items[0].subtree.items.removeAll()
         checkFalse(tree.hasDescendant(where: \UIElement.hasDescriptiveAttributes))
+        // A descriptive parent does not satisfy a leaf-only predicate while
+        // its sole child is undescriptive. Removing the child changes that.
+        var leafQueries = UIElementTree(items: [UIElementTree.Item(element: titled,
+            subtree: UIElementTree(items: [.init(element: target, subtree: leafTree)], focusedElement: nil),
+            availableSubset: subset)], focusedElement: nil)
+        checkTrue(leafQueries.hasDescendant(where: \UIElement.hasDescriptiveAttributes))
+        checkFalse(leafQueries.hasLeafDescendant(where: \UIElement.hasDescriptiveAttributes))
+        checkEqual(leafQueries.element(at: IndexPath(indexes: [0, 0]))?.role, .window)
+        checkEqual(leafQueries.item(for: IndexPath(index: 0))?.availableSubset, subset)
+        for path in [IndexPath(), IndexPath(index: -1), IndexPath(index: 1),
+                     IndexPath(indexes: [0, -1]), IndexPath(indexes: [0, 1]), IndexPath(indexes: [0, 0, 0])] {
+            checkTrue(leafQueries.item(at: path) == nil)
+            checkTrue(leafQueries.element(for: path) == nil)
+        }
+        leafQueries.items[0].subtree.items.removeAll()
+        // An incomplete subset with no currently stored children is still a leaf.
+        checkTrue(leafQueries.hasLeafDescendant(where: \UIElement.hasDescriptiveAttributes))
+        checkTrue(leafQueries.hasLeafDescendant(where: \UIElement.hasDescriptiveAttributes))
+        leafQueries.items.removeAll()
+        checkFalse(leafQueries.hasLeafDescendant(where: \UIElement.hasDescriptiveAttributes))
         let app = UIElement(axElement: appAX, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
         let point = try await target.clickablePoint(reportError: { _ in unexpectedFailure("unexpected read failure") })
         checkEqual(point, CGPoint(x: 50, y: 40))

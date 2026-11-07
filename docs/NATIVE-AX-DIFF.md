@@ -4339,3 +4339,29 @@ are synthetic. Transformations, rendering, leaf-only predicates, focus selection
 identity/path lookup and original collector integration still require recovery.
 This is a functional generic tree foundation, not a complete tree API or real UI
 acceptance claim.
+
+
+## Leaf predicate and positional path access
+
+Recovered hasLeafDescendant(where:) at 0x100650ff4..0x100651398. It consults
+leafProperties first, then checks a node's predicate only when the stored
+subtree.items is empty; otherwise it recursively searches that subtree. A failed
+leaf predicate still recurses into the empty subtree, preserving cache/writeback
+behavior. Results are cached and normal items modification invalidates both
+predicate caches. availableSubset does not participate in the leaf test: an
+incomplete node with no stored children is a leaf for this query.
+
+UIElementTreePath.swift restores item(for:) from 0x10064e63c and element(for:)
+from 0x10064e954. Empty path or a component outside the current items.indices
+returns nil; otherwise consume the first component and return the item or recurse
+into its subtree. item(at:) 0x10064e088 and element(at:) 0x10064e08c are direct
+aliases. Positional components refer to stored arrays, not AX identities, external
+numeric IDs or availableSubset range offsets.
+
+Complete helper build/self-test pass. Regression cases distinguish a matching
+parent from a matching leaf, verify incomplete-subset leaf semantics, cached
+true/false invalidation after nested modifications, nested path projection,
+subset preservation and empty/negative/too-large/deeper-than-leaf paths. The
+fixtures use synthetic UIElements and make no UI input/model requests. Identity
+and numeric-ID table lookup, focus selection, transformations, rendering and
+production collector integration remain outstanding.
