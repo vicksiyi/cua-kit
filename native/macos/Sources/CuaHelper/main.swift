@@ -34,9 +34,27 @@ final class Target {
     var capturedWindow: CapturedWindow?
     private(set) var focusEnforcer: SyntheticAppFocusEnforcer?
     private(set) var accessibilityAssertion: AXEnablementAssertion?
+    private(set) var windowObservation: AppControllerWindowObservation<UIElement>?
+
+    func prepareWindowObservation(make: (() throws -> AppControllerWindowObservation<UIElement>)? = nil) throws {
+        guard windowObservation == nil else { return }
+        if let make { windowObservation = try make(); return }
+        windowObservation = try AppControllerWindowObservation(application: root,
+            processID: app.processIdentifier, bundleIdentifier: app.bundleIdentifier ?? "",
+            focusEnforcer: { [weak self] in
+                MainActor.assumeIsolated { self?.focusEnforcer }
+            }, reportError: { error in
+                Logger(subsystem: "core.cua", category: "WindowObservation").error("Window observation: \(String(describing: error))")
+            }, deliverEvent: { operation in
+                // Target owns its dictionary on MainActor. FIFO main-queue
+                // delivery is an explicit adapter to the native sync default.
+                DispatchQueue.main.async(execute: operation)
+            })
+    }
     // Controller activate 0x10007243c: acquire only when no assertion exists.
     // Keep the assertion across observations/actions, never around each click.
     func activateAccessibility(make: (() -> AXEnablementAssertion?)? = nil) {
+        defer { windowObservation?.activateOrdering() }
         guard accessibilityAssertion == nil else { return }
         if let make { accessibilityAssertion = make(); return }
         let application = UIElement(element: root)
@@ -56,6 +74,7 @@ final class Target {
     func deactivateAccessibility() {
         accessibilityAssertion?.disable()
         accessibilityAssertion = nil
+        windowObservation?.deactivateOrdering()
     }
 
     // App-controller activateFocusEnforcer at 0x100071fb8: lazy per-target
@@ -181,6 +200,7 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
         let id = UUID().uuidString
         let target = Target(app)
+        try target.prepareWindowObservation()
         target.activateAccessibility()
         targets[id] = target
         return ["targetId": id, "app": info(app)]

@@ -2953,3 +2953,28 @@ assertion release. Existing Target lifecycle checks verify deactivation releases
 the assertion while the Target itself remains alive and is idempotent. The
 retirement helper is a Sky adapter lifecycle correction; production window
 observation ownership and live Sky application acceptance remain outstanding.
+
+
+## Production Target observation ownership integration
+
+Target now lazily prepares AppControllerWindowObservation before private bind and
+Sky state activation. Preparation is idempotent, propagates construction failure
+and stores only a successfully constructed owner. Sky caches newly created
+Targets after preparation succeeds. AX activation then starts ordering (including
+repeated activation calls); deactivation releases the AX assertion before stopping
+ordering. The native root observer remains controller-owned until destruction.
+
+Because Target is MainActor-isolated, its adapter explicitly delivers AX events
+FIFO through DispatchQueue.main. Focus-enforcer lookups use MainActor.assumeIsolated
+inside that delivered handler. This is a documented scheduling adaptation to the
+existing adapter, not a claim that the original callback runs on MainActor; the
+native owner's default synchronous AX-thread delivery remains unchanged. No extra
+window dictionary lock was added. Initial registration occurs on Target's actor,
+and subsequent event mutation uses the same serial domain.
+
+Injected ownership checks cover failed preparation leaving nil, successful owner
+reuse, retained ownership and release with Target. They create no subscriptions or
+ordering task. Full production native subscription/order restoration and live Sky
+application clicking have not been accepted on the locked desktop. Mouse target
+selection still needs to consume the maintained window registry instead of its
+older per-action AXWindows reconstruction; that is an outstanding integration step.

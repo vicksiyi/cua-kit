@@ -119,8 +119,10 @@ final class SkyAppState {
             target = cached
         } else {
             retireTarget(at: path)
-            target = Target(app); targets[path] = target
+            target = Target(app)
         }
+        try target.prepareWindowObservation()
+        targets[path] = target
         // Sky/MCP state reads enter the same controller activation as private
         // bind. Acquire/reuse AX enablement before capture and later input.
         target.activateAccessibility()

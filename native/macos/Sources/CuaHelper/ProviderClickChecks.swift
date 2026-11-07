@@ -3776,6 +3776,7 @@ func runProviderClickChecks() async throws {
     runAppControllerAXEventHandlerChecks()
     try runAppControllerWindowObservationLifetimeChecks()
     try runAppControllerObservationDeliveryChecks()
+    try await runTargetWindowObservationOwnershipChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7666,4 +7667,29 @@ private func runAppControllerObservationDeliveryChecks() throws {
     } catch Failed.construction {}
     precondition(failedWindows == nil)
     retainedCallback?(event)
+}
+
+@MainActor private func runTargetWindowObservationOwnershipChecks() throws {
+    enum Failed: Error { case construction }
+    var target: Target? = Target(.current)
+    do {
+        try target!.prepareWindowObservation(make: { throw Failed.construction })
+        preconditionFailure()
+    } catch Failed.construction {}
+    precondition(target!.windowObservation == nil)
+    let observer = try AXNotificationObserver(processID: getpid(), handler: { _ in })
+    var owner: AppControllerWindowObservation<UIElement>? = try AppControllerWindowObservation(
+        application: target!.root, processID: getpid(), bundleIdentifier: "owned-check",
+        focusEnforcer: { nil }, reportError: { _ in preconditionFailure() },
+        initializeWindows: { _ in }, makeObserver: { _ in observer })
+    weak var lifetime = owner
+    var constructions = 0
+    try target!.prepareWindowObservation(make: { constructions += 1; return owner! })
+    owner = nil
+    try target!.prepareWindowObservation(make: { preconditionFailure() })
+    precondition(constructions == 1 && lifetime != nil && target!.windowObservation === lifetime)
+    // No ordering activation/native subscriptions are started by this check.
+    target!.deactivateAccessibility()
+    target = nil
+    precondition(lifetime == nil)
 }
