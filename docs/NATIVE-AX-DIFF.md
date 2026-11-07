@@ -2710,3 +2710,32 @@ Restored `readCStringBytes` from `0x10024d4a4..<0x10024d594`. The function advan
 Restored `segmentName(_:matches:)` and the ten-byte `__LINKEDIT` name in the Swift SoftLink target. The native wrapper copies the fixed 16-byte segment name, then compares the expected byte array. More than sixteen bytes cannot match. Shorter matching names require a zero immediately afterward; later padding is not inspected. A full sixteen-byte match does not need a terminator. These details come from `0x10024c1f4..<0x10024c31c`, not a generic C-string interpretation.
 
 Tests cover raw high-bit bytes, absent/empty strings, explicit buffer limits, all single-byte nonzero values, composed ULEB/string/ULEB offsets, segment lengths zero through sixteen, mismatches, embedded NULs and nonzero trailing padding. Both SoftLink test executables and the Swift package build pass; the static audit pins the source branches and initializer. All buffers are owned fixtures. Image discovery, export traversal, hashing and production SPI resolution remain incomplete.
+
+### SoftLink mapped-image load-command scan
+
+Recovered the inline command collection from `lookUpSymbols` at
+`0x1002490c8..<0x100249350` and `validCommandSize` at `0x10024b890`.
+`Sources/SoftLink/LoadCommands.swift` extracts that collection into a testable
+Swift helper; `SymbolLoadCommands` and `symbolLoadCommands` are extraction names,
+not claimed original API names. The enclosing symbol lookup is not yet restored.
+Evidence is pinned to SkyComputerUseService SHA-256
+`b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862`.
+
+The scan requires MH_MAGIC_64, walks ncmds from header+32, and rejects any
+cmdsize below 8. It does not use sizeofcmds or impose command alignment.
+It gathers __TEXT vmaddr, __LINKEDIT vmaddr/fileoff, LC_SYMTAB offsets/count,
+and export metadata from LC_DYLD_INFO, LC_DYLD_INFO_ONLY and
+LC_DYLD_EXPORTS_TRIE. Both segments are required. Repeated commands overwrite
+prior collected fields; a zero-size DYLD_INFO export is ignored, whereas a
+zero-size EXPORTS_TRIE replaces previous export metadata. Thus there is no
+unconditional “new exports command wins” precedence independent of ordering.
+The subsequent lookup rejects unusable segment addresses and chooses symbol
+resolution paths; these later stages remain outside this extracted scan.
+
+This retains the original mapped-image caller contract, not an untrusted-file
+parser. Unaligned reads preserve the observed ARM scan behavior for nonaligned
+command strides. Fixtures cover missing segments, invalid magic/header size,
+9-byte unknown commands, duplicate segments, both export orders, zero-size
+exports, and symbol-table fields. They execute only reconstructed Swift, not the
+vendor native service. This is a loader dependency restoration, not desktop
+end-to-end acceptance or completed hierarchy SPI integration.
