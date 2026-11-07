@@ -55,6 +55,44 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        func formatted(_ raw: AnyObject, _ type: TransformedUIElementValueType) -> String? {
+            transformedUIElementFormattedValue(raw, classify: { type },
+                dateFormat: { unexpectedFailure() })
+        }
+        checkEqual(formatted(NSNumber(value: 42), .integer), "42")
+        checkEqual(formatted(NSNumber(value: 1.25), .float), "1.25")
+        checkEqual(formatted(kCFBooleanTrue, .boolean), "on")
+        checkEqual(formatted(kCFBooleanFalse, .boolean), "off")
+        checkEqual(formatted("raw string" as NSString, .string), "raw string")
+        checkTrue(formatted(NSArray(), .unknown) == nil)
+        for (components, expected): (Int, TransformedUIElementDateFormat) in [
+            (0x0c, .time), (0x0e, .time), (0xc0, .monthAndYear), (0xe0, .date),
+            (0xec, .dateAndTime), (0xee, .dateAndTime)
+        ] {
+            checkEqual(transformedUIElementDateFormat(components: components,
+                reportUnknown: { _ in unexpectedFailure() }), expected)
+        }
+        checkEqual(transformedUIElementDateFormat(components: nil,
+            reportUnknown: { _ in unexpectedFailure() }), .dateAndTime)
+        var unknownComponents: [UInt] = []
+        checkEqual(transformedUIElementDateFormat(components: 1,
+            reportUnknown: { unknownComponents.append($0) }), .dateAndTime)
+        checkEqual(unknownComponents, [1])
+        let dateOnly = TransformedUIElementDateFormat.date.makeFormatter()
+        checkEqual(dateOnly.dateStyle, .short); checkEqual(dateOnly.timeStyle, .none)
+        let timeOnly = TransformedUIElementDateFormat.time.makeFormatter()
+        checkEqual(timeOnly.dateStyle, .none); checkEqual(timeOnly.timeStyle, .short)
+        let dateTime = TransformedUIElementDateFormat.dateAndTime.makeFormatter()
+        checkEqual(dateTime.dateStyle, .short); checkEqual(dateTime.timeStyle, .short)
+        let monthYear = TransformedUIElementDateFormat.monthAndYear.makeFormatter()
+        checkEqual(monthYear.dateFormat, "MMMM yyyy")
+        var formatRequests = 0
+        let sampleDate = NSDate(timeIntervalSince1970: 0)
+        let formattedDate = transformedUIElementFormattedValue(sampleDate, classify: { .date }, dateFormat: {
+            formatRequests += 1; return .monthAndYear
+        })
+        checkEqual(formattedDate, monthYear.string(from: sampleDate as Date))
+        checkEqual(formatRequests, 1)
         let visibleKey = UIElementAttribute.visibleCharacterRange
         let visibleAX = AXUIElementCreateApplication(12504)
         let encodedVisible = try AXEncodedValue(wrapping: CFRange(location: 7, length: 12))

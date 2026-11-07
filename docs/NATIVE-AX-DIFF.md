@@ -4745,3 +4745,34 @@ launched. The text composition is ready for the transformed owner; that owner
 must still clear isValueSettable whenever the returned truncation range exists.
 Non-string formatting, remaining constructor fields and collector integration
 are not completed by this change.
+
+
+### Transformed value formatting and date selection (2026-11-07)
+
+Restored formatter `0x100762924..<0x100762b78` in
+TransformedUIElementValueFormatting.swift. Float/integer use NSNumber.stringValue;
+boolean uses CFBooleanGetValue and the literal strings on/off; string bridges
+NSString; unknown returns nil. Date invokes the date-format selection dependency
+only on the date branch. The supplied raw value and the cached classification
+are distinct inputs in the source; this helper preserves that boundary and its
+forced casts rather than inventing mismatch recovery.
+
+Restored DateFormatter factory `0x1006e5154..<0x1006e525c`: tag 0 uses short date
+and no time, tag 1 short time and no date, tag 2 both short, tag 3 literal format
+MMMM yyyy. No explicit locale/calendar/time-zone override appears in the source.
+The class binding at 0x10151EF38 is Foundation NSDateFormatter; selector refs
+0x101542e18/0x101542e10 resolve to stringValue/stringFromDate:, and
+0x1015430d8/0x1015430f8/0x101542ca0 to dateStyle/timeStyle/dateFormat setters.
+
+The AXDateTimeComponents decision tail `0x10075c408..<0x10075c568` maps 0x0c/0x0e
+to time, 0xc0 to month+year, 0xe0 to date, and 0xec/0xee to date+time. A missing
+value defaults to date+time. Unknown nonnegative values are reported and use the
+same default; negative signed values trap during UInt conversion, as in source.
+The cached/fresh integer accessor feeding this decision is not yet composed.
+
+Validation: full Swift build and provider selftest pass for numbers, both Boolean
+values, string/unknown, every recognized date mask, nil/unknown masks, formatter
+settings, and lazy date selection. Date text is compared with a separately
+constructed matching formatter in the same environment, not a fixed locale
+assumption. These components do not yet complete transformed-node construction
+or production collector integration.
