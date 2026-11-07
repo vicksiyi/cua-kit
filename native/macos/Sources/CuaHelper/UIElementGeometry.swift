@@ -5,7 +5,7 @@ extension UIElementAttribute {
     static let size = UIElementAttribute("AXSize")
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // Window specialization 0x10079d594 -> 0x10079d5c4; cached lenient, fresh strict.
     func positionValue(
         read: () -> (error: AXError, value: AXPartialValue?),

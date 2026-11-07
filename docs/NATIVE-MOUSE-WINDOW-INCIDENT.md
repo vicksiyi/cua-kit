@@ -2978,3 +2978,27 @@ ordering task. Full production native subscription/order restoration and live Sk
 application clicking have not been accepted on the locked desktop. Mouse target
 selection still needs to consume the maintained window registry instead of its
 older per-action AXWindows reconstruction; that is an outstanding integration step.
+
+
+## Production coordinate mouse selection uses maintained window records
+
+Coordinate mouse input now reads Target's maintained AppControllerWindows through
+its original native stacking-order helper. It no longer rebuilds an AXWindows
+map for each click or silently substitutes that array when observation ownership
+is absent. Indexed input wraps the containing native window as WindowUIElement.
+MouseEventTarget retains the WindowUIElementProtocol existential through target
+resolution and synthetic activation preparation, including a MenuUIElement.
+
+The native resolver dependencies are shared between the previous concrete test
+entry and the protocol-window entry; the latter uses the raw window-ID witness
+for routing. Menu-specific ID resolution still belongs to explicit menu window
+registration. Geometry and activation-point accessors now live on the protocol
+extension with the same provider/cache/error policies, so type preservation does
+not introduce an extra UIElement reconstruction/cache read.
+
+A mock-provider case passes a MenuUIElement through the concrete native resolver
+in the Atlas no-hit branch, verifies original wrapper identity, raw dispatch ID
+and cached bounds without native input. Existing source branch/window-selection
+checks continue to cover ordering and PID routing. This production integration
+still requires unlocked real click, background-window and Sky/DeepSeek acceptance;
+previous fixture success predates the new maintained-registry selection path.

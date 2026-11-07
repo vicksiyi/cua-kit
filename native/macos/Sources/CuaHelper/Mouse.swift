@@ -137,27 +137,22 @@ extension Target {
             try validateSnapshot(params)
             try checkDeadline()
             let application = UIElement(element: root)
-            let target: MouseEventTarget<UIElement, UIElement>
+            let target: MouseEventTarget<UIElement, any WindowUIElementProtocol>
             if let element {
                 guard let raw = attribute(element.axElement, kAXWindowAttribute),
                       let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) else {
                     throw fail("TARGET_NOT_FOUND", "Clicked element has no containing window.")
                 }
-                target = try application.mouseEventTarget(at: point, accessibilityWindow: UIElement(element: ax),
+                target = try application.mouseEventTarget(at: point, accessibilityWindow: WindowUIElement(element: ax),
                     hitElement: element, reportError: report)
             } else {
                 // Coordinate input uses the same native hit-test/PID/window
                 // resolver as indexed input. Capture geometry validates the
                 // supplied pixels; it is not itself a mouse event destination.
-                let available = application.elementCollectionValue(for: UIElementAttribute("AXWindows"), reportError: report)
-                // Snapshot the current AX window map before the native order
-                // read. Full notification-driven registry ownership remains
-                // separate; never use AX array order as a stacking fallback.
-                var known: [UInt32: UIElement] = [:]
-                for window in available {
-                    if let id = try? window.axElement.windowID { known[id] = window }
+                guard let observation = windowObservation else {
+                    throw fail("TARGET_NOT_FOUND", "Window observation has not been prepared for this target.")
                 }
-                let windows = orderedMouseWindows(windows: { known }, orderedWindowIDs: { onScreenMouseWindowIDs() })
+                let windows = observation.windows.orderedWindows(orderedWindowIDs: { onScreenMouseWindowIDs() })
                 target = try application.mouseEventTarget(at: point, windows: windows, reportError: report)
             }
             let window = target.mouseWindow

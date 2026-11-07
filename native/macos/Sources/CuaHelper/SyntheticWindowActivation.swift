@@ -1,7 +1,7 @@
 import CoreGraphics
 
 // Read dependencies of the WindowUIElementProtocol existential used at
-// 0x1007414c8. The host's full window protocol is not restored yet.
+// 0x1007414c8. Concrete adapters preserve the original window identity.
 struct SyntheticActivationWindow {
     // The source requests Optional<CGPoint> through value<T> returning T?.
     // Outer nil means unavailable; .some(nil) preserves a decoded nil point.

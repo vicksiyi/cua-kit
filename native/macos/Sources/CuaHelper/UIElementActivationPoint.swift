@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     func activationPointValue(read: () -> (error: AXError, value: AXPartialValue?),
         reportError: (Error) -> Void) -> CGPoint?? {
         let attribute = UIElementAttribute("AXActivationPoint")
@@ -20,7 +20,7 @@ extension UIElement {
 }
 
 extension SyntheticActivationWindow {
-    init(element: UIElement, reportError: @escaping (Error) -> Void) {
+    init(element: any UIElementProtocol, reportError: @escaping (Error) -> Void) {
         self.init(activationPoint: {
             element.activationPointValue(read: { element.axElement.value(for: UIElementAttribute("AXActivationPoint")) },
                 reportError: reportError)

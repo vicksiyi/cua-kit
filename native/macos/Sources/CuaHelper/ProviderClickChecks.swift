@@ -55,9 +55,12 @@ private enum ProviderClickChecks {
             performed.append(action)
             if fail { throw UIElementError.axError(.failure) }
         }
-        var pid: Int32 { get throws { fatalError() } }
-        var actualPID: Int32 { get throws { fatalError() } }
-        var windowID: UInt32 { get throws { fatalError() } }
+        var readPID: (() throws -> Int32)?
+        var readActualPID: (() throws -> Int32)?
+        var readWindowID: (() throws -> UInt32)?
+        var pid: Int32 { get throws { guard let readPID else { fatalError() }; return try readPID() } }
+        var actualPID: Int32 { get throws { guard let readActualPID else { fatalError() }; return try readActualPID() } }
+        var windowID: UInt32 { get throws { guard let readWindowID else { fatalError() }; return try readWindowID() } }
         var testBundleIdentifier: String?
         var bundleReads = 0
         var bundleIdentifier: String? { bundleReads += 1; return testBundleIdentifier }
@@ -2986,6 +2989,16 @@ private enum ProviderClickChecks {
             try wrapped.perform(action: .press)
         }
         checkEqual(targetMock.performed, Array(repeating: .press, count: 6))
+        targetMock.readPID = { 7 }; targetMock.readActualPID = { 7 }; targetMock.readWindowID = { 42 }
+        targetMock.testBundleIdentifier = "com.openai.atlas.owned-check"
+        let preservedWindow: any WindowUIElementProtocol = MenuUIElement(axElement: targetAX, cache: target.cache)
+        let resolved = try target.mouseEventTarget(at: CGPoint(x: 20, y: 30),
+            accessibilityWindow: preservedWindow, hitElement: nil, reportError: { _ in unexpectedFailure() })
+        checkTrue(resolved.accessibilityWindow is MenuUIElement)
+        checkTrue(CFEqual(resolved.accessibilityWindow.axElement, targetAX))
+        checkEqual(resolved.windowID, 42); checkEqual(resolved.windowBounds, rect)
+        targetMock.readPID = nil; targetMock.readActualPID = nil; targetMock.readWindowID = nil
+        targetMock.testBundleIdentifier = nil
         var hierarchyCopies = 0
         let reader = AXHierarchyReader(resolvePID: { element in
                 checkTrue(CFEqual(element, targetAX)); return 99999

@@ -5,7 +5,7 @@ extension UIElementAttribute {
     static let frame = UIElementAttribute("AXFrame")
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // Window specialization 0x1007575ac..<0x100757a50. AXFrame is preferred;
     // only a nil result (including logged read/decode errors) enters fallback.
     // Position/size keep separate typed provider boundaries; UIElementGeometry

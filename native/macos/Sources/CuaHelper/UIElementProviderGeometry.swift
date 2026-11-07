@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     func frameValue(reportError: (Error) -> Void) -> CGRect? {
         frameValue(readAttribute: { axElement.value(for: $0) }, reportError: reportError)
     }
