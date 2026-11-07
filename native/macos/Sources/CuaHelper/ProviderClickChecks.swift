@@ -130,6 +130,65 @@ private enum ProviderClickChecks {
             checkEqual(UIElement(element: root.axElement).role, .button)
         }
         checkTrue(UIElementTreeTransaction.current == nil)
+        // Scoped convenience wrapper reuses a containing prefetch table, but
+        // passes the original receiver (AXWindow), not its cached root (AXButton).
+        prefetched.perform { _ in
+            target.withSubtreeTransaction(additionalAttributes: [], maxChildCount: 500,
+                reader: reader) { receiver in
+                checkEqual(receiver.role, .window)
+                checkEqual(UIElementTreeTransaction.current?.element.role, .button)
+            }
+        }
+        checkEqual(hierarchyCopies, 1)
+        target.withSubtreeTransaction(additionalAttributes: [], maxChildCount: -7,
+            reader: reader) { receiver in
+            checkEqual(receiver.role, .button)
+            checkTrue(UIElementTreeTransaction.current != nil)
+        }
+        checkEqual(hierarchyCopies, 2)
+        checkTrue(UIElementTreeTransaction.current == nil)
+        enum ScopeFailure: Error { case expected }
+        do {
+            try target.withSubtreeTransaction(additionalAttributes: [], maxChildCount: -7,
+                reader: reader) { _ in throw ScopeFailure.expected }
+            unexpectedFailure("work failure must escape")
+        } catch ScopeFailure.expected {}
+        checkEqual(hierarchyCopies, 3)
+        checkTrue(UIElementTreeTransaction.current == nil)
+        // With prefetch disabled, an existing scope bypasses even table membership.
+        transaction.perform { _ in
+            UIElementTreeTransaction.$prefetchEnabled.withValue(false) {
+                let outside = UIElement(axElement: AXUIElementCreateApplication(12504), cache: target.cache)
+                outside.withSubtreeTransaction(additionalAttributes: [], maxChildCount: 0,
+                    reader: reader) { receiver in
+                    checkTrue(CFEqual(receiver.axElement, outside.axElement))
+                }
+            }
+        }
+        checkEqual(hierarchyCopies, 3)
+        UIElementTreeTransaction.$prefetchEnabled.withValue(false) {
+            target.withSubtreeTransaction(additionalAttributes: [], maxChildCount: 0,
+                reader: reader) { receiver in
+                checkTrue(UIElementTreeTransaction.current != nil)
+                checkTrue(receiver.cache.attributes.isEmpty)
+            }
+        }
+        checkEqual(hierarchyCopies, 3)
+        checkTrue(UIElementTreeTransaction.current == nil)
+        let emptyScope = UIElementTreeTransaction(element: target,
+            cache: UIElementTransactionCache(attributeTable: [:], requestedAttributes: [],
+                fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable<UIElementRole>())
+        emptyScope.perform { _ in
+            target.withSubtreeTransaction(additionalAttributes: [], maxChildCount: -7,
+                reader: reader) { receiver in
+                checkEqual(receiver.role, .button)
+                checkFalse(UIElementTreeTransaction.current!.cache.attributeTable.isEmpty)
+            }
+            checkTrue(UIElementTreeTransaction.current!.cache.attributeTable.isEmpty)
+        }
+        checkEqual(hierarchyCopies, 4)
+        checkTrue(UIElementTreeTransaction.current == nil)
         let app = UIElement(axElement: appAX, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
         let point = try await target.clickablePoint(reportError: { _ in unexpectedFailure("unexpected read failure") })
         checkEqual(point, CGPoint(x: 50, y: 40))

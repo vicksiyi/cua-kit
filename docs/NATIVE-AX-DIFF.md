@@ -4210,3 +4210,37 @@ The standalone Target.collect still uses its earlier traversal. Switching that
 caller requires recovering the original collection call site's parameters and
 lifecycle, not inventing a maxChildCount from the demo's node budget. This change
 finishes the concrete subtree API composition, not end-to-end collector parity.
+
+
+## Scoped subtree reuse and static caller audit
+
+A static ARM64 direct-branch scan of the pinned service finds six calls to
+subtreeTransaction: 0x10021f550, 0x100230d74, 0x100234808, 0x100238774,
+0x10023a250 and 0x10076cc14. RefetchableSkyshotAXTree.refetchTree at 0x100230d74
+passes 100; 0x10021f550 also passes 100 and adds windowIDs. At 0x1002347b8
+and 0x1002347bc the caller materializes 100 and 20, then conditionally selects
+between them before 0x100234808. The semantic meaning of those condition inputs
+remains to be recovered; these observations do not justify a universal 100
+limit or replacing the standalone collector's traversal budget with one.
+
+The sixth caller is UIElementProtocol.withSubtreeTransaction at 0x10076ca5c.
+UIElementWithSubtreeTransaction.swift now restores its branch order:
+- Disabled prefetch plus an existing current transaction invokes work(self).
+- Otherwise, a current transaction whose attributeTable contains the receiver's
+  AX identity also invokes work(self), even if the per-element dictionary is empty.
+- All other cases construct a subtree transaction and invoke its scoped perform.
+
+The reuse path retains the original receiver, rather than substituting the
+current transaction's root or reconstructing a different concrete element.
+Disabled prefetch without a current transaction still constructs and installs
+a new transaction. The native table lookup at 0x1007b71b8 uses CFHash before its
+lookup helper, consistent with the AX-keyed table, not provider identity lookup.
+Extra attributes and max count do not invalidate the native reuse path.
+
+Complete-helper tests exercise receiver/root role differences on reuse, new
+scope creation, throwing-work restoration, disabled-prefetch with and without
+an existing scope, and a nested current-table miss restoring the previous scope.
+The reader is injected and all data are synthetic; no native hierarchy SPI or
+vendor process runs. The entry is ready for source-compatible callers, but the
+standalone collector and original RefetchableSkyshotAXTree lifecycle are not yet
+equivalent. That integration remains explicit outstanding work.
