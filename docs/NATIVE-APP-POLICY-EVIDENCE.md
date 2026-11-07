@@ -1211,3 +1211,30 @@ status. Platform AXError is reused rather than introducing a custom TS error.
 The audit pins the original enum metadata, reason enum/raw strings,
 description function and result assembly ranges. Live IPC decoding/dispatch
 and end-to-end application acceptance remain pending.
+
+### Native server error-number mapping
+
+NativeIPCServerErrorMapping restores `throwMappedServerError` from its public
+entry at `0x100de5268` through implementation `0x100de6d98..<0x100de75bc`.
+The 27-entry relative jump table at `0x100de75bc` covers -10032 through
+-10006. Gaps -10019, -10017 and -10013, plus all values outside the table,
+fall back to serverError preserving the original Int32 number and String.
+No trimming or synthetic application identifier is applied to String payloads.
+
+The accessibility branch parses the complete payload as Int32, then carries
+that raw value in platform AXError. Invalid decimal text and overflow fall
+back to serverError. The imported C enum's Swift initializer has an optional
+signature but accepts arbitrary Int32 raw values; the native branch likewise
+stores the parsed bits without testing membership in known AX error codes.
+Tests include known/unknown codes, signs, zero padding, Int32 endpoints,
+whitespace, Unicode digits and overflow. The messages-send-plan branch maps
+exact raw strings missing/expired/already_consumed; unrecognized strings
+preserve the original server error. Other mapped String and no-payload cases
+follow their jump-table destinations and Swift enum tags.
+
+The restored convenience function returns the typed value for inspection;
+the matching throwMappedServerError entry always throws that value. Tests
+cover every mapped destination, unmapped gaps/range endpoints, special
+payload parsers and preservation of multiline Unicode messages. The audit
+pins the implementation and table. This does not yet wire native IPC decoding
+into a live host, nor restore all non-interruption error descriptions.

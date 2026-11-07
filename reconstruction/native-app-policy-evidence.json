@@ -229,6 +229,18 @@
   ],
   "codeRanges": [
     {
+      "name": "ipcServerErrorMapping",
+      "start": "0x100de6d98",
+      "endExclusive": "0x100de75bc",
+      "sha256": "4e79d222b335801cc91524103b82cf1462a9de35fb0742fe9393c4374001b1dd"
+    },
+    {
+      "name": "ipcServerErrorJumpTable",
+      "start": "0x100de75bc",
+      "endExclusive": "0x100de7628",
+      "sha256": "9c067edf9e2377f22211dcd2676d333f8c8a39c26765e802111cb7034c811743"
+    },
+    {
       "name": "ipcErrorDescription",
       "start": "0x100de4b20",
       "endExclusive": "0x100de50c4",

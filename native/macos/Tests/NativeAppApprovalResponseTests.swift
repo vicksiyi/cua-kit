@@ -4,6 +4,7 @@ import MCP
 @main struct NativeAppApprovalResponseTests {
     static func main() async throws {
         let tests = Self()
+        tests.testNativeServerErrorMapping()
         try tests.testIPCInterruptionSelectionAndWireShape()
         try await tests.testApprovalFailureBecomesNativeWireResult()
         try tests.testVendorToolResultSurvivesCodecAndContextMerge()
@@ -195,6 +196,50 @@ import MCP
         equal(withContext.result._meta?["codex/telemetry"], context.value)
         precondition(withContext.result.isError == nil)
         equal(NativeIPCClientError.SendPlanUnavailableReason.alreadyConsumed.rawValue, "already_consumed")
+    }
+
+    func testNativeServerErrorMapping() {
+        let payload = "fixture\n原始说明"
+        let cases: [(Int32, NativeIPCClientError)] = [
+            (-10006, .appNotAllowed(bundleIdentifier: payload)), (-10007, .runningApplicationNotFound(bundleIdentifier: payload)),
+            (-10009, .permissionsNotGranted), (-10010, .invalidApp(payload)), (-10011, .noActiveSession(app: payload)),
+            (-10012, .userStoppedSession(app: payload)), (-10014, .permissionsPending), (-10015, .blockedURL(url: payload)),
+            (-10016, .userIntervened(message: payload)), (-10018, .ambiguousApp(message: payload)),
+            (-10020, .screenLocked(message: payload)), (-10021, .turnEnded), (-10022, .messagesPermissionsPending),
+            (-10023, .messagesPermissionsDenied), (-10024, .messagesQueryTimedOut), (-10025, .messagesInvalidRequest(payload)),
+            (-10026, .messagesAmbiguousDestination(payload)), (-10028, .messagesSendOutcomeUncertain),
+            (-10029, .messagesSendRateLimited(message: payload)), (-10030, .calendarPermissionsPending),
+            (-10031, .calendarPermissionsDenied), (-10032, .calendarInvalidRequest(payload))
+        ]
+        for (number, expected) in cases {
+            equal(NativeIPCClientError.mappedServerError(errorNumber: number, errorString: payload), expected)
+            do {
+                try NativeIPCClientError.throwMappedServerError(errorNumber: number, errorString: payload)
+                fatalError("Mapper must throw")
+            } catch let error as NativeIPCClientError { equal(error, expected) }
+            catch { fatalError("Wrong error type") }
+        }
+        for number: Int32 in [-10033, -10019, -10017, -10013, -10005, 0, Int32.min, Int32.max] {
+            equal(NativeIPCClientError.mappedServerError(errorNumber: number, errorString: payload),
+                  .serverError(errorNumber: number, errorString: payload))
+        }
+        for reason in [NativeIPCClientError.SendPlanUnavailableReason.missing, .expired, .alreadyConsumed] {
+            equal(NativeIPCClientError.mappedServerError(errorNumber: -10027, errorString: reason.rawValue),
+                  .messagesSendPlanUnavailable(reason))
+        }
+        for value in ["", "MISSING", " missing", "alreadyConsumed", "unknown"] {
+            equal(NativeIPCClientError.mappedServerError(errorNumber: -10027, errorString: value),
+                  .serverError(errorNumber: -10027, errorString: value))
+        }
+        for value in ["-25200", "+25200", "0", "-2147483648", "2147483647", "00042"] {
+            let mapped = NativeIPCClientError.mappedServerError(errorNumber: -10008, errorString: value)
+            guard case let .accessibilityError(error) = mapped else { fatalError("Int32 not parsed") }
+            equal(error.rawValue, Int32(value)!)
+        }
+        for value in ["", "+", "-", " 1", "1\n", "1.0", "2147483648", "-2147483649", "１２"] {
+            equal(NativeIPCClientError.mappedServerError(errorNumber: -10008, errorString: value),
+                  .serverError(errorNumber: -10008, errorString: value))
+        }
     }
 
     private func equal<T: Equatable>(_ left: T, _ right: T) { precondition(left == right) }

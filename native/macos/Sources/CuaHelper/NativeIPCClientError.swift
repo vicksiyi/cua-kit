@@ -2,8 +2,8 @@ import ApplicationServices
 
 /// Field order and associated values recovered from Error descriptor 0x1012e4c10.
 /// Only interruption presentation is restored here. Other native descriptions
-/// and IPC numeric-error decoding still require their own reconstruction.
-enum NativeIPCClientError: Error {
+/// still require their own reconstruction. Numeric mapping is in the companion file.
+enum NativeIPCClientError: Error, Equatable {
     enum SendPlanUnavailableReason: String { case missing, expired, alreadyConsumed = "already_consumed" }
     case serverError(errorNumber: Int32, errorString: String)
     case invalidApp(String)
