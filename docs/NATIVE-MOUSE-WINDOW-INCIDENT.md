@@ -2230,3 +2230,27 @@ focus selection, sleep-before-ordering, watched-versus-unrelated window ordering
 raise failure exit, twenty missing-window attempts, absent/failed AX selection
 and cancellation. No real AXRaise or desktop notification is used by these tests.
 Production observer/controller composition and live menu acceptance remain.
+
+
+## Concrete ordering observer composed
+
+WindowOrderingObserver now connects the lock-protected task store, weak-owner
+main loop, didChangeOrder AsyncStream/Observer, foreground restoration, menu-open
+selection and short menu polling task. start preserves a single owned main task;
+stop/deinit cancel both tasks; menu close only cancels the menu task. Task bodies
+capture their parent observer weakly for the main loop, and capture menu PID/IDs
+without retaining the parent for menu work. No automatic task-slot clearing on
+normal task completion was added, matching source ownership until stop/close.
+
+NativeWindowOrderingObserver supplies the real WindowServer observer, focused
+AX-window restoration and native menu task dependencies. Its explicit initializer
+is available, but production Target integration still requires controller window
+registration and AX menu notification ownership. Merely constructing it starts
+no native subscription.
+
+A composed injected check starts the real Task lifecycle against a fake native
+observer, delivers a change through AsyncStream, verifies restoration dispatch,
+then drops the parent and requires observer cleanup. A bounded test deadline
+prevents a retention-cycle regression from hanging verification. No real desktop
+subscription, raise or menu operation occurs in that check. Live native event
+acceptance and full production controller parity remain unproven.

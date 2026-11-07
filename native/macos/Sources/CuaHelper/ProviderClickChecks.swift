@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    await runWindowOrderingObserverCompositionChecks()
     await runWindowOrderingMenuTaskChecks()
     runWindowOrderingMenuOpenChecks()
     await runWindowOrderingEventLoopChecks()
@@ -7132,4 +7133,42 @@ private func runWindowOrderingMenuTaskChecks() async {
     await runWindowOrderingMenuTask(observedWindowIDs: [7], focusedWindow: { 1 }, windowID: { _ in 8 },
         onScreenWindowIDs: { unexpectedFailure() }, raise: { _ in unexpectedFailure() },
         sleep: { _ in throw CancellationError() })
+}
+
+
+private func runWindowOrderingObserverCompositionChecks() async {
+    final class Observer {
+        let release: () -> Void
+        init(_ release: @escaping () -> Void) { self.release = release }
+        deinit { release() }
+    }
+    typealias Callback = (Int, WindowServerEvent) -> Void
+    let ready = AsyncStream<Callback>.makeStream()
+    let seen = AsyncStream<Int>.makeStream()
+    let disposed = AsyncStream<Bool>.makeStream()
+    let deadline = Task {
+        do { try await Task.sleep(for: .seconds(2)) } catch { return }
+        ready.continuation.finish(); seen.continuation.finish(); disposed.continuation.finish()
+    }
+    defer { deadline.cancel() }
+    var owner: WindowOrderingObserver<Int, Observer, Int>? = .init(observedWindowIDs: [7],
+        makeObserver: { ids, events, callback in
+            checkEqual(ids, [7]); checkEqual(events, [.didChangeOrder]); ready.continuation.yield(callback)
+            return Observer { disposed.continuation.yield(true) }
+        }, restore: { value, ids in checkEqual(ids(), [7]); seen.continuation.yield(value) },
+        windowOwnerPID: { _ in nil }, frontmostApplication: { nil }, processIdentifier: { Int32($0) },
+        runMenuTask: { _, _ in unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+    weak var lifetime = owner
+    owner!.start(); owner!.start()
+    var readyIterator = ready.stream.makeAsyncIterator()
+    guard let callback = await readyIterator.next() else { unexpectedFailure() }
+    callback(42, .didChangeOrder)
+    var seenIterator = seen.stream.makeAsyncIterator()
+    checkEqual(await seenIterator.next(), 42)
+    // The idle main task's weak capture must permit owner deinit, which cancels
+    // that task and disposes its native-observer equivalent.
+    owner = nil
+    var disposedIterator = disposed.stream.makeAsyncIterator()
+    checkEqual(await disposedIterator.next(), true)
+    checkTrue(lifetime == nil)
 }
