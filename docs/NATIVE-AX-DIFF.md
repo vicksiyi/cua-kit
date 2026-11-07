@@ -4394,3 +4394,29 @@ and clearing, mutation invalidation, and non-unique general reverse-map values.
 All are synthetic checks; no native UI or model calls occur. Original tree
 transformation/rendering, focus-tree extraction and collector lifecycle remain
 outstanding, and standalone demo IDs/observations are unchanged.
+
+
+## Generic focus-tree construction and identification
+
+UIElementFocusTree.swift restores focusTree(selectedItems:) at
+0x100650a38..0x100650d50. A missing focusedElement returns nil even when the
+caller supplies selected items. Otherwise it constructs a fresh tree with one
+root: the focused element, nil root availableSubset, and a subtree containing
+the supplied selected items with nil subtree focus. The outer tree retains the
+focused element. It does not inspect selected state, prune the original tree,
+remove duplicates or require focus to already appear in the original items.
+
+isFocusTree() at 0x10064ecc4..0x10064f1cc first requires exactly one root, then
+compares that root's optional identity with focusedElement's optional identity.
+It uses identity equality, not whole-element equality or a leaf/selection check.
+A one-root tree without focusedElement is false; equal identities with different
+cached properties are true.
+
+Complete helper build/self-test pass with synthetic elements. Coverage includes
+no-focus with selection, focus absent from original items, empty and duplicate
+selected lists, preservation of selected subtree/subset metadata, fresh nil focus
+inside the selected subtree, same identity with differing properties, mismatched
+identity, absent focus and multiple roots. The higher-level transformed-tree
+focusTree(context:) beginning at 0x100766958 is a distinct, still-incomplete
+selection/transformation pipeline. No real UI/model request occurred and this
+change does not switch the standalone observation renderer.
