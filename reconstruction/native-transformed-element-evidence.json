@@ -1,4 +1,46 @@
 {
+  "secondaryActions": {
+    "calls": [
+      {
+        "instruction": "0x10062918c",
+        "target": "0x100627d14",
+        "link": true
+      },
+      {
+        "instruction": "0x100627d34",
+        "target": "0x100627ac4",
+        "link": true
+      },
+      {
+        "instruction": "0x100627d50",
+        "target": "0x100018c54",
+        "link": true
+      },
+      {
+        "instruction": "0x100626d7c",
+        "target": "0x100628e10",
+        "link": true
+      },
+      {
+        "instruction": "0x100626d8c",
+        "target": "0x100627930",
+        "link": true
+      }
+    ],
+    "excludedKinds": [
+      "press",
+      "showMenu",
+      "scrollToVisible"
+    ],
+    "excludedDescriptions": [
+      "Add comment",
+      "Remove unused rows",
+      "Remove unused columns",
+      "Remove unused rows and columns"
+    ],
+    "behavior": "filter static exclusions, preserve duplicates/order/empty descriptions, comma-space join, appendUnique joined entry",
+    "limitation": "full content collection and live integration pending"
+  },
   "contentEligibility": {
     "calls": [
       {

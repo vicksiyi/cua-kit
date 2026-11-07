@@ -872,7 +872,31 @@ for site, word in [(0x10062786c, 0xf9401a69),
                    (0x1006278d8, 0x52800469)]:
     assert struct.unpack('<I', read(site, 4))[0] == word
 
-print(json.dumps(dict(contentEligibility=dict(
+secondary_action_calls = [branch(site, target) for site, target in [
+    (0x10062918c, 0x100627d14), (0x100627d34, 0x100627ac4),
+    (0x100627d50, 0x100018c54), (0x100626d7c, 0x100628e10),
+    (0x100626d8c, 0x100627930),
+]]
+assert read(0x10156b778, 8) == struct.pack('<Q', 3)
+assert read(0x10156b788, 3) == bytes([0, 1, 2])
+assert read(0x10156b7a8, 8) == struct.pack('<Q', 4)
+secondary_excluded = []
+for index in range(4):
+    raw = read(0x10156b7b8 + index * 16, 16)
+    count, pointer = struct.unpack('<QQ', raw)
+    if raw[15] & 0x20:
+        text = raw[:raw[15] & 15].decode()
+    else:
+        address = (pointer & 0xfffffffff) + 0x100000000 + 32
+        text = read(address, count & 0xffff).decode()
+    secondary_excluded.append(text)
+assert secondary_excluded == ['Add comment', 'Remove unused rows', 'Remove unused columns', 'Remove unused rows and columns']
+
+print(json.dumps(dict(secondaryActions=dict(
+    calls=secondary_action_calls, excludedKinds=['press', 'showMenu', 'scrollToVisible'],
+    excludedDescriptions=secondary_excluded,
+    behavior="filter static exclusions, preserve duplicates/order/empty descriptions, comma-space join, appendUnique joined entry",
+    limitation="full content collection and live integration pending"), contentEligibility=dict(
     calls=content_eligibility_calls,
     behavior="informational only: button/checkBox/menuButton require hasDescriptiveAttributes; menu/menuBar false; all others true",
     getters="node role +0x30; role presentationKind +0x40; node hasDescriptiveAttributes +0xe8",

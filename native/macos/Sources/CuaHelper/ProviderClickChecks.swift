@@ -2923,6 +2923,34 @@ private enum ProviderClickChecks {
             }
         }
         do {
+            var content = AccessibilityContentAccumulator()
+            content.appendSecondaryActions([
+                .init(kind: .press, description: "Open"),
+                .init(kind: .showMenu, description: "Menu"),
+                .init(kind: .scrollToVisible, description: "Reveal"),
+                .init(kind: .other, description: "Add comment"),
+                .init(kind: .other, description: "Remove unused rows"),
+                .init(kind: .other, description: "Remove unused columns"),
+                .init(kind: .other, description: "Remove unused rows and columns"),
+            ])
+            checkTrue(content.entries.isEmpty)
+            content.appendUnique(.init(label: nil, text: "Open"))
+            content.appendSecondaryActions([
+                .init(kind: .other, description: "Open"),
+                .init(kind: .other, description: "Open"),
+                .init(kind: .other, description: "add comment"),
+                .init(kind: .other, description: ""),
+            ])
+            checkEqual(content.entries.last?.text, "Open, Open, add comment, ")
+            checkEqual(content.entries.last?.label, "Secondary Actions")
+            // Only the joined payload is deduplicated against prior content.
+            content.appendSecondaryActions([.init(kind: .other, description: "Open")])
+            checkEqual(content.entries.count, 2)
+            var empty = AccessibilityContentAccumulator()
+            empty.appendSecondaryActions([.init(kind: .other, description: "")])
+            checkEqual(formatAccessibilityContent(empty.entries), "Secondary Actions: ")
+        }
+        do {
             checkEqual(formatAccessibilityContent([]), "")
             checkEqual(formatAccessibilityContent([.init(label: "Description", text: "only")]), "only")
             checkEqual(formatAccessibilityContent([.init(label: "", text: "only")]), "only")

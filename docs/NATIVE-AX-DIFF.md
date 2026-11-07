@@ -6572,3 +6572,24 @@ including getter counts. Swift build, provider checks and the pinned static
 audit passed. This suppresses content only: it is not a rule to drop a whole
 node or its children. Whole-node role/state composition and production
 collector integration are still pending; no live app execution was performed.
+
+
+### Secondary action content (2026-11-07)
+
+Recovered 0x100626b70..0x100626d8c with closure 0x100629180 and predicate
+0x100627d14. The predicate receives two STATIC sets, not the accumulated text
+set: kinds press/showMenu/scrollToVisible and exact descriptions Add comment,
+Remove unused rows, Remove unused columns, Remove unused rows and columns.
+Static arrays at 0x10156b768 and 0x10156b798 establish their contents.
+
+AccessibilitySecondaryActions.swift filters those sets, preserves remaining
+sequence order/duplicates/empty descriptions, joins with comma-space, and
+appends the Secondary Actions entry through appendUnique. No surviving actions
+means no entry; one action with empty description still produces an entry.
+Only the final joined text participates in accumulator deduplication. Matching
+is Swift String equality, without case folding or trimming.
+
+Build, owned provider tests and static audit passed, including all exclusions,
+duplicate actions, prior identical content, case differences and empty text.
+Full content collection, node composition and live collector integration are
+still pending; this is not an end-to-end app acceptance claim.
