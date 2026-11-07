@@ -2298,3 +2298,20 @@ unsupported results and error propagation without installing any real AX
 notification. AXObserver creation uses AXObserverCreateWithInfoCallback in the
 source; callback context, removal and RunLoopTask monitoring still require
 restoration before production notification ownership can be declared complete.
+
+
+## AX notification removal accounting
+
+Removal at 0x1006ed1a0 calls AXObserverRemoveNotification before changing
+the target map. Only success and notificationNotRegistered (-25210) remove
+the target; other errors propagate and preserve the record. Empty sets remain
+in the dictionary, including successful direct removal of an unseen pair.
+Removing an entire notification snapshots its registered set first. Array
+overloads preserve order and duplicates, stop at the first error and retain
+earlier successful changes without rollback.
+
+Injected provider checks cover successful/already-absent removal, failed removal
+record preservation, retained empty sets, empty bulk removal and ordered batch
+failure. The Swift build and provider checks pass. No native notification was
+installed by these checks. Callback context and RunLoop monitoring, followed by
+production controller ownership, remain outstanding.

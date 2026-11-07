@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    try runAXNotificationRemovalChecks()
     try runAXNotificationRegistrationChecks()
     runMouseWindowRegistryOwnershipChecks()
     await runWindowOrderingObserverCompositionChecks()
@@ -7226,4 +7227,41 @@ private func runAXNotificationRegistrationChecks() throws {
         preconditionFailure("unexpected AX error must propagate")
     } catch UIElementError.axError(let error) { checkEqual(error, .failure) }
     checkTrue(targets.targets[.menuClosed] == nil)
+}
+
+
+private func runAXNotificationRemovalChecks() throws {
+    let targets = AXNotificationRegistrationTargets<Int>()
+    for id in [7, 8] { try targets.register(.windowCreated, ignoringErrors: [], for: id, addNotification: { .success }) }
+    try targets.remove(.windowCreated, for: 7, removeNotification: { .notificationNotRegistered })
+    checkEqual(targets.targets[.windowCreated], Set([8]))
+    do {
+        try targets.remove(.windowCreated, for: 8, removeNotification: { .failure })
+        unexpectedFailure()
+    } catch UIElementError.axError(let error) { checkEqual(error, .failure) }
+    checkEqual(targets.targets[.windowCreated], Set([8]))
+    try targets.remove(.windowCreated, for: 8, removeNotification: { .success })
+    checkEqual(targets.targets[.windowCreated], Set<Int>())
+    // A successful direct removal on an unrecorded notification creates the
+    // source default empty Set; whole-notification removal does not call AX.
+    try targets.remove(.menuClosed, for: 99, removeNotification: { .notificationNotRegistered })
+    checkEqual(targets.targets[.menuClosed], Set<Int>())
+    try targets.remove(.menuClosed, removeNotification: { _, _ in unexpectedFailure() })
+    for notification in [AXNotification.windowCreated, .menuOpened] {
+        try targets.register(notification, ignoringErrors: [], for: 99, addNotification: { .success })
+    }
+    var calls: [AXNotification] = []
+    do {
+        try targets.remove(notifications: [.windowCreated, .menuOpened, .menuClosed], for: 99,
+            removeNotification: { notification, element in
+                checkEqual(element, 99); calls.append(notification)
+                return notification == .menuOpened ? .failure : .success
+            })
+        unexpectedFailure()
+    } catch UIElementError.axError(let error) { checkEqual(error, .failure) }
+    checkEqual(calls, [.windowCreated, .menuOpened])
+    checkEqual(targets.targets[.windowCreated], Set<Int>())
+    checkEqual(targets.targets[.menuOpened], Set([99]))
+    try targets.remove(notifications: [.menuOpened, .menuOpened], removeNotification: { _, _ in .success })
+    checkEqual(targets.targets[.menuOpened], Set<Int>())
 }

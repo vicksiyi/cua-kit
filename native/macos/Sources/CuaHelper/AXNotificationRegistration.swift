@@ -21,4 +21,28 @@ final class AXNotificationRegistrationTargets<Element: Hashable> {
         try registerAXNotification(ignoringErrors: ignoringErrors, addNotification: addNotification,
             recordTarget: { targets[notification, default: []].insert(element) })
     }
+
+    func remove(_ notification: AXNotification, for element: Element,
+        removeNotification: () -> AXError) throws {
+        try removeAXNotification(removeNotification: removeNotification,
+            removeTarget: { targets[notification, default: []].remove(element) })
+    }
+    func remove(_ notification: AXNotification,
+        removeNotification: (AXNotification, Element) -> AXError) throws {
+        guard let installed = targets[notification] else { return }
+        // Snapshot the original Set before individual removals mutate it.
+        for element in installed {
+            try remove(notification, for: element, removeNotification: { removeNotification(notification, element) })
+        }
+    }
+    func remove(notifications: [AXNotification], for element: Element,
+        removeNotification: (AXNotification, Element) -> AXError) throws {
+        for notification in notifications {
+            try remove(notification, for: element, removeNotification: { removeNotification(notification, element) })
+        }
+    }
+    func remove(notifications: [AXNotification],
+        removeNotification: (AXNotification, Element) -> AXError) throws {
+        for notification in notifications { try remove(notification, removeNotification: removeNotification) }
+    }
 }
