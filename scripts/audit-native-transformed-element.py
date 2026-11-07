@@ -261,8 +261,34 @@ branch(0x10065bc90, 0x101152ff4) # String equality fallback
 branch(0x10065bd70, 0x1011515fc) # replaceSubrange(_:with:)
 branch(0x10065bd80, 0x10064fac4) # items modify completion invalidates caches
 
+# Repetitive static text: descendant canBeUserInteractive key path and
+# helper's Foundation substring matching / promotion / repeat pass.
+assert relative(0x10118ba80 + 32) == 0x10065d51c
+assert struct.unpack('<I', read(0x10065d53c, 4))[0] == 0xf9407029
+branch(0x100659e34, 0x100650d50)
+branch(0x10065ae84, 0x10065c5ac)
+for site in [0x10065c764, 0x10065c888]: branch(site, 0x101151da0)
+for site in [0x10065c7e4, 0x10065c8f0]: branch(site, 0x101151e18)
+branch(0x10065cae8, 0x1011515fc)
+branch(0x10065cb00, 0x10064fac4)
+branch(0x10065cb50, 0x10065c5ac)
+for address, instruction in [
+    (0x100659d8c, 0xf9404f08), # own isFocusable
+    (0x100659db4, 0xf9404708), # own isSelectable
+    (0x10065ae20, 0xf9402708), # own description
+    (0x10065ae3c, 0xf9406b08), # own stringValue (not value)
+    (0x10065c840, 0xf9402aa8), # child value
+    (0x10065c6f8, 0xd1000739), # descending indices
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
+    repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
+        guard="not focusable/selectable and no canBeUserInteractive descendant",
+        matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",
+        mutation="collect matching child indices descending, replace by grandchildren, repeat against same parent strings",
+        limitation="no role or subset guard added; full pipeline integration pending"),
     redundantHierarchy=dict(entry="0x10065a630", iteration="0x10065ba78",
         guards="parent not selectable/focused/node-descriptive; parent render succeeds",
         flatten="reverse original child indices; matching role, absent subset ranges, equal rendered text; replace child by its children",

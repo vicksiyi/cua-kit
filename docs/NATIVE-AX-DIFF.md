@@ -5343,3 +5343,32 @@ child error with other successful changes, role/subset skips before rendering,
 unequal text, empty trees, focusedElement capture and original input retention.
 The rendering callback remains injected; the full renderer, dispatcher and
 production integration still need to be connected before live acceptance.
+
+
+### Repetitive static text (2026-11-07)
+
+Restored tag 6 and helper 0x10065c5ac in Swift. The entry at 0x100659d8c
+rejects a focusable/selectable parent and any descendant whose
+canBeUserInteractive is true. The latter key path at 0x10118ba80 points to
+0x10065d51c, which reads witness slot 28; it is not a role-name comparison.
+
+Capture parent description and stringValue. Scan children in reverse, trim
+each child description/value using Foundation whitespacesAndNewlines, then
+match nonempty child description contained in parent description, or child
+value contained in parent stringValue. Description match short-circuits
+value. The Foundation contains import is at GOT 0x101463a10 (stub
+0x101151e18). Parent value uses stringValue (witness 26), child uses value
+(witness 10). This distinction preserves parent Boolean-value suppression.
+
+Collect all matching indices before mutation, promote each matching child's
+children at that index, and recurse with the same captured parent strings.
+Return transformed if the initial pass found matches, regardless of later
+recursive return; otherwise unchanged. No subset check is present here.
+Unlike arbitrary retries, each promotion removes a node from the finite
+stored tree, so the recursive pass terminates without an invented round cap.
+
+Tests cover trimmed substring matching, nested promotions, duplicate survivor
+order, parent interactivity, deep descendant interactivity, whitespace-only
+text, value matching, partial child metadata, empty input and input retention.
+Build/self-test pass; this rule still awaits complete production pipeline
+integration and real application acceptance with the remaining strategies.

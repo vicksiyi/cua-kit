@@ -1082,6 +1082,52 @@ private enum ProviderClickChecks {
             item: emptyGroup, context: &hierarchyContext) { _, _ in "" }
         guard case .transformed(let emptyTransformed) = noChildren else { unexpectedFailure() }
         checkTrue(emptyTransformed.children.isEmpty)
+        var repeatParent = anonymousGroup
+        repeatParent.description = "prefix duplicate suffix"
+        var repeatNode = anonymousGroup
+        repeatNode.description = "  duplicate\n"
+        var uniqueNode = anonymousGroup
+        uniqueNode.description = "unique"
+        let uniqueItem = PruneItem(element: uniqueNode, subtree: transformedLeaf)
+        let repeatLeaf = PruneItem(element: repeatNode, subtree: .init(items: [uniqueItem], focusedElement: nil))
+        let repeatNested = PruneItem(element: repeatNode, subtree: .init(items: [repeatLeaf], focusedElement: nil))
+        let repetitionInput = PruneItem(element: repeatParent,
+            subtree: .init(items: [repeatNested, uniqueItem, repeatLeaf], focusedElement: nil))
+        let repetitionResult = UIElementTreeTransformation.flattenRepetitiveStaticText(item: repetitionInput)
+        guard case .transformed(let repetitionOutput) = repetitionResult else { unexpectedFailure() }
+        checkEqual(repetitionOutput.children.map { $0.element.description }, ["unique", "unique", "unique"])
+        checkEqual(repetitionInput.children.count, 3)
+        for key in [\TransformedUIElement.isFocusable, \.isSelectable] {
+            var interactiveParent = repetitionInput
+            interactiveParent.element[keyPath: key] = true
+            guard case .unchanged = UIElementTreeTransformation.flattenRepetitiveStaticText(
+                item: interactiveParent) else { unexpectedFailure() }
+        }
+        var interactiveDescendant = repetitionInput
+        interactiveDescendant.subtree.items[0].subtree.items[0].element.role = .button
+        guard case .unchanged = UIElementTreeTransformation.flattenRepetitiveStaticText(
+            item: interactiveDescendant) else { unexpectedFailure() }
+        var whitespaceRepeat = repetitionInput
+        whitespaceRepeat.subtree.items = [.init(element: textRoot, subtree: transformedLeaf)]
+        guard case .unchanged = UIElementTreeTransformation.flattenRepetitiveStaticText(
+            item: whitespaceRepeat) else { unexpectedFailure() }
+        // Parent value uses stringValue, whereas child value uses raw value.
+        var valueParent = anonymousGroup
+        valueParent.value = "prefix repeated suffix"
+        var valueChild = anonymousGroup
+        valueChild.value = " repeated "
+        let valueRepeated = PruneItem(element: valueParent,
+            subtree: .init(items: [.init(element: valueChild, subtree: transformedLeaf)], focusedElement: nil))
+        checkEqual(valueParent.stringValue, valueParent.value)
+        guard case .transformed(let valueFlattened) = UIElementTreeTransformation.flattenRepetitiveStaticText(
+            item: valueRepeated) else { unexpectedFailure() }
+        checkTrue(valueFlattened.children.isEmpty)
+        var incompleteRepeat = repetitionInput
+        incompleteRepeat.subtree.items[0].availableSubset = .init(count: 20, availableRanges: [])
+        guard case .transformed = UIElementTreeTransformation.flattenRepetitiveStaticText(
+            item: incompleteRepeat) else { unexpectedFailure() }
+        guard case .unchanged = UIElementTreeTransformation.flattenRepetitiveStaticText(
+            item: emptyGroup) else { unexpectedFailure() }
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

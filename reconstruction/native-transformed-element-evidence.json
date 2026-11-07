@@ -51,6 +51,14 @@
       "link": true
     }
   ],
+  "repetitiveText": {
+    "entry": "0x100659d8c",
+    "helper": "0x10065c5ac",
+    "guard": "not focusable/selectable and no canBeUserInteractive descendant",
+    "matching": "Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",
+    "mutation": "collect matching child indices descending, replace by grandchildren, repeat against same parent strings",
+    "limitation": "no role or subset guard added; full pipeline integration pending"
+  },
   "redundantHierarchy": {
     "entry": "0x10065a630",
     "iteration": "0x10065ba78",
