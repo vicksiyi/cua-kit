@@ -1,0 +1,107 @@
+{
+  "binarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "protocol": {
+    "name": "AccessibilitySupport.UIElementProtocol",
+    "descriptor": "0x1012cd46c",
+    "signatureRequirements": 4,
+    "requirementCount": 12,
+    "witnessTable": "0x10149ed40",
+    "requirements": [
+      {
+        "index": 0,
+        "descriptor": "0x1012cd4b4",
+        "flags": "0x0",
+        "defaultImplementation": null,
+        "witness": null
+      },
+      {
+        "index": 1,
+        "descriptor": "0x1012cd4bc",
+        "flags": "0x0",
+        "defaultImplementation": null,
+        "witness": null
+      },
+      {
+        "index": 2,
+        "descriptor": "0x1012cd4c4",
+        "flags": "0x3",
+        "defaultImplementation": null,
+        "witness": "0x10078fbf4"
+      },
+      {
+        "index": 3,
+        "descriptor": "0x1012cd4cc",
+        "flags": "0x13",
+        "defaultImplementation": null,
+        "witness": "0x10078fbfc"
+      },
+      {
+        "index": 4,
+        "descriptor": "0x1012cd4d4",
+        "flags": "0x13",
+        "defaultImplementation": null,
+        "witness": "0x10078fc04"
+      },
+      {
+        "index": 5,
+        "descriptor": "0x1012cd4dc",
+        "flags": "0x2",
+        "defaultImplementation": null,
+        "witness": "0x10078fc50"
+      },
+      {
+        "index": 6,
+        "descriptor": "0x1012cd4e4",
+        "flags": "0x13",
+        "defaultImplementation": null,
+        "witness": "0x1007aff6c"
+      },
+      {
+        "index": 7,
+        "descriptor": "0x1012cd4ec",
+        "flags": "0x13",
+        "defaultImplementation": null,
+        "witness": "0x1007aff74"
+      },
+      {
+        "index": 8,
+        "descriptor": "0x1012cd4f4",
+        "flags": "0x13",
+        "defaultImplementation": null,
+        "witness": "0x1007925f4"
+      },
+      {
+        "index": 9,
+        "descriptor": "0x1012cd4fc",
+        "flags": "0x13",
+        "defaultImplementation": null,
+        "witness": "0x100792600"
+      },
+      {
+        "index": 10,
+        "descriptor": "0x1012cd504",
+        "flags": "0x11",
+        "defaultImplementation": null,
+        "witness": "0x1007b8a04"
+      },
+      {
+        "index": 11,
+        "descriptor": "0x1012cd50c",
+        "flags": "0x11",
+        "defaultImplementation": null,
+        "witness": "0x100792670"
+      }
+    ]
+  },
+  "inherited": {
+    "name": "ComputerUseCore.AccessibilityNode",
+    "descriptor": "0x1012c9238",
+    "signatureRequirements": 4,
+    "requirementCount": 36
+  },
+  "limitations": [
+    "Witness member names beyond separately traced entries remain unresolved.",
+    "Zero base-conformance slots require runtime instantiation; they are not missing inheritance.",
+    "This is static evidence, not executable protocol conformance or desktop acceptance."
+  ]
+}

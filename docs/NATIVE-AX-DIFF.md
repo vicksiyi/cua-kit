@@ -3287,3 +3287,43 @@ bundle and lazy identity lookup. The existing element-cache construction test
 also passes, as does Swift build. Selection is now available for the transaction
 constructor, but full transaction/protocol ownership and TaskLocal scope remain
 incomplete; no live UI acceptance is implied.
+
+### Protocol witness inventory required by transaction ownership
+
+The repository still has concrete UIElement storage and behavior helpers, but no
+complete UIElementProtocol / AccessibilityNode declaration and conformance.
+A full transaction must retain its protocol root, not merely an AXUIElement or
+cache. This is the next structural prerequisite, not a runtime permission issue.
+
+`scripts/audit-native-element-protocol.py` now reads the pinned native Mach-O
+without loading it, checks its SHA256, protocol descriptor dimensions/flags and
+UIElement witness targets, and emits the checked-in
+`reconstruction/native-element-protocol-evidence.json`.
+UIElementProtocol at `0x1012cd46c` has four signature requirements and twelve
+witness requirements: two base conformances, a static getter, two instance
+getters, an initializer, four more instance getters and two instance methods.
+The base conformances are AccessibilityNode and Hashable (exported descriptors
+`0x1012cd4b4` and `0x1012cd4bc`). AccessibilityNode at `0x1012c9238` has four
+signature requirements and 36 witness requirements, including inherited and
+associated-type/conformance slots; this is not a count of 36 callable methods.
+
+Separately traced concrete UIElement witnesses:
+
+| Requirement index | Witness | Observed behavior |
+| --- | --- | --- |
+| 2 | 0x10078fbf4 | Static getter returns zero; semantic name unresolved |
+| 3 | 0x10078fbfc | Retains and returns AX element stored at offset 0 |
+| 4 | 0x10078fc04 | Retains and returns three cache fields at offsets 8/16/24 |
+| 5 | 0x10078fc50 | Invokes recovered element initializer 0x10072187c and stores all four return words |
+| 6 | 0x1007aff6c | Passes attribute dictionary to 0x1007289b0 |
+| 7 | 0x1007aff74 | Passes all four storage words to 0x1007aaf9c |
+| 8 | 0x1007925f4 | Passes all four storage words to 0x100790b88 |
+| 9 | 0x100792600 | Calls 0x100790b88 then maps via 0x100790690 |
+| 10 | 0x1007b8a04 | Delegates to 0x1007ad94c |
+| 11 | 0x100792670 | Delegates to 0x1007343b8 with stored element/cache |
+
+The two zero base-table slots in the on-disk UIElement witness table require
+runtime instantiation; they must not be interpreted as absent inheritance.
+Names/signatures for the remaining witnesses and inherited requirements still
+need tracing before restoring the complete protocol. The read-only audit passed
+and its emitted JSON was regenerated; no vendor binary or UI operation ran.
