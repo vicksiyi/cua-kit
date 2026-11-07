@@ -224,8 +224,31 @@ for address, instruction in [
 ]:
     assert struct.unpack('<I', read(address, 4))[0] == instruction
 
+# Single-item group merge: grouping, selectable/focused, node description;
+# child availableSubset optional's range pointer 0/1 versus allocated array.
+for address, instruction in [
+    (0x100659c74, 0xf9401c08),
+    (0x100659ca4, 0xf94046c8),
+    (0x100659cbc, 0xf9404ac8),
+    (0x100659cd4, 0xf94076c8),
+    (0x100659d00, 0xf100041f),
+    (0x10065be9c, 0xb9802b08),
+    (0x10065bea4, 0xf9400508),
+    (0x10065bea8, 0xf100051f),
+    (0x10065bee0, 0x52800022),
+    (0x1000100f0, 0x52800021),
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+branch(0x100659cfc, 0x101150ef4) # Array.count
+branch(0x100659d48, 0x1011514d0) # Collection.first
+branch(0x10065bf8c, 0x101151500) # Collection.isEmpty
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
+    singleItemGroup=dict(entry="0x100659c10", replacement="0x10065be7c",
+        guard="role.isGrouping and not selectable/focused/node.hasDescriptiveAttributes",
+        action="replace with sole child only if child subset ranges absent; otherwise remove empty or keep",
+        limitation="extracted body; complete transform dispatcher and production integration pending"),
     pruning=dict(emptyDisabled="remove iff disabled, not focused, no stored children and no item description",
         nonDescriptive="retain own focusability/selectability, interesting actions or item description; then retain descendant focusability/selectability or interesting actions; otherwise remove",
         integration="concrete branches tested through tree driver; full production pipeline remains pending"),

@@ -954,6 +954,62 @@ private enum ProviderClickChecks {
         checkEqual(pruneOutput.items.count, 1)
         checkTrue(pruneOutput.items[0].children.isEmpty)
         checkEqual(pruneInput.items[0].children.count, 1)
+        // Single-item grouping uses the node predicate, not item text, and
+        // blocks replacement for any explicit child subset ranges (even []).
+        var anonymousGroup = emptyDisabled
+        anonymousGroup.description = nil
+        let mergeChild = PruneItem(element: textChild, subtree: grandchildTree)
+        let groupItem = PruneItem(element: anonymousGroup,
+            subtree: .init(items: [mergeChild], focusedElement: textChild))
+        func replacedChild(_ item: PruneItem) -> PruneItem? {
+            switch UIElementTreeTransformation.mergeSingleItemGroups(item: item) {
+            case .replaced(let child): return child
+            case .unchanged, .removed: return nil
+            default: unexpectedFailure("group rule must not return transformed")
+            }
+        }
+        checkEqual(replacedChild(groupItem)?.element.title, " child ")
+        checkEqual(replacedChild(groupItem)?.children.count, 1)
+        for key in [\TransformedUIElement.isSelectable, \.isFocused] {
+            var retained = groupItem
+            retained.element[keyPath: key] = true
+            checkTrue(replacedChild(retained) == nil)
+        }
+        var focusableGroup = groupItem
+        focusableGroup.element.isFocusable = true
+        checkTrue(replacedChild(focusableGroup) != nil)
+        var whitespaceGroup = groupItem
+        whitespaceGroup.element.description = " "
+        checkTrue(replacedChild(whitespaceGroup) == nil)
+        var nonGroup = groupItem
+        nonGroup.element.role = .button
+        checkTrue(replacedChild(nonGroup) == nil)
+        var parentSubsetGroup = groupItem
+        parentSubsetGroup.availableSubset = .init(count: 20, availableRanges: [])
+        checkTrue(replacedChild(parentSubsetGroup) != nil)
+        for ranges: [Range<Int>]? in [nil, [], [0..<1]] {
+            var subsetGroup = groupItem
+            subsetGroup.subtree.items[0].availableSubset = .init(count: 50, availableRanges: ranges)
+            checkEqual(replacedChild(subsetGroup) != nil, ranges == nil)
+        }
+        let emptyGroup = PruneItem(element: anonymousGroup, subtree: transformedLeaf)
+        checkTrue(removed(UIElementTreeTransformation.mergeSingleItemGroups(item: emptyGroup)))
+        var multiGroup = groupItem
+        multiGroup.subtree.items.append(mergeChild)
+        checkTrue(!removed(UIElementTreeTransformation.mergeSingleItemGroups(item: multiGroup)))
+        // Replacement restarts the pipeline, allowing a chain of anonymous
+        // groups to collapse while preserving the surviving child's subtree.
+        let outerGroup = PruneItem(element: anonymousGroup,
+            subtree: .init(items: [groupItem], focusedElement: nil))
+        let mergeInput = UIElementTree<TransformedUIElement>(items: [outerGroup], focusedElement: textChild)
+        let mergeOutput = mergeInput.transformed(using: [UIElementTreeTransformation.mergeSingleItemGroups],
+            in: &pruneContext) { _, item, _ in
+                UIElementTreeTransformation.mergeSingleItemGroups(item: item)
+            }
+        checkEqual(mergeOutput.items.count, 1)
+        checkEqual(mergeOutput.items[0].element.title, " child ")
+        checkEqual(mergeOutput.items[0].children[0].element.title, "\n grandchild\t")
+        checkEqual(mergeOutput.focusedElement?.title, " child ")
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

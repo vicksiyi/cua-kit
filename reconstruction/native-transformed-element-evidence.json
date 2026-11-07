@@ -51,6 +51,13 @@
       "link": true
     }
   ],
+  "singleItemGroup": {
+    "entry": "0x100659c10",
+    "replacement": "0x10065be7c",
+    "guard": "role.isGrouping and not selectable/focused/node.hasDescriptiveAttributes",
+    "action": "replace with sole child only if child subset ranges absent; otherwise remove empty or keep",
+    "limitation": "extracted body; complete transform dispatcher and production integration pending"
+  },
   "pruning": {
     "emptyDisabled": "remove iff disabled, not focused, no stored children and no item description",
     "nonDescriptive": "retain own focusability/selectability, interesting actions or item description; then retain descendant focusability/selectability or interesting actions; otherwise remove",

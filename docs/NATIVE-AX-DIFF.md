@@ -5290,3 +5290,29 @@ merely because its child was removed later. Input values remain unchanged.
 These tests do not enable the partial pipeline in the production collector.
 Remaining common/Mac strategy bodies and the complete dispatcher are still
 required before production tree replacement and real app acceptance.
+
+
+### Single-item group merge (2026-11-07)
+
+Restored tag-4 `mergeSingleItemGroups` in Swift from 0x100659c10, with the
+replacement continuation at 0x10065be7c and fallback at 0x10065bf5c.
+It requires role.isGrouping, not selectable, not focused, and no **node-level**
+descriptive attributes. Focusability, enabled and interesting actions are
+not checked by this branch. Whitespace-only node text therefore prevents
+merging, unlike the trimmed item-level predicate used by pruning.
+
+A sole child replaces the group only if that child's availableSubset is nil
+or its availableRanges is nil. Any explicit ranges array, including [],
+blocks replacement. The original compares the second optional-descriptor
+word against 1: nil descriptor is encoded with second word 1 (default
+initializer 0x1000100ec), complete descriptor uses nil ranges (0), actual
+ranges arrays have pointer >1. Parent subset metadata is not checked.
+If no replacement occurs, an empty group is removed; a nonempty one remains.
+The replacement returns Result.replaced, so the recovered driver restarts
+its strategy list and can collapse multiple nested anonymous groups.
+
+Tests cover these guards, both subset locations, incomplete/complete/nil
+child metadata, zero/one/multiple children, and nested replacement through
+the actual tree driver with focusedElement preservation. Build and mock
+provider self-tests are required; no live UI or vendor process is executed.
+The helper is not yet a complete dispatcher or production pipeline.
