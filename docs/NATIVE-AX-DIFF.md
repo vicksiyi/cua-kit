@@ -4951,3 +4951,27 @@ field mappings, absent entries, wrong-type cache entries, empty strings, and no
 additional provider reads. Remaining constructor work includes URL/DOM classes,
 actions and full owner assembly; rich-text transforms and production collection
 are still outstanding. No live application acceptance is claimed.
+
+
+### Constructor URL fallback (2026-11-07)
+
+Recovered `UIElement.transformedURL(capturedRole:reportError:)` in Swift.
+The pinned common constructor first uses the cached typed AXURL getter
+(0x10075eb80); its non-nil branch at 0x10075ebe0 skips all document work.
+Only the already captured window role (0x10075ebf8..0x10075ec3c) enables
+AXDocument fallback. AXDocument uses lenient cached String decoding, then
+strict provider decoding when the cache is absent/invalid, respecting the
+existing known-unsupported gate and error reporting. The URL initializer call
+at 0x10075f3a0 targets stub 0x10114e974 / GOT 0x1014630c8, bound to
+`Foundation.URL.init(string:)`. This preserves relative URLs rather than
+inventing a filesystem-path conversion. AXURL itself still requires a typed
+URL and does not parse arbitrary strings.
+
+Provider checks cover cached URL priority, non-window short-circuit, cached
+relative document, invalid cache/fresh fallback, String AXURL rejection,
+known-unsupported document, strict fresh type failure, and provider failure.
+An empty supported-attribute set with no transaction attributes means unknown,
+not known-unsupported; the unsupported fixture uses a nonempty set excluding
+AXDocument. This accessor is ready for full owner assembly; the production
+collector is still not using the complete transformed owner/tree pipeline.
+DOM classes, action descriptions and owner integration remain outstanding.

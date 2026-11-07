@@ -557,6 +557,44 @@ private enum ProviderClickChecks {
         checkTrue(badStrings.title == nil); checkTrue(badStrings.description == nil)
         checkEqual(badStrings.help, "")
         checkEqual(textProvider.singleReads, readsBeforeValueState)
+        let urlAX = AXUIElementCreateApplication(12507)
+        let urlProvider = Hit()
+        provider.replacements[urlAX] = urlProvider
+        let documentAttribute = UIElementAttribute("AXDocument")
+        func urlElement(_ attributes: [UIElementAttribute: AXPartialValue], supported: Bool = true) -> UIElement {
+            UIElement(axElement: urlAX, cache: UIElementCache(
+                supportedAttributes: supported ? [documentAttribute] : [UIElementAttribute("AXRole")],
+                attributes: attributes, transactionAttributes: nil))
+        }
+        var urlErrors = 0
+        func transformedURL(_ element: UIElement, role: UIElementRole = .window) -> URL? {
+            element.transformedURL(capturedRole: role, reportError: { _ in urlErrors += 1 })
+        }
+        let canonicalURL = URL(string: "https://example.com/cached")!
+        checkEqual(transformedURL(urlElement([UIElementAttribute("AXURL"): partial(canonicalURL as NSURL)])), canonicalURL)
+        checkEqual(urlProvider.singleReads, 0)
+        checkTrue(transformedURL(urlElement([:]), role: .textField) == nil)
+        checkEqual(urlProvider.singleReads, 0)
+        checkEqual(transformedURL(urlElement([documentAttribute: partial("relative/document" as NSString)])),
+            URL(string: "relative/document"))
+        checkEqual(urlProvider.singleReads, 0)
+        urlProvider.readResult = (.success, partial("https://example.com/fresh" as NSString))
+        checkEqual(transformedURL(urlElement([documentAttribute: partial(NSNumber(value: 3))])),
+            URL(string: "https://example.com/fresh"))
+        checkEqual(urlProvider.singleReads, 1)
+        // A String in AXURL is not parsed there; the window document is used.
+        checkEqual(transformedURL(urlElement([UIElementAttribute("AXURL"): partial("https://ignored.example" as NSString)])),
+            URL(string: "https://example.com/fresh"))
+        checkEqual(urlProvider.singleReads, 2)
+        checkTrue(transformedURL(urlElement([:], supported: false)) == nil)
+        checkEqual(urlProvider.singleReads, 2)
+        urlProvider.readResult = (.success, partial(NSNumber(value: 3)))
+        checkTrue(transformedURL(urlElement([:])) == nil)
+        checkEqual(urlErrors, 1)
+        urlProvider.readResult = (.failure, nil)
+        checkTrue(transformedURL(urlElement([:])) == nil)
+        checkEqual(urlErrors, 2)
+        checkEqual(urlProvider.singleReads, 4)
         let role = UIElementAttribute("AXRole")
         var rect = CGRect(x: 10, y: 20, width: 80, height: 40)
         let target = UIElement(axElement: targetAX, cache: UIElementCache(supportedAttributes: [role, .frame],
