@@ -1,7 +1,7 @@
 # Native AX enablement: source evidence and remaining work
 
-Status: source audit and an isolated diagnostic; production enablement lifecycle
-is not implemented. Do not treat this as the established cause of Multica's
+Status: source audit, tracker/manual-enable components and isolated diagnostics;
+the complete production enablement lifecycle is not implemented. Do not treat this as the established cause of Multica's
 unresponsive clicks or add unconditional accessibility flags as a workaround.
 
 ## Source boundaries
@@ -60,3 +60,57 @@ accounting and assertion ownership; cover partial acquisition, repeated owners,
 release-once, cancellation and teardown. Then integrate with observation and
 window registry ownership. Validate with live before/after effects rather than
 using accepted AX/event dispatch as proof of a successful interaction.
+
+
+## Shared assertion tracker and Electron helper restoration
+
+AXEnablementAssertionTracker restores the shared (application, kind) dictionary
+semantics at 0x100703360 and 0x1007036a8. Acquire stores count+1 before reporting
+and returns true only when the previous count was zero. Release of a missing
+or nonpositive count reports and returns false. A final release removes the key
+(and its retained running-app object) and returns true; intermediate releases
+store count-1 and return false. No global PID-only counter, negative debt or
+extra lock is substituted. The native owner must serialize use as in the source.
+The generic application key supports isolated tests; integration will supply
+NSRunningApplication and preserve its equality instead of extracting a PID.
+
+The Kind descriptor 0x1012cc788 and records 0x10132305c/68/74 establish order:
+enableElectronAccessibility, enableEnhancedUserInterface,
+enableVoiceOverOnPreference. The third kind is not another AX Boolean flag;
+its policy/native operation remains pending.
+
+ElectronAccessibilityEnablement restores manual helper 0x100700d78:
+only an explicit false attribute value leads to a true-write attempt. Nil or
+already-true returns false and leaves the caller's changed flag intact. Encoding
+and setter failures are discarded; the attempted-write path still marks changed
+and returns true (0x100701200..0x100701214). Therefore true is not verified AX
+write success. The concrete UIElement composition reuses the existing cached/
+uncached Bool reader and provider-aware encoder/setter, without cache mutation.
+
+Tests cover multiple owners, independent apps/kinds, first/last transitions,
+failed-acquisition rollback sequences, mismatched release/reacquisition and
+retention through the last kind. The Electron helper checks nil/false/true reads,
+existing changed state and setter failures. Native Swift build, provider-click
+self-test and expanded pinned static audit pass. These components are not yet
+called automatically by the app controller; policy, operations for other kinds,
+assertion cleanup/owner lifetime and controller integration remain outstanding.
+
+## Owned-window live acceptance gate
+
+scripts/test-native-indexed-click.py --allow-owned-ui is an explicit opt-in
+integration gate. It only binds PIDs from fixture processes it launches, builds
+temporary uniquely identified fixture bundles, and targets their Save button
+with alwaysSimulateClick=true. A successful case requires observing a unique
+saved-text result, not merely a dispatched response. Its intended cases are a
+foreground fixture and that same fixture behind a second owned active fixture.
+The fixture now reports activation/resignation events for those preconditions.
+The gate uses the compatibility NDJSON transport to reach the real Swift mouse
+backend; it does not establish restored MCP/AgentLoop acceptance.
+
+Two local attempts terminated at the foreground-fixture activation precondition:
+READY was received but no active notification arrived within the bounded wait.
+The second attempt used a temporary .app bundle. No mouseInput request was sent,
+so neither result proves or disproves click delivery. All spawned processes were
+terminated by their owned subprocess handles. Local reports/stderr remain under
+gitignored artifacts/debug; no runtime report is part of the published changes.
+Do not mark the live gate green or remove its activation check to conceal this.

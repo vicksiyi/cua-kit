@@ -3739,6 +3739,8 @@ func runProviderClickChecks() async throws {
     try runMouseEventTargetChecks()
     runOrderedMouseWindowChecks()
     runMouseWindowRegistryChecks()
+    runAXEnablementAssertionTrackerChecks()
+    runElectronAccessibilityEnablementChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -6175,4 +6177,86 @@ private func runMouseWindowRegistryChecks() {
     checkTrue(windows.isEmpty && notifications.last! == [])
     pruneMouseWindows(&windows, accessibilityWindowID: { _ in unexpectedFailure() },
         observedWindowIDsChanged: { _ in unexpectedFailure() })
+}
+
+private func runAXEnablementAssertionTrackerChecks() {
+    var first: [String] = [], missing: [String] = []
+    let tracker = AXEnablementAssertionTracker<String>(
+        reportFirstAcquisition: { first.append("\($0):\($1)") }, reportMissingRelease: { missing.append($0) })
+    let electron = AXEnablementKind.enableElectronAccessibility
+    let enhanced = AXEnablementKind.enableEnhancedUserInterface
+    // Two independent owners of the same app/kind must not disable each other.
+    checkTrue(tracker.acquire(for: "app-a", kind: electron))
+    checkFalse(tracker.acquire(for: "app-a", kind: electron))
+    checkFalse(tracker.release(for: "app-a", kind: electron))
+    checkTrue(tracker.release(for: "app-a", kind: electron))
+    checkTrue(first.count == 1 && missing.isEmpty)
+    // Missing/duplicate cleanup reports a mismatch without creating debt that
+    // would prevent the next owner from receiving its first-enable decision.
+    checkFalse(tracker.release(for: "app-a", kind: electron))
+    checkTrue(missing == ["app-a"])
+    checkTrue(tracker.acquire(for: "app-a", kind: electron))
+    // Other app and other kind are separate even while app-a/electron is held.
+    checkTrue(tracker.acquire(for: "app-a", kind: enhanced))
+    checkTrue(tracker.acquire(for: "app-b", kind: electron))
+    checkTrue(tracker.release(for: "app-a", kind: electron))
+    checkTrue(tracker.release(for: "app-a", kind: enhanced))
+    checkTrue(tracker.release(for: "app-b", kind: electron))
+    // Failure rollback for one kind cannot release another successful kind.
+    checkTrue(tracker.acquire(for: "app-a", kind: electron))
+    checkTrue(tracker.acquire(for: "app-a", kind: enhanced))
+    checkTrue(tracker.release(for: "app-a", kind: enhanced))
+    checkFalse(tracker.acquire(for: "app-a", kind: electron))
+    checkFalse(tracker.release(for: "app-a", kind: electron))
+    checkTrue(tracker.release(for: "app-a", kind: electron))
+    for kind in AXEnablementKind.allCases {
+        checkTrue(tracker.acquire(for: "app-a", kind: kind))
+        checkFalse(tracker.acquire(for: "app-a", kind: kind))
+    }
+    for kind in AXEnablementKind.allCases {
+        checkFalse(tracker.release(for: "app-a", kind: kind))
+        checkTrue(tracker.release(for: "app-a", kind: kind))
+    }
+
+    final class Application: Hashable {
+        static func == (lhs: Application, rhs: Application) -> Bool { lhs === rhs }
+        func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
+    }
+    let lifetime = AXEnablementAssertionTracker<Application>(
+        reportFirstAcquisition: { _, _ in }, reportMissingRelease: { _ in unexpectedFailure() })
+    var app: Application? = Application()
+    weak var weakApp = app
+    checkTrue(lifetime.acquire(for: app!, kind: electron))
+    checkTrue(lifetime.acquire(for: app!, kind: enhanced))
+    app = nil
+    checkTrue(weakApp != nil)
+    func release(_ kind: AXEnablementKind) { checkTrue(lifetime.release(for: weakApp!, kind: kind)) }
+    release(electron)
+    checkTrue(weakApp != nil)
+    release(enhanced)
+    checkTrue(weakApp == nil)
+}
+
+private func runElectronAccessibilityEnablementChecks() {
+    enum Failure: Error { case write }
+    for originalChanged in [false, true] {
+        for value: Bool? in [nil, false, true] {
+            for writeFails in [false, true] {
+                var changed = originalChanged, reads = 0, writes: [Bool] = []
+                let attempted = performElectronAccessibilityEnablement(changed: &changed,
+                    manualAccessibility: { reads += 1; return value },
+                    setManualAccessibility: { value in
+                        writes.append(value)
+                        if writeFails { throw Failure.write }
+                    })
+                checkTrue(reads == 1)
+                if value == false {
+                    checkTrue(attempted && changed && writes == [true])
+                } else {
+                    checkFalse(attempted)
+                    checkTrue(changed == originalChanged && writes.isEmpty)
+                }
+            }
+        }
+    }
 }

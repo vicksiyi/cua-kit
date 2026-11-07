@@ -54,6 +54,8 @@ final class Delegate: NSObject, NSApplicationDelegate {
         }
         print("READY"); fflush(stdout)
     }
+    func applicationDidBecomeActive(_ notification: Notification) { report(["event": "activation", "active": true]) }
+    func applicationDidResignActive(_ notification: Notification) { report(["event": "activation", "active": false]) }
     @objc func save() { result.stringValue = "Saved \(field.stringValue)" }
 }
 let app = NSApplication.shared
