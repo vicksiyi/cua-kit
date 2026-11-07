@@ -1,3 +1,4 @@
+import { ModelHttpError } from "./chat-model";
 import { NativePolicyConfigurationError } from "./native-policy-configuration";
 import { getDemoDebugLog } from "./demo-debug";
 import { SupervisorCompatibilityError } from "./native-supervisor";
@@ -17,7 +18,7 @@ try {
   // Keep the original failure even when the diagnostic disk write fails.
   try { debug?.write("entry.error", { error }); }
   catch { console.error("Could not write the local startup diagnostic."); }
-  if (error instanceof NativePolicyConfigurationError || error instanceof SupervisorCompatibilityError || error instanceof BrowserStartupError) {
+  if (error instanceof ModelHttpError || error instanceof NativePolicyConfigurationError || error instanceof SupervisorCompatibilityError || error instanceof BrowserStartupError) {
     console.error(error.message);
     process.exitCode = 1;
   } else if (error instanceof ComputerUnavailableError) {

@@ -1,3 +1,4 @@
+import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import type { ModelAdapter } from "./contracts";
 
@@ -22,6 +23,14 @@ const responseSchema = z.object({
     .min(1),
 });
 
+export type ModelRetry = { status: number; attempt: number; nextAttempt: number; delayMs: number };
+export class ModelHttpError extends Error {
+  constructor(readonly status: number, readonly attempts: number) {
+    super(`Model request failed: HTTP ${status} after ${attempts} attempt(s). The model did not return a decision for this step.`);
+    this.name = "ModelHttpError";
+  }
+}
+
 /** Optional demo adapter. The SDK, MCP server and loop do not import this provider. */
 export class ChatCompletionsModel implements ModelAdapter {
   constructor(
@@ -30,6 +39,7 @@ export class ChatCompletionsModel implements ModelAdapter {
       apiKey: string;
       model: string;
       thinking?: "disabled";
+      onRetry?: (event: ModelRetry) => void;
     },
   ) {}
   async decide(input: Parameters<ModelAdapter["decide"]>[0]) {
@@ -99,7 +109,7 @@ export class ChatCompletionsModel implements ModelAdapter {
     const signal = input.signal
       ? AbortSignal.any([input.signal, AbortSignal.timeout(60000)])
       : AbortSignal.timeout(60000);
-    const response = await fetch(this.config.endpoint, {
+    const request: RequestInit = {
       method: "POST",
       signal,
       headers: {
@@ -125,10 +135,23 @@ export class ChatCompletionsModel implements ModelAdapter {
             }
           : { tool_choice: "none" }),
       }),
-    });
-    // Never log response bodies/headers on HTTP errors: providers may echo credentials or content.
-    if (!response.ok)
-      throw new Error(`Model request failed: HTTP ${response.status}`);
+    };
+    // Retry only explicit transient HTTP responses, never tool execution or
+    // malformed successful responses. All attempts share the 60-second signal.
+    let response: Response;
+    for (let attempt = 1; ; attempt++) {
+      signal.throwIfAborted();
+      response = await fetch(this.config.endpoint, request);
+      if (response.ok) break;
+      const status = response.status;
+      // Do not read/log provider bodies or headers: they can echo user content.
+      await response.body?.cancel().catch(() => {});
+      if (attempt >= 3 || ![500, 502, 503, 504].includes(status))
+        throw new ModelHttpError(status, attempt);
+      const delayMs = attempt * 1000;
+      this.config.onRetry?.({ status, attempt, nextAttempt: attempt + 1, delayMs });
+      await delay(delayMs, undefined, { signal });
+    }
     const message = responseSchema.parse(await response.json()).choices[0]!
       .message;
     // Observed DeepSeek failure: serialized calls were returned in content even

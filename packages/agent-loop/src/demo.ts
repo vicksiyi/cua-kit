@@ -59,7 +59,12 @@ if (checkComputer && !computerEnabled)
   );
 const nativePermissions = computerEnabled && process.env.CUA_DEMO_NATIVE_PERMISSIONS !== undefined
   ? parseNativePermissions(process.env.CUA_DEMO_NATIVE_PERMISSIONS) : undefined;
-const model = checkBrowser || checkComputer ? undefined : createDemoModel();
+const model = checkBrowser || checkComputer ? undefined : createDemoModel(process.env, {
+  onRetry: (event) => {
+    debug?.write("model.retry", event);
+    console.error(`Model HTTP ${event.status}; retry ${event.nextAttempt}/3 in ${event.delayMs}ms (no tool replay).`);
+  },
+});
 const requestMeta: unknown = JSON.parse(
   process.env.CUA_MCP_REQUEST_META ?? "{}",
 );

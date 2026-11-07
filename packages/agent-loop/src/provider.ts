@@ -1,7 +1,8 @@
-import { ChatCompletionsModel } from "./chat-model";
+import { ChatCompletionsModel, type ModelRetry } from "./chat-model";
 /** Demo configuration is separate from CUA and MCP. Credentials are never tool arguments. */
 export function createDemoModel(
   env: Record<string, string | undefined> = process.env,
+  options: { onRetry?: (event: ModelRetry) => void } = {},
 ) {
   const provider = env.CUA_MODEL_PROVIDER ?? "deepseek";
   if (provider !== "deepseek" && provider !== "openai-compatible")
@@ -24,6 +25,7 @@ export function createDemoModel(
       : undefined);
   if (!endpoint) throw new Error("Set CUA_MODEL_ENDPOINT.");
   return new ChatCompletionsModel({
+    onRetry: options.onRetry,
     apiKey,
     model,
     endpoint,
