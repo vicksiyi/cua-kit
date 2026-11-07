@@ -3462,3 +3462,29 @@ cover missing-key return and boolean true dispatch. Complete source driver
 lifecycle, handler ownership and coordinator composition still remain unfinished.
 
 Swift build, provider checks and pinned static audit pass for handler stop-all behavior.
+
+
+## Native Animation protocol and update composition (2026-11-08)
+
+Descriptor 0x1012cd860 has five requirements and permits value conformers:
+UUID id, AnimationState state, stop(immediately:), reset(), performTick(with:).
+InterpolatableAnimation witness entries 0x1014a03d8+8 map to UUID copy, state
+read, stop at 0x1007c606c, reset's virtual slot and tick at 0x1007c61b8.
+The no-argument stop extension 0x1007c1f04 forwards immediately=true.
+The Swift protocol now preserves this contract without an AnyObject constraint.
+
+AnimationUpdate descriptor 0x1012cd958 / fields 0x1013244dc defines timestamp,
+duration, targetTimestamp (Double). The three-value initializer preserves inputs;
+the two-value initializer computes targetTimestamp=timestamp+duration, and
+targetRunningTime(from:) returns nil for absent start, otherwise target-start.
+No zero clamping or finite-value validation is introduced. Arithmetic is pinned
+at 0x1007c2b90/0x1007c2ba8.
+
+The handler stop-all loop now has a concrete existential protocol composition
+that invokes stop(immediately:true). A contract fixture runs tick, stop convenience,
+reset and registry draining through the actual restored protocol, checking identity,
+state, update payload and registry removal. Its animation implementation is a
+fixture; the generic InterpolatableAnimation engine is still incomplete. DriverSource,
+coordinator ownership, timing/physics and the production cursor window remain open.
+
+Swift build, provider protocol/composition checks and pinned static audit pass.

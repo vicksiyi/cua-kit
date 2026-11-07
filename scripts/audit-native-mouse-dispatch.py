@@ -641,6 +641,13 @@ assert read(0x1007cae1c, 48).hex() == 'e00316aa84292694f40316aaadfdff9760620091e
 assert read(0x1007ca7e4, 8).hex() == '1f04007140090054'
 assert read(0x1007ca82c, 20).hex() == '280f40f920008052e1031caae20319aa00013fd6'
 
+# Animation protocol has UUID/state getters plus stop/reset/tick methods.
+assert struct.unpack('<II', read(0x1012cd860 + 12, 8)) == (0, 5)
+assert [struct.unpack('<I', read(0x1012cd860 + 24 + n * 8, 4))[0] for n in range(5)] == [0x13, 0x13, 0x11, 0x11, 0x11]
+assert [value & 0xffffffff for value in struct.unpack('<5Q', read(0x1014a03d8 + 8, 40))] == [0x7c6488, 0x7c64d4, 0x7c6518, 0x7c6538, 0x7c6560]
+# Update timing uses un-clamped subtraction/addition; no synthesized duration.
+assert read(0x1007c2b90, 32).hex() == '0000679e4038601e0800669e210000720010889ac0035fd60228611ec0035fd6'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

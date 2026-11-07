@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runNativeAnimationProtocolCompositionChecks()
     runAnimationDriverStopAnimationsChecks()
     runAnimationDriverRemovalChecks()
     runAnimationTransactionCompletionChecks()
@@ -8081,4 +8082,28 @@ private func runAnimationDriverStopAnimationsChecks() {
         stopImmediately: { value in events.append("stop-\(value)"); animations.removeValue(forKey: b) },
         remove: { animations.removeValue(forKey: $0) })
     precondition(events == ["stop-1"] && animations == [c: 3])
+}
+
+
+private func runNativeAnimationProtocolCompositionChecks() {
+    final class Mock: Animation {
+        let id = UUID()
+        var state: AnimationState = .running
+        var ticks: [AnimationUpdate] = []
+        var stopped: [Bool] = []
+        func stop(immediately: Bool) { stopped.append(immediately); state = .ended }
+        func reset() { state = .ready }
+        func performTick(with update: AnimationUpdate) { ticks.append(update) }
+    }
+    let concrete = Mock()
+    let animation: any Animation = concrete
+    let update = AnimationUpdate(timestamp: 10, duration: 0.25)
+    precondition(update.targetTimestamp == 10.25 && update.targetRunningTime(from: 11) == -0.75)
+    precondition(update.targetRunningTime(from: nil) == nil)
+    animation.performTick(with: update); animation.stop(); animation.reset()
+    precondition(concrete.ticks == [update] && concrete.stopped == [true] && animation.state == .ready)
+    var records: [UUID: any Animation] = [animation.id: animation]
+    stopAnimationDriverAnimations(keys: { [animation.id] }, lookup: { records[$0] },
+        remove: { records.removeValue(forKey: $0) })
+    precondition(records.isEmpty && concrete.stopped == [true, true] && animation.state == .ended)
 }

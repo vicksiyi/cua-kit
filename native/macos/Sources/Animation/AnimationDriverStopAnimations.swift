@@ -16,3 +16,13 @@ public func stopAnimationDriverAnimations<Value>(
         }
     }
 }
+
+
+// Native protocol composition for the recovered handler loop.
+public func stopAnimationDriverAnimations(
+    keys: () -> [UUID], lookup: (UUID) -> (any Animation)?,
+    remove: (UUID) -> (any Animation)?
+) {
+    stopAnimationDriverAnimations(keys: keys, lookup: lookup,
+        stopImmediately: { $0.stop(immediately: true) }, remove: remove)
+}
