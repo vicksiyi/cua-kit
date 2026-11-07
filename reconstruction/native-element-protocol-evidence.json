@@ -109,11 +109,261 @@
     "name": "ComputerUseCore.AccessibilityNode",
     "descriptor": "0x1012c9238",
     "signatureRequirements": 4,
-    "requirementCount": 36
+    "requirementCount": 36,
+    "getters": [
+      {
+        "name": "role",
+        "descriptor": "0x1012c92a8",
+        "transformedSlot": "0x101574c30",
+        "transformedWitness": "0x1007623fc",
+        "elementSlot": "0x101575698",
+        "elementWitness": "0x1007aff80"
+      },
+      {
+        "name": "roleDescription",
+        "descriptor": "0x1012c92b0",
+        "transformedSlot": "0x101574c38",
+        "transformedWitness": "0x100762408",
+        "elementSlot": "0x1015756a0",
+        "elementWitness": "0x1007affa8"
+      },
+      {
+        "name": "title",
+        "descriptor": "0x1012c92b8",
+        "transformedSlot": "0x101574c40",
+        "transformedWitness": "0x100762434",
+        "elementSlot": "0x1015756a8",
+        "elementWitness": "0x1007affb0"
+      },
+      {
+        "name": "description",
+        "descriptor": "0x1012c92c0",
+        "transformedSlot": "0x101574c48",
+        "transformedWitness": "0x100762460",
+        "elementSlot": "0x1015756b0",
+        "elementWitness": "0x1007affb8"
+      },
+      {
+        "name": "value",
+        "descriptor": "0x1012c92c8",
+        "transformedSlot": "0x101574c50",
+        "transformedWitness": "0x10076248c",
+        "elementSlot": "0x1015756b8",
+        "elementWitness": "0x1007affc0"
+      },
+      {
+        "name": "valueDescription",
+        "descriptor": "0x1012c92d0",
+        "transformedSlot": "0x101574c58",
+        "transformedWitness": "0x1007624b8",
+        "elementSlot": "0x1015756c0",
+        "elementWitness": "0x1007affc8"
+      },
+      {
+        "name": "valueTypeName",
+        "descriptor": "0x1012c92d8",
+        "transformedSlot": "0x101574c60",
+        "transformedWitness": "0x1007624e4",
+        "elementSlot": "0x1015756c8",
+        "elementWitness": "0x10078fd5c"
+      },
+      {
+        "name": "help",
+        "descriptor": "0x1012c92e0",
+        "transformedSlot": "0x101574c68",
+        "transformedWitness": "0x100762510",
+        "elementSlot": "0x1015756d0",
+        "elementWitness": "0x1007affd0"
+      },
+      {
+        "name": "identifier",
+        "descriptor": "0x1012c92e8",
+        "transformedSlot": "0x101574c70",
+        "transformedWitness": "0x10076253c",
+        "elementSlot": "0x1015756d8",
+        "elementWitness": "0x1007affd8"
+      },
+      {
+        "name": "url",
+        "descriptor": "0x1012c92f0",
+        "transformedSlot": "0x101574c78",
+        "transformedWitness": "0x100762568",
+        "elementSlot": "0x1015756e0",
+        "elementWitness": "0x1007affe0"
+      },
+      {
+        "name": "isSelected",
+        "descriptor": "0x1012c92f8",
+        "transformedSlot": "0x101574c80",
+        "transformedWitness": "0x100762578",
+        "elementSlot": "0x1015756e8",
+        "elementWitness": "0x1007affec"
+      },
+      {
+        "name": "isSelectable",
+        "descriptor": "0x1012c9300",
+        "transformedSlot": "0x101574c88",
+        "transformedWitness": "0x100762584",
+        "elementSlot": "0x1015756f0",
+        "elementWitness": "0x1007afff8"
+      },
+      {
+        "name": "isFocused",
+        "descriptor": "0x1012c9308",
+        "transformedSlot": "0x101574c90",
+        "transformedWitness": "0x100762590",
+        "elementSlot": "0x1015756f8",
+        "elementWitness": "0x1007b0004"
+      },
+      {
+        "name": "isFocusable",
+        "descriptor": "0x1012c9310",
+        "transformedSlot": "0x101574c98",
+        "transformedWitness": "0x10076259c",
+        "elementSlot": "0x101575700",
+        "elementWitness": "0x1007b0038"
+      },
+      {
+        "name": "isEnabled",
+        "descriptor": "0x1012c9318",
+        "transformedSlot": "0x101574ca0",
+        "transformedWitness": "0x1007625a8",
+        "elementSlot": "0x101575708",
+        "elementWitness": "0x1007b0044"
+      },
+      {
+        "name": "isDisclosable",
+        "descriptor": "0x1012c9320",
+        "transformedSlot": "0x101574ca8",
+        "transformedWitness": "0x1007625b4",
+        "elementSlot": "0x101575710",
+        "elementWitness": "0x1007b004c"
+      },
+      {
+        "name": "isDisclosing",
+        "descriptor": "0x1012c9328",
+        "transformedSlot": "0x101574cb0",
+        "transformedWitness": "0x1007625c0",
+        "elementSlot": "0x101575718",
+        "elementWitness": "0x1007b88d0"
+      },
+      {
+        "name": "isValueSettable",
+        "descriptor": "0x1012c9330",
+        "transformedSlot": "0x101574cb8",
+        "transformedWitness": "0x1007625cc",
+        "elementSlot": "0x101575720",
+        "elementWitness": "0x1007b0070"
+      },
+      {
+        "name": "isSentByCurrentUser",
+        "descriptor": "0x1012c9338",
+        "transformedSlot": "0x101574cc0",
+        "transformedWitness": "0x1007625d8",
+        "elementSlot": "0x101575728",
+        "elementWitness": "0x10078fd68"
+      },
+      {
+        "name": "titleTargetIdentities",
+        "descriptor": "0x1012c9340",
+        "transformedSlot": "0x101574cc8",
+        "transformedWitness": "0x1007afb60",
+        "elementSlot": "0x101575730",
+        "elementWitness": "0x1007b0108"
+      },
+      {
+        "name": "stringValue",
+        "descriptor": "0x1012c9348",
+        "transformedSlot": "0x101574cd0",
+        "transformedWitness": "0x100762670",
+        "elementSlot": "0x101575738",
+        "elementWitness": "0x10078fd70"
+      },
+      {
+        "name": "placeholderValue",
+        "descriptor": "0x1012c9350",
+        "transformedSlot": "0x101574cd8",
+        "transformedWitness": "0x100762674",
+        "elementSlot": "0x101575740",
+        "elementWitness": "0x1007b0138"
+      },
+      {
+        "name": "canBeUserInteractive",
+        "descriptor": "0x1012c9358",
+        "transformedSlot": "0x101574ce0",
+        "transformedWitness": "0x1007626a0",
+        "elementSlot": "0x101575748",
+        "elementWitness": "0x10079068c"
+      },
+      {
+        "name": "hasDescriptiveAttributes",
+        "descriptor": "0x1012c9360",
+        "transformedSlot": "0x101574ce8",
+        "transformedWitness": "0x1007626a4",
+        "elementSlot": "0x101575750",
+        "elementWitness": "0x10078fd7c"
+      },
+      {
+        "name": "hasInterestingActions",
+        "descriptor": "0x1012c9368",
+        "transformedSlot": "0x101574cf0",
+        "transformedWitness": "0x1007626a8",
+        "elementSlot": "0x101575758",
+        "elementWitness": "0x100790688"
+      },
+      {
+        "name": "boolValue",
+        "descriptor": "0x1012c9370",
+        "transformedSlot": "0x101574cf8",
+        "transformedWitness": "0x1007afb64",
+        "elementSlot": "0x101575760",
+        "elementWitness": "0x1007b0140"
+      },
+      {
+        "name": "isTableRow",
+        "descriptor": "0x1012c9378",
+        "transformedSlot": "0x101574d00",
+        "transformedWitness": "0x1007626ac",
+        "elementSlot": "0x101575768",
+        "elementWitness": "0x10078fe30"
+      },
+      {
+        "name": "flattenedRole",
+        "descriptor": "0x1012c9380",
+        "transformedSlot": "0x101574d08",
+        "transformedWitness": "0x1007626fc",
+        "elementSlot": "0x101575770",
+        "elementWitness": "0x10078fe38"
+      },
+      {
+        "name": "rowIndexRange",
+        "descriptor": "0x1012c9388",
+        "transformedSlot": "0x101574d10",
+        "transformedWitness": "0x100762738",
+        "elementSlot": "0x101575778",
+        "elementWitness": "0x10078fe74"
+      },
+      {
+        "name": "columnIndexRange",
+        "descriptor": "0x1012c9390",
+        "transformedSlot": "0x101574d18",
+        "transformedWitness": "0x100762750",
+        "elementSlot": "0x101575780",
+        "elementWitness": "0x10078fe84"
+      },
+      {
+        "name": "presentationActions",
+        "descriptor": "0x1012c9398",
+        "transformedSlot": "0x101574d20",
+        "transformedWitness": "0x100762768",
+        "elementSlot": "0x101575788",
+        "elementWitness": "0x10078fe94"
+      }
+    ]
   },
   "limitations": [
-    "All ten direct member names are known; inherited getter names and full conformances remain incomplete.",
+    "Member mapping is static evidence, not complete conformer implementation.",
     "Zero base-conformance slots require runtime instantiation; they are not missing inheritance.",
-    "This is static evidence, not executable protocol conformance or desktop acceptance."
+    "Full protocol type constraints, implementations and transaction wiring require separate validation."
   ]
 }

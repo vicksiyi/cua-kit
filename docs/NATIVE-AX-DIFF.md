@@ -3350,3 +3350,71 @@ selected or value states. No extra isEnabled check is added at this layer.
 All eight Boolean combinations are tested with exact callback order and skipped
 queries; the fixture and Swift build pass. Full protocol conformance remains
 outstanding, so these defaults are not advertised as production UI acceptance.
+
+
+### Complete parent getter mapping via a second conformer
+
+The 31 AccessibilityNode instance getter positions are now named by comparing
+UIElement's table with TransformedUIElement's table at 0x101574c00. Both conform
+to the same protocol descriptor; corresponding positions have the same requirement.
+This avoids guessing names from generic false/nil bodies. The compact audit now
+checks all 31 inherited getter descriptors and transformed witness targets and
+emits both conformers' slot/target addresses alongside each name.
+
+| Getter | UIElement slot | Transformed witness |
+| --- | --- | --- |
+| role | 0x101575698 | 0x1007623fc |
+| roleDescription | 0x1015756a0 | 0x100762408 |
+| title | 0x1015756a8 | 0x100762434 |
+| description | 0x1015756b0 | 0x100762460 |
+| value | 0x1015756b8 | 0x10076248c |
+| valueDescription | 0x1015756c0 | 0x1007624b8 |
+| valueTypeName | 0x1015756c8 | 0x1007624e4 |
+| help | 0x1015756d0 | 0x100762510 |
+| identifier | 0x1015756d8 | 0x10076253c |
+| url | 0x1015756e0 | 0x100762568 |
+| isSelected | 0x1015756e8 | 0x100762578 |
+| isSelectable | 0x1015756f0 | 0x100762584 |
+| isFocused | 0x1015756f8 | 0x100762590 |
+| isFocusable | 0x101575700 | 0x10076259c |
+| isEnabled | 0x101575708 | 0x1007625a8 |
+| isDisclosable | 0x101575710 | 0x1007625b4 |
+| isDisclosing | 0x101575718 | 0x1007625c0 |
+| isValueSettable | 0x101575720 | 0x1007625cc |
+| isSentByCurrentUser | 0x101575728 | 0x1007625d8 |
+| titleTargetIdentities | 0x101575730 | 0x1007afb60 |
+| stringValue | 0x101575738 | 0x100762670 |
+| placeholderValue | 0x101575740 | 0x100762674 |
+| canBeUserInteractive | 0x101575748 | 0x1007626a0 |
+| hasDescriptiveAttributes | 0x101575750 | 0x1007626a4 |
+| hasInterestingActions | 0x101575758 | 0x1007626a8 |
+| boolValue | 0x101575760 | 0x1007afb64 |
+| isTableRow | 0x101575768 | 0x1007626ac |
+| flattenedRole | 0x101575770 | 0x1007626fc |
+| rowIndexRange | 0x101575778 | 0x100762738 |
+| columnIndexRange | 0x101575780 | 0x100762750 |
+| presentationActions | 0x101575788 | 0x100762768 |
+
+Evidence paths: 0x100762670 directly branches to the exported stringValue getter;
+0x1007626a0/6a4/6a8 directly branch to canBeUserInteractive,
+hasDescriptiveAttributes and hasInterestingActions. The flattenedRole,
+rowIndexRange and columnIndexRange witnesses call their exported getters at
+0x10075dd48, 0x10075da54 and 0x10075da70. isTableRow compares the stored subrole
+with AXTableRow, matching exported getter 0x10075d964; isSentByCurrentUser tests
+stored DOM classes for exact is-sender, matching 0x10075d9b4. The string and
+Boolean storage witnesses correspond to the previously recovered named fields;
+isDisclosable and isDisclosing intentionally use reversed field-vector entries
+0x68 and 0x64. The optional URL witness uses metadata-dependent layout.
+
+Two especially important distinctions: titleTargetIdentities delegates through
+0x1007afb60 to 0x1007acee0, which reads AXServesAsTitleForUIElements; boolValue
+delegates through 0x1007afb64 to 0x1007ad204, which reads AXValue. The two AXValue
+String getters remain separate requirements (value and stringValue).
+presentationActions uses the associated Sequence requirement, not the concrete
+UIElementProtocol actions list. Generic UIElement returning empty presentation
+actions does not justify deleting that associated type.
+
+The read-only audit passes for the pinned binary. Getter-name discovery is no
+longer an outstanding prerequisite for the parent protocol; complete declarations,
+associated-type conformances, executable implementations and transaction scope
+remain incomplete. This turn adds evidence, not live desktop functionality.

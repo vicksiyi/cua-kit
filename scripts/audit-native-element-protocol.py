@@ -60,13 +60,41 @@ direct_names = ['AccessibilityNode', 'Hashable', 'static role', 'axElement', 'ca
                 'actionDescriptions', 'setValue(_:forAttribute:)', 'perform(action:)']
 for entry, name in zip(ui['requirements'], direct_names):
     entry['meaning'] = name
-# Inherited protocol is inventoried without pretending unnamed getters are known.
+# Cross-conformer table: names come from transformed stored fields / named getters,
+# not from generic UIElement's shared false/nil bodies.
+node_names = ['role', 'roleDescription', 'title', 'description', 'value',
+    'valueDescription', 'valueTypeName', 'help', 'identifier', 'url',
+    'isSelected', 'isSelectable', 'isFocused', 'isFocusable', 'isEnabled',
+    'isDisclosable', 'isDisclosing', 'isValueSettable', 'isSentByCurrentUser',
+    'titleTargetIdentities', 'stringValue', 'placeholderValue', 'canBeUserInteractive',
+    'hasDescriptiveAttributes', 'hasInterestingActions', 'boolValue', 'isTableRow',
+    'flattenedRole', 'rowIndexRange', 'columnIndexRange', 'presentationActions']
+transformed_targets = [0x1007623fc,0x100762408,0x100762434,0x100762460,0x10076248c,
+    0x1007624b8,0x1007624e4,0x100762510,0x10076253c,0x100762568,
+    0x100762578,0x100762584,0x100762590,0x10076259c,0x1007625a8,
+    0x1007625b4,0x1007625c0,0x1007625cc,0x1007625d8,0x1007afb60,
+    0x100762670,0x100762674,0x1007626a0,0x1007626a4,0x1007626a8,
+    0x1007afb64,0x1007626ac,0x1007626fc,0x100762738,0x100762750,0x100762768]
 a = 0x1012c9238
 h = struct.unpack('<6I', read(a, 24))
-assert h[3:5] == (4, 36)
+if h[3:5] != (4, 36): raise SystemExit('Inherited protocol dimensions changed')
+getters = []
+for i, (name, target) in enumerate(zip(node_names, transformed_targets)):
+    descriptor = 0x1012c92a8 + i * 8
+    if struct.unpack('<II', read(descriptor, 8)) != (0x13, 0):
+        raise SystemExit('Inherited getter descriptor changed')
+    transformed_slot = 0x101574c30 + i * 8
+    raw = struct.unpack('<Q', read(transformed_slot, 8))[0]
+    if 0x100000000 + (raw & 0xffffffff) != target:
+        raise SystemExit('Transformed witness changed')
+    concrete_slot = 0x101575698 + i * 8
+    concrete = struct.unpack('<Q', read(concrete_slot, 8))[0]
+    getters.append(dict(name=name, descriptor=hex(descriptor),
+        transformedSlot=hex(transformed_slot), transformedWitness=hex(target),
+        elementSlot=hex(concrete_slot), elementWitness=hex(0x100000000 + (concrete & 0xffffffff))))
 print(json.dumps(dict(binarySHA256=expected, protocol=ui,
     inherited=dict(name='ComputerUseCore.AccessibilityNode', descriptor=hex(a),
-                   signatureRequirements=4, requirementCount=36),
-    limitations=['All ten direct member names are known; inherited getter names and full conformances remain incomplete.',
+                   signatureRequirements=4, requirementCount=36, getters=getters),
+    limitations=['Member mapping is static evidence, not complete conformer implementation.',
                  'Zero base-conformance slots require runtime instantiation; they are not missing inheritance.',
-                 'This is static evidence, not executable protocol conformance or desktop acceptance.']), indent=2))
+                 'Full protocol type constraints, implementations and transaction wiring require separate validation.']), indent=2))
