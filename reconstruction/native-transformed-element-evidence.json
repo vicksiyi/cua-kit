@@ -1,4 +1,51 @@
 {
+  "attributedFormatState": {
+    "calls": [
+      {
+        "instruction": "0x1007727bc",
+        "target": "0x100773a5c",
+        "link": true
+      },
+      {
+        "instruction": "0x100772800",
+        "target": "0x100773a5c",
+        "link": true
+      },
+      {
+        "instruction": "0x1007784f0",
+        "target": "0x100773ee0",
+        "link": true
+      },
+      {
+        "instruction": "0x10077850c",
+        "target": "0x100773f8c",
+        "link": true
+      },
+      {
+        "instruction": "0x100772854",
+        "target": "0x1007765f8",
+        "link": true
+      },
+      {
+        "instruction": "0x1007729c4",
+        "target": "0x1007757e0",
+        "link": true
+      },
+      {
+        "instruction": "0x100778b70",
+        "target": "0x100778500",
+        "link": true
+      },
+      {
+        "instruction": "0x100778b88",
+        "target": "0x1007784e4",
+        "link": true
+      }
+    ],
+    "behavior": "ordered old-minus-new closing and new-minus-old opening; remove closing then append opening; retain surviving old order and full list identity",
+    "dependency": "Apple swift-collections OrderedSet; local resolved version 1.6.0, vendor library version not established",
+    "limitation": "format membership state only; full newline/render state machine remains pending"
+  },
   "attributedLineReplacement": {
     "calls": [
       {

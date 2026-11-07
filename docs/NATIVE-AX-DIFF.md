@@ -6143,3 +6143,34 @@ The state machine also removes a trailing LF from accumulated output and
 prepends an unmapped LF to the incoming run before boundary processing
 (0x100772a88..0x100772b88). These findings are not yet exposed as a complete
 formatter implementation.
+
+### Ordered format membership transitions (2026-11-07)
+
+Recovered the membership/mutation phase at `0x100772764..<0x100772a88`
+as `AttributedTextFormatState`. Closing is old-minus-new in old order; opening
+is new-minus-old in new order. The stored ordered set removes closing formats,
+then appends opening formats. Surviving formats retain their previous order,
+including when incoming attribute order changes. List identity includes level,
+index and prefix; heading/quote identity includes level. Closing is not reversed
+at this phase.
+
+The two filter closures call `0x100773ee0` / `0x100773f8c`. Linear lookup
+`0x100774a44` returns an optional index: discriminator 1 at `0x100774c6c`
+means missing, discriminator 0 at `0x100774c74` means found. This resolves the
+previous audit's ambiguity. Later wrappers `0x100778b68` and `0x100778b80`
+forward to the same predicates, rather than defining different comparisons.
+
+Reuse Apple swift-collections OrderedSet instead of rebuilding its hash table
+or bitset internals. The package was already present transitively at 1.6.0;
+make its OrderedCollections product a direct native helper dependency. This
+pins the locally resolved version, not a claim about the vendor's exact version.
+Tests exercise deduplication, survivor order, terminal removal, changed list
+index/heading level and both small and larger hash-backed collections. The
+larger-collection fixture uses a fresh state so earlier heading order cannot
+contaminate its expectation.
+
+This phase does not yet render the complete attributed stream. Newline handling,
+style assembly, final composition and production collector integration remain.
+
+Validation: Swift build, owned provider self-test, and pinned native static audit
+passed after the fixture isolation correction. No model or UI operations ran.

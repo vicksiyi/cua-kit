@@ -709,7 +709,21 @@ line_replacement_calls = [branch(site, target) for site, target in [
 ]]
 assert struct.unpack('<I', read(0x100773d74, 4))[0] == 0x52800142  # LF comparison
 
-print(json.dumps(dict(attributedLineReplacement=dict(
+format_state_calls = [branch(site, target) for site, target in [
+    (0x1007727bc, 0x100773a5c), (0x100772800, 0x100773a5c),
+    (0x1007784f0, 0x100773ee0), (0x10077850c, 0x100773f8c),
+    (0x100772854, 0x1007765f8), (0x1007729c4, 0x1007757e0),
+    (0x100778b70, 0x100778500), (0x100778b88, 0x1007784e4),
+]]
+# The linear search returns Optional<Int>: discriminator 1 = absent, 0 = found.
+assert struct.unpack('<I', read(0x100774c6c, 4))[0] == 0x52800021
+assert struct.unpack('<I', read(0x100774c74, 4))[0] == 0x52800001
+
+print(json.dumps(dict(attributedFormatState=dict(
+    calls=format_state_calls,
+    behavior="ordered old-minus-new closing and new-minus-old opening; remove closing then append opening; retain surviving old order and full list identity",
+    dependency="Apple swift-collections OrderedSet; local resolved version 1.6.0, vendor library version not established",
+    limitation="format membership state only; full newline/render state machine remains pending"), attributedLineReplacement=dict(
     calls=line_replacement_calls,
     behavior="iterate Character; replace exact LF with caller text and source offsets; retain other Character UTF16 slices including CRLF; replacement is not recursively scanned",
     limitation="state-machine primitive only; full line-boundary handling pending"), attributedListFormat=dict(

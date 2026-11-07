@@ -2404,6 +2404,38 @@ private enum ProviderClickChecks {
             checkEqual(unchanged.replacingLineFeeds(with: marker).text, unchanged.text)
         }
 
+        do {
+            var state = AttributedTextFormatState()
+            let first = state.transition(to: [.underline, .bold, .italic, .bold])
+            checkEqual(Array(first.opening), [.underline, .bold, .italic])
+            checkTrue(first.closing.isEmpty)
+            let changed = state.transition(to: [.italic, .bold, .superscript])
+            checkEqual(Array(changed.closing), [.underline])
+            checkEqual(Array(changed.opening), [.superscript])
+            checkEqual(Array(state.active), [.bold, .italic, .superscript])
+            let reordered = state.transition(to: [.superscript, .italic, .bold])
+            checkTrue(reordered.opening.isEmpty)
+            checkTrue(reordered.closing.isEmpty)
+            checkEqual(Array(state.active), [.bold, .italic, .superscript])
+            let terminal = state.transition(to: [])
+            checkEqual(Array(terminal.closing), [.bold, .italic, .superscript])
+            checkTrue(state.active.isEmpty)
+            let oldList = AttributedTextFormat.list(level: 1, index: 2, prefix: "*")
+            let nextList = AttributedTextFormat.list(level: 1, index: 3, prefix: "*")
+            _ = state.transition(to: [oldList, .heading(1)])
+            let listChange = state.transition(to: [nextList, .heading(2)])
+            checkEqual(Array(listChange.closing), [oldList, .heading(1)])
+            checkEqual(Array(listChange.opening), [nextList, .heading(2)])
+            // Exercise OrderedSet's hash-backed storage as well as its small-set path.
+            state = AttributedTextFormatState()
+            let many = (1...100).map { AttributedTextFormat.heading($0) }
+            _ = state.transition(to: many)
+            let reduced = state.transition(to: Array(many.reversed().prefix(50)))
+            checkEqual(Array(reduced.closing), Array(many.prefix(50)))
+            checkTrue(reduced.opening.isEmpty)
+            checkEqual(Array(state.active), Array(many.suffix(50)))
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
