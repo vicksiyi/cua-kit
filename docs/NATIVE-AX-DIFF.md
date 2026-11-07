@@ -3031,3 +3031,40 @@ verify the full visitation order, ignored suffixes, failures, empty requests,
 Unicode names, and literal (unnormalized) path construction. No platform library
 is opened by the fixtures. Private-framework/library/path branches and the
 public full-loader entry point remain to be recovered and connected.
+
+### SoftLink complete filesystem orchestration and production batch composition
+
+FilesystemImages.swift now restores the full control flow of
+`0x100249eb4..<0x10024b84c`. The private-framework branch at
+`0x10024abdc..<0x10024b470` repeats the public traversal with strategy 1 and
+/System/Library/PrivateFrameworks, including one nested Frameworks level and
+per-candidate completion checks. Both branches use the shared recovered path
+builders, now factored into visitFrameworkCandidates with an explicit root.
+
+At `0x10024b470` the implementation checks strategy 2. Its static array at
+`0x1015580f8` contains /usr/lib followed by /usr/lib/system. Directory entries
+are accepted only with exact `.dylib` or `.so` suffixes (`0x10024b564..<0x10024b59c`),
+joined literally to the directory and passed to the same candidate loader.
+It does not recurse into subdirectories or accept `.so.1` or uppercase suffixes.
+Failed enumeration advances to the second directory; exhausted requests stop
+further work. The branch ends at `0x10024b758`, then immediately assembles
+ordered results at `0x10024b760`.
+
+Correction to earlier remaining-work notes: there is no strategy-3/path search
+branch in this pinned function. The enum and grouping accept path requests,
+but filesystem discovery never visits candidates for them. resolveImagePaths
+accepts an explicit name and can return it for the path strategy; that separate
+string API does not imply this hashed-input loader can recover arbitrary paths.
+Path-only or unknown-strategy requests therefore return no filesystem results,
+without enumerating directories. Loaded-image lookup remains a separate stage
+that matches low hashes regardless of strategy.
+
+The new full-loader integration fixture combines public, nested private and
+library requests in a deliberately different output order, duplicates, path and
+unknown tags. It verifies traversal order, strategy isolation, failed directory
+continuation, precise suffix filtering, early completion, and preservation of
+original indices. Platform IO is injected; no private library or vendor service
+is executed. BatchSymbolSystem.swift now supplies the recovered production
+implementations for all three batch stages and exposes the public batch entry.
+This completes that composition, not AccessibilitySPI key binding, transaction
+prefetch wiring, or desktop end-to-end acceptance.

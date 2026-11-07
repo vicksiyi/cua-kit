@@ -22,8 +22,8 @@ func symbolRequestsByHash(_ requests: [[UInt64]]) -> [UInt64: [SymbolRequest]] {
     return result
 }
 
-/// Extracted dependency boundary; filesystem loading must be supplied until
-/// the native filesystem search strategy is restored. No silent empty fallback.
+/// Extracted dependency boundary. BatchSymbolSystem composes the recovered
+/// platform stages; fixtures can inject each stage independently.
 struct BatchSymbolSources {
     var loaded: ([UInt64], String) -> [ResolvedImage]
     var filesystem: ([UInt64], String) -> [ResolvedImage]

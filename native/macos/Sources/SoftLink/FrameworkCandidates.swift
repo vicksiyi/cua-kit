@@ -25,13 +25,13 @@ func nestedFrameworkDirectories(directory: String, entry: String,
 /// Public-framework branch 0x10024a330..<0x10024abdc. This is one level of
 /// nested framework discovery, not an unbounded recursive filesystem search.
 /// `hasPending` reads the current strategy-0 group after each callback.
-func visitPublicFrameworkCandidates(
+func visitFrameworkCandidates(
+    root: String,
     contents: (String) throws -> [String] = { try FileManager.default.contentsOfDirectory(atPath: $0) },
     hasPending: () -> Bool,
     visit: (String) -> Void
 ) {
     guard hasPending() else { return }
-    let root = "/System/Library/Frameworks"
     guard let entries = try? contents(root) else { return }
     for entry in entries where entry.hasSuffix(".framework") {
         for candidate in frameworkImageCandidates(directory: root, entry: entry) {
@@ -48,4 +48,12 @@ func visitPublicFrameworkCandidates(
             }
         }
     }
+}
+
+func visitPublicFrameworkCandidates(
+    contents: (String) throws -> [String] = { try FileManager.default.contentsOfDirectory(atPath: $0) },
+    hasPending: () -> Bool, visit: (String) -> Void
+) {
+    visitFrameworkCandidates(root: "/System/Library/Frameworks", contents: contents,
+                             hasPending: hasPending, visit: visit)
 }
