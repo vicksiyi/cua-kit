@@ -5,7 +5,7 @@ import Foundation
         let keys = AXHierarchyResultKeys(value: "value", count: "count")
         func decode(_ name: String, _ record: [String: Any], requested: [CFString] = [],
                     siblings: [String: [String: Any]] = [:]) -> AXPartialValue {
-            hierarchyAXPartialValue(name: name, record: record, requestedAttributes: requested,
+            hierarchyAXPartialValue(name: name, record: record, arrayAttributes: requested,
                                     elementRecords: siblings, keys: keys)
         }
         let array = NSMutableArray(array: ["a", "b"])

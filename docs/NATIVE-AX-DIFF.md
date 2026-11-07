@@ -3111,13 +3111,13 @@ not yet connected; real desktop acceptance remains outstanding.
 
 AXHierarchyPartialValue.swift restores `0x1006f8e0c..<0x1006f93a0`, the helper
 called for individual attribute records at `0x1006f8820`. It receives an attribute
-name, its result dictionary, the caller's requested attribute array, and the
+name, its result dictionary, the caller's arrayAttributes array, and the
 whole element's attribute-record dictionary. The value-key lookup is bridged
 using Optional<Any>._bridgeToObjectiveC (stub 0x101151b84, GOT 0x101466d90), so
 missing becomes NSNull rather than dropping the attribute. Count is conditionally
 cast to Swift.Int (metadata GOT 0x101466a30), not parsed from text.
 
-For CFArray values it reads the actual count. If the requested attribute array
+For CFArray values it reads the actual count. If the arrayAttributes array
 contains the attribute and the reported count exceeds that actual count, the
 array descriptor stores the reported total and [0..<actualCount]. Otherwise
 it stores actualCount with nil availableRanges. It does not discard the array
@@ -3138,3 +3138,36 @@ emoji/combining characters, sibling selection, and negative text totals. Build
 and focused fixture pass without private SPI calls. The surrounding hierarchy
 bridge, incomplete-result recursion and transaction owner are still outstanding;
 this helper alone does not enable production hierarchy collection.
+
+
+### Hierarchy outer dictionary decoding and incomplete-result rereads
+
+`AXHierarchyDecoding.swift` restores the outer bridge/merge flow at
+`0x1006f8320..<0x1006f8be4`. Nil output or a failed NSDictionary to
+`[AXUIElement: NSDictionary]` bridge returns an empty table. Each element's
+incomplete-result marker is ignored when absent or NSNull; other values go
+through the boolean decoder (`0x1006f866c`), with errors swallowed. Only true
+enters the recursive hierarchy call (`0x1006f8714`), using the same configuration.
+The injected reread callback preserves this boundary without calling vendor code.
+Recursive results replace entire per-element attribute dictionaries, and may
+add elements other than the original root.
+
+Otherwise the complete element dictionary must bridge to
+`[String: [String: Any]]`. The marker is not removed first: a scalar false or
+malformed marker therefore prevents this bridge and skips that element.
+Valid peers survive; a valid empty element dictionary remains a cache entry.
+The helper then applies the restored partial-value decoder to every record.
+It preserves source iteration and adds no sorting or independent recursion budget.
+
+Register tracing also corrects a previous parameter-name interpretation: the
+first array argument becomes x26 (arrayAttributes), while the second becomes
+x25 (copyHierarchy attributes and skipInspectionForAttributes). The partial-value
+helper receives the first array via `0x1006f8818`, so its membership parameter
+is now named arrayAttributes rather than requestedAttributes.
+
+Validation: both hierarchy decoding fixtures pass and the Swift package builds.
+Fixtures bridge a Swift AXUIElement-keyed dictionary rather than constructing an
+NSDictionary literal, whose NSCopying requirement crashes for AXUIElement keys.
+No AX reads, private SPI invocation or vendor executable launch occur. These
+helpers are not yet connected to production hierarchy collection: output ownership,
+same-process/main-thread execution and the transaction owner remain to be restored.
