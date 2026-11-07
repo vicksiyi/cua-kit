@@ -490,7 +490,41 @@ mac_action_filter_calls = [branch(site, target) for site, target in [
     (0x100794a40, 0x1007a7600),
 ]]
 
-print(json.dumps(dict(macActionFilter=dict(
+# Mac calendar and non-full leaf pruning before common tag 2.
+mac_pruning_words = {
+    0x100759934: 0xf94022a1, 0x10075994c: 0xeb02001f,
+    0x100759980: 0xf100053f, 0x100759984: 0x54004b61,
+    0x1007599e4: 0xb7004860, 0x10075a2a8: 0x36000218,
+    0x100759b98: 0x39400308, 0x100759b9c: 0x34000268,
+    0x100759bb4: 0xb50001a8, 0x100759bc4: 0xb9805ae8,
+    0x100759bd0: 0xb98052e8, 0x100759bdc: 0xb98066e8,
+    0x100759be4: 0x36002f48, 0x10075a1ec: 0x52800042,
+    0x10075a318: 0x52800062,
+}
+for address, word in mac_pruning_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+# Metadata field-offset vector starts at 0x10; these loads select captured flags.
+assert [stored[(offset - 0x10) // 4] for offset in [0x58, 0x50, 0x64]] == [
+    'isFocused', 'isSelected', 'isDisclosing']
+mac_pruning_calls = [branch(site, target) for site, target in [
+    (0x1007599e0, 0x100751a9c), (0x100759bbc, 0x10075c5ec),
+    (0x10075a2d0, 0x10064fb6c), (0x100759c58, 0x100657c10),
+]]
+mac_calendar_selectors = {}
+for address, expected_selector in [
+    (0x101542c18, 'runningApplicationWithProcessIdentifier:'),
+    (0x101542740, 'bundleIdentifier'),
+]:
+    pointer = (struct.unpack('<Q', read(address, 8))[0] & 0xfffffffff) + 0x100000000
+    assert cstring(pointer) == expected_selector
+    mac_calendar_selectors[hex(address)] = expected_selector
+
+print(json.dumps(dict(macTreePruning=dict(
+    instructions={hex(k): hex(v) for k, v in mac_pruning_words.items()},
+    calls=mac_pruning_calls, selectors=mac_calendar_selectors,
+    calendar="staticText role + Event roleDescription + exactly one staticText child + owning com.apple.iCal; clear child items, retain owner",
+    leafOverride="non-full context, leaf, no own description/focus/selection/disclosure -> removed; otherwise common pruning",
+    limitation="extracted branches; complete Mac pipeline/production collector wiring pending"), macActionFilter=dict(
     entry="0x1007597d0", predicate="0x1007946b0",
     instructions={hex(k): hex(v) for k, v in mac_action_filter_words.items()},
     calls=mac_action_filter_calls,

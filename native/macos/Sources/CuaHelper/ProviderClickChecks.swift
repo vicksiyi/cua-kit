@@ -1600,6 +1600,92 @@ private enum ProviderClickChecks {
         default: unexpectedFailure("empty actions still produce transformed")
         }
 
+        // Mac's non-full leaf override differs from the common rule.
+        var macLeaf = anonymousGroup
+        macLeaf.isSelected = false
+        macLeaf.isDisclosing = false
+        macLeaf.actionDescriptions = [UIElementActionDescription(.showMenu, description: "Menu")]
+        macLeaf.isFocusable = true
+        for type in [UIElementContextType.eventStreamContext, .informationalContext] {
+            switch MacUIElementTreeTransformation.pruneNonDescriptiveSubtrees(
+                item: associationItem(macLeaf), context: ownerContext(type)) {
+            case .removed: break
+            default: unexpectedFailure("inactive non-full leaf must be removed despite actions/focusability")
+            }
+        }
+        switch MacUIElementTreeTransformation.pruneNonDescriptiveSubtrees(
+            item: associationItem(macLeaf), context: ownerContext(.fullUIContext)) {
+        case .unchanged: break
+        default: unexpectedFailure("full context must retain common focusable leaf behavior")
+        }
+        for field in [\TransformedUIElement.isFocused, \TransformedUIElement.isSelected, \TransformedUIElement.isDisclosing] {
+            var active = macLeaf
+            active[keyPath: field] = true
+            switch MacUIElementTreeTransformation.pruneNonDescriptiveSubtrees(
+                item: associationItem(active), context: ownerContext(.informationalContext)) {
+            case .unchanged: break
+            default: unexpectedFailure("active leaf must reach common rule")
+            }
+        }
+        var describedLeaf = macLeaf
+        describedLeaf.title = "Descriptive"
+        for item in [associationItem(describedLeaf), associationItem(macLeaf, children: [targetA])] {
+            switch MacUIElementTreeTransformation.pruneNonDescriptiveSubtrees(
+                item: item, context: ownerContext(.informationalContext)) {
+            case .unchanged: break
+            default: unexpectedFailure("descriptive or non-leaf node must reach common rule")
+            }
+        }
+        // A focused flag alone bypasses the Mac override, not common pruning.
+        var focusedOnly = anonymousGroup
+        focusedOnly.isFocused = true
+        switch MacUIElementTreeTransformation.pruneNonDescriptiveSubtrees(
+            item: associationItem(focusedOnly), context: ownerContext(.informationalContext)) {
+        case .removed: break
+        default: unexpectedFailure("bypassing Mac override is not an unconditional retain")
+        }
+        var calendarNode = anonymousGroup
+        calendarNode.role = .staticText
+        calendarNode.roleDescription = "Event"
+        calendarNode.value = "Calendar event"
+        var calendarChild = anonymousGroup
+        calendarChild.role = .staticText
+        let calendarItem = associationItem(calendarNode, children: [associationItem(calendarChild, children: [targetA])])
+        var bundleReads = 0
+        func calendarResult(_ item: PruneItem, _ bundle: String?) -> UIElementTreeTransformation.Result<TransformedUIElement> {
+            MacUIElementTreeTransformation.removeElementsUnderCalendarEvents(item: item,
+                owningBundleIdentifier: { bundleReads += 1; return bundle })
+        }
+        switch calendarResult(calendarItem, "com.apple.iCal") {
+        case let .transformed(result):
+            checkTrue(result.children.isEmpty)
+            checkEqual(result.element.value, "Calendar event")
+            checkEqual(result.element.roleDescription, "Event")
+            checkTrue(CFEqual(result.element.id, calendarItem.element.id))
+        default: unexpectedFailure("Calendar Event child must be removed")
+        }
+        for bundle in [nil, "com.apple.Calendar", "com.apple.ical", "com.example.calendar"] as [String?] {
+            switch calendarResult(calendarItem, bundle) {
+            case .unchanged: break
+            default: unexpectedFailure("only original Calendar bundle identity should match")
+            }
+        }
+        let bundleReadsBeforeGuards = bundleReads
+        var nonEvent = calendarNode
+        nonEvent.roleDescription = "event"
+        var wrongRole = calendarNode
+        wrongRole.role = .group
+        for item in [associationItem(nonEvent, children: calendarItem.children),
+            associationItem(wrongRole, children: calendarItem.children), associationItem(calendarNode),
+            associationItem(calendarNode, children: [targetA]),
+            associationItem(calendarNode, children: calendarItem.children + calendarItem.children)] {
+            switch calendarResult(item, "com.apple.iCal") {
+            case .unchanged: break
+            default: unexpectedFailure("Calendar structural guard should bypass")
+            }
+        }
+        checkEqual(bundleReads, bundleReadsBeforeGuards)
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

@@ -1,4 +1,52 @@
 {
+  "macTreePruning": {
+    "instructions": {
+      "0x100759934": "0xf94022a1",
+      "0x10075994c": "0xeb02001f",
+      "0x100759980": "0xf100053f",
+      "0x100759984": "0x54004b61",
+      "0x1007599e4": "0xb7004860",
+      "0x10075a2a8": "0x36000218",
+      "0x100759b98": "0x39400308",
+      "0x100759b9c": "0x34000268",
+      "0x100759bb4": "0xb50001a8",
+      "0x100759bc4": "0xb9805ae8",
+      "0x100759bd0": "0xb98052e8",
+      "0x100759bdc": "0xb98066e8",
+      "0x100759be4": "0x36002f48",
+      "0x10075a1ec": "0x52800042",
+      "0x10075a318": "0x52800062"
+    },
+    "calls": [
+      {
+        "instruction": "0x1007599e0",
+        "target": "0x100751a9c",
+        "link": true
+      },
+      {
+        "instruction": "0x100759bbc",
+        "target": "0x10075c5ec",
+        "link": true
+      },
+      {
+        "instruction": "0x10075a2d0",
+        "target": "0x10064fb6c",
+        "link": true
+      },
+      {
+        "instruction": "0x100759c58",
+        "target": "0x100657c10",
+        "link": true
+      }
+    ],
+    "selectors": {
+      "0x101542c18": "runningApplicationWithProcessIdentifier:",
+      "0x101542740": "bundleIdentifier"
+    },
+    "calendar": "staticText role + Event roleDescription + exactly one staticText child + owning com.apple.iCal; clear child items, retain owner",
+    "leafOverride": "non-full context, leaf, no own description/focus/selection/disclosure -> removed; otherwise common pruning",
+    "limitation": "extracted branches; complete Mac pipeline/production collector wiring pending"
+  },
   "macActionFilter": {
     "entry": "0x1007597d0",
     "predicate": "0x1007946b0",

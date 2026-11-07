@@ -5683,3 +5683,36 @@ provider-click self-test passed. Added fixtures cover all predicate branches,
 ordered/lazy getters, both scroll axes, duplicate descriptions, preserved child
 items/identity, context bypass, and the empty-action transformed result. No
 vendor service or external application was launched for these checks.
+
+### Mac calendar child removal and non-full leaf pruning
+
+`MacUIElementTreePruning.swift` restores two additional native branches.
+Tag 10 (`0x1007598c4`) requires the captured parent role staticText,
+roleDescription exactly `Event`, exactly one direct child, and that child's
+captured role staticText. Only then does it obtain the owner's PID, look up
+NSRunningApplication and compare bundleIdentifier to `com.apple.iCal`.
+On success `0x10075a2d0` sets subtree.items to the empty array and returns
+transformed; it does not replace the event, copy child text or retain deeper
+children. Any failed guard or unavailable owner leaves the item unchanged.
+The extracted bundle lookup closure represents the PID/application lookup and
+must not be populated from an unrelated current/frontmost app.
+
+The shared tag-2 override at `0x100759b98` runs before the common pruning rule.
+Outside fullUIContext, it removes a leaf when its own hasDescriptiveAttributes,
+isFocused, isSelected and isDisclosing are all false. The metadata loads at
+0x58, 0x50 and 0x64 select the latter three stored flags, not focusable,
+selectable or enabled. Thus focusability/actions alone do not protect such a
+leaf. When this special case does not remove the node, the common rule still
+runs; bypassing the override is not unconditional retention.
+
+Pinned audit checks include branch words, field-offset names, common-dispatch
+and subtree-setter calls, and the chained selector references for
+runningApplicationWithProcessIdentifier: and bundleIdentifier. Swift build and
+the owned provider-click self-test pass. Fixtures cover all Calendar guards,
+lookup short-circuiting, owner preservation, nested child removal, all context
+types, active/descriptive/non-leaf bypasses and fallback to common pruning.
+The initial fixture inherited isSelected=true from an earlier owner fixture;
+correcting that setup exercised the intended inactive-leaf branch. No native
+policy settings or application state changed. These are extracted rule bodies;
+rich-text branches, full Mac dispatch and production collector integration
+remain incomplete.
