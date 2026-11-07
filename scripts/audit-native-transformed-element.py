@@ -743,7 +743,21 @@ compare_zero_branch(0x10064e31c, 8, 0x10064e428)
 assert struct.unpack('<I', read(0x10064e400, 4))[0] == 0xd2800001
 assert struct.unpack('<I', read(0x10064e404, 4))[0] == 0x52800022
 
-print(json.dumps(dict(renderNodeProjection=dict(
+render_tree_calls = [branch(site, target) for site, target in [
+    (0x10064c594, 0x10064b0e0), # depthFirstTraversal
+    (0x10064c7dc, 0x10114ef38), # IndexPath.dropLast (GOT 0x101463680)
+    (0x10064c6f0, 0x101150c18), # final root-path compactMap
+    (0x10064cbc4, 0x1011503d8), # parent-path dictionary lookup
+    (0x10064e1e0, 0x10064ecc4), # source isFocusTree
+    (0x10064e1f4, 0x1000e6d20), # render-tree value constructor
+]]
+compare_zero_branch(0x10064c890, 0, 0x10064c98c)
+compare_zero_branch(0x10064cbcc, 20, 0x10064cc48)
+
+print(json.dumps(dict(renderTreeAssembly=dict(
+    calls=render_tree_calls,
+    behavior="depth-first source paths; nonnil node maps path to itself; nil node inherits surviving ancestor path; attach to mapped ancestor or retain root path; preserve source isFocus; errors propagate",
+    limitation="render-specific assembly restored; generic traversable protocol and iterator internals are not exported; line formatting and production collection remain pending"), renderNodeProjection=dict(
     calls=render_projection_calls,
     behavior="invoke supplied renderer; propagate errors; empty string returns nil; preserve whitespace; identity, subset detail and source cursor path; elementID nil; children initially empty",
     limitation="compactTreeMap empty-parent behavior and whole-tree assembly not reconstructed by this callback"), providerTreeLookup=dict(

@@ -1,4 +1,40 @@
 {
+  "renderTreeAssembly": {
+    "calls": [
+      {
+        "instruction": "0x10064c594",
+        "target": "0x10064b0e0",
+        "link": true
+      },
+      {
+        "instruction": "0x10064c7dc",
+        "target": "0x10114ef38",
+        "link": true
+      },
+      {
+        "instruction": "0x10064c6f0",
+        "target": "0x101150c18",
+        "link": true
+      },
+      {
+        "instruction": "0x10064cbc4",
+        "target": "0x1011503d8",
+        "link": true
+      },
+      {
+        "instruction": "0x10064e1e0",
+        "target": "0x10064ecc4",
+        "link": true
+      },
+      {
+        "instruction": "0x10064e1f4",
+        "target": "0x1000e6d20",
+        "link": true
+      }
+    ],
+    "behavior": "depth-first source paths; nonnil node maps path to itself; nil node inherits surviving ancestor path; attach to mapped ancestor or retain root path; preserve source isFocus; errors propagate",
+    "limitation": "render-specific assembly restored; generic traversable protocol and iterator internals are not exported; line formatting and production collection remain pending"
+  },
   "renderNodeProjection": {
     "calls": [
       {

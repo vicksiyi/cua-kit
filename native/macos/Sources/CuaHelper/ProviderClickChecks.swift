@@ -2815,6 +2815,47 @@ private enum ProviderClickChecks {
         checkEqual(tree.items[0].children.count, 1)
         checkEqual(tree.items[0].availableSubsetDescription, "(showing 0-2 of 99 items)")
         do {
+            typealias Item = UIElementTree<UIElement>.Item
+            func item(_ children: [Item] = []) -> Item {
+                Item(element: target, subtree: UIElementTree(items: children, focusedElement: nil))
+            }
+            // Empty root -> visible root -> two empty ancestors -> visible child.
+            // Duplicate AX identity must not merge unrelated source paths.
+            let input = UIElementTree(items: [item([item([item([item([item()])]), item()])]), item()], focusedElement: nil)
+            var context = ownerContext(.fullUIContext)
+            let texts = ["", "parent", "", "", "deep child", "sibling", "other root"]
+            var visits = 0
+            let output = input.render(with: &context) { _, _ in
+                defer { visits += 1 }
+                return texts[visits]
+            }
+            checkEqual(visits, texts.count)
+            checkFalse(output.isFocus)
+            checkEqual(output.roots.map(\.text), ["parent", "other root"])
+            checkEqual(output.roots[0].children.map(\.text), ["deep child", "sibling"])
+            checkEqual(output.roots[0].sourcePath, IndexPath(indexes: [0, 0]))
+            checkEqual(output.roots[0].children[0].sourcePath, IndexPath(indexes: [0, 0, 0, 0, 0]))
+            checkEqual(output.roots[0].children[1].sourcePath, IndexPath(indexes: [0, 0, 1]))
+            checkEqual(output.roots[1].sourcePath, IndexPath(index: 1))
+            checkTrue(output.roots[0].elementID == nil)
+            checkTrue(input.render(with: &context) { _, _ in "" }.roots.isEmpty)
+            let focus = UIElementTree(items: [item()], focusedElement: target)
+            let emptyFocus = focus.render(with: &context) { _, _ in "" }
+            checkTrue(emptyFocus.isFocus) // based on source, not retained roots
+            checkTrue(emptyFocus.roots.isEmpty)
+            enum TreeRenderFailure: Error { case expected }
+            visits = 0
+            do {
+                _ = try input.render(with: &context) { _, _ in
+                    visits += 1
+                    if visits == 3 { throw TreeRenderFailure.expected }
+                    return "node"
+                }
+                unexpectedFailure("tree render must stop on an error")
+            } catch TreeRenderFailure.expected {}
+            checkEqual(visits, 3)
+        }
+        do {
             var context = ownerContext(.fullUIContext)
             var visits = 0
             let path = IndexPath(indexes: [2, 0])

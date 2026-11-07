@@ -6291,3 +6291,31 @@ This is not yet a full tree renderer or production collector integration.
 compactTreeMap's treatment of omitted ancestors, subsequent element-ID assignment,
 line formatting, and native traversal/subset selection remain separate work.
 No installed vendor service or live app was executed for this evidence.
+
+
+### Render-tree assembly and omitted ancestors (2026-11-07)
+
+Recovered the render-specific behavior of compactTreeMap at 0x10064c280.
+It walks depth first (call 0x10064c594), obtains each cursor's parent path using
+IndexPath.dropLast (0x10064c7dc; stub GOT 0x101463680), and resolves the nearest
+surviving ancestor through a path-to-path dictionary. A nonnil projection
+registers its node and maps its path to itself. The nil branch at 0x10064c98c
+maps the current path to its surviving ancestor when present, then advances the
+iterator rather than removing the subtree. A retained node attaches to that
+ancestor (witness call 0x10064cbe4); otherwise its path enters the root list.
+Final compactMap resolves root paths to nodes, preserving encounter order.
+
+UIElementRenderTree.swift implements that path-based assembly around the restored
+node projection. It retains original source paths, does not deduplicate AX IDs,
+and does not assign display element IDs. The isFocus flag comes from the source
+tree (0x10064e1e0), even when all render results are empty. Errors stop traversal
+and propagate without returning a partial tree. This is the render-specific
+specialization; it does not claim a recovered public generic traversal protocol.
+
+Build and owned provider tests passed: omitted root promotion, two consecutive
+omitted ancestors, surviving siblings, duplicate AX identities, original deep
+paths, empty output, source focus with no output roots, and early error stop.
+Static branch/call audit passed against the pinned native binary. No live app or
+vendor service was run. Remaining integration includes line formatting, numeric
+ID assignment, Mac protocol rendering witnesses, traversal subset selection and
+production Target.collect replacement.
