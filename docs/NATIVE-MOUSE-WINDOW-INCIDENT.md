@@ -2142,3 +2142,23 @@ normal raise, reported raise failure, sleep failure and observer lifetime.
 These checks register no live notifications and perform no actual AXRaise.
 The full source action helper/controller owner remains to be composed before
 claiming production ordering-restoration parity.
+
+
+## Native ordering restoration action composition
+
+Further inspection confirms helper 0x100733c14 is the specialized full action
+dispatcher: it preserves menu-role preparation, disclosure/scroll branches and
+the final AXUIElement.perform call. The ordering path passes the source raise
+action to this helper. The restored composition therefore reuses
+UIElement.perform(action: .raise); it does not replace it with a direct raw
+AXUIElementPerformAction call or duplicate the existing dispatcher.
+
+WindowOrderingRestoration now connects event-window eligibility, current
+foreground application selection, resolved-process AX application construction,
+focused-window selection, temporary workspaceAddWindow observer and scoped raise.
+No main/last-window fallback is introduced. Raise errors are reported by the
+scope; settle sleep errors/cancellation propagate to the main loop's owner.
+Injected orchestration checks verify selection gates and error propagation.
+This native action method is ready for the main event-loop composition but is
+not yet called by a complete production ordering observer. No native raise or
+notification subscription was performed by these checks.

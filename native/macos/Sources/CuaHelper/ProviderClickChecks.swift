@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    try await runWindowOrderingRestorationChecks()
     try await runWindowOrderingRaiseScopeChecks()
     await runWindowOrderingRestorationContextChecks()
     await runCGWindowEventStreamChecks()
@@ -7010,4 +7011,24 @@ private func runWindowOrderingRaiseScopeChecks() async throws {
             scenario == 2 ? ["ids", "observe", "raise", "error", "settle"] : ["ids", "observe", "raise", "settle"]
         checkEqual(trace, expected)
     }
+}
+
+
+private func runWindowOrderingRestorationChecks() async throws {
+    enum Failure: Error { case restore }
+    var restored: [String] = []
+    for selected in [false, true] {
+        try await restoreWindowOrderingChange(windowID: 7, ownerPID: 42,
+            observedWindowIDs: { selected ? [7] : [] }, frontmostApplication: { 8 },
+            processIdentifier: { _ in 43 }, focusedWindow: { _ in "focused" },
+            restore: { restored.append($0) })
+    }
+    checkEqual(restored, ["focused"])
+    do {
+        try await restoreWindowOrderingChange(windowID: 7, ownerPID: 42,
+            observedWindowIDs: { [7] }, frontmostApplication: { 8 },
+            processIdentifier: { _ in 43 }, focusedWindow: { _ in "focused" },
+            restore: { _ in throw Failure.restore })
+        preconditionFailure("restoration cancellation/error must propagate to event loop")
+    } catch { checkTrue(error is Failure) }
 }
