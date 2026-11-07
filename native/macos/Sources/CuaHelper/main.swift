@@ -294,6 +294,14 @@ if CommandLine.arguments.contains("--key-focus-query-check") {
     print(String(decoding: data, as: UTF8.self))
     exit(0)
 }
+if CommandLine.arguments.contains("--window-observer-binding-check") {
+    let windows = WindowServerSPI.observerBindingStatus
+    let attention = ApplicationAttentionSPI.bindingAvailable
+    let report: [String: Any] = ["readOnly": true, "windowObserver": windows, "applicationAttention": attention]
+    let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+    print(String(decoding: data, as: UTF8.self))
+    exit(windows.values.allSatisfy { $0 } && attention ? 0 : 1)
+}
 if CommandLine.arguments.contains("--ax-notification-delivery-check") {
     do {
         try await runAXNotificationDeliveryChecks()

@@ -3002,3 +3002,20 @@ and cached bounds without native input. Existing source branch/window-selection
 checks continue to cover ordering and PID routing. This production integration
 still requires unlocked real click, background-window and Sky/DeepSeek acceptance;
 previous fixture success predates the new maintained-registry selection path.
+
+
+## Read-only native observer binding acceptance
+
+`cua-helper --window-observer-binding-check` now resolves, without invoking,
+WindowServer main connection, register/remove notification callbacks, window
+subscription request and the application attention binding. All five resolved
+successfully on the current machine, including while the desktop is locked.
+The diagnostic returns only named availability booleans and a readOnly flag;
+production required-binding failure behavior is unchanged.
+
+This verifies runtime symbol resolution beyond pinned binary/static checks.
+It does not verify callback ABI execution, real WindowServer notification
+registration, ordering restoration or successful clicks. Those still require
+unlocked owned-window acceptance. The attention request is resolved once and
+shared by its typed callable and this diagnostic, with no setter invocation.
+Build, provider composition checks and the static audit pass after the change.

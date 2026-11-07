@@ -25,6 +25,13 @@ enum WindowServerSPI {
         return pointer
     }
     private static let functions = resolve(.functions)
+    // Read-only diagnostic: resolve pointers without invoking WindowServer SPI.
+    static var observerBindingStatus: [String: Bool] {
+        let slots = [("mainConnection", 0), ("registerNotify", 1), ("removeNotify", 2), ("requestWindows", 3)]
+        return Dictionary(uniqueKeysWithValues: slots.map { name, index in
+            (name, functions.indices.contains(index) && functions[index] != nil)
+        })
+    }
     private static let mainConnection = unsafeBitCast(required(functions[0]), to: MainConnection.self)
     private static let disable = unsafeBitCast(required(resolve(.disableUpdate).first ?? nil), to: Update.self)
     private static let reenable = unsafeBitCast(required(resolve(.reenableUpdate).first ?? nil), to: Update.self)
