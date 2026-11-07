@@ -2812,3 +2812,34 @@ at every split point. The symbol-table fixture also exercises the actual hashing
 path with a Unicode and embedded-NUL salt. Both tests and Swift build pass.
 This supersedes the earlier note that symbol-table hashing is entirely injected;
 full export-tree traversal and lookUpSymbols orchestration remain pending.
+
+### SoftLink iterative export-trie traversal
+
+Recovered traversal `0x10024c4f4..<0x10024d34c` as `collectExportTrie`.
+The 72-byte native work item comprises offset, byte-array name and SipHashState;
+it is popped from the end of the pending array. A visited-offset set prevents
+cycles and means a shared node is processed under the last-pushed path first.
+Each child's edge extends both name and streaming hash; terminal hashes append
+the salt to a copy of that state. Requested and already-resolved keys are checked
+before resolving addresses. A complete match set exits early.
+
+Terminal end is checked using unsigned addition, signed representability and
+trie size. Flags and ordinary address ULEBs use whole-trie bounds, rather than
+being artificially limited to terminal end. The re-export branch (flag bit 3)
+reads and ignores the ordinal result, then reads the imported name bounded by
+terminal end. Empty or unterminated imported names fall back to the accumulated
+name. Other flag bits do not cause extra filtering in the observed branch.
+Children are read in encoded order and pushed, not recursively visited on read.
+Malformed child strings/offsets end that node's child loop while preserving
+previously queued work. Invalid node offsets or revisits are skipped.
+
+Native name decoding calls stub `0x10115096c`, bound through `0x101466330` to
+Swift String._fromUTF8Repairing; reconstruction uses equivalent repairing UTF-8
+decoding. Re-export resolution remains injected: native dlopen/dlsym selection
+is observed but the owned dynamic-loader adapter is not yet restored. This is
+explicitly not a finished production export lookup entry point.
+
+Fixtures cover shared-node traversal order, a self-cycle, whole-trie ordinary
+address bounds, re-export imported-name selection and unterminated-name fallback,
+and truncated inputs. Tests execute only reconstructed Swift and fixture
+resolvers; no vendor native code or dynamic symbol resolution is executed.
