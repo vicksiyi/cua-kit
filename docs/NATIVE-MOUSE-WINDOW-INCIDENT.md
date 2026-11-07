@@ -2502,3 +2502,20 @@ republishObservedWindowIDs for this exact operation. Checks verify keys retain
 their stored identity after the AX ID changes and publication performs no AX
 read. This operation still awaits production callback integration; no new
 click success is implied by the notification acceptance result.
+
+
+## Initial primary-window and descendant-sheet traversal
+
+Controller initialization calls application.primaryWindow at 0x10006cc34, then
+registers that window at 0x10006ccc0. It begins with that window's children,
+removes the first queued child (memmove at 0x10006ce0c), tests AXSheet role and
+performs sheet registration when matched. Every visited child's children are
+appended afterward (0x10006d21c..0x10006d224), including descendants of sheets.
+This is a breadth-first traversal below the selected primary window; it is not
+an eager registration of every entry in the application's AXWindows array.
+
+registerAppControllerInitialWindows restores that orchestration with injected
+window/sheet operations. Checks cover absent primary short-circuit, primary
+registration before traversal, FIFO ordering, duplicate preservation and nested
+sheet traversal. Sheet-specific registration internals and production lifecycle
+ownership remain outstanding; this traversal alone does not populate Target.

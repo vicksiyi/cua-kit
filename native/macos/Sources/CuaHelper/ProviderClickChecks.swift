@@ -3752,6 +3752,7 @@ func runProviderClickChecks() async throws {
     runAppControllerMenuOpenChecks()
     runMouseWindowRegistryRemovalChecks()
     runAppControllerMenuStateChecks()
+    runAppControllerInitialWindowsChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7377,4 +7378,20 @@ private func runAppControllerMenuStateChecks() {
     precondition(state.focusedMenuBarItem == "Edit")
     state.menuDidClose(notifyOrdering: {}, removeWindows: {})
     precondition(state.openedMenu == nil && state.focusedMenuBarItem == nil)
+}
+
+private func runAppControllerInitialWindowsChecks() {
+    var events: [String] = []
+    registerAppControllerInitialWindows(primaryWindow: { Optional<Int>.none },
+        registerWindow: { _ in preconditionFailure() }, windowChildren: { _ -> [Int] in preconditionFailure() },
+        isSheet: { _ in preconditionFailure() }, registerSheet: { _ in preconditionFailure() },
+        children: { _ in preconditionFailure() })
+    registerAppControllerInitialWindows(primaryWindow: { 9 },
+        registerWindow: { events.append("window:\($0)") }, windowChildren: { _ in [1, 2, 1] },
+        isSheet: { events.append("role:\($0)"); return $0 != 1 },
+        registerSheet: { events.append("sheet:\($0)") }, children: { element in
+            events.append("children:\(element)")
+            return element == 2 ? [3] : []
+        })
+    precondition(events == ["window:9", "role:1", "children:1", "role:2", "sheet:2", "children:2", "role:1", "children:1", "role:3", "sheet:3", "children:3"])
 }
