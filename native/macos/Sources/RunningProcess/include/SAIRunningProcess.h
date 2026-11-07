@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "SAIApplicationPath.h"
+#import "SAIApplicationRegistry.h"
 #import <sys/proc_info.h>
 NS_ASSUME_NONNULL_BEGIN
 @interface SAIRunningProcessFilter : NSObject

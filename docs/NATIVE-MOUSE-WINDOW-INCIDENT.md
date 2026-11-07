@@ -744,3 +744,25 @@ Swift build/provider-click checks pass for the matching/parser examples and
 existing focus selections. No live AX acceptance test was performed. Registry
 key-focus bindings, preventer lifetime/cache and complete controller/input
 integration remain pending before actual Multica click acceptance.
+
+
+## ApplicationRegistry native boundaries and status selection
+
+ApplicationRegistrySPI wrappers 0x10026d7fc/26d800 call system GetProcessPID
+and shared primary-symbol slot 7 (_SLPSGetKeyFocusProcess), respectively. Reused
+WindowServerSPI's exact restored symbol batch. GetProcessPID is unavailable to
+Swift in the SDK, so a typed Objective-C/C wrapper in RunningProcess calls that
+same C API; no Swift-only ABI declaration remains.
+
+queryRegistryKeyFocusPID zero-initializes PSN/flag/PID and executes focus query
+then PID conversion even on query failure. For pidStatus=-600, focusStatus=0,
+flag=false, a present ViewBridge PID whose NSRunningApplication is absent is
+returned. Otherwise both statuses must be zero; failures report statuses and
+return nil. This preserves the unusual source fallback instead of treating all
+conversion failures as no focus.
+
+Swift build and provider-click checks pass for status/flag combinations and
+query ordering. A real read-only GetProcessPID(kCurrentProcess) call returned
+this helper's PID, verifying the C bridge ABI. Private key-focus SPI invocation
+has not yet been exercised; query selection tests inject native boundaries.
+Full preventer state/lifecycle and production app input remain pending.

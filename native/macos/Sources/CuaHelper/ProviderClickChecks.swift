@@ -1,4 +1,5 @@
 import DequeModule
+import Carbon
 import ApplicationServices
 import AppKit
 
@@ -3695,6 +3696,7 @@ func runProviderClickChecks() async throws {
     runFocusOwnerWindowSelectionChecks()
     runRestrictedFocusOwnerSelectionChecks()
     runFocusOwnerApplicationMatchChecks()
+    runKeyFocusRegistryQueryChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4552,4 +4554,36 @@ private func runFocusOwnerApplicationMatchChecks() {
     checkEqual(focusOwnerNameFromLocalizedName("Helper (Target)"), "Target")
     checkEqual(focusOwnerNameFromLocalizedName("Helper ( Target )"), " Target ")
     checkTrue(focusOwnerNameFromLocalizedName("Target") == nil)
+}
+
+
+private func runKeyFocusRegistryQueryChecks() {
+    for focusStatus: Int32 in [0, -1] {
+        for pidStatus: Int32 in [0, -600, -1] {
+            for flag in [false, true] {
+                var trace: [String] = [], reports = 0
+                let value = queryRegistryKeyFocusPID(getFocus: { process, outFlag in
+                    checkEqual(process.pointee.highLongOfPSN, 0)
+                    checkEqual(process.pointee.lowLongOfPSN, 0)
+                    trace.append("focus"); process.pointee.lowLongOfPSN = 123
+                    outFlag.pointee = DarwinBoolean(flag); return focusStatus
+                }, getPID: { process, outPID in
+                    checkEqual(process.pointee.lowLongOfPSN, 123)
+                    trace.append("pid"); outPID.pointee = 88; return pidStatus
+                }, viewBridgePID: { trace.append("bridge"); return 77 },
+                    applicationExists: { checkEqual($0, 77); trace.append("app"); return false },
+                    reportFailure: { checkEqual($0, focusStatus); checkEqual($1, pidStatus); reports += 1 })
+                checkEqual(Array(trace.prefix(2)), ["focus", "pid"])
+                let special = focusStatus == 0 && pidStatus == -600 && !flag
+                checkEqual(value, special ? 77 : (focusStatus == 0 && pidStatus == 0 ? 88 : nil))
+                checkEqual(reports, special || (focusStatus == 0 && pidStatus == 0) ? 0 : 1)
+                checkEqual(trace.count, special ? 4 : 2)
+            }
+        }
+    }
+    // kCurrentProcess serial number: read-only call verifies the actual C ABI.
+    var process = ProcessSerialNumber(highLongOfPSN: 0, lowLongOfPSN: UInt32(kCurrentProcess))
+    var pid: Int32 = 0
+    checkEqual(ApplicationRegistrySPI.getProcessPID(&process, pid: &pid), 0)
+    checkEqual(pid, ProcessInfo.processInfo.processIdentifier)
 }
