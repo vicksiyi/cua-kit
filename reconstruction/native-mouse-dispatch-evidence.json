@@ -92,6 +92,30 @@
     {
       "site": "0x1007453c0",
       "target": "0x100258054"
+    },
+    {
+      "site": "0x10077ea54",
+      "target": "0x101153af8"
+    },
+    {
+      "site": "0x10077ea64",
+      "target": "0x101153b40"
+    },
+    {
+      "site": "0x10077ecf4",
+      "target": "0x101153b1c"
+    },
+    {
+      "site": "0x10077ed10",
+      "target": "0x101153ae0"
+    },
+    {
+      "site": "0x10077ed24",
+      "target": "0x101153b10"
+    },
+    {
+      "site": "0x10077ed3c",
+      "target": "0x101153b28"
     }
   ],
   "defaultClickMilliseconds": 50,

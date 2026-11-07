@@ -269,3 +269,24 @@ preservation and accumulated flags without posting OS input. Static audit pins
 constant initializers and the native getter/post call sites. Installation and
 teardown of the EventTap instances, synchronization and wait/restoration loop
 remain outstanding; production clicks do not yet use these callbacks.
+
+
+## Dedicated run-loop ownership
+
+Restored RunLoopTask and nested RunLoopThread from 0x10077e63c..0x10077edd0.
+The task configures name/QoS/context and starts its thread; deinit cancels it.
+Thread main publishes its run loop under a lock, checks cancellation, invokes
+and clears configuration, installs a no-op default-mode source, and runs until
+cancelled. On exit it invalidates the keepalive source and clears the stored
+loop. Cancel calls super first, snapshots the loop under lock, schedules
+CFRunLoopStop on common modes and wakes it. The source's imported mode symbols
+are resolved in Mach-O fixups (0x1014649f8 common, 0x101464a00 default).
+The local lock is NSLock; the native storage uses os_unfair_lock. Both protect
+only loop publication/snapshot; this is not a claim of identical storage ABI.
+
+Build and provider checks pass with an actual dedicated thread executing a
+scheduled block, releasing its context after task deallocation, and cancelling
+before startup. No event taps or desktop input are installed by these tests.
+EventTap start/stop inspection also confirms idempotent-start guard, per-PID vs
+global creation, weak-owner callback context and dedicated RunLoopTask ownership.
+The actual EventTap class remains to be restored and connected.

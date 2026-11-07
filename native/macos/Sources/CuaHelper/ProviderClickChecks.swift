@@ -3673,6 +3673,7 @@ func runProviderClickChecks() async throws {
     try runSyntheticFocusEnforcementChecks()
     try runSyntheticWindowActivationChecks()
     runSafeActivationCallbackChecks()
+    runRunLoopTaskChecks()
 }
 
 private func runSyntheticFocusDeactivationChecks() throws {
@@ -3805,4 +3806,33 @@ private func runSafeActivationCallbackChecks() {
             checkEqual(reads, posts)
         }
     }
+}
+
+private func runRunLoopTaskChecks() {
+    let configured = DispatchSemaphore(value: 0)
+    let ranBlock = DispatchSemaphore(value: 0)
+    let releasedContext = DispatchSemaphore(value: 0)
+    final class Context {
+        let released: DispatchSemaphore
+        init(_ released: DispatchSemaphore) { self.released = released }
+        deinit { released.signal() }
+    }
+    var task: RunLoopTask? = RunLoopTask(name: "CUA RunLoop check", qualityOfService: .utility,
+        contextObject: Context(releasedContext)) { loop in
+            CFRunLoopPerformBlock(loop, CFRunLoopMode.defaultMode.rawValue) { ranBlock.signal() }
+            configured.signal()
+        }
+    checkTrue(task != nil)
+    checkEqual(configured.wait(timeout: .now() + 5), .success)
+    checkEqual(ranBlock.wait(timeout: .now() + 5), .success)
+    task = nil
+    checkEqual(releasedContext.wait(timeout: .now() + 5), .success)
+    // Cancellation before startup must not invoke configuration or hang.
+    let thread = RunLoopTask.RunLoopThread()
+    thread.configurationHandler = { _ in unexpectedFailure() }
+    thread.cancel()
+    thread.start()
+    let deadline = Date().addingTimeInterval(5)
+    while !thread.isFinished && Date() < deadline { Thread.sleep(forTimeInterval: 0.001) }
+    checkTrue(thread.isFinished)
 }
