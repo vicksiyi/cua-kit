@@ -205,8 +205,30 @@ assert struct.unpack('<I', read(0x10064f6e0, 4))[0] == 0x52800140  # newline
 assert struct.unpack('<I', read(0x10064fa28, 4))[0] == 0xf9401aE9  # own role
 assert struct.unpack('<I', read(0x10064fa68, 4))[0] == 0xf9401809  # static image
 
+# Concrete pruning branches, including descendant key paths and enum tags.
+assert relative(0x10118bab8 + 32) == 0x10065d578
+assert relative(0x10118bae8 + 32) == 0x10065d5c0
+branch(0x10065d59c, 0x100624f30)
+assert struct.unpack('<I', read(0x10065d5e0, 4))[0] == 0xf9407829
+branch(0x100659ac8, 0x100624f30)
+branch(0x100659af0, 0x10064f72c)
+branch(0x100659b60, 0x100650d50)
+branch(0x100659bd4, 0x100650d50)
+branch(0x10065a5a0, 0x101151500)
+branch(0x10065a5b0, 0x10064f72c)
+for address, instruction in [
+    (0x10065a530, 0xf94052a8), # isEnabled witness slot 20
+    (0x10065a550, 0xf9404aa8), # isFocused witness slot 18
+    (0x10065a624, 0x52800062), # Result.unchanged (3)
+    (0x10065b078, 0x52800042), # Result.removed (2)
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
+    pruning=dict(emptyDisabled="remove iff disabled, not focused, no stored children and no item description",
+        nonDescriptive="retain own focusability/selectability, interesting actions or item description; then retain descendant focusability/selectability or interesting actions; otherwise remove",
+        integration="concrete branches tested through tree driver; full production pipeline remains pending"),
     itemDescriptiveState=dict(fields=item_fields, flatten="self then pre-order descendants; trim whitespacesAndNewlines per string, drop empty, newline join; preserve duplicates", roleFallback="own role equals image only"), valueTypeLabels=value_type_labels,
     constructorDirectCallSites=[hex(x) for x in constructor_call_sites],
     traversalRoleFlow=dict(instructions={hex(k): hex(v) for k, v in role_flow_words.items()},

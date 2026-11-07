@@ -5263,3 +5263,30 @@ existing binary SHA. No vendor executable was launched.
 This supplies a dependency for pruning strategies. Concrete strategy bodies,
 production traversal/rendering integration and live app acceptance remain
 incomplete; this change does not establish end-to-end completion.
+
+
+### Concrete pruning branches (2026-11-07)
+
+Restored two strategy bodies in `UIElementTreePruning.swift`, extracted as
+static helpers until the complete transform dispatcher can be wired:
+
+- `pruneEmptyDisabledElements` (tag 3, 0x10065a528): remove only when disabled,
+  not focused, stored children are empty, and item.hasDescriptiveAttributes
+  is false. No check of focusability, actions or availableSubset metadata.
+- `pruneNonDescriptiveSubtrees` (tag 2, 0x100659ab4): preserve own
+  isFocusableOrSelectable, own hasInterestingActions, or item description;
+  next query descendants for isFocusableOrSelectable and hasInterestingActions,
+  in that order. Remove otherwise. Enabled/focused alone do not protect it.
+  Key-path patterns 0x10118bab8 and 0x10118bae8 resolve to getters
+  0x10065d578 (calls 0x100624f30) and 0x10065d5c0 (witness slot 30).
+
+The empty-child call resolves to Collection.isEmpty at GOT 0x101466bb0.
+Result tags 2 and 3 were checked at 0x10065b078 and 0x10065a624.
+Tests distinguish both policies, descendants with interactions, text/image
+content, missing children with subset metadata, and parent-before-child
+execution through the recovered driver. A kept parent is not re-evaluated
+merely because its child was removed later. Input values remain unchanged.
+
+These tests do not enable the partial pipeline in the production collector.
+Remaining common/Mac strategy bodies and the complete dispatcher are still
+required before production tree replacement and real app acceptance.

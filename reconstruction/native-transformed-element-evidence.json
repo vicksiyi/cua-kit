@@ -51,6 +51,11 @@
       "link": true
     }
   ],
+  "pruning": {
+    "emptyDisabled": "remove iff disabled, not focused, no stored children and no item description",
+    "nonDescriptive": "retain own focusability/selectability, interesting actions or item description; then retain descendant focusability/selectability or interesting actions; otherwise remove",
+    "integration": "concrete branches tested through tree driver; full production pipeline remains pending"
+  },
   "itemDescriptiveState": {
     "fields": [
       {

@@ -895,6 +895,65 @@ private enum ProviderClickChecks {
             checkTrue(UIElementTree<TransformedUIElement>.Item(
                 element: descriptiveNode, subtree: transformedLeaf).hasDescriptiveAttributes)
         }
+        var emptyDisabled = textRoot
+        emptyDisabled.isEnabled = false
+        emptyDisabled.isFocused = false
+        emptyDisabled.isFocusable = false
+        emptyDisabled.isSelectable = false
+        emptyDisabled.actionDescriptions = []
+        typealias PruneItem = UIElementTree<TransformedUIElement>.Item
+        func removed(_ result: UIElementTreeTransformation.Result<TransformedUIElement>) -> Bool {
+            switch result {
+            case .removed: return true
+            case .unchanged: return false
+            default: unexpectedFailure("pruning must only remove or preserve")
+            }
+        }
+        let emptyItem = PruneItem(element: emptyDisabled, subtree: transformedLeaf)
+        checkTrue(removed(UIElementTreeTransformation.pruneEmptyDisabledElements(item: emptyItem)))
+        checkTrue(removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: emptyItem)))
+        // Unknown/unloaded children metadata is not a substitute for stored children.
+        var subsetItem = emptyItem
+        subsetItem.availableSubset = .init(count: 50, availableRanges: [])
+        checkTrue(removed(UIElementTreeTransformation.pruneEmptyDisabledElements(item: subsetItem)))
+        for key in [\TransformedUIElement.isEnabled, \.isFocused] {
+            var preserved = emptyItem
+            preserved.element[keyPath: key] = true
+            checkTrue(!removed(UIElementTreeTransformation.pruneEmptyDisabledElements(item: preserved)))
+            // Neither enabled nor focused alone protects a non-descriptive subtree.
+            checkTrue(removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: preserved)))
+        }
+        for key in [\TransformedUIElement.isFocusable, \.isSelectable] {
+            var interactive = emptyItem
+            interactive.element[keyPath: key] = true
+            checkTrue(!removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: interactive)))
+            checkTrue(removed(UIElementTreeTransformation.pruneEmptyDisabledElements(item: interactive)))
+            let nested = PruneItem(element: emptyDisabled, subtree: .init(items: [interactive], focusedElement: nil))
+            checkTrue(!removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: nested)))
+        }
+        var actionItem = emptyItem
+        actionItem.element.actionDescriptions = capturedOwner.actionDescriptions
+        checkTrue(actionItem.element.hasInterestingActions)
+        checkTrue(!removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: actionItem)))
+        let actionParent = PruneItem(element: emptyDisabled, subtree: .init(items: [actionItem], focusedElement: nil))
+        checkTrue(!removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: actionParent)))
+        let emptyParent = PruneItem(element: emptyDisabled, subtree: .init(items: [emptyItem], focusedElement: nil))
+        checkTrue(!removed(UIElementTreeTransformation.pruneEmptyDisabledElements(item: emptyParent)))
+        checkTrue(removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: emptyParent)))
+        checkTrue(!removed(UIElementTreeTransformation.pruneNonDescriptiveSubtrees(item: descriptionItem)))
+        checkTrue(!removed(UIElementTreeTransformation.pruneEmptyDisabledElements(
+            item: .init(element: imageNode, subtree: transformedLeaf))))
+        // Run the concrete branches through the actual driver; a parent kept
+        // before child pruning is not revisited after that child disappears.
+        var pruneContext = 0
+        let pruneInput = UIElementTree<TransformedUIElement>(items: [emptyParent, emptyItem], focusedElement: nil)
+        let pruneOutput = pruneInput.transformed(using: [UIElementTreeTransformation.pruneEmptyDisabledElements],
+            in: &pruneContext) { _, item, _ in
+                UIElementTreeTransformation.pruneEmptyDisabledElements(item: item)
+            }
+        checkEqual(pruneOutput.items.count, 1)
+        checkTrue(pruneOutput.items[0].children.isEmpty)
+        checkEqual(pruneInput.items[0].children.count, 1)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
