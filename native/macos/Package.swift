@@ -2,7 +2,8 @@
 import PackageDescription
 let package = Package(
     name: "CuaHelper", platforms: [.macOS(.v14)],
-    products: [.executable(name: "cua-helper", targets: ["CuaHelper"])],
+    products: [.executable(name: "cua-helper", targets: ["CuaHelper"]),
+        .library(name: "SoftLink", targets: ["SoftLink"])],
     dependencies: [
         .package(url: "https://github.com/modelcontextprotocol/swift-sdk.git", exact: "0.12.1"),
         .package(url: "https://github.com/apple/swift-algorithms.git", exact: "1.2.1"),
@@ -10,8 +11,9 @@ let package = Package(
         .package(url: "https://github.com/scinfu/SwiftSoup.git", exact: "2.9.6"),
     ],
     targets: [
+        .target(name: "SoftLink"),
         .target(name: "RunningProcess", publicHeadersPath: "include", cSettings: [.unsafeFlags(["-fobjc-arc"])]),
-        .executableTarget(name: "CuaHelper", dependencies: [.product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
+        .executableTarget(name: "CuaHelper", dependencies: ["SoftLink", .product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")]),
         .executableTarget(name: "CuaFixture"),
     ], swiftLanguageModes: [.v5]
 )

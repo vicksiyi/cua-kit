@@ -25,7 +25,7 @@ selected = [line for line in raw.splitlines() if ' T ' in line and any(word in l
     'SkyshotOperation', 'UIElementRenderTree', 'isAXTreeDiffingEnabled',
     'AccessibilityDifferenceLineBudgetExceeded', 'SystemSelection', 'AccessibilityTreePresentation',
     'selectedTextSSSgvg', 'selectedTextMarkerRange', 'cachedValue', 'UITextMarkerRange',
-    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction', 'FrequencyTable',
+    'AXPartialValue', 'AXEncodedValue', 'UIElementError', 'actualPID', 'UIElementTreeTransaction', 'FrequencyTable', 'readULEB128',
 ))]
 result = subprocess.run(['xcrun', 'swift-demangle'], input='\n'.join(selected)+'\n', text=True, capture_output=True, check=True)
 rows = []
@@ -2416,6 +2416,41 @@ error_evidence = {
     'conditionalFailureHelper':{'start':'0x1006e9d38','endExclusive':'0x1006e9d90','machineCodeSha256':hashlib.sha256(read_virtual(0x1006e9d38,0x58)).hexdigest()},
     'limitations':'Recovered enum and local branches; full error-routing algorithm and transport mapping remain incomplete.',
 }
+softlink_words = {
+    0x10024d354: 0x5400012a,
+    0x10024d370: 0xf9000048,
+    0x10024d398: 0xf9000048,
+    0x10024d484: 0x91002929,
+    0x10024d48c: 0xaa08fc08,
+    0x10024d494: 0x1a9fa7e1,
+    0x10024d498: 0x9a88b3e0,
+    0x10024d49c: 0xf9000049,
+    0x10026b1b0: 0xd4200020,
+    0x10026b1b4: 0xd4200020,
+    0x10026b1b8: 0xd4200020,
+    0x10026b1bc: 0xd4200020,
+    0x10026b1c0: 0xd4200020,
+}
+for address, word in softlink_words.items():
+    if struct.unpack('<I',read_virtual(address,4))[0] != word:
+        raise SystemExit('SoftLink decoding/binding boundary changed')
+softlink_evidence = {
+    'functions': [{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()}
+        for a,b in [(0x10024d34c,0x10024d4a4),(0x100269554,0x100269640),(0x10026b0f0,0x10026b1c4),(0x100255bac,0x100255f34)]],
+    'instructionWords': {hex(a):hex(w) for a,w in softlink_words.items()},
+    'SPIBinding': {
+        'batchLookup': '0x100269570 -> SoftLink.lookUpBatchSymbolPointers (0x100248374)',
+        'functionBinder': '0x10026b0f0 validates index, present/nonzero pointer and 8-byte destination; traps otherwise',
+        'keyLoader': '0x100255bac requires seven entries, traps on missing/null entries; no public-API fallback proven',
+        'initialization': 'Functions and CFString keys use separate Swift once initializers',
+    },
+    'ULEB128': {
+        'implementation':'native/macos/Sources/SoftLink/ULEB128.swift',
+        'behavior':'Consumes at most ten bytes; initial out-of-range offset unchanged; truncated input consumes available bytes; tenth continuation returns nil at offset+10; terminating tenth byte contributes only its low bit and does not reject excess payload bits; noncanonical encodings accepted.',
+        'callerContract':'Unsafe pointer must address the declared buffer; offset and size are nonnegative. No invalid-memory behavior is redefined.',
+    },
+    'limitations':'Only ULEB128 is implemented. Image lookup, salted hashing, symbol/export traversal, pointer binding, key loading and CUA transaction integration remain incomplete.',
+}
 record = {
     'artifact':'@oai/'+relative,
     'sha256':sha,
@@ -2447,6 +2482,7 @@ record = {
     'encodedStorageEvidence':encoded_storage_evidence,
     'multipleAttributeEvidence':multiple_attribute_evidence,
     'frequencyTableEvidence':frequency_evidence,
+    'softLinkEvidence':softlink_evidence,
     'limitations':[
         'No native service executed and no macOS UI observed.',
         'Symbol types establish native Swift ownership and API boundaries only.',

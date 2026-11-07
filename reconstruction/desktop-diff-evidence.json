@@ -5433,6 +5433,57 @@
     "interpretation": "Dictionary-backed value type; missing subscript is zero, increment initializes to one or uses checked addition, isUnique requires a present count equal to one.",
     "limitations": "Counter behavior only; role collection, transaction creation and cache invalidation are not reconstructed by this helper."
   },
+  "softLinkEvidence": {
+    "functions": [
+      {
+        "start": "0x10024d34c",
+        "endExclusive": "0x10024d4a4",
+        "machineCodeSha256": "f177507229c327e6bd642801cca34921a68818f556bf9c6537c0ed223916f814"
+      },
+      {
+        "start": "0x100269554",
+        "endExclusive": "0x100269640",
+        "machineCodeSha256": "f6a3911398137c127085f6d436339f84df3f040328c34084f644a74d4d288f45"
+      },
+      {
+        "start": "0x10026b0f0",
+        "endExclusive": "0x10026b1c4",
+        "machineCodeSha256": "448a01e713fd956db95ad88e577c3ffd6bbfeb4476d758bec92e7c4da037ec86"
+      },
+      {
+        "start": "0x100255bac",
+        "endExclusive": "0x100255f34",
+        "machineCodeSha256": "70c8fccb37ad855bc0b71f3804a2ca4b4968923d82dc190dee633b1b93c6ce41"
+      }
+    ],
+    "instructionWords": {
+      "0x10024d354": "0x5400012a",
+      "0x10024d370": "0xf9000048",
+      "0x10024d398": "0xf9000048",
+      "0x10024d484": "0x91002929",
+      "0x10024d48c": "0xaa08fc08",
+      "0x10024d494": "0x1a9fa7e1",
+      "0x10024d498": "0x9a88b3e0",
+      "0x10024d49c": "0xf9000049",
+      "0x10026b1b0": "0xd4200020",
+      "0x10026b1b4": "0xd4200020",
+      "0x10026b1b8": "0xd4200020",
+      "0x10026b1bc": "0xd4200020",
+      "0x10026b1c0": "0xd4200020"
+    },
+    "SPIBinding": {
+      "batchLookup": "0x100269570 -> SoftLink.lookUpBatchSymbolPointers (0x100248374)",
+      "functionBinder": "0x10026b0f0 validates index, present/nonzero pointer and 8-byte destination; traps otherwise",
+      "keyLoader": "0x100255bac requires seven entries, traps on missing/null entries; no public-API fallback proven",
+      "initialization": "Functions and CFString keys use separate Swift once initializers"
+    },
+    "ULEB128": {
+      "implementation": "native/macos/Sources/SoftLink/ULEB128.swift",
+      "behavior": "Consumes at most ten bytes; initial out-of-range offset unchanged; truncated input consumes available bytes; tenth continuation returns nil at offset+10; terminating tenth byte contributes only its low bit and does not reject excess payload bits; noncanonical encodings accepted.",
+      "callerContract": "Unsafe pointer must address the declared buffer; offset and size are nonnegative. No invalid-memory behavior is redefined."
+    },
+    "limitations": "Only ULEB128 is implemented. Image lookup, salted hashing, symbol/export traversal, pointer binding, key loading and CUA transaction integration remain incomplete."
+  },
   "limitations": [
     "No native service executed and no macOS UI observed.",
     "Symbol types establish native Swift ownership and API boundaries only.",
@@ -6453,6 +6504,11 @@
       "address": "000000010076cda0",
       "mangled": "_$s20AccessibilitySupport24UIElementTreeTransactionV8$currents9TaskLocalCyACSgGvgZ",
       "signature": "static AccessibilitySupport.UIElementTreeTransaction.$current.getter : Swift.TaskLocal<AccessibilitySupport.UIElementTreeTransaction?>"
+    },
+    {
+      "address": "000000010024d34c",
+      "mangled": "_$s8SoftLink11readULEB1284from4size6offsets6UInt64VSgSPys5UInt8VG_S2iztF",
+      "signature": "SoftLink.readULEB128(from: Swift.UnsafePointer<Swift.UInt8>, size: Swift.Int, offset: inout Swift.Int) -> Swift.UInt64?"
     },
     {
       "address": "00000001006f5f88",

@@ -2690,3 +2690,14 @@ The previously unresolved constructor callee `0x1006f7f2c` reaches `SystemSoftwa
 The direct native path calls copyHierarchy and proceeds to inspect the output pointer; no AX status branch is present between the call and output lookup. The output ownership, dictionary bridging, partial-value decoding and same-process main-thread closure still require reconstruction before this can become the production transaction prefetch path. Do not infer that a nonzero AX status must always throw here from the stricter single-attribute write helpers.
 
 Validation: Swift build, the standalone option test using fixture keys (including empty/duplicate arrays, CFBoolean identity, and signed count extremes), and static audit generation/check. This adds a source-derived construction helper and evidence, not a working hierarchy collector or desktop acceptance.
+
+
+### SoftLink dependency and native ULEB128 (2026-11-07)
+
+The SPI initializer calls a batch lookup wrapper at `0x100269554`, whose call at `0x100269570` targets `SoftLink.lookUpBatchSymbolPointers(images:symbolRequests:salt:)`. This dependency must be reconstructed before claiming a source-faithful SPI loader. The function-pointer binder validates its next entry, non-null pointer and eight-byte target representation, with trap branches on failure. The separate CFString key loader requires seven populated entries. No public-API fallback is established by these paths.
+
+A separate Swift `SoftLink` target now starts restoring this original module boundary. Its first function, `readULEB128`, follows `0x10024d34c..<0x10024d4a4`: empty/out-of-range input returns nil without advancing; truncation consumes available bytes; a maximum of ten bytes is consumed. A terminating tenth byte contributes only its low bit, and excess payload bits are truncated rather than rejected. A continuing tenth byte returns nil after consuming that byte. Noncanonical encodings are accepted. Replacing this with an arbitrarily stricter parser would change the observed behavior.
+
+The unsafe pointer API retains its caller contract: valid declared memory and nonnegative offset/size. Tests do not exercise undefined memory access. The test covers all 65,536 two-byte inputs, all 256 tenth-byte cases, known multi-byte values, embedded offsets and truncation. Swift package build and the static evidence check pass. No vendor binary or system SPI was executed.
+
+Remaining SoftLink work includes salted hashing, image matching, Mach-O/export traversal and batch lookup; SPI binding, seven key values, hierarchy decoding and transaction integration remain incomplete. Adding the target does not make production hierarchy prefetch available yet.
