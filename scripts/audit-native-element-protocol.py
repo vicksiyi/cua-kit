@@ -55,12 +55,16 @@ ui = protocol('AccessibilitySupport.UIElementProtocol', 0x1012cd46c, 0x10149ed40
     [0, 0, 3, 0x13, 0x13, 2, 0x13, 0x13, 0x13, 0x13, 0x11, 0x11],
     [None, None, 0x10078fbf4, 0x10078fbfc, 0x10078fc04, 0x10078fc50,
      0x1007aff6c, 0x1007aff74, 0x1007925f4, 0x100792600, 0x1007b8a04, 0x100792670])
+transformed_ui = protocol('TransformedUIElement.UIElementProtocol witness', 0x1012cd46c, 0x10149dac8,
+    [0, 0, 3, 0x13, 0x13, 2, 0x13, 0x13, 0x13, 0x13, 0x11, 0x11],
+    [None, None, 0x100762060, 0x100762068, 0x100762070, 0x1007620bc,
+     0x1007620c0, 0x1007afad0, 0x1007925dc, 0x1007620ec, 0x1007afad4, 0x1007925e0])
 direct_names = ['AccessibilityNode', 'Hashable', 'static role', 'axElement', 'cache',
                 'init(element:)', 'subrole', 'isInsideWebView', 'actions',
                 'actionDescriptions', 'setValue(_:forAttribute:)', 'perform(action:)']
 for entry, name in zip(ui['requirements'], direct_names):
     entry['meaning'] = name
-    entry['meaningStatus'] = 'provisional; distinguish concrete member from protocol witness' if name in ('actions', 'actionDescriptions') else 'mapped'
+    entry['meaningStatus'] = 'mapped; actions uses nonoptional default witness, distinct from transformed concrete optional property'
 # Cross-conformer table: names come from transformed stored fields / named getters,
 # not from generic UIElement's shared false/nil bodies.
 node_names = ['role', 'roleDescription', 'title', 'description', 'value',
@@ -95,7 +99,7 @@ for i, (name, target) in enumerate(zip(node_names, transformed_targets)):
         elementSlot=hex(concrete_slot), elementWitness=hex(0x100000000 + (concrete & 0xffffffff))))
 # Pin the concrete/default getter distinction, beyond descriptor slot counts.
 for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
-                     (0x100792648, 0x100790690)]:
+                     (0x100792648, 0x100790690), (0x1007925dc, 0x1007907fc)]:
     word = struct.unpack('<I', read(site, 4))[0]
     assert word & 0x7c000000 == 0x14000000
     displacement = word & 0x3ffffff
@@ -103,13 +107,13 @@ for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
     assert site + displacement * 4 == target
 assert struct.unpack('<I', read(0x10079258c, 4))[0] == 0xf9402428
 
-print(json.dumps(dict(binarySHA256=expected, protocol=ui,
+print(json.dumps(dict(binarySHA256=expected, protocol=ui, transformedProtocol=transformed_ui,
     actionBoundary=dict(
         transformedActions='0x10075d2f8 returns Optional<Array<UIElementAction>> from captured actionDescriptions',
         protocolExtensionActions='0x1007916b0 returns Array<UIElementAction>',
         protocolExtensionActionDescriptions='0x100792570 is named _actionDescriptions and calls witness +0x48',
         concreteWitnessRoutes={'0x1007925f4': '0x100790b88', '0x100792600': '0x100790b88 then 0x100790690'},
-        unresolved='Do not assert nonoptional actions requirement matches transformed optional property; audit exact witness contract before conforming.'),
+        resolution='Transformed witness +0x48 routes to 0x1007907fc, not optional concrete getter 0x10075d2f8; restore protocol default action getter separately.'),
     inherited=dict(name='ComputerUseCore.AccessibilityNode', descriptor=hex(a),
                    signatureRequirements=4, requirementCount=36, getters=getters),
     limitations=['Member mapping is static evidence, not complete conformer implementation.',

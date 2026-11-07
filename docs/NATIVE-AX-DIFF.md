@@ -6696,3 +6696,24 @@ exact witness types/default resolution have been recovered. In particular, no
 optional captured array is force-unwrapped and no fresh provider action list is
 substituted just to make the render overload compile. This finding changes the
 next integration step: resolve the action protocol contract before conformance.
+
+
+### Action boundary resolved through transformed witness table (2026-11-07)
+
+The previous discrepancy is resolved by inspecting the transformed conformance
+itself, table 0x10149dac8. Its actions witness is 0x1007925dc -> 0x1007907fc,
+NOT its concrete optional getter 0x10075d2f8. The specialized default route reads
+native actions and appends disclosure actions. Thus the nonoptional protocol
+requirement and optional concrete property coexist through a default witness;
+changing the requirement to Optional would have been incorrect.
+
+UIElementProviderActionGetters now defines defaults on UIElementProtocol,
+matching the native protocol extension rather than only the concrete UIElement.
+The captured optional property remains unchanged. The actionDescriptions
+witness 0x1007620ec returns the stored captured array; its mapping is also kept
+separate from the default description builder.
+
+The audit pins all twelve transformed witness slots plus the action forwarding
+branch. Swift build and existing provider/action regression checks passed.
+Remaining transformed conformance work includes initializer semantics and the
+other provider/transaction witnesses; production integration is not complete.

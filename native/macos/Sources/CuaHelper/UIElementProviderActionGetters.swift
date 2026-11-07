@@ -2,7 +2,7 @@ import ApplicationServices
 import Foundation
 import os
 
-extension UIElement {
+extension UIElementProtocol {
     // 0x1007916b0: read native actions once, append disclosure only on success.
     var actions: [UIElementAction] {
         uiElementActions(readActions: { try axElement.actions },
