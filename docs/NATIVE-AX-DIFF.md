@@ -2896,3 +2896,33 @@ finds its own image by hash; it neither loads a module nor launches vendor code.
 Swift build and the SoftLink tests pass. Filesystem image loading, string-path
 overloads and batch selection remain to be recovered; this change does not yet
 bind Accessibility SPI or establish live desktop acceptance.
+
+### SoftLink batch candidate priorities and filesystem fallback staging
+
+Recovered symbolRequestsByHash (`0x1002486b4`), pending-hash selection
+(`0x1002489c8`), per-image match selection (`0x100248b4c`), and the orchestration
+in lookUpBatchSymbolPointers (`0x100248374`) into BatchSymbols.swift. The batch
+entry still requires explicit source dependencies: filesystem search has not
+been recovered, and no empty filesystem stub is presented as a working default.
+
+Each outer request occupies one output slot; each inner hash's array index is
+its priority. The reverse map retains duplicate hashes and all corresponding
+slots/priorities. An image is queried only for hashes that could fill an empty
+slot or improve an existing priority. Per-image results first choose the lowest
+priority per slot, then update global matches. Equal priorities do not replace
+an existing match.
+
+Crucially, batch completion requires EVERY slot to have priority zero, not merely
+some matching candidate. Lower-priority results continue through later loaded
+images and, if necessary, filesystem loading. Empty alternative lists remain
+nil slots and prevent that completion condition. The original passes the entire
+image request array to the filesystem stage. This batch function consumes the
+ResolvedImage header only; its index is not used to compute symbol priority.
+This narrows the earlier note about request indices affecting batch selection:
+ordering matters, but symbol-alternative position supplies this priority.
+
+Fixtures verify grouping duplicates, pending-hash filtering, fallback improvement,
+priority-zero early exit, best alternative selection independent of dictionary
+iteration, multiple output slots sharing a hash, empty requests and empty
+alternatives. Build and targeted batch tests pass. Production filesystem source,
+SPI binding and UI-prefetch integration remain incomplete.
