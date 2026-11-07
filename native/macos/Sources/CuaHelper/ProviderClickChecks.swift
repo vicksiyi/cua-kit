@@ -3723,6 +3723,7 @@ func runProviderClickChecks() async throws {
     try await runSyntheticFocusSafeActivationBranchChecks()
     runSafeActivationSavedWindowChecks()
     runUIElementBooleanValueChecks()
+    runRunningApplicationPIDResolutionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5599,4 +5600,29 @@ private func runUIElementBooleanValueChecks() {
     let unsupported = item([:], supported: [UIElementAttribute("AXTitle")])
     checkTrue(unsupported.booleanValue(for: attribute, ignoringTypeMismatch: false,
         read: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }) == nil)
+}
+
+private func runRunningApplicationPIDResolutionChecks() {
+    var trace: [String] = [], terminated = false, path: String? = "/test/app"
+    var matches: [Int32]? = [88]
+    func resolve(_ raw: Int32) -> Int32 {
+        resolveRunningApplicationProcessIdentifier(rawPID: raw, isTerminated: {
+            trace.append("terminated"); return terminated
+        }, executablePath: { trace.append("path"); return path }, matchingProcessIDs: {
+            trace.append("matches"); checkEqual($0, "/test/app"); return matches
+        })
+    }
+    checkEqual(resolve(77), 77); checkTrue(trace.isEmpty)
+    terminated = true
+    checkEqual(resolve(0), -1); checkEqual(trace, ["terminated"])
+    trace = []; terminated = false; path = nil
+    checkEqual(resolve(-1), -1); checkEqual(trace, ["terminated","path"])
+    trace = []; path = "/test/app"
+    checkEqual(resolve(0), 88); checkEqual(trace, ["terminated","path","matches"])
+    matches = nil; checkEqual(resolve(-1), -1)
+    matches = []; checkEqual(resolve(-1), -1)
+    matches = [88,88]; checkEqual(resolve(-1), -1) // cardinality, not unique PID count
+    matches = [88,99]; checkEqual(resolve(-1), -1)
+    matches = [0]; checkEqual(resolve(-1), 0) // no extra validation of the sole result
+    checkEqual(systemResolvedRunningApplicationPID(.current), NSRunningApplication.current.processIdentifier)
 }

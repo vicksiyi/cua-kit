@@ -1448,3 +1448,29 @@ actual application activation or raise windows.
 
 Validation: Swift build, provider-click self-test and pinned native static audit
 pass. This establishes driver boundary composition, not live click acceptance.
+
+
+## Running application PID resolution and outstanding direct-branch wait
+
+Restored resolvingProcessIdentifier at 0x100260b44. Positive raw PID returns
+immediately without querying termination/path. Otherwise a terminated app or
+missing executable URL returns -1. A nil-name executable-path filter with
+options=1 reuses the existing Objective-C SAIRunningProcess implementation.
+Exactly one candidate returns its PID, with no deduplication, first-match or
+additional PID validation; absent/empty/multiple results return -1.
+
+The enforcer's native restoration overload now constructs the saved AX wrapper
+using this resolver, captures the focused window, and supplies the native
+restoration driver. Fresh target wrappers use the current transaction cache.
+Build and provider-click checks pass, including lazy read order, termination,
+missing path, nil/empty/duplicate/multiple matches and a read-only current-app
+positive-PID check. No real activation or process scan is invoked by the tests.
+
+Correction to the earlier foreground-branch section: nil/same-PID foreground
+selection is only the initial branch, not the complete direct path. Following
+successful enforcement, 0x100741a94 constructs a target AX wrapper and
+0x100741ca0 awaits waitUntilAppBelievesItIsFrontmost(timeout: 0.25). This
+nonthrowing wait has additional AX/fallback behavior at 0x10070e1b8 and is
+not implemented yet. The selector currently returns after direct enforcement;
+production input must not claim parity until this continuation is restored.
+No real application clicking has been verified.
