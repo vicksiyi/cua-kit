@@ -4365,3 +4365,32 @@ subset preservation and empty/negative/too-large/deeper-than-leaf paths. The
 fixtures use synthetic UIElements and make no UI input/model requests. Identity
 and numeric-ID table lookup, focus selection, transformations, rendering and
 production collector integration remain outstanding.
+
+
+## Identity/ID table and focused-element assignment
+
+Recovered UIElementTree.table() 0x10064ff84 and enumeration callback
+0x1006503fc. The callback stores each item's identity -> current ordinal and
+ordinal -> IndexPath; the enumeration starts at zero and visits the item before
+its children. Repeated identities overwrite the forward value with the last
+ordinal, but all ordinal paths remain. UIElementTreeTable.init(values:paths:)
+0x1006569b4 derives its reverse dictionary from the final forward dictionary
+using assignment (0x100656eb0), not a uniqueness-enforcing constructor. Thus an
+earlier duplicate's numeric path exists even though the reverse table no longer
+contains that ordinal. Duplicate values supplied to the general table initializer
+overwrite in Swift dictionary iteration order; no stable winner is invented.
+
+The tree caches the assembled table until items mutation invalidates it.
+Numeric item(for:) 0x10064fd7c looks up path then uses the already restored
+positional lookup; element(for:) projects the result. id(for:) 0x10065030c
+uses the identity map. setFocusedElement(identity:) 0x100650908 resolves through
+those methods and clears focusedElement on a missing identity, rather than
+retaining an old focus. The focused return value is the same resolved element.
+
+Complete helper build/self-test pass: duplicate identities with distinct cached
+properties, zero-based preorder/nested paths, retained earlier numeric lookup,
+missing reverse entry for an overwritten identity, invalid IDs, focus selection
+and clearing, mutation invalidation, and non-unique general reverse-map values.
+All are synthetic checks; no native UI or model calls occur. Original tree
+transformation/rendering, focus-tree extraction and collector lifecycle remain
+outstanding, and standalone demo IDs/observations are unchanged.

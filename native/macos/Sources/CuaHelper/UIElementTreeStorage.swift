@@ -1,15 +1,27 @@
 import Foundation
 
-// Stored value layout from descriptor 0x1012c9c80. Construction of the original
-// bidirectional lookup table is separate; no inferred IDs or paths are inserted.
+// Stored value layout from descriptor 0x1012c9c80. The initializer preserves
+// supplied paths and derives only the reverse mapping from supplied values.
 struct UIElementTreeTable<Identity: Hashable, Value: Hashable> {
     var values: [Identity: Value]
     var elements: [Value: Identity]
     var paths: [Value: IndexPath]
+
+    // 0x1006569b4: reverse the final forward dictionary by ordinary assignment.
+    // Duplicate values overwrite in dictionary iteration order; no uniqueness trap.
+    init(values: [Identity: Value], paths: [Value: IndexPath]) {
+        self.values = values
+        self.paths = paths
+        self.elements = [:]
+        for (identity, value) in values { elements[value] = identity }
+    }
+    subscript(identity identity: Identity) -> Value? { values[identity] }
+    subscript(value value: Value) -> Identity? { elements[value] }
+    func path(to value: Value) -> IndexPath? { paths[value] }
 }
 
 // Descriptor 0x1012c9b14 and constructor 0x10064fc24. This restores the tree
-// owner; transformations, lookup-table construction and rendering are separate.
+// owner and lookup cache; transformations and rendering remain separate.
 struct UIElementTree<Element: AccessibilityNode>: Sequence {
     struct Item {
         var element: Element
@@ -80,6 +92,41 @@ struct UIElementTree<Element: AccessibilityNode>: Sequence {
         }
         leafProperties[property] = found
         return found
+    }
+
+    // 0x10064ff84 + enumeration callback 0x1006503fc. IDs start at zero
+    // and advance for every stored item, including repeated identities.
+    mutating func table() -> UIElementTreeTable<Element.ID, Int> {
+        if let cachedTable { return cachedTable }
+        var values: [Element.ID: Int] = [:]
+        var paths: [Int: IndexPath] = [:]
+        var nextID = 0
+        func visit(_ tree: UIElementTree<Element>, path: IndexPath) {
+            for (index, item) in tree.items.enumerated() {
+                let itemPath = path.appending(index)
+                values[item.element.id] = nextID
+                paths[nextID] = itemPath
+                nextID += 1
+                visit(item.subtree, path: itemPath)
+            }
+        }
+        visit(self, path: IndexPath())
+        let result = UIElementTreeTable(values: values, paths: paths)
+        cachedTable = result
+        return result
+    }
+    mutating func id(for identity: Element.ID) -> Int? { table()[identity: identity] }
+    mutating func item(for id: Int) -> Item? {
+        guard let path = table().path(to: id) else { return nil }
+        return item(for: path)
+    }
+    mutating func element(for id: Int) -> Element? { item(for: id)?.element }
+    // 0x100650908: a missing identity clears the previous focused element.
+    @discardableResult
+    mutating func setFocusedElement(identity: Element.ID) -> Element? {
+        if let id = id(for: identity) { focusedElement = element(for: id) }
+        else { focusedElement = nil }
+        return focusedElement
     }
 
     // Native Iterator is a class (descriptor 0x1012c9b8c), eagerly populated by
