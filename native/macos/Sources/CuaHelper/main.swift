@@ -86,15 +86,20 @@ final class Target {
         }
         // Distinguish denied/unresponsive AX from an actual empty tree.
         let status = readRawAXAttribute(root, kAXRoleAttribute).error
-        guard status == .success else { throw fail(status == .apiDisabled ? "PERMISSION_DENIED" : "PROVIDER_DISCONNECTED", "AX root unavailable: \(status.rawValue)") }
+        guard status == .success else { throw UIElementError.axError(status) }
         walk(UIElement(systemElement: root, transaction: nil), nil, 0)
         return (result, warnings)
     }
     func observe() throws -> [String: Any] {
-        capturedWindow = nil
+        // A failed refresh must not leave an older observation actionable.
+        invalidateInputState()
         let (current, warnings) = try collect()
-        nodes = current; snapshot = UUID().uuidString
-        return ["snapshotId": snapshot!, "elements": current.map { $0.data }, "warnings": warnings, "text": try observationText(elements: current.map { $0.data }, warnings: warnings, screenshotAvailable: CGPreflightScreenCaptureAccess())]
+        let elements = current.map { $0.data }
+        let text = try observationText(elements: elements, warnings: warnings,
+            screenshotAvailable: CGPreflightScreenCaptureAccess())
+        let identifier = UUID().uuidString
+        nodes = current; snapshot = identifier
+        return ["snapshotId": identifier, "elements": elements, "warnings": warnings, "text": text]
     }
     func action(_ params: [String: Any]) throws -> [String: Any] {
         try validateSnapshot(params)

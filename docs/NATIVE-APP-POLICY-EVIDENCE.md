@@ -1318,3 +1318,12 @@ Focus and selected-text-range writes now use the recovered system attribute writ
 Input observation invalidation is now deferred around the action switch, so throwing writes and actions also retire snapshot, element nodes and captured-window coordinates. This is owned-host lifecycle handling, not a reconstructed original snapshot algorithm. Policy and deadline validation still precede dispatch.
 
 Validation includes the strict attribute writer's fifteen non-success AX statuses composed through wire projection and native client decoding, existing setter/encoding/action tests, Swift build, and restored/installed JS client IPC fixtures. Desktop input success remains unverified without real app acceptance.
+
+
+### Observation error preservation and snapshot publication (2026-11-07)
+
+The owned collector's root AXRole probe now throws its typed AXError instead of flattening the raw status into a provider-disconnection sentence. The preceding explicit accessibility permission check is unchanged. This allows root-read failures to use the same recovered IPC numeric payload contract as input failures. The original full collector is still not restored: the current node/depth/time bounds and traversal are independent host logic.
+
+`Target.observe` clears prior input state before collection and creates/publishes its replacement snapshot only after text rendering succeeds. Previously failed collection could leave an older snapshot and nodes behind, and rendering could fail after publishing a replacement snapshot. The snapshot change is owned lifecycle logic, not an assertion about the original native collector's implementation. The screenshot wrapper already invalidates on failure.
+
+Validation: Swift build, existing raw AX read/threading and wire-projection tests, and native observation-text self-test. The failed-refresh lifecycle was inspected at its publication sites; no live AX failure injection was performed. A read-only `hello` request to the newly built owned helper still reports both accessibility and screenRecording false in this execution context. No permission prompt or model request was issued; real desktop acceptance remains incomplete.
