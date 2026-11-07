@@ -339,3 +339,22 @@ examines AXFrontmost and window ordering, and may raise its prior focused window
 It has distinct one/two-second bounds and a quiet-period check; exact complete
 branch composition is not yet restored. Neither a fixed sleep nor setting all
 flags true would preserve this behavior.
+
+
+## Restoration completion gate and timing
+
+Decoded 0x100742968..0x1007429fc into safeActivationRestorationDecision.
+Once previous-app foreground and prior window checks reach this gate, required
+paired notifications mean foreground byte 1 AND target byte 2. If absent, poll
+until the two-second bound. Otherwise a required quiet period compares a fresh
+time read to lastEventTime; no time read occurs when the gate doesn't need it.
+Completion is checked before timeout, so completed restoration at the boundary
+succeeds. ARM's timeout comparison treats unordered as timeout; local code uses
+`!(elapsed < timeout)` to preserve that detail.
+
+Pinned doubles: reactivation threshold 0.05 at 0x10115b8d8; quiet period 0.1 at
+0x101159db8. Poll Duration immediate 0x2386f26fc10000 is 10^16 attoseconds=10ms.
+The extracted gate receives the prior branch's paired/quiet requirements rather
+than guessing their derivation. Full async loop and error-type mapping are not
+yet connected. Tests cover missing acknowledgments, quiet-period boundary,
+frontmost mismatch, lazy clock reads and completion before timeout.

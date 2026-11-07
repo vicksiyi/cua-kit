@@ -3674,6 +3674,7 @@ func runProviderClickChecks() async throws {
     try runSyntheticWindowActivationChecks()
     runSafeActivationCallbackChecks()
     runTargetActivationObservationChecks()
+    runSafeActivationRestorationDecisionChecks()
     runRunLoopTaskChecks()
     runEventTapLifecycleChecks()
 }
@@ -3912,4 +3913,31 @@ private func runTargetActivationObservationChecks() {
     // Foreground tap writes only bytes 0/1, preserving target observation.
     checkFalse(state.observe(type: 20, subtypeValue: nil, time: 9))
     checkTrue(state.targetResignObserved)
+}
+
+private func runSafeActivationRestorationDecisionChecks() {
+    var observation = SafeActivationObservedEvents()
+    _ = observation.observe(type: 20, subtypeValue: nil, time: 0)
+    // The target side has not acknowledged resignation yet.
+    checkEqual(safeActivationRestorationDecision(savedApplicationIsFrontmost: true,
+        requiresPairedNotifications: true, requiresQuietPeriod: false,
+        observation: observation, elapsed: 1.999, now: { unexpectedFailure() }), .pollAgain)
+    checkEqual(safeActivationRestorationDecision(savedApplicationIsFrontmost: true,
+        requiresPairedNotifications: true, requiresQuietPeriod: false,
+        observation: observation, elapsed: 2, now: { unexpectedFailure() }), .timedOut)
+    _ = observation.targetRequestsSuppression(type: 19, subtypeValue: nil, time: 0)
+    for elapsed in [0.0, 1.999, 2.0, 3.0] {
+        for now in [0.099, 0.1, 0.101] {
+            let result = safeActivationRestorationDecision(savedApplicationIsFrontmost: true,
+                requiresPairedNotifications: true, requiresQuietPeriod: true,
+                observation: observation, elapsed: elapsed, now: { now })
+            checkEqual(result, now >= 0.1 ? .complete : elapsed >= 2 ? .timedOut : .pollAgain)
+        }
+    }
+    checkEqual(safeActivationRestorationDecision(savedApplicationIsFrontmost: false,
+        requiresPairedNotifications: false, requiresQuietPeriod: false,
+        observation: observation, elapsed: 2, now: { unexpectedFailure() }), .timedOut)
+    checkEqual(safeActivationRestorationDecision(savedApplicationIsFrontmost: true,
+        requiresPairedNotifications: false, requiresQuietPeriod: false,
+        observation: observation, elapsed: 3, now: { unexpectedFailure() }), .complete)
 }

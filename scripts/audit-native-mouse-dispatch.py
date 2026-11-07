@@ -68,6 +68,9 @@ for site, opcode in [(0x100731114, 0x528001a9), (0x100731124, 0x52800269),
                      (0x100731134, 0x52800289), (0x100731190, 0x52800a69),
                      (0x10072f890, 0x528002c9), (0x10072f908, 0x528002e9)]:
     assert struct.unpack('<I', read(site, 4))[0] == opcode, hex(site)
+# Safe-enforcement timing data and polling Duration immediate.
+assert struct.unpack('<d', read(0x10115b8d8, 8))[0] == 0.05
+assert struct.unpack('<d', read(0x101159db8, 8))[0] == 0.1
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
