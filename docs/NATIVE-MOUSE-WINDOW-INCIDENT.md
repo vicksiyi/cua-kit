@@ -3098,3 +3098,30 @@ initialization. This does not restore copyItem/useSelectionForFindItem or contro
 focused-item discovery, nor prove real application clicking.
 
 Swift build, provider composition checks and the pinned static audit pass after this recovery.
+
+
+## Native copy-item selection recovery (2026-11-08)
+
+MenuBarItem.copyItem getter 0x100723014 invokes items then helper 0x100723070.
+The helper first scans direct items for exact cmdChar "C" and cmdModifiers 0;
+it does not use lowercase matching, enabled state, title or recursive discovery
+in this first pass. Only after no shortcut matches does it scan cached titles for
+the first exact English "Copy". If that item's child items are empty, return the
+item; otherwise recursively search those child items and immediately return that
+result, including nil. Do not continue to later "Copy" siblings after recursion
+fails. Evidence: uppercase compare 0x100723704, zero-modifier branch 0x1007239d4,
+Copy literal 0x100723e94 and recursive call 0x100724020. All are now statically pinned.
+
+MenuItem.items at 0x100721e50 tail-calls the same collection body as MenuBarItem,
+so the recovered two-level lookup is now shared. MenuItem.cmdChar and cmdModifiers
+use the existing cached-first, supported-attribute and strict uncached decoding
+policy with String and Int respectively; failures report using MenuItem's logger.
+The fallback title remains cache-only. No localized-title heuristics, traversal
+caps or new fallback actions are added.
+
+Injected checks verify shortcut precedence over an earlier English fallback,
+first shortcut, uppercase/modifier requirements, missing modifiers, no match,
+no traversal into an unrelated submenu, recursive Copy selection and immediate
+nil from the first Copy submenu. Swift build, provider checks and static audit
+pass. These are source/behavior tests without real input; application clicking,
+focused-item discovery and useSelectionForFindItem are still incomplete.

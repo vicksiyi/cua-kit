@@ -543,6 +543,15 @@ assert read(0x100722d6c, 12).hex() == '20008052e10313aa2bc4ff97'
 # MenuItem's static .menuItem role and shared initialization path.
 assert read(0x100721db8, 36).hex() == '617200f021602b91427500b042803a91437500b063001f91c40400b084f00f9106030014'
 
+# copyItem: exact uppercase C, zero modifiers, English Copy fallback and
+# recursive return from only that first matching title's nonempty submenu.
+assert read(0x100723704, 20).hex() == '7f0e01f1e10000540820fcd2ff0208eb81000054'
+assert read(0x1007239d4, 12).hex() == '16f10737d71900b5a9010014'
+assert read(0x100723e94, 24).hex() == '68e88d52082eaf72bf0208eb0880fcd2800348fa20080054'
+assert read(0x100724014, 16).hex() == 'a80a40f9880200b4e00315aa14fcff97'
+# MenuItem.items tail-calls the same collection implementation as MenuBarItem.
+assert read(0x100721e64, 4).hex() == '25030014'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

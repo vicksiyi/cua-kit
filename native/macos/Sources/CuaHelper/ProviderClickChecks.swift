@@ -3787,6 +3787,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runCopyMenuItemChecks()
     try runAppControllerWindowObservationLifetimeChecks()
     try runAppControllerObservationDeliveryChecks()
     try await runTargetWindowObservationOwnershipChecks()
@@ -7522,12 +7523,34 @@ private func runWindowWrapperStorageChecks() {
                 fallbackElements: UIElementFallbackCache(initialState: [:])),
             roleFrequencyTable: FrequencyTable<UIElementRole>())
         scope.perform { _ in
-            let results = MenuBarItemUIElement(element: ax).itemsValue(reportError: { _ in preconditionFailure() })
+            let results = MenuBarItemUIElement(element: ax).menuItemsValue(reportError: { _ in preconditionFailure() })
             precondition(results.count == expected)
             precondition(results.allSatisfy { $0.id == item && $0.cache.transactionAttributes == [children] })
             precondition(MenuItemUIElement.role == .menuItem)
         }
     }
+}
+
+private func runCopyMenuItemChecks() {
+    struct Item { let id: Int; let char: String?; let modifiers: Int?; let title: String?; let children: [Item] }
+    func find(_ items: [Item]) -> Int? {
+        findCopyMenuItem(items, cmdChar: { $0.char }, cmdModifiers: { $0.modifiers },
+            title: { $0.title }, children: { $0.children })?.id
+    }
+    let fallback = Item(id: 1, char: nil, modifiers: nil, title: "Copy", children: [])
+    let shortcut = Item(id: 2, char: "C", modifiers: 0, title: "复制", children: [])
+    precondition(find([fallback, shortcut]) == 2)
+    precondition(find([shortcut, shortcut]) == 2)
+    precondition(find([fallback]) == 1 && find([]) == nil)
+    for (char, modifiers) in [("c", 0), ("C", 1), ("C", nil)] {
+        precondition(find([Item(id: 3, char: char, modifiers: modifiers, title: nil, children: [])]) == nil)
+    }
+    let nonCopy = Item(id: 4, char: nil, modifiers: nil, title: "Other", children: [shortcut])
+    precondition(find([nonCopy]) == nil)
+    let nestedCopy = Item(id: 5, char: nil, modifiers: nil, title: "Copy", children: [shortcut])
+    precondition(find([nestedCopy]) == 2)
+    let deadCopy = Item(id: 6, char: nil, modifiers: nil, title: "Copy", children: [nonCopy])
+    precondition(find([deadCopy, fallback]) == nil)
 }
 
 private func runAppControllerWindowEventDispatchChecks() {

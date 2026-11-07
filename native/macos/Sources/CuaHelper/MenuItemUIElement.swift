@@ -13,3 +13,29 @@ struct MenuItemUIElement: UIElementProtocol {
         self.axElement = axElement; self.cache = cache
     }
 }
+
+
+extension MenuItemUIElement {
+    var items: [MenuItemUIElement] { menuItemsValue(reportError: reportAttributeReadError) }
+    var cmdChar: String? {
+        let attribute = UIElementAttribute(kAXMenuItemCmdCharAttribute)
+        return stringValue(for: attribute, ignoringTypeMismatch: false,
+            read: { axElement.value(for: attribute) }, reportError: reportAttributeReadError)
+    }
+    var cmdModifiers: Int? {
+        let attribute = UIElementAttribute(kAXMenuItemCmdModifiersAttribute)
+        return uiElementAttributeValue(ignoringTypeMismatch: false, cachedValue: {
+            uiElementCachedValue(attribute, readCache: { cache }) {
+                try? decodeAXInt($0.value.value, throwingOnFailure: false)
+            }
+        }, uncachedValue: { ignore in
+            uiElementUncachedValue(operation: {
+                try uiElementUncachedValueThrowing(ignoringTypeMismatch: ignore,
+                    isKnownUnsupported: { attributeIsKnownUnsupported(attribute) },
+                    read: { axElement.value(for: attribute) },
+                    decode: { try? decodeAXInt($0.value.value, throwingOnFailure: false) },
+                    decodeThrowing: { try decodeAXInt($0.value.value, throwingOnFailure: true) })
+            }, reportError: reportAttributeReadError)
+        })
+    }
+}
