@@ -1686,6 +1686,81 @@ private enum ProviderClickChecks {
         }
         checkEqual(bundleReads, bundleReadsBeforeGuards)
 
+        var richNode = anonymousGroup
+        richNode.role = .textArea
+        richNode.value = "Original"
+        richNode.truncationRange = nil
+        let richText = NSAttributedString(string: "Rich input")
+        var richContext = ownerContext(.fullUIContext)
+        var richCalls: [String] = []
+        var textualContent: String? = nil
+        var richAvailable = true
+        var richThrows = false
+        var rangesRead: [NSRange] = []
+        func richResult(_ node: TransformedUIElement) -> UIElementTreeTransformation.Result<TransformedUIElement> {
+            MacUIElementTreeTransformation.retrieveAttributedTextFromTextAreas(
+                item: associationItem(node, children: [targetA]), context: &richContext,
+                readTextualContent: { richCalls.append("content"); return textualContent },
+                readFullText: {
+                    richCalls.append("full")
+                    if richThrows { throw NSError(domain: "fixture", code: 1) }
+                    return richAvailable ? richText : nil
+                }, readRange: { range in
+                    richCalls.append("range"); rangesRead.append(range)
+                    if richThrows { throw NSError(domain: "fixture", code: 2) }
+                    return richAvailable ? richText : nil
+                }, render: { value, context in
+                    richCalls.append("render")
+                    checkTrue(value === richText)
+                    context.isWebShaped = true
+                    return TransformedUIString(stringLiteral: "Formatted")
+                })
+        }
+        func richUnchanged(_ node: TransformedUIElement, calls: [String]) {
+            richCalls = []
+            switch richResult(node) {
+            case .unchanged: break
+            default: unexpectedFailure("rich-text guard/failure should preserve input")
+            }
+            checkEqual(richCalls, calls)
+        }
+        var notTextArea = richNode
+        notTextArea.role = .textField
+        richUnchanged(notTextArea, calls: [])
+        textualContent = "AXTextualContextSourceCode"
+        richUnchanged(richNode, calls: ["content"])
+        textualContent = nil
+        var noRichValue = richNode
+        noRichValue.value = nil
+        richUnchanged(noRichValue, calls: ["content"])
+        richAvailable = false
+        richUnchanged(richNode, calls: ["content", "full"])
+        richAvailable = true
+        richThrows = true
+        richUnchanged(richNode, calls: ["content", "full"])
+        richThrows = false
+        for range in [nil, NSRange(location: 3, length: 7), NSRange(location: NSNotFound, length: 0)] as [NSRange?] {
+            var node = richNode
+            node.truncationRange = range
+            node.value = "" // present empty value is eligible
+            richCalls = []
+            switch richResult(node) {
+            case let .transformed(result):
+                checkTrue(result.element.attributedString === richText)
+                checkEqual(result.element.value, "Formatted")
+                checkEqual(result.element.transformedString?.description, "Formatted")
+                checkEqual(result.children.count, 1)
+                checkEqual(result.element.truncationRange, range)
+                checkTrue(richContext.isWebShaped)
+            default: unexpectedFailure("rich-text success should transform")
+            }
+            checkEqual(richCalls, ["content", range == nil ? "full" : "range", "render"])
+        }
+        checkEqual(rangesRead, [NSRange(location: 3, length: 7), NSRange(location: -1, length: 0)])
+        richNode.truncationRange = NSRange(location: 1, length: 2)
+        richThrows = true
+        richUnchanged(richNode, calls: ["content", "range"])
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

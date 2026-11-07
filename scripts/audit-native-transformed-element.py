@@ -519,7 +519,35 @@ for address, expected_selector in [
     assert cstring(pointer) == expected_selector
     mac_calendar_selectors[hex(address)] = expected_selector
 
-print(json.dumps(dict(macTreePruning=dict(
+# Text-area rich text outer branch: range selection and commit semantics.
+text_area_words = {
+    0x100759ae4: 0x360040a0, 0x100759b10: 0xb50000a1,
+    0x100759b20: 0xb4000261, 0x100759b68: 0x37003c95,
+    0x100759b70: 0xb4003c59, 0x100759b78: 0x360011e8,
+    0x100759b88: 0xb4004835, 0x100759dbc: 0xeb0002bf,
+    0x100759dc0: 0xda9f12b5, 0x10075a48c: 0xb4fff360,
+    0x10075a690: 0xb98072f6, 0x10075a6a8: 0xb98076e8,
+    0x10075a700: 0xa906e277,
+}
+for address, word in text_area_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+assert [stored[(offset - 0x10) // 4] for offset in [0x70, 0x74]] == [
+    'attributedString', 'transformedString']
+text_area_calls = [branch(site, target) for site, target in [
+    (0x100759b0c, 0x10075b530), (0x100759b1c, 0x10072bd3c),
+    (0x100759b84, 0x10075abf4), (0x100759db8, 0x10114dda4),
+    (0x100759e38, 0x1006f6ed4), (0x10075a654, 0x100770530),
+    (0x10075a6dc, 0x100638c74),
+]]
+branch(0x10075a704, 0x10075988c, False)
+
+print(json.dumps(dict(textAreaRichText=dict(
+    instructions={hex(k): hex(v) for k, v in text_area_words.items()},
+    calls=text_area_calls,
+    guards="textArea, textualContent != AXTextualContextSourceCode, captured value present",
+    read="captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
+    commit="store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
+    limitations="outer branch extracted; full-text helper, attributed-run formatter and production integration still pending"), macTreePruning=dict(
     instructions={hex(k): hex(v) for k, v in mac_pruning_words.items()},
     calls=mac_pruning_calls, selectors=mac_calendar_selectors,
     calendar="staticText role + Event roleDescription + exactly one staticText child + owning com.apple.iCal; clear child items, retain owner",

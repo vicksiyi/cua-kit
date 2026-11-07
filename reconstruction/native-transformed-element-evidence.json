@@ -1,4 +1,62 @@
 {
+  "textAreaRichText": {
+    "instructions": {
+      "0x100759ae4": "0x360040a0",
+      "0x100759b10": "0xb50000a1",
+      "0x100759b20": "0xb4000261",
+      "0x100759b68": "0x37003c95",
+      "0x100759b70": "0xb4003c59",
+      "0x100759b78": "0x360011e8",
+      "0x100759b88": "0xb4004835",
+      "0x100759dbc": "0xeb0002bf",
+      "0x100759dc0": "0xda9f12b5",
+      "0x10075a48c": "0xb4fff360",
+      "0x10075a690": "0xb98072f6",
+      "0x10075a6a8": "0xb98076e8",
+      "0x10075a700": "0xa906e277"
+    },
+    "calls": [
+      {
+        "instruction": "0x100759b0c",
+        "target": "0x10075b530",
+        "link": true
+      },
+      {
+        "instruction": "0x100759b1c",
+        "target": "0x10072bd3c",
+        "link": true
+      },
+      {
+        "instruction": "0x100759b84",
+        "target": "0x10075abf4",
+        "link": true
+      },
+      {
+        "instruction": "0x100759db8",
+        "target": "0x10114dda4",
+        "link": true
+      },
+      {
+        "instruction": "0x100759e38",
+        "target": "0x1006f6ed4",
+        "link": true
+      },
+      {
+        "instruction": "0x10075a654",
+        "target": "0x100770530",
+        "link": true
+      },
+      {
+        "instruction": "0x10075a6dc",
+        "target": "0x100638c74",
+        "link": true
+      }
+    ],
+    "guards": "textArea, textualContent != AXTextualContextSourceCode, captured value present",
+    "read": "captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
+    "commit": "store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
+    "limitations": "outer branch extracted; full-text helper, attributed-run formatter and production integration still pending"
+  },
   "macTreePruning": {
     "instructions": {
       "0x100759934": "0xf94022a1",

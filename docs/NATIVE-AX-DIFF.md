@@ -5716,3 +5716,40 @@ correcting that setup exercised the intended inactive-leaf branch. No native
 policy settings or application state changed. These are extracted rule bodies;
 rich-text branches, full Mac dispatch and production collector integration
 remain incomplete.
+
+### Text-area rich-text outer transformation
+
+Recovered the tag-11 control flow (`0x100759a84`, range branch
+`0x100759db4`, success commit `0x10075a690`) in
+`MacUIElementTextAreaTransformation.swift`. It checks textArea, then the typed
+textualContent string (cached reader followed by uncached fallback in the
+original), skips `AXTextualContextSourceCode`, and requires captured value to
+be present. Empty strings are eligible. It does not gate on context type.
+
+With truncationRange present, the original converts NSNotFound location to -1
+before parameter encoding and reads attributedStringForRange. The imported
+getter at `0x10114dda4` resolves through GOT `0x1014624e8` to Foundation's
+NSNotFound getter. Without truncationRange, it calls `0x10075abf4`. Read,
+parameter encoding or decode errors, and nil results, return unchanged without
+a plain-text substitution. On success the attributed-run formatter receives
+the mutable rendering context, then attributedString, transformedString and
+value are updated. The subtree and truncationRange are retained. The web-area
+branch instead clears the subtree after formatting; these branches must not
+be unified by indiscriminately clearing children.
+
+The outer transformation currently requires explicit readFullText/readRange
+and render closures. They mark actual unreconstructed dependencies, not default
+fallback implementations. The full-text helper probes support for
+attributedStringForTextMarkerRangeWithOptions before selecting its path;
+its marker/options handling and the formatter's run/attribute semantics still
+need complete recovery. The web-area path reads start/end markers and probes
+nextLineEndTextMarkerForTextMarker; a returned marker triggers a diagnostic and
+unchanged result, while nil/errors proceed to the captured start/end range.
+That web-area path is evidence only at this stage, not implemented here.
+
+Validation: pinned audit, Swift build and owned helper self-test pass. Tests
+exercise role and source-code guards, nil versus empty value, nil/error read
+results, range selection and NSNotFound normalization, context mutation,
+attributed-string identity, value/structured-text updates and subtree retention.
+The test formatter is explicitly injected and does not validate native rich-text
+rendering. No live application or vendor service is executed.
