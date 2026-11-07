@@ -3770,6 +3770,7 @@ func runProviderClickChecks() async throws {
     try runMenuWindowIDChecks()
     runWindowWrapperStorageChecks()
     runAppControllerWindowEventDispatchChecks()
+    runAppControllerAttentionChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7496,4 +7497,25 @@ private func runAppControllerWindowEventDispatchChecks() {
         (AXNotification("UnrecognizedNotification"), [])] {
         events = []; dispatch(name); precondition(events == expected)
     }
+}
+
+private func runAppControllerAttentionChecks() {
+    enum Failed: Error { case pid }
+    var calls: [String] = []
+    clearAppControllerAttention(processID: { throw Failed.pid },
+        getProcess: { _, _ in preconditionFailure() }, setAttention: { _, _ in preconditionFailure() })
+    clearAppControllerAttention(processID: { calls.append("pid"); return 7 },
+        getProcess: { pid, process in
+            precondition(pid == 7 && process.pointee.highLongOfPSN == 0 && process.pointee.lowLongOfPSN == 0)
+            calls.append("lookup"); return -1
+        }, setAttention: { _, _ in preconditionFailure() })
+    precondition(calls == ["pid", "lookup"])
+    calls = []
+    clearAppControllerAttention(processID: { calls.append("pid"); return 8 },
+        getProcess: { _, process in process.pointee.lowLongOfPSN = 42; calls.append("lookup"); return 0 },
+        setAttention: { process, attention in
+            precondition(process.pointee.lowLongOfPSN == 42 && !attention)
+            calls.append("clear"); return -1
+        })
+    precondition(calls == ["pid", "lookup", "clear"])
 }

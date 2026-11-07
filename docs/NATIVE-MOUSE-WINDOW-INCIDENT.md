@@ -2748,3 +2748,19 @@ The source controller passes false after successful process resolution and
 ignores the setter status. Native binding invocation and controller-side process
 resolution still require validation/integration; this new wrapper is not called
 by production Target yet and no application attention was changed by this work.
+
+
+## Controller attention clearing composition
+
+ApplicationRegistrySPI.getProcessForPID at 0x10026d7f8 directly tails to the
+public Carbon GetProcessForPID function. Reconstruction adds that call to the
+existing Objective-C RunningProcess bridge alongside GetProcessPID, keeping the
+original native API rather than replacing it with a TypeScript process model.
+clearAppControllerAttention composes the callback policy: zero-initialize PSN,
+attempt application AX pid, resolve PSN, and only on noErr set attention=false.
+AX PID failures and PSN errors skip the setter; setter failures are ignored.
+
+Injected checks cover PID failure, lookup failure, original zero-initialized
+PSN, pointer output reuse, false attention value and ignored setter status.
+The native composition is ready for the controller callback, but has not yet
+been invoked on a user application or wired into production Target.

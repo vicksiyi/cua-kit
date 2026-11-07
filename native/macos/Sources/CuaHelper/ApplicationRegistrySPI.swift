@@ -12,6 +12,11 @@ enum ApplicationRegistrySPI {
     static func releaseKeyFocus(withID id: UInt32) -> Int32 {
         WindowServerSPI.releaseKeyFocus(withID: id)
     }
+    // 0x10026d7f8 directly forwards the public Carbon function.
+    static func getProcessForPID(_ pid: Int32,
+        process: UnsafeMutablePointer<ProcessSerialNumber>) -> Int32 {
+        CoreCUAGetProcessForPID(pid, process)
+    }
     static func getProcessPID(_ process: UnsafeMutablePointer<ProcessSerialNumber>,
                               pid: UnsafeMutablePointer<Int32>) -> Int32 {
         CoreCUAGetProcessPID(process, pid)
