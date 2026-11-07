@@ -2997,3 +2997,37 @@ All loading and dyld reads in these fixtures are injected: no vendor service or
 private library is executed. The production dependency uses Darwin dlopen and
 the existing dyld wrappers. This callback still needs the main directory
 candidate enumeration to be recovered before full filesystem fallback wiring.
+
+### SoftLink public framework enumeration
+
+The static optional-string array at `0x101558088` contains five entries in
+order: nil, Current, A, B, C. nil selects an unversioned path; it is distinct
+from an empty version string. `0x10024de70..<0x10024e0e8` builds executable
+candidates by dropping the final `.framework`. Its count import at GOT
+`0x101466370` is Swift.String.count, and helper `0x1002549a0` walks backwards
+from endIndex with a startIndex limit. Reconstruction uses Swift dropLast,
+not byte truncation. `0x10024e0e8..<0x10024e2ec` constructs the corresponding
+nested `Frameworks` directories. Neither helper normalizes or deduplicates
+paths. These helpers are now in FrameworkCandidates.swift.
+
+The public-framework branch (`0x10024a330..<0x10024abdc`) first checks for
+pending strategy-0 requests. Selector references resolve to `defaultManager`
+(`0x1015420f0`) and `contentsOfDirectoryAtPath:error:` (`0x101542ed0`). It lists
+/System/Library/Frameworks in returned order, filters by `.framework` suffix
+(the import at GOT `0x101466490` is Swift.String.hasSuffix), visits the five
+executable candidates, then enumerates each corresponding nested Frameworks
+directory. Children with the same suffix yield another five candidates. There
+is no recursive descent into those children's Frameworks directories in this
+branch. Root listing failure skips the branch; nested listing failure proceeds
+to the next directory. After each candidate callback, an exhausted request
+group ends traversal. It does not sort the directory entries.
+
+visitPublicFrameworkCandidates restores that traversal with an injectable
+contents closure; the production default is Foundation FileManager. An
+integration fixture feeds this enumerator into loadFilesystemImageCandidate:
+only the matching nested candidate opens, dyld lookup fills its original result
+slot, and subsequent versions/directories are not visited. Other fixtures
+verify the full visitation order, ignored suffixes, failures, empty requests,
+Unicode names, and literal (unnormalized) path construction. No platform library
+is opened by the fixtures. Private-framework/library/path branches and the
+public full-loader entry point remain to be recovered and connected.
