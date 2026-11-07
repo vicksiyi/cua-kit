@@ -51,6 +51,14 @@
       "link": true
     }
   ],
+  "redundantHierarchy": {
+    "entry": "0x10065a630",
+    "iteration": "0x10065ba78",
+    "guards": "parent not selectable/focused/node-descriptive; parent render succeeds",
+    "flatten": "reverse original child indices; matching role, absent subset ranges, equal rendered text; replace child by its children",
+    "errors": "parent error unchanged; child error skipped; context side effects retained",
+    "result": "transformed even for zero children or no matches"
+  },
   "singleItemGroup": {
     "entry": "0x100659c10",
     "replacement": "0x10065be7c",

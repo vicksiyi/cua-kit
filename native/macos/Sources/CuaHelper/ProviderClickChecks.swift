@@ -1010,6 +1010,78 @@ private enum ProviderClickChecks {
         checkEqual(mergeOutput.items[0].element.title, " child ")
         checkEqual(mergeOutput.items[0].children[0].element.title, "\n grandchild\t")
         checkEqual(mergeOutput.focusedElement?.title, " child ")
+        enum HierarchyRenderFailure: Error { case expected }
+        var hierarchyContext = ownerContext(.fullUIContext)
+        var hierarchyCalls: [String] = []
+        var redundantParent = anonymousGroup
+        redundantParent.identifier = "parent"
+        func namedGroup(_ name: String) -> TransformedUIElement {
+            var node = anonymousGroup
+            node.identifier = name
+            return node
+        }
+        let nestedA = PruneItem(element: namedGroup("a"), subtree: grandchildTree)
+        let nestedB = PruneItem(element: namedGroup("b"), subtree: .init(items: [mergeChild], focusedElement: nil))
+        let redundantItem = PruneItem(element: redundantParent,
+            subtree: .init(items: [nestedA, nestedB], focusedElement: textChild))
+        let flattened = UIElementTreeTransformation.flattenRedundantHierarchy(
+            item: redundantItem, context: &hierarchyContext) { node, _ in
+                hierarchyCalls.append(node.identifier!)
+                return "same"
+            }
+        guard case .transformed(let flattenedItem) = flattened else { unexpectedFailure() }
+        checkEqual(hierarchyCalls, ["parent", "b", "a"])
+        checkEqual(flattenedItem.children.map { $0.element.title }, ["\n grandchild\t", " child "])
+        checkEqual(flattenedItem.subtree.focusedElement?.title, " child ")
+        checkEqual(redundantItem.children.count, 2)
+        hierarchyCalls = []
+        let partialFlatten = UIElementTreeTransformation.flattenRedundantHierarchy(
+            item: redundantItem, context: &hierarchyContext) { node, _ in
+                hierarchyCalls.append(node.identifier!)
+                if node.identifier == "b" { throw HierarchyRenderFailure.expected }
+                return "same"
+            }
+        guard case .transformed(let partialItem) = partialFlatten else { unexpectedFailure() }
+        checkEqual(hierarchyCalls, ["parent", "b", "a"])
+        checkEqual(partialItem.children[1].element.identifier, "b")
+        checkEqual(partialItem.children[0].element.title, "\n grandchild\t")
+        var parentFailureCalls = 0
+        let failedParent = UIElementTreeTransformation.flattenRedundantHierarchy(
+            item: redundantItem, context: &hierarchyContext) { _, context in
+                parentFailureCalls += 1
+                context.urlShortener.configuration.totalLimit = 321
+                throw HierarchyRenderFailure.expected
+            }
+        guard case .unchanged = failedParent else { unexpectedFailure() }
+        checkEqual(parentFailureCalls, 1)
+        checkEqual(hierarchyContext.urlShortener.configuration.totalLimit, 321)
+        for key in [\TransformedUIElement.isSelectable, \.isFocused] {
+            var blocked = redundantItem
+            blocked.element[keyPath: key] = true
+            let result = UIElementTreeTransformation.flattenRedundantHierarchy(
+                item: blocked, context: &hierarchyContext) { _, _ in unexpectedFailure() }
+            guard case .unchanged = result else { unexpectedFailure() }
+        }
+        var skipChildren = redundantItem
+        skipChildren.subtree.items[0].element.role = .button
+        skipChildren.subtree.items[1].availableSubset = .init(count: 1, availableRanges: [])
+        hierarchyCalls = []
+        let skipped = UIElementTreeTransformation.flattenRedundantHierarchy(
+            item: skipChildren, context: &hierarchyContext) { node, _ in
+                hierarchyCalls.append(node.identifier!)
+                return "same"
+            }
+        guard case .transformed(let skippedItem) = skipped else { unexpectedFailure() }
+        checkEqual(hierarchyCalls, ["parent"])
+        checkEqual(skippedItem.children.count, 2)
+        let differentText = UIElementTreeTransformation.flattenRedundantHierarchy(
+            item: redundantItem, context: &hierarchyContext) { node, _ in node.identifier! }
+        guard case .transformed(let differentItem) = differentText else { unexpectedFailure() }
+        checkEqual(differentItem.children.count, 2)
+        let noChildren = UIElementTreeTransformation.flattenRedundantHierarchy(
+            item: emptyGroup, context: &hierarchyContext) { _, _ in "" }
+        guard case .transformed(let emptyTransformed) = noChildren else { unexpectedFailure() }
+        checkTrue(emptyTransformed.children.isEmpty)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

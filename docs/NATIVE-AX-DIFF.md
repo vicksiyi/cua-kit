@@ -5316,3 +5316,30 @@ child metadata, zero/one/multiple children, and nested replacement through
 the actual tree driver with focusedElement preservation. Build and mock
 provider self-tests are required; no live UI or vendor process is executed.
 The helper is not yet a complete dispatcher or production pipeline.
+
+
+### Redundant hierarchy flattening (2026-11-07)
+
+Restored tag 5 in `UIElementTreeHierarchy.swift`, from guard/parent-render
+entry 0x10065a630 and traversal 0x10065ba78. The parent must not be selectable,
+focused or node-descriptive. No grouping-role requirement applies here.
+Render the parent once; failure returns unchanged. Visit the original direct
+child indices in reverse. For a child with matching role and no explicit
+subset ranges, render it using the same mutable context. On render failure,
+retain that child and continue; do not discard other successful changes.
+When the rendered strings are equal, replace the child by its stored children
+at the same position. The closed index range is prepared at 0x10065bca4;
+0x10065bd70 calls RangeReplaceableCollection.replaceSubrange, and
+0x10065bd80 invalidates tree caches after the items mutation.
+
+Inserted grandchildren are not revisited in the same pass. This preserves
+ordering and prevents index movement from skipping original earlier siblings.
+Context changes made by rendering, even before an error, are retained.
+Return transformed even when no children match or the original tree is empty;
+this is not the replaced result used by single-group merging.
+
+Tests cover reverse render order, grandchildren placement, parent error,
+child error with other successful changes, role/subset skips before rendering,
+unequal text, empty trees, focusedElement capture and original input retention.
+The rendering callback remains injected; the full renderer, dispatcher and
+production integration still need to be connected before live acceptance.

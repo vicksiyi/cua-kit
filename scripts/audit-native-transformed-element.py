@@ -243,8 +243,31 @@ branch(0x100659cfc, 0x101150ef4) # Array.count
 branch(0x100659d48, 0x1011514d0) # Collection.first
 branch(0x10065bf8c, 0x101151500) # Collection.isEmpty
 
+# Redundant hierarchy: parent guards, reverse child index, child subset,
+# string equality and closed-range replacement with child subtree items.
+for address, instruction in [
+    (0x10065a630, 0xf94046c8),
+    (0x10065a658, 0xf9404ac8),
+    (0x10065a670, 0xf94076c8),
+    (0x10065bb10, 0xd1000739),
+    (0x10065bc0c, 0xf100051f),
+    (0x10065bca4, 0xa93567b9),
+    (0x10065bdfc, 0x52800002),
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+branch(0x10065ba98, 0x101150ef4)
+branch(0x10065bc44, 0x101155184) # child render error released, then continue
+branch(0x10065bc90, 0x101152ff4) # String equality fallback
+branch(0x10065bd70, 0x1011515fc) # replaceSubrange(_:with:)
+branch(0x10065bd80, 0x10064fac4) # items modify completion invalidates caches
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
+    redundantHierarchy=dict(entry="0x10065a630", iteration="0x10065ba78",
+        guards="parent not selectable/focused/node-descriptive; parent render succeeds",
+        flatten="reverse original child indices; matching role, absent subset ranges, equal rendered text; replace child by its children",
+        errors="parent error unchanged; child error skipped; context side effects retained",
+        result="transformed even for zero children or no matches"),
     singleItemGroup=dict(entry="0x100659c10", replacement="0x10065be7c",
         guard="role.isGrouping and not selectable/focused/node.hasDescriptiveAttributes",
         action="replace with sole child only if child subset ranges absent; otherwise remove empty or keep",
