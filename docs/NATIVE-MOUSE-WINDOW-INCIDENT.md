@@ -2781,3 +2781,23 @@ optional observer registration and an enforcer boundary. Checks cover exact
 bundle matching, ignored subscription failure, missing observer and PID failure
 continuing with nil. It is not invoked on the real Control Center by these checks;
 production callback composition remains required.
+
+
+## Concrete window/menu ownership composition
+
+AppControllerWindows now composes the restored window-protocol existentials,
+MouseWindowRegistry, separate menu state, initial primary/sheet traversal and
+menu open/close operations. Registration uses the concrete windowID witness,
+while pruning validates rawWindowID; these remain distinct for menus. Initial
+sheet registration passes the previously resolved AX ID into the registry.
+Menu open records/waits/registers before notifying ordering; menu close notifies
+ordering, clears menu state and removes records matching the native AX element.
+Observed-ID and ordering-menu effects are explicit injected owner callbacks.
+
+Composition checks use complete window-protocol test conformers to verify
+resolved registration keys versus raw pruning IDs, preserved stored keys,
+matching-identity removal, per-removal ID publication, state clearing and native
+ordering duplicate preservation. They send no UI input. The owner must still
+serialize registry access: this class does not invent a dictionary lock or claim
+that Target/MainActor and AX callback thread ownership are already reconciled.
+Actual Target wiring and application clicking acceptance remain outstanding.

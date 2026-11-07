@@ -3772,6 +3772,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowEventDispatchChecks()
     runAppControllerAttentionChecks()
     runAppControllerWindowCreatedFocusChecks()
+    runAppControllerWindowsCompositionChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7538,4 +7539,40 @@ private func runAppControllerWindowCreatedFocusChecks() {
         registerDestroyed: nil, actualPID: { calls.append("pid"); throw Failed.pid },
         startSuppressingMenuDismissal: { precondition($0 == nil); calls.append("suppress") })
     precondition(calls == ["pid", "suppress"])
+}
+
+private func runAppControllerWindowsCompositionChecks() {
+    struct Window: WindowUIElementProtocol {
+        static var role: UIElementRole? { nil }
+        let axElement: AXUIElement
+        let cache: UIElementCache
+        var rawWindowID: UInt32
+        var windowID: UInt32
+        init(element: AXUIElement) {
+            axElement = element
+            cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+            rawWindowID = 1; windowID = 1
+        }
+    }
+    let firstAX = AXUIElementCreateApplication(7), otherAX = AXUIElementCreateApplication(8)
+    var updates: [Set<UInt32>] = []
+    var closeCalls = 0
+    let context = AppControllerWindows<UIElement>(observedWindowIDsChanged: { updates.append(Set($0)) },
+        menuDidOpen: { preconditionFailure() }, menuDidClose: { closeCalls += 1 })
+    var first = Window(element: firstAX); first.rawWindowID = 99; first.windowID = 10
+    var second = first; second.windowID = 20
+    var other = Window(element: otherAX); other.windowID = 30
+    var invalid = other; invalid.windowID = 40; invalid.rawWindowID = 0
+    context.register(first); context.register(second); context.register(other); context.register(invalid)
+    precondition(updates.last == [10, 20, 30, 40])
+    precondition(Set(context.windows().keys) == [10, 20, 30])
+    precondition(updates.last == [10, 20, 30])
+    updates = []
+    context.menuState.setOpenedMenu(MenuUIElement(axElement: firstAX, cache: first.cache))
+    context.closeMenu(firstAX)
+    precondition(closeCalls == 1 && context.menuState.openedMenu == nil)
+    precondition(updates.count == 2 && updates.last == [30])
+    context.republishObservedWindowIDs()
+    precondition(updates.last == [30])
+    precondition(context.orderedWindows { [30, 30] }.count == 2)
 }
