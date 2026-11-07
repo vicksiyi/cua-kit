@@ -9,18 +9,28 @@ extension UIElement {
         read: () -> (error: AXError, value: AXPartialValue?),
         reportError: (Error) -> Void
     ) -> ScrollBarUIElement? {
+        scrollBarValue(for: attribute,
+            initialize: { ScrollBarUIElement(systemElement: $0, transaction: transaction) },
+            read: read, reportError: reportError)
+    }
+
+    func scrollBarValue(for attribute: UIElementAttribute,
+        initialize: (AXUIElement) -> ScrollBarUIElement,
+        read: () -> (error: AXError, value: AXPartialValue?),
+        reportError: (Error) -> Void
+    ) -> ScrollBarUIElement? {
         uiElementAttributeValue(ignoringTypeMismatch: false,
             cachedValue: {
                 uiElementCachedValue(attribute, readCache: { cache }) {
-                    try? decodeAXScrollBar($0.value.value, throwingOnFailure: false, transaction: transaction)
+                    try? decodeAXScrollBar($0.value.value, throwingOnFailure: false, initialize: initialize)
                 }
             }, uncachedValue: { ignore in
                 uiElementUncachedValue(operation: {
                     try uiElementUncachedValueThrowing(ignoringTypeMismatch: ignore,
                         isKnownUnsupported: { attributeIsKnownUnsupported(attribute) },
                         read: read,
-                        decode: { try? decodeAXScrollBar($0.value.value, throwingOnFailure: false, transaction: transaction) },
-                        decodeThrowing: { try decodeAXScrollBar($0.value.value, throwingOnFailure: true, transaction: transaction) })
+                        decode: { try? decodeAXScrollBar($0.value.value, throwingOnFailure: false, initialize: initialize) },
+                        decodeThrowing: { try decodeAXScrollBar($0.value.value, throwingOnFailure: true, initialize: initialize) })
                 }, reportError: reportError)
             })
     }

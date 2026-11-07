@@ -12,6 +12,7 @@ extension UIElementActionEnvironment {
             perform: performAXAction,
             count: { readAXArrayCount($0, for: $1) },
             parent: { $0.parentValue(reportError: $1) },
-            visibleChildren: { $0.childrenPreferringVisible(reportError: $1) })
+            visibleChildren: { $0.childrenPreferringVisible(reportError: $1) },
+            scrollBar: { try $0.scrollUsingScrollBar(direction: $1, perform: $2, reportError: $3) })
     }
 }

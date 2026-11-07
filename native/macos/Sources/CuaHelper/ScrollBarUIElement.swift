@@ -7,6 +7,10 @@ struct ScrollBarUIElement {
     let axElement: AXUIElement
     let cache: UIElementCache
 
+    init(axElement: AXUIElement, cache: UIElementCache) {
+        self.axElement = axElement; self.cache = cache
+    }
+
     // Original 0x100717a54 -> 0x10071e390 reads current transaction once and
     // calls the shared cache constructor; it does not validate the element role.
     init(systemElement: AXUIElement, transaction: UIElementTransactionCache?) {

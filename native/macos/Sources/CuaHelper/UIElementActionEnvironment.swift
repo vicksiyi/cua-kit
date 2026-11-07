@@ -15,6 +15,8 @@ struct UIElementActionEnvironment {
 
     var visibleChildren: ((UIElement, (Error) -> Void) -> [UIElement])? = nil
 
+    var scrollBar: ((UIElement, UIElementScrollDirection, (UIElement, UIElementAction) throws -> Void, (Error) -> Void) throws -> Bool)? = nil
+
     static var system: Self {
         Self(read: readSystemAXAttributeValue,
             supported: { Set(decodedAXSupportedAttributes(readRawAXAttributeNames($0))) },
@@ -61,7 +63,12 @@ extension UIElement {
                 try toggleDisclosureWritingValue(freshSupportedAttributes: { environment.supported(axElement) },
                     isAttributeSettable: { try environment.settable(axElement, $0) }, write: environment.write)
             }, scrollUsingScrollBar: { direction in
-                try scrollUsingSystemScrollBar(direction: direction, transaction: transaction, read: environment.read,
+                if let scroll = environment.scrollBar {
+                    return try scroll(self, direction, { button, action in
+                        try button.performAction(action, transaction: transaction, environment: environment, reportError: reportError)
+                    }, reportError)
+                }
+                return try scrollUsingSystemScrollBar(direction: direction, transaction: transaction, read: environment.read,
                     perform: { button, action in
                         try button.performAction(action, transaction: transaction, environment: environment, reportError: reportError)
                     }, reportError: reportError)

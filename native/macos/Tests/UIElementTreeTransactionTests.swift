@@ -303,7 +303,50 @@ import os
         precondition(selectedEmpty.childrenPreferringVisible(reportError: { _ in preconditionFailure() }).isEmpty)
         precondition(provider.lookups == before + 1) // Fresh support only, no fallback to AXChildren.
     }
+    static func checkProviderScrollBar() throws {
+        let ax = AXUIElementCreateApplication(12301), bar = AXUIElementCreateApplication(12302)
+        let increment = AXUIElementCreateApplication(12303), decrement = AXUIElementCreateApplication(12304)
+        let role = UIElementAttribute("AXRole"), subrole = UIElementAttribute("AXSubrole")
+        let children = UIElementAttribute("AXChildren")
+        let vertical = UIElementAttribute("AXVerticalScrollBar"), horizontal = UIElementAttribute("AXHorizontalScrollBar")
+        func partial(_ value: AnyObject) -> AXPartialValue {
+            AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        }
+        let mock = AXMockProviderFixture.Mock(), provider = AXMockProviderFixture.Provider(ax, AXMockProviderFixture.Mock())
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        let owner = UIElementTreeTransaction(element: Element(element: ax),
+            cache: UIElementTransactionCache(attributeTable: [
+                bar: [role: partial("AXGroup" as NSString), children: partial([increment, decrement] as NSArray)],
+                increment: [role: partial("AXButton" as NSString), subrole: partial("AXIncrementPage" as NSString)],
+                decrement: [role: partial("AXButton" as NSString), subrole: partial("AXDecrementPage" as NSString)]
+            ], requestedAttributes: [role, subrole, children], fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable())
+        let item = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [vertical, horizontal],
+            attributes: [vertical: partial(bar), horizontal: partial(bar)], transactionAttributes: nil))
+        try owner.perform { _ in
+            for direction in [UIElementScrollDirection.up, .down, .left, .right] {
+                var calls = 0
+                let result = try item.scrollUsingScrollBar(direction: direction, perform: { button, action in
+                    calls += 1
+                    let expected = direction == .up || direction == .left ? decrement : increment
+                    precondition(CFEqual(button.axElement, expected) && action == .press)
+                }, reportError: { _ in preconditionFailure() })
+                precondition(result && calls == 1)
+            }
+            do {
+                _ = try item.scrollUsingScrollBar(direction: .down, perform: { _, _ in throw Failure.expected },
+                    reportError: { _ in preconditionFailure() })
+                preconditionFailure()
+            } catch Failure.expected {}
+            precondition(provider.lookups == 0)
+        }
+        AXMockProviderStorage.current = AXMockProviderFixture.Provider(bar, mock)
+        let cold = ScrollBarUIElement(element: bar)
+        precondition(CFEqual(cold.axElement, bar) && mock.supportReads == 1)
+    }
     static func main() throws {
+        try checkProviderScrollBar()
         try checkProviderCollections()
         try checkProviderParent()
         try checkAXConformance()

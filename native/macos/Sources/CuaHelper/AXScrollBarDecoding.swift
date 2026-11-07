@@ -7,11 +7,16 @@ func decodeAXScrollBar(
     throwingOnFailure: Bool,
     transaction: UIElementTransactionCache?
 ) throws -> ScrollBarUIElement? {
+    try decodeAXScrollBar(raw, throwingOnFailure: throwingOnFailure,
+        initialize: { ScrollBarUIElement(systemElement: $0, transaction: transaction) })
+}
+
+func decodeAXScrollBar(_ raw: AnyObject, throwingOnFailure: Bool,
+    initialize: (AXUIElement) -> ScrollBarUIElement
+) throws -> ScrollBarUIElement? {
     let kind = CFGetTypeID(raw)
     if kind == AXUIElementGetTypeID() {
-        return try unwrapAXElement(raw, throwingOnFailure: throwingOnFailure) {
-            ScrollBarUIElement(systemElement: $0, transaction: transaction)
-        }
+        return try unwrapAXElement(raw, throwingOnFailure: throwingOnFailure, initialize: initialize)
     }
     if kind == AXTextMarkerGetTypeID() {
         return try decodeAXTextMarker(raw as! AXTextMarker, throwingOnFailure: throwingOnFailure, as: ScrollBarUIElement.self)

@@ -68,6 +68,26 @@ struct UIElementActionEnvironmentTests {
         events = []
         try ordinary.performAction(.scrollDownByPage, transaction: nil, environment: environment, reportError: { _ in fatalError() })
         precondition(events == ["perform:self:AXScrollDownByPage"])
+        environment.scrollBar = { item, direction, perform, _ in
+            precondition(direction == .down)
+            events.append("scrollbar")
+            try perform(item, .press)
+            return true
+        }
+        events = []
+        try ordinary.performAction(.scrollDownByPage, transaction: nil, environment: environment, reportError: { _ in fatalError() })
+        precondition(events == ["scrollbar", "perform:self:AXPress"])
+        environment.scrollBar = { _, _, _, _ in
+            events.append("scrollbar-failed")
+            throw UIElementError.axError(.failure)
+        }
+        events = []
+        do {
+            try ordinary.performAction(.scrollDownByPage, transaction: nil, environment: environment, reportError: { _ in fatalError() })
+            preconditionFailure()
+        } catch UIElementError.axError(let error) { precondition(error == .failure) }
+        precondition(events == ["scrollbar-failed"])
+        environment.scrollBar = nil
         let originalPerform = environment.perform
         environment.perform = { element, _ in
             precondition(element === parentAX); events.append("parent-failed")

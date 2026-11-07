@@ -4000,3 +4000,28 @@ action fixture also checks the injected visible-child callback and ancestor /
 self execution order. No real UI actions or vendor binary execution occurred.
 Scrollbar decoding, remaining geometry/hit-test paths, complete UIElement
 conformance and source subtree collector are still outstanding.
+
+### Provider scrollbar construction and page actions
+
+ScrollBarUIElement now has the source-style `init(element:)`: read the current
+transaction once and invoke the shared provider cache constructor, with no role
+validation (0x100717a54 -> 0x10071e390). The decoder and typed scrollbar accessor
+share their existing type-dispatch/cache-read bodies through initializer seams;
+explicit system/transaction adapters remain available. Provider page-button
+lookup uses the restored child collection and first matching button role/subrole.
+
+The provider action environment selects provider scrollbar composition and
+recursively dispatches AXPress on the selected button. The recovered directional
+helper retains vertical up/down, horizontal left/right, decrement up/left and
+increment down/right (0x1007287d0). A thrown button action propagates, without
+raw AX scroll fallback. The optional environment callback is project wiring,
+not a claim about the original native type layout.
+
+Full helper build and transaction/action fixtures pass. Tests cover all four
+directions, exactly one button press, prefetched bars/buttons with zero provider
+lookups, a bar whose cached role is not AXScrollBar (no invented validation),
+cold provider-backed construction and error propagation. Full action dispatch
+checks that success uses only button AXPress and failure prevents duplicate
+raw scroll. No live desktop action or installed vendor service was executed.
+Complete UIElementProtocol, geometry/hit testing and original subtree collector
+integration still require work.
