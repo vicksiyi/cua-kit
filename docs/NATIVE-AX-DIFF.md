@@ -5102,3 +5102,27 @@ ordinary multi-index ranges, Int.max boundary and overflowing endpoint. Both
 row and column getter paths are exercised with zero provider reads. Remaining
 protocol/rendering and production tree integration are not covered by these
 checks and remain pending.
+
+
+### Transformed presentation properties (2026-11-07)
+
+Connected presentationActions, flattenedRole and hasDescriptiveAttributes on
+the owner. Presentation getter 0x10075dbe4 stores the captured descriptions,
+callback 0x10075dc20 and nil closure context: a lazy mapping. Callback compares
+mutable action constants in press/showMenu/scrollToVisible order, otherwise
+other, retaining each stored description verbatim. No provider description
+lookup, filtering or deduplication occurs. The mapping captures the array at
+getter time but reads action constants when iterated; implemented using Swift's
+standard lazy map rather than eagerly materializing a new array.
+
+Flattened roles reuse the previously recovered transformed-only table.
+Descriptive attributes at 0x10075c5ec inspect stored description, value, title,
+placeholder in that order, then role == image. This differs in ordering from
+the generic node helper and uses stored value even when stringValue suppresses
+a Bool display. Empty strings do not count; whitespace is not trimmed.
+
+Build/provider selftest pass for all four action kinds, duplicates, preserved
+empty labels, lazy constant lookup/first-match precedence, captured array
+semantics, empty output, transformed role mappings, whitespace/image handling
+and Bool textual-value distinction without fresh provider reads. Full protocol
+conformance and downstream tree/production integration remain pending.

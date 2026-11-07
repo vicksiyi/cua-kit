@@ -702,6 +702,40 @@ private enum ProviderClickChecks {
         checkTrue(computedOwner.rowIndexRange == nil)
         checkTrue(computedOwner.columnIndexRange == nil)
         checkEqual(ownerProvider.singleReads, 0)
+        computedOwner.actionDescriptions = [
+            .init(.press, description: "kept label"), .init(.showMenu, description: ""),
+            .init(.scrollToVisible, description: "visible"), .init(.expand, description: "custom expand"),
+            .init(.press, description: "duplicate")]
+        let lazyPresentation = computedOwner.presentationActions
+        checkEqual(Array(lazyPresentation).map(\.kind), [.press, .showMenu, .scrollToVisible, .other, .press])
+        checkEqual(Array(lazyPresentation).map(\.description), ["kept label", "", "visible", "custom expand", "duplicate"])
+        let savedPress = UIElementAction.press
+        UIElementAction.press = .showMenu
+        checkEqual(Array(lazyPresentation).map(\.kind), [.other, .press, .scrollToVisible, .other, .other])
+        UIElementAction.press = savedPress
+        computedOwner.actionDescriptions = []
+        checkEqual(Array(lazyPresentation).count, 5)
+        checkTrue(Array(computedOwner.presentationActions).isEmpty)
+        computedOwner.role = .radioButton
+        checkEqual(computedOwner.flattenedRole?.description, "radio button")
+        computedOwner.role = .row
+        checkEqual(computedOwner.flattenedRole?.description, "outline row")
+        computedOwner.role = .group
+        checkTrue(computedOwner.flattenedRole == nil)
+        computedOwner.description = nil; computedOwner.value = ""; computedOwner.title = nil
+        computedOwner.placeholderValue = nil
+        checkFalse(computedOwner.hasDescriptiveAttributes)
+        computedOwner.placeholderValue = " "
+        checkTrue(computedOwner.hasDescriptiveAttributes)
+        computedOwner.placeholderValue = nil; computedOwner.role = .image
+        checkTrue(computedOwner.hasDescriptiveAttributes)
+        computedOwner.role = .group; computedOwner.value = "off"
+        computedOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [], attributes: [UIElementAttribute("AXValue"): partial(kCFBooleanFalse)],
+            transactionAttributes: nil))
+        checkTrue(computedOwner.stringValue == nil)
+        checkTrue(computedOwner.hasDescriptiveAttributes)
+        checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
