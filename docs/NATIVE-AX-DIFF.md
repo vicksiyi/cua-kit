@@ -3858,3 +3858,25 @@ initialization. Provider, array/thread and transaction tests passed; after query
 wiring, the expanded transaction fixture and full Swift package build also pass.
 These do not constitute live system-query acceptance. Provider-aware writes/actions,
 equality, full UIElement conformance and production collector integration remain.
+
+### Provider-aware writes and actions use actualPID routing
+
+The provider-aware `setAXAttribute` and `performAXAction` system branches now
+use the same actualPID-aware synchronous dispatcher as the recovered read
+front doors. Pinned native evidence: setValue calls getpid at 0x1006f761c and
+0x1006fa0d4 at 0x1006f7624; perform calls them at 0x1006f9b6c and
+0x1006f9b74. Both only inspect main-thread status for a known same-process
+actualPID, then synchronously dispatch if needed. Lookup failure retains the
+existing default-level local error reporting and direct execution behavior.
+
+Mock replacement remains authoritative: no actualPID lookup or system operation
+occurs after a replacement has handled or thrown from the operation. System
+write accepts only success; system perform retains its success/cannotComplete/
+attributeUnsupported acceptance. A Result transports operation errors across
+the synchronous closure without retrying or swallowing them. The explicitly
+legacy system-only helpers still exist; this change does not claim every higher
+level production call site has migrated or that visible UI behavior is accepted.
+
+Validation: full owned Swift helper builds; regression fixtures cover mock-first
+operations, actualPID thread-dispatch matrix, write errors and action errors.
+No installed vendor service was executed and no real UI mutation was performed.
