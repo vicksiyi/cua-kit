@@ -3259,3 +3259,31 @@ Additional static evidence: `perform(work:)` at `0x10076c8e8` copies the complet
 transaction into the current TaskLocal value and invokes its scoped operation at
 `0x10076c99c`; a cache-only TaskLocal would lose the root and frequency fields.
 The full protocol root must be preserved when implementing that owner.
+
+### Enabled subtree attribute selection
+
+`SubtreeAttributeSelection.swift` restores selection from `0x10076be64` through
+`0x10076c570`. The array-attribute list is AXChildren, AXSelectedRows,
+AXSelectedCells, AXSelectedChildren, in that order. Requested attributes begin
+with Array(the shared 20-member base Set), followed by additionalAttributes;
+there is no root-supported intersection and no deduplication of extras.
+The base initializer is the same `0x100764678` used by cold-cache construction;
+its shared declaration is now named uiElementBaseAttributes. Cold selection
+continues to intersect it with supported attributes, unchanged.
+
+The conditional map initializer `0x100764ba4` contains AXDOMClassList with the
+previously decoded com.kishanbagaria.jack bundle list. Subtree selection first
+checks root support (`0x10076c0a4`), then existing requested membership
+(`0x10076c23c`, equality closure `0x10076d94c`), then resolves the bundle
+(`0x10076c2a8`) and tests exact membership (`0x10076c30c`). It appends the
+attribute only on a match. Explicit additional DOM attributes are retained,
+including duplicates, and skip bundle resolution. After hierarchy reading,
+`0x10076c698` appends arrayAttributes to the requested array and `0x10076c6ac`
+builds the transaction's requested Set; transactionAttributes exposes that union.
+
+Tests check the complete base despite empty root support, extras/duplicates,
+array order, union size, explicit DOM preservation, matching/nonmatching/missing
+bundle and lazy identity lookup. The existing element-cache construction test
+also passes, as does Swift build. Selection is now available for the transaction
+constructor, but full transaction/protocol ownership and TaskLocal scope remain
+incomplete; no live UI acceptance is implied.

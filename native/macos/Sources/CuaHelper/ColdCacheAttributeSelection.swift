@@ -3,7 +3,7 @@ import ApplicationServices
 
 // Source base-set initializer 0x100764678. Private AXTraits is encoded as a
 // Swift string literal by 0x10079cb08; other names use the system SDK constants.
-private let coldCacheBaseAttributes: Set<UIElementAttribute> = Set([
+let uiElementBaseAttributes: Set<UIElementAttribute> = Set([
     kAXRoleAttribute, kAXSubroleAttribute, kAXRoleDescriptionAttribute,
     kAXTitleAttribute, kAXDescriptionAttribute, kAXValueAttribute,
     kAXValueDescriptionAttribute, kAXPlaceholderValueAttribute,
@@ -21,7 +21,7 @@ func coldCacheAttributes(
     supported: Set<UIElementAttribute>,
     bundleIdentifier: () -> String?
 ) -> Set<UIElementAttribute> {
-    var requested = supported.intersection(coldCacheBaseAttributes)
+    var requested = supported.intersection(uiElementBaseAttributes)
     let domClassList = UIElementAttribute("AXDOMClassList")
     if supported.contains(domClassList), bundleIdentifier() == "com.kishanbagaria.jack" {
         requested.insert(domClassList)
