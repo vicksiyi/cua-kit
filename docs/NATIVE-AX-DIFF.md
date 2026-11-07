@@ -5788,3 +5788,35 @@ next-line error recovery, range nil/error preservation and successful subtree
 removal while retaining owner identity. This supersedes the preceding section's
 statement that the web-area outer path is evidence-only; its dependent readers
 and formatter remain incomplete.
+
+### Concrete attributed marker-range reading
+
+`UIElementAttributedTextReading.swift` restores `0x10075aed8` and options
+construction at `0x10075b620`, with a concrete TransformedUIElement adapter to
+the existing provider-aware AXUIElement methods. Each call reads supported
+parameterized attributes afresh. Presence of
+AXAttributedStringForTextMarkerRangeWithOptions selects that attribute and a
+two-entry dictionary: AXTextMarkerRange contains the raw CF range object and
+AXSpellCheck is Bool false. Otherwise it reads
+AXAttributedStringForTextMarkerRange with the UITextMarkerRange wrapper, which
+the existing dynamic parameter encoder unwraps. Capability selection is not
+a retry chain: nil/error in the selected path never invokes the other path.
+
+The common read boundary `0x10075c7b8` encodes first, calls the provider's
+parameterizedValue, returns nil for absent results and invokes the decoder
+with throwingOnFailure true for present results. `AXAttributedStringDecoding`
+adds that concrete specialization, preserving special CF branches and ordinary
+Foundation casting. The class reference used by `0x1007144ac` resolves at
+0x10151ee50 to Foundation NSAttributedString. Plain NSString is not promoted;
+CFArray has the existing array-target mismatch error rather than the generic
+failed-to-unwrap error. This distinction is covered by tests.
+
+Validation: native audit, Swift build and provider-click self-test pass.
+Owned mock providers exercise the actual TransformedUIElement -> AX provider
+route for both capability paths. They inspect the encoded dictionary/CF range,
+check Bool type identity and false value, preserve returned attributed-string
+identity, and verify exactly one support read and parameter read even on nil
+or errors. Special-object/type-mismatch decoding is also covered. No system AX
+read, vendor launch or external app operation is needed for these tests.
+This completes the concrete marker-range read helper, not the full-text
+selection helper or attributed-run renderer; final pipeline integration remains.

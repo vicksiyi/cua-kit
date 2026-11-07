@@ -23,7 +23,10 @@ private enum ProviderClickChecks {
         func arrayCount(for attribute: UIElementAttribute) -> (error: AXError, count: Int) { fatalError() }
         func isAttributeSettable(_ attribute: UIElementAttribute) throws -> Bool { fatalError() }
         func setValue(_ value: AXEncodedValue, forAttribute attribute: UIElementAttribute) throws { fatalError() }
-        var supportedParameterizedAttributes: [UIElementAttribute] { fatalError() }
+        var parameterSupport: (() -> [UIElementAttribute])?
+        var supportedParameterizedAttributes: [UIElementAttribute] {
+            guard let parameterSupport else { fatalError() }; return parameterSupport()
+        }
         func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? {
             guard let parameterRead else { fatalError() }
             return try parameterRead(attribute, parameter)
@@ -1833,6 +1836,61 @@ private enum ProviderClickChecks {
             }
             checkEqual(webCalls, ["support", "start", "end", "next", "range", "render"])
         }
+
+        let attributedRange = UITextMarkerRange(start: webStart, end: webEnd)
+        let optionsAttribute = UIElementAttribute("AXAttributedStringForTextMarkerRangeWithOptions")
+        var nativeTextCalls: [String] = []
+        var nativeHasOptions = true
+        var nativeTextNil = false
+        var nativeTextThrows = false
+        ownerProvider.parameterSupport = {
+            nativeTextCalls.append("support")
+            return nativeHasOptions ? [optionsAttribute] : []
+        }
+        ownerProvider.parameterRead = { attribute, encoded in
+            nativeTextCalls.append("read")
+            if nativeHasOptions {
+                checkTrue(attribute == optionsAttribute)
+                let options = encoded.value as! NSDictionary
+                checkEqual(options.count, 2)
+                checkTrue(CFEqual(options["AXTextMarkerRange"] as! AXTextMarkerRange, attributedRange.range))
+                let spellCheck = options["AXSpellCheck"] as! NSNumber
+                checkTrue(CFGetTypeID(spellCheck) == CFBooleanGetTypeID())
+                checkFalse(spellCheck.boolValue)
+            } else {
+                checkTrue(attribute == UIElementAttribute("AXAttributedStringForTextMarkerRange"))
+                checkTrue(CFEqual(encoded.value as! AXTextMarkerRange, attributedRange.range))
+            }
+            if nativeTextThrows { throw UIElementError.axError(.failure) }
+            return nativeTextNil ? nil : partial(richText)
+        }
+        for options in [true, false] {
+            nativeHasOptions = options; nativeTextCalls = []
+            checkTrue(try capturedOwner.attributedText(for: attributedRange) === richText)
+            checkEqual(nativeTextCalls, ["support", "read"])
+            nativeTextNil = true; nativeTextCalls = []
+            checkTrue(try capturedOwner.attributedText(for: attributedRange) == nil)
+            checkEqual(nativeTextCalls, ["support", "read"])
+            nativeTextNil = false; nativeTextThrows = true; nativeTextCalls = []
+            do {
+                _ = try capturedOwner.attributedText(for: attributedRange)
+                unexpectedFailure("native rich-text read must propagate error")
+            } catch UIElementError.axError(let error) { checkTrue(error == .failure) }
+            checkEqual(nativeTextCalls, ["support", "read"]) // never retry the other attribute
+            nativeTextThrows = false
+        }
+        for wrong in ["plain text" as NSString, NSArray(), webStart.marker, attributedRange.range, ownerAX] as [AnyObject] {
+            checkTrue(try decodeAXAttributedString(wrong, throwingOnFailure: false) == nil)
+            do {
+                _ = try decodeAXAttributedString(wrong, throwingOnFailure: true)
+                unexpectedFailure("wrong rich-text type must throw")
+            } catch UIElementError.failedToUnwrapAttributeValue { }
+              catch UIElementError.unexpectedAttributeValueType {
+                checkTrue(CFGetTypeID(wrong) == CFArrayGetTypeID())
+            }
+        }
+        ownerProvider.parameterSupport = nil
+        ownerProvider.parameterRead = nil
 
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {

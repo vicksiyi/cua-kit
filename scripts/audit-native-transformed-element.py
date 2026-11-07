@@ -560,7 +560,24 @@ web_area_calls = [branch(site, target) for site, target in [
     (0x10075a0cc, 0x100770530), (0x10075a1a8, 0x10064fb6c),
 ]]
 
-print(json.dumps(dict(webAreaRichText=dict(
+# Rich marker-range reader and options dictionary, with strict decoding.
+range_reader_words = {0x10075af78: 0x360000f8, 0x10075b6e8: 0x3901831f,
+                      0x10075c85c: 0xb4000297, 0x10075c860: 0x52800020}
+for address, word in range_reader_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word
+range_reader_calls = [branch(site, target) for site, target in [
+    (0x10075af00, 0x1006f6a60), (0x10075af88, 0x10075b620),
+    (0x10075afd8, 0x10075c780), (0x10075b754, 0x10075c780),
+    (0x10075c7f4, 0x1006ea3e4), (0x10075c824, 0x1006f6ed4),
+]]
+assert cstring(0x101256f30) == 'AXTextMarkerRange'
+
+print(json.dumps(dict(attributedRangeReader=dict(
+    instructions={hex(k): hex(v) for k, v in range_reader_words.items()}, calls=range_reader_calls,
+    selection="fresh supportedParameterizedAttributes chooses WithOptions, otherwise plain marker range",
+    options={"AXTextMarkerRange": "raw CF marker range", "AXSpellCheck": False},
+    decoding="encode parameter, provider read, nil passthrough, strict NSAttributedString decoding; no fallback/retry",
+    integration="TransformedUIElement concrete reader uses existing AX provider dispatch; outer pipeline and formatter remain pending"), webAreaRichText=dict(
     instructions={hex(k): hex(v) for k, v in web_area_words.items()}, calls=web_area_calls,
     guards="informationalContext + webArea + no chromeNodeID support + start/end markers present",
     probe="nextLineEndTextMarkerForTextMarker(end); nonnil -> diagnostic and unchanged; nil/error -> original marker range",

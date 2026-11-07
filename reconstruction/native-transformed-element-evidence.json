@@ -1,4 +1,51 @@
 {
+  "attributedRangeReader": {
+    "instructions": {
+      "0x10075af78": "0x360000f8",
+      "0x10075b6e8": "0x3901831f",
+      "0x10075c85c": "0xb4000297",
+      "0x10075c860": "0x52800020"
+    },
+    "calls": [
+      {
+        "instruction": "0x10075af00",
+        "target": "0x1006f6a60",
+        "link": true
+      },
+      {
+        "instruction": "0x10075af88",
+        "target": "0x10075b620",
+        "link": true
+      },
+      {
+        "instruction": "0x10075afd8",
+        "target": "0x10075c780",
+        "link": true
+      },
+      {
+        "instruction": "0x10075b754",
+        "target": "0x10075c780",
+        "link": true
+      },
+      {
+        "instruction": "0x10075c7f4",
+        "target": "0x1006ea3e4",
+        "link": true
+      },
+      {
+        "instruction": "0x10075c824",
+        "target": "0x1006f6ed4",
+        "link": true
+      }
+    ],
+    "selection": "fresh supportedParameterizedAttributes chooses WithOptions, otherwise plain marker range",
+    "options": {
+      "AXTextMarkerRange": "raw CF marker range",
+      "AXSpellCheck": false
+    },
+    "decoding": "encode parameter, provider read, nil passthrough, strict NSAttributedString decoding; no fallback/retry",
+    "integration": "TransformedUIElement concrete reader uses existing AX provider dispatch; outer pipeline and formatter remain pending"
+  },
   "webAreaRichText": {
     "instructions": {
       "0x100759718": "0x7100091f",
