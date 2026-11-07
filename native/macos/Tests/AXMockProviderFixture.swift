@@ -16,6 +16,7 @@ enum AXMockProviderFixture {
         var requested: [UIElementAttribute] = []
         var shouldThrow = false
         var settableResult = false
+        var actionsResult: [UIElementAction] = [.press, .press]
         var operationCalls: [String] = []
         var arrayArguments: (index: Int, maxValues: Int, count: Int?)?
         var point: CGPoint?
@@ -47,7 +48,7 @@ enum AXMockProviderFixture {
         var supportedParameterizedAttributes: [UIElementAttribute] { support }
         func parameterizedValue(for attribute: UIElementAttribute, parameter: AXEncodedValue) throws -> AXPartialValue? { try checkOperation("parameterized"); requested = [attribute]; writtenValue = parameter.value; return output.value }
         func element(at point: CGPoint) throws -> UIElement? { try checkOperation("hit"); self.point = point; return hit }
-        var actions: [UIElementAction] { get throws { try checkOperation("actions"); return [.press, .press] } }
+        var actions: [UIElementAction] { get throws { try checkOperation("actions"); return actionsResult } }
         func description(for action: UIElementAction) throws -> String? { try checkOperation("description"); lastAction = action; return nil }
         func perform(_ action: UIElementAction) throws { try checkOperation("perform"); lastAction = action }
         var pid: Int32 { get throws { if shouldThrow { throw Failure.expected }; return -3 } }

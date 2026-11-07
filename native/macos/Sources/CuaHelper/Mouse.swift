@@ -123,7 +123,7 @@ extension Target {
             holdDuration: (params["duration"] as? Double).map { _ in Duration.nanoseconds(Int64(held)) },
             heldKeyIsPresent: false, flags: flags,
             alwaysSimulateClick: params["alwaysSimulateClick"] as? Bool ?? false,
-            readActions: { item.actions(in: .provider, reportError: report) }, isInsideWebView: insideWebView)
+            readActions: { item.actions }, isInsideWebView: insideWebView)
         // This host currently has no native VirtualCursor or SyntheticAppFocusEnforcer
         // instance. Exercise the source's nil-context branches, not fake implementations.
         return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,

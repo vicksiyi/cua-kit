@@ -450,7 +450,31 @@ import os
         let invalid = try decodeAXURL(ax, throwingOnFailure: false)
         precondition(invalid == nil)
     }
+    static func checkProviderActionGetters() {
+        let ax = AXUIElementCreateApplication(12801)
+        let mock = AXMockProviderFixture.Mock(), provider = AXMockProviderFixture.Provider(ax, AXMockProviderFixture.Mock())
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        let disclosing = UIElementAttribute("AXDisclosing")
+        let partial = AXPartialValue(value: AXEncodedValue(value: NSNumber(value: true)), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        let item = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [disclosing], attributes: [disclosing: partial], transactionAttributes: nil))
+        provider.mock.settableResult = true
+        precondition(item.actions == [.press, .press, .collapse])
+        provider.mock.operationCalls = []
+        precondition(item.actionDescriptions.map(\.description) == ["Press", "Press", "Collapse"])
+        precondition(provider.mock.operationCalls == ["actions", "settable"])
+        let custom = UIElementAction("AXUnrecognizedAction")
+        provider.mock.actionsResult = [custom, custom]
+        provider.mock.settableResult = false
+        provider.mock.operationCalls = []
+        precondition(item.actionDescriptions.map(\.description) == [custom.name, custom.name])
+        precondition(provider.mock.operationCalls == ["actions", "settable", "description", "description"])
+        AXMockProviderStorage.current = AXMockProviderFixture.Provider(ax, mock)
+        mock.shouldThrow = true
+        precondition(item.actions.isEmpty && mock.operationCalls == ["actions"])
+    }
     static func main() throws {
+        checkProviderActionGetters()
         try checkCachedTypedValues()
         checkProviderCapabilities()
         try checkProviderGeometry()

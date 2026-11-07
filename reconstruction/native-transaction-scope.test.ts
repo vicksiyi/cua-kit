@@ -52,6 +52,10 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AccessibilityNodeDefaults.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementProtocol.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementIdentity.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementProviderActionGetters.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementActions.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementDisclosure.swift"),
+
         join(root, "native/macos/Sources/CuaHelper/UIElementCachedTypedValues.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXURLDecoding.swift"),
 

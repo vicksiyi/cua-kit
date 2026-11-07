@@ -4120,3 +4120,28 @@ and mismatched Bool; NSURL bridging, string rejection and missing URL; strict
 URL decode failure; non-URL AX reference; and duplicate title targets decoded
 from a prefetched child cache with no provider reads. These are local fixtures,
 not evidence of completed protocol conformance or live UI acceptance.
+
+### Direct provider action getters and native error records
+
+`UIElementProviderActionGetters.swift` supplies concrete actions and
+ actionDescriptions properties. Actions use AX protocol actions once, then the
+recovered disclosure append; failure reports and returns [] before capability
+queries. Action descriptions use the already-restored ordered map/custom-name/
+native-description fallback without deduplication. Host observation, advertised
+secondary actions and mouse click preparation now call the direct actions getter.
+
+Native error evidence: actions 0x1007917b4 calls logger(Self), then stub
+0x101151824 -> GOT 0x101469b40 -> os_log_type_t.error. Role formatting uses
+String(describing:) via stub 0x10115087c / GOT 0x101466288; NSError is bridged
+at 0x1007918fc. Format identity is log[da1f5cd320487f18bcab]. Description
+failure at 0x100793838 follows the same logger/error path and format identity
+log[229981a078c5701cec51]. The restored properties use the cached NativeLogger
+factory, default privacy interpolation and local OS logging, not telemetry.
+
+Validation: full helper build through the transaction harness, plus provider
+fixture. Checks cover duplicate native actions, appended collapse, built-in
+labels avoiding native description reads, duplicate unknown descriptions
+falling back independently to raw names, and failed actions returning [] with
+no subsequent writability lookup. The error fixture emits only synthetic local
+role/error data. Other no-argument getter logging/witnesses and complete
+UIElementProtocol conformance are still pending.

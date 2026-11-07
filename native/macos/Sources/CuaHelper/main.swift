@@ -64,9 +64,7 @@ final class Target {
             // Secure input contents are not exported.
             let secure = item.subrole == "AXSecureTextField"
             if !secure, let value = scalar(attribute(element, kAXValueAttribute)) { data["value"] = String(describing: value) }
-            let actions = item.actions(in: .provider, reportError: { error in
-                Logger(subsystem: "core.cua", category: "Accessibility").error("Action discovery failed: \(String(describing: error))")
-            })
+            let actions = item.actions
             var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
             props[kAXEnabledAttribute] = item.isEnabled
             props[kAXFocusedAttribute] = item.isFocused
@@ -129,9 +127,7 @@ final class Target {
             guard let action = params["value"] as? String else { throw fail("INVALID_ARGUMENT", "Secondary action requires a name.") }
             if action == "focus" { try item.setValue(true, forAttribute: UIElementAttribute(kAXFocusedAttribute)) }
             else {
-                let actions = item.actions(in: .provider, reportError: { error in
-                    Logger(subsystem: "core.cua", category: "Accessibility").error("Action discovery failed: \(String(describing: error))")
-                })
+                let actions = item.actions
                 guard actions.contains(UIElementAction(action)) else { throw fail("UNSUPPORTED_CAPABILITY", "Action is not advertised by this AX element.") }
                 try perform(UIElementAction(action))
             }
