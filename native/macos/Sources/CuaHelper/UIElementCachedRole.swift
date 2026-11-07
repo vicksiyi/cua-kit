@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // Protocol extension getter 0x1007a80f0: cached AXRole String only.
     // Empty/custom strings remain valid roles; only absence/decode failure
     // falls back to AXUnknown. No fresh AX read or display-label substitution.

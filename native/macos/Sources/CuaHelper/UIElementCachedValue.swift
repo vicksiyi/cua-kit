@@ -10,7 +10,7 @@ func uiElementCachedValue<Value>(
     return decode(partial)
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // Concrete String specialization; full generic decoding remains separate.
     func cachedStringValue(for attribute: UIElementAttribute) -> String? {
         uiElementCachedValue(attribute, readCache: { cache }) { partial in

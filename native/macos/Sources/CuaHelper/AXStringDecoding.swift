@@ -25,7 +25,7 @@ func decodeAXString(_ raw: AnyObject, throwingOnFailure: Bool) throws -> String?
     return try decodeAXOrdinaryValue(raw, throwingOnFailure: throwingOnFailure, as: String.self)
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // Witness 0x1007aff6c: reads only the cached AXSubrole entry. Descriptors
     // do not participate, and decode errors are suppressed at this boundary.
     var subrole: String? {

@@ -2607,3 +2607,21 @@ original AX identity, prefetched-cache propagation and restoration of TaskLocal
 state. These types intentionally do not yet declare full UIElementProtocol /
 WindowUIElementProtocol conformance: their complete inherited getter/action
 witnesses still need to be restored before registry/Target integration.
+
+
+## Restoring cached getters to the protocol extension
+
+The symbol table identifies cached role, subrole and text getters as
+UIElementProtocol extensions, rather than UIElement-only methods. Reconstruction
+now declares cachedStringValue, cached role/subrole, roleDescription, help,
+identifier, placeholderValue, title, description, value and valueDescription on
+the protocol extension. They continue to read the same immutable cache and use
+the same decoder; no fresh AX request or wrapper-to-UIElement conversion is
+introduced. Existing concrete stored properties, such as transformed captured
+values, retain their concrete witnesses.
+
+This moves the implementation toward native shared protocol behavior so window
+wrappers can inherit the actual cache logic. The remaining inherited getters
+and full action behavior still need the same treatment before concrete window
+conformances are complete. Cache/getter regression coverage is in the existing
+provider composition checks; this refactor is not application input acceptance.
