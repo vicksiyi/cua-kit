@@ -4442,3 +4442,35 @@ all focus/selection combinations for the exceptional roles, a default-role case,
 and nil/empty/excluded/mixed/unknown action cases. Vendor executable was inspected
 statically, not launched. These predicates await the full TransformedUIElement
 owner and tree transformation integration; this is not production UI acceptance.
+
+### TransformedUIElement construction inventory (2026-11-07)
+
+`audit-native-transformed-element.py` now independently verifies the pinned
+Mach-O descriptor and ARM64 constructor branches. Its JSON output is stored in
+`reconstruction/native-transformed-element-evidence.json`; the audit does not
+load or execute the vendor service.
+
+Descriptor `0x1012ccde4` describes a struct with 26 stored fields: the underlying
+UIElement, role/subrole/roleDescription, title/description/value, truncationRange,
+valueDescription/valueTypeName/placeholderValue/help/identifier/url/domClassList,
+actionDescriptions, eight state flags, attributedString and transformedString.
+`actions`, `cache`, `axElement`, `stringValue` and interactivity properties are
+computed, not independent storage. A reconstruction must preserve that distinction
+rather than taking a snapshot of every getter into unrelated fields.
+
+The UIElement/context initializer tail-branches from `0x10075c570` to the common
+constructor `0x10075e160`. The AX/context initializer reads the current transaction,
+constructs the provider cache at call `0x10075e0f8 -> 0x10076589c`, then calls the
+same constructor at `0x10075e124`. The AX-only initializer additionally constructs
+a URL shortener (`0x10075debc -> 0x10065fb6c`) before its transaction/cache path.
+It must not be treated as a direct copy of AX attributes without context.
+
+The common constructor spans `0x10075e160..<0x10075ff54`; static disassembly shows
+cached attribute decoding, value conversion, capability checks and supported
+attribute fallbacks. Its full branch reconstruction remains pending. Consequently
+no default-filled TransformedUIElement shell was added: such a shell would compile
+but incorrectly imply that transformation semantics had been restored.
+
+Validation: the audit runs successfully against the pinned installed binary and
+asserts descriptor kind, field order, field-offset-vector placement, and four
+constructor branch destinations. This is static source evidence, not a live app test.
