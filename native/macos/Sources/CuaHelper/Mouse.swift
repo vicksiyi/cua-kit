@@ -135,7 +135,7 @@ extension Target {
                 try validateSnapshot(params)
                 try checkDeadline()
                 defer { invalidateInputState() }
-                try item.performAction(action, transaction: nil, environment: .provider, reportError: report)
+                try item.perform(action: action)
                 return ["outcome": "dispatched", "eventCount": 0, "action": action.name]
             }, simulateClick: { _ in
                 guard let point = try await item.clickablePoint(reportError: report) else {

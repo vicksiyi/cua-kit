@@ -5,6 +5,7 @@ private enum ProviderClickChecks {
         var result: UIElement?
         var points: [CGPoint] = []
         var fail = false
+        var performed: [UIElementAction] = []
         static func == (lhs: Hit, rhs: Hit) -> Bool { lhs === rhs }
         func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
         var supportedAttributes: [UIElementAttribute] = []
@@ -24,7 +25,10 @@ private enum ProviderClickChecks {
         }
         var actions: [UIElementAction] { get throws { fatalError() } }
         func description(for action: UIElementAction) throws -> String? { fatalError() }
-        func perform(_ action: UIElementAction) throws { fatalError() }
+        func perform(_ action: UIElementAction) throws {
+            performed.append(action)
+            if fail { throw UIElementError.axError(.failure) }
+        }
         var pid: Int32 { get throws { fatalError() } }
         var actualPID: Int32 { get throws { fatalError() } }
         var windowID: UInt32 { get throws { fatalError() } }
@@ -52,6 +56,40 @@ private enum ProviderClickChecks {
         var rect = CGRect(x: 10, y: 20, width: 80, height: 40)
         let target = UIElement(axElement: targetAX, cache: UIElementCache(supportedAttributes: [role, .frame],
             attributes: [role: partial("AXWindow" as NSString), .frame: partial(AXValueCreate(.cgRect, &rect)!)], transactionAttributes: nil))
+        // Exercise real concrete witnesses through the existential used by a
+        // transaction root, rather than a separate fixture implementation.
+        let targetMock = Hit()
+        provider.replacements[targetAX] = targetMock
+        let protocolTarget: any UIElementProtocol = target
+        checkTrue(UIElement.role == nil)
+        checkTrue(CFEqual(protocolTarget.id, targetAX))
+        checkTrue(protocolTarget.valueTypeName == nil)
+        checkFalse(protocolTarget.isSentByCurrentUser)
+        checkFalse(protocolTarget.isTableRow)
+        checkTrue(protocolTarget.rowIndexRange == nil)
+        checkTrue(protocolTarget.columnIndexRange == nil)
+        checkTrue(protocolTarget.presentationActions.isEmpty)
+        try protocolTarget.perform(action: .press)
+        checkEqual(targetMock.performed, [.press])
+        targetMock.fail = true
+        do {
+            try protocolTarget.perform(action: .press)
+            unexpectedFailure("provider action failure must escape the protocol witness")
+        } catch UIElementError.axError(.failure) {}
+        checkEqual(targetMock.performed, [.press, .press])
+        targetMock.fail = false
+        let transaction = UIElementTreeTransaction(element: target,
+            cache: UIElementTransactionCache(attributeTable: [targetAX: target.cache.attributes],
+                requestedAttributes: [role, .frame], fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable<UIElementRole>())
+        try transaction.perform { root in
+            checkTrue(CFEqual(root.axElement, targetAX))
+            let reconstructed: any UIElementProtocol = UIElement(element: root.axElement)
+            checkEqual(reconstructed.role, root.role)
+            try reconstructed.perform(action: .press)
+        }
+        checkTrue(UIElementTreeTransaction.current == nil)
+        checkEqual(targetMock.performed, [.press, .press, .press])
         let app = UIElement(axElement: appAX, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
         let point = try await target.clickablePoint(reportError: { _ in unexpectedFailure("unexpected read failure") })
         checkEqual(point, CGPoint(x: 50, y: 40))

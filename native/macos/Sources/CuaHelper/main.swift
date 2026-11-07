@@ -68,9 +68,7 @@ final class Target {
             var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
             props[kAXEnabledAttribute] = item.isEnabled
             props[kAXFocusedAttribute] = item.isFocused
-            props[kAXSelectedAttribute] = item.isSelected(reportError: { error in
-                Logger(subsystem: "core.cua", category: "Accessibility").error("Selection traits read failed: \(String(describing: error))")
-            })
+            props[kAXSelectedAttribute] = item.isSelected
             if let selected = attribute(element,kAXSelectedTextRangeAttribute),
                let range = decodedAXTypedAttribute(selected, as: CFRange.self) {
                 props["selectionStart"] = range.location; props["selectionLength"] = range.length
@@ -112,9 +110,7 @@ final class Target {
         // All attempted AX operations retire the observation, including throws.
         defer { invalidateInputState() }
         func perform(_ action: UIElementAction) throws {
-            try item.performAction(action, transaction: nil, environment: .provider, reportError: { error in
-                Logger(subsystem: "core.cua", category: "Accessibility").error("Action dependency read failed: \(String(describing: error))")
-            })
+            try item.perform(action: action)
         }
         switch operation {
         case "press": try perform(.press)

@@ -4145,3 +4145,36 @@ falling back independently to raw names, and failed actions returning [] with
 no subsequent writability lookup. The error fixture emits only synthetic local
 role/error data. Other no-argument getter logging/witnesses and complete
 UIElementProtocol conformance are still pending.
+
+
+## Concrete UIElement protocol conformance and production action witnesses
+
+UIElement now conforms to the complete UIElementProtocol/AccessibilityNode
+contract. Static role returns nil (0x10078fbf4); instance role remains cached.
+The inherited concrete nil/false/empty witnesses at 0x10078fd5c, 0x10078fd68,
+0x10078fe30, 0x10078fe74, 0x10078fe84 and 0x10078fe94 match the existing
+AccessibilityNode defaults; these are source behavior, not placeholder fields.
+Selection, web classification and title-target identities use the provider
+implementations with the recovered generic uncached-read logger: logger(Self),
+error level, NSError, default privacy, token baa09d44b6c8dd36e77f
+(0x1007ae4b0..0x1007ae54c).
+
+The concrete perform(action:) witness composes original menu ancestor
+preparation, disclosure toggling, scrollbar page actions and raw AX dispatch.
+Recursive ancestor/button actions enter the concrete witness, and action lists
+use their own recovered error logger. The standalone production action handler
+and prepared mouse AX-action path now call this witness; selection observation
+uses the concrete property. Existing snapshot/deadline and authorization checks
+are unchanged.
+
+Validation: the complete helper self-test exercises the real UIElement through
+an any UIElementProtocol existential, including native identity, inherited
+fields, successful action dispatch and propagated provider failure. A real
+UIElementTreeTransaction root reconstructs its element from the scoped cache,
+dispatches through the protocol and restores TaskLocal state. All AX operations
+in this test use injected mock providers; no vendor executable, application
+launch or UI input is exercised. Full helper build and provider integration
+check pass. Separate transaction scope and action-environment regression fixtures also
+pass, covering nested/throwing scope restoration and action composition. Production subtree collector integration and real
+desktop/browser acceptance remain outstanding; this conformance alone does not
+prove them complete.
