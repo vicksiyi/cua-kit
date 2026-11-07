@@ -6364,3 +6364,24 @@ repeated references, ID overwrite, no-ID options, and empty trees. Static audit
 pins the traversal/callback/assignment instructions. Production Target.collect
 integration, native traversal/filtering, protocol rendering witnesses and
 incremental ID lifecycle still require completion and live acceptance.
+
+
+### Next available display-ID supplier (2026-11-07)
+
+Recovered nextAvailableElementIDIterator (0x10063deb4) and its mutating next
+(0x10063ebbc). It captures the tree and starts with a nil cached maximum. Only
+on the first next call does 0x10063ec10 traverse nodes and take max of present
+elementIDs (max stub 0x101150ccc, GOT 0x101466620; key path component metadata
+offset 0x68). A missing maximum defaults to zero, then the method adds one and
+stores it. Thus an empty tree starts at 1, while full setElementIDs starts at 0.
+Present negative maxima are not clamped. Overflow traps rather than wrapping.
+
+The restored nested value type returns Int directly, like the native signature;
+it does not pretend to conform to IteratorProtocol's optional next. First scan
+observes shared-node mutations since iterator construction; subsequent calls use
+the cached counter and do not rescan. Copied counters advance independently.
+Build and owned provider tests cover empty/all-nil trees, nested maxima, lazy
+observation, cached behavior, negative maxima and value copies. Static audit
+pins the maximum helper, increment, cache-present store and key-path offset.
+This restores the ID supplier, not incremental diff matching/application or
+production collection integration. No real app or vendor service was executed.

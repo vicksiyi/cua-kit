@@ -2851,6 +2851,29 @@ private enum ProviderClickChecks {
             let empty = UIElementRenderTree<Int>(isFocus: false, roots: [])
             empty.setElementIDs()
             checkEqual(empty.lines(indent: " ", options: []), [])
+            var emptyIDs = empty.nextAvailableElementIDIterator()
+            checkEqual(emptyIDs.next(), 1)
+            checkEqual(emptyIDs.next(), 2)
+            let idChild = UIElementRender(id: 10, elementID: 9, text: "child", detailText: nil, sourcePath: nil, children: [])
+            let idRoot = UIElementRender(id: 11, elementID: nil, text: "root", detailText: nil, sourcePath: nil, children: [idChild])
+            let idTree = UIElementRenderTree(isFocus: false, roots: [idRoot])
+            var ids = idTree.nextAvailableElementIDIterator()
+            idChild.elementID = 20 // first scan is lazy and sees shared nodes
+            checkEqual(ids.next(), 21)
+            idChild.elementID = 100 // later scans must not happen
+            checkEqual(ids.next(), 22)
+            var copiedIDs = ids
+            checkEqual(copiedIDs.next(), 23)
+            checkEqual(ids.next(), 23) // cached counter has value semantics
+            var freshIDs = idTree.nextAvailableElementIDIterator()
+            checkEqual(freshIDs.next(), 101)
+            idChild.elementID = -5
+            var negativeIDs = idTree.nextAvailableElementIDIterator()
+            checkEqual(negativeIDs.next(), -4) // no clamp of present maxima
+            idChild.elementID = nil
+            var missingIDs = idTree.nextAvailableElementIDIterator()
+            checkEqual(missingIDs.next(), 1)
+
 
             checkTrue(input.render(with: &context) { _, _ in "" }.roots.isEmpty)
             let focus = UIElementTree(items: [item()], focusedElement: target)

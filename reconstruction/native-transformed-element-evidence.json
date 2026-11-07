@@ -1,4 +1,25 @@
 {
+  "nextAvailableElementID": {
+    "calls": [
+      {
+        "instruction": "0x10063ebe8",
+        "target": "0x10063ec10",
+        "link": true
+      },
+      {
+        "instruction": "0x10063ec40",
+        "target": "0x10063dba0",
+        "link": true
+      },
+      {
+        "instruction": "0x10063ee14",
+        "target": "0x101150ccc",
+        "link": true
+      }
+    ],
+    "behavior": "capture tree; lazy first maximum of present node IDs; missing maximum defaults to zero; add one and cache; subsequent calls increment cached value; checked overflow",
+    "limitation": "ID supplier only; incremental difference matching/application not yet restored"
+  },
   "renderOutput": {
     "calls": [
       {

@@ -70,3 +70,38 @@ extension UIElementRenderTree {
         return result
     }
 }
+
+extension UIElementRenderTree {
+    // 0x10063deb4 captures the tree value and leaves the cached maximum nil.
+    func nextAvailableElementIDIterator() -> NextAvailableElementIDIterator {
+        NextAvailableElementIDIterator(tree: self)
+    }
+
+    struct NextAvailableElementIDIterator {
+        private let tree: UIElementRenderTree<Identity>
+        private var maxElementID: Int?
+
+        fileprivate init(tree: UIElementRenderTree<Identity>) { self.tree = tree }
+
+        // 0x10063ebbc: scan lazily on first next; thereafter increment only the
+        // cached maximum. This API returns Int, not an optional iterator result.
+        mutating func next() -> Int {
+            if maxElementID == nil {
+                var maximum: Int?
+                func visit(_ nodes: [UIElementRender<Identity>]) {
+                    for node in nodes {
+                        if let id = node.elementID {
+                            maximum = maximum.map { Swift.max($0, id) } ?? id
+                        }
+                        visit(node.children)
+                    }
+                }
+                visit(tree.roots)
+                maxElementID = maximum ?? 0
+            }
+            let next = maxElementID! + 1
+            maxElementID = next
+            return next
+        }
+    }
+}

@@ -786,7 +786,19 @@ assert struct.unpack('<I', read(0x10064b1ac, 4))[0] == 0xf1000400
 assert struct.unpack('<I', read(0x10063de78, 4))[0] == 0xf900035b
 assert struct.unpack('<I', read(0x10063de7c, 4))[0] == 0x3900235f
 
-print(json.dumps(dict(renderOutput=dict(
+next_id_calls = [branch(site, target) for site, target in [
+    (0x10063ebe8, 0x10063ec10), (0x10063ec40, 0x10063dba0),
+    (0x10063ee14, 0x101150ccc),
+]]
+assert struct.unpack('<I', read(0x10063ebf4, 4))[0] == 0xb1000440
+assert struct.unpack('<I', read(0x10063ec00, 4))[0] == 0x3900629f
+# Key path's final class stored-property component is elementID's metadata offset.
+assert struct.unpack('<I', read(0x10118b1d0 + 36, 4))[0] == 0x68
+
+print(json.dumps(dict(nextAvailableElementID=dict(
+    calls=next_id_calls,
+    behavior="capture tree; lazy first maximum of present node IDs; missing maximum defaults to zero; add one and cache; subsequent calls increment cached value; checked overflow",
+    limitation="ID supplier only; incremental difference matching/application not yet restored"), renderOutput=dict(
     calls=render_output_calls,
     ids="unconditional zero-based depth-first offsets; duplicate references receive last occurrence offset; no identity deduplication",
     lines="depth-first rendered nodes; render-path depth count minus one; options forwarded to node.line; no automatic ID assignment",
