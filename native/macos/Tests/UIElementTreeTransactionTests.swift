@@ -175,7 +175,50 @@ import os
         precondition(mock.supportReads == 5 && mock.batchReads == 5)
         precondition(fallbackUIElementCache(element: ax, in: retries.cache.fallbackElements) == nil)
     }
+    static func checkAXConformance() throws {
+        let ax = AXUIElementCreateApplication(12020)
+        let other = AXUIElementCreateApplication(12021)
+        let mock = AXMockProviderFixture.Mock()
+        let provider = AXMockProviderFixture.Provider(ax, mock)
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        let element: any AXUIElementProtocol = ax
+        let pid = try element.pid, actual = try element.actualPID, window = try element.windowID
+        precondition(pid == -3 && actual == 42 && window == UInt32.max)
+        let actions = try element.actions
+        precondition(actions == [.press, .press])
+        try element.perform(.press)
+        precondition(mock.operationCalls.last == "perform")
+        mock.shouldThrow = true
+        do { _ = try element.actions; preconditionFailure() }
+        catch AXMockProviderFixture.Failure.expected {}
+        precondition(ax.isEqual(to: ax) && !ax.isEqual(to: other))
+        precondition(!ax.isEqual(to: mock))
+        let before = provider.lookups
+        precondition(providerAXElementsEqual(ax, ax))
+        precondition(!providerAXElementsEqual(ax, other))
+        precondition(!providerAXElementsEqual(other, ax))
+        precondition(provider.lookups == before + 6)
+        final class ReplacingProvider: AXMockProvider {
+            var seen: [AXUIElement] = []
+            let replacement = AXMockProviderFixture.Mock()
+            func lookup(_ element: AXUIElement) -> (any AXUIElementProtocol)? {
+                seen.append(element)
+                // Equality must retain the original provider for both lookups.
+                AXMockProviderStorage.current = nil
+                return replacement
+            }
+        }
+        let replacing = ReplacingProvider()
+        AXMockProviderStorage.current = replacing
+        precondition(providerAXElementsEqual(ax, other))
+        precondition(replacing.seen.count == 2)
+        precondition(CFEqual(replacing.seen[0], ax) && CFEqual(replacing.seen[1], other))
+        AXMockProviderStorage.current = nil
+        precondition(providerAXElementsEqual(ax, ax) && !providerAXElementsEqual(ax, other))
+    }
     static func main() throws {
+        try checkAXConformance()
         checkProviderInitializer()
         checkSubtreeConstruction()
         checkScopedConstruction()

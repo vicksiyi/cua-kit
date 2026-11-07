@@ -17,13 +17,17 @@ test(
     try {
       const executable = join(directory, "axvalue-tests");
       const nativeRoot = join(root, "native/macos");
-      await exec("swift", ["build", "--package-path", nativeRoot, "--target", "SoftLink"], { maxBuffer: 4 * 1024 * 1024 });
+      await exec("swift", ["build", "--package-path", nativeRoot, "--target", "CuaHelper"], { maxBuffer: 4 * 1024 * 1024 });
       const build = join(nativeRoot, ".build/debug");
-      const softLinkObjects = (await readdir(join(build, "SoftLink.build")))
-        .filter(name => name.endsWith(".o"))
-        .map(name => join(build, "SoftLink.build", name));
+      const dependencyObjects: string[] = [];
+      for (const target of ["SoftLink", "Algorithms", "RealModule", "_NumericsShims"]) {
+        const directory = join(build, `${target}.build`);
+        for (const name of await readdir(directory))
+          if (name.endsWith(".o")) dependencyObjects.push(join(directory, name));
+      }
       await exec("xcrun", [
-        "swiftc", "-I", join(build, "Modules"), ...softLinkObjects,
+        "swiftc", "-I", join(build, "Modules"), ...dependencyObjects,
+        "-Xcc", `-fmodule-map-file=${join(nativeRoot, ".build/checkouts/swift-numerics/Sources/_NumericsShims/include/module.modulemap")}`,
         join(root, "native/macos/Sources/CuaHelper/UIElementError.swift"),
         "-o",
         executable,
@@ -93,6 +97,14 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AXProviderCollections.swift"),
         join(root, "native/macos/Sources/CuaHelper/NativeLogger.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXReadErrorLogging.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXUIElementConformance.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProviderOperations.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXProviderOperationsSystem.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXAttributeSettable.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXAttributeWriting.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXActionReading.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift"),
+        join(root, "native/macos/Sources/CuaHelper/AXActionPerforming.swift"),
         join(root, "native/macos/Tests/UIElementTreeTransactionTests.swift"),
       ]);
       const { stdout } = await exec(executable);

@@ -3880,3 +3880,27 @@ level production call site has migrated or that visible UI behavior is accepted.
 Validation: full owned Swift helper builds; regression fixtures cover mock-first
 operations, actualPID thread-dispatch matrix, write errors and action errors.
 No installed vendor service was executed and no real UI mutation was performed.
+
+### Concrete AXUIElementProtocol conformance and equality
+
+`AXUIElementConformance.swift` now supplies the concrete witness surface at
+0x10149b1b8 through the restored provider-aware entry points, including throwing
+identity/actions getters, subset metadata, parameterized queries and hit testing.
+The inherited SDK Hashable implementation remains unchanged.
+
+The direct `isEqual(to:)` witness follows 0x1006fab28: compare CF type IDs,
+return false for a non-AX object, otherwise CFEqual. It deliberately does not
+perform provider lookup. Separately, `providerAXElementsEqual` reconstructs
+0x1006fb9ac: snapshot the optional static provider once; absent means CFEqual;
+present means look up left then right, independently use originals on misses,
+and invoke the left resolved object's equality witness. It is a named recovered
+entry point, not yet a replacement for every upstream equality operator call site.
+
+The transaction fixture now links actual Algorithms/RealModule/_NumericsShims
+and SoftLink objects and exercises an AXUIElement through the protocol existential.
+It checks throwing getters/actions, duplicate mock actions, direct mixed-type
+comparison, left/right replacement misses, no-provider comparison, lookup order,
+and changing global provider storage during the first lookup. No vendor service,
+real AX query or UI mutation is needed by these mock-driven checks. Full owned
+Swift helper compilation also succeeds. Higher-level UIElement conformance and
+production subtree integration remain unfinished.
