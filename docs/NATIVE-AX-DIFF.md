@@ -2926,3 +2926,25 @@ priority-zero early exit, best alternative selection independent of dictionary
 iteration, multiple output slots sharing a hash, empty requests and empty
 alternatives. Build and targeted batch tests pass. Production filesystem source,
 SPI binding and UI-prefetch integration remain incomplete.
+
+### SoftLink filesystem candidate path construction
+
+Recovered resolveImagePaths(name:strategy:) from `0x1002503a0..<0x100250cbc`
+in ImagePaths.swift. Framework and privateFramework produce five candidates:
+unversioned first, then Current, A, B, C under the appropriate /System/Library
+framework directory. The private-framework final C candidate shares code with
+the framework branch at `0x1002508e8 -> 0x100250620`, retaining its private prefix.
+
+Library produces exactly /usr/lib/{name}, /usr/lib/system/{name}, and
+/usr/lib/system/lib{name}.dylib. It does not remove an existing lib prefix or
+.dylib suffix. Path returns the name unchanged. Unknown strategy strings do
+NOT return empty: they produce public framework candidates in C, A, B, Current
+order, with no unversioned candidate. Matching strategy names is case-sensitive.
+The implementation constructs strings only; it performs no existence checks,
+path normalization, home expansion or loading.
+
+Tests cover the complete ordered outputs, unknown/case-mismatched strategy,
+existing library suffixes, empty names and unchanged Unicode/NUL/path strings.
+Swift build and the path fixture pass. The surrounding filesystem inventory,
+request-strategy decoding, dlopen and header rediscovery still need restoration
+before providing the production BatchSymbolSources.filesystem dependency.
