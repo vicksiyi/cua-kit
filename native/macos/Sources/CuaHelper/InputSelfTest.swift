@@ -132,6 +132,35 @@ func runInputChecks() throws {
           getLocation(sourceEvent) == CGPoint(x: 100, y: 350) else {
         throw fail("SELF_TEST_FAILED", "Source scroll factory geometry or vertical delta differs.")
     }
+    for id: UInt32 in [0, 123] {
+        for geometry in [false, true] {
+            for point in [false, true] {
+                let activation = try SynthesizedEvent.notifyAppActivated(windowID: id,
+                    windowBounds: geometry ? frameB : nil, activationPoint: point ? mapped : nil)
+                let clickExpected = id != 0 && geometry && point
+                guard activation.cgEvents.count == (clickExpected ? 3 : 1),
+                      let notification = NSEvent(cgEvent: activation.cgEvents[0]),
+                      notification.type == .appKitDefined, notification.subtype.rawValue == 1,
+                      notification.windowNumber == Int(id), notification.data1 == 0, notification.data2 == 0,
+                      notification.modifierFlags.rawValue == (id == 0 ? 0 : 0xc0000) else {
+                    throw fail("SELF_TEST_FAILED", "Activation notification or optional click gate differs")
+                }
+                if clickExpected {
+                    let pair = Array(activation.cgEvents.dropFirst())
+                    guard pair.map({$0.type}) == [.leftMouseDown, .leftMouseUp],
+                          pair.map({$0.getIntegerValueField(.mouseEventNumber)}) == [1, 2],
+                          pair.allSatisfy({$0.location == mapped && getLocation($0) == CGPoint(x:100,y:50)}) else {
+                        throw fail("SELF_TEST_FAILED", "Activation click order or unflipped coordinates differ")
+                    }
+                }
+            }
+        }
+    }
+    let deactivation = try SynthesizedEvent.notifyAppDeactivated()
+    guard deactivation.cgEvents.count == 1,
+          NSEvent(cgEvent: deactivation.cgEvents[0])?.subtype.rawValue == 2 else {
+        throw fail("SELF_TEST_FAILED", "Deactivation notification differs")
+    }
     for (direction,pages) in [("invalid",1.0),("down",0.0),("down",-1.0),("down",Double.nan),("down",Double.infinity),("down",100000.0)] {
         do { _ = try scrollEvents(point:mapped,viewport:frameB,direction:direction,pages:pages); throw fail("SELF_TEST_FAILED","Invalid scroll accepted.") }
         catch let error as Failure { guard error.code == "INVALID_ARGUMENT" else { throw error } }

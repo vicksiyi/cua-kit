@@ -44,6 +44,18 @@
     {
       "site": "0x1006fc46c",
       "target": "0x1007a7790"
+    },
+    {
+      "site": "0x100754414",
+      "target": "0x100730374"
+    },
+    {
+      "site": "0x1007305e0",
+      "target": "0x10026cc8c"
+    },
+    {
+      "site": "0x100730724",
+      "target": "0x10026cc8c"
     }
   ],
   "defaultClickMilliseconds": 50,

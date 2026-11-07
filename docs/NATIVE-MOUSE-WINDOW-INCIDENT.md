@@ -153,3 +153,20 @@ read order. It is not wired to production until the actual state owner, role-set
 adapter and safe enforcement operation are restored. No fake enforcer or generic
 activate() substitutes for those missing components. This step explains another
 real gap but does not establish successful background Multica input.
+
+## Activation notification primitives
+
+Recovered notifyAppActivated (0x100754408 -> 0x100730374) and
+notifyAppDeactivated (0x100754420). Activation constructs AppKit-defined event
+subtype 1, window number, zero timestamp/location/data fields, and flags 0xc0000
+only for nonzero window IDs. If and only if window ID is nonzero and both bounds
+and activation point exist, it appends left-down and left-up events with fixed
+numbers 1/2, clickCount 1, subtype 3, global location and UNFLIPPED window-local
+location. These activation events do not use the ordinary click counter.
+Deactivation constructs subtype 2 with window zero and empty flags.
+
+Eight presence combinations and the notification/click metadata are checked by
+--self-test, without posting OS events. Build and checks pass. Source call sites
+are pinned. These primitives remain outside production until focus state,
+notifications, enforcement ownership and restoration are connected; they are
+not a claim that synthetic focus or Multica interaction is complete.
