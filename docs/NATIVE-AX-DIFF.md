@@ -6485,3 +6485,25 @@ Swift build and owned provider checks passed for nil, singleton, negative,
 normal and Int.max upper ranges; static audit pins the four initial guards,
 integer formatting calls and entry-constructor edge. Full content generation,
 node-description composition and production integration remain incomplete.
+
+
+### Content-entry constructor and long/multiline flag (2026-11-07)
+
+Recovered 0x100628e10 in AccessibilityContentEntry.swift. It stores the optional
+label and original text unchanged, followed by a Boolean. The private field
+name is stripped; isLongOrMultiline is a descriptive reconstruction. The flag
+first tries String.index(startIndex, offsetBy: 101, limitedBy: endIndex), using
+Swift Character distance. A successful advance returns true immediately; if
+absent, Foundation StringProtocol.contains tests a literal LF substring. This
+is not a byte-length threshold or an instruction to truncate the text.
+
+Static stub binding confirms index(offsetBy:limitedBy:) at GOT 0x101466388 and
+Foundation contains at 0x101463a10. The offset, LF literal, success flag and both
+calls are pinned in the audit. The restored Rows/Columns helper can now create a
+real content entry from its range payload, retaining the supplied label.
+
+Build and owned provider checks passed for 100/101 boundaries with ASCII,
+multi-scalar emoji and combining characters, LF/CRLF, non-LF line separators,
+label presence and range-entry integration. Entry accumulation, deduplication,
+final formatting, full node renderer composition and production collector wiring
+remain incomplete. No vendor service or live application was executed.

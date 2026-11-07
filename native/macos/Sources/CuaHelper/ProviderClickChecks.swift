@@ -2858,6 +2858,28 @@ private enum ProviderClickChecks {
             checkEqual(accessibilityIndexRangeText(3...8), "3-8")
             checkEqual(accessibilityIndexRangeText(0...Int.max), "0-" + String(Int.max))
         }
+        do {
+            for count in [0, 1, 100, 101, 102] {
+                for character in ["a", "👩‍💻", "e\u{301}"] {
+                    let text = String(repeating: character, count: count)
+                    let entry = AccessibilityContentEntry(label: nil, text: text)
+                    checkTrue(entry.label == nil)
+                    checkEqual(entry.text, text)
+                    checkEqual(entry.isLongOrMultiline, count >= 101)
+                }
+            }
+            for text in ["\n", "a\nb", "a\r\nb"] {
+                checkTrue(AccessibilityContentEntry(label: "", text: text).isLongOrMultiline)
+            }
+            for text in ["\r", "\u{85}", "\u{2028}", "\u{2029}"] {
+                checkFalse(AccessibilityContentEntry(label: "Description", text: text).isLongOrMultiline)
+            }
+            let range = AccessibilityContentEntry.indexRange(label: "Rows", range: 2...9)!
+            checkEqual(range.label, "Rows")
+            checkEqual(range.text, "2-9")
+            checkFalse(range.isLongOrMultiline)
+            checkTrue(AccessibilityContentEntry.indexRange(label: "Columns", range: 2...2) == nil)
+        }
         let leafTree = UIElementTree<UIElement>(items: [], focusedElement: nil)
         let childTree = UIElementTree(items: [UIElementTree.Item(element: cachedChildren, subtree: leafTree)], focusedElement: nil)
         var tree = UIElementTree(items: [UIElementTree.Item(element: target, subtree: childTree, availableSubset: subset),

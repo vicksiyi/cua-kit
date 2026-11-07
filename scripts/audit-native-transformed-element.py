@@ -842,7 +842,18 @@ for site, word in [(0x100627b88, 0x370009e2), (0x100627b8c, 0xb7f809c0),
                    (0x100627b90, 0xeb01001f), (0x100627b94, 0x5400098a)]:
     assert struct.unpack('<I', read(site, 4))[0] == word
 
-print(json.dumps(dict(contentIndexRange=dict(
+content_entry_calls = [branch(site, target) for site, target in [
+    (0x100628e78, 0x1011509d8), (0x100628eb0, 0x101151e18),
+]]
+assert struct.unpack('<I', read(0x100628e6c, 4))[0] == 0x52800ca1 # offsetBy 101
+assert struct.unpack('<I', read(0x100628e84, 4))[0] == 0x52800148 # LF
+assert struct.unpack('<I', read(0x100628eb8, 4))[0] == 0x52800020 # successful advance -> true
+
+print(json.dumps(dict(contentEntryConstructor=dict(
+    calls=content_entry_calls,
+    layout="optional label, original text, Bool",
+    flag="true if index(startIndex, offsetBy:101, limitedBy:endIndex) succeeds, otherwise Foundation contains LF",
+    limitation="descriptive flag name reconstructed; accumulator and final formatting integration remain pending"), contentIndexRange=dict(
     calls=index_range_calls,
     behavior="nil/negative lower/equal bounds omitted; otherwise lower-upper decimal payload; no one-based conversion or upper-bound adjustment",
     limitation="payload restored only; labeled-entry constructor and full content accumulation pending"), stateDescriptionComponent=dict(

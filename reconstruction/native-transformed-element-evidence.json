@@ -1,4 +1,21 @@
 {
+  "contentEntryConstructor": {
+    "calls": [
+      {
+        "instruction": "0x100628e78",
+        "target": "0x1011509d8",
+        "link": true
+      },
+      {
+        "instruction": "0x100628eb0",
+        "target": "0x101151e18",
+        "link": true
+      }
+    ],
+    "layout": "optional label, original text, Bool",
+    "flag": "true if index(startIndex, offsetBy:101, limitedBy:endIndex) succeeds, otherwise Foundation contains LF",
+    "limitation": "descriptive flag name reconstructed; accumulator and final formatting integration remain pending"
+  },
   "contentIndexRange": {
     "calls": [
       {
