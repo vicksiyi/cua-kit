@@ -7,7 +7,7 @@ final class AXNotificationObserver {
         let observer: AXObserver
         let element: AXUIElement
         let notification: AXNotification
-        let info: [AnyHashable: Any]
+        let info: [String: AnyObject]?
     }
     enum InitializationError: Error { case missingObserver }
     let pid: pid_t
@@ -24,7 +24,7 @@ final class AXNotificationObserver {
             guard let refcon else { return }
             let context = Unmanaged<AXNotificationCallbackContext<AXObserver, AXNotificationObserver>>
                 .fromOpaque(refcon).takeUnretainedValue()
-            let dictionary = info as? [AnyHashable: Any]
+            let dictionary = bridgeAXNotificationInfo(info)
             AXNotificationCallbackContext.deliver(context: context, info: dictionary) { owner, dictionary in
                 owner.onNotificationReceived(NotificationEvent(observer: observer, element: element,
                     notification: AXNotification(notification), info: dictionary))
@@ -85,4 +85,11 @@ final class AXNotificationObserver {
         monitoringTask = nil
     }
     deinit { stopMonitoring() }
+}
+
+// Source uses Dictionary<String, AnyObject> conditional Objective-C bridging,
+// not arbitrary AnyHashable keys (0x1006ed6cc, imported Foundation bridge).
+func bridgeAXNotificationInfo(_ info: CFDictionary?) -> [String: AnyObject]? {
+    guard let info else { return nil }
+    return info as NSDictionary as? [String: AnyObject]
 }

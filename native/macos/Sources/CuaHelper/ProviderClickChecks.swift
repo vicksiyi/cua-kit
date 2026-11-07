@@ -3748,6 +3748,7 @@ func runProviderClickChecks() async throws {
     runAXInitializedApplicationChecks()
     try runAXNotificationRemovalChecks()
     runAXNotificationCallbackContextChecks()
+    runAXNotificationInfoBridgeChecks()
     try runAXNotificationRegistrationChecks()
     runMouseWindowRegistryOwnershipChecks()
     await runWindowOrderingObserverCompositionChecks()
@@ -7292,4 +7293,14 @@ private func runAXNotificationCallbackContextChecks() {
     precondition(deliveries == 1)
     context = nil
     precondition(weakObserver == nil)
+}
+
+private func runAXNotificationInfoBridgeChecks() {
+    precondition(bridgeAXNotificationInfo(nil) == nil)
+    let empty = [:] as NSDictionary
+    precondition(bridgeAXNotificationInfo(empty as CFDictionary)?.isEmpty == true)
+    let valid = ["value": NSNumber(value: 7)] as NSDictionary
+    precondition((bridgeAXNotificationInfo(valid as CFDictionary)?["value"] as? NSNumber)?.intValue == 7)
+    let invalid = [NSNumber(value: 1): "value"] as NSDictionary
+    precondition(bridgeAXNotificationInfo(invalid as CFDictionary) == nil)
 }

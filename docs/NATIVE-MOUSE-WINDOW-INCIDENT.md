@@ -2359,3 +2359,22 @@ cleanup step. RunLoopTask exposes its existing locked RunLoop for this operation
 This concrete object still needs controller ownership and real AX event-delivery
 acceptance. Compilation and existing injected checks alone do not prove that
 production application operations receive window/menu notifications.
+
+
+## Callback info type correction and controller subscription discovery
+
+The original NotificationEvent.info getter symbol explicitly declares
+[String: AnyObject]?. The concrete observer now uses that type and conditional
+NSDictionary bridging, rather than permitting AnyHashable keys. Checks verify
+nil rejection, acceptance of an empty dictionary, valid string-key contents and
+rejection of NSNumber keys. The imported Foundation conditional bridge is pinned
+at 0x101463730. Build and provider checks pass after this correction.
+
+Controller initializer disassembly at 0x10006d660..0x10006d7a4 identifies six
+root subscriptions: windowCreated, menuOpened, menuClosed, sheetCreated,
+windowMoved and windowResized. This is stronger evidence than assuming the
+initial five notification constants matched the controller's root list.
+The callback also removes/registers uiElementDestroyed on individual elements
+and calls WindowOrderingObserver.menuDidOpen/menuDidClose. Exact event branches
+and controller callbacks are still being reconstructed before production wiring.
+The static dump is /tmp/cua-controller-init-full.asm; no vendor process ran.

@@ -497,3 +497,5 @@ assert (~((ax_not_registered_move >> 5) & 0xffff)) & 0xffffffff == (-25210 & 0xf
 
 assert pinned_imported_symbol(0x101469058) == "_$sSo17OS_dispatch_queueC8DispatchE4mainABvgZ"
 assert pinned_imported_symbol(0x101464a00) == "_kCFRunLoopDefaultMode"
+
+assert pinned_imported_symbol(0x101463730) == "_$sSD10FoundationE34_conditionallyBridgeFromObjectiveC_6resultSbSo12NSDictionaryC_SDyxq_GSgztFZ"
