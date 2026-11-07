@@ -586,6 +586,12 @@ assert read(0x100094358, 4).hex() == '22008052'
 # constrainFrameRect:toScreen: returns the incoming CGRect untouched.
 assert read(0x1000946b0, 4).hex() == 'c0035fd6'
 
+# Cursor corresponding-window eligibility: absent optional -> true; query
+# windowNumbersWithOptions:1 (all applications, current space), compare UInt32.
+assert read(0x10009b064, 16).hex() == '09114039690000363500805240000014'
+assert read(0x10009b08c, 4).hex() == '22008052'
+assert read(0x10009b13c, 8).hex() == '1f03196b81fdff54'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

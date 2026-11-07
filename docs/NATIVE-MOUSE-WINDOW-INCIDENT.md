@@ -3253,3 +3253,25 @@ level reasons, active-space/occlusion callbacks and motion ownership require
 separate recovery before the actual subclass is connected. The known configuration
 is recorded here rather than shipping a partially subscribed window with guessed
 callback behavior. No cursor window has been created or presented by this audit.
+
+
+## Cursor corresponding-window eligibility recovery (2026-11-08)
+
+Window callback helper 0x10009b03c reads optional correspondingWindowID
+(field-offset symbol 0x1015507c8). Nil returns true without querying windows.
+A present value calls NSWindow.windowNumbersWithOptions: with raw option 1,
+then compares NSNumber.unsignedIntValue to the stored UInt32. Nil/empty list
+or no match returns false; no special rejection of ID zero is present.
+The current SDK NSWindow.h defines option 1 as AllApplications, while AllSpaces
+is 1<<4. Thus this checks visible windows on the current space, not every space.
+
+The native Swift composition now calls NSWindow.windowNumbers(options:
+.allApplications), sharing an injected eligibility function that preserves
+NSNumber unsigned conversion and nil short-circuit. Checks cover absent ID without
+query, nil/empty/missing lists, match, zero and signed NSNumber conversion.
+Static pins cover optional branch, option 1 and UInt32 comparison. This helper is
+not yet connected to a concrete cursor window; callbacks, reset/animation and
+level-reason behavior continue to require recovery. No on-screen cursor or UI
+input is produced by these component checks.
+
+Swift build, provider checks and pinned static audit pass for this helper.

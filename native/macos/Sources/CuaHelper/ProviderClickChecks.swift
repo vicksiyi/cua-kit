@@ -3787,6 +3787,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runCursorCorrespondingWindowChecks()
     await runSoftwareCursorViewChecks()
     try await runVirtualCursorContractChecks()
     runUseSelectionForFindItemChecks()
@@ -7840,4 +7841,16 @@ private func runAppControllerObservationDeliveryChecks() throws {
     precondition(image.size == NSSize(width: 20, height: 23))
     precondition(imageView.frame == NSRect(x: 0, y: 0, width: 20, height: 23))
     precondition(image.representations.contains { $0.pixelsWide == 200 && $0.pixelsHigh == 230 })
+}
+
+
+private func runCursorCorrespondingWindowChecks() {
+    precondition(cursorCorrespondingWindowIsPresent(nil, windowNumbers: { preconditionFailure() }))
+    precondition(!cursorCorrespondingWindowIsPresent(7, windowNumbers: { nil }))
+    precondition(!cursorCorrespondingWindowIsPresent(7, windowNumbers: { [] }))
+    precondition(!cursorCorrespondingWindowIsPresent(7, windowNumbers: { [6, 8] }))
+    precondition(cursorCorrespondingWindowIsPresent(7, windowNumbers: { [6, 7, 8] }))
+    precondition(cursorCorrespondingWindowIsPresent(0, windowNumbers: { [0] }))
+    // Source compares NSNumber.unsignedIntValue, not signed NSNumber identity.
+    precondition(cursorCorrespondingWindowIsPresent(UInt32.max, windowNumbers: { [-1] }))
 }
