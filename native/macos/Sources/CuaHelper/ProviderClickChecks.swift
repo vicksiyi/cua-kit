@@ -3694,6 +3694,7 @@ func runProviderClickChecks() async throws {
     runFocusedElementOwnerSelectionChecks()
     runFocusOwnerWindowSelectionChecks()
     runRestrictedFocusOwnerSelectionChecks()
+    runFocusOwnerApplicationMatchChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4532,4 +4533,23 @@ private func runRestrictedFocusOwnerSelectionChecks() {
         windowPID: { nil }, activationPolicy: { _ in unexpectedFailure() }, fallback: { 55 },
         reportError: { _ in reports += 1 }), 55)
     checkEqual(reports, 1)
+}
+
+
+private func runFocusOwnerApplicationMatchChecks() {
+    struct App { let name: String?; let policy: Int }
+    func match(_ apps: [App]) -> App? {
+        matchingFocusOwnerApplication(ownerName: "Target", runningApplications: { apps },
+            localizedName: { $0.name }, activationPolicy: { $0.policy })
+    }
+    checkTrue(match([]) == nil)
+    checkTrue(match([App(name: "Target", policy: 2)]) == nil)
+    checkEqual(match([App(name: "Other", policy: 0), App(name: "Target", policy: 1)])?.policy, 1)
+    checkTrue(match([App(name: "Target", policy: 0), App(name: "Target", policy: 1)]) == nil)
+    let absent: App? = matchingFocusOwnerApplication(ownerName: nil,
+        runningApplications: { unexpectedFailure() }, localizedName: { $0.name }, activationPolicy: { $0.policy })
+    checkTrue(absent == nil)
+    checkEqual(focusOwnerNameFromLocalizedName("Helper (Target)"), "Target")
+    checkEqual(focusOwnerNameFromLocalizedName("Helper ( Target )"), " Target ")
+    checkTrue(focusOwnerNameFromLocalizedName("Target") == nil)
 }

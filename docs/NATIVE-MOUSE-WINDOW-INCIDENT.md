@@ -721,3 +721,26 @@ restored, so the concrete common resolver still requires this final dependency.
 Swift build/provider-click checks pass for the new branch selections and
 existing focus/monitor composition. No live system input was posted; production
 Mouse.swift remains outside this complete-controller reconstruction.
+
+
+## Localized-name ownership mapping and common system path
+
+Selector rebases confirm helper 0x100751c50 reads localizedName and workspace
+runningApplications. Its parser 0x100752244 requires both parenthesis characters,
+skips trailing closing parentheses, then extracts after the last opening one;
+no whitespace normalization is added. Candidate localized names must equal the
+extracted owner name, and policy2 candidates are excluded. Exactly one match is
+accepted; zero/multiple candidates return nil, with no PID/order tie breaker.
+FocusOwnerLocalizedName and FocusOwnerApplicationMatch restore these stages.
+
+CommonFocusOwnerSystem now composes focused element acquisition (including a
+fresh read when no explicit element exists), element/application/window owner
+selection, optional name-based application mapping, and workspace PID fallback.
+The ViewBridge path sets skipApplicationOwner=true, then performs the separate
+actual-PID query after primary acquisition/resolution. ViewBridgeFocusIdentities
+preserves both identities; it does not claim native enum tag/wire parity.
+
+Swift build/provider-click checks pass for the matching/parser examples and
+existing focus selections. No live AX acceptance test was performed. Registry
+key-focus bindings, preventer lifetime/cache and complete controller/input
+integration remain pending before actual Multica click acceptance.
