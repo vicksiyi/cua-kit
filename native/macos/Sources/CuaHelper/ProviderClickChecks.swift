@@ -736,6 +736,32 @@ private enum ProviderClickChecks {
         checkTrue(computedOwner.stringValue == nil)
         checkTrue(computedOwner.hasDescriptiveAttributes)
         checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
+        let protocolOwner: any AccessibilityNode = computedOwner
+        checkEqual(protocolOwner.boolValue, false)
+        checkTrue(protocolOwner.stringValue == nil)
+        checkTrue(protocolOwner.hasDescriptiveAttributes)
+        checkEqual(Array(protocolOwner.presentationActions).count, 0)
+        checkTrue(CFEqual(computedOwner.id, ownerAX))
+        var titledOwner = capturedOwner
+        let titleLinks = UIElementAttribute("AXServesAsTitleForUIElements")
+        titledOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [titleLinks], attributes: [titleLinks: partial([] as NSArray)],
+            transactionAttributes: nil))
+        checkTrue(titledOwner.titleTargetIdentities.isEmpty)
+        checkEqual(ownerProvider.singleReads, 0)
+        ownerProvider.readResult = (.success, partial([] as NSArray))
+        titledOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [titleLinks], attributes: [:], transactionAttributes: nil))
+        checkTrue(titledOwner.titleTargetIdentities.isEmpty)
+        checkEqual(ownerProvider.singleReads, 1)
+        // Use the actual transformed node in the restored generic tree.
+        let transformedLeaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        var transformedTree = UIElementTree<TransformedUIElement>(items: [
+            .init(element: capturedOwner, subtree: transformedLeaf)
+        ], focusedElement: capturedOwner)
+        checkEqual(Array(transformedTree).count, 1)
+        checkTrue(transformedTree.hasDescendant(where: \TransformedUIElement.hasDescriptiveAttributes))
+        checkTrue(CFEqual(transformedTree.focusedElement!.id, ownerAX))
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

@@ -5126,3 +5126,29 @@ empty labels, lazy constant lookup/first-match precedence, captured array
 semantics, empty output, transformed role mappings, whitespace/image handling
 and Bool textual-value distinction without fresh provider reads. Full protocol
 conformance and downstream tree/production integration remain pending.
+
+
+### AccessibilityNode conformance and generic tree use (2026-11-07)
+
+The restored TransformedUIElement now conforms to AccessibilityNode with its
+actual lazy PresentationActions associated type. Identity comes from the
+resilient Identifiable witness entry at descriptor+0x28 (0x101195514), targeting
+0x1007627e4, which loads the stored AX handle. AccessibilityNode witness table
+0x101574c00 slot 25 targets 0x1007afb60 -> 0x1007acee0 (title identities), and
+slot 31 targets 0x1007afb64 -> 0x1007ad204 (cached Bool). Neither is a default
+empty/nil witness. The binary audit now pins these targets and ID load.
+
+Title identities reuse the existing element collection cache/fresh path and
+map to AX handles. Cached empty arrays suppress fresh requests; absent cached
+collections can perform a provider read. Bool remains cached-only. Other
+protocol requirements use restored owner fields and computed properties.
+UIElementProtocol conformance is not asserted: it has a different actions
+contract and construction requirements.
+
+Swift build and provider selftest pass. New coverage dispatches bool/text/
+descriptive/actions through an AccessibilityNode existential, verifies cached
+and fresh empty title collections with exact provider read counts, and places
+an actual transformed node in UIElementTree for iteration, descendant-property
+queries and focus identity. This establishes generic-tree compatibility, not
+production traversal or final rendering. Mutable protocol, equality/hash,
+root overloads and downstream transform/production acceptance remain pending.

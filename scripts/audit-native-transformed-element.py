@@ -134,6 +134,17 @@ rendering_witnesses = [0x100758848, 0x100758854, 0x10075885c, 0x100758870]
 for i, target in enumerate(rendering_witnesses):
     raw = struct.unpack('<Q', read(0x101574b78 + (i + 3) * 8, 8))[0]
     assert 0x100000000 + (raw & 0xffffffff) == target
+# Chained witness pointers: address payload is the low 32 bits plus image base.
+node_witnesses = {}
+for slot, target in [(25, 0x1007afb60), (31, 0x1007afb64)]:
+    word = struct.unpack('<Q', read(0x101574c00 + slot * 8, 8))[0]
+    assert 0x100000000 + (word & 0xffffffff) == target
+    node_witnesses[str(slot)] = hex(target)
+assert relative(0x101195514) == 0x1007627e4
+assert struct.unpack('<I', read(0x1007627e4, 4))[0] == 0xf9400280
+branch(0x1007afb60, 0x1007acee0, link=False)
+branch(0x1007afb64, 0x1007ad204, link=False)
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls, valueTypeLabels=value_type_labels,
     constructorDirectCallSites=[hex(x) for x in constructor_call_sites],
@@ -145,6 +156,7 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
         requirements=["Role: AccessibilityRole", "Role", "urlShortener.get",
             "urlShortener.set", "urlShortener.modify", "type.get"],
         concreteWitnesses=[hex(x) for x in rendering_witnesses]),
+    nodeWitnesses=node_witnesses,
     constructionFindings=[
         'UIElement/context initializer tail-branches into common constructor.',
         'AX/context initializer constructs provider cache before common constructor.',
