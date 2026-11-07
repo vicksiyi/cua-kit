@@ -6751,3 +6751,14 @@ the same snapshot, zero AX reads, and write-error propagation without state
 mutation. Build, tests and static caller/encoder/setter audit passed. The method
 is a dispatcher component: full menu preparation and scroll dispatch wiring
 remain pending. These checks did not operate a live application.
+
+### Transformed action entry
+
+Restored specialized perform entry (0x10073440c): prepare menu ancestors,
+then dispatch the requested self action; expand/collapse use captured disclosure
+flags, scrolling first attempts the corresponding scrollbar page button and
+falls back to raw AX action when unavailable. Provider errors propagate.
+The implementation reuses existing parent/cache/scroll readers. Static branch
+audit, Swift build and isolated provider checks pass (raw action, both disclosure
+actions, scroll fallback and failure propagation). This does not establish live
+app acceptance or complete transformed protocol conformance.

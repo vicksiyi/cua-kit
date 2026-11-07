@@ -844,6 +844,36 @@ private enum ProviderClickChecks {
             checkTrue(node.isDisclosing)
             ownerProvider.writeValue = nil
         }
+        do {
+            let performAX = AXUIElementCreateApplication(12509)
+            let performProvider = Hit()
+            provider.replacements[performAX] = performProvider
+            var node = capturedOwner
+            node.role = .button
+            node.element = UIElement(axElement: performAX, cache: UIElementCache(
+                supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+            performProvider.performed = []; performProvider.readResult = (.success, nil)
+            try node.perform(action: .press)
+            checkEqual(performProvider.performed, [.press])
+            node.isDisclosable = true; node.isDisclosing = false
+            var disclosureWrites = 0
+            performProvider.writeValue = { value, attribute in
+                disclosureWrites += 1
+                checkEqual(attribute, UIElementAttribute("AXDisclosing"))
+                checkEqual((value.value as? NSNumber)?.boolValue, true)
+            }
+            try node.perform(action: .expand)
+            try node.perform(action: .collapse)
+            checkEqual(disclosureWrites, 2)
+            checkEqual(performProvider.performed, [.press])
+            try node.perform(action: .scrollDownByPage) // no scrollbar -> native fallback
+            checkEqual(performProvider.performed, [.press, .scrollDownByPage])
+            performProvider.fail = true
+            do { try node.perform(action: .press); unexpectedFailure() }
+            catch UIElementError.axError(let code) { checkEqual(code, .failure) }
+            checkEqual(performProvider.performed.count, 3)
+            performProvider.fail = false; performProvider.writeValue = nil
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

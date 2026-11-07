@@ -102,7 +102,8 @@ for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
                      (0x100792648, 0x100790690), (0x1007925dc, 0x1007907fc),
                      (0x1007afb00, 0x1006ea3e4), (0x1007afb30, 0x1006f74e4),
                      (0x10073492c, 0x1007465fc), (0x10074667c, 0x1006ea3e4),
-                     (0x1007466ac, 0x1006f74e4)]:
+                     (0x1007466ac, 0x1006f74e4), (0x1007349dc, 0x100728f34),
+                     (0x100734a04, 0x1006f9a40), (0x100734a20, 0x100740134)]:
     word = struct.unpack('<I', read(site, 4))[0]
     assert word & 0x7c000000 == 0x14000000
     displacement = word & 0x3ffffff
@@ -111,6 +112,7 @@ for site, target in [(0x1007925fc, 0x100790b88), (0x100792624, 0x100790b88),
 assert struct.unpack('<I', read(0x10079258c, 4))[0] == 0xf9402428
 
 print(json.dumps(dict(binarySHA256=expected, protocol=ui, transformedProtocol=transformed_ui,
+    transformedPerform=dict(entry='0x10073440c', behavior='prepare menu ancestors then dispatch self; captured disclosure; scrollbar page button press with raw AX fallback'),
     transformedDisclosure=dict(entry='0x1007465fc', caller='0x10073492c', flags='metadata +0x68 isDisclosable and +0x64 isDisclosing', behavior='unsupported no-op; write inverse captured disclosing; preserve captured fields'),
     transformedSetValue=dict(witness='0x1007afad4', encodeCall='0x1007afb00 -> 0x1006ea3e4', writeCall='0x1007afb30 -> 0x1006f74e4', behavior='encode before AX identity resolution; single provider write; no captured field mutation'),
     actionBoundary=dict(

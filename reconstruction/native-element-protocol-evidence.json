@@ -210,6 +210,10 @@
       }
     ]
   },
+  "transformedPerform": {
+    "entry": "0x10073440c",
+    "behavior": "prepare menu ancestors then dispatch self; captured disclosure; scrollbar page button press with raw AX fallback"
+  },
   "transformedDisclosure": {
     "entry": "0x1007465fc",
     "caller": "0x10073492c",
