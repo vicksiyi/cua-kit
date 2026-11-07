@@ -3926,3 +3926,27 @@ environment fixtures pass. This is partial production integration: collection
 traversal, parent-value decoding, web hit-test helpers and clickable-point
 geometry still have explicit legacy system adapters. Full UIElementProtocol
 conformance, original subtree collector and live UI acceptance remain open.
+
+### UIElementProtocol identity defaults
+
+Static inspection of the pinned binary establishes three default witnesses:
+`id` at 0x1007ad500 forwards axElement; equality at 0x1007ad47c reads the
+left then right AX references and calls the provider comparator 0x1006fb9ac;
+`hash(into:)` at 0x1007ab548 calls CFHash on the original reference and then
+stub 0x1011534f8, whose GOT slot 0x101468528 binds Hasher._combine(UInt).
+`UIElementIdentity.swift` restores these protocol defaults. Hashing uses public
+Hasher.combine(UInt), whose UInt hashing supplies that word, without importing
+Swift SPI or making provider lookup part of hashing. Cache content is excluded.
+
+The conforming transaction fixture now relies on these defaults rather than
+its own id/equality/hash implementations. It checks equal references with
+different caches, exact hashing from a copied Hasher state, no provider reads
+while hashing, and equality through a provider whose first lookup mutates the
+global provider slot. Such replacement fixtures are not a license to use
+inconsistent equal/hash pairs as dictionary keys; source semantics are retained.
+Full helper build and transaction fixture pass without executing vendor code.
+
+Parent and child decoders still construct explicit system-only elements; they
+must be migrated together with transaction propagation rather than silently
+changing existing explicit-transaction test and compatibility paths. This
+identity change prepares the full protocol conformance but does not complete it.

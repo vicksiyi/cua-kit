@@ -16,7 +16,6 @@ import os
         }
         static var role: UIElementRole? { nil }
         var role: UIElementRole { .group }
-        var id: AXUIElement { axElement }
         var subrole: String? { nil }
         var isInsideWebView: Bool { false }
         var actions: [UIElementAction] { [] }
@@ -34,8 +33,6 @@ import os
         var isValueSettable: Bool { false }
         func setValue(_ value: Any, forAttribute: UIElementAttribute) throws { preconditionFailure("fixture has no operations") }
         func perform(action: UIElementAction) throws { preconditionFailure("fixture has no operations") }
-        static func == (lhs: Self, rhs: Self) -> Bool { CFEqual(lhs.axElement, rhs.axElement) }
-        func hash(into hasher: inout Hasher) { hasher.combine(CFHash(axElement)) }
     }
     static func transaction(_ pid: pid_t) -> UIElementTreeTransaction {
         var frequencies = FrequencyTable<UIElementRole>(); frequencies.increment(.group)
@@ -202,6 +199,15 @@ import os
         catch AXMockProviderFixture.Failure.expected {}
         precondition(ax.isEqual(to: ax) && !ax.isEqual(to: other))
         precondition(!ax.isEqual(to: mock))
+        let first = Element(element: ax)
+        let differentCache = Element(element: ax, cache: UIElementCache(supportedAttributes: [attribute], attributes: [:], transactionAttributes: [attribute]))
+        precondition(first.id === ax && first == differentCache)
+        let hashLookups = provider.lookups
+        var expectedHash = Hasher(), observedHash = expectedHash
+        expectedHash.combine(CFHash(ax))
+        first.hash(into: &observedHash)
+        precondition(expectedHash.finalize() == observedHash.finalize())
+        precondition(provider.lookups == hashLookups)
         let before = provider.lookups
         precondition(providerAXElementsEqual(ax, ax))
         precondition(!providerAXElementsEqual(ax, other))
@@ -219,7 +225,7 @@ import os
         }
         let replacing = ReplacingProvider()
         AXMockProviderStorage.current = replacing
-        precondition(providerAXElementsEqual(ax, other))
+        precondition(Element(element: ax) == Element(element: other))
         precondition(replacing.seen.count == 2)
         precondition(CFEqual(replacing.seen[0], ax) && CFEqual(replacing.seen[1], other))
         AXMockProviderStorage.current = nil
