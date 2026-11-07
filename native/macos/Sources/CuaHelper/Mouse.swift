@@ -43,6 +43,8 @@ func mouseClickEvents(point: CGPoint, button: String, count: Int, flags: CGEvent
     }
     var events: [CGEvent] = []
     for click in 1...count {
+        // One process-wide number per down/up pair, separate from clickCount.
+        let eventNumber = Int(SynthesizedEvent.nextEventNumber)
         for type in [down,up] {
             let nsType: NSEvent.EventType
             switch type {
@@ -57,7 +59,7 @@ func mouseClickEvents(point: CGPoint, button: String, count: Int, flags: CGEvent
             // NSEvent, preserving the AppKit window number in the CG event.
             guard let event = NSEvent.mouseEvent(with: nsType, location: point,
                 modifierFlags: [], timestamp: 0, windowNumber: Int(window?.id ?? 0),
-                context: nil, eventNumber: click, clickCount: click, pressure: 1)?.cgEvent else {
+                context: nil, eventNumber: eventNumber, clickCount: click, pressure: 1)?.cgEvent else {
                 throw fail("PROVIDER_DISCONNECTED", "Cannot allocate mouse event.")
             }
             event.flags = flags

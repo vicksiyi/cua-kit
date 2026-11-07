@@ -77,6 +77,14 @@ func runInputChecks() throws {
               events[0].getIntegerValueField(.mouseEventButtonNumber) == button,
               events.allSatisfy({$0.location == mapped && $0.flags.contains(.maskControl) && $0.flags.contains(.maskShift)}) else { throw fail("SELF_TEST_FAILED","Mouse event sequence differs.") }
     }
+    let doubleClick = try mouseClickEvents(point: mapped, button: "left", count: 2, flags: [])
+    let nextClick = try mouseClickEvents(point: mapped, button: "left", count: 1, flags: [])
+    let numbers = (doubleClick + nextClick).map { $0.getIntegerValueField(.mouseEventNumber) }
+    let firstNumber = numbers[0]
+    guard numbers == [firstNumber, firstNumber, firstNumber + 1, firstNumber + 1, firstNumber + 2, firstNumber + 2],
+          (doubleClick + nextClick).map({ $0.getIntegerValueField(.mouseEventClickState) }) == [1, 1, 2, 2, 1, 1] else {
+        throw fail("SELF_TEST_FAILED", "Click event numbers reset or diverged from their down/up pair.")
+    }
     // Non-origin, Retina-independent global -> AppKit window-local mapping.
     // Previously windowNumber was 0, so postToPid could silently miss the view.
     typealias GetWindowLocation = @convention(c) (CGEvent) -> CGPoint

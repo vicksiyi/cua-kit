@@ -51,3 +51,18 @@ release at 250, for both normal and cancelled waits. It posts no real OS input.
 Build, input, held-input, drag and provider-click checks pass. Static call sites
 are pinned by scripts/audit-native-mouse-dispatch.py. This does not yet reproduce
 the entire source send-loop timing, focus machinery or click-event counter.
+
+## Click sequence counter
+
+The getter at 0x1007547b8 returns and then increments a process counter, initially
+zero at 0x101574978. The click builder at 0x100755a4c allocates one number per
+click and reuses it for down/up (x24 at 0x100755bbc and 0x10075628c). The separate
+click count is x25, starting at one within each request. Previously both fields
+used the per-request click index, restarting the event number at every command.
+
+The helper now shares a checked Int64 counter through SynthesizedEvent; an NSLock
+is host synchronization, not claimed source behavior. Regression verifies two
+clicks followed by a separate command: event numbers [n,n,n+1,n+1,n+2,n+2], click
+counts [1,1,2,2,1,1]. Input, held-input and provider-click checks pass. Static audit
+pins the initializer and both down/up argument sites. Drag numbering and complete
+source event construction remain separate work; this is not full parity.

@@ -22,6 +22,7 @@
       "target": "0x10026cc8c"
     }
   ],
+  "clickNumber": "zero-initialized process counter; down/up reuse x24; clickCount uses x25",
   "interpretation": "setTimestamp precedes postToPid; mouse construction sets window fields and local location",
   "limits": "Static call-site evidence; does not prove live app acceptance or complete send-loop parity."
 }
