@@ -2,7 +2,7 @@ import ApplicationServices
 import Foundation
 
 // System branch of AXUIElementRef.description(for:), 0x1006f9904–0x1006f99e0.
-// The preceding TaskLocal MockProvider dispatch is not implemented here.
+// The preceding static optional MockProvider dispatch is not implemented here.
 func systemAXActionDescriptionResult(
     copy: (inout CFString?) -> AXError
 ) throws -> String? {

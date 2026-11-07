@@ -14,7 +14,7 @@ func copiedAXElementAtPoint<Element>(
     return found.map(construct)
 }
 
-// Explicit system adapter. The vendor TaskLocal MockProvider branch is not
+// Explicit system adapter. The vendor static optional MockProvider branch is not
 // replaced; transaction ownership remains supplied by the caller.
 func systemAXElementAtPoint(
     _ point: CGPoint, in element: AXUIElement,

@@ -1069,7 +1069,7 @@ API/保序依据：[官方 Unique.swift](https://github.com/apple/swift-algorith
 测试先用 SwiftPM 构建真实依赖，再链接 Algorithms/RealModule 对象运行独立 Swift 程序，
 使用实际 Foundation 数组桥接、重复字符串和 Unicode 不同编码、
 混合类型、nil/空数组、错误状态与非空输出组合验证。readSystemAXActions 是显式系统分支，
-未冒充原版 TaskLocal MockProvider 分派，也未接入完整动作描述/生产观察器。
+未冒充原版 static optional MockProvider 分派，也未接入完整动作描述/生产观察器。
 
 
 ## 系统动作描述读取（2026-11-07）
@@ -1088,7 +1088,7 @@ NSString 类引用 0x10151efe8 已通过 Mach-O fixups 核查。Swift 实现使�
 
 同时确认外层映射 0x10079716c 调用描述解析器 0x100793768，nil 时才回退动作名。
 该解析器先调用自定义描述函数 0x100794cec，再请求系统描述；目前没有猜测自定义
-文本或将这一层提前接入生产。TaskLocal MockProvider 分派、完整描述解析与
+文本或将这一层提前接入生产。static optional MockProvider 分派、完整描述解析与
 页面状态输出的接线仍待恢复。
 
 
@@ -1164,7 +1164,7 @@ Target.action 的 setValue 入口已复用该实现，调用方仍按原有策�
 CFString 名称边界。Swift 测试验证输出未写入、false/true 和七种错误与输出位组合，
 确认一次调用和原始 AXError；构建通过。
 
-原 TaskLocal MockProvider 前置分派及展开/折叠的生产执行仍待恢复。权限阻塞未改变，
+原 static optional MockProvider 前置分派及展开/折叠的生产执行仍待恢复。权限阻塞未改变，
 本轮不重复运行真实应用验收，也没有调用模型。
 
 
@@ -1178,7 +1178,7 @@ AXUIElementPerformAction；0x101570e00 的两个 Int32 常量是 -25204/-25205�
 
 原版先查询 PID，仅同进程且当前非主线程时同步切到主队列；重建复用已恢复的
 onAXAttributeReadThread 通用同步逻辑。测试本轮只验证错误策略，不声称完成真实
-应用操作或本轮独立验证线程分流。原 TaskLocal MockProvider 选择仍待恢复。
+应用操作或本轮独立验证线程分流。原 static optional MockProvider 选择仍待恢复。
 
 重要执行边界：UIElementProtocol.perform(action:) 不等于直接 AX perform。
 0x100791d78–0x100791e14 对 expand/collapse 都调用 toggleDisclosure；后者
@@ -2289,7 +2289,7 @@ original transformation rendering and real app acceptance are still pending.
 ### Action discovery and execution integration
 
 Added an explicit standalone environment that composes restored operations; it
-is not presented as the original TaskLocal MockProvider. Observation and named
+is not presented as the original static optional MockProvider. Observation and named
 secondary-action validation now share the supplemental actions getter, including
 SAIExpand/SAICollapse. Press and named secondary actions enter the full restored
 branch ordering: menu ancestor preparation, disclosure toggle, scrollbar page
@@ -2490,7 +2490,7 @@ AXHitTesting.swift 恢复 0x1006f7a90 的系统分支：按目标 PID 复用现�
 以及预取事务缓存复用；Swift package 构建和测试通过。首次 fixture 编译遇到
 CGFloat/Double.infinity 重载歧义，显式指定 CGFloat 后通过。
 
-此处仅恢复系统适配层，事务仍由调用者传入；原 TaskLocal MockProvider、隐式
+此处仅恢复系统适配层，事务仍由调用者传入；原 static optional MockProvider、隐式
 current transaction 获取及完整点击生产接线未完成，没有进行真实 UI 操作验收。
 
 
@@ -3570,3 +3570,36 @@ missing/empty/whitespace/malformed values, and the distinct enabled/disclosing
 defaults with absent, CFBoolean, null, string and array values. Focused test and
 full Swift build pass. Static inspection did not execute the vendor binary.
 Full protocol conformance and provider wiring remain outstanding.
+
+### Correction: native MockProvider storage and AXUIElementProtocol
+
+Earlier sections incorrectly called MockProvider TaskLocal. Static inspection
+now establishes a different mechanism in this pinned build: once initializer
+0x1006fab7c zeros a 40-byte optional existential at 0x1015ca768. The reader at
+0x1006f5fdc copies that value via a value-witness initializeWithCopy helper,
+not TaskLocal.get. This is separate from UIElementTreeTransaction.current,
+which really is TaskLocal. Earlier explicit “TaskLocal MockProvider” wording in
+this document, source comments and the desktop audit has been corrected.
+
+MockProvider descriptor 0x1012cc62c has one instance-method requirement. In
+value(for:), provider witness +8 is invoked with the AX reference at 0x1006f6018.
+A nil provider or a nil lookup result enters the system path; a found object
+calls its AXUIElementProtocol value(for:) witness at +0x18 and returns that
+result directly. This does not select a second browser/backend. The source
+spelling of the provider lookup method and external setter/synchronization
+remain unverified; no invented global setter or TaskLocal substitute is added.
+
+The resolved interface is the separate class-bound AXUIElementProtocol at
+0x1012cc520. Its 19 requirements (Hashable base plus 18 getters/methods) were
+mapped from AXUIElement's witness table 0x10149b1b8 and the actual thunk calls.
+AXUIElementProtocol.swift now declares the complete interface, retaining raw
+error/partial-value tuples, array subset parameters, throwing APIs, concrete
+UIElement hit-test return, and nonoptional pid/actualPID/windowID properties.
+It does not yet claim concrete AXUIElement conformance or route production reads.
+
+scripts/audit-native-ax-provider.py pins the vendor SHA, descriptors, requirement
+flags, all witness addresses, nil initialization instructions and selected routing
+instructions. It emits reconstruction/native-ax-provider-evidence.json. Audit
+and full Swift build pass without loading or executing vendor code. The next
+implementation boundary is the static provider lookup plus concrete AX interface
+routing, rather than the previously assumed TaskLocal provider lifecycle.

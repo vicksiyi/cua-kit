@@ -13,7 +13,7 @@ func systemAXActionsResult(copy: (inout CFArray?) -> AXError) throws -> [UIEleme
     return strings.uniqued().map(UIElementAction.init)
 }
 
-// Explicit system-only provider. Original TaskLocal MockProvider dispatch is
+// Explicit system-only provider. Original static optional MockProvider dispatch is
 // still separate; this function must not claim to implement that whole getter.
 func readSystemAXActions(_ element: AXUIElement) throws -> [UIElementAction] {
     try systemAXActionsResult { AXUIElementCopyActionNames(element, &$0) }

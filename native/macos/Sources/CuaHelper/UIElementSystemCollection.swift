@@ -78,7 +78,7 @@ extension UIElement {
 }
 
 extension UIElement {
-    // Explicit system-only adapter. The original TaskLocal MockProvider selection
+    // Explicit system-only adapter. The original static optional MockProvider selection
     // must precede this path when the complete provider layer is connected.
     func systemElementCount(for attribute: UIElementAttribute) throws -> Int? {
         try elementCount(for: attribute) { readSystemAXArrayCount(axElement, attribute) }

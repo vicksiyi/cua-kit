@@ -9,7 +9,7 @@ func systemAXActionResult(perform: () -> AXError) throws {
     }
 }
 
-// TaskLocal MockProvider dispatch is not included. The original system branch
+// static optional MockProvider dispatch is not included. The original system branch
 // runs same-process AX actions on the main thread, as ordinary attribute reads do.
 func performSystemAXAction(_ element: AXUIElement, _ action: UIElementAction) throws {
     let targetPID = resolvedAXProcessID(element)

@@ -1146,7 +1146,7 @@ element_storage_evidence['singleAttributeSystemIntegration']={
     'consumerBoundary':'Existing finite/positive geometry check retained for capture/input consumers; not claimed as original frame-getter behavior.',
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1006f5f88,0x1006f629c)]],
     'implementation':['native/macos/Sources/CuaHelper/AXSingleAttributeReading.swift','native/macos/Sources/CuaHelper/WindowSelection.swift'],
-    'limitations':'System path integrated; original TaskLocal MockProvider and transaction acquisition absent. Native live acceptance remains unverified because required macOS permissions are not granted.',
+    'limitations':'System path integrated; original static optional MockProvider and transaction acquisition absent. Native live acceptance remains unverified because required macOS permissions are not granted.',
 }
 element_storage_evidence['cachedTextProduction']={
     'sharedGetter':'0x1007ab5dc..<0x1007ab724, cache witness then lenient String specialization 0x100710b44; no uncached fallback',
@@ -1243,7 +1243,7 @@ element_storage_evidence['systemHitTesting']={
     'result':'Only AXError.success accepted; every other status throws axError even if output exists. Success nil returns nil; success element constructs UIElement with current transaction.',
     'blocks':[{'start':hex(a),'endExclusive':hex(b),'machineCodeSha256':hashlib.sha256(read_virtual(a,b-a)).hexdigest()} for a,b in [(0x1006f7a90,0x1006f7ea8),(0x1006f7ea8,0x1006f7f2c)]],
     'implementation':'AXHitTesting.swift composes existing PID/main-thread helpers and concrete transaction-based UIElement constructor.',
-    'limitations':'System branch only; TaskLocal MockProvider and automatic current-transaction lookup remain pending. Fixture validation is not live UI acceptance; production clickablePoint integration remains incomplete.',
+    'limitations':'System branch only; static optional MockProvider and automatic current-transaction lookup remain pending. Fixture validation is not live UI acceptance; production clickablePoint integration remains incomplete.',
 }
 element_storage_evidence['chessPreferredPoint']={
     'entry':'0x10079eb20..<0x10079f380',
@@ -1556,7 +1556,7 @@ element_storage_evidence['systemActionReader']={
         for a,b in [(0x1006f949c,0x1006f9590),(0x1006f95e4,0x1006f97ec),(0x1006fb4d8,0x1006fb4e4)]],
     'implementation':'native/macos/Sources/CuaHelper/AXActionReading.swift',
     'dependency':'swift-algorithms 1.2.1 selected and pinned; original linked version is not established',
-    'limitations':'System branch only; original TaskLocal MockProvider selection and complete production action wiring remain pending.',
+    'limitations':'System branch only; original static optional MockProvider selection and complete production action wiring remain pending.',
 }
 description_class=next((line for line in fixups.splitlines() if '0x10151efe8' in line.lower()),'')
 if '_OBJC_CLASS_$_NSString' not in description_class: raise SystemExit('Action-description string class changed')
@@ -1568,7 +1568,7 @@ element_storage_evidence['systemActionDescriptionReader']={
     'block':{'start':'0x1006f9904','endExclusive':'0x1006f99e4',
         'machineCodeSha256':hashlib.sha256(read_virtual(0x1006f9904,0x1006f99e4-0x1006f9904)).hexdigest()},
     'implementation':'native/macos/Sources/CuaHelper/AXActionDescriptionReading.swift',
-    'limitations':'System branch and custom description policy are restored separately. TaskLocal MockProvider dispatch and production descriptor wiring remain pending. Typed CFString output follows the system API contract.',
+    'limitations':'System branch and custom description policy are restored separately. static optional MockProvider dispatch and production descriptor wiring remain pending. Typed CFString output follows the system API contract.',
 }
 action_description_imports={
     '0x101466488':'hasPrefix', '0x101463988':'scanString',
@@ -1621,7 +1621,7 @@ element_storage_evidence['systemAttributeSettable']={
         'machineCodeSha256':hashlib.sha256(read_virtual(0x1006f7434,0x1006f7490-0x1006f7434)).hexdigest()},
     'implementation':'native/macos/Sources/CuaHelper/AXAttributeSettable.swift',
     'productionUse':'Target.action setValue uses this system adapter; existing caller rejection policy retained',
-    'limitations':'Original preceding TaskLocal MockProvider selection and full disclosure-action wiring remain pending.',
+    'limitations':'Original preceding static optional MockProvider selection and full disclosure-action wiring remain pending.',
 }
 if struct.unpack('<ii',read_virtual(0x101570e00,8))!=(-25204,-25205):
     raise SystemExit('Native tolerated action errors changed')

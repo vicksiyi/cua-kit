@@ -1,0 +1,140 @@
+{
+  "binarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "protocol": {
+    "name": "AXUIElementProtocol",
+    "descriptor": "0x1012cc520",
+    "classBound": true,
+    "requirements": [
+      {
+        "index": 0,
+        "name": "Hashable",
+        "descriptor": "0x1012cc550",
+        "witness": null
+      },
+      {
+        "index": 1,
+        "name": "supportedAttributes",
+        "descriptor": "0x1012cc558",
+        "witness": "0x1006fa8ec"
+      },
+      {
+        "index": 2,
+        "name": "value(for:)",
+        "descriptor": "0x1012cc560",
+        "witness": "0x1006fa8f0"
+      },
+      {
+        "index": 3,
+        "name": "values(for:)",
+        "descriptor": "0x1012cc568",
+        "witness": "0x1006fa944"
+      },
+      {
+        "index": 4,
+        "name": "arrayValue(for:index:maxValues:countIfKnown:)",
+        "descriptor": "0x1012cc570",
+        "witness": "0x1006fa958"
+      },
+      {
+        "index": 5,
+        "name": "arrayCount(for:)",
+        "descriptor": "0x1012cc578",
+        "witness": "0x1006fa9b0"
+      },
+      {
+        "index": 6,
+        "name": "isAttributeSettable(_:)",
+        "descriptor": "0x1012cc580",
+        "witness": "0x1006fa9b4"
+      },
+      {
+        "index": 7,
+        "name": "setValue(_:forAttribute:)",
+        "descriptor": "0x1012cc588",
+        "witness": "0x1006fa9cc"
+      },
+      {
+        "index": 8,
+        "name": "supportedParameterizedAttributes",
+        "descriptor": "0x1012cc590",
+        "witness": "0x1006fa9e0"
+      },
+      {
+        "index": 9,
+        "name": "parameterizedValue(for:parameter:)",
+        "descriptor": "0x1012cc598",
+        "witness": "0x1006fa9e4"
+      },
+      {
+        "index": 10,
+        "name": "element(at:)",
+        "descriptor": "0x1012cc5a0",
+        "witness": "0x1006faa30"
+      },
+      {
+        "index": 11,
+        "name": "actions",
+        "descriptor": "0x1012cc5a8",
+        "witness": "0x1006faa58"
+      },
+      {
+        "index": 12,
+        "name": "description(for:)",
+        "descriptor": "0x1012cc5b0",
+        "witness": "0x1006faa6c"
+      },
+      {
+        "index": 13,
+        "name": "perform(_:)",
+        "descriptor": "0x1012cc5b8",
+        "witness": "0x1006faa80"
+      },
+      {
+        "index": 14,
+        "name": "pid",
+        "descriptor": "0x1012cc5c0",
+        "witness": "0x1006faa94"
+      },
+      {
+        "index": 15,
+        "name": "actualPID",
+        "descriptor": "0x1012cc5c8",
+        "witness": "0x1006faaa8"
+      },
+      {
+        "index": 16,
+        "name": "windowID",
+        "descriptor": "0x1012cc5d0",
+        "witness": "0x1006faabc"
+      },
+      {
+        "index": 17,
+        "name": "bundleIdentifier",
+        "descriptor": "0x1012cc5d8",
+        "witness": "0x1006faad0"
+      },
+      {
+        "index": 18,
+        "name": "isEqual(to:)",
+        "descriptor": "0x1012cc5e0",
+        "witness": "0x1006faad4"
+      }
+    ]
+  },
+  "mockProvider": {
+    "descriptor": "0x1012cc62c",
+    "requirementCount": 1,
+    "storage": "0x1015ca768",
+    "initialization": "0x1006fab7c",
+    "storageKind": "static optional existential, nil by default; not TaskLocal",
+    "initializerSHA256": "7dae8882f94765991225ce01599afdb9b5d2fe19bfca7f5dd2e02c30cf6765d7",
+    "dispatch": "provider lookup at witness +8 with AX reference; nil result uses system path; nonnil result calls AXUIElementProtocol method",
+    "valueDispatch": {
+      "lookupCall": "0x1006f6018",
+      "nilFallback": "0x1006f602c",
+      "methodSlot": "0x18",
+      "methodCall": "0x1006f6050"
+    },
+    "limitation": "MockProvider method source spelling and setter synchronization remain unverified; concrete AXUIElement conformance and routing not implemented"
+  }
+}
