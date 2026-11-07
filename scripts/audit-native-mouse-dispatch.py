@@ -113,6 +113,13 @@ for site, expected_bytes in [(0x10074be2c, '95067837'), (0x10074be30, 'c00c0036'
                              (0x10074c930, 'f57e60b3'), (0x10074c934, 'c97e60d3'),
                              (0x10074c950, '15a702a9'), (0x10074c954, '08730079')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# Registered gained/lost selection excludes the intercepted logical owner.
+for site, expected_bytes in [(0x10074d374, '1f01166b'), (0x10074d37c, '1f01136b'),
+                             (0x10074d384, '69a34039'), (0x10074d390, '69834039'),
+                             (0x10074d398, '691f40b9'), (0x10074d3a4, '1f01136b'),
+                             (0x10074d3ac, '1f01166b'), (0x10074d3c0, '68834039'),
+                             (0x10074d3c8, '681f40b9')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

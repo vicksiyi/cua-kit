@@ -214,6 +214,18 @@ if CommandLine.arguments.contains("--graphics-init-self-test") {
     print("{\"graphicsInitialized\":true,\"idempotent\":true}")
     exit(0)
 }
+if let index = CommandLine.arguments.firstIndex(of: "--app-observation-check") {
+    guard CommandLine.arguments.indices.contains(index + 1) else {
+        fputs("Usage: cua-helper --app-observation-check BUNDLE_ID\n", stderr); exit(2)
+    }
+    do {
+        let report = try await MainActor.run {
+            try appObservationDiagnostic(bundleIdentifier: CommandLine.arguments[index + 1])
+        }
+        let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+        print(String(decoding: data, as: UTF8.self)); exit(0)
+    } catch { fputs("App observation diagnostic failed: \(error)\n", stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--key-focus-query-check") {
     var failure: [String: Any]?
     let pid = systemRegistryKeyFocusPID { focus, conversion in

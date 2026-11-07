@@ -883,3 +883,37 @@ order, registered same-owner acceptance, unregistered acceptance, route reuse
 and suppression reset. Build and provider-click checks pass with injected
 callbacks, without actual input. Previous-owner storage, full changed/new-front
 notification handling and production controller ownership remain incomplete.
+
+
+## Registered transition selection and real AX diagnostic
+
+Restored per-record gained/lost selection from 0x10074d374..0x10074d3d4.
+It compares previous/current logical owners and excludes a present intercepted
+logical owner (route state+0x1c/+0x20). The taken-focus producer now preserves
+this identity alongside the physical intercepted PID and recipient PID.
+Exhaustive small relation checks and producer-to-selector checks pass. Full
+callback task execution and the remainder of changed-focus handling are still
+missing; selection alone is not a production callback implementation.
+
+Revalidated actual environment permissions: helper --permissions reports
+accessibility=true and screenRecording=true, requested=false. This supersedes
+earlier environment-only TCC=false observations. No dialogs were requested.
+
+New read-only operator entry:
+
+    native/macos/.build/debug/cua-helper --app-observation-check ai.multica.desktop
+
+It outputs roles/counts and equality facts, not application content/titles.
+Current Multica is running, inactive, not hidden. AXChildren succeeds with
+roles [AXApplication, AXMenuBar]; its AXApplication child equals the root.
+AXWindows succeeds with one reference whose role is AXApplication and which
+also equals the root. Ordinary traversal therefore legitimately skips that
+cycle and yields menus only. A separate direct system Swift probe reproduced
+the raw role/equality results; provider decoding preserves the original roles.
+WindowServer independently lists an actual window. This is an observed AX
+inconsistency, not proof of its cause, and does not explain every older click
+failure. No real click or application activation was performed in these checks.
+
+Swift build, provider-click checks, pinned static audit and live read-only
+diagnostic pass. Production focus controller integration and a harmless
+before/after Multica UI click acceptance remain required.

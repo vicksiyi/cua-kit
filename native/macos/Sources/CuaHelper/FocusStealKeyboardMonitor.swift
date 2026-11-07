@@ -7,6 +7,25 @@ import CoreGraphics
 struct FocusStealKeyboardRoute {
     let interceptedPID: Int32
     let recipientPID: Int32
+    // Optional logical owner at native state+0x1c/+0x20. A matching
+    // intercepted owner must not generate registered focus transitions.
+    let interceptedOwnerPID: Int32?
+    init(interceptedPID: Int32, recipientPID: Int32, interceptedOwnerPID: Int32? = nil) {
+        self.interceptedPID = interceptedPID; self.recipientPID = recipientPID
+        self.interceptedOwnerPID = interceptedOwnerPID
+    }
+}
+
+enum FocusStealRegistrationTransition: Equatable { case unchanged, gained, lost }
+
+// Per-record selection in 0x10074d374..0x10074d3d4. The caller traverses
+// the snapshot in registration order; duplicate PIDs remain distinct records.
+func focusStealRegistrationTransition(pid: Int32, previousOwnerPID: Int32,
+                                     currentOwnerPID: Int32,
+                                     interceptedOwnerPID: Int32?) -> FocusStealRegistrationTransition {
+    if pid == currentOwnerPID && pid != previousOwnerPID && interceptedOwnerPID != pid { return .gained }
+    if pid == previousOwnerPID && pid != currentOwnerPID && interceptedOwnerPID != pid { return .lost }
+    return .unchanged
 }
 
 final class FocusStealKeyboardRoutingState {
@@ -18,6 +37,12 @@ final class FocusStealKeyboardRoutingState {
         lock.lock(); defer { lock.unlock() }
         self.route = route
         keyFocusReturnWasSuppressed = false
+    }
+    func registrationTransition(pid: Int32, previousOwnerPID: Int32,
+                                currentOwnerPID: Int32) -> FocusStealRegistrationTransition {
+        lock.lock(); defer { lock.unlock() }
+        return focusStealRegistrationTransition(pid: pid, previousOwnerPID: previousOwnerPID,
+            currentOwnerPID: currentOwnerPID, interceptedOwnerPID: route?.interceptedOwnerPID)
     }
     // 0x10074c8d0..0x10074c95c. Resolve the incoming physical PID while
     // holding state lock, then test its logical owner against registrations.
@@ -31,7 +56,8 @@ final class FocusStealKeyboardRoutingState {
         let registered = isRegistered(ownerPID)
         let suppress = registered && ownerPID != previousOwnerPID
         route = suppress ? FocusStealKeyboardRoute(interceptedPID: incomingFocusPID,
-                                                   recipientPID: destinationPID) : nil
+                                                   recipientPID: destinationPID,
+                                                   interceptedOwnerPID: ownerPID) : nil
         keyFocusReturnWasSuppressed = false
         return suppress ? nil : event
     }

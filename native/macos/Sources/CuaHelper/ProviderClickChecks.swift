@@ -3700,6 +3700,7 @@ func runProviderClickChecks() async throws {
     runFocusStealRegistrationStoreChecks()
     runFocusStealKeyboardMonitorChecks()
     runFocusStealTakenStateChecks()
+    runFocusStealRegistrationTransitionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4686,4 +4687,33 @@ private func runFocusStealTakenStateChecks() {
     checkTrue(taken(previous: 77, registered: false) === event)
     checkTrue(state.filterKeyFocusReturned(event, destinationPID: 77) === event)
     checkEqual(trace.count, 8)
+}
+
+private func runFocusStealRegistrationTransitionChecks() {
+    // Cover all owner relations, including unchanged focus and interception of
+    // either side. Physical focus PID need not equal the logical owner.
+    for previous: Int32 in [66, 77] {
+        for current: Int32 in [66, 77] {
+            for suppressed: Int32? in [nil, 66, 77] {
+                let state = FocusStealKeyboardRoutingState(route: FocusStealKeyboardRoute(
+                    interceptedPID: 88, recipientPID: 99, interceptedOwnerPID: suppressed))
+                for pid: Int32 in [66, 77, 55] {
+                    let actual = state.registrationTransition(pid: pid, previousOwnerPID: previous,
+                        currentOwnerPID: current)
+                    if previous == current || pid == suppressed || (pid != previous && pid != current) {
+                        checkEqual(actual, .unchanged)
+                    } else if pid == current { checkEqual(actual, .gained) }
+                    else { checkEqual(actual, .lost) }
+                }
+            }
+        }
+    }
+    let state = FocusStealKeyboardRoutingState()
+    let event = CGEvent(source: nil)!
+    _ = state.filterKeyFocusTaken(event, previousOwnerPID: 77, incomingFocusPID: 88,
+        destinationPID: 77, resolveOwnerPID: { _ in 66 }, isRegistered: { _ in true })
+    checkEqual(state.registrationTransition(pid: 66, previousOwnerPID: 77, currentOwnerPID: 66), .unchanged)
+    checkEqual(state.registrationTransition(pid: 77, previousOwnerPID: 77, currentOwnerPID: 66), .lost)
+    state.update(nil)
+    checkEqual(state.registrationTransition(pid: 66, previousOwnerPID: 77, currentOwnerPID: 66), .gained)
 }
