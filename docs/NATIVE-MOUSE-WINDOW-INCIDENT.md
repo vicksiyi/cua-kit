@@ -2536,3 +2536,21 @@ operation, preserving publication after mutation. Checks cover no extra AX read,
 replacement publication, zero-ID insertion and stored-key lookup. Production
 initialization still needs to compose this with the descendant scan and its
 publication boundaries; this overload is not itself full Target integration.
+
+
+## Menu-specific native window ID resolution
+
+MenuUIElement.windowID delegates to 0x100725a5c. It first reads actualPID,
+then raw AX windowID, then lists native windows with options raw 18
+(optionOnScreenAboveWindow plus excludeDesktopElements), relative to that AX ID.
+It returns the first window in native order with the same owner PID and layer
+101 or 24. No match throws a distinct menu-window error; it does not fall back
+to the raw AX ID. Successful raw zero is still passed to the list operation.
+CGWindow.allWindows at 0x10025b8e8 calls CGWindowListCopyWindowInfo.
+
+resolveMenuWindowID and systemMenuWindowID restore this lookup. Checks cover
+lookup order/options, foreign PID rejection, ordinary-layer rejection, first
+matching window selection, missing-match failure and PID error short-circuit.
+Production menu wrappers still need to use this path when the full controller
+is connected. Treating a menu's raw AX ID as its dispatch window would be a
+behavioral mismatch, even if basic fixture-window clicks succeed.

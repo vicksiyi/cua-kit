@@ -3754,6 +3754,7 @@ func runProviderClickChecks() async throws {
     runAppControllerMenuStateChecks()
     runAppControllerInitialWindowsChecks()
     runResolvedWindowRegistrationChecks()
+    try runMenuWindowIDChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7410,4 +7411,29 @@ private func runResolvedWindowRegistrationChecks() {
     // changed IDs under their stored key. Here the current IDs are all nonzero.
     let ordered = registry.orderedWindows { [7] }
     precondition(ordered == ["replacement"])
+}
+
+private func runMenuWindowIDChecks() throws {
+    struct Window { let id: UInt32; let pid: Int32; let level: Int32 }
+    var calls: [String] = []
+    let result = try resolveMenuWindowID(actualPID: { calls.append("pid"); return 7 },
+        accessibilityWindowID: { calls.append("axid"); return 0 }, allWindows: { options, relative in
+            precondition(options.rawValue == 18 && relative == 0)
+            calls.append("windows")
+            return [Window(id: 1, pid: 8, level: 101), Window(id: 2, pid: 7, level: 0),
+                Window(id: 3, pid: 7, level: 24), Window(id: 4, pid: 7, level: 101)]
+        }, ownerPID: { $0.pid }, level: { $0.level }, windowID: { $0.id })
+    precondition(result == 3 && calls == ["pid", "axid", "windows"])
+    do {
+        _ = try resolveMenuWindowID(actualPID: { 7 }, accessibilityWindowID: { 99 },
+            allWindows: { _, _ in [Window]() }, ownerPID: { $0.pid }, level: { $0.level }, windowID: { $0.id })
+        preconditionFailure("Missing native menu must not return the AX ID")
+    } catch MenuWindowIDError.menuWindowNotFound {}
+    enum Failed: Error { case pid }
+    do {
+        _ = try resolveMenuWindowID(actualPID: { throw Failed.pid },
+            accessibilityWindowID: { preconditionFailure() }, allWindows: { _, _ in [Window]() },
+            ownerPID: { $0.pid }, level: { $0.level }, windowID: { $0.id })
+        preconditionFailure()
+    } catch Failed.pid {}
 }
