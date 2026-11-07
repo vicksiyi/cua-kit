@@ -3702,6 +3702,7 @@ func runProviderClickChecks() async throws {
     runFocusStealTakenStateChecks()
     runFocusStealRegistrationTransitionChecks()
     await runFocusStealRegistrationCallbackChecks()
+    await runFocusStealRegisteredDispatchChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4742,4 +4743,39 @@ private func runFocusStealRegistrationCallbackChecks() async {
         })!
     checkTrue(await missing.value)
     checkEqual(recorder.snapshot, ["gained", "lost", "missing"])
+}
+
+private func runFocusStealRegisteredDispatchChecks() async {
+    final class Recorder: @unchecked Sendable {
+        private let lock = NSLock()
+        private var values: [String] = []
+        func append(_ value: String) { lock.lock(); defer { lock.unlock() }; values.append(value) }
+        var snapshot: [String] { lock.lock(); defer { lock.unlock() }; return values }
+    }
+    let recorder = Recorder()
+    let store = FocusStealRegistrationStore<FocusStealRegistrationCallbacks>(pid: { $0.pid }, becameEmpty: {})
+    store.append(FocusStealRegistrationCallbacks(pid: 88, lost: nil, gained: { recorder.append("gained-1") }))
+    store.append(FocusStealRegistrationCallbacks(pid: 88, lost: nil, gained: { recorder.append("gained-2") }))
+    store.append(FocusStealRegistrationCallbacks(pid: 77, lost: { recorder.append("lost") }, gained: nil))
+    store.append(FocusStealRegistrationCallbacks(pid: 55, lost: nil, gained: nil))
+    let state = FocusStealKeyboardRoutingState()
+    var snapshotReads = 0
+    let tasks = state.scheduleRegisteredTransitions(previousOwnerPID: 77, currentOwnerPID: 88,
+        takeRegistrationSnapshot: {
+            snapshotReads += 1
+            let snapshot = store.snapshot
+            _ = store.removeFirst(pid: 88)
+            return snapshot
+        }, reportMissingHandler: { _, _ in unexpectedFailure() })
+    checkEqual(snapshotReads, 1); checkEqual(tasks.count, 3)
+    for task in tasks { checkFalse(await task.value) }
+    checkEqual(recorder.snapshot.sorted(), ["gained-1", "gained-2", "lost"])
+    checkEqual(store.snapshot.map { $0.pid }, [88, 77, 55])
+    // The intercepted logical owner does not receive a gained callback.
+    state.update(FocusStealKeyboardRoute(interceptedPID: 99, recipientPID: 77, interceptedOwnerPID: 88))
+    let suppressed = state.scheduleRegisteredTransitions(previousOwnerPID: 77, currentOwnerPID: 88,
+        takeRegistrationSnapshot: { store.snapshot })
+    checkEqual(suppressed.count, 1)
+    for task in suppressed { checkFalse(await task.value) }
+    checkEqual(recorder.snapshot.filter { $0 == "lost" }.count, 2)
 }

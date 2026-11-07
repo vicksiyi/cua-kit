@@ -937,3 +937,20 @@ missing-handler reporting and result semantics. Build/provider-click checks
 and static audit pass. This restores the scheduling boundary, not the full
 changed-focus state update, native runtime flag layout or production controller
 integration. Live Multica click acceptance is still outstanding.
+
+
+## Registered dispatch composition
+
+Composed state-locked transition selection with a single registration snapshot
+and unstructured task scheduling. The registration-list lock is released by
+the snapshot provider before iteration; the system-state lock remains held
+through selection/enqueue. Duplicates are not deduplicated, and removal after
+snapshot acquisition cannot alter that delivery batch. No task is awaited
+under the system-state lock. Build/provider-click checks pass for duplicate
+records, removal after snapshot and intercepted-owner exclusion with actual
+async callback tasks.
+
+This composes callback payloads only. Native captured records also retain tap
+resources and menu-suppression fields, so full registration-resource lifetime
+parity, history mutation, changed/new-front processing and production controller
+integration are still required. No actual UI input was sent in these tests.

@@ -44,6 +44,29 @@ final class FocusStealKeyboardRoutingState {
         return focusStealRegistrationTransition(pid: pid, previousOwnerPID: previousOwnerPID,
             currentOwnerPID: currentOwnerPID, interceptedOwnerPID: route?.interceptedOwnerPID)
     }
+    // Changed-focus callback snapshots registrations under their own lock,
+    // releases that list lock, then traverses the snapshot under state lock.
+    // Returning task handles is an internal verification seam; production
+    // callers may discard them, as the original callback does.
+    @discardableResult
+    func scheduleRegisteredTransitions(previousOwnerPID: Int32, currentOwnerPID: Int32,
+        takeRegistrationSnapshot: () -> [FocusStealRegistrationCallbacks],
+        reportMissingHandler: @escaping @Sendable (Int32, FocusStealRegistrationTransition) -> Void = { _, _ in }
+    ) -> [Task<Bool, Never>] {
+        lock.lock(); defer { lock.unlock() }
+        let registrations = takeRegistrationSnapshot()
+        var tasks: [Task<Bool, Never>] = []
+        for registration in registrations {
+            let transition = focusStealRegistrationTransition(pid: registration.pid,
+                previousOwnerPID: previousOwnerPID, currentOwnerPID: currentOwnerPID,
+                interceptedOwnerPID: route?.interceptedOwnerPID)
+            if let task = scheduleFocusStealRegistrationCallback(registration,
+                transition: transition, reportMissingHandler: reportMissingHandler) {
+                tasks.append(task)
+            }
+        }
+        return tasks
+    }
     // 0x10074c8d0..0x10074c95c. Resolve the incoming physical PID while
     // holding state lock, then test its logical owner against registrations.
     // Return the original notification if allowed and clear any stale route.
