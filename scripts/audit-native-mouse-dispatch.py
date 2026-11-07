@@ -33,7 +33,9 @@ calls = [(0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x100754904, 0x1002580d0), (0x100754914, 0x1002580d0),
          (0x1007549c8, 0x10026cc8c),
          (0x100754ab4, 0x100258288), (0x100754b00, 0x100257d88),
-         (0x100754c90, 0x10026cc8c)]
+         (0x100754c90, 0x10026cc8c),
+         (0x1006fc334, 0x1007a7790), (0x1006fc420, 0x100715974),
+         (0x1006fc46c, 0x1007a7790)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)

@@ -3634,4 +3634,39 @@ private func checkTrue(_ value: Bool, file: StaticString = #filePath, line: UInt
 private func checkFalse(_ value: Bool, file: StaticString = #filePath, line: UInt = #line) { precondition(!value, "Expected false", file: file, line: line) }
 private func unexpectedFailure(_ message: String = "unexpected failure") -> Never { preconditionFailure(message) }
 
-func runProviderClickChecks() async throws { try await ProviderClickChecks.run() }
+private func runApplicationClickActivationChecks() async throws {
+    // Validate every gate combination, including nil-enforcer behavior.
+    for bits in 0..<256 {
+        let enforcer = bits & 1 != 0, focus = bits & 2 != 0, held = bits & 4 != 0
+        let coordinate = bits & 8 != 0, web = bits & 16 != 0
+        let selection = bits & 32 != 0, catalyst = bits & 64 != 0, role = bits & 128 != 0
+        var enforced = 0, probed = 0, focusReads = 0
+        let result = try await prepareApplicationForSyntheticClick(hasFocusEnforcer: enforcer,
+            applicationBelievesItHasFocus: { focusReads += 1; return focus }, hasHeldKey: held,
+            clickingByCoordinate: coordinate, isInsideWebView: web,
+            clickingMayCauseSelection: { selection }, isCatalystApp: { catalyst },
+            catalystRoleRequiresActivation: { role },
+            applicationIsActive: { probed += 1; return true },
+            safelyEnforceWindowActiveState: { enforced += 1 })
+        let requiresEnforcement = enforcer && !focus && (held || (coordinate && (web || selection)) || (catalyst && (selection || role)))
+        checkEqual(enforced, requiresEnforcement ? 1 : 0)
+        checkEqual(result, !enforcer || focus || requiresEnforcement)
+        checkEqual(probed, enforcer ? 0 : 1)
+        checkEqual(focusReads, enforcer ? 1 : 0)
+    }
+    var reads: [String] = []
+    let result = try await prepareApplicationForSyntheticClick(hasFocusEnforcer: true,
+        applicationBelievesItHasFocus: { reads.append("focus"); return false }, hasHeldKey: false,
+        clickingByCoordinate: true, isInsideWebView: false,
+        clickingMayCauseSelection: { reads.append("selection"); return false },
+        isCatalystApp: { reads.append("catalyst"); return true },
+        catalystRoleRequiresActivation: { reads.append("role"); return false },
+        applicationIsActive: { unexpectedFailure() }, safelyEnforceWindowActiveState: { unexpectedFailure() })
+    checkFalse(result)
+    checkEqual(reads, ["focus", "selection", "catalyst", "selection", "role"])
+}
+
+func runProviderClickChecks() async throws {
+    try await ProviderClickChecks.run()
+    try await runApplicationClickActivationChecks()
+}

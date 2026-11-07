@@ -130,3 +130,26 @@ remains absent for AX routing; the timing fallback is applied only when posting
 synthetic events. Native default constant and max-selection instruction are
 pinned in the audit. Build, held-input, sky-action and provider-click checks pass.
 This corrects timing evidence, without claiming a live Multica acceptance result.
+
+## Synthetic activation decision recovered
+
+ApplicationUIElement.syntheticallyActivateIfNeededForSendingClick at
+0x1006fc140..0x1006fc708 differs from unconditional foreground activation:
+- Without an enforcer, read AX PID and return NSRunningApplication.isActive
+  (false for missing app); propagate the PID read error. No activation occurs.
+- With an enforcer, first return true if applicationBelievesItHasFocus is true.
+- Otherwise held-key input requires safe enforcement.
+- Coordinate input requires enforcement if inside a WebView or if clicking the
+  target may cause selection.
+- Otherwise Catalyst apps require enforcement for selection-sensitive targets
+  or membership in the source's role set.
+- Return false when no condition applies; successful enforcement returns true,
+  and failures propagate.
+
+The orchestration is restored in ApplicationClickActivation.swift using explicit
+dependencies. The duplicated selection read is preserved when coordinate input
+falls through into Catalyst handling. Tests cover 256 input combinations and
+read order. It is not wired to production until the actual state owner, role-set
+adapter and safe enforcement operation are restored. No fake enforcer or generic
+activate() substitutes for those missing components. This step explains another
+real gap but does not establish successful background Multica input.
