@@ -4855,3 +4855,23 @@ Validation: full Swift helper build and provider selftest pass for the four
 allowed roles, all three incrementor exclusions, nil/unrelated additional roles,
 radioButton+AXTabButton gating, and slider rejection. Full transformed-owner and
 traversal integration still require the remaining constructor/caller work.
+
+
+### Traversal role propagation audit (2026-11-07)
+
+Extended the pinned static audit to enumerate and assert the twelve direct common
+constructor callers, and to verify the argument flow for traversal 0x100769250.
+Its constructor call loads argument 9 from [fp+0x10] at 0x1007695e0 and forwards
+it as x4 at 0x1007696e8. For recursion, 0x1007698d0 loads offset +0x20 from the
+current transformed node, 0x1007698ec places it as the next invocation's stack
+argument 9, and 0x100769914 calls the same traversal. Offset +0x20 is the role
+stored by the common constructor at 0x10075e434. This establishes that this
+recursive path supplies the current transformed node's role to its child.
+
+This is traversal context, not an AXParent attribute request. Other traversal
+variants and skipped-node propagation still require tracing before the argument
+can be globally renamed or the complete tree transform reconstructed. The audit
+also records direct-call scan scope; it does not claim absence of indirect calls.
+Validation: pinned binary hash, direct-call inventory, instruction-word assertions
+and recursive branch targets pass; generated evidence JSON updated. No native
+runtime behavior or live UI completion is claimed by this static audit.

@@ -68,6 +68,35 @@ calls = [branch(0x10075c570, 0x10075e160, False),
          branch(0x10075e0f8, 0x10076589c),
          branch(0x10075e124, 0x10075e160),
          branch(0x10075debC, 0x10065fb6c)]
+# Direct constructor callers in the executable instruction region. This is not
+# an assertion that no indirect call exists.
+constructor_call_sites = []
+code_start = 0x100000000
+code = read(code_start, 0x1150000)
+for offset in range(0, len(code) - 4, 4):
+    word = struct.unpack_from('<I', code, offset)[0]
+    if word & 0x7c000000 != 0x14000000:
+        continue
+    immediate = word & 0x3ffffff
+    if immediate & 0x2000000: immediate -= 0x4000000
+    if code_start + offset + immediate * 4 == 0x10075e160:
+        constructor_call_sites.append(code_start + offset)
+assert constructor_call_sites == [
+    0x10071b0d8, 0x100758a4c, 0x100758c10, 0x10075c570,
+    0x10075dfdc, 0x10075e124, 0x100768418, 0x10076879c,
+    0x100768f9c, 0x1007696f8, 0x100769f08, 0x10076a7dc,
+]
+# Traversal 0x100769250 takes the constructor role argument from stack arg 9.
+# Its recursive call places the current transformed node's role (+0x20) there.
+role_flow_words = {
+    0x1007695e0: 0xf9400bb5,  # ldr x21, [x29, #0x10]
+    0x1007696e8: 0xaa1503e4,  # mov x4, x21
+    0x1007698d0: 0xf9401108,  # ldr x8, [x8, #0x20]
+    0x1007698ec: 0xa90027e8,  # stp x8, x9, [sp]
+}
+for address, word in role_flow_words.items():
+    assert struct.unpack('<I', read(address, 4))[0] == word, hex(address)
+role_flow_branches = [branch(0x1007696f8, 0x10075e160), branch(0x100769914, 0x100769250)]
 value_type_labels = []
 for i in range(6):
     first = read(0x1011955f8 + i * 8, 8)
@@ -88,6 +117,11 @@ for i, target in enumerate(rendering_witnesses):
     assert 0x100000000 + (raw & 0xffffffff) == target
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls, valueTypeLabels=value_type_labels,
+    constructorDirectCallSites=[hex(x) for x in constructor_call_sites],
+    traversalRoleFlow=dict(instructions={hex(k): hex(v) for k, v in role_flow_words.items()},
+        branches=role_flow_branches,
+        finding="0x100769250 passes current transformed role to recursive child constructor",
+        limitation="Other traversal variants and skipped-node behavior still require tracing"),
     renderingContext=dict(descriptor=hex(rendering_descriptor), flags=rendering_flags,
         requirements=["Role: AccessibilityRole", "Role", "urlShortener.get",
             "urlShortener.set", "urlShortener.modify", "type.get"],
