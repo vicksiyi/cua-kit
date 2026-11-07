@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runCursorWindowResetChecks()
     runCursorMotionAnimationResetChecks()
     runCursorWindowVisibilityChecks()
     runCursorCorrespondingWindowChecks()
@@ -7915,5 +7916,44 @@ private func runCursorMotionAnimationResetChecks() {
             positionState: { $0.state }, stopPositionImmediately: { _ in preconditionFailure() },
             clearPosition: { clears += 1 })
         precondition(clears == 2)
+    }
+}
+
+
+private func runCursorWindowResetChecks() {
+    for persistent in [false, true] {
+        for temporary in [false, true] {
+            for wants in [false, true] {
+                for present in [false, true] {
+                    var reason = temporary
+                    var events: [String] = []
+                    func reset() {
+                        resetCursorWindow(overlayReasons: { (persistent, reason) },
+                            clearTemporaryOverlayReason: { reason = false; events.append("reason") },
+                            setLevel: { precondition($0 == 0); events.append("level") },
+                            resetMotionAnimations: { events.append("motion") },
+                            resetScootAnimations: { events.append("scoot") },
+                            clearNextInteractionHandler: { events.append("next") },
+                            clearMotionCompletionHandler: { events.append("completion") },
+                            clearTimingSatisfied: { events.append("timing") },
+                            setVelocityX: { precondition($0 == 0); events.append("vx") },
+                            setVelocityY: { precondition($0 == 0); events.append("vy") },
+                            wantsToBeVisible: { events.append("wants"); return wants },
+                            correspondingWindowIsPresent: { events.append("present"); return present },
+                            updateVisibility: { events.append("visibility") })
+                    }
+                    reset()
+                    let core = ["motion", "scoot", "next", "completion", "timing", "vx", "vy"]
+                    var expected = ["reason"] + (!persistent && temporary ? ["level"] : []) + core
+                    if temporary {
+                        expected.append("wants")
+                        if wants { expected.append("present"); if present { expected.append("visibility") } }
+                    }
+                    precondition(events == expected && !reason)
+                    events = []; reset()
+                    precondition(events == ["reason"] + core)
+                }
+            }
+        }
     }
 }

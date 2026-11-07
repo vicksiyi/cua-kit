@@ -608,6 +608,11 @@ assert read(0x10009b394, 8).hex() == '1f0d0071e0000054'
 assert read(0x10009b3f0, 8).hex() == 'b65e40a9bf7e00a9'
 assert read(0x10009b414, 8).hex() == '746a79f8340200b4'
 
+# Outer cursor reset preserves reason0, clears reason1 and conditionally
+# restores normal level; visibility is refreshed only for a removed reason1.
+assert read(0x10009b338, 24).hex() == '1805403909014039090100391f050039e9000037d8000034'
+assert read(0x10009b4fc, 44).hex() == '78010034a8a500b008e143f9686a68381f050071c1000054f40313aac9feff9760000036f40313aa21ffff97'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

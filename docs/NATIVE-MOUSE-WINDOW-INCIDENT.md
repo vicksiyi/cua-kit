@@ -3325,3 +3325,25 @@ handlers, clears timing state and zeros velocity; those phases are not yet wired
 No concrete cursor window/animation resources are created by this component.
 
 Swift build, provider checks and pinned static audit pass for the motion-reset phase.
+
+
+## Cursor reset outer sequencing recovery (2026-11-08)
+
+Native Window reset 0x10009b30c snapshots its two overlay-reason bytes, preserves
+the first and clears the second. If the first was false and the second true,
+setLevel(0) happens before animation reset. It then resets motion progress/position,
+resets scoot animations, releases next-interaction handler, releases completion
+handler, clears timing-satisfied state, and sets style velocityX then velocityY
+to zero. Callback release is not callback invocation. Only when reason1 was true
+does it reread wantsToBeVisible, then corresponding-window presence; both true
+cause a visibility update. These are short-circuit reads after all reset phases.
+
+The outer injected Swift sequencing now preserves the order and delegates the
+previously recovered motion reset and still-pending scoot reset to explicit
+boundaries. A second reset after reason1 clearing must not reset window level or
+reenter visibility evaluation. Checks cover all combinations of reason flags,
+wants/presence and a consecutive reset. Static audit pins reason preservation,
+clear and final visibility gating. Concrete window, callbacks and native animation
+ownership are still not connected; this is not production cursor availability.
+
+Swift build, provider checks and pinned static audit pass after outer reset recovery.
