@@ -6,6 +6,9 @@ import CoreGraphics
 struct SynthesizedEvent {
     let cgEvents: [CGEvent]
 
+    // Static Swift Duration at 0x1011950e0: 50_000_000_000_000_000 attoseconds.
+    static let defaultClickDuration: Duration = .milliseconds(50)
+
     // Descriptor 0x1012cccd0 / fields 0x1013237c8. No associated payloads.
     enum Error: Swift.Error, Hashable {
         case invalidParameter

@@ -115,3 +115,18 @@ native route; the running helper's binary fingerprint is not in the run log.
 Rebuilding the executable does not replace an already running process. A fresh
 CLI run is required to test this fix. Approval waiting/countdown behavior is a
 separate observed issue and was not changed or bypassed here.
+
+## Default click timing
+
+Static Duration storage at 0x1011950e0 encodes 50 milliseconds. The click dispatch
+flow at 0x1007b2f40 checks event type; for a non-final down event it chooses the
+larger of the requested hold and this default (Duration.< import at GOT
+0x101468848, selection at 0x1007b300c). Other non-final events use the default
+interval. Previously the helper sent ordinary synthetic down/up with no wait.
+
+Synthetic click pairs now hold for at least 50 ms, preserve longer requested
+holds, and wait the default interval between repeated pairs. Omitted duration
+remains absent for AX routing; the timing fallback is applied only when posting
+synthetic events. Native default constant and max-selection instruction are
+pinned in the audit. Build, held-input, sky-action and provider-click checks pass.
+This corrects timing evidence, without claiming a live Multica acceptance result.

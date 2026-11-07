@@ -5,6 +5,12 @@ func heldNanoseconds(_ seconds: Double) throws -> UInt64 {
     guard seconds.isFinite, seconds >= 0, seconds <= 30 else { throw fail("INVALID_ARGUMENT","Input duration must be 0..30 seconds.") }
     return UInt64((seconds * 1_000_000_000).rounded())
 }
+// Source click dispatch uses at least the default interval after mouse-down.
+// An explicit zero still selects synthetic clicking, but is not a zero-length press.
+func clickHoldNanoseconds(_ seconds: Double?) throws -> UInt64 {
+    max(try heldNanoseconds(seconds ?? 0), 50_000_000)
+}
+
 // Same cooperative cleanup strategy as drag: release only to the original process.
 @MainActor
 func dispatchHeldPair(_ down: CGEvent, _ up: CGEvent, nanoseconds: UInt64,
@@ -27,6 +33,13 @@ func runHeldInputChecks() async throws {
     for duration in [-1,30.001,Double.nan,Double.infinity] {
         do { _ = try heldNanoseconds(duration); throw fail("SELF_TEST_FAILED","Invalid hold accepted.") }
         catch let error as Failure { guard error.code == "INVALID_ARGUMENT" else { throw error } }
+    }
+    guard try clickHoldNanoseconds(nil) == 50_000_000,
+          try clickHoldNanoseconds(0) == 50_000_000,
+          try clickHoldNanoseconds(0.01) == 50_000_000,
+          try clickHoldNanoseconds(0.125) == 125_000_000,
+          SynthesizedEvent.defaultClickDuration == .milliseconds(50) else {
+        throw fail("SELF_TEST_FAILED", "Default click hold differs from native timing")
     }
     let events = try mouseClickEvents(point:CGPoint(x:1,y:2),button:"left",count:1,flags:[])
     for interrupted in [false,true] {

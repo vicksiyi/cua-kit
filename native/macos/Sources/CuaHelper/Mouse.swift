@@ -95,7 +95,7 @@ extension Target {
         return point
     }
     func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
-        let held = try heldNanoseconds(params["duration"] as? Double ?? 0)
+        let held = try clickHoldNanoseconds(params["duration"] as? Double)
         let button = params["mouseButton"] as? String ?? "left"
         let count = params["clickCount"] as? Int ?? 1
         guard (1...10).contains(count) else { throw fail("INVALID_ARGUMENT", "Click count must be 1..10.") }
@@ -126,6 +126,9 @@ extension Target {
                 try await dispatchHeldPair(events[index], events[index+1], nanoseconds: held,
                     post: { dispatchNativeEvent($0, to: self.app.processIdentifier) }, validate: { try self.validateIdentity() },
                     wait: { try await Task.sleep(nanoseconds: $0) })
+                if index + 2 < events.count {
+                    try await Task.sleep(for: SynthesizedEvent.defaultClickDuration)
+                }
             }
             return ["outcome": "dispatched", "eventCount": events.count, "windowId": Int(window.id), "point": ["x": point.x, "y": point.y]]
         }

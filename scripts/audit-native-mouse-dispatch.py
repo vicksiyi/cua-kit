@@ -40,6 +40,10 @@ for site, target in calls:
     displacement = instruction & 0x3ffffff
     if displacement & 0x2000000: displacement -= 0x4000000
     assert site + displacement * 4 == target, hex(site)
+# Default duration is stored as a signed 128-bit attosecond count.
+assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
+# Duration.< comparison is followed by selection of max(requested, default).
+assert struct.unpack('<I', read(0x1007b300c, 4))[0] == 0x9a951294
 # Pin the increment getter, zero initializer, pair reuse, and per-click count.
 assert read(0x101574978, 8) == bytes(8)
 for site, opcode in [(0x1007547c0, 0xb1000409),
@@ -48,6 +52,7 @@ for site, opcode in [(0x1007547c0, 0xb1000409),
     assert struct.unpack('<I', read(site, 4))[0] == opcode, hex(site)
 print(json.dumps({'binarySha256': expected, 'calls': [
     {'site': hex(site), 'target': hex(target)} for site,target in calls],
+    'defaultClickMilliseconds': 50,
     'clickNumber': 'zero-initialized process counter; down/up reuse x24; clickCount uses x25',
     'interpretation': 'setTimestamp precedes postToPid; mouse construction sets window fields and local location',
     'limits': 'Static call-site evidence; does not prove live app acceptance or complete send-loop parity.'}, indent=2))
