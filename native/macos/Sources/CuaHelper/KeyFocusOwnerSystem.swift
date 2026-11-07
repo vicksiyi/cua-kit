@@ -44,3 +44,37 @@ func systemInitialSyntheticFocusState(
         resolveFocusOwnerPID: { systemKeyFocusOwnerIdentity(pid: $0, transaction: transaction, reportError: reportError).ownerPID },
         workspaceFrontmostPID: { NSWorkspace.shared.frontmostApplication?.processIdentifier })
 }
+
+// Initial system-state owner at 0x10074b920..0x10074b9a8. Workspace
+// fallback is an ordinary identity; do not re-run special owner resolution.
+func initialFocusStealOwnerIdentity(queryKeyFocusPID: () -> Int32?,
+    resolveOwner: (Int32) -> KeyFocusOwnerIdentity,
+    workspaceFrontmostPID: () -> Int32?) -> KeyFocusOwnerIdentity {
+    if let pid = queryKeyFocusPID() { return resolveOwner(pid) }
+    return .ordinary(pid: workspaceFrontmostPID() ?? 0)
+}
+
+func systemInitialFocusStealOwnerIdentity(transaction: UIElementTransactionCache?,
+    reportRegistryFailure: (Int32, Int32) -> Void,
+    reportError: (Error) -> Void) -> KeyFocusOwnerIdentity {
+    initialFocusStealOwnerIdentity(
+        queryKeyFocusPID: { systemRegistryKeyFocusPID(reportFailure: reportRegistryFailure) },
+        resolveOwner: { systemKeyFocusOwnerIdentity(pid: $0, transaction: transaction, reportError: reportError) },
+        workspaceFrontmostPID: { NSWorkspace.shared.frontmostApplication?.processIdentifier })
+}
+
+// Semantic history at state offsets 0/0xc; preserve complete payloads, not
+// only owner PIDs. Initial previous storage is an uninitialized sentinel in
+// the binary, represented by nil here without claiming native tag encoding.
+// Enclosing system-state owner serializes mutations.
+struct FocusStealOwnershipHistory {
+    private(set) var current: KeyFocusOwnerIdentity
+    private(set) var previous: KeyFocusOwnerIdentity?
+    init(current: KeyFocusOwnerIdentity) { self.current = current; previous = nil }
+    // 0x10074d23c..0x10074d270 always copies old to previous then writes new,
+    // even if logical owner PID stayed equal.
+    mutating func record(_ owner: KeyFocusOwnerIdentity) {
+        previous = current
+        current = owner
+    }
+}

@@ -954,3 +954,24 @@ This composes callback payloads only. Native captured records also retain tap
 resources and menu-suppression fields, so full registration-resource lifetime
 parity, history mutation, changed/new-front processing and production controller
 integration are still required. No actual UI input was sent in these tests.
+
+
+## Focus owner initialization and history
+
+Restored the initial-owner selection at 0x10074b920..0x10074b9a8. It uses
+the existing registry key-focus query and rich owner resolver on success.
+Query absence falls back to NSWorkspace.frontmostApplication PID or zero,
+as an ordinary identity, without calling the rich resolver a second time.
+Selector refs 0x101543e20/0x101542688/0x101542168 resolve to sharedWorkspace,
+frontmostApplication and processIdentifier.
+
+FocusStealOwnershipHistory preserves complete identities: changed-focus entry
+0x10074d23c..0x10074d270 copies current into previous, then writes the new
+identity, before registration snapshot and callbacks. There is no same-owner-PID
+deduplication at that boundary. Initial previous sentinel is represented as
+semantic nil; native packed sentinel/tag bytes are not exposed. Tests preserve
+restricted source PID and ViewBridge actual-focused PID across equal logical
+owner transitions, plus query/fallback selection. Swift build, provider-click
+checks and static audit pass. This is the history value layer; enclosing
+system-state lifecycle, remaining changed/new-front effects and production
+controller integration remain incomplete.

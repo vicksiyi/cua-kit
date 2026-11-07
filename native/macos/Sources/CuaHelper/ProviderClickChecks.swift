@@ -3703,6 +3703,7 @@ func runProviderClickChecks() async throws {
     runFocusStealRegistrationTransitionChecks()
     await runFocusStealRegistrationCallbackChecks()
     await runFocusStealRegisteredDispatchChecks()
+    runFocusStealOwnershipHistoryChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4778,4 +4779,28 @@ private func runFocusStealRegisteredDispatchChecks() async {
     checkEqual(suppressed.count, 1)
     for task in suppressed { checkFalse(await task.value) }
     checkEqual(recorder.snapshot.filter { $0 == "lost" }.count, 2)
+}
+
+private func runFocusStealOwnershipHistoryChecks() {
+    var trace: [String] = []
+    let resolved = initialFocusStealOwnerIdentity(queryKeyFocusPID: { trace.append("query"); return 88 },
+        resolveOwner: { checkEqual($0, 88); trace.append("resolve"); return .restricted(ownerPID: 77, sourcePID: 88) },
+        workspaceFrontmostPID: { unexpectedFailure() })
+    checkEqual(trace, ["query", "resolve"])
+    var history = FocusStealOwnershipHistory(current: resolved)
+    checkTrue(history.previous == nil)
+    history.record(.viewBridge(ViewBridgeFocusIdentities(ownerPID: 77, actualFocusedPID: 66)))
+    guard case .restricted(let previousOwner, let previousSource)? = history.previous else { unexpectedFailure() }
+    checkEqual(previousOwner, 77); checkEqual(previousSource, 88)
+    guard case .viewBridge(let bridge) = history.current else { unexpectedFailure() }
+    checkEqual(bridge.ownerPID, 77); checkEqual(bridge.actualFocusedPID, 66)
+    history.record(.ordinary(pid: 55))
+    guard case .viewBridge(let oldBridge)? = history.previous else { unexpectedFailure() }
+    checkEqual(oldBridge.actualFocusedPID, 66); checkEqual(history.current.ownerPID, 55)
+    for workspace: Int32? in [nil, 44] {
+        let fallback = initialFocusStealOwnerIdentity(queryKeyFocusPID: { nil },
+            resolveOwner: { _ in unexpectedFailure() }, workspaceFrontmostPID: { workspace })
+        guard case .ordinary(let pid) = fallback else { unexpectedFailure() }
+        checkEqual(pid, workspace ?? 0)
+    }
 }

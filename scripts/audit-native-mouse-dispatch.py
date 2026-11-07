@@ -126,6 +126,11 @@ for site, expected_bytes in [(0x10074ecac, '730000b4'), (0x10074ecb4, '60023fd6'
                              (0x10074ecbc, 'e8179f1a'), (0x10074ed10, '730000b4'),
                              (0x10074ed18, '60023fd6'), (0x10074ed20, 'e8179f1a')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
+# Changed-focus history copies complete old identity before writing new.
+for site, expected_bytes in [(0x10074d23c, '680340f9'), (0x10074d240, '69134079'),
+                             (0x10074d24c, '68c300f8'), (0x10074d258, '692b0079'),
+                             (0x10074d264, '780300f9'), (0x10074d270, '73130079')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).
