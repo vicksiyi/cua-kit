@@ -902,7 +902,27 @@ assert struct.unpack('<I', read(0x100626b38, 4))[0] == 0x52800be0 # underscore
 assert struct.unpack('<I', read(0x100626b50, 4))[0] == 0x528a69c0 # NS
 assert struct.unpack('<I', read(0x100627034, 4))[0] == 0x52888920 # ID
 
-print(json.dumps(dict(contentIdentifier=dict(
+content_field_reads = {
+    0x10062650c: (0x40, "title"), 0x1006265a0: (0x48, "description"),
+    0x10062664c: (0x110, "rowIndexRange"), 0x10062667c: (0x118, "columnIndexRange"),
+    0x1006266ac: (0x78, "url"), 0x100626878: (0x68, "help"),
+    0x100626910: (0x50, "value"), 0x1006269b4: (0x58, "valueDescription"),
+    0x100626a54: (0xd8, "placeholderValue"), 0x100626b04: (0x70, "identifier"),
+    0x100626bd8: (0x120, "presentationActions"),
+}
+for site, (offset, name) in content_field_reads.items():
+    word = struct.unpack('<I', read(site, 4))[0]
+    assert word & 0xffc00000 == 0xf9400000
+    assert (word >> 5) & 31 == 21
+    assert ((word >> 10) & 0xfff) * 8 == offset
+content_collection_calls = [branch(0x1006267dc, 0x10065f7c0), branch(0x100626824, 0x100627930)]
+compare_zero_branch(0x1006267f8, 22, 0x100626864)
+
+print(json.dumps(dict(contentCollection=dict(
+    fieldReads={hex(site): dict(offset=offset, field=name) for site,(offset,name) in content_field_reads.items()},
+    calls=content_collection_calls,
+    behavior="ordered field collection, shared mutable URL shortener with role==image, nonempty text fields, range bypass, identifier/actions filters, final formatting",
+    limitation="generic component assembled; role/state composition and production observation integration pending"), contentIdentifier=dict(
     calls=identifier_calls,
     behavior="omit nil/empty and Swift String prefixes underscore or NS; appendUnique with ID label",
     prefixStub="0x101150b34 -> GOT 0x101466488 Swift.String.hasPrefix",

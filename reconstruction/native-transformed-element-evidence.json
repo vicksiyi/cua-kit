@@ -1,4 +1,66 @@
 {
+  "contentCollection": {
+    "fieldReads": {
+      "0x10062650c": {
+        "offset": 64,
+        "field": "title"
+      },
+      "0x1006265a0": {
+        "offset": 72,
+        "field": "description"
+      },
+      "0x10062664c": {
+        "offset": 272,
+        "field": "rowIndexRange"
+      },
+      "0x10062667c": {
+        "offset": 280,
+        "field": "columnIndexRange"
+      },
+      "0x1006266ac": {
+        "offset": 120,
+        "field": "url"
+      },
+      "0x100626878": {
+        "offset": 104,
+        "field": "help"
+      },
+      "0x100626910": {
+        "offset": 80,
+        "field": "value"
+      },
+      "0x1006269b4": {
+        "offset": 88,
+        "field": "valueDescription"
+      },
+      "0x100626a54": {
+        "offset": 216,
+        "field": "placeholderValue"
+      },
+      "0x100626b04": {
+        "offset": 112,
+        "field": "identifier"
+      },
+      "0x100626bd8": {
+        "offset": 288,
+        "field": "presentationActions"
+      }
+    },
+    "calls": [
+      {
+        "instruction": "0x1006267dc",
+        "target": "0x10065f7c0",
+        "link": true
+      },
+      {
+        "instruction": "0x100626824",
+        "target": "0x100627930",
+        "link": true
+      }
+    ],
+    "behavior": "ordered field collection, shared mutable URL shortener with role==image, nonempty text fields, range bypass, identifier/actions filters, final formatting",
+    "limitation": "generic component assembled; role/state composition and production observation integration pending"
+  },
   "contentIdentifier": {
     "calls": [
       {

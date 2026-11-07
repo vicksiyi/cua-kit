@@ -2968,6 +2968,34 @@ private enum ProviderClickChecks {
             checkTrue(content.entries.dropFirst().allSatisfy { $0.label == "ID" })
         }
         do {
+            var node = capturedOwner
+            node.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+                supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+            node.role = .group
+            node.title = "Title"; node.description = "Title"
+            node.url = nil; node.help = "Help text"; node.value = "false"
+            node.valueDescription = "Details text"; node.placeholderValue = "Placeholder text"
+            node.identifier = "public-id"
+            node.actionDescriptions = [.init(.expand, description: "Expand")]
+            var context = ownerContext(.fullUIContext)
+            checkEqual(node.accessibilityContentDescription(context: &context),
+                "Title, Help: Help text, Value: false, Details: Details text, Placeholder: Placeholder text, ID: public-id, Secondary Actions: Expand")
+            node.title = nil; node.description = ""; node.help = nil; node.value = nil
+            node.valueDescription = nil; node.placeholderValue = nil; node.identifier = nil
+            node.actionDescriptions = []
+            checkEqual(node.accessibilityContentDescription(context: &context), "")
+            node.value = " "
+            checkEqual(node.accessibilityContentDescription(context: &context), " ")
+            node.value = nil
+            node.url = URL(string: "https://example.com/path?q=1#part")!
+            var expectedShortener = context.urlShortener
+            let expectedURL = expectedShortener.trim(url: node.url!, isImage: false)!
+            checkEqual(node.accessibilityContentDescription(context: &context), expectedURL)
+            node.role = .menu
+            context.type = .informationalContext
+            checkEqual(node.accessibilityContentDescription(context: &context), "")
+        }
+        do {
             checkEqual(formatAccessibilityContent([]), "")
             checkEqual(formatAccessibilityContent([.init(label: "Description", text: "only")]), "only")
             checkEqual(formatAccessibilityContent([.init(label: "", text: "only")]), "only")

@@ -6610,3 +6610,27 @@ Build, owned provider checks and static audit passed. Tests cover nil/empty,
 exact/prefixed exclusions, prior text deduplication, whitespace, casing and
 combining-character behavior. This remains a recovered content component;
 complete node composition and production collector integration are pending.
+
+
+### Complete generic content collection (2026-11-07)
+
+AccessibilityContentDescription.swift assembles the recovered components for
+0x100626300. Getter order is title, description, row range, column range, URL,
+help, value, valueDescription, placeholderValue, identifier, presentationActions.
+Informational eligibility runs first. Ordinary text fields omit nil/empty,
+then appendUnique with their native labels. Ranges keep their separate bypass.
+URL presence causes role==image evaluation and an in-place mutation of the
+context's URL shortener; a present returned string is appended even if empty.
+The native value getter is +0x50; boolValue/stringValue are not read here.
+
+Identifier and secondary action branches use the recovered helpers. Final
+formatting handles stable short/long ordering and singleton label suppression.
+Tests assemble the full content from a captured TransformedUIElement fixture:
+field order, cross-field duplicate suppression, action formatting, absent/empty
+text, retained whitespace, URL shortening, and informational menu suppression.
+Swift build, owned provider tests and static getter/call audit passed.
+
+This completes the standalone generic content component, not the entire native
+rendering route. Role/state/content composition, protocol routing into the
+render tree and production observation integration still require work. No live
+app acceptance or model-provider recovery is claimed by these local tests.
