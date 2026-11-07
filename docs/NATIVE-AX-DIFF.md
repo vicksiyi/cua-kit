@@ -4900,3 +4900,29 @@ transforms can still reshape structure and remain separate reconstruction work.
 Validation: pinned static audit, Swift helper build and provider selftest pass.
 This closes the identified parameter-origin uncertainty but does not implement
 the full traversal/filter/subset algorithm, transformed owner or collector.
+
+
+### Constructor value-field group composition (2026-11-07)
+
+Added TransformedUIElementValueState and UIElement.transformedValueState to compose
+cached-value classification, context/Chromium writability, string truncation and
+non-string formatting in constructor order. This local field-group type is not
+the original TransformedUIElement owner and is not presented as its replacement.
+
+The cached AXValue guard is essential: source 0x10075e744/0x10075e768 skips the
+entire value group when absent, retaining nil value, nil type name, nil truncation
+range and false writability initialized at 0x10075e2b8..0x10075e318. Although the
+standalone classifier can infer string for a textField lacking AXValue, the full
+constructor does not call that classifier on this missing-value path. With a
+value, it records classification first, computes writability, then tests CFString
+identity. Strings use their partial truncation descriptor; any resulting range
+clears writability at 0x10075f26c..0x10075f278. Other types use the restored formatter
+and retain computed writability even when formatting returns nil.
+
+Validation: full Swift helper build and provider selftest pass. Concrete-element
+cases cover missing AXValue on textField (nil type name, not inferred string),
+complete writable text, partial text whose reread is known unsupported (retained
+range and cleared writability), and slider numeric formatting. Provider counts
+verify these cases do not perform unexpected reads. The composition is ready for
+the full owner; remaining fields, attributed text and collector wiring remain
+outstanding and no live application behavior is claimed.

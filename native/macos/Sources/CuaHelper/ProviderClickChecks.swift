@@ -513,6 +513,34 @@ private enum ProviderClickChecks {
         checkEqual(dateElement(nil).transformedDateFormat(reportError: { _ in dateErrors += 1 },
             reportUnknown: { unknownDateValues.append($0) }), .dateAndTime)
         checkEqual(unknownDateValues, [1]); checkEqual(dateErrors, 1)
+        func valueStateElement(_ value: AXPartialValue?, role: String = "AXTextField") -> UIElement {
+            var attributes = [UIElementAttribute("AXRole"): partial(role as NSString)]
+            attributes[UIElementAttribute("AXValue")] = value
+            return UIElement(axElement: textAX, cache: UIElementCache(
+                supportedAttributes: [], attributes: attributes, transactionAttributes: [UIElementAttribute("AXValue")]))
+        }
+        func valueState(_ element: UIElement) -> TransformedUIElementValueState {
+            element.transformedValueState(contextType: .eventStreamContext, isChromium: false,
+                traversalParentRole: nil, reportError: { _ in unexpectedFailure() },
+                reportUnknownDateComponents: { _ in unexpectedFailure() })
+        }
+        let readsBeforeValueState = textProvider.singleReads
+        let missingValueState = valueState(valueStateElement(nil))
+        checkTrue(missingValueState.value == nil); checkTrue(missingValueState.valueTypeName == nil)
+        checkFalse(missingValueState.isValueSettable)
+        let fullValueState = valueState(valueStateElement(partial("full" as NSString)))
+        checkEqual(fullValueState.value, "full"); checkEqual(fullValueState.valueTypeName, "string")
+        checkTrue(fullValueState.isValueSettable); checkTrue(fullValueState.truncationRange == nil)
+        let partialValueState = valueState(valueStateElement(AXPartialValue(
+            value: AXEncodedValue(value: "part" as NSString), arraySubsetDescriptor: nil,
+            textTruncationDescriptor: .init(count: 20, availableRange: 4..<8))))
+        checkEqual(partialValueState.value, "part")
+        checkEqual(partialValueState.truncationRange, NSRange(location: 4, length: 4))
+        checkFalse(partialValueState.isValueSettable)
+        let numberValueState = valueState(valueStateElement(partial(NSNumber(value: 42)), role: "AXSlider"))
+        checkEqual(numberValueState.value, "42"); checkEqual(numberValueState.valueTypeName, "integer")
+        checkTrue(numberValueState.isValueSettable)
+        checkEqual(textProvider.singleReads, readsBeforeValueState)
         let role = UIElementAttribute("AXRole")
         var rect = CGRect(x: 10, y: 20, width: 80, height: 40)
         let target = UIElement(axElement: targetAX, cache: UIElementCache(supportedAttributes: [role, .frame],
