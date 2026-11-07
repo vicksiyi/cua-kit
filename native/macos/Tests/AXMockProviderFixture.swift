@@ -52,7 +52,7 @@ enum AXMockProviderFixture {
         var pid: Int32 { get throws { if shouldThrow { throw Failure.expected }; return -3 } }
         var actualPID: Int32 { get throws { if shouldThrow { throw Failure.expected }; return 42 } }
         var windowID: UInt32 { get throws { if shouldThrow { throw Failure.expected }; return UInt32.max } }
-        var bundleIdentifier: String? { nil }
+        var bundleIdentifier: String? = nil
     }
     final class Provider: AXMockProvider {
         let target: AXUIElement

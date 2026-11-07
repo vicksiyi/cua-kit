@@ -52,6 +52,9 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AccessibilityNodeDefaults.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementProtocol.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementIdentity.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementProviderGeometry.swift"),
+        join(root, "native/macos/Sources/CuaHelper/UIElementInsideWebView.swift"),
+
         join(root, "native/macos/Sources/CuaHelper/UIElementProviderScrollBar.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementScrollBarValue.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementScrollUsingScrollBar.swift"),

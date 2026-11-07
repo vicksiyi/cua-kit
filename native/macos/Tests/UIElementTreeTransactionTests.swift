@@ -345,7 +345,48 @@ import os
         let cold = ScrollBarUIElement(element: bar)
         precondition(CFEqual(cold.axElement, bar) && mock.supportReads == 1)
     }
+    static func checkProviderGeometry() throws {
+        let ax = AXUIElementCreateApplication(12401), parent = AXUIElementCreateApplication(12402)
+        let mock = AXMockProviderFixture.Mock(), provider = AXMockProviderFixture.Provider(ax, AXMockProviderFixture.Mock())
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        func partial(_ value: AnyObject) -> AXPartialValue {
+            AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        }
+        var point = CGPoint(x: 7, y: 11), size = CGSize(width: 21, height: 31)
+        var rect = CGRect(x: 99, y: 101, width: 14, height: 17)
+        let position = partial(AXValueCreate(.cgPoint, &point)!), dimensions = partial(AXValueCreate(.cgSize, &size)!)
+        let direct = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [.frame],
+            attributes: [.frame: partial(AXValueCreate(.cgRect, &rect)!)], transactionAttributes: nil))
+        precondition(direct.frameValue(reportError: { _ in preconditionFailure() }) == rect && provider.lookups == 0)
+        let fallback = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [.frame, .position, .size],
+            attributes: [.position: position, .size: dimensions], transactionAttributes: nil))
+        provider.mock.output = (.failure, nil)
+        var errors = 0
+        precondition(fallback.frameValue(reportError: { _ in errors += 1 }) == CGRect(origin: point, size: size))
+        precondition(errors == 1 && provider.lookups == 1 && provider.mock.requested == [.frame])
+        let role = UIElementAttribute("AXRole"), parentKey = UIElementAttribute("AXParent")
+        let owner = UIElementTreeTransaction(element: Element(element: ax),
+            cache: UIElementTransactionCache(attributeTable: [parent: [role: partial("AXWebArea" as NSString)]],
+                requestedAttributes: [role, parentKey], fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable())
+        let child = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [role, parentKey],
+            attributes: [role: partial("AXButton" as NSString), parentKey: partial(parent)], transactionAttributes: nil))
+        owner.perform { _ in
+            precondition(child.isInsideWebView(reportError: { _ in preconditionFailure() }))
+            precondition(provider.lookups == 1)
+        }
+        AXMockProviderStorage.current = AXMockProviderFixture.Provider(parent, mock)
+        let notWeb = UIElement(axElement: parent, cache: UIElementCache(supportedAttributes: [role],
+            attributes: [role: partial("AXButton" as NSString)], transactionAttributes: nil))
+        precondition(!notWeb.isInsideWebView(reportError: { _ in preconditionFailure() }))
+        mock.bundleIdentifier = "com.openai.atlas.test"
+        precondition(notWeb.isInsideWebView(reportError: { _ in preconditionFailure() }))
+        mock.bundleIdentifier = "org.example.com.openai.atlas"
+        precondition(!notWeb.isInsideWebView(reportError: { _ in preconditionFailure() }))
+    }
     static func main() throws {
+        try checkProviderGeometry()
         try checkProviderScrollBar()
         try checkProviderCollections()
         try checkProviderParent()

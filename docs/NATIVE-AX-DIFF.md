@@ -4025,3 +4025,27 @@ checks that success uses only button AXPress and failure prevents duplicate
 raw scroll. No live desktop action or installed vendor service was executed.
 Complete UIElementProtocol, geometry/hit testing and original subtree collector
 integration still require work.
+
+### Provider frame and web-view classification front doors
+
+Added concrete provider wrappers for frame/position/size and isInsideWebView.
+They reuse the restored typed readers and ancestor classifier; frame keeps
+AXFrame preference and ordered position/size fallback, while web classification
+keeps the source parent-chain lookahead and original-element bundle prefix check.
+The host window/capture/input frame boundary now constructs provider elements
+and uses provider frame reads, retaining its independent finite-positive geometry
+validation. Mouse click classification now uses provider parent decoding and
+bundle identity instead of the explicit legacy adapters.
+
+Full helper build and provider/transaction fixtures pass. Checks cover cached
+frame with zero provider lookups, one logged failed AXFrame read followed by
+cached position/size, a prefetched AXWebArea ancestor, nil bundle identity,
+com.openai.atlas prefix acceptance and a non-prefix substring rejection. An
+initial fixture omitted AXParent from the prefetched request set, so the source
+lookahead correctly attempted a fresh parent read; the fixture now explicitly
+marks the missing parent as requested/known unsupported. Production traversal
+semantics were not weakened to make that fixture pass.
+
+This does not yet migrate clickable-point clipping, Chess preferred-point or
+web hit-test compositions. No real user UI operation or vendor service execution
+was performed. Live behavior and overall protocol/subtree fidelity remain open.

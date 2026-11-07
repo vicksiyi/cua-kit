@@ -117,8 +117,7 @@ extension Target {
         }
         let item = UIElement(element: nodes[id - 1].element)
         let insideWebView: () -> Bool = {
-            item.isInsideWebView(transaction: nil, readParent: readSystemAXAttributeValue,
-                bundleIdentifier: systemAXBundleIdentifier, reportError: report)
+            item.isInsideWebView(reportError: report)
         }
         let preparation = prepareUIElementClick(mouseButton: mouse, count: count,
             holdDuration: (params["duration"] as? Double).map { _ in Duration.nanoseconds(Int64(held)) },
