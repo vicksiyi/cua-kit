@@ -432,3 +432,41 @@ The full foreground/window restoration loop and enforcer ownership must be
 completed before integration; only then can a real Multica click and a changed
 post-click UI observation validate the repair. The latest available debug log
 remains 2026-11-07T08-56-03-778Z; no newer user run was available for comparison.
+
+
+## Foreground restoration loop and window ordering
+
+Restored the other-foreground-application loop as
+restoreSafeActivationForeground with explicit native-operation dependencies.
+It resets observation quiet time after enforcement, records system uptime,
+checks cancellation, and polls with the source 10ms Duration. While the target
+is frontmost, it attempts saved-application activation at intervals >=50ms,
+clears only the acknowledgment pair before each attempt, and enforces the
+2-second timeout. A third foreground app (or none) throws instead of switching
+it away. Activation failure is separate from timeout.
+
+When the saved application is frontmost, an existing enforcement error skips
+the target AX-frontmost read; otherwise that read determines whether final
+verification can begin before the one-second threshold. Window-order repair
+runs first. The source enumerates options 0x11 and searches only target-owned
+windows preceding the saved window at the same layer (0x10074265c..7426d4).
+restoreSafeActivationWindowOrder preserves this condition and raises the saved
+AX window when supplied; absence of an AX handle does not erase the obstruction
+signal. Obstruction resets quiet time and delays progress below one second.
+The final gate rechecks actual foreground PID, acknowledgment pair after an
+activation, and 100ms of quiet when enforcement failed, activation occurred,
+or observed transition byte 0 is set. Completion precedes timeout testing.
+
+SafeActivationNativeResources.enforceAndRestore now composes the scope and
+restoration loop. Native lifetime ownership and the adapter for saved/target
+application operations still need integration into SyntheticAppFocusEnforcer;
+public error mapping is not yet supplied (the loop has internal typed errors).
+This does not yet connect Mouse.swift or implement the no-previous-app branch.
+
+Validation: Swift build, provider-click checks, and pinned source audit pass.
+Tests cover immediate completion, paired acknowledgment/quiet waiting,
+activation failure, foreground takeover, failed enforcement skipping AX,
+missing acknowledgments timing out, window obstruction/layer/ordering,
+cancellation, and concrete-resource cleanup preserving the original enforcement
+error. All use controlled clocks/ports/operations; no real app click or system
+screen-update suppression was performed. Multica acceptance remains pending.

@@ -25,6 +25,9 @@ struct SafeActivationObservedEvents {
         return type == 13 && (subtype == 22 || subtype == 23)
     }
 
+    // Post-enforcement and saved-window raise reset quiet time only.
+    mutating func markRestorationActivity(time: Double) { lastEventTime = time }
+
     // 0x1007421c4 clears bytes 1/2, preserving the first observed flag.
     mutating func beginForegroundRestoration(time: Double) {
         transitionFlags &= 0xff

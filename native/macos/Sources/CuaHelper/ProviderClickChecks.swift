@@ -3677,6 +3677,7 @@ func runProviderClickChecks() async throws {
     runSafeActivationRestorationDecisionChecks()
     try await runSafeActivationScopeChecks()
     try await runSafeActivationNativeResourceChecks()
+    try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
     runEventTapLifecycleChecks()
 }
@@ -4020,6 +4021,117 @@ private func runSafeActivationNativeResourceChecks() async throws {
     checkEqual(masks, [SafeActivationNativeResources.foregroundMask, SafeActivationNativeResources.targetInputMask])
     checkEqual(trace, ["tap:77", "tap:88", "install", "connection", "disable", "reenable", "clear"])
     checkTrue(observer == nil)
+    // Exercise concrete resources + full loop: failure still tears everything
+    // down, and the original enforcement error wins over foreground mismatch.
+    trace.removeAll()
+    do {
+        try await resources!.enforceAndRestore(enforce: { throw SafeActivationRestoreError.activationFailed },
+            driver: SafeActivationRestorationDriver(now: { 10 }, frontmostPID: { 99 },
+                activateSavedApplication: { unexpectedFailure() },
+                targetBelievesItIsFrontmost: { unexpectedFailure() },
+                restoreSavedWindowIfObscured: { unexpectedFailure() }))
+        fatalError("Expected original enforcement error")
+    } catch { checkEqual(error as? SafeActivationRestoreError, .activationFailed) }
+    checkEqual(trace, ["tap:77", "tap:88", "install", "connection", "disable", "reenable", "clear"])
+    checkTrue(observer == nil)
     resources = nil
     checkTrue(lifetime == nil)
+}
+
+
+private func runSafeActivationRestorationLoopChecks() async throws {
+    var raises = 0, windowReads = 0
+    let windows = [SafeActivationOrderedWindow(id: 1, ownerPID: 88, layer: 0),
+                   SafeActivationOrderedWindow(id: 2, ownerPID: 77, layer: 0)]
+    let readWindows = { windowReads += 1; return windows }
+    checkTrue(try restoreSafeActivationWindowOrder(savedWindowID: 2, targetPID: 88,
+        windows: readWindows, raiseSavedWindow: { raises += 1 }))
+    checkEqual(raises, 1)
+    checkTrue(!(try restoreSafeActivationWindowOrder(savedWindowID: nil, targetPID: 88,
+        windows: readWindows, raiseSavedWindow: { raises += 1 })))
+    checkEqual(windowReads, 1)
+    checkTrue(!(try restoreSafeActivationWindowOrder(savedWindowID: 1, targetPID: 88,
+        windows: readWindows, raiseSavedWindow: nil)))
+    checkTrue(try restoreSafeActivationWindowOrder(savedWindowID: 2, targetPID: 88,
+        windows: readWindows, raiseSavedWindow: nil))
+    checkTrue(!(try restoreSafeActivationWindowOrder(savedWindowID: 2, targetPID: 88,
+        windows: { [SafeActivationOrderedWindow(id: 1, ownerPID: 88, layer: 1), windows[1]] },
+        raiseSavedWindow: nil)))
+    // No real system input, foreground changes, or screen suppression.
+    var time = 10.0
+    var pid: Int32? = 77
+    var activations = 0, reads = 0, sleeps = 0
+    let store = SafeActivationObservationStore(time: time)
+    var driver = SafeActivationRestorationDriver(now: { time }, frontmostPID: { pid },
+        activateSavedApplication: { activations += 1; pid = 77; return true },
+        targetBelievesItIsFrontmost: { reads += 1; return true },
+        restoreSavedWindowIfObscured: { false },
+        sleep: { _ in sleeps += 1; time += 0.01 })
+    try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+        enforcementFailed: false, observations: store, driver: driver)
+    checkEqual(sleeps, 0); checkEqual(activations, 0); checkEqual(reads, 1)
+
+    // Reactivation waits for both acknowledgments and a quiet period.
+    pid = 88; reads = 0
+    driver.sleep = { _ in
+        sleeps += 1; time += 0.01
+        if sleeps == 1 {
+            store.access { value in
+                _ = value.observe(type: 20, subtypeValue: 0, time: time)
+                _ = value.targetRequestsSuppression(type: 19, subtypeValue: 0, time: time)
+            }
+        }
+    }
+    try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+        enforcementFailed: false, observations: store, driver: driver)
+    checkEqual(activations, 1); checkTrue(sleeps >= 11)
+
+    // A third application is never activated over; fail instead.
+    pid = 99
+    do {
+        try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+            enforcementFailed: false, observations: store, driver: driver)
+        fatalError("Expected foreground-change error")
+    } catch { checkEqual(error as? SafeActivationRestoreError, .foregroundApplicationChanged) }
+
+    pid = 88; driver.activateSavedApplication = { false }
+    do {
+        try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+            enforcementFailed: false, observations: store, driver: driver)
+        fatalError("Expected activation error")
+    } catch { checkEqual(error as? SafeActivationRestoreError, .activationFailed) }
+
+    // Failure skips the AX read, but still waits for quiet before cleanup.
+    pid = 77; reads = 0; sleeps = 0
+    driver.sleep = { _ in sleeps += 1; time += 0.01 }
+    try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+        enforcementFailed: true, observations: store, driver: driver)
+    checkEqual(reads, 0); checkTrue(sleeps >= 10)
+
+    // No notification acknowledgment: bounded timeout rather than success.
+    pid = 88
+    driver.activateSavedApplication = { pid = 77; return true }
+    do {
+        try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+            enforcementFailed: false, observations: store, driver: driver)
+        fatalError("Expected timeout")
+    } catch { checkEqual(error as? SafeActivationRestoreError, .timedOut) }
+    // A still-obscuring window delays completion through the one-second branch,
+    // even when AX already reports frontmost. Quiet time then bounds restoration.
+    pid = 77; sleeps = 0
+    var obstructionReads = 0
+    let obstructionStart = time
+    driver.restoreSavedWindowIfObscured = {
+        obstructionReads += 1
+        return time - obstructionStart < 0.03
+    }
+    try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+        enforcementFailed: false, observations: store, driver: driver)
+    checkTrue(obstructionReads >= 4); checkTrue(sleeps >= 3)
+    driver.checkCancellation = { throw CancellationError() }
+    do {
+        try await restoreSafeActivationForeground(targetPID: 88, savedPID: 77,
+            enforcementFailed: false, observations: store, driver: driver)
+        fatalError("Expected cancellation")
+    } catch { checkTrue(error is CancellationError) }
 }

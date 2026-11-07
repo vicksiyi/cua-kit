@@ -56,6 +56,15 @@ final class SafeActivationNativeResources {
             options: .defaultTap, eventsOfInterest: Self.targetInputMask, driver: tapDriver)
     }
 
+    func enforceAndRestore(enforce: () throws -> Void,
+                           driver: SafeActivationRestorationDriver) async throws {
+        try await withSafeActivationRestoration(operations: operations, enforce: enforce) { error in
+            try await restoreSafeActivationForeground(targetPID: self.targetPID,
+                savedPID: self.savedPID(), enforcementFailed: error != nil,
+                observations: self.observations, driver: driver)
+        }
+    }
+
     var operations: SafeActivationScopeOperations {
         let observations = self.observations, clock = self.clock
         let helperPID = self.helperPID, targetPID = self.targetPID
