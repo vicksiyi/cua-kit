@@ -5053,3 +5053,28 @@ node mutation/rendering, protocol conformance, tree transformation/traversal,
 root overloads and real application acceptance still need completion. The
 existing flat production collector has not been silently switched to an
 unfinished rendering pipeline. Logger callbacks remain explicit dependencies.
+
+
+### Transformed owner computed state (2026-11-07)
+
+Connected captured-owner computed properties: axElement/cache forward stored
+element data (0x1000029fc / 0x100724374); actions maps actionDescriptions at
+0x10075d2f8, preserving order/duplicates and returning a present empty array
+when descriptions are empty. It never invokes native action enumeration.
+The optional actions signature differs from UIElementProtocol's nonoptional
+contract; no speculative UIElementProtocol conformance has been added.
+
+The stringValue getter 0x1007607d8..0x100760914 leniently decodes cached
+AXValue as Bool. Both present true and present false return nil; absent/bad
+Bool returns the captured transformed value at owner offset 0x68. It does not
+return raw AX text or blindly expose formatted on/off values. Connected the
+already recovered focusability, interesting-actions and interactivity predicates
+to the owner's stored fields.
+
+Build and provider selftest pass. New checks verify present-empty actions,
+no extra native actions/attribute reads, computed cache/identity forwarding,
+both Bool values suppressing text, raw String vs transformed value selection,
+and predicate changes after mutating captured fields. This is a subset of the
+computed contract: remaining AccessibilityNode properties, equality/hash,
+root constructors, downstream transforms and tree/production integration are
+still pending. No full protocol or live UI acceptance is claimed.

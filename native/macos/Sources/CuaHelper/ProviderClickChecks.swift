@@ -639,6 +639,35 @@ private enum ProviderClickChecks {
             reportError: { _ in unexpectedFailure() }, reportUnknownDateComponents: { _ in unexpectedFailure() })
         checkTrue(eventOwner.isDisclosable); checkEqual(eventOwner.actionDescriptions, [])
         checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
+        checkTrue(CFEqual(capturedOwner.axElement, ownerAX))
+        checkEqual(capturedOwner.cache.supportedAttributes, ownerElement.cache.supportedAttributes)
+        checkEqual(capturedOwner.actions, [.press])
+        checkEqual(eventOwner.actions, [])
+        checkTrue(eventOwner.actions != nil)
+        checkTrue(capturedOwner.hasInterestingActions)
+        checkFalse(eventOwner.hasInterestingActions)
+        var computedOwner = capturedOwner
+        computedOwner.value = "transformed display"
+        checkEqual(computedOwner.stringValue, "transformed display")
+        for flag in [kCFBooleanTrue!, kCFBooleanFalse!] {
+            computedOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+                supportedAttributes: [], attributes: [UIElementAttribute("AXValue"): partial(flag)],
+                transactionAttributes: nil))
+            checkTrue(computedOwner.stringValue == nil)
+        }
+        computedOwner.element = UIElement(axElement: ownerAX, cache: UIElementCache(
+            supportedAttributes: [], attributes: [UIElementAttribute("AXValue"): partial("raw text" as NSString)],
+            transactionAttributes: nil))
+        checkEqual(computedOwner.stringValue, "transformed display")
+        computedOwner.actionDescriptions = [.init(.showMenu, description: "menu"),
+            .init(.scrollToVisible, description: "scroll")]
+        checkFalse(computedOwner.hasInterestingActions)
+        computedOwner.role = .staticText
+        computedOwner.isFocusable = false; computedOwner.isSelectable = true
+        checkTrue(computedOwner.isFocusableOrSelectable); checkTrue(computedOwner.canBeUserInteractive)
+        computedOwner.role = .group
+        checkFalse(computedOwner.canBeUserInteractive)
+        checkEqual(ownerActionReads, 1); checkEqual(ownerProvider.singleReads, 0)
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
