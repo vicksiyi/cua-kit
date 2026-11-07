@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    await runAnimationDriverContractChecks()
     runInterpolatableAnimationValueChangeChecks()
     runInterpolatableAnimationFinishChecks()
     runInterpolatableAnimationTickChecks()
@@ -8195,4 +8196,25 @@ private func runInterpolatableAnimationValueChangeChecks() {
     trace.events = []
     changeInterpolatableAnimationValue(readValue: { value }, mutate: {}, handler: { { _ in preconditionFailure() } })
     precondition(trace.events == ["equal-2-2"])
+}
+
+
+@MainActor private func runAnimationDriverContractChecks() {
+    final class Source: AnimationDriverSource {
+        func makeAnimationDriver() -> AnimationDriver { AnimationDriver() }
+    }
+    @MainActor final class Counter { var updates: [AnimationUpdate] = [] }
+    let source: any AnimationDriverSource = Source()
+    let driver = source.makeAnimationDriver(), other = source.makeAnimationDriver()
+    precondition(driver !== other && driver.frameCallback == nil && !driver.isActive)
+    driver.start(); driver.stop()
+    precondition(!driver.isActive)
+    let counter = Counter()
+    driver.frameCallback = { counter.updates.append($0) }
+    let update = AnimationUpdate(timestamp: 2, duration: 0.25)
+    driver.frameCallback?(update)
+    precondition(counter.updates == [update])
+    driver.isActive = true; driver.stop()
+    precondition(driver.isActive)
+    driver.frameCallback = nil
 }

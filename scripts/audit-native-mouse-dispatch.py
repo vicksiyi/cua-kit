@@ -671,6 +671,16 @@ assert read(0x1007c59d4, 28).hex() == 'e80318aa69fdff97f4031baa80033fd6e80316aaf
 assert read(0x1007c5a10, 8).hex() == '9a0240f93a0600b4'
 assert read(0x1007c5a28, 28).hex() == 'e00316aae10318aaf40313aae20313aae30319aa362b2694a0000036'
 
+# AnimationDriverSource is class-constrained with one factory method.
+assert struct.unpack('<II', read(0x1012cdec0 + 12, 8)) == (1, 1)
+assert struct.unpack('<I', read(0x1012cdec0 + 36, 4))[0] == 0x11
+assert struct.unpack('<i', read(0x1012cde44 + 20, 4))[0] == 0
+# Native base start/stop are genuinely no-op; display-link subclass overrides.
+for descriptor in [0x1012cdea8, 0x1012cdeb0]:
+    relative = descriptor + 4
+    assert relative + struct.unpack('<i', read(relative, 4))[0] == 0x100009888
+assert read(0x100009888, 4).hex() == 'c0035fd6'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

@@ -3557,3 +3557,31 @@ Concrete SIMD storage and value-wrapper initialization remain unimplemented;
 this does not enable the production cursor or establish app clicking success.
 
 Swift build, provider value-flow/composition checks and pinned static audit pass.
+
+
+## Native driver base/source contract and actual clock boundary (2026-11-08)
+
+AnimationDriverSource descriptor 0x1012cdec0 is class-constrained with one
+makeAnimationDriver()->AnimationDriver requirement. Native NSView/NSWindow/
+NSScreen witnesses call a common factory at 0x1007d7de0; the NSWindow closure
+uses AppKit displayLinkWithTarget:selector:, not a synthetic periodic timer.
+This confirms the system display-link boundary for subsequent restoration.
+
+The Animation module now defines the source protocol and native AnimationDriver
+base. Its descriptor has no superclass reference: this is a plain Swift class,
+not an NSObject subclass. Source base stores optional @MainActor @Sendable frameCallback and mutable
+isActive=false. Its start/stop method descriptors 0x1012cdea8/0x1012cdeb0 both
+point to a single ret at 0x100009888: they do not change isActive, create a timer
+or clear callback. Concrete DisplayLinkAnimationDriver overrides provide scheduling.
+The base is therefore not presented as an active clock. Its ownership/defaults,
+factory result identity, manual MainActor frame payload delivery and unchanged
+base start/stop behavior are checked without a display link or UI window.
+
+Initial-value investigation also confirms the start routine stores startTime,
+reads current value and writes _initialValue via metadata field word 17 (0x88),
+using SIMDValue rather than replacing the current value. That storage path still
+requires the SIMD wrapper recovery. Neither this driver contract nor the partial
+start evidence enables production cursor movement; concrete display-link lifetime,
+coordinator and cursor ownership remain pending.
+
+Swift build, provider driver-contract checks and pinned static audit pass after base/source recovery.
