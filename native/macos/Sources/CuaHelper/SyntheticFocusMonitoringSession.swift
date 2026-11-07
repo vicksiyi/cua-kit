@@ -46,6 +46,10 @@ final class SyntheticFocusMonitoringSession {
             target?.observeFrontmostPID(application.processIdentifier, targetPID: pid)
         }
     }
+    func synthesizedActionWasPerformed(activity: SyntheticFocusActivity = .shared,
+                                       now: () -> Double = { ProcessInfo.processInfo.systemUptime }) {
+        activity.record(pid: pid, time: now())
+    }
     func enforceActiveState(for window: SyntheticActivationWindow?,
                             send: (SynthesizedEvent) throws -> Void) throws {
         try target.state.mutate { try $0.enforceActiveState(for: window, send: send) }

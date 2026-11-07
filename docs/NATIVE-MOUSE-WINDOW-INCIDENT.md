@@ -646,3 +646,54 @@ Objective-C package's SAIRunningProcessFilter and first matching pid; no process
 enumerator was reimplemented. Swift build and provider-click tests pass for
 lazy branch selection and bypass of irrelevant readers. Special owner resolvers,
 ApplicationRegistry bindings and preventer cache adapter remain pending.
+
+
+## ViewBridge result carries two process identities
+
+0x10075128c constructs an application AX wrapper with the current tree
+transaction, then invokes 0x100752874 followed by 0x1007531b0. It packs the
+first result's low PID into return x0 low32 and the second result into the upper
+payload/tag. Thus the full focus-owner result contains more information than
+the selected owner PID currently exposed by KeyFocusOwnerSelection.
+
+Second query 0x1007531b0 independently rereads focusedUIElement, extracts
+actualPID (not pid) via the existing throwing-getter adapter 0x1007526d0, then
+checks that process's running-app activationPolicy against 2. A missing AX
+focus, getter failure or other policy takes explicit nil-result branches. An absent
+running-app object preserves the PID (0x10075329c -> 0x1007532bc); this distinction
+was confirmed in the follow-up audit. First query 0x100752874 also reads focusedUIElement and follows the
+focusedUIElement attribute further; it is not equivalent to the second query.
+The production resolver must preserve their independent reads and both PID
+identities, rather than reuse one cached element or collapse the native result
+shape. Full result enum tags and fallback branches remain under audit.
+
+
+## Distinguish retry exhaustion from activity gate
+
+Further audit of 0x100752874 shows stale-activity failure jumps directly to
+common owner resolution at 0x100753034 with a nil element. Exhausting retries
+instead reaches 0x100753010 and checks a static optional PID at 0x101574960
+before common resolution. This is a cached PID, not a cached UIElement. Added
+ViewBridgeFocusAcquisition to retain element/activityTooOld/retriesExhausted;
+the optional-only acquisition projection must not drive full fallback selection.
+Remaining audit: writes/validity of that static cached PID and final resolver
+behavior when no element is present. No production fallback was guessed.
+
+
+## Activity cache writer and acquisition composition
+
+Located writes at synthesizedActionWasPerformed 0x100745f14: systemUptime is
+stored to 0x101574958 and target PID/present tag to 0x101574960. These are the
+recent synthesized-action time/PID, not arbitrary AX observation timestamps.
+SyntheticFocusActivity preserves process-wide defaults (time zero, PID nil)
+and session exposes the source-named recording operation. Production dispatch
+has not yet been wired to call it at the audited native timing.
+
+resolveViewBridgePrimaryFocusPID composes acquisition, activity gate and
+exhaustion fallback with separate time/PID cache reads. Tests update the cache
+mid-retry and verify the final PID is fresh, stale activity bypasses cached PID,
+and immediate focus avoids clock/retry/cache reads. Swift build and
+provider-click checks pass. UIElementFocusedValue reuses the existing exact AX
+element/cache/transaction pipeline; the second ViewBridge actual-PID query now
+has a concrete AX/AppKit overload. Primary retry-read adapter, common owner
+resolver result shape and production integration remain incomplete.

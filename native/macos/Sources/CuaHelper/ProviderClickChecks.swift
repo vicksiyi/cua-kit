@@ -3686,6 +3686,10 @@ func runProviderClickChecks() async throws {
     runInclusiveFrontmostTrackerChecks()
     runSyntheticFocusInitialStateChecks()
     runKeyFocusOwnerSelectionChecks()
+    runViewBridgeActualFocusPIDChecks()
+    runViewBridgeFocusRetryChecks()
+    runViewBridgeFocusFallbackChecks()
+    runViewBridgeActivityCompositionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4387,4 +4391,80 @@ private func runKeyFocusOwnerSelectionChecks() {
     checkEqual(selectKeyFocusOwnerPID(88, viewBridgePID: { nil },
         resolveViewBridge: { _ in unexpectedFailure() }, activationPolicy: { _ in 2 },
         resolveProhibitedApplication: { checkEqual($0, 88); return 77 }), 77)
+}
+
+
+private func runViewBridgeActualFocusPIDChecks() {
+    let absent: Int32? = viewBridgeActualFocusPID(focusedElement: { Optional<Int>.none },
+        actualPID: { _ in unexpectedFailure() }, activationPolicy: { _ in unexpectedFailure() },
+        reportError: { _ in unexpectedFailure() })
+    checkTrue(absent == nil)
+    for policy: Int? in [nil, 0, 1, 2] {
+        let result = viewBridgeActualFocusPID(focusedElement: { 123 },
+            actualPID: { checkEqual($0, 123); return 88 }, activationPolicy: { checkEqual($0, 88); return policy },
+            reportError: { _ in unexpectedFailure() })
+        checkEqual(result, policy == nil || policy == 2 ? 88 : nil)
+    }
+    var reports = 0
+    let failed = viewBridgeActualFocusPID(focusedElement: { 123 },
+        actualPID: { _ in throw SafeActivationRestoreError.activationFailed },
+        activationPolicy: { _ in unexpectedFailure() }, reportError: { _ in reports += 1 })
+    checkTrue(failed == nil); checkEqual(reports, 1)
+}
+
+
+private func runViewBridgeFocusRetryChecks() {
+    let immediate: Int? = acquireViewBridgeFocusedElement(initialRead: { 88 },
+        recentActivityElapsed: { unexpectedFailure() }, sleepMicroseconds: { _ in unexpectedFailure() },
+        retryRead: { unexpectedFailure() })
+    checkEqual(immediate, 88)
+    var sleeps = 0, reads = 0
+    let retry: Int? = acquireViewBridgeFocusedElement(initialRead: { nil }, recentActivityElapsed: { 0.2 },
+        sleepMicroseconds: { checkEqual($0, 15000); sleeps += 1 },
+        retryRead: { reads += 1; return reads == 3 ? 77 : nil })
+    checkEqual(retry, 77); checkEqual(sleeps, 3)
+    sleeps = 0
+    let exhausted: Int? = acquireViewBridgeFocusedElement(initialRead: { nil }, recentActivityElapsed: { 0 },
+        sleepMicroseconds: { _ in sleeps += 1 }, retryRead: { nil })
+    checkTrue(exhausted == nil); checkEqual(sleeps, 12)
+    for elapsed in [1.0, Double.nan] {
+        let skipped: Int? = acquireViewBridgeFocusedElement(initialRead: { nil }, recentActivityElapsed: { elapsed },
+            sleepMicroseconds: { _ in unexpectedFailure() }, retryRead: { unexpectedFailure() })
+        checkTrue(skipped == nil)
+    }
+}
+
+
+private func runViewBridgeFocusFallbackChecks() {
+    checkEqual(resolveAcquiredViewBridgeFocusPID(ViewBridgeFocusAcquisition.element(123),
+        cachedPID: { unexpectedFailure() }, resolveElement: { checkEqual($0, 123); return 88 }), 88)
+    checkEqual(resolveAcquiredViewBridgeFocusPID(ViewBridgeFocusAcquisition<Int>.activityTooOld,
+        cachedPID: { unexpectedFailure() }, resolveElement: { checkTrue($0 == nil); return 77 }), 77)
+    checkEqual(resolveAcquiredViewBridgeFocusPID(ViewBridgeFocusAcquisition<Int>.retriesExhausted,
+        cachedPID: { 66 }, resolveElement: { _ in unexpectedFailure() }), 66)
+    checkEqual(resolveAcquiredViewBridgeFocusPID(ViewBridgeFocusAcquisition<Int>.retriesExhausted,
+        cachedPID: { nil }, resolveElement: { checkTrue($0 == nil); return 55 }), 55)
+}
+
+
+private func runViewBridgeActivityCompositionChecks() {
+    let activity = SyntheticFocusActivity()
+    checkEqual(activity.snapshot().time, 0); checkTrue(activity.snapshot().pid == nil)
+    activity.record(pid: 88, time: 10)
+    var sleeps = 0
+    let result = resolveViewBridgePrimaryFocusPID(initialRead: { Optional<Int>.none }, retryRead: { nil },
+        resolveElement: { _ in unexpectedFailure() }, activity: activity, now: { 10.2 },
+        sleepMicroseconds: { _ in
+            sleeps += 1
+            if sleeps == 6 { activity.record(pid: 77, time: 10.3) }
+        })
+    checkEqual(result, 77); checkEqual(sleeps, 12)
+    let stale = resolveViewBridgePrimaryFocusPID(initialRead: { Optional<Int>.none },
+        retryRead: { unexpectedFailure() }, resolveElement: { checkTrue($0 == nil); return 66 },
+        activity: activity, now: { 20 }, sleepMicroseconds: { _ in unexpectedFailure() })
+    checkEqual(stale, 66)
+    let immediate = resolveViewBridgePrimaryFocusPID(initialRead: { 123 }, retryRead: { unexpectedFailure() },
+        resolveElement: { checkEqual($0, 123); return 55 }, activity: activity,
+        now: { unexpectedFailure() }, sleepMicroseconds: { _ in unexpectedFailure() })
+    checkEqual(immediate, 55)
 }
