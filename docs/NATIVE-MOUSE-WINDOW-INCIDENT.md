@@ -1331,3 +1331,29 @@ Validation: Swift build and provider-click composition checks passed with
 shared-owner reuse, duplicate removal, last-owner destruction, lazy recreation
 and cached-versus-fresh focus query assertions. Static callsite audit passed.
 These checks do not establish successful production application clicking.
+
+
+## Menu dismissal suppression resource lifecycle
+
+Restored constructor 0x10074b4c8, first-record mutations 0x10074b6f8 /
+0x10074b7cc, and callback 0x10074fc14. A start with an existing shared
+preventer constructs a target process tap and, when supplied, a separate
+menu-process tap, even if both PIDs match. These are head/default taps for
+CGEventTypes [1,2,6,3,4,7,25,26,27], pinned from static array 0x101572220.
+Tap creation precedes list locking and happens even if the requested record
+is missing; only the first matching record receives the taps and enabled bit.
+Stop clears only that first record's taps/bit under the existing list lock.
+With no shared owner the lifecycle API returns without construction.
+
+Callbacks weakly reference the preventer, snapshot full registration records
+under lock and accept any matching enabled record, then release the lock before
+window lookup. Field 51 is converted to UInt32 with the existing checked helper,
+and the existing WindowServer lookup supplies the owner. Unknown windows pass;
+target/menu-owned windows pass; other owned windows are suppressed. There is
+no helper-PID bypass or alternate activation in this source callback.
+
+Implementation reuses EventTap, syntheticFocusWindowOwnerPID and the existing
+registration callback resource leases. Tests use local Mach ports and injected
+window lookup, covering masks/order, equal target/menu PIDs, unknown windows,
+first-record replacement/removal and create-then-discard for missing records.
+Production controller integration and real application clicking remain unverified.

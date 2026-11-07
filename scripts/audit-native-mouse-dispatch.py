@@ -29,7 +29,7 @@ def read(address, size):
     raise ValueError(hex(address))
 
 # Source send(to:delay:) stamps each event immediately before postToPid.
-calls = [(0x1007504a8, 0x10074b88c), (0x1007504d8, 0x10074b1cc), (0x100750538, 0x10074b2f4), (0x10074afe0, 0x10074b40c), (0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0x100715d4c), (0x1007531f4, 0x1007526d0), (0x10075029c, 0x10075246c), (0x1007502b0, 0x10075128c), (0x1007503dc, 0x1007513e4), (0x100751484, 0x100715d4c), (0x1007514ec, 0x1007526d0), (0x10074a204, 0x100750594), (0x100750634, 0x10074ffcc), (0x10075063c, 0x10075027c), (0x10075005c, 0x10026d800), (0x100750070, 0x10026d7fc), (0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
+calls = [(0x10074b064, 0x10074b4c8), (0x10074b090, 0x10074b6f8), (0x10074b12c, 0x10074b7cc), (0x10074b5c0, 0x100732798), (0x10074b664, 0x100732798), (0x10074fd78, 0x10025b818), (0x1007504a8, 0x10074b88c), (0x1007504d8, 0x10074b1cc), (0x100750538, 0x10074b2f4), (0x10074afe0, 0x10074b40c), (0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0x100715d4c), (0x1007531f4, 0x1007526d0), (0x10075029c, 0x10075246c), (0x1007502b0, 0x10075128c), (0x1007503dc, 0x1007513e4), (0x100751484, 0x100715d4c), (0x1007514ec, 0x1007526d0), (0x10074a204, 0x100750594), (0x100750634, 0x10074ffcc), (0x10075063c, 0x10075027c), (0x10075005c, 0x10026d800), (0x100750070, 0x10026d7fc), (0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x100754904, 0x1002580d0), (0x100754914, 0x1002580d0),
          (0x1007549c8, 0x10026cc8c),
          (0x100754ab4, 0x100258288), (0x100754b00, 0x100257d88),
@@ -237,3 +237,7 @@ print(json.dumps({'binarySha256': expected, 'calls': [
     'clickNumber': 'zero-initialized process counter; down/up reuse x24; clickCount uses x25',
     'interpretation': 'setTimestamp precedes postToPid; mouse construction sets window fields and local location',
     'limits': 'Static call-site evidence; does not prove live app acceptance or complete send-loop parity.'}, indent=2))
+
+# Menu event array: nine UInt32 CGEventTypes in constructor order.
+assert struct.unpack("<Q", read(0x101572230, 8))[0] == 9
+assert list(struct.unpack("<9I", read(0x101572240, 36))) == [1, 2, 6, 3, 4, 7, 25, 26, 27]

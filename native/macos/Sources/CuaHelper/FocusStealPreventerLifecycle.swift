@@ -34,6 +34,15 @@ final class FocusStealPreventerLifecycle {
         withExtendedLifetime(owner) { _ = owner.unregister(pid: pid) }
     }
 
+    func startSuppressingMenuDismissalEvents(for pid: Int32, menuPID: Int32?,
+        windowOwnerPID: @escaping (UInt32) -> Int32? = syntheticFocusWindowOwnerPID) {
+        // Source returns immediately when no shared owner exists.
+        instance?.startSuppressingMenuDismissalEvents(for: pid, menuPID: menuPID, windowOwnerPID: windowOwnerPID)
+    }
+    func stopSuppressingMenuDismissalEvents(for pid: Int32) {
+        instance?.stopSuppressingMenuDismissalEvents(for: pid)
+    }
+
     func isAppCurrentlyFocused(_ pid: Int32) -> Bool {
         // 0x100750594: an existing owner uses its locked cached identity;
         // without one, query the same registry/workspace path as initialization.

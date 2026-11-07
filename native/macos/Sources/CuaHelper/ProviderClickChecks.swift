@@ -3718,6 +3718,7 @@ func runProviderClickChecks() async throws {
     await runFocusStealCallbackResourceLifetimeChecks()
     runFocusStealRegistrationResourceChecks()
     runSystemFocusStealPreventerChecks()
+    runMenuDismissalSuppressionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5359,4 +5360,94 @@ private func runSystemFocusStealPreventerChecks() {
     lifecycle.startPreventingFocusStealing(for: 88, targetLostFocusHandler: nil, targetGainedFocusHandler: nil)
     checkEqual(constructions, 2)
     lifecycle.stopPreventingFocusStealing(for: 88); checkTrue(lifecycleOwner == nil)
+}
+
+private func runMenuDismissalSuppressionChecks() {
+    let event = CGEvent(source: nil)!
+    var enabled = false, window: UInt32? = 123, owner: Int32? = 88
+    var reads = 0
+    func filter() -> CGEvent? {
+        filterMenuDismissalEvent(event, targetPID: 88, menuPID: 99,
+            suppressionEnabled: { enabled }, eventWindowID: { reads += 1; return window },
+            windowOwnerPID: { checkEqual($0, 123); return owner })
+    }
+    checkTrue(filter() === event); checkEqual(reads, 0)
+    enabled = true
+    checkTrue(filter() === event)
+    owner = 99; checkTrue(filter() === event)
+    owner = 77; checkTrue(filter() == nil)
+    owner = nil; checkTrue(filter() === event)
+    window = nil; checkTrue(filter() === event)
+    var pids: [Int32] = [], invalidations = 0
+    var callbacks: [(CGEventTapCallBack, UnsafeMutableRawPointer)] = []
+    let driver = EventTap.Driver(create: { location, place, options, mask, callback, info in
+        guard case .process(let pid) = location else { unexpectedFailure() }
+        pids.append(pid); checkEqual(place.rawValue, 0); checkEqual(options.rawValue, 0)
+        checkEqual(mask, [1,2,6,3,4,7,25,26,27].reduce(CGEventMask(0)) { $0 | CGEventMask(1) << $1 })
+        callbacks.append((callback, info))
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
+    var invoked = 0
+    var taps: [EventTap]? = menuDismissalEventTaps(targetPID: 88, menuPID: 88, driver: driver) { _, sent in
+        checkTrue(sent === event); invoked += 1; return nil
+    }
+    checkEqual(taps?.count, 2); checkEqual(pids, [88,88])
+    for (callback, info) in callbacks {
+        checkTrue(callback(OpaquePointer(bitPattern: 1)!, .leftMouseDown, event, info) == nil)
+    }
+    checkEqual(invoked, 2)
+    taps = nil; checkEqual(invalidations, 2)
+    taps = menuDismissalEventTaps(targetPID: 77, menuPID: nil, driver: driver) { _, event in event }
+    checkEqual(taps?.count, 1); checkEqual(pids, [88,88,77])
+    taps = nil; checkEqual(invalidations, 3)
+
+    let menuMask = [1,2,6,3,4,7,25,26,27].reduce(CGEventMask(0)) { $0 | CGEventMask(1) << $1 }
+    let combinedDriver = EventTap.Driver(create: { location, place, options, mask, callback, info in
+        if mask == menuMask { return driver.create(location, place, options, mask, callback, info) }
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: driver.invalidate)
+    let dependencies = SystemFocusStealPreventer.Dependencies(resolveOwner: { .ordinary(pid: $0) },
+        releaseFocus: { _ in unexpectedFailure() }, compensateViewBridge: { _, _, _ in unexpectedFailure() })
+    var preventer: SystemFocusStealPreventer? = SystemFocusStealPreventer(initialOwner: { .ordinary(pid: 77) },
+        viewBridgePID: { nil }, dependencies: dependencies, tapDriver: combinedDriver, becameEmpty: {})
+    preventer!.register(pid: 88, lost: nil, gained: nil)
+    preventer!.register(pid: 88, lost: nil, gained: nil)
+    var windowQueries = 0
+    func start(_ pid: Int32, menuPID: Int32?) {
+        preventer!.startSuppressingMenuDismissalEvents(for: pid, menuPID: menuPID,
+            windowOwnerPID: { _ in windowQueries += 1; return 77 })
+    }
+    start(88, menuPID: 99)
+    let firstCallback = callbacks[3]
+    func invoke(_ value: (CGEventTapCallBack, UnsafeMutableRawPointer)) -> CGEvent? {
+        value.0(OpaquePointer(bitPattern: 1)!, .leftMouseDown, event, value.1)?.takeUnretainedValue()
+    }
+    checkTrue(invoke(firstCallback) == nil); checkEqual(windowQueries, 1)
+    let beforeStop = invalidations
+    preventer!.stopSuppressingMenuDismissalEvents(for: 88)
+    checkEqual(invalidations, beforeStop + 2)
+    // Duplicate registration remains but is not enabled; restarting replaces
+    // only the first record and removal must dispose just that record's taps.
+    start(88, menuPID: nil)
+    checkTrue(invoke(callbacks.last!) == nil)
+    let beforeRemove = invalidations
+    checkTrue(preventer!.unregister(pid: 88))
+    checkEqual(invalidations, beforeRemove + 2) // mouse tap + first keyboard
+    checkTrue(preventer!.isRegistered(pid: 88))
+    let beforeMissing = invalidations
+    start(77, menuPID: 99) // resources are created then discarded without a record
+    checkEqual(invalidations, beforeMissing + 2)
+    preventer!.stopSuppressingMenuDismissalEvents(for: 77)
+    preventer = nil
+
+    struct Record { let pid: Int32; var enabled: Bool }
+    let store = FocusStealRegistrationStore<Record>(pid: { $0.pid }, becameEmpty: {})
+    store.append(Record(pid: 88, enabled: false)); store.append(Record(pid: 88, enabled: false))
+    checkFalse(store.mutateFirst(pid: 77) { _ in unexpectedFailure() })
+    checkTrue(store.mutateFirst(pid: 88) { $0.enabled = true })
+    checkEqual(store.snapshot.map { $0.enabled }, [true, false])
+    checkTrue(store.mutateFirst(pid: 88) { $0.enabled = false })
+    checkEqual(store.snapshot.map { $0.enabled }, [false, false])
 }

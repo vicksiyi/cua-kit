@@ -57,6 +57,27 @@ final class SystemFocusStealPreventer: SystemFocusNotificationHandling {
     }
     @discardableResult func unregister(pid: Int32) -> Bool { registrations.removeFirst(pid: pid) }
     func isRegistered(pid: Int32) -> Bool { registrations.snapshot.contains { $0.pid == pid } }
+    func startSuppressingMenuDismissalEvents(for pid: Int32, menuPID: Int32?,
+        windowOwnerPID: @escaping (UInt32) -> Int32? = syntheticFocusWindowOwnerPID) {
+        // Source builds resources before acquiring the list lock, including
+        // when the requested registration is absent; replacement is first-only.
+        let taps = menuDismissalEventTaps(targetPID: pid, menuPID: menuPID, driver: tapDriver) { [weak self] _, event in
+            guard let self else { return event }
+            return filterMenuDismissalEvent(event, targetPID: pid, menuPID: menuPID,
+                suppressionEnabled: { self.registrations.snapshot.contains { $0.pid == pid && $0.isMenuDismissalSuppressionEnabled } },
+                eventWindowID: { syntheticFocusClickWindowID(event) }, windowOwnerPID: windowOwnerPID)
+        }
+        registrations.mutateFirst(pid: pid) { record in
+            record.mouseEventTaps = taps
+            record.isMenuDismissalSuppressionEnabled = true
+        }
+    }
+    func stopSuppressingMenuDismissalEvents(for pid: Int32) {
+        registrations.mutateFirst(pid: pid) { record in
+            record.mouseEventTaps = nil
+            record.isMenuDismissalSuppressionEnabled = false
+        }
+    }
     var ownershipSnapshot: FocusStealOwnershipHistory { state.ownershipSnapshot }
 
     func filterSystemFocusNotification(_ event: CGEvent, viewBridgePID: Int32?) -> CGEvent? {

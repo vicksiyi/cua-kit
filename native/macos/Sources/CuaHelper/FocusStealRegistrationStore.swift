@@ -22,6 +22,12 @@ final class FocusStealRegistrationStore<Record> {
         if records.isEmpty { becameEmpty() }
         return true
     }
+    @discardableResult func mutateFirst(pid target: Int32, _ body: (inout Record) -> Void) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        guard let index = records.firstIndex(where: { pid($0) == target }) else { return false }
+        body(&records[index])
+        return true
+    }
     var snapshot: [Record] {
         lock.lock(); defer { lock.unlock() }; return records
     }
