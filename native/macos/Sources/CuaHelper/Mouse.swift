@@ -134,14 +134,27 @@ extension Target {
         }
         func simulate(at point: CGPoint, element: UIElement? = nil,
                       initiallyInsideWebView: Bool = false) async throws -> [String: Any] {
-            let window = try mouseWindow(params)
+            try validateSnapshot(params)
             try checkDeadline()
-            let prepared: Bool
+            let application = UIElement(element: root)
+            let target: MouseEventTarget<UIElement, UIElement>?
             if let element {
+                guard let raw = attribute(element.axElement, kAXWindowAttribute),
+                      let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) else {
+                    throw fail("TARGET_NOT_FOUND", "Clicked element has no containing window.")
+                }
+                target = try application.mouseEventTarget(at: point, accessibilityWindow: UIElement(element: ax),
+                    hitElement: element, reportError: report)
+            } else { target = nil }
+            let window = try target?.mouseWindow ?? mouseWindow(params)
+            let destinationPID = target?.pid ?? app.processIdentifier
+            let prepared: Bool
+            if let target {
                 let enforcer = activateFocusEnforcer()
-                prepared = try await UIElement(element: root).prepareSyntheticClickFocus(element: element,
-                    insideWebView: initiallyInsideWebView, clickingByCoordinate: false,
-                    hasHeldKey: false, window: activationWindow(for: element), enforcer: enforcer,
+                prepared = try await application.prepareSyntheticClickFocus(element: target.element,
+                    insideWebView: initiallyInsideWebView, clickingByCoordinate: true,
+                    hasHeldKey: false,
+                    window: SyntheticActivationWindow(element: target.accessibilityWindow, reportError: report), enforcer: enforcer,
                     applicationIsActive: {
                         let pid = try self.root.pid
                         return NSRunningApplication(processIdentifier: pid)?.isActive ?? false
@@ -158,13 +171,13 @@ extension Target {
             for index in stride(from: 0, to: events.count, by: 2) {
                 try checkDeadline()
                 try await dispatchHeldPair(events[index], events[index+1], nanoseconds: held,
-                    post: { dispatchNativeEvent($0, to: self.app.processIdentifier) }, validate: { try self.validateIdentity() },
+                    post: { dispatchNativeEvent($0, to: destinationPID) }, validate: { try self.validateIdentity() },
                     wait: { try await Task.sleep(nanoseconds: $0) })
                 if index + 2 < events.count {
                     try await Task.sleep(for: SynthesizedEvent.defaultClickDuration)
                 }
             }
-            return ["outcome": "dispatched", "eventCount": events.count, "windowId": Int(window.id), "point": ["x": point.x, "y": point.y]]
+            return ["outcome": "dispatched", "eventCount": events.count, "targetPid": Int(destinationPID), "windowId": Int(window.id), "point": ["x": point.x, "y": point.y]]
         }
         guard let id = params["elementId"] as? Int else {
             return try await simulate(at: observedInputPoint(params))

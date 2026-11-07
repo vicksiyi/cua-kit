@@ -47,3 +47,12 @@ extension Target {
         return MouseWindow(id: capture.windowId, frame: capture.frame)
     }
 }
+
+// Consume all native target geometry, including the source's false flipped
+// default. Do not reconstruct a second window from the original indexed node.
+extension MouseEventTarget {
+    var mouseWindow: MouseWindow {
+        MouseWindow(id: windowID, frame: windowBounds,
+            usesFlippedCoordinates: windowUsesFlippedCoordinates)
+    }
+}

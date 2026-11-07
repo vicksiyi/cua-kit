@@ -6027,6 +6027,14 @@ private func runMouseEventTargetChecks() throws {
     checkTrue(direct.pid == 11 && direct.element == 1 && direct.accessibilityWindow == "original" &&
         direct.windowID == 80 && direct.windowBounds == axBounds && !direct.windowUsesFlippedCoordinates)
     checkTrue(calls == ["appPID", "windowPID:original", "children:1", "foreign:2:11", "elementID:1", "elementPID:1", "frame:original"])
+    let directWindow = direct.mouseWindow
+    checkTrue(directWindow.id == 80 && directWindow.frame == axBounds && !directWindow.usesFlippedCoordinates)
+    let events = try mouseClickEvents(point: CGPoint(x: 30, y: 40), button: "left", count: 1,
+        flags: [], window: directWindow)
+    checkTrue(events.count == 2 && events.allSatisfy {
+        $0.getIntegerValueField(.mouseEventWindowUnderMousePointer) == 80 &&
+        $0.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) == 80
+    })
     calls = []; elementPID = nil
     checkTrue(try resolve().windowID == 90)
     checkTrue(calls.contains("ancestor:1:11"))

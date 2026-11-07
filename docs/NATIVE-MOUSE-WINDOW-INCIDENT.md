@@ -1833,11 +1833,47 @@ system-wide replacement, foreign replacement, exact Atlas behavior, missing
 native windows and error precedence. Tests do not post events, create taps,
 activate apps, or perform live window queries.
 
-Production Mouse.swift still uses its older target/window construction and
-coordinate focus path. The resolver is now available as a concrete native
+At the resolver-only stage, production Mouse.swift still used its older
+target/window construction and coordinate focus path. The resolver is now available as a concrete native
 composition, but wiring it into sendClick, completing that lifecycle and live
 Multica acceptance remain required. Passing resolver checks does not establish
 that the reported app-click problem is fixed.
 
 Validation: native Swift build, provider-click self-test (including system-wide
 illegalArgument propagation) and the expanded pinned static audit pass.
+
+
+## Indexed simulated clicks now consume the native resolver
+
+The following integration supersedes the resolver-only status above. Source
+UIElementProtocol.click continuation 0x1007b1f94 calls the complete target
+resolver with its supplied containing AX window and original element. The
+indexed simulated-click branch in Mouse.swift now does the same after current
+snapshot validation. It consumes the resolved target's PID, element, original
+accessibility window, ID, bounds and flipped-coordinate value:
+
+- Build the event window from the resolved metadata rather than reading a
+  second window from the indexed element. The native false flipped value now
+  reaches event-local coordinate construction for this branch.
+- Prepare focus using the resolved element (which can be nil/replaced), keeping
+  the original accessibility-window activation context. Synthesized sendClick
+  uses coordinate-sending activation policy, including web/selection checks;
+  passing clickingByCoordinate=false here had incorrectly skipped those
+  conditions for indexed simulated clicks.
+- Post down/up events to the resolved destination PID, matching source
+  0x1006fceb0/0x1006fcf44, rather than always using the app controller PID.
+  Focus-preparation events still belong to the original application's enforcer.
+- Return targetPid in the dispatched result to distinguish the resolved event
+  destination from the original app. Cancellation/deadline/identity/snapshot
+  validation and held-button release behavior remain in force.
+
+The resolver checks also construct unsent CGEvents from the resolved window
+and verify both event window fields. The existing native input self-test
+checks AppKit window number, global location and window-local coordinates for
+both flipped values on non-origin windows. Swift build, provider-click checks,
+native input self-test and expanded static audit pass. No events were posted.
+
+Coordinate-only clicks still use the older captured-window route and active-app
+probe; source orderedWindows/controller context and complete sendClick scope
+remain to be integrated. AX-action and synthetic-event delivery to Multica still
+need harmless live verification. This is not a claim that real app clicks work.
