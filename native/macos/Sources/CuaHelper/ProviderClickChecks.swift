@@ -3788,6 +3788,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runAnimationDriverStopAnimationsChecks()
     runAnimationDriverRemovalChecks()
     runAnimationTransactionCompletionChecks()
     runAnimationStateStopCompositionChecks()
@@ -8053,12 +8054,31 @@ private func runAnimationDriverRemovalChecks() {
     let id = ObjectIdentifier(source)
     var registry = [id: Handler("old", released: { events.append($0) })]
     removeAnimationDriver(source: otherSource, lookup: { registry[$0] },
-        invalidate: { _ in preconditionFailure() }, remove: { _ in preconditionFailure() })
-    removeAnimationDriver(source: source, lookup: { registry[$0] }, invalidate: { handler in
+        stopAnimations: { _ in preconditionFailure() }, remove: { _ in preconditionFailure() })
+    removeAnimationDriver(source: source, lookup: { registry[$0] }, stopAnimations: { handler in
         precondition(registry[id] === handler)
         events.append("invalidate")
         registry[id] = Handler("replacement", released: { events.append($0) })
     }, remove: { key in events.append("remove"); return registry.removeValue(forKey: key) })
     precondition(registry.isEmpty)
     precondition(events == ["invalidate", "remove", "old", "replacement"])
+}
+
+
+private func runAnimationDriverStopAnimationsChecks() {
+    let a = UUID(), b = UUID(), c = UUID()
+    var animations = [a: 1, b: 2]
+    var events: [String] = []
+    stopAnimationDriverAnimations(keys: { [a, b] }, lookup: { animations[$0] },
+        stopImmediately: { value in
+            events.append("stop-\(value)")
+            if value == 1 { animations[a] = 9; animations[c] = 3 }
+        }, remove: { key in events.append("remove"); return animations.removeValue(forKey: key) })
+    precondition(events == ["stop-1", "remove", "stop-2", "remove"])
+    precondition(animations == [c: 3])
+    animations = [a: 1, b: 2, c: 3]; events = []
+    stopAnimationDriverAnimations(keys: { [a, b, c] }, lookup: { animations[$0] },
+        stopImmediately: { value in events.append("stop-\(value)"); animations.removeValue(forKey: b) },
+        remove: { animations.removeValue(forKey: $0) })
+    precondition(events == ["stop-1"] && animations == [c: 3])
 }

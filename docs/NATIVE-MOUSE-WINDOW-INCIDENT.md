@@ -3438,3 +3438,27 @@ animation and driver cleanup is a separate body still being recovered; this
 routine does not substitute for a complete coordinator or animation driver.
 
 Swift build, provider lifetime/composition checks and pinned static audit pass for driver removal.
+
+
+## Driver handler stop-all body and naming correction (2026-11-08)
+
+Full body 0x1007ca4dc..<0x1007ca940 does not directly invalidate the driver or
+invoke onInvalidation. It snapshots UUID keys of runningAnimations, then for each
+key rereads the dictionary. A missing snapshotted key returns from the entire
+operation, not continue. A found animation receives stop(immediately:true)
+without an ended-state guard, then the current entry for that UUID is removed.
+Stopping can replace that entry or remove another snapshot key; fresh removal
+and early exit preserve those effects. Newly added keys are outside the snapshot.
+Dictionary access ends before calling the animation. The snapshot/retained value
+outlives each callback and removal; no sorting, deduplication or retries are added.
+
+This body is now restored as the injected Animation helper. The previously named
+removeAnimationDriver invalidate dependency is corrected to stopAnimations;
+older incident paragraphs used "invalidation" as a provisional description of
+this unnamed callee and must not be read as evidence for a direct driver API call.
+Tests verify replacement removal, newly added keys remaining, and immediate
+termination when another snapshotted key was removed during stop. Static pins
+cover missing-key return and boolean true dispatch. Complete source driver
+lifecycle, handler ownership and coordinator composition still remain unfinished.
+
+Swift build, provider checks and pinned static audit pass for handler stop-all behavior.
