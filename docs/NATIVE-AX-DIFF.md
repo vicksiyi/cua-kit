@@ -4531,3 +4531,33 @@ Separate finding: common construction explicitly zeroes isValueSettable at
 helpers still need auditing for mutations. No unconditional-false implementation
 has been added on that incomplete evidence. The full transformed owner and
 production collector integration remain pending.
+
+### TransformedUIString storage and core API (2026-11-07)
+
+Added the concrete `TransformedUIString` and nested `StringInterpolation` types,
+composing the previously restored span/mapping functions. Metadata descriptors
+`0x1012c9600` and `0x1012c961c` establish a single outer `stringInterpolation` field
+and inner `spans`/`sourceOffsets` storage. The type now supports literal/String
+construction, compiler-driven String/transformed-string interpolation, description,
+isEmpty/last, removeLast, mapped append, both source-range queries, += and +.
+
+Initializer evidence: `0x10063a084` creates one empty plain span, while
+`0x100638c78` initializes an empty span array and reserves
+max(0, literalCapacity + interpolationCount), with checked addition. Literal and
+String initialization share the one-span constructor via `0x10063a11c` and
+`0x10063cc34`. The interpolation initializer at `0x100009888` returns the two-word
+interpolation storage unchanged. These are distinct constructions; they are not
+normalized to an empty description. Operator bodies at `0x10063a38c`,
+`0x10063a420`, and `0x10063a4b8` use the existing span append/mapping merge path.
+
+Validation: complete Swift helper build and provider selftest pass. New owner-level
+cases exercise Unicode UTF-16 mapping through compiler interpolation, literal gaps
+without source mappings, copy-on-write isolation after removal, concatenation
+without rebasing source offsets, ambiguous substring rejection, and zero-span
+removal after a negative-capacity sum is clamped to zero.
+
+This is the storage/core API, not a claim that the whole rendering subsystem is
+complete. URL interpolation/Markdown link generic overloads still need the original
+AccessibilityRenderingContext contract; their existing extracted algorithms remain
+separate. Sequence joining and full transformed-node construction also remain to
+be connected. No live browser/application acceptance was performed in this change.

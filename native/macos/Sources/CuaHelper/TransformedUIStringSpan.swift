@@ -1,7 +1,7 @@
 import Foundation
 
 // Original private StringInterpolation.Span (nominal 0x1012c9640), kept under
-// a local name until the full interpolation and source-offset engine is restored.
+// a local helper name and used by the restored StringInterpolation owner.
 enum TransformedUIStringSpan {
     case string(String)
     case url(String, url: URL, isImage: Bool)

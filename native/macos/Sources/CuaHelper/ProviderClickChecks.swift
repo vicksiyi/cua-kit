@@ -51,6 +51,33 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        var mappedText = TransformedUIString()
+        mappedText.appendMappedString("🙂a", sourceOffsets: [10, 11, 12])
+        checkEqual(mappedText.description, "🙂a")
+        checkEqual(mappedText.sourceRange(forMarkdownRange: NSRange(location: 0, length: 2)),
+            NSRange(location: 10, length: 2))
+        let interpolatedText: TransformedUIString = "prefix \(mappedText) suffix"
+        checkEqual(interpolatedText.description, "prefix 🙂a suffix")
+        checkEqual(interpolatedText.sourceRange(ofMarkdownSubstring: "🙂a"),
+            NSRange(location: 10, length: 3))
+        checkTrue(interpolatedText.sourceRange(ofMarkdownSubstring: "prefix") == nil)
+        var copiedText = mappedText
+        copiedText += "!"
+        copiedText.removeLast()
+        copiedText.removeLast()
+        checkEqual(copiedText.description, "🙂")
+        checkEqual(mappedText.description, "🙂a")
+        checkEqual(copiedText.last, "🙂")
+        let repeatedText = mappedText + mappedText
+        checkTrue(repeatedText.sourceRange(ofMarkdownSubstring: "🙂a") == nil)
+        checkEqual(repeatedText.sourceRange(forMarkdownRange: NSRange(location: 3, length: 3)),
+            NSRange(location: 10, length: 3))
+        let emptyInterpolation = TransformedUIString.StringInterpolation(
+            literalCapacity: -2, interpolationCount: 1)
+        var emptyText = TransformedUIString(stringInterpolation: emptyInterpolation)
+        emptyText.removeLast() // Zero spans are a no-op; init() has one empty span.
+        checkTrue(emptyText.isEmpty)
+        checkTrue(emptyText.last == nil)
         let disclosureAttribute = UIElementAttribute("AXDisclosing")
         let supportCache = UIElementCache(supportedAttributes: [disclosureAttribute],
             attributes: [:], transactionAttributes: nil)
