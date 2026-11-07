@@ -3676,6 +3676,7 @@ func runProviderClickChecks() async throws {
     runTargetActivationObservationChecks()
     runSafeActivationRestorationDecisionChecks()
     try await runSafeActivationScopeChecks()
+    try await runSafeActivationNativeResourceChecks()
     runRunLoopTaskChecks()
     runEventTapLifecycleChecks()
 }
@@ -3986,4 +3987,39 @@ private func runSafeActivationScopeChecks() async throws {
         unexpectedFailure()
     } catch is CancellationError {} catch { unexpectedFailure() }
     checkEqual(cleaned, ["updates", "observer", "target", "foreground"])
+}
+
+private func runSafeActivationNativeResourceChecks() async throws {
+    var observer: SafeActivationNativeResources.TargetObserver?
+    var trace: [String] = []
+    let connection = OpaquePointer(bitPattern: 123)!
+    var masks: [CGEventMask] = []
+    let taps = EventTap.Driver(create: { location, _, _, mask, _, _ in
+        guard case .process(let pid) = location else { unexpectedFailure() }
+        trace.append("tap:\(pid)"); masks.append(mask)
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0) })
+    var resources: SafeActivationNativeResources? = SafeActivationNativeResources(
+        savedPID: { 77 }, targetPID: 88, helperPID: 99,
+        setTargetObserver: { observer = $0; trace.append($0 == nil ? "clear" : "install") },
+        clock: { 10 }, tapDriver: taps,
+        updates: WindowUpdateDriver(mainConnection: { trace.append("connection"); return connection },
+            disable: { checkTrue($0 == connection); trace.append("disable"); return .failure },
+            reenable: { checkTrue($0 == connection); trace.append("reenable"); return .success }),
+        post: { _, _ in unexpectedFailure() })
+    weak var lifetime = resources
+    try await withSafeActivationRestoration(operations: resources!.operations, enforce: {
+        let event = try SynthesizedEvent.notifyAppDeactivated().cgEvents[0]
+        checkTrue(observer!(CGEventType(rawValue: 13)!, event))
+    }, restore: { error in
+        checkTrue(error == nil)
+        checkTrue(resources!.observations.snapshot.targetResignObserved)
+        checkEqual(resources!.observations.snapshot.lastEventTime, 10)
+    })
+    checkEqual(masks, [SafeActivationNativeResources.foregroundMask, SafeActivationNativeResources.targetInputMask])
+    checkEqual(trace, ["tap:77", "tap:88", "install", "connection", "disable", "reenable", "clear"])
+    checkTrue(observer == nil)
+    resources = nil
+    checkTrue(lifetime == nil)
 }

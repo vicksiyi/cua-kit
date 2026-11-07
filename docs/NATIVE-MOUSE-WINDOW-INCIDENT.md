@@ -405,3 +405,30 @@ required symbol like the pinned source. Swift build and provider checks pass.
 Production safe activation still needs to capture one connection, pair update
 calls through its scope, and compose the complete restoration loop. No live
 window update suppression or real-app interaction was tested here.
+
+
+## Concrete safe-activation resources (not yet production input)
+
+SafeActivationNativeResources now composes two process EventTaps, a locked
+observation store, the temporary target observer, and WindowServer update scope.
+The saved application's tap watches raw event types 13/20/19 (initializer
+0x100746164); the target's keyboard tap watches 10/11/12 (static array
+0x101571410, pinned by audit-native-mouse-dispatch.py). Both use head placement
+and default options. Observation times use ProcessInfo.systemUptime, matching
+the native NSProcessInfo processInfo/systemUptime selector pair, not wall time.
+
+The update scope captures one connection and reuses it for disable/reenable.
+Callbacks retain only the observation store and input dependencies, avoiding
+a resources -> EventTap -> retained handler -> resources cycle. Provider tests
+use local Mach ports and an injected update driver: exact masks/PIDs, observer
+installation/removal, same-connection cleanup even when disable returns a
+failure code, and object deallocation all pass. Swift build and pinned static
+audit pass. Tests do not install system input taps or suppress screen updates.
+
+The practical incident remains unresolved: Target.mouseInput in Mouse.swift
+still dispatches synthetic events without a SyntheticAppFocusEnforcer or
+VirtualCursor instance. These resource objects have no production caller yet.
+The full foreground/window restoration loop and enforcer ownership must be
+completed before integration; only then can a real Multica click and a changed
+post-click UI observation validate the repair. The latest available debug log
+remains 2026-11-07T08-56-03-778Z; no newer user run was available for comparison.
