@@ -274,6 +274,13 @@ if CommandLine.arguments.contains("--key-focus-query-check") {
     print(String(decoding: data, as: UTF8.self))
     exit(0)
 }
+if CommandLine.arguments.contains("--ax-notification-lifecycle-check") {
+    do {
+        try await runAXNotificationLifecycleChecks()
+        print("AX notification lifecycle checks passed (no subscriptions or UI input)")
+        exit(0)
+    } catch { fputs("AX notification lifecycle failed: \(error)\n", stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--provider-click-self-test") {
     do { try await runProviderClickChecks(); print("Provider click composition checks passed"); exit(0) }
     catch { fputs("Provider click checks failed: \(error)\n", stderr); exit(1) }

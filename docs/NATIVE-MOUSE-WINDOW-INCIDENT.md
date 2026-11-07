@@ -2448,3 +2448,20 @@ integration requires an explicit ownership decision rather than assuming the
 native callback is already running on the main thread. The original dictionary
 has no extra lock, while these two menu slots have their own native locks.
 This outstanding concurrency boundary must be resolved during controller wiring.
+
+
+## Real native AX monitoring lifecycle check
+
+`cua-helper --ax-notification-lifecycle-check` creates a real AXObserver for
+its own process and starts the actual RunLoopTask. It waits for the native AX
+source to appear in default mode, verifies repeat start retains the same RunLoop,
+stops and verifies source removal, repeats stop, then restarts and verifies a new
+RunLoop and final source removal. It passed on this machine after a successful
+Swift build; the process was externally bounded to 15 seconds. Existing provider
+composition checks and the pinned static audit also pass.
+
+This check registers no AX notifications and sends no UI input. It proves native
+observer creation and source/task start-stop behavior including the main-queue
+barrier, not real event delivery, Target wiring or successful application clicks.
+The internal monitoringRunLoop accessor exposes the existing locked snapshot for
+lifecycle observation; it does not change production start/stop behavior.

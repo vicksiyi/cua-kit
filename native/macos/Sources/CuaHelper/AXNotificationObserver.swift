@@ -75,6 +75,9 @@ final class AXNotificationObserver {
         for notification in notifications { try remove(notification, for: element) }
     }
 
+    // Internal lifecycle observation; does not install notifications or send input.
+    var monitoringRunLoop: CFRunLoop? { monitoringTask?.currentRunLoop }
+
     func startMonitoring(qos: QualityOfService) {
         guard monitoringTask == nil else { return }
         let source = AXObserverGetRunLoopSource(axObserver)
