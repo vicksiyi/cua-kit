@@ -5434,3 +5434,31 @@ The subsequent optional providerTitle callback maps its result to a nil test
 The complete optional working-item, provider precedence and mutation paths
 still require reconstruction. This helper does not claim title association
 is complete or usable as a standalone production transformation.
+
+
+### Provider title eligibility (2026-11-07)
+
+Decoded the guard after the sole-text selection. This is a query about whether
+an association target lacks a title, not a fallback for producing label text.
+With a providerTitle closure, invoke it once for the target ID and compare its
+result to nil. A nil result permits the candidate without inspecting stored
+children; any non-nil result, including an empty string, blocks it.
+Only when the closure itself is absent does the rule find the first matching
+ID in the original direct child array and inspect that node's title. Missing
+node or nil title permits the candidate; a present title blocks it. Duplicate
+IDs use the first match, not a reverse table or a later matching node.
+
+Evidence: 0x100658ef8 maps the optional closure using helper 0x100273bd0;
+callback 0x10065d9d8 invokes the provider and returns result == nil.
+0x100658f1c distinguishes Optional<Bool>.none tag 2; the absent path calls
+Sequence.first(where:) at 0x100658fac via 0x10065f790 -> identity predicate.
+For a found node, the saved title getter is called at 0x100659094 and nil
+branches to 0x1006590e4. A missing node also joins there from 0x10065900c.
+Provider false branches to 0x100659374, skipping candidate assignment.
+
+Restored as the extracted helper titleAssociationTargetLacksTitle. Tests
+cover provider-authoritative nil despite a captured title, provider non-nil
+despite missing captured nodes, empty strings, absent providers, no match,
+duplicate first-match order and one provider invocation with the correct ID.
+This is eligibility only; complete title writeback/relocation/rebuild and the
+full production dispatcher remain incomplete.

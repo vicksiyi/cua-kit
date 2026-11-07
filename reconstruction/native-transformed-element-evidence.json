@@ -156,10 +156,11 @@
       "search helpers use Collection.firstIndex(where:)",
       "subtree items are mutated and their caches invalidated"
     ],
+    "providerGuard": "present provider is authoritative; only absent provider searches original direct children by ID; nil title permits candidate, empty title blocks",
     "textCandidate": "value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
     "remaining": [
       "recover complete optional working-item flow",
-      "map providerTitle presence/absence branches and remaining writeback flow",
+      "recover remaining title writeback flow after eligibility guard",
       "recover target relocation/removal and rebuild callback branches",
       "only then implement dispatcher branch and fixture acceptance"
     ]

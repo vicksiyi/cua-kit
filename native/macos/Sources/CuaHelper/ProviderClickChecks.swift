@@ -1163,6 +1163,32 @@ private enum ProviderClickChecks {
         emptyTitleCandidate.title = "same"
         emptyTitleCandidate.value = "same"
         checkTrue(soleTitleAssociationText(emptyTitleCandidate) == nil)
+        // A present provider returning nil is distinct from no provider.
+        var providerLookups = 0
+        let titleTargets = identityChildren.children
+        checkFalse(titleAssociationTargetLacksTitle(identity: capturedOwner.id, in: titleTargets))
+        checkTrue(titleAssociationTargetLacksTitle(identity: capturedOwner.id, in: titleTargets,
+            providerTitle: { identity in
+                providerLookups += 1
+                checkTrue(CFEqual(identity, capturedOwner.id))
+                return nil
+            }))
+        checkEqual(providerLookups, 1)
+        for providedTitle in ["", " ", "existing"] {
+            checkFalse(titleAssociationTargetLacksTitle(identity: capturedOwner.id, in: [PruneItem](),
+                providerTitle: { _ in providedTitle }))
+        }
+        checkTrue(titleAssociationTargetLacksTitle(identity: capturedOwner.id, in: [PruneItem]()))
+        var untitledTarget = capturedOwner
+        untitledTarget.title = nil
+        let duplicateTargets = [PruneItem(element: untitledTarget, subtree: transformedLeaf),
+            PruneItem(element: capturedOwner, subtree: transformedLeaf)]
+        checkTrue(titleAssociationTargetLacksTitle(identity: capturedOwner.id, in: duplicateTargets))
+        checkFalse(titleAssociationTargetLacksTitle(identity: capturedOwner.id, in: Array(duplicateTargets.reversed())))
+        var emptyExistingTitle = untitledTarget
+        emptyExistingTitle.title = ""
+        checkFalse(titleAssociationTargetLacksTitle(identity: capturedOwner.id,
+            in: [PruneItem(element: emptyExistingTitle, subtree: transformedLeaf)]))
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

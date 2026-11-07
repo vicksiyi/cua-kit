@@ -327,6 +327,20 @@ for site, register, target in [
 for site, slot in [(0x100658c84, 10), (0x100658cac, 8), (0x100658ccc, 9)]:
     assert struct.unpack('<I', read(site, 4))[0] == 0xf9400328 | (slot << 10)
 
+# Provider presence is Optional<Bool>: none takes child-array lookup;
+# some(true) (nil title) proceeds; some(false) skips candidate assignment.
+branch(0x100658ef8, 0x100273bd0)
+branch(0x100658fac, 0x101150c6c)
+branch(0x10065f798, 0x10065da60)
+branch(0x10065900c, 0x1006590e4, link=False)
+compare_zero_branch(0x1006590bc, 20, 0x1006590e4)
+for address, instruction in [
+    (0x10065da18, 0xf100029f), # provider result second word == 0
+    (0x10065da1c, 0x1a9f17e8), # cset w8, eq
+    (0x100658f1c, 0x7100091f), # Optional<Bool>.none tag 2
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+
 print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
     storedFields=stored, verifiedBranches=calls,
     titleAssociationInvestigation=dict(status="partial evidence, not an implemented rule",
@@ -335,9 +349,10 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
             "target filtering callback inserts IDs into a Set and returns inserted",
             "search helpers use Collection.firstIndex(where:)",
             "subtree items are mutated and their caches invalidated"],
+        providerGuard="present provider is authoritative; only absent provider searches original direct children by ID; nil title permits candidate, empty title blocks",
         textCandidate="value/title/description read once in order; exactly one non-nil field; empty and whitespace retained; equal multi-field text still ambiguous",
         remaining=["recover complete optional working-item flow",
-            "map providerTitle presence/absence branches and remaining writeback flow",
+            "recover remaining title writeback flow after eligibility guard",
             "recover target relocation/removal and rebuild callback branches",
             "only then implement dispatcher branch and fixture acceptance"]),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",

@@ -24,3 +24,15 @@ func soleTitleAssociationText<Element: AccessibilityNode>(_ element: Element) ->
         return nil
     }
 }
+
+
+// Extracted guard at 0x100658db4..0x1006590fc. Presence of the provider is
+// authoritative: its nil result permits association, without consulting the
+// captured child array. Only an absent provider falls back to first ID match.
+func titleAssociationTargetLacksTitle<Element: AccessibilityNode>(
+    identity: Element.ID, in children: [UIElementTree<Element>.Item],
+    providerTitle: ((Element.ID) -> String?)? = nil
+) -> Bool {
+    if let providerTitle { return providerTitle(identity) == nil }
+    return children.first { $0.element.id == identity }?.element.title == nil
+}
