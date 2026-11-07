@@ -3730,6 +3730,7 @@ func runProviderClickChecks() async throws {
     try await runApplicationClickFocusCompositionChecks()
     try runApplicationClickEventFlagChecks()
     runInputSnapshotFocusComparisonChecks()
+    try runMouseEventWindowSelectionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5783,4 +5784,49 @@ private func runInputSnapshotFocusComparisonChecks() {
     checkTrue(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
     current["frame"] = ["x": 10, "y": 20]
     checkFalse(inputSnapshotDataEqual(previous, current, allowingFocusChange: true))
+}
+
+private func runMouseEventWindowSelectionChecks() throws {
+    let point = CGPoint(x: 20, y: 30)
+    var reads: [Int] = [], trace: [String] = []
+    func frame(_ id: Int) -> CGRect? {
+        reads.append(id)
+        return id == 1 ? nil : CGRect(x: 0, y: 0, width: 100, height: 100)
+    }
+    let result = try resolveMouseEventWindowAndElement(point, windows: [1,2,3], frame: frame,
+        hitTest: { trace.append("hit"); return Optional(99) }, makeTarget: { window, element in
+            trace.append("target"); checkEqual(window, 2); checkEqual(element, 99); return window
+        })
+    checkEqual(result, 2); checkEqual(reads, [1,2]); checkEqual(trace, ["hit","target"])
+    do {
+        let _: Int = try resolveMouseEventWindowAndElement(point, windows: [Int](), frame: { _ in unexpectedFailure() },
+            hitTest: { () -> Int? in unexpectedFailure() }, makeTarget: { _, _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch MouseEventWindowSelectionError.noWindows {} catch { unexpectedFailure() }
+    do {
+        let _: Int = try resolveMouseEventWindowAndElement(point, windows: [1], frame: { _ in nil },
+            hitTest: { () -> Int? in unexpectedFailure() }, makeTarget: { _, _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch MouseEventWindowSelectionError.noWindowAtPoint(let seen) { checkEqual(seen, point) }
+    catch { unexpectedFailure() }
+    checkEqual(AXError.illegalArgument.rawValue, -25201)
+    let suppressed: Int? = try mouseEventElementAtPoint { throw UIElementError.axError(.illegalArgument) }
+    checkTrue(suppressed == nil)
+    let absent: Int? = try mouseEventElementAtPoint { nil }
+    checkTrue(absent == nil)
+    do {
+        let _: Int? = try mouseEventElementAtPoint { throw UIElementError.axError(.cannotComplete) }
+        unexpectedFailure()
+    } catch UIElementError.axError(let error) { checkEqual(error.rawValue, AXError.cannotComplete.rawValue) }
+    catch { unexpectedFailure() }
+    enum Failure: Error { case hit, target }
+    do {
+        let _: Int? = try mouseEventElementAtPoint { throw Failure.hit }
+        unexpectedFailure()
+    } catch Failure.hit {} catch { unexpectedFailure() }
+    do {
+        let _: Int = try resolveMouseEventWindowAndElement(point, windows: [1], frame: { _ in CGRect(x: 0,y: 0,width: 100,height: 100) },
+            hitTest: { () -> Int? in nil }, makeTarget: { _, element in checkTrue(element == nil); throw Failure.target })
+        unexpectedFailure()
+    } catch Failure.target {} catch { unexpectedFailure() }
 }

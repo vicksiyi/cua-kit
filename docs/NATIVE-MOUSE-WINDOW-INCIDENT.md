@@ -1645,3 +1645,29 @@ SystemRunningApplicationLookup already implemented the exact native process
 resolution. The later duplicate RunningApplicationProcessIdentifier implementation
 was removed, enforcer capture now uses systemResolvedProcessIdentifier, and
 the new edge-case tests exercise the original shared implementation instead.
+
+
+## Coordinate mouse target's window selection and hit-test boundaries
+
+Restored target(forMouseEventAt:with:) boundaries 0x100705c44..0x100705e1c.
+An empty AX-window list throws its no-windows case before reading frames or
+hit testing. Otherwise the source selector 0x100705e5c returns the first AX
+window in caller order with a nonnil frame containing the point; it does not
+sort or substitute the focused window. No match throws a point-bearing error.
+Only then is the application AX root hit-tested. Successful nil is preserved.
+
+The source wrapper at 0x100707390 catches only UIElementError.axError(-25201),
+AXError.illegalArgument, and returns nil. Other UIElement errors and unrelated
+errors propagate. MouseEventWindowSelection restores the selection, selective
+error handling and delegation to the subsequent target/PID/window resolver.
+It intentionally does not replace that resolver with a screenshot rectangle
+or assume that an AX hit's process is the app process.
+
+Tests cover order/lazy frame reads, first-match selection, empty/no-match
+gating, successful nil hits, the exact suppressed AX error, other AX and
+unrelated errors, and target-construction error propagation. Full source
+target resolver (including out-of-process windows) and coordinate production
+integration remain outstanding; no live clicks or AX hit tests ran.
+
+Validation: Swift build, provider-click checks and pinned static audit pass.
+This selection layer is not yet called by the coordinate production sender.
