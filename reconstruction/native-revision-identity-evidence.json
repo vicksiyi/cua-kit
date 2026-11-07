@@ -1,0 +1,15 @@
+{
+  "binarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "root": "0x1006564b4: render then zero-based setElementIDs then revision constructor",
+  "resolver": "0x1006554c0",
+  "precedence": [
+    "require sourcePath",
+    "existing elementID",
+    "identity dictionary",
+    "next available ID"
+  ],
+  "mutation": "assign node elementID then identity dictionary; return identity, ID, source path",
+  "limitations": [
+    "Revision constructor, focus mapping and incremental changes are not yet integrated."
+  ]
+}

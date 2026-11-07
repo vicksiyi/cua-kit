@@ -920,6 +920,29 @@ private enum ProviderClickChecks {
             checkTrue(informational.actionDescriptions.isEmpty)
             checkEqual(context.type, .informationalContext)
         }
+        do {
+            func rendered(_ identity: Int, _ id: Int?, _ path: IndexPath?) -> UIElementRender<Int> {
+                UIElementRender(id: identity, elementID: id, text: "node",
+                    detailText: nil, sourcePath: path, children: [])
+            }
+            let existing = rendered(1, 7, IndexPath(indexes: [0, 2]))
+            let tree = UIElementRenderTree(isFocus: false, roots: [existing])
+            var next = tree.nextAvailableElementIDIterator()
+            var identities: [Int: Int] = [1: 3, 2: 6]
+            let original = try resolveRevisionRenderIdentity(existing, identities: &identities, nextID: &next)
+            checkEqual(original.elementID, 7)
+            checkEqual(original.sourcePath, IndexPath(indexes: [0, 2]))
+            let duplicate = rendered(1, nil, IndexPath(index: 4))
+            checkEqual(try resolveRevisionRenderIdentity(duplicate, identities: &identities, nextID: &next).elementID, 7)
+            let missing = rendered(3, nil, nil)
+            do { _ = try resolveRevisionRenderIdentity(missing, identities: &identities, nextID: &next); unexpectedFailure() }
+            catch is MissingRenderSourcePathError {}
+            checkTrue(missing.elementID == nil); checkTrue(identities[3] == nil)
+            let fresh = rendered(3, nil, IndexPath()) // empty path is present, not nil
+            checkEqual(try resolveRevisionRenderIdentity(fresh, identities: &identities, nextID: &next).elementID, 8)
+            checkEqual(fresh.elementID, 8)
+            checkEqual(identities, [1: 7, 2: 6, 3: 8])
+        }
         // Attribute changes affect display, but not native element identity.
         checkEqual(capturedOwner, mutableOwner)
         checkEqual(capturedOwner.hashValue, mutableOwner.hashValue)

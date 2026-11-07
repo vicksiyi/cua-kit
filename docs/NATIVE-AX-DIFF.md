@@ -6799,3 +6799,21 @@ missing are superseded by this section. Production collector/operation ID
 wiring and live app acceptance remain incomplete. Unknown date-component
 diagnostics currently use a readable local message rather than the vendor's
 exact logger payload; diagnostic fidelity is not claimed.
+
+### Revision render identity resolution
+
+Root revision 0x1006564b4 renders the source tree, assigns zero-based render IDs
+(0x100656600), then constructs a revision. Callback 0x1006554c0 first requires
+sourcePath, then chooses existing elementID, identity-map ID, or next available
+ID, in that order. It mutates the render node and identity map and returns the
+identity/ID/path tuple. Missing sourcePath throws before ID allocation. Empty
+IndexPath is present and accepted by this callback.
+
+Restored resolveRevisionRenderIdentity and tested existing-ID precedence,
+identity reuse, failure without mutation/allocation, empty path and fresh ID.
+Build and provider tests pass. Source tree item indices are not a replacement
+for revision IDs: omitted nodes/focus renders can change the mapping. The
+production 1-based collector is unchanged until the complete revision owner,
+focus path handling and operation lookup are recovered. The local error type
+is provisional; native MissingSourcePathError nesting/description still need
+restoration with the revision owner.
