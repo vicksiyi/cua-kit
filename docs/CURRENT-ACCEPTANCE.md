@@ -43,6 +43,12 @@
 当前本地最新模型 JSONL 是 2026-11-07T11-11-49 的浏览器任务，终止于模型 HTTP 402；
 它不是最近原生应用点击失败的直接证据，不能用它替代应用链路复现。
 
+完整原生窗口 owner 的受控验收入口（尚待解锁后运行；不验证 ordering 或真实点击）：
+
+```sh
+native/macos/.build/debug/cua-helper --ax-notification-delivery-check --full-window-owner --allow-owned-ui
+```
+
 ## 本轮复现入口
 
 ```sh

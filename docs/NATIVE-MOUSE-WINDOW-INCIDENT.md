@@ -3019,3 +3019,27 @@ registration, ordering restoration or successful clicks. Those still require
 unlocked owned-window acceptance. The attention request is resolved once and
 shared by its typed callable and this diagnostic, with no setter invocation.
 Build, provider composition checks and the static audit pass after the change.
+
+
+## Full native window owner acceptance entry (2026-11-08, pending unlocked run)
+
+The existing real AX delivery check can now opt into `--full-window-owner`.
+It launches only its sibling owned fixture, waits for that child's AX windows,
+constructs the actual AppControllerWindowObservation with its default native
+observer factory and initial registry discovery, and uses Target's main-queue
+serial delivery adapter. It requires an event to finish delivery, exactly one
+nonzero initial native window ID retained after delivery, no reported discovery
+errors, and owner release without a retain cycle. Fixture termination remains
+in the existing cleanup path. No mouse/keyboard input or user application is used.
+
+Ordering is intentionally not activated by this diagnostic; it does not prove
+WindowServer notification registration, ordering restoration, Target activation,
+Sky/MCP/DeepSeek execution or visible clicking. The original component delivery
+check remains available without the new flag.
+
+Command: `native/macos/.build/debug/cua-helper --ax-notification-delivery-check --full-window-owner --allow-owned-ui`.
+Swift build and provider composition checks pass. Running this command on the
+current locked desktop exits 1 before launching a fixture, explicitly reporting
+that acceptance was not run. Full owner live acceptance is therefore pending,
+not passed. This adds the missing runnable verification path without retrying
+any canceled user operation.
