@@ -29,7 +29,7 @@ def read(address, size):
     raise ValueError(hex(address))
 
 # Source send(to:delay:) stamps each event immediately before postToPid.
-calls = [(0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
+calls = [(0x10075029c, 0x10075246c), (0x1007502b0, 0x10075128c), (0x1007503dc, 0x1007513e4), (0x100751484, 0x100715d4c), (0x1007514ec, 0x1007526d0), (0x10074a204, 0x100750594), (0x100750634, 0x10074ffcc), (0x10075063c, 0x10075027c), (0x10075005c, 0x10026d800), (0x100750070, 0x10026d7fc), (0x100740660, 0x100785018), (0x1007852d4, 0x1007858fc), (0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x100754904, 0x1002580d0), (0x100754914, 0x1002580d0),
          (0x1007549c8, 0x10026cc8c),
          (0x100754ab4, 0x100258288), (0x100754b00, 0x100257d88),
@@ -89,6 +89,9 @@ assert struct.unpack("<I", read(0x100731148, 4))[0] == 0x52800669
 assert struct.unpack('<Q', read(0x101572280, 8))[0] == 1
 assert struct.unpack('<I', read(0x101572290, 4))[0] == 1
 assert struct.unpack('<II', read(0x1011921b0, 8)) == (0, 1)
+# Special focus process filter name and selector strings.
+assert read(0x10136a956, len(b'initWithName:options:')) == b'initWithName:options:'
+assert read(0x10136c8f8, len(b'runningProcessesWithFilter:')) == b'runningProcessesWithFilter:'
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

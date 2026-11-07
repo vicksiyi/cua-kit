@@ -3684,6 +3684,8 @@ func runProviderClickChecks() async throws {
     try await runSyntheticFocusSessionRestorationChecks()
     runFrontmostApplicationObservationStoreChecks()
     runInclusiveFrontmostTrackerChecks()
+    runSyntheticFocusInitialStateChecks()
+    runKeyFocusOwnerSelectionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4352,4 +4354,37 @@ private func runInclusiveFrontmostTrackerChecks() {
     checkEqual(delivered, 1); checkTrue(store.frontmostApplication == app)
     tracker = nil; checkTrue(lifetime == nil)
     store.removeObserver(observer)
+}
+
+
+private func runSyntheticFocusInitialStateChecks() {
+    let cached = initialSyntheticFocusState(targetIsActive: false, targetPID: 88,
+        preventerFocusPID: { 88 }, queryKeyFocusPID: { unexpectedFailure() },
+        resolveFocusOwnerPID: { _ in unexpectedFailure() }, workspaceFrontmostPID: { unexpectedFailure() })
+    checkTrue(cached.applicationBelievesItHasFocus && !cached.applicationIsActive)
+    let resolved = initialSyntheticFocusState(targetIsActive: true, targetPID: 88,
+        preventerFocusPID: { nil }, queryKeyFocusPID: { 99 },
+        resolveFocusOwnerPID: { checkEqual($0, 99); return 88 }, workspaceFrontmostPID: { unexpectedFailure() })
+    checkTrue(resolved.applicationBelievesItHasFocus && resolved.applicationBelievesItIsActive)
+    let fallback = initialSyntheticFocusState(targetIsActive: false, targetPID: 88,
+        preventerFocusPID: { nil }, queryKeyFocusPID: { nil },
+        resolveFocusOwnerPID: { _ in unexpectedFailure() }, workspaceFrontmostPID: { nil })
+    checkTrue(!fallback.applicationBelievesItHasFocus)
+}
+
+
+private func runKeyFocusOwnerSelectionChecks() {
+    checkEqual(selectKeyFocusOwnerPID(88, viewBridgePID: { 88 },
+        resolveViewBridge: { checkEqual($0, 88); return 77 },
+        activationPolicy: { _ in unexpectedFailure() },
+        resolveProhibitedApplication: { _ in unexpectedFailure() }), 77)
+    for policy: Int? in [nil, 0, 1] {
+        checkEqual(selectKeyFocusOwnerPID(88, viewBridgePID: { 99 },
+            resolveViewBridge: { _ in unexpectedFailure() },
+            activationPolicy: { checkEqual($0, 88); return policy },
+            resolveProhibitedApplication: { _ in unexpectedFailure() }), 88)
+    }
+    checkEqual(selectKeyFocusOwnerPID(88, viewBridgePID: { nil },
+        resolveViewBridge: { _ in unexpectedFailure() }, activationPolicy: { _ in 2 },
+        resolveProhibitedApplication: { checkEqual($0, 88); return 77 }), 77)
 }

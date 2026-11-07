@@ -582,3 +582,67 @@ duplicate notification, tracker deallocation, and removing an observer during
 snapshot delivery. Tests use an isolated NotificationCenter and current app
 identity only; no OS focus/input was changed. Full exclusion branch,
 focus-steal preventer and production input integration remain incomplete.
+
+
+## Initial key-focus ownership is not just foreground PID
+
+Audited native helper 0x100750594 called by initial state mutation 0x10074a1e0.
+When SystemFocusStealPreventer already exists, it reads a PID from its locked
+state. Otherwise 0x10074ffcc calls ApplicationRegistrySPI.getKeyFocusProcess
+(0x10026d800) and getProcessPID (0x10026d7fc). A present result is passed through
+0x10075027c before target comparison; that function performs additional ownership
+resolution and cannot be replaced by the raw query PID. Only the missing-query
+branch falls back to workspace frontmostApplication PID, or zero if absent.
+
+Pinned these calls in audit-native-mouse-dispatch.py. This evidence rules out
+seeding key-focus belief from NSRunningApplication.isActive or the inclusive
+tracker alone. Next work must reconstruct the ownership resolution and the
+preventer's cached-state semantics before supplying production initialization.
+No guessed system adapter or behavior change was introduced for this query.
+
+
+## Special focus-owner branch evidence
+
+Resolved selector 0x101542870 -> 0x10136777b as activationPolicy.
+At 0x1007502f0, policy raw value 2 selects AX-based resolution; missing
+NSRunningApplication or other policies return the supplied PID directly.
+Before that policy check, a separate optional-PID query at 0x10075246c can
+select a special resolver 0x10075128c when it equals the supplied PID.
+Do not infer this special process identity from the function's redacted name.
+
+AX resolution 0x1007513e4 reads ApplicationUIElement.focusedUIElement if no
+explicit element was supplied (0x100751484), then extracts its AX PID through
+0x1007526d0 (0x1007514ec). Further fallback below 0x100751838 includes
+application PID extraction and running-app inspection; those branches remain
+unmapped. Evidence does not justify replacing this with parent-process lookup.
+Initial-state selection is implemented/tested with injected native resolution;
+its system adapters are still pending and production clicks remain unverified.
+
+
+## Special process identity: ViewBridgeAuxiliary
+
+Audited 0x10075246c: it constructs a filter with name ViewBridgeAuxiliary and
+options 1, calls runningProcessesWithFilter:, takes the first result and reads
+its pid. Missing/empty results produce an absent optional PID. Selector rebases:
+0x101542aa8 -> 0x10136a956 initWithName:options:;
+0x101542c30 -> 0x10136c8f8 runningProcessesWithFilter:;
+0x101543de8 -> 0x101367df6 pid. Classrefs are local ObjC classes at
+0x101546b40 and 0x101546b90; class identity still needs recovery before a
+matching process-query adapter is implemented. Do not replace the query with
+a shell-name search: matching semantics/options are not yet mapped.
+
+This identifies the equality branch in 0x10075027c as ViewBridge auxiliary
+focus handling. The focused-element fallback should preserve its cross-process
+AX ownership semantics; PID-parent guessing would diverge from this source.
+
+
+## Initial focus selection implementation status
+
+initialSyntheticFocusState now preserves cached/query/resolve/workspace order
+through explicit native dependencies. selectKeyFocusOwnerPID preserves
+ViewBridge equality priority, policy=2 resolution, and ordinary/missing-app PID
+passthrough. viewBridgeAuxiliaryFocusPID reuses the existing RunningProcess
+Objective-C package's SAIRunningProcessFilter and first matching pid; no process
+enumerator was reimplemented. Swift build and provider-click tests pass for
+lazy branch selection and bypass of irrelevant readers. Special owner resolvers,
+ApplicationRegistry bindings and preventer cache adapter remain pending.
