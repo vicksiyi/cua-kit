@@ -7486,10 +7486,18 @@ private func runWindowWrapperStorageChecks() {
         let window = WindowUIElement(element: ax)
         let sheet = SheetUIElement(element: ax)
         let menu = MenuUIElement(element: ax)
+        let menuBarItem = MenuBarItemUIElement(element: ax)
         precondition(CFEqual(window.axElement, ax) && CFEqual(sheet.axElement, ax) && CFEqual(menu.axElement, ax))
         precondition(window.cache.transactionAttributes == requested)
         precondition(sheet.cache.transactionAttributes == requested)
         precondition(menu.cache.transactionAttributes == requested)
+        precondition(CFEqual(menuBarItem.axElement, ax) && menuBarItem.cache.transactionAttributes == requested)
+        precondition(MenuBarItemUIElement.role == .menuBarItem)
+        let slot = AppControllerMenuState<MenuUIElement, MenuBarItemUIElement>()
+        slot.setFocusedMenuBarItem(menuBarItem)
+        precondition(slot.focusedMenuBarItem?.id == ax)
+        slot.menuDidClose(notifyOrdering: {}, removeWindows: {})
+        precondition(slot.focusedMenuBarItem == nil)
         precondition(WindowUIElement.role == .window && SheetUIElement.role == .sheet && MenuUIElement.role == .menu)
     }
     precondition(UIElementTreeTransaction.current == nil)
@@ -7691,7 +7699,7 @@ private func runAppControllerObservationDeliveryChecks() throws {
     } catch Failed.construction {}
     precondition(target!.windowObservation == nil)
     let observer = try AXNotificationObserver(processID: getpid(), handler: { _ in })
-    var owner: AppControllerWindowObservation<UIElement>? = try AppControllerWindowObservation(
+    var owner: AppControllerWindowObservation<MenuBarItemUIElement>? = try AppControllerWindowObservation(
         application: target!.root, processID: getpid(), bundleIdentifier: "owned-check",
         focusEnforcer: { nil }, reportError: { _ in preconditionFailure() },
         initializeWindows: { _ in }, makeObserver: { _ in observer })

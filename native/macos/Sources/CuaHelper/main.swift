@@ -34,9 +34,9 @@ final class Target {
     var capturedWindow: CapturedWindow?
     private(set) var focusEnforcer: SyntheticAppFocusEnforcer?
     private(set) var accessibilityAssertion: AXEnablementAssertion?
-    private(set) var windowObservation: AppControllerWindowObservation<UIElement>?
+    private(set) var windowObservation: AppControllerWindowObservation<MenuBarItemUIElement>?
 
-    func prepareWindowObservation(make: (() throws -> AppControllerWindowObservation<UIElement>)? = nil) throws {
+    func prepareWindowObservation(make: (() throws -> AppControllerWindowObservation<MenuBarItemUIElement>)? = nil) throws {
         guard windowObservation == nil else { return }
         if let make { windowObservation = try make(); return }
         windowObservation = try AppControllerWindowObservation(application: root,

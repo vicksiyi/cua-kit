@@ -3043,3 +3043,28 @@ current locked desktop exits 1 before launching a fixture, explicitly reporting
 that acceptance was not run. Full owner live acceptance is therefore pending,
 not passed. This adds the missing runnable verification path without retrying
 any canceled user operation.
+
+
+## Concrete focused menu-bar item storage (2026-11-08)
+
+The pinned source declares `_currentlyFocusedMenuBarItem` as a separately locked
+`MenuBarItemUIElement?`, not `UIElement?` (initializer symbol 0x100047824).
+MenuBarItem's exported AX/cache getters are 0x100724dac/0x100724db0;
+its initializer shares 0x100724de0 -> 0x100721e3c with other native wrappers.
+Static role initialization 0x1007229cc loads UIElementRole.menuBarItem at
+0x1015cae90 and stores it in 0x1015ca7c8. The static audit now pins those role
+address instructions in addition to the already pinned common constructor branch.
+
+MenuBarItemUIElement now retains AX reference and transaction-aware UIElementCache,
+conforms to the shared inherited UIElementProtocol, and declares .menuBarItem.
+Production Target's observation owner and its full-owner acceptance entry now
+specialize the focused slot with that concrete type. Generic component tests
+remain generic. Provider checks verify transaction cache propagation, identity,
+static role, slot storage and close clearing. Swift build, provider composition
+checks and pinned static audit pass without real input.
+
+This restores the controller storage type, not the entire MenuBarItem API:
+items/copyItem/useSelectionForFindItem and the controller logic that discovers
+and sets the focused menu-bar item still require separate source recovery.
+No evidence ties this storage difference to the user's previous click failure.
+The current locked desktop still prevents full-owner/live clicking acceptance.

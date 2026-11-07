@@ -106,7 +106,7 @@ private func verifyOwnedWindowObservation(application: AXUIElement, processID: I
     guard ready else { throw UIElementError.failedInit("Owned application did not expose its AX windows") }
     let delivered = OSAllocatedUnfairLock<Int>(initialState: 0)
     let errors = OSAllocatedUnfairLock<[String]>(initialState: [])
-    var owner: AppControllerWindowObservation<UIElement>? = try AppControllerWindowObservation(
+    var owner: AppControllerWindowObservation<MenuBarItemUIElement>? = try AppControllerWindowObservation(
         application: application, processID: processID, bundleIdentifier: "",
         focusEnforcer: { nil }, reportError: { error in
             errors.withLock { $0.append(String(describing: error)) }
