@@ -2676,3 +2676,22 @@ Cache-first selection semantics, missing-vs-malformed AXSelected distinctions,
 traits fallback, support-and-settable checks and decoder error handling remain
 unchanged. Full perform(action:) and web-view ancestry composition are still
 concrete and require further restoration before full window conformance.
+
+
+## Protocol-existential parent chain and web ancestry
+
+The source generic isInsideWebView getter at 0x1007ab2c4 calls the generic
+parentChain with depth 300 and includingSelf=true. Its yielded nodes retain
+UIElementProtocol existential identity; they are not all rebuilt as concrete
+UIElement snapshots before traversal. The provider parent chain now preserves
+that existential root and returns decoded parent UIElements as protocol values.
+This avoids a fresh AX/cache construction for the initial wrapper and lets
+its own role/cache witnesses participate.
+
+The shared element-value decoder and provider parent read now live on the
+protocol extension, as does provider web-ancestry composition and its public
+default getter. Existing parent-chain behavior still resolves the next parent
+before yielding, preserves the original depth semantics and retains the Atlas
+bundle-prefix fallback. Explicit system-transaction helper overloads remain
+concrete where their existing callers require concrete UIElement sequences.
+Full generic action dispatch and scrollbar dependencies remain outstanding.

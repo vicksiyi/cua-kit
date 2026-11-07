@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // parent getter calls value<UIElement>(AXParent, ignoringTypeMismatch:false),
     // 0x1007b0214..<0x1007b029c.
     func elementValue(

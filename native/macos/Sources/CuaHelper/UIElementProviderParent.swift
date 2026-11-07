@@ -7,7 +7,7 @@ func decodeAXUIElement(_ raw: AnyObject, throwingOnFailure: Bool) throws -> UIEl
         initialize: { UIElement(element: $0) })
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func parentValue(reportError: (Error) -> Void) -> UIElement? {
         let attribute = UIElementAttribute(kAXParentAttribute)
         return elementValue(for: attribute, initialize: { UIElement(element: $0) },
@@ -16,8 +16,8 @@ extension UIElement {
 
     func parentChain(maxDepth: Int = 300, includingSelf: Bool,
         reportError: @escaping (Error) -> Void
-    ) -> UnfoldSequence<UIElement, (node: UIElement?, depth: Int)> {
-        uiElementParentChain(of: self, maxDepth: maxDepth, includingSelf: includingSelf) {
+    ) -> UnfoldSequence<any UIElementProtocol, (node: (any UIElementProtocol)?, depth: Int)> {
+        uiElementParentChain(of: self as any UIElementProtocol, maxDepth: maxDepth, includingSelf: includingSelf) {
             $0.parentValue(reportError: reportError)
         }
     }

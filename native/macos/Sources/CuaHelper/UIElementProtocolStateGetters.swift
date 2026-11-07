@@ -8,6 +8,7 @@ extension UIElementProtocol {
     func reportAttributeReadError(_ error: Error) {
         NativeLogger.logger(for: Self.self).error("log[baa09d44b6c8dd36e77f] [0]=\(error as NSError)")
     }
+    var isInsideWebView: Bool { isInsideWebView(reportError: reportAttributeReadError) }
     var isSelected: Bool { isSelected(reportError: reportAttributeReadError) }
     var titleTargetIdentities: [AXUIElement] {
         titleTargetIdentities(reportError: reportAttributeReadError)

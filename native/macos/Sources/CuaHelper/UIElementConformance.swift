@@ -6,7 +6,6 @@ extension UIElement: UIElementProtocol {
     // Concrete witness 0x10078fbf4 returns nil; instance role remains cached.
     static var role: UIElementRole? { nil }
 
-    var isInsideWebView: Bool { isInsideWebView(reportError: reportAttributeReadError) }
 
     // Full action dispatcher uses each concrete getter's own logging path.
     // Parent/children decode under the current transaction, not a captured copy.

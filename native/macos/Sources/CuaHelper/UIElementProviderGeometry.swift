@@ -13,8 +13,11 @@ extension UIElement {
         sizeValue(read: { axElement.value(for: .size) }, reportError: reportError)
     }
 
+}
+
+extension UIElementProtocol {
     func isInsideWebView(reportError: @escaping (Error) -> Void) -> Bool {
-        uiElementIsInsideWebView(self,
+        uiElementIsInsideWebView(self as any UIElementProtocol,
             parent: { $0.parentValue(reportError: reportError) },
             role: { $0.role }, bundleIdentifier: { $0.axElement.bundleIdentifier })
     }
