@@ -28,7 +28,7 @@ func uiElementPartialArrayValue<Element>(
         decode: { decode(partial) })
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // Concrete [UIElement] specialization; other generic decoder targets remain
     // separate until the complete encoded-value unwrapping surface is restored.
     func partialArrayValue(for attribute: UIElementAttribute, maxCount: Int?) throws

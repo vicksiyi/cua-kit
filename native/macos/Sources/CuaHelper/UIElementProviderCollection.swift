@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     func elementCollectionValue(for attribute: UIElementAttribute,
         reportError: (Error) -> Void
     ) -> [UIElement] {

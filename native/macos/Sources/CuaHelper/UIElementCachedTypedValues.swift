@@ -18,7 +18,7 @@ extension UIElementProtocol {
 
 }
 
-extension UIElement {
+extension UIElementProtocol {
     // 0x1007ad0ac: typed UIElement array -> original AX references, in order.
     func titleTargetIdentities(reportError: (Error) -> Void) -> [AXUIElement] {
         elementCollectionValue(for: UIElementAttribute(kAXServesAsTitleForUIElementsAttribute),

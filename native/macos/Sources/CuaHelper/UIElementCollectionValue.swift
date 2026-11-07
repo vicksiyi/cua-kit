@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // Concrete array-reader composition at 0x100724514..<0x1007248bc.
     // Cached decoding suppresses errors; uncached decoding is strict, reports
     // errors once, and yields [] on absent/failed results. An empty cached array

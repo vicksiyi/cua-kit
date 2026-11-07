@@ -2642,3 +2642,20 @@ These methods are now available through the native UIElementProtocol boundary,
 which is required for window-like concrete conformers to inherit them. Remaining
 collection/state/presentation getters and action witnesses still prevent claiming
 complete window conformance or production application acceptance.
+
+
+## Shared collection getters for window conformers
+
+The existing [UIElement] collection accessor, provider-aware collection/children
+reads, array count, visible-child selection and partial-array accessor now live
+on UIElementProtocol. Their decoder target remains the existing [UIElement]
+specialization; the change does not claim the entire original generic decoder
+surface has been reconstructed. Cached empty arrays remain hits, strict fresh
+read errors retain their existing reporting, maxCount applies only to fresh
+partial-array reads and construction still consults the current transaction.
+
+The titleTargetIdentities helper can therefore also live on UIElementProtocol,
+returning original AX references in source order. Existing provider composition
+checks cover cache/fresh-read policy, subset descriptors, child selection and
+transaction construction. Remaining state/presentation and action witnesses
+are still required for concrete window-type conformance and Target wiring.
