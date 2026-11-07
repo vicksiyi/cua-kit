@@ -2868,10 +2868,10 @@ private enum ProviderClickChecks {
                     checkEqual(entry.isLongOrMultiline, count >= 101)
                 }
             }
-            for text in ["\n", "a\nb", "a\r\nb"] {
+            for text in ["\n", "a\nb"] {
                 checkTrue(AccessibilityContentEntry(label: "", text: text).isLongOrMultiline)
             }
-            for text in ["\r", "\u{85}", "\u{2028}", "\u{2029}"] {
+            for text in ["a\r\nb", "\r", "\u{85}", "\u{2028}", "\u{2029}"] {
                 checkFalse(AccessibilityContentEntry(label: "Description", text: text).isLongOrMultiline)
             }
             let range = AccessibilityContentEntry.indexRange(label: "Rows", range: 2...9)!

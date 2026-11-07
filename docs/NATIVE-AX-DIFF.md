@@ -6502,8 +6502,11 @@ Foundation contains at 0x101463a10. The offset, LF literal, success flag and bot
 calls are pinned in the audit. The restored Rows/Columns helper can now create a
 real content entry from its range payload, retaining the supplied label.
 
-Build and owned provider checks passed for 100/101 boundaries with ASCII,
-multi-scalar emoji and combining characters, LF/CRLF, non-LF line separators,
+Initial provider check exposed an incorrect CRLF test expectation: Foundation
+contains(LF) does not match the LF inside a CRLF Character on this runtime.
+The expectation was corrected without changing the constructor. The passing
+checks cover 100/101 boundaries with ASCII, multi-scalar emoji and combining
+characters, LF matching, CRLF nonmatching, non-LF line separators,
 label presence and range-entry integration. Entry accumulation, deduplication,
 final formatting, full node renderer composition and production collector wiring
 remain incomplete. No vendor service or live application was executed.
