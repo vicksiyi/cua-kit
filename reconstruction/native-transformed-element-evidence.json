@@ -232,6 +232,14 @@
     "mutation": "flatten description/stringValue/title; overwrite own focusability with descendant predicate; retain full Boolean-valued items in depth-first order using optional rebuild",
     "limitation": "extracted body; complete dispatcher and production integration pending"
   },
+  "linksIntoMarkdownText": {
+    "entry": "0x10065856c",
+    "mutation": "0x10065a7ec",
+    "guard": "link role and non-nil URL; nonempty rendered URL description",
+    "text": "empty literal + URL interpolation with own role/context + empty literal; no node-title link label",
+    "writes": "staticText role, literal roleDescription link, transformedString, value description, nil URL, empty subtree",
+    "preserves": "title, description, focusability and other unmodified fields; context changes survive empty result"
+  },
   "repetitiveText": {
     "entry": "0x100659d8c",
     "helper": "0x10065c5ac",

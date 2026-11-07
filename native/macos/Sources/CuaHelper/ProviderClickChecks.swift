@@ -1344,6 +1344,52 @@ private enum ProviderClickChecks {
         default: unexpectedFailure("selectable leaf should still transform")
         }
 
+        var linkNode = associationNode(associationA, [], title: "Keep title")
+        linkNode.role = .link
+        linkNode.roleDescription = "Original role"
+        linkNode.description = "Keep description"
+        linkNode.url = renderURL
+        linkNode.isFocused = true
+        linkNode.isFocusable = true
+        let linkItem = associationItem(linkNode, children: [targetA])
+        var linkContext = RenderingContext()
+        switch UIElementTreeTransformation.flattenLinksIntoMarkdownText(item: linkItem, context: &linkContext) {
+        case .transformed(let result):
+            checkEqual(result.element.role, .staticText)
+            checkEqual(result.element.roleDescription, "link")
+            checkEqual(result.element.title, "Keep title")
+            checkEqual(result.element.description, "Keep description")
+            checkTrue(result.element.isFocused)
+            checkTrue(result.element.isFocusable)
+            checkTrue(result.element.url == nil)
+            checkTrue(result.children.isEmpty)
+            checkTrue(result.element.value?.contains("query=one") == true)
+            checkFalse(result.element.value?.contains("Keep title") == true)
+            checkEqual(result.element.value, result.element.transformedString?.description)
+            var text = result.element.transformedString!
+            linkContext.urlShortener.configuration.includeQuery = false
+            checkTrue(text.trimURLs(context: &linkContext)) // URL span retained, not plain text
+            checkFalse(text.description.contains("query=one"))
+        default: unexpectedFailure("link URL was not transformed")
+        }
+        for variant in 0..<2 {
+            var node = linkNode
+            if variant == 0 { node.role = .button }
+            else { node.url = nil }
+            switch UIElementTreeTransformation.flattenLinksIntoMarkdownText(item: associationItem(node), context: &linkContext) {
+            case .unchanged: break
+            default: unexpectedFailure("non-link or missing URL should not transform")
+            }
+        }
+
+        var hiddenLink = linkNode
+        hiddenLink.url = URL(string: "data:text/plain,fixture")!
+        switch UIElementTreeTransformation.flattenLinksIntoMarkdownText(
+            item: associationItem(hiddenLink, children: [targetA]), context: &linkContext) {
+        case .unchanged: break
+        default: unexpectedFailure("empty rendered URL must not erase the original link subtree")
+        }
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],

@@ -380,6 +380,30 @@ for site, target in [
 ]:
     branch(site, target)
 
+# Link-to-text transformation interpolates URL only (not the Markdown-label
+# helper), then checks rendered description length before any node setters.
+for address, instruction in [
+    (0x1006585c8, 0xf9401009), # static link role
+    (0x100658630, 0xf9403f09), # node URL getter
+    (0x10065a94c, 0xf9400e69), # staticText role
+    (0x10065a978, 0xf9400ae8), # role setter
+    (0x10065a998, 0xf94012e8), # roleDescription setter
+    (0x10065a9b4, 0xf94046f3), # transformedString setter
+    (0x10065a9f8, 0xf9402ae8), # value setter
+    (0x10065aa44, 0xf9403ae8), # URL setter
+    (0x10065aad4, 0x52800002), # transformed result
+]:
+    assert struct.unpack('<I', read(address, 4))[0] == instruction
+for site, target in [
+    (0x1006585f8, 0x101150714),
+    (0x10065a858, 0x100639134), (0x10065a910, 0x100639134),
+    (0x10065a8d4, 0x100638d40),
+    (0x10065a924, 0x10063b5f8), (0x10065a9dc, 0x10063b5f8),
+    (0x10065aa78, 0x101150f3c), (0x10065aa88, 0x10064fac4),
+]:
+    branch(site, target)
+compare_zero_branch(0x10065a948, 8, 0x10065afe8)
+
 # Full title mutation paths: setter before source removal; relocation appends
 # (or invokes rebuild) before sorting target indices and removing siblings.
 for site, target in [
@@ -417,6 +441,11 @@ print(json.dumps(dict(binarySHA256=expected, descriptor=hex(descriptor),
         guards="selectable, not focused/table/table-row; no value-settable or selectable descendant",
         mutation="flatten description/stringValue/title; overwrite own focusability with descendant predicate; retain full Boolean-valued items in depth-first order using optional rebuild",
         limitation="extracted body; complete dispatcher and production integration pending"),
+    linksIntoMarkdownText=dict(entry="0x10065856c", mutation="0x10065a7ec",
+        guard="link role and non-nil URL; nonempty rendered URL description",
+        text="empty literal + URL interpolation with own role/context + empty literal; no node-title link label",
+        writes="staticText role, literal roleDescription link, transformedString, value description, nil URL, empty subtree",
+        preserves="title, description, focusability and other unmodified fields; context changes survive empty result"),
     repetitiveText=dict(entry="0x100659d8c", helper="0x10065c5ac",
         guard="not focusable/selectable and no canBeUserInteractive descendant",
         matching="Foundation contains; nonempty trimmed child description in parent description OR child value in parent stringValue",

@@ -5539,3 +5539,35 @@ Boolean subtree preservation and empty text. No live app or vendor service
 execution was performed. Seven common strategy bodies are now extracted;
 link markdown flattening and text-only sibling merging, Mac-specific rules,
 complete dispatcher and production collector integration still remain.
+
+### Link-to-text transformation (2026-11-07)
+
+Common tag 7 `flattenLinksIntoMarkdownText` is restored as a Swift rule body.
+Its name does not imply `[title](URL)` output: the native branch interpolates
+only the node URL using `appendInterpolation(URL, role:context:)`, surrounded
+by empty literals. The separate Markdown-link label helper is not called.
+Entry 0x10065856c checks role == link and a non-nil URL. The interpolation
+mutates the shared URL shortener. It then inspects rendered description length,
+not structural span emptiness; empty rendered text returns unchanged without
+rolling back context changes.
+
+On nonempty output, setter order is role = staticText, roleDescription =
+literal `link`, transformedString = interpolated spans, value = description,
+URL = nil, and subtree.items.removeAll(keepingCapacity: false). Title,
+description, focusable/focused state and other properties remain untouched.
+There is no interactive-child guard and no rebuild callback in this branch.
+The structured URL span is retained so later URL refresh can rewrite it.
+
+Evidence: static link role slot 4 at 0x1006585c8, URL getter slot 15 at
+0x100658630; URL interpolation 0x10065a8d4; description calls at
+0x10065a924/0x10065a9dc; empty-description branch 0x10065a948 -> 0x10065afe8.
+Role staticText slot 3 at 0x10065a94c; mutable setter slots 2/4/17/10/14
+at 0x10065a978/998/9b4/9f8/aa44; subtree clear at 0x10065aa78; result tag
+0 at 0x10065aad4. All of these are pinned by the read-only binary audit.
+
+Validation: Swift build and own provider mock checks pass. Fixtures verify
+preserved title/description/focus, child removal, missing URL/non-link guards,
+URL-only output, structured URL refresh and data-URL empty-output rejection.
+This is the eighth extracted common rule body. The final common sibling-text
+merge rule, Mac-specific strategies, full dispatcher and production collection
+integration remain; these tests do not prove live app operation acceptance.
