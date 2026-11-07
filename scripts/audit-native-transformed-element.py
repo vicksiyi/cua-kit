@@ -776,7 +776,21 @@ for site, reg, bit, target, nonzero in [
     if displacement & 0x2000: displacement -= 0x4000
     assert site + displacement * 4 == target
 
-print(json.dumps(dict(renderLineAndSelection=dict(
+render_output_calls = [branch(site, target) for site, target in [
+    (0x10063dd3c, 0x10064b0e0), (0x10063dda4, 0x101150c24),
+    (0x10063df28, 0x10063dba0), (0x100645df4, 0x10063e00c),
+    (0x10063e074, 0x10064b194), (0x10063e08c, 0x10063e0b0),
+    (0x10064b1a8, 0x10114ef14),
+]]
+assert struct.unpack('<I', read(0x10064b1ac, 4))[0] == 0xf1000400
+assert struct.unpack('<I', read(0x10063de78, 4))[0] == 0xf900035b
+assert struct.unpack('<I', read(0x10063de7c, 4))[0] == 0x3900235f
+
+print(json.dumps(dict(renderOutput=dict(
+    calls=render_output_calls,
+    ids="unconditional zero-based depth-first offsets; duplicate references receive last occurrence offset; no identity deduplication",
+    lines="depth-first rendered nodes; render-path depth count minus one; options forwarded to node.line; no automatic ID assignment",
+    limitation="production collector and incremental ID reuse remain separate"), renderLineAndSelection=dict(
     flags=line_options, calls=line_format_calls,
     line="repeat supplied Character; optional integer and space; text; optional space plus detail including present empty detail; no per-line indentation",
     selection="only focus trees; concatenate immediate root children preserving references/order/duplicates; nil if empty; resulting isFocus false",

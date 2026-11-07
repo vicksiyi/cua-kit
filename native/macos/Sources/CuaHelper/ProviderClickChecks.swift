@@ -2838,6 +2838,20 @@ private enum ProviderClickChecks {
             checkEqual(output.roots[0].children[1].sourcePath, IndexPath(indexes: [0, 0, 1]))
             checkEqual(output.roots[1].sourcePath, IndexPath(index: 1))
             checkTrue(output.roots[0].elementID == nil)
+            checkEqual(output.lines(indent: "-", options: []), ["parent", "-deep child", "-sibling", "other root"])
+            output.setElementIDs()
+            checkEqual(output.lines(indent: "·", options: []), ["0 parent", "·1 deep child", "·2 sibling", "3 other root"])
+            checkEqual(output.lines(indent: "·", options: [.withoutElementID]), ["parent", "·deep child", "·sibling", "other root"])
+            output.roots[0].elementID = 99
+            output.setElementIDs()
+            checkEqual(output.roots[0].elementID, 0)
+            let repeated = UIElementRenderTree(isFocus: false, roots: [output.roots[1], output.roots[1]])
+            repeated.setElementIDs()
+            checkEqual(repeated.lines(indent: " ", options: []), ["1 other root", "1 other root"])
+            let empty = UIElementRenderTree<Int>(isFocus: false, roots: [])
+            empty.setElementIDs()
+            checkEqual(empty.lines(indent: " ", options: []), [])
+
             checkTrue(input.render(with: &context) { _, _ in "" }.roots.isEmpty)
             let focus = UIElementTree(items: [item()], focusedElement: target)
             let emptyFocus = focus.render(with: &context) { _, _ in "" }

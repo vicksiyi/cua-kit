@@ -6342,3 +6342,25 @@ empty details, multiline text, negative IDs, multi-scalar Character indentation,
 and selection aliasing/duplicates/empty cases. Swift build, provider tests and
 static binary audit passed. Production traversal/collection integration, display
 ID assignment and whole-tree line enumeration remain incomplete.
+
+
+### Whole-tree output and full ID assignment (2026-11-07)
+
+Recovered setElementIDs (0x10063dc28): depth-first traversal followed by standard
+Sequence.enumerated (0x10063dda4, GOT 0x1014665b0), storing each zero-based offset
+as a present elementID (0x10063de78/7c). Existing IDs are overwritten. It does not
+deduplicate identities or shared references; a repeated reference ends with its
+last occurrence's offset. This is full assignment, not incremental ID reuse.
+
+Recovered lines(indent:options:) at 0x10063deec through callback 0x10063e00c:
+each render traversal cursor calls node.line with cursor.depth. Depth is current
+IndexPath.count minus one (0x10064b194), not the original node sourcePath depth.
+Consequently descendants promoted across omitted ancestors use their new output
+depth while preserving their original source path. Lines does not assign IDs.
+
+Build and owned provider tests passed for the composed source-tree render -> ID
+assignment -> lines path, including two omitted ancestors, multiple roots,
+repeated references, ID overwrite, no-ID options, and empty trees. Static audit
+pins the traversal/callback/assignment instructions. Production Target.collect
+integration, native traversal/filtering, protocol rendering witnesses and
+incremental ID lifecycle still require completion and live acceptance.

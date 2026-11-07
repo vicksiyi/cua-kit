@@ -40,3 +40,33 @@ extension UIElementTree {
         return UIElementRenderTree(isFocus: isFocusTree(), roots: rootPaths.compactMap { nodes[$0] })
     }
 }
+
+extension UIElementRenderTree {
+    // 0x10063dc28 enumerates depth-first cursors and unconditionally replaces
+    // each node's display ID with its zero-based traversal offset.
+    func setElementIDs() {
+        var offset = 0
+        func visit(_ nodes: [UIElementRender<Identity>]) {
+            for node in nodes {
+                node.elementID = offset
+                offset += 1
+                visit(node.children)
+            }
+        }
+        visit(roots)
+    }
+
+    // 0x10063deec -> callback 0x10063e00c. Depth is the RENDER traversal
+    // path count minus one, independent of the original sourcePath depth.
+    func lines(indent: Character, options: UIElementRenderLineOptions) -> [String] {
+        var result: [String] = []
+        func visit(_ nodes: [UIElementRender<Identity>], depth: Int) {
+            for node in nodes {
+                result.append(node.line(indent: indent, indentCount: depth, options: options))
+                visit(node.children, depth: depth + 1)
+            }
+        }
+        visit(roots, depth: 0)
+        return result
+    }
+}

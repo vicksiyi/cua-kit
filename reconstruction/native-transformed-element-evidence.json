@@ -1,4 +1,46 @@
 {
+  "renderOutput": {
+    "calls": [
+      {
+        "instruction": "0x10063dd3c",
+        "target": "0x10064b0e0",
+        "link": true
+      },
+      {
+        "instruction": "0x10063dda4",
+        "target": "0x101150c24",
+        "link": true
+      },
+      {
+        "instruction": "0x10063df28",
+        "target": "0x10063dba0",
+        "link": true
+      },
+      {
+        "instruction": "0x100645df4",
+        "target": "0x10063e00c",
+        "link": true
+      },
+      {
+        "instruction": "0x10063e074",
+        "target": "0x10064b194",
+        "link": true
+      },
+      {
+        "instruction": "0x10063e08c",
+        "target": "0x10063e0b0",
+        "link": true
+      },
+      {
+        "instruction": "0x10064b1a8",
+        "target": "0x10114ef14",
+        "link": true
+      }
+    ],
+    "ids": "unconditional zero-based depth-first offsets; duplicate references receive last occurrence offset; no identity deduplication",
+    "lines": "depth-first rendered nodes; render-path depth count minus one; options forwarded to node.line; no automatic ID assignment",
+    "limitation": "production collector and incremental ID reuse remain separate"
+  },
   "renderLineAndSelection": {
     "flags": [
       1,
