@@ -50,6 +50,17 @@ func uiElementFullAttributedText(
 }
 
 extension TransformedUIElement {
+    // 0x100759db4..<0x100759e58: truncated text bypasses parameterized
+    // capability discovery and directly requests the captured character range.
+    func attributedText(for range: NSRange) throws -> NSAttributedString? {
+        let parameter = CFRange(location: range.location == NSNotFound ? -1 : range.location,
+            length: range.length)
+        let encoded = try AXEncodedValue(wrapping: parameter)
+        guard let partial = try axElement.parameterizedValue(
+            for: UIElementAttribute("AXAttributedStringForRange"), parameter: encoded) else { return nil }
+        return try decodeAXAttributedString(partial.value.value, throwingOnFailure: true)
+    }
+
     func fullAttributedText() throws -> NSAttributedString? {
         try uiElementFullAttributedText(capturedValue: value,
             supportedParameterizedAttributes: { axElement.supportedParameterizedAttributes },

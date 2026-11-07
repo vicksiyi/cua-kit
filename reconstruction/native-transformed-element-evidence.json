@@ -216,7 +216,8 @@
     "guards": "textArea, textualContent != AXTextualContextSourceCode, captured value present",
     "read": "captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
     "commit": "store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
-    "limitations": "outer branch extracted; full-text helper, attributed-run formatter and production integration still pending"
+    "integration": "provider-backed text-area overload composes full/range reads and strict decode; textual-context read and attributed formatter remain explicit",
+    "limitations": "complete Mac dispatcher and production collector integration pending"
   },
   "macTreePruning": {
     "instructions": {

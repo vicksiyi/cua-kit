@@ -606,7 +606,8 @@ print(json.dumps(dict(fullAttributedText=dict(
     guards="textArea, textualContent != AXTextualContextSourceCode, captured value present",
     read="captured truncationRange -> parameterized range read (NSNotFound -> -1), otherwise full-text helper; nil/error -> unchanged",
     commit="store attributedString and formatted TransformedUIString, replace value with description, preserve subtree and truncationRange",
-    limitations="outer branch extracted; full-text helper, attributed-run formatter and production integration still pending"), macTreePruning=dict(
+    integration="provider-backed text-area overload composes full/range reads and strict decode; textual-context read and attributed formatter remain explicit",
+    limitations="complete Mac dispatcher and production collector integration pending"), macTreePruning=dict(
     instructions={hex(k): hex(v) for k, v in mac_pruning_words.items()},
     calls=mac_pruning_calls, selectors=mac_calendar_selectors,
     calendar="staticText role + Event roleDescription + exactly one staticText child + owning com.apple.iCal; clear child items, retain owner",

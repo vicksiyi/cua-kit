@@ -1,6 +1,20 @@
 import Foundation
 
 extension MacUIElementTreeTransformation {
+    // Provider-backed composition. Textual-context lookup and attributed-run
+    // rendering remain explicit until their native composition is recovered.
+    static func retrieveAttributedTextFromTextAreas(
+        item: UIElementTree<TransformedUIElement>.Item,
+        context: inout UIElementTransformationContext,
+        readTextualContent: () -> String?,
+        render: (NSAttributedString, inout UIElementTransformationContext) -> TransformedUIString
+    ) -> UIElementTreeTransformation.Result<TransformedUIElement> {
+        retrieveAttributedTextFromTextAreas(item: item, context: &context,
+            readTextualContent: readTextualContent,
+            readFullText: { try item.element.fullAttributedText() },
+            readRange: { try item.element.attributedText(for: $0) }, render: render)
+    }
+
     // Tag 11 at 0x100759a84. The readFullText and render closures are explicit
     // extraction seams for 0x10075abf4 and the attributed-run formatter;
     // neither is replaced by a plain-string fallback here.

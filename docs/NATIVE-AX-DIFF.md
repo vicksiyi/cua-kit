@@ -5853,3 +5853,29 @@ marker nil/type/provider failures and exactly one capability query. The helper
 uses existing initializer/transport production components; tests inject the
 constructor and reads to avoid external app operations. The native rich-text
 formatter and complete transform/collector integration remain unfinished.
+
+### Text-area transformation to provider composition
+
+Added the concrete NSRange reader to TransformedUIElement and a provider-backed
+text-area transformation overload. The range path follows the already pinned
+`0x100759db4` branch: normalize NSNotFound to -1, construct CFRange, encode as
+AXValue(.cfRange), directly call AXAttributedStringForRange, and strictly decode
+the result. It deliberately does not discover parameterized support or fall
+back to full text. The full path uses the restored fullAttributedText helper.
+Both now feed the existing outer transformation's preserve-on-failure behavior.
+
+Owned-provider tests exercise the complete composed path from the outer
+text-area rule through actual parameter encoding, AX provider dispatch, strict
+decoding and value/attributed-string assignment. Fixtures cover full UTF-16
+range, a captured subrange, NSNotFound, nil result, wrong result type and provider
+failure. They verify that truncation bypasses support queries and that neither
+failed reads nor decode failures invoke rendering. The injected renderer is
+still a test fixture, not evidence that native attributed formatting is done.
+
+Static audit, Swift build and provider-click self-test pass. Textual-context
+lookup and attributed formatting remain explicit dependencies of the new
+overload. Inspection also confirmed that native attribute textualContent's
+initializer `0x10079c6e0` encodes AXTextualContext, not AXTextualContent; future
+provider composition must use the former spelling. No application was opened,
+no system AX operation was posted, and the production collector is not yet
+switched to this transformation pipeline.

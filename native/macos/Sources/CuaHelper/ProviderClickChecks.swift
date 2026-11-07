@@ -1953,6 +1953,56 @@ private enum ProviderClickChecks {
         } catch UIElementError.axError(let error) { checkTrue(error == .failure) }
         checkEqual(fullTextCalls, ["support", "construct", "AXTextMarkerRangeForUIElement"])
 
+        var composedRichNode = capturedOwner
+        composedRichNode.role = .textArea
+        composedRichNode.value = "A😀e\u{301}"
+        var composedCalls: [String] = []
+        var composedReadNil = false, composedReadWrong = false, composedReadFailure = false
+        var composedRange = CFRange()
+        ownerProvider.parameterSupport = { composedCalls.append("support"); return [] }
+        ownerProvider.parameterRead = { attribute, parameter in
+            composedCalls.append("parameter")
+            checkTrue(attribute == UIElementAttribute("AXAttributedStringForRange"))
+            checkTrue(CFGetTypeID(parameter.value) == AXValueGetTypeID())
+            checkTrue(AXValueGetType(parameter.value as! AXValue) == .cfRange)
+            checkTrue(AXValueGetValue(parameter.value as! AXValue, .cfRange, &composedRange))
+            if composedReadFailure { throw UIElementError.axError(.failure) }
+            if composedReadWrong { return partial("not attributed" as NSString) }
+            return composedReadNil ? nil : partial(richText)
+        }
+        func composedRichResult() -> UIElementTreeTransformation.Result<TransformedUIElement> {
+            MacUIElementTreeTransformation.retrieveAttributedTextFromTextAreas(
+                item: associationItem(composedRichNode, children: [targetA]), context: &richContext,
+                readTextualContent: { composedCalls.append("textual"); return nil },
+                render: { value, _ in
+                    composedCalls.append("render"); checkTrue(value === richText)
+                    return TransformedUIString(stringLiteral: "Composed result")
+                })
+        }
+        for range in [nil, NSRange(location: 2, length: 3), NSRange(location: NSNotFound, length: 0)] as [NSRange?] {
+            composedRichNode.truncationRange = range; composedCalls = []
+            switch composedRichResult() {
+            case let .transformed(result):
+                checkEqual(result.element.value, "Composed result")
+                checkTrue(result.element.attributedString === richText)
+                checkEqual(result.children.count, 1)
+            default: unexpectedFailure("provider-backed text-area composition should transform")
+            }
+            checkEqual(composedCalls, range == nil ? ["textual", "support", "parameter", "render"] : ["textual", "parameter", "render"])
+            checkEqual(composedRange.location, range.map { $0.location == NSNotFound ? -1 : $0.location } ?? 0)
+            checkEqual(composedRange.length, range?.length ?? 5)
+        }
+        for failure in 0..<3 {
+            composedReadNil = failure == 0; composedReadWrong = failure == 1; composedReadFailure = failure == 2
+            composedCalls = []
+            switch composedRichResult() {
+            case .unchanged: break
+            default: unexpectedFailure("provider nil/type/error must preserve original item")
+            }
+            checkEqual(composedCalls, ["textual", "parameter"])
+        }
+        ownerProvider.parameterSupport = nil; ownerProvider.parameterRead = nil
+
         let classAttribute = UIElementAttribute("AXDOMClassList")
         func classList(_ object: AnyObject?) -> [String]? {
             UIElement(axElement: textAX, cache: UIElementCache(supportedAttributes: [classAttribute],
