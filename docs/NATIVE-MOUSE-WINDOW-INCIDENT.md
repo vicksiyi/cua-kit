@@ -3125,3 +3125,25 @@ no traversal into an unrelated submenu, recursive Copy selection and immediate
 nil from the first Copy submenu. Swift build, provider checks and static audit
 pass. These are source/behavior tests without real input; application clicking,
 focused-item discovery and useSelectionForFindItem are still incomplete.
+
+
+## Use-selection-for-find lookup recovery (2026-11-08)
+
+Getter 0x100724088 calls MenuBarItem.items, then scans only that direct array for
+cached title equal to the exact English string "Use Selection for Find" at
+0x101256ab0. It returns the first match. There is no cmdChar/modifier check,
+localized-title matching, enabled-state read, fresh title query or submenu search.
+The implementation now uses shared items and cached title getters with precisely
+that selection. The static audit pins its call/literal setup and string comparison.
+
+Transaction-backed checks invoke the actual getter and verify first match,
+case-sensitive rejection followed by a later match, and nil for other/localized
+titles. Swift build, provider checks and pinned static audit pass. These are
+cache-backed checks without UI input.
+
+Call-site inspection finds no production call to copyItem or
+useSelectionForFindItem in the current helper yet. This restores the native
+accessors, not their higher-level controller action integration. That integration
+must follow source evidence rather than adding an arbitrary keyboard or menu
+fallback. Focused-menu-item discovery and true Sky/MCP/DeepSeek app operations
+remain incomplete; the new lookup does not establish that clicking is repaired.

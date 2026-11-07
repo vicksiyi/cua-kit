@@ -56,3 +56,11 @@ extension MenuBarItemUIElement {
             title: { $0.title }, children: { $0.items })
     }
 }
+
+extension MenuBarItemUIElement {
+    // 0x100724088: first direct item with an exact cached English title.
+    // This getter does not inspect shortcuts, enabled state or submenus.
+    var useSelectionForFindItem: MenuItemUIElement? {
+        items.first { $0.title == "Use Selection for Find" }
+    }
+}

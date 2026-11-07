@@ -3787,6 +3787,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    runUseSelectionForFindItemChecks()
     runCopyMenuItemChecks()
     try runAppControllerWindowObservationLifetimeChecks()
     try runAppControllerObservationDeliveryChecks()
@@ -7527,6 +7528,36 @@ private func runWindowWrapperStorageChecks() {
             precondition(results.count == expected)
             precondition(results.allSatisfy { $0.id == item && $0.cache.transactionAttributes == [children] })
             precondition(MenuItemUIElement.role == .menuItem)
+        }
+    }
+}
+
+private func runUseSelectionForFindItemChecks() {
+    let root = AXUIElementCreateApplication(getpid())
+    let menu = AXUIElementCreateApplication(1)
+    let first = AXUIElementCreateApplication(2)
+    let second = AXUIElementCreateSystemWide()
+    let children = UIElementAttribute(kAXChildrenAttribute)
+    let title = UIElementAttribute(kAXTitleAttribute)
+    func partial(_ raw: AnyObject) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: raw), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    for (firstTitle, secondTitle, expected) in [
+        ("Use Selection for Find", "Use Selection for Find", first as AXUIElement?),
+        ("use selection for find", "Use Selection for Find", second as AXUIElement?),
+        ("使用所选内容查找", "Other", nil)
+    ] {
+        let table: [AXUIElement: [UIElementAttribute: AXPartialValue]] = [
+            root: [children: partial([menu] as NSArray)],
+            menu: [children: partial([first, second] as NSArray)],
+            first: [title: partial(firstTitle as NSString)],
+            second: [title: partial(secondTitle as NSString)]]
+        let scope = UIElementTreeTransaction(element: UIElement(element: root),
+            cache: UIElementTransactionCache(attributeTable: table, requestedAttributes: [children, title],
+                fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable<UIElementRole>())
+        scope.perform { _ in
+            precondition(MenuBarItemUIElement(element: root).useSelectionForFindItem?.id == expected)
         }
     }
 }
