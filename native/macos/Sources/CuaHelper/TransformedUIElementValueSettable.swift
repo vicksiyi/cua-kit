@@ -1,6 +1,6 @@
 // Constructor 0x10075e808..0x10075e860 and 0x10075edb4..0x10075f13c.
-// The Chromium predicate stays an explicit dependency until its extra role
-// argument is traced through every construction entry point.
+// The Chromium predicate is composed by the explicit additionalRole overload.
+// Keep this dependency boundary to verify short-circuit/provider ordering.
 private let transformedEventValueSettableRoles: Set<UIElementRole> = [
     UIElementRole("AXComboBox"), UIElementRole("AXDateField"),
     UIElementRole("AXDateTimeArea"), UIElementRole("AXIncrementor"),

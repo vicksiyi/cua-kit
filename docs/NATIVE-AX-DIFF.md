@@ -4829,3 +4829,29 @@ rejection, and Chromium-before-native ordering in full context. The later
 constructor truncation branch still must clear isValueSettable when a range is
 present. Neither the complete owner nor production collector wiring is supplied
 by this extracted decision.
+
+
+### Chromium value predicate and constructor caller trace (2026-11-07)
+
+Restored `0x100762be4..<0x100762ebc` and composed it with the writability gate.
+It rejects an incrementor when the additional optional role is dateField,
+dateTimeArea or timeField. Otherwise comboBox/incrementor/textArea/textField are
+accepted, as is radioButton with subrole AXTabButton; other roles are rejected.
+The four-role set comes from `0x100761544`, separate from the eight-role event
+inference table. The additionalRole parameter is required explicitly (including
+nil), rather than fabricating a parent lookup inside the accessor.
+
+A static direct-branch scan found twelve call sites for constructor 0x10075e160:
+0x10071b0d8, 0x100758a4c, 0x100758c10, 0x10075c570, 0x10075dfdc,
+0x10075e124, 0x100768418, 0x10076879c, 0x100768f9c, 0x1007696f8,
+0x100769f08 and 0x10076a7dc. Standalone descriptions, public constructors and
+menu-bar paths pass x4=0. Four traversal paths pass a retained value instead.
+For example 0x100768f9c receives x4 from the traversal's original x6, saved at
+0x100768b00. This disproves an unconditional nil assumption, but does not yet
+prove that every traversal supplies the immediate AX parent's role. That caller
+provenance remains pending; no automatic AXParent read was introduced.
+
+Validation: full Swift helper build and provider selftest pass for the four
+allowed roles, all three incrementor exclusions, nil/unrelated additional roles,
+radioButton+AXTabButton gating, and slider rejection. Full transformed-owner and
+traversal integration still require the remaining constructor/caller work.

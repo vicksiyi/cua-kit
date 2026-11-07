@@ -55,6 +55,26 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        for name in ["AXComboBox", "AXIncrementor", "AXTextArea", "AXTextField"] {
+            checkTrue(transformedUIElementChromiumAllowsValue(role: UIElementRole(name),
+                subrole: nil, additionalRole: nil))
+        }
+        for name in ["AXDateField", "AXDateTimeArea", "AXTimeField"] {
+            checkFalse(transformedUIElementChromiumAllowsValue(role: UIElementRole("AXIncrementor"),
+                subrole: nil, additionalRole: UIElementRole(name)))
+            checkTrue(transformedUIElementChromiumAllowsValue(role: .textField,
+                subrole: nil, additionalRole: UIElementRole(name)))
+        }
+        checkTrue(transformedUIElementChromiumAllowsValue(role: UIElementRole("AXIncrementor"),
+            subrole: nil, additionalRole: .group))
+        checkTrue(transformedUIElementChromiumAllowsValue(role: .radioButton,
+            subrole: "AXTabButton", additionalRole: nil))
+        checkFalse(transformedUIElementChromiumAllowsValue(role: .radioButton,
+            subrole: nil, additionalRole: nil))
+        checkFalse(transformedUIElementChromiumAllowsValue(role: .button,
+            subrole: "AXTabButton", additionalRole: nil))
+        checkFalse(transformedUIElementChromiumAllowsValue(role: UIElementRole("AXSlider"),
+            subrole: nil, additionalRole: nil))
         let eventWritableRoles = ["AXComboBox", "AXDateField", "AXDateTimeArea", "AXIncrementor",
             "AXSlider", "AXTextArea", "AXTextField", "AXTimeField"]
         for name in eventWritableRoles + ["AXButton", "AXCheckBox", "AXStaticText", "Custom"] {
