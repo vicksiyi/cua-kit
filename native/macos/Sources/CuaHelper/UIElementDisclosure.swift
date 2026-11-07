@@ -22,6 +22,8 @@ func uiElementIsDisclosing(cache: UIElementCache) -> Bool {
 // Concrete immutable UIElement composition. System/provider writes remain
 // supplied by the caller until the original encoded-value setter is restored.
 extension UIElement {
+    var isDisclosing: Bool { uiElementIsDisclosing(cache: cache) }
+
     func toggleDisclosure(
         freshSupportedAttributes: () -> Set<UIElementAttribute>,
         isAttributeSettable: (UIElementAttribute) throws -> Bool,

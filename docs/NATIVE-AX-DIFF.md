@@ -3548,3 +3548,25 @@ Tests pass and the Swift helper builds. The initial fixture compile failed on
 CFString versus String comparison; explicit bridging corrected the assertion.
 No vendor service, UI operation or model request was executed. Production
 provider/concrete-root wiring and end-to-end acceptance remain incomplete.
+
+### Concrete cached metadata getters
+
+Static disassembly of the pinned vendor binary confirms roleDescription
+0x1007ab5c0, help 0x1007ab7bc, identifier 0x1007ab7e0 and placeholderValue
+0x1007ad1e8 all load their corresponding static attribute and tail-call the
+already recovered cached String helper 0x1007ab5dc. UIElementCachedText now
+exposes these four concrete properties through that same decoding path.
+
+The isDisclosing entry 0x1007ac3d4 tail-calls 0x1007ac3f0; missing/error paths
+converge at 0x1007ac50c (false). A concrete isDisclosing property now reuses the
+existing uiElementIsDisclosing implementation. isEnabled already existed and
+was reverified: 0x1007ac374 defaults to true and 0x1007ac33c..34c maps decoded
+Optional.none to true while retaining an explicit false. No second enabled
+implementation remains; an initial duplicate was caught by the full package
+build and removed before publication.
+
+The expanded cached-property fixture covers all eight independent text fields,
+missing/empty/whitespace/malformed values, and the distinct enabled/disclosing
+defaults with absent, CFBoolean, null, string and array values. Focused test and
+full Swift build pass. Static inspection did not execute the vendor binary.
+Full protocol conformance and provider wiring remain outstanding.

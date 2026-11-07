@@ -18,7 +18,7 @@ test(
       const executable = join(directory, "axvalue-tests");
       await exec("xcrun", [
         "swiftc",
-        ...["UIElementCachedText", "UIElementRole", "UIElementCachedRole"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),
+        ...["UIElementCachedText", "UIElementDisclosure", "UIElementEnabled", "UIElementFocusCapability", "AXBoolDecoding", "UIElementRole", "UIElementCachedRole"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),
         join(root, "native/macos/Sources/CuaHelper/UIElementError.swift"),
         "-o",
         executable,
