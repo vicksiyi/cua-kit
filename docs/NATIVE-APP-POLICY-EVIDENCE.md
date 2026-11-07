@@ -1265,3 +1265,27 @@ result round-trip. The description and AX dispatch code are statically pinned.
 The special branch's initialized-nil screenshot is preserved. Actual native
 IPC transport integration and real application/browser acceptance remain
 unverified; this builder is not yet a live host replacement.
+
+### Live independent-service payload correction
+
+Reviewing the actual host wiring confirmed that the current Swift helper is a
+server for the JS Sky native-pipe client, whereas the recovered native MCP
+failure converter is a separate client-side path. It must not be installed
+inside the server response encoder. That review exposed a concrete existing
+wire mismatch: SkyAppState returned explanatory sentences as the message of
+-10006 and -10011, but the native mapper interprets those payloads as
+bundleIdentifier and app respectively.
+
+SkyAppState now emits the resolved bundle ID for policy rejection in perform,
+start and get, and the requested application reference for missing-session
+input. All policy evaluation, denial, invalidation and no-input behavior is
+unchanged. This is a correction to the independently implemented server's
+payload contract, supported by the original client's mapping; it is not a
+claim that the rest of SkyAppState has recovered original function bodies.
+
+The real-socket handshake/inventory fixtures now assert exact code and message
+for all tested input methods plus denied start/get. Both restored and installed
+Sky JavaScript clients passed against the rebuilt owned Swift helper. Fixtures
+use temporary application bundles without executables; no genuine application
+was controlled and the vendor native service was not executed. Full browser
+and desktop end-to-end acceptance remains pending.

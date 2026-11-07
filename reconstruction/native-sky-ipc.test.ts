@@ -57,8 +57,8 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   for(const [method,args] of [
    ['setValue',{value:'hello'}],['selectText',{text:'hello',selection:'cursor_after'}],['performSecondaryAction',{action:'focus'}],['typeText',{text:'hi 🌍'}],['pressKey',{key:'Super+a',duration:0.125}],['click',{mouseButton:'middle',clickCount:2,duration:0.125}],['scroll',{direction:' R ',pages:0.5}],['drag',{fromX:1.5,fromY:2,toX:30,toY:40.5}],['paste',{text:'hello 🌍',format:'text'}],['paste',{text:'**hello**',format:'md'}],['paste',{text:'<b>hello</b>',format:'html'}],
   ] as const){
-   await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011);
-   await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006);
+   await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,...args}),(error:any)=>error.code===-10011&&error.message===join(f.root,'com.core.fixture.allowed.app'));
+   await assert.rejects(client[method]({app:join(f.root,'com.core.fixture.forbidden.app'),elementIndex:1,...args}),(error:any)=>error.code===-10006&&error.message==='com.core.fixture.forbidden');
   }
   await assert.rejects(client.paste({app:join(f.root,'com.core.fixture.allowed.app'),text:'x',format:'rtf'}),(error:any)=>error.code===-32602);
   await assert.rejects(client.scroll({app:join(f.root,'com.core.fixture.allowed.app'),x:12.5,y:24,direction:'down',pages:1}),(error:any)=>error.code===-10011);
@@ -67,11 +67,11 @@ for(const source of ['restored','installed'] as const) test(`Swift IPC accepts $
   await assert.rejects(client.pressKey({app:join(f.root,'com.core.fixture.allowed.app'),key:'a',duration:-1}),(error:any)=>error.code===-32602);
   await assert.rejects(client.selectText({app:join(f.root,'com.core.fixture.allowed.app'),elementIndex:1,text:'hello',selection:'invalid'}),(error:any)=>error.code===-32602);
   await assert.rejects(client.startApp('/nonexistent/core-start.app'),(error:any)=>error.code===-10010);
-  await assert.rejects(client.startApp(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
+  await assert.rejects(client.startApp(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006&&error.message==='com.core.fixture.forbidden');
   await assert.rejects(client.getAppState('com.example.not-running'),(error:any)=>error.code===-10010);
   // Resolvable bundle without an executable now reaches the native launch failure.
   await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.allowed.app')),(error:any)=>error.code===-10005);
-  await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006);
+  await assert.rejects(client.getAppState(join(f.root,'com.core.fixture.forbidden.app')),(error:any)=>error.code===-10006&&error.message==='com.core.fixture.forbidden');
  }finally{(globalThis as any).nodeRepl=before;}
 });
 test('Swift IPC enforces negotiation, deadlines, frame limits and unknown-operation errors',{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:10000},async t=>{

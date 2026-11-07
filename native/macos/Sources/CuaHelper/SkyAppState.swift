@@ -14,11 +14,11 @@ final class SkyAppState {
         let path = identity["appPath"] as! String
         guard evaluated["decision"] as? String == "allowed" else {
             targets[path]?.invalidateInputState()
-            throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
+            throw SkyRPCFailure(code: -10006, message: identity["bundleIdentifier"] as! String)
         }
         var params = try decodeSkyElementAction(action)
         guard let target = targets[path], let snapshot = target.snapshot else {
-            throw SkyRPCFailure(code: -10011, message: "A fresh native app observation is required before input")
+            throw SkyRPCFailure(code: -10011, message: reference)
         }
         defer { target.invalidateInputState() }
         guard target.app.bundleIdentifier == identity["bundleIdentifier"] as? String else {
@@ -53,10 +53,10 @@ final class SkyAppState {
     /// Response uses the original optional-skyshot MacWindowAppState envelope.
     func start(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
         let evaluated = try await policy.evaluate(reference)
-        guard evaluated["decision"] as? String == "allowed" else {
-            throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
-        }
         let identity = evaluated["target"] as! [String: Any]
+        guard evaluated["decision"] as? String == "allowed" else {
+            throw SkyRPCFailure(code: -10006, message: identity["bundleIdentifier"] as! String)
+        }
         let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
         targets.removeValue(forKey: path)?.invalidateInputState()
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
@@ -79,7 +79,7 @@ final class SkyAppState {
         // Failures after resolution retire only this application's earlier observation.
         targets[path]?.invalidateInputState()
         guard evaluated["decision"] as? String == "allowed" else {
-            throw SkyRPCFailure(code: -10006, message: "Native policy does not allow this application")
+            throw SkyRPCFailure(code: -10006, message: identity["bundleIdentifier"] as! String)
         }
         var running = NSWorkspace.shared.runningApplications.filter {
             !$0.isTerminated && $0.bundleIdentifier == identifier && $0.bundleURL?.resolvingSymlinksInPath().path == path
