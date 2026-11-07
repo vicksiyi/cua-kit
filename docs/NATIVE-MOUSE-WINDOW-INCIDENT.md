@@ -2465,3 +2465,22 @@ observer creation and source/task start-stop behavior including the main-queue
 barrier, not real event delivery, Target wiring or successful application clicks.
 The internal monitoringRunLoop accessor exposes the existing locked snapshot for
 lifecycle observation; it does not change production start/stop behavior.
+
+
+## Real owned-window AX event delivery acceptance
+
+`cua-helper --ax-notification-delivery-check --allow-owned-ui` passed on this
+machine with the desktop unlocked. It starts the exact sibling CuaFixture as
+its own child, subscribes to windowMoved on that child application root, starts
+the concrete observer and waits for a native callback whose element PID matches
+the child. The fixture moves only its own window by one point on a timer. No
+mouse or keyboard event is sent. The check then removes the native subscription,
+stops monitoring and terminates its owned child. The invocation was bounded to
+20 seconds in an isolated process group, with group cleanup after completion.
+
+This proves actual native AXObserverAddNotification -> RunLoop -> info callback
+-> bridge -> weak-owner handler delivery for a windowMoved event. It is stronger
+than the earlier no-subscription lifecycle check, but does not cover every
+notification type, Target integration, MCP/DeepSeek or arbitrary app clicks.
+The flag requires explicit --allow-owned-ui; no existing app PID can be supplied.
+Swift build, provider component checks and the pinned static audit also pass.

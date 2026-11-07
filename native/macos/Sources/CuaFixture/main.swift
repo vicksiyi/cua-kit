@@ -66,6 +66,15 @@ final class Delegate: NSObject, NSApplicationDelegate {
             NSApp.activate(ignoringOtherApps: true)
         }
         writeFixtureLine("READY")
+        if CommandLine.arguments.contains("--ax-event-probe") {
+            // Owned notification fixture: move only this newly created window.
+            Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+                guard let window = self?.window else { return }
+                var origin = window.frame.origin
+                origin.x += origin.x.truncatingRemainder(dividingBy: 2) == 0 ? 1 : -1
+                window.setFrameOrigin(origin)
+            }
+        }
         if CommandLine.arguments.contains("--activation-probe") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 let running = NSRunningApplication.current

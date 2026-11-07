@@ -274,6 +274,13 @@ if CommandLine.arguments.contains("--key-focus-query-check") {
     print(String(decoding: data, as: UTF8.self))
     exit(0)
 }
+if CommandLine.arguments.contains("--ax-notification-delivery-check") {
+    do {
+        try await runAXNotificationDeliveryChecks()
+        print("AX notification delivery check passed (owned fixture, no mouse/keyboard input)")
+        exit(0)
+    } catch { fputs("AX notification delivery failed: \(error)\n", stderr); exit(1) }
+}
 if CommandLine.arguments.contains("--ax-notification-lifecycle-check") {
     do {
         try await runAXNotificationLifecycleChecks()
