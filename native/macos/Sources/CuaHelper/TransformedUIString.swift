@@ -113,3 +113,20 @@ struct TransformedUIString: ExpressibleByStringInterpolation, CustomStringConver
         return result
     }
 }
+
+// 0x10063aeac..<0x10063b3a8. This intentionally is not repeated += of
+// transformed strings: after the first structurally nonempty result, each
+// incoming description becomes plain text (0x10063b164..0x10063b1c8).
+extension Sequence where Element == TransformedUIString {
+    func joined(separator: String) -> TransformedUIString {
+        var result = TransformedUIString()
+        for value in self {
+            if result.isEmpty {
+                result = value
+            } else {
+                result += separator + value.description
+            }
+        }
+        return result
+    }
+}

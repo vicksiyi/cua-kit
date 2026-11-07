@@ -44,4 +44,14 @@ struct UIElementTransformationContext {
             individualLimit: nil, totalLimit: nil, includeQuery: true,
             includeFragment: true, baseHost: nil))
     }
+
+    // 0x1007587b4: runs the body once; compaction updates configuration and
+    // accounting afterward. A thrown body skips both compaction and final reset.
+    mutating func shortenURLsIfNeeded<Result>(totalLength: inout Int,
+        body: (inout Self) throws -> Result
+    ) rethrows -> Result {
+        try withUIElementURLRenderingPass(context: &self, shortener: \.urlShortener,
+            totalLength: &totalLength, body: body)
+    }
+
 }

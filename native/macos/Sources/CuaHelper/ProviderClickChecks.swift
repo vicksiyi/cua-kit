@@ -102,6 +102,20 @@ private enum ProviderClickChecks {
         checkEqual(copiedText.description, "🙂")
         checkEqual(mappedText.description, "🙂a")
         checkEqual(copiedText.last, "🙂")
+        let joinedText = [TransformedUIString(), mappedText, mappedText].joined(separator: "|")
+        checkEqual(joinedText.description, "🙂a|🙂a")
+        checkEqual(joinedText.sourceRange(forMarkdownRange: NSRange(location: 0, length: 3)),
+            NSRange(location: 10, length: 3))
+        checkTrue(joinedText.sourceRange(forMarkdownRange: NSRange(location: 4, length: 3)) == nil)
+        checkEqual([mappedText, TransformedUIString()].joined(separator: "|").description, "🙂a|")
+        checkTrue([TransformedUIString]().joined(separator: "|").isEmpty)
+        // Join retains the first URL's metadata but flattens subsequent elements.
+        var urlJoin = [renderedURL, compilerURL].joined(separator: "|")
+        renderingContext.urlShortener.configuration.individualLimit = 5
+        checkTrue(urlJoin.trimURLs(context: &renderingContext))
+        checkTrue(urlJoin.description.hasSuffix("|" + compilerURL.description))
+        // Two empty image spans are structurally nonempty, so keep the separator.
+        checkEqual([imageText, TransformedUIString("x")].joined(separator: "|").description, "|x")
         let repeatedText = mappedText + mappedText
         checkTrue(repeatedText.sourceRange(ofMarkdownSubstring: "🙂a") == nil)
         checkEqual(repeatedText.sourceRange(forMarkdownRange: NSRange(location: 3, length: 3)),

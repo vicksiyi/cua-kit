@@ -4587,3 +4587,33 @@ unchanged refresh, bracket escaping, and two image URLs retained as two empty sp
 (description empty but structural isEmpty false). This supplies the previously
 missing rendering-protocol wiring. Full transformed-node construction, attributed
 text conversion and production tree collector integration remain outstanding.
+
+### Context shortening method and sequence joining (2026-11-07)
+
+Connected `UIElementTransformationContext.shortenURLsIfNeeded(totalLength:body:)`
+to the restored rendering-pass implementation. Reinspection of
+`0x1007587b4..<0x100758848` confirms exactly one body invocation: reset, body,
+compact configuration, add measured URL length, reset. A thrown body skips the
+last three steps and preserves mutations already performed. This method does not
+itself rerender the result after compaction; callers must own later rendering.
+The context fixture now calls the actual method rather than the extracted helper.
+
+Restored `Sequence<TransformedUIString>.joined(separator:)` from
+`0x10063aeac..<0x10063b3a8`. It initializes one empty plain span and iterates once.
+If the current result is structurally empty, it replaces the result with the next
+value. Otherwise it appends `separator + value.description` as a plain string.
+This deliberately differs from ordinary repeated transformed-string concatenation:
+subsequent values lose URL metadata and source mappings; empty leading values do
+not create separators, while an empty trailing value after nonempty output does.
+Source `0x10063b164..0x10063b1c8` calls description, String.append (stub
+`0x101150a2c`, bound at `0x1014663c0` to `$sSS6appendyySSF`), then plain-span append.
+The emptiness branch checks span count plus the sole span's payload, matching the
+existing structural isEmpty helper, including multiple empty URL spans.
+
+Validation: full helper build and provider selftest pass. New join cases cover
+source maps retained only for the first value, trailing separators, empty sequences,
+URL refresh only affecting retained metadata, and structurally nonempty image-span
+input. The focused context test passes all 384 constructor/composition cases plus
+a throwing callback case that proves one invocation, unchanged accounting, and
+retained URL state. No live AgentLoop or vendor service was launched. Full node
+construction and production tree collection remain outstanding.

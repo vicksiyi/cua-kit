@@ -29,7 +29,7 @@ struct UIElementTransformationContextTests {
                             includeQuery: true, includeFragment: true, baseHost: nil))
                         // Compose actual URL state with the recovered context, not a mock shortener.
                         var total = 3
-                        let output = withUIElementURLRenderingPass(context: &context, shortener: \.urlShortener, totalLength: &total) {
+                        let output = context.shortenURLsIfNeeded(totalLength: &total) {
                             $0.urlShortener.trim(url: URL(string: "https://example.com/a?q=1#f")!, isImage: false)
                         }
                         precondition(output == "example.com/a?q=1#f" && total == 3 + output!.count)
@@ -41,11 +41,26 @@ struct UIElementTransformationContextTests {
         }
         let config = UIElementURLShortener.Configuration(individualLimit: 29, totalLimit: 83,
             includeQuery: false, includeFragment: false, baseHost: nil)
-        let context = UIElementTransformationContext(type: .fullUIContext,
+        var context = UIElementTransformationContext(type: .fullUIContext,
             application: Optional<Int>.none, window: Optional<Int>.none, urlConfiguration: config,
             isCatalystApp: { _ in fatalError() }, applicationIsWebShaped: { _ in fatalError() },
             windowHasChromeNode: { _ in fatalError() }, frame: { _ in fatalError() })
         precondition(context.urlShortener.configuration == config)
+        enum ProbeError: Error { case expected }
+        var callbackCount = 0
+        var totalLength = 17
+        do {
+            let _: Int = try context.shortenURLsIfNeeded(totalLength: &totalLength) { value in
+                callbackCount += 1
+                _ = value.urlShortener.trim(url: URL(string: "https://example.com/a")!, isImage: false)
+                throw ProbeError.expected
+            }
+            preconditionFailure("expected callback error")
+        } catch ProbeError.expected {} catch { preconditionFailure("unexpected error") }
+        precondition(callbackCount == 1 && totalLength == 17)
+        precondition(context.urlShortener.configuration == config)
+        precondition(context.urlShortener.compactConfigurationIfNeeded() > 0,
+            "throw must preserve URLs collected before failure")
         print("transformation context preserves repeated reads, window gating and URL state: \(cases) cases")
     }
 }
