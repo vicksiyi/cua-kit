@@ -2801,3 +2801,21 @@ ordering duplicate preservation. They send no UI input. The owner must still
 serialize registry access: this class does not invent a dictionary lock or claim
 that Target/MainActor and AX callback thread ownership are already reconciled.
 Actual Target wiring and application clicking acceptance remain outstanding.
+
+
+## Real window-record composition acceptance expansion (pending unlocked run)
+
+The owned-window notification check now creates AppControllerWindows, constructs
+and registers a real WindowUIElement from its owned callback element, then routes
+windowMoved through dispatchAppControllerWindowEvent. It requires at least two
+ID publications and exactly one nonzero native window ID. Registry access stays
+on the single AX callback thread; the async test only reads separately locked
+acceptance counters. Attention/focus effects are deliberately not exercised by
+this notification/record acceptance case, and it is not production Target wiring.
+
+Current preflight reports screenLocked=true and frontmostIsLoginWindow=true.
+The expanded live check has therefore not been run successfully yet; earlier
+AX-delivery success does not prove this new composition. The check now refuses
+to launch its owned fixture when the desktop is locked. Compilation/component
+verification can proceed independently while unlocked UI acceptance remains
+pending. No user-app action or canceled operation was retried.
