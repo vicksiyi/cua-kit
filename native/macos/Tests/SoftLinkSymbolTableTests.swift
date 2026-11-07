@@ -40,6 +40,14 @@ import MachO
         precondition(matches[67]!.name == "export-C")
         precondition(visited == [65,66,66,65,66,67,68]) // Early exit once all requested keys exist.
         precondition(matches[65]!.name == "A" && matches[66]!.name == "B")
+        let salt = "盐🧂\0suffix"
+        let key = Array(salt.utf8).withUnsafeBufferPointer { suffix in
+            [UInt8(65)].withUnsafeBufferPointer { sipHash(buffer: $0, appending: suffix) }
+        }
+        var salted: [UInt64: ResolvedSymbol] = [:]
+        collectSymbolTable(image: image, linkedit: UnsafeRawPointer(linkedit), commands: commands,
+                           requested: [key], matches: &salted, salt: salt)
+        precondition(salted[key]!.name == "A" && salted[key]!.pointer == image.advanced(by: 3))
         print("SoftLink symbol-table fallback passed")
     }
 }

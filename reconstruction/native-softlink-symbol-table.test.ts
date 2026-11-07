@@ -15,7 +15,7 @@ test("SoftLink symbol-table fallback preserves filtering and export precedence",
   try {
     const executable = join(directory, "test");
     await exec("xcrun", ["swiftc", "-o", executable,
-      ...["SegmentName", "LoadCommands", "SymbolTable"].map(name => join(root, `native/macos/Sources/SoftLink/${name}.swift`)),
+      ...["SegmentName", "LoadCommands", "SymbolTable", "SipHashState", "SipHash"].map(name => join(root, `native/macos/Sources/SoftLink/${name}.swift`)),
       join(root, "native/macos/Tests/SoftLinkSymbolTableTests.swift")]);
     const { stdout } = await exec(executable);
     assert.match(stdout, /SoftLink symbol-table fallback passed/);

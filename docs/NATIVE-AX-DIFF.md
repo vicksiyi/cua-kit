@@ -2790,3 +2790,25 @@ boundaries, nil empty buffers, bytewise input and retained finalization fields.
 These test the reconstructed implementation; the original service is never run.
 The salted/string overloads, image-mask policy and export-trie resolver remain
 pending and are not replaced with an invented hash adapter.
+
+### SoftLink salted byte hashing connected to symbol-table fallback
+
+Recovered both appending overloads at `0x100246f3c` and `0x1002473e0`.
+They hash message bytes followed directly by suffix bytes using one streaming
+state. The suffix does not replace the fixed key, introduce a separator, or
+cause a separate finalization. The buffer overload skips a nil base; the raw
+pointer overload retains the valid-pointer/nonnegative-count caller contract.
+
+The symbol-table salt preparation calls `0x1002540c8` at `0x100249534`.
+That helper's copy call at `0x100254118` reaches stub `0x101152184`, whose
+GOT slot `0x101467310` binds Swift `_StringGuts.copyUTF8(into:)`.
+Accordingly the new salt:String overload converts the salt to UTF-8 and
+invokes recovered SipHash on each raw symbol name followed by that salt.
+Embedded zero bytes in the salt remain included; only the symbol-name read
+uses strlen. The callback overload remains useful for isolated traversal tests.
+
+The existing streaming boundary suite now checks both public appending overloads
+at every split point. The symbol-table fixture also exercises the actual hashing
+path with a Unicode and embedded-NUL salt. Both tests and Swift build pass.
+This supersedes the earlier note that symbol-table hashing is entirely injected;
+full export-tree traversal and lookUpSymbols orchestration remain pending.

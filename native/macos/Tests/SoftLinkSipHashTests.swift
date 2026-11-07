@@ -23,6 +23,14 @@
                 Array(bytes[..<split]).withUnsafeBufferPointer { state.append($0) }
                 state.append(UnsafeBufferPointer(start: nil, count: 0))
                 Array(bytes[split...]).withUnsafeBufferPointer { state.append($0) }
+                Array(bytes[..<split]).withUnsafeBufferPointer { message in
+                    Array(bytes[split...]).withUnsafeBufferPointer { suffix in
+                        precondition(sipHash(buffer: message, appending: suffix) == expected)
+                        if let pointer = message.baseAddress {
+                            precondition(sipHash(bytes: pointer, count: message.count, appending: suffix) == expected)
+                        }
+                    }
+                }
                 precondition(state.count == length && state.pendingCount == length % 8)
                 let pending = state.pending
                 precondition(state.finalize() == expected)

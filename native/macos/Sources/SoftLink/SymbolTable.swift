@@ -15,7 +15,7 @@ typealias ResolvedSymbol = (pointer: UnsafeRawPointer, name: String)
 
 /// Extracted symbol-table fallback, 0x100249510..<0x1002496c8.
 /// The hash dependency receives the raw name bytes (excluding NUL). Production
-/// must supply the original salted SoftLink SipHash, which is not restored yet.
+/// can use the recovered salted overload below.
 /// `matches` may already contain export-trie results; those take precedence.
 func collectSymbolTable(image: UnsafeRawPointer, linkedit: UnsafeRawPointer,
                         commands: SymbolLoadCommands, requested: Set<UInt64>,
@@ -40,5 +40,18 @@ func collectSymbolTable(image: UnsafeRawPointer, linkedit: UnsafeRawPointer,
               value >= text, let relative = Int(exactly: value - text) else { continue }
         matches[key] = (image.advanced(by: relative), String(cString: name))
         if matches.count == requested.count { return }
+    }
+}
+
+/// Original lookUpSymbols builds UTF-8 salt bytes at 0x10024952c, then
+/// hashes each raw symbol name followed by those bytes at 0x1002495d0.
+func collectSymbolTable(image: UnsafeRawPointer, linkedit: UnsafeRawPointer,
+                        commands: SymbolLoadCommands, requested: Set<UInt64>,
+                        matches: inout [UInt64: ResolvedSymbol], salt: String) {
+    Array(salt.utf8).withUnsafeBufferPointer { suffix in
+        collectSymbolTable(image: image, linkedit: linkedit, commands: commands,
+                           requested: requested, matches: &matches) { name in
+            sipHash(buffer: name, appending: suffix)
+        }
     }
 }

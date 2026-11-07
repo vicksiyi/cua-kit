@@ -15,7 +15,7 @@ test("SoftLink fixed-state SipHash matches vectors and streaming boundaries", {
   try {
     const executable = join(directory, "test");
     await exec("xcrun", ["swiftc", "-o", executable,
-      ...["SipHashState"].map(name => join(root, `native/macos/Sources/SoftLink/${name}.swift`)),
+      ...["SipHashState", "SipHash"].map(name => join(root, `native/macos/Sources/SoftLink/${name}.swift`)),
       join(root, "native/macos/Tests/SoftLinkSipHashTests.swift")]);
     const { stdout } = await exec(executable);
     assert.match(stdout, /SoftLink fixed-state SipHash vectors and streaming passed/);
