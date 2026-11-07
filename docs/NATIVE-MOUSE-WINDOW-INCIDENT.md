@@ -1546,3 +1546,25 @@ strict malformed-value reporting. Production click preparation remains pending.
 Validation: Swift build, provider-click self-test and static audit pass. The
 existing test fixture now explicitly constructs outer .none; implicit Swift
 optional promotion had instead produced .some(nil). No live activation ran.
+
+
+## Concrete application click focus preparation
+
+ApplicationClickFocusComposition now wires the reconstructed generic synthetic
+click and accessibility-action focus preparers to UIElement/provider selection
+capabilities, the enforcer's cached key-focus belief, window activation context
+and native safe-enforcement method. Catalyst reads the exact private attribute
+_AXExhibitsMacCatalystBehavior (0x100715974 / 0x10079cab8) through the existing
+Bool accessor, with absence returning false. The extra role comparison at
+0x1006fc548..0x1006fc5b8 is menuButton equality, not a broader role whitelist.
+
+The adapters preserve no-enforcer and already-focused short circuits; they
+reuse the provider-aware action environment and current transaction, with no
+new process/path heuristics or activation fallback. Injected tests cover cached
+Catalyst values, no-enforcer active/probe behavior, and already-focused paths
+skipping further app/AX reads and event sends. Mouse.swift has not switched
+to these contexts yet: the caller must also honor the synthetic preparation
+result in its source-compatible event dispatch. Real clicking is unverified.
+
+Validation: Swift build, provider-click composition checks and pinned source
+audit pass. These adapters remain independent of the production mouse sender.

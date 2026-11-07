@@ -3727,6 +3727,7 @@ func runProviderClickChecks() async throws {
     await runApplicationFrontmostWaitChecks()
     await runTargetFocusEnforcerOwnershipChecks()
     try runActivationPointValueChecks()
+    try await runApplicationClickFocusCompositionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5711,4 +5712,42 @@ private func runActivationPointValueChecks() throws {
     let missing = uncached.activationPointValue(read: { (.success, bad) }, reportError: { _ in errors += 1 })
     guard case .none = missing else { unexpectedFailure() }
     checkEqual(errors, 1)
+}
+
+private func runApplicationClickFocusCompositionChecks() async throws {
+    let attr = UIElementAttribute("_AXExhibitsMacCatalystBehavior")
+    let ax = AXUIElementCreateApplication(Int32.max)
+    func application(_ value: Bool) -> UIElement {
+        let partial = AXPartialValue(value: AXEncodedValue(value: NSNumber(value: value)), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        return UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [], attributes: [attr: partial], transactionAttributes: nil))
+    }
+    for flag in [false, true] {
+        checkEqual(application(flag).isCatalystApplication(reportError: { _ in unexpectedFailure() }), flag)
+    }
+    let app = application(false)
+    var probes = 0
+    let active = try await app.prepareSyntheticClickFocus(element: nil, insideWebView: false,
+        clickingByCoordinate: true, hasHeldKey: false, window: nil, enforcer: nil,
+        applicationIsActive: { probes += 1; return false }, reportError: { _ in unexpectedFailure() },
+        send: { _ in unexpectedFailure() })
+    checkFalse(active); checkEqual(probes, 1)
+    try await app.prepareAccessibilityClickFocus(element: app, window: nil, enforcer: nil,
+        probeApplicationIsActive: { probes += 1 }, reportError: { _ in unexpectedFailure() }, send: { _ in unexpectedFailure() })
+    checkEqual(probes, 2)
+    let driver = EventTap.Driver(create: { _, _, _, _, _, _ in nil }, enable: { _, _ in }, invalidate: { _ in })
+    let deps = SystemFocusStealPreventer.Dependencies(resolveOwner: { .ordinary(pid: $0) },
+        releaseFocus: { _ in unexpectedFailure() }, compensateViewBridge: { _, _, _ in unexpectedFailure() })
+    let prevention = FocusStealPreventerLifecycle(makeInstance: { empty in
+        SystemFocusStealPreventer(initialOwner: { .ordinary(pid: 88) }, viewBridgePID: { nil },
+            dependencies: deps, tapDriver: driver, becameEmpty: empty)
+    }, resolveInitialOwner: { unexpectedFailure() })
+    let enforcer = SyntheticAppFocusEnforcer(pid: 88, prevention: prevention,
+        makeTracker: { InclusiveFrontmostApplicationTracker(center: NotificationCenter(), initialApplication: { nil }) },
+        targetIsActive: { false }, tapDriver: driver)
+    let focused = try await app.prepareSyntheticClickFocus(element: nil, insideWebView: true,
+        clickingByCoordinate: true, hasHeldKey: true, window: nil, enforcer: enforcer,
+        applicationIsActive: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }, send: { _ in unexpectedFailure() })
+    checkTrue(focused)
+    try await app.prepareAccessibilityClickFocus(element: app, window: nil, enforcer: enforcer,
+        probeApplicationIsActive: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }, send: { _ in unexpectedFailure() })
 }

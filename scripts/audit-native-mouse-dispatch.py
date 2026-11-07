@@ -258,3 +258,6 @@ assert read(0x100741ca0, 4).hex() == "4631ff17"
 # Activation point requests Optional<CGPoint> (symbolic reference + Sg).
 assert read(0x10129edec, 8) == bytes.fromhex("028b331c00536700")
 assert read(0x1011924f8, 7) == b"CGPoint"
+
+# Catalyst flag literal and menu-button-only role branch used in click preparation.
+assert read(0x101257cf0, 30) == b"_AXExhibitsMacCatalystBehavior"
