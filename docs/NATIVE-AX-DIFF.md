@@ -4802,3 +4802,30 @@ type producing one error and the date+time default, and unknown masks producing
 a separate report. This completes the date accessor composition, not the full
 transformed owner or production collector integration. No live application
 success is inferred from these component checks.
+
+
+### Context-dependent transformed value writability (2026-11-07)
+
+Restored constructor decision `0x10075e808..0x10075e860` and
+`0x10075edb4..0x10075f13c` in TransformedUIElementValueSettable.swift. Chromium
+first applies a separate eligibility predicate; rejection skips both event-role
+inference and native writability probes. In eventStreamContext, membership in
+the eight-role table initialized by `0x1007616b0` supplies the result without an
+AX writability request: comboBox, dateField, dateTimeArea, incrementor, slider,
+textArea, textField, timeField. Other contexts use supported-and-settable AXValue
+checks, including fresh supportedAttributes when AXValue was not in the cache's
+transaction request, and false on a thrown writability query.
+
+A UIElement composition method uses the existing native provider support and
+writability accessors. The Chromium predicate remains an explicit dependency:
+`0x100762be4` accepts role, subrole and another optional role argument originating
+from constructor x4. Its role tables and exclusions have been inspected, but
+that argument's meaning across construction entry points is not yet established;
+no guessed parent-role lookup or unconditional allowance was inserted.
+
+Validation: full helper build and provider selftest pass for all eight event
+roles, excluded/unknown roles, skipped native probes in event context, Chromium
+rejection, and Chromium-before-native ordering in full context. The later
+constructor truncation branch still must clear isValueSettable when a range is
+present. Neither the complete owner nor production collector wiring is supplied
+by this extracted decision.

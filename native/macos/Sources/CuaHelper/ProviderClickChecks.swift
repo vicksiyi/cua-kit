@@ -55,6 +55,23 @@ private enum ProviderClickChecks {
         }
     }
     static func run() async throws {
+        let eventWritableRoles = ["AXComboBox", "AXDateField", "AXDateTimeArea", "AXIncrementor",
+            "AXSlider", "AXTextArea", "AXTextField", "AXTimeField"]
+        for name in eventWritableRoles + ["AXButton", "AXCheckBox", "AXStaticText", "Custom"] {
+            let result = transformedUIElementValueSettable(contextType: .eventStreamContext,
+                isChromium: false, role: UIElementRole(name), chromiumAllowsValue: { unexpectedFailure() },
+                readSupportedAndSettable: { unexpectedFailure() })
+            checkEqual(result, eventWritableRoles.contains(name))
+        }
+        var writableProbes: [String] = []
+        checkFalse(transformedUIElementValueSettable(contextType: .eventStreamContext, isChromium: true,
+            role: .textField, chromiumAllowsValue: { writableProbes.append("chromium"); return false },
+            readSupportedAndSettable: { unexpectedFailure() }))
+        checkEqual(writableProbes, ["chromium"])
+        checkTrue(transformedUIElementValueSettable(contextType: .fullUIContext, isChromium: true,
+            role: .textField, chromiumAllowsValue: { writableProbes.append("chromium"); return true },
+            readSupportedAndSettable: { writableProbes.append("native"); return true }))
+        checkEqual(writableProbes, ["chromium", "chromium", "native"])
         func formatted(_ raw: AnyObject, _ type: TransformedUIElementValueType) -> String? {
             transformedUIElementFormattedValue(raw, classify: { type },
                 dateFormat: { unexpectedFailure() })
