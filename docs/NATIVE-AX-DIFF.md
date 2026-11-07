@@ -6510,3 +6510,23 @@ characters, LF matching, CRLF nonmatching, non-LF line separators,
 label presence and range-entry integration. Entry accumulation, deduplication,
 final formatting, full node renderer composition and production collector wiring
 remain incomplete. No vendor service or live application was executed.
+
+
+### Content accumulation and text-based deduplication (2026-11-07)
+
+Recovered 0x100627930 in AccessibilityContentAccumulator.swift. Its membership
+lookup reads entry.text at +16, not the optional label, and uses a Swift String
+hash set (0x100018c54, equality fallback 0x101152ff4). A seen string returns
+without changing the array; otherwise it enters the set then appends the whole
+entry. First occurrence therefore retains its label, text and format flag.
+No trimming, lowercasing or empty-string filtering occurs inside this helper;
+field-specific guards remain the caller's responsibility.
+
+Range insertion at 0x100627b88 bypasses that set and appends directly. Equal Rows
+and Columns ranges both remain, and neither suppresses a later ordinary text
+entry with the same payload. This distinction is preserved in the accumulator.
+Tests cover duplicate text with different labels, whitespace/case differences,
+canonically equivalent Unicode, empty text and mixed range/text insertion.
+Swift build, owned provider checks and static call/offset audit passed.
+Full content assembly/formatting and production collection remain incomplete;
+this component was not substituted for a live node renderer.

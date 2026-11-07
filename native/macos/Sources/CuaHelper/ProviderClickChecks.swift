@@ -2880,6 +2880,27 @@ private enum ProviderClickChecks {
             checkFalse(range.isLongOrMultiline)
             checkTrue(AccessibilityContentEntry.indexRange(label: "Columns", range: 2...2) == nil)
         }
+        do {
+            var content = AccessibilityContentAccumulator()
+            content.appendUnique(.init(label: nil, text: "same"))
+            content.appendUnique(.init(label: "Description", text: "same"))
+            content.appendUnique(.init(label: "Value", text: " same "))
+            content.appendUnique(.init(label: "Value", text: "Same"))
+            content.appendUnique(.init(label: "first", text: "é"))
+            content.appendUnique(.init(label: "second", text: "e\u{301}"))
+            checkEqual(content.entries.map(\.text), ["same", " same ", "Same", "é"])
+            checkTrue(content.entries[0].label == nil)
+            checkEqual(content.entries[3].label, "first")
+            content.appendUnique(.init(label: "Empty", text: ""))
+            checkTrue(content.contains(text: "")) // no helper-level trimming/filtering
+            content.appendIndexRange(label: "Rows", range: 0...2)
+            content.appendIndexRange(label: "Columns", range: 0...2)
+            checkFalse(content.contains(text: "0-2"))
+            content.appendUnique(.init(label: "Value", text: "0-2"))
+            content.appendIndexRange(label: "Rows", range: 0...2)
+            checkEqual(content.entries.suffix(4).map(\.label), ["Rows", "Columns", "Value", "Rows"])
+            checkTrue(content.contains(text: "0-2"))
+        }
         let leafTree = UIElementTree<UIElement>(items: [], focusedElement: nil)
         let childTree = UIElementTree(items: [UIElementTree.Item(element: cachedChildren, subtree: leafTree)], focusedElement: nil)
         var tree = UIElementTree(items: [UIElementTree.Item(element: target, subtree: childTree, availableSubset: subset),

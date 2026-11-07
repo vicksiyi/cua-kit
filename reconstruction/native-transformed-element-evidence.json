@@ -1,4 +1,25 @@
 {
+  "contentAccumulator": {
+    "calls": [
+      {
+        "instruction": "0x100627990",
+        "target": "0x100018c54",
+        "link": true
+      },
+      {
+        "instruction": "0x1006279d4",
+        "target": "0x1006606ec",
+        "link": true
+      },
+      {
+        "instruction": "0x100018cf4",
+        "target": "0x101152ff4",
+        "link": true
+      }
+    ],
+    "behavior": "ordered entries plus separate Swift String set; appendUnique preserves first label by text equality; no trimming/casefold; range helper bypasses set",
+    "limitation": "full content call ordering, formatting and production integration pending"
+  },
   "contentEntryConstructor": {
     "calls": [
       {

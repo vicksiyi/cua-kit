@@ -849,7 +849,17 @@ assert struct.unpack('<I', read(0x100628e6c, 4))[0] == 0x52800ca1 # offsetBy 101
 assert struct.unpack('<I', read(0x100628e84, 4))[0] == 0x52800148 # LF
 assert struct.unpack('<I', read(0x100628eb8, 4))[0] == 0x52800020 # successful advance -> true
 
-print(json.dumps(dict(contentEntryConstructor=dict(
+content_accumulator_calls = [branch(site, target) for site, target in [
+    (0x100627990, 0x100018c54), (0x1006279d4, 0x1006606ec),
+    (0x100018cf4, 0x101152ff4),
+]]
+# entry.text (+16), not entry.label (+0), supplies both membership and insertion.
+assert struct.unpack('<I', read(0x100627970, 4))[0] == 0xa9415ab7
+
+print(json.dumps(dict(contentAccumulator=dict(
+    calls=content_accumulator_calls,
+    behavior="ordered entries plus separate Swift String set; appendUnique preserves first label by text equality; no trimming/casefold; range helper bypasses set",
+    limitation="full content call ordering, formatting and production integration pending"), contentEntryConstructor=dict(
     calls=content_entry_calls,
     layout="optional label, original text, Bool",
     flag="true if index(startIndex, offsetBy:101, limitedBy:endIndex) succeeds, otherwise Foundation contains LF",
