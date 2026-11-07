@@ -3690,6 +3690,10 @@ func runProviderClickChecks() async throws {
     runViewBridgeFocusRetryChecks()
     runViewBridgeFocusFallbackChecks()
     runViewBridgeActivityCompositionChecks()
+    runFocusOwnerMissingElementFallbackChecks()
+    runFocusedElementOwnerSelectionChecks()
+    runFocusOwnerWindowSelectionChecks()
+    runRestrictedFocusOwnerSelectionChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4452,19 +4456,80 @@ private func runViewBridgeActivityCompositionChecks() {
     checkEqual(activity.snapshot().time, 0); checkTrue(activity.snapshot().pid == nil)
     activity.record(pid: 88, time: 10)
     var sleeps = 0
-    let result = resolveViewBridgePrimaryFocusPID(initialRead: { Optional<Int>.none }, retryRead: { nil },
+    let result = resolveViewBridgePrimaryFocusPIDUsingReads(initialRead: { Optional<Int>.none }, retryRead: { nil },
         resolveElement: { _ in unexpectedFailure() }, activity: activity, now: { 10.2 },
         sleepMicroseconds: { _ in
             sleeps += 1
             if sleeps == 6 { activity.record(pid: 77, time: 10.3) }
         })
     checkEqual(result, 77); checkEqual(sleeps, 12)
-    let stale = resolveViewBridgePrimaryFocusPID(initialRead: { Optional<Int>.none },
+    let stale = resolveViewBridgePrimaryFocusPIDUsingReads(initialRead: { Optional<Int>.none },
         retryRead: { unexpectedFailure() }, resolveElement: { checkTrue($0 == nil); return 66 },
         activity: activity, now: { 20 }, sleepMicroseconds: { _ in unexpectedFailure() })
     checkEqual(stale, 66)
-    let immediate = resolveViewBridgePrimaryFocusPID(initialRead: { 123 }, retryRead: { unexpectedFailure() },
+    let immediate = resolveViewBridgePrimaryFocusPIDUsingReads(initialRead: { 123 }, retryRead: { unexpectedFailure() },
         resolveElement: { checkEqual($0, 123); return 55 }, activity: activity,
         now: { unexpectedFailure() }, sleepMicroseconds: { _ in unexpectedFailure() })
     checkEqual(immediate, 55)
+}
+
+
+private func runFocusOwnerMissingElementFallbackChecks() {
+    checkEqual(focusOwnerPIDWithoutElement(skipApplicationOwner: true,
+        applicationOwnerPID: { unexpectedFailure() }, workspaceFrontmostPID: { 88 }), 88)
+    checkEqual(focusOwnerPIDWithoutElement(skipApplicationOwner: false,
+        applicationOwnerPID: { 77 }, workspaceFrontmostPID: { unexpectedFailure() }), 77)
+    checkEqual(focusOwnerPIDWithoutElement(skipApplicationOwner: false,
+        applicationOwnerPID: { nil }, workspaceFrontmostPID: { 66 }), 66)
+    checkEqual(focusOwnerPIDWithoutElement(skipApplicationOwner: true,
+        applicationOwnerPID: { unexpectedFailure() }, workspaceFrontmostPID: { nil }), 0)
+}
+
+
+private func runFocusedElementOwnerSelectionChecks() {
+    for policy: Int? in [nil, 0, 1, 2] {
+        var restricted = 0
+        let result = focusedElementOwnerPID(element: 123,
+            readPID: { checkEqual($0, 123); return 88 }, activationPolicy: { _ in policy },
+            resolveRestrictedPID: { checkEqual($0, 88); restricted += 1; return 77 },
+            missingElementFallback: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+        checkEqual(result, policy == nil || policy == 2 ? 77 : 88)
+        checkEqual(restricted, policy == nil || policy == 2 ? 1 : 0)
+    }
+    var reports = 0
+    checkEqual(focusedElementOwnerPID(element: 123,
+        readPID: { _ in throw SafeActivationRestoreError.activationFailed },
+        activationPolicy: { _ in unexpectedFailure() }, resolveRestrictedPID: { _ in unexpectedFailure() },
+        missingElementFallback: { 66 }, reportError: { _ in reports += 1 }), 66)
+    checkEqual(reports, 1)
+}
+
+
+private func runFocusOwnerWindowSelectionChecks() {
+    checkEqual(focusOwnerWindowPID(focusedWindow: { 1 }, mainWindow: { unexpectedFailure() },
+        readPID: { checkEqual($0, 1); return 88 }, reportError: { _ in unexpectedFailure() }), 88)
+    checkEqual(focusOwnerWindowPID(focusedWindow: { nil }, mainWindow: { 2 },
+        readPID: { checkEqual($0, 2); return 77 }, reportError: { _ in unexpectedFailure() }), 77)
+    var errors = 0
+    let failed = focusOwnerWindowPID(focusedWindow: { 1 }, mainWindow: { unexpectedFailure() },
+        readPID: { _ in throw SafeActivationRestoreError.activationFailed }, reportError: { _ in errors += 1 })
+    checkTrue(failed == nil); checkEqual(errors, 1)
+    let missing: Int32? = focusOwnerWindowPID(focusedWindow: { Optional<Int>.none }, mainWindow: { nil },
+        readPID: { _ in unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+    checkTrue(missing == nil)
+}
+
+
+private func runRestrictedFocusOwnerSelectionChecks() {
+    checkEqual(restrictedFocusOwnerPID(applicationPID: { 88 }, windowPID: { unexpectedFailure() },
+        activationPolicy: { _ in 0 }, fallback: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }), 88)
+    checkEqual(restrictedFocusOwnerPID(applicationPID: { 88 }, windowPID: { 77 },
+        activationPolicy: { $0 == 88 ? 2 : 1 }, fallback: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }), 77)
+    checkEqual(restrictedFocusOwnerPID(applicationPID: { 88 }, windowPID: { 77 },
+        activationPolicy: { _ in nil }, fallback: { 66 }, reportError: { _ in unexpectedFailure() }), 66)
+    var reports = 0
+    checkEqual(restrictedFocusOwnerPID(applicationPID: { throw SafeActivationRestoreError.activationFailed },
+        windowPID: { nil }, activationPolicy: { _ in unexpectedFailure() }, fallback: { 55 },
+        reportError: { _ in reports += 1 }), 55)
+    checkEqual(reports, 1)
 }

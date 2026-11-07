@@ -697,3 +697,27 @@ provider-click checks pass. UIElementFocusedValue reuses the existing exact AX
 element/cache/transaction pipeline; the second ViewBridge actual-PID query now
 has a concrete AX/AppKit overload. Primary retry-read adapter, common owner
 resolver result shape and production integration remain incomplete.
+
+
+## Common owner resolver element/window stages
+
+FocusedElementOwnerSelection preserves the element-stage distinction: an
+existing running app with policy !=2 resolves directly; missing app or policy2
+continues to restricted resolution. A throwing element PID read reports the
+error and enters missing-element fallback. RestrictedFocusOwnerSelection
+rechecks application AX PID, then window PID, requiring an existing non-policy2
+running app for either direct success. FocusOwnerWindowSelection prefers
+focusedWindow; only absence triggers mainWindow, never a failed PID read.
+
+RestrictedFocusOwnerSystem composes these stages with current-transaction
+UIElement construction, existing AX cache/element decoding and provider-aware
+PID reads. UIElementFocusedValue supplies concrete primary-query retry reads;
+each retry repeats the read instead of caching a prior element result.
+FocusOwnerMissingElementFallback preserves the skip flag: ViewBridge skips
+application-owner mapping, while other callers try it before workspace fallback
+(or zero). The application-owner mapping helper at 0x100751c50 is not yet
+restored, so the concrete common resolver still requires this final dependency.
+
+Swift build/provider-click checks pass for the new branch selections and
+existing focus/monitor composition. No live system input was posted; production
+Mouse.swift remains outside this complete-controller reconstruction.

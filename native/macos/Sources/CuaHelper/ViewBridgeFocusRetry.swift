@@ -56,7 +56,7 @@ func resolveAcquiredViewBridgeFocusPID<Element>(
 
 // Preserve separate native reads: gate on the last-action time before retries,
 // then read cached PID only if the retries exhaust. No early cache snapshot.
-func resolveViewBridgePrimaryFocusPID<Element>(
+func resolveViewBridgePrimaryFocusPIDUsingReads<Element>(
     initialRead: () -> Element?, retryRead: () -> Element?,
     resolveElement: (Element?) -> Int32,
     activity: SyntheticFocusActivity = .shared,

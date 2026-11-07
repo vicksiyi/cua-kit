@@ -22,3 +22,21 @@ extension UIElement {
             read: { axElement.value(for: attribute) }, reportError: reportError)
     }
 }
+
+extension UIElement {
+    // Shared focused-element read pipeline for normal and ViewBridge retry
+    // reads. Each retry repeats the read; it does not reuse an earlier result.
+    func resolveViewBridgePrimaryFocusPID(
+        transaction: UIElementTransactionCache?,
+        activity: SyntheticFocusActivity = .shared,
+        now: () -> Double,
+        sleepMicroseconds: (UInt32) -> Void,
+        resolveElement: (UIElement?) -> Int32,
+        reportError: (Error) -> Void
+    ) -> Int32 {
+        let read = { self.focusedUIElementValue(transaction: transaction, reportError: reportError) }
+        return resolveViewBridgePrimaryFocusPIDUsingReads(initialRead: read, retryRead: read,
+            resolveElement: resolveElement, activity: activity, now: now,
+            sleepMicroseconds: sleepMicroseconds)
+    }
+}
