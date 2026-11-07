@@ -557,6 +557,15 @@ assert read(0x1007240a8, 36).hex() == '8efaff97f70300aa180840f9980f00b41b0080d21
 assert read(0x101256ab0, 23) == b'Use Selection for Find\0'
 assert read(0x100724218, 52).hex() == 'c80280d20800faf2e00340f91f0008ebfc6341a960025cfac0050054e10313aac20280d20200faf2e3031caa040080526bbb2894'
 
+# VirtualCursor descriptor: one layout constraint; getter/setter/modify and
+# async method. Concrete witnesses route to ComputerUseCursor.isPressed.
+assert struct.unpack('<II', read(0x1012cd810 + 12, 8)) == (1, 4)
+assert [struct.unpack('<I', read(0x1012cd810 + 36 + n * 8, 4))[0] for n in range(4)] == [0x13, 0x14, 0x16, 0x31]
+assert [value & 0xffffffff for value in struct.unpack('<4Q', read(0x10146f030 + 8, 32))] == [0x93f18, 0x93f60, 0x93fac, 0x115f120]
+# The no-count convenience invokes witness slot +32 with count=1.
+assert struct.unpack('<I', read(0x1007c1d04, 4))[0] == 0xf94012a8
+assert struct.unpack('<I', read(0x1007c1d30, 4))[0] == 0x52800020
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

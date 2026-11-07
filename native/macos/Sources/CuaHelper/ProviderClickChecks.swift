@@ -3787,6 +3787,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    try await runVirtualCursorContractChecks()
     runUseSelectionForFindItemChecks()
     runCopyMenuItemChecks()
     try runAppControllerWindowObservationLifetimeChecks()
@@ -7794,4 +7795,27 @@ private func runAppControllerObservationDeliveryChecks() throws {
     target!.deactivateAccessibility()
     target = nil
     precondition(lifetime == nil)
+}
+
+
+@MainActor private func runVirtualCursorContractChecks() async throws {
+    enum Failed: Error { case press }
+    final class Cursor: VirtualCursor {
+        var isPressed = false
+        var counts: [Int] = []
+        var fails = false
+        func press(count: Int) async throws {
+            counts.append(count)
+            if fails { throw Failed.press }
+        }
+    }
+    let concrete = Cursor()
+    let cursor: any VirtualCursor = concrete
+    cursor.isPressed = true
+    try await cursor.press()
+    precondition(concrete.counts == [1] && cursor.isPressed)
+    concrete.fails = true
+    do { try await cursor.press(); preconditionFailure() }
+    catch Failed.press {}
+    precondition(concrete.counts == [1, 1] && cursor.isPressed)
 }

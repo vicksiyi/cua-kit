@@ -3147,3 +3147,31 @@ accessors, not their higher-level controller action integration. That integratio
 must follow source evidence rather than adding an arbitrary keyboard or menu
 fallback. Focused-menu-item discovery and true Sky/MCP/DeepSeek app operations
 remain incomplete; the new lookup does not establish that clicking is repaired.
+
+
+## Native virtual cursor contract audit (2026-11-08)
+
+Production mouseInput still passes cursorPress:nil. This is an explicit remaining
+parity gap, separate from whether AX or CG input actually operates the app.
+The pinned native VirtualCursor descriptor 0x1012cd810 has a class layout constraint
+and four requirements: Bool isPressed getter/setter/modify and asynchronous
+throwing press(count:). ComputerUseCursor's table 0x10146f030 maps these to
+0x100093f18/0x100093f60/0x100093fac and async witness 0x10115f120; the modify
+witness calls ComputerUseCursor.isPressed.modify at 0x100090be4.
+
+The native Swift protocol and no-count convenience are now restored.
+Convenience 0x1007c1cc4 loads witness slot +32 and delegates exactly once with
+count=1. It obtains MainActor metadata/shared (stubs 0x101151050/0x101151044,
+imports _$sScMMa / _$sScM6sharedScMvgZ) and resumes on that executor after await.
+It adds no input events, timing, state reset, retry or error suppression.
+Static audit pins descriptor requirements, witness entries and count dispatch.
+Build and provider checks pass, including existential state access and thrown
+press propagation without retry/state mutation by the convenience method.
+
+This is not a visible cursor implementation or production integration.
+Original ComputerUseCursor owns an AppKit Window, Style, motion configuration,
+activity/fade state and async move/press methods. Its resource bundle contains
+Assets.car rather than loose cursor PNGs; exact rendering asset choice still
+requires recovery. No synthetic overlay or unrelated image was substituted.
+Concrete drawing/animation/attachment, lifetime and click integration remain
+outstanding. Desktop remains locked; no real input was attempted this turn.
