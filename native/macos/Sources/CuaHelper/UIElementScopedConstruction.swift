@@ -2,8 +2,8 @@ import ApplicationServices
 
 extension UIElement {
     // 0x10072187c reads the complete TaskLocal owner once, extracts its cache,
-    // and then calls the cache constructor. Keep provider-dependent reads
-    // explicit until their original dispatch is restored.
+    // and then calls the cache constructor. The concrete no-closure overload
+    // supplies the restored provider-aware construction path.
     init(
         element: AXUIElement,
         constructCache: (AXUIElement, UIElementTransactionCache?) -> UIElementCache

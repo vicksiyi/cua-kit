@@ -3663,3 +3663,33 @@ unchanged PID forwarding, and zero initialization/error handling for window ID.
 Focused test and Swift build pass. These are component tests; no SPI/private
 library was loaded, no actual AX query was executed and production cache/collector
 integration remains pending.
+
+### Concrete UIElement initializer through provider-aware caching
+
+UIElementProviderConstruction.swift now connects the concrete `init(element:)`
+to the previously restored TaskLocal snapshot and cache construction algorithm.
+Its cache reader uses the mock-first supported-attributes, bundle-identity and
+multiple-attribute front doors. No synthetic empty cache, fixture-only provider
+or replacement transaction owner is inserted. Existing explicit system-only
+initializers remain separate, and the production collector is not switched to
+the full protocol before its remaining requirements are implemented.
+
+Public PID/bundle adapters were separated from actualPID/window SPI adapters so
+integration fixtures can compile and run the real constructor and public fallback
+code without linking the private symbol loader. Production functions retain the
+same implementations; AXProviderIdentitySPI.swift contains the relocated two SPI
+adapters. The fixture shares one complete AX mock with the dispatch tests.
+
+The transaction fixture now invokes actual UIElement(element:) using a provider
+for a synthetic AX reference. It proves cold construction consumes supported
+attributes and batch values, a transaction shares the fallback cache even after
+the provider's output changes, scope exit resumes cold reads, a prefetch hit
+performs no provider lookup, and failed batch reads do not poison the fallback
+cache (both subsequent constructions retry). All paths are backed by the real
+cache/transaction/provider code, not duplicated test algorithms.
+
+Both provider-dispatch and transaction integration tests pass, along with the
+Swift package build. No real AX request, SPI load, vendor execution or model call
+is needed for those fixtures. Remaining integration includes concrete protocol
+conformance, provider-aware operation and read-thread identity routing, full
+subtree construction at production callsites and real application acceptance.

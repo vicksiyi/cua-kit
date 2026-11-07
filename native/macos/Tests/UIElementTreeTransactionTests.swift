@@ -128,7 +128,49 @@ import os
         precondition(fallbackUIElementCache(element: ax, in: enabled.cache.fallbackElements) == nil)
         precondition(UIElementTreeTransaction.prefetchEnabled)
     }
+    static func checkProviderInitializer() {
+        let ax = AXUIElementCreateApplication(12010)
+        let mock = AXMockProviderFixture.Mock()
+        let provider = AXMockProviderFixture.Provider(ax, mock)
+        precondition(AXMockProviderStorage.current == nil)
+        AXMockProviderStorage.current = provider
+        defer { AXMockProviderStorage.current = nil }
+        let role = UIElementAttribute("AXRole")
+        mock.supportedAttributes = [role]
+        mock.batchOutput = [role: AXPartialValue(value: AXEncodedValue(value: "AXButton" as NSString),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)]
+        let cold = UIElement(element: ax)
+        precondition(cold.role == .button && mock.supportReads == 1 && mock.batchReads == 1)
+        let owner = transaction(12011)
+        owner.perform { _ in
+            let first = UIElement(element: ax)
+            precondition(first.role == .button && mock.supportReads == 2 && mock.batchReads == 2)
+            mock.batchOutput = [:]
+            let second = UIElement(element: ax)
+            precondition(second.role == .button && mock.supportReads == 2 && mock.batchReads == 2)
+        }
+        let after = UIElement(element: ax)
+        precondition(after.role == .unknown && mock.supportReads == 3 && mock.batchReads == 3)
+        let prefetched = UIElementTreeTransaction(element: Element(element: ax),
+            cache: UIElementTransactionCache(attributeTable: [ax: cold.cache.attributes],
+                requestedAttributes: [role], fallbackElements: UIElementFallbackCache(initialState: [:])),
+            roleFrequencyTable: FrequencyTable<UIElementRole>())
+        let beforeLookups = provider.lookups
+        prefetched.perform { _ in
+            let item = UIElement(element: ax)
+            precondition(item.role == .button && item.cache.transactionAttributes == [role])
+        }
+        precondition(provider.lookups == beforeLookups) // Prefetch hit avoids provider entirely.
+        mock.shouldThrow = true
+        let retries = transaction(12012)
+        retries.perform { _ in
+            _ = UIElement(element: ax); _ = UIElement(element: ax)
+        }
+        precondition(mock.supportReads == 5 && mock.batchReads == 5)
+        precondition(fallbackUIElementCache(element: ax, in: retries.cache.fallbackElements) == nil)
+    }
     static func main() throws {
+        checkProviderInitializer()
         checkSubtreeConstruction()
         checkScopedConstruction()
         let outer = transaction(11000), inner = transaction(11001)
