@@ -80,6 +80,18 @@
     {
       "site": "0x100745a8c",
       "target": "0x100754280"
+    },
+    {
+      "site": "0x100745358",
+      "target": "0x100257e24"
+    },
+    {
+      "site": "0x100745384",
+      "target": "0x100257e24"
+    },
+    {
+      "site": "0x1007453c0",
+      "target": "0x100258054"
     }
   ],
   "defaultClickMilliseconds": 50,

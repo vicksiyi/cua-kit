@@ -242,3 +242,30 @@ application branch creates two EventTap instances and starts monitoring at
 0x100742b40, 0x100742c34 and 0x100742ed4. Exact callback filtering and async
 restoration are not yet fully decoded. The simple state composition is therefore
 not a substitute for this scope and remains unconnected to production clicks.
+
+
+## Safe-enforcement event callbacks
+
+Decoded the two callback bodies via 0x10074a260 -> 0x100744fe4/0x100745044
+and 0x10074a28c -> 0x100745330. The former timestamps every observed event,
+sets temporary flags 0x0101 for type 20 or AppKit subtype 1, sets byte 0 for
+type 19 or AppKit subtype 2, and consumes those events. AppKit subtypes 22/23
+are consumed without changing flags. Other events pass through. These temporary
+flags are not the enforcer's application belief state. Raw subtype field is 83;
+conversion to Int16 is exact, so overflowing values must not alias subtype 1/2.
+
+The second callback reads source PID (41); own-helper events pass through without
+reading target PID. For other sources it reads target PID (40). Events addressed
+to the synthetic target are posted to the saved foreground application's PID
+and consumed, with the original timestamp. Other targets pass through. Source
+PID conversions are checked Int32 conversions; local implementation retains
+that behavior. Neither callback is a global input capture feature: they belong
+to the scoped safe-enforcement operation.
+
+Restored in SafeActivationEventCallbacks.swift with real CGEvent adapters and
+injected posting for tests. Build/provider checks validate event identity,
+source/target routing, lazy destination reads, subtype boundaries, timestamp
+preservation and accumulated flags without posting OS input. Static audit pins
+constant initializers and the native getter/post call sites. Installation and
+teardown of the EventTap instances, synchronization and wait/restoration loop
+remain outstanding; production clicks do not yet use these callbacks.

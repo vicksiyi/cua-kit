@@ -40,7 +40,9 @@ calls = [(0x100753970, 0x1002581ac), (0x10075397c, 0x100258054),
          (0x100730724, 0x10026cc8c),
          (0x100741398, 0x100754280), (0x100741430, 0x1007414c8),
          (0x1007416a8, 0x100754280), (0x1007417d8, 0x100754280),
-         (0x10074ad3c, 0x100746338), (0x100745a8c, 0x100754280)]
+         (0x10074ad3c, 0x100746338), (0x100745a8c, 0x100754280),
+         (0x100745358, 0x100257e24), (0x100745384, 0x100257e24),
+         (0x1007453c0, 0x100258054)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -54,6 +56,11 @@ for site, opcode in [(0x10072f568, 0x528002a9), (0x10072f6b8, 0x52880009), (0x10
 assert read(0x100746338, 12).hex() == '2800805208040039c0035fd6'
 assert read(0x100746344, 12).hex() == '2820805208000079c0035fd6'
 assert read(0x100746350, 8).hex() == '1f000079c0035fd6'
+# Safe-enforce callbacks: raw event types, subtype field and appearance values.
+for site, opcode in [(0x100731114, 0x528001a9), (0x100731124, 0x52800269),
+                     (0x100731134, 0x52800289), (0x100731190, 0x52800a69),
+                     (0x10072f890, 0x528002c9), (0x10072f908, 0x528002e9)]:
+    assert struct.unpack('<I', read(site, 4))[0] == opcode, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000
 # Duration.< comparison is followed by selection of max(requested, default).

@@ -3672,6 +3672,7 @@ func runProviderClickChecks() async throws {
     try runSyntheticFocusDeactivationChecks()
     try runSyntheticFocusEnforcementChecks()
     try runSyntheticWindowActivationChecks()
+    runSafeActivationCallbackChecks()
 }
 
 private func runSyntheticFocusDeactivationChecks() throws {
@@ -3763,4 +3764,45 @@ private func runSyntheticWindowActivationChecks() throws {
         }
     }
     checkEqual(try syntheticWindowActivationEvent(nil).cgEvents.count, 1)
+}
+
+private func runSafeActivationCallbackChecks() {
+    var observed = SafeActivationObservedEvents()
+    checkFalse(observed.observe(type: 19, subtypeValue: nil, time: 1))
+    checkEqual(observed.transitionFlags, 1)
+    checkFalse(observed.observe(type: 13, subtypeValue: 1, time: 2))
+    checkEqual(observed.transitionFlags, 0x0101)
+    checkFalse(observed.observe(type: 13, subtypeValue: 2, time: 3))
+    checkEqual(observed.transitionFlags, 0x0101)
+    for subtype: Int64 in [22, 23] {
+        checkFalse(observed.observe(type: 13, subtypeValue: subtype, time: 4))
+    }
+    for subtype: Int64 in [0, 24, 65537, -65535, Int64.max] {
+        checkTrue(observed.observe(type: 13, subtypeValue: subtype, time: 5))
+    }
+    checkTrue(observed.observe(type: 10, subtypeValue: 1, time: 6))
+    checkEqual(observed.lastEventTime, 6)
+    let notification = try! SynthesizedEvent.notifyAppDeactivated().cgEvents[0]
+    notification.setIntegerValueField(CGEventField(rawValue: 83)!, value: 22)
+    checkTrue(observed.filter(type: CGEventType(rawValue: 13)!, event: notification, time: 7) == nil)
+    checkEqual(observed.lastEventTime, 7)
+    for source: Int64 in [100, 101] {
+        for target: Int64 in [200, 201] {
+            let event = CGEvent(source: nil)!
+            event.timestamp = 123
+            event.setIntegerValueField(.eventSourceUnixProcessID, value: source)
+            event.setIntegerValueField(.eventTargetUnixProcessID, value: target)
+            var posts = 0, reads = 0
+            let result = routeInputDuringSafeActivation(event, helperPID: 100, targetPID: 200,
+                previousApplicationPID: { reads += 1; return 300 },
+                post: { posted, pid in
+                    posts += 1; checkTrue(posted === event)
+                    checkEqual(pid, 300); checkEqual(posted.timestamp, 123)
+                })
+            let redirected = source != 100 && target == 200
+            checkEqual(result == nil, redirected)
+            checkEqual(posts, redirected ? 1 : 0)
+            checkEqual(reads, posts)
+        }
+    }
 }
