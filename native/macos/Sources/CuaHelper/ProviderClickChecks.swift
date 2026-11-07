@@ -3716,6 +3716,7 @@ func runProviderClickChecks() async throws {
     runSystemFocusNotificationMonitorChecks()
     try await runViewBridgeRefreshTaskChecks()
     await runFocusStealCallbackResourceLifetimeChecks()
+    runFocusStealRegistrationResourceChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5215,4 +5216,33 @@ private func runFocusStealCallbackResourceLifetimeChecks() async {
         checkTrue(fixture.observed == nil)
         checkTrue(fixture.store.snapshot.isEmpty)
     }
+}
+
+private func runFocusStealRegistrationResourceChecks() {
+    var creates = 0, invalidations = 0, emptyTransitions = 0
+    let driver = EventTap.Driver(create: { location, placement, options, mask, _, _ in
+        guard case .process(88) = location else { unexpectedFailure() }
+        checkEqual(placement.rawValue, 1); checkEqual(options.rawValue, 0)
+        checkEqual(mask, FocusStealKeyboardMonitor.mask); creates += 1
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
+    let state = FocusStealKeyboardRoutingState(initialOwner: .ordinary(pid: 77))
+    let store = FocusStealRegistrationStore<FocusStealRegistration>(pid: { $0.pid }, becameEmpty: { emptyTransitions += 1 })
+    var first: FocusStealRegistration? = FocusStealRegistration(pid: 88, helperPID: 99, state: state,
+        targetLostFocusHandler: nil, targetGainedFocusHandler: nil, driver: driver)
+    checkTrue(first!.mouseEventTaps == nil); checkFalse(first!.isMenuDismissalSuppressionEnabled)
+    weak var firstMonitor = first!.keyboardMonitor
+    var payload: FocusStealRegistrationCallbacks? = first!.callbackSnapshot
+    store.append(first!); first = nil
+    store.append(FocusStealRegistration(pid: 88, helperPID: 99, state: state,
+        targetLostFocusHandler: nil, targetGainedFocusHandler: nil, driver: driver))
+    checkEqual(creates, 2)
+    checkFalse(store.removeFirst(pid: 55)); checkEqual(invalidations, 0)
+    checkTrue(store.removeFirst(pid: 88))
+    checkTrue(firstMonitor != nil); checkEqual(invalidations, 0)
+    checkTrue(store.removeFirst(pid: 88)); checkEqual(emptyTransitions, 1)
+    checkEqual(invalidations, 1)
+    checkTrue(payload != nil); payload = nil
+    checkTrue(firstMonitor == nil); checkEqual(invalidations, 2)
 }

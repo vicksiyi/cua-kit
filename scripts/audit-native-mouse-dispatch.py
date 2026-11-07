@@ -69,7 +69,8 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x10074c77c, 0x100257e24), (0x10074c7cc, 0x100257e24),
          (0x10074c994, 0x100257e24),
          (0x10074eac0, 0x1006ffa48), (0x1006ffc28, 0x1011554e4),
-         (0x1006ffc84, 0x1011554e4)]
+         (0x1006ffc84, 0x1011554e4),
+         (0x1007504d8, 0x10074b1cc)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -214,6 +215,11 @@ for site, expected_bytes in [(0x10074d82c, 'a0077bad'), (0x10074d830, '000401ad'
                              (0x10074d838, '0010803d'), (0x10074d844, '0090843c'),
                              (0x10074db14, 'a0077bad'), (0x10074db18, '000401ad'),
                              (0x10074db20, '0010803d'), (0x10074db2c, '0090843c')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
+# Registration record: PID, two handlers, keyboard tap, nil mouse taps, false flag.
+for site, expected_bytes in [(0x1007504e0, 'f51300b9'), (0x1007504e4, 'f8df01a9'),
+                             (0x1007504e8, 'f6cf02a9'), (0x1007504ec, 'e0ff03a9'),
+                             (0x1007504f0, 'ff230139')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000

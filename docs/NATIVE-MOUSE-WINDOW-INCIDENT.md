@@ -1267,3 +1267,24 @@ no runtime workaround was added. No real OS tap/input was used in checks.
 The full registration record/resource constructor, singleton lifecycle and
 production controller still must supply those leases and compose the restored
 monitors/state. Live Multica acceptance remains outstanding.
+
+
+## Concrete registration record resources
+
+Restored DisallowedThiefProcess payload construction at
+0x1007504d4..0x1007504f0 as FocusStealRegistration: PID, optional lost/gained
+handlers, one per-process keyboard monitor, optional mouse-event taps initially
+nil, and menu-dismissal suppression initially false. Keyboard construction
+reuses FocusStealKeyboardMonitor. Callback snapshots lease this record's
+keyboard and any current mouse taps, preserving resources across later removal
+or replacement of the live record. Menu resource mutations remain a future
+enclosing-list-lock responsibility.
+
+Integration checks construct two same-PID registrations with independent local
+Mach ports, remove the first match, retain its tap through a callback snapshot,
+remove the remaining record, then release the snapshot and verify both taps
+are invalidated exactly once. Missing removal and last-empty transition are
+also checked. Swift build/provider-click checks and static audit pass without
+real event taps/input. Full preventer owner/singleton lifecycle, menu behavior
+and production controller integration remain incomplete. Multica acceptance
+has not been established.
