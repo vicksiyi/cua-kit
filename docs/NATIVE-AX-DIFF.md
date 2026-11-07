@@ -4303,3 +4303,39 @@ Complete helper build/self-test pass using injected providers only. Neither the
 generic UIElementTree owner nor its transformation/render collector is complete;
 these restored readers/formatting primitives are not yet connected to the legacy
 flat observation renderer, and no real UI acceptance is claimed.
+
+
+## Generic tree storage, snapshot iterator and descendant predicate cache
+
+UIElementTreeStorage.swift restores the five fields reflected at 0x1012c9b14:
+items, focusedElement, descendantProperties, leafProperties and cachedTable.
+Item's descriptor 0x1012c9b50 has element/subtree/availableSubset; its children
+getter returns subtree.items and its subset description now uses the recovered
+formatter. TreeTable's descriptor 0x1012c9c80 has values/elements/paths; field
+manglings SDyxq_G and SDyq_xG establish the forward/reverse dictionaries. Only
+its stored value is introduced here; its original indexing constructors and
+lookup algorithms remain outstanding.
+
+Tree initialization follows 0x10064fc24: supplied items/focus, empty predicate
+caches and nil table. The items setter and normal modify completion call
+0x10064fac4, clearing both dictionaries with keepingCapacity:true and setting
+the table nil. hasDescendant(where:) at 0x100650d50 consults its cache first,
+checks each item before recursively checking its subtree, short-circuits and
+stores the result. Child cache mutation writes back through items, preserving
+the same parent invalidation behavior.
+
+Iterator is a class (descriptor 0x1012c9b8c), with elements/currentIndex fields.
+Its initializer 0x100652774 enumerates the tree through 0x1006505b8, using the
+append callback 0x100651df4. The traversal invokes the callback before subtree
+recursion. next() at 0x100651ea4 uses the current index, checked increment and
+stable nil after exhaustion. The restored implementation eagerly snapshots
+pre-order elements and preserves duplicates; it is not a lazy live AX walk.
+
+Full-helper build/self-test pass. Checks cover nested item/subset storage,
+pre-order iteration with duplicate elements, shared iterator cursor, independent
+iterators, snapshots surviving tree mutation, stable exhaustion, and predicate
+cache invalidation on append and nested subtree mutation. All elements/providers
+are synthetic. Transformations, rendering, leaf-only predicates, focus selection,
+identity/path lookup and original collector integration still require recovery.
+This is a functional generic tree foundation, not a complete tree API or real UI
+acceptance claim.
