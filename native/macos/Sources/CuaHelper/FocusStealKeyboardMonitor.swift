@@ -35,6 +35,7 @@ enum FocusStealRouteObservation: Equatable {
 struct FocusStealOwnerChange {
     let tasks: [Task<Bool, Never>]
     let routeObservation: FocusStealRouteObservation
+    let firstInterceptedFocusReleaseSucceeded: Bool?
 }
 
 final class FocusStealKeyboardRoutingState {
@@ -69,6 +70,7 @@ final class FocusStealKeyboardRoutingState {
     @discardableResult
     func recordOwnerAndSchedule(_ owner: KeyFocusOwnerIdentity, physicalFocusPID: Int32,
         takeRegistrationSnapshot: () -> [FocusStealRegistrationCallbacks],
+        releaseFirstInterceptedFocus: () -> Bool,
         reportMissingHandler: @escaping @Sendable (Int32, FocusStealRegistrationTransition) -> Void = { _, _ in }
     ) -> FocusStealOwnerChange {
         lock.lock(); defer { lock.unlock() }
@@ -88,7 +90,11 @@ final class FocusStealKeyboardRoutingState {
         }
         // Source selects callbacks before updating interception progress.
         let observation = observePhysicalFocusPIDLocked(physicalFocusPID)
-        return FocusStealOwnerChange(tasks: tasks, routeObservation: observation)
+        // 0x10074e2b0..0x10074e2c8: only tag 0 -> 1 reaches this
+        // direct release path. Other observations need separate handling.
+        let released = observation == .firstInterceptedFocus ? releaseFirstInterceptedFocus() : nil
+        return FocusStealOwnerChange(tasks: tasks, routeObservation: observation,
+            firstInterceptedFocusReleaseSucceeded: released)
     }
     // 0x10074dd78..0x10074e0e4 and 0x10074e6f8: retain a route for
     // either physical endpoint. Any third PID clears route and both flags.

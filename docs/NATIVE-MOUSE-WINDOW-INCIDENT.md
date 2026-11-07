@@ -1037,3 +1037,22 @@ call and timestamp preservation. Build/provider-click checks and static audit
 pass. Private focus-release behavior on real notification events, its full
 conditional selection, remaining notification resources and production click
 controller integration still need verification.
+
+
+## Direct release selection in changed-focus processing
+
+Restored the direct release action after route progress, gated at
+0x10074e2b0..0x10074e2c8. Only the first intercepted physical focus observation
+(tag 0 -> 1) reaches this direct call. Repeated intercepted focus, recipient
+focus, absent route and cleared route do not use this path. The preceding
+ViewBridge-specific alternative is separate; first/repeated intercepted-focus
+flags bypass that alternative before the direct-release gate.
+
+The state operation takes an explicit release dependency, invokes it under the
+same state lock after progress advances, and preserves its success/failure as
+an optional result. Failure does not undo progress or cause automatic retries
+on repeated notifications. Tests cover success and failure followed by repeated
+notifications with no second release. Build/provider-click checks and static
+audit pass with injected release operations only. ViewBridge compensation,
+result-dependent previous identity metadata, system notification resources and
+production click integration remain unfinished.
