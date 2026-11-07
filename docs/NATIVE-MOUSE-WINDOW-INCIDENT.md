@@ -1288,3 +1288,46 @@ also checked. Swift build/provider-click checks and static audit pass without
 real event taps/input. Full preventer owner/singleton lifecycle, menu behavior
 and production controller integration remain incomplete. Multica acceptance
 has not been established.
+
+
+## Per-instance focus prevention owner and cancellation boundary
+
+SystemFocusStealPreventer now composes registration records, shared routing
+state, the system notification monitor and the optional ViewBridge keyboard
+monitor. Source 0x10074ba24 skips the latter when no ViewBridge PID exists;
+0x10074ca50 resolves changed-owner identity before acquiring the state lock.
+The system dependency resolves the current UIElement transaction at each call,
+rather than retaining a constructor-time transaction cache.
+
+Swift build and provider-click self-tests pass. Injected event callbacks cover
+focus taken, unchanged-event keyboard forwarding, one-shot focus returned,
+changed-owner release, new-front cleanup, duplicate registration removal and
+resource teardown. No real event taps, posting or application activation were
+performed by these checks.
+
+User cancellation followed repeated ineffective operations and was intentional.
+It is not evidence that cancellation caused the preceding no-op clicks. Respect
+cancellation; do not retry through it. The static singleton/menu lifecycle and
+production input controller integration remain outstanding, and successful
+Multica interaction has not yet been demonstrated.
+
+
+## Preventer singleton ownership reconstruction
+
+FocusStealPreventerLifecycle restores the singleton ownership branch at
+0x10075044c: lazy construction, reuse on subsequent registrations and duplicate
+registration preservation. Stop at 0x10074af90 retains its selected instance
+through list unlocking; last removal clears the singleton inside the list
+lock at 0x10074b4ac. The implementation uses withExtendedLifetime to preserve
+this destruction boundary. A missing PID does not discard the owner.
+
+Focus queries at 0x100750594 use the existing locked state when available,
+and the registry/rich-resolution/workspace initialization path otherwise.
+No singleton lock is invented beyond the source's registration/state locks.
+The lifecycle exposes an injectable factory; production controller wiring and
+menu suppression remain outstanding. Tests use only local Mach ports.
+
+Validation: Swift build and provider-click composition checks passed with
+shared-owner reuse, duplicate removal, last-owner destruction, lazy recreation
+and cached-versus-fresh focus query assertions. Static callsite audit passed.
+These checks do not establish successful production application clicking.

@@ -1,4 +1,5 @@
 import Foundation
+import CoreGraphics
 
 // DisallowedThiefProcess payload constructed at 0x1007504d4..0x1007504f0.
 // Mutations of menu resources belong to the enclosing registration-list lock.
@@ -14,11 +15,12 @@ struct FocusStealRegistration {
          state: FocusStealKeyboardRoutingState,
          targetLostFocusHandler: (@Sendable () -> Void)?,
          targetGainedFocusHandler: (@Sendable () -> Void)?,
-         driver: EventTap.Driver = .system) {
+         driver: EventTap.Driver = .system,
+         postKeyboard: @escaping (CGEvent, Int32) -> Void = { $0.postToPid($1) }) {
         self.pid = pid
         self.targetLostFocusHandler = targetLostFocusHandler
         self.targetGainedFocusHandler = targetGainedFocusHandler
-        keyboardMonitor = FocusStealKeyboardMonitor(pid: pid, helperPID: helperPID, state: state, driver: driver)
+        keyboardMonitor = FocusStealKeyboardMonitor(pid: pid, helperPID: helperPID, state: state, post: postKeyboard, driver: driver)
         mouseEventTaps = nil
         isMenuDismissalSuppressionEnabled = false
     }

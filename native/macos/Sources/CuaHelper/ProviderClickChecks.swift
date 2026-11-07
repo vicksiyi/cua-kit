@@ -3717,6 +3717,7 @@ func runProviderClickChecks() async throws {
     try await runViewBridgeRefreshTaskChecks()
     await runFocusStealCallbackResourceLifetimeChecks()
     runFocusStealRegistrationResourceChecks()
+    runSystemFocusStealPreventerChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5245,4 +5246,117 @@ private func runFocusStealRegistrationResourceChecks() {
     checkEqual(invalidations, 1)
     checkTrue(payload != nil); payload = nil
     checkTrue(firstMonitor == nil); checkEqual(invalidations, 2)
+}
+
+private func runSystemFocusStealPreventerChecks() {
+    var transactionReads = 0
+    let systemDependencies = SystemFocusStealPreventer.Dependencies.system(transaction: {
+        transactionReads += 1; return nil
+    }, reportAXError: { _ in unexpectedFailure() }, reportReleaseFailure: { _ in unexpectedFailure() })
+    checkEqual(transactionReads, 0)
+    // Guaranteed nonexistent PID: exercises only read-only owner discovery,
+    // with no AX element construction, activation, release or event posting.
+    checkEqual(systemDependencies.resolveOwner(Int32.max).ownerPID, Int32.max)
+    checkEqual(systemDependencies.resolveOwner(Int32.max).ownerPID, Int32.max)
+    checkEqual(transactionReads, 2)
+    var taps: [(callback: CGEventTapCallBack, info: UnsafeMutableRawPointer)] = []
+    var locations: [String] = [], trace: [String] = []
+    var invalidations = 0, emptyTransitions = 0
+    let driver = EventTap.Driver(create: { location, placement, options, mask, callback, info in
+        checkEqual(placement.rawValue, 1); checkEqual(options.rawValue, 0)
+        switch location {
+        case .session(let kind):
+            checkEqual(kind.rawValue, 2); checkEqual(mask, CGEventMask(1) << 21)
+            locations.append("session")
+        case .process(let pid):
+            checkTrue(pid == 99 || pid == 88); checkEqual(mask, FocusStealKeyboardMonitor.mask)
+            locations.append("process-\(pid)")
+        }
+        trace.append("tap-\(locations.last!)")
+        taps.append((callback, info))
+        var context = CFMachPortContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+        return CFMachPortCreate(nil, { _, _, _, _ in }, &context, nil)
+    }, enable: { _, _ in }, invalidate: { CFMachPortInvalidate($0); invalidations += 1 })
+    var destination: Int32 = 77, subtype: UInt16 = 0x4000
+    var releases = 0, posts: [Int32] = []
+    let keyboard = CGEvent(source: nil)!
+    keyboard.setIntegerValueField(.eventSourceUnixProcessID, value: 44)
+    keyboard.setIntegerValueField(.eventTargetUnixProcessID, value: 88)
+    keyboard.timestamp = 123
+    let dependencies = SystemFocusStealPreventer.Dependencies(readInteger: { _, field in
+        switch field.rawValue {
+        case 40: return Int64(destination)
+        case 64: return Int64(subtype)
+        case 73: return 88
+        default: unexpectedFailure()
+        }
+    }, resolveOwner: { trace.append("resolve-\($0)"); return .ordinary(pid: $0) },
+        releaseFocus: { _ in releases += 1; return true },
+        compensateViewBridge: { _, _, _ in unexpectedFailure() },
+        postKeyboard: { sent, pid in checkTrue(sent === keyboard); checkEqual(sent.timestamp, 123); posts.append(pid) })
+    var owner: SystemFocusStealPreventer? = SystemFocusStealPreventer(
+        initialOwner: { trace.append("owner"); return .ordinary(pid: 77) },
+        viewBridgePID: { trace.append("bridge"); return 99 }, helperPID: 55,
+        dependencies: dependencies, tapDriver: driver, becameEmpty: { emptyTransitions += 1 })
+    weak var weakOwner = owner
+    checkEqual(trace, ["owner", "bridge", "tap-session", "tap-process-99"])
+    owner!.register(pid: 88, lost: nil, gained: nil)
+    owner!.register(pid: 88, lost: nil, gained: nil)
+    checkEqual(locations, ["session", "process-99", "process-88", "process-88"])
+    let notification = CGEvent(source: nil)!
+    func notify() -> CGEvent? {
+        taps[0].callback(OpaquePointer(bitPattern: 1)!, CGEventType(rawValue: 21)!, notification, taps[0].info)?.takeUnretainedValue()
+    }
+    func key() -> CGEvent? {
+        taps[2].callback(OpaquePointer(bitPattern: 1)!, .keyDown, keyboard, taps[2].info)?.takeUnretainedValue()
+    }
+    checkTrue(notify() == nil)
+    checkTrue(key() == nil); checkEqual(posts, [77])
+    subtype = 0x8000
+    checkTrue(notify() == nil); checkTrue(notify() === notification)
+    subtype = 0xf102; destination = 99
+    checkTrue(notify() === notification); checkEqual(releases, 1)
+    checkEqual(owner!.ownershipSnapshot.current.ownerPID, 88)
+    checkEqual(owner!.ownershipSnapshot.previous?.ownerPID, 77)
+    checkTrue(notify() === notification); checkEqual(releases, 1)
+    subtype = 2
+    checkTrue(notify() === notification)
+    checkTrue(key() === keyboard); checkEqual(posts, [77])
+    checkFalse(owner!.unregister(pid: 55))
+    checkTrue(owner!.unregister(pid: 88)); checkEqual(invalidations, 1)
+    checkTrue(owner!.isRegistered(pid: 88))
+    checkTrue(owner!.unregister(pid: 88)); checkEqual(invalidations, 2)
+    checkEqual(emptyTransitions, 1)
+    owner = nil; checkTrue(weakOwner == nil); checkEqual(invalidations, 4)
+    var noBridge: SystemFocusStealPreventer? = SystemFocusStealPreventer(
+        initialOwner: { .ordinary(pid: 77) }, viewBridgePID: { nil },
+        dependencies: dependencies, tapDriver: driver, becameEmpty: { unexpectedFailure() })
+    checkTrue(noBridge != nil); checkEqual(locations.count, 5); checkEqual(locations.last, "session")
+    noBridge = nil; checkEqual(invalidations, 5)
+    var constructions = 0, initialQueries = 0
+    weak var lifecycleOwner: SystemFocusStealPreventer?
+    let lifecycle = FocusStealPreventerLifecycle(makeInstance: { empty in
+        constructions += 1
+        let created = SystemFocusStealPreventer(initialOwner: { .ordinary(pid: 77) },
+            viewBridgePID: { nil }, dependencies: dependencies, tapDriver: driver, becameEmpty: empty)
+        lifecycleOwner = created
+        return created
+    }, resolveInitialOwner: { initialQueries += 1; return .ordinary(pid: 66) })
+    lifecycle.stopPreventingFocusStealing(for: 88)
+    checkEqual(constructions, 0)
+    checkTrue(lifecycle.isAppCurrentlyFocused(66)); checkEqual(initialQueries, 1)
+    lifecycle.startPreventingFocusStealing(for: 88, targetLostFocusHandler: nil, targetGainedFocusHandler: nil)
+    lifecycle.startPreventingFocusStealing(for: 88, targetLostFocusHandler: nil, targetGainedFocusHandler: nil)
+    checkEqual(constructions, 1); checkTrue(lifecycleOwner != nil)
+    checkTrue(lifecycle.isAppCurrentlyFocused(77)); checkFalse(lifecycle.isAppCurrentlyFocused(66))
+    checkEqual(initialQueries, 1)
+    lifecycle.stopPreventingFocusStealing(for: 55)
+    lifecycle.stopPreventingFocusStealing(for: 88)
+    checkTrue(lifecycleOwner != nil)
+    lifecycle.stopPreventingFocusStealing(for: 88)
+    checkTrue(lifecycleOwner == nil)
+    checkTrue(lifecycle.isAppCurrentlyFocused(66)); checkEqual(initialQueries, 2)
+    lifecycle.startPreventingFocusStealing(for: 88, targetLostFocusHandler: nil, targetGainedFocusHandler: nil)
+    checkEqual(constructions, 2)
+    lifecycle.stopPreventingFocusStealing(for: 88); checkTrue(lifecycleOwner == nil)
 }
