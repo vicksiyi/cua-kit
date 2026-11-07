@@ -302,3 +302,25 @@ WebArea descendant search remains an explicit required dependency. Deterministic
 checks cover inclusive deadlines, failed-condition sleeps, zero/negative timeout,
 early success and backward clock movement. They use injected dates/sleep and
 perform no live native input.
+
+
+## WebArea descendant readiness composition
+
+UIElementDescendant restores the breadth-first traversal at
+0x1007b62d4..0x1007b6fc0: seed a Deque from ordinary immediate children,
+pop its front, test type-role then predicate, and append children only after
+a failed match. The root itself is excluded; duplicates and child order are
+preserved. The pinned code has no visited set or traversal-count cap.
+
+The concrete UIElement composition reuses its existing provider-aware ordinary
+children reader and cached-role getter, preserving their error/cache policies.
+The WebAreaUIElement role initializer loads UIElementRole.webArea; initialization
+uses this role and the always-true default predicate at 0x1007b62cc. The concrete
+initializeAccessibilityApplication method now combines the native initial delay,
+restored Date polling and this descendant search. Controller owner integration
+is still outstanding; this method alone does not change live click behavior.
+
+Checks exercise breadth-first preference over deeper matches, predicate
+short-circuiting, no expansion after a successful match, duplicate candidates
+and exclusion of the root. Native build, provider-click checks and pinned static
+audit pass. These checks have not established unlocked live-app acceptance.

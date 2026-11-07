@@ -3746,6 +3746,7 @@ func runProviderClickChecks() async throws {
     runAXEnablementPolicyChecks()
     runAXEnablementAcquisitionChecks()
     runAXInitializedApplicationChecks()
+    runUIElementDescendantChecks()
     try runSynchronousPollingChecks()
     runAXApplicationInitializationChecks()
     runEnhancedUserInterfaceEnablementChecks()
@@ -6693,4 +6694,25 @@ private func runSynchronousPollingChecks() throws {
         currentDate: { start.addingTimeInterval(times.removeFirst()) }, sleep: { sleeps.append($0) },
         condition: { reads += 1; return reads == 3 })
     checkEqual(reads, 3); checkEqual(sleeps, [0.05, 0.05])
+}
+
+
+private func runUIElementDescendantChecks() {
+    let tree = [0: [1, 2], 1: [3], 2: [4], 3: [], 4: []]
+    var expanded: [Int] = []; var tested: [Int] = []
+    let result = uiElementDescendant(of: 0, children: { expanded.append($0); return tree[$0]! },
+        matchesType: { tested.append($0); return $0 == 2 || $0 == 3 }, passingTest: { _ in true })
+    checkEqual(result, 2); checkEqual(tested, [1, 2]); checkEqual(expanded, [0, 1])
+    tested = []; expanded = []
+    let predicateResult = uiElementDescendant(of: 0,
+        children: { expanded.append($0); return tree[$0]! }, matchesType: { $0 >= 2 },
+        passingTest: { tested.append($0); return $0 == 4 })
+    checkEqual(predicateResult, 4); checkEqual(tested, [2, 3, 4]); checkEqual(expanded, [0, 1, 2, 3])
+    var predicates = 0
+    let duplicateResult = uiElementDescendant(of: 0, children: { $0 == 0 ? [1, 1] : [] },
+        matchesType: { _ in true }, passingTest: { _ in predicates += 1; return predicates == 2 })
+    checkEqual(duplicateResult, 1); checkEqual(predicates, 2)
+    let empty = uiElementDescendant(of: 0, children: { _ in [] as [Int] },
+        matchesType: { _ in preconditionFailure("root is not a descendant") }, passingTest: { _ in true })
+    checkTrue(empty == nil)
 }
