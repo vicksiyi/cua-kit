@@ -206,6 +206,14 @@ if CommandLine.arguments.contains("--paste-content-self-test") {
     do { try runPasteContentChecks(); print("{\"nativePasteFormats\":true}"); exit(0) }
     catch { fputs("Paste format self-test failed: \(error)\n",stderr); exit(1) }
 }
+if CommandLine.arguments.contains("--graphics-init-self-test") {
+    initializeNativeGraphics()
+    let first = NSApplication.shared
+    initializeNativeGraphics()
+    guard NSApp === first else { fputs("Graphics initialization is not stable\n", stderr); exit(1) }
+    print("{\"graphicsInitialized\":true,\"idempotent\":true}")
+    exit(0)
+}
 if CommandLine.arguments.contains("--provider-click-self-test") {
     do { try await runProviderClickChecks(); print("Provider click composition checks passed"); exit(0) }
     catch { fputs("Provider click checks failed: \(error)\n", stderr); exit(1) }

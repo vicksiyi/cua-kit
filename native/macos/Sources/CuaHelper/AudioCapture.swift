@@ -68,6 +68,7 @@ private final class ScreenAudioCapture: NativeAudioCaptureBackend {
 @MainActor
 private func startScreenAudioCapture(url: URL, duration: Int, deadline: Double) async throws -> NativeAudioCaptureBackend {
     guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED","Screen Recording permission is required for loopback audio") }
+    initializeNativeGraphics()
     let content = try await SCShareableContent.excludingDesktopWindows(false,onScreenWindowsOnly:true)
     guard let display = content.displays.first else { throw fail("TARGET_NOT_FOUND","No display is available for loopback audio") }
     try Task.checkCancellation()

@@ -29,6 +29,7 @@ extension Target {
     func captureWindows() async throws -> [SCWindow] {
         try validateIdentity()
         guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED", "Screen Recording permission is required; no permission prompt was requested.") }
+        initializeNativeGraphics()
         do {
             let content = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: true)
             try validateIdentity()
