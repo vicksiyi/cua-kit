@@ -1711,3 +1711,29 @@ assembly before coordinate production integration. No live input is exercised.
 Validation: Swift build, provider-click self-tests and pinned native static
 audit pass for effective-process selection and ID search. Live coordinate
 click acceptance and full target routing remain unproven.
+
+
+## Complete mouse target resolver's initial routing seed
+
+Restored the prefix at 0x100705fe4..0x100706214 as an explicit internal
+MouseEventRoutingSeed. Read app PID first, then the containing AX window's
+actual PID. If they differ, read that window's ID and bypass hit children and
+bundle lookup. Otherwise a present hit contributes its first child, falling
+back to the original hit only for an empty children list. Child order is kept;
+there is no role filter or alternate-candidate retry in this prefix.
+
+A missing hit reads the app bundle identifier and only the exact source
+com.openai.atlas case requests the AX-window-ID fallback. This remains a
+source-specific case, not a generic browser categorization. The intermediate
+no-hit case deliberately defers actual ID lookup to its later branch so the
+source's swallowed-ID-error behavior can be restored there. WindowServer
+lookup/system-wide hit testing and final bounds/flipped-coordinate assembly
+remain outstanding. This seed is not a final MouseEventTarget or a production
+coordinate-click fallback.
+
+Tests assert read order, foreign PID short circuit, first-child and empty-child
+behavior, lazy exact bundle matching and PID-error propagation before later
+reads. No live AX or input is invoked.
+
+Validation: Swift build, provider-click self-test and pinned static audit pass.
+The full routing/coordinate integration and live behavior remain unverified.

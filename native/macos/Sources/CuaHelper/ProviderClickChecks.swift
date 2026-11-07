@@ -3733,6 +3733,7 @@ func runProviderClickChecks() async throws {
     try runMouseEventWindowSelectionChecks()
     runOutOfProcessMouseTargetChecks()
     try runOutOfProcessMouseWindowIDChecks()
+    try runMouseEventRoutingSeedChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5891,4 +5892,37 @@ private func runOutOfProcessMouseWindowIDChecks() throws {
         unexpectedFailure()
     } catch MouseEventWindowSelectionError.noWindows {} catch { unexpectedFailure() }
     checkEqual(visited, 301)
+}
+
+private func runMouseEventRoutingSeedChecks() throws {
+    var trace: [String] = [], windowPID: Int32 = 99, hit: Int? = 7, childValues: [Int] = [8,9]
+    var bundle: String? = "com.openai.atlas"
+    func seed() throws -> MouseEventRoutingSeed<Int> {
+        try mouseEventRoutingSeed(applicationPID: { trace.append("app"); return 88 },
+            windowActualPID: { trace.append("window-pid"); return windowPID },
+            windowID: { trace.append("window-id"); return 123 }, hitElement: hit,
+            children: { checkEqual($0, 7); trace.append("children"); return childValues },
+            bundleIdentifier: { trace.append("bundle"); return bundle })
+    }
+    guard case .foreignWindow(let pid, let id) = try seed() else { unexpectedFailure() }
+    checkEqual(pid, 99); checkEqual(id, 123); checkEqual(trace, ["app","window-pid","window-id"])
+    trace = []; windowPID = 88
+    guard case .hitElement(let app, let effective) = try seed() else { unexpectedFailure() }
+    checkEqual(app, 88); checkEqual(effective, 8); checkEqual(trace, ["app","window-pid","children"])
+    childValues = []
+    guard case .hitElement(_, let leaf) = try seed() else { unexpectedFailure() }
+    checkEqual(leaf, 7)
+    hit = nil; trace = []
+    guard case .noHit(let owner, let useAX) = try seed() else { unexpectedFailure() }
+    checkEqual(owner, 88); checkTrue(useAX); checkEqual(trace, ["app","window-pid","bundle"])
+    bundle = "com.google.Chrome"
+    guard case .noHit(_, let ordinary) = try seed() else { unexpectedFailure() }
+    checkFalse(ordinary)
+    enum Failure: Error { case pid }
+    do {
+        let _: MouseEventRoutingSeed<Int> = try mouseEventRoutingSeed(applicationPID: { throw Failure.pid },
+            windowActualPID: { unexpectedFailure() }, windowID: { unexpectedFailure() }, hitElement: nil,
+            children: { _ in unexpectedFailure() }, bundleIdentifier: { unexpectedFailure() })
+        unexpectedFailure()
+    } catch Failure.pid {} catch { unexpectedFailure() }
 }
