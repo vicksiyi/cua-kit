@@ -101,6 +101,9 @@ final class FocusStealKeyboardRoutingState {
             routeObservation: observation, isRegistered: isRegisteredOwner)
         let compensationReleased = inspectViewBridge ? compensateViewBridge(previousOwnerPID) : nil
         let released = observation == .firstInterceptedFocus ? releaseFirstInterceptedFocus() : nil
+        // 0x10074e600..0x10074e618 updates state+0x16 only for ViewBridge.
+        // No release action on that transition stores false, not stale success.
+        ownership.recordFocusReleaseResult(compensationReleased ?? released ?? false)
         return FocusStealOwnerChange(tasks: tasks, routeObservation: observation,
             didAttemptViewBridgeCompensation: inspectViewBridge,
             viewBridgeCompensationReleaseSucceeded: compensationReleased,

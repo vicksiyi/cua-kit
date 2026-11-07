@@ -1153,3 +1153,21 @@ All release/post actions were injected in checks; none changed actual UI.
 The enclosing refresh task lifecycle/error policy, release-dependent history
 metadata, complete system notification tap dispatch/resources and production
 input-controller integration remain open. No end-to-end Multica fix is claimed.
+
+
+## ViewBridge release-result metadata
+
+Restored byte state+0x16, initialized zero at 0x10074b9e4 and conditionally
+written at 0x10074e600..0x10074e618. The mask test requires flags containing
+0x8100, so both ViewBridge actual-PID-present and actual-PID-absent identities
+qualify. Ordinary/restricted identities leave this byte untouched.
+
+History exposes this semantic byte as lastViewBridgeFocusReleaseSucceeded
+without claiming its full downstream purpose. The shared state writes the
+selected compensation/direct release result, or false when neither release
+path runs, only for current ViewBridge identities. Tests cover initial false,
+true/false results, both actual PID variants, preservation across other types
+and reset on a ViewBridge transition with no release. Build/provider-click
+checks and static audit pass. No live system release was performed.
+Complete refresh-task/error handling, system notification resources/lifecycle,
+production controller integration and Multica UI acceptance remain required.

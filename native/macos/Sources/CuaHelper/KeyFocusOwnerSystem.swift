@@ -70,12 +70,19 @@ func systemInitialFocusStealOwnerIdentity(transaction: UIElementTransactionCache
 struct FocusStealOwnershipHistory {
     private(set) var current: KeyFocusOwnerIdentity
     private(set) var previous: KeyFocusOwnerIdentity?
+    // Native state+0x16, initialized to zero. Only a current ViewBridge
+    // identity updates this field; other identities preserve the last value.
+    private(set) var lastViewBridgeFocusReleaseSucceeded = false
     init(current: KeyFocusOwnerIdentity) { self.current = current; previous = nil }
     // 0x10074d23c..0x10074d270 always copies old to previous then writes new,
     // even if logical owner PID stayed equal.
     mutating func record(_ owner: KeyFocusOwnerIdentity) {
         previous = current
         current = owner
+    }
+    mutating func recordFocusReleaseResult(_ success: Bool) {
+        guard case .viewBridge = current else { return }
+        lastViewBridgeFocusReleaseSucceeded = success
     }
 }
 

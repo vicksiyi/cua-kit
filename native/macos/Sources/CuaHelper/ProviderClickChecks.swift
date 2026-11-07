@@ -3710,6 +3710,7 @@ func runProviderClickChecks() async throws {
     try runViewBridgeKeyFocusRefreshChecks()
     runUIElementProcessTypeChecks()
     runViewBridgeFocusCompensationChecks()
+    runViewBridgeReleaseMetadataChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5000,4 +5001,34 @@ private func runViewBridgeFocusCompensationChecks() {
             }
         }
     }
+}
+
+private func runViewBridgeReleaseMetadataChecks() {
+    let bridge = KeyFocusOwnerIdentity.viewBridge(ViewBridgeFocusIdentities(ownerPID: 77, actualFocusedPID: nil))
+    var history = FocusStealOwnershipHistory(current: bridge)
+    checkFalse(history.lastViewBridgeFocusReleaseSucceeded)
+    history.recordFocusReleaseResult(true)
+    for identity in [KeyFocusOwnerIdentity.ordinary(pid: 77), .restricted(ownerPID: 77, sourcePID: 88)] {
+        history.record(identity); history.recordFocusReleaseResult(false)
+        checkTrue(history.lastViewBridgeFocusReleaseSucceeded)
+    }
+    for actual: Int32? in [nil, 88] {
+        history.record(.viewBridge(ViewBridgeFocusIdentities(ownerPID: 77, actualFocusedPID: actual)))
+        history.recordFocusReleaseResult(false); checkFalse(history.lastViewBridgeFocusReleaseSucceeded)
+        history.recordFocusReleaseResult(true); checkTrue(history.lastViewBridgeFocusReleaseSucceeded)
+    }
+    let state = FocusStealKeyboardRoutingState(initialOwner: bridge)
+    _ = state.recordOwnerAndSchedule(.viewBridge(ViewBridgeFocusIdentities(ownerPID: 66, actualFocusedPID: 99)),
+        physicalFocusPID: 99, takeRegistrationSnapshot: { [] },
+        releaseFirstInterceptedFocus: { unexpectedFailure() }, isRegisteredOwner: { _ in true },
+        compensateViewBridge: { checkEqual($0, 77); return true })
+    checkTrue(state.ownershipSnapshot.lastViewBridgeFocusReleaseSucceeded)
+    _ = state.recordOwnerAndSchedule(.ordinary(pid: 55), physicalFocusPID: 55,
+        takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() },
+        isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
+    checkTrue(state.ownershipSnapshot.lastViewBridgeFocusReleaseSucceeded)
+    _ = state.recordOwnerAndSchedule(bridge, physicalFocusPID: 88,
+        takeRegistrationSnapshot: { [] }, releaseFirstInterceptedFocus: { unexpectedFailure() },
+        isRegisteredOwner: { _ in unexpectedFailure() }, compensateViewBridge: { _ in unexpectedFailure() })
+    checkFalse(state.ownershipSnapshot.lastViewBridgeFocusReleaseSucceeded)
 }
