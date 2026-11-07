@@ -3175,3 +3175,32 @@ Assets.car rather than loose cursor PNGs; exact rendering asset choice still
 requires recovery. No synthetic overlay or unrelated image was substituted.
 Concrete drawing/animation/attachment, lifetime and click integration remain
 outstanding. Desktop remains locked; no real input was attempted this turn.
+
+
+## Default software cursor view and original asset recovery (2026-11-08)
+
+Pinned Style.current global 0x101550720 initially references closure 0x10009b570,
+which constructs SoftwareCursorStyle. This is evidence for the initial default;
+Style.current is writable, so it does not prove no runtime override exists.
+SoftwareCursorStyle.makeView 0x10009bf40 returns its cached NSImageView if present;
+otherwise loads named SoftwareCursor from its module bundle, falls back to an
+empty NSImage, sets image.size to 20x23 points, sets imageView.image and frame at
+zero origin with that size, stores and returns the view. No new window or input
+is created by makeView. The base Style.makeView traps as unimplemented; it is not
+the default drawing implementation.
+
+assetutil identifies SoftwareCursor in Package_ComputerUse.bundle Assets.car
+(and the same rendition in Package_SlimCore), 200x230 RGB/sRGB with alpha.
+The original was exported through Bundle.image(forResource:) and AppKit bitmap
+PNG encoding without redraw or resize. The exported file and provenance metadata
+are now owned build resources; runtime image loading uses Bundle.module and no
+longer requires the installed vendor app for this component. Asset provenance
+records catalog digest, exported SHA256, dimensions and pinned native build.
+
+SoftwareCursorStyle currently restores the makeView portion only; base Style
+properties, animation and window lifecycle are still missing. The view checks
+verify actual resource decoding, 200x230 pixels, 20x23-point image/frame and view
+identity reuse, without presenting any window. Static pins cover initial factory
+and size instructions. This is not yet an on-screen cursor or click integration.
+
+Swift build, provider/resource view checks and pinned static audit pass for this component.

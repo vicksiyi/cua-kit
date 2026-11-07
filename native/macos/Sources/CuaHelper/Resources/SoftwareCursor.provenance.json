@@ -1,0 +1,14 @@
+{
+  "sourceBundle": "Package_ComputerUse.bundle",
+  "sourceCatalog": "Contents/Resources/Assets.car",
+  "assetName": "SoftwareCursor",
+  "renditionName": "Software Cursor.png",
+  "pixelWidth": 200,
+  "pixelHeight": 230,
+  "displayWidthPoints": 20,
+  "displayHeightPoints": 23,
+  "catalogRenditionDigest": "16D47273031B7D8E898B283601F3A35CB03F5015C425DBCBE038BBA89BA94329",
+  "exportedPngSHA256": "59adde55d087ac279ba6ef0801b296998a08f3eddd7bb91ab0b3f5c8e538d3f5",
+  "extraction": "Bundle.image(forResource:) -> TIFF representation -> NSBitmapImageRep PNG; no redraw or resize",
+  "nativeBinarySHA256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862"
+}

@@ -566,6 +566,11 @@ assert [value & 0xffffffff for value in struct.unpack('<4Q', read(0x10146f030 + 
 assert struct.unpack('<I', read(0x1007c1d04, 4))[0] == 0xf94012a8
 assert struct.unpack('<I', read(0x1007c1d30, 4))[0] == 0x52800020
 
+# The initial current-style closure creates SoftwareCursorStyle; makeView
+# caches an NSImageView and sets the SoftwareCursor image to 20x23 points.
+assert struct.unpack('<Q', read(0x101550720, 8))[0] & 0xffffffff == 0x9b570
+assert read(0x10009c00c, 8).hex() == '0090661e01f0661e'
+
 # Move/resize rejoins after the stop-suppression branch, not before it.
 geometry_tail = struct.unpack("<I", read(0x10006ea3c, 4))[0]
 assert geometry_tail >> 26 == 0b000101

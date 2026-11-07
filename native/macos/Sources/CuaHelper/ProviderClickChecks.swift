@@ -3787,6 +3787,7 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    await runSoftwareCursorViewChecks()
     try await runVirtualCursorContractChecks()
     runUseSelectionForFindItemChecks()
     runCopyMenuItemChecks()
@@ -7818,4 +7819,15 @@ private func runAppControllerObservationDeliveryChecks() throws {
     do { try await cursor.press(); preconditionFailure() }
     catch Failed.press {}
     precondition(concrete.counts == [1, 1] && cursor.isPressed)
+}
+
+
+@MainActor private func runSoftwareCursorViewChecks() {
+    let style = SoftwareCursorStyle()
+    let first = style.makeView()
+    precondition(first === style.makeView())
+    guard let imageView = first as? NSImageView, let image = imageView.image else { preconditionFailure() }
+    precondition(image.size == NSSize(width: 20, height: 23))
+    precondition(imageView.frame == NSRect(x: 0, y: 0, width: 20, height: 23))
+    precondition(image.representations.contains { $0.pixelsWide == 200 && $0.pixelsHigh == 230 })
 }
