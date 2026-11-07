@@ -7,6 +7,7 @@ import SoftLink
 enum WindowServerSPI {
     private typealias MainConnection = @convention(c) () -> OpaquePointer?
     private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
+    private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
     private typealias Update = @convention(c) (OpaquePointer?) -> CGError
 
     private static func resolve(_ request: WindowServerSPISymbolRequest) -> [UnsafeRawPointer?] {
@@ -28,6 +29,9 @@ enum WindowServerSPI {
                                    flag: UnsafeMutablePointer<DarwinBoolean>) -> Int32 {
         keyFocus(process, flag)
     }
+    // 0x10026d860 tails through global 0x10155b550: primary slot 8.
+    private static let releaseFocus = unsafeBitCast(required(functions[8]), to: ReleaseKeyFocus.self)
+    static func releaseKeyFocus(withID id: UInt32) -> Int32 { releaseFocus(id) }
     static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }
     static func reenableUpdate(_ connection: OpaquePointer?) -> CGError { reenable(connection) }

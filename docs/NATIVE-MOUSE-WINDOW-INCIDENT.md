@@ -1012,3 +1012,28 @@ clearing, reset flags and physical/logical PID separation. Build/provider-click
 checks and static audit pass. Later notification/resource effects and
 production controller integration are still incomplete; no live click result
 is claimed.
+
+
+## System key-focus release primitive
+
+Changed-focus handling calls 0x10074f130, which reads private event field 71
+(initializer 0x1007311b8), performs a checked UInt32 conversion, and calls
+ApplicationRegistrySPI.releaseKeyFocus(withID:) at 0x10026d860. It returns true
+only for status zero; unavailable field or failed status reports and returns
+false. It does not synthesize or post a replacement event at this boundary.
+
+Added the typed C-function binding via existing primary WindowServer symbol
+batch slot 8. Source slot-table base is 0x10155b510; release wrapper tails
+through 0x10155b550. Reused the existing SoftLink machinery.
+SystemKeyFocusRelease composes field reading, checked conversion, binding and
+failure reporting. The actual system release call was not invoked during tests.
+
+Initial fixture attempted to write field 71 into a generic CGEvent and failed
+an ID assertion: a direct read-only Swift probe confirmed writing 123 reads
+back 0 for that generic event. Corrected the fixture to inject field reads,
+while preserving actual CGEvent field access in production. Checks cover absent
+field (no read/call), IDs 0/123/UInt32.max, success/failure statuses, one release
+call and timestamp preservation. Build/provider-click checks and static audit
+pass. Private focus-release behavior on real notification events, its full
+conditional selection, remaining notification resources and production click
+controller integration still need verification.

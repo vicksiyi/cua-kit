@@ -3705,6 +3705,7 @@ func runProviderClickChecks() async throws {
     await runFocusStealRegisteredDispatchChecks()
     runFocusStealOwnershipHistoryChecks()
     runFocusStealPhysicalFocusChecks()
+    runSystemKeyFocusReleaseChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -4832,4 +4833,26 @@ private func runFocusStealPhysicalFocusChecks() {
         physicalFocusPID: 88, takeRegistrationSnapshot: { [] })
     checkEqual(change.routeObservation, .repeatedInterceptedFocus)
     checkEqual(state.ownershipSnapshot.current.ownerPID, 66)
+}
+
+private func runSystemKeyFocusReleaseChecks() {
+    let event = CGEvent(source: nil)!
+    event.timestamp = 98765
+    var reports: [SystemKeyFocusReleaseFailure] = []
+    checkFalse(releaseSystemKeyFocus(for: event, idField: nil,
+        readID: { _, _ in unexpectedFailure() }, release: { _ in unexpectedFailure() }, reportFailure: { reports.append($0) }))
+    checkEqual(reports, [.unavailableIDField])
+    for id: UInt32 in [0, 123, UInt32.max] {
+        for status: Int32 in [0, -50, -600] {
+            reports = []
+            var releases: [UInt32] = []
+            let success = releaseSystemKeyFocus(for: event,
+                readID: { received, field in
+                    checkTrue(received === event); checkEqual(field.rawValue, 71); return Int64(id)
+                }, release: { releases.append($0); return status }, reportFailure: { reports.append($0) })
+            checkEqual(success, status == 0); checkEqual(releases, [id])
+            checkEqual(reports, status == 0 ? [] : [.status(status)])
+            checkEqual(event.timestamp, 98765)
+        }
+    }
 }

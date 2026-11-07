@@ -56,7 +56,8 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x100742c90, 0x1007453f8),
          (0x10074f848, 0x100257e24), (0x10074f8a4, 0x10074f8e4),
          (0x10074f96c, 0x100257e24), (0x10074fbe0, 0x100258054),
-         (0x10074dcf4, 0x1011554e4)]
+         (0x10074dcf4, 0x1011554e4),
+         (0x10074f244, 0x100257e24), (0x10074f254, 0x10026d860)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -137,6 +138,11 @@ for site, expected_bytes in [(0x10074dd78, '68a34039'), (0x10074de88, '698341b8'
                              (0x10074dff8, '682740b9'), (0x10074dffc, '1f010a6b'),
                              (0x10074e0dc, '69a30039'), (0x10074e6f8, '7fff01a9'),
                              (0x10074e700, '68530079')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
+# Focus ID field initializer, release SPI pointer slot and UInt32 checks.
+for site, expected_bytes in [(0x10026c068, '08411491'), (0x10026d874, '01a942f9'),
+                             (0x1007311c0, 'e9088052'), (0x10074f248, '800bf8b7'),
+                             (0x10074f24c, '08fc60d3')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000

@@ -9,6 +9,9 @@ enum ApplicationRegistrySPI {
                                    flag: UnsafeMutablePointer<DarwinBoolean>) -> Int32 {
         WindowServerSPI.getKeyFocusProcess(process, flag: flag)
     }
+    static func releaseKeyFocus(withID id: UInt32) -> Int32 {
+        WindowServerSPI.releaseKeyFocus(withID: id)
+    }
     static func getProcessPID(_ process: UnsafeMutablePointer<ProcessSerialNumber>,
                               pid: UnsafeMutablePointer<Int32>) -> Int32 {
         CoreCUAGetProcessPID(process, pid)
