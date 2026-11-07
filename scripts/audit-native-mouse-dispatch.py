@@ -67,7 +67,9 @@ calls = [(0x10075135c, 0x100752874), (0x100751374, 0x1007531b0), (0x1007531cc, 0
          (0x10074e884, 0x10074c688),
          (0x10074f488, 0x100257e24),
          (0x10074c77c, 0x100257e24), (0x10074c7cc, 0x100257e24),
-         (0x10074c994, 0x100257e24)]
+         (0x10074c994, 0x100257e24),
+         (0x10074eac0, 0x1006ffa48), (0x1006ffc28, 0x1011554e4),
+         (0x1006ffc84, 0x1011554e4)]
 for site, target in calls:
     instruction = struct.unpack('<I', read(site, 4))[0]
     assert instruction >> 26 == 0b100101, hex(site)
@@ -202,6 +204,10 @@ for site, expected_bytes in [(0x10074f4ac, '888f41b8'), (0x10074f4b0, '89434039'
 for site, expected_bytes in [(0x10074c828, '770200b7'), (0x10074c82c, 'df02176b'),
                              (0x10074c830, '21020054'), (0x10074c7d0, '401bf8b7'),
                              (0x10074c7d4, '08fc50d3')]:
+    assert read(site, 4).hex() == expected_bytes, hex(site)
+# Unstructured refresh task uses inherited context flags; creation branches join.
+for site, expected_bytes in [(0x1006ffb24, '18808352'), (0x1006ffb44, '18808352'),
+                             (0x1006ffc64, '09000014')]:
     assert read(site, 4).hex() == expected_bytes, hex(site)
 # Default duration is stored as a signed 128-bit attosecond count.
 assert int.from_bytes(read(0x1011950e0, 16), 'little', signed=True) == 50_000_000_000_000_000

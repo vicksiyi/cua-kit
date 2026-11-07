@@ -1226,3 +1226,22 @@ pass; no OS tap was installed and no UI input sent. The complete preventer
 owner still must compose these resources with registration/per-process taps,
 refresh task policy and production input controller. Multica acceptance remains
 unverified.
+
+
+## Refresh task creation boundary
+
+Audited 0x1006ffa48, called by compensation at 0x10074eac0. It creates
+one unstructured throwing task with inherited context flags 0x1c00. Its
+swift_task_create sites 0x1006ffc28/0x1006ffc84 are mutually exclusive paths
+that join at 0x1006ffc88; they are not two sequential tasks. The caller releases
+the returned task handle without awaiting. The operation's construction error
+remains in the task result; this helper introduces no retry/catch policy.
+
+Added scheduleViewBridgeKeyFocusRefresh using Swift Task<Void, Error> and
+existing refresh operation body. Tests await actual tasks, verify TaskLocal
+inheritance and recipient PID, and verify a thrown construction failure
+propagates with exactly one operation invocation. Build/provider-click checks
+and static audit pass without real event posting. A complete preventer owner
+still needs to wire task scheduling, state routing, registration tap lifetime
+and notification resources to production input. Multica click acceptance
+remains outstanding.

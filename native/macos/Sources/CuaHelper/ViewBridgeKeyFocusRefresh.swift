@@ -12,3 +12,14 @@ func refreshViewBridgeKeyFocus(for pid: Int32,
     send(try makeTaken(), pid)
     send(try makeReturned(), pid)
 }
+
+// Caller 0x10074ea58..0x10074eac4 creates one unstructured throwing task
+// through 0x1006ffa48 and releases its handle without awaiting it. The two
+// swift_task_create sites in that helper are mutually exclusive branches.
+// Preserve errors in the task result; do not silently retry the operation.
+@discardableResult
+func scheduleViewBridgeKeyFocusRefresh(for pid: Int32,
+    operation: @escaping @Sendable (Int32) throws -> Void = { try refreshViewBridgeKeyFocus(for: $0) }
+) -> Task<Void, Error> {
+    Task { try operation(pid) }
+}

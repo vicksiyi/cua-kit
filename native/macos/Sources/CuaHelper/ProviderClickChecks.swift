@@ -3714,6 +3714,7 @@ func runProviderClickChecks() async throws {
     runFocusStealNewFrontChecks()
     runSystemFocusNotificationRoutingChecks()
     runSystemFocusNotificationMonitorChecks()
+    try await runViewBridgeRefreshTaskChecks()
     try await runSafeActivationNativeResourceChecks()
     try await runSafeActivationRestorationLoopChecks()
     runRunLoopTaskChecks()
@@ -5147,4 +5148,30 @@ private func runSystemFocusNotificationMonitorChecks() {
     checkTrue(callback!(OpaquePointer(bitPattern: 1)!, CGEventType(rawValue: 21)!, event, info)?.takeUnretainedValue() === event)
     checkTrue(monitor != nil); monitor = nil
     checkEqual(trace, ["create", "enable", "disable", "invalidate"])
+}
+
+private enum ViewBridgeRefreshTaskTestContext {
+    @TaskLocal static var value = 0
+}
+private func runViewBridgeRefreshTaskChecks() async throws {
+    try await ViewBridgeRefreshTaskTestContext.$value.withValue(99) {
+        let task = scheduleViewBridgeKeyFocusRefresh(for: 77, operation: { pid in
+            checkEqual(pid, 77); checkEqual(ViewBridgeRefreshTaskTestContext.value, 99)
+        })
+        try await task.value
+    }
+    enum Failure: Error { case construction }
+    final class Counter: @unchecked Sendable {
+        private let lock = NSLock()
+        private var count = 0
+        func increment() { lock.lock(); defer { lock.unlock() }; count += 1 }
+        var value: Int { lock.lock(); defer { lock.unlock() }; return count }
+    }
+    let counter = Counter()
+    let failed = scheduleViewBridgeKeyFocusRefresh(for: 77, operation: { pid in
+        checkEqual(pid, 77); counter.increment(); throw Failure.construction
+    })
+    do { try await failed.value; unexpectedFailure() }
+    catch Failure.construction {}
+    checkEqual(counter.value, 1)
 }
