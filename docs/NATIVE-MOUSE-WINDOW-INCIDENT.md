@@ -2397,3 +2397,20 @@ native unregistration and swallows that branch's error. menuClosed invokes
 WindowOrderingObserver.menuDidClose before clearing other controller state.
 Do not infer that destruction directly erases the window dictionary: its actual
 window getter prunes invalid AX IDs. More menu-state handling remains to map.
+
+
+## Menu-open readiness and registration ordering
+
+The menu-open callback at 0x10006dd30 first wraps and records the menu, then
+polls its windowID for up to 0.25 seconds at 0.01-second intervals. The delay
+is decoded from 0x10116b0a8; the condition at 0x10006ea6c returns nil on an AX
+windowID error but accepts a successful zero ID. Polling failure is swallowed.
+It then calls menu-window registration (0x1000858c0), followed by the ordering
+observer's menuDidOpen. Registration rereads the windowID rather than reusing
+the polling result, inserts into the shared window map and updates observed IDs.
+
+prepareAppControllerMenuOpen restores this sequence using the existing Date
+polling helper and injectable boundaries. Checks cover exact order, timing,
+zero-ID acceptance and continuation after a timeout. The concrete controller
+still needs its menu state, notification callback and window registry connected;
+this helper alone does not start native listeners or send input.

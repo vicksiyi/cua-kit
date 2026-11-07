@@ -3749,6 +3749,7 @@ func runProviderClickChecks() async throws {
     try runAXNotificationRemovalChecks()
     runAXNotificationCallbackContextChecks()
     runAXNotificationInfoBridgeChecks()
+    runAppControllerMenuOpenChecks()
     precondition(AppControllerAXNotifications.root.map { $0.name as String } == ["AXWindowCreated", "AXMenuOpened", "AXMenuClosed", "AXSheetCreated", "AXWindowMoved", "AXWindowResized"])
     precondition(AppControllerAXNotifications.qualityOfService.rawValue == 25)
     try runAXNotificationRegistrationChecks()
@@ -7305,4 +7306,24 @@ private func runAXNotificationInfoBridgeChecks() {
     precondition((bridgeAXNotificationInfo(valid as CFDictionary)?["value"] as? NSNumber)?.intValue == 7)
     let invalid = [NSNumber(value: 1): "value"] as NSDictionary
     precondition(bridgeAXNotificationInfo(invalid as CFDictionary) == nil)
+}
+
+private func runAppControllerMenuOpenChecks() {
+    enum Failed: Error { case timeout, unavailable }
+    var events: [String] = []
+    prepareAppControllerMenuOpen(7, storeMenu: { _ in events.append("store") },
+        windowID: { _ in events.append("id"); return 0 },
+        wait: { timeout, delay, condition in
+            precondition(timeout == 0.25 && delay == 0.01)
+            events.append("wait")
+            precondition(condition() == 0)
+        }, registerMenu: { _ in events.append("register") }, menuDidOpen: { events.append("open") })
+    precondition(events == ["store", "wait", "id", "register", "open"])
+    events = []
+    prepareAppControllerMenuOpen(7, storeMenu: { _ in events.append("store") },
+        windowID: { _ in throw Failed.unavailable }, wait: { _, _, condition in
+            precondition(condition() == nil)
+            throw Failed.timeout
+        }, registerMenu: { _ in events.append("register") }, menuDidOpen: { events.append("open") })
+    precondition(events == ["store", "register", "open"])
 }
