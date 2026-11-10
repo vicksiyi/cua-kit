@@ -1,0 +1,77 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x1007547d4 -e 0x1007548e4
+SkyComputerUseService`static AccessibilitySupport.SynthesizedEvent.mouseEvent(eventNumber: Swift.Int64, type: AccessibilitySupport.SynthesizedEvent.MouseEventType, clickCount: Swift.Int, at: __C.CGPoint, mouseButton: __C.CGMouseButton, flags: __C.CGEventFlags, inWindow: Swift.Optional<Swift.UInt32>, windowBounds: Swift.Optional<__C.CGRect>, windowUsesFlippedCoordinates: Swift.Bool) throws -> AccessibilitySupport.SynthesizedEvent:
+SkyComputerUseService[0x1007547d4] <+0>:   sub    sp, sp, #0xd0
+SkyComputerUseService[0x1007547d8] <+4>:   str    d14, [sp, #0x40]
+SkyComputerUseService[0x1007547dc] <+8>:   stp    d13, d12, [sp, #0x48]
+SkyComputerUseService[0x1007547e0] <+12>:  stp    d11, d10, [sp, #0x58]
+SkyComputerUseService[0x1007547e4] <+16>:  stp    d9, d8, [sp, #0x68]
+SkyComputerUseService[0x1007547e8] <+20>:  str    x28, [sp, #0x78]
+SkyComputerUseService[0x1007547ec] <+24>:  stp    x27, x26, [sp, #0x80]
+SkyComputerUseService[0x1007547f0] <+28>:  stp    x25, x24, [sp, #0x90]
+SkyComputerUseService[0x1007547f4] <+32>:  stp    x23, x22, [sp, #0xa0]
+SkyComputerUseService[0x1007547f8] <+36>:  stp    x20, x19, [sp, #0xb0]
+SkyComputerUseService[0x1007547fc] <+40>:  stp    x29, x30, [sp, #0xc0]
+SkyComputerUseService[0x100754800] <+44>:  add    x29, sp, #0xc0
+SkyComputerUseService[0x100754804] <+48>:  mov    x19, x21
+SkyComputerUseService[0x100754808] <+52>:  str    w7, [sp, #0xc]
+SkyComputerUseService[0x10075480c] <+56>:  mov    x23, x6
+SkyComputerUseService[0x100754810] <+60>:  mov    x24, x5
+SkyComputerUseService[0x100754814] <+64>:  mov    x27, x4
+SkyComputerUseService[0x100754818] <+68>:  mov    x26, x3
+SkyComputerUseService[0x10075481c] <+72>:  fmov   d8, d1
+SkyComputerUseService[0x100754820] <+76>:  fmov   d9, d0
+SkyComputerUseService[0x100754824] <+80>:  mov    x22, x2
+SkyComputerUseService[0x100754828] <+84>:  mov    x28, x0
+SkyComputerUseService[0x10075482c] <+88>:  mov    x0, x1
+SkyComputerUseService[0x100754830] <+92>:  mov    x1, x3
+SkyComputerUseService[0x100754834] <+96>:  bl     0x100754d28               ; ___lldb_unnamed_symbol81289
+SkyComputerUseService[0x100754838] <+100>: mov    w20, w0
+SkyComputerUseService[0x10075483c] <+104>: mov    w25, w24
+SkyComputerUseService[0x100754840] <+108>: adrp   x8, 3530
+SkyComputerUseService[0x100754844] <+112>: ldr    x0, [x8, #0xe20]
+SkyComputerUseService[0x100754848] <+116>: bl     0x101154bf0               ; symbol stub for: objc_opt_self
+SkyComputerUseService[0x10075484c] <+120>: tst    x24, #0x100000000
+SkyComputerUseService[0x100754850] <+124>: csel   x4, x25, xzr, eq
+SkyComputerUseService[0x100754854] <+128>: adrp   x8, 3567
+SkyComputerUseService[0x100754858] <+132>: ldr    x1, [x8, #0xa0]
+SkyComputerUseService[0x10075485c] <+136>: movi   d2, #0000000000000000
+SkyComputerUseService[0x100754860] <+140>: fmov   s3, #1.00000000
+SkyComputerUseService[0x100754864] <+144>: mov    x2, x20
+SkyComputerUseService[0x100754868] <+148>: fmov   d0, d9
+SkyComputerUseService[0x10075486c] <+152>: fmov   d1, d8
+SkyComputerUseService[0x100754870] <+156>: mov    x3, #0x0                  ; =0 
+SkyComputerUseService[0x100754874] <+160>: mov    x5, #0x0                  ; =0 
+SkyComputerUseService[0x100754878] <+164>: mov    x6, x28
+SkyComputerUseService[0x10075487c] <+168>: mov    x7, x22
+SkyComputerUseService[0x100754880] <+172>: bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x100754884] <+176>: mov    x29, x29
+SkyComputerUseService[0x100754888] <+180>: bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x10075488c] <+184>: cbz    x0, 0x100754a00           ; <+556>
+SkyComputerUseService[0x100754890] <+188>: adrp   x8, 3566
+SkyComputerUseService[0x100754894] <+192>: ldr    x1, [x8, #0x848]
+SkyComputerUseService[0x100754898] <+196>: mov    x20, x0
+SkyComputerUseService[0x10075489c] <+200>: bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x1007548a0] <+204>: mov    x29, x29
+SkyComputerUseService[0x1007548a4] <+208>: bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x1007548a8] <+212>: mov    x22, x0
+SkyComputerUseService[0x1007548ac] <+216>: mov    x0, x20
+SkyComputerUseService[0x1007548b0] <+220>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x1007548b4] <+224>: cbz    x22, 0x100754a00          ; <+556>
+SkyComputerUseService[0x1007548b8] <+228>: mov    x0, x22
+SkyComputerUseService[0x1007548bc] <+232>: mov    x1, x27
+SkyComputerUseService[0x1007548c0] <+236>: bl     0x1002580c4               ; static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()
+SkyComputerUseService[0x1007548c4] <+240>: mov    x0, x22
+SkyComputerUseService[0x1007548c8] <+244>: fmov   d0, d9
+SkyComputerUseService[0x1007548cc] <+248>: fmov   d1, d8
+SkyComputerUseService[0x1007548d0] <+252>: bl     0x100258140               ; static SystemSoftware.CGEventAPI.setLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()
+SkyComputerUseService[0x1007548d4] <+256>: mov    w2, w26
+SkyComputerUseService[0x1007548d8] <+260>: mov    x0, x22
+SkyComputerUseService[0x1007548dc] <+264>: mov    w1, #0x3                  ; =3 
+SkyComputerUseService[0x1007548e0] <+268>: bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+(lldb) memory read -f x -s 4 -c 12 0x1013237a0
+0x1013237a0: 0xfffd8cb9 0x00000000 0x00000000 0xfffd8cb7
+0x1013237b0: 0x00000000 0x00000000 0xfffd8cb3 0x00000000
+0x1013237c0: 0x00000000 0xfffd8cb4 0xfff7b742 0x00000000
+(lldb) quit

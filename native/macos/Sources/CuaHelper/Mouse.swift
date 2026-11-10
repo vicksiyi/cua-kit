@@ -35,40 +35,22 @@ func mouseModifiers(_ chord: String?) throws -> CGEventFlags {
 }
 func mouseClickEvents(point: CGPoint, button: String, count: Int, flags: CGEventFlags, window: MouseWindow? = nil) throws -> [CGEvent] {
     guard point.x.isFinite, point.y.isFinite, (1...10).contains(count) else { throw fail("INVALID_ARGUMENT","Click count must be 1..10 and coordinates finite.") }
-    let mouse: CGMouseButton, down: CGEventType, up: CGEventType
+    let mouse: CGMouseButton
     switch button {
-    case "left","l": mouse = .left; down = .leftMouseDown; up = .leftMouseUp
-    case "right","r": mouse = .right; down = .rightMouseDown; up = .rightMouseUp
-    case "middle","m": mouse = .center; down = .otherMouseDown; up = .otherMouseUp
+    case "left","l": mouse = .left
+    case "right","r": mouse = .right
+    case "middle","m": mouse = .center
     default: throw fail("INVALID_ARGUMENT","Unknown mouse button.")
     }
     var events: [CGEvent] = []
     for click in 1...count {
-        // One process-wide number per down/up pair, separate from clickCount.
-        let eventNumber = Int(SynthesizedEvent.nextEventNumber)
-        for type in [down,up] {
-            let nsType: NSEvent.EventType
-            switch type {
-            case .leftMouseDown: nsType = .leftMouseDown
-            case .leftMouseUp: nsType = .leftMouseUp
-            case .rightMouseDown: nsType = .rightMouseDown
-            case .rightMouseUp: nsType = .rightMouseUp
-            case .otherMouseDown: nsType = .otherMouseDown
-            default: nsType = .otherMouseUp
-            }
-            // Source SynthesizedEvent.mouseEvent (0x1007547d4) starts with
-            // NSEvent, preserving the AppKit window number in the CG event.
-            guard let event = NSEvent.mouseEvent(with: nsType, location: point,
-                modifierFlags: [], timestamp: 0, windowNumber: Int(window?.id ?? 0),
-                context: nil, eventNumber: eventNumber, clickCount: click, pressure: 1)?.cgEvent else {
-                throw fail("PROVIDER_DISCONNECTED", "Cannot allocate mouse event.")
-            }
-            event.flags = flags
-            event.location = point
-            event.setIntegerValueField(.mouseEventButtonNumber, value: Int64(mouse.rawValue))
-            event.setIntegerValueField(.mouseEventSubtype, value: 3)
-            if let window { try applyMouseWindow(window, to: event) }
-            events.append(event)
+        let eventNumber = SynthesizedEvent.nextEventNumber
+        for type: SynthesizedEvent.MouseEventType in [.mouseDown, .mouseUp] {
+            let event = try SynthesizedEvent.mouseEvent(eventNumber: eventNumber,
+                type: type, clickCount: click, at: point, mouseButton: mouse,
+                flags: flags, inWindow: window?.id, windowBounds: window?.frame,
+                windowUsesFlippedCoordinates: window?.usesFlippedCoordinates ?? false)
+            events.append(contentsOf: event.cgEvents)
         }
     }
     return events

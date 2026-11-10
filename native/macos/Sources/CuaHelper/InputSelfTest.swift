@@ -108,6 +108,35 @@ func runInputChecks() throws {
             }
         }
     }
+    // Original four-case/button mapping and independent optional window/bounds.
+    for (button, rawTypes) in [(CGMouseButton.left, [1, 2, 6, 5]),
+                               (.right, [3, 4, 7, 5]), (.center, [25, 26, 27, 5])] {
+        for (index, kind) in [SynthesizedEvent.MouseEventType.mouseDown, .mouseUp, .mouseDragged, .mouseMoved].enumerated() {
+            for windowID: UInt32? in [nil, 0, 123] {
+                for bounds: CGRect? in [nil, frameB] {
+                    let result = try SynthesizedEvent.mouseEvent(eventNumber: 42, type: kind,
+                        clickCount: 2, at: mapped, mouseButton: button, flags: .maskShift,
+                        inWindow: windowID, windowBounds: bounds, windowUsesFlippedCoordinates: false)
+                    guard result.cgEvents.count == 1, let event = result.cgEvents.first,
+                          Int(event.type.rawValue) == rawTypes[index], event.flags == .maskShift,
+                          event.location == mapped,
+                          event.getIntegerValueField(.mouseEventButtonNumber) == Int64(button.rawValue),
+                          event.getIntegerValueField(.mouseEventSubtype) == 3 else {
+                        throw fail("SELF_TEST_FAILED", "Original mouse factory event mapping differs.")
+                    }
+                    if let windowID {
+                        guard event.getIntegerValueField(.mouseEventWindowUnderMousePointer) == Int64(windowID),
+                              event.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) == Int64(windowID) else {
+                            throw fail("SELF_TEST_FAILED", "Optional factory window routing differs.")
+                        }
+                        if bounds != nil, getLocation(event) != CGPoint(x: 100, y: 50) {
+                            throw fail("SELF_TEST_FAILED", "Optional factory window geometry differs.")
+                        }
+                    }
+                }
+            }
+        }
+    }
     do { _ = try mouseModifiers("a"); throw fail("SELF_TEST_FAILED","Unsupported mouse key accepted.") }
     catch let error as Failure { guard error.code == "UNSUPPORTED_CAPABILITY" else { throw error } }
     for (direction,vertical,sign) in [("up",true,1),("u",true,1),("down",true,-1),("d",true,-1),("left",false,1),("l",false,1),("right",false,-1),("r",false,-1)] {

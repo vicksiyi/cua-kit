@@ -1,0 +1,44 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "entry": "0x1007547d4",
+  "fieldDescriptor": "0x101323788",
+  "cases": [
+    "mouseDown",
+    "mouseUp",
+    "mouseDragged",
+    "mouseMoved"
+  ],
+  "mappingFunction": "0x100754d28",
+  "eventTypes": {
+    "left": [
+      1,
+      2,
+      6,
+      5
+    ],
+    "right": [
+      3,
+      4,
+      7,
+      5
+    ],
+    "other": [
+      25,
+      26,
+      27,
+      5
+    ]
+  },
+  "source": "native/macos/Sources/CuaHelper/SynthesizedEventMouse.swift",
+  "limits": [
+    "SynthesizedEvent remains in CuaHelper pending full original module relocation",
+    "No complete ABI/default-argument parity claimed",
+    "In-memory event checks do not prove application event delivery"
+  ],
+  "validation": {
+    "build": "Swift build exit0,21.89s",
+    "nativeSelfTest": "cua-helper --self-test exit0; no event posting",
+    "factoryCases": 72,
+    "coverage": "Four types x three buttons x three optional IDs(nil/0/123) x two optional bounds(nil/rectangle); shift flags, subtype, button, global coordinates, window routing/local coordinates when present; existing flipped and paired-click checks also pass"
+  }
+}

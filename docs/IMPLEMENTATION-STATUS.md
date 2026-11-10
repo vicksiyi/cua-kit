@@ -8553,3 +8553,21 @@ Swift build passed15.91s; --self-test exited0. This strengthens the prior mocked
 caller validation, but is not live event delivery or application acceptance.
 The fresh UI preflight still reported screenLocked=1 with both permissions true;
 no owned UI fixture was launched and no desktop input was posted.
+
+## 2026-11-11 original mouse event factory
+
+SynthesizedEvent.mouseEvent now implements the original independent optional
+window ID/bounds signature, four-case MouseEventType and left/right/other event
+mapping. Enum names/order and all three numeric tables are checked directly
+against pinned original metadata/data by audit-mouse-event-factory.py. The
+original NSEvent factory parameters, CGEvent flags/location/button/subtype,
+optional field91/92 writes, translation/flip and invalidParameter error path
+are backed by static disassembly. Existing click-pair composition now delegates
+to this factory instead of duplicating allocation and mutation logic.
+
+Swift build passed21.89s. Native --self-test passed72 factory combinations
+(4 types x3 buttons x3 window identity states x2 bounds states), plus previous
+flipped-coordinate and paired-click checks. Events are allocated and inspected,
+not posted. SynthesizedEvent remains in CuaHelper pending complete original
+AccessibilitySupport relocation; original default-argument/whole ABI parity and
+actual App delivery are unproven. See mouse-event-factory-evidence.json.
