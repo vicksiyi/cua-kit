@@ -1,6 +1,7 @@
 #if canImport(SystemSoftware)
 import SystemSoftware
 #endif
+// Extracted generic fixture seam; native production uses CGWindow.EventStream.
 // EventStream fields at 0x1012c1e4c and iterator fields at 0x1012c1e74.
 // Every makeAsyncIterator creates its own stream and native observer. Merely
 // constructing this sequence does not subscribe to WindowServer notifications.
@@ -34,12 +35,5 @@ struct CGWindowEventStream<Window, Observer>: AsyncSequence {
     func makeAsyncIterator() -> AsyncIterator {
         AsyncIterator(windowIDs: windowIDs, events: events, bufferingPolicy: bufferingPolicy,
             makeObserver: makeObserver)
-    }
-}
-
-extension CGWindowEventStream where Window == NativeWindowDescription, Observer == NativeCGWindowObserver {
-    init(windowIDs: [UInt32], events: [WindowServerEvent], bufferingPolicy: BufferingPolicy) {
-        self.init(windowIDs: windowIDs, events: events, bufferingPolicy: bufferingPolicy,
-            makeObserver: { NativeCGWindowObserver(windowIDs: $0, events: $1, eventHandler: $2) })
     }
 }

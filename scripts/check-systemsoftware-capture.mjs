@@ -12,9 +12,12 @@ for (const module of ["SlimCore", "SystemSoftware", "SoftLink"]) {
 }
 const temporary = await mkdtemp(join(tmpdir(), "cua-systemsoftware-check-"));
 try {
-  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check", "systemsoftware-snapshot-check"]) {
+  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check", "systemsoftware-snapshot-check", "window-ordering-iterator-check"]) {
     const executable = join(temporary, fixture);
-    execFileSync("swiftc", ["-parse-as-library", "-I", join(build, "Modules"), ...objects,
+    const extraSources = fixture === "window-ordering-iterator-check"
+      ? ["CGWindowEventStream", "WindowOrderingRestorationContext", "WindowOrderingEventLoop"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`))
+      : [];
+    execFileSync("swiftc", ["-parse-as-library", "-I", join(build, "Modules"), ...objects, ...extraSources,
       join(root, `reconstruction/${fixture}.swift`), "-o", executable], { cwd: root, stdio: "inherit" });
     execFileSync(executable, [], { stdio: "inherit", timeout: 15000 });
   }

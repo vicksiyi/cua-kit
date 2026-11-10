@@ -8415,3 +8415,30 @@ Nonfinite/overflow trap paths and actual SDK async error/ownership remain untest
 Original EventStream production integration, broader ABI/source and live acceptance
 remain incomplete. New snapshot API does not replace other production capture
 routes without their original caller evidence.
+
+### 2026-11-11 — Native window ordering now uses original EventStream iterator
+
+Changed generic ordering observer's stored factory from observer creation to typed
+iterator creation. Native specialization now explicitly uses
+CGWindow.EventStream.AsyncIterator and nativeOrderingWindowEventStream (original
+didChangeOrder/newest1), without type erasure or extra iterator wrapper. Removed
+unused native specialization of the old generic stream. Generic observer-factory
+initializer/loop overload remain for injected fixtures and delegate to the same
+iterator loop. Existing fixture type annotation updated to name its fake iterator.
+
+Legacy AsyncIteratorProtocol.next is still throwing even when Failure==Never;
+minimal SDK typecheck proved that constraint alone insufficient. Added a small
+internal protocol refining the existing next requirement as nonthrowing; both
+original and generic test iterators conform. No invented error swallowing/try!
+was added. Normalized comparison confirms event processing, membership comparison,
+weak owner handling, release-before-resubscribe and cancellation body unchanged
+apart from iterator factory substitution.
+
+Full helper build passed39.72s. Four linked fixture binaries passed. Focused owned
+iterator fixture checks native nominal sequence/config construction (no subscription),
+resubscription, resource release before next factory call, ordinary error continue,
+cancellation stop, duplicate/order membership equivalence and missing-owner guard.
+Final focused source typecheck includes explicit CGWindow.EventStream annotation.
+No actual WindowServer notifications, desktop actions, vendor executable or model
+ran. Concrete live subscriptions and original ordering class/ABI/concurrency parity
+remain unaccepted; generic fixture seams are not claimed original nominal layout.

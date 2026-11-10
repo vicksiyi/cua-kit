@@ -81,7 +81,7 @@
     "limits": [
       "Real iterator initialization/private notification subscription not executed",
       "Real yield/next/cancellation/lifetime acceptance remains unproven",
-      "Production WindowOrderingEventLoop still uses extracted generic stream; nominal production migration remains open"
+      "NativeWindowOrderingObserver now creates original CGWindow.EventStream.AsyncIterator; generic observer-factory path remains for injected fixtures; real native subscription still unaccepted"
     ]
   },
   "snapshot": {
@@ -100,6 +100,17 @@
       "SDK async callback bridge/live error ownership not exercised",
       "Nonfinite/out-of-Int conversion trap paths not executed",
       "No original argument defaults inferred; production callers using other capture routes not replaced"
+    ]
+  },
+  "productionEventStream": {
+    "nativeAlias": "WindowOrderingObserver<CGWindow, CGWindow.EventStream.AsyncIterator, NSRunningApplication>",
+    "factory": "nativeOrderingWindowEventStream uses original event didChangeOrder and bufferingNewest(1)",
+    "loop": "Shared generic iterator loop; no type erasure or extra iterator wrapper; original processing/re-subscription body unchanged after factory substitution",
+    "validation": "native build39.72s; four linked fixtures pass; final focused typecheck includes explicit original nominal sequence type",
+    "limits": [
+      "No live private notification subscription or event delivery",
+      "WindowOrderingObserver generic/test seam is not full original nominal class/ABI restoration",
+      "Refined nonthrowing iterator protocol needed because legacy AsyncIteratorProtocol.next remains throwing even with Failure==Never"
     ]
   }
 }

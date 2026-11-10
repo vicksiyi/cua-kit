@@ -23,3 +23,8 @@ func orderingWindowEventStream<Window, Observer>(observedWindowIDs: [UInt32],
     CGWindowEventStream(windowIDs: observedWindowIDs, events: [.didChangeOrder],
         bufferingPolicy: .bufferingNewest(1), makeObserver: makeObserver)
 }
+
+// Original native subscription: didChangeOrder, newest buffer capacity1.
+func nativeOrderingWindowEventStream(observedWindowIDs: [UInt32]) -> CGWindow.EventStream {
+    CGWindow.EventStream(windowIDs: observedWindowIDs, events: [.didChangeOrder], bufferingPolicy: .bufferingNewest(1))
+}

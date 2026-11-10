@@ -7483,7 +7483,7 @@ private func runWindowOrderingObserverCompositionChecks() async {
         ready.continuation.finish(); seen.continuation.finish(); disposed.continuation.finish()
     }
     defer { deadline.cancel() }
-    var owner: WindowOrderingObserver<Int, Observer, Int>? = .init(observedWindowIDs: [7],
+    var owner: WindowOrderingObserver<Int, CGWindowEventStream<Int, Observer>.AsyncIterator, Int>? = .init(observedWindowIDs: [7],
         makeObserver: { ids, events, callback in
             checkEqual(ids, [7]); checkEqual(events, [.didChangeOrder]); ready.continuation.yield(callback)
             return Observer { disposed.continuation.yield(true) }

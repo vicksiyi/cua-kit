@@ -5,9 +5,9 @@ import AppKit
 
 // Complete observer composition; dependencies expose native boundaries for
 // isolated lifetime checks. Production specialization below uses WindowServer.
-final class WindowOrderingObserver<Window, Observer, Application> {
+final class WindowOrderingObserver<Window, Iterator: WindowOrderingEventIterator, Application> where Iterator.Element == (Window, WindowServerEvent) {
     private let store: WindowOrderingObserverTaskStore<Task<Void, Never>>
-    private let makeObserver: ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer
+    private let makeIterator: ([UInt32]) -> Iterator
     private let restore: (Window, @escaping () -> [UInt32]) async throws -> Void
     private let windowOwnerPID: (UInt32) -> Int32?
     private let frontmostApplication: () -> Application?
@@ -16,13 +16,13 @@ final class WindowOrderingObserver<Window, Observer, Application> {
     private let reportError: (Error) -> Void
 
     init(observedWindowIDs: [UInt32],
-        makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer,
+        makeIterator: @escaping ([UInt32]) -> Iterator,
         restore: @escaping (Window, @escaping () -> [UInt32]) async throws -> Void,
         windowOwnerPID: @escaping (UInt32) -> Int32?, frontmostApplication: @escaping () -> Application?,
         processIdentifier: @escaping (Application) -> Int32,
         runMenuTask: @escaping (Int32, [UInt32]) async -> Void, reportError: @escaping (Error) -> Void) {
         store = WindowOrderingObserverTaskStore(observedWindowIDs: observedWindowIDs, cancel: { $0.cancel() })
-        self.makeObserver = makeObserver; self.restore = restore
+        self.makeIterator = makeIterator; self.restore = restore
         self.windowOwnerPID = windowOwnerPID; self.frontmostApplication = frontmostApplication
         self.processIdentifier = processIdentifier; self.runMenuTask = runMenuTask; self.reportError = reportError
     }
@@ -31,11 +31,11 @@ final class WindowOrderingObserver<Window, Observer, Application> {
         set { store.observedWindowIDs = newValue }
     }
     func start() {
-        let makeObserver = makeObserver, reportError = reportError
+        let makeIterator = makeIterator, reportError = reportError
         store.start {
             Task { [weak self] in
                 await runWindowOrderingEventLoop(weakOwner: { [weak self] in self },
-                    observedWindowIDs: { $0.observedWindowIDs }, makeObserver: makeObserver,
+                    observedWindowIDs: { $0.observedWindowIDs }, makeIterator: makeIterator,
                     handle: { owner, window, _ in
                         try await owner.restore(window, { owner.observedWindowIDs })
                     }, reportError: reportError)
@@ -53,16 +53,33 @@ final class WindowOrderingObserver<Window, Observer, Application> {
     deinit { store.stop() }
 }
 
-typealias NativeWindowOrderingObserver = WindowOrderingObserver<NativeWindowDescription, NativeCGWindowObserver, NSRunningApplication>
+typealias NativeWindowOrderingObserver = WindowOrderingObserver<NativeWindowDescription, CGWindow.EventStream.AsyncIterator, NSRunningApplication>
 
-extension WindowOrderingObserver where Window == NativeWindowDescription, Observer == NativeCGWindowObserver, Application == NSRunningApplication {
+extension WindowOrderingObserver where Window == NativeWindowDescription, Iterator == CGWindow.EventStream.AsyncIterator, Application == NSRunningApplication {
     convenience init(observedWindowIDs: [UInt32], reportError: @escaping (Error) -> Void) {
         self.init(observedWindowIDs: observedWindowIDs,
-            makeObserver: { NativeCGWindowObserver(windowIDs: $0, events: $1, eventHandler: $2) },
+            makeIterator: { nativeOrderingWindowEventStream(observedWindowIDs: $0).makeAsyncIterator() },
             restore: { try await restoreNativeWindowOrderingAfterChange($0, observedWindowIDs: $1, reportError: reportError) },
             windowOwnerPID: { systemNativeWindowDescription($0)?.ownerPID },
             frontmostApplication: { NSWorkspace.shared.frontmostApplication }, processIdentifier: { $0.processIdentifier },
             runMenuTask: { await runNativeWindowOrderingMenuTask(pid: $0, observedWindowIDs: $1, reportError: reportError) },
             reportError: reportError)
+    }
+}
+
+// Generic injected observer initializer is for fixtures; native specialization
+// above creates the original nominal EventStream iterator directly.
+extension WindowOrderingObserver {
+    convenience init<Observer>(observedWindowIDs: [UInt32],
+        makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer,
+        restore: @escaping (Window, @escaping () -> [UInt32]) async throws -> Void,
+        windowOwnerPID: @escaping (UInt32) -> Int32?, frontmostApplication: @escaping () -> Application?,
+        processIdentifier: @escaping (Application) -> Int32,
+        runMenuTask: @escaping (Int32, [UInt32]) async -> Void, reportError: @escaping (Error) -> Void
+    ) where Iterator == CGWindowEventStream<Window, Observer>.AsyncIterator {
+        self.init(observedWindowIDs: observedWindowIDs,
+            makeIterator: { orderingWindowEventStream(observedWindowIDs: $0, makeObserver: makeObserver).makeAsyncIterator() },
+            restore: restore, windowOwnerPID: windowOwnerPID, frontmostApplication: frontmostApplication,
+            processIdentifier: processIdentifier, runMenuTask: runMenuTask, reportError: reportError)
     }
 }
