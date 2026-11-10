@@ -7890,3 +7890,22 @@ that speculative list expansion was removed. This fixture remains failing and
 is not counted as validated. The complete production helper and separate SlimCore
 consumer both pass, but do not substitute for transaction behavior regression.
 The unresolved fixture dependency closure is explicitly retained as remaining work.
+
+### 2026-11-11 — Transaction regression source dependencies repaired
+
+Fixed the previously failing native-transaction-scope fixture's real source list:
+UIElement concrete conformance, protocol state getters, cached text getters and
+menu action preparation were missing after earlier source decomposition. No
+protocol stubs or assertions were removed. Split the unchanged TransformedUIElement
+setter out of UIElementProviderSetValue into its own source file, so the base
+protocol fixture does not need the unrelated full transformed-node constructor.
+The complete helper target still includes both implementations automatically.
+
+The actual compiled transaction fixture now passes (41.86s), exercising nested
+and throwing task-local restoration, roots and flags. This supersedes the prior
+compile-failing transaction-regression checkpoint, not real native UI acceptance.
+No user app, screenshot, model or installed native executable was operated.
+
+Final full helper link/build passed (10.88s, exit 0). A byte comparison confirms
+the moved TransformedUIElement setter body is unchanged from the prior commit.
+Whitespace diff check passed.
