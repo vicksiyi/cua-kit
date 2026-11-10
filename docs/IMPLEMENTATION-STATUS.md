@@ -7616,3 +7616,23 @@ explicit type preservation and missing-type rejection (no inferred decode fallba
 Helper build passed (36.33s). No desktop, paid model or original native execution.
 Full DataFile interface/module audit and File/ScreenshotFile composition still
 remain; this is not a whole native restoration completion claim.
+
+### 2026-11-11 — File representation and ScreenshotFile value ownership
+
+Restored the File path/temporaryFile/data enum, observed convenience constructors
+and derived Hashable/Codable representation. Native CodingKeys field descriptors
+confirm outer case names and _0 for each nested payload; encode uses nested keyed
+containers, and decode checks one recognized case. DataFile identity and
+TemporaryFile path equality remain distinct. File accessors/naming/representationType
+are not yet implemented and are not substituted with guessed policy.
+
+Added ScreenshotFile's three immutable fields and fieldwise derived coding/hash/
+equality. Ownership passes through File rather than a substitute bare temporary
+owner. Initial thirteen-check suite passed. Added explicit retention/deletion
+coverage for copied ScreenshotFile values and reran the suite; terminal result
+recorded below. No original native execution, desktop operation or model call.
+Writer naming/composition, full interface/module alignment and live acceptance
+remain incomplete; these value types alone do not complete screenshot output.
+
+Final suite including ScreenshotFile copy retention/final-release cleanup:
+13 checks passed. Swift helper build passed (18.08s, exit 0).

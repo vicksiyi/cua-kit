@@ -1,0 +1,32 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "constructors": {
+    "temporary": "0x100fff480..0x100fff4b4 stores tag1",
+    "data": "0x100fff4b4..0x100fff5a8 constructs DataFile and stores tag2",
+    "path": "0x101000cf8"
+  },
+  "coding": {
+    "encode": "0x100ffffc0..0x1010003f4",
+    "decode": "0x1010005d8 onward",
+    "outerKeysDescriptor": "0x1012eb2f4 -> path,temporaryFile,data",
+    "nestedKeysDescriptors": [
+      "0x1012eb318",
+      "0x1012eb33c",
+      "0x1012eb360"
+    ],
+    "nestedField": "_0 in all three branches",
+    "semantics": "Swift synthesized keyed enum representation; decode enforces one recognized case"
+  },
+  "ScreenshotFile": {
+    "fields": "0x1012ea684/0x1013468a0 -> File, URL, String",
+    "init": "0x100fb2aa0..0x100fb2b20 moves three fields",
+    "derivedEquality": "0x100fb2cbc calls File equality then URL equality then String comparison",
+    "codingAndHash": "0x100fb2d4c / 0x100fb303c / 0x100fb2f04; fieldwise derived contracts"
+  },
+  "validation": "reconstruction/screenshot-file-representation-check.swift; SDK JSON/case/hash/ownership tests, not original-native execution",
+  "limits": [
+    "File convenience accessors, naming and representationType still pending",
+    "Screenshot writer naming/composition and live capture integration pending",
+    "Module-boundary/full interface audit pending"
+  ]
+}
