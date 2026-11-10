@@ -8783,3 +8783,18 @@ cancellation short circuit, and safe empty exact entries. Nonempty posting uses
 injected closures only. Handler/global-tap send overloads and live event delivery
 remain unaccepted; moving these entries does not finish AccessibilitySupport or
 whole CUA restoration. See synthesized-send-evidence.json.
+
+## 2026-11-11 global session-tap send entry
+
+SynthesizedEvent.send(delay:) now exposes the original global async entry. Pinned
+instructions show tap raw1 (cgSessionEventTap), not raw0/HID. Every event receives
+a fresh Dispatch uptime timestamp before post; an optional delay follows each
+post including the last. The additional injected post/clock boundary makes tap,
+timestamp, order and wait behavior observable without sending global input.
+
+Build passed20.58s; native self-test and all15 module fixtures passed. New cases
+cover nil/zero/10ms delays, fixed injected per-event timestamps, session tap1,
+last-event wait and propagation of wait failure/cancellation. Empty exact entry
+runs safely; nonempty actual global posting was not executed. The exact export
+matches original. Handler-based send and live delivery remain incomplete; no
+whole module/whole CUA completion claim. See synthesized-send-evidence.json.

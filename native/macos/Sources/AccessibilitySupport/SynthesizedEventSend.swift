@@ -34,4 +34,24 @@ public extension SynthesizedEvent {
             if let delay { try await sleepUntil(now().advanced(by: delay)) }
         }
     }
+    // Original0x100755440 uses session tap raw1, not HID tap raw0.
+    func send(delay: Duration?) async throws {
+        try await send(delay: delay, post: { CGEventAPI.post($0, tap: $1) })
+    }
+
+    // Explicit dependency boundary for unposted native-event verification.
+    func send(delay: Duration?, post: (CGEvent, CGEventTapLocation) -> Void,
+        timestamp: () -> UInt64 = { DispatchTime.now().uptimeNanoseconds },
+        now: () -> ContinuousClock.Instant = { ContinuousClock().now },
+        sleepUntil: (ContinuousClock.Instant) async throws -> Void = {
+            try await ContinuousClock().sleep(until: $0, tolerance: nil)
+        }
+    ) async throws {
+        for event in cgEvents {
+            CGEventAPI.setTimestamp(event, timestamp: timestamp())
+            post(event, .cgSessionEventTap)
+            if let delay { try await sleepUntil(now().advanced(by: delay)) }
+        }
+    }
+
 }
