@@ -7560,3 +7560,24 @@ reconstruction/screenshot-file-layout-evidence.json. The audit passed. It proves
 layout only; File/DataFile algorithms and coding, ScreenshotFile contracts and
 writer naming/composition remain to recover. No runtime or desktop test is claimed
 for these unimplemented types.
+
+### 2026-11-11 — DataFile constructor and component-based type inference
+
+Restored immutable data/filename/type construction from 101004648..101004868,
+plus the type inference helper 101003d70..101003fa8 and Data.count fileSize.
+An explicit UTType wins. Otherwise System.FilePath.Component(filename) must
+succeed, its extension is passed to UTType(filenameExtension:conformingTo:.data),
+and absent component/extension/type falls back to .data. A path containing a
+separator is not reduced to its basename. This uses the exact SDK libraries
+identified in native import fixups, not independent extension/type mappings.
+
+All eleven screenshot checks passed, including explicit override, PNG inference,
+invalid components, hidden/plain filenames, binary payload retention and empty
+size. SDK forwarding checks support the statically recovered calls; they are
+not an original-native differential oracle. DataFile is explicitly partial:
+lazy materialization/lock owner, Codable and equality are still unimplemented,
+so File/ScreenshotFile composition has not been filled with substitute types.
+No model, user desktop or original native binary execution was used.
+
+The helper build passed (exit 0); the pinned File/ScreenshotFile layout audit was
+also regenerated and byte-matched its recorded evidence.

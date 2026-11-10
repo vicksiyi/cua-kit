@@ -1,0 +1,15 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "source": "0x101004648..0x101004868",
+  "inference": "0x101003d70..0x101003fa8",
+  "size": "0x101003bd4: Data.count storage branches",
+  "bindings": {
+    "0x101469288": "System.FilePath.Component.init?(String)",
+    "0x101469270": "System.FilePath.Component.extension",
+    "0x1014692e8": "UTType.init(filenameExtension:conformingTo:)",
+    "0x101469318": "UTType.data"
+  },
+  "rule": "Explicit type wins; otherwise single filename component extension, infer conforming to data, fallback data. Do not accept path components by splitting a path.",
+  "scope": "Only immutable fields, constructor, inferred type and size implemented; native lazy path lock, coding and equality still pending",
+  "validation": "reconstruction/data-file-construction-check.swift"
+}
