@@ -1,0 +1,33 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x1002580d0 -e 0x100258140
+SkyComputerUseService`static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ():
+SkyComputerUseService[0x1002580d0] <+0>:   adrp   x8, 4864
+SkyComputerUseService[0x1002580d4] <+4>:   ldr    x8, [x8, #0x268]
+SkyComputerUseService[0x1002580d8] <+8>:   cmn    x8, #0x1
+SkyComputerUseService[0x1002580dc] <+12>:  b.ne   0x1002580ec               ; <+28>
+SkyComputerUseService[0x1002580e0] <+16>:  adrp   x8, 4866
+SkyComputerUseService[0x1002580e4] <+20>:  ldr    x3, [x8, #0xce8]
+SkyComputerUseService[0x1002580e8] <+24>:  br     x3
+SkyComputerUseService[0x1002580ec] <+28>:  stp    x22, x21, [sp, #-0x30]!
+SkyComputerUseService[0x1002580f0] <+32>:  stp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x1002580f4] <+36>:  stp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x1002580f8] <+40>:  add    x29, sp, #0x20
+SkyComputerUseService[0x1002580fc] <+44>:  adrp   x8, 4864
+SkyComputerUseService[0x100258100] <+48>:  add    x8, x8, #0x268            ; SAIAttachmentCharacter + 512
+SkyComputerUseService[0x100258104] <+52>:  adrp   x9, -1
+SkyComputerUseService[0x100258108] <+56>:  add    x9, x9, #0x348            ; ___lldb_unnamed_symbol61313
+SkyComputerUseService[0x10025810c] <+60>:  mov    x19, x0
+SkyComputerUseService[0x100258110] <+64>:  mov    x0, x8
+SkyComputerUseService[0x100258114] <+68>:  mov    x20, x1
+SkyComputerUseService[0x100258118] <+72>:  mov    x1, x9
+SkyComputerUseService[0x10025811c] <+76>:  mov    x21, x2
+SkyComputerUseService[0x100258120] <+80>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x100258124] <+84>:  mov    x0, x19
+SkyComputerUseService[0x100258128] <+88>:  mov    x1, x20
+SkyComputerUseService[0x10025812c] <+92>:  mov    x2, x21
+SkyComputerUseService[0x100258130] <+96>:  ldp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x100258134] <+100>: ldp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x100258138] <+104>: ldp    x22, x21, [sp], #0x30
+SkyComputerUseService[0x10025813c] <+108>: b      0x1002580e0               ; <+16>
+(lldb) quit

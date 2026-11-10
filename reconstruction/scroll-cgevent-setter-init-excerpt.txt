@@ -1,0 +1,37 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x100257348 -e 0x1002573c8
+SkyComputerUseService`___lldb_unnamed_symbol61313:
+SkyComputerUseService[0x100257348] <+0>:   stp    x28, x27, [sp, #-0x60]!
+SkyComputerUseService[0x10025734c] <+4>:   stp    x26, x25, [sp, #0x10]
+SkyComputerUseService[0x100257350] <+8>:   stp    x24, x23, [sp, #0x20]
+SkyComputerUseService[0x100257354] <+12>:  stp    x22, x21, [sp, #0x30]
+SkyComputerUseService[0x100257358] <+16>:  stp    x20, x19, [sp, #0x40]
+SkyComputerUseService[0x10025735c] <+20>:  stp    x29, x30, [sp, #0x50]
+SkyComputerUseService[0x100257360] <+24>:  add    x29, sp, #0x50
+SkyComputerUseService[0x100257364] <+28>:  sub    sp, sp, #0x470
+SkyComputerUseService[0x100257368] <+32>:  adrp   x8, 4867
+SkyComputerUseService[0x10025736c] <+36>:  add    x8, x8, #0xc78            ; SAIAttachmentCharacter + 11280
+SkyComputerUseService[0x100257370] <+40>:  adrp   x9, 4867
+SkyComputerUseService[0x100257374] <+44>:  add    x9, x9, #0xc80            ; SAIAttachmentCharacter + 11288
+SkyComputerUseService[0x100257378] <+48>:  str    x8, [sp, #0x3a8]
+SkyComputerUseService[0x10025737c] <+52>:  str    x9, [sp, #0x3b0]
+SkyComputerUseService[0x100257380] <+56>:  adrp   x8, 4867
+SkyComputerUseService[0x100257384] <+60>:  add    x8, x8, #0xc88            ; SAIAttachmentCharacter + 11296
+SkyComputerUseService[0x100257388] <+64>:  adrp   x9, 4867
+SkyComputerUseService[0x10025738c] <+68>:  add    x9, x9, #0xc90            ; SAIAttachmentCharacter + 11304
+SkyComputerUseService[0x100257390] <+72>:  str    x8, [sp, #0x3b8]
+SkyComputerUseService[0x100257394] <+76>:  str    x9, [sp, #0x3c0]
+SkyComputerUseService[0x100257398] <+80>:  adrp   x8, 4867
+SkyComputerUseService[0x10025739c] <+84>:  add    x8, x8, #0xc98            ; SAIAttachmentCharacter + 11312
+SkyComputerUseService[0x1002573a0] <+88>:  adrp   x9, 4867
+SkyComputerUseService[0x1002573a4] <+92>:  add    x9, x9, #0xca0            ; SAIAttachmentCharacter + 11320
+SkyComputerUseService[0x1002573a8] <+96>:  str    x8, [sp, #0x3c8]
+SkyComputerUseService[0x1002573ac] <+100>: str    x9, [sp, #0x3d0]
+SkyComputerUseService[0x1002573b0] <+104>: adrp   x8, 4867
+SkyComputerUseService[0x1002573b4] <+108>: add    x8, x8, #0xca8            ; SAIAttachmentCharacter + 11328
+SkyComputerUseService[0x1002573b8] <+112>: adrp   x9, 4867
+SkyComputerUseService[0x1002573bc] <+116>: add    x9, x9, #0xcb0            ; SAIAttachmentCharacter + 11336
+SkyComputerUseService[0x1002573c0] <+120>: str    x8, [sp, #0x3d8]
+SkyComputerUseService[0x1002573c4] <+124>: str    x9, [sp, #0x3e0]
+(lldb) quit

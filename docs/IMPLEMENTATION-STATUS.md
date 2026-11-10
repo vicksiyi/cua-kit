@@ -8640,3 +8640,24 @@ ordinary event-number consumption. Existing native checks verify fixed numbers
 and global/local coordinates. Original/restored global entry signatures match.
 No activation or click was posted to an App; live acceptance, other remaining
 methods and broader original module parity are still incomplete.
+
+## 2026-11-11 scroll factory signature/module and errors
+
+The original independently optional window ID/bounds scroll signature now resides
+in AccessibilitySupport; CuaHelper retains only the MouseWindow compatibility
+overload. Source-before-checked-Int32 conversions, pixel units/wheelCount1,
+Y/X delta ordering, raw51 then91/92 and local-coordinate sequence follow the
+original. Failed source creation retains Error1; failed event allocation now
+uses original Error0 rather than helper PROVIDER_DISCONNECTED.
+
+Build passed21.58s; helper self-test passed. New12-combination fixture initially
+failed because scroll field91 did not retain requested ID123. Isolated direct
+public-API writes show fields91/92 both read0 on this system, also in the restored
+factory. raw51, pixel delta and global/local geometry checks pass. The fixture
+now reports that retention limitation and compares the isolated system baseline;
+it does not assert that91/92 retained the target ID. All9 linked fixtures pass.
+
+Original setIntegerValueField uses a soft-linked function via0x100257348; its
+resolved identity has not yet been decoded. Thus original field-retention parity
+is unresolved despite exact scroll entry signature. No events were posted.
+See scroll-factory-evidence.json and original setter/initializer excerpts.

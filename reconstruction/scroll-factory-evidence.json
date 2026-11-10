@@ -1,0 +1,38 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "entry": "0x100754a60",
+  "source": "native/macos/Sources/AccessibilitySupport/SynthesizedEventScroll.swift",
+  "calls": {
+    "0x100754ab4": "0x100258288",
+    "0x100754b00": "0x100257d88",
+    "0x100754bc0": "0x1002580d0",
+    "0x100754bd0": "0x1002580d0",
+    "0x100754be0": "0x1002580d0",
+    "0x100754c90": "0x10026cc8c"
+  },
+  "behavior": [
+    "HID-system source before checked Int32 delta conversions",
+    "Pixel units, wheelCount1, wheel1=deltaY/wheel2=deltaX/wheel3=0",
+    "Optional window identity and bounds independent; raw51 then91/92 then optional local coordinates",
+    "Source failure Error1; event failure Error0; conversion overflow traps"
+  ],
+  "limits": [
+    "Source/event allocation failures and out-of-range conversion traps not forced in runtime test",
+    "Helper MouseWindow overload remains an independent thin compatibility boundary",
+    "No scroll events posted; application delivery unaccepted",
+    "Passing public-system baseline does not prove original soft-linked setter identity or effective mouse-only fields on scroll events"
+  ],
+  "validation": {
+    "build": "exit0,21.58s",
+    "nativeInputSelfTest": "exit0",
+    "linkedFixtures": "9 pass after separating public-system field retention from requested writes",
+    "scrollCombinations": 12,
+    "exports": "Original optional-window/bounds entry signature matches exactly"
+  },
+  "observedDiscrepancy": {
+    "initialCheck": "Requested window123 was not retained by scroll field91; initial precondition failed",
+    "isolatedPublicAPIBaseline": "Both scroll fields91/92 read0 after direct public-API write123, same as restored factory",
+    "verified": "raw51 retains123; global/local coordinates and pixel delta verified",
+    "notVerified": "Original CGEventAPI.setIntegerValueField is soft-linked through initializer0x100257348; target identity not yet decoded, so original equivalence of field retention remains unresolved"
+  }
+}
