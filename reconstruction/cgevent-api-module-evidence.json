@@ -1,0 +1,28 @@
+{
+  "originalModule": "SystemSoftware.CGEventAPI",
+  "source": "native/macos/Sources/SystemSoftware/CGEventAPI.swift",
+  "requestSource": "native/macos/Sources/SystemSoftware/CGEventAPISymbolRequest.swift",
+  "restoredMethods": [
+    "getIntegerValueField",
+    "setIntegerValueField"
+  ],
+  "originalEntries": [
+    "0x100257e24",
+    "0x1002580d0"
+  ],
+  "initialization": "All24 required pointers resolved and checked before any method returns; original publisher0x10026b0f0 traps on missing optional/pointer",
+  "productionCallers": "AccessibilitySupport mouseEvent and scroll integer writes",
+  "validation": {
+    "build": "exit0,28.53s",
+    "helperSelfTest": "exit0; actual production SoftLink bindings on unposted native events",
+    "linkedFixtures": "All10 pass; direct CGEventAPI wrapper reads/writes agree with original-request system pointers",
+    "exports": "Both method signatures exactly match original",
+    "requests": "All5 image hashes,24 ordered symbol alternatives and salt byte values match pinned binary"
+  },
+  "limits": [
+    "Only2 of24 original public methods restored; no whole-type completion claim",
+    "Swift static array substitutes native generic pointer publication storage; not ABI-identical",
+    "No original vendor process executed or real events posted",
+    "Other native and browser restoration work remains incomplete"
+  ]
+}

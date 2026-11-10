@@ -115,21 +115,5 @@
   "limits": [
     "Owned restored SoftLink fixture resolves system images only; never executes original service",
     "Only integer getter/setter identity is checked; other22 entries are not claimed restored"
-  ],
-  "validation": {
-    "fixtures": "All10 linked checks pass",
-    "hashes": "Both underscore/non-underscore CGEvent integer names match original request priorities at slots4/14",
-    "resolvedNames": {
-      "getter": "_SLEventGetIntegerValueField",
-      "setter": "_SLEventSetIntegerValueField"
-    },
-    "pointerIdentity": "Both pointers equal corresponding dlsym CGEvent public symbols on this system",
-    "retention": {
-      "requested": 123,
-      "field51": 123,
-      "field91": 0,
-      "field92": 0
-    },
-    "execution": "Owned fixture calls resolved system API on allocated unposted scroll event; vendor executable never run"
-  }
+  ]
 }

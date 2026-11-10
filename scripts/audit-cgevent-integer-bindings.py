@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Extract pinned request arrays and emit owned SoftLink verification fixture."""
-import contextlib, hashlib, io, json, pathlib, runpy, struct
+import ast, contextlib, hashlib, io, json, pathlib, re, runpy, struct
 root=pathlib.Path(__file__).resolve().parents[1]
 with contextlib.redirect_stdout(io.StringIO()):
     audit=runpy.run_path(str(root/'scripts/audit-native-mouse-dispatch.py'))
@@ -13,6 +13,10 @@ images=array(0x101558cc8); requests=[array(0x101558d18+index*56) for index in ra
 assert len(images)==5 and all(len(values)==2 for values in requests)
 saltAddress=(0x1002576c0 & ~4095)+4083*4096+0xcf0
 salt=read(saltAddress,128).decode(); assert all(c in '0123456789abcdef' for c in salt)
+production=(root/'native/macos/Sources/SystemSoftware/CGEventAPISymbolRequest.swift').read_text()
+assert json.loads(re.search(r'static let salt = ("[^"]+")',production)[1]) == salt
+assert ast.literal_eval(re.search(r'static let images: \[UInt64\] = (\[[^\n]+\])',production)[1]) == images
+assert ast.literal_eval(re.search(r'static let symbols: \[\[UInt64\]\] = (\[.*?\n    \])',production,re.S)[1]) == requests
 report={'binarySha256':hashlib.sha256(audit['data']).hexdigest(),
 'initializer':'0x100257348','saltVA':hex(saltAddress),'salt':salt,
 'imagesVA':'0x101558cc8','images':images,'requestsVA':'0x101558d18 stride56','requests':requests,
@@ -22,6 +26,7 @@ report={'binarySha256':hashlib.sha256(audit['data']).hexdigest(),
 source='''import CoreGraphics
 import Darwin
 import SoftLink
+import SystemSoftware
 
 @main struct Check {
     static func main() {
@@ -51,6 +56,8 @@ import SoftLink
         for raw: UInt32 in [51, 91, 92] {
             let field = CGEventField(rawValue: raw)!
             set(event, field, 123)
+            CGEventAPI.setIntegerValueField(event, field: field, value: 123)
+            precondition(CGEventAPI.getIntegerValueField(event, field: field) == get(event, field))
             print("Original-request system binding scroll field \\(raw): requested123 retained\\(get(event, field))")
         }
     }

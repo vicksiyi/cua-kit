@@ -1,6 +1,7 @@
 import CoreGraphics
 import Darwin
 import SoftLink
+import SystemSoftware
 
 @main struct Check {
     static func main() {
@@ -30,6 +31,8 @@ import SoftLink
         for raw: UInt32 in [51, 91, 92] {
             let field = CGEventField(rawValue: raw)!
             set(event, field, 123)
+            CGEventAPI.setIntegerValueField(event, field: field, value: 123)
+            precondition(CGEventAPI.getIntegerValueField(event, field: field) == get(event, field))
             print("Original-request system binding scroll field \(raw): requested123 retained\(get(event, field))")
         }
     }

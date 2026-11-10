@@ -34,11 +34,11 @@ public extension SynthesizedEvent {
             pressure: 1)?.cgEvent else { throw Error.invalidParameter }
         event.flags = flags
         event.location = point
-        event.setIntegerValueField(.mouseEventButtonNumber, value: Int64(mouseButton.rawValue))
-        event.setIntegerValueField(.mouseEventSubtype, value: 3)
+        CGEventAPI.setIntegerValueField(event, field: .mouseEventButtonNumber, value: Int64(mouseButton.rawValue))
+        CGEventAPI.setIntegerValueField(event, field: .mouseEventSubtype, value: 3)
         if let windowID {
-            event.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: Int64(windowID))
-            event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
+            CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointer, value: Int64(windowID))
+            CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
             if let bounds = windowBounds {
                 var local = event.location.applying(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
                 if windowUsesFlippedCoordinates { local.y = bounds.height - local.y }

@@ -8679,3 +8679,19 @@ All10 linked module/owned checks pass. This proves the scoped pointer identity
 and in-memory behavior, not original service execution, complete CGEventAPI
 restoration, or effective event delivery. Other22 request entries remain outside
 this check. See cgevent-integer-binding-evidence.json and generated Swift fixture.
+
+## 2026-11-11 production CGEvent integer API restoration
+
+SystemSoftware.CGEventAPI now exposes original getIntegerValueField and
+setIntegerValueField signatures, backed by the full original5-image/24-symbol
+request table and salt. The original generic publisher0x10026b0f0 traps on a
+missing optional/pointer; the restored shared initializer therefore checks all24
+required results before use, not only the invoked slot. AccessibilitySupport
+mouseEvent/scroll now use the restored integer-write wrapper in production.
+
+Build passed28.53s; native input self-test and all10 linked fixtures pass,
+including production wrapper reads/writes against original-request pointers.
+Both selected exported signatures match original. Static request audit compares
+production arrays/salt to pinned binary bytes. Only2 of24 public methods are
+implemented; generic storage ABI, wider API behavior and live event delivery
+are unaccepted. See cgevent-api-module-evidence.json and publisher disassembly.

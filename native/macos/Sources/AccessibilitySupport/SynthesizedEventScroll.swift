@@ -17,10 +17,10 @@ public extension SynthesizedEvent {
         event.location = point
         if let windowID {
             if let field = CGEventField(rawValue: 51) {
-                event.setIntegerValueField(field, value: Int64(windowID))
+                CGEventAPI.setIntegerValueField(event, field: field, value: Int64(windowID))
             }
-            event.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: Int64(windowID))
-            event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
+            CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointer, value: Int64(windowID))
+            CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
             if let bounds = windowBounds {
                 var local = event.location.applying(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
                 if windowUsesFlippedCoordinates { local.y = bounds.height - local.y }
