@@ -28,5 +28,19 @@
     "File convenience accessors, naming and representationType still pending",
     "Screenshot writer naming/composition and live capture integration pending",
     "Module-boundary/full interface audit pending"
-  ]
+  ],
+  "accessors": {
+    "dispatch": {
+      "data": "0x100fff5a8..0x100fff720: witness offset 0x18",
+      "filename": "0x100fff720..0x100fff884: witness offset 0x8",
+      "path": "0x100fff9e4..0x100fffb5c: witness offset 0x20"
+    },
+    "FilePathWitnessTable": "0x101510b48",
+    "DataFileWitnessTable": "0x1015109c8",
+    "filenameWitness": "0x10100566c..0x101005744: lastComponent.string or empty string",
+    "dataWitness": "0x1010058e8..0x101005ab4: URL notDirectory/relative nil; Data(contentsOf:options:) raw1 mappedIfSafe",
+    "dataImport": "GOT 0x101463130 Foundation.Data.init(contentsOf:options:)",
+    "pathWitness": "0x101005ab4 copies FilePath; DataFile witness delegates throwing lazy path",
+    "validation": "reconstruction/file-accessors-check.swift: all representations, eager read vs lazy path, filename root/empty, read error and no path existence check"
+  }
 }

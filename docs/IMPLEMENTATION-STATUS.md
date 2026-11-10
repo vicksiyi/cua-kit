@@ -7636,3 +7636,22 @@ remain incomplete; these value types alone do not complete screenshot output.
 
 Final suite including ScreenshotFile copy retention/final-release cleanup:
 13 checks passed. Swift helper build passed (18.08s, exit 0).
+
+### 2026-11-11 — File filename/path/data witness routing
+
+Restored File accessors through the observed FilePath/DataFile witness behavior.
+Path and temporary cases use FilePath; data returns its stored name/bytes and
+only materializes when path is requested. FilePath filename uses lastComponent
+or an empty string. Its read witness constructs URL with notDirectory/nil-relative
+and reads Foundation Data with mappedIfSafe (raw 1), propagating errors. Path
+access itself does not validate existence or rewrite an externally deleted file.
+Witness tables/offsets and native source addresses are recorded in File evidence.
+
+All fourteen screenshot checks passed, including all representations, no eager
+DataFile write, empty/root filenames, actual binary bytes, missing-file read
+error and retained absent path. These owned-filesystem tests validate the Core
+implementation; no original native function was executed. File naming, type/size/
+existence and remaining interface properties, screenshot writer composition and
+live acceptance remain incomplete. No paid model or desktop operations occurred.
+
+Swift helper build passed (16.70s, exit 0); whitespace diff check passed.
