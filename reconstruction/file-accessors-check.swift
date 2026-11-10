@@ -20,6 +20,23 @@ import UniformTypeIdentifiers
             let appended = (" " as NSString).appendingPathExtension(for: type)
             precondition(" " + File.pathExtension(for: type) == appended)
         }
+        let textURL = root.appendingPathComponent("text.txt")
+        let text = "hello 中文 🌍"
+        try text.write(to: textURL, atomically: false, encoding: .utf16)
+        let textFile = File(FilePath(textURL.path))
+        let textResult = try textFile.textContents()
+        precondition(textResult == text && textFile.pathOrFilename == textURL.path)
+        let memoryText = File(data: Data(text.utf8), filename: "memory-text.txt", type: .plainText)
+        precondition(memoryText.pathOrFilename == "memory-text.txt")
+        let memoryTextURL = root.appendingPathComponent("memory-text.txt")
+        precondition(!fm.fileExists(atPath: memoryTextURL.path))
+        let materializedText = try memoryText.textContents()
+        precondition(materializedText == text && fm.fileExists(atPath: memoryTextURL.path))
+        precondition(memoryText.pathOrFilename == "memory-text.txt")
+        do {
+            _ = try File(FilePath(root.appendingPathComponent("missing-text").path)).textContents()
+            preconditionFailure("missing text error hidden")
+        } catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
         let bytes = Data([0, 255, 7])
         let url = root.appendingPathComponent("existing.bin")
         try bytes.write(to: url)

@@ -119,5 +119,20 @@
       "Otherwise base UTF16.prefix(limit); if truncated and date present remove final code unit and append ellipsis",
       "Append date then extension; String(decoding:as:UTF16) preserves replacement decoding for split surrogates"
     ]
+  },
+  "textContents": {
+    "source": "0x101001244..0x1010014c0",
+    "order": "Initialize encoding UTF8, obtain throwing File.path (materializes data), String(contentsOfFile:usedEncoding:)",
+    "bindings": {
+      "0x101463758": "Foundation.String.init(contentsOfFile:usedEncoding:)",
+      "0x1014637d8": "String.Encoding.utf8"
+    },
+    "semantics": "Foundation auto detection with inout encoding; no strict UTF8-only decode or lossy data decode; errors propagate",
+    "validation": "UTF16/BOM Unicode path file, UTF8 memory file materialization, missing path error"
+  },
+  "pathOrFilename": {
+    "source": "0x1010014c0..0x101001880",
+    "rule": "filePath representation attempts path.string; data or path error returns filename",
+    "validation": "Memory before/after materialization retains filename and no eager write; path returns full string"
   }
 }

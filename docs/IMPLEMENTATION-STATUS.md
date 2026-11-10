@@ -7844,3 +7844,21 @@ gate, not successful capture acceptance. Local raw log remains outside git at
 
 Swift helper build passed (26.61s, exit 0); whitespace diff check passed. Live
 acceptance remains blocked by desktop lock; source restoration work can continue.
+
+### 2026-11-11 — File text decoding and path-or-filename projection
+
+Restored textContents 101001244..1010014c0: initialize usedEncoding to UTF8,
+obtain the throwing path (including DataFile materialization), then delegate to
+Foundation String(contentsOfFile:usedEncoding:). This is encoding detection, not
+strict UTF8 Data decoding; path/read errors propagate. Restored pathOrFilename
+1010014c0..101001880: filePath attempts full path, while data or a path failure
+returns filename. Materialized data still projects its name, not its cached path.
+
+Owned SDK tests cover UTF16/BOM Unicode text, UTF8 memory materialization,
+name-only projection before/after materialization and missing-file read failure.
+No original native function, user desktop or paid model was run. Full symbol/API
+coverage, defaults, signposts, module ownership and production screenshot routing
+remain incomplete; last real UI gate is still screenLocked, not accepted.
+
+All sixteen screenshot checks passed; helper build passed (23.44s, exit 0).
+Whitespace diff check passed.

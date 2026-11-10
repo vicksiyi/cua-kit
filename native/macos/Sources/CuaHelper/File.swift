@@ -42,6 +42,20 @@ enum File: Hashable, Codable {
         String((" " as NSString).appendingPathExtension(for: type).dropFirst())
     }
 
+    // 101001244..1010014c0: materialize path even for data; Foundation
+    // detects encoding via an inout initialized to UTF8 (not strict UTF8 decode).
+    func textContents() throws -> String {
+        var encoding = String.Encoding.utf8
+        return try String(contentsOfFile: path.string, usedEncoding: &encoding)
+    }
+
+    // 1010014c0..101001880: data uses filename without materialization;
+    // path failures fall back to filename rather than an empty string.
+    var pathOrFilename: String {
+        if representationType == .filePath, let path = try? path { return path.string }
+        return filename
+    }
+
     var type: UTType {
         switch self {
         case .data(let file): return file.type
