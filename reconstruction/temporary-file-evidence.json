@@ -18,7 +18,7 @@
   "implementation": "native/macos/Sources/CuaHelper/TemporaryFile.swift",
   "validation": "reconstruction/temporary-file-ownership-check.swift",
   "limits": [
-    "Data convenience constructor and Codable not yet restored",
+    "Full original class/module interface coverage audit pending",
     "not wired to ScreenshotFile owner or production screenshot file route"
   ],
   "uniquePath": {
@@ -82,6 +82,23 @@
     "writeCall": "0x101007f4c -> 0x10114ead0 -> GOT 0x1014631f8 Foundation.Data.write(to:options:)",
     "writeOptionsRawValue": 2,
     "urlInit": "0x101007f20 -> 0x10114e980 -> GOT 0x1014630d0 URL.init(filePath:directoryHint:relativeTo:)",
-    "status": "URL enum/default argument details still need verification; not implemented by assumption"
+    "status": "Restored using URL(filePath:directoryHint:.notDirectory,relativeTo:nil) and Data.write(options:.withoutOverwriting); shared writing stages preserve native ordering",
+    "directoryHintBinding": "0x101462fe8 -> Foundation.URL.DirectoryHint.notDirectory",
+    "optionsVerification": "SDK Data.WritingOptions.withoutOverwriting.rawValue == 2",
+    "validation": "Owned binary/empty files, collision numbering, missing parent propagation, final-release cleanup"
+  },
+  "codable": {
+    "encode": "0x101006b98..0x101006cb4",
+    "decode": "0x101006d00..0x101006ebc",
+    "codingKeysDescriptor": "0x1012eb468 -> CodingKeys; single field descriptor 0x101347690 -> path at 0x1013120f0",
+    "bindings": {
+      "0x101468738": "Encoder.container(keyedBy:)",
+      "0x101467bf8": "KeyedEncodingContainer.encode(_:forKey:)",
+      "0x101467b28": "KeyedDecodingContainer.decode(_:forKey:)",
+      "0x1014692a8": "System.FilePath Encodable conformance",
+      "0x1014692b8": "System.FilePath Decodable conformance"
+    },
+    "semantics": "Only keyed path; no copying, byte serialization or existence validation; decoded path is owned",
+    "validation": "SDK FilePath envelope JSON roundtrip, absent path adoption, deletion at final release, missing key error"
   }
 }

@@ -54,6 +54,45 @@ import System
         let directoryPath = directory!.path
         directory = nil
         precondition(!fm.fileExists(atPath: directoryPath.string))
+        struct PathEnvelope: Codable { let path: FilePath }
+        let serializedPath = named.appending("not-created")
+        let payload = try JSONEncoder().encode(PathEnvelope(path: serializedPath))
+        var decoded: TemporaryFile? = try JSONDecoder().decode(TemporaryFile.self, from: payload)
+        precondition(decoded!.path == serializedPath)
+        precondition(!fm.fileExists(atPath: serializedPath.string))
+        let encoded = try JSONEncoder().encode(decoded!)
+        let envelope = try JSONDecoder().decode(PathEnvelope.self, from: encoded)
+        precondition(envelope.path == serializedPath)
+        // Decoding adopts an absent path; if later materialized, final release removes it.
+        try Data().write(to: URL(fileURLWithPath: serializedPath.string))
+        decoded = nil
+        precondition(!fm.fileExists(atPath: serializedPath.string))
+        do {
+            _ = try JSONDecoder().decode(TemporaryFile.self, from: Data("{}".utf8))
+            preconditionFailure("missing path accepted")
+        } catch DecodingError.keyNotFound(let key, _) { precondition(key.stringValue == "path") }
+        precondition(Data.WritingOptions.withoutOverwriting.rawValue == 2)
+        let dataBytes = Data([0, 255, 1, 0, 10])
+        var dataOwner: TemporaryFile? = try TemporaryFile(writingData: dataBytes, as: "data.bin")
+        let dataPath = dataOwner!.path
+        let actualData = try Data(contentsOf: URL(fileURLWithPath: dataPath.string))
+        precondition(actualData == dataBytes)
+        var collisionOwner: TemporaryFile? = try TemporaryFile(writingData: Data(), as: "data.bin")
+        let collisionPath = collisionOwner!.path
+        precondition(collisionPath == named.appending("1/data.bin"))
+        let emptyData = try Data(contentsOf: URL(fileURLWithPath: collisionPath.string))
+        precondition(emptyData.isEmpty)
+        dataOwner = nil
+        collisionOwner = nil
+        precondition(!fm.fileExists(atPath: dataPath.string))
+        precondition(!fm.fileExists(atPath: collisionPath.string))
+        TemporaryFile.temporaryDirectory = named.appending("absent-parent")
+        do {
+            _ = try TemporaryFile(writingData: dataBytes, as: "failed")
+            preconditionFailure("missing parent silently created")
+        } catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
+        precondition(!fm.fileExists(atPath: TemporaryFile.temporaryDirectory.string))
+        TemporaryFile.temporaryDirectory = named
         let source = base.appending("original.txt")
         let bytes = Data([0, 1, 255, 10])
         try bytes.write(to: URL(fileURLWithPath: source.string))

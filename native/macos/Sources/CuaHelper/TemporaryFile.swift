@@ -4,8 +4,8 @@ import os
 
 // Adopted-file ownership from 1010061a0..101006200 and deinit 1010065bc.
 // Native System.FilePath is available from the SDK and matches vendor imports.
-// Codable and the data convenience constructor remain separate.
-class TemporaryFile: Hashable {
+// Codable stores only the native FilePath; it does not embed file bytes.
+class TemporaryFile: Hashable, Codable {
     enum Error: Swift.Error {
         case invalidFilePath
         case fileDidNotExistAfterCallingWriteBlock
@@ -18,6 +18,28 @@ class TemporaryFile: Hashable {
     let path: FilePath
 
     init(adoptingFileAt path: FilePath) { self.path = path }
+
+    private enum CodingKeys: String, CodingKey { case path }
+
+    // 101006b98 / 101006d00: keyed FilePath coding, without existence checks.
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        path = try container.decode(FilePath.self, forKey: .path)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(path, forKey: .path)
+    }
+
+    // 101007cac..1010080d8. The native implementation inlines the same
+    // select/write/existence/ownership stages as writingNewFile.
+    convenience init(writingData data: Data, as filename: String) throws {
+        try self.init(writingNewFile: filename) { path in
+            let url = URL(filePath: path.string, directoryHint: .notDirectory, relativeTo: nil)
+            try data.write(to: url, options: .withoutOverwriting)
+        }
+    }
 
     // 1010062c4..101006470: filename comes from the System component,
     // and FileManager owns copy semantics (including directories and links).

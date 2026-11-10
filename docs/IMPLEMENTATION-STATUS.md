@@ -7518,3 +7518,29 @@ so that constructor and Codable/ScreenshotFile remain incomplete.
 
 The Swift helper build passed (28.86s, exit 0). The preceding checkpoint push
 failed with an HTTP/2 framing-layer transport error; local commits were retained.
+
+### 2026-11-11 — TemporaryFile Data and keyed Codable
+
+Confirmed the Data constructor URL hint via GOT 101462fe8 binding to
+Foundation.URL.DirectoryHint.notDirectory, and the Foundation Data.write call's
+raw option 2 equals SDK withoutOverwriting. Restored these exact options with
+nil relative URL, retaining unique-path/write/existence/ownership order. Binary
+and empty-data output, collision selection, missing-parent error and cleanup
+checks pass; parent creation or default overwrite semantics were not invented.
+
+Recovered Codable's keyed container and single CodingKeys.path field from native
+metadata. Encode/decode dispatch use SDK System.FilePath conformances, not a
+serialized URL, file contents or handwritten path representation. Decode adopts
+without checking existence. Checks cover SDK-envelope roundtrip, missing key,
+absent-path adoption and later-created-file deletion at final release. Original
+full interface/module coverage and ScreenshotFile composition remain pending.
+
+Data-stage helper build passed (35.12s); ten checks passed before the subsequent
+Codable change. Final combined validation is recorded after terminal completion.
+No desktop operation, paid model or vendor native execution was used. GitHub
+HTTP/1.1 retry failed with a low-speed timeout; local commits remain intact.
+
+Final combined verification: all ten screenshot restoration checks passed with
+Data/Codable changes; Swift helper build passed (28.18s, exit 0). These are owned
+filesystem/SDK checks and static source evidence, not full native differential
+execution or desktop screenshot/input acceptance.
