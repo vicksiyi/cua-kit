@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import CoreGraphics
 
 // Operation body 0x10074eda0..0x10074f060, executed by the enclosing

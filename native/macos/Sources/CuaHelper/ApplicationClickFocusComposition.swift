@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import ApplicationServices
 
 extension UIElementProtocol {

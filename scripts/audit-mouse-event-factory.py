@@ -19,8 +19,8 @@ assert tables == {'left': [1,2,6,5], 'right': [3,4,7,5], 'other': [25,26,27,5]}
 report = {'binarySha256': hashlib.sha256(audit['data']).hexdigest(),
           'entry': '0x1007547d4', 'fieldDescriptor': hex(field), 'cases': names,
           'mappingFunction': '0x100754d28', 'eventTypes': tables,
-          'source': 'native/macos/Sources/CuaHelper/SynthesizedEventMouse.swift',
-          'limits': ['SynthesizedEvent remains in CuaHelper pending full original module relocation',
+          'source': 'native/macos/Sources/AccessibilitySupport/SynthesizedEventMouse.swift',
+          'limits': ['Other SynthesizedEvent extension bodies remain in CuaHelper',
                      'No complete ABI/default-argument parity claimed',
                      'In-memory event checks do not prove application event delivery']}
 (root / 'reconstruction/mouse-event-factory-evidence.json').write_text(json.dumps(report, indent=2)+'\n')

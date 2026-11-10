@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import AppKit
 
 // AXEnablementOperation helper 0x100701230..0x1007019f8. The Spotify path

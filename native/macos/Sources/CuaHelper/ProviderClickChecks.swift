@@ -1,3 +1,4 @@
+import AccessibilitySupport
 #if canImport(SystemSoftware)
 import SystemSoftware
 #endif

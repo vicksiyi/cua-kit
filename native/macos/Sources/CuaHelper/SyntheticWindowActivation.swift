@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import CoreGraphics
 
 // Read dependencies of the WindowUIElementProtocol existential used at

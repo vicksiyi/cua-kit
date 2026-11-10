@@ -2,7 +2,7 @@ import AppKit
 import CoreGraphics
 import SystemSoftware
 
-extension SynthesizedEvent {
+public extension SynthesizedEvent {
     // Original field descriptor0x101323788: four payload-free cases in this order.
     enum MouseEventType: Hashable {
         case mouseDown, mouseUp, mouseDragged, mouseMoved

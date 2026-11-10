@@ -1,0 +1,27 @@
+{
+  "originalModule": "AccessibilitySupport",
+  "movedFiles": [
+    "SynthesizedEvent.swift",
+    "SynthesizedEventMouse.swift",
+    "SynthesizedEventMoveMouse.swift",
+    "SynthesizedEventNumber.swift"
+  ],
+  "sourceDirectory": "native/macos/Sources/AccessibilitySupport",
+  "exactMatchedExportSignatures": [
+    "static AccessibilitySupport.SynthesizedEvent.mouseEvent(eventNumber: Swift.Int64, type: AccessibilitySupport.SynthesizedEvent.MouseEventType, clickCount: Swift.Int, at: __C.CGPoint, mouseButton: __C.CGMouseButton, flags: __C.CGEventFlags, inWindow: Swift.UInt32?, windowBounds: __C.CGRect?, windowUsesFlippedCoordinates: Swift.Bool) throws -> AccessibilitySupport.SynthesizedEvent",
+    "static AccessibilitySupport.SynthesizedEvent.moveMouse(to: __C.CGPoint, inWindow: Swift.UInt32?, windowBounds: __C.CGRect?, windowUsesFlippedCoordinates: Swift.Bool) throws -> AccessibilitySupport.SynthesizedEvent",
+    "static AccessibilitySupport.SynthesizedEvent.nextEventNumber.getter : Swift.Int64"
+  ],
+  "validation": {
+    "build": "exit0,37.02s",
+    "inputSelfTest": "exit0,actual unposted native events",
+    "clickTargetRegression": "1 pass,links actual AccessibilitySupport/SystemSoftware objects"
+  },
+  "limits": [
+    "Matching three selected export signatures is not whole module ABI or behavioral parity",
+    "Other SynthesizedEvent extensions remain in CuaHelper until their helper dependencies are restored in the appropriate modules",
+    "Public initializer is an explicit cross-module construction boundary; no claim it was an original exported initializer",
+    "Event-number lock remains independently authored host synchronization",
+    "No live application input acceptance"
+  ]
+}

@@ -8587,3 +8587,22 @@ combinations (3 window identities x2 geometry states x2 flip states), including
 native event-field/coordinate inspection and total event-number consumption.
 Events were not posted. Module relocation, default arguments and original
 controller-to-delivery composition remain unfinished; no live UI claim.
+
+## 2026-11-11 SynthesizedEvent nominal module alignment
+
+The core SynthesizedEvent type, Error/MouseEventType, mouseEvent/moveMouse and
+event-number storage now reside in AccessibilitySupport, matching the original
+module. All22 CuaHelper references were inspected and dependent files import
+the module explicitly; the standalone click-target regression links the actual
+built module objects instead of compiling a duplicate helper-local nominal type.
+Three selected exported signatures (mouseEvent, moveMouse, nextEventNumber)
+match the original demangled exports exactly. The explicit public cgEvents
+initializer is a cross-module boundary, not a claimed original exported entry.
+
+Swift build passed37.02s; native input self-test and click-target regression
+passed, as did all seven linked SystemSoftware/AccessibilitySupport fixtures.
+Other event extension methods still depend on CuaHelper services and await
+source-backed module separation. The event-number lock is an independent host
+synchronization choice. Selected exports and tests do not establish full ABI,
+whole AccessibilitySupport restoration or real application event delivery.
+See reconstruction/synthesized-event-module-evidence.json.

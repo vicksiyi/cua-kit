@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import CoreGraphics
 
 // Controller scroll tail0x100081c9c..0x100081d64. Upstream resolves the

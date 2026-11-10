@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import CoreGraphics
 
 @main struct UIElementClickTargetTests {

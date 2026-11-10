@@ -29,9 +29,9 @@
       5
     ]
   },
-  "source": "native/macos/Sources/CuaHelper/SynthesizedEventMouse.swift",
+  "source": "native/macos/Sources/AccessibilitySupport/SynthesizedEventMouse.swift",
   "limits": [
-    "SynthesizedEvent remains in CuaHelper pending full original module relocation",
+    "Other SynthesizedEvent extension bodies remain in CuaHelper",
     "No complete ABI/default-argument parity claimed",
     "In-memory event checks do not prove application event delivery"
   ],

@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import SlimCore
 import Foundation
 import AppKit

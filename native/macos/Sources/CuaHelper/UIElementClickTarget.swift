@@ -1,3 +1,4 @@
+import AccessibilitySupport
 import CoreGraphics
 
 // Extracted start of the simulated-click branch:

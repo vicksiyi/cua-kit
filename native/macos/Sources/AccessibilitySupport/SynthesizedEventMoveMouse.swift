@@ -1,6 +1,6 @@
 import CoreGraphics
 
-extension SynthesizedEvent {
+public extension SynthesizedEvent {
     // Original0x100754d5c: consume/increment event number before allocation;
     // NSEvent mouseMoved, clickCount1, button0, flags0, pressure1. Its remaining
     // construction matches mouseEvent's optional window/bounds branches.

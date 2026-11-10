@@ -5,7 +5,7 @@ import Foundation
 // The lock protects the CLI host's callers; it is not a recovered vendor lock.
 private let synthesizedEventNumberLock = NSLock()
 private var synthesizedEventNumber: Int64 = 0
-extension SynthesizedEvent {
+public extension SynthesizedEvent {
     static var nextEventNumber: Int64 {
         synthesizedEventNumberLock.lock()
         defer { synthesizedEventNumberLock.unlock() }

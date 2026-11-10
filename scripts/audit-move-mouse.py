@@ -21,7 +21,7 @@ for site, target in calls.items(): assert branch(site) == target
 assert word(0x100754d90) == 0xb10006c9
 assert word(0x100754d94) & 0xff00001f == 0x54000006
 report = {'binarySha256': hashlib.sha256(audit['data']).hexdigest(),
-          'entry':'0x100754d5c', 'source':'native/macos/Sources/CuaHelper/SynthesizedEventMoveMouse.swift',
+          'entry':'0x100754d5c', 'source':'native/macos/Sources/AccessibilitySupport/SynthesizedEventMoveMouse.swift',
           'calls':{hex(k):hex(v) for k,v in calls.items()},
           'behavior':['Consume event number with checked increment before allocation',
                       'NSEvent mouseMoved, clickCount1, pressure1, no initial modifiers',
@@ -30,6 +30,6 @@ report = {'binarySha256': hashlib.sha256(audit['data']).hexdigest(),
                       'Translation then conditional Y flip; allocation failure invalidParameter'],
           'limits':['Restored body delegates common allocation to mouseEvent; original binary has inlined construction',
                     'No production moveMouse caller added without original controller evidence',
-                    'CuaHelper module placement remains pending; no live event delivery acceptance']}
+                    'Other extensions remain in CuaHelper; no live event delivery acceptance']}
 (root/'reconstruction/move-mouse-evidence.json').write_text(json.dumps(report,indent=2)+'\n')
 print('Original moveMouse checked increment and seven native call sites verified')

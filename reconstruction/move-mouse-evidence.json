@@ -1,7 +1,7 @@
 {
   "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
   "entry": "0x100754d5c",
-  "source": "native/macos/Sources/CuaHelper/SynthesizedEventMoveMouse.swift",
+  "source": "native/macos/Sources/AccessibilitySupport/SynthesizedEventMoveMouse.swift",
   "calls": {
     "0x100754e38": "0x1002580c4",
     "0x100754e48": "0x100258140",
@@ -21,6 +21,6 @@
   "limits": [
     "Restored body delegates common allocation to mouseEvent; original binary has inlined construction",
     "No production moveMouse caller added without original controller evidence",
-    "CuaHelper module placement remains pending; no live event delivery acceptance"
+    "Other extensions remain in CuaHelper; no live event delivery acceptance"
   ]
 }
