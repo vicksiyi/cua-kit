@@ -43,18 +43,9 @@ func mouseClickEvents(point: CGPoint, button: String, count: Int, flags: CGEvent
     case "middle","m": mouse = .center
     default: throw fail("INVALID_ARGUMENT","Unknown mouse button.")
     }
-    var events: [CGEvent] = []
-    for click in 1...count {
-        let eventNumber = SynthesizedEvent.nextEventNumber
-        for type: SynthesizedEvent.MouseEventType in [.mouseDown, .mouseUp] {
-            let event = try SynthesizedEvent.mouseEvent(eventNumber: eventNumber,
-                type: type, clickCount: click, at: point, mouseButton: mouse,
-                flags: flags, inWindow: window?.id, windowBounds: window?.frame,
-                windowUsesFlippedCoordinates: window?.usesFlippedCoordinates ?? false)
-            events.append(contentsOf: event.cgEvents)
-        }
-    }
-    return events
+    return try SynthesizedEvent.click(at: point, andDragTo: nil, mouseButton: mouse,
+        count: count, flags: flags, inWindow: window?.id, windowBounds: window?.frame,
+        windowUsesFlippedCoordinates: window?.usesFlippedCoordinates ?? false).cgEvents
 }
 extension Target {
     func observedInputPoint(_ params: [String: Any]) async throws -> CGPoint {

@@ -1,0 +1,27 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "entry": "0x1007536ec",
+  "body": "0x100755a4c",
+  "source": "native/macos/Sources/AccessibilitySupport/SynthesizedEventClick.swift",
+  "behavior": [
+    "Reject count<1; no native upper count cap",
+    "Each click down/up share one event number and increasing click count",
+    "Drag adds exactly three events at start,midpoint,end,all sharing one additional number and clickCount0",
+    "Final up at destination uses original down event number",
+    "Window/bounds/flip/button/flags use original mouse-event construction"
+  ],
+  "limits": [
+    "Original inlined event construction is factored through restored mouseEvent helper",
+    "Outer helper count<=10 validation remains independent adapter policy",
+    "Production Drag.swift still uses independent20-step interpolation and requires separate dispatch/cancellation alignment",
+    "No real input or application acceptance performed"
+  ],
+  "validation": {
+    "build": "exit0,27.51s",
+    "nativeSelfTest": "exit0",
+    "linkedFixtures": "All16 pass after correcting fixture tuple type annotation",
+    "clickCases": "Three buttons xcounts1/2/12 xplain/drag; events,positions,click counts,paired/drag event numbers,flags/window routing and total counter consumption",
+    "invalidCounts": "-1 and0 throw original invalidParameter",
+    "exports": "Exact original click(at:andDragTo:...) signature matches"
+  }
+}

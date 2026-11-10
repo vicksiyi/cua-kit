@@ -8815,3 +8815,20 @@ skipped last event, failure/cancellation stop, singleton and empty sequences.
 Original export matches. All4 original send entry signatures are now present,
 but actual default callback delivery and wider event/native behavior remain
 unaccepted. See synthesized-send-evidence.json and handler disassembly excerpts.
+
+## 2026-11-11 original click/drag event composition
+
+SynthesizedEvent.click(at:andDragTo:...) now follows original0x100755a4c:
+count>=1, paired down/up numbering, optional3 dragged events at start/mid/end
+sharing another number and clickCount0, final up at destination with down number.
+The original has no10-count cap and no20-step drag interpolation. Existing plain
+mouseClickEvents now delegates construction to this entry; its outer<=10/finite
+validation remains an independent helper policy. Production Drag.swift still
+uses20-step interpolation pending separate routing/cancellation integration.
+
+Build passed27.51s; native self-test and all16 linked fixtures passed after a
+fixture-only tuple inference correction. Eighteen scenarios cover3 buttons,
+counts1/2/12 and plain/drag composition, geometry,flags/routing and number
+consumption. Invalid counts-1/0 throw original error. Entry export matches.
+No events were posted. Drag delivery, keyboard/modifier reconstruction and wider
+CUA parity remain incomplete; see click-factory-evidence.json.
