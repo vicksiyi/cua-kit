@@ -428,6 +428,7 @@
     ],
     "bodyChange": "None after public-visibility normalization",
     "validation": "20 SDK/owned fixtures including existing offscreen/resize/matcher checks now in unified runner; full helper build; independent module consumer typecheck",
-    "remaining": "ScreenshotShareableContent still depends on CuaHelper onScreenMouseWindowIDs; offscreen SDK binding still depends on WindowServerSPI adapter; buffer/app entry and complete native parity remain pending"
-  }
+    "remaining": "ScreenshotShareableContent still depends on CuaHelper onScreenMouseWindowIDs; accelerated/offscreen stages now reside in SlimCore and call SystemSoftware; buffer/app entry, acquisition and complete native parity remain pending"
+  },
+  "windowServerCoverageAudit": "reconstruction/windowserver-api-coverage.json: exported method-name coverage only; no whole-project percentage"
 }

@@ -8061,3 +8061,22 @@ result handling, selected-window plan forwarding, capture failure skipping resiz
 and resize failure retaining the captured image. No private SPI or desktop input
 was invoked. Acquisition/window enumeration, buffer/default/signpost reconstruction,
 production file-route integration and current live acceptance remain incomplete.
+
+### 2026-11-11 — Exported WindowServer API coverage denominator established
+
+Added scripts/audit-windowserver-api-coverage.py. It pins the complete current
+Mach-O SHA256, reads nm symbols and Swift demangles without executing the vendor
+service. For exported static SystemSoftware.WindowServerSPI method names only,
+15 unique names are observed; 8 have public static method names in the restored
+type and 7 are missing: associatedWindowIDs, getScreenRect, getWindowBounds,
+modifyConnectionNotifications, resolvedCornerRadius, setCursorUpdatesFromBackground,
+and setWindowLocation. Full original signatures/addresses are recorded in
+reconstruction/windowserver-api-coverage.json for subsequent body reconstruction.
+
+Name presence is explicitly body-unproven. Local extra methods, non-exported
+methods, all other modules, ABI and actual runtime behavior are not represented by
+this denominator. These counts must not be promoted to whole-project progress.
+This exposes concrete remaining native work rather than assuming that a migrated
+WindowServer module is complete. Updated stale screenshot evidence to acknowledge
+the completed accelerated/offscreen module migration. No production code changed,
+no paid model, private SPI invocation or desktop operation occurred.

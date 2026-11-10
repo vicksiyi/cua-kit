@@ -1,0 +1,102 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "scope": "Exported static method names of SystemSoftware.WindowServerSPI only",
+  "source": "native/macos/Sources/SystemSoftware/WindowServerSPI.swift",
+  "exportedMethodCount": 15,
+  "namePresentCount": 8,
+  "missingNames": [
+    "associatedWindowIDs",
+    "getScreenRect",
+    "getWindowBounds",
+    "modifyConnectionNotifications",
+    "resolvedCornerRadius",
+    "setCursorUpdatesFromBackground",
+    "setWindowLocation"
+  ],
+  "localNamesNotInExportedSet": [
+    "getKeyFocusProcess",
+    "releaseKeyFocus"
+  ],
+  "methods": {
+    "associatedWindowIDs": {
+      "address": "0x000000010026d060",
+      "signature": "static SystemSoftware.WindowServerSPI.associatedWindowIDs(forWindow: Swift.UInt32) -> [Swift.UInt32]",
+      "status": "missing-from-restored-type"
+    },
+    "captureWindowImagesInRect": {
+      "address": "0x000000010026cf58",
+      "signature": "static SystemSoftware.WindowServerSPI.captureWindowImagesInRect(_: [Swift.UInt32], options: SystemSoftware.WindowServerCaptureOptions, rect: __C.CGRect, connection: Swift.OpaquePointer?) -> [__C.CGImageRef]?",
+      "status": "name-present-body-unproven"
+    },
+    "disableUpdate": {
+      "address": "0x000000010026cb84",
+      "signature": "static SystemSoftware.WindowServerSPI.disableUpdate(Swift.OpaquePointer?) -> __C.CGError",
+      "status": "name-present-body-unproven"
+    },
+    "getScreenRect": {
+      "address": "0x000000010026cc14",
+      "signature": "static SystemSoftware.WindowServerSPI.getScreenRect(forWindow: Swift.UInt32, connection: Swift.OpaquePointer?, rect: Swift.UnsafeMutablePointer<__C.CGRect>) -> __C.CGError",
+      "status": "missing-from-restored-type"
+    },
+    "getWindowBounds": {
+      "address": "0x000000010026cc08",
+      "signature": "static SystemSoftware.WindowServerSPI.getWindowBounds(forWindow: Swift.UInt32, connection: Swift.OpaquePointer?, rect: Swift.UnsafeMutablePointer<__C.CGRect>) -> __C.CGError",
+      "status": "missing-from-restored-type"
+    },
+    "mainConnectionID": {
+      "address": "0x000000010026bb1c",
+      "signature": "static SystemSoftware.WindowServerSPI.mainConnectionID() -> Swift.OpaquePointer?",
+      "status": "name-present-body-unproven"
+    },
+    "modifyConnectionNotifications": {
+      "address": "0x000000010026cef8",
+      "signature": "static SystemSoftware.WindowServerSPI.modifyConnectionNotifications(_: Swift.Int32, connection: Swift.OpaquePointer?) -> Swift.Int32",
+      "status": "missing-from-restored-type"
+    },
+    "reenableUpdate": {
+      "address": "0x000000010026cba0",
+      "signature": "static SystemSoftware.WindowServerSPI.reenableUpdate(Swift.OpaquePointer?) -> __C.CGError",
+      "status": "name-present-body-unproven"
+    },
+    "registerConnectionNotifyProc": {
+      "address": "0x000000010026bb5c",
+      "signature": "static SystemSoftware.WindowServerSPI.registerConnectionNotifyProc(_: Swift.OpaquePointer?, callback: @convention(c) (Swift.UInt32, Swift.UnsafeMutableRawPointer?, Swift.UInt32, Swift.UnsafeMutableRawPointer?) -> (), event: SystemSoftware.WindowServerEvent, context: Swift.UnsafeMutableRawPointer?) -> __C.CGError",
+      "status": "name-present-body-unproven"
+    },
+    "removeConnectionNotifyProc": {
+      "address": "0x000000010026bc50",
+      "signature": "static SystemSoftware.WindowServerSPI.removeConnectionNotifyProc(_: Swift.OpaquePointer?, callback: @convention(c) (Swift.UInt32, Swift.UnsafeMutableRawPointer?, Swift.UInt32, Swift.UnsafeMutableRawPointer?) -> (), event: SystemSoftware.WindowServerEvent, context: Swift.UnsafeMutableRawPointer?) -> __C.CGError",
+      "status": "name-present-body-unproven"
+    },
+    "requestNotificationsForWindows": {
+      "address": "0x000000010026bbe0",
+      "signature": "static SystemSoftware.WindowServerSPI.requestNotificationsForWindows(_: Swift.OpaquePointer?, windows: Swift.UnsafePointer<Swift.UInt32>, count: Swift.UInt32) -> ()",
+      "status": "name-present-body-unproven"
+    },
+    "resolvedCornerRadius": {
+      "address": "0x000000010026d2d0",
+      "signature": "static SystemSoftware.WindowServerSPI.resolvedCornerRadius(forWindow: Swift.UInt32) -> CoreGraphics.CGFloat?",
+      "status": "missing-from-restored-type"
+    },
+    "setCursorUpdatesFromBackground": {
+      "address": "0x000000010026cd64",
+      "signature": "static SystemSoftware.WindowServerSPI.setCursorUpdatesFromBackground(Swift.Bool) -> __C.CGError",
+      "status": "missing-from-restored-type"
+    },
+    "setWindowLevel": {
+      "address": "0x000000010026ccf8",
+      "signature": "static SystemSoftware.WindowServerSPI.setWindowLevel(_: Swift.Int32, forWindow: Swift.UInt32, connection: Swift.OpaquePointer?) -> __C.CGError",
+      "status": "name-present-body-unproven"
+    },
+    "setWindowLocation": {
+      "address": "0x000000010026cc8c",
+      "signature": "static SystemSoftware.WindowServerSPI.setWindowLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()",
+      "status": "missing-from-restored-type"
+    }
+  },
+  "limits": [
+    "Name presence does not verify signatures, bodies, ownership, ABI or runtime behavior",
+    "Non-exported methods and other CUA modules are outside this denominator",
+    "Do not convert these counts into whole-project completion percentage"
+  ]
+}
