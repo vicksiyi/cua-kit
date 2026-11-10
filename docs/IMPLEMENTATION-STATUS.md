@@ -7997,3 +7997,26 @@ functions typecheck without execution, so NSApp/SDK acquisition was not performe
 Acquisition/WindowServer binding, buffer ownership, original defaults/signposts,
 production file-route integration and actual desktop acceptance remain incomplete.
 No paid model or installed vendor native executable was run.
+
+### 2026-11-11 — Current WindowServer binding provenance revalidated
+
+Confirmed current exported mainConnectionID and capture option symbols belong to
+SystemSoftware. The existing request evidence's binarySha256 held only an old
+8-character tag, not a complete pin. Replaced it with the verified current SHA256
+and retained that old value as legacyBinaryTag. Added a reproducible read-only
+Mach-O audit comparing current native bytes, recorded requests and production
+Swift constants for primary/disable/reenable/capture bindings (16 symbol requests).
+
+Corrected an initial interpretation: zero words at imagesVA are static Swift
+array object headers, not evidence of absent request data or a changed runtime
+initializer. Count is +16 and UInt64 elements begin +32. All four groups' image
+arrays, symbol hashes and salt strings match the current binary and Swift source.
+No binding was changed to accommodate an audit failure. The script was adjusted
+for local Python's pre-3.10 zip API, then executed successfully with parsed output
+checks; the resulting report is recorded in windowserver-request-current-audit.json.
+
+This static check does not resolve/invoke private SPI or prove calling signatures,
+ownership or actual capture. It supplies the missing current-version provenance
+before moving WindowServer code into SystemSoftware. That module migration,
+visible-window API placement and remaining capture/default/signpost/integration
+work remain open; no full restoration or real UI acceptance is claimed.

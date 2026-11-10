@@ -1,0 +1,32 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "arrayElementOffset": 32,
+  "requests": [
+    {
+      "name": "functions",
+      "imageCount": 5,
+      "symbolCount": 13,
+      "matchesRecordedAndSwift": true
+    },
+    {
+      "name": "disableUpdate",
+      "imageCount": 5,
+      "symbolCount": 1,
+      "matchesRecordedAndSwift": true
+    },
+    {
+      "name": "reenableUpdate",
+      "imageCount": 5,
+      "symbolCount": 1,
+      "matchesRecordedAndSwift": true
+    },
+    {
+      "name": "captureWindowImagesInRect",
+      "imageCount": 5,
+      "symbolCount": 1,
+      "matchesRecordedAndSwift": true
+    }
+  ],
+  "validation": "Static request bytes only; no SPI resolution or execution",
+  "limits": "Does not establish calling signatures, ownership, runtime symbol availability or UI capture acceptance"
+}

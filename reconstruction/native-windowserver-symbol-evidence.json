@@ -1,5 +1,5 @@
 {
-  "binarySha256": "03030054",
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
   "requests": [
     {
       "name": "functions",
@@ -149,5 +149,8 @@
       ],
       "salt": "5f432bd6a61ddb58d97b14f71e16def7d6c8760a8a8200aa7719c33c74446c85bef954acef705119fc3163f398eb4eb2e60b39765ddbd30e2d0b835282573e7b"
     }
-  ]
+  ],
+  "legacyBinaryTag": "03030054",
+  "staticArrayLayout": "imagesVA/symbolsVA address Swift static array objects; count at +16, UInt64 elements at +32",
+  "currentAudit": "scripts/audit-windowserver-requests.py compares native bytes, recorded values and production Swift constants"
 }
