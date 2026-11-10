@@ -12,7 +12,7 @@
   "limits": [
     "Dictionary initializer/raw description helper are extracted public boundaries; original initializer access level not claimed",
     "No original memory layout/ABI parity claim",
-    "scale/screen/snapshot/observer coverage remains incomplete",
+    "snapshot/observer coverage remains incomplete",
     "No actual native window query acceptance"
   ],
   "enumeration": {
@@ -32,5 +32,18 @@
     "changes": "Move existing normalized generic point algorithm unchanged; add original static entry and desktop property; production wrappers delegate",
     "validation": "native build39.84s; static call/property audit; linked injected order/conversion/nil lookup and desktop property checks",
     "partialLayout": "Original stride88 and ownerPID4/bounds8/level40/isOnscreen80 match linked current type; not full ABI proof"
+  },
+  "screenAndScale": {
+    "source": "native/macos/Sources/SystemSoftware/CGWindowScreen.swift",
+    "original": "bestScreen260e0c..261068; scale25b86c; screen25bcf0",
+    "bodyChange": "Existing extracted generic selection unchanged after visibility normalization; original nominal property surfaces added",
+    "rules": [
+      "Intersecting preference wins without screen inventory read",
+      "Materialize all candidate intersection areas before first maximum",
+      "No-overlap list still chooses first; only empty list returns nil",
+      "scale queries with no preference; backingScaleFactor untouched; fallback2 on no screen"
+    ],
+    "validation": "native build34.09s; static original callsites; linked injected preference/order/tie/no-overlap/empty checks and compile-only real API surfaces",
+    "limits": "MainActor retained from existing adapter/SDK boundary; original annotation not established; real NSScreen/backing scale behavior not executed"
   }
 }

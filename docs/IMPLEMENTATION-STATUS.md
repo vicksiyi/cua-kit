@@ -8312,3 +8312,23 @@ Remaining scale/screen/snapshot/observer coverage and actual desktop point query
 input/capture acceptance stay incomplete. Cross-module generic helper/initializer
 visibility remains extracted rather than asserted original API. No real desktop
 inventory/window-number query, private SPI, vendor execution or paid model ran.
+
+### 2026-11-11 — CGWindow screen/scale and NSScreen bestScreen aligned
+
+Moved existing recovered bestWindowScreen generic stage from CuaHelper into
+SystemSoftware unchanged after public access normalization. Added original
+NSScreen.bestScreen(for:preferredScreen:) and CGWindow.screen/scale surfaces.
+An intersecting preference avoids reading screen inventory; otherwise all frame
+intersection areas are materialized before choosing first maximum. Zero overlap
+still picks first available screen. Scale uses no preference and returns backing
+scale unchanged, fallback2 only when no screen. Existing nativeWindowScale adapter
+now delegates to that selector. MainActor isolation is retained from the existing
+adapter/SDK boundary; original annotation is not established by native symbols.
+
+Full build passed34.09s. Linked injection tests passed preferred short circuit,
+frame-read order, first maximum tie, no overlap and empty inventory; actual SDK
+property signatures typecheck without execution. Static audit verifies original
+scale/screen calls, preference intersects/candidate intersection and maximum helper.
+No real screen inventory/backing-scale read, desktop input/capture or model ran.
+Snapshot/observer interfaces, broader source fidelity and actual UI acceptance
+remain incomplete; these tests do not prove complete NSScreen or CGWindow parity.

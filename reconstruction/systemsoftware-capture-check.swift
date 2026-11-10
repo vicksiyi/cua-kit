@@ -1,5 +1,6 @@
 import Foundation
 import CoreGraphics
+import AppKit
 import SystemSoftware
 import SlimCore
 
@@ -184,6 +185,33 @@ import SlimCore
         let desktopWindow = CGWindow([kCGWindowNumber as String: UInt32(1),
             kCGWindowLayer as String: CGWindowLevelForKey(CGWindowLevelKey(rawValue: 18)!)])
         precondition(desktopWindow.isDesktopLevel && !minimalWindow.isDesktopLevel)
+        var screenCalls: [String] = []
+        let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let preferred = bestWindowScreen(for: bounds, preferred: 9,
+            screens: { preconditionFailure("inventory despite intersecting preference") },
+            frame: { id in precondition(id == 9); return bounds })
+        precondition(preferred == 9)
+        let maxScreen = bestWindowScreen(for: bounds, preferred: 9,
+            screens: { screenCalls.append("inventory"); return [0, 1, 2] }, frame: { id in
+                screenCalls.append("frame \(id)")
+                return id == 9 ? CGRect(x: 1000, y: 1000, width: 10, height: 10)
+                    : CGRect(x: 0, y: 0, width: id == 0 ? 50 : 100, height: 100)
+            })
+        precondition(maxScreen == 1 && screenCalls == ["frame 9", "inventory", "frame 0", "frame 1", "frame 2"])
+        let noOverlap = bestWindowScreen(for: bounds, preferred: Optional<Int>.none,
+            screens: { [4, 5] }, frame: { _ in CGRect(x: 1000, y: 1000, width: 10, height: 10) })
+        precondition(noOverlap == 4)
+        let noScreens = bestWindowScreen(for: bounds, preferred: Optional<Int>.none,
+            screens: { [] }, frame: { _ in preconditionFailure("frame without candidates") })
+        precondition(noScreens == nil)
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
+}
+
+// Compile-only SDK property surfaces; no real screen read in injected fixture.
+@MainActor
+func checkRestoredScreenAPIs(_ window: CGWindow) {
+    let _: NSScreen? = window.screen
+    let _: CGFloat = window.scale
+    let _: NSScreen? = NSScreen.bestScreen(for: window.bounds, preferredScreen: nil)
 }

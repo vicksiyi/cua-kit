@@ -27,4 +27,9 @@ call(0x10025bcd8, 0x101153ec4)
 for site, expected in [(0x10025bca0, 0xb9400680), (0x10025bcb4, 0xb9402a80),
                        (0x10025bcbc, 0x39414280), (0x10025b998, 0x52800b18)]:
     assert struct.unpack('<I', r(site, 4))[0] == expected
+call(0x10025b8a8, 0x100260e0c)  # scale -> bestScreen
+call(0x10025bd28, 0x100260e0c)  # screen -> bestScreen
+call(0x100260e78, 0x101153e4c)  # preference intersects
+call(0x100260f58, 0x101153e40)  # candidate intersection
+call(0x100261020, 0x1002617bc)  # first maximum stage
 print('CGWindow enumeration, point lookup calls and desktop-level key match pinned binary')
