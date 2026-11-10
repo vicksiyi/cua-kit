@@ -1,0 +1,337 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x100730374 -e 0x10073089c
+SkyComputerUseService`___lldb_unnamed_symbol80948:
+SkyComputerUseService[0x100730374] <+0>:    sub    sp, sp, #0x120
+SkyComputerUseService[0x100730378] <+4>:    stp    d15, d14, [sp, #0x80]
+SkyComputerUseService[0x10073037c] <+8>:    stp    d13, d12, [sp, #0x90]
+SkyComputerUseService[0x100730380] <+12>:   stp    d11, d10, [sp, #0xa0]
+SkyComputerUseService[0x100730384] <+16>:   stp    d9, d8, [sp, #0xb0]
+SkyComputerUseService[0x100730388] <+20>:   str    x28, [sp, #0xc0]
+SkyComputerUseService[0x10073038c] <+24>:   stp    x27, x26, [sp, #0xd0]
+SkyComputerUseService[0x100730390] <+28>:   stp    x25, x24, [sp, #0xe0]
+SkyComputerUseService[0x100730394] <+32>:   stp    x23, x22, [sp, #0xf0]
+SkyComputerUseService[0x100730398] <+36>:   stp    x20, x19, [sp, #0x100]
+SkyComputerUseService[0x10073039c] <+40>:   stp    x29, x30, [sp, #0x110]
+SkyComputerUseService[0x1007303a0] <+44>:   add    x29, sp, #0x110
+SkyComputerUseService[0x1007303a4] <+48>:   mov    x19, x21
+SkyComputerUseService[0x1007303a8] <+52>:   mov    x27, x4
+SkyComputerUseService[0x1007303ac] <+56>:   mov    x24, x3
+SkyComputerUseService[0x1007303b0] <+60>:   mov    x26, x2
+SkyComputerUseService[0x1007303b4] <+64>:   mov    x22, x1
+SkyComputerUseService[0x1007303b8] <+68>:   mov    x28, x0
+SkyComputerUseService[0x1007303bc] <+72>:   cmp    w0, #0x0
+SkyComputerUseService[0x1007303c0] <+76>:   mov    w8, #0xc0000              ; =786432 
+SkyComputerUseService[0x1007303c4] <+80>:   csel   x20, xzr, x8, eq
+SkyComputerUseService[0x1007303c8] <+84>:   adrp   x8, 3566
+SkyComputerUseService[0x1007303cc] <+88>:   ldr    x0, [x8, #0xe20]
+SkyComputerUseService[0x1007303d0] <+92>:   bl     0x101154bf0               ; symbol stub for: objc_opt_self
+SkyComputerUseService[0x1007303d4] <+96>:   mov    x25, x0
+SkyComputerUseService[0x1007303d8] <+100>:  mov    w23, w28
+SkyComputerUseService[0x1007303dc] <+104>:  adrp   x8, 3603
+SkyComputerUseService[0x1007303e0] <+108>:  ldr    x1, [x8, #0xb0]
+SkyComputerUseService[0x1007303e4] <+112>:  str    xzr, [sp]
+SkyComputerUseService[0x1007303e8] <+116>:  movi   d0, #0000000000000000
+SkyComputerUseService[0x1007303ec] <+120>:  movi   d1, #0000000000000000
+SkyComputerUseService[0x1007303f0] <+124>:  movi   d2, #0000000000000000
+SkyComputerUseService[0x1007303f4] <+128>:  mov    w2, #0xd                  ; =13 
+SkyComputerUseService[0x1007303f8] <+132>:  mov    x3, x20
+SkyComputerUseService[0x1007303fc] <+136>:  mov    x4, x23
+SkyComputerUseService[0x100730400] <+140>:  mov    x5, #0x0                  ; =0 
+SkyComputerUseService[0x100730404] <+144>:  mov    w6, #0x1                  ; =1 
+SkyComputerUseService[0x100730408] <+148>:  mov    x7, #0x0                  ; =0 
+SkyComputerUseService[0x10073040c] <+152>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x100730410] <+156>:  mov    x29, x29
+SkyComputerUseService[0x100730414] <+160>:  bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x100730418] <+164>:  cbz    x0, 0x100730764           ; <+1008>
+SkyComputerUseService[0x10073041c] <+168>:  mov    x20, x0
+SkyComputerUseService[0x100730420] <+172>:  adrp   x8, 3602
+SkyComputerUseService[0x100730424] <+176>:  ldr    x1, [x8, #0x848]
+SkyComputerUseService[0x100730428] <+180>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x10073042c] <+184>:  mov    x29, x29
+SkyComputerUseService[0x100730430] <+188>:  bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x100730434] <+192>:  mov    x8, x0
+SkyComputerUseService[0x100730438] <+196>:  mov    x0, x20
+SkyComputerUseService[0x10073043c] <+200>:  mov    x20, x8
+SkyComputerUseService[0x100730440] <+204>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x100730444] <+208>:  cbz    x20, 0x100730764          ; <+1008>
+SkyComputerUseService[0x100730448] <+212>:  cbz    w28, 0x100730794          ; <+1056>
+SkyComputerUseService[0x10073044c] <+216>:  ldrb   w8, [x22, #0x20]
+SkyComputerUseService[0x100730450] <+220>:  tbnz   w8, #0x0, 0x100730794     ; <+1056>
+SkyComputerUseService[0x100730454] <+224>:  tbnz   w27, #0x0, 0x100730794    ; <+1056>
+SkyComputerUseService[0x100730458] <+228>:  ldp    d8, d9, [x22]
+SkyComputerUseService[0x10073045c] <+232>:  fmov   d12, x26
+SkyComputerUseService[0x100730460] <+236>:  fmov   d13, x24
+SkyComputerUseService[0x100730464] <+240>:  ldp    d10, d11, [x22, #0x10]
+SkyComputerUseService[0x100730468] <+244>:  adrp   x0, 3651
+SkyComputerUseService[0x10073046c] <+248>:  add    x0, x0, #0x2a8            ; type metadata for AccessibilitySupport.AXNotificationObserver + 632
+SkyComputerUseService[0x100730470] <+252>:  adrp   x1, 2660
+SkyComputerUseService[0x100730474] <+256>:  add    x1, x1, #0xdd0            ; direct field offset for AccessibilitySupport.EventTap.shouldAutoreenable : Swift.Bool + 128
+SkyComputerUseService[0x100730478] <+260>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10073047c] <+264>:  mov    x24, x0
+SkyComputerUseService[0x100730480] <+268>:  add    x1, sp, #0x48
+SkyComputerUseService[0x100730484] <+272>:  bl     0x101155364               ; symbol stub for: swift_initStackObject
+SkyComputerUseService[0x100730488] <+276>:  mov    x22, x0
+SkyComputerUseService[0x10073048c] <+280>:  adrp   x8, 2603
+SkyComputerUseService[0x100730490] <+284>:  ldr    q0, [x8, #0x900]
+SkyComputerUseService[0x100730494] <+288>:  str    q0, [x0, #0x10]
+SkyComputerUseService[0x100730498] <+292>:  adrp   x27, 3603
+SkyComputerUseService[0x10073049c] <+296>:  ldr    x1, [x27, #0xa0]
+SkyComputerUseService[0x1007304a0] <+300>:  movi   d2, #0000000000000000
+SkyComputerUseService[0x1007304a4] <+304>:  fmov   s3, #1.00000000
+SkyComputerUseService[0x1007304a8] <+308>:  mov    x0, x25
+SkyComputerUseService[0x1007304ac] <+312>:  mov    w2, #0x1                  ; =1 
+SkyComputerUseService[0x1007304b0] <+316>:  fmov   d0, d12
+SkyComputerUseService[0x1007304b4] <+320>:  fmov   d1, d13
+SkyComputerUseService[0x1007304b8] <+324>:  mov    x3, #0x0                  ; =0 
+SkyComputerUseService[0x1007304bc] <+328>:  mov    x4, x23
+SkyComputerUseService[0x1007304c0] <+332>:  mov    x5, #0x0                  ; =0 
+SkyComputerUseService[0x1007304c4] <+336>:  mov    w6, #0x1                  ; =1 
+SkyComputerUseService[0x1007304c8] <+340>:  mov    w7, #0x1                  ; =1 
+SkyComputerUseService[0x1007304cc] <+344>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x1007304d0] <+348>:  mov    x29, x29
+SkyComputerUseService[0x1007304d4] <+352>:  bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x1007304d8] <+356>:  cbz    x0, 0x1007307f8           ; <+1156>
+SkyComputerUseService[0x1007304dc] <+360>:  adrp   x8, 3602
+SkyComputerUseService[0x1007304e0] <+364>:  ldr    x1, [x8, #0x848]
+SkyComputerUseService[0x1007304e4] <+368>:  mov    x28, x20
+SkyComputerUseService[0x1007304e8] <+372>:  mov    x20, x0
+SkyComputerUseService[0x1007304ec] <+376>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x1007304f0] <+380>:  mov    x29, x29
+SkyComputerUseService[0x1007304f4] <+384>:  bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x1007304f8] <+388>:  mov    x26, x0
+SkyComputerUseService[0x1007304fc] <+392>:  mov    x0, x20
+SkyComputerUseService[0x100730500] <+396>:  mov    x20, x28
+SkyComputerUseService[0x100730504] <+400>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x100730508] <+404>:  cbz    x26, 0x1007307f8          ; <+1156>
+SkyComputerUseService[0x10073050c] <+408>:  mov    x0, x26
+SkyComputerUseService[0x100730510] <+412>:  mov    x1, #0x0                  ; =0 
+SkyComputerUseService[0x100730514] <+416>:  bl     0x1002580c4               ; static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()
+SkyComputerUseService[0x100730518] <+420>:  mov    x0, x26
+SkyComputerUseService[0x10073051c] <+424>:  fmov   d0, d12
+SkyComputerUseService[0x100730520] <+428>:  fmov   d1, d13
+SkyComputerUseService[0x100730524] <+432>:  bl     0x100258140               ; static SystemSoftware.CGEventAPI.setLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()
+SkyComputerUseService[0x100730528] <+436>:  mov    x0, x26
+SkyComputerUseService[0x10073052c] <+440>:  mov    w1, #0x3                  ; =3 
+SkyComputerUseService[0x100730530] <+444>:  mov    x2, #0x0                  ; =0 
+SkyComputerUseService[0x100730534] <+448>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x100730538] <+452>:  mov    x0, x26
+SkyComputerUseService[0x10073053c] <+456>:  mov    w1, #0x7                  ; =7 
+SkyComputerUseService[0x100730540] <+460>:  mov    w2, #0x3                  ; =3 
+SkyComputerUseService[0x100730544] <+464>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x100730548] <+468>:  mov    x0, x26
+SkyComputerUseService[0x10073054c] <+472>:  mov    w1, #0x5b                 ; =91 
+SkyComputerUseService[0x100730550] <+476>:  mov    x2, x23
+SkyComputerUseService[0x100730554] <+480>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x100730558] <+484>:  mov    x0, x26
+SkyComputerUseService[0x10073055c] <+488>:  mov    w1, #0x5c                 ; =92 
+SkyComputerUseService[0x100730560] <+492>:  mov    x2, x23
+SkyComputerUseService[0x100730564] <+496>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x100730568] <+500>:  mov    x0, x26
+SkyComputerUseService[0x10073056c] <+504>:  bl     0x100257e84               ; static SystemSoftware.CGEventAPI.getLocation(__C.CGEventRef) -> __C.CGPoint
+SkyComputerUseService[0x100730570] <+508>:  fmov   d14, d0
+SkyComputerUseService[0x100730574] <+512>:  fmov   d15, d1
+SkyComputerUseService[0x100730578] <+516>:  fmov   d0, d8
+SkyComputerUseService[0x10073057c] <+520>:  fmov   d1, d9
+SkyComputerUseService[0x100730580] <+524>:  fmov   d2, d10
+SkyComputerUseService[0x100730584] <+528>:  fmov   d3, d11
+SkyComputerUseService[0x100730588] <+532>:  bl     0x101153e04               ; symbol stub for: CGRectGetMinX
+SkyComputerUseService[0x10073058c] <+536>:  fmov   d1, d8
+SkyComputerUseService[0x100730590] <+540>:  fneg   d8, d0
+SkyComputerUseService[0x100730594] <+544>:  stur   d1, [x29, #-0x48]
+SkyComputerUseService[0x100730598] <+548>:  fmov   d0, d1
+SkyComputerUseService[0x10073059c] <+552>:  fmov   d1, d9
+SkyComputerUseService[0x1007305a0] <+556>:  fmov   d2, d10
+SkyComputerUseService[0x1007305a4] <+560>:  fmov   d3, d11
+SkyComputerUseService[0x1007305a8] <+564>:  bl     0x101153e10               ; symbol stub for: CGRectGetMinY
+SkyComputerUseService[0x1007305ac] <+568>:  fneg   d1, d0
+SkyComputerUseService[0x1007305b0] <+572>:  add    x8, sp, #0x10
+SkyComputerUseService[0x1007305b4] <+576>:  fmov   d0, d8
+SkyComputerUseService[0x1007305b8] <+580>:  bl     0x101153b7c               ; symbol stub for: CGAffineTransformMakeTranslation
+SkyComputerUseService[0x1007305bc] <+584>:  ldp    q0, q1, [sp, #0x10]
+SkyComputerUseService[0x1007305c0] <+588>:  ldr    q2, [sp, #0x30]
+SkyComputerUseService[0x1007305c4] <+592>:  stp    q0, q1, [sp, #0x10]
+SkyComputerUseService[0x1007305c8] <+596>:  str    q2, [sp, #0x30]
+SkyComputerUseService[0x1007305cc] <+600>:  add    x0, sp, #0x10
+SkyComputerUseService[0x1007305d0] <+604>:  fmov   d0, d14
+SkyComputerUseService[0x1007305d4] <+608>:  fmov   d1, d15
+SkyComputerUseService[0x1007305d8] <+612>:  bl     0x101153d8c               ; symbol stub for: CGPointApplyAffineTransform
+SkyComputerUseService[0x1007305dc] <+616>:  mov    x0, x26
+SkyComputerUseService[0x1007305e0] <+620>:  bl     0x10026cc8c               ; static SystemSoftware.WindowServerSPI.setWindowLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()
+SkyComputerUseService[0x1007305e4] <+624>:  stur   x26, [x22, #0x20]
+SkyComputerUseService[0x1007305e8] <+628>:  ldr    x1, [x27, #0xa0]
+SkyComputerUseService[0x1007305ec] <+632>:  movi   d2, #0000000000000000
+SkyComputerUseService[0x1007305f0] <+636>:  fmov   s3, #1.00000000
+SkyComputerUseService[0x1007305f4] <+640>:  mov    x0, x25
+SkyComputerUseService[0x1007305f8] <+644>:  mov    w2, #0x2                  ; =2 
+SkyComputerUseService[0x1007305fc] <+648>:  fmov   d0, d12
+SkyComputerUseService[0x100730600] <+652>:  fmov   d1, d13
+SkyComputerUseService[0x100730604] <+656>:  mov    x3, #0x0                  ; =0 
+SkyComputerUseService[0x100730608] <+660>:  mov    x4, x23
+SkyComputerUseService[0x10073060c] <+664>:  mov    x5, #0x0                  ; =0 
+SkyComputerUseService[0x100730610] <+668>:  mov    w6, #0x2                  ; =2 
+SkyComputerUseService[0x100730614] <+672>:  mov    w7, #0x1                  ; =1 
+SkyComputerUseService[0x100730618] <+676>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x10073061c] <+680>:  mov    x29, x29
+SkyComputerUseService[0x100730620] <+684>:  bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x100730624] <+688>:  cbz    x0, 0x100730828           ; <+1204>
+SkyComputerUseService[0x100730628] <+692>:  adrp   x8, 3602
+SkyComputerUseService[0x10073062c] <+696>:  ldr    x1, [x8, #0x848]
+SkyComputerUseService[0x100730630] <+700>:  mov    x20, x0
+SkyComputerUseService[0x100730634] <+704>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x100730638] <+708>:  mov    x29, x29
+SkyComputerUseService[0x10073063c] <+712>:  bl     0x101154c2c               ; symbol stub for: objc_retainAutoreleasedReturnValue
+SkyComputerUseService[0x100730640] <+716>:  mov    x25, x0
+SkyComputerUseService[0x100730644] <+720>:  mov    x0, x20
+SkyComputerUseService[0x100730648] <+724>:  mov    x20, x28
+SkyComputerUseService[0x10073064c] <+728>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x100730650] <+732>:  cbz    x25, 0x100730828          ; <+1204>
+SkyComputerUseService[0x100730654] <+736>:  mov    x0, x25
+SkyComputerUseService[0x100730658] <+740>:  mov    x1, #0x0                  ; =0 
+SkyComputerUseService[0x10073065c] <+744>:  bl     0x1002580c4               ; static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()
+SkyComputerUseService[0x100730660] <+748>:  mov    x0, x25
+SkyComputerUseService[0x100730664] <+752>:  fmov   d0, d12
+SkyComputerUseService[0x100730668] <+756>:  fmov   d1, d13
+SkyComputerUseService[0x10073066c] <+760>:  bl     0x100258140               ; static SystemSoftware.CGEventAPI.setLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()
+SkyComputerUseService[0x100730670] <+764>:  mov    x0, x25
+SkyComputerUseService[0x100730674] <+768>:  mov    w1, #0x3                  ; =3 
+SkyComputerUseService[0x100730678] <+772>:  mov    x2, #0x0                  ; =0 
+SkyComputerUseService[0x10073067c] <+776>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x100730680] <+780>:  mov    x0, x25
+SkyComputerUseService[0x100730684] <+784>:  mov    w1, #0x7                  ; =7 
+SkyComputerUseService[0x100730688] <+788>:  mov    w2, #0x3                  ; =3 
+SkyComputerUseService[0x10073068c] <+792>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x100730690] <+796>:  mov    x0, x25
+SkyComputerUseService[0x100730694] <+800>:  mov    w1, #0x5b                 ; =91 
+SkyComputerUseService[0x100730698] <+804>:  mov    x2, x23
+SkyComputerUseService[0x10073069c] <+808>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x1007306a0] <+812>:  mov    x0, x25
+SkyComputerUseService[0x1007306a4] <+816>:  mov    w1, #0x5c                 ; =92 
+SkyComputerUseService[0x1007306a8] <+820>:  mov    x2, x23
+SkyComputerUseService[0x1007306ac] <+824>:  bl     0x1002580d0               ; static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()
+SkyComputerUseService[0x1007306b0] <+828>:  mov    x0, x25
+SkyComputerUseService[0x1007306b4] <+832>:  bl     0x100257e84               ; static SystemSoftware.CGEventAPI.getLocation(__C.CGEventRef) -> __C.CGPoint
+SkyComputerUseService[0x1007306b8] <+836>:  fmov   d8, d0
+SkyComputerUseService[0x1007306bc] <+840>:  fmov   d12, d1
+SkyComputerUseService[0x1007306c0] <+844>:  ldur   d14, [x29, #-0x48]
+SkyComputerUseService[0x1007306c4] <+848>:  fmov   d0, d14
+SkyComputerUseService[0x1007306c8] <+852>:  fmov   d1, d9
+SkyComputerUseService[0x1007306cc] <+856>:  fmov   d2, d10
+SkyComputerUseService[0x1007306d0] <+860>:  fmov   d3, d11
+SkyComputerUseService[0x1007306d4] <+864>:  bl     0x101153e04               ; symbol stub for: CGRectGetMinX
+SkyComputerUseService[0x1007306d8] <+868>:  fneg   d13, d0
+SkyComputerUseService[0x1007306dc] <+872>:  fmov   d0, d14
+SkyComputerUseService[0x1007306e0] <+876>:  fmov   d1, d9
+SkyComputerUseService[0x1007306e4] <+880>:  fmov   d2, d10
+SkyComputerUseService[0x1007306e8] <+884>:  fmov   d3, d11
+SkyComputerUseService[0x1007306ec] <+888>:  bl     0x101153e10               ; symbol stub for: CGRectGetMinY
+SkyComputerUseService[0x1007306f0] <+892>:  fneg   d1, d0
+SkyComputerUseService[0x1007306f4] <+896>:  add    x8, sp, #0x10
+SkyComputerUseService[0x1007306f8] <+900>:  fmov   d0, d13
+SkyComputerUseService[0x1007306fc] <+904>:  bl     0x101153b7c               ; symbol stub for: CGAffineTransformMakeTranslation
+SkyComputerUseService[0x100730700] <+908>:  ldp    q0, q1, [sp, #0x10]
+SkyComputerUseService[0x100730704] <+912>:  ldr    q2, [sp, #0x30]
+SkyComputerUseService[0x100730708] <+916>:  stp    q0, q1, [sp, #0x10]
+SkyComputerUseService[0x10073070c] <+920>:  str    q2, [sp, #0x30]
+SkyComputerUseService[0x100730710] <+924>:  add    x0, sp, #0x10
+SkyComputerUseService[0x100730714] <+928>:  fmov   d0, d8
+SkyComputerUseService[0x100730718] <+932>:  fmov   d1, d12
+SkyComputerUseService[0x10073071c] <+936>:  bl     0x101153d8c               ; symbol stub for: CGPointApplyAffineTransform
+SkyComputerUseService[0x100730720] <+940>:  mov    x0, x25
+SkyComputerUseService[0x100730724] <+944>:  bl     0x10026cc8c               ; static SystemSoftware.WindowServerSPI.setWindowLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()
+SkyComputerUseService[0x100730728] <+948>:  str    x25, [x22, #0x28]
+SkyComputerUseService[0x10073072c] <+952>:  mov    x0, x24
+SkyComputerUseService[0x100730730] <+956>:  mov    w1, #0x28                 ; =40 
+SkyComputerUseService[0x100730734] <+960>:  mov    w2, #0x7                  ; =7 
+SkyComputerUseService[0x100730738] <+964>:  bl     0x101154f98               ; symbol stub for: swift_allocObject
+SkyComputerUseService[0x10073073c] <+968>:  adrp   x8, 2604
+SkyComputerUseService[0x100730740] <+972>:  ldr    q0, [x8, #0x80]
+SkyComputerUseService[0x100730744] <+976>:  str    q0, [x0, #0x10]
+SkyComputerUseService[0x100730748] <+980>:  str    x20, [x0, #0x20]
+SkyComputerUseService[0x10073074c] <+984>:  str    x0, [sp, #0x10]
+SkyComputerUseService[0x100730750] <+988>:  add    x20, sp, #0x10
+SkyComputerUseService[0x100730754] <+992>:  mov    x0, x22
+SkyComputerUseService[0x100730758] <+996>:  bl     0x10076d3f4               ; ___lldb_unnamed_symbol81622
+SkyComputerUseService[0x10073075c] <+1000>: ldr    x0, [sp, #0x10]
+SkyComputerUseService[0x100730760] <+1004>: b      0x1007307c4               ; <+1104>
+SkyComputerUseService[0x100730764] <+1008>: bl     0x1007310d0               ; ___lldb_unnamed_symbol80952
+SkyComputerUseService[0x100730768] <+1012>: mov    x1, x0
+SkyComputerUseService[0x10073076c] <+1016>: adrp   x0, 3436
+SkyComputerUseService[0x100730770] <+1020>: add    x0, x0, #0xc78            ; type metadata for AccessibilitySupport.SheetUIElement + 256
+SkyComputerUseService[0x100730774] <+1024>: mov    x2, #0x0                  ; =0 
+SkyComputerUseService[0x100730778] <+1028>: mov    w3, #0x0                  ; =0 
+SkyComputerUseService[0x10073077c] <+1032>: bl     0x101154f8c               ; symbol stub for: swift_allocError
+SkyComputerUseService[0x100730780] <+1036>: mov    x19, x0
+SkyComputerUseService[0x100730784] <+1040>: strb   wzr, [x1]
+SkyComputerUseService[0x100730788] <+1044>: mov    x21, x0
+SkyComputerUseService[0x10073078c] <+1048>: bl     0x101155700               ; symbol stub for: swift_willThrow
+SkyComputerUseService[0x100730790] <+1052>: b      0x1007307c4               ; <+1104>
+SkyComputerUseService[0x100730794] <+1056>: adrp   x0, 3651
+SkyComputerUseService[0x100730798] <+1060>: add    x0, x0, #0x2a8            ; type metadata for AccessibilitySupport.AXNotificationObserver + 632
+SkyComputerUseService[0x10073079c] <+1064>: adrp   x1, 2660
+SkyComputerUseService[0x1007307a0] <+1068>: add    x1, x1, #0xdd0            ; direct field offset for AccessibilitySupport.EventTap.shouldAutoreenable : Swift.Bool + 128
+SkyComputerUseService[0x1007307a4] <+1072>: bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x1007307a8] <+1076>: mov    w1, #0x28                 ; =40 
+SkyComputerUseService[0x1007307ac] <+1080>: mov    w2, #0x7                  ; =7 
+SkyComputerUseService[0x1007307b0] <+1084>: bl     0x101154f98               ; symbol stub for: swift_allocObject
+SkyComputerUseService[0x1007307b4] <+1088>: adrp   x8, 2604
+SkyComputerUseService[0x1007307b8] <+1092>: ldr    q0, [x8, #0x80]
+SkyComputerUseService[0x1007307bc] <+1096>: str    q0, [x0, #0x10]
+SkyComputerUseService[0x1007307c0] <+1100>: str    x20, [x0, #0x20]
+SkyComputerUseService[0x1007307c4] <+1104>: mov    x21, x19
+SkyComputerUseService[0x1007307c8] <+1108>: ldp    x29, x30, [sp, #0x110]
+SkyComputerUseService[0x1007307cc] <+1112>: ldp    x20, x19, [sp, #0x100]
+SkyComputerUseService[0x1007307d0] <+1116>: ldp    x23, x22, [sp, #0xf0]
+SkyComputerUseService[0x1007307d4] <+1120>: ldp    x25, x24, [sp, #0xe0]
+SkyComputerUseService[0x1007307d8] <+1124>: ldp    x27, x26, [sp, #0xd0]
+SkyComputerUseService[0x1007307dc] <+1128>: ldr    x28, [sp, #0xc0]
+SkyComputerUseService[0x1007307e0] <+1132>: ldp    d9, d8, [sp, #0xb0]
+SkyComputerUseService[0x1007307e4] <+1136>: ldp    d11, d10, [sp, #0xa0]
+SkyComputerUseService[0x1007307e8] <+1140>: ldp    d13, d12, [sp, #0x90]
+SkyComputerUseService[0x1007307ec] <+1144>: ldp    d15, d14, [sp, #0x80]
+SkyComputerUseService[0x1007307f0] <+1148>: add    sp, sp, #0x120
+SkyComputerUseService[0x1007307f4] <+1152>: ret    
+SkyComputerUseService[0x1007307f8] <+1156>: bl     0x1007310d0               ; ___lldb_unnamed_symbol80952
+SkyComputerUseService[0x1007307fc] <+1160>: mov    x1, x0
+SkyComputerUseService[0x100730800] <+1164>: adrp   x0, 3436
+SkyComputerUseService[0x100730804] <+1168>: add    x0, x0, #0xc78            ; type metadata for AccessibilitySupport.SheetUIElement + 256
+SkyComputerUseService[0x100730808] <+1172>: mov    x2, #0x0                  ; =0 
+SkyComputerUseService[0x10073080c] <+1176>: mov    w3, #0x0                  ; =0 
+SkyComputerUseService[0x100730810] <+1180>: bl     0x101154f8c               ; symbol stub for: swift_allocError
+SkyComputerUseService[0x100730814] <+1184>: mov    x19, x0
+SkyComputerUseService[0x100730818] <+1188>: strb   wzr, [x1]
+SkyComputerUseService[0x10073081c] <+1192>: mov    x21, x0
+SkyComputerUseService[0x100730820] <+1196>: bl     0x101155700               ; symbol stub for: swift_willThrow
+SkyComputerUseService[0x100730824] <+1200>: b      0x10073085c               ; <+1256>
+SkyComputerUseService[0x100730828] <+1204>: bl     0x1007310d0               ; ___lldb_unnamed_symbol80952
+SkyComputerUseService[0x10073082c] <+1208>: mov    x1, x0
+SkyComputerUseService[0x100730830] <+1212>: adrp   x0, 3436
+SkyComputerUseService[0x100730834] <+1216>: add    x0, x0, #0xc78            ; type metadata for AccessibilitySupport.SheetUIElement + 256
+SkyComputerUseService[0x100730838] <+1220>: mov    x2, #0x0                  ; =0 
+SkyComputerUseService[0x10073083c] <+1224>: mov    w3, #0x0                  ; =0 
+SkyComputerUseService[0x100730840] <+1228>: bl     0x101154f8c               ; symbol stub for: swift_allocError
+SkyComputerUseService[0x100730844] <+1232>: mov    x19, x0
+SkyComputerUseService[0x100730848] <+1236>: strb   wzr, [x1]
+SkyComputerUseService[0x10073084c] <+1240>: mov    x21, x0
+SkyComputerUseService[0x100730850] <+1244>: bl     0x101155700               ; symbol stub for: swift_willThrow
+SkyComputerUseService[0x100730854] <+1248>: mov    x0, x26
+SkyComputerUseService[0x100730858] <+1252>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10073085c] <+1256>: mov    x0, x20
+SkyComputerUseService[0x100730860] <+1260>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x100730864] <+1264>: str    xzr, [x22, #0x10]
+SkyComputerUseService[0x100730868] <+1268>: mov    x0, x22
+SkyComputerUseService[0x10073086c] <+1272>: bl     0x101155454               ; symbol stub for: swift_setDeallocating
+SkyComputerUseService[0x100730870] <+1276>: adrp   x8, 3384
+SkyComputerUseService[0x100730874] <+1280>: ldr    x8, [x8, #0x8f8]
+SkyComputerUseService[0x100730878] <+1284>: add    x0, x22, #0x20
+SkyComputerUseService[0x10073087c] <+1288>: add    x2, x8, #0x8
+SkyComputerUseService[0x100730880] <+1292>: mov    x1, #0x0                  ; =0 
+SkyComputerUseService[0x100730884] <+1296>: bl     0x101154fbc               ; symbol stub for: swift_arrayDestroy
+SkyComputerUseService[0x100730888] <+1300>: b      0x100730790               ; <+1052>
+
+SkyComputerUseService`___lldb_unnamed_symbol80949:
+SkyComputerUseService[0x10073088c] <+0>:    sub    sp, sp, #0x80
+SkyComputerUseService[0x100730890] <+4>:    stp    x0, x28, [sp, #0x18]
+SkyComputerUseService[0x100730894] <+8>:    stp    x27, x26, [sp, #0x30]
+SkyComputerUseService[0x100730898] <+12>:   stp    x25, x24, [sp, #0x40]
+(lldb) quit

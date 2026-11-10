@@ -1,0 +1,23 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "entry": "0x100754408",
+  "builder": "0x100730374",
+  "source": "native/macos/Sources/AccessibilitySupport/SynthesizedActivationEvent.swift",
+  "behavior": [
+    "AppKit-defined subtype1 notification first; flags0 for zero ID else0xc0000",
+    "Append clicks only for nonzero ID and both optional geometry/point present",
+    "Left down/up with fixed eventNumbers1/2, no global counter consumption",
+    "Unflipped local coordinates; all allocation errors invalidParameter"
+  ],
+  "limits": [
+    "Common click construction delegates restored mouseEvent; original body is inlined",
+    "Allocation errors verified statically, not induced at runtime",
+    "No event posting; actual activation/click delivery remains unaccepted"
+  ],
+  "validation": {
+    "build": "exit0,36.19s",
+    "nativeInputSelfTest": "exit0; checks fixed numbers and global/local coordinates",
+    "linkedFixtures": "All8 pass; direct module consumer covers8 activation combinations and unchanged global event counter",
+    "exports": "notifyAppActivated global signature exactly matches original"
+  }
+}

@@ -8623,3 +8623,20 @@ method export signatures exactly match original. Allocation failures are checked
 statically, not forced at runtime. No focus change or application deactivation
 was posted; full event module restoration and live acceptance remain incomplete.
 See reconstruction/focus-notifications-evidence.json.
+
+## 2026-11-11 activation notification and optional clicks
+
+notifyAppActivated now resides in AccessibilitySupport and reuses restored
+mouseEvent construction for its fixed-number down/up pair. Original0x100730374
+establishes nonzero window ID plus both optional bounds/point as the click gate,
+notification flags0/0xc0000, fixed eventNumbers1/2 and unflipped coordinates.
+All3 allocation-error exits write Error tag0; previous helper-specific errors
+were replaced by invalidParameter. Static audit and full builder excerpt are
+recorded in app-activation-event-evidence.json and associated files.
+
+Build passed36.19s; native input self-test and all8 linked fixtures passed.
+Direct module checks cover8 window/bounds/point combinations and verify no
+ordinary event-number consumption. Existing native checks verify fixed numbers
+and global/local coordinates. Original/restored global entry signatures match.
+No activation or click was posted to an App; live acceptance, other remaining
+methods and broader original module parity are still incomplete.
