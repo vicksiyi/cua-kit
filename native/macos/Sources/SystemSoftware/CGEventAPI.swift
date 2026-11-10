@@ -82,4 +82,24 @@ public enum CGEventAPI {
         sourceCreateBinding(stateID)?.takeRetainedValue()
     }
 
+    private typealias UnicodeGetter = @convention(c) (CGEvent, Int, UnsafeMutablePointer<Int>?, UnsafeMutablePointer<UInt16>?) -> Void
+    private typealias UnicodeSetter = @convention(c) (CGEvent, Int, UnsafePointer<UInt16>?) -> Void
+    private static let unflippedGetter = unsafeBitCast(functions[8], to: LocationGetter.self)
+    private static let unicodeGetter = unsafeBitCast(functions[9], to: UnicodeGetter.self)
+    private static let unicodeSetter = unsafeBitCast(functions[10], to: UnicodeSetter.self)
+
+    public static func getUnflippedLocation(_ event: CGEvent) -> CGPoint {
+        unflippedGetter(event)
+    }
+    public static func keyboardGetUnicodeString(_ event: CGEvent, maxStringLength: Int,
+        actualStringLength: UnsafeMutablePointer<Int>?, unicodeString: UnsafeMutablePointer<UInt16>?
+    ) {
+        unicodeGetter(event, maxStringLength, actualStringLength, unicodeString)
+    }
+    // Original array payload pointer+32, explicit length unchanged. This wrapper
+    // does not truncate to Array.count or add a new validation/error policy.
+    public static func keyboardSetUnicodeString(_ event: CGEvent, stringLength: Int, unicodeString: [UInt16]) {
+        unicodeString.withUnsafeBufferPointer { unicodeSetter(event, stringLength, $0.baseAddress) }
+    }
+
 }

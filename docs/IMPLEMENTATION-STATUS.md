@@ -8726,3 +8726,21 @@ pixel scroll deltas and owned event mutation. No allocation failure, leak
 instrumentation or event posting was performed. This bounded API has14 of24
 original method signatures implemented; remaining10 and wider restoration/live
 acceptance remain open. See reconstruction/cgevent-create-evidence.json.
+
+## 2026-11-11 Unicode and unflipped event location
+
+CGEventAPI adds getUnflippedLocation and keyboardGet/SetUnicodeString at original
+slots8/9/10. Setter borrows UInt16 array storage and forwards explicit length;
+getter preserves optional output/count pointers and maximum length. Original
+array payload+32 and pointer forwarding are statically recorded. Input.swift's
+text key pairs now call the restored Unicode setter. No independent length
+clamp/validation was introduced into the native wrapper.
+
+Build passed26.76s; native input self-test and all13 linked checks passed.
+Empty, ASCII, surrogate/CJK and explicit prefix strings round-trip; truncated
+reads and nil output/count pointers match the SDK. Unflipped coordinates and all3
+hash/pointer identities pass; selected export signatures match exactly.
+Invalid oversized lengths and empty-array pointer ABI were not certified. No
+text events were posted. This type has17 of24 original method signatures;
+remaining7 and full reconstruction/live acceptance remain unfinished.
+See reconstruction/cgevent-unicode-evidence.json.

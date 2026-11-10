@@ -1,0 +1,38 @@
+{
+  "source": "native/macos/Sources/SystemSoftware/CGEventAPI.swift",
+  "slots": {
+    "getUnflippedLocation": 8,
+    "keyboardGetUnicodeString": 9,
+    "keyboardSetUnicodeString": 10
+  },
+  "originalEntries": [
+    "0x100257f50",
+    "0x100257f5c",
+    "0x100257fd4"
+  ],
+  "matchedSignatures": [
+    "static SystemSoftware.CGEventAPI.getUnflippedLocation(__C.CGEventRef) -> __C.CGPoint",
+    "static SystemSoftware.CGEventAPI.keyboardGetUnicodeString(_: __C.CGEventRef, maxStringLength: Swift.Int, actualStringLength: Swift.UnsafeMutablePointer<Swift.Int>?, unicodeString: Swift.UnsafeMutablePointer<Swift.UInt16>?) -> ()",
+    "static SystemSoftware.CGEventAPI.keyboardSetUnicodeString(_: __C.CGEventRef, stringLength: Swift.Int, unicodeString: [Swift.UInt16]) -> ()"
+  ],
+  "behavior": [
+    "Getter forwards max length and nullable actual-length/output pointers unchanged",
+    "Setter borrows UInt16 array storage with explicit stringLength unchanged; no added clamp or validation",
+    "Unflipped point directly returned from required original slot8"
+  ],
+  "productionCaller": "Input.swift typeText key pairs now set Unicode through restored API",
+  "validation": {
+    "build": "exit0,26.76s",
+    "nativeInputSelfTest": "exit0",
+    "linkedFixtures": "All13 pass",
+    "unicode": "Empty/ASCII/surrogate+CJK; explicit prefix length, zero-length nil pointers and SDK-equivalent truncated reads",
+    "location": "Unflipped coordinates agree with SDK for zero and negative/fractional points",
+    "bindings": "Both-priority symbol hashes and resolved system pointers match all3 new slots"
+  },
+  "limits": [
+    "Invalid length exceeding borrowed array capacity is not tested; wrapper preserves original caller contract",
+    "Empty-array pointer representation is not claimed ABI-identical to original static Swift array payload",
+    "No real text input posted or whole keyboard algorithm parity claimed",
+    "17 of24 original CGEventAPI method signatures now present; remaining7 incomplete"
+  ]
+}

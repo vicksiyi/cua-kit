@@ -1,3 +1,4 @@
+import SystemSoftware
 import Foundation
 import AppKit
 import ApplicationServices
@@ -67,10 +68,8 @@ extension Target {
             guard let text = params["text"] as? String, text.utf16.count <= 100000 else { throw fail("INVALID_ARGUMENT", "typeText requires at most 100000 UTF-16 units.") }
             for chunk in unicodeChunks(text) {
                 guard let down = CGEvent(keyboardEventSource:source,virtualKey:0,keyDown:true), let up = CGEvent(keyboardEventSource:source,virtualKey:0,keyDown:false) else { throw fail("PROVIDER_DISCONNECTED", "Cannot allocate Unicode key events.") }
-                chunk.withUnsafeBufferPointer { pointer in
-                    down.keyboardSetUnicodeString(stringLength:chunk.count,unicodeString:pointer.baseAddress)
-                    up.keyboardSetUnicodeString(stringLength:chunk.count,unicodeString:pointer.baseAddress)
-                }
+                CGEventAPI.keyboardSetUnicodeString(down, stringLength: chunk.count, unicodeString: chunk)
+                CGEventAPI.keyboardSetUnicodeString(up, stringLength: chunk.count, unicodeString: chunk)
                 pairs.append((down,up))
             }
         case "pressKey":
