@@ -1,16 +1,13 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import CoreGraphics
 import ScreenCaptureKit
 
 // Display inclusion branch 0x100fb9324..0x100fb9408. The crop uses a
 // translation into display coordinates, without clipping or a Y-axis flip.
-func screenshotDisplaySourceRect(region: CGRect, displayFrame: CGRect) -> CGRect {
+public func screenshotDisplaySourceRect(region: CGRect, displayFrame: CGRect) -> CGRect {
     region.offsetBy(dx: -displayFrame.origin.x, dy: -displayFrame.origin.y)
 }
 
-func screenshotDisplayFilter(display: SCDisplay, includedWindows: [SCWindow],
+public func screenshotDisplayFilter(display: SCDisplay, includedWindows: [SCWindow],
     region: CGRect
 ) -> (filter: SCContentFilter, sourceRect: CGRect, baseSize: CGSize) {
     let sourceRect = screenshotDisplaySourceRect(region: region, displayFrame: display.frame)
@@ -21,7 +18,7 @@ func screenshotDisplayFilter(display: SCDisplay, includedWindows: [SCWindow],
 // No included-ID branch fb8f34..fb9054 receives the first display from
 // shareable content and excludes no windows. SCDisplay dimensions are pixels;
 // the later shared absent-size branch still applies filter.pointPixelScale.
-func screenshotFullDisplayFilter(display: SCDisplay)
+public func screenshotFullDisplayFilter(display: SCDisplay)
     -> (filter: SCContentFilter, baseSize: CGSize, sourceRect: CGRect?) {
     let filter = SCContentFilter(display: display, excludingWindows: [])
     let width = CGFloat(display.width)
@@ -32,7 +29,7 @@ func screenshotFullDisplayFilter(display: SCDisplay)
 
 // SDK binding of the included-ID branch. Dictionary construction remains
 // unique-key checked like the original buffer's window lookup table.
-func screenshotIncludedDisplayFilter(content: SCShareableContent,
+public func screenshotIncludedDisplayFilter(content: SCShareableContent,
     includedWindowIDs: [UInt32], cropToFirstWindow: Bool
 ) throws -> (filter: SCContentFilter, sourceRect: CGRect, baseSize: CGSize) {
     let windows = Dictionary(uniqueKeysWithValues: content.windows.map { ($0.windowID, $0) })

@@ -7964,3 +7964,19 @@ defaults/signposts, production file-route selection and live acceptance remain o
 
 Final helper build passed (36.08s, exit 0); independent built-module geometry
 consumer typecheck passed. Whitespace diff check passed.
+
+### 2026-11-11 — ScreenCaptureKit filter/config/capture module alignment
+
+Moved ScreenshotSingleWindowFilter, ScreenshotDisplayFilter,
+ScreenshotStreamConfiguration and ScreenScreenshotCapture into SlimCore. This
+puts the SDK capture stage with the recovered namespace/geometry and image
+output. Added necessary cross-module visibility; normalized byte comparison
+confirms unchanged window/display selection, config flags, sizing and capture
+sequencing. No alternative browser/desktop backend was introduced.
+
+All sixteen screenshot checks passed; full helper build passed (38.23s).
+Independent built-module consumer typecheck passed for single/display filters,
+all config overloads and async SDK capture entry (not executed). SDK config and
+injected capture checks do not establish actual desktop capture. Acquisition,
+WindowServer bridge, remaining buffer/module alignment, defaults/signposts and
+production/live acceptance remain pending. No desktop/model/vendor-native run.

@@ -3,7 +3,7 @@ import ScreenCaptureKit
 
 // SC branch performs one capture, preserving SDK errors and returning the image
 // without applying the separate WindowServer resize continuation.
-func captureScreenScreenshot<Configuration, Image>(
+public func captureScreenScreenshot<Configuration, Image>(
     configuration: () throws -> Configuration,
     capture: (Configuration) async throws -> Image
 ) async throws -> Image {
@@ -11,7 +11,7 @@ func captureScreenScreenshot<Configuration, Image>(
     return try await capture(configuration)
 }
 
-func captureScreenScreenshot(filter: SCContentFilter, configuration: SCStreamConfiguration)
+public func captureScreenScreenshot(filter: SCContentFilter, configuration: SCStreamConfiguration)
     async throws -> CGImage {
     try await captureScreenScreenshot(configuration: { configuration }, capture: {
         try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: $0)

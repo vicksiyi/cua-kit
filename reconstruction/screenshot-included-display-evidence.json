@@ -400,5 +400,17 @@
     "bodyChange": "none after access/import normalization",
     "validation": "16 SDK fixtures, full helper build36.08s, independent built-module consumer typecheck",
     "remaining": "WindowServer bridge, acquisition, full capture/module/API audit and real desktop acceptance"
+  },
+  "screenCaptureKitModuleAlignment": {
+    "module": "SlimCore",
+    "stages": [
+      "ScreenshotSingleWindowFilter",
+      "ScreenshotDisplayFilter",
+      "ScreenshotStreamConfiguration",
+      "ScreenScreenshotCapture"
+    ],
+    "changes": "Only source location/imports/public boundary; normalized bodies unchanged",
+    "validation": "16 source fixtures, complete helper build38.23s, independent SDK consumer typecheck",
+    "limits": "No real ScreenCaptureKit capture performed; acquisition/WindowServer and full capture/module fidelity still pending"
   }
 }

@@ -1,12 +1,9 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import ScreenCaptureKit
 import CoreGraphics
 
 // Original buffer pathfb8804..fb8ac4. Accelerated capture is a separate
 // branch; this configuration belongs to the ScreenCaptureKit branch.
-func screenshotStreamConfiguration(shouldBeOpaque: Bool,
+public func screenshotStreamConfiguration(shouldBeOpaque: Bool,
     includeWindowShadow: Bool
 ) -> SCStreamConfiguration {
     let configuration = SCStreamConfiguration()
@@ -17,7 +14,7 @@ func screenshotStreamConfiguration(shouldBeOpaque: Bool,
     return configuration
 }
 
-func screenshotStreamConfiguration(width: Int, height: Int, sourceRect: CGRect?,
+public func screenshotStreamConfiguration(width: Int, height: Int, sourceRect: CGRect?,
     shouldBeOpaque: Bool, includeWindowShadow: Bool
 ) -> SCStreamConfiguration {
     let configuration = screenshotStreamConfiguration(shouldBeOpaque: shouldBeOpaque,
@@ -28,7 +25,7 @@ func screenshotStreamConfiguration(width: Int, height: Int, sourceRect: CGRect?,
     return configuration
 }
 
-func screenshotStreamConfiguration(filter: SCContentFilter, baseSize: CGSize,
+public func screenshotStreamConfiguration(filter: SCContentFilter, baseSize: CGSize,
     imageSize: CGSize?, sourceRect: CGRect?, shouldBeOpaque: Bool,
     includeWindowShadow: Bool
 ) -> SCStreamConfiguration? {

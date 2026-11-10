@@ -1,4 +1,5 @@
 import Foundation
+import ScreenCaptureKit
 import CoreGraphics
 import ImageIO
 import System
@@ -64,4 +65,20 @@ func checkSlimCoreScreenshotGeometrySurface() throws {
         lookup: { _ in region }, windowFrame: { $0 }, displays: { [region] }, displayFrame: { $0 })
     _ = plan.windows; _ = plan.display; _ = plan.region
     _ = screenshotDisplay(for: region, displays: [region], frame: { $0 })
+}
+
+func checkSlimCoreScreenCaptureSurface(window: SCWindow, display: SCDisplay,
+    filter: SCContentFilter
+) async throws {
+    _ = screenshotSingleWindowBaseSize(frame: { window.frame })
+    _ = screenshotSingleWindowFilter(window: window)
+    _ = screenshotDisplaySourceRect(region: window.frame, displayFrame: display.frame)
+    _ = screenshotDisplayFilter(display: display, includedWindows: [window], region: window.frame)
+    _ = screenshotFullDisplayFilter(display: display)
+    let config = screenshotStreamConfiguration(shouldBeOpaque: true, includeWindowShadow: false)
+    _ = screenshotStreamConfiguration(width: 4, height: 3, sourceRect: nil,
+        shouldBeOpaque: true, includeWindowShadow: false)
+    _ = screenshotStreamConfiguration(filter: filter, baseSize: window.frame.size,
+        imageSize: nil, sourceRect: nil, shouldBeOpaque: true, includeWindowShadow: false)
+    _ = try await captureScreenScreenshot(filter: filter, configuration: config)
 }
