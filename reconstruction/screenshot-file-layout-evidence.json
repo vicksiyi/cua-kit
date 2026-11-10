@@ -1,0 +1,42 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "File": {
+    "descriptor": "0x1012eb260",
+    "fieldDescriptor": "0x1013474c8",
+    "kind": 2,
+    "fields": [
+      {
+        "name": "path",
+        "symbolicTypeAddress": "0x1012b7d1a"
+      },
+      {
+        "name": "temporaryFile",
+        "symbolicTypeAddress": "0x1012b7d20"
+      },
+      {
+        "name": "data",
+        "symbolicTypeAddress": "0x1012b7d26"
+      }
+    ]
+  },
+  "ScreenshotFile": {
+    "descriptor": "0x1012ea684",
+    "fieldDescriptor": "0x1013468a0",
+    "kind": 0,
+    "fields": [
+      {
+        "name": "file",
+        "symbolicTypeAddress": "0x1012b6a56"
+      },
+      {
+        "name": "url",
+        "symbolicTypeAddress": "0x1012b6a5c"
+      },
+      {
+        "name": "mimeType",
+        "symbolicTypeAddress": "0x1012b6784"
+      }
+    ]
+  },
+  "limits": "Metadata layout only: does not prove algorithms, complete coding contracts or runtime acceptance"
+}

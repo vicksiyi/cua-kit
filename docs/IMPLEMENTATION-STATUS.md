@@ -7544,3 +7544,19 @@ Final combined verification: all ten screenshot restoration checks passed with
 Data/Codable changes; Swift helper build passed (28.18s, exit 0). These are owned
 filesystem/SDK checks and static source evidence, not full native differential
 execution or desktop screenshot/input acceptance.
+
+### 2026-11-11 — ScreenshotFile dependency layout pinned
+
+Static metadata audit confirms ScreenshotFile is a struct storing file/url/mimeType;
+File is a three-payload enum path/temporaryFile/data. The temporary-file initializer
+stores tag 1; data construction stores tag 2. The screenshot writer returns the
+File wrapper rather than a bare TemporaryFile. Replacing File with a temporary
+owner would change the original representation and is not implemented.
+
+Added scripts/audit-screenshot-file-layout.py: verifies installed binary SHA,
+reads Mach-O mapped field descriptors and checks exact field/case names without
+running/attaching the binary. Its generated result is recorded in
+reconstruction/screenshot-file-layout-evidence.json. The audit passed. It proves
+layout only; File/DataFile algorithms and coding, ScreenshotFile contracts and
+writer naming/composition remain to recover. No runtime or desktop test is claimed
+for these unimplemented types.
