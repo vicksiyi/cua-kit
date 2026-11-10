@@ -1,3 +1,4 @@
+import SystemSoftware
 import Foundation
 import CoreGraphics
 import AppKit

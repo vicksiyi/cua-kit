@@ -1,0 +1,18 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "originalModule": "SystemSoftware.CGWindow; exported window(for:) entry0x10025b818 calls helper0x10025c904",
+  "source": "native/macos/Sources/SystemSoftware/CGWindow.swift",
+  "changes": [
+    "Move already recovered payload decoding/raw description helper from CuaHelper",
+    "Rename restored nominal type NativeWindowDescription to CGWindow",
+    "Expose cross-module access; retain transitional CuaHelper typealias",
+    "Add original static window(for:) entry through existing helper"
+  ],
+  "bodyChange": "No payload decoding or raw description helper algorithm changes after name/visibility normalization",
+  "limits": [
+    "Dictionary initializer/raw description helper are extracted public boundaries; original initializer access level not claimed",
+    "No original memory layout/ABI parity claim",
+    "scale/screen/isDesktopLevel/allWindows/window(at)/snapshot/observer coverage remains incomplete",
+    "No actual native window query acceptance"
+  ]
+}

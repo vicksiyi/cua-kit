@@ -115,6 +115,26 @@ import SlimCore
             count: { _ in 2 }, windowID: { _, _ in matchingReads += 1; return 8 },
             radii: { _, _ in nil })
         precondition(missingFirstRadii == nil && matchingReads == 1)
+        let minimalWindow = CGWindow([kCGWindowNumber as String: UInt32(91)])
+        precondition(minimalWindow.id == 91 && minimalWindow.ownerPID == -1 && minimalWindow.level == 0)
+        precondition(minimalWindow.bounds == .zero && minimalWindow.name == nil && minimalWindow.isOnscreen == nil)
+        let fullWindow = CGWindow([kCGWindowNumber as String: NSNumber(value: UInt32(123)),
+            kCGWindowOwnerPID as String: NSNumber(value: Int32(88)),
+            kCGWindowLayer as String: NSNumber(value: Int32(3)),
+            kCGWindowBounds as String: rect.dictionaryRepresentation,
+            kCGWindowName as String: "window", kCGWindowOwnerName as String: "owner",
+            kCGWindowIsOnscreen as String: NSNumber(value: false)])
+        precondition(fullWindow.id == 123 && fullWindow.ownerPID == 88 && fullWindow.level == 3)
+        precondition(fullWindow.bounds == rect && fullWindow.name == "window" && fullWindow.ownerName == "owner")
+        precondition(fullWindow.isOnscreen == false)
+        precondition(CGWindow.window(for: 0) == nil) // original zero gate avoids native query
+        var descriptionReads = 0
+        let description = nativeWindowDescription(7, descriptions: { ids in
+            descriptionReads += 1
+            precondition(CFArrayGetCount(ids) == 1 && UInt(bitPattern: CFArrayGetValueAtIndex(ids, 0)) == 7)
+            return [["value": "first"], ["value": "second"]]
+        })
+        precondition(descriptionReads == 1 && description?["value"] as? String == "first")
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }

@@ -8250,3 +8250,26 @@ All21 screenshot checks passed. No production source behavior changed, and no
 original native/desktop/model execution occurred. This establishes specific
 selection/dictionary evidence, not full SDK object or buffer parity. Original
 Swift duplicate-key error representation/runtime path remains unexecuted.
+
+### 2026-11-11 — CGWindow nominal type and lookup moved into SystemSoftware
+
+Moved existing recovered NativeWindowDescription payload decoding and raw
+CGWindowListCreateDescriptionFromArray helper into SystemSoftware.CGWindow.
+Current native window(for:) symbol25b818 delegates to helper25c904; restored that
+static entry using the same decoder. CuaHelper keeps a transitional typealias and
+wrapper, not a second independent storage type. Normalized comparison confirms
+unchanged payload/raw-lookup bodies after nominal name/access changes. Public
+raw dictionary initializer/helper are extracted cross-module boundaries, not a
+claim of exact original initializer visibility, memory layout or ABI.
+
+Initial compilation caught a mechanically added public modifier on a local let;
+removed that invalid modifier before verification. Final full helper build passed
+36.76s. Separately linked SystemSoftware consumer passed minimum/full payload,
+NSNumber casts, bounds/names/onscreen defaults, zero-ID original entry gate and
+injected nonretaining numeric-pointer description/first-result checks. No actual
+window description query, vendor executable or paid model ran. Existing callers
+compile with the restored nominal type through the alias.
+
+Original scale/screen/isDesktopLevel/allWindows/window(at)/snapshot/observer and
+broader module interface remain incomplete. This nominal/API alignment does not
+establish full CGWindow restoration or live input/capture acceptance.
