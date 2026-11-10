@@ -18,4 +18,13 @@ delta = ((adrp >> 5) & 0x7ffff) << 2 | ((adrp >> 29) & 3)
 if delta & (1 << 20): delta -= 1 << 21
 slot = (stub & ~4095) + delta * 4096 + ((ldr >> 10) & 4095) * 8
 assert audit['pinned_imported_symbol'](slot) == '_$sSa10FoundationE34_conditionallyBridgeFromObjectiveC_6resultSbSo7NSArrayC_SayxGSgztFZ'
-print('CGWindow CopyWindowInfo, whole-array conditional bridge, map and nil gates match pinned binary')
+# Point lookup uses AppKit containment, height-minus-y, checked UInt32 and raw description lookup.
+call(0x10025bb68, 0x10115414c)
+call(0x10025bbac, 0x101153dc8)
+call(0x10025bbe8, 0x10025c904)
+assert struct.unpack('<I', r(0x10025bcd4, 4))[0] == 0x52800240  # raw desktop level key18
+call(0x10025bcd8, 0x101153ec4)
+for site, expected in [(0x10025bca0, 0xb9400680), (0x10025bcb4, 0xb9402a80),
+                       (0x10025bcbc, 0x39414280), (0x10025b998, 0x52800b18)]:
+    assert struct.unpack('<I', r(site, 4))[0] == expected
+print('CGWindow enumeration, point lookup calls and desktop-level key match pinned binary')

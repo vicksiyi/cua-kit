@@ -8291,3 +8291,24 @@ conditional NSArray bridge import, payload initializer call and nil gates. No
 actual desktop enumeration or vendor native execution occurred. Existing missing
 required-window-number trap was not executed. CGWindow remaining screen/scale/
 point/snapshot/observer interfaces and overall live acceptance stay incomplete.
+
+### 2026-11-11 — CGWindow point lookup and desktop-level property aligned
+
+Moved recovered mouseWindowAtPoint generic stage to SystemSoftware unchanged
+except public access; restored CGWindow.window(at:belowWindowID:) with NSScreen/
+NSWindow native boundaries and window(for:) lookup. CuaHelper wrapper delegates;
+AX Finder desktop fallback now uses restored isDesktopLevel property. Original
+25bcc4 compares level against CGWindowLevelForKey(raw18), with no other criteria.
+
+Full native build passed39.84s. Linked checks passed ordered screen traversal,
+second frame read, height-minus-y without origin adjustment, maximum ID forwarding,
+no retry after first matching screen's nil lookup, and desktop-level property.
+Static audit confirms original AppKit/height/description calls, key18 and selected
+field-offset/stride instructions. Current CGWindow stride88 and ownerPID4/bounds8/
+level40/isOnscreen80 offsets match those inspected native sites. This is partial
+layout evidence, not full type ABI/interface proof.
+
+Remaining scale/screen/snapshot/observer coverage and actual desktop point query/
+input/capture acceptance stay incomplete. Cross-module generic helper/initializer
+visibility remains extracted rather than asserted original API. No real desktop
+inventory/window-number query, private SPI, vendor execution or paid model ran.

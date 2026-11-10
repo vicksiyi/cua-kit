@@ -12,7 +12,7 @@
   "limits": [
     "Dictionary initializer/raw description helper are extracted public boundaries; original initializer access level not claimed",
     "No original memory layout/ABI parity claim",
-    "scale/screen/isDesktopLevel/window(at)/snapshot/observer coverage remains incomplete",
+    "scale/screen/snapshot/observer coverage remains incomplete",
     "No actual native window query acceptance"
   ],
   "enumeration": {
@@ -25,5 +25,12 @@
     ],
     "validation": "full helper build21.57s; linked injected array checks; scripts/audit-cgwindow-enumeration.py",
     "limits": "No actual window enumeration, SDK mutable state, or invalid-required-ID trap executed"
+  },
+  "pointAndDesktop": {
+    "source": "native/macos/Sources/SystemSoftware/CGWindowAtPoint.swift",
+    "original": "point25ba5c..25bc94; desktop25bcc4..25bcf0",
+    "changes": "Move existing normalized generic point algorithm unchanged; add original static entry and desktop property; production wrappers delegate",
+    "validation": "native build39.84s; static call/property audit; linked injected order/conversion/nil lookup and desktop property checks",
+    "partialLayout": "Original stride88 and ownerPID4/bounds8/level40/isOnscreen80 match linked current type; not full ABI proof"
   }
 }

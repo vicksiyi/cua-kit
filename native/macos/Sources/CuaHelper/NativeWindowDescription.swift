@@ -12,7 +12,5 @@ func systemNativeWindowDescription(_ id: UInt32) -> NativeWindowDescription? {
 }
 
 func systemNativeWindow(at point: CGPoint, belowWindowID: UInt32 = 0) -> NativeWindowDescription? {
-    mouseWindowAtPoint(point, belowWindowID: belowWindowID, screens: NSScreen.screens,
-        frame: { $0.frame }, windowNumber: { NSWindow.windowNumber(at: $0, belowWindowWithWindowNumber: $1) },
-        lookupWindow: systemNativeWindowDescription)
+    CGWindow.window(at: point, belowWindowID: belowWindowID)
 }

@@ -34,7 +34,7 @@ extension WindowUIElement {
                     applicationPID: { try axApplication.axElement.pid },
                     bundleIdentifier: { NSRunningApplication(processIdentifier: $0)?.bundleIdentifier },
                     desktopWindows: { nativeWindowDescriptions(.optionOnScreenOnly) },
-                    isDesktopLevel: { $0.level == CGWindowLevelForKey(CGWindowLevelKey(rawValue: 18)!) },
+                    isDesktopLevel: { $0.isDesktopLevel },
                     frame: { frameValue(reportError: reportError) },
                     title: { cachedStringValue(for: UIElementAttribute(kAXTitleAttribute)) },
                     ordinaryWindows: {

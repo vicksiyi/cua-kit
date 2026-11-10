@@ -115,6 +115,12 @@ import SlimCore
             count: { _ in 2 }, windowID: { _, _ in matchingReads += 1; return 8 },
             radii: { _, _ in nil })
         precondition(missingFirstRadii == nil && matchingReads == 1)
+        // Original getters25bca0..25bcc0 and allWindows element stride0x58.
+        precondition(MemoryLayout<CGWindow>.stride == 88)
+        precondition(MemoryLayout<CGWindow>.offset(of: \.ownerPID) == 4)
+        precondition(MemoryLayout<CGWindow>.offset(of: \.bounds) == 8)
+        precondition(MemoryLayout<CGWindow>.offset(of: \.level) == 40)
+        precondition(MemoryLayout<CGWindow>.offset(of: \.isOnscreen) == 80)
         let minimalWindow = CGWindow([kCGWindowNumber as String: UInt32(91)])
         precondition(minimalWindow.id == 91 && minimalWindow.ownerPID == -1 && minimalWindow.level == 0)
         precondition(minimalWindow.bounds == .zero && minimalWindow.name == nil && minimalWindow.isOnscreen == nil)
@@ -155,6 +161,29 @@ import SlimCore
         let malformedList = CGWindow.allWindows(.optionAll, relativeToWindow: 0,
             copyWindowInfo: { _, _ in malformedRows })
         precondition(malformedList.isEmpty)
+        var pointCalls: [String] = []
+        var matchingFrames = 0
+        let hit: String? = mouseWindowAtPoint(CGPoint(x: 10, y: 20), belowWindowID: UInt32.max,
+            screens: [0, 1, 2], frame: { screen in
+                pointCalls.append("frame \(screen)")
+                if screen == 0 { return CGRect(x: 200, y: 200, width: 50, height: 50) }
+                matchingFrames += 1
+                return matchingFrames == 1 ? CGRect(x: 0, y: 0, width: 100, height: 100)
+                    : CGRect(x: 1000, y: 1000, width: 20, height: 200)
+            }, windowNumber: { point, relative in
+                pointCalls.append("window")
+                precondition(point == CGPoint(x: 10, y: 180) && relative == Int(UInt32.max))
+                return Int(UInt32.max)
+            }, lookupWindow: { id in pointCalls.append("lookup"); precondition(id == UInt32.max); return "found" })
+        precondition(hit == "found" && pointCalls == ["frame 0", "frame 1", "frame 1", "window", "lookup"])
+        var matchingScreensRead = 0
+        let noPointWindow: UInt32? = mouseWindowAtPoint(CGPoint(x: 10, y: 20), belowWindowID: 0,
+            screens: [0, 1], frame: { _ in matchingScreensRead += 1; return CGRect(x: 0, y: 0, width: 100, height: 100) },
+            windowNumber: { _, _ in 0 }, lookupWindow: { _ in nil })
+        precondition(noPointWindow == nil && matchingScreensRead == 2)
+        let desktopWindow = CGWindow([kCGWindowNumber as String: UInt32(1),
+            kCGWindowLayer as String: CGWindowLevelForKey(CGWindowLevelKey(rawValue: 18)!)])
+        precondition(desktopWindow.isDesktopLevel && !minimalWindow.isDesktopLevel)
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }
