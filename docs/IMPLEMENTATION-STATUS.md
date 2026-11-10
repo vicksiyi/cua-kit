@@ -8208,3 +8208,26 @@ No SDK content acquisition/desktop inventory/capture/input or paid model ran.
 Original async logging/signpost/defaults, buffer module placement/production
 integration and actual live acceptance remain incomplete. Broader CGWindow type,
 observer and SystemSoftware restoration remain open.
+
+### 2026-11-11 — Complete staged screenshot entries moved into SlimCore
+
+Current native symbols confirm both original entry surfaces are static
+SlimCore.ScreenshotImplementation methods: captureScreenshotBuffer atfb381c
+(seven arguments) and captureScreenshotFile atfb3608 (five arguments). Moved
+ScreenshotBuffer from CuaHelper into SlimCore, removing self import and exposing
+extension methods across module boundary. Normalized comparison confirms no body
+change. Existing production CuaHelper/Capture.swift uses the same content overload
+now resolved from SlimCore, not a new alternate screenshot backend.
+
+All20 stage checks pass; full native build passed24.95s; separately linked
+injected capture/query consumer passed; independent built-module consumer typecheck
+passes for content, seven-argument buffer and five-argument file entry points.
+These are stage/injection/compilation checks, not actual SCK capture or end-to-end
+acceptance. No desktop, private SPI or paid model call was performed.
+
+Default argument generators remain unconfirmed; no guessed defaults added.
+Original logging/signposts, full branch behavior/ABI, live capture acceptance and
+production file-route selection remain incomplete. Outer Capture adapter still
+has its own focus/identity/dimension/PNG/data response policies; module movement
+does not establish their original parity. Broader JS/native/browser restoration
+and original SystemSoftware CGWindow/observer coverage remain open.

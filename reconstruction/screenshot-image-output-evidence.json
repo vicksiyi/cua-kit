@@ -133,5 +133,23 @@
     "consumer": "reconstruction/slimcore-file-consumer-check.swift; built-module typecheck covers public image/file writer and extracted capture composition",
     "validation": "16 source fixtures and complete helper build; normalized bodies identical",
     "limits": "Buffer/SDK acquisition and selection wrapper remain CuaHelper extensions; incomplete full module/public API fidelity; date injection remains internal"
+  },
+  "bufferModuleAlignment": {
+    "module": "SlimCore",
+    "source": "native/macos/Sources/SlimCore/ScreenshotBuffer.swift",
+    "originalSymbols": [
+      "0000000100fb3608 T static SlimCore.ScreenshotImplementation.captureScreenshotFile(appName: Swift.String?, delay: Swift.Int?, imageSize: __C.CGSize?, includedWindowIDs: [Swift.UInt32]?, cropToFirstWindow: Swift.Bool) async throws -> SlimCore.File",
+      "000000010122bbc0 S async function pointer to static SlimCore.ScreenshotImplementation.captureScreenshotFile(appName: Swift.String?, delay: Swift.Int?, imageSize: __C.CGSize?, includedWindowIDs: [Swift.UInt32]?, cropToFirstWindow: Swift.Bool) async throws -> SlimCore.File",
+      "0000000100fb381c T static SlimCore.ScreenshotImplementation.captureScreenshotBuffer(appName: Swift.String?, delay: Swift.Int?, imageSize: __C.CGSize?, includedWindowIDs: [Swift.UInt32]?, cropToFirstWindow: Swift.Bool, shouldBeOpaque: Swift.Bool, includeWindowShadow: Swift.Bool) async throws -> __C.CGImageRef",
+      "000000010122bbd0 S async function pointer to static SlimCore.ScreenshotImplementation.captureScreenshotBuffer(appName: Swift.String?, delay: Swift.Int?, imageSize: __C.CGSize?, includedWindowIDs: [Swift.UInt32]?, cropToFirstWindow: Swift.Bool, shouldBeOpaque: Swift.Bool, includeWindowShadow: Swift.Bool) async throws -> __C.CGImageRef"
+    ],
+    "bodyChange": "none after visibility/import normalization",
+    "production": "CuaHelper/Capture.swift still calls the same content overload; outer adapter policies/encoding remain independent and are not original parity",
+    "limits": [
+      "No default-argument generator confirmed",
+      "Logging/signposts not restored",
+      "Built-module typecheck is not real capture or SDK path acceptance",
+      "Complete buffer branch semantics and production file-route integration remain unaccepted"
+    ]
   }
 }

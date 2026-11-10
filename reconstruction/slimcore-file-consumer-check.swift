@@ -107,3 +107,15 @@ func checkAcquisitionModuleBoundary() async throws {
     let _: SCShareableContent = try await screenshotShareableContent(
         currentProcessOnly: false, includedWindowIDs: nil)
 }
+
+// Compile-only complete recovered screenshot entry surfaces; not executed.
+func checkScreenshotEntryModuleBoundary(content: SCShareableContent) async throws {
+    let _: CGImage = try await ScreenshotImplementation.captureScreenshotBuffer(content: content,
+        appName: nil, imageSize: nil, includedWindowIDs: nil, cropToFirstWindow: false,
+        shouldBeOpaque: true, includeWindowShadow: false)
+    let _: CGImage = try await ScreenshotImplementation.captureScreenshotBuffer(appName: nil,
+        delay: nil, imageSize: nil, includedWindowIDs: nil, cropToFirstWindow: false,
+        shouldBeOpaque: true, includeWindowShadow: false)
+    let _: File = try await ScreenshotImplementation.captureScreenshotFile(appName: nil,
+        delay: nil, imageSize: nil, includedWindowIDs: nil, cropToFirstWindow: false)
+}

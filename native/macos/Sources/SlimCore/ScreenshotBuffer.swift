@@ -1,10 +1,7 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import CoreGraphics
 import ScreenCaptureKit
 
-extension ScreenshotImplementation {
+public extension ScreenshotImplementation {
     // Buffer body after shareable content acquisition (fb8340..fb94a4).
     // Delay/acquisition, file encoding and signpost wrappers are separate stages.
     static func captureScreenshotBuffer(content: SCShareableContent,
@@ -55,7 +52,7 @@ extension ScreenshotImplementation {
     }
 }
 
-extension ScreenshotImplementation {
+public extension ScreenshotImplementation {
     // Injectable acquisition boundary for staged/owned verification. The native
     // policy overload below supplies original application-window selection.
     static func captureScreenshotBuffer(appName: String?, delay: Int?, imageSize: CGSize?,
@@ -71,7 +68,7 @@ extension ScreenshotImplementation {
     }
 }
 
-extension ScreenshotImplementation {
+public extension ScreenshotImplementation {
     // Original argument surface, with caller-provided values until the separate
     // default-argument generators are recovered. Acquisition policy is native.
     static func captureScreenshotBuffer(appName: String?, delay: Int?, imageSize: CGSize?,
@@ -89,7 +86,7 @@ extension ScreenshotImplementation {
     }
 }
 
-extension ScreenshotImplementation {
+public extension ScreenshotImplementation {
     // fb3608 sets the shared capture body opacity=true/shadow=false. No guessed
     // default arguments: callers supply all five values of the original surface.
     static func captureScreenshotFile(appName: String?, delay: Int?, imageSize: CGSize?,
