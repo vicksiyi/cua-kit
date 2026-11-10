@@ -8185,3 +8185,26 @@ subnormal acceptance. This does not invoke any private SPI. Exported method-name
 coverage now15/15 only; body, signature, ABI, options/properties and runtime parity
 remain unproven. No whole SystemSoftware/CUA completion or percentage follows.
 No paid model, desktop operation or vendor service execution occurred.
+
+### 2026-11-11 — Screenshot acquisition removed from CuaHelper dependency
+
+Static inspection corrects an overbroad assumption: original screenshot code at
+fb4c0c directly calls CGWindowListCreate(0x11,0), whereas the separately exported
+SystemSoftware.CGWindow.allWindows uses CGWindowListCopyWindowInfo. The screenshot
+route must not be replaced with that different API. Moved the extracted direct
+C binding/ID decoding into SlimCore OnScreenWindowIDs and moved existing
+ScreenshotShareableContent there, preserving normalized bodies exactly. Extracted
+helper names/public visibility do not claim original API/ABI identity.
+
+Controller ordering remains in CuaHelper, importing SlimCore's shared extracted
+enumeration. Initial build exposed three callers missing imports (Mouse and two
+ordering files); corrected them. Final full build passed23.81s. All20 screenshot
+checks passed. Acquisition fixture no longer uses a link-only inventory stub;
+it compiles the real enumeration and injects nonretaining numeric-pointer CFArray
+values, checking0x11/relative0/nil/zero/maxUInt32/duplicates without calling the
+C API. Independent built-module acquisition consumer typecheck also passed.
+
+No SDK content acquisition/desktop inventory/capture/input or paid model ran.
+Original async logging/signpost/defaults, buffer module placement/production
+integration and actual live acceptance remain incomplete. Broader CGWindow type,
+observer and SystemSoftware restoration remain open.

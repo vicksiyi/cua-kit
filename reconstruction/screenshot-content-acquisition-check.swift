@@ -1,10 +1,19 @@
 import Foundation
-// Link-only stub for the real SDK wrapper. Synthetic acquisition must not call it.
-func onScreenMouseWindowIDs() -> [UInt32] { preconditionFailure("No desktop inventory in fixture") }
+import CoreGraphics
 
 @main struct Check {
     final class FixtureError: Error {}
     static func main() async throws {
+        var inventoryCalls = 0
+        let emptyIDs = onScreenMouseWindowIDs(createList: { options, relative in
+            precondition(options.rawValue == 0x11 && relative == 0)
+            inventoryCalls += 1; return nil
+        })
+        precondition(emptyIDs.isEmpty && inventoryCalls == 1)
+        var entries: [UnsafeRawPointer?] = [UnsafeRawPointer(bitPattern: 7), nil,
+            UnsafeRawPointer(bitPattern: UInt(UInt32.max)), UnsafeRawPointer(bitPattern: 7)]
+        let array = CFArrayCreate(nil, &entries, entries.count, nil)!
+        precondition(onScreenMouseWindowIDs(createList: { _, _ in array }) == [7, 0, UInt32.max, 7])
         let cases: [(Bool, Bool, [UInt32]?, ScreenshotContentScope, Int)] = [
             (false, true, nil, .onScreenExcludingDesktop, 0),
             (false, true, [], .onScreenExcludingDesktop, 1),

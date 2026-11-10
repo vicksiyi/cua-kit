@@ -97,3 +97,13 @@ func checkSlimCoreScreenshotPlanningSurface() async throws {
     _ = plan?.windowIDs; _ = plan?.rect
     _ = try await captureScreenshotAfterDelay(delay: nil, acquire: { 1 }, capture: { $0 })
 }
+
+// Compile-only exported acquisition entry; do not query the desktop here.
+func checkAcquisitionModuleBoundary() async throws {
+    let _: [UInt32] = onScreenMouseWindowIDs(createList: { _, _ in nil })
+    let _: Int = try await acquireScreenshotContent(currentProcessOnly: false,
+        supportsCurrentProcess: true, includedWindowIDs: nil,
+        visibleWindowIDs: { [] }, acquire: { _ in 1 })
+    let _: SCShareableContent = try await screenshotShareableContent(
+        currentProcessOnly: false, includedWindowIDs: nil)
+}

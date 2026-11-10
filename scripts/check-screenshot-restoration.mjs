@@ -5,11 +5,11 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const native = "native/macos/Sources/CuaHelper/";
-const slimCore = new Set(["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotEncoding", "ImageDestination", "ScreenshotImplementation", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan", "ScreenshotSingleWindowFilter", "ScreenshotDisplayFilter", "ScreenshotStreamConfiguration", "ScreenScreenshotCapture", "ScreenshotContentScope", "ScreenshotDelay", "ScreenshotCurrentProcess", "ScreenshotWindowSelection", "ScreenshotAppNameMatcher", "ScreenshotAppWindow", "ScreenshotOffscreenTarget", "ScreenshotOffscreenPlan", "ScreenshotImageResize"]);
+const slimCore = new Set(["OnScreenWindowIDs", "ScreenshotShareableContent", "NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotEncoding", "ImageDestination", "ScreenshotImplementation", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan", "ScreenshotSingleWindowFilter", "ScreenshotDisplayFilter", "ScreenshotStreamConfiguration", "ScreenScreenshotCapture", "ScreenshotContentScope", "ScreenshotDelay", "ScreenshotCurrentProcess", "ScreenshotWindowSelection", "ScreenshotAppNameMatcher", "ScreenshotAppWindow", "ScreenshotOffscreenTarget", "ScreenshotOffscreenPlan", "ScreenshotImageResize"]);
 const cases = [
   ["production-configuration", ["ScreenshotSingleWindowFilter", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotStreamConfiguration"], "screenshot-production-configuration-check"],
   ["included-display-plan", ["ScreenshotImplementation", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan"], "screenshot-included-display-plan-check"],
-  ["content-acquisition", ["ScreenshotContentScope", "ScreenshotShareableContent"], "screenshot-content-acquisition-check"],
+  ["content-acquisition", ["ScreenshotContentScope", "OnScreenWindowIDs", "ScreenshotShareableContent"], "screenshot-content-acquisition-check"],
   ["current-process", ["ScreenshotCurrentProcess"], "screenshot-current-process-check"],
   ["delay", ["ScreenshotDelay"], "screenshot-delay-check"],
   ["temporary-file-path", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-path-check"],

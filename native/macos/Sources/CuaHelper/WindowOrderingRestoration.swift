@@ -1,3 +1,4 @@
+import SlimCore
 import AppKit
 import ApplicationServices
 

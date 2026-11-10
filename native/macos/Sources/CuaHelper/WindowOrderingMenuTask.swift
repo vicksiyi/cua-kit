@@ -1,3 +1,4 @@
+import SlimCore
 import ApplicationServices
 
 // 0x1007884b0..0x100788d60. Capture the selected app's focused AX window/ID

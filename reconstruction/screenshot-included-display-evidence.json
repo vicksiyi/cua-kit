@@ -428,7 +428,14 @@
     ],
     "bodyChange": "None after public-visibility normalization",
     "validation": "20 SDK/owned fixtures including existing offscreen/resize/matcher checks now in unified runner; full helper build; independent module consumer typecheck",
-    "remaining": "ScreenshotShareableContent still depends on CuaHelper onScreenMouseWindowIDs; accelerated/offscreen stages now reside in SlimCore and call SystemSoftware; buffer/app entry, acquisition and complete native parity remain pending"
+    "remaining": "ScreenshotShareableContent and direct CGWindowListCreate enumeration now reside in SlimCore; full buffer/app entry, defaults/signposts, production integration and runtime parity remain pending"
   },
-  "windowServerCoverageAudit": "reconstruction/windowserver-api-coverage.json: exported method-name coverage only; no whole-project percentage"
+  "windowServerCoverageAudit": "reconstruction/windowserver-api-coverage.json: exported method-name coverage only; no whole-project percentage",
+  "acquisitionModuleAlignment": {
+    "module": "SlimCore",
+    "originalCall": "0x100fb4c0c..0x100fb4c98 directly calls CGWindowListCreate(0x11,0); not SystemSoftware.CGWindow.allWindows/CGWindowListCopyWindowInfo",
+    "bodyChange": "none after imports/public visibility normalization",
+    "validation": "20 screenshot checks pass including injected nonretaining pointer-array IDs; real inventory not queried",
+    "limits": "Extracted helper names are not claimed original public API or ABI; complete async acquisition logging/wrapper parity and real SDK acquisition remain unaccepted"
+  }
 }

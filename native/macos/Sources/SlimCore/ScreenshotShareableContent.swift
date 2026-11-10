@@ -1,11 +1,8 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import ScreenCaptureKit
 
 // Acquisition routefb4a78: select one SDK method and propagate its error;
 // errors do not trigger a second scope or replace the content with empty data.
-func acquireScreenshotContent<Content>(currentProcessOnly: Bool, supportsCurrentProcess: Bool,
+public func acquireScreenshotContent<Content>(currentProcessOnly: Bool, supportsCurrentProcess: Bool,
     includedWindowIDs: [UInt32]?, visibleWindowIDs: () -> [UInt32],
     acquire: (ScreenshotContentScope) async throws -> Content
 ) async throws -> Content {
@@ -15,7 +12,7 @@ func acquireScreenshotContent<Content>(currentProcessOnly: Bool, supportsCurrent
     return try await acquire(scope)
 }
 
-func screenshotShareableContent(currentProcessOnly: Bool,
+public func screenshotShareableContent(currentProcessOnly: Bool,
     includedWindowIDs: [UInt32]?
 ) async throws -> SCShareableContent {
     let supportsCurrentProcess: Bool
