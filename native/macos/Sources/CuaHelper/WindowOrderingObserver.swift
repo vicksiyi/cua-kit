@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 import AppKit
 
 // Complete observer composition; dependencies expose native boundaries for

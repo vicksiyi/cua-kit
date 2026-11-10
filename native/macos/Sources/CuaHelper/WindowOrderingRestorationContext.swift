@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 // Entry guards of 0x10078acd8..0x10078af48. Ignore windows outside the
 // current observed-ID list and windows owned by the current foreground app.
 // Only another foreground app's focused AX window can enter restoration;

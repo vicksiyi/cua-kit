@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 import CoreGraphics
 
 // Registration tail 0x1002599f4..0x100259b00 and observer deinit

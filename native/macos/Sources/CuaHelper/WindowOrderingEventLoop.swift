@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 private enum WindowOrderingLoopStep { case next, resubscribe, stop }
 
 // 0x100789184..0x10078abf8. Owner lookup is weak, both before subscribing

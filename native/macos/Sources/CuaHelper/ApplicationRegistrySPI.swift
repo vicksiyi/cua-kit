@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 import Carbon
 
 import RunningProcess

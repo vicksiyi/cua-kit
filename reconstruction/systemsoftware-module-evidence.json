@@ -1,0 +1,25 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "originalModule": "SystemSoftware; current exported mainConnectionID/capture options confirmed by nm demangle",
+  "moved": [
+    "WindowServerSPI",
+    "WindowServerCaptureOptions",
+    "WindowServerEvent",
+    "WindowServerSPISymbolRequest",
+    "WindowCaptureImageBridge"
+  ],
+  "dependency": "SystemSoftware -> SoftLink; CuaHelper -> SystemSoftware; no TS rewrite or substitute API",
+  "bodyChange": "None after access visibility normalization",
+  "validation": {
+    "helperBuild": "43.30s, exit0",
+    "staticRequests": "scripts/audit-windowserver-requests.py passes at new source path",
+    "linkedConsumer": "node scripts/check-systemsoftware-capture.mjs passes via built SystemSoftware/SoftLink objects; injected callback only",
+    "generator": "Dry-run captured outputs without writes; generated source exact, full SHA256 correct"
+  },
+  "limits": [
+    "No private SPI resolution/invocation tested",
+    "Not complete SystemSoftware interface or native ABI parity",
+    "CGWindow/observer types and capture adapters remain partly CuaHelper",
+    "Real desktop capture/input not accepted"
+  ]
+}

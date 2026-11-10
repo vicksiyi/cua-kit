@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 import Atomics
 
 // 0x10078b2e4..0x10078bce8: observe workspace-add events for a snapshot of

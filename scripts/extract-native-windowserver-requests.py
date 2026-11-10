@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Extract pinned WindowServer symbol requests; does not execute vendor code."""
-import runpy,contextlib,io,struct,json
+import runpy,contextlib,io,struct,json,hashlib
 from pathlib import Path
 with contextlib.redirect_stdout(io.StringIO()): audit=runpy.run_path('scripts/audit-native-mouse-dispatch.py')
 r=audit['read']
@@ -24,5 +24,5 @@ for name,images,symbols,salt in requests:
  source+=f'    static let {name} = Self(images: [{", ".join(hex(v) for v in i)}],\n        symbols: [{", ".join("["+", ".join(hex(v) for v in row)+"]" for row in ss)}],\n        salt: "{st}")\n'
  evidence.append(dict(name=name,imagesVA=hex(images),symbolsVA=list(map(hex,symbols)),saltVA=hex(salt),images=i,symbols=ss,salt=st))
 source+='}\n'
-Path('native/macos/Sources/CuaHelper/WindowServerSPISymbolRequest.swift').write_text(source)
-Path('reconstruction/native-windowserver-symbol-evidence.json').write_text(json.dumps({'binarySha256':audit['expected'],'requests':evidence},indent=2)+'\n')
+Path('native/macos/Sources/SystemSoftware/WindowServerSPISymbolRequest.swift').write_text(source)
+Path('reconstruction/native-windowserver-symbol-evidence.json').write_text(json.dumps({'binarySha256':hashlib.sha256(audit['args'].binary.read_bytes()).hexdigest(),'requests':evidence},indent=2)+'\n')

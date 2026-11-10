@@ -8020,3 +8020,27 @@ ownership or actual capture. It supplies the missing current-version provenance
 before moving WindowServer code into SystemSoftware. That module migration,
 visible-window API placement and remaining capture/default/signpost/integration
 work remain open; no full restoration or real UI acceptance is claimed.
+
+### 2026-11-11 — WindowServer bridge moved into SystemSoftware
+
+Added the original SystemSoftware target depending on SoftLink. Moved WindowServerSPI,
+capture options, event/callback definitions, static symbol requests and image array
+bridge out of CuaHelper. Current demangled native symbols establish the module.
+CuaHelper imports SystemSoftware; cross-module signatures are public. Normalized
+byte comparison confirms unchanged function bodies/calling signatures/constants.
+Full helper build passed (43.30s); no new SPI implementation or fallback was added.
+
+Added a real separately compiled/linked SystemSoftware consumer check using only
+injected capture callbacks: missing binding/empty windows do not invoke callback;
+connection/count/options/rect and duplicate IDs forward unchanged; image identity
+survives the array bridge. It passes via node scripts/check-systemsoftware-capture.mjs
+(after building native/macos). No private SPI was resolved or called by the fixture.
+Initial single-source @main compilation needed parse-as-library; fixed the runner.
+
+Updated extraction/audit paths. Fixed the extractor's evidence hash: the imported
+large audit reuses its expected variable, so the extractor now hashes the binary
+directly instead of reading that mutable variable. Dry-run interception verified
+exact generated source and full SHA256 output without overwriting evidence/files.
+Current static request audit also passes at the new path. Full SystemSoftware
+(CGWindow/observer/process) module coverage, screenshot adapter migration, default/
+signpost/production and actual UI acceptance remain open. No model/desktop run.

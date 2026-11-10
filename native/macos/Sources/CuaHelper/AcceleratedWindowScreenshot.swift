@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 import CoreGraphics
 
 // Capture stage0x100fb27f8..0x100fb28a4. Preserve nil/empty as no image and

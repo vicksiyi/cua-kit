@@ -44,7 +44,7 @@ def cstring(va):
         va += 1
     return result.decode('utf-8')
 
-source = (root / 'native/macos/Sources/CuaHelper/WindowServerSPISymbolRequest.swift').read_text()
+source = (root / 'native/macos/Sources/SystemSoftware/WindowServerSPISymbolRequest.swift').read_text()
 pattern = r'static let (\w+) = Self\(images: (\[.*?\]),\s*symbols: (\[\[.*?\]\]),\s*salt: "([^"]+)"\)'
 def numbers(text):
     return json.loads(re.sub(r'0x[0-9a-fA-F]+', lambda m: str(int(m[0], 16)), text))

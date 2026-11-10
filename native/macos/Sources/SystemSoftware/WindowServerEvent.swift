@@ -1,6 +1,6 @@
 // Field descriptor 0x10131bb78 and raw-value table 0x10116c6bc.
 // Keep source values rather than substituting AX notification names.
-enum WindowServerEvent: UInt32, CaseIterable {
+public enum WindowServerEvent: UInt32, CaseIterable {
     case isObscured = 800
     case isUnobscured = 801
     case isOrderedIn = 802
@@ -24,5 +24,5 @@ enum WindowServerEvent: UInt32, CaseIterable {
     case workspaceDestroyed = 1328
 }
 
-typealias WindowServerNotificationCallback = @convention(c)
+public typealias WindowServerNotificationCallback = @convention(c)
     (UInt32, UnsafeMutableRawPointer?, UInt32, UnsafeMutableRawPointer?) -> Void

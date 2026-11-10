@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 #if canImport(SlimCore)
 import SlimCore
 #endif

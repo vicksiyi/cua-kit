@@ -1,3 +1,6 @@
+#if canImport(SystemSoftware)
+import SystemSoftware
+#endif
 // EventStream fields at 0x1012c1e4c and iterator fields at 0x1012c1e74.
 // Every makeAsyncIterator creates its own stream and native observer. Merely
 // constructing this sequence does not subscribe to WindowServer notifications.
