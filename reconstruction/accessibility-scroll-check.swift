@@ -29,7 +29,7 @@ import Darwin
                             let actual = event.getIntegerValueField(field)
                             precondition(actual == baseline.getIntegerValueField(field))
                             if id != 0 && geometry == nil && !flipped {
-                                print("Scroll field \(field.rawValue) requested=\(id) retained=\(actual); original soft-link identity still pending")
+                                print("Scroll field \(field.rawValue) requested=\(id) retained=\(actual); same behavior as confirmed original-request system binding")
                             }
                         }
                         if geometry != nil { precondition(get(event) == CGPoint(x: 100, y: flipped ? 350 : 50)) }

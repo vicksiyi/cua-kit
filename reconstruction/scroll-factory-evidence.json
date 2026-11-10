@@ -20,7 +20,7 @@
     "Source/event allocation failures and out-of-range conversion traps not forced in runtime test",
     "Helper MouseWindow overload remains an independent thin compatibility boundary",
     "No scroll events posted; application delivery unaccepted",
-    "Passing public-system baseline does not prove original soft-linked setter identity or effective mouse-only fields on scroll events"
+    "Original-request pointer equality and unposted field retention confirmed on this system only; no actual scroll delivery acceptance"
   ],
   "validation": {
     "build": "exit0,21.58s",
@@ -33,6 +33,6 @@
     "initialCheck": "Requested window123 was not retained by scroll field91; initial precondition failed",
     "isolatedPublicAPIBaseline": "Both scroll fields91/92 read0 after direct public-API write123, same as restored factory",
     "verified": "raw51 retains123; global/local coordinates and pixel delta verified",
-    "notVerified": "Original CGEventAPI.setIntegerValueField is soft-linked through initializer0x100257348; target identity not yet decoded, so original equivalence of field retention remains unresolved"
+    "notVerified": "Resolved by cgevent-integer-bindings-check: original-request slots4/14 resolve system CGEvent integer getter/setter pointer aliases and reproduce field91/92 reads0"
   }
 }

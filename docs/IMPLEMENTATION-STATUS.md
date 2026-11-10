@@ -8661,3 +8661,21 @@ Original setIntegerValueField uses a soft-linked function via0x100257348; its
 resolved identity has not yet been decoded. Thus original field-retention parity
 is unresolved despite exact scroll entry signature. No events were posted.
 See scroll-factory-evidence.json and original setter/initializer excerpts.
+
+## 2026-11-11 integer binding identity and scroll retention resolved
+
+Pinned CGEvent initializer0x100257348 supplies5 image hashes,24 two-priority
+symbol requests and its128-byte salt. New static extraction plus owned SoftLink
+consumer verifies that integer getter/setter requests at slots4/14 hash the
+underscore/non-underscore CGEvent names. Restored resolution returns aliases
+_SLEventGetIntegerValueField/_SLEventSetIntegerValueField whose pointers equal
+the corresponding public CGEvent dlsym pointers on this system.
+
+Calling these original-request-resolved system pointers on an allocated,
+unposted scroll event reproduces field51=123 and fields91/92=0 after writes123.
+Thus the preceding unresolved integer-setter identity question is closed for
+this installed/system combination; no field-retention workaround was introduced.
+All10 linked module/owned checks pass. This proves the scoped pointer identity
+and in-memory behavior, not original service execution, complete CGEventAPI
+restoration, or effective event delivery. Other22 request entries remain outside
+this check. See cgevent-integer-binding-evidence.json and generated Swift fixture.
