@@ -3,9 +3,8 @@
   "scope": "Exported static method names of SystemSoftware.WindowServerSPI only",
   "source": "native/macos/Sources/SystemSoftware/WindowServerSPI.swift",
   "exportedMethodCount": 15,
-  "namePresentCount": 13,
+  "namePresentCount": 14,
   "missingNames": [
-    "associatedWindowIDs",
     "resolvedCornerRadius"
   ],
   "localNamesNotInExportedSet": [
@@ -16,7 +15,7 @@
     "associatedWindowIDs": {
       "address": "0x000000010026d060",
       "signature": "static SystemSoftware.WindowServerSPI.associatedWindowIDs(forWindow: Swift.UInt32) -> [Swift.UInt32]",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     },
     "captureWindowImagesInRect": {
       "address": "0x000000010026cf58",

@@ -6,6 +6,7 @@ import Foundation
 // Source wrappers: mainConnectionID 0x10026bb1c, disableUpdate 0x10026cb84,
 // reenableUpdate 0x10026cba0. Each has its own lazy initialization token.
 public enum WindowServerSPI {
+    private typealias AssociatedWindows = @convention(c) (OpaquePointer?, UInt32) -> Unmanaged<NSArray>?
     private typealias MainConnection = @convention(c) () -> OpaquePointer?
     private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
     private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
@@ -136,6 +137,29 @@ public enum WindowServerSPI {
         let connection = mainConnectionID()
         let value = NSNumber(value: enabled ? 1 : 0)
         return connectionProperty(connection, connection, "SetsCursorInBackground" as NSString, value)
+    }
+    // 0x10026d060: unlike the primary table, either optional binding can be
+    // absent. Do not resolve the query when the connection binding is absent.
+    private static let associatedConnection: MainConnection? = {
+        guard let pointer = resolve(.associatedMainConnection).first ?? nil else { return nil }
+        return unsafeBitCast(pointer, to: MainConnection.self)
+    }()
+    private static let associatedQuery: AssociatedWindows? = {
+        guard let pointer = resolve(.associatedWindowQuery).first ?? nil else { return nil }
+        return unsafeBitCast(pointer, to: AssociatedWindows.self)
+    }()
+    public static func associatedWindowIDs(forWindow id: UInt32) -> [UInt32] {
+        guard let connection = associatedConnection else { return [] }
+        guard let query = associatedQuery else { return [] }
+        return associatedWindowIDs(forWindow: id, mainConnection: connection,
+            query: { connection, window in query(connection, window)?.takeUnretainedValue() })
+    }
+    public static func associatedWindowIDs(forWindow id: UInt32,
+        mainConnection: (() -> OpaquePointer?)?,
+        query: ((OpaquePointer?, UInt32) -> NSArray?)?) -> [UInt32] {
+        guard let mainConnection, let query else { return [] }
+        guard let values = query(mainConnection(), id) else { return [] }
+        return associatedWindowIDValues(values)
     }
     public static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     public static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }

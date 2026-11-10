@@ -63,6 +63,22 @@ import SlimCore
             NSNumber(value: 7), NSNumber(value: 3.75), NSNull(), NSNumber(value: false)]
         precondition(associatedWindowIDValues(associated) == [7, UInt32.max, 7, 3, 0])
         precondition(associatedWindowIDValues([]) == [])
+        var associatedCalls: [String] = []
+        let missing = WindowServerSPI.associatedWindowIDs(forWindow: 8,
+            mainConnection: nil, query: { _, _ in associatedCalls.append("unexpected"); return [] })
+        precondition(missing.isEmpty && associatedCalls.isEmpty)
+        let missingQuery = WindowServerSPI.associatedWindowIDs(forWindow: 8,
+            mainConnection: { associatedCalls.append("unexpected"); return nil }, query: nil)
+        precondition(missingQuery.isEmpty && associatedCalls.isEmpty)
+        let ids = WindowServerSPI.associatedWindowIDs(forWindow: 8,
+            mainConnection: { associatedCalls.append("connection"); return nil },
+            query: { connection, id in
+                precondition(connection == nil && id == 8)
+                associatedCalls.append("query"); return associated
+            })
+        precondition(ids == [7, UInt32.max, 7, 3, 0] && associatedCalls == ["connection", "query"])
+        precondition(WindowServerSPI.associatedWindowIDs(forWindow: 0,
+            mainConnection: { nil }, query: { _, _ in nil }).isEmpty)
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }

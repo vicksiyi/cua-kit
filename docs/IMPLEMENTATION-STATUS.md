@@ -8134,3 +8134,25 @@ associatedWindowIDs entry remains missing because its two optional acquisition
 bindings, initialization and returned object lifetime are not yet reconstructed;
 this conversion helper does not alter exported API coverage. No desktop/model or
 vendor service execution occurred. Full restoration remains incomplete.
+
+### 2026-11-11 — Associated-window optional query entry restored
+
+Extracted independent main-connection and query SoftLink requests from original
+initializers26dbb0/26def8 into AssociatedWindowSymbolRequests. Reproducible extractor
+uses the pinned binary read-only audit; exact array/string addresses and values
+are recorded in associated-window-symbol-requests.json. Original optional getter
+and initializer transcripts are retained; neither symbol is replaced by a public
+API or primary required table slot.
+
+WindowServerSPI.associatedWindowIDs now checks optional connection binding before
+resolving query, checks query before invoking connection, passes a nil connection
+result through to query, and returns[] on absent binding or nil returned NSArray.
+Returned object is taken unretained and held as a Swift object while the restored
+NSNumber conversion stage enumerates; actual native ownership remains unaccepted.
+
+Native helper build passed33.17s. Separately linked injection tests verify missing
+binding gates, no connection call when query absent, connection-before-query,
+window argument and nil-connection forwarding, nil result and numeric conversion.
+No actual SoftLink/private query was invoked. Name coverage now14/15, only
+resolvedCornerRadius absent; this does not establish complete body or ABI fidelity.
+No desktop, paid model or vendor native service execution occurred.
