@@ -49,7 +49,7 @@
     "finalizeResult": "ignored by original caller"
   },
   "validation": "reconstruction/image-destination-check.swift (owned pixel image, real ImageIO files, no desktop capture)",
-  "limits": "TemporaryFile/File/ScreenshotFile ownership and naming, signposts and production file-based screenshot API still pending",
+  "limits": "Functional naming/ImageIO/File ownership composition restored; original logging/signposts, capture wrapper/defaults, module audit and real desktop acceptance pending",
   "qualityInstructions": [
     "SkyComputerUseService[0x10101a020] <+84>:  fmov   d0, x22",
     "SkyComputerUseService[0x10101a024] <+88>:  adrp   x8, 1098",
@@ -73,5 +73,16 @@
     "SkyComputerUseService[0x10101a250] <+256>: mov    x2, x21",
     "SkyComputerUseService[0x10101a254] <+260>: mov    x3, x23",
     "SkyComputerUseService[0x10101a258] <+264>: bl     0x101153c90               ; symbol stub for: CGImageDestinationAddImageFromSource"
-  ]
+  ],
+  "fileComposition": {
+    "source": "0x100fb3d5c..0x100fb4500",
+    "name": "appName + \" Screenshot\", or Screenshot when nil",
+    "date": "0x100fb3e0c -> GOT0x101463388 Foundation.Date.now",
+    "filename": "shared naming function with reservedUTF16Count6 and selected PNG/JPEG type",
+    "path": "TemporaryFile.uniquePath in mutable shared directory; URL .notDirectory/nil-relative",
+    "ownership": "After image add/finalize, allocate adopted TemporaryFile and store File temporaryFile(tag1); construct ScreenshotFile URL/MIME",
+    "semantics": "No fileExists check and no finalize Bool validation, matching native order; error before ownership does not create an owner",
+    "validation": "reconstruction/screenshot-file-output-check.swift: real PNG/JPEG decode, type/dimensions/MIME/name, deterministic collision subdir, nil app name, final-release cleanup",
+    "limits": "Logging/signpost wrapper and captureScreenshotFile/public production connection still pending; date overload is an extracted test boundary"
+  }
 }

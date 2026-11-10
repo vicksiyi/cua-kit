@@ -7781,3 +7781,23 @@ argument generators and full module/API audit remain unproven. Screenshot file
 writer composition and actual UI acceptance remain open; no model/desktop run.
 
 Swift helper build passed (23.87s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — Screenshot file output ownership composition
+
+Composed writeScreenshotToFile's functional stages from fb3d5c..fb4500:
+appName + " Screenshot" (nil -> Screenshot), Date.now, naming with reserve 6,
+unique path in shared temporaryDirectory, notDirectory URL, ImageIO encoding,
+and adopted TemporaryFile wrapped in File/ScreenshotFile with matching MIME.
+Ownership is allocated after finalize, without the writingNewFile constructor's
+existence check or validation of finalize Bool. Date injection is an extracted
+Foundation test boundary, while the original-argument entry reads Date.now.
+
+Real owned PNG/JPEG output checks decoded type/dimensions, MIME, escaped filename,
+deterministic collision subdirectory, nil app name and final-release cleanup.
+No desktop screenshot was acquired. Logging/signpost instrumentation remains
+pending, as do captureScreenshotFile/default argument composition, production
+file-route integration, complete module audit and current real UI acceptance.
+The method is functional recovery, not a claim of full original wrapper parity.
+
+All sixteen screenshot checks passed; Swift helper build passed (23.24s, exit 0).
+Whitespace diff check passed. No paid model or vendor native executable was run.
