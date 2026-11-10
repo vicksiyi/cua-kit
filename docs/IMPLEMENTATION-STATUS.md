@@ -7708,3 +7708,21 @@ still require additional tracing; screenshot writer integration, full interface
 alignment and real UI acceptance remain open. No model/desktop/vendor-native run.
 
 Swift helper build passed (23.40s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — File type and Foundation URL content-type fallback
+
+Restored File.type dispatch and original URL.contentType extension. The getter
+requests contentTypeKey; read failure or nil type falls back to URL.pathExtension
+through UTType(filenameExtension:conformingTo:.data), then .data if inference
+returns nil. Path/temporary representations construct notDirectory/nil-relative
+URLs. Data returns its stored UTType without touching the lazy file owner.
+Import fixups and native source ranges are recorded in File evidence.
+
+All fourteen checks passed: actual file metadata, directory folder type, absent
+PNG extension fallback, absent extension default, explicit memory override and
+no memory file creation. These SDK tests support statically recovered semantics,
+not whole native parity. Naming, remaining convenience properties, screenshot
+writer integration, complete module audit and real UI acceptance remain open.
+No desktop/model/vendor-native execution was used.
+
+Swift helper build passed (23.28s, exit 0); whitespace diff check passed.

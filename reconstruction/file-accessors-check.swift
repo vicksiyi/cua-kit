@@ -1,5 +1,6 @@
 import Foundation
 import System
+import UniformTypeIdentifiers
 
 @main struct Check {
     static func main() throws {
@@ -15,6 +16,13 @@ import System
         let url = root.appendingPathComponent("existing.bin")
         try bytes.write(to: url)
         let pathFile = File(FilePath(url.path))
+        let missingPNG = File(FilePath(root.appendingPathComponent("missing.png").path))
+        precondition(missingPNG.type == .png)
+        precondition(File(FilePath(root.appendingPathComponent("plain").path)).type == .data)
+        let actualURLType = try url.resourceValues(forKeys: [.contentTypeKey]).contentType
+        let expectedType = actualURLType ?? UTType(filenameExtension: url.pathExtension, conformingTo: .data) ?? .data
+        precondition(pathFile.type == expectedType)
+        precondition(File(FilePath(root.path)).type == .folder)
         precondition(!pathFile.isDirectory)
         precondition(File(FilePath(root.path)).isDirectory)
         precondition(!File(FilePath(root.appendingPathComponent("missing").path)).isDirectory)
@@ -39,6 +47,9 @@ import System
         precondition(File(FilePath("/")).filename.isEmpty)
         precondition(File(FilePath("")).filename.isEmpty)
         let memory = File(data: bytes, filename: "memory.bin", type: nil)
+        let explicitMemory = File(data: bytes, filename: "wrong.png", type: .jpeg)
+        precondition(explicitMemory.type == .jpeg)
+        precondition(!fm.fileExists(atPath: root.appendingPathComponent("wrong.png").path))
         precondition(memory.representationType == .data && memory.exists)
         let unavailable = TemporaryFile.temporaryDirectory
         TemporaryFile.temporaryDirectory = unavailable.appending("missing-parent")
@@ -55,6 +66,7 @@ import System
         precondition(fm.fileExists(atPath: materialized.string))
         let owner = TemporaryFile(adoptingFileAt: FilePath(url.path))
         let temporary = File(owner)
+        precondition(temporary.type == expectedType)
         let temporarySize = try temporary.fileSize
         precondition(temporarySize == bytes.count)
         let temporaryData = try temporary.data

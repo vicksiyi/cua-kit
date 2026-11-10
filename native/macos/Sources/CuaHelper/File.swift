@@ -36,6 +36,16 @@ enum File: Hashable, Codable {
 
     // Native File routes path and temporary ownership through FilePath witnesses;
     // DataFile returns its payload/name directly and materializes only for path.
+    var type: UTType {
+        switch self {
+        case .data(let file): return file.type
+        case .path(let path):
+            return URL(filePath: path.string, directoryHint: .notDirectory, relativeTo: nil).contentType
+        case .temporaryFile(let owner):
+            return URL(filePath: owner.path.string, directoryHint: .notDirectory, relativeTo: nil).contentType
+        }
+    }
+
     var fileSize: Int {
         get throws {
             switch self {
@@ -104,3 +114,11 @@ extension DataFile {
 
 // Native descriptor 1012eb3f4 / field descriptor 101347630, one empty case.
 enum FilePathRepresentationError: Swift.Error { case failedToFetchFileSize }
+
+// Native Foundation.URL.contentType getter, 101022fc4..1010232f8.
+extension URL {
+    var contentType: UTType {
+        if let type = try? resourceValues(forKeys: [.contentTypeKey]).contentType { return type }
+        return UTType(filenameExtension: pathExtension, conformingTo: .data) ?? .data
+    }
+}

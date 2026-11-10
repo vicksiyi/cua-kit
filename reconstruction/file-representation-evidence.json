@@ -76,5 +76,19 @@
     "errorMetadata": "0x101510c00 -> descriptor0x1012eb3f4, fields0x101347630; one no-payload case",
     "data": "DataFile.fileSize == Data.count; no materialization",
     "validation": "Binary size for path/temp/data; unavailable data parent still succeeds; missing path resource error propagates. Missing-size branch has static evidence but no real SDK fixture producing nil size."
+  },
+  "type": {
+    "dispatch": "0x100fff884..0x100fff9e4; path witness 0x101005744..0x1010058e8",
+    "URLGetter": "0x101022fc4..0x1010232f8",
+    "order": "ResourceValues.contentType with contentTypeKey; on read error/nil infer UTType(filenameExtension:URL.pathExtension, conformingTo:data); if nil use data",
+    "bindings": {
+      "0x101464998": "NSURLContentTypeKey",
+      "0x1014692d0": "URLResourceValues.contentType",
+      "0x101463008": "URL.pathExtension",
+      "0x1014692e8": "UTType.init(filenameExtension:conformingTo:)",
+      "0x101469318": "UTType.data"
+    },
+    "data": "Use stored UTType without materializing",
+    "validation": "Existing metadata/actual directory, absent PNG fallback, no extension fallback, explicit memory type and no eager file"
   }
 }
