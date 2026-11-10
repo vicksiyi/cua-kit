@@ -8542,3 +8542,14 @@ compilation plus pinned original call evidence supports this source alignment,
 not live click acceptance. Optional-bounds behavior and wider SynthesizedEvent
 module fidelity remain open. See reconstruction/mouse-window-location-evidence.json
 and the corresponding static disassembly excerpt.
+
+## 2026-11-11 native mouse binding execution check
+
+The helper's non-posting native input self-test now checks both window IDs0/123
+and flipped/unflipped coordinates. Actual allocated NSEvent/CGEvent pairs execute
+the required WindowServerSPI window-location setter and native getter, verifying
+local/global geometry, both routing fields, subtype and AppKit window number.
+Swift build passed15.91s; --self-test exited0. This strengthens the prior mocked
+caller validation, but is not live event delivery or application acceptance.
+The fresh UI preflight still reported screenLocked=1 with both permissions true;
+no owned UI fixture was launched and no desktop input was posted.

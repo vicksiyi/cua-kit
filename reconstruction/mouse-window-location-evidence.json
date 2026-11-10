@@ -16,7 +16,13 @@
   ],
   "limits": [
     "MouseWindow adapter still requires bounds; original optional-bounds construction is not fully represented by this adapter",
-    "No live event posting or private SPI executed for this verification",
-    "Restored wrapper already has independent pinned required-binding audit; caller change does not prove full mouse event parity"
-  ]
+    "Restored wrapper already has independent pinned required-binding audit; caller change does not prove full mouse event parity",
+    "Setter/getter execution on in-memory events proves this binding/geometry boundary, not event delivery to an application"
+  ],
+  "validation": {
+    "build": "Swift build complete15.91s exit0",
+    "nativeInputSelfTest": "cua-helper --self-test exit0; actual required window-location setter and getter executed on allocated, unposted CGEvents",
+    "cases": "Window IDs0 and123, flipped true/false, paired mouse down/up: AppKit windowNumber, both routing fields, global/local coordinates, subtype3",
+    "boundary": "No event posting, application interaction, screenshot or live desktop click"
+  }
 }

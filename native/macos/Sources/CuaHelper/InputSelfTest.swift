@@ -92,17 +92,19 @@ func runInputChecks() throws {
         throw fail("SELF_TEST_FAILED", "Cannot inspect the window-local event location.")
     }
     let getLocation = unsafeBitCast(getLocationPointer, to: GetWindowLocation.self)
-    for flipped in [true, false] {
-        let target = MouseWindow(id: 123, frame: frameB, usesFlippedCoordinates: flipped)
-        let events = try mouseClickEvents(point: mapped, button: "left", count: 1, flags: [], window: target)
-        for event in events {
-            guard let appKit = NSEvent(cgEvent: event), appKit.windowNumber == 123,
-                  getLocation(event) == CGPoint(x: 100, y: flipped ? 350 : 50),
-                  event.location == mapped,
-                  event.getIntegerValueField(.mouseEventWindowUnderMousePointer) == 123,
-                  event.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) == 123,
-                  event.getIntegerValueField(.mouseEventSubtype) == 3 else {
-                throw fail("SELF_TEST_FAILED", "Mouse event lost its target window or local coordinates.")
+    for windowID: UInt32 in [0, 123] {
+        for flipped in [true, false] {
+            let target = MouseWindow(id: windowID, frame: frameB, usesFlippedCoordinates: flipped)
+            let events = try mouseClickEvents(point: mapped, button: "left", count: 1, flags: [], window: target)
+            for event in events {
+                guard let appKit = NSEvent(cgEvent: event), appKit.windowNumber == Int(windowID),
+                      getLocation(event) == CGPoint(x: 100, y: flipped ? 350 : 50),
+                      event.location == mapped,
+                      event.getIntegerValueField(.mouseEventWindowUnderMousePointer) == Int64(windowID),
+                      event.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) == Int64(windowID),
+                      event.getIntegerValueField(.mouseEventSubtype) == 3 else {
+                    throw fail("SELF_TEST_FAILED", "Mouse event lost its target window or local coordinates.")
+                }
             }
         }
     }
