@@ -7742,3 +7742,21 @@ has not been filled with invented formatting. Screenshot writer integration and
 full native/live acceptance remain incomplete. No model/desktop/vendor-native run.
 
 All fourteen screenshot checks passed; Swift helper build passed (23.41s, exit 0).
+
+### 2026-11-11 — Filename date and escaping stages
+
+Restored the extracted date stage using two lazy DateFormatter objects with only
+native dateFormat settings yyyy-MM-dd and h.mm.ss a, joined by literal " at ".
+No POSIX locale/UTC/calendar override was introduced. Restored slash-to-colon
+escapedFilename and colon-to-slash displayFilename from their shared replacement
+helper. These mappings are intentionally lossy for preexisting colons.
+
+All fifteen screenshot checks passed, including Unicode/empty/mixed escaping and
+ambient SDK formatter comparison. The main filename function's collection calls
+were pinned to String.UTF16View index/range operations. Reserve arithmetic,
+truncation and ellipsis composition remain incomplete: no character-based
+approximation is being called restored. Evidence records these boundaries.
+No desktop, paid model or vendor-native execution occurred. Screenshot writer
+composition, full interface/module audit and live UI acceptance remain open.
+
+Swift helper build passed (24.41s, exit 0); whitespace diff check passed.

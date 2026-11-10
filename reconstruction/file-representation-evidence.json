@@ -99,5 +99,17 @@
     "result": "Native drops first character of appended result; retains leading dot, e.g. .png and .jpeg; no extension yields empty",
     "validation": "Real Foundation PNG/JPEG/data/folder plus PDF/text/HTML/JSON/HEIC forwarding checks",
     "limits": "Main filename reserved UTF16/date/truncation composition not yet restored"
+  },
+  "namingStages": {
+    "dateHelper": "0x1010024b8..0x101002614",
+    "formatters": "0x101001184 date yyyy-MM-dd; 0x1010011a8 time h.mm.ss a; shared init0x1010011cc..101001244 sets only dateFormat",
+    "separator": "literal at 0x101002540..10100254c: \" at \"",
+    "escaping": "0x101001178 slash->colon; 0x101002194 colon->slash; shared replacing helper0x1010021a0",
+    "validation": "reconstruction/file-naming-stages-check.swift: ASCII/Unicode/empty/lossy mappings and ambient SDK date formatting",
+    "mainFilename": "0x101002614..0x101002c5c remains partial: reserve arithmetic, UTF16 prefix/truncation and ellipsis composition not yet implemented",
+    "utf16Witnesses": {
+      "0x101466460": "String.UTF16View.index(_:offsetBy:limitedBy:)",
+      "0x101466480": "String.UTF16View range subscript"
+    }
   }
 }
