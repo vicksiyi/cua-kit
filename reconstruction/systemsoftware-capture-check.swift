@@ -135,6 +135,26 @@ import SlimCore
             return [["value": "first"], ["value": "second"]]
         })
         precondition(descriptionReads == 1 && description?["value"] as? String == "first")
+        var listCalls = 0
+        let listRows: CFArray = [
+            [kCGWindowNumber as String: UInt32(7), kCGWindowName as String: "first"],
+            [kCGWindowNumber as String: UInt32(7), kCGWindowName as String: "duplicate"],
+            [kCGWindowNumber as String: UInt32(0)]
+        ] as CFArray
+        let listed = CGWindow.allWindows([.optionOnScreenAboveWindow, .excludeDesktopElements],
+            relativeToWindow: 123, copyWindowInfo: { options, relative in
+                listCalls += 1; precondition(options.rawValue == 0x12 && relative == 123)
+                return listRows
+            })
+        precondition(listCalls == 1 && listed.map(\.id) == [7, 7, 0])
+        precondition(listed.map(\.name) == ["first", "duplicate", nil])
+        let absentList = CGWindow.allWindows(.optionAll, relativeToWindow: 0,
+            copyWindowInfo: { _, _ in nil })
+        precondition(absentList.isEmpty)
+        let malformedRows: CFArray = [[kCGWindowNumber as String: UInt32(7)], "bad"] as CFArray
+        let malformedList = CGWindow.allWindows(.optionAll, relativeToWindow: 0,
+            copyWindowInfo: { _, _ in malformedRows })
+        precondition(malformedList.isEmpty)
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }

@@ -8273,3 +8273,21 @@ compile with the restored nominal type through the alias.
 Original scale/screen/isDesktopLevel/allWindows/window(at)/snapshot/observer and
 broader module interface remain incomplete. This nominal/API alignment does not
 establish full CGWindow restoration or live input/capture acceptance.
+
+### 2026-11-11 — CGWindow allWindows API and production callers aligned
+
+Restored exported allWindows(_:relativeToWindow:) using original
+CGWindowListCopyWindowInfo, whole NSArray conditional bridge and map of the
+recovered CGWindow decoder. Nil or whole-array bridge failure returns[]; no
+compact-map of malformed rows, ID deduplication or zero filtering introduced.
+MenuWindowID and AXWindowDescriptionFallback now delegate to this SystemSoftware
+entry instead of their local equivalent SDK/decoder compositions. Other list
+adapters were not assumed equivalent without evidence.
+
+Full helper build passed21.57s. Linked injected consumer passed flags/relative ID
+forwarding, one query, ordering/duplicate/zero preservation, nil list and mixed
+malformed-array all-or-nothing conversion. Static audit checks original Copy API,
+conditional NSArray bridge import, payload initializer call and nil gates. No
+actual desktop enumeration or vendor native execution occurred. Existing missing
+required-window-number trap was not executed. CGWindow remaining screen/scale/
+point/snapshot/observer interfaces and overall live acceptance stay incomplete.

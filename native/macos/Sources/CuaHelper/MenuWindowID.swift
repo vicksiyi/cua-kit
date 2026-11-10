@@ -1,3 +1,4 @@
+import SystemSoftware
 import ApplicationServices
 import CoreGraphics
 
@@ -23,7 +24,6 @@ func resolveMenuWindowID<Window>(actualPID: () throws -> Int32,
 func systemMenuWindowID(_ element: AXUIElement) throws -> UInt32 {
     try resolveMenuWindowID(actualPID: { try element.actualPID },
         accessibilityWindowID: { try element.windowID }, allWindows: { options, relative in
-            let rows = CGWindowListCopyWindowInfo(options, relative) as? [[String: Any]] ?? []
-            return rows.map(NativeWindowDescription.init)
+            CGWindow.allWindows(options, relativeToWindow: relative)
         }, ownerPID: { $0.ownerPID }, level: { $0.level }, windowID: { $0.id })
 }

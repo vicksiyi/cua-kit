@@ -12,7 +12,18 @@
   "limits": [
     "Dictionary initializer/raw description helper are extracted public boundaries; original initializer access level not claimed",
     "No original memory layout/ABI parity claim",
-    "scale/screen/isDesktopLevel/allWindows/window(at)/snapshot/observer coverage remains incomplete",
+    "scale/screen/isDesktopLevel/window(at)/snapshot/observer coverage remains incomplete",
     "No actual native window query acceptance"
-  ]
+  ],
+  "enumeration": {
+    "entry": "0x10025b8e8..0x10025ba5c",
+    "implementation": "native/macos/Sources/SystemSoftware/CGWindowEnumeration.swift",
+    "api": "CGWindowListCopyWindowInfo; whole-array conditional bridge then map(CGWindow.init)",
+    "productionCallers": [
+      "CuaHelper/MenuWindowID.swift",
+      "CuaHelper/AXWindowDescriptionFallback.swift"
+    ],
+    "validation": "full helper build21.57s; linked injected array checks; scripts/audit-cgwindow-enumeration.py",
+    "limits": "No actual window enumeration, SDK mutable state, or invalid-required-ID trap executed"
+  }
 }

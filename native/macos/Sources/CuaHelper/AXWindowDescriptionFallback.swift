@@ -1,3 +1,4 @@
+import SystemSoftware
 import AppKit
 import ApplicationServices
 import os
@@ -20,8 +21,7 @@ func resolveAXWindowDescriptionFallback(isScrollArea: () -> Bool,
 }
 
 private func nativeWindowDescriptions(_ options: CGWindowListOption) -> [NativeWindowDescription] {
-    let rows = CGWindowListCopyWindowInfo(options, 0) as? [[String: Any]] ?? []
-    return rows.map(NativeWindowDescription.init)
+    CGWindow.allWindows(options, relativeToWindow: 0)
 }
 
 extension WindowUIElement {
