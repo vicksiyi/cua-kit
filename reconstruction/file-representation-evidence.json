@@ -63,5 +63,18 @@
       "0x101462b00": "URLResourceValues.isDirectory"
     },
     "validation": "Regular/missing path, real directory with misleading .png suffix, adopted directory, SDK symlink metadata, data with invalid materialization parent"
+  },
+  "size": {
+    "dispatch": "0x100fffb5c..0x100fffcd0: witness offset0x28",
+    "filePathWitness": "0x101005aec -> 0x1010052d0..0x1010055b8",
+    "resource": "URL .notDirectory/nil-relative, NSURLFileSizeKey only, return URLResourceValues.fileSize",
+    "bindings": {
+      "0x1014649a0": "NSURLFileSizeKey",
+      "0x101462b10": "URLResourceValues.fileSize"
+    },
+    "errors": "Resource request errors propagate; missing size throws FilePathRepresentationError.failedToFetchFileSize",
+    "errorMetadata": "0x101510c00 -> descriptor0x1012eb3f4, fields0x101347630; one no-payload case",
+    "data": "DataFile.fileSize == Data.count; no materialization",
+    "validation": "Binary size for path/temp/data; unavailable data parent still succeeds; missing path resource error propagates. Missing-size branch has static evidence but no real SDK fixture producing nil size."
   }
 }

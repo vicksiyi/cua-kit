@@ -32,6 +32,8 @@ import System
         precondition(File(FilePath(root.path)).exists)
         precondition(pathFile.filename == "existing.bin")
         let path = try pathFile.path
+        let pathSize = try pathFile.fileSize
+        precondition(pathSize == bytes.count)
         let read = try pathFile.data
         precondition(path == FilePath(url.path) && read == bytes)
         precondition(File(FilePath("/")).filename.isEmpty)
@@ -40,6 +42,8 @@ import System
         precondition(memory.representationType == .data && memory.exists)
         let unavailable = TemporaryFile.temporaryDirectory
         TemporaryFile.temporaryDirectory = unavailable.appending("missing-parent")
+        let memorySize = try memory.fileSize
+        precondition(memorySize == bytes.count)
         precondition(!memory.isDirectory)
         precondition(memory.exists) // Must not attempt a write even when it would fail.
         precondition(!fm.fileExists(atPath: TemporaryFile.temporaryDirectory.string))
@@ -51,10 +55,14 @@ import System
         precondition(fm.fileExists(atPath: materialized.string))
         let owner = TemporaryFile(adoptingFileAt: FilePath(url.path))
         let temporary = File(owner)
+        let temporarySize = try temporary.fileSize
+        precondition(temporarySize == bytes.count)
         let temporaryData = try temporary.data
         precondition(temporaryData == bytes && temporary.filename == "existing.bin")
         try fm.removeItem(at: url)
         do { _ = try temporary.data; preconditionFailure("read failure hidden") }
+        catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
+        do { _ = try temporary.fileSize; preconditionFailure("size read failure hidden") }
         catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
         precondition(temporary.representationType == .filePath && !temporary.exists)
         precondition(!memory.isDirectory)

@@ -7690,3 +7690,21 @@ build passed (24.02s, exit 0). This proves the owned fixture behavior and static
 call mapping, not original-native differential or real screenshot acceptance.
 Type/size/naming and screenshot writer integration remain incomplete; no desktop,
 paid model or original native executable was run.
+
+### 2026-11-11 — File size resource semantics and native missing-size error
+
+Restored fileSize dispatch at witness slot 0x28. Path and temporary cases query
+only NSURLFileSizeKey through a notDirectory/nil-relative URL; Foundation errors
+propagate. An absent optional size throws the recovered one-case native
+FilePathRepresentationError.failedToFetchFileSize enum (descriptor 1012eb3f4).
+Data returns Data.count without materializing. Native addresses/import bindings
+are recorded in file-representation-evidence.json.
+
+All fourteen checks passed, including actual binary length for all representations,
+unwritable/missing data parent without materialization and missing path size error.
+No real resource fixture yielding nil fileSize was identified: that error branch
+has static evidence, not an executed SDK acceptance case. Type fallback and naming
+still require additional tracing; screenshot writer integration, full interface
+alignment and real UI acceptance remain open. No model/desktop/vendor-native run.
+
+Swift helper build passed (23.40s, exit 0); whitespace diff check passed.

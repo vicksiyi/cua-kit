@@ -36,6 +36,27 @@ enum File: Hashable, Codable {
 
     // Native File routes path and temporary ownership through FilePath witnesses;
     // DataFile returns its payload/name directly and materializes only for path.
+    var fileSize: Int {
+        get throws {
+            switch self {
+            case .data(let file): return file.fileSize
+            case .path(let path): return try Self.size(of: path)
+            case .temporaryFile(let owner): return try Self.size(of: owner.path)
+            }
+        }
+    }
+
+    // 1010052d0..1010055b8: propagate resource read errors; a successful
+    // resource read without a size throws the recovered native error.
+    private static func size(of path: FilePath) throws -> Int {
+        let url = URL(filePath: path.string, directoryHint: .notDirectory, relativeTo: nil)
+        let values = try url.resourceValues(forKeys: [.fileSizeKey])
+        guard let size = values.fileSize else {
+            throw FilePathRepresentationError.failedToFetchFileSize
+        }
+        return size
+    }
+
     var filename: String {
         switch self {
         case .path(let path): return path.lastComponent?.string ?? ""
@@ -80,3 +101,6 @@ enum File: Hashable, Codable {
 extension DataFile {
     var representationType: File.RepresentationType { .data }
 }
+
+// Native descriptor 1012eb3f4 / field descriptor 101347630, one empty case.
+enum FilePathRepresentationError: Swift.Error { case failedToFetchFileSize }
