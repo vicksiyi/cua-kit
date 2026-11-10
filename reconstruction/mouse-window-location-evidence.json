@@ -1,0 +1,22 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "source": "native/macos/Sources/CuaHelper/MouseWindow.swift",
+  "originalCaller": "AccessibilitySupport.SynthesizedEvent.mouseEvent at 0x1007547d4 (excerpt +268 onward)",
+  "callSite": "0x1007549c8 -> SystemSoftware.WindowServerSPI.setWindowLocation at 0x10026cc8c",
+  "originalBehavior": [
+    "Optional window presence is tested at 0x1007548f4; it is not a nonzero numeric ID test",
+    "Set event integer fields91 and92 to provided window ID",
+    "If bounds present, translate global location by negative CGRectGetMinX/MinY; optionally flip Y using CGRectGetHeight",
+    "Call required WindowServerSPI function; no optional per-caller dlsym fallback"
+  ],
+  "changes": [
+    "Remove duplicate optional CGEventSetWindowLocation resolver",
+    "Use restored shared required SystemSoftware binding",
+    "Remove unsupported zero-window-ID rejection; retain caller snapshot/target validation"
+  ],
+  "limits": [
+    "MouseWindow adapter still requires bounds; original optional-bounds construction is not fully represented by this adapter",
+    "No live event posting or private SPI executed for this verification",
+    "Restored wrapper already has independent pinned required-binding audit; caller change does not prove full mouse event parity"
+  ]
+}

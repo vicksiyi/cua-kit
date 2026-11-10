@@ -8526,3 +8526,19 @@ is an additional test seam, not an original API. The full AccessibilitySupport
 module, native behavior parity, and real desktop acceptance remain incomplete.
 See reconstruction/accessibility-front-process-evidence.json and
 reconstruction/front-process-callers-evidence.json (direct branches only).
+
+## 2026-11-11 mouse window-location binding alignment
+
+MouseWindow now calls SystemSoftware.WindowServerSPI.setWindowLocation instead
+of independently resolving optional CGEventSetWindowLocation. Original
+SynthesizedEvent.mouseEvent's direct call at 0x1007549c8 and its optional-window
+presence branch establish required binding and no numeric-zero-ID rejection.
+The adapter's extra zero-ID rejection was removed; target freshness guards remain.
+Original coordinate translation and optional flip were inspected statically.
+
+Swift build passed (32.71s); native-macos-client.test.ts passed all 19 mocked
+caller/transport tests. Those tests do not execute the changed native setter;
+compilation plus pinned original call evidence supports this source alignment,
+not live click acceptance. Optional-bounds behavior and wider SynthesizedEvent
+module fidelity remain open. See reconstruction/mouse-window-location-evidence.json
+and the corresponding static disassembly excerpt.

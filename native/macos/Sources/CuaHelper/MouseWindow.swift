@@ -1,6 +1,6 @@
 import AppKit
 import ApplicationServices
-import Darwin
+import SystemSoftware
 
 struct MouseWindow {
     let id: UInt32
@@ -9,23 +9,14 @@ struct MouseWindow {
     var usesFlippedCoordinates = true
 }
 
-private typealias SetWindowLocation = @convention(c) (CGEvent, CGPoint) -> Void
-private let setMouseWindowLocation: SetWindowLocation? = {
-    guard let symbol = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "CGEventSetWindowLocation") else { return nil }
-    return unsafeBitCast(symbol, to: SetWindowLocation.self)
-}()
-
 func applyMouseWindow(_ window: MouseWindow, to event: CGEvent) throws {
     // Native mouseEvent +288..+500 sets both window fields and a separate
     // window-local location. postToPid alone does not supply these fields.
-    guard window.id != 0, let setLocation = setMouseWindowLocation else {
-        throw fail("UNSUPPORTED_CAPABILITY", "Window-targeted mouse event support is unavailable.")
-    }
     event.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: Int64(window.id))
     event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(window.id))
     let global = event.location
     let localY = global.y - window.frame.minY
-    setLocation(event, CGPoint(x: global.x - window.frame.minX,
+    WindowServerSPI.setWindowLocation(event, location: CGPoint(x: global.x - window.frame.minX,
         y: window.usesFlippedCoordinates ? window.frame.height - localY : localY))
 }
 
