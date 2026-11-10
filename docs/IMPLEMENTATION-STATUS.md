@@ -7655,3 +7655,21 @@ existence and remaining interface properties, screenshot writer composition and
 live acceptance remain incomplete. No paid model or desktop operations occurred.
 
 Swift helper build passed (16.70s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — File representationType and existence semantics
+
+Recovered the two-case RepresentationType descriptor (data tag0/filePath tag1),
+FilePath/DataFile constant witnesses and File representation dispatch. Restored
+File/DataFile representationType without tying it to whether lazy data has been
+written to disk. File.exists returns true immediately for data representation;
+filePath attempts path acquisition, maps acquisition errors to false, then asks
+FileManager.fileExists. It does not materialize memory merely to check existence.
+
+All fourteen checks passed with existing/missing files, directory existence,
+invalid materialization parent with memory exists=true, and deleted temporary
+exists=false. These are owned-filesystem checks plus pinned static evidence;
+isDirectory/type/size and naming remain under audit, not inferred from suffixes.
+Screenshot write composition, complete module/API alignment and live UI acceptance
+remain pending. No desktop/model/vendor-native execution occurred.
+
+Swift helper build passed (23.15s, exit 0); whitespace diff check passed.

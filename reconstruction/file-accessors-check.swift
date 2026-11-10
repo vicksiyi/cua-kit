@@ -15,6 +15,9 @@ import System
         let url = root.appendingPathComponent("existing.bin")
         try bytes.write(to: url)
         let pathFile = File(FilePath(url.path))
+        precondition(pathFile.representationType == .filePath && pathFile.exists)
+        precondition(!File(FilePath(root.appendingPathComponent("missing").path)).exists)
+        precondition(File(FilePath(root.path)).exists)
         precondition(pathFile.filename == "existing.bin")
         let path = try pathFile.path
         let read = try pathFile.data
@@ -22,6 +25,12 @@ import System
         precondition(File(FilePath("/")).filename.isEmpty)
         precondition(File(FilePath("")).filename.isEmpty)
         let memory = File(data: bytes, filename: "memory.bin", type: nil)
+        precondition(memory.representationType == .data && memory.exists)
+        let unavailable = TemporaryFile.temporaryDirectory
+        TemporaryFile.temporaryDirectory = unavailable.appending("missing-parent")
+        precondition(memory.exists) // Must not attempt a write even when it would fail.
+        precondition(!fm.fileExists(atPath: TemporaryFile.temporaryDirectory.string))
+        TemporaryFile.temporaryDirectory = unavailable
         let memoryData = try memory.data
         precondition(memoryData == bytes && memory.filename == "memory.bin")
         precondition(!fm.fileExists(atPath: root.appendingPathComponent("memory.bin").path))
@@ -34,6 +43,8 @@ import System
         try fm.removeItem(at: url)
         do { _ = try temporary.data; preconditionFailure("read failure hidden") }
         catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
+        precondition(temporary.representationType == .filePath && !temporary.exists)
+        precondition(memory.exists) // representation does not change after materialization
         let retainedPath = try temporary.path
         precondition(retainedPath == FilePath(url.path))
         print("File accessor routing checks passed")

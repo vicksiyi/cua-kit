@@ -3,8 +3,25 @@ import System
 import UniformTypeIdentifiers
 
 // Native three-payload representation and synthesized keyed enum coding.
-// Naming helpers, remaining accessors and representationType remain to restore.
+// Naming helpers and remaining accessors remain to restore.
 enum File: Hashable, Codable {
+    enum RepresentationType: Hashable { case data, filePath }
+
+    var representationType: RepresentationType {
+        switch self {
+        case .path, .temporaryFile: return .filePath
+        case .data: return .data
+        }
+    }
+
+    // 101001880..101001bb4: memory data exists independent of materialization.
+    // Path acquisition errors are converted to false before the FileManager read.
+    var exists: Bool {
+        if representationType == .data { return true }
+        guard let path = try? path else { return false }
+        return FileManager.default.fileExists(atPath: path.string)
+    }
+
     case path(FilePath)
     case temporaryFile(TemporaryFile)
     case data(DataFile)
@@ -49,4 +66,9 @@ enum File: Hashable, Codable {
     init(data: Data, filename: String, type: UTType?) {
         self = .data(DataFile(data: data, filename: filename, type: type))
     }
+}
+
+// Native DataFile witness returns representation tag zero without materializing.
+extension DataFile {
+    var representationType: File.RepresentationType { .data }
 }

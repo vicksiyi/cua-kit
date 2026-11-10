@@ -42,5 +42,14 @@
     "dataImport": "GOT 0x101463130 Foundation.Data.init(contentsOf:options:)",
     "pathWitness": "0x101005ab4 copies FilePath; DataFile witness delegates throwing lazy path",
     "validation": "reconstruction/file-accessors-check.swift: all representations, eager read vs lazy path, filename root/empty, read error and no path existence check"
+  },
+  "state": {
+    "representation": "0x101000e10..0x101000f6c; metadata 0x1012eb288/0x1013474fc: data(tag0), filePath(tag1)",
+    "witnesses": {
+      "FilePath": "0x101005b00 returns1",
+      "DataFile": "0x1010041f0 returns0"
+    },
+    "exists": "0x101001880..0x101001bb4: representation data -> true before path acquisition; filePath -> try path, false on error, FileManager.fileExists",
+    "validation": "Existing/missing paths and directories; data true even with invalid materialization parent; retained data representation after path request; deleted temporary false"
   }
 }
