@@ -7,10 +7,10 @@ public extension SynthesizedEvent {
         inWindow windowID: UInt32?, windowBounds: CGRect?,
         windowUsesFlippedCoordinates: Bool
     ) throws -> SynthesizedEvent {
-        guard let source = CGEventSource(stateID: .hidSystemState) else {
+        guard let source = CGEventAPI.sourceCreate(stateID: .hidSystemState) else {
             throw Error.failedToCreateSource
         }
-        guard let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel,
+        guard let event = CGEventAPI.createScrollWheelEvent(source: source, units: .pixel,
             wheelCount: 1, wheel1: Int32(deltaY), wheel2: Int32(deltaX), wheel3: 0) else {
             throw Error.invalidParameter
         }

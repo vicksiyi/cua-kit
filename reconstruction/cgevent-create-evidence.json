@@ -1,0 +1,28 @@
+{
+  "source": "native/macos/Sources/SystemSoftware/CGEventAPI.swift",
+  "slots": {
+    "create": 0,
+    "createKeyboardEvent": 1,
+    "createScrollWheelEvent": 2,
+    "sourceCreate": 18
+  },
+  "matchedSignatures": [
+    "static SystemSoftware.CGEventAPI.create(source: __C.CGEventSourceRef?) -> __C.CGEventRef?",
+    "static SystemSoftware.CGEventAPI.createKeyboardEvent(source: __C.CGEventSourceRef?, virtualKey: Swift.UInt16, keyDown: Swift.Bool) -> __C.CGEventRef?",
+    "static SystemSoftware.CGEventAPI.createScrollWheelEvent(source: __C.CGEventSourceRef?, units: __C.CGScrollEventUnit, wheelCount: Swift.UInt32, wheel1: Swift.Int32, wheel2: Swift.Int32, wheel3: Swift.Int32) -> __C.CGEventRef?",
+    "static SystemSoftware.CGEventAPI.sourceCreate(stateID: __C.CGEventSourceStateID) -> __C.CGEventSourceRef?"
+  ],
+  "ownership": "Create-rule C functions explicitly return Unmanaged CF objects; takeRetainedValue adopts once into Swift ARC",
+  "validation": {
+    "build": "exit0,17.23s",
+    "nativeInputSelfTest": "exit0",
+    "linkedFixtures": "All12 pass",
+    "symbols": "Original hashes/pointer identities match CGEventCreate, CGEventCreateKeyboardEvent, CGEventCreateScrollWheelEvent2 and CGEventSourceCreate",
+    "construction": "Three source states; nil/provided source; keyboard up/down; scroll pixel delta; owned event mutation"
+  },
+  "limits": [
+    "No allocation failures induced and no leak-instrumentation or whole ABI equivalence claimed",
+    "No events posted; real App acceptance remains incomplete",
+    "14 of24 original method signatures implemented in bounded CGEventAPI type; remaining10 methods incomplete"
+  ]
+}

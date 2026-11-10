@@ -8710,3 +8710,19 @@ Checks cover flags combinations, negative/fractional coordinates, full UInt64
 timestamp boundaries and several event types, on unposted allocated events.
 No desktop event delivery or full ABI/type/whole-project completion is claimed.
 See reconstruction/cgevent-scalars-evidence.json and original wrapper excerpt.
+
+## 2026-11-11 CGEvent/source constructors
+
+CGEventAPI adds create/createKeyboardEvent/createScrollWheelEvent/sourceCreate at
+original slots0/1/2/18. Original symbol hash/pointer checks identify slot2 as
+CGEventCreateScrollWheelEvent2 (fixed arguments), not the variadic symbol.
+Create-rule Unmanaged returns are adopted once into Swift ARC. The scroll factory
+now calls the restored source/event constructors rather than SDK initializers.
+All4 selected global method signatures exactly match original.
+
+Build passed17.23s; native input self-test and all12 linked fixtures passed.
+Construction checks cover3 source states, nil/provided sources, keyboard up/down,
+pixel scroll deltas and owned event mutation. No allocation failure, leak
+instrumentation or event posting was performed. This bounded API has14 of24
+original method signatures implemented; remaining10 and wider restoration/live
+acceptance remain open. See reconstruction/cgevent-create-evidence.json.

@@ -56,4 +56,30 @@ public enum CGEventAPI {
     public static func setType(_ event: CGEvent, type: CGEventType) { typeSetter(event, type) }
 
 
+    private typealias EventCreate = @convention(c) (CGEventSource?) -> Unmanaged<CGEvent>?
+    private typealias KeyboardCreate = @convention(c) (CGEventSource?, UInt16, Bool) -> Unmanaged<CGEvent>?
+    private typealias ScrollCreate = @convention(c) (CGEventSource?, CGScrollEventUnit, UInt32, Int32, Int32, Int32) -> Unmanaged<CGEvent>?
+    private typealias SourceCreate = @convention(c) (CGEventSourceStateID) -> Unmanaged<CGEventSource>?
+    private static let eventCreate = unsafeBitCast(functions[0], to: EventCreate.self)
+    private static let keyboardCreate = unsafeBitCast(functions[1], to: KeyboardCreate.self)
+    private static let scrollCreate = unsafeBitCast(functions[2], to: ScrollCreate.self)
+    private static let sourceCreateBinding = unsafeBitCast(functions[18], to: SourceCreate.self)
+
+    // Create-rule C functions return owned CF objects; transfer that ownership
+    // into Swift exactly once. No extra retain or unretained adoption.
+    public static func create(source: CGEventSource?) -> CGEvent? {
+        eventCreate(source)?.takeRetainedValue()
+    }
+    public static func createKeyboardEvent(source: CGEventSource?, virtualKey: UInt16, keyDown: Bool) -> CGEvent? {
+        keyboardCreate(source, virtualKey, keyDown)?.takeRetainedValue()
+    }
+    public static func createScrollWheelEvent(source: CGEventSource?, units: CGScrollEventUnit,
+        wheelCount: UInt32, wheel1: Int32, wheel2: Int32, wheel3: Int32
+    ) -> CGEvent? {
+        scrollCreate(source, units, wheelCount, wheel1, wheel2, wheel3)?.takeRetainedValue()
+    }
+    public static func sourceCreate(stateID: CGEventSourceStateID) -> CGEventSource? {
+        sourceCreateBinding(stateID)?.takeRetainedValue()
+    }
+
 }
