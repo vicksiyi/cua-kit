@@ -94,5 +94,18 @@
     "implementation": "Original five-argument surface in ScreenshotBuffer.swift; extracted capture/write stages in ScreenshotFileCapture.swift",
     "validation": "Owned CGImage fixture with real writer; capture/write failure identity, PNG selection and File lifetime. Full production capture function compiled but not run against user desktop.",
     "limits": "Default generators, original signposts, production app-route selection and real desktop acceptance pending"
+  },
+  "selectionWriter": {
+    "source": "0x1002350a4..0x100235160",
+    "name": "context.applicationWindow.axApplication via UIElementProtocol.title; nil -> explicit Unknown",
+    "call": "0x100235134 forwards screenshot and caller encoding to ScreenshotImplementation.writeScreenshotToFile",
+    "implementation": "native/macos/Sources/CuaHelper/SystemSelectionScreenshotFile.swift",
+    "validation": "Helper compilation; no real AX/title invocation because owned live gate returned screenLocked",
+    "limits": "Existing app skyshot route not switched merely by adding original helper"
+  },
+  "latestLiveGate": {
+    "command": "CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern='live owned App skyshot through restored Sky client' reconstruction/native-sky-ipc.test.ts",
+    "result": "Failed at observation with screenLocked/-10020 in approximately2.3s; no screenshot/input acceptance",
+    "cleanup": "After test terminal exit, pgrep for owned fixture/helper patterns returned no matches"
   }
 }

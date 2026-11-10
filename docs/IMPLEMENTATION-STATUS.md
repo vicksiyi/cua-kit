@@ -7821,3 +7821,26 @@ logging/signposts, defaults, full module/API audit and app-route integration rem
 open. No paid model or vendor native execution occurred.
 
 Swift helper build passed (16.46s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — SystemSelection screenshot file entry and current live gate
+
+Recovered SystemSelection.writeScreenshotToFile at 1002350a4..100235160:
+read context application's AX title, use explicit Unknown when missing, and
+forward caller encoding/image to the shared ScreenshotImplementation writer.
+Added this original helper without switching the current independent Skyshot
+production route or replacing AX title with bundle/window metadata. Compilation
+is the current check; no live AX/title result is claimed.
+
+Searched installed symbols for default-argument generators; no matching named
+generator was found. This is insufficient to establish defaults, so original
+entry arguments remain explicit. No inferred defaults were introduced.
+
+Ran one current real owned-app skyshot regression through restored Sky client.
+It failed at observation with screenLocked (-10020), approximately 2.3 seconds,
+before screenshot/input. TCC gate passed; test cleanup ran and no owned fixture/
+helper processes matched the cleanup check afterwards. This is an actual failed
+gate, not successful capture acceptance. Local raw log remains outside git at
+/tmp/cua-current-skyshot-acceptance.log. No model/vendor native executable was run.
+
+Swift helper build passed (26.61s, exit 0); whitespace diff check passed. Live
+acceptance remains blocked by desktop lock; source restoration work can continue.
