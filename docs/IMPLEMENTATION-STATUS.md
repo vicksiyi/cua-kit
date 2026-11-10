@@ -8606,3 +8606,20 @@ source-backed module separation. The event-number lock is an independent host
 synchronization choice. Selected exports and tests do not establish full ABI,
 whole AccessibilitySupport restoration or real application event delivery.
 See reconstruction/synthesized-event-module-evidence.json.
+
+## 2026-11-11 focus/deactivation notification alignment
+
+notifyWindowKeyFocusRemoved/Returned and notifyAppDeactivated now reside in
+AccessibilitySupport. Original lazy constants establish type21, subtype0x4000
+and signed0x8000; deactivation uses AppKit-defined type13/subtype2. Pinned
+failure paths write SynthesizedEvent.Error tag0, so the former helper-specific
+UNSUPPORTED_CAPABILITY/PROVIDER_DISCONNECTED construction errors were replaced
+with original invalidParameter. Activation-with-click remains separate/pending.
+
+Swift build passed38.23s; helper --self-test and all8 linked module fixtures
+passed. New direct module consumer constructs/inspects all3 unposted events,
+including type/subtype, zero flags/window/location/timestamp/payload. All3 global
+method export signatures exactly match original. Allocation failures are checked
+statically, not forced at runtime. No focus change or application deactivation
+was posted; full event module restoration and live acceptance remain incomplete.
+See reconstruction/focus-notifications-evidence.json.

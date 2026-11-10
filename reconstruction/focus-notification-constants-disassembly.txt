@@ -1,0 +1,57 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10072f560 -e 0x10072f598
+SkyComputerUseService`___lldb_unnamed_symbol80926:
+SkyComputerUseService[0x10072f560] <+0>:  adrp   x8, 3739
+SkyComputerUseService[0x10072f564] <+4>:  add    x8, x8, #0x810            ; static __C.NSEventType.processNotification : Swift.Optional<__C.NSEventType>
+SkyComputerUseService[0x10072f568] <+8>:  mov    w9, #0x15                 ; =21 
+SkyComputerUseService[0x10072f56c] <+12>: str    x9, [x8]
+SkyComputerUseService[0x10072f570] <+16>: strb   wzr, [x8, #0x8]
+SkyComputerUseService[0x10072f574] <+20>: ret    
+
+SkyComputerUseService`static __C.NSEventType.processNotification.getter : Swift.Optional<__C.NSEventType>:
+SkyComputerUseService[0x10072f578] <+0>:  adrp   x8, 3649
+SkyComputerUseService[0x10072f57c] <+4>:  ldr    x8, [x8, #0x3f0]
+SkyComputerUseService[0x10072f580] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10072f584] <+12>: b.ne   0x10072f59c               ; <+36>
+SkyComputerUseService[0x10072f588] <+16>: adrp   x8, 3739
+SkyComputerUseService[0x10072f58c] <+20>: add    x8, x8, #0x810            ; static __C.NSEventType.processNotification : Swift.Optional<__C.NSEventType>
+SkyComputerUseService[0x10072f590] <+24>: ldr    x0, [x8]
+SkyComputerUseService[0x10072f594] <+28>: ldrb   w1, [x8, #0x8]
+(lldb) disassemble -s 0x10072f6b0 -e 0x10072f720
+SkyComputerUseService`___lldb_unnamed_symbol80929:
+SkyComputerUseService[0x10072f6b0] <+0>:  adrp   x8, 3739
+SkyComputerUseService[0x10072f6b4] <+4>:  add    x8, x8, #0x822            ; static __C.NSEventSubtype.kCPSNotifyKeyFocusTaken : Swift.Optional<__C.NSEventSubtype>
+SkyComputerUseService[0x10072f6b8] <+8>:  mov    w9, #0x4000               ; =16384 
+SkyComputerUseService[0x10072f6bc] <+12>: strh   w9, [x8]
+SkyComputerUseService[0x10072f6c0] <+16>: strb   wzr, [x8, #0x2]
+SkyComputerUseService[0x10072f6c4] <+20>: ret    
+
+SkyComputerUseService`static __C.NSEventSubtype.kCPSNotifyKeyFocusTaken.getter : Swift.Optional<__C.NSEventSubtype>:
+SkyComputerUseService[0x10072f6c8] <+0>:  adrp   x1, 3739
+SkyComputerUseService[0x10072f6cc] <+4>:  add    x1, x1, #0x822            ; static __C.NSEventSubtype.kCPSNotifyKeyFocusTaken : Swift.Optional<__C.NSEventSubtype>
+SkyComputerUseService[0x10072f6d0] <+8>:  adrp   x0, 3649
+SkyComputerUseService[0x10072f6d4] <+12>: add    x0, x0, #0x408            ; protocol witness table for Swift.UnsafeMutableRawPointer.AtomicOptionalRepresentation : Atomics.AtomicStorage in Atomics + 12536
+SkyComputerUseService[0x10072f6d8] <+16>: adrp   x3, 0
+SkyComputerUseService[0x10072f6dc] <+20>: add    x3, x3, #0x6b0            ; ___lldb_unnamed_symbol80929
+SkyComputerUseService[0x10072f6e0] <+24>: add    x2, x1, #0x2
+SkyComputerUseService[0x10072f6e4] <+28>: b      0x10072f978               ; ___lldb_unnamed_symbol80936
+
+SkyComputerUseService`___lldb_unnamed_symbol80930:
+SkyComputerUseService[0x10072f6e8] <+0>:  adrp   x8, 3739
+SkyComputerUseService[0x10072f6ec] <+4>:  add    x8, x8, #0x826            ; static __C.NSEventSubtype.kCPSNotifyKeyFocusReturned : Swift.Optional<__C.NSEventSubtype>
+SkyComputerUseService[0x10072f6f0] <+8>:  mov    w9, #0x8000               ; =32768 
+SkyComputerUseService[0x10072f6f4] <+12>: strh   w9, [x8]
+SkyComputerUseService[0x10072f6f8] <+16>: strb   wzr, [x8, #0x2]
+SkyComputerUseService[0x10072f6fc] <+20>: ret    
+
+SkyComputerUseService`static __C.NSEventSubtype.kCPSNotifyKeyFocusReturned.getter : Swift.Optional<__C.NSEventSubtype>:
+SkyComputerUseService[0x10072f700] <+0>:  adrp   x1, 3739
+SkyComputerUseService[0x10072f704] <+4>:  add    x1, x1, #0x826            ; static __C.NSEventSubtype.kCPSNotifyKeyFocusReturned : Swift.Optional<__C.NSEventSubtype>
+SkyComputerUseService[0x10072f708] <+8>:  adrp   x0, 3649
+SkyComputerUseService[0x10072f70c] <+12>: add    x0, x0, #0x410            ; protocol witness table for Swift.UnsafeMutableRawPointer.AtomicOptionalRepresentation : Atomics.AtomicStorage in Atomics + 12544
+SkyComputerUseService[0x10072f710] <+16>: adrp   x3, 0
+SkyComputerUseService[0x10072f714] <+20>: add    x3, x3, #0x6e8            ; ___lldb_unnamed_symbol80930
+SkyComputerUseService[0x10072f718] <+24>: add    x2, x1, #0x2
+SkyComputerUseService[0x10072f71c] <+28>: b      0x10072f978               ; ___lldb_unnamed_symbol80936
+(lldb) quit

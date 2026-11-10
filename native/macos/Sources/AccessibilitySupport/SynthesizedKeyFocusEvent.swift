@@ -1,7 +1,6 @@
-import AccessibilitySupport
 import AppKit
 
-extension SynthesizedEvent {
+public extension SynthesizedEvent {
     // Pinned native optional constants: processNotification=21 (0x10072f560),
     // taken=0x4000 (0x10072f6b0), returned=0x8000 (0x10072f6e8).
     static func notifyWindowKeyFocusRemoved() throws -> SynthesizedEvent {
@@ -15,7 +14,7 @@ extension SynthesizedEvent {
               let event = NSEvent.otherEvent(with: type, location: .zero,
                 modifierFlags: [], timestamp: 0, windowNumber: 0, context: nil,
                 subtype: subtype, data1: 0, data2: 0)?.cgEvent else {
-            throw fail("UNSUPPORTED_CAPABILITY", "Cannot construct process focus notification.")
+            throw Error.invalidParameter
         }
         return SynthesizedEvent(cgEvents: [event])
     }

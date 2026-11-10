@@ -2,11 +2,6 @@ import AccessibilitySupport
 import AppKit
 
 extension SynthesizedEvent {
-    // 0x100754420: AppKit-defined subtype 2, no window/flags/payload.
-    static func notifyAppDeactivated() throws -> SynthesizedEvent {
-        SynthesizedEvent(cgEvents: [try appActivationNotification(windowID: 0, subtype: 2, flags: [])])
-    }
-
     // 0x100754408 -> 0x100730374. A window-targeted activation notification
     // optionally includes a synthetic click when BOTH geometry and point exist.
     static func notifyAppActivated(windowID: UInt32, windowBounds: CGRect?,

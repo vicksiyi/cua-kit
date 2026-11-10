@@ -1,0 +1,30 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "entries": {
+    "returned": "0x100754250",
+    "removed": "0x100754524",
+    "deactivated": "0x100754420"
+  },
+  "optionalConstants": {
+    "processNotification": 21,
+    "taken": 16384,
+    "returned": 32768
+  },
+  "failure": "SynthesizedEvent.Error.invalidParameter tag0",
+  "sources": [
+    "native/macos/Sources/AccessibilitySupport/SynthesizedKeyFocusEvent.swift",
+    "native/macos/Sources/AccessibilitySupport/SynthesizedDeactivationEvent.swift"
+  ],
+  "limits": [
+    "Allocation failure branch is statically matched, not forced in native runtime",
+    "Events are constructed and inspected without posting; no real focus or app deactivation asserted",
+    "Other event extension/module work and live acceptance remain open"
+  ],
+  "validation": {
+    "build": "exit0,38.23s",
+    "helperSelfTest": "exit0",
+    "linkedFixtures": "All8 pass, including actual AccessibilitySupport notification constructors",
+    "notifications": "Three unposted events: type/subtype, zero location/timestamp/window/payload and no flags",
+    "exports": "All3 notification method signatures exactly match original demangled global T exports"
+  }
+}
