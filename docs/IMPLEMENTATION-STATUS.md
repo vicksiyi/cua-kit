@@ -7500,3 +7500,21 @@ success/deinit, missing output, exact writer-error propagation with retained
 partial output, directory acceptance and shared-directory fallback. Current vendor
 binary SHA matches the evidence pin. No desktop, vendor binary execution or paid
 model was used. The Swift helper build also passed (terminal exit 0).
+
+### 2026-11-11 — TemporaryFile copy constructor
+
+Restored copyingFileAt from 1010062c4..1010065a8. It obtains the final component
+through SDK System.FilePath, throws invalidFilePath when absent, then delegates
+to writingNewFile and FileManager.copyItem(atPath:toPath:). This preserves native
+copy behavior rather than inventing a file-only copy implementation. Static
+binding and selector addresses are recorded in temporary-file-evidence.json.
+
+All ten screenshot checks passed again, with added binary-data copy, collision,
+source retention, empty/root rejection, underlying missing-source error and
+recursive directory-copy ownership cases. No desktop/model/vendor native execution.
+Data's native write call was separately identified as Foundation Data.write with
+raw options 2; URL initializer enum/default details remain under investigation,
+so that constructor and Codable/ScreenshotFile remain incomplete.
+
+The Swift helper build passed (28.86s, exit 0). The preceding checkpoint push
+failed with an HTTP/2 framing-layer transport error; local commits were retained.

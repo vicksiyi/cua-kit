@@ -4,7 +4,7 @@ import os
 
 // Adopted-file ownership from 1010061a0..101006200 and deinit 1010065bc.
 // Native System.FilePath is available from the SDK and matches vendor imports.
-// Codable and data/copy convenience constructors remain separate.
+// Codable and the data convenience constructor remain separate.
 class TemporaryFile: Hashable {
     enum Error: Swift.Error {
         case invalidFilePath
@@ -18,6 +18,15 @@ class TemporaryFile: Hashable {
     let path: FilePath
 
     init(adoptingFileAt path: FilePath) { self.path = path }
+
+    // 1010062c4..101006470: filename comes from the System component,
+    // and FileManager owns copy semantics (including directories and links).
+    convenience init(copyingFileAt source: FilePath) throws {
+        guard let filename = source.lastComponent?.string else { throw Error.invalidFilePath }
+        try self.init(writingNewFile: filename) { destination in
+            try FileManager.default.copyItem(atPath: source.string, toPath: destination.string)
+        }
+    }
 
     // 101008130: a throwing writer leaves any partial file untouched. Ownership
     // begins only after successful writing and the existence check.

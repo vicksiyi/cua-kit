@@ -18,7 +18,7 @@
   "implementation": "native/macos/Sources/CuaHelper/TemporaryFile.swift",
   "validation": "reconstruction/temporary-file-ownership-check.swift",
   "limits": [
-    "data/copy convenience constructors and Codable not yet restored",
+    "Data convenience constructor and Codable not yet restored",
     "not wired to ScreenshotFile owner or production screenshot file route"
   ],
   "uniquePath": {
@@ -65,5 +65,23 @@
     "error": "fileDidNotExistAfterCallingWriteBlock (tag 1), enum descriptor 0x1012eb484 / fields 0x101347668",
     "throw": "writer failure propagates without deleting a partial output; existence accepts directories",
     "validation": "reconstruction/temporary-file-writing-check.swift"
+  },
+  "copyingFile": {
+    "source": "0x1010062c4..0x1010065a8",
+    "filename": "System.FilePath.lastComponent?.string; nil throws invalidFilePath tag 0",
+    "copy": "FileManager.default.copyItem(atPath:toPath:) through writingNewFile; no independent file copy algorithm",
+    "bindings": {
+      "0x101469240": "System.FilePath.lastComponent",
+      "0x101469268": "System.FilePath.Component.string",
+      "0x10136913e": "copyItemAtPath:toPath:error:"
+    },
+    "validation": "reconstruction/temporary-file-writing-check.swift: bytes, collision, source retention, missing component, missing source, directory copy"
+  },
+  "dataConstructorTrace": {
+    "source": "0x101007cac..0x1010080d8",
+    "writeCall": "0x101007f4c -> 0x10114ead0 -> GOT 0x1014631f8 Foundation.Data.write(to:options:)",
+    "writeOptionsRawValue": 2,
+    "urlInit": "0x101007f20 -> 0x10114e980 -> GOT 0x1014630d0 URL.init(filePath:directoryHint:relativeTo:)",
+    "status": "URL enum/default argument details still need verification; not implemented by assumption"
   }
 }

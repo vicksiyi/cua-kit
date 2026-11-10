@@ -54,6 +54,43 @@ import System
         let directoryPath = directory!.path
         directory = nil
         precondition(!fm.fileExists(atPath: directoryPath.string))
+        let source = base.appending("original.txt")
+        let bytes = Data([0, 1, 255, 10])
+        try bytes.write(to: URL(fileURLWithPath: source.string))
+        var copy: TemporaryFile? = try TemporaryFile(copyingFileAt: source)
+        let copiedPath = copy!.path
+        precondition(copiedPath == named.appending("original.txt"))
+        let copiedBytes = try Data(contentsOf: URL(fileURLWithPath: copiedPath.string))
+        precondition(copiedBytes == bytes)
+        // Collision is handled by the existing numbered-directory selection.
+        var secondCopy: TemporaryFile? = try TemporaryFile(copyingFileAt: source)
+        let secondPath = secondCopy!.path
+        precondition(secondPath == named.appending("1/original.txt"))
+        copy = nil
+        secondCopy = nil
+        precondition(!fm.fileExists(atPath: copiedPath.string))
+        precondition(!fm.fileExists(atPath: secondPath.string))
+        precondition(fm.fileExists(atPath: source.string))
+        for invalid in [FilePath(""), FilePath("/")] {
+            do {
+                _ = try TemporaryFile(copyingFileAt: invalid)
+                preconditionFailure("path without component accepted")
+            } catch TemporaryFile.Error.invalidFilePath {}
+        }
+        do {
+            _ = try TemporaryFile(copyingFileAt: base.appending("nonexistent"))
+            preconditionFailure("copy failure ignored")
+        } catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
+        let sourceDirectory = base.appending("source-directory")
+        try fm.createDirectory(atPath: sourceDirectory.string, withIntermediateDirectories: false)
+        try bytes.write(to: URL(fileURLWithPath: sourceDirectory.appending("child").string))
+        var directoryCopy: TemporaryFile? = try TemporaryFile(copyingFileAt: sourceDirectory)
+        let directoryCopyPath = directoryCopy!.path
+        let copiedChild = try Data(contentsOf: URL(fileURLWithPath: directoryCopyPath.appending("child").string))
+        precondition(copiedChild == bytes)
+        directoryCopy = nil
+        precondition(!fm.fileExists(atPath: directoryCopyPath.string))
+        precondition(fm.fileExists(atPath: sourceDirectory.string))
         print("Temporary file initialization and writing checks passed")
     }
 }
