@@ -8442,3 +8442,22 @@ Final focused source typecheck includes explicit CGWindow.EventStream annotation
 No actual WindowServer notifications, desktop actions, vendor executable or model
 ran. Concrete live subscriptions and original ordering class/ABI/concurrency parity
 remain unaccepted; generic fixture seams are not claimed original nominal layout.
+
+### 2026-11-11 — Current CGWindow binary export surface audited
+
+Added reproducible read-only original/restored Mach-O export comparison. Original
+binary full SHA256 is pinned; both nm and swift-demangle subprocesses are checked.
+For direct global T signatures beginning SystemSoftware.CGWindow. or static
+SystemSoftware.CGWindow. (including nested types/accessors), original has33 and
+current restored binary has35. All33 original signatures have exact demangled
+matches. Two additional exports are the extracted dictionary initializer and
+injected CopyWindowInfo overload; they are explicitly not original API identity.
+Report records both binary hashes, matched addresses and repository head at audit.
+
+No private/local implementation, metadata/witness, body, ownership, ABI or runtime
+coverage is inferred from these counts. Existing binary/source correspondence
+requires separate build evidence; repository head alone is not proof. This is not
+a whole-project restoration percentage or CGWindow semantic completion claim.
+Live acceptance remains unaccepted. Read-only local preflight record is stored
+only under ignored artifacts/debug, not added to version control; no UI fixture
+or input was started. No model or vendor executable ran.

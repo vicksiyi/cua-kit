@@ -1,0 +1,188 @@
+{
+  "scope": "Direct global T signatures starting SystemSoftware.CGWindow. or static SystemSoftware.CGWindow.; nested types/accessors included",
+  "originalSha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "restoredSha256": "c5d321d42dd1f2e905af04c92ebe43b38a91d6b888e2177d73637ef0b7d52bc8",
+  "repositoryHeadAtAudit": "0068f8cfad19a512e568161d6cdbec3fa5b76c2e",
+  "originalSignatureCount": 33,
+  "restoredSignatureCount": 35,
+  "exactSignatureMatchCount": 33,
+  "missingOriginalSignatures": [],
+  "additionalRestoredSignatures": [
+    "SystemSoftware.CGWindow.init([Swift.String : Any]) -> SystemSoftware.CGWindow",
+    "static SystemSoftware.CGWindow.allWindows(_: __C.CGWindowListOption, relativeToWindow: Swift.UInt32, copyWindowInfo: (__C.CGWindowListOption, Swift.UInt32) -> __C.CFArrayRef?) -> [SystemSoftware.CGWindow]"
+  ],
+  "matches": [
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.AsyncIterator.init(windowIDs: [Swift.UInt32], events: [SystemSoftware.WindowServerEvent], bufferingPolicy: Swift.AsyncStream<(SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent)>.Continuation.BufferingPolicy) -> SystemSoftware.CGWindow.EventStream.AsyncIterator",
+      "originalAddress": "0x0000000100258b78",
+      "restoredAddress": "0x0000000101305d14"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.AsyncIterator.next() async -> (SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent)?",
+      "originalAddress": "0x0000000100258e98",
+      "restoredAddress": "0x00000001013065f8"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.bufferingPolicy.getter : Swift.AsyncStream<(SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent)>.Continuation.BufferingPolicy",
+      "originalAddress": "0x0000000100258a3c",
+      "restoredAddress": "0x0000000101305780"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.bufferingPolicy.modify : Swift.AsyncStream<(SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent)>.Continuation.BufferingPolicy",
+      "originalAddress": "0x0000000100258aec",
+      "restoredAddress": "0x00000001013058e4"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.bufferingPolicy.setter : Swift.AsyncStream<(SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent)>.Continuation.BufferingPolicy",
+      "originalAddress": "0x0000000100258a94",
+      "restoredAddress": "0x0000000101305834"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.events.getter : [SystemSoftware.WindowServerEvent]",
+      "originalAddress": "0x00000001002589f8",
+      "restoredAddress": "0x000000010130570c"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.events.modify : [SystemSoftware.WindowServerEvent]",
+      "originalAddress": "0x0000000100258a28",
+      "restoredAddress": "0x000000010130576c"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.events.setter : [SystemSoftware.WindowServerEvent]",
+      "originalAddress": "0x0000000100258a00",
+      "restoredAddress": "0x0000000101305734"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.init(windowIDs: [Swift.UInt32], events: [SystemSoftware.WindowServerEvent], bufferingPolicy: Swift.AsyncStream<(SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent)>.Continuation.BufferingPolicy) -> SystemSoftware.CGWindow.EventStream",
+      "originalAddress": "0x0000000100258b18",
+      "restoredAddress": "0x0000000101305910"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.makeAsyncIterator() -> SystemSoftware.CGWindow.EventStream.AsyncIterator",
+      "originalAddress": "0x0000000100259184",
+      "restoredAddress": "0x00000001013069e0"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.windowIDs.getter : [Swift.UInt32]",
+      "originalAddress": "0x00000001002589b4",
+      "restoredAddress": "0x0000000101305698"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.windowIDs.modify : [Swift.UInt32]",
+      "originalAddress": "0x00000001002589e4",
+      "restoredAddress": "0x00000001013056f8"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.EventStream.windowIDs.setter : [Swift.UInt32]",
+      "originalAddress": "0x00000001002589bc",
+      "restoredAddress": "0x00000001013056c0"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.Observer.__allocating_init(windowIDs: [Swift.UInt32], events: [SystemSoftware.WindowServerEvent], eventHandler: @Sendable (SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent) -> ()) -> SystemSoftware.CGWindow.Observer",
+      "originalAddress": "0x00000001002584c4",
+      "restoredAddress": "0x00000001013085f8"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.Observer.__deallocating_deinit",
+      "originalAddress": "0x00000001002586d0",
+      "restoredAddress": "0x0000000101308f44"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.Observer.deinit",
+      "originalAddress": "0x0000000100258580",
+      "restoredAddress": "0x0000000101308d98"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.Observer.init(windowIDs: [Swift.UInt32], events: [SystemSoftware.WindowServerEvent], eventHandler: @Sendable (SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent) -> ()) -> SystemSoftware.CGWindow.Observer",
+      "originalAddress": "0x000000010025853c",
+      "restoredAddress": "0x0000000101308658"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.bounds.getter : __C.CGRect",
+      "originalAddress": "0x000000010025bca8",
+      "restoredAddress": "0x0000000101302918"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.id.getter : Swift.UInt32",
+      "originalAddress": "0x00000001001eb340",
+      "restoredAddress": "0x0000000101302908"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.isDesktopLevel.getter : Swift.Bool",
+      "originalAddress": "0x000000010025bcc4",
+      "restoredAddress": "0x00000001013043c0"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.isOnscreen.getter : Swift.Bool?",
+      "originalAddress": "0x000000010025bcbc",
+      "restoredAddress": "0x000000010130299c"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.level.getter : Swift.Int32",
+      "originalAddress": "0x000000010025bcb4",
+      "restoredAddress": "0x000000010130292c"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.name.getter : Swift.String?",
+      "originalAddress": "0x0000000100049ea8",
+      "restoredAddress": "0x0000000101302934"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.observe(events: [SystemSoftware.WindowServerEvent], eventHandler: @Sendable (SystemSoftware.CGWindow, SystemSoftware.WindowServerEvent) -> ()) -> SystemSoftware.CGWindow.Observer",
+      "originalAddress": "0x00000001002586f0",
+      "restoredAddress": "0x0000000101308f80"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.ownerName.getter : Swift.String?",
+      "originalAddress": "0x00000001000ead80",
+      "restoredAddress": "0x0000000101302968"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.ownerPID.getter : Swift.Int32",
+      "originalAddress": "0x000000010025bca0",
+      "restoredAddress": "0x0000000101302910"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.scale.getter : CoreGraphics.CGFloat",
+      "originalAddress": "0x000000010025b86c",
+      "restoredAddress": "0x000000010130b0d0"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.screen.getter : __C.NSScreen?",
+      "originalAddress": "0x000000010025bcf0",
+      "restoredAddress": "0x000000010130b078"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.snapshot(width: Swift.Int, height: Swift.Int) async throws -> __C.CGImageRef?",
+      "originalAddress": "0x000000010025b10c",
+      "restoredAddress": "0x000000010130ca68"
+    },
+    {
+      "signature": "SystemSoftware.CGWindow.snapshotAtBackingSize() async throws -> __C.CGImageRef?",
+      "originalAddress": "0x000000010025aeb4",
+      "restoredAddress": "0x000000010130c7c4"
+    },
+    {
+      "signature": "static SystemSoftware.CGWindow.allWindows(_: __C.CGWindowListOption, relativeToWindow: Swift.UInt32) -> [SystemSoftware.CGWindow]",
+      "originalAddress": "0x000000010025b8e8",
+      "restoredAddress": "0x0000000101305410"
+    },
+    {
+      "signature": "static SystemSoftware.CGWindow.window(at: __C.CGPoint, belowWindowID: Swift.UInt32) -> SystemSoftware.CGWindow?",
+      "originalAddress": "0x000000010025ba5c",
+      "restoredAddress": "0x0000000101304194"
+    },
+    {
+      "signature": "static SystemSoftware.CGWindow.window(for: Swift.UInt32) -> SystemSoftware.CGWindow?",
+      "originalAddress": "0x000000010025b818",
+      "restoredAddress": "0x000000010130351c"
+    }
+  ],
+  "limits": [
+    "Export signature presence does not prove original function bodies, ABI, ownership or runtime behavior",
+    "Counts include getters/setters/constructors; not distinct source functions or whole-project completion",
+    "Private/local implementation symbols, metadata, protocol witnesses and other modules excluded",
+    "Audits existing binaries; repository head alone does not establish binary/source correspondence",
+    "Two extracted public constructor/injection boundaries are additional exports, not original API identity"
+  ]
+}

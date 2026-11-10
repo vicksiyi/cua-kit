@@ -112,5 +112,13 @@
       "WindowOrderingObserver generic/test seam is not full original nominal class/ABI restoration",
       "Refined nonthrowing iterator protocol needed because legacy AsyncIteratorProtocol.next remains throwing even with Failure==Never"
     ]
+  },
+  "exportSurfaceAudit": {
+    "evidence": "reconstruction/cgwindow-export-surface-evidence.json",
+    "script": "scripts/audit-cgwindow-export-surface.py",
+    "originalDirectTSignatures": 33,
+    "exactMatchesInRestoredBinary": 33,
+    "additionalRestoredSignatures": 2,
+    "limits": "Nested/accessor signatures included; no body/ABI/runtime/source-correspondence or whole-project completion claim; extracted constructor/injection extras are not original API identity"
   }
 }
