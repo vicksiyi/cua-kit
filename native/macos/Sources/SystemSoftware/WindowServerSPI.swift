@@ -10,6 +10,9 @@ public enum WindowServerSPI {
     private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
     private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
     private typealias SetWindowLevel = @convention(c) (OpaquePointer?, UInt32, Int32) -> CGError
+    private typealias WindowRect = @convention(c) (OpaquePointer?, UInt32, UnsafeMutablePointer<CGRect>) -> CGError
+    private typealias SetWindowLocation = @convention(c) (CGEvent, CGPoint) -> Void
+    private typealias ModifyNotifications = @convention(c) (OpaquePointer?, Int32, Int32, UnsafeRawPointer?) -> Int32
     private typealias Update = @convention(c) (OpaquePointer?) -> CGError
     private typealias ConnectionNotify = @convention(c)
         (OpaquePointer?, WindowServerNotificationCallback, UInt32, UnsafeMutableRawPointer?) -> CGError
@@ -103,6 +106,27 @@ public enum WindowServerSPI {
     public static func setWindowLevel(_ level: Int32, forWindow id: UInt32,
                                connection: OpaquePointer?) -> CGError {
         windowLevel(connection, id, level)
+    }
+    // Original global table begins at 0x10155b510; slots 4/5/6/11.
+    // 0x10026cc20 swaps Swift window/connection arguments before C tail-call.
+    private static let windowBounds = unsafeBitCast(required(functions[4]), to: WindowRect.self)
+    private static let screenRect = unsafeBitCast(required(functions[5]), to: WindowRect.self)
+    private static let windowLocation = unsafeBitCast(required(functions[6]), to: SetWindowLocation.self)
+    private static let modifyNotifications = unsafeBitCast(required(functions[11]), to: ModifyNotifications.self)
+    public static func getWindowBounds(forWindow id: UInt32, connection: OpaquePointer?,
+        rect: UnsafeMutablePointer<CGRect>) -> CGError {
+        windowBounds(connection, id, rect)
+    }
+    public static func getScreenRect(forWindow id: UInt32, connection: OpaquePointer?,
+        rect: UnsafeMutablePointer<CGRect>) -> CGError {
+        screenRect(connection, id, rect)
+    }
+    public static func setWindowLocation(_ event: CGEvent, location: CGPoint) {
+        windowLocation(event, location)
+    }
+    // 0x10026cef8: C args connection, signed notification value, zero, null.
+    public static func modifyConnectionNotifications(_ value: Int32, connection: OpaquePointer?) -> Int32 {
+        modifyNotifications(connection, value, 0, nil)
     }
     public static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     public static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }

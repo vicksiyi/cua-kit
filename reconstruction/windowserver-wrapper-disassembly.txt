@@ -1,0 +1,125 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10026cc08 -e 0x10026ccf8
+SkyComputerUseService`static SystemSoftware.WindowServerSPI.getWindowBounds(forWindow: Swift.UInt32, connection: Swift.Optional<Swift.OpaquePointer>, rect: Swift.UnsafeMutablePointer<__C.CGRect>) -> __C.CGError:
+SkyComputerUseService[0x10026cc08] <+0>:   adrp   x3, 4847
+SkyComputerUseService[0x10026cc0c] <+4>:   add    x3, x3, #0x530            ; type metadata for SystemSoftware.User + 344
+SkyComputerUseService[0x10026cc10] <+8>:   b      0x10026cc20               ; ___lldb_unnamed_symbol61751
+
+SkyComputerUseService`static SystemSoftware.WindowServerSPI.getScreenRect(forWindow: Swift.UInt32, connection: Swift.Optional<Swift.OpaquePointer>, rect: Swift.UnsafeMutablePointer<__C.CGRect>) -> __C.CGError:
+SkyComputerUseService[0x10026cc14] <+0>:   adrp   x3, 4847
+SkyComputerUseService[0x10026cc18] <+4>:   add    x3, x3, #0x538            ; type metadata for SystemSoftware.User + 352
+SkyComputerUseService[0x10026cc1c] <+8>:   b      0x10026cc20               ; ___lldb_unnamed_symbol61751
+
+SkyComputerUseService`___lldb_unnamed_symbol61751:
+SkyComputerUseService[0x10026cc20] <+0>:   stp    x22, x21, [sp, #-0x30]!
+SkyComputerUseService[0x10026cc24] <+4>:   stp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x10026cc28] <+8>:   stp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x10026cc2c] <+12>:  add    x29, sp, #0x20
+SkyComputerUseService[0x10026cc30] <+16>:  mov    x20, x1
+SkyComputerUseService[0x10026cc34] <+20>:  mov    x19, x0
+SkyComputerUseService[0x10026cc38] <+24>:  adrp   x8, 4844
+SkyComputerUseService[0x10026cc3c] <+28>:  ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026cc40] <+32>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026cc44] <+36>:  b.ne   0x10026cc64               ; <+68>
+SkyComputerUseService[0x10026cc48] <+40>:  ldr    x3, [x3]
+SkyComputerUseService[0x10026cc4c] <+44>:  mov    x0, x20
+SkyComputerUseService[0x10026cc50] <+48>:  mov    x1, x19
+SkyComputerUseService[0x10026cc54] <+52>:  ldp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x10026cc58] <+56>:  ldp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x10026cc5c] <+60>:  ldp    x22, x21, [sp], #0x30
+SkyComputerUseService[0x10026cc60] <+64>:  br     x3
+SkyComputerUseService[0x10026cc64] <+68>:  adrp   x0, 4844
+SkyComputerUseService[0x10026cc68] <+72>:  add    x0, x0, #0x2a8            ; SAIAttachmentCharacter + 576
+SkyComputerUseService[0x10026cc6c] <+76>:  adrp   x1, 0
+SkyComputerUseService[0x10026cc70] <+80>:  add    x1, x1, #0x44             ; ___lldb_unnamed_symbol61738
+SkyComputerUseService[0x10026cc74] <+84>:  mov    x21, x2
+SkyComputerUseService[0x10026cc78] <+88>:  mov    x22, x3
+SkyComputerUseService[0x10026cc7c] <+92>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026cc80] <+96>:  mov    x3, x22
+SkyComputerUseService[0x10026cc84] <+100>: mov    x2, x21
+SkyComputerUseService[0x10026cc88] <+104>: b      0x10026cc48               ; <+40>
+
+SkyComputerUseService`static SystemSoftware.WindowServerSPI.setWindowLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ():
+SkyComputerUseService[0x10026cc8c] <+0>:   adrp   x8, 4844
+SkyComputerUseService[0x10026cc90] <+4>:   ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026cc94] <+8>:   cmn    x8, #0x1
+SkyComputerUseService[0x10026cc98] <+12>:  b.ne   0x10026cca8               ; <+28>
+SkyComputerUseService[0x10026cc9c] <+16>:  adrp   x8, 4847
+SkyComputerUseService[0x10026cca0] <+20>:  ldr    x1, [x8, #0x540]
+SkyComputerUseService[0x10026cca4] <+24>:  br     x1
+SkyComputerUseService[0x10026cca8] <+28>:  stp    d9, d8, [sp, #-0x30]!
+SkyComputerUseService[0x10026ccac] <+32>:  stp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x10026ccb0] <+36>:  stp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x10026ccb4] <+40>:  add    x29, sp, #0x20
+SkyComputerUseService[0x10026ccb8] <+44>:  adrp   x8, 4844
+SkyComputerUseService[0x10026ccbc] <+48>:  add    x8, x8, #0x2a8            ; SAIAttachmentCharacter + 576
+SkyComputerUseService[0x10026ccc0] <+52>:  adrp   x1, 0
+SkyComputerUseService[0x10026ccc4] <+56>:  add    x1, x1, #0x44             ; ___lldb_unnamed_symbol61738
+SkyComputerUseService[0x10026ccc8] <+60>:  mov    x19, x0
+SkyComputerUseService[0x10026cccc] <+64>:  mov    x0, x8
+SkyComputerUseService[0x10026ccd0] <+68>:  fmov   d8, d1
+SkyComputerUseService[0x10026ccd4] <+72>:  fmov   d9, d0
+SkyComputerUseService[0x10026ccd8] <+76>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026ccdc] <+80>:  mov    x0, x19
+SkyComputerUseService[0x10026cce0] <+84>:  fmov   d0, d9
+SkyComputerUseService[0x10026cce4] <+88>:  fmov   d1, d8
+SkyComputerUseService[0x10026cce8] <+92>:  ldp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x10026ccec] <+96>:  ldp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x10026ccf0] <+100>: ldp    d9, d8, [sp], #0x30
+SkyComputerUseService[0x10026ccf4] <+104>: b      0x10026cc9c               ; <+16>
+(lldb) disassemble -s 0x10026cd64 -e 0x10026cdd0
+SkyComputerUseService`static SystemSoftware.WindowServerSPI.setCursorUpdatesFromBackground(Swift.Bool) -> __C.CGError:
+SkyComputerUseService[0x10026cd64] <+0>:   stp    x24, x23, [sp, #-0x40]!
+SkyComputerUseService[0x10026cd68] <+4>:   stp    x22, x21, [sp, #0x10]
+SkyComputerUseService[0x10026cd6c] <+8>:   stp    x20, x19, [sp, #0x20]
+SkyComputerUseService[0x10026cd70] <+12>:  stp    x29, x30, [sp, #0x30]
+SkyComputerUseService[0x10026cd74] <+16>:  add    x29, sp, #0x30
+SkyComputerUseService[0x10026cd78] <+20>:  mov    x19, x0
+SkyComputerUseService[0x10026cd7c] <+24>:  adrp   x8, 4844
+SkyComputerUseService[0x10026cd80] <+28>:  ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026cd84] <+32>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026cd88] <+36>:  b.ne   0x10026ced0               ; <+364>
+SkyComputerUseService[0x10026cd8c] <+40>:  adrp   x8, 4847
+SkyComputerUseService[0x10026cd90] <+44>:  ldr    x8, [x8, #0x510]
+SkyComputerUseService[0x10026cd94] <+48>:  blr    x8
+SkyComputerUseService[0x10026cd98] <+52>:  mov    x20, x0
+SkyComputerUseService[0x10026cd9c] <+56>:  and    x0, x19, #0x1
+SkyComputerUseService[0x10026cda0] <+60>:  bl     0x1011513bc
+SkyComputerUseService[0x10026cda4] <+64>:  mov    x19, x0
+SkyComputerUseService[0x10026cda8] <+68>:  adrp   x8, 4847
+SkyComputerUseService[0x10026cdac] <+72>:  ldr    x24, [x8, #0x560]
+SkyComputerUseService[0x10026cdb0] <+76>:  adrp   x0, 4847
+SkyComputerUseService[0x10026cdb4] <+80>:  add    x0, x0, #0x680            ; type metadata for SystemSoftware.User + 680
+SkyComputerUseService[0x10026cdb8] <+84>:  adrp   x1, 3840
+SkyComputerUseService[0x10026cdbc] <+88>:  add    x1, x1, #0x3a0            ; static SystemSoftware.WindowServerCaptureOptions.ignoreGlobalClipShape : SystemSoftware.WindowServerCaptureOptions + 8
+SkyComputerUseService[0x10026cdc0] <+92>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026cdc4] <+96>:  adrp   x1, 4846
+SkyComputerUseService[0x10026cdc8] <+100>: add    x1, x1, #0xa70            ; SAIAttachmentCharacter + 10760
+SkyComputerUseService[0x10026cdcc] <+104>: bl     0x101155370               ; symbol stub for: swift_initStaticObject
+(lldb) disassemble -s 0x10026cef8 -e 0x10026cf58
+SkyComputerUseService`static SystemSoftware.WindowServerSPI.modifyConnectionNotifications(_: Swift.Int32, connection: Swift.Optional<Swift.OpaquePointer>) -> Swift.Int32:
+SkyComputerUseService[0x10026cef8] <+0>:  stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026cefc] <+4>:  stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026cf00] <+8>:  add    x29, sp, #0x10
+SkyComputerUseService[0x10026cf04] <+12>: mov    x20, x1
+SkyComputerUseService[0x10026cf08] <+16>: mov    x19, x0
+SkyComputerUseService[0x10026cf0c] <+20>: adrp   x8, 4844
+SkyComputerUseService[0x10026cf10] <+24>: ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026cf14] <+28>: cmn    x8, #0x1
+SkyComputerUseService[0x10026cf18] <+32>: b.ne   0x10026cf40               ; <+72>
+SkyComputerUseService[0x10026cf1c] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026cf20] <+40>: ldr    x4, [x8, #0x568]
+SkyComputerUseService[0x10026cf24] <+44>: mov    x0, x20
+SkyComputerUseService[0x10026cf28] <+48>: mov    x1, x19
+SkyComputerUseService[0x10026cf2c] <+52>: mov    w2, #0x0                  ; =0 
+SkyComputerUseService[0x10026cf30] <+56>: mov    x3, #0x0                  ; =0 
+SkyComputerUseService[0x10026cf34] <+60>: ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026cf38] <+64>: ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026cf3c] <+68>: br     x4
+SkyComputerUseService[0x10026cf40] <+72>: adrp   x0, 4844
+SkyComputerUseService[0x10026cf44] <+76>: add    x0, x0, #0x2a8            ; SAIAttachmentCharacter + 576
+SkyComputerUseService[0x10026cf48] <+80>: adrp   x1, 0
+SkyComputerUseService[0x10026cf4c] <+84>: add    x1, x1, #0x44             ; ___lldb_unnamed_symbol61738
+SkyComputerUseService[0x10026cf50] <+88>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026cf54] <+92>: b      0x10026cf1c               ; <+36>

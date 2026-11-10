@@ -3,15 +3,11 @@
   "scope": "Exported static method names of SystemSoftware.WindowServerSPI only",
   "source": "native/macos/Sources/SystemSoftware/WindowServerSPI.swift",
   "exportedMethodCount": 15,
-  "namePresentCount": 8,
+  "namePresentCount": 12,
   "missingNames": [
     "associatedWindowIDs",
-    "getScreenRect",
-    "getWindowBounds",
-    "modifyConnectionNotifications",
     "resolvedCornerRadius",
-    "setCursorUpdatesFromBackground",
-    "setWindowLocation"
+    "setCursorUpdatesFromBackground"
   ],
   "localNamesNotInExportedSet": [
     "getKeyFocusProcess",
@@ -36,12 +32,12 @@
     "getScreenRect": {
       "address": "0x000000010026cc14",
       "signature": "static SystemSoftware.WindowServerSPI.getScreenRect(forWindow: Swift.UInt32, connection: Swift.OpaquePointer?, rect: Swift.UnsafeMutablePointer<__C.CGRect>) -> __C.CGError",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     },
     "getWindowBounds": {
       "address": "0x000000010026cc08",
       "signature": "static SystemSoftware.WindowServerSPI.getWindowBounds(forWindow: Swift.UInt32, connection: Swift.OpaquePointer?, rect: Swift.UnsafeMutablePointer<__C.CGRect>) -> __C.CGError",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     },
     "mainConnectionID": {
       "address": "0x000000010026bb1c",
@@ -51,7 +47,7 @@
     "modifyConnectionNotifications": {
       "address": "0x000000010026cef8",
       "signature": "static SystemSoftware.WindowServerSPI.modifyConnectionNotifications(_: Swift.Int32, connection: Swift.OpaquePointer?) -> Swift.Int32",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     },
     "reenableUpdate": {
       "address": "0x000000010026cba0",
@@ -91,7 +87,7 @@
     "setWindowLocation": {
       "address": "0x000000010026cc8c",
       "signature": "static SystemSoftware.WindowServerSPI.setWindowLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     }
   },
   "limits": [

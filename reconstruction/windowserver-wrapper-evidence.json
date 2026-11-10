@@ -1,0 +1,50 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "source": "native/macos/Sources/SystemSoftware/WindowServerSPI.swift",
+  "staticTranscript": "reconstruction/windowserver-wrapper-disassembly.txt",
+  "tableBase": "0x10155b510",
+  "wrappers": {
+    "getWindowBounds": {
+      "entry": "0x10026cc08",
+      "slot": 4,
+      "cOrder": [
+        "connection",
+        "windowID",
+        "rect"
+      ]
+    },
+    "getScreenRect": {
+      "entry": "0x10026cc14",
+      "slot": 5,
+      "cOrder": [
+        "connection",
+        "windowID",
+        "rect"
+      ]
+    },
+    "setWindowLocation": {
+      "entry": "0x10026cc8c",
+      "slot": 6,
+      "cOrder": [
+        "event",
+        "location (d0,d1)"
+      ]
+    },
+    "modifyConnectionNotifications": {
+      "entry": "0x10026cef8",
+      "slot": 11,
+      "cOrder": [
+        "connection",
+        "value",
+        "zero",
+        "null"
+      ]
+    }
+  },
+  "limits": [
+    "Static wrapper/calling-register reconstruction only; actual SPI calls not tested",
+    "Fixed zero/null parameters do not establish their semantic C parameter names or signedness",
+    "Background cursor body is only partially included in transcript and remains unimplemented",
+    "No full ABI/runtime or whole-module completion claim"
+  ]
+}

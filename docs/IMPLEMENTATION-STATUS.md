@@ -8080,3 +8080,21 @@ This exposes concrete remaining native work rather than assuming that a migrated
 WindowServer module is complete. Updated stale screenshot evidence to acknowledge
 the completed accelerated/offscreen module migration. No production code changed,
 no paid model, private SPI invocation or desktop operation occurred.
+
+### 2026-11-11 — Four direct WindowServer wrappers reconstructed
+
+Read current pinned native instructions statically via LLDB target creation only.
+Restored getWindowBounds/getScreenRect (primary slots4/5; C connection/window/rect
+order), setWindowLocation (slot6; event plus CGPoint in floating registers), and
+modifyConnectionNotifications (slot11; connection/value/zero/null). Original
+addresses and disassembly are retained in windowserver-wrapper-evidence.json and
+windowserver-wrapper-disassembly.txt. Required lazy binding follows existing
+primary-table behavior; no replacement API or fallback was introduced.
+
+Full native helper build passed31.65s. Existing separately linked injected capture
+consumer passed; this is a regression check, not execution of the new wrappers.
+Exported method-name audit now reports12/15 present, with associatedWindowIDs,
+resolvedCornerRadius and setCursorUpdatesFromBackground still missing. Names do
+not establish body/ABI/runtime parity; fixed zero/null operand semantics are not
+inferred. No installed vendor service execution, private SPI invocation, desktop
+operation or model call occurred. Full native and screenshot goals remain open.
