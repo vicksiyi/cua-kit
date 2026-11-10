@@ -1,3 +1,6 @@
+#if canImport(SlimCore)
+import SlimCore
+#endif
 import CoreGraphics
 
 // Buffer fb8920..fb8930 then fb8934/fb8e60. Capture failure remains nil for

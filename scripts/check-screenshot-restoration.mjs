@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const native = "native/macos/Sources/CuaHelper/";
-const slimCore = new Set(["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotEncoding", "ImageDestination", "ScreenshotImplementation", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan", "ScreenshotSingleWindowFilter", "ScreenshotDisplayFilter", "ScreenshotStreamConfiguration", "ScreenScreenshotCapture"]);
+const slimCore = new Set(["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotEncoding", "ImageDestination", "ScreenshotImplementation", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan", "ScreenshotSingleWindowFilter", "ScreenshotDisplayFilter", "ScreenshotStreamConfiguration", "ScreenScreenshotCapture", "ScreenshotContentScope", "ScreenshotDelay", "ScreenshotCurrentProcess", "ScreenshotWindowSelection", "ScreenshotAppNameMatcher", "ScreenshotAppWindow", "ScreenshotOffscreenTarget", "ScreenshotOffscreenPlan", "ScreenshotImageResize"]);
 const cases = [
   ["production-configuration", ["ScreenshotSingleWindowFilter", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotStreamConfiguration"], "screenshot-production-configuration-check"],
   ["included-display-plan", ["ScreenshotImplementation", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan"], "screenshot-included-display-plan-check"],
@@ -22,6 +22,10 @@ const cases = [
   ["file-naming-stages", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming"], "file-naming-stages-check"],
   ["image-output", ["ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput"], "image-destination-check"],
   ["screenshot-file-output", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture"], "screenshot-file-output-check"],
+  ["offscreen-plan", ["ScreenshotOffscreenPlan"], "screenshot-offscreen-plan-check"],
+  ["offscreen-target", ["ScreenshotOffscreenTarget"], "screenshot-offscreen-target-check"],
+  ["image-resize", ["ScreenshotImageResize"], "screenshot-image-resize-check"],
+  ["app-name-matcher", ["ScreenshotAppNameMatcher"], "screenshot-app-name-matcher-check"],
   ["screen-capture-composition", ["ScreenScreenshotCapture"], "screen-screenshot-capture-check"],
 ];
 if (process.platform !== "darwin") throw new Error("Screenshot native checks require macOS SDKs");

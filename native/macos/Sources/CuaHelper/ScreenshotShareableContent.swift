@@ -1,3 +1,6 @@
+#if canImport(SlimCore)
+import SlimCore
+#endif
 import ScreenCaptureKit
 
 // Acquisition routefb4a78: select one SDK method and propagate its error;

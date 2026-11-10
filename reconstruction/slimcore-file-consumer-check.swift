@@ -82,3 +82,18 @@ func checkSlimCoreScreenCaptureSurface(window: SCWindow, display: SCDisplay,
         imageSize: nil, sourceRect: nil, shouldBeOpaque: true, includeWindowShadow: false)
     _ = try await captureScreenScreenshot(filter: filter, configuration: config)
 }
+
+func checkSlimCoreScreenshotPlanningSurface() async throws {
+    let rect = CGRect(x: 0, y: 0, width: 4, height: 4)
+    _ = screenshotContentScope(currentProcessOnly: false, supportsCurrentProcess: true,
+        includedWindowIDs: nil, visibleWindowIDs: { [] })
+    _ = screenshotUsesCurrentProcess(includedWindowIDs: nil)
+    _ = matchingScreenshotAppWindow(in: ["Fixture"], appName: "Fixture", applicationName: { $0 })
+    _ = selectScreenshotWindow(includedWindowIDs: [1], appName: nil,
+        windows: { [1] }, windowID: { UInt32($0) }, matchingApp: { _ in nil })
+    let plan = screenshotOffscreenPlan(selectedWindow: 1, includedWindowIDs: [1],
+        cropToFirstWindow: false, lookup: { _ in 1 }, isOnScreen: { _ in false },
+        windowID: { UInt32($0) }, frame: { _ in rect })
+    _ = plan?.windowIDs; _ = plan?.rect
+    _ = try await captureScreenshotAfterDelay(delay: nil, acquire: { 1 }, capture: { $0 })
+}

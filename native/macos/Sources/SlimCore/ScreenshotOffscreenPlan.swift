@@ -1,13 +1,13 @@
 import CoreGraphics
 
-struct ScreenshotOffscreenPlan {
-    let windowIDs: [UInt32]
-    let rect: CGRect
+public struct ScreenshotOffscreenPlan {
+    public let windowIDs: [UInt32]
+    public let rect: CGRect
 }
 
 // Selected-window branch builds a singleton ID array. Crop-first branch jumps
 // past that allocation and retains all requested IDs, including duplicates.
-func screenshotOffscreenPlan<Window>(selectedWindow: Window?,
+public func screenshotOffscreenPlan<Window>(selectedWindow: Window?,
     includedWindowIDs: [UInt32]?, cropToFirstWindow: Bool,
     lookup: (UInt32) -> Window?, isOnScreen: (Window) -> Bool,
     windowID: (Window) -> UInt32, frame: (Window) -> CGRect

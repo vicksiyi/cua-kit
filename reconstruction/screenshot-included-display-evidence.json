@@ -342,7 +342,7 @@
     "durationBody": "0x100fb45c4..0x100fb466c",
     "durationMultiplier": "0x0de0b6b3a7640000 = 1000000000000000000 attoseconds per integer delay",
     "unit": "seconds",
-    "implementation": "native/macos/Sources/CuaHelper/ScreenshotDelay.swift",
+    "implementation": "native/macos/Sources/SlimCore/ScreenshotDelay.swift",
     "validation": "reconstruction/screenshot-delay-check.swift",
     "instructions": [
       "SkyComputerUseService[0x100fb45e0] <+28>:  ldr    x8, [x22, #0x28]",
@@ -361,7 +361,7 @@
     "limits": "Sleep signpost omitted; original feature-flag/default acquisition policy remains explicit injected boundary"
   },
   "currentProcessPolicy": {
-    "implementation": "native/macos/Sources/CuaHelper/ScreenshotCurrentProcess.swift",
+    "implementation": "native/macos/Sources/SlimCore/ScreenshotCurrentProcess.swift",
     "sourceRange": "0x100fb4740..0x100fb49c8",
     "caller": "0x100fb8178..0x100fb81c8 (after optional sleep, before shareable content)",
     "selectors": {
@@ -412,5 +412,22 @@
     "changes": "Only source location/imports/public boundary; normalized bodies unchanged",
     "validation": "16 source fixtures, complete helper build38.23s, independent SDK consumer typecheck",
     "limits": "No real ScreenCaptureKit capture performed; acquisition/WindowServer and full capture/module fidelity still pending"
+  },
+  "planningModuleAlignment": {
+    "module": "SlimCore",
+    "stages": [
+      "ScreenshotContentScope",
+      "ScreenshotDelay",
+      "ScreenshotCurrentProcess",
+      "ScreenshotWindowSelection",
+      "ScreenshotAppNameMatcher",
+      "ScreenshotAppWindow",
+      "ScreenshotOffscreenTarget",
+      "ScreenshotOffscreenPlan",
+      "ScreenshotImageResize"
+    ],
+    "bodyChange": "None after public-visibility normalization",
+    "validation": "20 SDK/owned fixtures including existing offscreen/resize/matcher checks now in unified runner; full helper build; independent module consumer typecheck",
+    "remaining": "ScreenshotShareableContent still depends on CuaHelper onScreenMouseWindowIDs; offscreen SDK binding still depends on WindowServerSPI adapter; buffer/app entry and complete native parity remain pending"
   }
 }

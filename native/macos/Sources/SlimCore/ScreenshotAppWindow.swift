@@ -9,7 +9,7 @@ private struct ScreenshotAppWindowRecord {
 
 // 0x100fb763c..0x100fb7bfc. App-name selection only considers on-screen
 // candidates, even when the shareable content contains off-screen windows.
-func screenshotWindow(matching appName: String, in content: SCShareableContent) -> SCWindow? {
+public func screenshotWindow(matching appName: String, in content: SCShareableContent) -> SCWindow? {
     let onScreenWindows = content.windows.filter { $0.isOnScreen }
     var records: [ScreenshotAppWindowRecord] = []
     for window in onScreenWindows {
@@ -28,7 +28,7 @@ func screenshotWindow(matching appName: String, in content: SCShareableContent) 
 
 // Concrete composition of the buffer's selection branch; nil selection is
 // intentionally retained for the subsequent display/filter plan to interpret.
-func selectScreenshotWindow(in content: SCShareableContent,
+public func selectScreenshotWindow(in content: SCShareableContent,
     includedWindowIDs: [UInt32]?, appName: String?
 ) -> SCWindow? {
     selectScreenshotWindow(includedWindowIDs: includedWindowIDs, appName: appName,

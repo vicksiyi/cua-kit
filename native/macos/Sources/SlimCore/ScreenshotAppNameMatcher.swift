@@ -2,7 +2,7 @@ import Foundation
 
 // ScreenshotImplementation matcher 0x100fb723c..0x100fb7638.
 // Preserve separate passes: an earlier prefix must not beat a later exact name.
-func matchingScreenshotAppWindow<Window>(in windows: [Window], appName: String,
+public func matchingScreenshotAppWindow<Window>(in windows: [Window], appName: String,
     applicationName: (Window) -> String?
 ) -> Window? {
     let requested = appName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)

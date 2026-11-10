@@ -7980,3 +7980,20 @@ all config overloads and async SDK capture entry (not executed). SDK config and
 injected capture checks do not establish actual desktop capture. Acquisition,
 WindowServer bridge, remaining buffer/module alignment, defaults/signposts and
 production/live acceptance remain pending. No desktop/model/vendor-native run.
+
+### 2026-11-11 — Screenshot planning and resize stages moved into SlimCore
+
+Moved nine recovered stages: content scope, delay, current-process subset policy,
+window selection, app-name matching/SDK mapping, offscreen target/plan and image
+resize/continuation. Normalized byte comparison confirms no body changes; only
+module location and necessary public boundaries changed. CuaHelper acquisition
+and offscreen adapters import them. The actual visible-window enumeration and
+WindowServer SPI bridge were not silently copied or replaced.
+
+Unified test runner now includes four existing standalone fixtures for offscreen
+plan/target, actual CGImage resize and app-name matching. All twenty checks pass.
+Full helper build and separate built-module consumer typecheck passed. Consumer
+functions typecheck without execution, so NSApp/SDK acquisition was not performed.
+Acquisition/WindowServer binding, buffer ownership, original defaults/signposts,
+production file-route integration and actual desktop acceptance remain incomplete.
+No paid model or installed vendor native executable was run.

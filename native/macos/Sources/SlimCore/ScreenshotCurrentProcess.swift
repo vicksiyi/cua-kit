@@ -3,7 +3,7 @@ import AppKit
 // fb4740..fb49c8: absent IDs skip NSApp entirely. Present IDs (including an
 // empty list) collect visible positive-numbered ordered windows, then use subset.
 // windowNumber is read again for checked UInt32 conversion after visibility.
-func screenshotUsesCurrentProcess<Window>(includedWindowIDs: [UInt32]?,
+public func screenshotUsesCurrentProcess<Window>(includedWindowIDs: [UInt32]?,
     orderedWindows: () -> [Window], windowNumber: (Window) -> Int,
     isVisible: (Window) -> Bool
 ) -> Bool {
@@ -17,7 +17,7 @@ func screenshotUsesCurrentProcess<Window>(includedWindowIDs: [UInt32]?,
     return Set(includedWindowIDs).isSubset(of: Set(numbers))
 }
 
-func screenshotUsesCurrentProcess(includedWindowIDs: [UInt32]?) -> Bool {
+public func screenshotUsesCurrentProcess(includedWindowIDs: [UInt32]?) -> Bool {
     screenshotUsesCurrentProcess(includedWindowIDs: includedWindowIDs,
         orderedWindows: { NSApp.orderedWindows },
         windowNumber: { $0.windowNumber }, isVisible: { $0.isVisible })
