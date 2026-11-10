@@ -51,5 +51,17 @@
     },
     "exists": "0x101001880..0x101001bb4: representation data -> true before path acquisition; filePath -> try path, false on error, FileManager.fileExists",
     "validation": "Existing/missing paths and directories; data true even with invalid materialization parent; retained data representation after path request; deleted temporary false"
+  },
+  "directory": {
+    "source": "0x101001bb4..0x101002194",
+    "guard": "data representation -> false before acquiring path",
+    "path": "path acquisition failure -> false; URL .notDirectory with nil relativeTo",
+    "resources": "Set containing NSURLIsDirectoryKey only; resourceValues errors -> false; isDirectory nil -> false",
+    "bindings": {
+      "0x1014649a8": "NSURLIsDirectoryKey",
+      "0x101463018": "URL.resourceValues(forKeys:)",
+      "0x101462b00": "URLResourceValues.isDirectory"
+    },
+    "validation": "Regular/missing path, real directory with misleading .png suffix, adopted directory, SDK symlink metadata, data with invalid materialization parent"
   }
 }

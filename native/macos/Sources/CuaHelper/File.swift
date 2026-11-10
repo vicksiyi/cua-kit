@@ -22,6 +22,14 @@ enum File: Hashable, Codable {
         return FileManager.default.fileExists(atPath: path.string)
     }
 
+    // 101001bb4..101002194: representation guard precedes path/URL access.
+    // SDK resource metadata, not filename suffixes, determines directory status.
+    var isDirectory: Bool {
+        guard representationType == .filePath, let path = try? path else { return false }
+        let url = URL(filePath: path.string, directoryHint: .notDirectory, relativeTo: nil)
+        return (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+    }
+
     case path(FilePath)
     case temporaryFile(TemporaryFile)
     case data(DataFile)

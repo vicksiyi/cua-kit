@@ -15,6 +15,18 @@ import System
         let url = root.appendingPathComponent("existing.bin")
         try bytes.write(to: url)
         let pathFile = File(FilePath(url.path))
+        precondition(!pathFile.isDirectory)
+        precondition(File(FilePath(root.path)).isDirectory)
+        precondition(!File(FilePath(root.appendingPathComponent("missing").path)).isDirectory)
+        let dotted = root.appendingPathComponent("directory.png")
+        try fm.createDirectory(at: dotted, withIntermediateDirectories: false)
+        precondition(File(FilePath(dotted.path)).isDirectory)
+        let directoryOwner = TemporaryFile(adoptingFileAt: FilePath(dotted.path))
+        precondition(File(directoryOwner).isDirectory)
+        let link = root.appendingPathComponent("link")
+        try fm.createSymbolicLink(at: link, withDestinationURL: dotted)
+        let expectedLink = try URL(filePath: link.path, directoryHint: .notDirectory).resourceValues(forKeys: [.isDirectoryKey]).isDirectory ?? false
+        precondition(File(FilePath(link.path)).isDirectory == expectedLink)
         precondition(pathFile.representationType == .filePath && pathFile.exists)
         precondition(!File(FilePath(root.appendingPathComponent("missing").path)).exists)
         precondition(File(FilePath(root.path)).exists)
@@ -28,6 +40,7 @@ import System
         precondition(memory.representationType == .data && memory.exists)
         let unavailable = TemporaryFile.temporaryDirectory
         TemporaryFile.temporaryDirectory = unavailable.appending("missing-parent")
+        precondition(!memory.isDirectory)
         precondition(memory.exists) // Must not attempt a write even when it would fail.
         precondition(!fm.fileExists(atPath: TemporaryFile.temporaryDirectory.string))
         TemporaryFile.temporaryDirectory = unavailable
@@ -44,6 +57,7 @@ import System
         do { _ = try temporary.data; preconditionFailure("read failure hidden") }
         catch { precondition((error as NSError).domain == NSCocoaErrorDomain) }
         precondition(temporary.representationType == .filePath && !temporary.exists)
+        precondition(!memory.isDirectory)
         precondition(memory.exists) // representation does not change after materialization
         let retainedPath = try temporary.path
         precondition(retainedPath == FilePath(url.path))

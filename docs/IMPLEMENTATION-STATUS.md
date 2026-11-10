@@ -7673,3 +7673,20 @@ Screenshot write composition, complete module/API alignment and live UI acceptan
 remain pending. No desktop/model/vendor-native execution occurred.
 
 Swift helper build passed (23.15s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — File directory metadata behavior
+
+Restored isDirectory from 101001bb4..101002194. Data representation returns
+false before path acquisition. For filePath, acquisition errors become false;
+the URL uses notDirectory/nil-relative, then queries only NSURLIsDirectoryKey.
+Resource-value errors or absent optional Bool return false. Source bindings pin
+URL.resourceValues and URLResourceValues.isDirectory; no extension heuristics or
+FileManager directory substitute was introduced.
+
+All fourteen screenshot checks passed, with regular/missing files, an actual
+directory named directory.png, adopted directory ownership, SDK symlink metadata
+and memory representation with an invalid materialization parent. Swift helper
+build passed (24.02s, exit 0). This proves the owned fixture behavior and static
+call mapping, not original-native differential or real screenshot acceptance.
+Type/size/naming and screenshot writer integration remain incomplete; no desktop,
+paid model or original native executable was run.
