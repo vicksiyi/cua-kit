@@ -60,8 +60,28 @@
     "limits": [
       "Concrete init/deinit private notifications not executed",
       "Generic registration resource test is not runtime proof of concrete Observer",
-      "Original nested EventStream and snapshot APIs remain incomplete",
+      "Snapshot API and original EventStream live/production integration remain incomplete",
       "Typealiases remain in CuaHelper during caller migration"
+    ]
+  },
+  "nominalEventStream": {
+    "source": "native/macos/Sources/SystemSoftware/CGWindowEventStream.swift",
+    "originalSequenceFields": [
+      "windowIDs",
+      "events",
+      "bufferingPolicy"
+    ],
+    "originalIteratorFields": [
+      "stream",
+      "observer",
+      "iterator"
+    ],
+    "semantics": "Value construction stores configuration; each makeAsyncIterator creates standard stream/iterator and concrete Observer; yield ignores result; next delegates; no extra onTermination release",
+    "validation": "native build21.86s; linked value construction/field mutation and compile-only iterator surfaces; static descriptors/import/callsite audit",
+    "limits": [
+      "Real iterator initialization/private notification subscription not executed",
+      "Real yield/next/cancellation/lifetime acceptance remains unproven",
+      "Production WindowOrderingEventLoop still uses extracted generic stream; nominal production migration remains open"
     ]
   }
 }

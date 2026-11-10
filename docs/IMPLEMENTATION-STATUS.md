@@ -8362,3 +8362,24 @@ production Observer or invoke native SPI; generic resource tests are not runtime
 proof of concrete production notifications. Original nested EventStream, snapshot
 API and full observer/concurrency/live acceptance remain incomplete. No desktop,
 paid model or vendor executable ran.
+
+### 2026-11-11 — Original nested CGWindow.EventStream API restored
+
+Added SystemSoftware.CGWindow.EventStream and nested AsyncIterator with original
+three sequence fields and three iterator fields. Public value init only stores
+windowIDs/events/bufferingPolicy; each iterator initializes standard
+AsyncStream.makeStream/makeAsyncIterator and a concrete CGWindow.Observer, capturing
+continuation for yield. No observer factory is stored in original nominal types,
+and no onTermination release policy or alternative cancellation protocol added.
+
+Current native initializer inspected statically. Dedicated audit verifies both
+field descriptors and makeStream/makeAsyncIterator/yield imports/calls plus observer
+construction call. Full build passed21.86s. Linked checks execute only sequence
+value construction/mutation and typecheck original iterator APIs without calling
+them. Both linked fixture binaries pass. No actual iterator subscription,
+notification/yield/next/cancellation lifecycle or private SPI was exercised.
+
+Existing WindowOrderingEventLoop still uses the extracted generic stream with an
+injected observer factory; its production migration is not claimed by this new
+nominal API. Snapshot and full live/concurrency/interface parity remain open.
+No desktop, vendor service or paid model run occurred.

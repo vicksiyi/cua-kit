@@ -21,6 +21,15 @@ import SystemSoftware
         let latest = snapshotCGWindowDescriptions(windowIDs: [7, 7], lookup: { _ in revision += 1; return revision })
         precondition(latest == [7: 2])
         let event = WindowServerEvent.allCases.first!
+        // Executed value construction must not initialize a native observer.
+        var stream = CGWindow.EventStream(windowIDs: [7, 7], events: [event], bufferingPolicy: .bufferingNewest(1))
+        precondition(stream.windowIDs == [7, 7] && stream.events == [event])
+        if case .bufferingNewest(let capacity) = stream.bufferingPolicy { precondition(capacity == 1) }
+        else { preconditionFailure("Wrong initial buffering policy") }
+        stream.windowIDs = [9]; stream.events = []; stream.bufferingPolicy = .bufferingOldest(2)
+        precondition(stream.windowIDs == [9] && stream.events.isEmpty)
+        if case .bufferingOldest(let capacity) = stream.bufferingPolicy { precondition(capacity == 2) }
+        else { preconditionFailure("Wrong mutable buffering policy") }
         var order: [String] = []
         var token: CGWindowObserverRegistration<UInt>? = CGWindowObserverRegistration(
             windowIDs: [7, 7, 0], events: [event, event], registerCallback: { order.append("registry"); return 1 },
@@ -61,4 +70,11 @@ import SystemSoftware
 func checkOriginalObserverAPIs(_ window: CGWindow) {
     let _: CGWindow.Observer = window.observe(events: []) { _, _ in }
     let _: CGWindow.Observer = CGWindow.Observer(windowIDs: [], events: [], eventHandler: { _, _ in })
+}
+
+// Compile-only iterator API: real iterator initialization would register SPI.
+func checkOriginalEventStreamAPIs(_ stream: CGWindow.EventStream) async {
+    var iterator: CGWindow.EventStream.AsyncIterator = stream.makeAsyncIterator()
+    let _: (CGWindow, WindowServerEvent)? = await iterator.next()
+    let _: CGWindow.EventStream.AsyncIterator = .init(windowIDs: [], events: [], bufferingPolicy: .unbounded)
 }
