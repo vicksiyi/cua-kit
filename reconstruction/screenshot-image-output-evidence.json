@@ -1,0 +1,77 @@
+{
+  "binary": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService",
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "method": "Static LLDB metadata/disassembly only; native vendor artifact not run",
+  "encoding": {
+    "descriptor": "0x1012ea668",
+    "fieldDescriptor": "0x101346878",
+    "cases": [
+      {
+        "name": "jpeg",
+        "label": "compressionQuality",
+        "payload": "CGFloat?",
+        "fieldNameAddress": "0x101311a50",
+        "symbolicTypeAddress": "0x1012b6a32"
+      },
+      {
+        "name": "png",
+        "fieldNameAddress": "0x101311a55",
+        "payload": null
+      }
+    ]
+  },
+  "destination": {
+    "metadata": "0x1015122c0",
+    "kind": "0x200 (struct)",
+    "init": "0x101019edc..0x101019fc8",
+    "addImage": "0x101019fcc..0x10101a138",
+    "finalize": "0x10101a13c..0x10101a14c",
+    "filenameCountGetter": "0x100047cdc returns 6",
+    "errorDescriptor": "0x1012eb9f0",
+    "errorFieldDescriptor": "0x101347a14",
+    "errorCaseNameAddress": "0x1013122b0",
+    "errorCase": "failedToCreateImageDestination",
+    "qualityRule": "nil -> nil properties; clamp <=0 to +0 and >1 to 1; preserve NaN",
+    "addImageFromSource": {
+      "source": "0x10101a150..0x10101a27c",
+      "maxPixelSize": "present Int forwarded unchanged in kCGImageDestinationImageMaxPixelSize; nil bridges empty properties dictionary",
+      "index": "forwarded unchanged",
+      "sdk": "CGImageDestinationAddImageFromSource",
+      "validation": "owned image source nil/2/10 pixel bounds plus raw property nil/negative/zero/Int.max checks"
+    }
+  },
+  "outputStage": {
+    "source": "0x100fb4024..0x100fb42d0",
+    "mimeTypes": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "finalizeResult": "ignored by original caller"
+  },
+  "validation": "reconstruction/image-destination-check.swift (owned pixel image, real ImageIO files, no desktop capture)",
+  "limits": "TemporaryFile/File/ScreenshotFile ownership and naming, signposts and production file-based screenshot API still pending",
+  "qualityInstructions": [
+    "SkyComputerUseService[0x10101a020] <+84>:  fmov   d0, x22",
+    "SkyComputerUseService[0x10101a024] <+88>:  adrp   x8, 1098",
+    "SkyComputerUseService[0x10101a028] <+92>:  ldr    x8, [x8, #0xf08]",
+    "SkyComputerUseService[0x10101a02c] <+96>:  ldr    x22, [x8]",
+    "SkyComputerUseService[0x10101a030] <+100>: fcmp   d0, #0.0",
+    "SkyComputerUseService[0x10101a034] <+104>: movi   d1, #0000000000000000",
+    "SkyComputerUseService[0x10101a038] <+108>: fcsel  d0, d1, d0, ls",
+    "SkyComputerUseService[0x10101a03c] <+112>: fmov   d1, #1.00000000",
+    "SkyComputerUseService[0x10101a040] <+116>: fcmp   d0, d1",
+    "SkyComputerUseService[0x10101a044] <+120>: fcsel  d8, d1, d0, gt"
+  ],
+  "sourceOutputInstructions": [
+    "SkyComputerUseService[0x10101a190] <+64>:  tbnz   w24, #0x0, 0x10101a210    ; <+192>",
+    "SkyComputerUseService[0x10101a194] <+68>:  adrp   x8, 1098",
+    "SkyComputerUseService[0x10101a1b8] <+104>: mov    x2, x23",
+    "SkyComputerUseService[0x10101a210] <+192>: mov    x0, #0x0                  ; =0 ",
+    "SkyComputerUseService[0x10101a238] <+232>: bl     0x1011502ac",
+    "SkyComputerUseService[0x10101a248] <+248>: mov    x0, x19",
+    "SkyComputerUseService[0x10101a24c] <+252>: mov    x1, x22",
+    "SkyComputerUseService[0x10101a250] <+256>: mov    x2, x21",
+    "SkyComputerUseService[0x10101a254] <+260>: mov    x3, x23",
+    "SkyComputerUseService[0x10101a258] <+264>: bl     0x101153c90               ; symbol stub for: CGImageDestinationAddImageFromSource"
+  ]
+}

@@ -25,3 +25,16 @@ func screenshotFullDisplayFilter(display: SCDisplay)
     let height = CGFloat(display.height)
     return (filter, CGSize(width: width, height: height), nil)
 }
+
+
+// SDK binding of the included-ID branch. Dictionary construction remains
+// unique-key checked like the original buffer's window lookup table.
+func screenshotIncludedDisplayFilter(content: SCShareableContent,
+    includedWindowIDs: [UInt32], cropToFirstWindow: Bool
+) throws -> (filter: SCContentFilter, sourceRect: CGRect, baseSize: CGSize) {
+    let windows = Dictionary(uniqueKeysWithValues: content.windows.map { ($0.windowID, $0) })
+    let plan = try screenshotIncludedDisplayPlan(includedWindowIDs: includedWindowIDs,
+        cropToFirstWindow: cropToFirstWindow, lookup: { windows[$0] },
+        windowFrame: { $0.frame }, displays: { content.displays }, displayFrame: { $0.frame })
+    return screenshotDisplayFilter(display: plan.display, includedWindows: plan.windows, region: plan.region)
+}

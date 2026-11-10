@@ -7254,3 +7254,183 @@ files were checked for credential patterns/private artifacts; no findings.
 No real desktop, paid model, vendor native executable or full native parity
 acceptance was included. Remaining native, browser-bundle and contract work
 keeps the full restoration goal incomplete.
+
+### 2026-11-10 — Selected-window screenshot components enter production
+
+Capture.swift now composes screenshotSingleWindowFilter, screenshotCaptureSize,
+screenshotPixelDimensions, screenshotStreamConfiguration and captureScreenScreenshot
+for its selected on-screen window branch. The base size comes from window.frame
+rather than filter.contentRect, matching the restored single-window route at
+fb8774..fb87f4. The existing original frame/focus/identity revalidation and
+coordinate metadata remain in the adapter; this is not full screenshot parity.
+
+Deployment still caps image dimensions/bytes and uses SDK default opacity via
+an explicit argument; original request defaults, display inclusion, offscreen
+capture, shadows option surface and full screenshot planning remain unconnected.
+The production configuration now applies the restored ignoreShadowsDisplay rule.
+
+Compiled/executed the new standalone configuration check with real SDK config
+objects (frame size, scale/ceil, cursor/shadow/opacity and sourceRect), plus the
+existing async capture composition check (configuration/capture error identity
+and one-call ordering). Swift helper build passed in 17.37 seconds. No screenshot
+or input was taken from the user's desktop; no original vendor binary or model
+was run. Real screenshot geometry and coordinate input acceptance remain pending.
+
+### 2026-11-10 — Screenshot acquisition composition and live gate result
+
+Ran one real owned-app skyshot acceptance through restored Sky -> local Swift.
+The helper permission probe reported Accessibility=true and ScreenRecording=true,
+but the first observation returned screenLocked (-10020) before screenshot/input.
+The test exited in about one second and its registered cleanup retired the owned
+fixture/helper. No retry or unlocked-session success is claimed. The desktop lock
+is a live-validation blocker, not evidence that the screenshot change passed.
+
+Connected captureWindows' default content acquisition to the restored
+screenshotShareableContent(currentProcessOnly:false,includedWindowIDs:nil).
+This selects the same on-screen/non-desktop SDK acquisition as the previous
+adapter code, but now uses the recovered scope-selection front door. It does
+not enable explicit offscreen IDs or current-process options in the public API.
+Standalone native acquisition checks cover six scope/read-order combinations,
+exactly one acquisition, duplicate/empty IDs and error identity without fallback.
+Those checks passed; no actual content enumeration was performed by the fixture.
+
+### 2026-11-10 — Included-window display planning composition
+
+Statically inspected the installed SkyComputerUseService with LLDB (target create
+and disassemble only; no run/attach). Added binary-hash/instruction evidence for
+fb8b64..fb9408. Restored included-ID window resolution and its composition with
+the existing window-region/display-selection functions: request order and
+duplicates survive, missing IDs are omitted, initial display is required before
+reading frames, crop anchors to the first requested ID, and the second display
+read retains the initial display if it becomes empty.
+
+Standalone Swift checks passed for resolution/read ordering, duplicates and
+missing IDs, crop/union selection, second-read disappearance and thrown error
+identity. The caller supplies missing-display error construction explicitly;
+its original enum representation has not been restored. SDK display-filter
+binding and production included-window route remain pending. This generic
+composition is not being counted as a working public multi-window screenshot.
+No desktop operations, paid model or vendor native execution occurred.
+
+### 2026-11-10 — Screenshot error enum and included-display SDK binding
+
+Recovered the nested ScreenshotImplementation.Error metadata: invalidCaptureSize
+has one CGSize payload (tag 0), screenCaptureFailed has no payload (tag 1).
+The missing-display branch allocates/stores tag 1 at fb942c..fb945c. Namespace
+and field descriptors, symbolic CGSize reference and throw instructions are now
+recorded in screenshot-included-display-evidence.json; all inspection was static.
+Restored the zero-case enum namespace and nested error cases in Swift, replacing
+the included-plan's default error factory with screenCaptureFailed.
+
+Added screenshotIncludedDisplayFilter binding: unique-key window lookup table,
+request-ordered included plan, display-relative sourceRect and SDK inclusion
+filter. Tests verify default recovered error and CGSize payload in addition to
+the prior ordering/geometry cases. Standalone Swift check passed. The concrete
+SDK binding compiles with the helper; no SCShareableContent was acquired in tests.
+It is not yet connected to the public production inclusion/offscreen request
+route. No original native executable, desktop operation or paid model was run.
+
+### 2026-11-10 — Screenshot buffer body assembled and selected route wired
+
+Added ScreenshotImplementation.captureScreenshotBuffer(content:...) for the
+body after content acquisition: selected-window/app matching, unique window
+lookup, offscreen plan/capture with nil failure and optional resize, single-window,
+included-display and full-display filter routes, pixel validation/errors and SDK
+capture. Buffer configuration now sets flags before deriving/validating dimensions,
+matching fb8804..fb8874; width/height/sourceRect are assigned after validation.
+
+Target.screenshot retains acquired content and calls this body with its selected
+singleton window ID and explicit frame-derived image size. Adapter ownership,
+limits, focus/frame revalidation and geometry metadata remain separate. It builds
+an outer filter for coordinate metadata and an inner capture filter; live geometry
+agreement remains unaccepted. It does not expose arbitrary window IDs or capture
+other applications via the original selected-app API.
+
+Standalone SDK configuration checks passed after assembly. Swift helper build
+passed; previous branch/async capture checks support constituent behavior, but
+there is no full-body original-native differential oracle. Original delay,
+acquisition wrapper/defaults, encoding/file output and logging/signposts remain
+outside this restored body. Public multi-window/offscreen requests and real
+single-window screenshot/input acceptance remain incomplete (last live gate was
+locked; no repeated UI attempt was made).
+
+### 2026-11-10 — Screenshot delay and acquisition ordering
+
+Traced the positive optional delay gate, async closure pointer and sleep body
+statically. The original multiplies the signed integer by 10^18 attoseconds to
+construct Duration: delay is seconds. Nil, zero and negative values skip sleep;
+positive values await it before acquiring content. Errors/cancellation propagate
+without acquiring/capturing or retry. Source addresses, multiplier and instruction
+witnesses are recorded in screenshot-included-display-evidence.json.
+
+Added captureScreenshotAfterDelay and an entry composition overload of the
+screenshot buffer. Acquisition is explicitly supplied by the caller because the
+original feature-flag/default acquisition policy is still unresolved; no guessed
+false/current-process choice or default delay was inserted. Signpost wrapping
+remains pending. Standalone checks passed for nil/nonpositive/positive/Int.max
+Duration values, stage ordering, exact error identity, and actual cancelled Swift
+Task sleep with no content acquisition. No real positive delay was waited out,
+no desktop operation/model/vendor native execution occurred. Helper build passed.
+
+### 2026-11-10 — Screenshot acquisition policy recovered (prior assumption corrected)
+
+The policy previously described as an unresolved feature-flag boundary is not a
+feature flag. Static tracing identified the NSApp import at 0x1014644a0 and
+orderedWindows/windowNumber/isVisible selector references. The buffer chooses
+current-process acquisition when explicitly included IDs are a subset of visible
+positive-numbered NSApp ordered-window IDs. Nil IDs returns false without reading
+NSApp; empty explicit IDs still enumerate and satisfy the subset rule. The
+window number is read before visibility and read again for checked UInt32 conversion.
+
+Restored this Swift policy and added the original-argument buffer overload,
+which waits, computes the native policy, acquires shareable content and runs the
+buffer body. The injectable acquisition overload remains a test boundary, not a
+production substitute. No guessed current-process constant or feature flag was
+added. Static selector/import witnesses are in the screenshot evidence file.
+
+Standalone native policy checks passed for nil/empty/duplicate/foreign IDs,
+getter order and hidden-window conversion avoidance. Helper build passed in
+15.72s. No real desktop inventory/capture/input, model or vendor native execution
+occurred. Default-argument generators, signposts, file output and real-device
+acceptance still remain; the full original API is not declared complete.
+
+### 2026-11-10 — Screenshot encoding and native ImageIO output stage
+
+Recovered ScreenshotEncoding enum metadata: jpeg(compressionQuality: CGFloat?)
+and png, with Equatable conformance. Restored the ImageDestination value wrapper's
+URL initializer (ImageIO count 1, nil options), failedToCreateImageDestination
+error, quality dictionary, add(image:compressionQuality:) and finalize Bool.
+Quality uses source comparisons: <=0 becomes positive zero, >1 becomes 1,
+NaN survives, and absent quality supplies nil properties. Static filename session
+character count getter returns 6. Sources/evidence are pinned to the binary hash.
+
+Added the extracted ScreenshotImplementation.writeScreenshotImage(to:...) stage:
+JPEG/PNG UTType and MIME selection, native add and finalize. The original file
+writer ignores finalize's Bool, so this stage does likewise rather than inventing
+an error. It does not replace TemporaryFile ownership or return ScreenshotFile.
+ImageDestination.addImage(from:at:maxPixelSize:) and signpost wrappers remain open.
+
+Actual ImageIO tests wrote/decoded owned 4x3 PNG and JPEG files, checked output
+MIME/type/dimensions, nil/clamped/nonfinite quality properties, encoding equality
+and unsupported destination type failure. Files are removed after the check.
+The standalone test and helper build (16.88s) passed. No desktop screenshot,
+paid model or original native executable was run. Full file output lifecycle and
+production file-based screenshot API are not yet completed by this stage.
+
+### 2026-11-10 — Image-source write and reproducible screenshot checks
+
+Restored ImageDestination.addImage(from:at:maxPixelSize:) from 10101a150..10101a27c.
+The index and present Int size are forwarded unchanged; absent maxPixelSize uses
+an empty bridged property dictionary (unlike nil quality in add(image:)). Real
+ImageIO checks confirm source copy without upscaling and a max dimension of 2
+when requested. Property checks retain negative/zero/Int.max without adding
+validation absent in the source. Evidence updated for these forwarding branches.
+
+Added npm run test:screenshot:restored: compiles/runs seven isolated Swift fixtures
+covering production SDK config, included-display plan, acquisition scope, NSApp
+subset policy, delay/cancellation, actual image output and async capture ordering.
+The runner uses owned temporary binaries/files, cleans them, and does not capture
+or operate the desktop. All seven checks passed together; helper build passed
+in 20.54s. No live acceptance retry was performed (last attempt screenLocked).
+The full screenshot file naming/TemporaryFile/ScreenshotFile lifecycle, signposts,
+default generators and real geometry/input acceptance remain incomplete.

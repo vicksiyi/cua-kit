@@ -51,7 +51,8 @@
     "demo:legacy": "npm run build && node dist/agent/demo.js",
     "build:legacy-runtime": "node scripts/build-reconstruction.mjs --include-legacy",
     "test:native-host-router": "node scripts/test-native-host-router.mjs",
-    "build:rust-browser-host": "node scripts/build-rust-browser-host.mjs"
+    "build:rust-browser-host": "node scripts/build-rust-browser-host.mjs",
+    "test:screenshot:restored": "node scripts/check-screenshot-restoration.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

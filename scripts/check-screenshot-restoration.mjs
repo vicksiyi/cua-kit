@@ -1,0 +1,26 @@
+import { execFileSync } from "node:child_process";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const native = "native/macos/Sources/CuaHelper/";
+const cases = [
+  ["production-configuration", ["ScreenshotSingleWindowFilter", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotStreamConfiguration"], "screenshot-production-configuration-check"],
+  ["included-display-plan", ["ScreenshotImplementation", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan"], "screenshot-included-display-plan-check"],
+  ["content-acquisition", ["ScreenshotContentScope", "ScreenshotShareableContent"], "screenshot-content-acquisition-check"],
+  ["current-process", ["ScreenshotCurrentProcess"], "screenshot-current-process-check"],
+  ["delay", ["ScreenshotDelay"], "screenshot-delay-check"],
+  ["image-output", ["ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput"], "image-destination-check"],
+  ["screen-capture-composition", ["ScreenScreenshotCapture"], "screen-screenshot-capture-check"],
+];
+if (process.platform !== "darwin") throw new Error("Screenshot native checks require macOS SDKs");
+const directory = await mkdtemp(join(tmpdir(), "cua-screenshot-checks-"));
+try {
+  for (const [name, files, fixture] of cases) {
+    const executable = join(directory, name);
+    execFileSync("swiftc", ["-o", executable, ...files.map(file => `${native}${file}.swift`), `reconstruction/${fixture}.swift`], { cwd: root, stdio: "inherit" });
+    execFileSync(executable, [], { cwd: root, stdio: "inherit", timeout: 15000 });
+  }
+  console.log(`${cases.length} screenshot restoration checks passed (no desktop capture or input).`);
+} finally { await rm(directory, { recursive: true, force: true }); }

@@ -44,14 +44,17 @@ extension Target {
     }
 
     func captureWindows() async throws -> [SCWindow] {
+        try await captureWindowContent().windows
+    }
+    func captureWindowContent() async throws -> (content: SCShareableContent, windows: [SCWindow]) {
         try validateIdentity()
         try requireUnlockedNativeDesktop()
         guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED", "Screen Recording permission is required; no permission prompt was requested.") }
         initializeNativeGraphics()
         do {
-            let content = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: true)
+            let content = try await screenshotShareableContent(currentProcessOnly: false, includedWindowIDs: nil)
             try validateIdentity()
-            return content.windows.filter { $0.owningApplication?.processID == app.processIdentifier && $0.frame.width > 0 && $0.frame.height > 0 }
+            return (content, content.windows.filter { $0.owningApplication?.processID == app.processIdentifier && $0.frame.width > 0 && $0.frame.height > 0 })
         } catch let error as Failure { throw error }
           catch { throw fail("PROVIDER_DISCONNECTED", "Window enumeration failed: \(error.localizedDescription)") }
     }
@@ -62,24 +65,33 @@ extension Target {
         }]
     }
     func screenshot(_ params: [String: Any]) async throws -> [String: Any] {
-        let available = try await withNativeAsyncObservationPhase("screenshot-enumerate", pid: app.processIdentifier) { try await captureWindows() }
+        let capture = try await withNativeAsyncObservationPhase("screenshot-enumerate", pid: app.processIdentifier) { try await captureWindowContent() }
+        let available = capture.windows
         let requestedId = params["windowId"] as? Int
         if params["windowId"] != nil && requestedId == nil { throw fail("INVALID_ARGUMENT", "windowId must be an integer.") }
         let focus = requestedId == nil && available.count > 1 ? try focusedCaptureWindow() : nil
         let selectedId = try selectCaptureWindow(available.map { CaptureWindowCandidate(id:Int($0.windowID),title:$0.title ?? "",frame:$0.frame) }, requestedId:requestedId, focusedFrame:focus?.frame, focusedTitle:focus?.title)
         guard let window = available.first(where: {Int($0.windowID) == selectedId}) else { throw fail("TARGET_NOT_FOUND", "Selected window disappeared.") }
         let originalFrame = window.frame
-        let filter = SCContentFilter(desktopIndependentWindow: window)
-        let config = SCStreamConfiguration()
+        // The selected on-screen window branch uses the restored frame-based
+        // size and configuration path. Deployment limits remain adapter policy.
+        let selection = screenshotSingleWindowFilter(window: window)
+        let filter = selection.filter
         let scale = Double(filter.pointPixelScale)
         let rect = filter.contentRect
-        let width = Int(ceil(rect.width * scale)), height = Int(ceil(rect.height * scale))
-        guard width > 0 && height > 0 && width <= 8192 && height <= 8192 && width * height <= 32_000_000 else { throw fail("INVALID_ARGUMENT", "Window exceeds screenshot dimension budget.") }
-        config.width = width; config.height = height
-        config.showsCursor = false; config.ignoreShadowsSingleWindow = true
+        let size = screenshotCaptureSize(imageSize: nil, baseSize: selection.baseSize,
+            pointPixelScale: { filter.pointPixelScale })
+        guard let dimensions = screenshotPixelDimensions(size),
+              dimensions.width <= 8192, dimensions.height <= 8192,
+              dimensions.width * dimensions.height <= 32_000_000 else {
+            throw fail("INVALID_ARGUMENT", "Window exceeds screenshot dimension budget.")
+        }
         let image: CGImage
         do { image = try await withNativeAsyncObservationPhase("screenshot-sdk-capture", pid: app.processIdentifier) {
-            try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+            try await ScreenshotImplementation.captureScreenshotBuffer(content: capture.content,
+                appName: nil, imageSize: size, includedWindowIDs: [window.windowID],
+                cropToFirstWindow: false, shouldBeOpaque: SCStreamConfiguration().shouldBeOpaque,
+                includeWindowShadow: false)
         } }
         catch { throw fail("PROVIDER_DISCONNECTED", "Window screenshot failed: \(error.localizedDescription)") }
         try validateIdentity()

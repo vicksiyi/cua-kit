@@ -3,14 +3,22 @@ import CoreGraphics
 
 // Original buffer pathfb8804..fb8ac4. Accelerated capture is a separate
 // branch; this configuration belongs to the ScreenCaptureKit branch.
-func screenshotStreamConfiguration(width: Int, height: Int, sourceRect: CGRect?,
-    shouldBeOpaque: Bool, includeWindowShadow: Bool
+func screenshotStreamConfiguration(shouldBeOpaque: Bool,
+    includeWindowShadow: Bool
 ) -> SCStreamConfiguration {
     let configuration = SCStreamConfiguration()
     configuration.ignoreShadowsSingleWindow = !includeWindowShadow
     configuration.ignoreShadowsDisplay = true
     configuration.showsCursor = false
     configuration.shouldBeOpaque = shouldBeOpaque
+    return configuration
+}
+
+func screenshotStreamConfiguration(width: Int, height: Int, sourceRect: CGRect?,
+    shouldBeOpaque: Bool, includeWindowShadow: Bool
+) -> SCStreamConfiguration {
+    let configuration = screenshotStreamConfiguration(shouldBeOpaque: shouldBeOpaque,
+        includeWindowShadow: includeWindowShadow)
     configuration.width = width
     configuration.height = height
     if let sourceRect { configuration.sourceRect = sourceRect }
