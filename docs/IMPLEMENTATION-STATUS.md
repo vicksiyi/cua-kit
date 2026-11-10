@@ -8571,3 +8571,19 @@ flipped-coordinate and paired-click checks. Events are allocated and inspected,
 not posted. SynthesizedEvent remains in CuaHelper pending complete original
 AccessibilitySupport relocation; original default-argument/whole ABI parity and
 actual App delivery are unproven. See mouse-event-factory-evidence.json.
+
+## 2026-11-11 moveMouse construction
+
+SynthesizedEvent.moveMouse(to:inWindow:windowBounds:windowUsesFlippedCoordinates:)
+now preserves the original checked event-number increment before allocation,
+mouseMoved type, clickCount1, pressure1, zero flags/button and subtype3. It
+shares mouseEvent construction rather than duplicating the original inlined
+body. Original optional-window/bounds branches and conditional flip were
+inspected; audit-move-mouse.py verifies the checked increment and seven direct
+calls in the pinned binary. No new production controller caller was invented.
+
+Swift build passed26.32s; native --self-test passed all prior checks and12 move
+combinations (3 window identities x2 geometry states x2 flip states), including
+native event-field/coordinate inspection and total event-number consumption.
+Events were not posted. Module relocation, default arguments and original
+controller-to-delivery composition remain unfinished; no live UI claim.

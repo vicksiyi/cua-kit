@@ -1,0 +1,26 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "entry": "0x100754d5c",
+  "source": "native/macos/Sources/CuaHelper/SynthesizedEventMoveMouse.swift",
+  "calls": {
+    "0x100754e38": "0x1002580c4",
+    "0x100754e48": "0x100258140",
+    "0x100754e58": "0x1002580d0",
+    "0x100754e68": "0x1002580d0",
+    "0x100754e7c": "0x1002580d0",
+    "0x100754e8c": "0x1002580d0",
+    "0x100754f3c": "0x10026cc8c"
+  },
+  "behavior": [
+    "Consume event number with checked increment before allocation",
+    "NSEvent mouseMoved, clickCount1, pressure1, no initial modifiers",
+    "CG flags0, button0, subtype3, global location",
+    "Optional window identity and optional geometry; zero ID remains present",
+    "Translation then conditional Y flip; allocation failure invalidParameter"
+  ],
+  "limits": [
+    "Restored body delegates common allocation to mouseEvent; original binary has inlined construction",
+    "No production moveMouse caller added without original controller evidence",
+    "CuaHelper module placement remains pending; no live event delivery acceptance"
+  ]
+}

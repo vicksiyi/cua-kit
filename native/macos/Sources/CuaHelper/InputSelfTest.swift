@@ -137,6 +137,35 @@ func runInputChecks() throws {
             }
         }
     }
+    let numberBeforeMove = SynthesizedEvent.nextEventNumber
+    var moveCount: Int64 = 0
+    for windowID: UInt32? in [nil, 0, 123] {
+        for bounds: CGRect? in [nil, frameB] {
+            for flipped in [false, true] {
+                let moved = try SynthesizedEvent.moveMouse(to: mapped, inWindow: windowID,
+                    windowBounds: bounds, windowUsesFlippedCoordinates: flipped)
+                moveCount += 1
+                guard moved.cgEvents.count == 1, let event = moved.cgEvents.first,
+                      event.type == .mouseMoved, event.flags.isEmpty, event.location == mapped,
+                      event.getIntegerValueField(.mouseEventButtonNumber) == 0,
+                      event.getIntegerValueField(.mouseEventSubtype) == 3 else {
+                    throw fail("SELF_TEST_FAILED", "Native moveMouse factory fields differ.")
+                }
+                if let windowID {
+                    guard event.getIntegerValueField(.mouseEventWindowUnderMousePointer) == Int64(windowID),
+                          event.getIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent) == Int64(windowID) else {
+                        throw fail("SELF_TEST_FAILED", "Native moveMouse routing differs.")
+                    }
+                    if bounds != nil, getLocation(event) != CGPoint(x: 100, y: flipped ? 350 : 50) {
+                        throw fail("SELF_TEST_FAILED", "Native moveMouse local coordinates differ.")
+                    }
+                }
+            }
+        }
+    }
+    guard SynthesizedEvent.nextEventNumber == numberBeforeMove + moveCount + 1 else {
+        throw fail("SELF_TEST_FAILED", "Native moveMouse event-number consumption differs.")
+    }
     do { _ = try mouseModifiers("a"); throw fail("SELF_TEST_FAILED","Unsupported mouse key accepted.") }
     catch let error as Failure { guard error.code == "UNSUPPORTED_CAPABILITY" else { throw error } }
     for (direction,vertical,sign) in [("up",true,1),("u",true,1),("down",true,-1),("d",true,-1),("left",false,1),("l",false,1),("right",false,-1),("r",false,-1)] {
