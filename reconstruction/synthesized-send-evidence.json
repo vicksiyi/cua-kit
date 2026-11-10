@@ -1,0 +1,34 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "source": "native/macos/Sources/AccessibilitySupport/SynthesizedEventSend.swift",
+  "originalEntries": {
+    "sync": "0x100754280",
+    "asyncDelay": "0x1007537e8"
+  },
+  "calls": {
+    "0x10075394c": "0x10115015c",
+    "0x100753950": "0x101150150",
+    "0x100753970": "0x1002581ac",
+    "0x10075397c": "0x100258054",
+    "0x100754380": "0x10115015c",
+    "0x100754384": "0x101150150",
+    "0x1007543a4": "0x1002581ac",
+    "0x1007543b0": "0x100258054"
+  },
+  "imports": {
+    "0x10115015c": "_$s8Dispatch0A4TimeV3nowACyFZ",
+    "0x101150150": "_$s8Dispatch0A4TimeV17uptimeNanosecondss6UInt64Vvg"
+  },
+  "limits": [
+    "Only sync and async-to-PID delay overloads covered; handler and global-tap variants remain unfinished",
+    "Dependency overload is an additional test boundary,not an original API",
+    "Default posting not executed in fixtures; static calls do not prove live delivery"
+  ],
+  "validation": {
+    "build": "exit0,41.82s",
+    "nativeInputSelfTest": "exit0",
+    "linkedFixtures": "All15 pass",
+    "send": "Injected post/clock verify order,delay after last event,no-delay no-clock,wait failure/cancellation stop before next post,empty exact sync/async entries",
+    "exports": "Both exact original send(to:) and send(to:delay:) signatures match"
+  }
+}

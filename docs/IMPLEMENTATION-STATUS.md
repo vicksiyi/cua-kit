@@ -8766,3 +8766,20 @@ Thus CGEventAPI's bounded public interface surface is present, but full behavior
 ABI/callback lifetime validation and real app delivery are unaccepted. Wider
 CUA restoration remains incomplete. See cgevent-delivery-evidence.json and
 cgevent-api-export-surface-evidence.json.
+
+## 2026-11-11 original sync/async PID send entries
+
+SynthesizedEvent.send(to:) and send(to:delay:) now expose the exact original
+signatures in AccessibilitySupport. The static audit resolves chained imports
+for DispatchTime.now/uptimeNanoseconds and verifies timestamp-before-PID-post
+calls in both native loops. The original async optional delay follows every
+post including the last; wait errors/cancellation propagate without invented
+cleanup/retry events. The existing injected post/clock dependency overload is
+explicitly additional API and preserves helper/controller test integration.
+
+Build passed41.82s; native self-test and all15 linked fixtures passed. The new
+consumer verifies send order, last-event delay, no-delay behavior, failure and
+cancellation short circuit, and safe empty exact entries. Nonempty posting uses
+injected closures only. Handler/global-tap send overloads and live event delivery
+remain unaccepted; moving these entries does not finish AccessibilitySupport or
+whole CUA restoration. See synthesized-send-evidence.json.
