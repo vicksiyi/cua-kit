@@ -1,4 +1,6 @@
 import Foundation
+import CoreGraphics
+import ImageIO
 import System
 import UniformTypeIdentifiers
 import SlimCore
@@ -30,4 +32,14 @@ func checkSlimCoreFileSurface(_ path: FilePath, decoder: Decoder, encoder: Encod
     _ = File.pathExtension(for: .png)
     _ = TemporaryFile.uniquePath(forFilename: "fixture", in: path)
     _ = NativeLogger.logger(for: DataFile.self)
+}
+
+func checkSlimCoreImageSurface(image: CGImage, source: CGImageSource, url: URL) throws {
+    let encoding = ScreenshotEncoding.jpeg(compressionQuality: 0.8)
+    _ = encoding == .png
+    let destination = try ImageDestination(url: url, forType: .png)
+    destination.add(image: image, compressionQuality: nil)
+    destination.addImage(from: source, at: 0, maxPixelSize: nil)
+    _ = destination.finalize()
+    _ = ImageDestination.sessionFilenameCharacterCount
 }

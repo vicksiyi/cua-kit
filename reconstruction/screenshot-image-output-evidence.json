@@ -107,5 +107,19 @@
     "command": "CUA_TEST_NATIVE_SKYSHOT=1 node --import tsx --test --test-name-pattern='live owned App skyshot through restored Sky client' reconstruction/native-sky-ipc.test.ts",
     "result": "Failed at observation with screenLocked/-10020 in approximately2.3s; no screenshot/input acceptance",
     "cleanup": "After test terminal exit, pgrep for owned fixture/helper patterns returned no matches"
+  },
+  "imageModuleAlignment": {
+    "module": "SlimCore",
+    "types": [
+      "ScreenshotEncoding",
+      "ImageDestination"
+    ],
+    "sources": [
+      "native/macos/Sources/SlimCore/ScreenshotEncoding.swift",
+      "native/macos/Sources/SlimCore/ImageDestination.swift"
+    ],
+    "change": "Moved from CuaHelper; public boundary added; function bodies byte-matched after visibility normalization",
+    "validation": "16 SDK screenshot fixtures; complete helper build; separate consumer typecheck for encoding/init/add/source/finalize",
+    "limits": "ScreenshotImplementation and related algorithms still in CuaHelper; original package-wide interface audit incomplete"
   }
 }

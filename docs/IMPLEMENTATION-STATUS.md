@@ -7909,3 +7909,20 @@ No user app, screenshot, model or installed native executable was operated.
 Final full helper link/build passed (10.88s, exit 0). A byte comparison confirms
 the moved TransformedUIElement setter body is unchanged from the prior commit.
 Whitespace diff check passed.
+
+### 2026-11-11 — ScreenshotEncoding/ImageDestination moved into SlimCore
+
+Moved the two original SlimCore-qualified image types into the existing SlimCore
+target, next to File/ScreenshotFile. Added cross-module public type/constructor/
+operation boundaries; kept raw destination storage and extracted dictionary
+helpers internal. A normalized byte comparison confirms no function-body change.
+CuaHelper image writers now resolve the real imported SlimCore types.
+
+All sixteen screenshot checks passed at the new paths, including real ImageIO
+quality/source writes and composed PNG/JPEG output. Full helper build passed
+(25.80s). The independent consumer typechecked built-module encoding equality,
+destination init/add/source/finalize APIs without compiling their source files.
+ScreenshotImplementation/capture algorithms still reside in CuaHelper; this is
+not whole screenshot-module migration or real desktop acceptance. Default values,
+original logging/signposts, production app routing and full interface audit remain
+pending. No desktop, paid model or installed native executable was used.

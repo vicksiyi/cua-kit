@@ -4,14 +4,14 @@ import ImageIO
 import UniformTypeIdentifiers
 
 // Native value wrapper (metadata kind 0x200), not an independent image encoder.
-struct ImageDestination {
-    enum Error: Swift.Error, Hashable {
+public struct ImageDestination {
+    public enum Error: Swift.Error, Hashable {
         case failedToCreateImageDestination
     }
-    static let sessionFilenameCharacterCount = 6
+    public static let sessionFilenameCharacterCount = 6
     let destination: CGImageDestination
 
-    init(url: URL, forType type: UTType) throws {
+    public init(url: URL, forType type: UTType) throws {
         guard let destination = CGImageDestinationCreateWithURL(url as CFURL,
             type.identifier as CFString, 1, nil) else {
             throw Error.failedToCreateImageDestination
@@ -28,7 +28,7 @@ struct ImageDestination {
         return [kCGImageDestinationLossyCompressionQuality: NSNumber(value: Double(quality))] as CFDictionary
     }
 
-    func add(image: CGImage, compressionQuality: CGFloat?) {
+    public func add(image: CGImage, compressionQuality: CGFloat?) {
         CGImageDestinationAddImage(destination, image,
             Self.imageProperties(compressionQuality: compressionQuality))
     }
@@ -38,9 +38,9 @@ struct ImageDestination {
         guard let maxPixelSize else { return [:] as CFDictionary }
         return [kCGImageDestinationImageMaxPixelSize: NSNumber(value: maxPixelSize)] as CFDictionary
     }
-    func addImage(from source: CGImageSource, at index: Int, maxPixelSize: Int?) {
+    public func addImage(from source: CGImageSource, at index: Int, maxPixelSize: Int?) {
         CGImageDestinationAddImageFromSource(destination, source, index,
             Self.sourceProperties(maxPixelSize: maxPixelSize))
     }
-    func finalize() -> Bool { CGImageDestinationFinalize(destination) }
+    public func finalize() -> Bool { CGImageDestinationFinalize(destination) }
 }
