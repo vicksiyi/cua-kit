@@ -2,7 +2,7 @@ import CoreGraphics
 
 // Buffer display selection 0x100fb912c..0x100fb9270. Pairwise comparisons
 // re-read both frames each time; equal or unordered areas retain the first.
-func screenshotDisplay<Display>(for region: CGRect, displays: [Display],
+public func screenshotDisplay<Display>(for region: CGRect, displays: [Display],
     frame: (Display) -> CGRect
 ) -> Display? {
     guard var best = displays.first else { return nil }
@@ -19,7 +19,7 @@ func screenshotDisplay<Display>(for region: CGRect, displays: [Display],
 // The inclusion route keeps the initial first display (fb8c94), then reads
 // displays again for overlap selection. If that second list became empty,
 // fb930c..fb9320 retains the initial display rather than failing selection.
-func screenshotDisplay<Display>(for region: CGRect, initialDisplay: Display,
+public func screenshotDisplay<Display>(for region: CGRect, initialDisplay: Display,
     displays: () -> [Display], frame: (Display) -> CGRect
 ) -> Display {
     screenshotDisplay(for: region, displays: displays(), frame: frame) ?? initialDisplay

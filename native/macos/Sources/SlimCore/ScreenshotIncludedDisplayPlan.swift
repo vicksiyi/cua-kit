@@ -1,18 +1,15 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import CoreGraphics
 
-struct ScreenshotIncludedDisplayPlan<Window, Display> {
-    let windows: [Window]
-    let display: Display
-    let region: CGRect
+public struct ScreenshotIncludedDisplayPlan<Window, Display> {
+    public let windows: [Window]
+    public let display: Display
+    public let region: CGRect
 }
 
 // Included-ID branch fb8b64..fb9408. Keep resolution before the first-display
 // requirement, then region selection before the second display read. The caller
 // may supply an error factory for fixtures; default is the recovered error case.
-func screenshotIncludedDisplayPlan<Window, Display>(
+public func screenshotIncludedDisplayPlan<Window, Display>(
     includedWindowIDs: [UInt32], cropToFirstWindow: Bool,
     lookup: (UInt32) -> Window?, windowFrame: (Window) -> CGRect,
     displays: () -> [Display], displayFrame: (Display) -> CGRect,

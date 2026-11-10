@@ -1,3 +1,6 @@
+#if canImport(SlimCore)
+import SlimCore
+#endif
 import Animation
 import GraphicsSupport
 import DequeModule

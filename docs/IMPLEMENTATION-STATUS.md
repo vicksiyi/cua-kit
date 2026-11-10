@@ -7945,3 +7945,22 @@ and actual desktop acceptance remain open. No model/desktop/vendor native run.
 
 Final complete helper build passed (exit 0); separate SlimCore consumer typecheck
 passed against built module. Whitespace check passed. No real capture was run.
+
+### 2026-11-11 — Screenshot geometry stages moved into SlimCore
+
+Moved ScreenshotCaptureSize, ScreenshotPixelDimensions, ScreenshotWindowRegion,
+ScreenshotDisplaySelection and ScreenshotIncludedDisplayPlan into SlimCore.
+Exposed cross-module geometry helpers/plan results needed by the current buffer;
+normalized byte comparison confirms unchanged algorithms, including native
+ordering and numeric boundaries. No original ABI/API-exactness claim is made for
+these extracted helper functions. WindowServer bridge and acquisition remain
+CuaHelper-dependent pending original lower-module migration.
+
+All sixteen screenshot checks passed at new paths. Initial full build exposed
+missing SlimCore imports in configuration and owned provider checks; imports
+were corrected and final build/consumer results are recorded below. No model,
+desktop or installed vendor native executable was run. Complete screenshot module,
+defaults/signposts, production file-route selection and live acceptance remain open.
+
+Final helper build passed (36.08s, exit 0); independent built-module geometry
+consumer typecheck passed. Whitespace diff check passed.

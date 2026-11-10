@@ -53,3 +53,15 @@ func checkSlimCoreScreenshotFileAPI(image: CGImage, url: URL) async throws {
         try ScreenshotImplementation.writeScreenshotToFile(appName: nil, screenshot: image, encoding: encoding)
     })
 }
+
+func checkSlimCoreScreenshotGeometrySurface() throws {
+    let region = CGRect(x: 0, y: 0, width: 4, height: 3)
+    _ = screenshotCaptureSize(imageSize: nil, baseSize: region.size, pointPixelScale: { 2 })
+    _ = screenshotPixelDimensions(region.size)
+    _ = screenshotWindowRegion(includedWindowIDs: [1], cropToFirstWindow: true,
+        lookup: { _ in region }, resolvedWindows: [region], frame: { $0 })
+    let plan = try screenshotIncludedDisplayPlan(includedWindowIDs: [1], cropToFirstWindow: true,
+        lookup: { _ in region }, windowFrame: { $0 }, displays: { [region] }, displayFrame: { $0 })
+    _ = plan.windows; _ = plan.display; _ = plan.region
+    _ = screenshotDisplay(for: region, displays: [region], frame: { $0 })
+}

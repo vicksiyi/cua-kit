@@ -271,7 +271,7 @@
     "SkyComputerUseService[0x100fb9404] <+4344>: mov    w19, #0x0                 ; =0 ",
     "SkyComputerUseService[0x100fb9408] <+4348>: b      0x100fb87f4               ; <+1256>"
   ],
-  "restoration": "native/macos/Sources/CuaHelper/ScreenshotIncludedDisplayPlan.swift",
+  "restoration": "native/macos/Sources/SlimCore/ScreenshotIncludedDisplayPlan.swift",
   "validation": "reconstruction/screenshot-included-display-plan-check.swift",
   "limits": "Error case representation and SDK binding restored; production inclusion routing, original request defaults and real desktop screenshot acceptance remain pending",
   "errorEvidence": {
@@ -387,5 +387,18 @@
     "validation": "reconstruction/screenshot-current-process-check.swift",
     "correction": "This branch is local application-window subset computation, not a feature-flag lookup",
     "limits": "Argument default generators, signpost wrappers, file output and real desktop acceptance remain pending"
+  },
+  "geometryModuleAlignment": {
+    "module": "SlimCore",
+    "stages": [
+      "ScreenshotCaptureSize",
+      "ScreenshotPixelDimensions",
+      "ScreenshotWindowRegion",
+      "ScreenshotDisplaySelection",
+      "ScreenshotIncludedDisplayPlan"
+    ],
+    "bodyChange": "none after access/import normalization",
+    "validation": "16 SDK fixtures, full helper build36.08s, independent built-module consumer typecheck",
+    "remaining": "WindowServer bridge, acquisition, full capture/module/API audit and real desktop acceptance"
   }
 }

@@ -2,7 +2,7 @@ import CoreGraphics
 
 // fb8874..fb895c: explicit imageSize avoids reading filter.pointPixelScale.
 // SDK supplies Float scale, promoted before multiplying dimensions.
-func screenshotCaptureSize(imageSize: CGSize?, baseSize: CGSize,
+public func screenshotCaptureSize(imageSize: CGSize?, baseSize: CGSize,
     pointPixelScale: () -> Float
 ) -> CGSize {
     if let imageSize { return imageSize }

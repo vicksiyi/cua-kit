@@ -3,7 +3,7 @@ import CoreGraphics
 // ScreenshotImplementation helper0x100fb7c00. The upper comparison is inclusive
 // at2^63, followed by a checked Swift Int conversion; preserve that original
 // boundary trap rather than silently converting it to a nil result.
-func screenshotPixelDimensions(_ size: CGSize) -> (width: Int, height: Int)? {
+public func screenshotPixelDimensions(_ size: CGSize) -> (width: Int, height: Int)? {
     guard size.width.isFinite, size.height.isFinite,
           size.width > 0, size.height > 0 else { return nil }
     let width = size.width.rounded(.up)
