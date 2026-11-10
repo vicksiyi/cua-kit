@@ -8044,3 +8044,20 @@ exact generated source and full SHA256 output without overwriting evidence/files
 Current static request audit also passes at the new path. Full SystemSoftware
 (CGWindow/observer/process) module coverage, screenshot adapter migration, default/
 signpost/production and actual UI acceptance remain open. No model/desktop run.
+
+### 2026-11-11 — Accelerated/offscreen capture stages moved into SlimCore
+
+Moved AcceleratedWindowScreenshot and OffscreenScreenshotCapture from CuaHelper
+into SlimCore, which now depends on the restored SystemSoftware target. Normalized
+comparison with the preceding commit confirms unchanged bodies, with only imports
+and cross-module visibility changed. Original logging/signpost wrappers are still
+missing; these extracted helper names do not establish original API/ABI parity.
+
+Full helper build completed (37.14s); all twenty screenshot checks passed. The
+separately linked consumer now links SlimCore/SystemSoftware/SoftLink and passes
+injected accelerated/offscreen checks: connection-before-capture ordering,
+unchanged duplicate IDs/options/rect/connection, first-image selection, empty
+result handling, selected-window plan forwarding, capture failure skipping resize,
+and resize failure retaining the captured image. No private SPI or desktop input
+was invoked. Acquisition/window enumeration, buffer/default/signpost reconstruction,
+production file-route integration and current live acceptance remain incomplete.

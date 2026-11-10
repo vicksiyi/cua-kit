@@ -1,6 +1,7 @@
 import Foundation
 import CoreGraphics
 import SystemSoftware
+import SlimCore
 
 @main struct Check {
     static func main() {
@@ -33,6 +34,29 @@ import SystemSoftware
         precondition(calls == 1 && result?.first === image)
         let bridged = windowCaptureImages([image] as CFArray)
         precondition(bridged?.first === image)
+        var captureStages: [String] = []
+        let first: String? = captureAcceleratedWindowScreenshot([7, 7, 9], rect: rect,
+            mainConnection: { captureStages.append("connection"); return connection },
+            capture: { ids, options, region, actual in
+                captureStages.append("capture")
+                precondition(ids == [7, 7, 9] && options.rawValue == 0x800 && region == rect && actual == connection)
+                return ["first", "second"]
+            })
+        precondition(first == "first" && captureStages == ["connection", "capture"])
+        let noImage: String? = captureAcceleratedWindowScreenshot([], rect: rect,
+            mainConnection: { nil }, capture: { _, _, _, _ in [] })
+        precondition(noImage == nil)
+        let plan = screenshotOffscreenPlan(selectedWindow: 7, includedWindowIDs: [7, 9],
+            cropToFirstWindow: false, lookup: { _ in 7 }, isOnScreen: { _ in false },
+            windowID: { UInt32($0) }, frame: { _ in rect })!
+        var resized = false
+        let failed: String? = captureOffscreenScreenshot(plan: plan, imageSize: rect.size,
+            capture: { _, _ in nil }, resize: { image, _ in resized = true; return image })
+        precondition(failed == nil && !resized)
+        let retained: String? = captureOffscreenScreenshot(plan: plan, imageSize: rect.size,
+            capture: { ids, region in precondition(ids == [7] && region == rect); return "captured" },
+            resize: { _, size in resized = true; precondition(size == rect.size); return nil })
+        precondition(retained == "captured" && resized)
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }

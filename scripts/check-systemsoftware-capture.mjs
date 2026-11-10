@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const build = join(root, "native/macos/.build/debug");
 const objects = [];
-for (const module of ["SystemSoftware", "SoftLink"]) {
+for (const module of ["SlimCore", "SystemSoftware", "SoftLink"]) {
   const directory = join(build, `${module}.build`);
   for (const name of await readdir(directory)) if (name.endsWith(".o")) objects.push(join(directory, name));
 }

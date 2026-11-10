@@ -8,18 +8,25 @@
     "WindowServerSPISymbolRequest",
     "WindowCaptureImageBridge"
   ],
-  "dependency": "SystemSoftware -> SoftLink; CuaHelper -> SystemSoftware; no TS rewrite or substitute API",
+  "dependency": "SlimCore -> SystemSoftware -> SoftLink; CuaHelper -> SlimCore/SystemSoftware; no substitute API",
   "bodyChange": "None after access visibility normalization",
   "validation": {
     "helperBuild": "43.30s, exit0",
     "staticRequests": "scripts/audit-windowserver-requests.py passes at new source path",
     "linkedConsumer": "node scripts/check-systemsoftware-capture.mjs passes via built SystemSoftware/SoftLink objects; injected callback only",
-    "generator": "Dry-run captured outputs without writes; generated source exact, full SHA256 correct"
+    "generator": "Dry-run captured outputs without writes; generated source exact, full SHA256 correct",
+    "acceleratedOffscreenConsumer": "Built SlimCore/SystemSoftware/SoftLink linked fixture passes: forwarding/order, first image, nil capture, resize fallback; injected callbacks only",
+    "latestHelperBuild": "37.14s; build log reports Build complete",
+    "screenshotChecks": "20 restored screenshot checks pass; no desktop capture or input"
   },
   "limits": [
     "No private SPI resolution/invocation tested",
     "Not complete SystemSoftware interface or native ABI parity",
-    "CGWindow/observer types and capture adapters remain partly CuaHelper",
+    "CGWindow enumeration/observer types, acquisition and buffer integration remain partly CuaHelper",
     "Real desktop capture/input not accepted"
+  ],
+  "captureStagesMovedToSlimCore": [
+    "AcceleratedWindowScreenshot",
+    "OffscreenScreenshotCapture"
   ]
 }

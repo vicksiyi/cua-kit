@@ -15,7 +15,7 @@ let package = Package(
     targets: [
         .target(name: "SoftLink"),
         .target(name: "Animation"),
-        .target(name: "SlimCore"),
+        .target(name: "SlimCore", dependencies: ["SystemSoftware"]),
         .target(name: "SystemSoftware", dependencies: ["SoftLink"]),
         .target(name: "GraphicsSupport", dependencies: ["SoftLink"]),
         .target(name: "RunningProcess", publicHeadersPath: "include", cSettings: [.unsafeFlags(["-fobjc-arc"])]),
