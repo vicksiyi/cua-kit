@@ -8156,3 +8156,32 @@ window argument and nil-connection forwarding, nil result and numeric conversion
 No actual SoftLink/private query was invoked. Name coverage now14/15, only
 resolvedCornerRadius absent; this does not establish complete body or ABI fidelity.
 No desktop, paid model or vendor native service execution occurred.
+
+### 2026-11-11 — Resolved corner-radius query reconstructed
+
+Read original full26d2d0..26d7f8 and five optional binding initializers26dc3c..26def8.
+Extended request extractor with five original image/hash/salt records. The public
+resolvedCornerRadius entry short-circuits main-connection/query/iterator/count/
+window-ID/radii bindings in original order, creates one UInt32 NSNumber window ID,
+queries with zero flags, scans count once for first matching ID and reads that
+index's NSArray. Missing binding/query/iterator/match/radii returns nil.
+
+Extracted query composition retains input array/query result/iterator through
+completion with explicit extended lifetimes. Production takes query/iterator as
+retained unknown objects and radii as autoreleased NSArray, based on original
+release/retain sites; actual private ABI/ownership behavior is still unaccepted.
+Original NSNumber conversion calls CGFloat(truncating:), enumerates all values,
+filters finite nonnegative values (including negative zero), then returns first.
+The NZCV filter interpretation was compared across4107 deterministic Double bit
+patterns, with original CGFloat bridge and skip-branch verified statically.
+Initial skip-branch audit had an incorrect manually entered opcode; replaced it
+with the encoding derived from the inspected source/target addresses before pass.
+
+Initial full native build passed21.21s; after explicit lifetime preservation,
+final build passed16.46s and separately linked injected checks passed. They cover
+query argument forwarding/order, first matching index, missing query/no match/
+nil first radii, nonnumeric/NaN/infinity/negative filtering, negative zero and
+subnormal acceptance. This does not invoke any private SPI. Exported method-name
+coverage now15/15 only; body, signature, ABI, options/properties and runtime parity
+remain unproven. No whole SystemSoftware/CUA completion or percentage follows.
+No paid model, desktop operation or vendor service execution occurred.

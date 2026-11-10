@@ -1,0 +1,187 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10026dc3c -e 0x10026def8
+SkyComputerUseService`___lldb_unnamed_symbol61756:
+SkyComputerUseService[0x10026dc3c] <+0>:   stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026dc40] <+4>:   stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026dc44] <+8>:   add    x29, sp, #0x10
+SkyComputerUseService[0x10026dc48] <+12>:  adrp   x0, 4845
+SkyComputerUseService[0x10026dc4c] <+16>:  add    x0, x0, #0xc20            ; SAIAttachmentCharacter + 11192
+SkyComputerUseService[0x10026dc50] <+20>:  adrp   x1, 3838
+SkyComputerUseService[0x10026dc54] <+24>:  add    x1, x1, #0x928            ; property descriptor for static SystemSoftware.AccessibilitySPI.copyHierarchyResultCountKey : __C.CFStringRef + 40
+SkyComputerUseService[0x10026dc58] <+28>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026dc5c] <+32>:  mov    x19, x0
+SkyComputerUseService[0x10026dc60] <+36>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dc64] <+40>:  add    x1, x1, #0x630            ; SAIAttachmentCharacter + 9672
+SkyComputerUseService[0x10026dc68] <+44>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026dc6c] <+48>:  mov    x20, x0
+SkyComputerUseService[0x10026dc70] <+52>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dc74] <+56>:  add    x1, x1, #0x680            ; SAIAttachmentCharacter + 9752
+SkyComputerUseService[0x10026dc78] <+60>:  mov    x0, x19
+SkyComputerUseService[0x10026dc7c] <+64>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026dc80] <+68>:  mov    x1, x0
+SkyComputerUseService[0x10026dc84] <+72>:  adrp   x8, 4062
+SkyComputerUseService[0x10026dc88] <+76>:  add    x8, x8, #0x4b0            ; "b1725877396fc131d26ced08cd4c2a313e0d5aa9b68f57e40da749641604a227c4987b9e84e4127e6dab94c649e6333748ee06548fce0f13f0f731ad018afb"
+SkyComputerUseService[0x10026dc8c] <+80>:  sub    x8, x8, #0x20
+SkyComputerUseService[0x10026dc90] <+84>:  orr    x3, x8, #0x8000000000000000
+SkyComputerUseService[0x10026dc94] <+88>:  mov    x0, x20
+SkyComputerUseService[0x10026dc98] <+92>:  mov    x2, #0x7e                 ; =126 
+SkyComputerUseService[0x10026dc9c] <+96>:  movk   x2, #0xd000, lsl #48
+SkyComputerUseService[0x10026dca0] <+100>: bl     0x10026da14               ; ___lldb_unnamed_symbol61753
+SkyComputerUseService[0x10026dca4] <+104>: cmp    x0, #0x0
+SkyComputerUseService[0x10026dca8] <+108>: cset   w8, eq
+SkyComputerUseService[0x10026dcac] <+112>: adrp   x9, 4846
+SkyComputerUseService[0x10026dcb0] <+116>: add    x9, x9, #0x600            ; type metadata for SystemSoftware.User + 552
+SkyComputerUseService[0x10026dcb4] <+120>: str    x0, [x9]
+SkyComputerUseService[0x10026dcb8] <+124>: strb   w8, [x9, #0x8]
+SkyComputerUseService[0x10026dcbc] <+128>: ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026dcc0] <+132>: ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026dcc4] <+136>: ret    
+
+SkyComputerUseService`___lldb_unnamed_symbol61757:
+SkyComputerUseService[0x10026dcc8] <+0>:   stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026dccc] <+4>:   stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026dcd0] <+8>:   add    x29, sp, #0x10
+SkyComputerUseService[0x10026dcd4] <+12>:  adrp   x0, 4845
+SkyComputerUseService[0x10026dcd8] <+16>:  add    x0, x0, #0xc20            ; SAIAttachmentCharacter + 11192
+SkyComputerUseService[0x10026dcdc] <+20>:  adrp   x1, 3838
+SkyComputerUseService[0x10026dce0] <+24>:  add    x1, x1, #0x928            ; property descriptor for static SystemSoftware.AccessibilitySPI.copyHierarchyResultCountKey : __C.CFStringRef + 40
+SkyComputerUseService[0x10026dce4] <+28>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026dce8] <+32>:  mov    x19, x0
+SkyComputerUseService[0x10026dcec] <+36>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dcf0] <+40>:  add    x1, x1, #0x6b8            ; SAIAttachmentCharacter + 9808
+SkyComputerUseService[0x10026dcf4] <+44>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026dcf8] <+48>:  mov    x20, x0
+SkyComputerUseService[0x10026dcfc] <+52>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dd00] <+56>:  add    x1, x1, #0x708            ; SAIAttachmentCharacter + 9888
+SkyComputerUseService[0x10026dd04] <+60>:  mov    x0, x19
+SkyComputerUseService[0x10026dd08] <+64>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026dd0c] <+68>:  mov    x1, x0
+SkyComputerUseService[0x10026dd10] <+72>:  adrp   x8, 4062
+SkyComputerUseService[0x10026dd14] <+76>:  add    x8, x8, #0x430            ; "f4a2fcd7d0a861dedd446112733dd8cbe2d2b11b814ffedc1a3b0b33c95166be173e58c3c172cac8f7b06056e30c2f277b3561df7ddf06e7fec55f132af597"
+SkyComputerUseService[0x10026dd18] <+80>:  sub    x8, x8, #0x20
+SkyComputerUseService[0x10026dd1c] <+84>:  orr    x3, x8, #0x8000000000000000
+SkyComputerUseService[0x10026dd20] <+88>:  mov    x0, x20
+SkyComputerUseService[0x10026dd24] <+92>:  mov    x2, #0x7e                 ; =126 
+SkyComputerUseService[0x10026dd28] <+96>:  movk   x2, #0xd000, lsl #48
+SkyComputerUseService[0x10026dd2c] <+100>: bl     0x10026da14               ; ___lldb_unnamed_symbol61753
+SkyComputerUseService[0x10026dd30] <+104>: cmp    x0, #0x0
+SkyComputerUseService[0x10026dd34] <+108>: cset   w8, eq
+SkyComputerUseService[0x10026dd38] <+112>: adrp   x9, 4846
+SkyComputerUseService[0x10026dd3c] <+116>: add    x9, x9, #0x610            ; type metadata for SystemSoftware.User + 568
+SkyComputerUseService[0x10026dd40] <+120>: str    x0, [x9]
+SkyComputerUseService[0x10026dd44] <+124>: strb   w8, [x9, #0x8]
+SkyComputerUseService[0x10026dd48] <+128>: ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026dd4c] <+132>: ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026dd50] <+136>: ret    
+
+SkyComputerUseService`___lldb_unnamed_symbol61758:
+SkyComputerUseService[0x10026dd54] <+0>:   stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026dd58] <+4>:   stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026dd5c] <+8>:   add    x29, sp, #0x10
+SkyComputerUseService[0x10026dd60] <+12>:  adrp   x0, 4845
+SkyComputerUseService[0x10026dd64] <+16>:  add    x0, x0, #0xc20            ; SAIAttachmentCharacter + 11192
+SkyComputerUseService[0x10026dd68] <+20>:  adrp   x1, 3838
+SkyComputerUseService[0x10026dd6c] <+24>:  add    x1, x1, #0x928            ; property descriptor for static SystemSoftware.AccessibilitySPI.copyHierarchyResultCountKey : __C.CFStringRef + 40
+SkyComputerUseService[0x10026dd70] <+28>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026dd74] <+32>:  mov    x19, x0
+SkyComputerUseService[0x10026dd78] <+36>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dd7c] <+40>:  add    x1, x1, #0x740            ; SAIAttachmentCharacter + 9944
+SkyComputerUseService[0x10026dd80] <+44>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026dd84] <+48>:  mov    x20, x0
+SkyComputerUseService[0x10026dd88] <+52>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dd8c] <+56>:  add    x1, x1, #0x790            ; SAIAttachmentCharacter + 10024
+SkyComputerUseService[0x10026dd90] <+60>:  mov    x0, x19
+SkyComputerUseService[0x10026dd94] <+64>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026dd98] <+68>:  mov    x1, x0
+SkyComputerUseService[0x10026dd9c] <+72>:  adrp   x8, 4062
+SkyComputerUseService[0x10026dda0] <+76>:  add    x8, x8, #0x3b0            ; "47cb017270ae908da8c30d59ea85fea8cd33100c3fa0a7064ef68a65365f3ccdcd19465f43b99e50442cfeefaed68bdb4894c6e2280f72d709eb24d07ad527"
+SkyComputerUseService[0x10026dda4] <+80>:  sub    x8, x8, #0x20
+SkyComputerUseService[0x10026dda8] <+84>:  orr    x3, x8, #0x8000000000000000
+SkyComputerUseService[0x10026ddac] <+88>:  mov    x0, x20
+SkyComputerUseService[0x10026ddb0] <+92>:  mov    x2, #0x7e                 ; =126 
+SkyComputerUseService[0x10026ddb4] <+96>:  movk   x2, #0xd000, lsl #48
+SkyComputerUseService[0x10026ddb8] <+100>: bl     0x10026da14               ; ___lldb_unnamed_symbol61753
+SkyComputerUseService[0x10026ddbc] <+104>: cmp    x0, #0x0
+SkyComputerUseService[0x10026ddc0] <+108>: cset   w8, eq
+SkyComputerUseService[0x10026ddc4] <+112>: adrp   x9, 4846
+SkyComputerUseService[0x10026ddc8] <+116>: add    x9, x9, #0x620            ; type metadata for SystemSoftware.User + 584
+SkyComputerUseService[0x10026ddcc] <+120>: str    x0, [x9]
+SkyComputerUseService[0x10026ddd0] <+124>: strb   w8, [x9, #0x8]
+SkyComputerUseService[0x10026ddd4] <+128>: ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026ddd8] <+132>: ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026dddc] <+136>: ret    
+
+SkyComputerUseService`___lldb_unnamed_symbol61759:
+SkyComputerUseService[0x10026dde0] <+0>:   stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026dde4] <+4>:   stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026dde8] <+8>:   add    x29, sp, #0x10
+SkyComputerUseService[0x10026ddec] <+12>:  adrp   x0, 4845
+SkyComputerUseService[0x10026ddf0] <+16>:  add    x0, x0, #0xc20            ; SAIAttachmentCharacter + 11192
+SkyComputerUseService[0x10026ddf4] <+20>:  adrp   x1, 3838
+SkyComputerUseService[0x10026ddf8] <+24>:  add    x1, x1, #0x928            ; property descriptor for static SystemSoftware.AccessibilitySPI.copyHierarchyResultCountKey : __C.CFStringRef + 40
+SkyComputerUseService[0x10026ddfc] <+28>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026de00] <+32>:  mov    x19, x0
+SkyComputerUseService[0x10026de04] <+36>:  adrp   x1, 4845
+SkyComputerUseService[0x10026de08] <+40>:  add    x1, x1, #0x7c8            ; SAIAttachmentCharacter + 10080
+SkyComputerUseService[0x10026de0c] <+44>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026de10] <+48>:  mov    x20, x0
+SkyComputerUseService[0x10026de14] <+52>:  adrp   x1, 4845
+SkyComputerUseService[0x10026de18] <+56>:  add    x1, x1, #0x818            ; SAIAttachmentCharacter + 10160
+SkyComputerUseService[0x10026de1c] <+60>:  mov    x0, x19
+SkyComputerUseService[0x10026de20] <+64>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026de24] <+68>:  mov    x1, x0
+SkyComputerUseService[0x10026de28] <+72>:  adrp   x8, 4062
+SkyComputerUseService[0x10026de2c] <+76>:  add    x8, x8, #0x330            ; "fe2d489f5b70ec34a46a924a560ca7ba2ad4f449f8182f28d9f2d83ce0524a646dba1ea6c49fcad72b8a86bbf25466bde3996c5f62de5b922d3c2c11838b6f"
+SkyComputerUseService[0x10026de30] <+80>:  sub    x8, x8, #0x20
+SkyComputerUseService[0x10026de34] <+84>:  orr    x3, x8, #0x8000000000000000
+SkyComputerUseService[0x10026de38] <+88>:  mov    x0, x20
+SkyComputerUseService[0x10026de3c] <+92>:  mov    x2, #0x7e                 ; =126 
+SkyComputerUseService[0x10026de40] <+96>:  movk   x2, #0xd000, lsl #48
+SkyComputerUseService[0x10026de44] <+100>: bl     0x10026da14               ; ___lldb_unnamed_symbol61753
+SkyComputerUseService[0x10026de48] <+104>: cmp    x0, #0x0
+SkyComputerUseService[0x10026de4c] <+108>: cset   w8, eq
+SkyComputerUseService[0x10026de50] <+112>: adrp   x9, 4846
+SkyComputerUseService[0x10026de54] <+116>: add    x9, x9, #0x630            ; type metadata for SystemSoftware.User + 600
+SkyComputerUseService[0x10026de58] <+120>: str    x0, [x9]
+SkyComputerUseService[0x10026de5c] <+124>: strb   w8, [x9, #0x8]
+SkyComputerUseService[0x10026de60] <+128>: ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026de64] <+132>: ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026de68] <+136>: ret    
+
+SkyComputerUseService`___lldb_unnamed_symbol61760:
+SkyComputerUseService[0x10026de6c] <+0>:   stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026de70] <+4>:   stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026de74] <+8>:   add    x29, sp, #0x10
+SkyComputerUseService[0x10026de78] <+12>:  adrp   x0, 4845
+SkyComputerUseService[0x10026de7c] <+16>:  add    x0, x0, #0xc20            ; SAIAttachmentCharacter + 11192
+SkyComputerUseService[0x10026de80] <+20>:  adrp   x1, 3838
+SkyComputerUseService[0x10026de84] <+24>:  add    x1, x1, #0x928            ; property descriptor for static SystemSoftware.AccessibilitySPI.copyHierarchyResultCountKey : __C.CFStringRef + 40
+SkyComputerUseService[0x10026de88] <+28>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026de8c] <+32>:  mov    x19, x0
+SkyComputerUseService[0x10026de90] <+36>:  adrp   x1, 4845
+SkyComputerUseService[0x10026de94] <+40>:  add    x1, x1, #0x850            ; SAIAttachmentCharacter + 10216
+SkyComputerUseService[0x10026de98] <+44>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026de9c] <+48>:  mov    x20, x0
+SkyComputerUseService[0x10026dea0] <+52>:  adrp   x1, 4845
+SkyComputerUseService[0x10026dea4] <+56>:  add    x1, x1, #0x8a0            ; SAIAttachmentCharacter + 10296
+SkyComputerUseService[0x10026dea8] <+60>:  mov    x0, x19
+SkyComputerUseService[0x10026deac] <+64>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026deb0] <+68>:  mov    x1, x0
+SkyComputerUseService[0x10026deb4] <+72>:  adrp   x8, 4062
+SkyComputerUseService[0x10026deb8] <+76>:  add    x8, x8, #0x2a0            ; "b986f87fb98ed4cfc0cd4b62dd298157cceb820b68cce451d9e9b3f251e8d4c38de5a82e96fc0903bfe73cba635808211ed360d7699351ae7973516c2ce9c4cf"
+SkyComputerUseService[0x10026debc] <+80>:  sub    x8, x8, #0x20
+SkyComputerUseService[0x10026dec0] <+84>:  orr    x3, x8, #0x8000000000000000
+SkyComputerUseService[0x10026dec4] <+88>:  mov    x0, x20
+SkyComputerUseService[0x10026dec8] <+92>:  mov    x2, #0x80                 ; =128 
+SkyComputerUseService[0x10026decc] <+96>:  movk   x2, #0xd000, lsl #48
+SkyComputerUseService[0x10026ded0] <+100>: bl     0x10026da14               ; ___lldb_unnamed_symbol61753
+SkyComputerUseService[0x10026ded4] <+104>: cmp    x0, #0x0
+SkyComputerUseService[0x10026ded8] <+108>: cset   w8, eq
+SkyComputerUseService[0x10026dedc] <+112>: adrp   x9, 4846
+SkyComputerUseService[0x10026dee0] <+116>: add    x9, x9, #0x640            ; type metadata for SystemSoftware.User + 616
+SkyComputerUseService[0x10026dee4] <+120>: str    x0, [x9]
+SkyComputerUseService[0x10026dee8] <+124>: strb   w8, [x9, #0x8]
+SkyComputerUseService[0x10026deec] <+128>: ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026def0] <+132>: ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026def4] <+136>: ret    

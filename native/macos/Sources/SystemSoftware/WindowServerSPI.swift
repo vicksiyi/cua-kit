@@ -7,6 +7,11 @@ import Foundation
 // reenableUpdate 0x10026cba0. Each has its own lazy initialization token.
 public enum WindowServerSPI {
     private typealias AssociatedWindows = @convention(c) (OpaquePointer?, UInt32) -> Unmanaged<NSArray>?
+    private typealias CornerQuery = @convention(c) (OpaquePointer?, NSArray, UInt32) -> Unmanaged<AnyObject>?
+    private typealias CornerIterator = @convention(c) (AnyObject) -> Unmanaged<AnyObject>?
+    private typealias CornerCount = @convention(c) (AnyObject) -> UInt32
+    private typealias CornerWindowID = @convention(c) (AnyObject, UInt32) -> UInt32
+    private typealias CornerRadii = @convention(c) (AnyObject, UInt32) -> Unmanaged<NSArray>?
     private typealias MainConnection = @convention(c) () -> OpaquePointer?
     private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
     private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
@@ -160,6 +165,37 @@ public enum WindowServerSPI {
         guard let mainConnection, let query else { return [] }
         guard let values = query(mainConnection(), id) else { return [] }
         return associatedWindowIDValues(values)
+    }
+    private static let cornerQuery: CornerQuery? = {
+        guard let p = resolve(.cornerQuery).first ?? nil else { return nil }
+        return unsafeBitCast(p, to: CornerQuery.self)
+    }()
+    private static let cornerIterator: CornerIterator? = {
+        guard let p = resolve(.cornerIterator).first ?? nil else { return nil }
+        return unsafeBitCast(p, to: CornerIterator.self)
+    }()
+    private static let cornerCount: CornerCount? = {
+        guard let p = resolve(.cornerCount).first ?? nil else { return nil }
+        return unsafeBitCast(p, to: CornerCount.self)
+    }()
+    private static let cornerWindowID: CornerWindowID? = {
+        guard let p = resolve(.cornerWindowID).first ?? nil else { return nil }
+        return unsafeBitCast(p, to: CornerWindowID.self)
+    }()
+    private static let cornerRadii: CornerRadii? = {
+        guard let p = resolve(.cornerRadii).first ?? nil else { return nil }
+        return unsafeBitCast(p, to: CornerRadii.self)
+    }()
+    // Original26d2d0: short-circuit six optional bindings in this exact order.
+    public static func resolvedCornerRadius(forWindow id: UInt32) -> CGFloat? {
+        guard let connection = associatedConnection,
+              let query = cornerQuery, let iterator = cornerIterator,
+              let count = cornerCount, let window = cornerWindowID,
+              let radii = cornerRadii else { return nil }
+        return queryResolvedCornerRadius(forWindow: id, mainConnection: connection,
+            query: { query($0, $1, $2)?.takeRetainedValue() },
+            makeIterator: { iterator($0)?.takeRetainedValue() }, count: count,
+            windowID: window, radii: { radii($0, $1)?.takeUnretainedValue() })
     }
     public static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     public static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }

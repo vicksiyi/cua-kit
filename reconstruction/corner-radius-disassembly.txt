@@ -1,0 +1,340 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10026d2d0 -e 0x10026d800
+SkyComputerUseService`static SystemSoftware.WindowServerSPI.resolvedCornerRadius(forWindow: Swift.UInt32) -> Swift.Optional<CoreGraphics.CGFloat>:
+SkyComputerUseService[0x10026d2d0] <+0>:    stp    d9, d8, [sp, #-0x70]!
+SkyComputerUseService[0x10026d2d4] <+4>:    stp    x28, x27, [sp, #0x10]
+SkyComputerUseService[0x10026d2d8] <+8>:    stp    x26, x25, [sp, #0x20]
+SkyComputerUseService[0x10026d2dc] <+12>:   stp    x24, x23, [sp, #0x30]
+SkyComputerUseService[0x10026d2e0] <+16>:   stp    x22, x21, [sp, #0x40]
+SkyComputerUseService[0x10026d2e4] <+20>:   stp    x20, x19, [sp, #0x50]
+SkyComputerUseService[0x10026d2e8] <+24>:   stp    x29, x30, [sp, #0x60]
+SkyComputerUseService[0x10026d2ec] <+28>:   add    x29, sp, #0x60
+SkyComputerUseService[0x10026d2f0] <+32>:   sub    sp, sp, #0x90
+SkyComputerUseService[0x10026d2f4] <+36>:   mov    x20, x0
+SkyComputerUseService[0x10026d2f8] <+40>:   mov    x0, #0x0                  ; =0 
+SkyComputerUseService[0x10026d2fc] <+44>:   bl     0x10114e7b8
+SkyComputerUseService[0x10026d300] <+48>:   ldur   x21, [x0, #-0x8]
+SkyComputerUseService[0x10026d304] <+52>:   ldr    x8, [x21, #0x40]
+SkyComputerUseService[0x10026d308] <+56>:   mov    x9, x8
+SkyComputerUseService[0x10026d30c] <+60>:   adrp   x16, 4598
+SkyComputerUseService[0x10026d310] <+64>:   ldr    x16, [x16, #0xc18]
+SkyComputerUseService[0x10026d314] <+68>:   blr    x16
+SkyComputerUseService[0x10026d318] <+72>:   mov    x9, sp
+SkyComputerUseService[0x10026d31c] <+76>:   add    x8, x8, #0xf
+SkyComputerUseService[0x10026d320] <+80>:   and    x8, x8, #0xfffffffffffffff0
+SkyComputerUseService[0x10026d324] <+84>:   sub    x19, x9, x8
+SkyComputerUseService[0x10026d328] <+88>:   mov    sp, x19
+SkyComputerUseService[0x10026d32c] <+92>:   adrp   x8, 4843
+SkyComputerUseService[0x10026d330] <+96>:   ldr    x8, [x8, #0x2c0]
+SkyComputerUseService[0x10026d334] <+100>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026d338] <+104>:  b.ne   0x10026d720               ; <+1104>
+SkyComputerUseService[0x10026d33c] <+108>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d340] <+112>:  ldr    x24, [x8, #0x588]
+SkyComputerUseService[0x10026d344] <+116>:  cbz    x24, 0x10026d6f4          ; <+1060>
+SkyComputerUseService[0x10026d348] <+120>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d34c] <+124>:  ldr    x8, [x8, #0x2c8]
+SkyComputerUseService[0x10026d350] <+128>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026d354] <+132>:  b.ne   0x10026d744               ; <+1140>
+SkyComputerUseService[0x10026d358] <+136>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d35c] <+140>:  ldr    x26, [x8, #0x590]
+SkyComputerUseService[0x10026d360] <+144>:  cbz    x26, 0x10026d6f4          ; <+1060>
+SkyComputerUseService[0x10026d364] <+148>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d368] <+152>:  ldr    x8, [x8, #0x2d0]
+SkyComputerUseService[0x10026d36c] <+156>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026d370] <+160>:  b.ne   0x10026d768               ; <+1176>
+SkyComputerUseService[0x10026d374] <+164>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d378] <+168>:  ldr    x28, [x8, #0x598]
+SkyComputerUseService[0x10026d37c] <+172>:  cbz    x28, 0x10026d6f4          ; <+1060>
+SkyComputerUseService[0x10026d380] <+176>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d384] <+180>:  ldr    x8, [x8, #0x2d8]
+SkyComputerUseService[0x10026d388] <+184>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026d38c] <+188>:  b.ne   0x10026d78c               ; <+1212>
+SkyComputerUseService[0x10026d390] <+192>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d394] <+196>:  ldr    x22, [x8, #0x5a0]
+SkyComputerUseService[0x10026d398] <+200>:  cbz    x22, 0x10026d6f4          ; <+1060>
+SkyComputerUseService[0x10026d39c] <+204>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d3a0] <+208>:  ldr    x8, [x8, #0x2e0]
+SkyComputerUseService[0x10026d3a4] <+212>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026d3a8] <+216>:  b.ne   0x10026d7b0               ; <+1248>
+SkyComputerUseService[0x10026d3ac] <+220>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d3b0] <+224>:  ldr    x27, [x8, #0x5a8]
+SkyComputerUseService[0x10026d3b4] <+228>:  cbz    x27, 0x10026d6f4          ; <+1060>
+SkyComputerUseService[0x10026d3b8] <+232>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d3bc] <+236>:  ldr    x8, [x8, #0x2e8]
+SkyComputerUseService[0x10026d3c0] <+240>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026d3c4] <+244>:  b.ne   0x10026d7d4               ; <+1284>
+SkyComputerUseService[0x10026d3c8] <+248>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d3cc] <+252>:  ldr    x8, [x8, #0x5b0]
+SkyComputerUseService[0x10026d3d0] <+256>:  cbz    x8, 0x10026d6f4           ; <+1060>
+SkyComputerUseService[0x10026d3d4] <+260>:  stur   x8, [x29, #-0xf0]
+SkyComputerUseService[0x10026d3d8] <+264>:  stur   x0, [x29, #-0xd8]
+SkyComputerUseService[0x10026d3dc] <+268>:  adrp   x0, 4846
+SkyComputerUseService[0x10026d3e0] <+272>:  add    x0, x0, #0x698            ; type metadata for SystemSoftware.User + 704
+SkyComputerUseService[0x10026d3e4] <+276>:  adrp   x1, 3839
+SkyComputerUseService[0x10026d3e8] <+280>:  add    x1, x1, #0x3a8            ; static SystemSoftware.WindowServerCaptureOptions.ignoreGlobalClipShape : SystemSoftware.WindowServerCaptureOptions + 16
+SkyComputerUseService[0x10026d3ec] <+284>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026d3f0] <+288>:  mov    w1, #0x28                 ; =40 
+SkyComputerUseService[0x10026d3f4] <+292>:  mov    w2, #0x7                  ; =7 
+SkyComputerUseService[0x10026d3f8] <+296>:  bl     0x101154f98               ; symbol stub for: swift_allocObject
+SkyComputerUseService[0x10026d3fc] <+300>:  mov    x23, x0
+SkyComputerUseService[0x10026d400] <+304>:  adrp   x8, 3823
+SkyComputerUseService[0x10026d404] <+308>:  ldr    q0, [x8, #0x80]
+SkyComputerUseService[0x10026d408] <+312>:  str    q0, [x0, #0x10]
+SkyComputerUseService[0x10026d40c] <+316>:  adrp   x8, 4785
+SkyComputerUseService[0x10026d410] <+320>:  ldr    x0, [x8, #0xe98]
+SkyComputerUseService[0x10026d414] <+324>:  bl     0x101154b6c               ; symbol stub for: objc_allocWithZone
+SkyComputerUseService[0x10026d418] <+328>:  adrp   x8, 4821
+SkyComputerUseService[0x10026d41c] <+332>:  ldr    x1, [x8, #0xf40]
+SkyComputerUseService[0x10026d420] <+336>:  mov    x2, x20
+SkyComputerUseService[0x10026d424] <+340>:  bl     0x101154ba8               ; symbol stub for: objc_msgSend
+SkyComputerUseService[0x10026d428] <+344>:  str    x0, [x23, #0x20]
+SkyComputerUseService[0x10026d42c] <+348>:  mov    x0, #0x0                  ; =0 
+SkyComputerUseService[0x10026d430] <+352>:  bl     0x10026e354               ; ___lldb_unnamed_symbol61769
+SkyComputerUseService[0x10026d434] <+356>:  mov    x1, x0
+SkyComputerUseService[0x10026d438] <+360>:  mov    x0, x23
+SkyComputerUseService[0x10026d43c] <+364>:  stur   x1, [x29, #-0xe0]
+SkyComputerUseService[0x10026d440] <+368>:  bl     0x101150df8
+SkyComputerUseService[0x10026d444] <+372>:  mov    x25, x0
+SkyComputerUseService[0x10026d448] <+376>:  mov    x0, x23
+SkyComputerUseService[0x10026d44c] <+380>:  bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x10026d450] <+384>:  blr    x24
+SkyComputerUseService[0x10026d454] <+388>:  mov    x1, x25
+SkyComputerUseService[0x10026d458] <+392>:  mov    w2, #0x0                  ; =0 
+SkyComputerUseService[0x10026d45c] <+396>:  blr    x26
+SkyComputerUseService[0x10026d460] <+400>:  cbz    x0, 0x10026d628           ; <+856>
+SkyComputerUseService[0x10026d464] <+404>:  mov    x23, x0
+SkyComputerUseService[0x10026d468] <+408>:  stur   x25, [x29, #-0xe8]
+SkyComputerUseService[0x10026d46c] <+412>:  blr    x28
+SkyComputerUseService[0x10026d470] <+416>:  cbz    x0, 0x10026d6e4           ; <+1044>
+SkyComputerUseService[0x10026d474] <+420>:  mov    x24, x0
+SkyComputerUseService[0x10026d478] <+424>:  blr    x22
+SkyComputerUseService[0x10026d47c] <+428>:  mov    x26, x0
+SkyComputerUseService[0x10026d480] <+432>:  mov    w1, #0x0                  ; =0 
+SkyComputerUseService[0x10026d484] <+436>:  ldur   x28, [x29, #-0xe8]
+SkyComputerUseService[0x10026d488] <+440>:  cmp    w26, w1
+SkyComputerUseService[0x10026d48c] <+444>:  b.eq   0x10026d630               ; <+864>
+SkyComputerUseService[0x10026d490] <+448>:  add    w22, w1, #0x1
+SkyComputerUseService[0x10026d494] <+452>:  mov    x0, x24
+SkyComputerUseService[0x10026d498] <+456>:  blr    x27
+SkyComputerUseService[0x10026d49c] <+460>:  mov    x1, x22
+SkyComputerUseService[0x10026d4a0] <+464>:  cmp    w0, w20
+SkyComputerUseService[0x10026d4a4] <+468>:  b.ne   0x10026d488               ; <+440>
+SkyComputerUseService[0x10026d4a8] <+472>:  sub    w1, w22, #0x1
+SkyComputerUseService[0x10026d4ac] <+476>:  mov    x0, x24
+SkyComputerUseService[0x10026d4b0] <+480>:  ldur   x8, [x29, #-0xf0]
+SkyComputerUseService[0x10026d4b4] <+484>:  blr    x8
+SkyComputerUseService[0x10026d4b8] <+488>:  cbz    x0, 0x10026d64c           ; <+892>
+SkyComputerUseService[0x10026d4bc] <+492>:  bl     0x101154c08               ; symbol stub for: objc_retain
+SkyComputerUseService[0x10026d4c0] <+496>:  mov    x8, x19
+SkyComputerUseService[0x10026d4c4] <+500>:  stur   x0, [x29, #-0xf0]
+SkyComputerUseService[0x10026d4c8] <+504>:  mov    x20, x0
+SkyComputerUseService[0x10026d4cc] <+508>:  bl     0x101151a94
+SkyComputerUseService[0x10026d4d0] <+512>:  bl     0x10026e310               ; ___lldb_unnamed_symbol61768
+SkyComputerUseService[0x10026d4d4] <+516>:  mov    x28, x0
+SkyComputerUseService[0x10026d4d8] <+520>:  sub    x8, x29, #0x88
+SkyComputerUseService[0x10026d4dc] <+524>:  mov    x20, x19
+SkyComputerUseService[0x10026d4e0] <+528>:  ldur   x0, [x29, #-0xd8]
+SkyComputerUseService[0x10026d4e4] <+532>:  mov    x1, x28
+SkyComputerUseService[0x10026d4e8] <+536>:  bl     0x101151d4c
+SkyComputerUseService[0x10026d4ec] <+540>:  ldur   x8, [x29, #-0x70]
+SkyComputerUseService[0x10026d4f0] <+544>:  cbz    x8, 0x10026d668           ; <+920>
+SkyComputerUseService[0x10026d4f4] <+548>:  adrp   x27, 4603
+SkyComputerUseService[0x10026d4f8] <+552>:  ldr    x27, [x27, #0x918]
+SkyComputerUseService[0x10026d4fc] <+556>:  adrp   x26, 4603
+SkyComputerUseService[0x10026d500] <+560>:  ldr    x26, [x26, #0x900]
+SkyComputerUseService[0x10026d504] <+564>:  mov    x22, #0xfffffffffffff     ; =4503599627370495 
+SkyComputerUseService[0x10026d508] <+568>:  b      0x10026d530               ; <+608>
+SkyComputerUseService[0x10026d50c] <+572>:  sub    x0, x29, #0xa8
+SkyComputerUseService[0x10026d510] <+576>:  bl     0x1000093fc               ; ___lldb_unnamed_symbol49576
+SkyComputerUseService[0x10026d514] <+580>:  ldur   x0, [x29, #-0xd8]
+SkyComputerUseService[0x10026d518] <+584>:  sub    x8, x29, #0x88
+SkyComputerUseService[0x10026d51c] <+588>:  mov    x20, x19
+SkyComputerUseService[0x10026d520] <+592>:  mov    x1, x28
+SkyComputerUseService[0x10026d524] <+596>:  bl     0x101151d4c
+SkyComputerUseService[0x10026d528] <+600>:  ldur   x8, [x29, #-0x70]
+SkyComputerUseService[0x10026d52c] <+604>:  cbz    x8, 0x10026d670           ; <+928>
+SkyComputerUseService[0x10026d530] <+608>:  sub    x0, x29, #0x88
+SkyComputerUseService[0x10026d534] <+612>:  sub    x1, x29, #0xa8
+SkyComputerUseService[0x10026d538] <+616>:  bl     0x10002ed9c               ; ___lldb_unnamed_symbol50488
+SkyComputerUseService[0x10026d53c] <+620>:  sub    x0, x29, #0xa8
+SkyComputerUseService[0x10026d540] <+624>:  sub    x1, x29, #0xc8
+SkyComputerUseService[0x10026d544] <+628>:  bl     0x1000093b8               ; ___lldb_unnamed_symbol49574
+SkyComputerUseService[0x10026d548] <+632>:  sub    x0, x29, #0xd0
+SkyComputerUseService[0x10026d54c] <+636>:  sub    x1, x29, #0xc8
+SkyComputerUseService[0x10026d550] <+640>:  add    x2, x26, #0x8
+SkyComputerUseService[0x10026d554] <+644>:  ldur   x3, [x29, #-0xe0]
+SkyComputerUseService[0x10026d558] <+648>:  mov    w4, #0x6                  ; =6 
+SkyComputerUseService[0x10026d55c] <+652>:  bl     0x101155118               ; symbol stub for: swift_dynamicCast
+SkyComputerUseService[0x10026d560] <+656>:  cbz    w0, 0x10026d50c           ; <+572>
+SkyComputerUseService[0x10026d564] <+660>:  ldur   x20, [x29, #-0xd0]
+SkyComputerUseService[0x10026d568] <+664>:  mov    x0, x20
+SkyComputerUseService[0x10026d56c] <+668>:  bl     0x10114f004
+SkyComputerUseService[0x10026d570] <+672>:  fmov   d8, d0
+SkyComputerUseService[0x10026d574] <+676>:  fmov   x25, d8
+SkyComputerUseService[0x10026d578] <+680>:  mov    x0, x20
+SkyComputerUseService[0x10026d57c] <+684>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d580] <+688>:  sub    x0, x29, #0xa8
+SkyComputerUseService[0x10026d584] <+692>:  bl     0x1000093fc               ; ___lldb_unnamed_symbol49576
+SkyComputerUseService[0x10026d588] <+696>:  and    x8, x25, #0x7fffffffffffffff
+SkyComputerUseService[0x10026d58c] <+700>:  mov    x9, #-0x10000000000000    ; =-4503599627370496 
+SkyComputerUseService[0x10026d590] <+704>:  add    x9, x8, x9
+SkyComputerUseService[0x10026d594] <+708>:  lsr    x9, x9, #53
+SkyComputerUseService[0x10026d598] <+712>:  sub    x10, x25, #0x1
+SkyComputerUseService[0x10026d59c] <+716>:  cmn    x25, #0x1
+SkyComputerUseService[0x10026d5a0] <+720>:  mov    w11, #0x3ff               ; =1023 
+SkyComputerUseService[0x10026d5a4] <+724>:  ccmp   x9, x11, #0x2, gt
+SkyComputerUseService[0x10026d5a8] <+728>:  ccmp   x10, x22, #0x0, hs
+SkyComputerUseService[0x10026d5ac] <+732>:  ccmp   x8, #0x0, #0x4, hs
+SkyComputerUseService[0x10026d5b0] <+736>:  b.ne   0x10026d514               ; <+580>
+SkyComputerUseService[0x10026d5b4] <+740>:  mov    x0, x27
+SkyComputerUseService[0x10026d5b8] <+744>:  bl     0x1011553d0               ; symbol stub for: swift_isUniquelyReferenced_nonNull_native
+SkyComputerUseService[0x10026d5bc] <+748>:  tbz    w0, #0x0, 0x10026d5e4     ; <+788>
+SkyComputerUseService[0x10026d5c0] <+752>:  ldp    x25, x8, [x27, #0x10]
+SkyComputerUseService[0x10026d5c4] <+756>:  add    x20, x25, #0x1
+SkyComputerUseService[0x10026d5c8] <+760>:  cmp    x25, x8, lsr #1
+SkyComputerUseService[0x10026d5cc] <+764>:  ldur   x0, [x29, #-0xd8]
+SkyComputerUseService[0x10026d5d0] <+768>:  b.hs   0x10026d604               ; <+820>
+SkyComputerUseService[0x10026d5d4] <+772>:  str    x20, [x27, #0x10]
+SkyComputerUseService[0x10026d5d8] <+776>:  add    x8, x27, x25, lsl #3
+SkyComputerUseService[0x10026d5dc] <+780>:  str    d8, [x8, #0x20]
+SkyComputerUseService[0x10026d5e0] <+784>:  b      0x10026d518               ; <+584>
+SkyComputerUseService[0x10026d5e4] <+788>:  ldr    x8, [x27, #0x10]
+SkyComputerUseService[0x10026d5e8] <+792>:  add    x1, x8, #0x1
+SkyComputerUseService[0x10026d5ec] <+796>:  mov    w0, #0x0                  ; =0 
+SkyComputerUseService[0x10026d5f0] <+800>:  mov    w2, #0x1                  ; =1 
+SkyComputerUseService[0x10026d5f4] <+804>:  mov    x3, x27
+SkyComputerUseService[0x10026d5f8] <+808>:  bl     0x10025ee50               ; ___lldb_unnamed_symbol61465
+SkyComputerUseService[0x10026d5fc] <+812>:  mov    x27, x0
+SkyComputerUseService[0x10026d600] <+816>:  b      0x10026d5c0               ; <+752>
+SkyComputerUseService[0x10026d604] <+820>:  cmp    x8, #0x1
+SkyComputerUseService[0x10026d608] <+824>:  cset   w0, hi
+SkyComputerUseService[0x10026d60c] <+828>:  mov    x1, x20
+SkyComputerUseService[0x10026d610] <+832>:  mov    w2, #0x1                  ; =1 
+SkyComputerUseService[0x10026d614] <+836>:  mov    x3, x27
+SkyComputerUseService[0x10026d618] <+840>:  bl     0x10025ee50               ; ___lldb_unnamed_symbol61465
+SkyComputerUseService[0x10026d61c] <+844>:  mov    x27, x0
+SkyComputerUseService[0x10026d620] <+848>:  ldur   x0, [x29, #-0xd8]
+SkyComputerUseService[0x10026d624] <+852>:  b      0x10026d5d4               ; <+772>
+SkyComputerUseService[0x10026d628] <+856>:  mov    x0, x25
+SkyComputerUseService[0x10026d62c] <+860>:  b      0x10026d6f0               ; <+1056>
+SkyComputerUseService[0x10026d630] <+864>:  mov    x0, x28
+SkyComputerUseService[0x10026d634] <+868>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d638] <+872>:  mov    x0, x23
+SkyComputerUseService[0x10026d63c] <+876>:  bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d640] <+880>:  mov    x0, x24
+SkyComputerUseService[0x10026d644] <+884>:  bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d648] <+888>:  b      0x10026d6f4               ; <+1060>
+SkyComputerUseService[0x10026d64c] <+892>:  mov    x0, x28
+SkyComputerUseService[0x10026d650] <+896>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d654] <+900>:  mov    x0, x24
+SkyComputerUseService[0x10026d658] <+904>:  bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d65c] <+908>:  mov    x0, x23
+SkyComputerUseService[0x10026d660] <+912>:  bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d664] <+916>:  b      0x10026d6f4               ; <+1060>
+SkyComputerUseService[0x10026d668] <+920>:  adrp   x27, 4603
+SkyComputerUseService[0x10026d66c] <+924>:  ldr    x27, [x27, #0x918]
+SkyComputerUseService[0x10026d670] <+928>:  ldur   x20, [x29, #-0xf0]
+SkyComputerUseService[0x10026d674] <+932>:  mov    x0, x20
+SkyComputerUseService[0x10026d678] <+936>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d67c] <+940>:  ldr    x8, [x21, #0x8]
+SkyComputerUseService[0x10026d680] <+944>:  mov    x0, x19
+SkyComputerUseService[0x10026d684] <+948>:  ldur   x1, [x29, #-0xd8]
+SkyComputerUseService[0x10026d688] <+952>:  blr    x8
+SkyComputerUseService[0x10026d68c] <+956>:  ldr    x8, [x27, #0x10]
+SkyComputerUseService[0x10026d690] <+960>:  cbz    x8, 0x10026d6cc           ; <+1020>
+SkyComputerUseService[0x10026d694] <+964>:  ldr    x19, [x27, #0x20]
+SkyComputerUseService[0x10026d698] <+968>:  mov    x0, x20
+SkyComputerUseService[0x10026d69c] <+972>:  bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d6a0] <+976>:  mov    x0, x27
+SkyComputerUseService[0x10026d6a4] <+980>:  bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x10026d6a8] <+984>:  mov    x0, x24
+SkyComputerUseService[0x10026d6ac] <+988>:  bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d6b0] <+992>:  mov    x0, x23
+SkyComputerUseService[0x10026d6b4] <+996>:  bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d6b8] <+1000>: ldur   x0, [x29, #-0xe8]
+SkyComputerUseService[0x10026d6bc] <+1004>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d6c0] <+1008>: mov    x0, x19
+SkyComputerUseService[0x10026d6c4] <+1012>: mov    w1, #0x0                  ; =0 
+SkyComputerUseService[0x10026d6c8] <+1016>: b      0x10026d6fc               ; <+1068>
+SkyComputerUseService[0x10026d6cc] <+1020>: mov    x0, x20
+SkyComputerUseService[0x10026d6d0] <+1024>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d6d4] <+1028>: mov    x0, x27
+SkyComputerUseService[0x10026d6d8] <+1032>: bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x10026d6dc] <+1036>: mov    x0, x24
+SkyComputerUseService[0x10026d6e0] <+1040>: bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d6e4] <+1044>: mov    x0, x23
+SkyComputerUseService[0x10026d6e8] <+1048>: bl     0x10115558c               ; symbol stub for: swift_unknownObjectRelease
+SkyComputerUseService[0x10026d6ec] <+1052>: ldur   x0, [x29, #-0xe8]
+SkyComputerUseService[0x10026d6f0] <+1056>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x10026d6f4] <+1060>: mov    x0, #0x0                  ; =0 
+SkyComputerUseService[0x10026d6f8] <+1064>: mov    w1, #0x1                  ; =1 
+SkyComputerUseService[0x10026d6fc] <+1068>: sub    sp, x29, #0x60
+SkyComputerUseService[0x10026d700] <+1072>: ldp    x29, x30, [sp, #0x60]
+SkyComputerUseService[0x10026d704] <+1076>: ldp    x20, x19, [sp, #0x50]
+SkyComputerUseService[0x10026d708] <+1080>: ldp    x22, x21, [sp, #0x40]
+SkyComputerUseService[0x10026d70c] <+1084>: ldp    x24, x23, [sp, #0x30]
+SkyComputerUseService[0x10026d710] <+1088>: ldp    x26, x25, [sp, #0x20]
+SkyComputerUseService[0x10026d714] <+1092>: ldp    x28, x27, [sp, #0x10]
+SkyComputerUseService[0x10026d718] <+1096>: ldp    d9, d8, [sp], #0x70
+SkyComputerUseService[0x10026d71c] <+1100>: ret    
+SkyComputerUseService[0x10026d720] <+1104>: adrp   x8, 4843
+SkyComputerUseService[0x10026d724] <+1108>: add    x8, x8, #0x2c0            ; SAIAttachmentCharacter + 600
+SkyComputerUseService[0x10026d728] <+1112>: adrp   x1, -1
+SkyComputerUseService[0x10026d72c] <+1116>: add    x1, x1, #0x808            ; ___lldb_unnamed_symbol61741
+SkyComputerUseService[0x10026d730] <+1120>: mov    x22, x0
+SkyComputerUseService[0x10026d734] <+1124>: mov    x0, x8
+SkyComputerUseService[0x10026d738] <+1128>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d73c] <+1132>: mov    x0, x22
+SkyComputerUseService[0x10026d740] <+1136>: b      0x10026d33c               ; <+108>
+SkyComputerUseService[0x10026d744] <+1140>: adrp   x8, 4843
+SkyComputerUseService[0x10026d748] <+1144>: add    x8, x8, #0x2c8            ; SAIAttachmentCharacter + 608
+SkyComputerUseService[0x10026d74c] <+1148>: adrp   x1, -1
+SkyComputerUseService[0x10026d750] <+1152>: add    x1, x1, #0x86c            ; ___lldb_unnamed_symbol61742
+SkyComputerUseService[0x10026d754] <+1156>: mov    x22, x0
+SkyComputerUseService[0x10026d758] <+1160>: mov    x0, x8
+SkyComputerUseService[0x10026d75c] <+1164>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d760] <+1168>: mov    x0, x22
+SkyComputerUseService[0x10026d764] <+1172>: b      0x10026d358               ; <+136>
+SkyComputerUseService[0x10026d768] <+1176>: adrp   x8, 4843
+SkyComputerUseService[0x10026d76c] <+1180>: add    x8, x8, #0x2d0            ; SAIAttachmentCharacter + 616
+SkyComputerUseService[0x10026d770] <+1184>: adrp   x1, -1
+SkyComputerUseService[0x10026d774] <+1188>: add    x1, x1, #0x8d0            ; ___lldb_unnamed_symbol61743
+SkyComputerUseService[0x10026d778] <+1192>: mov    x22, x0
+SkyComputerUseService[0x10026d77c] <+1196>: mov    x0, x8
+SkyComputerUseService[0x10026d780] <+1200>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d784] <+1204>: mov    x0, x22
+SkyComputerUseService[0x10026d788] <+1208>: b      0x10026d374               ; <+164>
+SkyComputerUseService[0x10026d78c] <+1212>: adrp   x8, 4843
+SkyComputerUseService[0x10026d790] <+1216>: add    x8, x8, #0x2d8            ; SAIAttachmentCharacter + 624
+SkyComputerUseService[0x10026d794] <+1220>: adrp   x1, -1
+SkyComputerUseService[0x10026d798] <+1224>: add    x1, x1, #0x934            ; ___lldb_unnamed_symbol61744
+SkyComputerUseService[0x10026d79c] <+1228>: mov    x22, x0
+SkyComputerUseService[0x10026d7a0] <+1232>: mov    x0, x8
+SkyComputerUseService[0x10026d7a4] <+1236>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d7a8] <+1240>: mov    x0, x22
+SkyComputerUseService[0x10026d7ac] <+1244>: b      0x10026d390               ; <+192>
+SkyComputerUseService[0x10026d7b0] <+1248>: adrp   x8, 4843
+SkyComputerUseService[0x10026d7b4] <+1252>: add    x8, x8, #0x2e0            ; SAIAttachmentCharacter + 632
+SkyComputerUseService[0x10026d7b8] <+1256>: adrp   x1, -1
+SkyComputerUseService[0x10026d7bc] <+1260>: add    x1, x1, #0x998            ; ___lldb_unnamed_symbol61745
+SkyComputerUseService[0x10026d7c0] <+1264>: mov    x23, x0
+SkyComputerUseService[0x10026d7c4] <+1268>: mov    x0, x8
+SkyComputerUseService[0x10026d7c8] <+1272>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d7cc] <+1276>: mov    x0, x23
+SkyComputerUseService[0x10026d7d0] <+1280>: b      0x10026d3ac               ; <+220>
+SkyComputerUseService[0x10026d7d4] <+1284>: adrp   x8, 4843
+SkyComputerUseService[0x10026d7d8] <+1288>: add    x8, x8, #0x2e8            ; SAIAttachmentCharacter + 640
+SkyComputerUseService[0x10026d7dc] <+1292>: adrp   x1, -1
+SkyComputerUseService[0x10026d7e0] <+1296>: add    x1, x1, #0x9fc            ; ___lldb_unnamed_symbol61746
+SkyComputerUseService[0x10026d7e4] <+1300>: mov    x23, x0
+SkyComputerUseService[0x10026d7e8] <+1304>: mov    x0, x8
+SkyComputerUseService[0x10026d7ec] <+1308>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d7f0] <+1312>: mov    x0, x23
+SkyComputerUseService[0x10026d7f4] <+1316>: b      0x10026d3c8               ; <+248>
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.getProcessForPID(_: Swift.Int32, process: Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>) -> Swift.Int32:
+SkyComputerUseService[0x10026d7f8] <+0>:    b      0x101154020               ; symbol stub for: GetProcessForPID
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.getProcessPID(_: Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>, pid: Swift.UnsafeMutablePointer<Swift.Int32>) -> Swift.Int32:
+SkyComputerUseService[0x10026d7fc] <+0>:    b      0x10115402c               ; symbol stub for: GetProcessPID

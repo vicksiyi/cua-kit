@@ -79,6 +79,42 @@ import SlimCore
         precondition(ids == [7, UInt32.max, 7, 3, 0] && associatedCalls == ["connection", "query"])
         precondition(WindowServerSPI.associatedWindowIDs(forWindow: 0,
             mainConnection: { nil }, query: { _, _ in nil }).isEmpty)
+        let radiusValues: NSArray = ["12", NSNumber(value: Double.nan), NSNumber(value: -2),
+            NSNumber(value: Double.infinity), NSNumber(value: -0.0), NSNumber(value: 8)]
+        let negativeZero = resolvedCornerRadiusValue(radiusValues)!
+        precondition(negativeZero == 0 && negativeZero.sign == .minus)
+        precondition(resolvedCornerRadiusValue([NSNumber(value: -Double.infinity), NSNull()]) == nil)
+        precondition(resolvedCornerRadiusValue([NSNumber(value: Double.leastNonzeroMagnitude)]) == CGFloat(Double.leastNonzeroMagnitude))
+        var cornerCalls: [String] = []
+        let radius = queryResolvedCornerRadius(forWindow: 8,
+            mainConnection: { cornerCalls.append("connection"); return nil },
+            query: { connection, ids, flags -> String? in
+                precondition(connection == nil && ids == [NSNumber(value: UInt32(8))] && flags == 0)
+                cornerCalls.append("query"); return "query-result"
+            }, makeIterator: { value -> String? in
+                precondition(value == "query-result"); cornerCalls.append("iterator"); return "iterator"
+            }, count: { _ in cornerCalls.append("count"); return 3 },
+            windowID: { _, index in cornerCalls.append("id \(index)"); return index == 0 ? 7 : 8 },
+            radii: { _, index in precondition(index == 1); cornerCalls.append("radii"); return [NSNumber(value: 12)] })
+        precondition(radius == 12 && cornerCalls == ["connection", "query", "iterator", "count", "id 0", "id 1", "radii"])
+        let failedRadius = queryResolvedCornerRadius(forWindow: 8,
+            mainConnection: { nil }, query: { _, _, _ -> Int? in nil },
+            makeIterator: { _ -> Int? in preconditionFailure("iterator after failed query") },
+            count: { _ in preconditionFailure("count after failed query") },
+            windowID: { _, _ in preconditionFailure("id after failed query") },
+            radii: { _, _ in preconditionFailure("radii after failed query") })
+        precondition(failedRadius == nil)
+        let noMatch = queryResolvedCornerRadius(forWindow: 8,
+            mainConnection: { nil }, query: { _, _, _ in 1 }, makeIterator: { $0 },
+            count: { _ in 2 }, windowID: { _, _ in 7 },
+            radii: { _, _ in preconditionFailure("radii for unmatched window") })
+        precondition(noMatch == nil)
+        var matchingReads = 0
+        let missingFirstRadii = queryResolvedCornerRadius(forWindow: 8,
+            mainConnection: { nil }, query: { _, _, _ in 1 }, makeIterator: { $0 },
+            count: { _ in 2 }, windowID: { _, _ in matchingReads += 1; return 8 },
+            radii: { _, _ in nil })
+        precondition(missingFirstRadii == nil && matchingReads == 1)
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }

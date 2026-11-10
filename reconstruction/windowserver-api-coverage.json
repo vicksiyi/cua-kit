@@ -3,10 +3,8 @@
   "scope": "Exported static method names of SystemSoftware.WindowServerSPI only",
   "source": "native/macos/Sources/SystemSoftware/WindowServerSPI.swift",
   "exportedMethodCount": 15,
-  "namePresentCount": 14,
-  "missingNames": [
-    "resolvedCornerRadius"
-  ],
+  "namePresentCount": 15,
+  "missingNames": [],
   "localNamesNotInExportedSet": [
     "getKeyFocusProcess",
     "releaseKeyFocus"
@@ -70,7 +68,7 @@
     "resolvedCornerRadius": {
       "address": "0x000000010026d2d0",
       "signature": "static SystemSoftware.WindowServerSPI.resolvedCornerRadius(forWindow: Swift.UInt32) -> CoreGraphics.CGFloat?",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     },
     "setCursorUpdatesFromBackground": {
       "address": "0x000000010026cd64",
