@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const native = "native/macos/Sources/CuaHelper/";
+const slimCore = new Set(["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile"]);
 const cases = [
   ["production-configuration", ["ScreenshotSingleWindowFilter", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotStreamConfiguration"], "screenshot-production-configuration-check"],
   ["included-display-plan", ["ScreenshotImplementation", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan"], "screenshot-included-display-plan-check"],
@@ -28,7 +29,7 @@ const directory = await mkdtemp(join(tmpdir(), "cua-screenshot-checks-"));
 try {
   for (const [name, files, fixture] of cases) {
     const executable = join(directory, name);
-    execFileSync("swiftc", ["-o", executable, ...files.map(file => `${native}${file}.swift`), `reconstruction/${fixture}.swift`], { cwd: root, stdio: "inherit" });
+    execFileSync("swiftc", ["-o", executable, ...files.map(file => `native/macos/Sources/${slimCore.has(file) ? "SlimCore" : "CuaHelper"}/${file}.swift`), `reconstruction/${fixture}.swift`], { cwd: root, stdio: "inherit" });
     execFileSync(executable, [], { cwd: root, stdio: "inherit", timeout: 15000 });
   }
   console.log(`${cases.length} screenshot restoration checks passed (no desktop capture or input).`);

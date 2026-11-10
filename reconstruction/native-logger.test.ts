@@ -19,7 +19,7 @@ test(
       await exec("xcrun", [
         "swiftc",
         "-o", executable,
-        join(root, "native/macos/Sources/CuaHelper/NativeLogger.swift"),
+        join(root, "native/macos/Sources/SlimCore/NativeLogger.swift"),
         join(root, "native/macos/Tests/NativeLoggerTests.swift"),
       ]);
       const { stdout } = await exec(executable);

@@ -18,7 +18,7 @@ extension TemporaryFile {
 
     // 101005d78..101006148. Only a collision introduces a numbered directory;
     // the initial directory is not prepared here. No path is atomically reserved.
-    static func uniquePath(forFilename filename: String, in directory: FilePath) -> FilePath {
+    public static func uniquePath(forFilename filename: String, in directory: FilePath) -> FilePath {
         let manager = FileManager.default
         var candidate = directory.appending(filename)
         var newDirectory: FilePath?

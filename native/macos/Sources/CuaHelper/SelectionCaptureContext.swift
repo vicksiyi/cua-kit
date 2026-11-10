@@ -1,3 +1,6 @@
+#if canImport(SlimCore)
+import SlimCore
+#endif
 import AppKit
 
 // Native extract0x10023820c..0x10023842c snapshots window/app and chooses

@@ -18,12 +18,12 @@ private enum FileDateFormatters {
 }
 
 extension File {
-    static func filename(_ name: String?, reservedUTF16Count: Int32, date: Date?, type: UTType) -> String {
+    public static func filename(_ name: String?, reservedUTF16Count: Int32, date: Date?, type: UTType) -> String {
         makeFilename(name ?? type.localizedDescription ?? "Unknown",
             reservedUTF16Count: reservedUTF16Count, date: date, type: type)
     }
 
-    static func directoryName(_ name: String?, reservedUTF16Count: Int32, date: Date?) -> String {
+    public static func directoryName(_ name: String?, reservedUTF16Count: Int32, date: Date?) -> String {
         makeFilename(name ?? "Unknown", reservedUTF16Count: reservedUTF16Count, date: date, type: nil)
     }
 

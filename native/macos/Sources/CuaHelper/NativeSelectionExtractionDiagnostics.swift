@@ -1,3 +1,6 @@
+#if canImport(SlimCore)
+import SlimCore
+#endif
 import os
 
 // Host diagnostics for the restored extractor. Event wording is local adapter

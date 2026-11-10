@@ -15,14 +15,14 @@
     "0x101469298": "libswiftSystem/System.FilePath metadata"
   },
   "dependency": "SDK import System verified locally; no independent FilePath or extra dependency added",
-  "implementation": "native/macos/Sources/CuaHelper/TemporaryFile.swift",
+  "implementation": "native/macos/Sources/SlimCore/TemporaryFile.swift",
   "validation": "reconstruction/temporary-file-ownership-check.swift",
   "limits": [
     "Full original class/module interface coverage audit pending",
     "not wired to ScreenshotFile owner or production screenshot file route"
   ],
   "uniquePath": {
-    "implementation": "native/macos/Sources/CuaHelper/TemporaryFilePath.swift",
+    "implementation": "native/macos/Sources/SlimCore/TemporaryFilePath.swift",
     "source": "0x101005d78..0x101006148",
     "directoryPreparation": "0x101007924..0x101007c68",
     "rules": [

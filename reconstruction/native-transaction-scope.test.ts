@@ -135,7 +135,7 @@ test(
         join(root, "native/macos/Sources/CuaHelper/AXArraySubsetSystem.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXArrayCount.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXProviderCollections.swift"),
-        join(root, "native/macos/Sources/CuaHelper/NativeLogger.swift"),
+        join(root, "native/macos/Sources/SlimCore/NativeLogger.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXReadErrorLogging.swift"),
         join(root, "native/macos/Sources/CuaHelper/AXUIElementConformance.swift"),
         join(root, "native/macos/Sources/CuaHelper/UIElementSetValue.swift"),

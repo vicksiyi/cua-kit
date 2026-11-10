@@ -7862,3 +7862,31 @@ remain incomplete; last real UI gate is still screenLocked, not accepted.
 
 All sixteen screenshot checks passed; helper build passed (23.44s, exit 0).
 Whitespace diff check passed.
+
+### 2026-11-11 — File ownership types moved into original SlimCore module
+
+Moved TemporaryFile/path helpers, DataFile, File/naming and ScreenshotFile from
+CuaHelper into the existing SlimCore Swift target, matching original qualified
+types. Shared NativeLogger cache moved with them and CuaHelper callers import
+that module, preserving one cache rather than duplicating loggers per module.
+Added required cross-module visibility and explicit ScreenshotFile initializer.
+Isolated source fixtures retain conditional imports; production resolves actual
+SlimCore. Other screenshot algorithms still reside in CuaHelper and are not
+claimed module-aligned by this change.
+
+Initial compile exposed a local-variable visibility typo and a missing File
+import at the screenshot entry; both corrected. Final helper build passed
+(21.28s). All sixteen screenshot checks passed with sources at their new paths.
+A separate consumer typechecked against the built SlimCore module (without
+implementation source compilation), covering public file/owner/coding/writer-name
+surfaces. Native logger/transaction regressions use the new source location;
+terminal results recorded below. No real UI/model/vendor native execution.
+
+Additional regression results: native-logger.test.ts passed. The older manually
+assembled native-transaction-scope fixture failed compiling UIElementProviderGeometry
+because its selected UIElement sources omit current protocol conformance. Adding
+the conformance file exposed further omitted defaults/dispatcher dependencies;
+that speculative list expansion was removed. This fixture remains failing and
+is not counted as validated. The complete production helper and separate SlimCore
+consumer both pass, but do not substitute for transaction behavior regression.
+The unresolved fixture dependency closure is explicitly retained as remaining work.

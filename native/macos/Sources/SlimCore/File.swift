@@ -4,10 +4,10 @@ import UniformTypeIdentifiers
 
 // Native three-payload representation and synthesized keyed enum coding.
 // Naming helpers and remaining accessors remain to restore.
-enum File: Hashable, Codable {
-    enum RepresentationType: Hashable { case data, filePath }
+public enum File: Hashable, Codable {
+    public enum RepresentationType: Hashable { case data, filePath }
 
-    var representationType: RepresentationType {
+    public var representationType: RepresentationType {
         switch self {
         case .path, .temporaryFile: return .filePath
         case .data: return .data
@@ -16,7 +16,7 @@ enum File: Hashable, Codable {
 
     // 101001880..101001bb4: memory data exists independent of materialization.
     // Path acquisition errors are converted to false before the FileManager read.
-    var exists: Bool {
+    public var exists: Bool {
         if representationType == .data { return true }
         guard let path = try? path else { return false }
         return FileManager.default.fileExists(atPath: path.string)
@@ -24,7 +24,7 @@ enum File: Hashable, Codable {
 
     // 101001bb4..101002194: representation guard precedes path/URL access.
     // SDK resource metadata, not filename suffixes, determines directory status.
-    var isDirectory: Bool {
+    public var isDirectory: Bool {
         guard representationType == .filePath, let path = try? path else { return false }
         let url = URL(filePath: path.string, directoryHint: .notDirectory, relativeTo: nil)
         return (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
@@ -38,25 +38,25 @@ enum File: Hashable, Codable {
     // DataFile returns its payload/name directly and materializes only for path.
     // 101001080..101001178. Native Foundation chooses the extension;
     // removing the one-character base leaves a leading dot when one is present.
-    static func pathExtension(for type: UTType) -> String {
+    public static func pathExtension(for type: UTType) -> String {
         String((" " as NSString).appendingPathExtension(for: type).dropFirst())
     }
 
     // 101001244..1010014c0: materialize path even for data; Foundation
     // detects encoding via an inout initialized to UTF8 (not strict UTF8 decode).
-    func textContents() throws -> String {
+    public func textContents() throws -> String {
         var encoding = String.Encoding.utf8
         return try String(contentsOfFile: path.string, usedEncoding: &encoding)
     }
 
     // 1010014c0..101001880: data uses filename without materialization;
     // path failures fall back to filename rather than an empty string.
-    var pathOrFilename: String {
+    public var pathOrFilename: String {
         if representationType == .filePath, let path = try? path { return path.string }
         return filename
     }
 
-    var type: UTType {
+    public var type: UTType {
         switch self {
         case .data(let file): return file.type
         case .path(let path):
@@ -66,7 +66,7 @@ enum File: Hashable, Codable {
         }
     }
 
-    var fileSize: Int {
+    public var fileSize: Int {
         get throws {
             switch self {
             case .data(let file): return file.fileSize
@@ -87,7 +87,7 @@ enum File: Hashable, Codable {
         return size
     }
 
-    var filename: String {
+    public var filename: String {
         switch self {
         case .path(let path): return path.lastComponent?.string ?? ""
         case .temporaryFile(let owner): return owner.path.lastComponent?.string ?? ""
@@ -95,7 +95,7 @@ enum File: Hashable, Codable {
         }
     }
 
-    var path: FilePath {
+    public var path: FilePath {
         get throws {
             switch self {
             case .path(let path): return path
@@ -105,7 +105,7 @@ enum File: Hashable, Codable {
         }
     }
 
-    var data: Data {
+    public var data: Data {
         get throws {
             switch self {
             case .data(let file): return file.data
@@ -120,24 +120,24 @@ enum File: Hashable, Codable {
         return try Data(contentsOf: url, options: .mappedIfSafe)
     }
 
-    init(_ path: FilePath) { self = .path(path) }
-    init(_ file: TemporaryFile) { self = .temporaryFile(file) }
-    init(data: Data, filename: String, type: UTType?) {
+    public init(_ path: FilePath) { self = .path(path) }
+    public init(_ file: TemporaryFile) { self = .temporaryFile(file) }
+    public init(data: Data, filename: String, type: UTType?) {
         self = .data(DataFile(data: data, filename: filename, type: type))
     }
 }
 
 // Native DataFile witness returns representation tag zero without materializing.
 extension DataFile {
-    var representationType: File.RepresentationType { .data }
+    public var representationType: File.RepresentationType { .data }
 }
 
 // Native descriptor 1012eb3f4 / field descriptor 101347630, one empty case.
-enum FilePathRepresentationError: Swift.Error { case failedToFetchFileSize }
+public enum FilePathRepresentationError: Swift.Error { case failedToFetchFileSize }
 
 // Native Foundation.URL.contentType getter, 101022fc4..1010232f8.
 extension URL {
-    var contentType: UTType {
+    public var contentType: UTType {
         if let type = try? resourceValues(forKeys: [.contentTypeKey]).contentType { return type }
         return UTType(filenameExtension: pathExtension, conformingTo: .data) ?? .data
     }

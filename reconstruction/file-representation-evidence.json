@@ -134,5 +134,20 @@
     "source": "0x1010014c0..0x101001880",
     "rule": "filePath representation attempts path.string; data or path error returns filename",
     "validation": "Memory before/after materialization retains filename and no eager write; path returns full string"
+  },
+  "moduleAlignment": {
+    "module": "SlimCore",
+    "moved": [
+      "File.swift",
+      "FileNaming.swift",
+      "DataFile.swift",
+      "TemporaryFile.swift",
+      "TemporaryFilePath.swift",
+      "ScreenshotFile.swift",
+      "NativeLogger.swift"
+    ],
+    "consumer": "reconstruction/slimcore-file-consumer-check.swift; swiftc -typecheck -I native/macos/.build/debug/Modules",
+    "validation": "Complete Swift helper build and 16 isolated screenshot fixtures pass; logger regression passes",
+    "remaining": "Screenshot algorithms still in CuaHelper; full original module/API coverage not proven; old transaction fixture compile dependency closure unresolved"
   }
 }
