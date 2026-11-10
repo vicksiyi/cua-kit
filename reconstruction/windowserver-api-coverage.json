@@ -3,11 +3,10 @@
   "scope": "Exported static method names of SystemSoftware.WindowServerSPI only",
   "source": "native/macos/Sources/SystemSoftware/WindowServerSPI.swift",
   "exportedMethodCount": 15,
-  "namePresentCount": 12,
+  "namePresentCount": 13,
   "missingNames": [
     "associatedWindowIDs",
-    "resolvedCornerRadius",
-    "setCursorUpdatesFromBackground"
+    "resolvedCornerRadius"
   ],
   "localNamesNotInExportedSet": [
     "getKeyFocusProcess",
@@ -77,7 +76,7 @@
     "setCursorUpdatesFromBackground": {
       "address": "0x000000010026cd64",
       "signature": "static SystemSoftware.WindowServerSPI.setCursorUpdatesFromBackground(Swift.Bool) -> __C.CGError",
-      "status": "missing-from-restored-type"
+      "status": "name-present-body-unproven"
     },
     "setWindowLevel": {
       "address": "0x000000010026ccf8",

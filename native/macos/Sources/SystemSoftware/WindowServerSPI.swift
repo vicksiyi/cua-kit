@@ -13,6 +13,7 @@ public enum WindowServerSPI {
     private typealias WindowRect = @convention(c) (OpaquePointer?, UInt32, UnsafeMutablePointer<CGRect>) -> CGError
     private typealias SetWindowLocation = @convention(c) (CGEvent, CGPoint) -> Void
     private typealias ModifyNotifications = @convention(c) (OpaquePointer?, Int32, Int32, UnsafeRawPointer?) -> Int32
+    private typealias ConnectionProperty = @convention(c) (OpaquePointer?, OpaquePointer?, NSString, NSNumber) -> CGError
     private typealias Update = @convention(c) (OpaquePointer?) -> CGError
     private typealias ConnectionNotify = @convention(c)
         (OpaquePointer?, WindowServerNotificationCallback, UInt32, UnsafeMutableRawPointer?) -> CGError
@@ -127,6 +128,14 @@ public enum WindowServerSPI {
     // 0x10026cef8: C args connection, signed notification value, zero, null.
     public static func modifyConnectionNotifications(_ value: Int32, connection: OpaquePointer?) -> Int32 {
         modifyNotifications(connection, value, 0, nil)
+    }
+    // 0x10026cd64..0x10026cef8: primary slot10; both connection args
+    // are mainConnectionID. Original bridges Int(enabled & 1), not Swift Bool.
+    private static let connectionProperty = unsafeBitCast(required(functions[10]), to: ConnectionProperty.self)
+    public static func setCursorUpdatesFromBackground(_ enabled: Bool) -> CGError {
+        let connection = mainConnectionID()
+        let value = NSNumber(value: enabled ? 1 : 0)
+        return connectionProperty(connection, connection, "SetsCursorInBackground" as NSString, value)
     }
     public static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     public static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }

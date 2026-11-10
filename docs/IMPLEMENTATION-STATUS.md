@@ -8098,3 +8098,20 @@ resolvedCornerRadius and setCursorUpdatesFromBackground still missing. Names do
 not establish body/ABI/runtime parity; fixed zero/null operand semantics are not
 inferred. No installed vendor service execution, private SPI invocation, desktop
 operation or model call occurred. Full native and screenshot goals remain open.
+
+### 2026-11-11 — Background cursor connection property restored
+
+Read full original setCursorUpdatesFromBackground body statically. Primary slot10
+is called with main connection twice, decoded NSString SetsCursorInBackground,
+and an NSNumber bridged from Swift Int(enabled & 1), not Bool. Preserved integer
+NSNumber construction and raw CGError return. XOR0x54 property bytes, exact
+argument moves and imported Int/String bridge symbols are checked reproducibly by
+scripts/audit-background-cursor.py against the pinned native binary. Transcripts
+are windowserver-remaining-disassembly.txt and windowserver-cursor-operands.txt.
+The remaining-functions transcript includes associatedWindowIDs and a partial
+resolvedCornerRadius body, which remain unimplemented rather than guessed.
+
+Native build passed21.13s; static operand/import audit passed. This adds a wrapper,
+not proof that the production cursor UI invokes it or that a cursor is visible.
+Actual private call, ownership ABI and desktop behavior remain unaccepted. No
+vendor native service execution, private SPI invocation or model call occurred.
