@@ -1,3 +1,6 @@
+#if canImport(SlimCore)
+import SlimCore
+#endif
 import CoreGraphics
 
 struct ScreenshotIncludedDisplayPlan<Window, Display> {

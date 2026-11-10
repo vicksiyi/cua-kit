@@ -121,5 +121,17 @@
     "change": "Moved from CuaHelper; public boundary added; function bodies byte-matched after visibility normalization",
     "validation": "16 SDK screenshot fixtures; complete helper build; separate consumer typecheck for encoding/init/add/source/finalize",
     "limits": "ScreenshotImplementation and related algorithms still in CuaHelper; original package-wide interface audit incomplete"
+  },
+  "screenshotModuleAlignment": {
+    "module": "SlimCore",
+    "typesAndStages": [
+      "ScreenshotImplementation and nested Error",
+      "ScreenshotImageOutput",
+      "ScreenshotFileOutput",
+      "ScreenshotFileCapture"
+    ],
+    "consumer": "reconstruction/slimcore-file-consumer-check.swift; built-module typecheck covers public image/file writer and extracted capture composition",
+    "validation": "16 source fixtures and complete helper build; normalized bodies identical",
+    "limits": "Buffer/SDK acquisition and selection wrapper remain CuaHelper extensions; incomplete full module/public API fidelity; date injection remains internal"
   }
 }

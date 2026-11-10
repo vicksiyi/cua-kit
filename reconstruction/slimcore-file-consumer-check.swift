@@ -43,3 +43,13 @@ func checkSlimCoreImageSurface(image: CGImage, source: CGImageSource, url: URL) 
     _ = destination.finalize()
     _ = ImageDestination.sessionFilenameCharacterCount
 }
+
+func checkSlimCoreScreenshotFileAPI(image: CGImage, url: URL) async throws {
+    _ = ScreenshotImplementation.Error.screenCaptureFailed
+    _ = ScreenshotImplementation.Error.invalidCaptureSize(CGSize(width: 0, height: 0))
+    _ = try ScreenshotImplementation.writeScreenshotImage(to: url, screenshot: image, encoding: .png)
+    _ = try ScreenshotImplementation.writeScreenshotToFile(appName: nil, screenshot: image, encoding: .png)
+    _ = try await ScreenshotImplementation.captureScreenshotFileResult(capture: { image }, write: { image, encoding in
+        try ScreenshotImplementation.writeScreenshotToFile(appName: nil, screenshot: image, encoding: encoding)
+    })
+}

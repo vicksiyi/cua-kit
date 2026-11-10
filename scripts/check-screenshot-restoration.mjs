@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const native = "native/macos/Sources/CuaHelper/";
-const slimCore = new Set(["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotEncoding", "ImageDestination"]);
+const slimCore = new Set(["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotEncoding", "ImageDestination", "ScreenshotImplementation", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture"]);
 const cases = [
   ["production-configuration", ["ScreenshotSingleWindowFilter", "ScreenshotCaptureSize", "ScreenshotPixelDimensions", "ScreenshotStreamConfiguration"], "screenshot-production-configuration-check"],
   ["included-display-plan", ["ScreenshotImplementation", "ScreenshotWindowRegion", "ScreenshotDisplaySelection", "ScreenshotIncludedDisplayPlan"], "screenshot-included-display-plan-check"],

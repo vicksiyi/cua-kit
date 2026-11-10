@@ -1,6 +1,3 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import Foundation
 import CoreGraphics
 import UniformTypeIdentifiers
@@ -9,7 +6,7 @@ extension ScreenshotImplementation {
     // Extracted image-output stage of writeScreenshotToFile, fb4024..fb42d0.
     // Filename/path ownership and returned ScreenshotFile are separate layers.
     // The source ignores finalize's Bool; do not fabricate a new throw here.
-    static func writeScreenshotImage(to url: URL, screenshot: CGImage,
+    public static func writeScreenshotImage(to url: URL, screenshot: CGImage,
         encoding: ScreenshotEncoding
     ) throws -> String {
         let type: UTType

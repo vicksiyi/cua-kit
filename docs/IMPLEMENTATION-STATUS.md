@@ -7926,3 +7926,22 @@ ScreenshotImplementation/capture algorithms still reside in CuaHelper; this is
 not whole screenshot-module migration or real desktop acceptance. Default values,
 original logging/signposts, production app routing and full interface audit remain
 pending. No desktop, paid model or installed native executable was used.
+
+### 2026-11-11 — Screenshot file entry namespace moved into SlimCore
+
+Moved ScreenshotImplementation namespace/errors, ImageIO output, screenshot-file
+writer and extracted capture/write stages into original SlimCore. CuaHelper
+selected-window buffer and selection entry import that actual module rather than
+maintaining a duplicate namespace. Cross-module entry visibility was added; the
+deterministic date injection overload remains internal, not a new public API.
+Normalized byte comparison confirms unchanged function bodies.
+
+All sixteen SDK/owned screenshot checks passed at their new paths. Initial full
+helper build passed (30.53s); final visibility refinement and independent module
+consumer verification recorded below. Capture algorithms still extend SlimCore
+from CuaHelper as a transitional boundary; full original module alignment is not
+claimed. Defaults, signpost instrumentation, app production-route integration
+and actual desktop acceptance remain open. No model/desktop/vendor native run.
+
+Final complete helper build passed (exit 0); separate SlimCore consumer typecheck
+passed against built module. Whitespace check passed. No real capture was run.

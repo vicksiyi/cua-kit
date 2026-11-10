@@ -1,6 +1,3 @@
-#if canImport(SlimCore)
-import SlimCore
-#endif
 import Foundation
 import CoreGraphics
 import UniformTypeIdentifiers
@@ -8,7 +5,7 @@ import UniformTypeIdentifiers
 extension ScreenshotImplementation {
     // Functional writer composition from fb3d5c..fb4500. Original logging and
     // signpost instrumentation remain a separate pending wrapper.
-    static func writeScreenshotToFile(appName: String?, screenshot: CGImage,
+    public static func writeScreenshotToFile(appName: String?, screenshot: CGImage,
         encoding: ScreenshotEncoding
     ) throws -> ScreenshotFile {
         try writeScreenshotToFile(appName: appName, screenshot: screenshot, encoding: encoding, date: .now)
