@@ -11,6 +11,9 @@ const cases = [
   ["content-acquisition", ["ScreenshotContentScope", "ScreenshotShareableContent"], "screenshot-content-acquisition-check"],
   ["current-process", ["ScreenshotCurrentProcess"], "screenshot-current-process-check"],
   ["delay", ["ScreenshotDelay"], "screenshot-delay-check"],
+  ["temporary-file-path", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-path-check"],
+  ["temporary-file-ownership", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-ownership-check"],
+  ["temporary-file-writing", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-writing-check"],
   ["image-output", ["ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput"], "image-destination-check"],
   ["screen-capture-composition", ["ScreenScreenshotCapture"], "screen-screenshot-capture-check"],
 ];

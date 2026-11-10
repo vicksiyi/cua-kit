@@ -1,0 +1,69 @@
+{
+  "binary": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService",
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "scope": "TemporaryFile adopted ownership, path selection, shared directory and writing-block construction; whole class remains partial",
+  "source": {
+    "adoptingInit": "0x1010061a0..0x101006200",
+    "equality": "0x101006204..0x101006214",
+    "hash": "0x1010076b0",
+    "deinit": "0x1010065bc..0x1010068fc",
+    "loggerMessage": "log[da1c38e801a415a6927e] [0]=%s"
+  },
+  "systemBindings": {
+    "0x101469250": "libswiftSystem/System.FilePath.string.getter",
+    "0x101469290": "libswiftSystem/System.FilePath.appending(String)",
+    "0x101469298": "libswiftSystem/System.FilePath metadata"
+  },
+  "dependency": "SDK import System verified locally; no independent FilePath or extra dependency added",
+  "implementation": "native/macos/Sources/CuaHelper/TemporaryFile.swift",
+  "validation": "reconstruction/temporary-file-ownership-check.swift",
+  "limits": [
+    "data/copy convenience constructors and Codable not yet restored",
+    "not wired to ScreenshotFile owner or production screenshot file route"
+  ],
+  "uniquePath": {
+    "implementation": "native/macos/Sources/CuaHelper/TemporaryFilePath.swift",
+    "source": "0x101005d78..0x101006148",
+    "directoryPreparation": "0x101007924..0x101007c68",
+    "rules": [
+      "Try directory/filename without preparing initial directory",
+      "On collision try directory/1/filename, directory/2/filename, etc.; preserve native checked integer increment",
+      "Only prepare the numbered directory after a collision; discard preparation error",
+      "Preparation returns for an existing directory; logs/removes a regular file before making directory with intermediate directories",
+      "No atomic reservation, filename suffix rewriting or existence-success fabrication"
+    ],
+    "validation": "reconstruction/temporary-file-path-check.swift",
+    "scope": "Only owned fixture directories tested, including regular-file replacement and readonly preparation failure"
+  },
+  "directoryInstructions": [
+    "SkyComputerUseService[0x101007b1c] <+504>: add    x3, x3, #0x6d0            ; \"Temporary directory was unexpectedly a regular file at %s\"",
+    "SkyComputerUseService[0x101007bb0] <+652>: ldr    x1, [x8, #0x6f0]",
+    "SkyComputerUseService[0x101007bbc] <+664>: mov    x2, x19",
+    "SkyComputerUseService[0x101007bc0] <+668>: bl     0x101154ba8               ; symbol stub for: objc_msgSend",
+    "SkyComputerUseService[0x101007bd8] <+692>: cbz    w20, 0x101007c40          ; <+796>",
+    "SkyComputerUseService[0x101007be0] <+700>: tbnz   w8, #0x0, 0x101007a1c     ; <+248>",
+    "SkyComputerUseService[0x101007c04] <+736>: ldr    x1, [x8, #0x930]",
+    "SkyComputerUseService[0x101007c14] <+752>: mov    w3, #0x1                  ; =1 ",
+    "SkyComputerUseService[0x101007c1c] <+760>: bl     0x101154ba8               ; symbol stub for: objc_msgSend",
+    "SkyComputerUseService[0x101007c34] <+784>: tbz    w20, #0x0, 0x101007c50    ; <+812>",
+    "SkyComputerUseService[0x101007c50] <+812>: mov    x19, x0",
+    "SkyComputerUseService[0x101007c64] <+832>: mov    x21, x20"
+  ],
+  "sharedDirectory": {
+    "source": "0x10100707c..0x1010074a0",
+    "storage": "0x1010074a4..0x1010076ac; Swift lazy mutable static FilePath",
+    "policy": "NSTemporaryDirectory()/Bundle.main.bundleIdentifier; nil identifier uses inc.software.unknown; prepare failure logs and returns base",
+    "selectors": {
+      "0x101542240": "mainBundle",
+      "0x101542740": "bundleIdentifier"
+    },
+    "validation": "reconstruction/temporary-file-writing-check.swift"
+  },
+  "writingBlock": {
+    "source": "0x101008130..0x101008378",
+    "order": "uniquePath -> writer -> fileExists -> allocate owner",
+    "error": "fileDidNotExistAfterCallingWriteBlock (tag 1), enum descriptor 0x1012eb484 / fields 0x101347668",
+    "throw": "writer failure propagates without deleting a partial output; existence accepts directories",
+    "validation": "reconstruction/temporary-file-writing-check.swift"
+  }
+}

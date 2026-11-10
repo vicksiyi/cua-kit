@@ -7434,3 +7434,69 @@ or operate the desktop. All seven checks passed together; helper build passed
 in 20.54s. No live acceptance retry was performed (last attempt screenLocked).
 The full screenshot file naming/TemporaryFile/ScreenshotFile lifecycle, signposts,
 default generators and real geometry/input acceptance remain incomplete.
+
+### 2026-11-10 — TemporaryFile adopted-path ownership
+
+Restored TemporaryFile's adoptingFileAt initializer, immutable System.FilePath,
+path equality/hash and deinit retirement. Original binding inspection confirms
+libswiftSystem FilePath.string/appending/equality; local SDK import System works,
+so no alternate FilePath implementation or new dependency is needed. This
+refines the earlier plan to use the checked-out swift-system package: the SDK
+module is the direct match for the installed dylib boundary.
+
+Deinit removes the adopted path with FileManager, logs failure with the recovered
+logger/message token, and does not throw/retry. Native ownership tests exercise
+retention through aliases, deletion at final release, adoption of a nonexistent
+path, path-based equality/hash and distinct owners of the same path. Tests only
+adopt freshly owned fixture paths. Added this fixture to the screenshot runner;
+all eight checks passed. Helper build passed (46.75s).
+
+Static tracing of uniquePath confirms FilePath.appending calls and numeric
+collision components; directory preparation/helper semantics remain under review,
+so uniquePath has not been guessed into this partial class. Copy/write constructors,
+Codable, shared temporary-directory policy, full logging parity and ScreenshotFile
+composition remain incomplete. The file is in the existing CuaHelper compilation
+unit; full original Swift module/package boundary migration is not claimed. No
+desktop operations, paid models or original native execution occurred.
+
+### 2026-11-11 — TemporaryFile unique-path and directory preparation
+
+Recovered uniquePath's collision loop and optional numbered-directory preparation.
+It initially returns directory/filename without creating the directory. Each
+collision tries directory/1/filename, directory/2/filename, etc., using native
+System.FilePath.appending and checked Int increments. Only the selected numbered
+directory is prepared. The result is not an atomic reservation. Preparation
+returns for an existing directory, logs/removes an existing regular file and
+creates the directory with intermediate directories; uniquePath discards errors.
+These source semantics are retained rather than replaced with suffix naming or
+an unconditional initial-directory creation policy.
+
+Real owned-filesystem checks passed: initial nonreservation, multiple collisions,
+numbered regular-file replacement, repeat selection without writing, nonexistent
+initial directory, and readonly preparation failure (non-root fixture). All nine
+screenshot restoration checks passed; helper build passed in 33.97s. Source range,
+binding and directory instructions are in temporary-file-evidence.json. No user
+files were adopted/replaced, no desktop/model/vendor native execution was used.
+Copy/write construction, Codable, shared temporary directory and ScreenshotFile
+composition remain open; this is not full TemporaryFile/source-goal completion.
+
+### 2026-11-11 — TemporaryFile shared directory and write-block construction
+
+Restored the lazy mutable temporaryDirectory from the pinned native binary:
+NSTemporaryDirectory plus Bundle.main.bundleIdentifier, nil identifier fallback
+inc.software.unknown; directory preparation failure logs and returns the base.
+The initializer extraction accepts environment inputs for owned-directory checks;
+production reads the actual Foundation environment. No additional lock was added.
+
+Restored writingNewFile:withBlock ordering: select unique path, invoke writer,
+check existence, then create ownership. A writer error propagates without deleting
+partial output. A successful block producing no path throws the recovered
+fileDidNotExistAfterCallingWriteBlock case; a directory satisfies existence just
+as in the source. This does not claim data/copy construction, Codable or the
+ScreenshotFile output lifecycle is complete.
+
+All ten standalone screenshot restoration checks passed, including owned-file
+success/deinit, missing output, exact writer-error propagation with retained
+partial output, directory acceptance and shared-directory fallback. Current vendor
+binary SHA matches the evidence pin. No desktop, vendor binary execution or paid
+model was used. The Swift helper build also passed (terminal exit 0).
