@@ -1,0 +1,67 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "originalLanguage": "Objective-C",
+  "originalClass": "SAIVirtualKeyPress",
+  "classMethods": {
+    "keyPressesForString:": "0x100245724"
+  },
+  "instanceMethods": {
+    "initWithKeyCode:modifiers:string:": "0x100245684",
+    "isEqual:": "0x100245980",
+    "description": "0x100245ae0",
+    "keyCode": "0x100245b6c",
+    "modifiers": "0x100245b74",
+    "string": "0x100245b7c",
+    ".cxx_destruct": "0x100245b84"
+  },
+  "instanceSize": 24,
+  "ivars": [
+    {
+      "offset": 8,
+      "name": "_keyCode",
+      "type": "S"
+    },
+    {
+      "offset": 12,
+      "name": "_modifiers",
+      "type": "I"
+    },
+    {
+      "offset": 16,
+      "name": "_string",
+      "type": "@\"NSString\""
+    }
+  ],
+  "modifierPriority": [
+    0,
+    512,
+    2048,
+    2560,
+    4096,
+    4608,
+    6144,
+    6656
+  ],
+  "source": "native/macos/Sources/RunningProcess/SAIVirtualKeyPress.m",
+  "behavior": [
+    "Carbon TIS layout/property/bytes and LMGetKbdType reused,not reimplemented",
+    "Iterate NSString UTF16 units,LF->CR,8 modifier states xkey codes0...127",
+    "UCKeyTranslate display action3,options0,deadstate0 per attempt,max4 units; first translated unit match wins",
+    "Unmapped characters logged and skipped; missing layout returnsnil",
+    "Copy string in initializer; original value equality/description; no hash override added"
+  ],
+  "limits": [
+    "RunningProcess is current reconstructed ObjC support target,not a proven original library module name",
+    "Swift type(string:) and key-event assembly not yet restored or connected",
+    "Current-layout check does not exhaust dead-key/layout/failure behavior",
+    "No vendor executable or actual input posting used"
+  ],
+  "validation": {
+    "build": "final incremental Swift build exit0,9.54s after original diagnostic-string alignment",
+    "objectiveCFixture": "exit0 via scripts/check-virtual-keypress.mjs",
+    "layout": "Runtime instance size24 and ivar offsets8/12/16 match original metadata",
+    "values": "Initializer copy,nullable string equality,key/modifier distinctions,original description format",
+    "nativeTranslation": "Current layout maps a,A,newline->CR; empty input yields empty array",
+    "linkedRegression": "All16 SystemSoftware/AccessibilitySupport linked checks pass with new ObjC object included"
+  }
+}

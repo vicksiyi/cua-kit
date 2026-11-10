@@ -8850,3 +8850,23 @@ No real input was posted. Existing10ms timing,deferred cleanup and identity poli
 remain independent helper orchestration, not claimed original controller bodies.
 The real screenshot-to-drag path and broader parity are unaccepted. See
 reconstruction/production-drag-alignment-evidence.json.
+
+## 2026-11-11 original Objective-C virtual keypress dependency
+
+Static type(string:) tracing identifies a MainActor hop followed by original
+Objective-C SAIVirtualKeyPress.keyPressesForString:, not the helper's independent
+UTF16 chunk path. Its class metadata/methods/fields establish Objective-C code,
+UInt16 keyCode@8,UInt32 Carbon modifiers@12,NSString@16 and size24. The restored
+.h/.m uses Foundation/Carbon TISCopyCurrentKeyboardLayoutInputSource,
+TISGetInputSourceProperty,LMGetKbdType and UCKeyTranslate directly. It preserves
+8 modifier priorities,key0...127,display action3,dead-state reset,max4 units,
+LF->CR,first-unit matching,skip/log unmapped characters,copy/equality/description
+and original diagnostics. No new hash override is invented.
+
+Final incremental build passed9.54s. Owned Objective-C fixture verifies runtime
+layout,value/copy/nil semantics,description and native current-layout mapping
+of a/A/newline plus empty input. All16 linked Swift module checks pass with this
+ObjC object. RunningProcess is the current support target placement,not a proven
+original source library name. Swift type(string:),event assembly and production
+integration are still pending; existing Chinese/emoji input behavior was not
+changed. No real input or vendor executable was run. See virtual-keypress-evidence.json.
