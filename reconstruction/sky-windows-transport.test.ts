@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -23,6 +24,8 @@ const send=x=>process.stdout.write(JSON.stringify(x)+'\\n');
 readline.createInterface({input:process.stdin}).on('line',line=>{
  const q=JSON.parse(line);history.push(q);
  if(q.method==='hang')return;
+ if(q.method==='exit0'){process.exit(0);return;}
+ if(process.env.FAIL_METHOD===q.method){send({id:q.id,error:'fixture rejected '+q.method});return;}
  if(q.method==='bad'){process.stdout.write('invalid-json\\n');return;}
  if(q.method==='exit130'){process.exit(130);return;}
  if(q.method==='stop'){send({id:q.id,error:process.env.STOP_MESSAGE});return;}
@@ -34,7 +37,7 @@ readline.createInterface({input:process.stdin}).on('line',line=>{
  if(q.method==='close')process.exit(0);
 });`;
 async function fixture(
-  run: (create: (C: any, preserve?: boolean) => any) => Promise<void>,
+  run: (create: (C: any, preserve?: boolean, extra?: Record<string, any>) => any) => Promise<void>,
 ) {
   const dir = await mkdtemp(path.join(os.tmpdir(), "cua-win-transport-"));
   const previous = process.env.CODEX_HOME;
@@ -44,19 +47,20 @@ async function fixture(
   await writeFile(file, helper);
   const clients: any[] = [];
   try {
-    await run((C, preserve = false) => {
+    await run((C, preserve = false, extra = {}) => {
       const c = new C({
         helperCommand: process.execPath,
         helperArgs: [file],
         helperEnv: { STOP_MESSAGE: USER_STOPPED_MESSAGE },
         timeoutMs: 2000,
         preserveHelperOnTimeout: preserve,
+        ...extra,
       });
       clients.push(c);
       return c;
     });
   } finally {
-    await Promise.all(clients.map((c) => c.close()));
+    await Promise.allSettled(clients.map((c) => c.close()));
     if (previous === undefined) delete process.env.CODEX_HOME;
     else process.env.CODEX_HOME = previous;
     await rm(dir, { recursive: true, force: true });
@@ -187,4 +191,75 @@ test("Windows transport denies approval without replay and rejects sibling reque
       await client.close();
     }
   });
+});
+
+
+test("Windows desktop transport retains stopped helper for cleanup and preserves close scope", async () => {
+  await fixture(async create => {
+    const traces = [];
+    for (const [index, C] of [Original, WindowsHelperTransport].entries()) {
+      const client = create(C, true, { desktopSession: true, helperEnv: {
+        STOP_MESSAGE: "Computer Use was stopped by the user with the physical Escape key",
+      }});
+      const metadata = scope(`desktop-stop-${index}`);
+      const before = await client.request("echo", {}, metadata);
+      await assert.rejects(client.request("stop", {}, metadata), e => e instanceof Error && e.message === USER_STOPPED_MESSAGE);
+      await assert.rejects(client.request("echo", {}, metadata), /physical Escape key/);
+      const cleanup = await client.request("desktop_cancel", {}, metadata);
+      assert.equal(cleanup.pid, before.pid);
+      const final = await client.request("desktop_close", {}, metadata);
+      traces.push(final.history.map((q: any) => q.method));
+      await client.close();
+      await client.close();
+      await assert.rejects(client.request("echo", {}, scope(`fresh-${index}`)), /Windows desktop session ended/);
+    }
+    assert.deepEqual(traces[1], traces[0]);
+    assert.deepEqual(traces[0], ["echo", "stop", "desktop_cancel", "desktop_close"]);
+  });
+});
+
+test("Windows desktop transport rejects lost cleanup, failed close and failed turn transitions", async () => {
+  await fixture(async create => {
+    for (const C of [Original, WindowsHelperTransport]) {
+      const exited = create(C, false, { desktopSession: true });
+      await assert.rejects(exited.request("exit0", {}), /exited with exit code 0/);
+      await assert.rejects(exited.close(), /exited without confirming cleanup/);
+      await assert.rejects(exited.request("echo", {}), /Windows desktop session ended/);
+      for (const desktopSession of [false, true]) {
+        const failedClose = create(C, false, { desktopSession, helperEnv: { FAIL_METHOD: "close" } });
+        await failedClose.request("echo", {});
+        if (desktopSession) await assert.rejects(failedClose.close(), /fixture rejected close/);
+        else await failedClose.close();
+        const transition = create(C, false, { desktopSession, helperEnv: { FAIL_METHOD: "end_turn" } });
+        await transition.request("echo", {}, scope("before"));
+        if (desktopSession) await assert.rejects(transition.request("echo", {}, scope("after")), /fixture rejected end_turn/);
+        else assert.ok(await transition.request("echo", {}, scope("after")));
+        // Desktop close must skip end_turn, preserving the last active metadata.
+        await transition.close();
+      }
+    }
+  });
+});
+
+test("Windows transport default request budgets match current original desktop methods", async () => {
+  await fixture(async create => {
+    for (const C of [Original, WindowsHelperTransport]) {
+      const client = create(C, true, { desktopSession: true, timeoutMs: undefined });
+      for (const method of ["desktop_get_screenshot", "desktop_type_text", "desktop_paste", "launch_app", "desktop_click", "echo"]) {
+        const result = await client.request(method, {});
+        assert.equal(result.history.at(-1).meta["x-oai-cua-request-budget-ms"],
+          ["desktop_click", "echo"].includes(method) ? 10000 : 15000);
+      }
+      const result = await client.request("echo", {}, { timeoutMs: 1234 });
+      assert.equal(result.history.at(-1).meta["x-oai-cua-request-budget-ms"], 1234);
+      await client.close();
+    }
+  });
+});
+
+
+test("Windows helper transport current oracle is SHA256 pinned", async () => {
+  const file = `${root}/sky/dist/project/cua/sky_js/src/targets/windows/internal/helper_transport.js`;
+  assert.equal(createHash("sha256").update(await readFile(file)).digest("hex"),
+    "502b93f0d8be7847e3415c7913451c35acdd8dd41fc85202a06429e263d9ffc8");
 });

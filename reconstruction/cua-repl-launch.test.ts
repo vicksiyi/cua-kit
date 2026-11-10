@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, writeFile, chmod, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, chmod, rm, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -221,4 +222,12 @@ test("environment builder matches current source audio flags, title and completi
     JSON.parse(enabled.NODE_REPL_JS_COMPLETION_SUMMARY!).instructions.length >
       0,
   );
+});
+
+
+test("current REPL environment/instructions/launcher oracle hashes are pinned", async () => {
+  const hashes = JSON.parse(await readFile(new URL("./cua-repl-current-hashes.json",import.meta.url),"utf8"));
+  for (const [name,expected] of Object.entries(hashes)) {
+    assert.equal(createHash("sha256").update(await readFile(`${originalDirectory}/${name}.js`)).digest("hex"),expected);
+  }
 });

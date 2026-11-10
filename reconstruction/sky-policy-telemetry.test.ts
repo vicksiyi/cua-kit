@@ -528,3 +528,48 @@ test("persisted app approval does not cache or override a later policy denial", 
   assert.deepEqual(original.responses.slice(0, 2), [{ value: "done" }, { value: "done" }]);
   assert.match((original.responses[2] as any).error, /organization's policy/);
 });
+
+test("Mac policy spans match current original stages, outcomes and telemetry failure isolation", async () => {
+  for (const mode of ["success", "denied", "forbidden", "lookup-error", "decline", "invalid", "TimeoutError", "AbortError", "approval-error", "execute-error", "cancelled", "span-start-error", "span-end-error", "audio"]) {
+    async function run(original: boolean) {
+      const trace: any[] = [];
+      const policy = makePolicy(original, {
+        getClient: async () => ({getAppPolicy: async () => {
+          trace.push("lookup");
+          if (mode === "lookup-error") throw Error("lookup failed");
+          return { decision: mode === "denied" || mode === "forbidden" ? mode : "allowed",
+            allowPersistentApproval: false, target: {appPath:"/fixture.app",bundleIdentifier:"fixture",displayName:"Fixture",risk:"low"} };
+        }}),
+        logComputerUseToolCalled: (event: any) => trace.push(["tool",{...event,durationMs:0}]),
+        logComputerUseApprovalRequested: () => trace.push("requested"),
+        logComputerUseApprovalResolved: (event: any) => trace.push(["resolved",event]),
+      });
+      const runtime = {
+        telemetry: { startSpan(name: string, attrs: any) {
+          trace.push(["span",name,attrs]);
+          if (mode === "span-start-error") throw Error("telemetry failed");
+          return {end(value: any) {
+            trace.push(["end",name,value]);
+            if (mode === "span-end-error") throw Error("telemetry failed");
+          }};
+        }},
+        async createElicitation() {
+          trace.push("approval");
+          if (["TimeoutError","AbortError","approval-error"].includes(mode)) {
+            const error = Error("approval failed");error.name = mode;throw error;
+          }
+          return {action:mode === "decline" ? "decline" : mode === "invalid" ? "unexpected" : "accept"};
+        },
+      };
+      const response = await host(runtime, () => result(() => mode === "audio" ? policy.requestComputerAudioApproval()
+        : policy.withComputerUsePolicy("click",{app:"fixture"},async () => {
+          trace.push("execute");
+          if (mode === "execute-error") throw Error("execution failed");
+          if (mode === "cancelled") throw new SkyComputerUseError({code:ServerErrorCode.userIntervened,message:"intervened",request:null,requestType:"click"});
+          return "done";
+        })));
+      return {trace,response};
+    }
+    assert.deepEqual(await run(false),await run(true),mode);
+  }
+});

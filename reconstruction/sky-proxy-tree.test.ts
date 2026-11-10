@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { inspect } from "node:util";
+import { createHash } from "node:crypto";
 import { parse } from "acorn";
 import { __awaiter } from "tslib";
 import { accessibility_tree } from "../packages/sky/src/targets/linux/accessibility_tree";
@@ -30,13 +31,24 @@ const body = ast.body
   .map((n) => source.slice(n.start, n.end))
   .join("\n");
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-const originalProxy = new AsyncFunction(
-  "e",
-  "t",
-  "r",
-  "o",
-  body + ";return {sky:l};",
+const originalRpc = await import(pathToFileURL(base + "sky_service_rpc.js").href);
+function importedAlias(name: string) {
+  for (const node of ast.body as any[]) {
+    if (node.type === "ImportDeclaration") {
+      const found = node.specifiers.find((s: any) => s.imported?.name === name);
+      if (found) return found.local.name;
+    }
+  }
+  throw Error(`Missing vendor import ${name}`);
+}
+const exportedSky = (ast.body as any[]).find(n => n.type === "ExportNamedDeclaration")
+  .specifiers.find((s: any) => s.exported.name === "sky").local.name;
+const originalProxyFactory = new AsyncFunction(
+  ...["__awaiter", "create_client", "load_options", "create_drag_handle", "invoke"].map(importedAlias),
+  body + `;return {sky:${exportedSky}};`,
 );
+const originalProxy = (awaiter: unknown, direct: unknown, options: unknown, _tree: unknown) =>
+  originalProxyFactory(awaiter, direct, options, originalRpc.create_drag_handle, originalRpc.invoke);
 async function host<T>(runtime: any, run: () => Promise<T>) {
   const prior = Object.getOwnPropertyDescriptor(globalThis, "nodeRepl");
   if (runtime === undefined) Reflect.deleteProperty(globalThis, "nodeRepl");
@@ -291,7 +303,8 @@ test("Sky proxy preserves deferred setup errors, lazy direct client and invalid 
     assert.deepEqual(await run(false), await run(true));
   }
 });
-test("Sky config loader preserves trimmed path precedence and raw JSON values", async () => {
+test("Sky config loader preserves path precedence, raw values and desktop API constraints", async () => {
+  assert.equal(createHash("sha256").update(await readFile(base + "load_options.js")).digest("hex"), "45c056a12f7cf1b90a224ae3a0f05636d8482d51ebd1f88085dcce38349c9222", "Installed loader changed; re-audit the current-version oracle");
   const prior = process.env.OAI_SKY_CONFIG_PATH,
     dir = await mkdtemp(path.join(tmpdir(), "sky-config-")),
     file = path.join(dir, "config.json");
@@ -306,6 +319,16 @@ test("Sky config loader preserves trimmed path precedence and raw JSON values", 
       '{"target":"linux","extra":1}',
       "null",
       '{"target":"unknown"}',
+      '{"target":"windows","api":"desktop","extra":1}',
+      '{"target":"mac","api":"desktop"}',
+      '{"target":"linux","api":"desktop"}',
+      '{"target":"windows","api":"window"}',
+      '{"target":"windows","api":null}',
+      '{"api":"desktop"}',
+      '[]',
+      '42',
+      '"text"',
+      'false',
       "invalid",
     ]) {
       await writeFile(file, content);

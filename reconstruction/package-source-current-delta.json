@@ -1,0 +1,155 @@
+{
+  "baseline": "reconstruction/package-source-inventory.json",
+  "scope": "Installed CUA, Sky and CUA-REPL JavaScript modules; excludes browser bundle, extension, native executables and declaration fidelity",
+  "limitation": "Matching paths and hashes establish inventory/provenance only, not behavior, readable-source completeness or real-device acceptance",
+  "counts": [
+    {
+      "name": "cua",
+      "modules": 27,
+      "missingTargets": [],
+      "missingBuilt": []
+    },
+    {
+      "name": "sky",
+      "modules": 65,
+      "missingTargets": [],
+      "missingBuilt": []
+    },
+    {
+      "name": "cua-repl",
+      "modules": 4,
+      "missingTargets": [],
+      "missingBuilt": []
+    }
+  ],
+  "changes": [
+    {
+      "source": "cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+      "target": "packages/cua/src/tinysky_alt/create_browser_api.ts",
+      "previousSha256": "fe00757868fc4dd01b00d2cd1b315d7442497a4b33d7cd030450da4d47a114f0",
+      "currentSha256": "9bd1b3af46ec3f91e51d319d7b277d463ce9a077335ef84a8697b318f1baa006",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/client.js",
+      "target": "packages/sky/src/client.ts",
+      "previousSha256": null,
+      "currentSha256": "79dcd8fb4fa890d65da073cd69ef8996f15e714d73b62fb0e9079d1579486497",
+      "change": "added",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/create_client.js",
+      "target": "packages/sky/src/create_client.ts",
+      "previousSha256": "5dc4a74434f382e318b596764054bf647fd13d3c9dea9ce5e8464a5c13fa2d81",
+      "currentSha256": "6f1c2f5fb25c3903ec0b1e99e5b6f0d179483aa5ce7a69dc7ec74a4a7aa77d33",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/load_options.js",
+      "target": "packages/sky/src/load_options.ts",
+      "previousSha256": "0ddd5df4674ae2696550cd2ac41583caef9dad9b58bd363559fda716c2ed8341",
+      "currentSha256": "45c056a12f7cf1b90a224ae3a0f05636d8482d51ebd1f88085dcce38349c9222",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/service.js",
+      "target": "packages/sky/src/service.ts",
+      "previousSha256": "789e3daf847da27432a816f51493a0ad452f36b67b40b99713c87bf662adb07d",
+      "currentSha256": "efd97700bc9d87fc6c2e7ef262d49eb638123c52fff92ff680ebd1bbb0e7cb81",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/sky.js",
+      "target": "packages/sky/src/sky.ts",
+      "previousSha256": "1a433cd5ffb9b91bdfa6fff003938b80dea0890cd8a80e7bca4132b381072c3a",
+      "currentSha256": "91a38110155e2d48ca376752cd66918e77fbf9457605c3fccc4ca3097684517a",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/sky_service_rpc.js",
+      "target": "packages/sky/src/sky_service_rpc.ts",
+      "previousSha256": null,
+      "currentSha256": "87b037bfa736500f6700824099d569cb8add10140c66ad6039e6d21f3f5c2f7d",
+      "change": "added",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/targets/mac/audio_recording.js",
+      "target": "packages/sky/src/targets/mac/audio_recording.ts",
+      "previousSha256": "883e11ac21cb261572166319a4dd7a948713cc7aaffc7c9117029d7374d01081",
+      "currentSha256": "439d5adfb320845fab760caa449019fc9c48115b07593fb6f160be7d0ed328be",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/targets/mac/computer-use-policy.js",
+      "target": "packages/sky/src/targets/mac/computer-use-policy.ts",
+      "previousSha256": "a00024117e11f2d1e4151e140bede2c0ed7931625aa0f79a427457cb1103524e",
+      "currentSha256": "b1591c30de7a51d0fb5a842a78096920427e1c96bda8199589b3c8de417cd897",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/targets/mac/native-pipe.js",
+      "target": "packages/sky/src/targets/mac/native-pipe.ts",
+      "previousSha256": "51a1138a0f0d7f01fe5d4d0a4f0753c67b2c3f3ed55c7540c26d182274e116f4",
+      "currentSha256": "60b3653f7ee052007b02a79e11416a89d424d73dac450e429a93b214839c267f",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/targets/windows/desktop_client.js",
+      "target": "packages/sky/src/targets/windows/desktop_client.ts",
+      "previousSha256": null,
+      "currentSha256": "80bddcec7b3d7b5053067f63624a456a4a735eb54a98c0d643b524571a18a736",
+      "change": "added",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/targets/windows/internal/computer_use_client.js",
+      "target": "packages/sky/src/targets/windows/internal/computer_use_client.ts",
+      "previousSha256": "12f2952342ee3e3e4ae2cd509de48f59c935a925607aee24f41d7797510802f7",
+      "currentSha256": "1d472472c615143c1f4f7d6ba083225a743e8f705c1042dc6ed64260bb3c116f",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "sky/dist/project/cua/sky_js/src/targets/windows/internal/helper_transport.js",
+      "target": "packages/sky/src/targets/windows/internal/helper_transport.ts",
+      "previousSha256": "ddade82306b88d3b4c35206567e16ef0fdf8999634e03380bdf12ca229dba4f1",
+      "currentSha256": "502b93f0d8be7847e3415c7913451c35acdd8dd41fc85202a06429e263d9ffc8",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "cua-repl/dist/lib/js/oai_js_cua_repl/src/environment.js",
+      "target": "packages/cua-repl/src/environment.ts",
+      "previousSha256": null,
+      "currentSha256": "0160beba37aa314e2f04a6febaa1a633b59fd59ff65b4e2282dc0926070d40ab",
+      "change": "added",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "cua-repl/dist/lib/js/oai_js_cua_repl/src/instructions.js",
+      "target": "packages/cua-repl/src/instructions.ts",
+      "previousSha256": "36acec6b10072e5f3730ca74be23de6b9a4707ebe996dea382f4c262a28d964c",
+      "currentSha256": "f825c4cccf4cca85af2b850ddbcbbfe5e1a7c44b31caf391dc2eb26f75e1a815",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    },
+    {
+      "source": "cua-repl/dist/lib/js/oai_js_cua_repl/src/launch.js",
+      "target": "packages/cua-repl/src/launch.ts",
+      "previousSha256": "97ce061a09cba0e701e83c2508c276ed573ce864d2478993f873c0650a84e316",
+      "currentSha256": "2b94afb931a6fd654b07957a04e3269710be747a1f3680cf2d0a007b6598f000",
+      "change": "changed",
+      "semanticStatus": "requires per-module evidence; hash drift alone does not establish a behavior change"
+    }
+  ]
+}

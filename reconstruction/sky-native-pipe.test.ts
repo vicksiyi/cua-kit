@@ -7,7 +7,8 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { pathToFileURL } from "node:url";
 import { createServer, createConnection } from "node:net";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import * as restored from "../packages/sky/src/targets/mac/native-pipe";
@@ -214,8 +215,8 @@ test("Mac request queue, metadata, wire errors and write failure preserve origin
     assert.deepEqual(await run(restored), await run(original), mode);
   }
 });
-test("Mac host requests preserve attachment uncertainty and listener cleanup", async () => {
-  for (const method of ["ensureService", "attachComputerAudio"])
+test("Mac host startup ensureService matches current source and cleans listeners", async () => {
+  const method = "ensureService";
     for (const mode of [
       "success",
       "error",
@@ -226,6 +227,9 @@ test("Mac host requests preserve attachment uncertainty and listener cleanup", a
     ]) {
       async function run(api: any) {
         const socket = new Socket();
+        let startup = false;
+        const service = new Socket();
+        service.callback = request => queueMicrotask(() => service.reply({id:request.id,jsonrpc:"2.0",result:{serverApiVersion:"fixture"}}));
         socket.callback = (request) => {
           if (mode === "write-error") throw Error("write");
           queueMicrotask(() => {
@@ -256,14 +260,15 @@ test("Mac host requests preserve attachment uncertainty and listener cleanup", a
             env: { NODE_REPL_HOST_SERVICES_PIPE_PATH: " /synthetic " },
             nativePipe: {
               async createConnection(name: string) {
-                assert.equal(name, "/synthetic");
-                return socket;
+                if (name === "/synthetic") { startup = true; return socket; }
+                if (startup) return service;
+                throw Error("service not started");
               },
             },
           },
           () =>
             result(() =>
-              api.requestComputerUseHost(method, { service: "fixture" }),
+              api.MacNativePipeTransport.create("fixture").then(() => "connected"),
             ),
         );
         const request = socket.writes[0];
@@ -546,5 +551,14 @@ test("Mac restored transport uses a real isolated Unix socket for handshake and 
     for (const socket of connections) socket.destroy();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await rm(directory, { recursive: true, force: true });
+  }
+});
+
+
+test("Mac native pipe public exports and current source hashes are pinned", async () => {
+  assert.deepEqual(Object.keys(restored).sort(), Object.keys(original).sort());
+  const hashes = JSON.parse(await readFile(new URL("./sky-mac-current-hashes.json",import.meta.url),"utf8"));
+  for (const [file, expected] of Object.entries(hashes)) {
+    assert.equal(createHash("sha256").update(await readFile(base+file)).digest("hex"),expected);
   }
 });

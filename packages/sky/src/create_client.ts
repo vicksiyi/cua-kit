@@ -10,6 +10,8 @@ export function create_client(
 ): T.FullDesktop.Client;
 export function create_client(options: T.Options): T.SkyClient;
 export function create_client(options: T.Options): T.SkyClient {
+  if ("api" in options && options.api === "desktop")
+    throw new Error("The configured desktop API requires create_client({ api: 'desktop' })");
   const target = options.target;
   switch (target) {
     case "linux":

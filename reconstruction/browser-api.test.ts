@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 const { create_browser_api: restored } =
   await import("../packages/cua/dist/tinysky_alt/create_browser_api.js");
@@ -351,4 +353,12 @@ test("two retained tab bindings route alternating edits and observations indepen
     return trace;
   }
   assert.deepEqual(await run(restored), await run(original));
+});
+
+
+test("browser API and tab binding comparisons pin their current source versions", async () => {
+  const evidence = JSON.parse(await readFile(new URL("./browser-api-current-evidence.json",import.meta.url),"utf8"));
+  for (const [key,file] of [["createBrowserApi","create_browser_api"],["bindTab","bind_tab"]]) {
+    assert.equal(createHash("sha256").update(await readFile(new URL(source(file)))).digest("hex"),evidence.sources[key].sha256);
+  }
 });

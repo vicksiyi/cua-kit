@@ -1,0 +1,50 @@
+{
+  "scope": "Current screenshot-only desktop declarations; copied without semantic changes",
+  "files": [
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/Desktop.d.ts",
+      "target": "packages/sky/src/types/Desktop.d.ts",
+      "sha256": "1bb1af281695ba3432e7b5eb0d030a845e791ddfef157bb13ba6b56ca0a11792"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/Click.d.ts",
+      "target": "packages/sky/src/types/desktop/Click.d.ts",
+      "sha256": "835aab3fad594cec0a8a50b8204e5e4fbde37e7e6d866ce273721b852de8296b"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/Close.d.ts",
+      "target": "packages/sky/src/types/desktop/Close.d.ts",
+      "sha256": "fee124cc3f99b9598a1f475a2369f9005bb49e0113e570f2deb102400d06e608"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/Drag.d.ts",
+      "target": "packages/sky/src/types/desktop/Drag.d.ts",
+      "sha256": "be57a72b53e9cc73f4fa346c061e4b14cd3b1db79df245f23873c224a7f6df4c"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/Move.d.ts",
+      "target": "packages/sky/src/types/desktop/Move.d.ts",
+      "sha256": "9239eae9a6fbdf8ce1a22fec74d263a358df4323ee3ef4eaf8e54d12b3306b5e"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/Paste.d.ts",
+      "target": "packages/sky/src/types/desktop/Paste.d.ts",
+      "sha256": "46394abf1b52c75aa1f2d4a2c486b6e4b7a85c1f8007655d6b58eac1a964e191"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/PressKey.d.ts",
+      "target": "packages/sky/src/types/desktop/PressKey.d.ts",
+      "sha256": "d3a50bc13d3c8d10889d7e063ad2184b18a538b5047d7d26201bba69d4b645a7"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/Scroll.d.ts",
+      "target": "packages/sky/src/types/desktop/Scroll.d.ts",
+      "sha256": "08cef2fed066a565226557fc38efec29a14a29554d7ebcbd6fa67b54887ab181"
+    },
+    {
+      "source": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/dist/project/cua/sky_js/src/types/desktop/TypeText.d.ts",
+      "target": "packages/sky/src/types/desktop/TypeText.d.ts",
+      "sha256": "3178493c6cb04f4d62963c70c469d12d948c43e7af389f418372eaa36fe3b052"
+    }
+  ]
+}

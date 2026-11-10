@@ -1,5 +1,4 @@
 import { Buffer } from "node:buffer";
-import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -21,7 +20,7 @@ export interface NativePipeConnection {
   write(data: Uint8Array): void;
 }
 type ConnectionFactory = (path: string) => Promise<NativePipeConnection>;
-type HostServiceMethod = "ensureService" | "attachComputerAudio";
+type HostServiceMethod = "ensureService";
 const MAX_FRAME_BYTES = 8_388_608;
 export function decodeMessageFrames(buffer: Buffer) {
   const messages: string[] = [];
@@ -413,7 +412,7 @@ async function startService(host: any) {
   else application = { bundleIdentifier: "com.openai.sky.CUAService" };
   await launch(application);
 }
-export async function requestComputerUseHost(
+async function requestComputerUseHost(
   method: HostServiceMethod,
   params: Record<string, string>,
 ): Promise<void> {
@@ -451,28 +450,12 @@ function exchangeHostRequest(
   params: Record<string, string>,
 ) {
   return new Promise<void>((resolve, reject) => {
-    const id = method === "ensureService" ? 0 : randomUUID();
+    const id = 0;
     let buffer: Buffer = Buffer.alloc(0),
       settled = false;
-    const uncertain = (error: Error) =>
-      method === "attachComputerAudio"
-        ? new Error(
-            "Computer audio attachment status is unknown. It may still arrive; do not retry this recording.",
-            { cause: error },
-          )
-        : error;
     const timer = setTimeout(
-      () =>
-        finish(
-          uncertain(
-            new Error(
-              method === "ensureService"
-                ? "Sky Computer Use host service ensure timed out"
-                : "Sky Computer Use host service response timed out",
-            ),
-          ),
-        ),
-      method === "attachComputerAudio" ? 60000 : 5000,
+      () => finish(new Error("Sky Computer Use host service ensure timed out")),
+      5000,
     );
     const finish = (error?: Error) => {
       if (settled) return;
@@ -512,26 +495,18 @@ function exchangeHostRequest(
             } else if ("result" in response) finish();
             else
               finish(
-                uncertain(
-                  new Error(
-                    "Sky Computer Use host service returned an invalid response",
-                  ),
-                ),
+                new Error("Sky Computer Use host service returned an invalid response"),
               );
           }
         }
       } catch (error) {
-        finish(uncertain(asError(error)));
+        finish(asError(error));
       }
     };
-    const failed = (error: Error) => finish(uncertain(error));
+    const failed = (error: Error) => finish(error);
     const closed = () =>
       finish(
-        uncertain(
-          new Error(
-            "Sky Computer Use host service connection closed before response",
-          ),
-        ),
+        new Error("Sky Computer Use host service connection closed before response"),
       );
     socket.on("data", data);
     socket.on("error", failed);
@@ -543,7 +518,7 @@ function exchangeHostRequest(
         ),
       );
     } catch (error) {
-      finish(uncertain(asError(error)));
+      finish(asError(error));
     }
   });
 }

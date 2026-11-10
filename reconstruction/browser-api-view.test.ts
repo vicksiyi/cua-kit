@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { parse } from "acorn";
+import { createHash } from "node:crypto";
 import {
   createApiView,
   getDisabledMemberIds,
@@ -12,9 +14,29 @@ const bundle = await readFile(
   `${root}/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js`,
   "utf8",
 );
-const original = await import(
-  `data:text/javascript;base64,${Buffer.from(bundle + "\nexport {jm as Factory,p as runtimeTypes,jh as Tab};").toString("base64")}`
+// Resolve the current lexical bindings from the factory AST, not old minified names.
+const ast = parse(bundle, { ecmaVersion: "latest", sourceType: "module" });
+const factories = ast.body.flatMap((node: any) => node.type === "VariableDeclaration"
+  ? node.declarations.filter((entry: any) => entry.init?.type === "ClassExpression" && bundle.slice(entry.start,entry.end).includes("Browser API interface has no runtime type:")) : []);
+assert.equal(factories.length,1);
+const factoryNode: any = factories[0];
+const registry = new Set<string>();
+function visit(node: any) {
+  if (node == null || typeof node !== "object") return;
+  if (node.type === "CallExpression" && node.callee?.type === "MemberExpression"
+    && node.callee.object?.name === "Reflect" && node.callee.property?.name === "get"
+    && node.arguments.length === 2 && node.arguments[0]?.type === "Identifier") registry.add(node.arguments[0].name);
+  for (const value of Object.values(node)) {
+    if (Array.isArray(value)) value.forEach(visit);
+    else if (value && typeof value === "object") visit(value);
+  }
+}
+visit(factoryNode.init);
+assert.equal(registry.size,1);
+const originalModule = await import(
+  `data:text/javascript;base64,${Buffer.from(bundle + `\nexport {${factoryNode.id.name} as Factory,${[...registry][0]} as runtimeTypes};`).toString("base64")}`
 );
+const original = { ...originalModule, Tab: originalModule.runtimeTypes.Tab };
 function makeOriginal(manifest: any, decorate: any) {
   return new original.Factory({
     apiManifest: manifest,
@@ -232,4 +254,10 @@ test("per-browser unsupported defaults and overrides match original factory with
           );
         for (const id of initial) assert.equal(disabled.has(id), true);
       }
+});
+
+
+test("API view comparison is pinned to current browser bundle", async () => {
+  const evidence = JSON.parse(await readFile(new URL("./browser-api-current-evidence.json",import.meta.url),"utf8"));
+  assert.equal(createHash("sha256").update(bundle).digest("hex"),evidence.sources.browserClient.sha256);
 });

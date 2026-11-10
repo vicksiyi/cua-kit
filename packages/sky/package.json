@@ -23,6 +23,11 @@
     "./serviceFactory": {
       "types": "./src/create_service.ts",
       "import": "./dist/create_service.js"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./dist/client.js",
+      "default": "./dist/client.js"
     }
   }
 }

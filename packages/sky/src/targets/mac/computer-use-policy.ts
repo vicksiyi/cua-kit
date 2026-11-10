@@ -12,6 +12,27 @@ export function createComputerUsePolicy(
     logComputerUseApprovalResolved: telemetry.logComputerUseApprovalResolved,
   },
 ) {
+  function startSpan(name: string, attrs: Record<string, string>) {
+    try { return (globalThis as any).nodeRepl?.telemetry?.startSpan(name, attrs); }
+    catch { return undefined; }
+  }
+  function endSpan(span: any, value: { attrs: Record<string, string>; status: string }) {
+    try { span?.end(value); } catch { }
+  }
+  async function waitForApproval<T extends { action?: string }>(kind: string, operation: () => Promise<T>): Promise<T> {
+    const span = startSpan("computer_use.elicitation.wait", { "computer_use.approval.kind": kind });
+    try {
+      const response = await operation();
+      const outcome = ["accept", "decline", "cancel"].includes(response.action ?? "") ? response.action! : "invalid_response";
+      endSpan(span, { attrs: { "computer_use.approval.outcome": outcome }, status: outcome === "invalid_response" ? "error" : "ok" });
+      return response;
+    } catch (error) {
+      const outcome = error instanceof Error && error.name === "TimeoutError" ? "timed_out"
+        : error instanceof Error && error.name === "AbortError" ? "cancel" : "invalid_response";
+      endSpan(span, { attrs: { "computer_use.approval.outcome": outcome }, status: outcome === "cancel" ? "ok" : "error" });
+      throw error;
+    }
+  }
   function setComputerUseResponseMeta(bundleIdentifier: string | null) {
     const host = (globalThis as any).nodeRepl;
     host?.setResponseMeta?.({
@@ -98,7 +119,7 @@ export function createComputerUsePolicy(
     const callId = toolCallId();
     let response: any;
     try {
-      response = await create({
+      response = await waitForApproval("app", () => create({
         message: `Allow Computer Use to use "${target.displayName}"?`,
         meta: {
           codex_approval_kind: "mcp_tool_call",
@@ -118,7 +139,7 @@ export function createComputerUsePolicy(
             { name: "app", display_name: "App", value: target.displayName },
           ],
         },
-      });
+      }));
     } catch (error) {
       requested();
       throw error;
@@ -162,26 +183,26 @@ export function createComputerUsePolicy(
     operation: (input: Readonly<Input>) => Promise<Result>,
   ): Promise<Result> {
     setComputerUseResponseMeta(null);
-    const copy = snapshot(input),
-      create = elicitation(),
-      client = await deps.getClient(),
-      policy = await client.getAppPolicy(copy.app);
-    setComputerUseResponseMeta(policy.target.bundleIdentifier);
+    const copy = snapshot(input), create = elicitation();
+    const span = startSpan("computer_use.policy", { "computer_use.target": "mac" });
+    let policy: MacAppPolicyResult | undefined;
     let target: MacAppPolicyResult["target"] | undefined;
-    switch (policy.decision) {
-      case "allowed":
-        target = policy.target;
-        break;
-      case "denied":
-        throw new Error(
-          `Computer Use is blocked from using the app '${policy.target.bundleIdentifier}' by your organization's policy.`,
-        );
-      case "forbidden":
-        throw new Error(
-          `Computer Use is not allowed to use the app '${policy.target.bundleIdentifier}' for safety reasons.`,
-        );
+    try {
+      const client = await deps.getClient();
+      policy = await client.getAppPolicy(copy.app);
+      setComputerUseResponseMeta(policy.target.bundleIdentifier);
+      switch (policy.decision) {
+        case "allowed": target = policy.target; break;
+        case "denied": throw new Error(`Computer Use is blocked from using the app '${policy.target.bundleIdentifier}' by your organization's policy.`);
+        case "forbidden": throw new Error(`Computer Use is not allowed to use the app '${policy.target.bundleIdentifier}' for safety reasons.`);
+      }
+      endSpan(span, { attrs: { "computer_use.policy.result": "allowed" }, status: "ok" });
+    } catch (error) {
+      const blocked = policy != null && (policy.decision === "denied" || policy.decision === "forbidden");
+      endSpan(span, { attrs: { "computer_use.policy.result": blocked ? "blocked" : "error" }, status: blocked ? "ok" : "error" });
+      throw error;
     }
-    await approve(create, policy, toolName);
+    await approve(create, policy!, toolName);
     const approved = snapshot(copy, target!.appPath);
     return withComputerUseToolTelemetry(
       toolName,
@@ -192,7 +213,7 @@ export function createComputerUsePolicy(
   async function requestComputerAudioApproval() {
     const create = elicitation(),
       callId = toolCallId();
-    const response = await create({
+    const response = await waitForApproval("audio", () => create({
       message: "Allow Computer Use to record computer audio?",
       meta: {
         codex_approval_kind: "mcp_tool_call",
@@ -206,7 +227,7 @@ export function createComputerUsePolicy(
         tool_params: {},
         tool_params_display: [],
       },
-    });
+    }));
     if (response.action !== "accept")
       throw new Error("Computer Use was not approved to record computer audio");
   }
@@ -216,6 +237,7 @@ export function createComputerUsePolicy(
     operation: () => Promise<Result>,
   ): Promise<Result> {
     const start = performance.now();
+    const span = startSpan("computer_use.native.execute", { "computer_use.target": "mac" });
     let terminalStatus: "completed" | "cancelled" | "failed" = "completed";
     try {
       return await operation();
@@ -228,6 +250,7 @@ export function createComputerUsePolicy(
           : "failed";
       throw error;
     } finally {
+      endSpan(span, { attrs: { "computer_use.terminal_status": terminalStatus }, status: terminalStatus === "failed" ? "error" : "ok" });
       deps.logComputerUseToolCalled({
         bundleIdentifier,
         durationMs: Math.min(

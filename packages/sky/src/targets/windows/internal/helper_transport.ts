@@ -12,6 +12,7 @@ import {
   type TurnScope,
 } from "./helper_protocol";
 export type HelperTransportOptions = {
+  desktopSession?: boolean;
   helperArgs?: string[];
   helperCommand: string;
   helperEnv?: Record<string, string | undefined>;
@@ -58,9 +59,12 @@ export class WindowsHelperTransport {
   #preserve: boolean;
   #stderr = "";
   #stdout = "";
-  #launchTimeout: number;
-  #requestTimeout: number;
+  #timeout?: number;
+  #desktop: boolean;
+  #launched = false;
+  #cleanupConfirmed = false;
   constructor({
+    desktopSession = false,
     helperArgs = [],
     helperCommand,
     helperEnv,
@@ -71,25 +75,28 @@ export class WindowsHelperTransport {
     this.#command = helperCommand;
     this.#env = helperEnv ?? null;
     this.#preserve = preserveHelperOnTimeout;
-    this.#launchTimeout = timeoutMs ?? 15000;
-    this.#requestTimeout = timeoutMs ?? 10000;
+    this.#desktop = desktopSession;
+    this.#timeout = timeoutMs;
   }
   close(): Promise<void> {
     this.#stoppedKey = null;
     const child = this.#child;
-    if (child == null) return Promise.resolve();
+    if (child == null) return this.#desktop && this.#launched && !this.#cleanupConfirmed
+      ? Promise.reject(new Error("Windows desktop helper exited without confirming cleanup")) : Promise.resolve();
     if (child.exitCode != null || child.signalCode != null) {
       this.#reset(child);
-      return Promise.resolve();
+      return this.#desktop && !this.#cleanupConfirmed
+        ? Promise.reject(new Error("Windows desktop helper exited without confirming cleanup")) : Promise.resolve();
     }
-    return this.request("close", {})
-      .catch(() => {
+    return this.request("close", {}, this.#desktop ? { skipTurnTransition: true, codexTurnMetadata: this.#activeMetadata } : undefined)
+      .catch(error => {
         child.kill();
+        if (this.#desktop) throw error;
       })
       .finally(() => {
         this.#reset(child);
       })
-      .then(() => {});
+      .then(() => { this.#cleanupConfirmed = true; });
   }
   onEvent(listener: (event: unknown) => void) {
     this.#events.add(listener);
@@ -120,12 +127,13 @@ export class WindowsHelperTransport {
         this.#child.signalCode != null)
     )
       return null;
-    if (this.#stoppedKey != null) {
+    const cleanup = this.#desktop && ["desktop_cancel", "desktop_close", "close"].includes(method);
+    if (!cleanup && this.#stoppedKey != null) {
       if (key === this.#stoppedKey)
         return Promise.reject(new Error(USER_STOPPED_MESSAGE));
       if (key != null) this.#stoppedKey = null;
     }
-    if (scope != null && turnScopeProtocol.interrupted(scope)) {
+    if (!cleanup && scope != null && turnScopeProtocol.interrupted(scope)) {
       this.#stoppedKey = key;
       return Promise.reject(new Error(USER_STOPPED_MESSAGE));
     }
@@ -154,10 +162,7 @@ export class WindowsHelperTransport {
         method,
         params,
         currentMetadata,
-        options.timeoutMs ??
-          (method === "launch_app"
-            ? this.#launchTimeout
-            : this.#requestTimeout),
+        options.timeoutMs ?? this.#budget(method),
       );
       if (reply.kind === "result") {
         result = reply.result;
@@ -179,7 +184,12 @@ export class WindowsHelperTransport {
     }
     return result;
   }
+  #budget(method: string) {
+    return this.#timeout ?? (["desktop_get_screenshot", "desktop_type_text", "desktop_paste", "launch_app"].includes(method) ? 15000 : 10000);
+  }
   #spawn() {
+    if (this.#desktop && this.#launched) throw new Error("Windows desktop session ended");
+    if (this.#desktop) this.#launched = true;
     const child = spawn(this.#command, this.#args, {
       env:
         this.#env == null
@@ -244,7 +254,7 @@ export class WindowsHelperTransport {
       previous = this.#activeKey,
       previousMetadata = this.#activeMetadata;
     if (previous != null && previous !== key)
-      await this.#send(child, "end_turn", {}, previousMetadata).catch(() => {});
+      await this.#send(child, "end_turn", {}, previousMetadata).catch(error => { if (this.#desktop) throw error; });
     this.#activeKey = key;
     this.#activeMetadata = key == null ? null : metadata;
   }
@@ -253,9 +263,7 @@ export class WindowsHelperTransport {
     method: string,
     params: Record<string, unknown>,
     metadata: unknown,
-    timeout = method === "launch_app"
-      ? this.#launchTimeout
-      : this.#requestTimeout,
+    timeout = this.#budget(method),
   ): Promise<Reply> {
     const id = this.#nextId++,
       meta = addRequestBudget(metadata, timeout),
@@ -332,12 +340,15 @@ export class WindowsHelperTransport {
         typeof response.error === "string"
           ? response.error
           : "computer-use helper request failed",
-      error = new Error(message);
-    if (message === USER_STOPPED_MESSAGE) {
+      stopped = message === USER_STOPPED_MESSAGE || (this.#desktop && message === "Computer Use was stopped by the user with the physical Escape key"),
+      error = new Error(stopped ? USER_STOPPED_MESSAGE : message);
+    if (stopped) {
       this.#markStopped(pending.turnScope);
-      this.#reset(pending.child);
-      pending.child.kill();
-      this.#reject(error, pending.child);
+      if (!this.#desktop) {
+        this.#reset(pending.child);
+        pending.child.kill();
+        this.#reject(error, pending.child);
+      }
     }
     pending.reject(error);
   }

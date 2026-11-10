@@ -7030,3 +7030,227 @@ Pinned instructions and the provider vtable establish current_auth/refetch_auth 
 ### 2026-11-07 String 解码与 subrole
 
 恢复原生 String 专用 CF 类型分派，复用现有 AXValue/marker/array helper，并接入具体 UIElement 的缓存 subrole。真实 CF/AX 对象边界测试通过；未连接生产观察器，不宣称完整泛型解码或 UIElementProtocol 已完成。
+
+### 2026-11-10 — current Sky config API constraint restored
+
+`load_options.ts` now matches the installed loader's explicit api/target rule:
+when api is present it must be desktop with target windows. Missing api still
+preserves raw JSON/default platform behavior; malformed/primitive values retain
+original errors rather than being normalized. Targeted original-JS differential
+cases cover valid/invalid API combinations, null, arrays, scalar values, malformed
+JSON and path precedence. The oracle loader is SHA256-pinned in the test.
+Targeted test, Sky typecheck and diff check passed; no model/UI/native binary run.
+This closes one known current-version branch gap, not the Windows desktop client
+or create/client_id service lifecycle gaps. No global manifest refresh claimed.
+
+### 2026-11-10 — current shared Sky RPC module assembled
+
+Added readable `sky_service_rpc.ts` corresponding to current installed JS,
+with invoke/media restoration and UUID drag-handle helpers. `createSkyProxy`
+now imports this module instead of retaining duplicated inline implementation.
+Tests updated the old minified sky.js oracle to resolve current import/export
+aliases from AST and supply original shared RPC dependencies. Shared module's
+original SHA256 is pinned; only this new mapping was added to source-map,
+without claiming all old hashes refreshed.
+
+Eight tests passed: existing Linux tree/proxy/deferred errors/config tests,
+plus shared RPC media bytes/nullish/falsy values, receiver/request identity,
+missing host/provider error and UUID/payload ordering. Sky typecheck and diff
+check passed. No model/UI/native executable run. Windows desktop API client,
+factory and service create/client_id/close session ownership remain pending.
+
+### 2026-11-10 — Windows screenshot-only desktop client restored
+
+Added readable WindowsDesktopClient from current desktop_client.js. It restores
+serialized operations, JPEG validation/private temp files, screenshot-required
+state after capture failure, drag sequence/handle state, operation IDs, timeout
+cancel, physical-Escape stop, cleanup escalation/AggregateError and idempotent
+close/file removal. Transport remains injected; no native Windows code was run.
+
+Seven version-pinned tests passed against installed JS: normal methods and
+queue/close/file lifecycle, invalid image recovery, timeout cancellation, Escape
+stop, drag cleanup and failed-cancel fatal session. Sky typecheck/diff check
+passed. This restores one class body, not a working desktop deployment.
+Static factory inspection confirms desktopSession helper-transport mode is
+required; current HelperTransportOptions lacks that flag. Factory/public client
+entry and service create/client_id/close ownership remain pending and must not
+be wired with an ignored option/stub merely to make the API appear present.
+
+
+### 2026-11-10 — Windows desktop helper transport lifecycle restored
+
+Restored desktopSession transport behavior from the current installed JS:
+single-use helper lifecycle, explicit cleanup confirmation, cleanup requests
+permitted after physical Escape, short Escape message normalization without
+killing the cleanup helper, close without turn transition, and desktop-only
+propagation of failed end_turn/close. Default screenshot/type/paste/launch budgets
+are 15 seconds; other requests retain 10 seconds unless explicitly overridden.
+
+Eight targeted tests passed, including three new desktop differential scenarios
+and a current-source SHA256 pin. Tests use an owned Node protocol fixture with
+both original JS and reconstructed TS; no native vendor executable, model API
+or desktop UI was invoked. Existing four ordinary transport regressions still
+pass. Sky typecheck/diff check passed. Factory/public client entry and service
+create/client_id/close ownership remain pending; this is transport parity, not
+Windows deployment acceptance.
+
+### 2026-11-10 — Desktop public client and factory restored
+
+Restored current client.js as client.ts and exported @core/sky/client. Outside
+NodeREPL it enforces desktop/windows configuration and selects the direct Swift
+helper factory; inside NodeREPL it creates a host-owned client, carries client_id
+on execute/drag calls, restores screenshot bytes and retains one close promise.
+The factory rejects native-pipe desktop sessions even with an injected transport,
+uses the original Swift helper path/env and desktopSession transport options.
+
+Nineteen combined entry/client/transport tests passed, with original-JS source
+hash pins and injected RPC/protocol fixtures. Sky typecheck and diff check passed.
+The first entry test exposed a test assumption: package_bin checks existence at
+construction, while client.close sends desktop_close even for an unused client.
+The corrected fixture overrides the unused binary path and does not invoke close;
+no vendor native process is run. Host RPC routing, invalid config/host responses,
+media, argument identity, drag ownership, close idempotence and injected factory
+behavior are compared with installed JS. Actual helper launch settings are
+source-derived but not Windows end-to-end verified. Service create/client_id/close
+ownership is still missing, so this does not establish a working hosted desktop
+session. Existing ordinary Windows client branches have not all been reaudited.
+
+### 2026-11-10 — Sky desktop service session ownership restored
+
+Updated the service closure and public service wiring to current service.js:
+cached configuration, one active desktop session, UUID client ownership,
+create/config/target validation, client_id routing and unknown/closed rejection.
+Successful close releases ownership; failed close retains it after clearing drag
+handles. execute explicitly rejects drag_handle. Drag handles reject duplicate
+start and operations while starting; failed start removes its entry, and Windows
+desktop failed move/end removes the handle while Linux retains it.
+
+The old service oracle returned an obsolete minified symbol; updated it to the
+current export and pinned the service SHA256. Seven service tests now cover
+media/receiver/descriptor/audio, Linux and desktop failure semantics, session
+recreation/failed close and concurrent start ordering. Combined service, desktop
+entry and shared-RPC tests: 15 passed. Sky typecheck and diff check passed. These
+are original-JS comparisons with injected clients, not a Windows helper or
+production hosted end-to-end acceptance. Native fidelity gaps remain open.
+
+### 2026-11-10 — Built desktop protocol chain and current inventory verified
+
+Restored current create_client.js desktop guard: the legacy window dispatcher
+must reject explicit desktop API before invoking any platform constructor.
+A new differential scenario covers mac/windows/linux/unknown targets. Full
+build:reconstruction passed, emitting the new modules and package subpath.
+
+Built @core/sky/client now has a deterministic integration test traversing real
+public import -> host RPC -> service session -> factory -> helper transport ->
+owned synthetic executable. Original installed JS traverses the same fixture.
+Both traces match screenshot/click/desktop_close/close, session exclusion and
+recreation, helper full-desktop environment, JPEG bytes/private file deletion
+and closed-client rejection. All six public-entry tests passed. This executes
+our Node fixture only, not a vendor native executable or real Windows desktop.
+
+Current narrow inventory is 27 cua + 65 sky + 4 cua-repl = 96 JS modules, all
+with corresponding TS paths and built outputs. Preserved the old inventory;
+package-source-current-delta.json records 4 added and 12 changed source modules
+against it without declaring those hash changes semantically audited. This
+scope excludes browser bundles, extension, native binaries and declaration
+fidelity. Source-path coverage is not source restoration completion percentage.
+
+### 2026-11-10 — Desktop declaration fidelity and consumer types
+
+Restored the nine installed Desktop/desktop declaration files without semantic
+changes, exported the Desktop namespace, and made WindowsDesktopClient implement
+Desktop.Client. Public create_client now returns Promise<Desktop.Client>;
+click/drag/scroll/move/type/paste/key inputs use original declarations rather than
+Record<string,unknown>. Shared drag RPC helper is generic so its inferred return
+preserves the public Promise<void> contract without changing runtime behavior.
+
+Seventeen entry/client/RPC tests passed, including hash/content equality for all
+nine declaration assets. Sky and the new compile-only consumer project passed:
+valid original API calls compile, while missing coordinates, wrong text/key
+fields and non-Windows creation are asserted compile errors. Initial standalone
+tsc invocation omitted project/Node types; replaced it with a reproducible
+project extending the existing config. No model/UI/native executable run. This
+closes desktop declaration gaps only, not a whole-package declaration audit.
+
+### 2026-11-10 — Current Mac policy spans and host-pipe export boundary
+
+Restored current computer-use-policy.js spans for policy lookup, elicitation
+wait and native execute. Outcomes distinguish policy-block/error, accepted/
+declined/cancel/invalid response, TimeoutError/AbortError and terminal execution
+status. Span start/end failures are isolated exactly as original; existing
+approval events and policy decisions are retained. Differential matrix covers
+14 paths including telemetry failures, policy denial, cancellation and audio.
+These spans go only through the existing host telemetry API; no new sender or
+network exporter was added.
+
+Found the old native-pipe test calling requestComputerUseHost from the installed
+module even though current JS no longer exports it. No production consumers of
+the local export remained. Removed that obsolete public export and unused
+attachComputerAudio/uncertain-attachment branch, retaining private ensureService
+startup behavior. Updated comparison to use MacNativePipeTransport.create with
+host/service socket fixtures, verifying success, errors, malformed data, close,
+write errors and listener cleanup through the real current entry.
+
+Fourteen policy/native-pipe tests passed, including a real isolated Unix socket
+handshake/queued RPC test and current hash/export pins. Sky typecheck/diff check
+passed. No model, desktop UI, real app, service launch or vendor native executable
+was used. This improves version fidelity/diagnostics; it is not evidence that
+previous Multica click failures are fixed or full macOS native restoration is
+complete.
+
+### 2026-11-10 — Current browser API-view oracle repaired and behavior rechecked
+
+Current create_browser_api.js was inspected against the local implementation;
+existing browser selection, tab creation/navigation, mention checks, user-tab
+claiming and new-tab handling match the tested paths. No production behavior
+change was needed. Updated this module's source-map entry only after running
+current-original comparisons; no blanket browser bundle hash refresh is claimed.
+
+Three API-view tests initially failed because their oracle hardcoded obsolete
+jm/p/jh bundle bindings. Replaced those with AST resolution of the class owning
+the runtime-type validation and its runtime registry, retrieving Tab from that
+registry. The corrected tests pass against current original code for identity
+caches, recursive argument unwrapping, descriptors, decorators, disabled members,
+proxy invariants and per-browser capability defaults/overrides. Eight browser
+API/view tests passed including current source pins and retained dual-tab edits.
+Recorded scoped browser-api-current-evidence.json. No model, real browser or
+native executable run. These tested paths are current-compatible; whole-bundle
+restoration and native lifecycle/real-device acceptance remain incomplete.
+
+### 2026-11-10 — REPL current baseline and declaration denominator inventory
+
+Rechecked current environment/instructions/launch JS against readable TS and
+reran the actual owned-child launcher comparison. Four tests passed including
+current source hash pins, platform/environment/guidance selection, configured
+surface/audio/title/completion summary, environment overrides and child exit
+status. Added environment's missing source-map entry and scoped current hashes;
+no behavior change was required. Signal forwarding and full supervisor behavior
+are not certified by this fixture.
+
+Added reproducible audit-declarations.ts. Current cua/sky/cua-repl declarations:
+198 paths = 86 byte-equal declarations, 4 differing declaration files, 95 paths
+with TS implementation but contract unverified, 13 declaration-only paths absent.
+The four differences include formatting/import remaps and must not automatically
+be counted as errors. The 13 absent paths include test/fixture declarations,
+platform re-export indexes and core env/unimplemented tooling contracts; absence
+alone does not prove a runtime capability missing. TS implementation presence
+is explicitly not marked type parity. Full path/hash report is local ignored
+artifacts/audit/declaration-inventory-current.json. No compiler-API dependency
+was added: the audit uses conservative byte comparison and leaves differences
+for review. Overall native/browser/contract completion remains unproven.
+
+### 2026-11-10 — Reconstruction checkpoint validation
+
+Reviewed the four declaration differences: CUA types and TinySky types preserve
+contracts with @oai -> @core scope remap and formatting; bootstrap-emitter differs
+only in formatting; Sky index uses explicit directory /index imports plus the
+restored Desktop export. No new argument gap was identified in these four files.
+This review does not certify the other 95 inferred implementation contracts.
+
+Full build:reconstruction, 68 targeted tests across browser API/view, REPL,
+Sky proxy/service/public entry, Windows desktop/transport and Mac pipe/policy,
+and the compile-only desktop consumer contract all passed together. Candidate
+files were checked for credential patterns/private artifacts; no findings.
+No real desktop, paid model, vendor native executable or full native parity
+acceptance was included. Remaining native, browser-bundle and contract work
+keeps the full restoration goal incomplete.

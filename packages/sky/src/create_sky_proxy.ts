@@ -1,5 +1,5 @@
-import { accessibility_tree } from "./targets/linux/accessibility_tree";
-import type { SkyServiceRequest } from "./create_service";
+import { invoke, create_drag_handle } from "./sky_service_rpc";
+import type { SkyRpcRequest } from "./sky_service_rpc";
 type RuntimeClient = { target?: string; [name: string]: any };
 /** Original sky.js module state, with a supplied direct-platform factory. */
 export async function createSkyProxy(createDirectClient: () => RuntimeClient) {
@@ -26,37 +26,11 @@ export async function createSkyProxy(createDirectClient: () => RuntimeClient) {
         rpc({ type: "execute", method, args }),
       );
     if (remote.target === "linux" && setup?.methods.includes("drag_handle"))
-      remote.drag_handle = () => {
-        const handle = crypto.randomUUID();
-        return {
-          start: (point: any) =>
-            rpc({ type: "drag_start", handle_id: handle, point }),
-          move_to: (point: any) =>
-            rpc({ type: "drag_move", handle_id: handle, point }),
-          end: () => rpc({ type: "drag_end", handle_id: handle }),
-        };
-      };
+      remote.drag_handle = () => create_drag_handle(rpc);
     return (client = remote);
   }
-  async function rpc(request: SkyServiceRequest): Promise<any> {
-    if (typeof runtime?.rpc !== "function")
-      throw new Error("Computer Use requires a trusted Node REPL Sky service");
-    let value = await runtime.rpc("sky", request);
-    if (request.type === "execute" && request.method === "get_screenshot")
-      value = value.map(media);
-    if (
-      request.type === "execute" &&
-      request.method === "get_window_state" &&
-      setup?.target === "linux"
-    )
-      value = {
-        ...value,
-        ax_tree: accessibility_tree(value.ax_tree, value.focused_modal),
-        screenshots: value.screenshots.map(media),
-      };
-    if (request.type === "execute" && request.method === "stop_audio_recording")
-      value = media(value);
-    return value ?? undefined;
+  async function rpc(request: SkyRpcRequest): Promise<any> {
+    return invoke(runtime, request, setup?.target);
   }
   const proxy = new Proxy({} as RuntimeClient, {
     get(_target, key) {
@@ -80,13 +54,4 @@ export async function createSkyProxy(createDirectClient: () => RuntimeClient) {
   });
   // Wrapping avoids Promise resolution treating an arbitrary remote "then" method as a thenable.
   return { sky: proxy };
-}
-function media(value: { filepath: string; data_url: string }) {
-  const encoded = value.data_url.split(",")[1] ?? "",
-    bytes = Buffer.from(encoded, "base64");
-  return {
-    filepath: value.filepath,
-    bytes: Uint8Array.from(bytes),
-    data_url: value.data_url,
-  };
 }

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, chmod, readFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { pathToFileURL } from "node:url";
@@ -141,4 +141,59 @@ test("public cua globals reach assembled Sky service and Windows pipe through ge
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+
+test("built desktop public package traverses host service and owned helper protocol", async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), "cua-desktop-public-"));
+  try {
+    const helper = path.join(dir, "helper"), config = path.join(dir, "config.json"), log = path.join(dir, "requests.jsonl");
+    await writeFile(config, JSON.stringify({ target: "windows", api: "desktop" }));
+    await writeFile(helper, `#!${process.execPath}
+const fs=require('node:fs');
+require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
+ const q=JSON.parse(line);fs.appendFileSync(process.env.FIXTURE_REQUEST_LOG,JSON.stringify({method:q.method,params:q.params,env:process.env.SKY_WINDOWS_FULL_DESKTOP})+'\\n');
+ const result=q.method==='desktop_get_screenshot'?{url:'data:image/jpeg;base64,YWJj'}:{};
+ process.stdout.write(JSON.stringify({id:q.id,ok:true,result})+'\\n');
+ if(q.method==='close')process.exit(0);
+});`);
+    await chmod(helper, 0o700);
+    const code = String.raw`
+      import assert from 'node:assert/strict';
+      import {readFile} from 'node:fs/promises';
+      const {handleRpc}=await import(process.env.SERVICE);
+      globalThis.nodeRepl={rpc:(name,q)=>{assert.equal(name,'sky');return handleRpc(q);}};
+      const {create_client}=await import(process.env.CLIENT);
+      const client=await create_client({api:'desktop'});
+      const screenshots=await client.get_screenshot();
+      assert.deepEqual([...screenshots[0].bytes],[97,98,99]);
+      assert.deepEqual([...await readFile(screenshots[0].filepath)],[97,98,99]);
+      await client.click({x:10,y:20});
+      await assert.rejects(create_client({api:'desktop'}),/already active/);
+      const closing=client.close();assert.equal(client.close(),closing);await closing;
+      await assert.rejects(readFile(screenshots[0].filepath),{code:'ENOENT'});
+      await assert.rejects(client.click({x:1,y:2}),/client is closed/);
+      const second=await create_client({api:'desktop'});await second.close();
+      console.log(JSON.stringify({target:client.target,bytes:[...screenshots[0].bytes]}));
+    `;
+    const traces = [];
+    for (const [client, service] of [
+      [pathToFileURL(`${root}/sky/dist/project/cua/sky_js/src/client.js`).href, originalService],
+      ["@core/sky/client", "@core/sky/service"],
+    ]) {
+      await writeFile(log, "");
+      const output = await exec(process.execPath, ["--input-type=module", "-e", code], {
+        cwd: process.cwd(), timeout: 10000,
+        env: { ...process.env, CLIENT: client, SERVICE: service, OAI_SKY_CONFIG_PATH: config,
+          OAI_SKY_WINDOWS_BIN: helper, FIXTURE_REQUEST_LOG: log, CODEX_HOME: path.relative(process.cwd(),dir),
+          CODEX_DISABLE_ANALYTICS: "1" },
+      });
+      assert.deepEqual(JSON.parse(output.stdout), {target:"windows_desktop",bytes:[97,98,99]});
+      const requests = (await readFile(log,"utf8")).trim().split("\n").map(line=>JSON.parse(line));
+      assert.deepEqual(requests.map(q=>q.method), ["desktop_get_screenshot","desktop_click","desktop_close","close","desktop_close","close"]);
+      assert.ok(requests.every(q=>q.env === "1"));
+      traces.push(requests.map(q=>({...q,params:{...q.params,...(q.params.operation_id?{operation_id:"uuid"}:{})}})));
+    }
+    assert.deepEqual(traces[1],traces[0]);
+  } finally { await rm(dir,{recursive:true,force:true}); }
 });

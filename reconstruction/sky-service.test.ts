@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { parse } from "acorn";
+import { createHash } from "node:crypto";
 import { __awaiter } from "tslib";
 import { UnreachableCaseError } from "@core/core/UnreachableCaseError";
 import { createSkyService } from "../packages/sky/src/create_service";
@@ -32,16 +33,18 @@ const originalFactory = new Function(
   "r",
   "o",
   "n",
-  (await body("service")) + ";return a;",
+  "i",
+  (await body("service")) + ";return c;",
 );
-function original(create: any) {
+function original(create: any, dependencies: any = {}) {
   return {
     handleRpc: originalFactory(
       __awaiter,
       UnreachableCaseError,
       create,
-      () => ({ target: "fixture" }),
+      dependencies.loadOptions ?? (() => ({ target: "fixture" })),
       originalPolicy,
+      { createDesktopClient: dependencies.createDesktopClient },
     ),
   };
 }
@@ -136,6 +139,7 @@ test("Sky dispatcher matches original media encoding, receiver, own-descriptor r
           "hidden",
           "missing",
           "constructor",
+          "drag_handle",
         ].map((method) => ({ type: "execute", method, args: ["one", 2] })),
         { type: "unknown" },
       ])
@@ -145,8 +149,8 @@ test("Sky dispatcher matches original media encoding, receiver, own-descriptor r
     assert.deepEqual(await run(createSkyService), await run(original));
   }
 });
-test("Sky drag handles preserve reuse and retain handles after failed move/end", async () => {
-  for (const target of ["mac", "linux"])
+test("Sky drag handles match current duplicate-start and failure cleanup semantics", async () => {
+  for (const target of ["mac", "linux", "windows_desktop"])
     for (const failure of ["none", "start", "move", "end"]) {
       async function run(factory: any) {
         let serial = 0,
@@ -242,4 +246,71 @@ test("Sky recording rechecks live host metadata on every invocation before calli
     if (priorAllow === undefined) delete process.env.SKY_AUDIO_MODEL_ALLOWLIST;
     else process.env.SKY_AUDIO_MODEL_ALLOWLIST = priorAllow;
   }
+});
+
+test("Sky desktop session ownership, failed-close retention and recreation match current source", async () => {
+  async function run(factory: any) {
+    const events: unknown[] = [], responses: unknown[] = [];
+    let created = 0, failClose = true, loads = 0;
+    const service = factory(() => { throw Error("must not create ordinary client"); }, {
+      loadOptions: () => { loads++; return { target: "windows", api: "desktop" }; },
+      createDesktopClient: () => {
+        const number = ++created;
+        return {
+          target: "windows_desktop",
+          echo: function (...args: unknown[]) { events.push([number, "echo", this.target]); return args; },
+          close: async () => { events.push([number, "close"]); if (failClose) { failClose = false; throw Error("cleanup failed"); } },
+          drag_handle: () => ({ start: async () => {}, move_to: async () => {}, end: async () => {} }),
+        };
+      },
+    });
+    const call = async (q: any) => responses.push(await result(() => service.handleRpc(q)));
+    await call({ type: "setup" });
+    await call({ type: "create", options: { api: "other" } });
+    await call({ type: "create", options: { api: "desktop", target: "mac" } });
+    const first = await service.handleRpc({ type: "create", options: { api: "desktop" } });
+    assert.equal(first.target, "windows_desktop");
+    const id = first.client_id;
+    await call({ type: "create", options: { api: "desktop" } });
+    await call({ type: "setup", client_id: "unknown" });
+    await call({ type: "execute", client_id: id, method: "echo", args: [1, 2] });
+    await call({ type: "drag_start", client_id: id, handle_id: "drag", point: {x: 1,y: 2} });
+    await call({ type: "execute", client_id: id, method: "close", args: [] });
+    // Failed close retains session ownership but clears its drag handles.
+    await call({ type: "drag_move", client_id: id, handle_id: "drag", point: {x: 1,y: 2} });
+    await call({ type: "create", options: { api: "desktop" } });
+    await call({ type: "execute", client_id: id, method: "close", args: [] });
+    await call({ type: "setup", client_id: id });
+    const second = await service.handleRpc({ type: "create", options: { api: "desktop" } });
+    assert.notEqual(second.client_id, id);
+    await service.handleRpc({ type: "execute", client_id: second.client_id, method: "close", args: [] });
+    return { events, responses, loads, created };
+  }
+  assert.deepEqual(await run(createSkyService), await run(original));
+});
+
+test("Sky pending drag start rejects concurrent duplicate/move/end and close clears ownership", async () => {
+  async function run(factory: any) {
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const service = factory(() => ({ target: "linux", drag_handle: () => ({
+      start: () => gate, move_to: async () => "move", end: async () => "end",
+    }) }));
+    const point = { x: 1, y: 2 };
+    const pending = service.handleRpc({ type: "drag_start", handle_id: "h", point });
+    const responses = [];
+    for (const type of ["drag_start", "drag_move", "drag_end"]) {
+      responses.push(await result(() => service.handleRpc({ type, handle_id: "h", point })));
+    }
+    release(); await pending;
+    responses.push(await result(() => service.handleRpc({ type: "drag_move", handle_id: "h", point })));
+    responses.push(await result(() => service.handleRpc({ type: "drag_end", handle_id: "h" })));
+    return responses;
+  }
+  assert.deepEqual(await run(createSkyService), await run(original));
+});
+
+
+test("Sky service oracle is current-version SHA256 pinned", async () => {
+  assert.equal(createHash("sha256").update(await readFile(`${root}/sky/dist/project/cua/sky_js/src/service.js`)).digest("hex"), "efd97700bc9d87fc6c2e7ef262d49eb638123c52fff92ff680ebd1bbb0e7cb81");
 });

@@ -1,0 +1,17 @@
+{
+  "scope": "Browser API view, browser selection/tab claim/create and retained tab bindings only; not whole browser bundle parity",
+  "sources": {
+    "browserClient": {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_browser/dist/skill/scripts/browser-client.js",
+      "sha256": "04d63754bb1134eae351c164e750c7a9b798de2757a734e7a62e14b63edf8de4"
+    },
+    "createBrowserApi": {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/create_browser_api.js",
+      "sha256": "9bd1b3af46ec3f91e51d319d7b277d463ce9a077335ef84a8697b318f1baa006"
+    },
+    "bindTab": {
+      "path": "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/cua/dist/lib/js/oai_js_cua/src/tinysky_alt/bind_tab.js",
+      "sha256": "a693e078ecbaa34020cf0caa373edb9c525dad87fd3ada62706a07eadaa6dc2a"
+    }
+  }
+}

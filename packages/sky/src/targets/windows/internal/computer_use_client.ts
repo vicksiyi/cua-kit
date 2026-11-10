@@ -1,3 +1,4 @@
+import { WindowsDesktopClient } from "../desktop_client";
 import { package_bin } from "../../../core/package_bin";
 import {
   WindowsComputerUseClientBase,
@@ -61,6 +62,24 @@ function choose(options: WindowsComputerUseClientOptions): {
   return { sharedTransportKey: key, transport: entry.transport };
 }
 export class WindowsComputerUseClient extends WindowsComputerUseClientBase {
+  static createDesktopClient(options: WindowsComputerUseClientOptions) {
+    const host = (globalThis as any).nodeRepl;
+    if (host?.env?.SKY_CUA_NATIVE_PIPE === "1")
+      throw new Error("Windows desktop sessions require the direct Swift helper transport");
+    return new WindowsDesktopClient(options.transport ?? new WindowsHelperTransport({
+      helperCommand: options.helperCommand ?? options.helperPath ?? package_bin({
+        relative_path: ["bin", "windows", "swift", process.arch === "arm64" ? "arm64" : "x64", "codex-computer-use-swift.exe"],
+        env_var_override: "OAI_SKY_WINDOWS_BIN",
+      }),
+      helperArgs: options.helperCommand == null
+        ? [...(options.helperArgs ?? []), "--parent-pid", String(process.pid)]
+        : options.helperArgs,
+      timeoutMs: options.timeoutMs,
+      desktopSession: true,
+      helperEnv: { SKY_WINDOWS_FULL_DESKTOP: "1" },
+      preserveHelperOnTimeout: true,
+    }));
+  }
   #sharedKey: string | null;
   constructor(options: WindowsComputerUseClientOptions = {}) {
     const selected = choose(options);
