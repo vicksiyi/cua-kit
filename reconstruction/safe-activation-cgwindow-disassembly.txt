@@ -1,0 +1,78 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10074265c -e 0x100742784
+SkyComputerUseService`___lldb_unnamed_symbol81051:
+SkyComputerUseService[0x10074265c] <+3448>: mov    w0, #0x11                 ; =17 
+SkyComputerUseService[0x100742660] <+3452>: mov    w1, #0x0                  ; =0 
+SkyComputerUseService[0x100742664] <+3456>: bl     0x10025b8e8               ; static SystemSoftware.CGWindow.allWindows(_: __C.CGWindowListOption, relativeToWindow: Swift.UInt32) -> Swift.Array<SystemSoftware.CGWindow>
+SkyComputerUseService[0x100742668] <+3460>: ldr    x10, [x0, #0x10]
+SkyComputerUseService[0x10074266c] <+3464>: cbz    x10, 0x10074283c          ; <+3928>
+SkyComputerUseService[0x100742670] <+3468>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x100742674] <+3472>: ldr    w11, [x22, #0x154]
+SkyComputerUseService[0x100742678] <+3476>: add    x9, x0, #0x48
+SkyComputerUseService[0x10074267c] <+3480>: ldur   w12, [x9, #-0x28]
+SkyComputerUseService[0x100742680] <+3484>: cmp    w12, w11
+SkyComputerUseService[0x100742684] <+3488>: b.eq   0x10074269c               ; <+3512>
+SkyComputerUseService[0x100742688] <+3492>: add    x8, x8, #0x1
+SkyComputerUseService[0x10074268c] <+3496>: add    x9, x9, #0x58
+SkyComputerUseService[0x100742690] <+3500>: cmp    x10, x8
+SkyComputerUseService[0x100742694] <+3504>: b.ne   0x10074267c               ; <+3480>
+SkyComputerUseService[0x100742698] <+3508>: b      0x10074283c               ; <+3928>
+SkyComputerUseService[0x10074269c] <+3512>: cbz    x8, 0x10074283c           ; <+3928>
+SkyComputerUseService[0x1007426a0] <+3516>: ldr    w10, [x22, #0x124]
+SkyComputerUseService[0x1007426a4] <+3520>: add    x11, x0, #0x48
+SkyComputerUseService[0x1007426a8] <+3524>: b      0x1007426b8               ; <+3540>
+SkyComputerUseService[0x1007426ac] <+3528>: add    x11, x11, #0x58
+SkyComputerUseService[0x1007426b0] <+3532>: subs   x8, x8, #0x1
+SkyComputerUseService[0x1007426b4] <+3536>: b.eq   0x10074283c               ; <+3928>
+SkyComputerUseService[0x1007426b8] <+3540>: ldur   w12, [x11, #-0x24]
+SkyComputerUseService[0x1007426bc] <+3544>: cmp    w12, w10
+SkyComputerUseService[0x1007426c0] <+3548>: b.ne   0x1007426ac               ; <+3528>
+SkyComputerUseService[0x1007426c4] <+3552>: ldr    w12, [x11]
+SkyComputerUseService[0x1007426c8] <+3556>: ldr    w13, [x9]
+SkyComputerUseService[0x1007426cc] <+3560>: cmp    w12, w13
+SkyComputerUseService[0x1007426d0] <+3564>: b.ne   0x1007426ac               ; <+3528>
+SkyComputerUseService[0x1007426d4] <+3568>: ldr    x19, [x22, #0x1e8]
+SkyComputerUseService[0x1007426d8] <+3572>: bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x1007426dc] <+3576>: cbz    x19, 0x100742784          ; <+3744>
+SkyComputerUseService[0x1007426e0] <+3580>: ldp    x21, x19, [x22, #0x1f8]
+SkyComputerUseService[0x1007426e4] <+3584>: ldp    x24, x23, [x22, #0x1e8]
+SkyComputerUseService[0x1007426e8] <+3588>: adrp   x25, 3635
+SkyComputerUseService[0x1007426ec] <+3592>: add    x25, x25, #0x818          ; static AccessibilitySupport.UIElementAction.raise : AccessibilitySupport.UIElementAction
+SkyComputerUseService[0x1007426f0] <+3596>: add    x1, x22, #0x128
+SkyComputerUseService[0x1007426f4] <+3600>: mov    x0, x25
+SkyComputerUseService[0x1007426f8] <+3604>: mov    x2, #0x0                  ; =0 
+SkyComputerUseService[0x1007426fc] <+3608>: mov    x3, #0x0                  ; =0 
+SkyComputerUseService[0x100742700] <+3612>: bl     0x10115501c               ; symbol stub for: swift_beginAccess
+SkyComputerUseService[0x100742704] <+3616>: ldp    x26, x25, [x25]
+SkyComputerUseService[0x100742708] <+3620>: mov    x0, x24
+SkyComputerUseService[0x10074270c] <+3624>: mov    x1, x23
+SkyComputerUseService[0x100742710] <+3628>: mov    x2, x21
+SkyComputerUseService[0x100742714] <+3632>: mov    x3, x19
+SkyComputerUseService[0x100742718] <+3636>: bl     0x10008a368               ; ___lldb_unnamed_symbol52541
+SkyComputerUseService[0x10074271c] <+3640>: mov    x0, x25
+SkyComputerUseService[0x100742720] <+3644>: bl     0x101155040               ; symbol stub for: swift_bridgeObjectRetain
+SkyComputerUseService[0x100742724] <+3648>: mov    x0, x26
+SkyComputerUseService[0x100742728] <+3652>: mov    x1, x25
+SkyComputerUseService[0x10074272c] <+3656>: mov    x2, x24
+SkyComputerUseService[0x100742730] <+3660>: mov    x3, x23
+SkyComputerUseService[0x100742734] <+3664>: mov    x4, x21
+SkyComputerUseService[0x100742738] <+3668>: mov    x5, x19
+SkyComputerUseService[0x10074273c] <+3672>: mov    x21, #0x0                 ; =0 
+SkyComputerUseService[0x100742740] <+3676>: bl     0x100733c14               ; ___lldb_unnamed_symbol80997
+SkyComputerUseService[0x100742744] <+3680>: mov    x19, x21
+SkyComputerUseService[0x100742748] <+3684>: ldp    x23, x21, [x22, #0x1f8]
+SkyComputerUseService[0x10074274c] <+3688>: ldp    x26, x24, [x22, #0x1e8]
+SkyComputerUseService[0x100742750] <+3692>: mov    x0, x25
+SkyComputerUseService[0x100742754] <+3696>: bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x100742758] <+3700>: mov    x0, x21
+SkyComputerUseService[0x10074275c] <+3704>: bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x100742760] <+3708>: mov    x0, x23
+SkyComputerUseService[0x100742764] <+3712>: bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x100742768] <+3716>: mov    x0, x24
+SkyComputerUseService[0x10074276c] <+3720>: adrp   x24, 3585
+SkyComputerUseService[0x100742770] <+3724>: bl     0x101155028               ; symbol stub for: swift_bridgeObjectRelease
+SkyComputerUseService[0x100742774] <+3728>: mov    x0, x26
+SkyComputerUseService[0x100742778] <+3732>: adrp   x26, 3584
+SkyComputerUseService[0x10074277c] <+3736>: bl     0x101154bfc               ; symbol stub for: objc_release
+SkyComputerUseService[0x100742780] <+3740>: cbnz   x19, 0x100741fb8          ; <+1748>

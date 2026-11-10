@@ -120,5 +120,13 @@
     "exactMatchesInRestoredBinary": 33,
     "additionalRestoredSignatures": 2,
     "limits": "Nested/accessor signatures included; no body/ABI/runtime/source-correspondence or whole-project completion claim; extracted constructor/injection extras are not original API identity"
+  },
+  "safeActivationProduction": {
+    "source": "native/macos/Sources/CuaHelper/SafeActivationWindowOrder.swift",
+    "originalCaller": "0x10074265c..0x100742784; allWindows call0x100742664 options0x11/relative0",
+    "change": "Remove independent three-field window projection/compactMap; use original CGWindow array/level directly",
+    "regression": "Optional missing PID/layer no longer drops saved window; original decoder defaults -1/0 preserve ordering lookup",
+    "validation": "native build36.18s; five linked checks pass; normalized restoration body unchanged except type/property names; original callsite/arguments audited",
+    "limits": "No actual activation, enumeration or AX raise; runtime UI acceptance remains blocked by local preflight conditions kept outside version control"
   }
 }

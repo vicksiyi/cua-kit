@@ -8461,3 +8461,21 @@ a whole-project restoration percentage or CGWindow semantic completion claim.
 Live acceptance remains unaccepted. Read-only local preflight record is stored
 only under ignored artifacts/debug, not added to version control; no UI fixture
 or input was started. No model or vendor executable ran.
+
+### 2026-11-11 — Safe activation uses original CGWindow values directly
+
+Original742664 calls SystemSoftware.CGWindow.allWindows(options0x11, relative0).
+Removed the independent SafeActivationOrderedWindow three-field model and local
+CopyWindowInfo compactMap. Safe activation now consumes original CGWindow array
+and level property directly. This also fixes a behavioral difference: missing
+optional PID/layer fields previously dropped a saved window; original decoder
+retains it with defaults -1/0, allowing correct saved-ID index/layer comparison.
+Existing Provider fixtures now construct original CGWindow values.
+
+Normalized comparison proves restoration loop body unchanged apart from window
+type/property substitution. Native build passed36.18s. Five linked fixtures pass;
+new focused regression checks retained missing-optional-field saved window,
+nil-saved-ID inventory gate, first-window exclusion, same-level matching, absent
+raise closure result and raise error identity. Static caller/argument audit passes.
+No native enumeration/activation/AXRaise, desktop/model/vendor execution occurred.
+Real activation/window-order and overall source/ABI acceptance remain incomplete.

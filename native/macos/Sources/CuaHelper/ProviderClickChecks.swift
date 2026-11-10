@@ -4444,8 +4444,12 @@ private func runSafeActivationNativeResourceChecks() async throws {
 
 private func runSafeActivationRestorationLoopChecks() async throws {
     var raises = 0, windowReads = 0
-    let windows = [SafeActivationOrderedWindow(id: 1, ownerPID: 88, layer: 0),
-                   SafeActivationOrderedWindow(id: 2, ownerPID: 77, layer: 0)]
+    func orderedWindow(id: UInt32, ownerPID: Int32, layer: Int32) -> CGWindow {
+        CGWindow([kCGWindowNumber as String: id, kCGWindowOwnerPID as String: ownerPID,
+            kCGWindowLayer as String: layer])
+    }
+    let windows = [orderedWindow(id: 1, ownerPID: 88, layer: 0),
+                   orderedWindow(id: 2, ownerPID: 77, layer: 0)]
     let readWindows = { windowReads += 1; return windows }
     checkTrue(try restoreSafeActivationWindowOrder(savedWindowID: 2, targetPID: 88,
         windows: readWindows, raiseSavedWindow: { raises += 1 }))
@@ -4458,7 +4462,7 @@ private func runSafeActivationRestorationLoopChecks() async throws {
     checkTrue(try restoreSafeActivationWindowOrder(savedWindowID: 2, targetPID: 88,
         windows: readWindows, raiseSavedWindow: nil))
     checkTrue(!(try restoreSafeActivationWindowOrder(savedWindowID: 2, targetPID: 88,
-        windows: { [SafeActivationOrderedWindow(id: 1, ownerPID: 88, layer: 1), windows[1]] },
+        windows: { [orderedWindow(id: 1, ownerPID: 88, layer: 1), windows[1]] },
         raiseSavedWindow: nil)))
     // No real system input, foreground changes, or screen suppression.
     var time = 10.0

@@ -32,4 +32,7 @@ call(0x10025bd28, 0x100260e0c)  # screen -> bestScreen
 call(0x100260e78, 0x101153e4c)  # preference intersects
 call(0x100260f58, 0x101153e40)  # candidate intersection
 call(0x100261020, 0x1002617bc)  # first maximum stage
+assert struct.unpack('<I', r(0x10074265c, 4))[0] == 0x52800220  # options0x11
+assert struct.unpack('<I', r(0x100742660, 4))[0] == 0x52800001  # relative0
+call(0x100742664, 0x10025b8e8)  # safe activation uses original CGWindow.allWindows
 print('CGWindow enumeration, point lookup calls and desktop-level key match pinned binary')
