@@ -7760,3 +7760,24 @@ No desktop, paid model or vendor-native execution occurred. Screenshot writer
 composition, full interface/module audit and live UI acceptance remain open.
 
 Swift helper build passed (24.41s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — Public filename and directory-name UTF16 composition
+
+Restored filename/directoryName and shared composition at 101002614..101002c5c.
+Nil file name uses type.localizedDescription or Unknown; nil directory name uses
+Unknown. Escaping precedes suffixing. Budget uses checked Int32 255 minus
+nonnegative reserved count and date/extension UTF16 lengths. If fewer than one
+unit remains, native discards suffixes and returns decoded base.prefix(255).
+Otherwise it accumulates the UTF16 prefix, replaces the last unit with ellipsis
+only for a truncated dated name, appends date/extension and decodes as UTF16.
+The native Unicode.UTF16 and UTF16View witnesses are pinned in evidence. Split
+surrogates therefore use replacement decoding, not grapheme-safe truncation.
+
+All fifteen checks passed, adding public ASCII/nil/empty names, type description,
+negative/6/255 reservations, dated/plain truncation and split surrogate output.
+No original-native differential execution was used: control flow and imports
+supply provenance while SDK/Core fixtures exercise the reconstruction. Default
+argument generators and full module/API audit remain unproven. Screenshot file
+writer composition and actual UI acceptance remain open; no model/desktop run.
+
+Swift helper build passed (23.87s, exit 0); whitespace diff check passed.

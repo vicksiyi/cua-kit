@@ -105,11 +105,19 @@
     "formatters": "0x101001184 date yyyy-MM-dd; 0x1010011a8 time h.mm.ss a; shared init0x1010011cc..101001244 sets only dateFormat",
     "separator": "literal at 0x101002540..10100254c: \" at \"",
     "escaping": "0x101001178 slash->colon; 0x101002194 colon->slash; shared replacing helper0x1010021a0",
-    "validation": "reconstruction/file-naming-stages-check.swift: ASCII/Unicode/empty/lossy mappings and ambient SDK date formatting",
-    "mainFilename": "0x101002614..0x101002c5c remains partial: reserve arithmetic, UTF16 prefix/truncation and ellipsis composition not yet implemented",
+    "validation": "ASCII escaping, nil/empty/type name, dates, reservation negative/6/255, plain vs dated truncation, split surrogate; Core tests + static evidence, not native differential",
+    "mainFilename": "0x101002614..0x101002c5c restored: escaped name, optional date/extension, checked UTF16 budget, fallback and replacement decoding",
     "utf16Witnesses": {
       "0x101466460": "String.UTF16View.index(_:offsetBy:limitedBy:)",
       "0x101466480": "String.UTF16View range subscript"
-    }
+    },
+    "rules": [
+      "Public filename nil name -> type.localizedDescription or Unknown; directory nil name -> Unknown",
+      "date suffix is space + cached date string; extension suffix via Foundation helper",
+      "limit = Int32(255) - max(reserved,0) - Int32(dateUTF16+extensionUTF16), checked arithmetic",
+      "limit<1 returns base UTF16.prefix(255) decoded, without suffixes",
+      "Otherwise base UTF16.prefix(limit); if truncated and date present remove final code unit and append ellipsis",
+      "Append date then extension; String(decoding:as:UTF16) preserves replacement decoding for split surrogates"
+    ]
   }
 }
