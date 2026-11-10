@@ -4,7 +4,8 @@
   "originalEntries": {
     "sync": "0x100754280",
     "asyncDelay": "0x1007537e8",
-    "globalDelay": "0x100755440"
+    "globalDelay": "0x100755440",
+    "handler": "0x100753e80"
   },
   "calls": {
     "0x10075394c": "0x10115015c",
@@ -18,30 +19,43 @@
     "0x10075559c": "0x10115015c",
     "0x1007555a0": "0x101150150",
     "0x1007555c0": "0x1002581ac",
-    "0x1007555cc": "0x100258048"
+    "0x1007555cc": "0x100258048",
+    "0x1007553f4": "0x10115015c",
+    "0x1007553f8": "0x101150150",
+    "0x100755418": "0x1002581ac",
+    "0x100755424": "0x100258054"
   },
   "imports": {
     "0x10115015c": "_$s8Dispatch0A4TimeV3nowACyFZ",
     "0x101150150": "_$s8Dispatch0A4TimeV17uptimeNanosecondss6UInt64Vvg"
   },
   "limits": [
-    "Sync,async-PID and global-session-tap delay overloads covered; handler variant remains unfinished",
+    "Four original send entry signatures covered; live delivery and whole module behavior remain unaccepted",
     "Dependency overload is an additional test boundary,not an original API",
     "Default posting not executed in fixtures; static calls do not prove live delivery"
   ],
-  "globalDelay": {
-    "entry": "0x100755440",
-    "tap": "cgSessionEventTap raw1",
-    "export": "Exact original send(delay:Duration?) async throws signature present",
+  "handler": {
+    "entry": "0x100753e80",
+    "callback": "0x100756700 ->0x10075539c",
+    "behavior": [
+      "Bool is index==count-1",
+      "Handler invoked sequentially with event and captured event/PID posting closure",
+      "No automatic post; each closure invocation refreshes Dispatch timestamp then posts",
+      "No once-only guard; handler failures/cancellation propagate and stop next iteration"
+    ],
     "validation": {
-      "build": "exit0,20.58s",
-      "selfTest": "exit0",
+      "build": "exit0,22.03s",
+      "nativeInputSelfTest": "exit0",
       "linkedFixtures": "All15 pass",
-      "cases": "Nil/zero/10ms delay,per-event timestamp and session tap,delay after final event,wait error/cancellation stop,empty exact entry"
+      "exactEntry": "Nonempty exact original handler method executes without posting when callback omitted; timestamps unchanged",
+      "injectedCallback": "Two posts for first event and none for second; last flagsfalse/true; async handler yield; event/PID identity",
+      "errors": "Handler failure/cancellation stops after first; singletonlast=true; empty handler not called",
+      "export": "Exact original handler signature matches"
     },
     "limits": [
-      "Nonempty sequences use injected post/clock; no real global input posted",
-      "Original handler-based overload remains unimplemented"
+      "No real default posting callback invoked",
+      "Injected post overload is extra API,not original exported entry",
+      "Four send entries now present does not establish full SynthesizedEvent/AccessibilitySupport behavior or whole CUA completion"
     ]
   }
 }

@@ -8798,3 +8798,20 @@ last-event wait and propagation of wait failure/cancellation. Empty exact entry
 runs safely; nonempty actual global posting was not executed. The exact export
 matches original. Handler-based send and live delivery remain incomplete; no
 whole module/whole CUA completion claim. See synthesized-send-evidence.json.
+
+## 2026-11-11 handler-controlled send entry
+
+SynthesizedEvent.send(to:handler:) now matches the original entry signature.
+Pinned count-1 comparison establishes Bool=isLast; the captured event/PID closure
+tail-calls the native timestamp/post helper. The handler chooses whether/how many
+times to invoke it. The loop does not auto-post, deduplicate callback invocations,
+add waits or swallow handler errors/cancellation. The additional injected post
+overload preserves this control without real input during verification.
+
+Build passed22.03s; native self-test and all15 module fixtures passed. Exact
+nonempty handler entry with omitted callback preserves timestamps and posts
+nothing. Injected cases verify async yield, last flags, double first-event post,
+skipped last event, failure/cancellation stop, singleton and empty sequences.
+Original export matches. All4 original send entry signatures are now present,
+but actual default callback delivery and wider event/native behavior remain
+unaccepted. See synthesized-send-evidence.json and handler disassembly excerpts.

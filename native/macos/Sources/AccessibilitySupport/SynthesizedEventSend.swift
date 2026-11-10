@@ -54,4 +54,23 @@ public extension SynthesizedEvent {
         }
     }
 
+    // Original0x100753e80: handler receives event,isLast and an explicit
+    // posting closure. The loop never auto-posts if the handler omits it.
+    func send(to pid: Int32,
+        handler: (CGEvent, Bool, () -> Void) async throws -> Void
+    ) async throws {
+        try await send(to: pid, handler: handler, post: { Self.postNativeEvent($0, to: $1) })
+    }
+
+    // Additional injection boundary; no once-only wrapper or cancellation check
+    // is inserted around the original handler-controlled posting closure.
+    func send(to pid: Int32,
+        handler: (CGEvent, Bool, () -> Void) async throws -> Void,
+        post: @escaping (CGEvent, Int32) -> Void
+    ) async throws {
+        for (index, event) in cgEvents.enumerated() {
+            try await handler(event, index == cgEvents.count - 1, { post(event, pid) })
+        }
+    }
+
 }

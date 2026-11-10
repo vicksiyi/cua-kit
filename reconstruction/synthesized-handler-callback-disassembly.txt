@@ -1,0 +1,59 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x100756700 -e 0x1007567d0
+SkyComputerUseService`___lldb_unnamed_symbol81306:
+SkyComputerUseService[0x100756700] <+0>:   ldr    x0, [x20, #0x10]
+SkyComputerUseService[0x100756704] <+4>:   ldr    w1, [x20, #0x18]
+SkyComputerUseService[0x100756708] <+8>:   b      0x10075539c               ; ___lldb_unnamed_symbol81294
+
+SkyComputerUseService`___lldb_unnamed_symbol81307:
+SkyComputerUseService[0x10075670c] <+0>:   sub    sp, sp, #0x50
+SkyComputerUseService[0x100756710] <+4>:   stp    x25, x24, [sp, #0x10]
+SkyComputerUseService[0x100756714] <+8>:   stp    x23, x22, [sp, #0x20]
+SkyComputerUseService[0x100756718] <+12>:  stp    x20, x19, [sp, #0x30]
+SkyComputerUseService[0x10075671c] <+16>:  stp    x29, x30, [sp, #0x40]
+SkyComputerUseService[0x100756720] <+20>:  add    x29, sp, #0x40
+SkyComputerUseService[0x100756724] <+24>:  mov    x19, x21
+SkyComputerUseService[0x100756728] <+28>:  mov    x24, x0
+SkyComputerUseService[0x10075672c] <+32>:  mov    w22, #0x1                 ; =1 
+SkyComputerUseService[0x100756730] <+36>:  mov    w0, #0x1                  ; =1 
+SkyComputerUseService[0x100756734] <+40>:  bl     0x100258288               ; static SystemSoftware.CGEventAPI.sourceCreate(stateID: __C.CGEventSourceStateID) -> Swift.Optional<__C.CGEventSourceRef>
+SkyComputerUseService[0x100756738] <+44>:  cbz    x0, 0x1007567fc           ; <+240>
+SkyComputerUseService[0x10075673c] <+48>:  mov    x20, x0
+SkyComputerUseService[0x100756740] <+52>:  mov    w0, #0x0                  ; =0 
+SkyComputerUseService[0x100756744] <+56>:  bl     0x1002582dc               ; static SystemSoftware.CGEventAPI.sourceFlagsState(__C.CGEventSourceStateID) -> __C.CGEventFlags
+SkyComputerUseService[0x100756748] <+60>:  mov    x23, x0
+SkyComputerUseService[0x10075674c] <+64>:  mov    x0, x20
+SkyComputerUseService[0x100756750] <+68>:  bl     0x100257cbc               ; static SystemSoftware.CGEventAPI.create(source: Swift.Optional<__C.CGEventSourceRef>) -> Swift.Optional<__C.CGEventRef>
+SkyComputerUseService[0x100756754] <+72>:  cbz    x0, 0x10075682c           ; <+288>
+SkyComputerUseService[0x100756758] <+76>:  mov    x22, x0
+SkyComputerUseService[0x10075675c] <+80>:  mov    w1, #0xc                  ; =12 
+SkyComputerUseService[0x100756760] <+84>:  bl     0x100258228               ; static SystemSoftware.CGEventAPI.setType(_: __C.CGEventRef, type: __C.CGEventType) -> ()
+SkyComputerUseService[0x100756764] <+88>:  mov    x0, x22
+SkyComputerUseService[0x100756768] <+92>:  mov    x1, x24
+SkyComputerUseService[0x10075676c] <+96>:  bl     0x1002580c4               ; static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()
+SkyComputerUseService[0x100756770] <+100>: mov    x0, x20
+SkyComputerUseService[0x100756774] <+104>: bl     0x100257cbc               ; static SystemSoftware.CGEventAPI.create(source: Swift.Optional<__C.CGEventSourceRef>) -> Swift.Optional<__C.CGEventRef>
+SkyComputerUseService[0x100756778] <+108>: cbz    x0, 0x100756860           ; <+340>
+SkyComputerUseService[0x10075677c] <+112>: mov    x24, x0
+SkyComputerUseService[0x100756780] <+116>: mov    w1, #0xc                  ; =12 
+SkyComputerUseService[0x100756784] <+120>: bl     0x100258228               ; static SystemSoftware.CGEventAPI.setType(_: __C.CGEventRef, type: __C.CGEventType) -> ()
+SkyComputerUseService[0x100756788] <+124>: mov    x0, x24
+SkyComputerUseService[0x10075678c] <+128>: mov    x1, x23
+SkyComputerUseService[0x100756790] <+132>: bl     0x1002580c4               ; static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()
+SkyComputerUseService[0x100756794] <+136>: adrp   x0, 3613
+SkyComputerUseService[0x100756798] <+140>: add    x0, x0, #0x2a8            ; type metadata for AccessibilitySupport.AXNotificationObserver + 632
+SkyComputerUseService[0x10075679c] <+144>: adrp   x1, 2622
+SkyComputerUseService[0x1007567a0] <+148>: add    x1, x1, #0xdd0            ; direct field offset for AccessibilitySupport.EventTap.shouldAutoreenable : Swift.Bool + 128
+SkyComputerUseService[0x1007567a4] <+152>: bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x1007567a8] <+156>: mov    x25, x0
+SkyComputerUseService[0x1007567ac] <+160>: mov    w1, #0x28                 ; =40 
+SkyComputerUseService[0x1007567b0] <+164>: mov    w2, #0x7                  ; =7 
+SkyComputerUseService[0x1007567b4] <+168>: bl     0x101154f98               ; symbol stub for: swift_allocObject
+SkyComputerUseService[0x1007567b8] <+172>: mov    x23, x0
+SkyComputerUseService[0x1007567bc] <+176>: adrp   x8, 2566
+SkyComputerUseService[0x1007567c0] <+180>: ldr    q0, [x8, #0x80]
+SkyComputerUseService[0x1007567c4] <+184>: str    q0, [sp]
+SkyComputerUseService[0x1007567c8] <+188>: str    q0, [x0, #0x10]
+SkyComputerUseService[0x1007567cc] <+192>: str    x22, [x0, #0x20]
+(lldb) quit

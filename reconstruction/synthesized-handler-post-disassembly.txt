@@ -1,0 +1,46 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10075539c -e 0x100755440
+SkyComputerUseService`___lldb_unnamed_symbol81294:
+SkyComputerUseService[0x10075539c] <+0>:   stp    x24, x23, [sp, #-0x40]!
+SkyComputerUseService[0x1007553a0] <+4>:   stp    x22, x21, [sp, #0x10]
+SkyComputerUseService[0x1007553a4] <+8>:   stp    x20, x19, [sp, #0x20]
+SkyComputerUseService[0x1007553a8] <+12>:  stp    x29, x30, [sp, #0x30]
+SkyComputerUseService[0x1007553ac] <+16>:  add    x29, sp, #0x30
+SkyComputerUseService[0x1007553b0] <+20>:  mov    x19, x1
+SkyComputerUseService[0x1007553b4] <+24>:  mov    x21, x0
+SkyComputerUseService[0x1007553b8] <+28>:  mov    x0, #0x0                  ; =0 
+SkyComputerUseService[0x1007553bc] <+32>:  bl     0x101150168
+SkyComputerUseService[0x1007553c0] <+36>:  mov    x22, x0
+SkyComputerUseService[0x1007553c4] <+40>:  ldur   x24, [x0, #-0x8]
+SkyComputerUseService[0x1007553c8] <+44>:  ldr    x8, [x24, #0x40]
+SkyComputerUseService[0x1007553cc] <+48>:  mov    x9, x8
+SkyComputerUseService[0x1007553d0] <+52>:  adrp   x16, 3342
+SkyComputerUseService[0x1007553d4] <+56>:  ldr    x16, [x16, #0xc18]
+SkyComputerUseService[0x1007553d8] <+60>:  blr    x16
+SkyComputerUseService[0x1007553dc] <+64>:  mov    x9, sp
+SkyComputerUseService[0x1007553e0] <+68>:  add    x8, x8, #0xf
+SkyComputerUseService[0x1007553e4] <+72>:  and    x8, x8, #0xfffffffffffffff0
+SkyComputerUseService[0x1007553e8] <+76>:  sub    x20, x9, x8
+SkyComputerUseService[0x1007553ec] <+80>:  mov    sp, x20
+SkyComputerUseService[0x1007553f0] <+84>:  mov    x8, x20
+SkyComputerUseService[0x1007553f4] <+88>:  bl     0x10115015c
+SkyComputerUseService[0x1007553f8] <+92>:  bl     0x101150150
+SkyComputerUseService[0x1007553fc] <+96>:  mov    x23, x0
+SkyComputerUseService[0x100755400] <+100>: ldr    x8, [x24, #0x8]
+SkyComputerUseService[0x100755404] <+104>: mov    x0, x20
+SkyComputerUseService[0x100755408] <+108>: mov    x1, x22
+SkyComputerUseService[0x10075540c] <+112>: blr    x8
+SkyComputerUseService[0x100755410] <+116>: mov    x0, x21
+SkyComputerUseService[0x100755414] <+120>: mov    x1, x23
+SkyComputerUseService[0x100755418] <+124>: bl     0x1002581ac               ; static SystemSoftware.CGEventAPI.setTimestamp(_: __C.CGEventRef, timestamp: Swift.UInt64) -> ()
+SkyComputerUseService[0x10075541c] <+128>: mov    x0, x21
+SkyComputerUseService[0x100755420] <+132>: mov    x1, x19
+SkyComputerUseService[0x100755424] <+136>: bl     0x100258054               ; static SystemSoftware.CGEventAPI.postToPid(_: __C.CGEventRef, pid: Swift.Int32) -> ()
+SkyComputerUseService[0x100755428] <+140>: sub    sp, x29, #0x30
+SkyComputerUseService[0x10075542c] <+144>: ldp    x29, x30, [sp, #0x30]
+SkyComputerUseService[0x100755430] <+148>: ldp    x20, x19, [sp, #0x20]
+SkyComputerUseService[0x100755434] <+152>: ldp    x22, x21, [sp, #0x10]
+SkyComputerUseService[0x100755438] <+156>: ldp    x24, x23, [sp], #0x40
+SkyComputerUseService[0x10075543c] <+160>: ret    
+(lldb) quit

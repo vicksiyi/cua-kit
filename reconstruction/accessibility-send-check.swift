@@ -71,6 +71,41 @@ import SystemSoftware
               catch WaitError.failed { precondition(!cancel) }
             precondition(trace == ["post", "sleep"])
         }
+        var handled = 0
+        for event in events { CGEventAPI.setTimestamp(event, timestamp: 7) }
+        // Invoke the exact original entry without calling its posting closure.
+        try await value.send(to: 42, handler: { event, isLast, _ in
+            precondition(event === events[handled] && isLast == (handled == 1))
+            handled += 1
+        })
+        precondition(handled == 2 && events.allSatisfy { CGEventAPI.getTimestamp($0) == 7 })
+        var callbackPosts: [CGEvent] = [], lastFlags: [Bool] = []
+        try await value.send(to: 42, handler: { event, isLast, performPost in
+            lastFlags.append(isLast)
+            await Task.yield()
+            if !isLast { performPost(); performPost() }
+        }, post: { event, pid in
+            precondition(pid == 42); callbackPosts.append(event)
+        })
+        precondition(lastFlags == [false, true] && callbackPosts.count == 2)
+        precondition(callbackPosts.allSatisfy { $0 === events[0] })
+        for cancel in [false, true] {
+            handled = 0
+            do {
+                try await value.send(to: 42, handler: { _, _, _ in
+                    handled += 1
+                    if cancel { throw CancellationError() }
+                    throw WaitError.failed
+                })
+                preconditionFailure("handler error swallowed")
+            } catch is CancellationError { precondition(cancel) }
+              catch WaitError.failed { precondition(!cancel) }
+            precondition(handled == 1)
+        }
+        try await SynthesizedEvent(cgEvents: [events[0]]).send(to: 42, handler: { _, isLast, _ in
+            precondition(isLast)
+        })
+        try await empty.send(to: 42, handler: { _, _, _ in preconditionFailure() })
         print("AccessibilitySupport sync/async send exports, order, last-event delay and error/cancellation checks passed; no event posting")
     }
 }
