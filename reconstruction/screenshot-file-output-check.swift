@@ -5,7 +5,7 @@ import System
 import UniformTypeIdentifiers
 
 @main struct Check {
-    static func main() throws {
+    static func main() async throws {
         let fm = FileManager.default
         let root = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try fm.createDirectory(at: root, withIntermediateDirectories: false)
@@ -45,6 +45,39 @@ import UniformTypeIdentifiers
         let unnamedURL = unnamed!.url
         unnamed = nil
         precondition(!fm.fileExists(atPath: unnamedURL.path))
+        enum Failure: Swift.Error { case capture, write }
+        var stages: [String] = []
+        do {
+            _ = try await ScreenshotImplementation.captureScreenshotFileResult(capture: {
+                stages.append("capture")
+                throw Failure.capture
+            }, write: { _, _ in preconditionFailure("write after capture error") })
+            preconditionFailure("capture error lost")
+        } catch Failure.capture {}
+        precondition(stages == ["capture"])
+        stages = []
+        do {
+            _ = try await ScreenshotImplementation.captureScreenshotFileResult(capture: {
+                stages.append("capture"); return image
+            }, write: { _, encoding in
+                stages.append("write")
+                precondition(encoding == .png)
+                throw Failure.write
+            })
+            preconditionFailure("write error lost")
+        } catch Failure.write {}
+        precondition(stages == ["capture", "write"])
+        var file: File? = try await ScreenshotImplementation.captureScreenshotFileResult(capture: {
+            image
+        }, write: { captured, encoding in
+            precondition(encoding == .png)
+            return try ScreenshotImplementation.writeScreenshotToFile(appName: "Async",
+                screenshot: captured, encoding: encoding, date: date)
+        })
+        let capturedPath = try file!.path
+        precondition(fm.fileExists(atPath: capturedPath.string))
+        file = nil
+        precondition(!fm.fileExists(atPath: capturedPath.string))
         print("Screenshot file naming, encoding and ownership checks passed")
     }
 }

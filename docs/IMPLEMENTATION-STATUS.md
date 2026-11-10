@@ -7801,3 +7801,23 @@ The method is functional recovery, not a claim of full original wrapper parity.
 
 All sixteen screenshot checks passed; Swift helper build passed (23.24s, exit 0).
 Whitespace diff check passed. No paid model or vendor native executable was run.
+
+### 2026-11-11 — Async captureScreenshotFile entry composition
+
+Restored the original five-argument entry and extracted async sequencing from
+fb3608..fb381c. It forwards caller capture options with shouldBeOpaque=true and
+includeWindowShadow=false, awaits the existing buffer, invokes file output with
+PNG, and returns ScreenshotFile.file while retaining ownership. Native packed
+stack flag writes and encoding tag/copy operations are pinned in output evidence.
+No default arguments were guessed. The extracted closure stage supplies isolated
+capture/write error and lifetime verification; production calls the real restored
+buffer and writer rather than the fixture closures.
+
+All sixteen checks passed, including capture failure skipping write, exact write
+error propagation, PNG selection and real owned-file retention/removal after
+returning only File. Current production capture entry compiled, but was not run
+against the user desktop: this is not real screenshot/input acceptance. Original
+logging/signposts, defaults, full module/API audit and app-route integration remain
+open. No paid model or vendor native execution occurred.
+
+Swift helper build passed (16.46s, exit 0); whitespace diff check passed.

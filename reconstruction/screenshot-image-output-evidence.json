@@ -84,5 +84,15 @@
     "semantics": "No fileExists check and no finalize Bool validation, matching native order; error before ownership does not create an owner",
     "validation": "reconstruction/screenshot-file-output-check.swift: real PNG/JPEG decode, type/dimensions/MIME/name, deterministic collision subdir, nil app name, final-release cleanup",
     "limits": "Logging/signpost wrapper and captureScreenshotFile/public production connection still pending; date overload is an extracted test boundary"
+  },
+  "captureFile": {
+    "source": "0x100fb3608..0x100fb381c",
+    "bufferFlags": "0x100fb36a4..36ac: packed stack bytes crop forwarded, opacity1/shadow0",
+    "encoding": "0x100fb37a4..37ac: encoding payload0/tag0x100 -> PNG",
+    "return": "0x100fb37d0..37f4: copy File field then destroy ScreenshotFile",
+    "errors": "Capture failure exits before writer; writer error propagates; successful File retains adopted owner",
+    "implementation": "Original five-argument surface in ScreenshotBuffer.swift; extracted capture/write stages in ScreenshotFileCapture.swift",
+    "validation": "Owned CGImage fixture with real writer; capture/write failure identity, PNG selection and File lifetime. Full production capture function compiled but not run against user desktop.",
+    "limits": "Default generators, original signposts, production app-route selection and real desktop acceptance pending"
   }
 }

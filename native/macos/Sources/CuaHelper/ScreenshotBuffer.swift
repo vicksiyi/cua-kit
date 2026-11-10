@@ -85,3 +85,20 @@ extension ScreenshotImplementation {
             })
     }
 }
+
+extension ScreenshotImplementation {
+    // fb3608 sets the shared capture body opacity=true/shadow=false. No guessed
+    // default arguments: callers supply all five values of the original surface.
+    static func captureScreenshotFile(appName: String?, delay: Int?, imageSize: CGSize?,
+        includedWindowIDs: [UInt32]?, cropToFirstWindow: Bool
+    ) async throws -> File {
+        try await captureScreenshotFileResult(capture: {
+            try await captureScreenshotBuffer(appName: appName, delay: delay,
+                imageSize: imageSize, includedWindowIDs: includedWindowIDs,
+                cropToFirstWindow: cropToFirstWindow, shouldBeOpaque: true,
+                includeWindowShadow: false)
+        }, write: { image, encoding in
+            try writeScreenshotToFile(appName: appName, screenshot: image, encoding: encoding)
+        })
+    }
+}

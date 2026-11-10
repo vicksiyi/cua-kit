@@ -20,7 +20,7 @@ const cases = [
   ["file-accessors", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File"], "file-accessors-check"],
   ["file-naming-stages", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming"], "file-naming-stages-check"],
   ["image-output", ["ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput"], "image-destination-check"],
-  ["screenshot-file-output", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput", "ScreenshotFileOutput"], "screenshot-file-output-check"],
+  ["screenshot-file-output", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile", "File", "FileNaming", "ScreenshotFile", "ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput", "ScreenshotFileOutput", "ScreenshotFileCapture"], "screenshot-file-output-check"],
   ["screen-capture-composition", ["ScreenScreenshotCapture"], "screen-screenshot-capture-check"],
 ];
 if (process.platform !== "darwin") throw new Error("Screenshot native checks require macOS SDKs");
