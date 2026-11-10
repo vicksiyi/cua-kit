@@ -1,3 +1,5 @@
+import AccessibilitySupport
+import SystemSoftware
 import Foundation
 import ApplicationServices
 
@@ -5,24 +7,16 @@ struct DragEvents {
     let down: CGEvent
     let moves: [CGEvent]
     let up: CGEvent
+    let window: MouseWindow?
 }
-func dragEvents(from: CGPoint, to: CGPoint) throws -> DragEvents {
-    guard [from.x,from.y,to.x,to.y].allSatisfy({$0.isFinite}),
-          let source = CGEventSource(stateID:.privateState) else { throw fail("INVALID_ARGUMENT","Drag needs finite coordinates and an event source.") }
-    func event(_ kind: CGEventType, _ point: CGPoint) throws -> CGEvent {
-        guard let value = CGEvent(mouseEventSource:source,mouseType:kind,mouseCursorPosition:point,mouseButton:.left) else {
-            throw fail("PROVIDER_DISCONNECTED","Cannot allocate drag event.")
-        }
-        value.setIntegerValueField(.mouseEventClickState,value:1)
-        return value
+func dragEvents(from: CGPoint, to: CGPoint, window: MouseWindow? = nil) throws -> DragEvents {
+    guard [from.x,from.y,to.x,to.y].allSatisfy({$0.isFinite}) else {
+        throw fail("INVALID_ARGUMENT", "Drag needs finite coordinates.")
     }
-    var moves: [CGEvent] = []
-    // Independent interpolation/timing policy; vendor native implementation is unavailable.
-    for step in 1...20 {
-        let fraction = Double(step)/20
-        moves.append(try event(.leftMouseDragged,CGPoint(x:from.x+(to.x-from.x)*fraction,y:from.y+(to.y-from.y)*fraction)))
-    }
-    return try DragEvents(down:event(.leftMouseDown,from),moves:moves,up:event(.leftMouseUp,to))
+    let events = try SynthesizedEvent.click(at: from, andDragTo: to,
+        mouseButton: .left, count: 1, flags: [], inWindow: window?.id,
+        windowBounds: window?.frame, windowUsesFlippedCoordinates: window?.usesFlippedCoordinates ?? false).cgEvents
+    return DragEvents(down: events[0], moves: Array(events[1...3]), up: events[4], window: window)
 }
 // Release at the last dispatched position even if waiting/identity checks fail.
 // This handles cooperative cancellation; forced process termination cannot run defer.
@@ -35,7 +29,11 @@ func dispatchDrag(_ events: DragEvents, post: (CGEvent) -> Void,
     var last = events.down.location
     defer {
         // Do not deliver cleanup to a reused PID or terminated application.
-        if (try? validate()) != nil { events.up.location = last; post(events.up) }
+        if (try? validate()) != nil {
+            CGEventAPI.setLocation(events.up, location: last)
+            if let window = events.window { applyMouseWindow(window, to: events.up) }
+            post(events.up)
+        }
     }
     do {
         for event in events.moves {
@@ -59,7 +57,7 @@ extension Target {
         var start = params; start["x"] = fromX; start["y"] = fromY
         guard start["elementId"] == nil else { throw fail("INVALID_ARGUMENT","Drag takes screenshot coordinates only.") }
         let from = try await observedInputPoint(start)
-        let events = try dragEvents(from:from,to:to)
+        let events = try dragEvents(from: from, to: to, window: mouseWindow(params))
         try validateSnapshot(params)
         defer { invalidateInputState() }
         func checkDeadline() throws {

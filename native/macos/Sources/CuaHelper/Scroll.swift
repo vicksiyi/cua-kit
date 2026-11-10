@@ -30,7 +30,7 @@ func scrollEvents(point: CGPoint, viewport: CGRect, direction: String, pages: Do
             throw fail("PROVIDER_DISCONNECTED","Cannot allocate scroll event.")
         }
         event.location = point
-        if let window { try applyMouseWindow(window, to: event) }
+        if let window { applyMouseWindow(window, to: event) }
         events.append(event); remaining -= amount
     }
     return events

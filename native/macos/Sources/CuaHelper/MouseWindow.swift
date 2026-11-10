@@ -9,12 +9,12 @@ struct MouseWindow {
     var usesFlippedCoordinates = true
 }
 
-func applyMouseWindow(_ window: MouseWindow, to event: CGEvent) throws {
+func applyMouseWindow(_ window: MouseWindow, to event: CGEvent) {
     // Native mouseEvent +288..+500 sets both window fields and a separate
     // window-local location. postToPid alone does not supply these fields.
-    event.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: Int64(window.id))
-    event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(window.id))
-    let global = event.location
+    CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointer, value: Int64(window.id))
+    CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(window.id))
+    let global = CGEventAPI.getLocation(event)
     let localY = global.y - window.frame.minY
     WindowServerSPI.setWindowLocation(event, location: CGPoint(x: global.x - window.frame.minX,
         y: window.usesFlippedCoordinates ? window.frame.height - localY : localY))

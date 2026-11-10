@@ -13,7 +13,7 @@
   "limits": [
     "Original inlined event construction is factored through restored mouseEvent helper",
     "Outer helper count<=10 validation remains independent adapter policy",
-    "Production Drag.swift still uses independent20-step interpolation and requires separate dispatch/cancellation alignment",
+    "Production Drag.swift now consumes original five-event construction; timing/cancellation policy remains an independent adapter boundary",
     "No real input or application acceptance performed"
   ],
   "validation": {

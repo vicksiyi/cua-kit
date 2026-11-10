@@ -8832,3 +8832,21 @@ counts1/2/12 and plain/drag composition, geometry,flags/routing and number
 consumption. Invalid counts-1/0 throw original error. Entry export matches.
 No events were posted. Drag delivery, keyboard/modifier reconstruction and wider
 CUA parity remain incomplete; see click-factory-evidence.json.
+
+## 2026-11-11 production drag composition and release geometry
+
+Production dragEvents now consumes the original five-event click/drag factory;
+the old independent20-step interpolation/private-source builder is removed.
+Target.dragInput forwards the validated screenshot window ID,bounds and flip
+flag. Deferred release previously changed only global location, leaving a
+window-local endpoint stale after interruption. It now reapplies both geometry
+and routing to the last dispatched position. applyMouseWindow is nonthrowing:
+its required restored binding has no recoverable throwing branch.
+
+Build passed33.50s. Native --drag-self-test, --self-test and --sky-action-self-test
+pass. Injected posting checks both window flips and interruption before0/1/2/3
+moves, local/global release coordinates, routing fields and identity-loss guards.
+No real input was posted. Existing10ms timing,deferred cleanup and identity policy
+remain independent helper orchestration, not claimed original controller bodies.
+The real screenshot-to-drag path and broader parity are unaccepted. See
+reconstruction/production-drag-alignment-evidence.json.

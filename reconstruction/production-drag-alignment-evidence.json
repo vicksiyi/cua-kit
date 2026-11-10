@@ -1,0 +1,23 @@
+{
+  "source": "native/macos/Sources/CuaHelper/Drag.swift",
+  "construction": "Original AccessibilitySupport.SynthesizedEvent.click(at:andDragTo:...) count1 supplies five native events; removed independent20-step interpolation",
+  "windowRouting": "Target.dragInput forwards validated snapshot MouseWindow ID,bounds,flip flag into original factory",
+  "releaseFix": "On interruption,up global location and window-local location/routing now both follow last dispatched point",
+  "adapterBoundary": [
+    "Finite-coordinate validation,10ms waits,identity guards and deferred release are existing helper policy,not claimed recovered original controller algorithm",
+    "applyMouseWindow is now nonthrowing because its restored required SPI body has no recoverable throw path"
+  ],
+  "validation": {
+    "build": "exit0,33.50s",
+    "dragSelfTest": "exit0; original three move positions and interruptions before0/1/2/3 moves",
+    "windowRelease": "Both flipped/unflipped windows across four interruption states; inspect native local/global locations and fields91/92 without posting",
+    "identity": "Initial invalid target postsnothing; invalidated target receives no cleanup",
+    "nativeInputSelfTest": "exit0",
+    "skyActionMapping": "exit0"
+  },
+  "limits": [
+    "Real screenshot-to-drag pipeline and business App acceptance untested",
+    "No actual events posted by self-tests",
+    "Outer click<=10 validation and wider controller/native reconstruction remain unfinished"
+  ]
+}
