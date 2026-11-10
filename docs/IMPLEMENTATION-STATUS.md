@@ -8231,3 +8231,22 @@ production file-route selection remain incomplete. Outer Capture adapter still
 has its own focus/identity/dimension/PNG/data response policies; module movement
 does not establish their original parity. Broader JS/native/browser restoration
 and original SystemSoftware CGWindow/observer coverage remain open.
+
+### 2026-11-11 — Buffer selection and unique dictionary provenance checked
+
+Read originalfb8340..fb8804 and dictionary mergefb5d78..fb60f8. Confirmed independent
+second content.windows getter, tuple construction and unique dictionary merge
+before offscreen routing. Existing-key path creates/throws an error, and capture
+caller routes it to swift_unexpectedError. The current unique-key dictionary is
+therefore supported by original code and was not removed based on suspicion.
+Static callsite/selector audit is reproducible via
+scripts/audit-screenshot-window-routing.py; original transcripts retained.
+
+Added missing standalone generic selection fixture to unified runner: singleton
+selects first match, absent ID never falls back to app-name matching, multi-ID
+(including repeated IDs) never selects single window or reads inventory; nil/
+empty IDs use app matcher only if appName is present (empty String still passed).
+All21 screenshot checks passed. No production source behavior changed, and no
+original native/desktop/model execution occurred. This establishes specific
+selection/dictionary evidence, not full SDK object or buffer parity. Original
+Swift duplicate-key error representation/runtime path remains unexecuted.

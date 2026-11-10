@@ -1,0 +1,18 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "selectionRange": "0x100fb8340..0x100fb84bc",
+  "dictionaryRange": "0x100fb84c4..0x100fb86d4",
+  "mergeRange": "0x100fb5d78..0x100fb60f8",
+  "selectors": {
+    "0x101542eb8": "windows",
+    "0x101542e98": "windowID"
+  },
+  "finding": "Keep dictionary construction in current ScreenshotBuffer; original also maps windowID/window pairs, merges uniquely and terminates on duplicate-key error",
+  "selectionFixture": "reconstruction/screenshot-window-selection-check.swift",
+  "productionChange": "none; suspected extra dictionary behavior is supported by original instructions",
+  "limits": [
+    "Static branch/callsite evidence and injected generic test only",
+    "Actual SDK windows/duplicate objects not exercised",
+    "No full buffer or original Swift internal error representation parity claim"
+  ]
+}
