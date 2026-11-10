@@ -14,7 +14,7 @@ public extension SynthesizedEvent {
             wheelCount: 1, wheel1: Int32(deltaY), wheel2: Int32(deltaX), wheel3: 0) else {
             throw Error.invalidParameter
         }
-        event.location = point
+        CGEventAPI.setLocation(event, location: point)
         if let windowID {
             if let field = CGEventField(rawValue: 51) {
                 CGEventAPI.setIntegerValueField(event, field: field, value: Int64(windowID))
@@ -22,7 +22,7 @@ public extension SynthesizedEvent {
             CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointer, value: Int64(windowID))
             CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
             if let bounds = windowBounds {
-                var local = event.location.applying(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
+                var local = CGEventAPI.getLocation(event).applying(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
                 if windowUsesFlippedCoordinates { local.y = bounds.height - local.y }
                 WindowServerSPI.setWindowLocation(event, location: local)
             }

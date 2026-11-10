@@ -21,7 +21,7 @@ report={'binarySha256':hashlib.sha256(audit['data']).hexdigest(),
 'initializer':'0x100257348','saltVA':hex(saltAddress),'salt':salt,
 'imagesVA':'0x101558cc8','images':images,'requestsVA':'0x101558d18 stride56','requests':requests,
 'setIntegerSlot':14,'getIntegerSlot':4,
-'limits':['Owned restored SoftLink fixture resolves system images only; never executes original service','Only integer getter/setter identity is checked; other22 entries are not claimed restored']}
+'limits':['Owned restored SoftLink fixture resolves system images only; never executes original service','Integer and8 scalar binding identities are checked; other14 entries are not claimed restored']}
 (root/'reconstruction/cgevent-integer-binding-evidence.json').write_text(json.dumps(report,indent=2)+'\n')
 source='''import CoreGraphics
 import Darwin
@@ -33,7 +33,7 @@ import SystemSoftware
         let salt = SALT
         let images: [UInt64] = IMAGES
         let requests: [[UInt64]] = REQUESTS
-        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField")] {
+        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField"), (3, "CGEventGetFlags"), (13, "CGEventSetFlags"), (5, "CGEventGetLocation"), (15, "CGEventSetLocation"), (6, "CGEventGetTimestamp"), (16, "CGEventSetTimestamp"), (7, "CGEventGetType"), (17, "CGEventSetType")] {
             for (priority, candidate) in [("_" + name), name].enumerated() {
                 let hash = Array(candidate.utf8).withUnsafeBufferPointer { bytes in
                     Array(salt.utf8).withUnsafeBufferPointer { sipHash(buffer: bytes, appending: $0) }
@@ -42,7 +42,7 @@ import SystemSoftware
             }
         }
         let resolved = lookUpBatchSymbolPointers(images: images, symbolRequests: requests, salt: salt)
-        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField")] {
+        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField"), (3, "CGEventGetFlags"), (13, "CGEventSetFlags"), (5, "CGEventGetLocation"), (15, "CGEventSetLocation"), (6, "CGEventGetTimestamp"), (16, "CGEventSetTimestamp"), (7, "CGEventGetType"), (17, "CGEventSetType")] {
             let expected = dlsym(UnsafeMutableRawPointer(bitPattern: -2), name)!
             precondition(resolved[slot].pointer == UnsafeRawPointer(expected))
             print("Original slot \\(slot) resolves \\(resolved[slot].name ?? "nil"); pointer equals system \\(name)")

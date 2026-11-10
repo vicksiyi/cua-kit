@@ -1,0 +1,36 @@
+{
+  "source": "native/macos/Sources/SystemSoftware/CGEventAPI.swift",
+  "slots": {
+    "getFlags": 3,
+    "setFlags": 13,
+    "getLocation": 5,
+    "setLocation": 15,
+    "getTimestamp": 6,
+    "setTimestamp": 16,
+    "getType": 7,
+    "setType": 17
+  },
+  "matchedSignatures": [
+    "static SystemSoftware.CGEventAPI.getFlags(__C.CGEventRef) -> __C.CGEventFlags",
+    "static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()",
+    "static SystemSoftware.CGEventAPI.getLocation(__C.CGEventRef) -> __C.CGPoint",
+    "static SystemSoftware.CGEventAPI.setLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()",
+    "static SystemSoftware.CGEventAPI.getTimestamp(__C.CGEventRef) -> Swift.UInt64",
+    "static SystemSoftware.CGEventAPI.setTimestamp(_: __C.CGEventRef, timestamp: Swift.UInt64) -> ()",
+    "static SystemSoftware.CGEventAPI.getType(__C.CGEventRef) -> __C.CGEventType",
+    "static SystemSoftware.CGEventAPI.setType(_: __C.CGEventRef, type: __C.CGEventType) -> ()"
+  ],
+  "productionCallers": "Mouse/scroll factory flags/location writes and location reads use restored wrappers",
+  "validation": {
+    "build": "exit0,10.37s",
+    "selfTest": "Native input checks exit0",
+    "linkedFixtures": "All11 pass",
+    "pointerIdentity": "All8 original symbol alternatives hash to corresponding request slots; selected pointers match system APIs",
+    "scalarCoverage": "Flags combinations; zero/negative/fractional coordinates; UInt64 timestamps including high bit and max; null/move/key/scroll types"
+  },
+  "limits": [
+    "No event posting or live desktop action",
+    "10 of24 original CGEventAPI method signatures now present; remaining14 methods and whole type parity incomplete",
+    "Module identity/signature matching does not prove full native ABI equivalence"
+  ]
+}

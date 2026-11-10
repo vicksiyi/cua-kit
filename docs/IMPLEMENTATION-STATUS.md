@@ -8695,3 +8695,18 @@ Both selected exported signatures match original. Static request audit compares
 production arrays/salt to pinned binary bytes. Only2 of24 public methods are
 implemented; generic storage ABI, wider API behavior and live event delivery
 are unaccepted. See cgevent-api-module-evidence.json and publisher disassembly.
+
+## 2026-11-11 CGEvent scalar API methods
+
+CGEventAPI now adds get/set pairs for flags, location, timestamp and type at
+original slots3/13,5/15,6/16,7/17. Original wrapper disassembly, both-priority
+symbol hashes and system pointer identity support these mappings. Mouse/scroll
+factories now use the original location/flags wrapper path. All8 selected method
+signatures exactly match original exports, bringing implemented methods to10 of24
+for this bounded type only; remaining14 methods are still absent.
+
+Build passed10.37s; native input self-test and all11 linked fixtures passed.
+Checks cover flags combinations, negative/fractional coordinates, full UInt64
+timestamp boundaries and several event types, on unposted allocated events.
+No desktop event delivery or full ABI/type/whole-project completion is claimed.
+See reconstruction/cgevent-scalars-evidence.json and original wrapper excerpt.

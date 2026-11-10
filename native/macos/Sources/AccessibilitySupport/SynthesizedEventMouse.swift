@@ -32,15 +32,15 @@ public extension SynthesizedEvent {
             modifierFlags: [], timestamp: 0, windowNumber: Int(windowID ?? 0),
             context: nil, eventNumber: Int(eventNumber), clickCount: clickCount,
             pressure: 1)?.cgEvent else { throw Error.invalidParameter }
-        event.flags = flags
-        event.location = point
+        CGEventAPI.setFlags(event, flags: flags)
+        CGEventAPI.setLocation(event, location: point)
         CGEventAPI.setIntegerValueField(event, field: .mouseEventButtonNumber, value: Int64(mouseButton.rawValue))
         CGEventAPI.setIntegerValueField(event, field: .mouseEventSubtype, value: 3)
         if let windowID {
             CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointer, value: Int64(windowID))
             CGEventAPI.setIntegerValueField(event, field: .mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
             if let bounds = windowBounds {
-                var local = event.location.applying(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
+                var local = CGEventAPI.getLocation(event).applying(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
                 if windowUsesFlippedCoordinates { local.y = bounds.height - local.y }
                 WindowServerSPI.setWindowLocation(event, location: local)
             }
