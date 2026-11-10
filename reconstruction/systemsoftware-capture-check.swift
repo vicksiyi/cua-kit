@@ -57,6 +57,12 @@ import SlimCore
             capture: { ids, region in precondition(ids == [7] && region == rect); return "captured" },
             resize: { _, size in resized = true; precondition(size == rect.size); return nil })
         precondition(retained == "captured" && resized)
+        // NSNumber coercion is intentional: no Int(exactly:), string parsing,
+        // deduplication or filtering of zero/bool/negative numeric values.
+        let associated: NSArray = [NSNumber(value: 7), "9", NSNumber(value: -1),
+            NSNumber(value: 7), NSNumber(value: 3.75), NSNull(), NSNumber(value: false)]
+        precondition(associatedWindowIDValues(associated) == [7, UInt32.max, 7, 3, 0])
+        precondition(associatedWindowIDValues([]) == [])
         print("SystemSoftware injected capture checks passed (no private SPI invocation)")
     }
 }

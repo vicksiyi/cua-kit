@@ -1,0 +1,281 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10026e310 -e 0x10026e398
+SkyComputerUseService`___lldb_unnamed_symbol61768:
+SkyComputerUseService[0x10026e310] <+0>:  adrp   x8, 4845
+SkyComputerUseService[0x10026e314] <+4>:  ldr    x0, [x8, #0x688]
+SkyComputerUseService[0x10026e318] <+8>:  cbz    x0, 0x10026e320           ; <+16>
+SkyComputerUseService[0x10026e31c] <+12>: ret    
+SkyComputerUseService[0x10026e320] <+16>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026e324] <+20>: mov    x29, sp
+SkyComputerUseService[0x10026e328] <+24>: mov    w0, #0xff                 ; =255 
+SkyComputerUseService[0x10026e32c] <+28>: bl     0x10114e7b8
+SkyComputerUseService[0x10026e330] <+32>: mov    x1, x0
+SkyComputerUseService[0x10026e334] <+36>: adrp   x0, 4596
+SkyComputerUseService[0x10026e338] <+40>: ldr    x0, [x0, #0xf80]
+SkyComputerUseService[0x10026e33c] <+44>: bl     0x101155328               ; symbol stub for: swift_getWitnessTable
+SkyComputerUseService[0x10026e340] <+48>: adrp   x8, 4845
+SkyComputerUseService[0x10026e344] <+52>: add    x8, x8, #0x688            ; type metadata for SystemSoftware.User + 688
+SkyComputerUseService[0x10026e348] <+56>: stlr   x0, [x8]
+SkyComputerUseService[0x10026e34c] <+60>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026e350] <+64>: ret    
+
+SkyComputerUseService`___lldb_unnamed_symbol61769:
+SkyComputerUseService[0x10026e354] <+0>:  adrp   x8, 4845
+SkyComputerUseService[0x10026e358] <+4>:  ldr    x0, [x8, #0x690]
+SkyComputerUseService[0x10026e35c] <+8>:  cbz    x0, 0x10026e368           ; <+20>
+SkyComputerUseService[0x10026e360] <+12>: mov    x1, #0x0                  ; =0 
+SkyComputerUseService[0x10026e364] <+16>: ret    
+SkyComputerUseService[0x10026e368] <+20>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026e36c] <+24>: mov    x29, sp
+SkyComputerUseService[0x10026e370] <+28>: adrp   x8, 4784
+SkyComputerUseService[0x10026e374] <+32>: ldr    x0, [x8, #0xe98]
+SkyComputerUseService[0x10026e378] <+36>: bl     0x101154bf0               ; symbol stub for: objc_opt_self
+SkyComputerUseService[0x10026e37c] <+40>: bl     0x101155280               ; symbol stub for: swift_getObjCClassMetadata
+SkyComputerUseService[0x10026e380] <+44>: adrp   x8, 4845
+SkyComputerUseService[0x10026e384] <+48>: add    x8, x8, #0x690            ; type metadata for SystemSoftware.User + 696
+SkyComputerUseService[0x10026e388] <+52>: stlr   x0, [x8]
+SkyComputerUseService[0x10026e38c] <+56>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026e390] <+60>: mov    x1, #0x0                  ; =0 
+SkyComputerUseService[0x10026e394] <+64>: ret    
+(lldb) disassemble -s 0x10026c808 -e 0x10026ca60
+SkyComputerUseService`___lldb_unnamed_symbol61741:
+SkyComputerUseService[0x10026c808] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026c80c] <+4>:  ldr    x8, [x8, #0x318]
+SkyComputerUseService[0x10026c810] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026c814] <+12>: b.ne   0x10026c844               ; <+60>
+SkyComputerUseService[0x10026c818] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026c81c] <+20>: ldrb   w8, [x8, #0x5f8]
+SkyComputerUseService[0x10026c820] <+24>: tbz    w8, #0x0, 0x10026c82c     ; <+36>
+SkyComputerUseService[0x10026c824] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026c828] <+32>: b      0x10026c838               ; <+48>
+SkyComputerUseService[0x10026c82c] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026c830] <+40>: ldr    x8, [x8, #0x5f0]
+SkyComputerUseService[0x10026c834] <+44>: cbz    x8, 0x10026c868           ; <+96>
+SkyComputerUseService[0x10026c838] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026c83c] <+52>: str    x8, [x9, #0x588]
+SkyComputerUseService[0x10026c840] <+56>: ret    
+SkyComputerUseService[0x10026c844] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026c848] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026c84c] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026c850] <+72>: add    x0, x0, #0x318            ; SAIAttachmentCharacter + 688
+SkyComputerUseService[0x10026c854] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026c858] <+80>: add    x1, x1, #0xbb0            ; ___lldb_unnamed_symbol61755
+SkyComputerUseService[0x10026c85c] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026c860] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026c864] <+92>: b      0x10026c818               ; <+16>
+SkyComputerUseService[0x10026c868] <+96>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61742:
+SkyComputerUseService[0x10026c86c] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026c870] <+4>:  ldr    x8, [x8, #0x320]
+SkyComputerUseService[0x10026c874] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026c878] <+12>: b.ne   0x10026c8a8               ; <+60>
+SkyComputerUseService[0x10026c87c] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026c880] <+20>: ldrb   w8, [x8, #0x608]
+SkyComputerUseService[0x10026c884] <+24>: tbz    w8, #0x0, 0x10026c890     ; <+36>
+SkyComputerUseService[0x10026c888] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026c88c] <+32>: b      0x10026c89c               ; <+48>
+SkyComputerUseService[0x10026c890] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026c894] <+40>: ldr    x8, [x8, #0x600]
+SkyComputerUseService[0x10026c898] <+44>: cbz    x8, 0x10026c8cc           ; <+96>
+SkyComputerUseService[0x10026c89c] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026c8a0] <+52>: str    x8, [x9, #0x590]
+SkyComputerUseService[0x10026c8a4] <+56>: ret    
+SkyComputerUseService[0x10026c8a8] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026c8ac] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026c8b0] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026c8b4] <+72>: add    x0, x0, #0x320            ; SAIAttachmentCharacter + 696
+SkyComputerUseService[0x10026c8b8] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026c8bc] <+80>: add    x1, x1, #0xc3c            ; ___lldb_unnamed_symbol61756
+SkyComputerUseService[0x10026c8c0] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026c8c4] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026c8c8] <+92>: b      0x10026c87c               ; <+16>
+SkyComputerUseService[0x10026c8cc] <+96>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61743:
+SkyComputerUseService[0x10026c8d0] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026c8d4] <+4>:  ldr    x8, [x8, #0x328]
+SkyComputerUseService[0x10026c8d8] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026c8dc] <+12>: b.ne   0x10026c90c               ; <+60>
+SkyComputerUseService[0x10026c8e0] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026c8e4] <+20>: ldrb   w8, [x8, #0x618]
+SkyComputerUseService[0x10026c8e8] <+24>: tbz    w8, #0x0, 0x10026c8f4     ; <+36>
+SkyComputerUseService[0x10026c8ec] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026c8f0] <+32>: b      0x10026c900               ; <+48>
+SkyComputerUseService[0x10026c8f4] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026c8f8] <+40>: ldr    x8, [x8, #0x610]
+SkyComputerUseService[0x10026c8fc] <+44>: cbz    x8, 0x10026c930           ; <+96>
+SkyComputerUseService[0x10026c900] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026c904] <+52>: str    x8, [x9, #0x598]
+SkyComputerUseService[0x10026c908] <+56>: ret    
+SkyComputerUseService[0x10026c90c] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026c910] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026c914] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026c918] <+72>: add    x0, x0, #0x328            ; SAIAttachmentCharacter + 704
+SkyComputerUseService[0x10026c91c] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026c920] <+80>: add    x1, x1, #0xcc8            ; ___lldb_unnamed_symbol61757
+SkyComputerUseService[0x10026c924] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026c928] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026c92c] <+92>: b      0x10026c8e0               ; <+16>
+SkyComputerUseService[0x10026c930] <+96>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61744:
+SkyComputerUseService[0x10026c934] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026c938] <+4>:  ldr    x8, [x8, #0x330]
+SkyComputerUseService[0x10026c93c] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026c940] <+12>: b.ne   0x10026c970               ; <+60>
+SkyComputerUseService[0x10026c944] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026c948] <+20>: ldrb   w8, [x8, #0x628]
+SkyComputerUseService[0x10026c94c] <+24>: tbz    w8, #0x0, 0x10026c958     ; <+36>
+SkyComputerUseService[0x10026c950] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026c954] <+32>: b      0x10026c964               ; <+48>
+SkyComputerUseService[0x10026c958] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026c95c] <+40>: ldr    x8, [x8, #0x620]
+SkyComputerUseService[0x10026c960] <+44>: cbz    x8, 0x10026c994           ; <+96>
+SkyComputerUseService[0x10026c964] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026c968] <+52>: str    x8, [x9, #0x5a0]
+SkyComputerUseService[0x10026c96c] <+56>: ret    
+SkyComputerUseService[0x10026c970] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026c974] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026c978] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026c97c] <+72>: add    x0, x0, #0x330            ; SAIAttachmentCharacter + 712
+SkyComputerUseService[0x10026c980] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026c984] <+80>: add    x1, x1, #0xd54            ; ___lldb_unnamed_symbol61758
+SkyComputerUseService[0x10026c988] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026c98c] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026c990] <+92>: b      0x10026c944               ; <+16>
+SkyComputerUseService[0x10026c994] <+96>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61745:
+SkyComputerUseService[0x10026c998] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026c99c] <+4>:  ldr    x8, [x8, #0x338]
+SkyComputerUseService[0x10026c9a0] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026c9a4] <+12>: b.ne   0x10026c9d4               ; <+60>
+SkyComputerUseService[0x10026c9a8] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026c9ac] <+20>: ldrb   w8, [x8, #0x638]
+SkyComputerUseService[0x10026c9b0] <+24>: tbz    w8, #0x0, 0x10026c9bc     ; <+36>
+SkyComputerUseService[0x10026c9b4] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026c9b8] <+32>: b      0x10026c9c8               ; <+48>
+SkyComputerUseService[0x10026c9bc] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026c9c0] <+40>: ldr    x8, [x8, #0x630]
+SkyComputerUseService[0x10026c9c4] <+44>: cbz    x8, 0x10026c9f8           ; <+96>
+SkyComputerUseService[0x10026c9c8] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026c9cc] <+52>: str    x8, [x9, #0x5a8]
+SkyComputerUseService[0x10026c9d0] <+56>: ret    
+SkyComputerUseService[0x10026c9d4] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026c9d8] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026c9dc] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026c9e0] <+72>: add    x0, x0, #0x338            ; SAIAttachmentCharacter + 720
+SkyComputerUseService[0x10026c9e4] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026c9e8] <+80>: add    x1, x1, #0xde0            ; ___lldb_unnamed_symbol61759
+SkyComputerUseService[0x10026c9ec] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026c9f0] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026c9f4] <+92>: b      0x10026c9a8               ; <+16>
+SkyComputerUseService[0x10026c9f8] <+96>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61746:
+SkyComputerUseService[0x10026c9fc] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026ca00] <+4>:  ldr    x8, [x8, #0x340]
+SkyComputerUseService[0x10026ca04] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026ca08] <+12>: b.ne   0x10026ca38               ; <+60>
+SkyComputerUseService[0x10026ca0c] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026ca10] <+20>: ldrb   w8, [x8, #0x648]
+SkyComputerUseService[0x10026ca14] <+24>: tbz    w8, #0x0, 0x10026ca20     ; <+36>
+SkyComputerUseService[0x10026ca18] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026ca1c] <+32>: b      0x10026ca2c               ; <+48>
+SkyComputerUseService[0x10026ca20] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026ca24] <+40>: ldr    x8, [x8, #0x640]
+SkyComputerUseService[0x10026ca28] <+44>: cbz    x8, 0x10026ca5c           ; <+96>
+SkyComputerUseService[0x10026ca2c] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026ca30] <+52>: str    x8, [x9, #0x5b0]
+SkyComputerUseService[0x10026ca34] <+56>: ret    
+SkyComputerUseService[0x10026ca38] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026ca3c] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026ca40] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026ca44] <+72>: add    x0, x0, #0x340            ; SAIAttachmentCharacter + 728
+SkyComputerUseService[0x10026ca48] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026ca4c] <+80>: add    x1, x1, #0xe6c            ; ___lldb_unnamed_symbol61760
+SkyComputerUseService[0x10026ca50] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026ca54] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026ca58] <+92>: b      0x10026ca0c               ; <+16>
+SkyComputerUseService[0x10026ca5c] <+96>: brk    #0x1
+(lldb) disassemble -s 0x10026ca60 -e 0x10026cb84
+SkyComputerUseService`___lldb_unnamed_symbol61747:
+SkyComputerUseService[0x10026ca60] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026ca64] <+4>:  ldr    x8, [x8, #0x348]
+SkyComputerUseService[0x10026ca68] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026ca6c] <+12>: b.ne   0x10026ca9c               ; <+60>
+SkyComputerUseService[0x10026ca70] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026ca74] <+20>: ldrb   w8, [x8, #0x658]
+SkyComputerUseService[0x10026ca78] <+24>: tbz    w8, #0x0, 0x10026ca84     ; <+36>
+SkyComputerUseService[0x10026ca7c] <+28>: mov    x8, #0x0                  ; =0 
+SkyComputerUseService[0x10026ca80] <+32>: b      0x10026ca90               ; <+48>
+SkyComputerUseService[0x10026ca84] <+36>: adrp   x8, 4847
+SkyComputerUseService[0x10026ca88] <+40>: ldr    x8, [x8, #0x650]
+SkyComputerUseService[0x10026ca8c] <+44>: cbz    x8, 0x10026cac0           ; <+96>
+SkyComputerUseService[0x10026ca90] <+48>: adrp   x9, 4847
+SkyComputerUseService[0x10026ca94] <+52>: str    x8, [x9, #0x5b8]
+SkyComputerUseService[0x10026ca98] <+56>: ret    
+SkyComputerUseService[0x10026ca9c] <+60>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026caa0] <+64>: mov    x29, sp
+SkyComputerUseService[0x10026caa4] <+68>: adrp   x0, 4844
+SkyComputerUseService[0x10026caa8] <+72>: add    x0, x0, #0x348            ; SAIAttachmentCharacter + 736
+SkyComputerUseService[0x10026caac] <+76>: adrp   x1, 1
+SkyComputerUseService[0x10026cab0] <+80>: add    x1, x1, #0xef8            ; ___lldb_unnamed_symbol61761
+SkyComputerUseService[0x10026cab4] <+84>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026cab8] <+88>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026cabc] <+92>: b      0x10026ca70               ; <+16>
+SkyComputerUseService[0x10026cac0] <+96>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61748:
+SkyComputerUseService[0x10026cac4] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026cac8] <+4>:  ldr    x8, [x8, #0x350]
+SkyComputerUseService[0x10026cacc] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026cad0] <+12>: b.ne   0x10026caf8               ; <+52>
+SkyComputerUseService[0x10026cad4] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026cad8] <+20>: add    x8, x8, #0x660            ; type metadata for SystemSoftware.User + 648
+SkyComputerUseService[0x10026cadc] <+24>: ldrb   w9, [x8, #0x8]
+SkyComputerUseService[0x10026cae0] <+28>: tbnz   w9, #0x0, 0x10026cb20     ; <+92>
+SkyComputerUseService[0x10026cae4] <+32>: ldr    x8, [x8]
+SkyComputerUseService[0x10026cae8] <+36>: cbz    x8, 0x10026cb1c           ; <+88>
+SkyComputerUseService[0x10026caec] <+40>: adrp   x9, 4847
+SkyComputerUseService[0x10026caf0] <+44>: str    x8, [x9, #0x5c0]
+SkyComputerUseService[0x10026caf4] <+48>: ret    
+SkyComputerUseService[0x10026caf8] <+52>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026cafc] <+56>: mov    x29, sp
+SkyComputerUseService[0x10026cb00] <+60>: adrp   x0, 4844
+SkyComputerUseService[0x10026cb04] <+64>: add    x0, x0, #0x350            ; SAIAttachmentCharacter + 744
+SkyComputerUseService[0x10026cb08] <+68>: adrp   x1, 1
+SkyComputerUseService[0x10026cb0c] <+72>: add    x1, x1, #0xf84            ; ___lldb_unnamed_symbol61762
+SkyComputerUseService[0x10026cb10] <+76>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026cb14] <+80>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026cb18] <+84>: b      0x10026cad4               ; <+16>
+SkyComputerUseService[0x10026cb1c] <+88>: brk    #0x1
+SkyComputerUseService[0x10026cb20] <+92>: brk    #0x1
+
+SkyComputerUseService`___lldb_unnamed_symbol61749:
+SkyComputerUseService[0x10026cb24] <+0>:  adrp   x8, 4844
+SkyComputerUseService[0x10026cb28] <+4>:  ldr    x8, [x8, #0x358]
+SkyComputerUseService[0x10026cb2c] <+8>:  cmn    x8, #0x1
+SkyComputerUseService[0x10026cb30] <+12>: b.ne   0x10026cb58               ; <+52>
+SkyComputerUseService[0x10026cb34] <+16>: adrp   x8, 4847
+SkyComputerUseService[0x10026cb38] <+20>: add    x8, x8, #0x670            ; type metadata for SystemSoftware.User + 664
+SkyComputerUseService[0x10026cb3c] <+24>: ldrb   w9, [x8, #0x8]
+SkyComputerUseService[0x10026cb40] <+28>: tbnz   w9, #0x0, 0x10026cb80     ; <+92>
+SkyComputerUseService[0x10026cb44] <+32>: ldr    x8, [x8]
+SkyComputerUseService[0x10026cb48] <+36>: cbz    x8, 0x10026cb7c           ; <+88>
+SkyComputerUseService[0x10026cb4c] <+40>: adrp   x9, 4847
+SkyComputerUseService[0x10026cb50] <+44>: str    x8, [x9, #0x5c8]
+SkyComputerUseService[0x10026cb54] <+48>: ret    
+SkyComputerUseService[0x10026cb58] <+52>: stp    x29, x30, [sp, #-0x10]!
+SkyComputerUseService[0x10026cb5c] <+56>: mov    x29, sp
+SkyComputerUseService[0x10026cb60] <+60>: adrp   x0, 4844
+SkyComputerUseService[0x10026cb64] <+64>: add    x0, x0, #0x358            ; SAIAttachmentCharacter + 752
+SkyComputerUseService[0x10026cb68] <+68>: adrp   x1, 2
+SkyComputerUseService[0x10026cb6c] <+72>: add    x1, x1, #0x10             ; ___lldb_unnamed_symbol61763
+SkyComputerUseService[0x10026cb70] <+76>: bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026cb74] <+80>: ldp    x29, x30, [sp], #0x10
+SkyComputerUseService[0x10026cb78] <+84>: b      0x10026cb34               ; <+16>
+SkyComputerUseService[0x10026cb7c] <+88>: brk    #0x1
+SkyComputerUseService[0x10026cb80] <+92>: brk    #0x1

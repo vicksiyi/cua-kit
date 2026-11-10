@@ -8115,3 +8115,22 @@ Native build passed21.13s; static operand/import audit passed. This adds a wrapp
 not proof that the production cursor UI invokes it or that a cursor is visible.
 Actual private call, ownership ABI and desktop behavior remain unaccepted. No
 vendor native service execution, private SPI invocation or model call occurred.
+
+### 2026-11-11 — Associated-window numeric conversion stage reconstructed
+
+Original associatedWindowIDs uses NSArray.makeIterator/NSFastEnumerationIterator,
+conditional NSNumber cast and unsignedIntValue, storing low32bits in sequence.
+Added AssociatedWindowIDValues in SystemSoftware preserving order/duplicates and
+NSNumber coercion; no string parsing, exact-int gate, deduplication or zero filter.
+Static audit scripts/audit-associated-window-values.py confirms imported iterator,
+NSNumber class, selector and output store against the pinned binary. Additional
+helper/optional-binding initializer disassembly is retained in
+reconstruction/associated-window-dependencies.txt.
+
+Native build passed21.08s. Separately linked consumer passed mixed numeric/string/
+null values, duplicate IDs, negative NSNumber wrapping, fractional truncation,
+bool conversion and empty input. No actual private query was called. Original
+associatedWindowIDs entry remains missing because its two optional acquisition
+bindings, initialization and returned object lifetime are not yet reconstructed;
+this conversion helper does not alter exported API coverage. No desktop/model or
+vendor service execution occurred. Full restoration remains incomplete.
