@@ -1,0 +1,42 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "scope": "Direct B/BL in __TEXT,__text only; indirect calls excluded",
+  "calls": {
+    "setFrontProcess": [
+      "0x10077b5f0",
+      "0x10077b698"
+    ],
+    "setWindowLocation": [
+      "0x1007305e0",
+      "0x100730724",
+      "0x1007549c8",
+      "0x100754c90",
+      "0x100754f3c",
+      "0x100755d10",
+      "0x100755ef4",
+      "0x100756094",
+      "0x100756234",
+      "0x1007563e4",
+      "0x1007b2700",
+      "0x1007b28b0",
+      "0x1007b47d4",
+      "0x1007b4980"
+    ],
+    "setCursorUpdatesFromBackground": []
+  },
+  "frontProcessCallers": [
+    "AccessibilitySupport NSRunningApplication.showAllWindows",
+    "AccessibilitySupport NSRunningApplication.setFrontProcess(windowID:options:)"
+  ],
+  "options": {
+    "allWindows": 256,
+    "causedByUser": 512,
+    "noWindows": 1024,
+    "dontUnhide": 2048
+  },
+  "limits": [
+    "No direct caller does not mean unused: indirect/runtime calls are not enumerated",
+    "Do not substitute this API into synthetic click activation without its original caller evidence",
+    "Original native hash pinned by imported read-only audit"
+  ]
+}

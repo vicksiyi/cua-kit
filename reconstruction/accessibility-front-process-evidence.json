@@ -1,0 +1,28 @@
+{
+  "originalModule": "AccessibilitySupport",
+  "source": "native/macos/Sources/AccessibilitySupport/RunningApplicationFrontProcess.swift",
+  "originalEntries": {
+    "showAllWindows": "0x10077b590",
+    "setFrontProcess(windowID:options:)": "0x10077b628",
+    "SetFrontProcessOptionsRawValues": "0x101195850"
+  },
+  "behavior": [
+    "Initialize eight-byte ProcessSerialNumber to zero; read application processIdentifier once",
+    "Call ApplicationRegistrySPI.getProcessForPID; return false on nonzero status without front setter",
+    "showAllWindows passes window ID zero and options 0x100",
+    "General entry preserves raw UInt32 window ID/options; return true only for CGError.success"
+  ],
+  "validation": {
+    "build": "Swift build complete, exit0, 16.14s",
+    "fixtures": "All seven scripts/check-systemsoftware-capture.mjs fixtures passed",
+    "frontProcessFixture": "Injected PID/PSN ordering, zero initialization, lookup failure short circuit, setter failure/success, raw UInt32 limits, option layout/composition",
+    "static": "scripts/audit-front-process-callers.py verifies two direct callers and four option constants against pinned original binary"
+  },
+  "limits": [
+    "No live front-process call or application activation exercised",
+    "Extracted injectable free function is an added test seam, not an original export",
+    "Only these NSRunningApplication extensions are restored in the new AccessibilitySupport target; the full original module is incomplete",
+    "Synthetic-click activation is a separate original path; no speculative replacement made",
+    "Direct branch enumeration excludes indirect calls; binary equivalence and complete ABI parity are not claimed"
+  ]
+}

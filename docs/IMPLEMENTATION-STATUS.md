@@ -8508,3 +8508,21 @@ compiler entry points now include required C module-map directory without assert
 changes. Static native branch/slot audit passes; attention body exact comparison
 passes. Full ABI, live behavior, bridge source identity and overall restoration
 remain unaccepted. No desktop action, vendor executable or model ran.
+
+## 2026-11-11 AccessibilitySupport front-process extensions
+
+The partial original AccessibilitySupport target now exposes
+NSRunningApplication.showAllWindows(), setFrontProcess(windowID:options:), and
+SetFrontProcessOptions with UInt32 raw values 0x100/0x200/0x400/0x800.
+Pinned static original callers establish zero-initialized PSN, one PID read,
+lookup-error short circuit, raw arguments and status-to-Bool behavior. The two
+entries compose the restored SystemSoftware.ApplicationRegistrySPI directly.
+No replacement of the separate synthetic-click activation path was inferred.
+
+Swift build passed; all seven linked SystemSoftware/AccessibilitySupport fixtures
+passed, including injected lookup/setter failures and forwarding/order checks.
+These checks do not invoke live front-process SPI. The injectable free function
+is an additional test seam, not an original API. The full AccessibilitySupport
+module, native behavior parity, and real desktop acceptance remain incomplete.
+See reconstruction/accessibility-front-process-evidence.json and
+reconstruction/front-process-callers-evidence.json (direct branches only).

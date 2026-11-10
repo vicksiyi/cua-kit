@@ -6,13 +6,13 @@ import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const build = join(root, "native/macos/.build/debug");
 const objects = [];
-for (const module of ["SlimCore", "SystemSoftware", "SoftLink", "RunningProcess"]) {
+for (const module of ["SlimCore", "SystemSoftware", "AccessibilitySupport", "SoftLink", "RunningProcess"]) {
   const directory = join(build, `${module}.build`);
   for (const name of await readdir(directory)) if (name.endsWith(".o")) objects.push(join(directory, name));
 }
 const temporary = await mkdtemp(join(tmpdir(), "cua-systemsoftware-check-"));
 try {
-  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check", "systemsoftware-snapshot-check", "window-ordering-iterator-check", "safe-activation-window-order-check", "systemsoftware-application-registry-check"]) {
+  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check", "systemsoftware-snapshot-check", "window-ordering-iterator-check", "safe-activation-window-order-check", "systemsoftware-application-registry-check", "running-application-front-process-check"]) {
     const executable = join(temporary, fixture);
     const extraSources = fixture === "window-ordering-iterator-check"
       ? ["CGWindowEventStream", "WindowOrderingRestorationContext", "WindowOrderingEventLoop"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`))
