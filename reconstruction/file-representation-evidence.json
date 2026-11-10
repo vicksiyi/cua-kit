@@ -90,5 +90,14 @@
     },
     "data": "Use stored UTType without materializing",
     "validation": "Existing metadata/actual directory, absent PNG fallback, no extension fallback, explicit memory type and no eager file"
+  },
+  "pathExtension": {
+    "source": "0x101001080..0x101001178",
+    "foundationSelector": "0x1015437c0 -> 0x10136de3e stringByAppendingPathExtensionForType:",
+    "baseString": "0x1012542dc: single ASCII space; init literal length1",
+    "typeBridge": "GOT 0x1014692f0 UTType._bridgeToObjectiveC",
+    "result": "Native drops first character of appended result; retains leading dot, e.g. .png and .jpeg; no extension yields empty",
+    "validation": "Real Foundation PNG/JPEG/data/folder plus PDF/text/HTML/JSON/HEIC forwarding checks",
+    "limits": "Main filename reserved UTF16/date/truncation composition not yet restored"
   }
 }

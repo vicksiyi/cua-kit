@@ -36,6 +36,12 @@ enum File: Hashable, Codable {
 
     // Native File routes path and temporary ownership through FilePath witnesses;
     // DataFile returns its payload/name directly and materializes only for path.
+    // 101001080..101001178. Native Foundation chooses the extension;
+    // removing the one-character base leaves a leading dot when one is present.
+    static func pathExtension(for type: UTType) -> String {
+        String((" " as NSString).appendingPathExtension(for: type).dropFirst())
+    }
+
     var type: UTType {
         switch self {
         case .data(let file): return file.type

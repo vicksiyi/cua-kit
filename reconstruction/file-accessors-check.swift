@@ -12,6 +12,14 @@ import UniformTypeIdentifiers
         TemporaryFile.temporaryDirectory = FilePath(root.path)
         defer { TemporaryFile.temporaryDirectory = saved }
         precondition(Data.ReadingOptions.mappedIfSafe.rawValue == 1)
+        precondition(File.pathExtension(for: .png) == ".png")
+        precondition(File.pathExtension(for: .jpeg) == ".jpeg")
+        precondition(File.pathExtension(for: .data).isEmpty)
+        precondition(File.pathExtension(for: .folder).isEmpty)
+        for type in [UTType.pdf, .plainText, .html, .json, .heic] {
+            let appended = (" " as NSString).appendingPathExtension(for: type)
+            precondition(" " + File.pathExtension(for: type) == appended)
+        }
         let bytes = Data([0, 255, 7])
         let url = root.appendingPathComponent("existing.bin")
         try bytes.write(to: url)

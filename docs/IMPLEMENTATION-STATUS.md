@@ -7726,3 +7726,19 @@ writer integration, complete module audit and real UI acceptance remain open.
 No desktop/model/vendor-native execution was used.
 
 Swift helper build passed (23.28s, exit 0); whitespace diff check passed.
+
+### 2026-11-11 — Native type-based path extension selection
+
+Restored File.pathExtension(for:) from 101001080..101001178. The native code
+constructs a one-space NSString, bridges UTType to Objective-C, calls
+stringByAppendingPathExtensionForType:, then removes the first character.
+The result retains its leading dot; real SDK results are .png/.jpeg, while
+.data and .folder yield empty. No preferred-extension lookup or hard-coded jpg
+substitute was used. Selector/literal/import witnesses are pinned in File evidence.
+
+Owned SDK checks cover PNG, JPEG, data/folder and PDF/text/HTML/JSON/HEIC forwarding.
+Main filename reserved UTF16/date/truncation composition remains unresolved and
+has not been filled with invented formatting. Screenshot writer integration and
+full native/live acceptance remain incomplete. No model/desktop/vendor-native run.
+
+All fourteen screenshot checks passed; Swift helper build passed (23.41s, exit 0).
