@@ -7581,3 +7581,22 @@ No model, user desktop or original native binary execution was used.
 
 The helper build passed (exit 0); the pinned File/ScreenshotFile layout audit was
 also regenerated and byte-matched its recorded evidence.
+
+### 2026-11-11 — DataFile lazy materialization under native unfair lock
+
+Restored path getter 101003c2c..101003d70 and its constructor-owned optional
+TemporaryFile lock state. OSAllocatedUnfairLock holds the owner while the entire
+write occurs; successful creation is published before returning its FilePath.
+Write errors propagate after unlocking without filling the cache. A cached owner
+returns its path without checking existence; external deletion does not silently
+rewrite the data. Owner release delegates cleanup to restored TemporaryFile.
+
+All twelve screenshot checks passed. Added owned-directory checks for no eager
+write, binary content, final-owner cleanup, external deletion without recreation,
+failed write followed by successful retry, and 24 concurrent accesses yielding
+one path/file with no numbered collision directories. Native static instructions
+establish ordering; these are Core implementation tests, not execution of the
+original native function. DataFile coding/equality and File/ScreenshotFile remain
+incomplete. No desktop/model/vendor-native execution occurred.
+
+Swift helper build passed (15.53s, exit 0); git diff whitespace check passed.

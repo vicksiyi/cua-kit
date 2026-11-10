@@ -10,6 +10,15 @@
     "0x101469318": "UTType.data"
   },
   "rule": "Explicit type wins; otherwise single filename component extension, infer conforming to data, fallback data. Do not accept path components by splitting a path.",
-  "scope": "Only immutable fields, constructor, inferred type and size implemented; native lazy path lock, coding and equality still pending",
-  "validation": "reconstruction/data-file-construction-check.swift"
+  "scope": "Fields, constructor, type/size and lazy path implemented; coding/equality remain pending",
+  "validation": "reconstruction/data-file-construction-check.swift",
+  "materialization": {
+    "getter": "0x101003c2c..0x101003c8c",
+    "body": "0x101003c8c..0x101003d70",
+    "initialization": "0x1010047f8..0x101004848: allocated lock storage, zero lock, nil owner",
+    "order": "unfair lock -> cached owner or TemporaryFile(writingData:as:) -> publish on success -> unlock",
+    "failure": "propagate and unlock; cache remains nil so later access retries",
+    "cache": "No existence recheck or rewrite when path already cached",
+    "validation": "reconstruction/data-file-materialization-check.swift: lazy bytes, cleanup, deletion without recreation, failed write then retry, 24 concurrent accesses producing one file"
+  }
 }

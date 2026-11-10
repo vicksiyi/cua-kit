@@ -14,7 +14,8 @@ const cases = [
   ["temporary-file-path", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-path-check"],
   ["temporary-file-ownership", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-ownership-check"],
   ["temporary-file-writing", ["NativeLogger", "TemporaryFile", "TemporaryFilePath"], "temporary-file-writing-check"],
-  ["data-file-construction", ["DataFile"], "data-file-construction-check"],
+  ["data-file-construction", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile"], "data-file-construction-check"],
+  ["data-file-materialization", ["NativeLogger", "TemporaryFile", "TemporaryFilePath", "DataFile"], "data-file-materialization-check"],
   ["image-output", ["ScreenshotImplementation", "ScreenshotEncoding", "ImageDestination", "ScreenshotImageOutput"], "image-destination-check"],
   ["screen-capture-composition", ["ScreenScreenshotCapture"], "screen-screenshot-capture-check"],
 ];
