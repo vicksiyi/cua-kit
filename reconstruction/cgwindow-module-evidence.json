@@ -12,7 +12,7 @@
   "limits": [
     "Dictionary initializer/raw description helper are extracted public boundaries; original initializer access level not claimed",
     "No original memory layout/ABI parity claim",
-    "snapshot/original EventStream and real observer notification coverage remains incomplete",
+    "Original EventStream production integration and real snapshot/observer notification acceptance remain incomplete",
     "No actual native window query acceptance"
   ],
   "enumeration": {
@@ -44,7 +44,7 @@
       "scale queries with no preference; backingScaleFactor untouched; fallback2 on no screen"
     ],
     "validation": "native build34.09s; static original callsites; linked injected preference/order/tie/no-overlap/empty checks and compile-only real API surfaces",
-    "limits": "MainActor retained from existing adapter/SDK boundary; original annotation not established; real NSScreen/backing scale behavior not executed"
+    "limits": "Unisolated SDK screen reads typecheck; added MainActor annotation removed after original backing snapshot generic-executor evidence. Real screen/backing-scale behavior not executed."
   },
   "observerAlignment": {
     "source": "native/macos/Sources/SystemSoftware/CGWindowNotification.swift",
@@ -60,7 +60,7 @@
     "limits": [
       "Concrete init/deinit private notifications not executed",
       "Generic registration resource test is not runtime proof of concrete Observer",
-      "Snapshot API and original EventStream live/production integration remain incomplete",
+      "Snapshot live acceptance and original EventStream live/production integration remain incomplete",
       "Typealiases remain in CuaHelper during caller migration"
     ]
   },
@@ -82,6 +82,24 @@
       "Real iterator initialization/private notification subscription not executed",
       "Real yield/next/cancellation/lifetime acceptance remains unproven",
       "Production WindowOrderingEventLoop still uses extracted generic stream; nominal production migration remains open"
+    ]
+  },
+  "snapshot": {
+    "source": "native/macos/Sources/SystemSoftware/CGWindowSnapshot.swift",
+    "original": "backing25aeb4..25b10c; snapshot25b10c..25b818",
+    "rules": [
+      "Backing dimensions independently read scale twice, nearest-away rounding, checked Int then minimum1",
+      "Explicit positive dimensions retained; one missing dimension aspect-derived from raw stored bounds size with truncation and setter only if positive",
+      "Full SCShareableContent.current; first matching window ID; no match returns nil",
+      "Desktop-independent filter; ignoreShadowsSingleWindow/display true; other SDK defaults unchanged",
+      "Acquisition/capture errors propagate without retry; original completion error-first and no-result/no-error trap inspected"
+    ],
+    "validation": "final native build24.06s; all three linked fixtures pass; static scale/rounding/executor/selector/callback-gate audit; real nominal snapshot signatures typechecked from unisolated context",
+    "limits": [
+      "No actual screen content acquisition or image capture run",
+      "SDK async callback bridge/live error ownership not exercised",
+      "Nonfinite/out-of-Int conversion trap paths not executed",
+      "No original argument defaults inferred; production callers using other capture routes not replaced"
     ]
   }
 }

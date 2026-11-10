@@ -19,7 +19,6 @@ public func bestWindowScreen<Screen>(for bounds: CGRect, preferred: Screen?,
 }
 
 public extension NSScreen {
-    @MainActor
     static func bestScreen(for bounds: CGRect, preferredScreen: NSScreen?) -> NSScreen? {
         bestWindowScreen(for: bounds, preferred: preferredScreen,
             screens: { NSScreen.screens }, frame: { $0.frame })
@@ -27,12 +26,10 @@ public extension NSScreen {
 }
 
 public extension CGWindow {
-    @MainActor
     var screen: NSScreen? {
         NSScreen.bestScreen(for: bounds, preferredScreen: nil)
     }
 
-    @MainActor
     var scale: CGFloat {
         NSScreen.bestScreen(for: bounds, preferredScreen: nil)?.backingScaleFactor ?? 2
     }

@@ -8383,3 +8383,35 @@ Existing WindowOrderingEventLoop still uses the extracted generic stream with an
 injected observer factory; its production migration is not claimed by this new
 nominal API. Snapshot and full live/concurrency/interface parity remain open.
 No desktop, vendor service or paid model run occurred.
+
+### 2026-11-11 — CGWindow snapshot entries and original sizing restored
+
+Read full25aeb4..25b818. Restored snapshotAtBackingSize and snapshot(width:height:)
+in SystemSoftware without routing through the distinct SlimCore screenshot API.
+Backing sizing reads scale independently twice, rounds nearest ties away, checks
+Int conversion and clamps to1. Explicit snapshot dimensions use raw stored bounds
+size for missing-side aspect derivation, truncation and positive-only setters;
+both nonpositive leaves SDK width/height defaults. Source uses full shareable
+content, first matching ID, desktop-independent filter and both shadow flags true;
+no cursor/opacity/dimension-budget policy was added. Other SDK defaults retained.
+No matching window returns nil; SDK acquisition/capture errors propagate with no
+retry. Original error-first/nil-result trap callback sites inspected statically.
+
+Corrected prior unsupported isolation assumption: backing async entry passes zero
+executor arguments, and local Swift5 SDK probe allows unisolated NSScreen reads.
+Removed added MainActor annotations from restored public screen/scale/bestScreen
+and backing snapshot APIs. Existing adapter's own isolation is unchanged. Actual
+original source annotations cannot be reconstructed from symbols alone, but the
+restored backing entry no longer introduces an extra main-executor hop.
+
+Final helper build passed24.06s; all three linked fixtures passed. Snapshot checks
+cover two scale reads/rounding/minimum1, explicit/missing dimensions, truncation/
+conditional setter order, unchanged SDK cursor/opacity/default sizes, first match,
+no match and acquisition/capture failure identity/no retries. Nominal APIs also
+typecheck from unisolated caller without executing. Dedicated pinned static audit
+verifies scale/frame calls, rounding/executor operands, SDK selectors and callback
+gates. No real content acquisition/capture, private SPI, vendor or model ran.
+Nonfinite/overflow trap paths and actual SDK async error/ownership remain untested.
+Original EventStream production integration, broader ABI/source and live acceptance
+remain incomplete. New snapshot API does not replace other production capture
+routes without their original caller evidence.
