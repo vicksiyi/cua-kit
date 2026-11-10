@@ -7600,3 +7600,19 @@ original native function. DataFile coding/equality and File/ScreenshotFile remai
 incomplete. No desktop/model/vendor-native execution occurred.
 
 Swift helper build passed (15.53s, exit 0); git diff whitespace check passed.
+
+### 2026-11-11 — DataFile identity/hash and required keyed coding
+
+Recovered object-pointer equality at 10043c510 (shared optimized function symbol)
+and pointer hashing through Hasher._combine(UInt), 100daf9c8/GOT 101468528.
+Equal payloads do not make distinct DataFile owners equal. CodingKeys metadata
+1012eb3cc/1013475fc records data/filename/type. The encoder writes these fields
+in order; decoder requires all three SDK Data/String/UTType values and invokes
+the constructor, creating a fresh empty lazy owner rather than restoring cache.
+
+Restored Hashable/Codable accordingly. All twelve screenshot checks passed,
+including alias/distinct-owner set behavior, SDK-envelope JSON interoperability,
+explicit type preservation and missing-type rejection (no inferred decode fallback).
+Helper build passed (36.33s). No desktop, paid model or original native execution.
+Full DataFile interface/module audit and File/ScreenshotFile composition still
+remain; this is not a whole native restoration completion claim.

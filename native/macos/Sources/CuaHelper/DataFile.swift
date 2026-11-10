@@ -3,9 +3,9 @@ import System
 import UniformTypeIdentifiers
 import os
 
-// Partial DataFile: immutable payload and constructor from 101004648..101004868.
-// Coding and equality remain to restore.
-class DataFile {
+// DataFile payload, identity, coding and lazy ownership recovered from native evidence.
+// Full original interface/module-boundary audit remains pending.
+class DataFile: Hashable, Codable {
     let data: Data
     let filename: String
     let type: UTType
@@ -15,6 +15,29 @@ class DataFile {
         self.data = data
         self.filename = filename
         self.type = type ?? Self.inferredType(for: filename)
+    }
+
+    // 10043c510 compares object pointers; equal bytes do not imply equal owners.
+    static func == (lhs: DataFile, rhs: DataFile) -> Bool { lhs === rhs }
+    func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
+
+    private enum CodingKeys: String, CodingKey { case data, filename, type }
+
+    // 101004984..101004c64: decode all three required fields, then construct
+    // a new owner with an empty lazy-file cache.
+    required convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let data = try container.decode(Data.self, forKey: .data)
+        let filename = try container.decode(String.self, forKey: .filename)
+        let type = try container.decode(UTType.self, forKey: .type)
+        self.init(data: data, filename: filename, type: type)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(data, forKey: .data)
+        try container.encode(filename, forKey: .filename)
+        try container.encode(type, forKey: .type)
     }
 
     // 101003d70..101003fa8. A filename must be ONE System component:

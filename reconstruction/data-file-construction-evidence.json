@@ -10,7 +10,7 @@
     "0x101469318": "UTType.data"
   },
   "rule": "Explicit type wins; otherwise single filename component extension, infer conforming to data, fallback data. Do not accept path components by splitting a path.",
-  "scope": "Fields, constructor, type/size and lazy path implemented; coding/equality remain pending",
+  "scope": "Payload, constructor, type/size, lazy path, identity/hash and keyed coding implemented; full original interface/module audit pending",
   "validation": "reconstruction/data-file-construction-check.swift",
   "materialization": {
     "getter": "0x101003c2c..0x101003c8c",
@@ -20,5 +20,17 @@
     "failure": "propagate and unlock; cache remains nil so later access retries",
     "cache": "No existence recheck or rewrite when path already cached",
     "validation": "reconstruction/data-file-materialization-check.swift: lazy bytes, cleanup, deletion without recreation, failed write then retry, 24 concurrent accesses producing one file"
+  },
+  "identity": {
+    "equals": "0x10043c510: cmp x0,x1; cset w0,eq",
+    "hash": "0x100daf9c8..0x100daf9ec: object pointer -> Hasher._combine(UInt), GOT 0x101468528",
+    "semantics": "Object identity, not payload equality; aliases compare equal"
+  },
+  "coding": {
+    "encode": "0x101004464..0x101004600",
+    "decode": "0x101004984..0x101004c64",
+    "keysDescriptor": "0x1012eb3cc -> field descriptor 0x1013475fc: data,filename,type",
+    "semantics": "Required Data/String/UTType in order; reconstruct through constructor; lazy owner excluded",
+    "validation": "SDK envelope roundtrip, distinct identity, required type key, explicit type preservation"
   }
 }
