@@ -21,7 +21,7 @@ report={'binarySha256':hashlib.sha256(audit['data']).hexdigest(),
 'initializer':'0x100257348','saltVA':hex(saltAddress),'salt':salt,
 'imagesVA':'0x101558cc8','images':images,'requestsVA':'0x101558d18 stride56','requests':requests,
 'setIntegerSlot':14,'getIntegerSlot':4,
-'limits':['Owned restored SoftLink fixture resolves system images only; never executes original service','Integer,8 scalar,4 create and3 Unicode/unflipped binding identities are checked; other7 entries are not claimed restored']}
+'limits':['Owned restored SoftLink fixture resolves system images only; never executes original service','All24 binding symbol identities are checked; this does not establish live posting/tap behavior']}
 (root/'reconstruction/cgevent-integer-binding-evidence.json').write_text(json.dumps(report,indent=2)+'\n')
 source='''import CoreGraphics
 import Darwin
@@ -33,7 +33,7 @@ import SystemSoftware
         let salt = SALT
         let images: [UInt64] = IMAGES
         let requests: [[UInt64]] = REQUESTS
-        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField"), (3, "CGEventGetFlags"), (13, "CGEventSetFlags"), (5, "CGEventGetLocation"), (15, "CGEventSetLocation"), (6, "CGEventGetTimestamp"), (16, "CGEventSetTimestamp"), (7, "CGEventGetType"), (17, "CGEventSetType"), (0, "CGEventCreate"), (1, "CGEventCreateKeyboardEvent"), (2, "CGEventCreateScrollWheelEvent2"), (18, "CGEventSourceCreate"), (8, "CGEventGetUnflippedLocation"), (9, "CGEventKeyboardGetUnicodeString"), (10, "CGEventKeyboardSetUnicodeString")] {
+        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField"), (3, "CGEventGetFlags"), (13, "CGEventSetFlags"), (5, "CGEventGetLocation"), (15, "CGEventSetLocation"), (6, "CGEventGetTimestamp"), (16, "CGEventSetTimestamp"), (7, "CGEventGetType"), (17, "CGEventSetType"), (0, "CGEventCreate"), (1, "CGEventCreateKeyboardEvent"), (2, "CGEventCreateScrollWheelEvent2"), (18, "CGEventSourceCreate"), (8, "CGEventGetUnflippedLocation"), (9, "CGEventKeyboardGetUnicodeString"), (10, "CGEventKeyboardSetUnicodeString"), (11, "CGEventPost"), (12, "CGEventPostToPid"), (19, "CGEventSourceFlagsState"), (20, "CGEventTapCreate"), (21, "CGEventTapCreateForPid"), (22, "CGEventTapEnable"), (23, "CGEventTapIsEnabled")] {
             for (priority, candidate) in [("_" + name), name].enumerated() {
                 let hash = Array(candidate.utf8).withUnsafeBufferPointer { bytes in
                     Array(salt.utf8).withUnsafeBufferPointer { sipHash(buffer: bytes, appending: $0) }
@@ -42,7 +42,7 @@ import SystemSoftware
             }
         }
         let resolved = lookUpBatchSymbolPointers(images: images, symbolRequests: requests, salt: salt)
-        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField"), (3, "CGEventGetFlags"), (13, "CGEventSetFlags"), (5, "CGEventGetLocation"), (15, "CGEventSetLocation"), (6, "CGEventGetTimestamp"), (16, "CGEventSetTimestamp"), (7, "CGEventGetType"), (17, "CGEventSetType"), (0, "CGEventCreate"), (1, "CGEventCreateKeyboardEvent"), (2, "CGEventCreateScrollWheelEvent2"), (18, "CGEventSourceCreate"), (8, "CGEventGetUnflippedLocation"), (9, "CGEventKeyboardGetUnicodeString"), (10, "CGEventKeyboardSetUnicodeString")] {
+        for (slot, name) in [(4, "CGEventGetIntegerValueField"), (14, "CGEventSetIntegerValueField"), (3, "CGEventGetFlags"), (13, "CGEventSetFlags"), (5, "CGEventGetLocation"), (15, "CGEventSetLocation"), (6, "CGEventGetTimestamp"), (16, "CGEventSetTimestamp"), (7, "CGEventGetType"), (17, "CGEventSetType"), (0, "CGEventCreate"), (1, "CGEventCreateKeyboardEvent"), (2, "CGEventCreateScrollWheelEvent2"), (18, "CGEventSourceCreate"), (8, "CGEventGetUnflippedLocation"), (9, "CGEventKeyboardGetUnicodeString"), (10, "CGEventKeyboardSetUnicodeString"), (11, "CGEventPost"), (12, "CGEventPostToPid"), (19, "CGEventSourceFlagsState"), (20, "CGEventTapCreate"), (21, "CGEventTapCreateForPid"), (22, "CGEventTapEnable"), (23, "CGEventTapIsEnabled")] {
             let expected = dlsym(UnsafeMutableRawPointer(bitPattern: -2), name)!
             precondition(resolved[slot].pointer == UnsafeRawPointer(expected))
             print("Original slot \\(slot) resolves \\(resolved[slot].name ?? "nil"); pointer equals system \\(name)")

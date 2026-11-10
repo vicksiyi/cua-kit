@@ -1,4 +1,5 @@
 import AccessibilitySupport
+import SystemSoftware
 import CoreGraphics
 import Dispatch
 
@@ -7,7 +8,7 @@ import Dispatch
 // This includes key-up/mouse-up events created before an awaited hold.
 func dispatchNativeEvent(_ event: CGEvent, to pid: pid_t,
                          timestamp: () -> CGEventTimestamp = { DispatchTime.now().uptimeNanoseconds },
-                         post: (CGEvent, pid_t) -> Void = { $0.postToPid($1) }) {
-    event.timestamp = timestamp()
+                         post: (CGEvent, pid_t) -> Void = { CGEventAPI.postToPid($0, pid: $1) }) {
+    CGEventAPI.setTimestamp(event, timestamp: timestamp())
     post(event, pid)
 }

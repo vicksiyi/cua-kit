@@ -12,13 +12,15 @@ for (const module of ["SlimCore", "SystemSoftware", "AccessibilitySupport", "Sof
 }
 const temporary = await mkdtemp(join(tmpdir(), "cua-systemsoftware-check-"));
 try {
-  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check", "systemsoftware-snapshot-check", "window-ordering-iterator-check", "safe-activation-window-order-check", "systemsoftware-application-registry-check", "running-application-front-process-check", "accessibility-notifications-check", "accessibility-scroll-check", "cgevent-integer-bindings-check", "cgevent-scalars-check", "cgevent-create-check", "cgevent-unicode-check"]) {
+  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check", "systemsoftware-snapshot-check", "window-ordering-iterator-check", "safe-activation-window-order-check", "systemsoftware-application-registry-check", "running-application-front-process-check", "accessibility-notifications-check", "accessibility-scroll-check", "cgevent-integer-bindings-check", "cgevent-scalars-check", "cgevent-create-check", "cgevent-unicode-check", "cgevent-delivery-check"]) {
     const executable = join(temporary, fixture);
     const extraSources = fixture === "window-ordering-iterator-check"
       ? ["CGWindowEventStream", "WindowOrderingRestorationContext", "WindowOrderingEventLoop"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`))
       : fixture === "safe-activation-window-order-check"
         ? [join(root, "native/macos/Sources/CuaHelper/SafeActivationWindowOrder.swift")]
-        : [];
+        : fixture === "cgevent-delivery-check"
+          ? [join(root, "native/macos/Sources/CuaHelper/NativeEventDispatch.swift")]
+          : [];
     execFileSync("swiftc", ["-Xcc", `-fmodule-map-file=${join(build, "RunningProcess.build/module.modulemap")}`, "-parse-as-library", "-I", join(build, "Modules"), ...objects, ...extraSources,
       join(root, `reconstruction/${fixture}.swift`), "-o", executable], { cwd: root, stdio: "inherit" });
     execFileSync(executable, [], { stdio: "inherit", timeout: 15000 });

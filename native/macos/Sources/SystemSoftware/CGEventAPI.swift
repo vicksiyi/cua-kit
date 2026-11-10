@@ -102,4 +102,40 @@ public enum CGEventAPI {
         unicodeString.withUnsafeBufferPointer { unicodeSetter(event, stringLength, $0.baseAddress) }
     }
 
+    private typealias Post = @convention(c) (CGEventTapLocation, CGEvent) -> Void
+    private typealias PostToPID = @convention(c) (Int32, CGEvent) -> Void
+    private typealias SourceFlags = @convention(c) (CGEventSourceStateID) -> CGEventFlags
+    private typealias TapCreate = @convention(c) (CGEventTapLocation, CGEventTapPlacement, CGEventTapOptions, UInt64, CGEventTapCallBack, UnsafeMutableRawPointer?) -> Unmanaged<CFMachPort>?
+    private typealias TapCreateForPID = @convention(c) (Int32, CGEventTapPlacement, CGEventTapOptions, UInt64, CGEventTapCallBack, UnsafeMutableRawPointer?) -> Unmanaged<CFMachPort>?
+    private typealias TapEnable = @convention(c) (CFMachPort, Bool) -> Void
+    private typealias TapIsEnabled = @convention(c) (CFMachPort) -> Bool
+    private static let postBinding = unsafeBitCast(functions[11], to: Post.self)
+    private static let postToPIDBinding = unsafeBitCast(functions[12], to: PostToPID.self)
+    private static let sourceFlagsBinding = unsafeBitCast(functions[19], to: SourceFlags.self)
+    private static let tapCreateBinding = unsafeBitCast(functions[20], to: TapCreate.self)
+    private static let tapCreateForPIDBinding = unsafeBitCast(functions[21], to: TapCreateForPID.self)
+    private static let tapEnableBinding = unsafeBitCast(functions[22], to: TapEnable.self)
+    private static let tapIsEnabledBinding = unsafeBitCast(functions[23], to: TapIsEnabled.self)
+
+    // Original common thunk0x100258060 swaps Swift event/target into C order.
+    public static func post(_ event: CGEvent, tap: CGEventTapLocation) { postBinding(tap, event) }
+    public static func postToPid(_ event: CGEvent, pid: Int32) { postToPIDBinding(pid, event) }
+    public static func sourceFlagsState(_ stateID: CGEventSourceStateID) -> CGEventFlags {
+        sourceFlagsBinding(stateID)
+    }
+    public static func tapCreate(tap: CGEventTapLocation, place: CGEventTapPlacement,
+        options: CGEventTapOptions, eventsOfInterest: UInt64, callback: CGEventTapCallBack,
+        userInfo: UnsafeMutableRawPointer?
+    ) -> CFMachPort? {
+        tapCreateBinding(tap, place, options, eventsOfInterest, callback, userInfo)?.takeRetainedValue()
+    }
+    public static func tapCreateForPid(pid: Int32, place: CGEventTapPlacement,
+        options: CGEventTapOptions, eventsOfInterest: UInt64, callback: CGEventTapCallBack,
+        userInfo: UnsafeMutableRawPointer?
+    ) -> CFMachPort? {
+        tapCreateForPIDBinding(pid, place, options, eventsOfInterest, callback, userInfo)?.takeRetainedValue()
+    }
+    public static func tapEnable(tap: CFMachPort, enable: Bool) { tapEnableBinding(tap, enable) }
+    public static func tapIsEnabled(tap: CFMachPort) -> Bool { tapIsEnabledBinding(tap) }
+
 }

@@ -1,0 +1,140 @@
+{
+  "scope": "Direct global T signatures starting SystemSoftware.CGEventAPI. or static SystemSoftware.CGEventAPI.; nested types/accessors included",
+  "originalSha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "restoredSha256": "27967d2de2f700cc4dbd17783c87a6c4745151021f3bb53f3e15009561555ef7",
+  "repositoryHeadAtAudit": "2bb62fa9bc4892ee1789a1cce9d6c14d2ee7119e",
+  "originalSignatureCount": 24,
+  "restoredSignatureCount": 24,
+  "exactSignatureMatchCount": 24,
+  "missingOriginalSignatures": [],
+  "additionalRestoredSignatures": [],
+  "matches": [
+    {
+      "signature": "static SystemSoftware.CGEventAPI.create(source: __C.CGEventSourceRef?) -> __C.CGEventRef?",
+      "originalAddress": "0x0000000100257cbc",
+      "restoredAddress": "0x0000000101307874"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.createKeyboardEvent(source: __C.CGEventSourceRef?, virtualKey: Swift.UInt16, keyDown: Swift.Bool) -> __C.CGEventRef?",
+      "originalAddress": "0x0000000100257d10",
+      "restoredAddress": "0x0000000101307924"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.createScrollWheelEvent(source: __C.CGEventSourceRef?, units: __C.CGScrollEventUnit, wheelCount: Swift.UInt32, wheel1: Swift.Int32, wheel2: Swift.Int32, wheel3: Swift.Int32) -> __C.CGEventRef?",
+      "originalAddress": "0x0000000100257d88",
+      "restoredAddress": "0x0000000101307a04"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.getFlags(__C.CGEventRef) -> __C.CGEventFlags",
+      "originalAddress": "0x0000000100257e18",
+      "restoredAddress": "0x0000000101306900"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.getIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField) -> Swift.Int64",
+      "originalAddress": "0x0000000100257e24",
+      "restoredAddress": "0x00000001013065b8"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.getLocation(__C.CGEventRef) -> __C.CGPoint",
+      "originalAddress": "0x0000000100257e84",
+      "restoredAddress": "0x0000000101306c28"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.getTimestamp(__C.CGEventRef) -> Swift.UInt64",
+      "originalAddress": "0x0000000100257e90",
+      "restoredAddress": "0x0000000101306f80"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.getType(__C.CGEventRef) -> __C.CGEventType",
+      "originalAddress": "0x0000000100257efc",
+      "restoredAddress": "0x00000001013072a8"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.getUnflippedLocation(__C.CGEventRef) -> __C.CGPoint",
+      "originalAddress": "0x0000000100257f50",
+      "restoredAddress": "0x0000000101307fb0"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.keyboardGetUnicodeString(_: __C.CGEventRef, maxStringLength: Swift.Int, actualStringLength: Swift.UnsafeMutablePointer<Swift.Int>?, unicodeString: Swift.UnsafeMutablePointer<Swift.UInt16>?) -> ()",
+      "originalAddress": "0x0000000100257f5c",
+      "restoredAddress": "0x0000000101307ff8"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.keyboardSetUnicodeString(_: __C.CGEventRef, stringLength: Swift.Int, unicodeString: [Swift.UInt16]) -> ()",
+      "originalAddress": "0x0000000100257fd4",
+      "restoredAddress": "0x0000000101308060"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.post(_: __C.CGEventRef, tap: __C.CGEventTapLocation) -> ()",
+      "originalAddress": "0x0000000100258048",
+      "restoredAddress": "0x0000000101308b40"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.postToPid(_: __C.CGEventRef, pid: Swift.Int32) -> ()",
+      "originalAddress": "0x0000000100258054",
+      "restoredAddress": "0x0000000101308b88"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.setFlags(_: __C.CGEventRef, flags: __C.CGEventFlags) -> ()",
+      "originalAddress": "0x00000001002580c4",
+      "restoredAddress": "0x0000000101306938"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.setIntegerValueField(_: __C.CGEventRef, field: __C.CGEventField, value: Swift.Int64) -> ()",
+      "originalAddress": "0x00000001002580d0",
+      "restoredAddress": "0x0000000101306600"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.setLocation(_: __C.CGEventRef, location: __C.CGPoint) -> ()",
+      "originalAddress": "0x0000000100258140",
+      "restoredAddress": "0x0000000101306c70"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.setTimestamp(_: __C.CGEventRef, timestamp: Swift.UInt64) -> ()",
+      "originalAddress": "0x00000001002581ac",
+      "restoredAddress": "0x0000000101306fb8"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.setType(_: __C.CGEventRef, type: __C.CGEventType) -> ()",
+      "originalAddress": "0x0000000100258228",
+      "restoredAddress": "0x00000001013072e0"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.sourceCreate(stateID: __C.CGEventSourceStateID) -> __C.CGEventSourceRef?",
+      "originalAddress": "0x0000000100258288",
+      "restoredAddress": "0x0000000101307b04"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.sourceFlagsState(__C.CGEventSourceStateID) -> __C.CGEventFlags",
+      "originalAddress": "0x00000001002582dc",
+      "restoredAddress": "0x0000000101308bd0"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.tapCreate(tap: __C.CGEventTapLocation, place: __C.CGEventTapPlacement, options: __C.CGEventTapOptions, eventsOfInterest: Swift.UInt64, callback: @convention(c) (Swift.OpaquePointer, __C.CGEventType, __C.CGEventRef, Swift.UnsafeMutableRawPointer?) -> Swift.Unmanaged<__C.CGEventRef>?, userInfo: Swift.UnsafeMutableRawPointer?) -> __C.CFMachPortRef?",
+      "originalAddress": "0x0000000100258330",
+      "restoredAddress": "0x0000000101308c08"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.tapCreateForPid(pid: Swift.Int32, place: __C.CGEventTapPlacement, options: __C.CGEventTapOptions, eventsOfInterest: Swift.UInt64, callback: @convention(c) (Swift.OpaquePointer, __C.CGEventType, __C.CGEventRef, Swift.UnsafeMutableRawPointer?) -> Swift.Unmanaged<__C.CGEventRef>?, userInfo: Swift.UnsafeMutableRawPointer?) -> __C.CFMachPortRef?",
+      "originalAddress": "0x000000010025833c",
+      "restoredAddress": "0x0000000101308d08"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.tapEnable(tap: __C.CFMachPortRef, enable: Swift.Bool) -> ()",
+      "originalAddress": "0x00000001002583e8",
+      "restoredAddress": "0x0000000101308e08"
+    },
+    {
+      "signature": "static SystemSoftware.CGEventAPI.tapIsEnabled(tap: __C.CFMachPortRef) -> Swift.Bool",
+      "originalAddress": "0x000000010025844c",
+      "restoredAddress": "0x0000000101308e5c"
+    }
+  ],
+  "limits": [
+    "Export signature presence does not prove original function bodies, ABI, ownership or runtime behavior",
+    "Counts include getters/setters/constructors; not distinct source functions or whole-project completion",
+    "Private/local implementation symbols, metadata, protocol witnesses and other modules excluded",
+    "Audits existing binaries; repository head alone does not establish binary/source correspondence",
+    "Post/tap entry signatures are checked statically; no live posting or tap execution implied"
+  ]
+}

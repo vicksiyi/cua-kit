@@ -1,0 +1,42 @@
+{
+  "source": "native/macos/Sources/SystemSoftware/CGEventAPI.swift",
+  "addedMethods": [
+    "post",
+    "postToPid",
+    "sourceFlagsState",
+    "tapCreate",
+    "tapCreateForPid",
+    "tapEnable",
+    "tapIsEnabled"
+  ],
+  "slots": {
+    "post": 11,
+    "postToPid": 12,
+    "sourceFlagsState": 19,
+    "tapCreate": 20,
+    "tapCreateForPid": 21,
+    "tapEnable": 22,
+    "tapIsEnabled": 23
+  },
+  "productionCaller": "NativeEventDispatch refreshes timestamp and defaults post through restored API",
+  "validation": {
+    "build": "exit0,26.51s",
+    "nativeInputSelfTest": "exit0",
+    "linkedFixtures": "All14 pass after restricting state query to raw0/1",
+    "exportAudit": "24 original,24 restored,24 exact matches,no missing/additional public methods",
+    "bindings": "All24 two-priority symbol hashes and resolved system pointer identities pass",
+    "delivery": "Injected post verifies event identity,PID,timestamp-before-post order; default system post not executed",
+    "sourceFlags": "raw0/1 return system flags successfully",
+    "tap": "Create/enable/query signatures compiled only; no tap created"
+  },
+  "observedFailure": {
+    "privateStateFlags": "Initial sourceFlagsState(raw:-1) exceeded15s fixture timeout; isolated owned process confirmed wait at that call and was explicitly terminated",
+    "resolution": "No production wrapper fallback or behavior change; raw0/1 verified,raw-1 runtime behavior remains unresolved"
+  },
+  "limits": [
+    "24/24 public method signatures is scoped interface coverage,not whole CUA restoration or full ABI/behavior equivalence",
+    "No live event posting,tap creation,or app delivery performed",
+    "Create ownership and callback lifetimes not exhaustively runtime-certified",
+    "Whole native module/browser/runtime restoration remains incomplete"
+  ]
+}

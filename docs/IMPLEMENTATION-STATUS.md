@@ -8744,3 +8744,25 @@ Invalid oversized lengths and empty-array pointer ABI were not certified. No
 text events were posted. This type has17 of24 original method signatures;
 remaining7 and full reconstruction/live acceptance remain unfinished.
 See reconstruction/cgevent-unicode-evidence.json.
+
+## 2026-11-11 CGEvent public surface and delivery/tap wrappers
+
+The remaining7 methods (post/postToPid/sourceFlagsState and4 tap methods) are
+implemented at original slots11/12/19/20/21/22/23. Original post thunk swaps
+event/target arguments into C order; tap creation preserves callback/context and
+adopts Create-rule ports. NativeEventDispatch defaults to the restored timestamp
+setter and PID post wrapper. The repeatable pinned export audit finds24 original,
+24 restored,24 exact matches and no extra/missing public method signatures.
+All24 original-priority symbol hashes and system pointer identities pass.
+
+Build passed26.51s; input self-test and all14 linked fixtures pass. Injected
+posting checks event/PID/timestamp-before-post without system posting. Source
+state reads0/1 pass; an initial raw-1 read timed out and isolated observation
+confirmed that call blocked. The owned process was terminated; the native wrapper
+was not changed to mask the behavior. Raw-1 runtime parity remains unresolved.
+Tap creation/enable/query and default posting were typechecked only, not executed.
+
+Thus CGEventAPI's bounded public interface surface is present, but full behavior,
+ABI/callback lifetime validation and real app delivery are unaccepted. Wider
+CUA restoration remains incomplete. See cgevent-delivery-evidence.json and
+cgevent-api-export-surface-evidence.json.
