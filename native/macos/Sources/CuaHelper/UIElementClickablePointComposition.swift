@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     func clickablePoint(
         scrollToVisible: Bool,
         transaction: UIElementTransactionCache?,

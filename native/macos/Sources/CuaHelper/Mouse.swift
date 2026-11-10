@@ -77,8 +77,8 @@ extension Target {
         try validateSnapshot(params)
         let point: CGPoint
         if let id = params["elementId"] as? Int {
-            guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count,
-                  let frame = axElementFrame(nodes[id-1].element) else { throw fail("INVALID_ARGUMENT","Indexed click requires an element with valid geometry and no coordinates.") }
+            guard params["x"] == nil, params["y"] == nil, let node = observedNode(for: id, in: nodes),
+                  let frame = axElementFrame(node.element) else { throw fail("INVALID_ARGUMENT","Indexed click requires an element with valid geometry and no coordinates.") }
             point = CGPoint(x:frame.midX,y:frame.midY)
         } else {
             guard let x = params["x"] as? Double, let y = params["y"] as? Double,
@@ -95,6 +95,15 @@ extension Target {
         return point
     }
     func mouseInput(_ params: [String: Any]) async throws -> [String: Any] {
+        var metadata: [String: Any] = ["operation": "click", "applicationPid": Int(app.processIdentifier)]
+        metadata["snapshotId"] = params["snapshotId"] as? String
+        metadata["elementId"] = params["elementId"] as? Int
+        metadata["coordinateInput"] = params["x"] != nil || params["y"] != nil
+        return try await withNativeMouseInputDiagnostic(metadata: metadata) {
+            try await performMouseInput(params)
+        }
+    }
+    private func performMouseInput(_ params: [String: Any]) async throws -> [String: Any] {
         let held = try clickHoldNanoseconds(params["duration"] as? Double)
         let button = params["mouseButton"] as? String ?? "left"
         let count = params["clickCount"] as? Int ?? 1
@@ -118,7 +127,7 @@ extension Target {
                 throw fail("INVALID_ARGUMENT", "Click deadline expired before dispatch; earlier clicks may have been dispatched.")
             }
         }
-        func activationWindow(for element: UIElement) throws -> SyntheticActivationWindow? {
+        func activationWindow(for element: any UIElementProtocol) throws -> SyntheticActivationWindow? {
             guard let raw = attribute(element.axElement, kAXWindowAttribute),
                   let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) else { return nil }
             return SyntheticActivationWindow(element: UIElement(element: ax), reportError: report)
@@ -132,12 +141,12 @@ extension Target {
                 focusPreparationSentEvents = true
             }
         }
-        func simulate(at point: CGPoint, element: UIElement? = nil,
+        func simulate(at point: CGPoint, element: (any UIElementProtocol)? = nil,
                       initiallyInsideWebView: Bool = false) async throws -> [String: Any] {
             try validateSnapshot(params)
             try checkDeadline()
             let application = UIElement(element: root)
-            let target: MouseEventTarget<UIElement, any WindowUIElementProtocol>
+            let target: MouseEventTarget<any UIElementProtocol, any WindowUIElementProtocol>
             if let element {
                 guard let raw = attribute(element.axElement, kAXWindowAttribute),
                       let ax = try unwrapAXUIElement(raw, throwingOnFailure: false) else {
@@ -179,16 +188,52 @@ extension Target {
                     try await Task.sleep(for: SynthesizedEvent.defaultClickDuration)
                 }
             }
-            return ["outcome": "dispatched", "eventCount": events.count, "targetPid": Int(destinationPID), "windowId": Int(window.id), "point": ["x": point.x, "y": point.y]]
+            // Local diagnostic fields describe routing, not an acknowledgement
+            // from the destination application. Preserve them in tool results
+            // so the agent-loop debug log can distinguish AX from CG dispatch.
+            let result: [String: Any] = ["outcome": "dispatched", "eventCount": events.count,
+                "targetPid": Int(destinationPID), "windowId": Int(window.id),
+                "point": ["x": point.x, "y": point.y],
+                "inputDiagnostics": [
+                    "route": "syntheticMouseEvents",
+                    "applicationPid": Int(app.processIdentifier),
+                    "applicationBelievesItHasFocus": prepared,
+                    "focusPreparationSentEvents": focusPreparationSentEvents,
+                    "windowUsesFlippedCoordinates": window.usesFlippedCoordinates,
+                    "targetResponseVerified": false
+                ]]
+            recordNativeInputDiagnostic(result)
+            return result
         }
         guard let id = params["elementId"] as? Int else {
             return try await simulate(at: observedInputPoint(params))
         }
         try validateSnapshot(params)
-        guard params["x"] == nil, params["y"] == nil, id > 0, id <= nodes.count else {
+        guard params["x"] == nil, params["y"] == nil, observedNode(for: id, in: nodes) != nil else {
             throw fail("INVALID_ARGUMENT", "Indexed click requires a valid element ID and no coordinates.")
         }
-        let item = UIElement(element: nodes[id - 1].element)
+        // This operation can scroll before dispatch. Retire its transport
+        // observation on every exit, including preparation/cursor failures.
+        defer { invalidateInputState() }
+        var didScroll = false
+        try checkDeadline()
+        let (preparedTree, item) = try await prepareToInteract(with: id,
+            cursorNextInteractionTiming: .closeEnough, positionElement: true,
+            animateCursor: params["animateCursor"] as? Bool ?? true,
+            cursorFeatureEnabled: { NativeCursorFeatureGate.isEnabled() },
+            didPositionScroll: { didScroll = $0 }, reportError: report)
+        try checkDeadline()
+        guard selectionTree === preparedTree else {
+            throw fail("STALE_OBSERVATION", "Element selection changed while preparing the click.")
+        }
+        if didScroll {
+            // Authorized preparation changed geometry. Compare later reads to
+            // the recovered selection, preserving the caller's target ID; the
+            // pre-scroll screenshot must no longer supply input coordinates.
+            nodes = try selectionObservedNodes(preparedTree.systemSelection.windowRevision,
+                frame: { axElementFrame($0.element) }, selectedRange: { $0.selectedTextRange })
+            capturedWindow = nil
+        }
         let insideWebView: () -> Bool = {
             item.isInsideWebView(reportError: report)
         }
@@ -197,12 +242,12 @@ extension Target {
             heldKeyIsPresent: false, flags: flags,
             alwaysSimulateClick: params["alwaysSimulateClick"] as? Bool ?? false,
             readActions: { item.actions }, isInsideWebView: insideWebView)
-        // VirtualCursor remains absent. AX actions now use the restored native
-        // enforcer and window context rather than the nil-enforcer probe.
+        // Preparation may have created/positioned the optional existing cursor.
+        // Its press animation remains separate from actual AX/event dispatch.
         return try await executePreparedUIElementClick(preparation, isInsideWebView: insideWebView,
             webClickHitsTarget: {
                 await item.webClickHitsTarget(app: UIElement(element: root), reportError: report)
-            }, cursorPress: nil,
+            }, virtualCursor: virtualCursor,
             prepareActionFocus: {
                 try Task.checkCancellation()
                 try validateSnapshot(params)
@@ -219,7 +264,15 @@ extension Target {
                 try checkDeadline()
                 defer { invalidateInputState() }
                 try item.perform(action: action)
-                return ["outcome": "dispatched", "eventCount": 0, "action": action.name]
+                let result: [String: Any] = ["outcome": "dispatched", "eventCount": 0, "action": action.name,
+                    "inputDiagnostics": [
+                        "route": "accessibilityAction",
+                        "applicationPid": Int(app.processIdentifier),
+                        "focusPreparationSentEvents": focusPreparationSentEvents,
+                        "targetResponseVerified": false
+                    ]]
+                recordNativeInputDiagnostic(result)
+                return result
             }, simulateClick: { initiallyInsideWebView in
                 guard let point = try await item.clickablePoint(reportError: report) else {
                     throw SynthesizedEvent.Error.cannotClickOffscreenElement

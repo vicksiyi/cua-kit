@@ -7,7 +7,7 @@ import { prepareIndependentRuntime } from "../packages/agent-loop/src/independen
 import { McpToolClient } from "../packages/agent-loop/src/mcp-client";
 import { NodeReplTurnClient } from "../packages/agent-loop/src/node-repl-turn";
 
-export async function connectNativeAcceptanceRuntime(bundleId: string) {
+export async function connectNativeAcceptanceRuntime(bundleId: string, diagnostics: { inputLogPath?: string } = {}) {
   const staged = await stageRuntimePackages([
     resolve("packages/sky"),
     resolve("packages/cua"),
@@ -38,6 +38,7 @@ export async function connectNativeAcceptanceRuntime(bundleId: string) {
       env: {
         CUA_REPL_ENABLED_SURFACES: "computer",
         CORE_CUA_NATIVE_BACKEND: "swift",
+        ...(diagnostics.inputLogPath ? { CUA_NATIVE_INPUT_LOG: diagnostics.inputLogPath } : {}),
         CORE_CUA_APP_POLICY: JSON.stringify({
           [bundleId]: {
             decision: "allowed",

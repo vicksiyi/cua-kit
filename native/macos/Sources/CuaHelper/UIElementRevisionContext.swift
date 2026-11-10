@@ -18,3 +18,18 @@ extension UIElementTreeRevision where Element: LMReadableElement & UIElementProt
         try root(tree, focusTree: nil, context: &context)
     }
 }
+
+
+extension UIElementTreeRevision where Element: LMReadableElement & UIElementProtocol {
+    //0x10076b6f4 shares the rendering context across full/focus callbacks.
+    func appending(tree: UIElementTree<Element>, focusTree: UIElementTree<Element>?,
+        context: inout UIElementTransformationContext
+    ) throws -> UIElementTreeRevision<Element> {
+        try appending(tree: tree, focusTree: focusTree) { try $0.render(with: &context) }
+    }
+
+    func appending(tree: UIElementTree<Element>, context: inout UIElementTransformationContext
+    ) throws -> UIElementTreeRevision<Element> {
+        try appending(tree: tree, focusTree: nil, context: &context)
+    }
+}

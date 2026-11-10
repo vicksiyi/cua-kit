@@ -7,6 +7,8 @@ struct SynthesizedEvent {
     let cgEvents: [CGEvent]
 
     // Static Swift Duration at 0x1011950e0: 50_000_000_000_000_000 attoseconds.
+    // Original Duration storage 0x1011950d0: 5e16 attoseconds.
+    static let cursorPressAnimationTime: Duration = .milliseconds(50)
     static let defaultClickDuration: Duration = .milliseconds(50)
 
     // Descriptor 0x1012cccd0 / fields 0x1013237c8. No associated payloads.

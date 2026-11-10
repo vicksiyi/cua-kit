@@ -44,6 +44,15 @@ final class Delegate: NSObject, NSApplicationDelegate {
         button.frame = NSRect(x:25,y:100,width:160,height:32)
         result.frame = NSRect(x:25,y:40,width:380,height:40)
         window.contentView?.addSubview(field); window.contentView?.addSubview(button); window.contentView?.addSubview(result)
+        if Bundle.main.object(forInfoDictionaryKey: "CoreFixtureDynamicUpdates") as? Bool == true {
+            let ticker = NSTextField(labelWithString: "Tick 0")
+            ticker.frame = NSRect(x: 25, y: 10, width: 250, height: 20)
+            window.contentView?.addSubview(ticker)
+            var tick = 0
+            Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { _ in
+                tick += 1; ticker.stringValue = "Tick \(tick)"
+            }
+        }
         if CommandLine.arguments.contains("--acceptance") {
             window.setContentSize(NSSize(width:600,height:600))
             field.frame.origin.y = 520; button.frame.origin.y = 470; result.frame.origin.y = 420

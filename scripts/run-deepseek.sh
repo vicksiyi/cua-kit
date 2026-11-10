@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 if [[ "${1:-}" == "--help" ]]; then
-  printf '%s\n' 'Usage: npm run demo -- [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--unified|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' 'Default: unified browser + native app tools on macOS; browser tools on other systems. Explicit browser deployment flags select browser-only mode. Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route. --unified enables browser and computer together; it discovers existing browser connections without eagerly launching Chrome.'
+  printf '%s\n' 'Usage: npm run demo -- [--auto-approve] [--managed-browser|--cdp-browser|--cdp-endpoint ws://127.0.0.1:PORT/devtools/browser/ID] [--browser|--computer|--unified|--swift-computer|--js|--check-browser|--check-computer] "your prompt"' '--auto-approve accepts browser/app MCP confirmation requests without terminal prompts; data-entry forms and URL authentication still use their normal flow. Service policies and macOS permissions remain enforced.' 'Default: unified browser + native app tools on macOS; browser tools on other systems. Explicit browser deployment flags select browser-only mode. Model provider: deepseek or openai-compatible via CUA_MODEL_PROVIDER. --js selects JavaScript-only tools. Project .env is loaded automatically. --computer and --swift-computer select the Rust + original Sky + Swift route. --unified enables browser and computer together; it discovers existing browser connections without eagerly launching Chrome.'
   exit 0
 fi
 managed_browser=false
@@ -24,6 +24,7 @@ while [[ $# -gt 0 ]]; do
       fi
       shift
       ;;
+    --auto-approve) export CUA_AUTO_APPROVE=1; shift ;;
     --swift-computer)
       if [[ -n "$mode" && "$mode" != computer ]]; then printf '%s\n' 'Swift computer deployment requires computer mode.' >&2; exit 2; fi
       mode=computer; shift
@@ -135,6 +136,8 @@ if [[ "$check_only" == false && -z "${!credential_name:-}" ]]; then
   printf '\n' >&2
 fi
 export "$credential_name"
+# The shell has consumed flags/delimiter; remaining arguments are prompt text.
+export CUA_DEMO_CLI_PARSED=1
 export CUA_NATIVE_SUPERVISOR_PATH="${CUA_NATIVE_SUPERVISOR_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl}"
 export NODE_REPL_NODE_PATH="${NODE_REPL_NODE_PATH:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 printf 'Runtime supervisor: %s\n' "${CUA_RUNTIME_SUPERVISOR:-installed}" >&2

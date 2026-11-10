@@ -43,4 +43,3 @@ export function createAuthQrFlowFromZXing(moduleUrl: string) {
       readBarcodes(bytes, options as ReaderOptions),
   });
 }
-

@@ -1,5 +1,5 @@
 {
-  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "binarySha256": "03030054",
   "requests": [
     {
       "name": "functions",
@@ -126,6 +126,28 @@
         ]
       ],
       "salt": "e77b5df1564d26f431ef11c9e2e3fe9c41eca69ecb7aed7d6f7a39d33d425a7fc275c627944653de17ee7086234336fe1fc442b59dd6af53cbb8ead456759a"
+    },
+    {
+      "name": "captureWindowImagesInRect",
+      "imagesVA": "0x10155a520",
+      "symbolsVA": [
+        "0x10155a570"
+      ],
+      "saltVA": "0x10124b630",
+      "images": [
+        96209701942306977,
+        79798607868981485,
+        138444126398684414,
+        142094502602431591,
+        141134504113703226
+      ],
+      "symbols": [
+        [
+          9706564637095237899,
+          14470252665158261436
+        ]
+      ],
+      "salt": "5f432bd6a61ddb58d97b14f71e16def7d6c8760a8a8200aa7719c33c74446c85bef954acef705119fc3163f398eb4eb2e60b39765ddbd30e2d0b835282573e7b"
     }
   ]
 }

@@ -10,7 +10,7 @@ func withAXEnablementApplication<Application, Result>(pid: () throws -> Int32,
     return operation(application, bundle)
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func windowHasChromeNodeForInitialization() -> Bool {
         uiElementWindowHasChromeNode(readChildren: { index, maximum, knownCount in
             // The source consumes a supplied partial even alongside an AX
@@ -21,7 +21,9 @@ extension UIElement {
             return result.value.flatMap { unwrapAXUIElementArray($0.value.value) }
         }, supportedAttributes: { $0.supportedAttributes })
     }
+}
 
+extension UIElement {
     // Complete native operation composition. The owning controller must retain
     // its returned assertion and provide its shared running-application tracker;
     // creating a fresh tracker per call would break cross-owner accounting.

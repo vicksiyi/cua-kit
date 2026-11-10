@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant P0 as Kernel CUA API
+    participant P1 as Trusted service
+    participant P2 as Rust host / 原生管道
+    participant P3 as Chrome 扩展 或 Swift
+    participant P4 as 页面 / macOS
+    P0->>P1: 1  cua.getTab / createBrowserTab → 浏览器服务选择与绑定
+    P1->>P2: 2  endpoint 发现 + 认证 socket；BrowserAPI RPC
+    P2->>P3: 3  Chrome Native Messaging → BrowserSession
+    P3->>P4: 4  tab / origin / debugger 状态检查；CDP 获取页面状态
+    P4->>P0: 5  AX 或 DOM snapshot → 初始状态 + 按需文档
+    P0->>P1: 6  tab.playwright.getByRole / getByLabel → fill / click
+    P1->>P3: 7  locator / frame 解析 → 经原管道发送 CDP 命令
+    P3->>P4: 8  chrome.debugger.sendCommand → 页面动作
+    P0->>P4: 9  再经同一链路请求状态 / screenshot，验证结果
+    P4->>P0: 10  观察 / 图片 / 错误返回；导航后重新取得状态
+    P0->>P1: 11  桌面分支：cua.getApp → Sky get_app_state
+    P1->>P2: 12  Mac IPC → native_pipe_request
+    P2->>P3: 13  Swift helper：GetSkyshot + 应用启动策略
+    P3->>P4: 14  未运行则按策略后台启动；已运行则复用
+    P4->>P0: 15  AX / 截图（需权限）；初始状态与文档返回
+    P0->>P3: 16  click / type 等 → Sky PerformAction，经相同 IPC 链
+    P3->>P4: 17  AX / 系统输入执行；重新观察验证

@@ -136,14 +136,30 @@ with tempfile.TemporaryDirectory(prefix='cua-owned-click-') as temporary, (log_d
         helper, responses = spawn('cua-helper')
         def request(method, params=None):
             identifier = str(uuid.uuid4())
-            helper.stdin.write((json.dumps({'id': identifier, 'method': method, 'params': params or {}}) + '\n').encode())
-            helper.stdin.flush()
-            response = json.loads(responses.read())
-            if response.get('id') != identifier:
-                raise RuntimeError('Native response ID mismatch')
-            if 'error' in response:
-                raise RuntimeError(json.dumps(response['error']))
-            return response['result']
+            started = time.monotonic()
+            trace = {'id': identifier, 'method': method, 'stage': report.get('stage'),
+                     'startedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()}
+            # Record control metadata, never screenshot bytes or input text.
+            trace['input'] = {key: value for key, value in (params or {}).items()
+                              if key in ('targetId', 'snapshotId', 'elementId', 'x', 'y',
+                                         'operation', 'alwaysSimulateClick')}
+            report.setdefault('requests', []).append(trace)
+            try:
+                helper.stdin.write((json.dumps({'id': identifier, 'method': method, 'params': params or {}}) + '\n').encode())
+                helper.stdin.flush()
+                response = json.loads(responses.read())
+                if response.get('id') != identifier:
+                    raise RuntimeError('Native response ID mismatch')
+                if 'error' in response:
+                    trace['responseError'] = response['error']
+                    raise RuntimeError(json.dumps(response['error']))
+                trace['completed'] = True
+                return response['result']
+            except Exception as error:
+                trace['failureType'] = type(error).__name__
+                raise
+            finally:
+                trace['durationMs'] = round((time.monotonic() - started) * 1000, 3)
         report['stage'] = 'helper-handshake'
         hello = request('hello')
         if not hello['permissions']['accessibility']:

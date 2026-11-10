@@ -1,10 +1,10 @@
 import ApplicationServices
 
 private func resolveNativeMouseEventTarget<Window>(application: UIElement, point: CGPoint,
-    accessibilityWindow: Window, hitElement: UIElement?, windowAX: (Window) -> AXUIElement,
+    accessibilityWindow: Window, hitElement: (any UIElementProtocol)?, windowAX: (Window) -> AXUIElement,
     windowID: (Window) throws -> UInt32, windowFrame: (Window) -> CGRect?,
-    reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<UIElement, Window> {
-    func actualPID(_ element: UIElement) -> Int32? {
+    reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<any UIElementProtocol, Window> {
+    func actualPID(_ element: any UIElementProtocol) -> Int32? {
         do { return try element.axElement.actualPID }
         catch { reportError(error); return nil }
     }
@@ -27,7 +27,7 @@ private func resolveNativeMouseEventTarget<Window>(application: UIElement, point
 extension UIElement {
     // Native resolver composition. This does not activate an app or post input.
     func mouseEventTarget(at point: CGPoint, accessibilityWindow: UIElement,
-        hitElement: UIElement?, reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<UIElement, UIElement> {
+        hitElement: (any UIElementProtocol)?, reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<any UIElementProtocol, UIElement> {
         try resolveNativeMouseEventTarget(application: self, point: point,
             accessibilityWindow: accessibilityWindow, hitElement: hitElement,
             windowAX: { $0.axElement }, windowID: { try $0.axElement.windowID },
@@ -35,7 +35,7 @@ extension UIElement {
     }
 
     func mouseEventTarget(at point: CGPoint, windows: [UIElement],
-        reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<UIElement, UIElement> {
+        reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<any UIElementProtocol, UIElement> {
         try resolveMouseEventWindowAndElement(point, windows: windows,
             frame: { $0.frameValue(reportError: reportError) },
             hitTest: { try axElement.element(at: point) }, makeTarget: { window, hit in
@@ -43,15 +43,15 @@ extension UIElement {
             })
     }
     func mouseEventTarget(at point: CGPoint, accessibilityWindow: any WindowUIElementProtocol,
-        hitElement: UIElement?, reportError: @escaping (Error) -> Void) throws
-        -> MouseEventTarget<UIElement, any WindowUIElementProtocol> {
+        hitElement: (any UIElementProtocol)?, reportError: @escaping (Error) -> Void) throws
+        -> MouseEventTarget<any UIElementProtocol, any WindowUIElementProtocol> {
         try resolveNativeMouseEventTarget(application: self, point: point,
             accessibilityWindow: accessibilityWindow, hitElement: hitElement,
             windowAX: { $0.axElement }, windowID: { try $0.rawWindowID },
             windowFrame: { $0.frameValue(reportError: reportError) }, reportError: reportError)
     }
     func mouseEventTarget(at point: CGPoint, windows: [any WindowUIElementProtocol],
-        reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<UIElement, any WindowUIElementProtocol> {
+        reportError: @escaping (Error) -> Void) throws -> MouseEventTarget<any UIElementProtocol, any WindowUIElementProtocol> {
         try resolveMouseEventWindowAndElement(point, windows: windows,
             frame: { $0.frameValue(reportError: reportError) },
             hitTest: { try axElement.element(at: point) }, makeTarget: { window, hit in

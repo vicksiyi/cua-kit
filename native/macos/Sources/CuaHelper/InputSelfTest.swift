@@ -126,6 +126,9 @@ func runInputChecks() throws {
         }
     }
     let sourceScroll = try SynthesizedEvent.scroll(at: mapped, deltaX: 0, deltaY: -5, inWindow: scrollWindow)
+    guard sourceScroll.cgEvents.first?.getIntegerValueField(CGEventField(rawValue: 51)!) == Int64(scrollWindow.id) else {
+        throw fail("SELF_TEST_FAILED", "Source scroll target window field differs.")
+    }
     guard sourceScroll.cgEvents.count == 1, let sourceEvent = sourceScroll.cgEvents.first,
           sourceEvent.type == .scrollWheel, sourceEvent.location == mapped,
           sourceEvent.getIntegerValueField(.scrollWheelEventPointDeltaAxis1) == -5,

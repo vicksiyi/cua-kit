@@ -12,7 +12,7 @@ test("CLI routes deployment flags independently of surface/check flag order", as
   });
   await writeFile(
     join(root, "node"),
-    `#!${process.execPath}\nif(process.argv[2]==='--input-type=module'){const child=require('node:child_process').spawnSync(process.execPath,process.argv.slice(2),{stdio:'inherit'});process.exit(child.status??1);}console.log(JSON.stringify({provider:process.env.CUA_MODEL_PROVIDER,runtime:process.env.CUA_RUNTIME_SUPERVISOR,native:process.env.CORE_CUA_NATIVE_BACKEND,configuration:process.env.CUA_MCP_ENV,argv:process.argv.slice(2),startChrome:process.env.CUA_DEMO_START_CHROME,endpoint:process.env.CUA_CDP_ENDPOINT}));\n`,
+    `#!${process.execPath}\nif(process.argv[2]==='--input-type=module'){const child=require('node:child_process').spawnSync(process.execPath,process.argv.slice(2),{stdio:'inherit'});process.exit(child.status??1);}console.log(JSON.stringify({provider:process.env.CUA_MODEL_PROVIDER,autoApprove:process.env.CUA_AUTO_APPROVE,cliParsed:process.env.CUA_DEMO_CLI_PARSED,runtime:process.env.CUA_RUNTIME_SUPERVISOR,native:process.env.CORE_CUA_NATIVE_BACKEND,configuration:process.env.CUA_MCP_ENV,argv:process.argv.slice(2),startChrome:process.env.CUA_DEMO_START_CHROME,endpoint:process.env.CUA_CDP_ENDPOINT}));\n`,
     { mode: 0o700 },
   );
   const run = (args: string[], extra: Record<string, string> = {}) =>
@@ -46,6 +46,25 @@ test("CLI routes deployment flags independently of surface/check flag order", as
     assert.equal(value.startChrome, undefined);
     assert.ok(!value.argv.slice(3).includes("--cdp-browser"));
   }
+  for (const args of [
+    ["--auto-approve", "--computer", "prompt"],
+    ["--computer", "--auto-approve", "prompt"],
+    ["--browser", "--auto-approve", "prompt"],
+    ["--cdp-browser", "--auto-approve", "prompt"],
+    ["--unified", "--auto-approve", "prompt"],
+  ]) {
+    const result = run(args);
+    assert.equal(result.status, 0, result.stderr);
+    const value = JSON.parse(result.stdout.trim().split("\n").at(-1)!);
+    assert.equal(value.autoApprove, "1");
+    assert.ok(!value.argv.includes("--auto-approve"), "Flag must not become model prompt");
+  }
+  const literalApprovalFlag = run(["--js", "--", "--auto-approve"]);
+  assert.equal(literalApprovalFlag.status, 0, literalApprovalFlag.stderr);
+  const literalValue = JSON.parse(literalApprovalFlag.stdout.trim().split("\n").at(-1)!);
+  assert.equal(literalValue.autoApprove, undefined);
+  assert.equal(literalValue.cliParsed, "1");
+  assert.equal(literalValue.argv.at(-1), "--auto-approve");
   for (const args of [
     ["--cdp-browser", "--managed-browser", "prompt"],
     ["--managed-browser", "--cdp-browser", "prompt"],

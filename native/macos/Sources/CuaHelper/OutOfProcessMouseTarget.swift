@@ -15,11 +15,12 @@ func selectOutOfProcessMouseTarget<Node>(for element: Node, appPID: Int32,
     return (selected.pid, selected.element)
 }
 
-extension UIElement {
-    func outOfProcessMouseTarget(appPID: Int32, reportError: @escaping (Error) -> Void) -> (pid: Int32, effectiveElement: UIElement)? {
-        selectOutOfProcessMouseTarget(for: self, appPID: appPID,
+extension UIElementProtocol {
+    func outOfProcessMouseTarget(appPID: Int32, reportError: @escaping (Error) -> Void) -> (pid: Int32, effectiveElement: any UIElementProtocol)? {
+        let root: any UIElementProtocol = self
+        return selectOutOfProcessMouseTarget(for: root, appPID: appPID,
             containingElement: { element, types in
-                ProcessType.containingElement(for: element, ofTypes: types, reportError: reportError)
+                UIElement.ProcessType.containingElement(for: element, ofTypes: types, reportError: reportError)
             }, reportMissingContainer: {
                 Logger(subsystem: "core.cua", category: "Accessibility").error("Mouse target has no containing event-handling process")
             })
@@ -42,7 +43,7 @@ func outOfProcessMouseWindowID<Node>(for element: Node,
     throw MouseEventWindowSelectionError.noWindows
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func outOfProcessMouseTargetWindow(appPID: Int32, reportError: @escaping (Error) -> Void) throws -> (pid: Int32, windowID: UInt32)? {
         guard let target = outOfProcessMouseTarget(appPID: appPID, reportError: reportError) else { return nil }
         let id = try outOfProcessMouseWindowID(for: target.effectiveElement,

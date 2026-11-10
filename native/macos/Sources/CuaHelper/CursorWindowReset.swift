@@ -1,7 +1,7 @@
 import CoreGraphics
 
-// Outer cursor Window reset at 0x10009b30c. Named reason0/reason1 until
-// source field names are recovered; only reason1 is cleared by this operation.
+// Outer cursor Window reset at 0x10009b30c. The reasons are appMonitor
+// and petLaunch respectively; only petLaunch is cleared by this operation.
 func resetCursorWindow(
     overlayReasons: () -> (Bool, Bool), clearTemporaryOverlayReason: () -> Void,
     setLevel: (Int) -> Void, resetMotionAnimations: () -> Void,

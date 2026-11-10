@@ -2,6 +2,47 @@
 
 本页用于区分已运行的路径和未完成的还原工作，不是完成率。总体目标仍未完成。历史文档中的“未实现/已通过”可能对应不同版本，以下以本轮运行证据和实际源码为准。
 
+2026-11-10 动态应用修复待实机验收：索引输入改为目标/祖先身份与目标数据校验，
+无关兄弟更新不再要求整树相等；坐标输入仍严格。截图期间 AX 更新时返回刷新后的
+AX 和先前图像、明确时间差并撤销截图坐标授权；不是原子图文配对。窗口上下文错误
+增加描述。构建、受控检查和协议检查通过，动态 fixture 实机回归因锁屏失败，不能
+宣称 Multica 场景已修复。详见 NATIVE-MOUSE-WINDOW-INCIDENT.md 最新条目。
+
+
+最新专项（2026-11-08）：解锁后私有 helper 前台/后台 × 元素/坐标 4 项真实点击通过。
+随后发现 Sky 连续 setValue+click 被私有快照失效阻断。已修正 Sky/NDJSON 状态桥接，
+不调用模型的 Rust/MCP/Swift 固定用例从失败变为通过，并观察到 Saved fixed-marker。
+失败动作后禁止继续输入、必须重新观察的反例也通过。不是原厂函数体的逐字还原，
+而是本仓库私有快照适配修正。间歇 bind-initial-windows 阻塞和完整模型验收仍未解决；
+下文较早“当前构建未真实点击验收”记录须结合本专项范围阅读。
+
+当前生产原生链路已接通以下代码路径，但尚未通过解锁桌面的实际输入验收：
+
+- `Target.collect` 使用 selection 提取、默认 Mac 转换、渲染版本和 transport Node 投影。
+  普通 observe 发布 selection；输入前/截图后复核只采集比较，不替换已发布 owner。
+- `RefetchableUIElement` 实现协议默认属性/动作、AX identity/hash 与写后刷新；生产
+  action/Mouse 按渲染 ID 从 selectionTree 恢复元素，不再从 Node AX 新建普通元素。
+- 点击接入 prepareToInteract：恢复 → 焦点 owner → 定位/可选滚动 → 滚动后重取 →
+  实际进程检查 → 点击。setValue/secondary/selectText 分别使用已审计的定位参数。
+  私有 compatibility press 仍为独立 AX 路径。
+- 定位已连接原版图片/光标 owner 的生产创建、移动与后续 press；feature 元数据默认
+  true，覆盖值来自本 helper 配置域。真实可见性、动画帧交付及移动等待尚未验收。
+- 锁屏前置检查返回 SCREEN_LOCKED，避免当前锁屏/异常 AX 循环下长时间 bind 无响应。
+  这是失败边界修复，不能证明解锁后的采集/点击成功。
+
+最近 Swift build、provider-click-self-test、静态源码 pins 与三项实际 helper 协议
+检查通过。provider 检查使用受控对象，不发送真实应用输入；协议检查覆盖握手、
+清单和错误边界。它们不证明 DeepSeek → MCP → 用户应用状态变化。
+
+当前尚有独立实现或部分还原：scrollInput 的 page-distance 策略、selectText 的正文
+选择 adapter、完整 FeatureFlag registry/test override owner、原生语言/接口覆盖与
+公共选项映射。详见下文及 NATIVE-MOUSE-WINDOW-INCIDENT.md 的最新记录。
+
+截图后端审计补充：原版选中离屏 SCWindow 时走 WindowServer 加速捕获，在屏窗口
+可走 desktopIndependentWindow 的 ScreenCaptureKit 过滤器。当前 Capture.swift 只枚举
+在屏窗口，没有接入加速分支。几何/配置/SPI 包装已有部分还原和受控检查，但还没有
+取代生产截图流程；不能据此宣称离屏应用截图、坐标或点击已经对齐。
+
 | 路径 | 当前证据 | 不能据此声称 |
 | --- | --- | --- |
 | Rust supervisor → native 扩展 → MCP → 页面 | 本轮真实测试通过，约 9.4 秒；自有页面操作、截图、标签组、locator 光标及清理 | 任意公开网站、模型任务都稳定 |
@@ -13,10 +54,24 @@
 | Swift 显式/观察时后台启动 owned App | 单独启用启动专项，本轮 4 项通过；还原/安装包客户端 × 两种启动方式 | Skyshot 截图/AX 成功；权限错误不算观察成功 |
 | 原生 macOS AX/截图/输入 | 2026-11-08 只读检查：accessibility=true、screenRecording=true；旧版 owned fixture 四种点击验收通过；新增生产窗口观察/注册表路径尚未真实验收 | 权限开启、组合检查或旧路径通过不能证明当前 Sky/MCP/DeepSeek 应用操作已修复 |
 
+## 原生动画恢复的当前边界（2026-11-08 复核）
+
+| 层次 | 已有实现/验证 | 尚缺 |
+| --- | --- | --- |
+| 数值与存储 | Float/Double、SIMD1/2/3/4/8/16/32、CoreGraphics 映射；SIMDValue 修改、比较、Codable 往返运行验证 | Float16 完整适配、完整原版接口覆盖审计 |
+| 动画对象与数值链路 | InterpolatableAnimation、BezierAnimation、SpringAnimation、Velocity Verlet、描述符工厂及 CGPoint 多帧生命周期回归通过 | 真实窗口/帧交付验收、完整接口/版本覆盖 |
+| 协调器与事务 | 共享存储、事务执行、源缓存、注册、驱动回调与完成链路通过手动帧集成测试 | 生产调用效果验收、其他事务/属性动画入口与真实帧验收 |
+| 系统时钟 | 真实 AppKit display link 启停/释放验证；独立系统对照实验 | 当前会话仍为 0 帧，真实帧交付未验收，原因未确定 |
+| 可见光标与输入 | 具体 NSWindow、原版图片、重置/可见性/遮挡回调及 AppMonitor 已恢复部分实现；真实离屏构造、workspace 重置、own-process KVO 创建与替换释放通过 | owner/运动/press 的完整接口覆盖、真实可见性与帧交付、AX/KVO 通知及当前构建真实点击验收 |
+
+这些数值测试未发送用户应用输入。此轮重新运行当前 helper 的 Sky 协议专项：
+还原客户端握手/应用清单、安装包客户端握手/应用清单、协议错误边界，3 通过、0 跳过。
+日志仅保留本地。桌面只读检查仍为锁屏；没有把协议通过当作实际点击成功。
+
 ## 当前明确未完成
 
 1. **原生 UI 验收**：当前 helper 的辅助功能与录屏权限均为 true，但 2026-11-08 桌面检查为 screenLocked=true、frontmostIsLoginWindow=true。旧版 owned fixture 前台/后台 × 索引/坐标点击成功，不覆盖随后接入的生产 Target 窗口观察、维护中的窗口注册表及 Sky/MCP/DeepSeek 链路；这些仍须解锁后的实际验收。不能从应用发现、启动、截图或离线组合检查推断点击效果。
-2. **Native disableDiff**：SkyIPC.swift 校验 disableDiff 类型，但调用 SkyAppState.get 时未传入；get 本身也无该参数。当前没有还原原生增量树语义，不能宣称该选项已完整实现。JS 声明说明 true 应返回完整树；原生具体差分算法尚缺证据。
+2. **Native disableDiff 与描述输出**：请求已从 SkyIPC 传至 SkyAppState、observe/capture 和 selection 提取；true 为本次捕获创建 root revision，发布的 refetchable owner 仍保留控制器 diff 能力。内部 revision/diff buffer 有受控检查，但公共 SkyAppState 文本已接入还原的 llmDescription（previous 差分、行选项 0）；版本级差分、预算回退及描述组装有受控检查。真实截图/文本往返尚未验收，不能宣称端到端观察及操作全部完成。
 3. **真实认证联调**：SIWC 线上账号/grant/cookie 流程未验收；受控 fixture 不代表真实登录。
 4. **整体源码版本审计**：当前 browser-service 的部分核心链路已更新 oracle，许多历史测试仍依赖旧压缩符号。没有全仓“全部测试绿”的证据；旧测试通过记录不能证明当前构建整体一致。
 5. **原生语言/算法还原**：Rust/Swift 路径与语言边界已迁移一部分；仍有 native-host、supervisor、legacy exports 等差异。独立实现和协议兼容不能冒充原厂函数体还原，详见 LANGUAGE-MIGRATION-AUDIT.md 和 NATIVE-HOST-LANGUAGE-AUDIT.md。
@@ -39,7 +94,7 @@ CUA_TEST_NATIVE_SKY_IPC=1 node --import tsx --test --test-name-pattern='handshak
 
 Swift 资源访问器已检查：默认运行入口直接使用 `.build/debug/cua-helper`，资源包
 `CuaHelper_CuaHelper.bundle` 位于同一构建目录；当前没有发现默认入口遗漏复制资源的步骤。
-这不是独立可分发安装包的验收。可见光标目前仍未接入生产输入。
+这不是独立可分发安装包的验收。AX 动作接收准备阶段的可选光标；生产创建/定位已经接线，但真实可见性、帧交付与点击效果仍未验收。
 
 ## 最近原生集成证据与复现顺序
 

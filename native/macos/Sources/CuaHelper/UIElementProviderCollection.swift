@@ -1,6 +1,14 @@
 import ApplicationServices
 
 extension UIElementProtocol {
+    // Source7b0468 suppresses count errors without reporting.
+    var childCount: Int? { try? count(for: UIElementAttribute(kAXChildrenAttribute)) }
+
+    func preferredVisibleChildrenAttribute() -> UIElementAttribute? {
+        uiElementPreferredVisibleAttribute(freshSupportedAttributes: { Set(axElement.supportedAttributes) },
+            count: { try count(for: $0) })
+    }
+
     func elementCollectionValue(for attribute: UIElementAttribute,
         reportError: (Error) -> Void
     ) -> [UIElement] {

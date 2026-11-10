@@ -1,6 +1,6 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // 0x10079fe78: AXFrame only. This deliberately does not call frameValue,
     // whose position/size fallback is not part of this clipping reader.
     func clippingFrameAttribute(
@@ -46,6 +46,9 @@ extension UIElement {
         }, reportError: reportError)
     }
 
+}
+
+extension UIElementProtocol {
     // 0x100794538: actions once -> Set -> intersect four page-scroll actions.
     func hasScrollAction(in environment: UIElementActionEnvironment, reportError: (Error) -> Void) -> Bool {
         let available = Set(actions(in: environment, reportError: reportError))
@@ -56,7 +59,8 @@ extension UIElement {
         uncached: Bool, transaction: UIElementTransactionCache?,
         environment: UIElementActionEnvironment, reportError: (Error) -> Void
     ) -> CGRect? {
-        uiElementClippingFrame(of: self, uncached: uncached, role: { $0.role },
+        let root: any UIElementProtocol = self
+        return uiElementClippingFrame(of: root, uncached: uncached, role: { $0.role },
             frameAttribute: { element, fresh in
                 element.clippingFrameAttribute(uncached: fresh,
                     read: { environment.read(element.axElement, .frame) }, reportError: reportError)

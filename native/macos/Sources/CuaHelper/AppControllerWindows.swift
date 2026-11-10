@@ -27,8 +27,8 @@ final class AppControllerWindows<FocusedMenuBarItem> {
     func registerWindow(_ element: AXUIElement) { register(WindowUIElement(element: element)) }
     func registerSheet(_ element: AXUIElement) { register(SheetUIElement(element: element)) }
 
-    func initialize(application: UIElement, reportError: @escaping (Error) -> Void) {
-        registerAppControllerInitialWindows(primaryWindow: {
+    func initialize(application: UIElement, reportError: @escaping (Error) -> Void) throws {
+        try registerAppControllerInitialWindows(primaryWindow: {
             application.primaryWindowValue(reportError: reportError)
         }, registerWindow: {
             register(WindowUIElement(axElement: $0.axElement, cache: $0.cache))
@@ -37,7 +37,10 @@ final class AppControllerWindows<FocusedMenuBarItem> {
             let sheet = SheetUIElement(element: element.axElement)
             guard let id = try? element.axElement.windowID else { return }
             registry.register(sheet, windowID: id)
-        }, children: { $0.childrenValue(reportError: reportError) })
+        }, children: { $0.childrenValue(reportError: reportError) }, checkpoint: {
+            try Task.checkCancellation()
+            try requireUnlockedNativeDesktop()
+        })
     }
     func openMenu(_ element: AXUIElement) {
         let menu = MenuUIElement(element: element)

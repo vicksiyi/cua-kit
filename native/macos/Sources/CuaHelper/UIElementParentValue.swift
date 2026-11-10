@@ -38,7 +38,7 @@ extension UIElementProtocol {
 
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func parentValue(
         transaction: UIElementTransactionCache?,
         read: () -> (error: AXError, value: AXPartialValue?),
@@ -48,6 +48,9 @@ extension UIElement {
             read: read, reportError: reportError)
     }
 
+}
+
+extension UIElement {
     func systemParentChain(
         maxDepth: Int = 300,
         includingSelf: Bool,

@@ -20,6 +20,8 @@ DeepSeek 调用侧 demo 已独立为 `@core/agent-loop`，支持替换模型与 
 
 参数放在 `npm run demo --` 或 `npm run demo:deepseek --` 之后。通用 demo 可用 `CUA_MODEL_PROVIDER=openai-compatible` 配置其他兼容模型；DeepSeek 专用入口固定选择 DeepSeek。启动从项目 `.env` 读模型凭证；本地 debug 默认写入 `artifacts/debug/`，不提交 Git。终端会打印日志路径，关闭可设 `CUA_DEBUG=0`。详情见 [CDP 接入说明](packages/cdp-host/README.md) 和 [Agent demo](packages/agent-loop/README.md)。
 
+排查原生应用点击可额外设置 `CUA_NATIVE_INPUT_LOG` 为现有目录内的绝对文件路径，例如项目 `artifacts/debug/native-input.jsonl` 的绝对路径，重启 demo 后生效。该开关独立于 `CUA_DEBUG`，只传给 Swift helper，记录 AX/鼠标事件路由与窗口、焦点准备信息。`dispatched` 表示已派发，仍需重新观察应用以验证操作结果；日志不包含截图或输入文本。
+
 [飞书当前架构与验收状态](https://my.feishu.cn/docx/YTspdmiproITEexFFNBcyHGtn2b#doxcn2cOz8MuLZR6O0hN43UuNCs) 已包含加载与调用时序图。浏览器默认使用重建版 Rust supervisor；电脑入口使用独立 Rust/Sky/Swift，全量替代与验收尚未完成。下面的阶段记录描述当时进展，当前状态以上表与 IMPLEMENTATION-STATUS 为准。
 
 下面是此前独立实现的历史说明：
@@ -150,3 +152,17 @@ This does not automatically grant access to any site or application.
 
 
 根目录旧 `Cua.launch` SDK 已标记 deprecated，现有使用者可通过 `@vicksiyi/cua-kit/legacy` 显式引用。原版 `tinyskyAlt` 是在 nodeRepl 中初始化全局 `cua` 的入口，不能把两者当作同一 API；新宿主通过还原 MCP 运行时接入，详见 [API 边界](docs/AGENT-INTEGRATION.md#restored-cua-api-versus-the-legacy-host-sdk)。旧 SDK 消费者仍在迁移中。
+
+### 自动审批（调用端选项）
+
+```sh
+npm run demo:deepseek -- --auto-approve "打开 Multica，读取我的任务"
+npm run demo:deepseek -- --browser --auto-approve "访问百度搜索 deepseek"
+```
+
+`--auto-approve` 可与 `--computer`、`--browser`、`--unified`、`--cdp-browser`
+配合使用，放在 prompt 前。统一自动接受网页、应用等 MCP 的确认请求，无需逐次输入
+accept；默认不开启。也可在本地 `.env` 设置 `CUA_AUTO_APPROVE=1` 持续启用。
+启动时会提示启用状态，自动审批会记录到本地 debug 日志。
+这是调用端审批配置：不会覆盖服务端/组织应用拒绝策略或授予 macOS 辅助功能、录屏权限。
+需要填写字段的表单和 URL 登录认证继续走原流程，不自动编造输入。

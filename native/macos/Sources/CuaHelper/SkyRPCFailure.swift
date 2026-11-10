@@ -14,6 +14,7 @@ struct SkyRPCFailure: Error, Equatable {
         let wireCode: Int
         switch code {
         case "PERMISSION_DENIED": wireCode = -10009
+        case "SCREEN_LOCKED": wireCode = -10020
         case "INVALID_ARGUMENT": wireCode = -32602
         // Host target errors also describe windows, text and display devices.
         // Only application-aware call sites may emit app-specific wire codes.

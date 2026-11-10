@@ -1,6 +1,6 @@
 import ApplicationServices
 
-// Source MenuBarItemUIElement init at 0x100724de0 shares the generic
+// MenuBarItemUIElement initialization shares the generic
 // wrapper/cache constructor; static role at 0x1007229cc is .menuBarItem.
 // This restores storage and the inherited UIElementProtocol contract used by
 // the controller slot. Menu-item search conveniences are not restored here.

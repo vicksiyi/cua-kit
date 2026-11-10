@@ -33,8 +33,8 @@ extension Target {
     func mouseWindow(_ params: [String: Any]) throws -> MouseWindow {
         try validateSnapshot(params)
         if let id = params["elementId"] as? Int {
-            guard id > 0, id <= nodes.count,
-                  let raw = attribute(nodes[id - 1].element, kAXWindowAttribute),
+            guard let node = observedNode(for: id, in: nodes),
+                  let raw = attribute(node.element, kAXWindowAttribute),
                   let element = try unwrapAXUIElement(raw, throwingOnFailure: false),
                   let frame = axElementFrame(element) else {
                 throw fail("TARGET_NOT_FOUND", "Clicked element has no usable containing window.")

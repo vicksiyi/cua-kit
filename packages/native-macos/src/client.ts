@@ -80,7 +80,7 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
     }),
     click: (input: {app:string;element_index?:number;x?:number;y?:number;mouse_button?:string;click_count?:number;key?:string;duration?:number}) => serial(async () => {
       const indexed = input.element_index !== undefined;
-      if (indexed ? (!Number.isSafeInteger(input.element_index) || input.element_index! <= 0 || input.x !== undefined || input.y !== undefined) : (!Number.isFinite(input.x) || !Number.isFinite(input.y))) throw new CuaError("INVALID_ARGUMENT","Click requires either an element index or finite screenshot coordinates");
+      if (indexed ? (!Number.isSafeInteger(input.element_index) || input.element_index! < 0 || input.x !== undefined || input.y !== undefined) : (!Number.isFinite(input.x) || !Number.isFinite(input.y))) throw new CuaError("INVALID_ARGUMENT","Click requires either an element index or finite screenshot coordinates");
       if (input.duration !== undefined && (!Number.isFinite(input.duration) || input.duration < 0 || input.duration > 30)) throw new CuaError("INVALID_ARGUMENT","Input duration must be 0..30 seconds");
       if (input.click_count !== undefined && (!Number.isSafeInteger(input.click_count) || input.click_count < 1 || input.click_count > 10)) throw new CuaError("INVALID_ARGUMENT","Click count must be 1..10");
       await write(input.app,"mouseInput",{elementId:input.element_index,x:input.x,y:input.y,mouseButton:input.mouse_button,clickCount:input.click_count,key:input.key,duration:input.duration});
@@ -91,7 +91,7 @@ export function createNativeMacClient(helper: NativeTransport, authorize: Native
     }),
     scroll: (input: {app:string;element_index?:number;x?:number;y?:number;direction:string;pages?:number}) => serial(async () => {
       const indexed = input.element_index !== undefined;
-      if (indexed ? (!Number.isSafeInteger(input.element_index) || input.element_index! <= 0 || input.x !== undefined || input.y !== undefined) : (!Number.isFinite(input.x) || !Number.isFinite(input.y))) throw new CuaError("INVALID_ARGUMENT","Scroll requires either an element index or finite screenshot coordinates");
+      if (indexed ? (!Number.isSafeInteger(input.element_index) || input.element_index! < 0 || input.x !== undefined || input.y !== undefined) : (!Number.isFinite(input.x) || !Number.isFinite(input.y))) throw new CuaError("INVALID_ARGUMENT","Scroll requires either an element index or finite screenshot coordinates");
       if (!["up","down","left","right","u","d","l","r"].includes(input.direction)) throw new CuaError("INVALID_ARGUMENT","Unknown scroll direction");
       if (input.pages !== undefined && (!Number.isFinite(input.pages) || input.pages <= 0)) throw new CuaError("INVALID_ARGUMENT","Scroll pages must be finite and positive");
       await write(input.app,"scrollInput",{elementId:input.element_index,x:input.x,y:input.y,direction:input.direction,pages:input.pages});

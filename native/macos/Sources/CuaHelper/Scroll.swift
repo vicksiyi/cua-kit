@@ -42,8 +42,8 @@ extension Target {
         if let id = params["elementId"] as? Int {
             var next: Int? = id
             var visited = Set<Int>()
-            while let index = next, index > 0, index <= nodes.count, visited.insert(index).inserted {
-                let node = nodes[index-1]
+            while let index = next, visited.insert(index).inserted,
+                  let node = observedNode(for: index, in: nodes) {
                 if let role = node.data["role"] as? String, ["AXScrollArea","AXWindow"].contains(role),
                    let frame = axElementFrame(node.element), frame.contains(point) { return frame }
                 next = node.data["parentId"] as? Int
@@ -56,8 +56,8 @@ extension Target {
                 guard node.data["role"] as? String == "AXScrollArea", let frame = axElementFrame(node.element), frame.contains(point) else { return nil }
                 var parent = node.data["parentId"] as? Int
                 var visited = Set<Int>()
-                while let id = parent, id > 0, id <= nodes.count, visited.insert(id).inserted {
-                    let ancestor = nodes[id-1]
+                while let id = parent, visited.insert(id).inserted,
+                      let ancestor = observedNode(for: id, in: nodes) {
                     if ancestor.data["role"] as? String == "AXWindow" {
                         // A different overlapping window must not supply the page extent.
                         guard let windowFrame = axElementFrame(ancestor.element), windowFrame == capture.frame else { return nil }

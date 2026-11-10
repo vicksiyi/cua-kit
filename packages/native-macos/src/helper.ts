@@ -6,6 +6,12 @@ import { CuaError, type ErrorCode } from './errors';
 
 export interface NativeAppInfo { pid: number; name: string; bundleId: string; path: string; launchTime: number }
 export interface HelperHello { protocolVersion: 1; platform: 'macos'; capabilities: string[]; permissions: { accessibility: boolean; screenRecording: boolean } }
+export function nativeHelperEnvironment(environment: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const result: NodeJS.ProcessEnv = { PATH: '/usr/bin:/bin', LANG: 'en_US.UTF-8' };
+  const diagnosticPath = environment.CUA_NATIVE_INPUT_LOG;
+  if (diagnosticPath?.startsWith('/')) result.CUA_NATIVE_INPUT_LOG = diagnosticPath;
+  return result;
+}
 /** Include declared hold time in the helper deadline; never retire a valid 30-second hold at 15 seconds. */
 export function nativeRequestTimeout(method: string, params: Record<string, unknown>): number {
   let holdMs = 0;
@@ -22,7 +28,7 @@ export class NativeHelper {
   private pending = new Map<string, { resolve: (value: any) => void; reject: (error: unknown) => void; timer: ReturnType<typeof setTimeout> }>();
   private ended = false;
   private constructor(path: string) {
-    this.child = spawn(path, [], { stdio: 'pipe', env: { PATH: '/usr/bin:/bin', LANG: 'en_US.UTF-8' } });
+    this.child = spawn(path, [], { stdio: 'pipe', env: nativeHelperEnvironment() });
     this.child.stderr.resume();
     const lines = createInterface({ input: this.child.stdout });
     lines.on('line', line => {

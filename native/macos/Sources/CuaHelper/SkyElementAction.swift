@@ -42,7 +42,7 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
         }
         var params: [String: Any] = ["operation": name]
         if let target = at["elementID"] as? [String: Any], let text = target["_0"] as? String,
-           let id = Int(text), id > 0, String(id) == text { params["elementId"] = id }
+           let id = Int(text), id >= 0, String(id) == text { params["elementId"] = id }
         else if let target = at["coordinate"] as? [String: Any], let point = target["_0"] as? [Any], point.count == 2 {
             params["x"] = try number(point[0], "x"); params["y"] = try number(point[1], "y")
         } else { throw SkyRPCFailure(code: -32602, message: "Invalid pointer action target") }
@@ -100,7 +100,7 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
         throw SkyRPCFailure(code: -10004, message: "This native action is not implemented")
     }
     guard let encoded = value["elementID"] as? String,
-          let id = Int(encoded), id > 0, String(id) == encoded else {
+          let id = Int(encoded), id >= 0, String(id) == encoded else {
         throw SkyRPCFailure(code: -32602, message: "Action requires an element ID from the current native observation")
     }
     func string(_ key: String) throws -> String {
@@ -126,6 +126,21 @@ func decodeSkyElementAction(_ action: [String: Any]) throws -> [String: Any] {
 }
 
 func runSkyActionChecks() throws {
+    for encoded in ["0", "42"] {
+        let pointer = try decodeSkyElementAction(["click": ["at": ["elementID": ["_0": encoded]],
+            "mouseButton": 0, "clickCount": 1]])
+        let write = try decodeSkyElementAction(["setValue": ["elementID": encoded, "value": "fixture"]])
+        guard pointer["elementId"] as? Int == Int(encoded), write["elementId"] as? Int == Int(encoded) else {
+            throw fail("SELF_TEST_FAILED", "Zero/sparse element ID was not preserved")
+        }
+    }
+    for encoded in ["-1", "00", "+0", " 0", "0.0"] {
+        do {
+            _ = try decodeSkyElementAction(["setValue": ["elementID": encoded, "value": "fixture"]])
+            throw fail("SELF_TEST_FAILED", "Noncanonical element ID accepted")
+        } catch is SkyRPCFailure {}
+    }
+
     let drag = try decodeSkyElementAction(["drag":["from":[10.5,20.0],"to":[100.0,200.5]]])
     let path = try dragEvents(from:CGPoint(x:drag["fromX"] as! Double,y:drag["fromY"] as! Double),to:CGPoint(x:drag["toX"] as! Double,y:drag["toY"] as! Double))
     guard path.down.location == CGPoint(x:10.5,y:20), path.up.location == CGPoint(x:100,y:200.5) else { throw fail("SELF_TEST_FAILED", "Drag endpoint mapping differs") }

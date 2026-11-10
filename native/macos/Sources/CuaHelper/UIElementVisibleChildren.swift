@@ -16,13 +16,21 @@ func uiElementChildrenPreferringVisible<Element>(
     isAttributeSupported: (UIElementAttribute) -> Bool,
     collectionValue: (UIElementAttribute) -> [Element]
 ) -> [Element] {
-    let supported = freshSupportedAttributes()
-    for attribute in [UIElementAttribute("AXVisibleRows"), UIElementAttribute("AXVisibleChildren")] {
-        if supported.contains(attribute), uiElementHasCount({ try count(attribute) }) {
-            return collectionValue(attribute)
-        }
+    if let attribute = uiElementPreferredVisibleAttribute(freshSupportedAttributes: freshSupportedAttributes, count: count) {
+        return collectionValue(attribute)
     }
     let children = UIElementAttribute("AXChildren")
     guard isAttributeSupported(children) else { return [] }
     return collectionValue(children)
+}
+
+func uiElementPreferredVisibleAttribute(freshSupportedAttributes: () -> Set<UIElementAttribute>,
+    count: (UIElementAttribute) throws -> Int?) -> UIElementAttribute? {
+    let supported = freshSupportedAttributes()
+    for attribute in [UIElementAttribute("AXVisibleRows"), UIElementAttribute("AXVisibleChildren")] {
+        if supported.contains(attribute), uiElementHasCount({ try count(attribute) }) {
+            return attribute
+        }
+    }
+    return nil
 }

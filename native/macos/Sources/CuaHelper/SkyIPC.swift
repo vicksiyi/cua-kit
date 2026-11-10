@@ -72,7 +72,8 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
                         throw rpcFailure(-32602, "disableDiff must be a boolean")
                     }
                 }
-                result = try await appState.get(app, policy: appPolicy, deadline: deadline.doubleValue)
+                result = try await appState.get(app, policy: appPolicy, deadline: deadline.doubleValue,
+                    disableDiff: payload["disableDiff"] as? Bool ?? false)
             case "ComputerUseIPCAppPolicyRequest":
                 let payload = params["request"] as! [String: Any]
                 guard let app = payload["app"] as? String, !app.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -90,6 +91,8 @@ private func skyReply(_ data: Data, negotiated: inout Bool, appPolicy: SkyAppPol
     } catch UIElementError.axError(let status) {
         let error = SkyRPCFailure.accessibility(status)
         return ["id": id, "jsonrpc": "2.0", "error": ["code": error.code, "message": error.message]]
+    } catch let error as FocusedUIElementContext.Error {
+        return ["id": id, "jsonrpc": "2.0", "error": ["code": -10005, "message": error.description]]
     } catch let error as Failure {
         let mapped = SkyRPCFailure.hostFailure(code: error.code, message: error.message)
         return ["id": id, "jsonrpc": "2.0", "error": ["code": mapped.code, "message": mapped.message]]

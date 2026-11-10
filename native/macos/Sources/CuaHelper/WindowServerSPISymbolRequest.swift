@@ -12,4 +12,7 @@ struct WindowServerSPISymbolRequest {
     static let reenableUpdate = Self(images: [0x1f24c53cb4e3017, 0x1eb3de5ae3f0ef9, 0x1b65d0aadf5b09c, 0x120cc0f1c991055, 0x161f2658666e8cd],
         symbols: [[0x93223e2a55ee0ec3, 0xa28222bc8e4ccc5b]],
         salt: "e77b5df1564d26f431ef11c9e2e3fe9c41eca69ecb7aed7d6f7a39d33d425a7fc275c627944653de17ee7086234336fe1fc442b59dd6af53cbb8ead456759a")
+    static let captureWindowImagesInRect = Self(images: [0x155ce36d437a8a1, 0x11b80693b99f0ed, 0x1ebda330f3b9cfe, 0x1f8d23280275c67, 0x1f569156f3f893a],
+        symbols: [[0x86b4a51c1f6e190b, 0xc8d0aa21dce85abc]],
+        salt: "5f432bd6a61ddb58d97b14f71e16def7d6c8760a8a8200aa7719c33c74446c85bef954acef705119fc3163f398eb4eb2e60b39765ddbd30e2d0b835282573e7b")
 }

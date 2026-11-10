@@ -1,5 +1,26 @@
 # Implementation status
 
+## 2026-11-09 bounded source-restoration inventory
+
+Read-only source audit found 343 recorded output mappings referencing only 48
+unique original files. All mapped outputs exist; five original files drifted
+from source-map hashes (300 mappings affected), which invalidates manifest
+currency, not automatically those implementations. The narrower JS inventory
+records92 modules, all with TS targets present, but current roots contain96:
+three new Sky modules lack same-path TS; REPL environment.ts exists but is
+unlisted. Twelve of the92 recorded source hashes drifted. Package versions also
+show Sky0.7.13->0.7.17 and cua-repl0.1.2->0.1.3. No overall completion percent
+is defensible. Browser method coverage, native file counts and historical test
+passes are different units and must not be aggregated.
+
+Module matrix, production boundaries, known gaps and cost recommendations:
+`artifacts/audit/source-restoration-audit-2026-11-09.txt`; per-mapping hashes:
+`artifacts/audit/source-restoration-audit-2026-11-09.json`. No runtime, model,
+UI or build executed for this audit. Freeze/version-reconcile before resuming
+unbounded reconstruction; recent native sequential-action bridge is an authored
+adapter fix, not proof of a recovered vendor function body.
+
+
 Current acceptance boundaries and remaining work: [CURRENT-ACCEPTANCE.md](CURRENT-ACCEPTANCE.md). The historical checkpoints below are not a whole-project completion claim.
 
 ## Browser extension host remains a native migration gap

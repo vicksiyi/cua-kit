@@ -20,6 +20,8 @@ class ComputerUseCursorStyle {
     var scootStretchPivotX: CGFloat = 0.5
     var scootStretchAngle: Angle = .zero
     var scootTiltAngle: Angle = .zero
+    // Native default hook 0x100009888 is a no-op.
+    func windowVisibilityDidChange() {}
     var hotSpot: CGPoint { fatalError("makeView has not been implemented") }
     func makeView() -> NSView { fatalError("makeView has not been implemented") }
 }

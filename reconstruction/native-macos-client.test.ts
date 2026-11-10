@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createNativeMacClient, type NativeTransport } from "../packages/native-macos/src/client";
-function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFailure?: boolean; missingText?: boolean } = {}) {
+function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFailure?: boolean; missingText?: boolean; elementId?: number } = {}) {
  const calls: Array<[string,any]> = [];
  const app={pid:42,name:"Fixture",bundleId:"test.fixture",path:"/Fixture.app",launchTime:1};
  let reads=0;
@@ -10,7 +10,7 @@ function fixture(options: { deny?: boolean; changeIdentity?: boolean; observeFai
   if(method==="hello") return {permissions:{screenRecording:false}} as T;
   if(method==="listApps") return {apps:[app]} as T;
   if(method==="bind") return {targetId:"target",app:{...app,launchTime:options.changeIdentity?2:1}} as T;
-  if(method==="observe") {if(options.observeFailure && ++reads>1) throw Error("read failed"); return {text:options.missingText ? undefined : '[1] AXTextField "Name"\nScreenshot unavailable: Screen Recording permission is not granted.',snapshotId:"snapshot",elements:[{id:1,role:"AXTextField",name:"Name"}],warnings:[]} as T;}
+  if(method==="observe") {if(options.observeFailure && ++reads>1) throw Error("read failed"); return {text:options.missingText ? undefined : '[1] AXTextField "Name"\nScreenshot unavailable: Screen Recording permission is not granted.',snapshotId:"snapshot",elements:[{id:options.elementId ?? 1,role:"AXTextField",name:"Name"}],warnings:[]} as T;}
   return {} as T;
  }};
  const client=createNativeMacClient(helper,async request=>{calls.push(["authorize",request]);if(options.deny)throw Error("denied");});
@@ -200,4 +200,31 @@ test("missing native text is rejected without enabling stale actions",async()=>{
  const {client}=fixture({missingText:true});
  await assert.rejects(client.get_app_state({app:"Fixture"}),/Native observation text is missing/);
  await assert.rejects(client.set_value({app:"Fixture",element_index:1,value:"x"}),/Observe/);
+});
+
+
+test("zero and sparse observed IDs pass app binding and native transport without positional remapping", async () => {
+ const {bind_mac_app}=await import("../packages/cua/src/tinysky_alt/bind_mac_app");
+ for (const id of [0,42]) {
+  const {client,calls}=fixture({elementId:id});
+  const app=bind_mac_app(client as any,"Fixture");
+  await app.getAXState({emit:false});
+  await app.click(id);
+  assert.equal(calls.find(c=>c[0]==="mouseInput")?.[1].elementId,id);
+  await app.getAXState({emit:false});
+  await app.scroll(id,"down",0.5);
+  assert.equal(calls.find(c=>c[0]==="scrollInput")?.[1].elementId,id);
+  await app.getAXState({emit:false});
+  await app.setValue(id,"value");
+  assert.equal(calls.find(c=>c[0]==="action")?.[1].elementId,id);
+  await app.getAXState({emit:false});
+  await assert.rejects(app.click(-1),/either/);
+ }
+});
+
+test("helper environment forwards only the absolute diagnostic path beside fixed runtime variables", async () => {
+ const {nativeHelperEnvironment}=await import("../packages/native-macos/src/helper");
+ assert.deepEqual(nativeHelperEnvironment({CUA_NATIVE_INPUT_LOG:"/tmp/owned-phase.jsonl",DEEPSEEK_API_KEY:"private",PATH:"/untrusted"}),
+  {PATH:"/usr/bin:/bin",LANG:"en_US.UTF-8",CUA_NATIVE_INPUT_LOG:"/tmp/owned-phase.jsonl"});
+ assert.deepEqual(nativeHelperEnvironment({CUA_NATIVE_INPUT_LOG:"relative.jsonl"}),{PATH:"/usr/bin:/bin",LANG:"en_US.UTF-8"});
 });

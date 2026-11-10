@@ -1,6 +1,7 @@
 import CoreGraphics
 import Carbon
 import SoftLink
+import Foundation
 
 // Source wrappers: mainConnectionID 0x10026bb1c, disableUpdate 0x10026cb84,
 // reenableUpdate 0x10026cba0. Each has its own lazy initialization token.
@@ -8,11 +9,14 @@ enum WindowServerSPI {
     private typealias MainConnection = @convention(c) () -> OpaquePointer?
     private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
     private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
+    private typealias SetWindowLevel = @convention(c) (OpaquePointer?, UInt32, Int32) -> CGError
     private typealias Update = @convention(c) (OpaquePointer?) -> CGError
     private typealias ConnectionNotify = @convention(c)
         (OpaquePointer?, WindowServerNotificationCallback, UInt32, UnsafeMutableRawPointer?) -> CGError
     private typealias RequestWindowNotifications = @convention(c)
         (OpaquePointer?, UnsafePointer<UInt32>, UInt32) -> Void
+    private typealias CaptureImages = @convention(c)
+        (OpaquePointer?, UnsafePointer<UInt32>, Int32, UInt32, CGRect) -> Unmanaged<CFArray>?
 
 
     private static func resolve(_ request: WindowServerSPISymbolRequest) -> [UnsafeRawPointer?] {
@@ -35,6 +39,37 @@ enum WindowServerSPI {
     private static let mainConnection = unsafeBitCast(required(functions[0]), to: MainConnection.self)
     private static let disable = unsafeBitCast(required(resolve(.disableUpdate).first ?? nil), to: Update.self)
     private static let reenable = unsafeBitCast(required(resolve(.reenableUpdate).first ?? nil), to: Update.self)
+    // Single-symbol helper26da14 wraps the same SoftLink batch API with one
+    // request. Unlike required observer bindings, capture binding may be nil.
+    private static let captureImages: CaptureImages? = {
+        guard let pointer = resolve(.captureWindowImagesInRect).first ?? nil else { return nil }
+        return unsafeBitCast(pointer, to: CaptureImages.self)
+    }()
+
+    static func captureWindowImagesInRect(_ windows: [UInt32], options: WindowServerCaptureOptions,
+        rect: CGRect, connection: OpaquePointer?
+    ) -> [CGImage]? {
+        let binding = captureImages
+        return captureWindowImagesInRect(windows, options: options, rect: rect, connection: connection,
+            capture: binding.map { function in { connection, pointer, count, options, rect in
+                guard let result = function(connection, pointer, count, options, rect) else { return nil }
+                // Original retains an autoreleased array before conditional
+                // bridging; the Swift array retains its image objects.
+                return windowCaptureImages(result.takeUnretainedValue())
+            } })
+    }
+
+    // Native26cf58 argument/count gate, injectable without invoking actual SPI.
+    static func captureWindowImagesInRect(_ windows: [UInt32], options: WindowServerCaptureOptions,
+        rect: CGRect, connection: OpaquePointer?,
+        capture: ((OpaquePointer?, UnsafePointer<UInt32>, Int32, UInt32, CGRect) -> [CGImage]?)?
+    ) -> [CGImage]? {
+        guard let capture, !windows.isEmpty else { return nil }
+        let count = Int32(windows.count)
+        return windows.withUnsafeBufferPointer {
+            capture(connection, $0.baseAddress!, count, options.rawValue, rect)
+        }
+    }
 
     private static let keyFocus = unsafeBitCast(required(functions[7]), to: KeyFocus.self)
     static func getKeyFocusProcess(_ process: UnsafeMutablePointer<ProcessSerialNumber>,
@@ -62,6 +97,12 @@ enum WindowServerSPI {
     static func requestNotificationsForWindows(_ connection: OpaquePointer?,
         windows: UnsafePointer<UInt32>, count: UInt32) {
         requestWindowNotifications(connection, windows, count)
+    }
+    // 0x10026ccf8: primary binding slot 12, C order connection/window/level.
+    private static let windowLevel = unsafeBitCast(required(functions[12]), to: SetWindowLevel.self)
+    static func setWindowLevel(_ level: Int32, forWindow id: UInt32,
+                               connection: OpaquePointer?) -> CGError {
+        windowLevel(connection, id, level)
     }
     static func mainConnectionID() -> OpaquePointer? { mainConnection() }
     static func disableUpdate(_ connection: OpaquePointer?) -> CGError { disable(connection) }

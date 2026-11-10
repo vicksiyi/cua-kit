@@ -2,12 +2,16 @@ import Foundation
 import AppKit
 import ApplicationServices
 
-// Observed Sky response schema, backed by the independent native AX/capture engine.
-// Native function bodies and original incremental skyshot formatting are unavailable.
+// Sky response schema backed by the progressively restored native AX/capture
+// engine and llmDescription. Some action adapters remain independent; see
+// CURRENT-ACCEPTANCE.md for source fidelity and actual UI validation boundaries.
 @MainActor
 final class SkyAppState {
     private let clipboard = ClipboardStore()
     private var targets: [String: Target] = [:]
+    // Sky actions carry render IDs, not private NDJSON snapshot tokens. Keep
+    // the last published ID identities across a successful action only.
+    private var successfulActionSelections: [String: [Node]] = [:]
     // Retire explicitly even when an in-flight observation still retains the
     // old Target across await. ARC destruction alone may otherwise be delayed.
     private func retireTarget(at path: String) {
@@ -15,6 +19,7 @@ final class SkyAppState {
         target.deactivateAccessibility()
         target.invalidateInputState()
         targets.removeValue(forKey: path)
+        successfulActionSelections.removeValue(forKey: path)
     }
     func perform(_ reference: String, action: [String: Any], policy: SkyAppPolicy, deadline: Double) async throws {
         let evaluated = try await policy.evaluate(reference)
@@ -22,19 +27,44 @@ final class SkyAppState {
         let path = identity["appPath"] as! String
         guard evaluated["decision"] as? String == "allowed" else {
             targets[path]?.invalidateInputState()
+            successfulActionSelections.removeValue(forKey: path)
             throw SkyRPCFailure(code: -10006, message: identity["bundleIdentifier"] as! String)
         }
         var params = try decodeSkyElementAction(action)
-        guard let target = targets[path], let snapshot = target.snapshot else {
+        guard let target = targets[path] else {
             throw SkyRPCFailure(code: -10011, message: reference)
         }
-        defer { target.invalidateInputState() }
+        let previous = successfulActionSelections.removeValue(forKey: path)
+        var completed = false
+        defer {
+            target.invalidateInputState()
+            if !completed { successfulActionSelections.removeValue(forKey: path) }
+        }
         guard target.app.bundleIdentifier == identity["bundleIdentifier"] as? String else {
             throw SkyRPCFailure(code: -10010, message: reference)
         }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -32602, message: "Computer Use request expired before input")
         }
+        if target.snapshot == nil, let previous {
+            // Refresh transport data without replacing the published refetchable
+            // owner. Never reinterpret an old element index as a different AX object.
+            let (current, warnings) = try target.collect(publishSelection: false)
+            guard warnings.isEmpty else { throw fail("STALE_OBSERVATION", "Refresh incomplete; observe again.") }
+            if let id = params["elementId"] as? Int {
+                guard let old = previous.first(where: { $0.data["id"] as? Int == id }),
+                      let fresh = current.first(where: { $0.data["id"] as? Int == id }),
+                      CFEqual(old.element, fresh.element) else {
+                    throw fail("STALE_OBSERVATION", "Element identity changed; observe again.")
+                }
+            }
+            target.nodes = current
+            target.snapshot = UUID().uuidString
+        }
+        guard let snapshot = target.snapshot else {
+            throw SkyRPCFailure(code: -10011, message: reference)
+        }
+        let publishedNodes = target.nodes
         params["snapshotId"] = snapshot
         params["deadlineUnixMilliseconds"] = deadline
         if ["typeText", "pressKey"].contains(params["operation"] as? String ?? "") {
@@ -52,10 +82,12 @@ final class SkyAppState {
             guard Date().timeIntervalSince1970 * 1000 < deadline else { throw SkyRPCFailure(code:-32602,message:"Paste expired before clipboard mutation") }
             _ = try await withNativeClipboard(clipboard,params:params) { try await target.pasteInput(params) }
         }
-        else { _ = try target.action(params) }
+        else { _ = try await target.action(params) }
         guard Date().timeIntervalSince1970 * 1000 < deadline else {
             throw SkyRPCFailure(code: -10005, message: "Input completed after deadline; observe before retrying")
         }
+        successfulActionSelections[path] = publishedNodes
+        completed = true
     }
     /// Explicit AppStart request. State reads also launch missing apps in background.
     /// Response uses the original optional-skyshot MacWindowAppState envelope.
@@ -79,13 +111,14 @@ final class SkyAppState {
         }
         return ["app": ["bundleIdentifier": identifier, "pid": pid]]
     }
-    func get(_ reference: String, policy: SkyAppPolicy, deadline: Double) async throws -> [String: Any] {
+    func get(_ reference: String, policy: SkyAppPolicy, deadline: Double, disableDiff: Bool = false) async throws -> [String: Any] {
         let terminatedPaths = targets.compactMap { $0.value.app.isTerminated ? $0.key : nil }
         for path in terminatedPaths { retireTarget(at: path) }
         let evaluated = try await policy.evaluate(reference)
         let identity = evaluated["target"] as! [String: Any]
         let path = identity["appPath"] as! String, identifier = identity["bundleIdentifier"] as! String
         // Failures after resolution retire only this application's earlier observation.
+        successfulActionSelections.removeValue(forKey: path)
         targets[path]?.invalidateInputState()
         guard evaluated["decision"] as? String == "allowed" else {
             throw SkyRPCFailure(code: -10006, message: identity["bundleIdentifier"] as! String)
@@ -128,7 +161,7 @@ final class SkyAppState {
         target.activateAccessibility()
         target.invalidateInputState()
         do {
-            let state = try await target.observeWithScreenshot([:])
+            let state = try await target.observeWithScreenshot(["disableDiff": disableDiff, "sourceDescription": true])
             guard Date().timeIntervalSince1970 * 1000 < deadline else {
                 throw SkyRPCFailure(code: -32602, message: "Computer Use request deadline expired during observation")
             }

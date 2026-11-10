@@ -28,13 +28,16 @@ struct UIElementActionEnvironment {
     }
 }
 
-extension UIElement {
+extension UIElementProtocol {
     func actions(in environment: UIElementActionEnvironment, reportError: (Error) -> Void) -> [UIElementAction] {
         actions(readNativeActions: { try environment.nativeActions(axElement) },
             freshSupportedAttributes: { environment.supported(axElement) },
             isAttributeSettable: { try environment.settable(axElement, $0) }, reportError: reportError)
     }
 
+}
+
+extension UIElement {
     func performAction(
         _ action: UIElementAction, transaction: UIElementTransactionCache?,
         environment: UIElementActionEnvironment, reportError: @escaping (Error) -> Void

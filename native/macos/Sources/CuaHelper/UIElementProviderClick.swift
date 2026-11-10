@@ -1,9 +1,10 @@
 import AppKit
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     func clippingFrame(uncached: Bool, reportError: (Error) -> Void) -> CGRect? {
-        uiElementClippingFrame(of: self, uncached: uncached, role: { $0.role },
+        let root: any UIElementProtocol = self
+        return uiElementClippingFrame(of: root, uncached: uncached, role: { $0.role },
             frameAttribute: { element, fresh in
                 element.clippingFrameAttribute(uncached: fresh,
                     read: { element.axElement.value(for: .frame) }, reportError: reportError)
@@ -29,22 +30,22 @@ extension UIElement {
     }
 
     func clickablePoint(reportError: (Error) -> Void) async throws -> CGPoint? {
-        try await uiElementClickablePoint { scrollToVisible in
-            try await uiElementClickablePoint(scrollToVisible: scrollToVisible,
-                preferredPoint: { chessPreferredPoint(reportError: reportError) },
-                frameBeforeScroll: { frameValue(reportError: reportError) },
-                scrollFrameToVisible: { _ in preconditionFailure("No-argument clickablePoint must not scroll") },
-                readFrameAttribute: { fresh in
-                    clippingFrameAttribute(uncached: fresh,
-                        read: { axElement.value(for: .frame) }, reportError: reportError)
-                }, clippingFrame: { clippingFrame(uncached: $0, reportError: reportError) })
-        }
+        try await uiElementClickablePoint(scrollToVisible: false,
+            preferredPoint: { chessPreferredPoint(reportError: reportError) },
+            frameBeforeScroll: { frameValue(reportError: reportError) },
+            scrollFrameToVisible: { _ in
+                preconditionFailure("No-argument clickablePoint must never request scrolling")
+            }, readFrameAttribute: { fresh in
+                clippingFrameAttribute(uncached: fresh,
+                    read: { axElement.value(for: .frame) }, reportError: reportError)
+            }, clippingFrame: { clippingFrame(uncached: $0, reportError: reportError) }).point
     }
 
     func webClickHitsTarget(app: UIElement, reportError: @escaping (Error) -> Void) async -> Bool {
-        await uiElementWebClickHitsTarget(target: self,
+        let target: any UIElementProtocol = self
+        return await uiElementWebClickHitsTarget(target: target,
             clickablePoint: { try await clickablePoint(reportError: reportError) },
-            hitTest: { try app.axElement.element(at: $0) },
+            hitTest: { try app.axElement.element(at: $0) as (any UIElementProtocol)? },
             parent: { $0.parentValue(reportError: reportError) },
             equal: { providerAXElementsEqual($0.axElement, $1.axElement) })
     }

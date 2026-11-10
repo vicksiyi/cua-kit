@@ -11,14 +11,31 @@ func rectData(_ rect: CGRect) -> [String: Double] {
 extension Target {
     func observeWithScreenshot(_ params: [String: Any]) async throws -> [String: Any] {
         do {
-            var state = try observe()
-            let captured = try await screenshot(params)
-            let (after, warnings) = try collect()
-            guard warnings.isEmpty, after.count == nodes.count,
-                  zip(after,nodes).allSatisfy({ CFEqual($0.element,$1.element) && NSDictionary(dictionary:$0.data).isEqual(to:$1.data) }) else {
-                throw fail("STALE_OBSERVATION", "AX state changed during screenshot; observe again.")
+            var state = try withNativeObservationPhase("observe", pid: app.processIdentifier) {
+                try observe(disableDiff: params["disableDiff"] as? Bool ?? false,
+                    sourceDescription: params["sourceDescription"] as? Bool ?? false)
             }
-            state["screenshot"] = captured
+            let captured = try await withNativeAsyncObservationPhase("screenshot", pid: app.processIdentifier) { try await screenshot(params) }
+            let (after, warnings) = try withNativeObservationPhase("revalidate", pid: app.processIdentifier) { try collect(publishSelection: false) }
+            guard warnings.isEmpty else {
+                throw fail("STALE_OBSERVATION", "AX refresh was incomplete during screenshot; observe again.")
+            }
+            let unchanged = after.count == nodes.count && zip(after,nodes).allSatisfy {
+                CFEqual($0.element,$1.element) && NSDictionary(dictionary:$0.data).isEqual(to:$1.data)
+            }
+            let reconciled = try reconcileScreenshotObservation(state, unchanged: unchanged,
+                revokeCoordinates: { self.capturedWindow = nil }, refresh: {
+                    try self.observe(disableDiff: params["disableDiff"] as? Bool ?? false,
+                        sourceDescription: params["sourceDescription"] as? Bool ?? false)
+                })
+            state = reconciled.state
+            var screenshotResult = captured
+            screenshotResult["coordinateInputAvailable"] = reconciled.coordinateInputAvailable
+            if !reconciled.coordinateInputAvailable {
+                state["text"] = (state["text"] as? String ?? "") +
+                    "\nThe app updated during capture. Accessibility state was refreshed after the image; use current element IDs. Image-coordinate input requires a new stable capture."
+            }
+            state["screenshot"] = screenshotResult
             return state
         } catch {
             invalidateInputState()
@@ -28,6 +45,7 @@ extension Target {
 
     func captureWindows() async throws -> [SCWindow] {
         try validateIdentity()
+        try requireUnlockedNativeDesktop()
         guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED", "Screen Recording permission is required; no permission prompt was requested.") }
         initializeNativeGraphics()
         do {
@@ -44,7 +62,7 @@ extension Target {
         }]
     }
     func screenshot(_ params: [String: Any]) async throws -> [String: Any] {
-        let available = try await captureWindows()
+        let available = try await withNativeAsyncObservationPhase("screenshot-enumerate", pid: app.processIdentifier) { try await captureWindows() }
         let requestedId = params["windowId"] as? Int
         if params["windowId"] != nil && requestedId == nil { throw fail("INVALID_ARGUMENT", "windowId must be an integer.") }
         let focus = requestedId == nil && available.count > 1 ? try focusedCaptureWindow() : nil
@@ -60,10 +78,12 @@ extension Target {
         config.width = width; config.height = height
         config.showsCursor = false; config.ignoreShadowsSingleWindow = true
         let image: CGImage
-        do { image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config) }
+        do { image = try await withNativeAsyncObservationPhase("screenshot-sdk-capture", pid: app.processIdentifier) {
+            try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+        } }
         catch { throw fail("PROVIDER_DISCONNECTED", "Window screenshot failed: \(error.localizedDescription)") }
         try validateIdentity()
-        let current = try await captureWindows()
+        let current = try await withNativeAsyncObservationPhase("screenshot-reenumerate", pid: app.processIdentifier) { try await captureWindows() }
         guard let same = current.first(where: { $0.windowID == window.windowID }), same.frame == originalFrame else { throw fail("STALE_OBSERVATION", "Window moved, resized or closed during capture.") }
         if let originalFocus = focus {
             guard let currentFocus = try focusedCaptureWindow(), CFEqual(originalFocus.element,currentFocus.element), captureFramesMatch(originalFocus.frame,currentFocus.frame) else { throw fail("STALE_OBSERVATION", "Focused window changed during capture.") }

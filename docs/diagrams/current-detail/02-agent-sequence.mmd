@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant P0 as 用户 / Demo
+    participant P1 as AgentLoop + DeepSeek
+    participant P2 as MCP / Rust
+    participant P3 as Kernel CUA API
+    participant P4 as Trusted / 执行后端
+    P0->>P2: 1  加载本地配置、选择后端、stage 包、连接 MCP
+    P2->>P0: 2  initialize → instructions / 工具能力
+    P0->>P2: 3  browser / computer 预检：js 读取 inventory
+    P2->>P3: 4  首次代码调用：启动 worker，banner 初始化 cua
+    P3->>P4: 5  查询可用浏览器 / 应用；返回初始状态
+    P4->>P0: 6  工具结果；初始观察加入 initialMessages
+    P0->>P1: 7  run(prompt, initialMessages)，读取 tools + instructions
+    P1->>P2: 8  模型给出 js 工具调用；同批工具顺序执行
+    P2->>P3: 9  执行持久化 cell：选 tab / app，读取状态或操作
+    P3->>P4: 10  trusted service RPC → 所选后端
+    P4->>P0: 11  如需授权：MCP elicitation → 宿主策略 / 终端确认
+    P0->>P4: 12  授权结果；拒绝 / 无能力时返回错误，不绕过
+    P4->>P1: 13  文本 / 图片 / 动作结果 / 错误，沿原链返回模型
+    P1->>P2: 14  未完成：继续工具调用；观察后验证目标
+    P1->>P2: 15  摘要分支可调用 js(completion_summary)，不执行代码
+    P1->>P2: 16  run 返回前：endTurn → turn_ended；成功 / 失败均清理
+    P1->>P0: 17  返回最终回答或错误；Demo finally 关闭连接与部署资源

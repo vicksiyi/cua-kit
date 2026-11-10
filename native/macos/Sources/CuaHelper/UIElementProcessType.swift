@@ -12,6 +12,15 @@ extension UIElement {
                 activationPolicy: { $0.activationPolicy.rawValue },
                 isFinishedLaunching: { $0.isFinishedLaunching })
         }
+        static func containingElement(for element: any UIElementProtocol, ofTypes types: Set<Self>,
+            reportError: @escaping (Error) -> Void
+        ) -> (element: any UIElementProtocol, processType: Self, pid: Int32)? {
+            containingProcessElement(for: element, ofTypes: types,
+                parent: { $0.parentValue(reportError: reportError) },
+                actualPID: { try $0.axElement.actualPID }, classify: processType,
+                reportError: reportError)
+        }
+
         static func containingElement(for element: UIElement, ofTypes types: Set<Self>,
             reportError: @escaping (Error) -> Void
         ) -> (element: UIElement, processType: Self, pid: Int32)? {

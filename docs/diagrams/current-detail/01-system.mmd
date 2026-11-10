@@ -1,0 +1,21 @@
+flowchart TB
+  subgraph caller[调用侧：可替换 Agent]
+    U[Prompt / 本地 .env] --> A[AgentLoop]
+    A <--> M[ModelAdapter / DeepSeek]
+    A --> C[McpToolClient + NodeReplTurnClient]
+    A --> L[本地 debug / 终端 trace]
+  end
+  D[prepareRestoredRuntime / stage @core packages] --> R
+  C <-->|MCP stdio| R[Rust MCP + Supervisor]
+  R <-->|执行与生命周期| K[Node Kernel / 持久化 JS / CUA API]
+  K <-->|trusted RPC 经 Supervisor| T[Trusted Worker]
+  T --> B[browser service / BrowserAPI]
+  B --> P[Rust 提供的认证 native pipe]
+  P --> H[Rust Chrome Native Host]
+  H <-->|Native Messaging| E[Extension BrowserSession]
+  E <-->|chrome.debugger / CDP| W[日常 Chrome 页面]
+  B -.显式 CDP 部署.-> CDP[CDP host / Playwright / 受管或外接浏览器]
+  T --> S[Sky service / Mac IPC]
+  S --> P2[Rust native pipe]
+  P2 --> SW[Swift helper]
+  SW --> OS[macOS 应用 / AX / 截图 / 输入]

@@ -40,7 +40,14 @@ extension Target {
     func validateSnapshot(_ params: [String: Any], allowingFocusChange: Bool = false) throws {
         try validate()
         guard let expected = params["snapshotId"] as? String, expected == snapshot else { throw fail("STALE_OBSERVATION", "Input needs a current observation.") }
-        let (current, warnings) = try collect()
+        let (current, warnings) = try collect(publishSelection: false)
+        if let id = params["elementId"] as? Int {
+            guard warnings.isEmpty, inputTargetSnapshotEqual(nodes, current, targetID: id,
+                allowingFocusChange: allowingFocusChange) else {
+                throw fail("STALE_OBSERVATION", "Target element or its containing hierarchy changed; observe again.")
+            }
+            return
+        }
         guard warnings.isEmpty, current.count == nodes.count else { throw fail("STALE_OBSERVATION", "Application tree changed or is incomplete; observe again. observed=\(nodes.count), current=\(current.count), warnings=\(warnings.count).") }
         for (a,b) in zip(nodes,current) {
             guard CFEqual(a.element,b.element), inputSnapshotDataEqual(a.data, b.data, allowingFocusChange: allowingFocusChange) else { throw fail("STALE_OBSERVATION", "Application state changed; observe again.") }

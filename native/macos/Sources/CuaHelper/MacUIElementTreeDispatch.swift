@@ -3,16 +3,16 @@ import ApplicationServices
 
 extension MacUIElementTreeTransformation {
     // Entry 0x1007595fc: Mac-specific branches surround common dispatch.
-    // The traversal rebuild, provider-title lookup, owning-app lookup and
-    // node renderer are required host compositions, never silent no-op defaults.
+    // Traversal rebuild remains a required host composition. Provider title,
+    // owning application and node rendering use recovered native defaults.
     // Attributed rendering now uses the recovered native implementation.
     func transform(
         item: UIElementTree<TransformedUIElement>.Item,
         context: inout UIElementTransformationContext,
         rebuild: (inout UIElementTree<TransformedUIElement>, UIElementTree<TransformedUIElement>.Item, inout UIElementTransformationContext) -> Void,
-        providerTitle: (AXUIElement) -> String?,
-        owningBundleIdentifier: (TransformedUIElement) -> String?,
-        renderNode: (TransformedUIElement, inout UIElementTransformationContext) throws -> String,
+        providerTitle: (AXUIElement) -> String? = macTransformationProviderTitle,
+        owningBundleIdentifier: ((TransformedUIElement) -> String?)? = nil,
+        renderNode: (TransformedUIElement, inout UIElementTransformationContext) throws -> String = macTransformationRenderNode,
         reportUnknownAttributedStyle: (String) -> Void,
         reportAttributeError: (Error) -> Void,
         reportUnexpectedNextLine: () -> Void
@@ -27,7 +27,10 @@ extension MacUIElementTreeTransformation {
             })
         case .removeElementsUnderCalendarEvents:
             return Self.removeElementsUnderCalendarEvents(item: item,
-                owningBundleIdentifier: { owningBundleIdentifier(item.element) })
+                owningBundleIdentifier: {
+                    if let owningBundleIdentifier { return owningBundleIdentifier(item.element) }
+                    return item.element.owningApplicationBundleIdentifier(reportError: reportAttributeError)
+                })
         case .retrieveAttributedTextFromTextAreas:
             return Self.retrieveAttributedTextFromTextAreas(item: item, context: &context,
                 reportAttributeError: reportAttributeError, render: { text, context in

@@ -8,9 +8,11 @@ import {readRuntimeEnvironment} from '../packages/agent-loop/src/restored-runtim
 import {prepareIndependentRuntime} from '../packages/agent-loop/src/independent-runtime';
 
 test('host auth/routing settings preserve precedence, empty values and exclude model secrets',async()=>{
- const parent={HOME:'/fixture/home',PATH:'/fixture/bin',CODEX_HOME:'/fixture/auth',CODEX_CLI_PATH:'/fixture/codex',NODE_REPL_RUNTIME_MODE:'gaas-browser',HTTPS_PROXY:'http://127.0.0.1:9',DEEPSEEK_API_KEY:'fixture-secret',CUA_MCP_ENV:JSON.stringify({CODEX_CLI_PATH:'',NODE_REPL_RUNTIME_MODE:''})};
+ const parent={HOME:'/fixture/home',PATH:'/fixture/bin',CODEX_HOME:'/fixture/auth',CODEX_CLI_PATH:'/fixture/codex',NODE_REPL_RUNTIME_MODE:'gaas-browser',HTTPS_PROXY:'http://127.0.0.1:9',CUA_NATIVE_INPUT_LOG:'/fixture/input.jsonl',DEEPSEEK_API_KEY:'fixture-secret',CUA_MCP_ENV:JSON.stringify({CODEX_CLI_PATH:'',NODE_REPL_RUNTIME_MODE:''})};
  const env=await readRuntimeEnvironment(parent);
+ assert.equal(env.CUA_NATIVE_INPUT_LOG,'/fixture/input.jsonl');
  const host=nativeSupervisorEnvironment(env,'/fixture/temp');
+ assert.equal(host.CUA_NATIVE_INPUT_LOG,undefined);
  assert.equal(host.HOME,parent.HOME);
  assert.equal(host.PATH,parent.PATH);
  assert.equal(host.CODEX_HOME,parent.CODEX_HOME);
@@ -27,15 +29,17 @@ test('prepared Rust host retains auth configuration while both sandbox workers r
  let runtime:Awaited<ReturnType<typeof prepareIndependentRuntime>>|undefined;
  try{
   const helper=join(root,'owned-helper');await writeFile(helper,'fixture');
-  runtime=await prepareIndependentRuntime({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift',CORE_CUA_NATIVE_HELPER_PATH:helper,HOME:root,CODEX_HOME:join(root,'auth'),CODEX_CLI_PATH:join(root,'codex'),PATH:'/fixture/bin',NODE_REPL_RUNTIME_MODE:'gaas-browser',DEEPSEEK_API_KEY:'fixture-secret',HTTPS_PROXY:'http://127.0.0.1:9'},root,'env-fixture');
+  runtime=await prepareIndependentRuntime({CUA_REPL_ENABLED_SURFACES:'computer',CORE_CUA_NATIVE_BACKEND:'swift',CORE_CUA_NATIVE_HELPER_PATH:helper,CUA_NATIVE_INPUT_LOG:join(root,'input.jsonl'),HOME:root,CODEX_HOME:join(root,'auth'),CODEX_CLI_PATH:join(root,'codex'),PATH:'/fixture/bin',NODE_REPL_RUNTIME_MODE:'gaas-browser',DEEPSEEK_API_KEY:'fixture-secret',HTTPS_PROXY:'http://127.0.0.1:9'},root,'env-fixture');
   assert.equal(runtime.environment.HOME,root);
   assert.equal(runtime.environment.CODEX_HOME,join(root,'auth'));
   assert.equal(runtime.environment.NODE_REPL_RUNTIME_MODE,'gaas-browser');
   assert.equal(runtime.environment.DEEPSEEK_API_KEY,undefined);
   const spec=JSON.parse(await readFile(runtime.args[0],'utf8'));
+  assert.equal(spec.native_service.input_log_path,join(root,'input.jsonl'));
+  assert.equal(runtime.environment.CUA_NATIVE_INPUT_LOG,undefined);
   for(const worker of [spec.kernel,spec.trusted]){
    const env=worker.sandbox.worker_environment;
-   for(const key of ['HOME','CODEX_HOME','CODEX_CLI_PATH','PATH','DEEPSEEK_API_KEY','HTTPS_PROXY']) assert.equal(env[key],undefined,key);
+   for(const key of ['HOME','CODEX_HOME','CODEX_CLI_PATH','PATH','DEEPSEEK_API_KEY','HTTPS_PROXY','CUA_NATIVE_INPUT_LOG']) assert.equal(env[key],undefined,key);
   }
  }finally{await runtime?.dispose();await rm(root,{recursive:true,force:true});}
 });

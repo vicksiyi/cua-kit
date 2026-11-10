@@ -13,9 +13,12 @@ import ApplicationServices
             precondition(wire.code == -10005)
             precondition(NativeIPCClientError.mappedServerError(errorNumber: Int32(wire.code), errorString: wire.message) == .serverError(errorNumber: -10005, errorString: wire.message))
         }
-        for (code, expected) in [("PERMISSION_DENIED", -10009), ("INVALID_ARGUMENT", -32602)] {
+        for (code, expected) in [("PERMISSION_DENIED", -10009), ("INVALID_ARGUMENT", -32602), ("SCREEN_LOCKED", -10020)] {
             precondition(SkyRPCFailure.hostFailure(code: code, message: "payload") == SkyRPCFailure(code: expected, message: "payload"))
         }
+        let locked = SkyRPCFailure.hostFailure(code: "SCREEN_LOCKED", message: "Unlock desktop before input")
+        precondition(NativeIPCClientError.mappedServerError(errorNumber: Int32(locked.code),
+            errorString: locked.message) == .screenLocked(message: locked.message))
         print("native Sky error projection and client decoding passed")
     }
 }

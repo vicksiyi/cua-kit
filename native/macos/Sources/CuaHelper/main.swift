@@ -32,6 +32,8 @@ final class Target {
     var nodes: [Node] = []
     var snapshot: String?
     var capturedWindow: CapturedWindow?
+    var virtualCursor: ComputerUseCursor?
+    var selectionTree: RefetchableSkyshotAXTree?
     private(set) var focusEnforcer: SyntheticAppFocusEnforcer?
     private(set) var accessibilityAssertion: AXEnablementAssertion?
     private(set) var windowObservation: AppControllerWindowObservation<MenuBarItemUIElement>?
@@ -95,73 +97,121 @@ final class Target {
     }
     func validate() throws {
         try validateIdentity()
+        try requireUnlockedNativeDesktop()
         guard AXIsProcessTrusted() else { throw fail("PERMISSION_DENIED", "Accessibility permission is required for the helper's responsible host application.") }
     }
-    func collect() throws -> ([Node], [String]) {
+    func collect(publishSelection: Bool = true, disableDiff: Bool = false) throws -> ([Node], [String]) {
         try validate()
-        var result: [Node] = [], warnings: [String] = [], visited = Set<AXUIElement>()
-        let started = Date()
-        func walk(_ item: UIElement, _ parent: Int?, _ depth: Int) {
-            let element = item.axElement
-            if result.count >= 3000 || depth > 80 || Date().timeIntervalSince(started) > 5 { if warnings.isEmpty { warnings.append("AX traversal truncated by node/depth/time budget.") }; return }
-            if !visited.insert(element).inserted { return }
-            let id = result.count + 1
-            // The typed children reader constructs each child cache once.
-            // Cached role/subrole/text and frame share that same snapshot.
-            let role = item.role.rawValue
-            var title = item.title ?? ""
-            if title.isEmpty { title = item.description ?? "" }
-            var data: [String: Any] = ["id": id, "role": role, "name": title]
-            if let frame = axElementFrame(item) { data["frame"] = rectData(frame) }
-            if let parent = parent { data["parentId"] = parent }
-            // Secure input contents are not exported.
-            let secure = item.subrole == "AXSecureTextField"
-            if !secure, let value = scalar(attribute(element, kAXValueAttribute)) { data["value"] = String(describing: value) }
-            let actions = item.actions
-            var props: [String: Any] = ["secure": secure, "actions": actions.map(\.name).joined(separator: ",")]
-            props[kAXEnabledAttribute] = item.isEnabled
-            props[kAXFocusedAttribute] = item.isFocused
-            props[kAXSelectedAttribute] = item.isSelected
-            if let selected = attribute(element,kAXSelectedTextRangeAttribute),
-               let range = decodedAXTypedAttribute(selected, as: CFRange.self) {
-                props["selectionStart"] = range.location; props["selectionLength"] = range.length
-            }
-            data["properties"] = props
-            result.append(Node(element: element, data: data))
-            let children = item.childrenValue(reportError: { error in
-                Logger(subsystem: "core.cua", category: "Accessibility").error("Children attribute read failed: \(String(describing: error))")
-            })
-            for child in children { walk(child, id, depth + 1) }
+        let application = ApplicationUIElement(element: root)
+        let context = try withNativeObservationPhase("focused-context", pid: app.processIdentifier) { try application.focusedUIElementContext() }
+        var warnings: [String] = []
+        let report: (any Error) -> Void = { error in
+            Logger(subsystem: "core.cua", category: "SelectionExtraction").error("AX extraction: \(String(describing: error))")
         }
-        // Distinguish denied/unresponsive AX from an actual empty tree.
-        let status = readRawAXAttribute(root, kAXRoleAttribute).error
-        guard status == .success else { throw UIElementError.axError(status) }
-        walk(UIElement(element: root), nil, 0)
-        return (result, warnings)
+        let selection = try withNativeObservationPhase("extract-selection", pid: app.processIdentifier) {
+            try extractSystemSelection(context: context, contextType: .fullUIContext,
+            treeCache: nil, previousRevision: selectionTree?.systemSelection.windowRevision,
+            rootElement: nil, performAccessibilityEnablement: true,
+            alwaysIncludeScreenshot: false, isAXTreeDiffingEnabled: !disableDiff,
+            enable: { $0.enableAccessibilityIfNeeded(window: $1, for: $2) },
+            readFocus: { $0.focusedUIElement }, prepareTransformation: {
+                UIElementTransformationContext(type: .fullUIContext, application: context.app,
+                    window: context.window, urlConfiguration: nil)
+            }, reportMissingFocus: { _ in
+                warnings.append("Focused element was absent from the captured tree.")
+            }, reportSelectionResolutionFailure: {
+                warnings.append("Focused selection required a separate tree capture.")
+            }, reportDepthLimit: {
+                warnings.append("AX traversal reached the native depth limit.")
+            }, reportLimit: { _ in
+                warnings.append("AX children exceeded the native capture limit.")
+            }, reportError: report, reportUnknownDateComponents: { _ in
+                warnings.append("AX date component could not be rendered.")
+            }, reportUnknownAttributedStyle: { _ in
+                warnings.append("AX attributed text contained an unknown style.")
+            }, reportUnexpectedNextLine: {
+                warnings.append("AX text transformation encountered an unexpected line.")
+            })
+        }
+        let current = try withNativeObservationPhase("project-observation", pid: app.processIdentifier) {
+            try selectionObservedNodes(selection.windowRevision,
+                frame: { axElementFrame($0.element) }, selectedRange: { $0.selectedTextRange })
+        }
+        // Input/screenshot revalidation is a read-only comparison against the
+        // published observation. Replacing its owner here would detach already
+        // resolved wrappers and silently publish even when comparison fails.
+        if publishSelection {
+            selectionTree = try RefetchableSkyshotAXTree(systemSelection: selection, isAXTreeDiffingEnabled: true)
+        }
+        return (current, warnings)
     }
-    func observe() throws -> [String: Any] {
+    func observe(disableDiff: Bool = false, sourceDescription: Bool = false) throws -> [String: Any] {
         // A failed refresh must not leave an older observation actionable.
         invalidateInputState()
-        let (current, warnings) = try collect()
+        let (current, warnings) = try collect(disableDiff: disableDiff)
         let elements = current.map { $0.data }
-        let text = try observationText(elements: elements, warnings: warnings,
-            screenshotAvailable: CGPreflightScreenCaptureAccess())
+        let text: String
+        if sourceDescription {
+            guard let selectionTree else { throw fail("STALE_OBSERVATION", "Published selection is absent.") }
+            // Native updateSkyshot callers0x100070ab0/0x10007124c use
+            // difference(previous), options0; disableDiff controls extraction.
+            text = selectionTree.systemSelection.llmDescription(.difference(from: .previous),
+                lineOptions: [], onLineBudgetExceeded: NativeSelectionExtractionDiagnostics.lineBudgetExceeded)
+        } else {
+            text = try observationText(elements: elements, warnings: warnings,
+                screenshotAvailable: CGPreflightScreenCaptureAccess())
+        }
         let identifier = UUID().uuidString
         nodes = current; snapshot = identifier
         return ["snapshotId": identifier, "elements": elements, "warnings": warnings, "text": text]
     }
-    func action(_ params: [String: Any]) throws -> [String: Any] {
+    func action(_ params: [String: Any]) async throws -> [String: Any] {
         try validateSnapshot(params)
         if let deadline = params["deadlineUnixMilliseconds"] as? Double,
            Date().timeIntervalSince1970 * 1000 >= deadline {
             throw fail("INVALID_ARGUMENT", "Input deadline expired during snapshot validation; no action was dispatched.")
         }
-        guard let id = params["elementId"] as? Int, id > 0, id <= nodes.count else { throw fail("STALE_OBSERVATION", "Element is absent from current snapshot.") }
-        let element = nodes[id-1].element
-        let operation = params["operation"] as? String ?? ""
-        let item = UIElement(element: element)
-        // All attempted AX operations retire the observation, including throws.
+        guard let id = params["elementId"] as? Int, observedNode(for: id, in: nodes) != nil else { throw fail("STALE_OBSERVATION", "Element is absent from current snapshot.") }
+        guard let selectionTree else {
+            throw fail("STALE_OBSERVATION", "Element selection is absent from current snapshot.")
+        }
+        // Recovery can publish a replacement selection before an AX write.
+        // Retire the transport snapshot on either recovery or action failure.
         defer { invalidateInputState() }
+        let operation = params["operation"] as? String ?? ""
+        // Validate required payloads before preparation can scroll the app.
+        switch operation {
+        case "setValue", "secondary":
+            guard params["value"] is String else { throw fail("INVALID_ARGUMENT", "Action requires a string value.") }
+        case "selectText":
+            guard let text = params["value"] as? String, !text.isEmpty else {
+                throw fail("INVALID_ARGUMENT", "Selection requires nonempty text.")
+            }
+        case "press": break // Private compatibility AX action; no native outer positioning policy.
+        default: throw fail("UNSUPPORTED_CAPABILITY", "Unsupported native action.")
+        }
+        try Task.checkCancellation()
+        let item: any UIElementProtocol
+        if operation == "press" {
+            item = try selectionTree.refetchElementIfNeeded(id, validateElement: true)
+        } else {
+            let timing: ComputerUseCursor.CursorNextInteractionTiming? = operation == "selectText"
+                ? nil : (operation == "secondary" ? .finished : .closeEnough)
+            let (preparedTree, preparedElement) = try await prepareToInteract(with: id,
+                cursorNextInteractionTiming: timing, positionElement: operation != "selectText",
+                animateCursor: true, cursorFeatureEnabled: { NativeCursorFeatureGate.isEnabled() },
+                reportError: NativeSelectionExtractionDiagnostics.attributeError)
+            guard self.selectionTree === preparedTree, params["snapshotId"] as? String == snapshot else {
+                throw fail("STALE_OBSERVATION", "Element selection changed while preparing the action.")
+            }
+            item = preparedElement
+        }
+        try Task.checkCancellation()
+        if let deadline = params["deadlineUnixMilliseconds"] as? Double,
+           Date().timeIntervalSince1970 * 1000 >= deadline {
+            throw fail("INVALID_ARGUMENT", "Input deadline expired during action preparation; no final action was dispatched.")
+        }
+        let element = item.axElement
         func perform(_ action: UIElementAction) throws {
             try item.perform(action: action)
         }
@@ -200,8 +250,13 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         guard let pid = params["pid"] as? Int, let app = NSRunningApplication(processIdentifier: pid_t(pid)), !app.isTerminated else { throw fail("TARGET_NOT_FOUND", "Application PID not found.") }
         let id = UUID().uuidString
         let target = Target(app)
-        try target.prepareWindowObservation()
-        target.activateAccessibility()
+        try requireUnlockedNativeDesktop()
+        try withNativeObservationPhase("bind-window-observation", pid: app.processIdentifier) {
+            try target.prepareWindowObservation()
+        }
+        withNativeObservationPhase("bind-accessibility", pid: app.processIdentifier) {
+            target.activateAccessibility()
+        }
         targets[id] = target
         return ["targetId": id, "app": info(app)]
     case "observe", "action", "release", "listWindows", "screenshot", "observeWithScreenshot", "keyboardInput", "validatePaste", "pasteInput", "mouseInput", "scrollInput", "dragInput", "pasteWithClipboard", "pasteFormatted":
@@ -225,9 +280,17 @@ func handle(_ method: String, _ params: [String: Any]) async throws -> [String: 
         if method == "observeWithScreenshot" { return try await target.observeWithScreenshot(params) }
         if method == "listWindows" { return try await target.windows() }
         if method == "screenshot" { return try await target.screenshot(params) }
-        return try method == "observe" ? target.observe() : target.action(params)
+        if method == "observe" { return try target.observe(disableDiff: params["disableDiff"] as? Bool ?? false) }
+        return try await target.action(params)
     default: throw fail("UNSUPPORTED_CAPABILITY", "Unknown helper method.")
     }
+}
+if CommandLine.arguments.contains("--initial-window-graph-check"),
+   let index = CommandLine.arguments.firstIndex(of: "--pid"), index + 1 < CommandLine.arguments.count,
+   let pid = Int32(CommandLine.arguments[index + 1]) {
+    let result = inspectInitialWindowGraph(pid: pid)
+    let data = try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys])
+    print(String(decoding: data, as: UTF8.self)); exit(0)
 }
 // Explicit operator-only entry: request system dialogs, never change TCC settings.
 if CommandLine.arguments.contains("--audio-lifecycle-self-test") {
@@ -262,6 +325,11 @@ if CommandLine.arguments.contains("--paste-termination-fixture") {
 if CommandLine.arguments.contains("--paste-content-self-test") {
     do { try runPasteContentChecks(); print("{\"nativePasteFormats\":true}"); exit(0) }
     catch { fputs("Paste format self-test failed: \(error)\n",stderr); exit(1) }
+}
+if CommandLine.arguments.contains("--cursor-window-owned-check") {
+    let report = await MainActor.run { runCursorWindowOwnedCheck() }
+    let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+    print(String(decoding: data, as: UTF8.self)); exit(0)
 }
 if CommandLine.arguments.contains("--graphics-init-self-test") {
     initializeNativeGraphics()
@@ -327,6 +395,24 @@ if CommandLine.arguments.contains("--ax-notification-lifecycle-check") {
 if CommandLine.arguments.contains("--provider-click-self-test") {
     do { try await runProviderClickChecks(); print("Provider click composition checks passed"); exit(0) }
     catch { fputs("Provider click checks failed: \(error)\n", stderr); exit(1) }
+}
+if CommandLine.arguments.contains("--cursor-window-fade-owned-check") {
+    // Fixture-only watchdog: report failure and terminate this diagnostic;
+    // never synthesize animation completion or resume the production waiter.
+    DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+        fputs("{\"ownedFadeCheckTimedOut\":true,\"completionVerified\":false,\"sentInput\":false}\n", stderr)
+        exit(1)
+    }
+    let report = await runCursorWindowFadeOwnedCheck()
+    let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+    print(String(decoding: data, as: UTF8.self))
+    exit(0)
+}
+if CommandLine.arguments.contains("--cursor-owner-hide-owned-check") {
+    let report = await runCursorOwnerHideOwnedCheck()
+    let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+    print(String(decoding: data, as: UTF8.self))
+    exit(0)
 }
 if CommandLine.arguments.contains("--sky-action-self-test") {
     do { try runSkyActionChecks(); print("{\"skyActionMapping\":true}"); exit(0) }

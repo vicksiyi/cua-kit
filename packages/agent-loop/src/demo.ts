@@ -1,3 +1,4 @@
+import { createAutoApproval, demoApprovalArguments } from "./auto-approval";
 import { BrowserStartupTools } from "./browser-startup-tools";
 import { parseNativePermissions, nativePermissionsContext } from "./native-permissions";
 import { unifiedPreflight } from "./unified-preflight";
@@ -14,13 +15,18 @@ import { NodeReplTurnClient, parseNodeReplTurnEvent } from "./node-repl-turn";
 import { AgentLoop, AgentStepBudgetError } from "./loop";
 import { McpToolClient } from "./mcp-client";
 import { createDemoModel } from "./provider";
-const question = process.argv.slice(2).join(" ").trim();
+const parsedApproval = process.env.CUA_DEMO_CLI_PARSED === "1"
+  ? { autoApprove: false, args: process.argv.slice(2) }
+  : demoApprovalArguments(process.argv.slice(2));
+const demoArgs = parsedApproval.args;
+const autoApprove = parsedApproval.autoApprove || process.env.CUA_AUTO_APPROVE === "1";
+const question = demoArgs.join(" ").trim();
 if (!question)
   throw new Error('Usage: npm run demo -w @core/agent-loop -- "question"');
 const checkBrowser =
-  process.argv.length === 3 && process.argv[2] === "--check-browser";
+  demoArgs.length === 1 && demoArgs[0] === "--check-browser";
 const checkComputer =
-  process.argv.length === 3 && process.argv[2] === "--check-computer";
+  demoArgs.length === 1 && demoArgs[0] === "--check-computer";
 const command = process.env.CUA_MCP_COMMAND;
 if (!command)
   throw new Error("Set CUA_MCP_COMMAND to the MCP server executable.");
@@ -90,9 +96,10 @@ debug?.write("run.start", {
   browserEnabled,
   computerEnabled,
   nativePermissions,
+  autoApprove,
   node: process.version,
 });
-const terminalElicit = createBrowserOriginApproval({
+const browserOriginElicit = createBrowserOriginApproval({
   origins: process.env.CUA_AUTO_APPROVE_BROWSER_ORIGINS,
   signal: controller.signal,
   fallback: createTerminalElicitation({ signal: controller.signal }),
@@ -101,6 +108,17 @@ const terminalElicit = createBrowserOriginApproval({
     debug?.write("elicitation.auto-approved", { origin, policy: "browser-origin" });
   },
 });
+const terminalElicit = createAutoApproval({
+  enabled: autoApprove,
+  signal: controller.signal,
+  fallback: browserOriginElicit,
+  onApproved: params => {
+    const metadata = { policy: "all-confirmations", connector: params._meta?.connector_id, tool: params._meta?.tool_name };
+    console.error(`MCP confirmation automatically approved (--auto-approve): ${metadata.connector ?? "unknown"}/${metadata.tool ?? "unknown"}`);
+    debug?.write("elicitation.auto-approved", metadata);
+  },
+});
+if (autoApprove) console.error("Auto-approve enabled for browser/app MCP confirmations; service policies and OS permissions still apply.");
 debug?.write("elicitation.capability", { available: !!terminalElicit });
 if (!terminalElicit && (browserEnabled || computerEnabled))
   console.error(

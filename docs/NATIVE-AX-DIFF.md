@@ -1,5 +1,10 @@
 # 原生 AX 增量树：当前可证实的边界
 
+> 2026-11-08 最新状态：本文较早“无 revision/未传 disableDiff/权限均 false”段落为历史
+> 记录。当前已有内部 revision/diff、提取与输入接线；disableDiff 已传至实际提取。
+> 尚缺原版公开增量描述/预算回退和解锁实机验收；当前文本仍是完整 observation
+> adapter。准确边界以 CURRENT-ACCEPTANCE.md 与最新事故记录为准。
+
 本页基于本机安装包的静态 Swift 导出符号及局部 ARM64 指令证据，尚未恢复完整原生函数体。
 运行 `python3 scripts/audit-desktop-diff.py --check` 可复核固定版本；
 完整证据保存在 `reconstruction/desktop-diff-evidence.json`。不启动原厂服务。

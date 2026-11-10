@@ -1,7 +1,7 @@
 import Foundation
 
-// Native difference storage and Change cases. Iterator/buffer matching logic
-// remains to be restored before this can drive appended revisions.
+// Native difference storage and Change cases. Matching/iteration are composed
+// in separate files; buffer and appended revision construction remain separate.
 struct UIElementRenderDifference<Identity: Hashable> {
     let oldRender: [UIElementRender<Identity>]
     let newRender: [UIElementRender<Identity>]

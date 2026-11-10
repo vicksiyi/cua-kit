@@ -1,7 +1,7 @@
 import Foundation
 
 // Native revision is a reference type. This restores root construction and
-// lookup; appended revisions, changes and serialized snapshots remain separate.
+// lookup and appended revisions; serialized snapshots remain separate.
 final class UIElementTreeRevision<Element: AccessibilityNode> {
     let lineageID: String
     let tree: UIElementTree<Element>
@@ -9,19 +9,22 @@ final class UIElementTreeRevision<Element: AccessibilityNode> {
     let focusTree: UIElementTree<Element>?
     let focusRenderTree: UIElementRenderTree<Element.ID>?
     let ids: UIElementTreeTable<Element.ID, Int>
+    let changes: [UIElementRenderDifference<Element.ID>.Change]
     let previousRevision: UIElementTreeRevision<Element>?
     typealias MissingSourcePathError = MissingRenderSourcePathError
 
     private init(tree: UIElementTree<Element>, renderTree: UIElementRenderTree<Element.ID>,
         focusTree: UIElementTree<Element>?, focusRenderTree: UIElementRenderTree<Element.ID>?,
-        lineageID: String
+        lineageID: String, changes: [UIElementRenderDifference<Element.ID>.Change] = [],
+        previousRevision: UIElementTreeRevision<Element>? = nil
     ) throws {
         self.tree = tree
         self.renderTree = renderTree
         self.focusTree = focusTree
         self.focusRenderTree = focusRenderTree
         self.lineageID = lineageID
-        previousRevision = nil
+        self.changes = changes
+        self.previousRevision = previousRevision
         ids = try makeRevisionTable(renderTree: renderTree, focusRenderTree: focusRenderTree)
     }
 
@@ -36,6 +39,20 @@ final class UIElementTreeRevision<Element: AccessibilityNode> {
         let focused = try focusTree.map(render)
         return try Self(tree: tree, renderTree: rendered, focusTree: focusTree,
             focusRenderTree: focused, lineageID: lineageID)
+    }
+
+    //0x100655d5c renders, buffers diff, inherits IDs, then renders focus.
+    // Constructor numbering/table work happens only after both renders succeed.
+    func appending(tree: UIElementTree<Element>, focusTree: UIElementTree<Element>?,
+        render: (UIElementTree<Element>) throws -> UIElementRenderTree<Element.ID>
+    ) throws -> UIElementTreeRevision<Element> {
+        let rendered = try render(tree)
+        let buffer = UIElementRenderDifference(oldTree: renderTree, newTree: rendered).buffer()
+        for change in buffer.changes { change.inheritElementID() }
+        let focused = try focusTree.map(render)
+        return try Self(tree: tree, renderTree: rendered, focusTree: focusTree,
+            focusRenderTree: focused, lineageID: lineageID, changes: buffer.changes,
+            previousRevision: self)
     }
 
     func item(for id: Int) -> UIElementTree<Element>.Item? {

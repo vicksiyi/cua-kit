@@ -1,8 +1,10 @@
 import Animation
+import GraphicsSupport
 import DequeModule
 import Carbon
 import ApplicationServices
 import AppKit
+import struct SwiftUI.Angle
 
 private enum ProviderClickChecks {
     final class Hit: AXUIElementProtocol {
@@ -998,6 +1000,18 @@ private enum ProviderClickChecks {
         }
         do {
             var source = capturedOwner; source.title = "full"
+            runFocusItemResolutionChecks(source: source)
+            runBuilderAppendChecks(source: source)
+            runMacTransformationRenderChecks(source: source)
+            runMacTreeTransformCompositionChecks(source: source)
+            runExtractionURLRegistrationChecks(source: source)
+            try runExtractionURLCompactionChecks(source: source)
+            runTreeURLTrimmingChecks(source: source)
+            try runExtractionRevisionChoiceChecks(source: source)
+            try runAppendedRevisionChecks(source: source)
+            try runIndexedTreeRefetchResolutionChecks(source: source)
+            runSelectionTreeCapturePreparationChecks(source: source)
+            try runSelectionExtractionTransactionChecks(source: source)
             var focus = source; focus.title = "focus"
             let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
             let fullTree = UIElementTree(items: [.init(element: source, subtree: empty)], focusedElement: nil)
@@ -1020,6 +1034,21 @@ private enum ProviderClickChecks {
             checkEqual(revision.focusRenderTree?.roots[0].elementID, 0)
             checkEqual(revision.element(for: 0)?.title, "focus")
             checkTrue(revision.element(for: 1) == nil)
+            let selectionCache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+            let selectionWindow = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+                axWindow: WindowUIElement(axElement: source.axElement, cache: selectionCache),
+                axApplication: ApplicationUIElement(axElement: source.axElement, cache: selectionCache))
+            let selection = SystemSelection(applicationWindow: selectionWindow, windowRevision: revision, invalidationMonitor: nil)
+            checkEqual(selection.elementsMatching(source, ignoreValueChange: false).count, 1)
+            checkTrue(selection.elementsMatching(focus, ignoreValueChange: false).isEmpty)
+            let duplicates = UIElementTree(items: [.init(element: source, subtree: empty),
+                .init(element: source, subtree: empty)], focusedElement: nil)
+            let duplicateRevision = try UIElementTreeRevision.root(duplicates, focusTree: nil, lineageID: "duplicates") { _ in
+                UIElementRenderTree(isFocus: false, roots: [])
+            }
+            let duplicateSelection = SystemSelection(applicationWindow: selectionWindow,
+                windowRevision: duplicateRevision, invalidationMonitor: nil)
+            checkEqual(duplicateSelection.elementsMatching(source, ignoreValueChange: false).count, 2)
             enum RenderFailure: Error { case expected }
             calls = []
             do {
@@ -2998,6 +3027,24 @@ private enum ProviderClickChecks {
         checkTrue(resolved.accessibilityWindow is MenuUIElement)
         checkTrue(CFEqual(resolved.accessibilityWindow.axElement, targetAX))
         checkEqual(resolved.windowID, 42); checkEqual(resolved.windowBounds, rect)
+        let routingRevision = try UIElementTreeRevision<TransformedUIElement>.root(
+            .init(items: [], focusedElement: nil), focusTree: nil, lineageID: "protocol-routing") { _ in
+                UIElementRenderTree(isFocus: false, roots: [])
+            }
+        let routingSelection = SystemSelection(applicationWindow: ApplicationWindow(
+            cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(42)]),
+            axWindow: WindowUIElement(axElement: targetAX, cache: target.cache),
+            axApplication: ApplicationUIElement(axElement: targetAX, cache: target.cache)),
+            windowRevision: routingRevision, invalidationMonitor: nil)
+        let routingTree = try RefetchableSkyshotAXTree(systemSelection: routingSelection, isAXTreeDiffingEnabled: true)
+        let routingWrapper = RefetchableUIElement(element: target, containingTree: routingTree)
+        let protocolRouted = try target.mouseEventTarget(at: CGPoint(x: 20, y: 30),
+            accessibilityWindow: preservedWindow, hitElement: routingWrapper,
+            reportError: { _ in unexpectedFailure() })
+        checkTrue((protocolRouted.element as? RefetchableUIElement) === routingWrapper)
+        checkTrue(protocolRouted.accessibilityWindow is MenuUIElement)
+        checkEqual(protocolRouted.pid, 7)
+        checkEqual(protocolRouted.windowID, 42)
         targetMock.readPID = nil; targetMock.readActualPID = nil; targetMock.readWindowID = nil
         targetMock.testBundleIdentifier = nil
         var hierarchyCopies = 0
@@ -3025,6 +3072,24 @@ private enum ProviderClickChecks {
         checkEqual(prefetched.element.role, .button)
         checkEqual(prefetched.roleFrequencyTable[.button], 1)
         checkTrue(UIElementTreeTransaction.current == nil)
+        enum MonitorUnavailable: Error { case expected }
+        let cacheMonitor = UIElementTreeInvalidationMonitor(app: ApplicationUIElement(axElement: targetAX,
+            cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)),
+            processID: { _ in throw MonitorUnavailable.expected })
+        let treeCache = TransformedUIElement.TreeCache(tree: UIElementTree(items: [], focusedElement: nil),
+            transaction: prefetched, invalidationMonitor: cacheMonitor)
+        checkTrue(treeCache.tree.items.isEmpty)
+        checkTrue(treeCache.invalidationMonitor === cacheMonitor)
+        // Reusing a cached tree must reuse its capture transaction too. The
+        // normal element constructor consults it without another hierarchy read.
+        treeCache.transaction.perform { root in
+            checkEqual(UIElement(element: root.axElement).role, .button)
+            checkEqual(UIElementTreeTransaction.current?.roleFrequencyTable[.button], 1)
+            checkEqual(hierarchyCopies, 1)
+        }
+        checkTrue(UIElementTreeTransaction.current == nil)
+        recordTreeInvalidation(.uiElementDestroyed, element: targetAX, state: cacheMonitor.state)
+        checkTrue(treeCache.invalidationMonitor.invalidationStateSnapshot().destroyedElements.contains(targetAX))
         prefetched.perform { root in
             checkEqual(UIElement(element: root.axElement).role, .button)
             // No prefetch means no hierarchy calls. Its root must be constructed
@@ -3695,6 +3760,49 @@ private func runApplicationClickActivationChecks() async throws {
 }
 
 func runProviderClickChecks() async throws {
+    try requireUnlockedNativeDesktop(readSession: { [:] })
+    try requireUnlockedNativeDesktop(readSession: { ["CGSSessionScreenIsLocked": false] })
+    do {
+        try requireUnlockedNativeDesktop(readSession: { ["CGSSessionScreenIsLocked": true] })
+        unexpectedFailure()
+    } catch let error as Failure {
+        checkEqual(error.code, "SCREEN_LOCKED")
+        checkEqual(SkyRPCFailure.hostFailure(code: error.code, message: error.message).code, -10020)
+    }
+    runObservedNodeLookupChecks()
+    try await runNativeRefetchBindingChecks()
+    try await runClickRoutingCursorChecks()
+    try await runMouseDiagnosticBoundaryChecks()
+    try runConcreteTreeRefetchResolutionChecks()
+    try runConcreteElementRecoveryChecks()
+    runRenderDifferenceIteratorSchedulingChecks()
+    runRenderSiblingPrefixChecks()
+    runRenderResidualIdentityMapChecks()
+    runRenderResidualMatchChecks()
+    runRenderRetentionPreflightChecks()
+    runRenderRetentionSolverChecks()
+    runDefaultRenderDifferenceChecks()
+    runRenderDifferenceBufferChecks()
+    runRenderDifferenceDepthOrderChecks()
+    runOwningApplicationBundleResolutionChecks()
+    runMenuBarProviderCompositionChecks()
+    runSelectionScreenshotChecks()
+    runImmediateMenuBarFilteringChecks()
+    runFocusProviderCacheChecks()
+    runFocusSelectionReadChecks()
+    runFocusPositiveSelectionChecks()
+    runFocusSelectionAttributeChecks()
+    runRecursiveTreeBuildChecks()
+    runPositionSubsetChecks()
+    runPositionVisibilityChecks()
+    runVisibleSubsetCompositionChecks()
+    runVisibleRangeSelectionChecks()
+    runVisibleRangeExpansionChecks()
+    runVisibleIndexRangeChecks()
+    runVisibleCollectionResolutionChecks()
+    runCompleteCollectionChecks()
+    runVisibleSubsetFallbackChecks()
+    runMacProviderTitleTransactionChecks()
     try await ProviderClickChecks.run()
     try await runApplicationClickActivationChecks()
     try runSyntheticFocusDeactivationChecks()
@@ -3788,6 +3896,51 @@ func runProviderClickChecks() async throws {
     runAppControllerWindowCreatedFocusChecks()
     runAppControllerWindowsCompositionChecks()
     runAppControllerAXEventHandlerChecks()
+    await runDelayedAnimationRegistrationChecks()
+    await runAnimationDriverHandlerOwnershipChecks()
+    await runAnimationCoordinatorDriverCacheChecks()
+    runAnimationTransactionStorageChecks()
+    runSpringParameterConversionChecks()
+    runVelocityVerletStiffnessChecks()
+    runVelocityVerletDragChecks()
+    runVelocityVerletConfigurationChecks()
+    runVelocityVerletStateChecks()
+    runVelocityVerletTimeChecks()
+    runVelocityVerletHalfKickChecks()
+    runVelocityVerletDriftChecks()
+    runVelocityVerletIntegrationChecks()
+    runSpringLogicalCompletionChecks()
+    runVelocityVerletMotionThresholdChecks()
+    runVelocityVerletIdleChecks()
+    await runSpringAnimationOwnershipChecks()
+    await runAnimationDescriptorFactoryChainChecks()
+    await runCursorAnimationStorageResetChecks()
+    await runCursorScootAnimationResetChecks()
+    await runCursorScootResetFieldOrderChecks()
+    await runCursorAppMonitorEventChecks()
+    await runConcreteCursorPressChecks()
+    await runCursorOrderOutChecks()
+    await runAnimationTransactionExecutionChecks()
+    await runAnimationCoordinatorRegistrationChecks()
+    await runInterpolatableAnimationOwnershipChecks()
+    await runBezierAnimationOwnershipChecks()
+    runImmediateAnimationRegistrationChecks()
+    await runAnimationDriverActivationChecks()
+    runAnimationDriverFrameChecks()
+    runBezierParameterResolutionChecks()
+    runBezierKernelCompositionChecks()
+    runBezierSolverChecks()
+    runBezierPolynomialChecks()
+    runBezierProjectionChecks()
+    runAnimationInitialCaptureChecks()
+    runAnimationTargetChangeChecks()
+    try runCoreGraphicsRepresentationChecks()
+    try runSIMDVectorRepresentationChecks()
+    try runSIMDValueRoundTripChecks()
+    runFloatingPointAlmostEqualChecks()
+    runSIMD1StorageChecks()
+    runFloatVectorLengthChecks()
+    runDoubleVectorLengthChecks()
     await runAnimationDriverContractChecks()
     runInterpolatableAnimationValueChangeChecks()
     runInterpolatableAnimationFinishChecks()
@@ -3799,6 +3952,81 @@ func runProviderClickChecks() async throws {
     runAnimationStateStopCompositionChecks()
     runInterpolatableAnimationStopChecks()
     runCursorWindowResetChecks()
+    runCursorWindowOcclusionChecks()
+    runCursorHotspotScreenPointChecks()
+    runCursorMotionAngleChecks()
+    runCursorCubicPathChecks()
+    runCursorStraightPathChecks()
+    runCursorPathSeedChecks()
+    runCursorPathCandidateChecks()
+    runCursorPathMetricChecks()
+    runCursorPathScoreChecks()
+    runCursorPathPlannerChecks()
+    await runCursorProgressVelocityChecks()
+    await runCursorProgressMotionFrameChecks()
+    await runCursorProgressAnimationPreparationChecks()
+    runCursorSpringResponseChecks()
+    await runCursorProgressEventBindingChecks()
+    await runCursorDrivenProgressChecks()
+    await runCursorInitialMotionAngleChecks()
+    await runCursorScootGeometryChecks()
+    await runCursorScootPreparationChecks()
+    await runCursorScootFinishChecks()
+    runCursorScootAxisGeometryChecks()
+    runCursorScootShapeTargetChecks()
+    await runCursorScootStretchAnimationChecks()
+    await runCursorScootTiltAnimationChecks()
+    await runCursorScootAngleSpringChecks()
+    await runCursorScootFrameChecks()
+    await runCursorDrivenScootChecks()
+    await runCursorMotionStartupChecks()
+    await runHostedPetLocationChecks()
+    await runCursorImmediateMoveChecks()
+    runCursorMoveWindowHitTestChecks()
+    runCursorMoveAnimationDecisionChecks()
+    await runCursorAnimatedAppearanceChecks()
+    await runCursorWindowMoveGeometryChecks()
+    await runCursorWindowMoveChecks()
+    await runCursorOwnerWindowMoveChecks()
+    await runCursorOwnerMoveChecks()
+    await runAppControllerVirtualCursorChecks()
+    try await runElementCursorPositionPreparationChecks()
+    try runUIElementScrollPlanChecks()
+    runScrollVisibilityConditionChecks()
+    runScrollBarPositionChecks()
+    try runScrollBarValueWritingChecks()
+    try runScrollBarPositionApplicationChecks()
+    runScrollContentFrameChecks()
+    try runScrollFrameAdjustmentChecks()
+    try runAXNumberValueChecks()
+    try await runScrollingClickablePointCompositionChecks()
+    try await runElementPositionCompositionChecks()
+    runApplicationWindowStorageChecks()
+    try runSystemSelectionStorageChecks()
+    runAXWindowDescriptionResolutionChecks()
+    runAXWindowDescriptionFallbackChecks()
+    runTreeInvalidationMonitorChecks()
+    try runRefetchableElementResolutionChecks()
+    runRefetchableElementMatchingChecks()
+    try runRefetchableElementRecoveryChecks()
+    try runRefetchableUIElementStorageChecks()
+    runApplicationAXPrimaryWindowChecks()
+    try runFocusedUIElementContextStorageChecks()
+    try runApplicationFocusedContextChecks()
+    runApplicationBundleWebShapeChecks()
+    try runSelectionCaptureContextChecks()
+    runNativeTransformationContextChecks()
+    runSelectionExtractionFocusChecks()
+    runUIElementSelectedRangesChecks()
+    runUIElementTreeBuildTraversalChecks()
+    runVisibleChildrenThresholdChecks()
+    await runCursorPathBoundsChecks()
+    runMovingCursorAssociationChecks()
+    runCursorObservedStateChecks()
+    runCursorBlurFilterResetChecks()
+    await runCursorFadeInPhaseChecks()
+    runLayerFilterPropertyChecks()
+    runFilterMethodSelectorChecks()
     runCursorMotionAnimationResetChecks()
     runCursorWindowVisibilityChecks()
     runCursorCorrespondingWindowChecks()
@@ -5830,6 +6058,26 @@ private func runApplicationClickFocusCompositionChecks() async throws {
         checkEqual(application(flag).isCatalystApplication(reportError: { _ in unexpectedFailure() }), flag)
     }
     let app = application(false)
+    let protocolTarget: any UIElementProtocol = RefetchReconstructionProbe(
+        element: AXUIElementCreateApplication(2147480021), reconstructed: false)
+    var selectionEnvironment = UIElementActionEnvironment.system
+    selectionEnvironment.supported = { _ in unexpectedFailure() }
+    selectionEnvironment.settable = { _, _ in unexpectedFailure() }
+    selectionEnvironment.read = { _, _ in unexpectedFailure() }
+    checkFalse(protocolTarget.clickingMayCauseSelection(transaction: nil,
+        environment: selectionEnvironment, reportError: { _ in unexpectedFailure() }))
+    var protocolProbes = 0
+    let protocolActive = try await (app as any UIElementProtocol).prepareSyntheticClickFocus(
+        element: protocolTarget, insideWebView: false, clickingByCoordinate: false,
+        hasHeldKey: false, window: nil, enforcer: nil,
+        applicationIsActive: { protocolProbes += 1; return false },
+        reportError: { _ in unexpectedFailure() }, send: { _ in unexpectedFailure() })
+    checkFalse(protocolActive)
+    try await (app as any UIElementProtocol).prepareAccessibilityClickFocus(
+        element: protocolTarget, window: nil, enforcer: nil,
+        probeApplicationIsActive: { protocolProbes += 1 },
+        reportError: { _ in unexpectedFailure() }, send: { _ in unexpectedFailure() })
+    checkEqual(protocolProbes, 2)
     var probes = 0
     let active = try await app.prepareSyntheticClickFocus(element: nil, insideWebView: false,
         clickingByCoordinate: true, hasHeldKey: false, window: nil, enforcer: nil,
@@ -6801,6 +7049,17 @@ private func runUIElementDescendantChecks() {
 
 
 private func runAXEnablementApplicationGuardChecks() {
+    // Exercise the concrete synchronous application wrapper without touching a
+    // real application or the production MainActor singleton. An absent app
+    // must exit before acquiring/releasing or reporting initialization.
+    let missingApp = ApplicationUIElement(element: AXUIElementCreateApplication(2147480019))
+    let tracker = AXEnablementAssertionTracker<NSRunningApplication>(
+        reportFirstAcquisition: { _, _ in unexpectedFailure() },
+        reportMissingRelease: { _ in unexpectedFailure() })
+    let assertion = missingApp.enableAccessibilityIfNeeded(window: nil, for: .fullUIContext,
+        tracker: tracker, reportError: { _ in unexpectedFailure() },
+        reportInitialized: { _ in unexpectedFailure() }, reportRelease: { _ in unexpectedFailure() })
+    checkTrue(assertion == nil)
     enum Failure: Error { case missingPID }
     for missing in 0...3 {
         var trace: [String] = []
@@ -8217,4 +8476,6634 @@ private func runInterpolatableAnimationValueChangeChecks() {
     driver.isActive = true; driver.stop()
     precondition(driver.isActive)
     driver.frameCallback = nil
+}
+
+
+private func runDoubleVectorLengthChecks() {
+    precondition(Double.length(SIMD2(3.0, 4.0)) == 5)
+    precondition(Double.lengthSquared(SIMD3(2.0, 3.0, 6.0)) == 49)
+    precondition(Double.length(SIMD4(1.0, 2.0, 2.0, 4.0)) == 5)
+    let eight = SIMD8<Double>(1, 2, 3, 4, 5, 6, 7, 8)
+    precondition(Double.lengthSquared(eight) == 204)
+    precondition(Double.length(eight) == Double(204).squareRoot())
+    // Native is a squared-vector reduction, not overflow-safe hypot.
+    precondition(Double.length(SIMD2(Double.greatestFiniteMagnitude, 0)).isInfinite)
+    precondition(Double.lengthSquared(SIMD4<Double>(.nan, 0, 0, 0)).isNaN)
+    precondition(Double.length(SIMD8<Double>(repeating: 0)) == 0)
+    precondition(Double.lengthSquared(SIMD16<Double>(repeating: 1)) == 16)
+    precondition(Double.length(SIMD32<Double>(repeating: 1)) == Double(Float16(32).squareRoot()))
+    var narrow16 = SIMD16<Double>(repeating: 0)
+    narrow16[0] = 1e30
+    precondition(Double.lengthSquared(narrow16).isInfinite)
+    var narrow32 = SIMD32<Double>(repeating: 0)
+    narrow32[0] = 1000
+    precondition(Double.lengthSquared(narrow32).isInfinite)
+    narrow32[0] = 1; narrow32[1] = 1
+    precondition(Double.length(narrow32) == 1.4140625) // sqrt rounded in half before widening
+    narrow32[0] = .nan
+    precondition(Double.lengthSquared(narrow32).isNaN)
+
+}
+
+
+private func runFloatVectorLengthChecks() {
+    precondition(Float.length(SIMD2<Float>(3, 4)) == 5)
+    precondition(Float.lengthSquared(SIMD3<Float>(2, 3, 6)) == 49)
+    precondition(Float.length(SIMD4<Float>(1, 2, 2, 4)) == 5)
+    precondition(Float.lengthSquared(SIMD8<Float>(1, 2, 3, 4, 5, 6, 7, 8)) == 204)
+    precondition(Float.length(SIMD16<Float>(repeating: 1)) == 4)
+    var half = SIMD32<Float>(repeating: 0)
+    half[0] = 1000
+    precondition(Float.lengthSquared(half).isInfinite)
+    half[0] = 1; half[1] = 1
+    precondition(Float.length(half) == 1.4140625)
+    half[0] = .nan
+    precondition(Float.lengthSquared(half).isNaN)
+    precondition(Float.length(SIMD2<Float>(.greatestFiniteMagnitude, 0)).isInfinite)
+}
+
+
+private func runSIMD1StorageChecks() {
+    var value = SIMD1<Double>(3)
+    precondition(value.scalarCount == 1 && value.storage.scalarCount == 2)
+    precondition(value[0] == 3 && value.storage[1] == 0)
+    value[0] += 2
+    precondition(value[0] == 5)
+    // Native delegates subscript to two-lane storage; preserve the second lane.
+    value[1] = 99
+    precondition(value.storage[1] == 99)
+    let sameLogicalValue = SIMD1<Double>(5)
+    precondition(value == sameLogicalValue)
+    var copy = value
+    copy.storage[0] = 8
+    precondition(value[0] == 5 && copy[0] == 8)
+    precondition(Array(value.indices) == [0])
+    precondition(SIMD1<Int32>()[0] == 0)
+    precondition(SIMD1<Float>(repeating: 7)[0] == 7)
+}
+
+
+private func runFloatingPointAlmostEqualChecks() {
+    precondition(1.0.isAlmostEqual(to: 1.001, tolerance: 0.01))
+    precondition(!1.0.isAlmostEqual(to: 2, tolerance: 0.5)) // strict boundary
+    precondition(!1.0.isAlmostEqual(to: 1, tolerance: 0))
+    precondition(Double.infinity.isAlmostEqual(to: .infinity, tolerance: 0))
+    precondition(!Double.infinity.isAlmostEqual(to: -.infinity, tolerance: 1))
+    precondition(!Double.nan.isAlmostEqual(to: .nan, tolerance: 1))
+    precondition(Double.infinity.isAlmostEqual(to: .greatestFiniteMagnitude, tolerance: 0.01))
+    precondition(Double.greatestFiniteMagnitude.isAlmostEqual(to: .infinity, tolerance: 0.01))
+    precondition(!Double.infinity.isAlmostEqual(to: 0, tolerance: 0.01))
+    precondition(Double.leastNonzeroMagnitude.isAlmostEqual(to: 0, tolerance: 0.01))
+    precondition(!Float(1).isAlmostEqual(to: 1, tolerance: .nan))
+    precondition(Float16(1).isAlmostEqual(to: 1, tolerance: 0.01))
+}
+
+
+private func runSIMDValueRoundTripChecks() throws {
+    var value = SIMDValue<Double>(wrappedValue: 3)
+    precondition(value.projectedValue[0] == 3)
+    value.projectedValue[0] += 4
+    precondition(value.wrappedValue == 7)
+    value.wrappedValue += 2
+    precondition(value.projectedValue[0] == 9)
+    precondition(SIMDValue<Double>().wrappedValue == 0)
+    precondition(value > SIMDValue<Double>(wrappedValue: 8))
+    let bytes = try JSONEncoder().encode(value)
+    precondition(String(decoding: bytes, as: UTF8.self) == "9")
+    let decoded = try JSONDecoder().decode(SIMDValue<Double>.self, from: bytes)
+    precondition(decoded == value)
+    do {
+        _ = try JSONDecoder().decode(SIMDValue<Double>.self, from: Data("{}".utf8))
+        preconditionFailure("SIMDValue accepted a keyed object for Double")
+    } catch is DecodingError { }
+    struct Normalized: SIMDRepresentable {
+        typealias SIMDType = SIMD1<Double>
+        var number: Double
+        init(_ representation: SIMDType) { number = representation[0].magnitude }
+        func simdRepresentation() -> SIMDType { SIMDType(number) }
+        static var zero: Self { Self(SIMDType(0)) }
+    }
+    let left = SIMDValue<Normalized>(simdValue: SIMD1(-2.0))
+    let right = SIMDValue<Normalized>(simdValue: SIMD1(2.0))
+    precondition(left.projectedValue != right.projectedValue)
+    precondition(left == right) // Compare reconstructed Value, not vector storage.
+    let scalar = SIMD1<Double>(-3)
+    precondition(scalar.magnitude() == 3 && scalar.magnitudeSquared() == 9)
+    precondition(SIMD1<Double>(1).isAlmostEqual(to: SIMD1(2), tolerance: 1))
+    precondition(!(SIMD1<Double>(1) < SIMD1(1)))
+    precondition(Float(3).simdRepresentation()[0] == 3)
+}
+
+
+private func runSIMDVectorRepresentationChecks() throws {
+    precondition(SIMD2<Double>(3, 4).magnitude() == 5)
+    precondition(SIMD3<Float>(2, 3, 6).magnitudeSquared() == 49)
+    precondition(SIMD4<Double>(1, 2, 2, 4).magnitude() == 5)
+    precondition(SIMD8<Float>(repeating: 1).magnitudeSquared() == 8)
+    precondition(SIMD16<Double>(repeating: 1).magnitude() == 4)
+    precondition(SIMD32<Float>(repeating: 1).magnitudeSquared() == 32)
+    precondition(SIMD2<Double>(1, 2) < SIMD2(2, 3))
+    precondition(!(SIMD2<Double>(1, 3) < SIMD2(2, 2)))
+    precondition(!(SIMD2<Double>(1, 2) < SIMD2(1, 3)))
+    precondition(SIMD2<Double>(1, 2).isAlmostEqual(to: SIMD2(2, 3), tolerance: 1))
+    // Whole-vector max chooses one delta; preserve source's asymmetric mixed-sign result.
+    precondition(!SIMD2<Double>(1, -100).isAlmostEqual(to: .zero, tolerance: 1))
+    precondition(SIMD2<Double>(-1, 100).isAlmostEqual(to: .zero, tolerance: 1))
+    precondition(!SIMD2<Double>(.infinity, 0).isAlmostEqual(to: SIMD2(.infinity, 0), tolerance: 1))
+    var wrapped = SIMDValue<SIMD2<Double>>(wrappedValue: SIMD2(1, 2))
+    wrapped.projectedValue[1] = 4
+    precondition(wrapped.wrappedValue == SIMD2(1, 4))
+    let encoded = try JSONEncoder().encode(wrapped)
+    let decoded = try JSONDecoder().decode(SIMDValue<SIMD2<Double>>.self, from: encoded)
+    precondition(decoded == wrapped)
+}
+
+
+private func runCoreGraphicsRepresentationChecks() throws {
+    precondition(CGFloat(-3).simdRepresentation()[0] == -3)
+    precondition(CGFloat(SIMD1<Double>(4)) == 4)
+    let point = CGPoint(x: -7, y: 11)
+    precondition(CGPoint(point.simdRepresentation()) == point)
+    let size = CGSize(width: -3, height: 8)
+    precondition(CGSize(size.simdRepresentation()) == size)
+    let rect = CGRect(x: -1, y: 2, width: -3, height: 4)
+    let lanes = rect.simdRepresentation()
+    precondition(lanes == SIMD4(-1.0, 2, -3, 4))
+    precondition(CGRect(lanes) == rect)
+    var wrapped = SIMDValue<CGPoint>(wrappedValue: point)
+    wrapped.projectedValue[0] += 2
+    precondition(wrapped.wrappedValue == CGPoint(x: -5, y: 11))
+    let encoded = try JSONEncoder().encode(wrapped)
+    let decoded = try JSONDecoder().decode(SIMDValue<CGPoint>.self, from: encoded)
+    precondition(decoded == wrapped)
+    precondition(CGPoint(x: 1000, y: 2000).isAlmostEqual(to: CGPoint(x: 1001, y: 2001), tolerance: 0.01))
+    precondition(!CGPoint(x: 1, y: 1).isAlmostEqual(to: CGPoint(x: 1, y: 1), tolerance: 0))
+    precondition(CGPoint(x: CGFloat.infinity, y: 1).isAlmostEqual(to: CGPoint(x: CGFloat.infinity, y: 1), tolerance: 0.01))
+}
+
+
+private func runAnimationTargetChangeChecks() {
+    for initial in [AnimationState.ready, .retargeted, .running, .ended] {
+        var target = SIMDValue<CGPoint>(wrappedValue: CGPoint(x: 1, y: 2))
+        var current = initial
+        var events: [String] = []
+        changeInterpolatableAnimationTarget(readTarget: { events.append("read"); return target.wrappedValue },
+            mutate: { events.append("write"); target.wrappedValue = CGPoint(x: 3, y: 4) },
+            state: { current }, setState: { current = $0; events.append("state") },
+            handler: { events.append("handler"); return { event in
+                guard case let .retargeted(from, to) = event else { preconditionFailure() }
+                precondition(from == CGPoint(x: 1, y: 2) && to == CGPoint(x: 3, y: 4))
+                events.append("event")
+            } })
+        if initial == .running {
+            precondition(current == .retargeted)
+            precondition(events == ["read", "write", "read", "state", "handler", "read", "event"])
+        } else { precondition(events == ["read", "write"] && current == initial) }
+    }
+    var target = 1
+    var current = AnimationState.running
+    var called = false
+    changeInterpolatableAnimationTarget(readTarget: { target }, mutate: { target = 2 },
+        state: { current }, setState: { current = $0; target = 3 },
+        handler: { { event in
+            guard case let .retargeted(from, to) = event else { preconditionFailure() }
+            precondition(from == 1 && to == 3); called = true
+        } })
+    precondition(called)
+    changeInterpolatableAnimationTarget(readTarget: { 1 }, mutate: {}, state: { .running },
+        setState: { _ in preconditionFailure("Unchanged target retargeted") },
+        handler: { preconditionFailure("Unchanged target read handler") })
+}
+
+
+private func runAnimationInitialCaptureChecks() {
+    var current = SIMDValue<CGPoint>(wrappedValue: CGPoint(x: 3, y: 4))
+    var initial = SIMDValue<CGPoint>()
+    var start: Double?
+    var state = AnimationState.ready
+    var events: [String] = []
+    func tick(_ timestamp: Double) {
+        performInterpolatableAnimationTick(with: AnimationUpdate(timestamp: timestamp, duration: 1),
+            state: { state }, initialize: { time in
+                startInterpolatableAnimation(at: time,
+                    setStartTime: { start = $0; events.append("time") },
+                    currentValue: { precondition(start == time); events.append("read"); return current.wrappedValue },
+                    setInitialValue: { initial.wrappedValue = $0; events.append("initial") })
+            }, setState: { state = $0; events.append("state") },
+            interpolate: { _ -> SIMD2<Double>? in current.projectedValue },
+            applyValue: { current.projectedValue = $0 }, finish: { preconditionFailure() })
+    }
+    tick(5)
+    precondition(start == 5 && initial.wrappedValue == CGPoint(x: 3, y: 4))
+    current.wrappedValue = CGPoint(x: 8, y: 9)
+    tick(6)
+    precondition(start == 5 && initial.wrappedValue == CGPoint(x: 3, y: 4))
+    state = .retargeted
+    tick(7)
+    precondition(start == 7 && initial.wrappedValue == CGPoint(x: 8, y: 9))
+    precondition(events == ["time", "read", "initial", "state", "state", "time", "read", "initial", "state"])
+}
+
+
+private func runBezierProjectionChecks() {
+    precondition(bezierAnimationProgress(targetTimestamp: 5, startTime: 5, duration: 2) == 0)
+    precondition(bezierAnimationProgress(targetTimestamp: 6, startTime: 5, duration: 2) == 0.5)
+    precondition(bezierAnimationProgress(targetTimestamp: 7, startTime: 5, duration: 2) == 1)
+    precondition(bezierAnimationProgress(targetTimestamp: 8, startTime: 5, duration: 2) == nil)
+    precondition(bezierAnimationProgress(targetTimestamp: 4, startTime: 5, duration: 2) == nil)
+    precondition(bezierAnimationProgress(targetTimestamp: 6, startTime: nil, duration: 2) == nil)
+    precondition(bezierAnimationProgress(targetTimestamp: .nan, startTime: 5, duration: 2) == nil)
+    precondition(bezierAnimationProgress(targetTimestamp: .infinity, startTime: 5, duration: .infinity) == 0)
+    let result = projectBezierAnimationValue(initial: CGPoint(x: -10, y: 4).simdRepresentation(),
+        target: CGPoint(x: 10, y: 12).simdRepresentation(), factor: 0.25)
+    precondition(CGPoint(result) == CGPoint(x: -5, y: 6))
+    let scalar = projectBezierAnimationValue(initial: SIMD1<Float>(2), target: SIMD1<Float>(6), factor: 0.5)
+    precondition(scalar[0] == 4)
+    let overflow = projectBezierAnimationValue(initial: SIMD1<Double>(-.greatestFiniteMagnitude),
+        target: SIMD1<Double>(.greatestFiniteMagnitude), factor: 0)
+    precondition(overflow[0].isNaN) // Preserve subtract/multiply/add, no endpoint shortcut.
+}
+
+
+private func runBezierPolynomialChecks() {
+    let curve = BezierFunction<Double>(x1: 0.25, y1: -1, x2: 0.75, y2: 2)
+    precondition(curve.x1 == 0.25 && curve.x2 == 0.75 && curve.y1 == -1 && curve.y2 == 2)
+    for t in [0.0, 0.25, 0.5, 0.75, 1, 1.5, -0.5] {
+        let u = 1 - t
+        let expectedX = 3 * u * u * t * 0.25 + 3 * u * t * t * 0.75 + t * t * t
+        let expectedY = -3 * u * u * t + 6 * u * t * t + t * t * t
+        precondition(abs(curve.evaluateCurveX(t: t) - expectedX) < 1e-12)
+        precondition(abs(curve.evaluateCurveY(t: t) - expectedY) < 1e-12)
+    }
+    let linear = BezierFunction<Float>(x1: 0, y1: 0, x2: 1, y2: 1)
+    precondition(linear.evaluateCurveX(t: 0.5) == 0.5)
+    precondition(linear.evaluateCurveX(t: .nan).isNaN)
+}
+
+
+private func runBezierSolverChecks() {
+    let curve = BezierFunction<Double>(x1: 0.25, y1: 0.1, x2: 0.25, y2: 1)
+    for x in [0.0, 0.001, 0.1, 0.5, 0.9, 0.999, 1] {
+        let t = curve.solveForT(x: x, epsilon: 1e-8)
+        precondition(abs(curve.evaluateCurveX(t: t) - x) < 1e-8)
+        let ty = curve.solveForT(y: x, epsilon: 1e-8)
+        precondition(abs(curve.evaluateCurveY(t: ty) - x) < 1e-8)
+    }
+    // x=t^3, near zero: derivative threshold forces the native bisection path.
+    let flat = BezierFunction<Double>(x1: 0, y1: 0, x2: 0, y2: 1)
+    let t = flat.solveForT(x: 1e-7, epsilon: 1e-12)
+    precondition(abs(t - pow(1e-7, 1.0 / 3)) < 1e-7)
+    let float = BezierFunction<Float>(x1: 0.25, y1: 0.1, x2: 0.75, y2: 1)
+    let tf = float.solveForT(x: 0.3, epsilon: 1e-5)
+    precondition(abs(float.evaluateCurveX(t: tf) - 0.3) < 1e-5)
+}
+
+
+private func runBezierKernelCompositionChecks() {
+    let ease = BezierFunction<Double>.easeIn
+    precondition(ease.x1 == 0.42 && ease.y1 == 0 && ease.x2 == 1 && ease.y2 == 1)
+    precondition(abs(ease.solve(x: 0.5, epsilon: 1e-8) - 0.3153568126) < 1e-8)
+    let y = ease.solve(x: 0.3, epsilon: 1e-8)
+    precondition(abs(ease.solve(y: y, epsilon: 1e-8) - 0.3) < 1e-6)
+    let initial = CGPoint(x: 10, y: 20).simdRepresentation()
+    let target = CGPoint(x: 110, y: 220).simdRepresentation()
+    var previousX = -Double.infinity
+    for step in 0...20 {
+        let update = AnimationUpdate(timestamp: -999, duration: 0, targetTimestamp: Double(step) / 10)
+        let result = interpolateBezierAnimationValue(with: update, startTime: 0, duration: 2,
+            curve: BezierFunction<Double>.easeInOut, initial: initial, target: target)!
+        precondition(result[0] >= previousX); previousX = result[0]
+        if step == 0 { precondition(result == initial) }
+        if step == 20 { precondition(result == target) }
+    }
+    let past = AnimationUpdate(timestamp: 0, duration: 0, targetTimestamp: 2.1)
+    precondition(interpolateBezierAnimationValue(with: past, startTime: 0, duration: 2,
+        curve: BezierFunction<Double>.linear, initial: initial, target: target) == nil)
+}
+
+
+private func runBezierParameterResolutionChecks() {
+    let custom = BezierFunction<Double>(x1: 0.123456789, y1: -0.345678912,
+        x2: 0.987654321, y2: 1.23456789)
+    let parameters = BezierParameters(curve: custom, duration: 0.75)
+    let resolved = resolveBezierAnimationParameters(parameters, as: Float.self)
+    let expected = BezierFunction<Float>(x1: Float(custom.x1), y1: Float(custom.y1),
+        x2: Float(custom.x2), y2: Float(custom.y2))
+    precondition(resolved.curve == expected && resolved.duration == 0.75)
+    let curves: [BezierParameters.Curve] = [.linear, .easeIn, .easeOut, .easeInOut]
+    for curve in curves {
+        let output = resolveBezierAnimationParameters(BezierParameters(curve, duration: 2), as: Double.self)
+        let initial = SIMD1<Double>(0), target = SIMD1<Double>(100)
+        let update = AnimationUpdate(timestamp: 0, duration: 0, targetTimestamp: 1)
+        let value = interpolateBezierAnimationValue(with: update, startTime: 0,
+            duration: output.duration, curve: output.curve, initial: initial, target: target)!
+        precondition(value[0] >= 0 && value[0] <= 100)
+        if curve == .linear { precondition(abs(value[0] - 50) < 0.001) }
+    }
+    let negative = resolveBezierAnimationParameters(BezierParameters(.linear, duration: -1), as: Double.self)
+    precondition(negative.duration == -1) // Validation stays in the kernel.
+}
+
+
+private func runAnimationDriverFrameChecks() {
+    final class Item: Animation {
+        let id: UUID
+        var state: AnimationState
+        var tick: (() -> Void)?
+        init(_ id: UUID = UUID(), state: AnimationState = .ready) { self.id = id; self.state = state }
+        func stop(immediately: Bool) { state = .ended }
+        func reset() { state = .ready }
+        func performTick(with update: AnimationUpdate) { tick?() }
+    }
+    let ended = Item(state: .ended), running = Item(state: .running)
+    var values: [UUID: any Animation] = [ended.id: ended, running.id: running]
+    var events: [String] = []
+    ended.tick = { preconditionFailure("Ended animation ticked") }
+    running.tick = { events.append("tick"); running.state = .ended }
+    var callback: (() -> Void)? = { preconditionFailure("Stale invalidation callback") }
+    performAnimationDriverFrame(with: AnimationUpdate(timestamp: 1, duration: 0.1),
+        snapshot: { [ended, running] }, remove: { events.append("remove"); values.removeValue(forKey: $0) },
+        isEmpty: { values.isEmpty }, stopDriver: {
+            events.append("stop"); callback = { events.append("invalidate") }
+        }, invalidation: { callback })
+    precondition(events == ["remove", "tick", "remove", "stop", "invalidate"])
+    let first = Item(), second = Item(), newcomer = Item()
+    values = [first.id: first, second.id: second]
+    events = []
+    first.tick = {
+        events.append("first")
+        values.removeValue(forKey: second.id)
+        values[newcomer.id] = newcomer
+    }
+    second.tick = { events.append("second") }
+    newcomer.tick = { preconditionFailure("New item ticked in same frame") }
+    performAnimationDriverFrame(with: AnimationUpdate(timestamp: 2, duration: 0.1),
+        snapshot: { [first, second] }, remove: { values.removeValue(forKey: $0) },
+        isEmpty: { values.isEmpty }, stopDriver: { preconditionFailure("Nonempty driver stopped") }, invalidation: { nil })
+    precondition(events == ["first", "second"])
+    // Break test-only closure ownership, preserving the native snapshot lifetime check.
+    running.tick = nil; first.tick = nil; second.tick = nil
+}
+
+
+@MainActor private func runAnimationDriverActivationChecks() {
+    final class Owner { var frames = 0 }
+    final class Driver: AnimationDriver {
+        var starts = 0
+        override func start() {
+            precondition(frameCallback != nil)
+            starts += 1; isActive = true
+        }
+    }
+    let driver = Driver()
+    var owner: Owner? = Owner()
+    weak var lifetime = owner
+    activateAnimationDriver(driver, owner: owner!, isEmpty: { true }, frame: { target, _ in target.frames += 1 })
+    precondition(driver.starts == 0 && driver.frameCallback == nil)
+    activateAnimationDriver(driver, owner: owner!, isEmpty: { false }, frame: { target, _ in target.frames += 1 })
+    precondition(driver.starts == 1)
+    driver.frameCallback?(AnimationUpdate(timestamp: 1, duration: 0.1))
+    precondition(owner!.frames == 1)
+    activateAnimationDriver(driver, owner: owner!, isEmpty: { preconditionFailure("Active driver queried registry") },
+        frame: { _, _ in preconditionFailure("Active callback replaced") })
+    driver.frameCallback?(AnimationUpdate(timestamp: 2, duration: 0.1))
+    precondition(owner!.frames == 2 && driver.starts == 1)
+    owner = nil
+    precondition(lifetime == nil)
+    driver.frameCallback?(AnimationUpdate(timestamp: 3, duration: 0.1))
+    driver.frameCallback = nil
+}
+
+
+private func runImmediateAnimationRegistrationChecks() {
+    final class Item: Animation {
+        let id: UUID
+        let state: AnimationState
+        init(_ id: UUID, _ state: AnimationState) { self.id = id; self.state = state }
+        func stop(immediately: Bool) { preconditionFailure("Registration stopped animation") }
+        func reset() { preconditionFailure("Registration reset animation") }
+        func performTick(with update: AnimationUpdate) { preconditionFailure("Registration ticked animation") }
+    }
+    for state in [AnimationState.ready, .retargeted, .running, .ended] {
+        let id = UUID(), old = Item(UUID(), .running)
+        let item = Item(id, state)
+        var registry: [UUID: any Animation] = [id: old]
+        var events: [String] = []
+        registerImmediateAnimation(item, insert: { id, value in
+            events.append("insert"); registry[id] = value
+        }, remove: { id in events.append("remove"); registry.removeValue(forKey: id) },
+        activate: {
+            events.append("activate")
+            if state == .ended { precondition(registry[id] == nil) }
+            else { precondition((registry[id] as? Item) === item) }
+        })
+        precondition(events == [state == .ended ? "remove" : "insert", "activate"])
+    }
+}
+
+
+@MainActor private func runDelayedAnimationRegistrationChecks() async {
+    final class Owner { var calls = 0 }
+    enum ProbeError: Error { case failed }
+    var live: Owner? = Owner()
+    weak var weakOwner = live
+    var events: [String] = []
+    await resumeDelayedAnimationRegistration(sleep: { events.append("sleep") },
+        owner: { events.append("owner"); return weakOwner }, register: { target, delay in
+            precondition(delay == .zero); target.calls += 1; events.append("register")
+        })
+    precondition(events == ["sleep", "owner", "register"] && live!.calls == 1)
+    // A non-cancellation sleep error does not itself suppress registration.
+    await resumeDelayedAnimationRegistration(sleep: { throw ProbeError.failed }, owner: { weakOwner },
+        register: { target, _ in target.calls += 1 })
+    precondition(live!.calls == 2)
+    let cancelled = Task { @MainActor in
+        withUnsafeCurrentTask { $0?.cancel() }
+        await resumeDelayedAnimationRegistration(sleep: { throw CancellationError() },
+            owner: { weakOwner }, register: { _, _ in preconditionFailure("Cancelled task registered") })
+    }
+    await cancelled.value
+    await resumeDelayedAnimationRegistration(sleep: { live = nil }, owner: { weakOwner },
+        register: { _, _ in preconditionFailure("Released owner registered") })
+    precondition(weakOwner == nil)
+    final class Item: Animation {
+        let id = UUID()
+        let state = AnimationState.ready
+        func stop(immediately: Bool) { preconditionFailure("Delayed registration stopped animation") }
+        func reset() { preconditionFailure("Delayed registration reset animation") }
+        func performTick(with update: AnimationUpdate) { preconditionFailure("Delayed registration ticked animation") }
+    }
+    let scheduledOwner = Owner()
+    let item = Item()
+    let clock = ContinuousClock()
+    let start = clock.now
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        scheduleDelayedAnimationRegistration(owner: scheduledOwner, animation: item, delay: .milliseconds(1)) {
+            target, registered, delay in
+            precondition(target === scheduledOwner && (registered as? Item) === item)
+            precondition(delay == .zero && start.duration(to: clock.now) >= .milliseconds(1))
+            target.calls += 1
+            continuation.resume()
+        }
+        precondition(scheduledOwner.calls == 0)
+    }
+    precondition(scheduledOwner.calls == 1)
+}
+
+
+@MainActor private func runAnimationDriverHandlerOwnershipChecks() {
+    final class Driver: AnimationDriver {
+        var starts = 0, stops = 0
+        override func start() { starts += 1; isActive = true }
+        override func stop() { stops += 1; isActive = false }
+    }
+    final class Item: Animation {
+        let id = UUID()
+        var state = AnimationState.ready
+        var ticks = 0, stops = 0
+        var onTick: (() -> Void)?
+        func stop(immediately: Bool) { precondition(immediately); stops += 1; state = .ended }
+        func reset() { preconditionFailure("Handler reset animation") }
+        func performTick(with update: AnimationUpdate) { ticks += 1; onTick?() }
+    }
+    let driver = Driver()
+    var owner: AnimationCoordinator.AnimationDriverHandler? = .init(driver: driver)
+    weak var lifetime = owner
+    let first = Item(), second = Item()
+    var invalidations = 0
+    owner!.onInvalidation = { precondition(!driver.isActive); invalidations += 1 }
+    owner!.register(first)
+    owner!.register(second)
+    precondition(driver.starts == 1)
+    first.onTick = { first.state = .ended }
+    driver.frameCallback?(AnimationUpdate(timestamp: 1, duration: 0.1))
+    precondition(first.ticks == 1 && second.ticks == 1 && driver.stops == 0)
+    owner!.stopAnimations()
+    precondition(first.stops == 0 && second.stops == 1)
+    driver.frameCallback?(AnimationUpdate(timestamp: 2, duration: 0.1))
+    precondition(driver.stops == 1 && invalidations == 1)
+    let late = Item()
+    owner!.register(late)
+    precondition(driver.starts == 2)
+    owner = nil
+    precondition(lifetime == nil && driver.stops == 1)
+    driver.frameCallback?(AnimationUpdate(timestamp: 3, duration: 0.1))
+    precondition(late.ticks == 0 && late.stops == 0)
+    first.onTick = nil
+}
+
+
+@MainActor private func runInterpolatableAnimationOwnershipChecks() {
+    struct Tracked: SIMDRepresentable {
+        typealias SIMDType = SIMD1<Double>
+        static var trace: [String] = []
+        var number: Double
+        init(number: Double) { self.number = number }
+        init(_ vector: SIMD1<Double>) { Self.trace.append("read:\(vector[0])"); number = vector[0] }
+        func simdRepresentation() -> SIMD1<Double> { Self.trace.append("write:\(number)"); return SIMD1(number) }
+        static var zero: Self { trace.append("zero"); return Self(number: 0) }
+    }
+    Tracked.trace = []
+    let tracked = InterpolatableAnimation<Tracked>(restoredValue: Tracked(number: 2), targetValue: Tracked(number: 10))
+    precondition(Tracked.trace == ["zero", "write:0.0", "zero", "write:0.0", "zero", "write:0.0",
+        "write:2.0", "write:2.0", "read:0.0", "write:10.0"], "Conversion trace: \(Tracked.trace)")
+    precondition(tracked.value.number == 2 && tracked.initialValue.number == 2 && tracked.targetValue.number == 10)
+    final class Projection: InterpolatableAnimation<Double> {
+        var next: SIMD1<Double>?
+        override func interpolate(with update: AnimationUpdate) -> SIMD1<Double>? { next }
+    }
+    // Native projected setter bypasses the wrapped target observer.
+    let projectedTarget = Projection(restoredValue: 0, targetValue: 1)
+    projectedTarget.state = .running
+    var targetEvents = 0
+    projectedTarget.eventHandler = { _ in targetEvents += 1 }
+    projectedTarget.$targetValue = SIMD1(2)
+    precondition(projectedTarget.targetValue == 2 && projectedTarget.state == .running && targetEvents == 0)
+    projectedTarget.$targetValue[0] = 3
+    precondition(projectedTarget.targetValue == 3 && projectedTarget.state == .running && targetEvents == 0)
+    projectedTarget.targetValue = 4
+    precondition(projectedTarget.state == .retargeted && targetEvents == 1)
+    projectedTarget.eventHandler = nil
+    let item = Projection(restoredValue: 2, targetValue: 10)
+    var events: [String] = []
+    item.eventHandler = { event in
+        switch event {
+        case let .valueChanged(old, new): events.append("value:\(old):\(new)")
+        case let .finished(value):
+            precondition(item.state == .running)
+            events.append("finished:\(value)")
+        case let .retargeted(old, new):
+            precondition(item.state == .retargeted)
+            events.append("target:\(old):\(new)")
+        }
+    }
+    item.next = SIMD1(4)
+    item.performTick(with: AnimationUpdate(timestamp: 1, duration: 0.1))
+    precondition(item.initialValue == 2 && item.startTime == 1 && item.value == 4)
+    item.targetValue = 20
+    precondition(item.state == .retargeted)
+    item.next = SIMD1(8)
+    item.performTick(with: AnimationUpdate(timestamp: 2, duration: 0.1))
+    precondition(item.initialValue == 4 && item.startTime == 2)
+    item.next = nil
+    item.performTick(with: AnimationUpdate(timestamp: 3, duration: 0.1))
+    precondition(item.value == 20 && item.state == .ended)
+    precondition(events == ["value:2.0:4.0", "target:10.0:20.0", "value:4.0:8.0", "value:8.0:20.0", "finished:20.0"])
+    item.reset()
+    precondition(item.state == .ready && item.startTime == nil && item.value == 20)
+    item.eventHandler = nil
+    let base = InterpolatableAnimation<Double>(restoredValue: 1, targetValue: 3)
+    base.performTick(with: AnimationUpdate(timestamp: 0, duration: 0.1))
+    precondition(base.value == 3 && base.state == .ended)
+}
+
+
+@MainActor private func runBezierAnimationOwnershipChecks() {
+    let item = BezierAnimation<CGPoint>(BezierParameters(.linear, duration: 1),
+        initialValue: CGPoint(x: 10, y: 20), targetValue: CGPoint(x: 110, y: 220))
+    precondition(item.value == CGPoint(x: 10, y: 20) && item.initialValue == item.value)
+    precondition(item.state == .ready && item.startTime == nil)
+    var values: [CGPoint] = []
+    var finished = 0
+    item.eventHandler = { event in
+        switch event {
+        case let .valueChanged(_, new): values.append(new)
+        case let .finished(value):
+            precondition(value == item.targetValue && item.state == .running)
+            finished += 1
+        case .retargeted: break
+        }
+    }
+    item.performTick(with: AnimationUpdate(timestamp: 0, duration: 0, targetTimestamp: 0))
+    item.performTick(with: AnimationUpdate(timestamp: 0.5, duration: 0, targetTimestamp: 0.5))
+    precondition(abs(item.value.x - 60) < 0.001 && abs(item.value.y - 120) < 0.001)
+    item.performTick(with: AnimationUpdate(timestamp: 1, duration: 0, targetTimestamp: 1))
+    precondition(item.state == .running && finished == 0)
+    item.performTick(with: AnimationUpdate(timestamp: 1.1, duration: 0, targetTimestamp: 1.1))
+    precondition(item.state == .ended && finished == 1 && item.value == item.targetValue)
+    precondition(values.count == 2)
+    item.eventHandler = nil
+    let updated = BezierAnimation<Double>(BezierParameters(.linear, duration: 1), initialValue: 0, targetValue: 100)
+    updated.start(at: 0)
+    let half = AnimationUpdate(timestamp: 0.5, duration: 0)
+    precondition(abs(updated.interpolate(with: half)![0] - 50) < 0.001)
+    precondition(!updated.updateParameters(.spring(SpringParameters(response: 0.5, dampingFraction: 0.7))))
+    precondition(abs(updated.interpolate(with: half)![0] - 50) < 0.001)
+    precondition(updated.updateParameters(.bezier(BezierParameters(.linear, duration: 2))))
+    precondition(updated.startTime == 0 && updated.state == .ready && updated.value == 0)
+    precondition(abs(updated.interpolate(with: half)![0] - 25) < 0.01)
+    let base = InterpolatableAnimation<Double>(restoredValue: 0, targetValue: 1)
+    precondition(!base.updateParameters(.bezier(BezierParameters(.linear, duration: 1))))
+    precondition(SpringParameters(stiffness: 4, dampingFraction: 0.5).response == Double.pi)
+    precondition(SpringParameters(stiffness: .infinity, dampingFraction: 0).response == 0)
+    precondition(SpringParameters(stiffness: .nan, dampingFraction: 0).response == 0)
+    precondition(SpringParameters(stiffness: -1, dampingFraction: 0).response.isNaN)
+    precondition(SpringParameters(stiffness: 0, dampingFraction: 0).response == .infinity)
+}
+
+
+@MainActor private func runAnimationCoordinatorDriverCacheChecks() {
+    final class Source: AnimationDriverSource {
+        var factories = 0
+        func makeAnimationDriver() -> AnimationDriver { factories += 1; return AnimationDriver() }
+    }
+    final class Item: Animation {
+        let id = UUID()
+        var state = AnimationState.ready
+        var stops = 0
+        func stop(immediately: Bool) { precondition(immediately); stops += 1; state = .ended }
+        func reset() {}
+        func performTick(with update: AnimationUpdate) {}
+    }
+    var coordinator: AnimationCoordinator? = AnimationCoordinator()
+    let source = Source(), other = Source()
+    let first = coordinator!.handler(for: source)
+    precondition(coordinator!.handler(for: source) === first && source.factories == 1)
+    precondition(coordinator!.handler(for: other) !== first && other.factories == 1)
+    let item = Item()
+    first.register(item)
+    coordinator!.remove(driverSource: source)
+    precondition(item.stops == 1)
+    let replacement = coordinator!.handler(for: source)
+    precondition(replacement !== first && source.factories == 2)
+    // Old callback removes the current key, as in the native callback body.
+    first.onInvalidation?()
+    precondition(coordinator!.handler(for: source) !== replacement && source.factories == 3)
+    weak var lifetime = coordinator
+    coordinator = nil
+    precondition(lifetime == nil)
+    replacement.onInvalidation?()
+    var retainedSource: Source? = Source()
+    weak var sourceLifetime = retainedSource
+    var retainedHandler: AnimationCoordinator.AnimationDriverHandler? = AnimationCoordinator().handler(for: retainedSource!)
+    retainedSource = nil
+    precondition(sourceLifetime != nil)
+    retainedHandler = nil
+    precondition(sourceLifetime == nil)
+    _ = retainedHandler
+}
+
+
+private func runAnimationTransactionStorageChecks() {
+    final class Source: AnimationDriverSource {
+        func makeAnimationDriver() -> AnimationDriver { AnimationDriver() }
+    }
+    precondition(Transaction.Priority.low.rawValue == 250)
+    precondition(Transaction.Priority.default.rawValue == 500)
+    precondition(Transaction.Priority.high.rawValue == 750)
+    precondition(Transaction.Priority.required.rawValue == 1000)
+    precondition(Transaction.Priority(-1) < .low && Transaction.Priority.high < .required)
+    var source: Source? = Source()
+    weak var lifetime = source
+    var calls: [AnimationState] = []
+    var transaction = Transaction(driverSource: source!, descriptor: .bezier(BezierParameters(.linear, duration: 2)),
+        priority: .high, delay: .milliseconds(25), completion: { calls.append($0) })
+    let copy = transaction
+    precondition(transaction.id == copy.id && transaction.driverSource === source)
+    precondition(transaction.descriptor == .bezier(BezierParameters(.linear, duration: 2)))
+    transaction.priority = .required
+    transaction.delay = .zero
+    transaction.completion?(.running)
+    precondition(copy.priority == .high && copy.delay == .milliseconds(25) && calls == [.running])
+    let other = Transaction(driverSource: source!, descriptor: nil, priority: .default, delay: .zero, completion: nil)
+    precondition(other.id != transaction.id && other.descriptor == nil)
+    source = nil
+    precondition(lifetime == nil) // Do not dereference an expired unowned source.
+    withExtendedLifetime((transaction, copy, other)) {}
+}
+
+
+@MainActor private func runAnimationTransactionExecutionChecks() {
+    final class Source: AnimationDriverSource {
+        func makeAnimationDriver() -> AnimationDriver { AnimationDriver() }
+    }
+    enum Failure: Error { case expected }
+    let source = Source()
+    let outer = Transaction(driverSource: source, descriptor: nil, priority: .default, delay: .zero, completion: nil)
+    let inner = Transaction(driverSource: source, descriptor: nil, priority: .high, delay: .zero, completion: nil)
+    var stack: [Transaction] = []
+    var registered: [UUID] = []
+    func execute<Result>(_ transaction: Transaction, _ body: () throws -> Result) rethrows -> Result {
+        try performAnimationTransaction(transaction, storeCompletion: { registered.append($0.id) },
+            append: { stack.append($0) }, removeLast: { stack.removeLast() }, body: body)
+    }
+    let result = execute(outer) {
+        precondition(stack.map(\.id) == [outer.id])
+        let nested = execute(inner) { precondition(stack.map(\.id) == [outer.id, inner.id]); return 7 }
+        precondition(stack.map(\.id) == [outer.id])
+        return nested + 1
+    }
+    precondition(result == 8 && stack.isEmpty && registered == [outer.id, inner.id])
+    do {
+        let _: Int = try execute(outer) { throw Failure.expected }
+        preconditionFailure("Throwing transaction returned")
+    } catch Failure.expected {} catch { preconditionFailure("Wrong error") }
+    precondition(stack.map(\.id) == [outer.id])
+    // Successful outer execution pops the live last entry, even when an inner
+    // failure was caught by its body: preserve the source's literal removeLast.
+    stack.removeAll()
+    execute(outer) {
+        do { let _: Int = try execute(inner) { throw Failure.expected } } catch {}
+    }
+    precondition(stack.map(\.id) == [outer.id])
+    precondition(outer.perform { inner.perform { 42 } } == 42)
+}
+
+
+@MainActor private func runAnimationCoordinatorRegistrationChecks() {
+    final class Driver: AnimationDriver {
+        var starts = 0
+        override func start() { starts += 1; isActive = true }
+        override func stop() { isActive = false }
+    }
+    final class Source: AnimationDriverSource {
+        let driver = Driver()
+        var factories = 0
+        func makeAnimationDriver() -> AnimationDriver { factories += 1; return driver }
+    }
+    let coordinator = AnimationCoordinator.shared
+    let outerSource = Source(), innerSource = Source(), explicitSource = Source()
+    var outerEvents: [AnimationState] = [], innerEvents: [AnimationState] = []
+    let outer = Transaction(driverSource: outerSource, descriptor: nil, priority: .required,
+        delay: .zero, completion: { outerEvents.append($0) })
+    let inner = Transaction(driverSource: innerSource, descriptor: nil, priority: .low,
+        delay: .zero, completion: { innerEvents.append($0) })
+    let noSource = InterpolatableAnimation<Double>(restoredValue: 0, targetValue: 1)
+    coordinator.register(noSource)
+    precondition(noSource.state == .ready)
+    let animation = InterpolatableAnimation<Double>(restoredValue: 0, targetValue: 1)
+    outer.perform { inner.perform { coordinator.register(animation) } }
+    precondition(innerSource.factories == 1 && outerSource.factories == 0)
+    innerSource.driver.frameCallback?(AnimationUpdate(timestamp: 0, duration: 0.1))
+    precondition(animation.state == .ended && innerEvents == [.running, .ended] && outerEvents.isEmpty)
+    // Completion is removed after ended, including for an explicit driver.
+    let explicit = InterpolatableAnimation<Double>(restoredValue: 0, targetValue: 1)
+    outer.perform { coordinator.register(explicit, driverSource: explicitSource) }
+    precondition(explicitSource.factories == 1 && outerSource.factories == 0)
+    explicitSource.driver.frameCallback?(AnimationUpdate(timestamp: 0, duration: 0.1))
+    precondition(outerEvents == [.running, .ended])
+    coordinator.remove(driverSource: innerSource)
+    coordinator.remove(driverSource: explicitSource)
+}
+
+
+private func runSpringParameterConversionChecks() {
+    precondition(SpringParameters.smooth == .smooth(duration: 0.5))
+    precondition(SpringParameters.snappy == .snappy(duration: 0.5))
+    precondition(SpringParameters.bouncy == .bouncy(duration: 0.5))
+    precondition(SpringParameters(duration: -2, bounce: 0).response == -2)
+    for (bounce, damping) in [(-2.0, Double.infinity), (-1, .infinity), (-0.5, 2), (0, 1), (0.5, 0.5), (1, 0), (2, 0)] {
+        precondition(SpringParameters(duration: 3, bounce: bounce).dampingFraction == damping)
+    }
+    precondition(SpringParameters(duration: 1, bounce: .infinity).dampingFraction == 0)
+    precondition(SpringParameters(duration: 1, bounce: -.infinity).dampingFraction == .infinity)
+    precondition(SpringParameters(duration: 1, bounce: .nan).dampingFraction.isNaN)
+    precondition(SpringParameters(duration: 1, bounce: -0.0).dampingFraction == 1)
+    precondition(SpringParameters.bouncy(duration: 2, extraBounce: 0.2).dampingFraction == 0.5)
+    precondition(SpringParameters.snappy(duration: 2, extraBounce: -0.65).dampingFraction == 2)
+}
+
+
+private func runVelocityVerletStiffnessChecks() {
+    precondition(velocityVerletStiffness(response: 2 * Double.pi) == 1)
+    precondition(velocityVerletStiffness(response: Double.infinity) == 0)
+    for response in [0.0, -0.0, -1, -Double.infinity, Double.nan] {
+        precondition(velocityVerletStiffness(response: response) == Double.infinity)
+    }
+    precondition(velocityVerletStiffness(response: Double.leastNormalMagnitude) == .infinity)
+    let response: Float = 0.5
+    let frequency = Float(6.283185307179586) / response
+    precondition(velocityVerletStiffness(response: response) == frequency * frequency)
+}
+
+
+private func runVelocityVerletDragChecks() {
+    precondition(velocityVerletDrag(dampingFraction: 0.5, stiffness: 4.0) == 2)
+    precondition(velocityVerletDrag(dampingFraction: -0.5, stiffness: 4.0) == -2)
+    precondition(velocityVerletDrag(dampingFraction: 0.0, stiffness: Double.infinity).isNaN)
+    precondition(velocityVerletDrag(dampingFraction: 1.0, stiffness: -1.0).isNaN)
+    precondition(velocityVerletDrag(dampingFraction: Double.infinity, stiffness: 0).isNaN)
+    precondition(velocityVerletDrag(dampingFraction: -1.0, stiffness: -0.0).sign == .plus)
+    let stiffness: Float = 123.25, damping: Float = 0.7
+    precondition(velocityVerletDrag(dampingFraction: damping, stiffness: stiffness) == (stiffness.squareRoot() * 2) * damping)
+}
+
+
+private func runVelocityVerletConfigurationChecks() {
+    typealias Configuration = VelocityVerletSimulation<SIMD2<Double>>.Configuration
+    let normal = Configuration(response: 0.5, dampingFraction: 0.7)
+    precondition(normal.response == 0.5 && normal.dt == 1.0 / 240 && normal.idleVelocityThreshold == 0.06)
+    precondition(normal.stiffness == velocityVerletStiffness(response: 0.5))
+    precondition(normal.drag == velocityVerletDrag(dampingFraction: 0.7, stiffness: normal.stiffness))
+    for response in [0.0, -1, Double.nan, Double.leastNormalMagnitude] {
+        let capped = Configuration(response: response, dampingFraction: 1, idleVelocityThreshold: -2)
+        precondition(capped.stiffness == 28800 && capped.idleVelocityThreshold == -2)
+        precondition(capped.drag == 28800.0.squareRoot() * 2)
+    }
+    let explicitNaN = Configuration(response: .infinity, dampingFraction: 1, idleVelocityThreshold: .nan)
+    precondition(explicitNaN.stiffness == 0 && explicitNaN.drag == 0 && explicitNaN.idleVelocityThreshold.isNaN)
+    let narrow = VelocityVerletSimulation<SIMD2<Float>>.Configuration(response: 0.7, dampingFraction: 0.3)
+    precondition(narrow.response == Float(0.7) && narrow.idleVelocityThreshold == Float(0.06))
+    precondition(narrow.stiffness == velocityVerletStiffness(response: Float(0.7)))
+}
+
+
+private func runVelocityVerletStateChecks() {
+    typealias Simulation = VelocityVerletSimulation<SIMD2<Double>>
+    let configuration = Simulation.Configuration(response: 0.5, dampingFraction: 0.7)
+    var state = Simulation(configuration: configuration, time: 12,
+        velocity: SIMD2(2, -3), force: SIMD2(5, -7))
+    let copy = state
+    state.reset()
+    precondition(state.velocity == .zero && state.force == .zero)
+    precondition(state.time == 12 && state.configuration.response == configuration.response)
+    precondition(state.configuration.dt == configuration.dt && state.configuration.drag == configuration.drag)
+    precondition(copy.velocity == SIMD2(2, -3) && copy.force == SIMD2(5, -7) && copy.time == 12)
+    state.configuration.dt = 0.25
+    precondition(copy.configuration.dt == 1.0 / 240)
+    state.reset()
+    precondition(state.configuration.dt == 0.25 && state.time == 12)
+}
+
+
+private func runVelocityVerletTimeChecks() {
+    typealias Simulation = VelocityVerletSimulation<SIMD2<Double>>
+    var config = Simulation.Configuration(response: 0.5, dampingFraction: 0.7)
+    config.dt = 0.25
+    var simulation = Simulation(configuration: config, time: 0, velocity: .zero, force: .zero)
+    var steps = 0
+    simulation.advanceTime(to: 1) { _ in steps += 1 }
+    precondition(steps == 4 && simulation.time == 1) // Exactly one-second gap is not clamped.
+    simulation.advanceTime(to: 0.5) { _ in preconditionFailure("Advanced backwards") }
+    simulation.advanceTime(to: .nan) { _ in preconditionFailure("Advanced to NaN") }
+    precondition(simulation.time == 1)
+    simulation.time = 0
+    steps = 0
+    simulation.advanceTime(to: 2) { _ in steps += 1 }
+    precondition(steps == 1 && simulation.time == (2 + (-1.0 / 60)) + 0.25)
+    simulation.time = 0
+    steps = 0
+    simulation.advanceTime(to: 0.2) { state in steps += 1; state.configuration.dt = 0.125 }
+    precondition(steps == 2 && simulation.time == 0.25)
+    simulation.advanceTime(to: .infinity) { _ in preconditionFailure("Infinite target performed a step") }
+    precondition(simulation.time == .infinity)
+    simulation.time = .nan
+    simulation.advanceTime(to: 1) { _ in preconditionFailure("NaN time performed a step") }
+    precondition(simulation.time.isNaN)
+}
+
+
+private func runVelocityVerletHalfKickChecks() {
+    let next = velocityVerletHalfKick(velocity: SIMD2<Double>(1, -2), force: SIMD2(4, 8), dt: 0.5)
+    precondition(next == SIMD2(2, 0))
+    let zero = velocityVerletHalfKick(velocity: SIMD2<Double>(1, -2), force: .zero, dt: 0.25)
+    precondition(zero == SIMD2(1, -2))
+    // Halving in Double before scalar conversion avoids early Float overflow.
+    let large = velocityVerletHalfKick(velocity: SIMD2<Float>.zero, force: SIMD2(repeating: 1),
+        dt: Double(Float.greatestFiniteMagnitude) * 1.5)
+    precondition(large[0].isFinite && large[0] == Float(Double(Float.greatestFiniteMagnitude) * 0.75))
+    let invalid = velocityVerletHalfKick(velocity: SIMD2<Double>.zero, force: SIMD2(.infinity, 1), dt: 0)
+    precondition(invalid[0].isNaN && invalid[1] == 0)
+}
+
+
+private func runVelocityVerletDriftChecks() {
+    let velocity = velocityVerletHalfKick(velocity: SIMD2<Double>(1, -2), force: SIMD2(4, 8), dt: 0.5)
+    let position = velocityVerletDrift(position: SIMD2<Double>(10, 20), halfStepVelocity: velocity, dt: 0.5)
+    precondition(position == SIMD2(11, 20))
+    // With no force, two exact dyadic time intervals match one full interval.
+    let start = SIMD2<Double>(3, -5), constantVelocity = SIMD2<Double>(2, 4)
+    let first = velocityVerletDrift(position: start, halfStepVelocity: constantVelocity, dt: 0.25)
+    let second = velocityVerletDrift(position: first, halfStepVelocity: constantVelocity, dt: 0.25)
+    precondition(second == velocityVerletDrift(position: start, halfStepVelocity: constantVelocity, dt: 0.5))
+    let backwards = velocityVerletDrift(position: second, halfStepVelocity: constantVelocity, dt: -0.5)
+    precondition(backwards == start)
+    let overflow = velocityVerletDrift(position: SIMD2<Float>.zero, halfStepVelocity: SIMD2(0, 1),
+        dt: Double(Float.greatestFiniteMagnitude) * 2)
+    precondition(overflow[0].isNaN && overflow[1] == .infinity)
+}
+
+
+private func runVelocityVerletIntegrationChecks() {
+    typealias Simulation = VelocityVerletSimulation<SIMD2<Double>>
+    let config = Simulation.Configuration(response: 2 * Double.pi, dampingFraction: 0)
+    var simulation = Simulation(configuration: config, time: 0, velocity: .zero, force: .zero)
+    var position = SIMD2<Double>(1, -2)
+    simulation.step(position: &position, target: .zero)
+    precondition(position == SIMD2(1, -2) && simulation.force == SIMD2(-1, 2))
+    precondition(simulation.velocity == SIMD2(-config.dt * 0.5, config.dt))
+    precondition(simulation.time == 0)
+    // Undamped oscillator over one second: compare to its analytic trajectory,
+    // allowing fixed-step integration error rather than mirroring each stage.
+    simulation.advance(to: 1, position: &position, target: .zero)
+    precondition(abs(position[0] - cos(simulation.time)) < 0.01)
+    precondition(abs(position[1] + 2 * cos(simulation.time)) < 0.02)
+    let force = velocityVerletForce(position: SIMD2<Double>(2, 3), target: SIMD2(5, 1),
+        halfStepVelocity: SIMD2(4, -2), stiffness: 2, drag: 3)
+    precondition(force == SIMD2(-6, 2))
+    let equilibrium = velocityVerletForce(position: SIMD2<Double>(2, 3), target: SIMD2(2, 3),
+        halfStepVelocity: .zero, stiffness: 2, drag: 3)
+    precondition(equilibrium == .zero)
+}
+
+
+private func runSpringLogicalCompletionChecks() {
+    for state in [AnimationState.ready, .retargeted, .running, .ended] {
+        precondition(springAnimationIsLogicallyComplete(startTime: nil, state: state,
+            simulationTime: .nan, response: Double.nan) == (state == .ended))
+    }
+    precondition(!springAnimationIsLogicallyComplete(startTime: 2, state: .ended, simulationTime: 2.25, response: 0.5))
+    precondition(springAnimationIsLogicallyComplete(startTime: 2, state: .running, simulationTime: 2.5, response: 0.5))
+    precondition(springAnimationIsLogicallyComplete(startTime: 2, state: .ready, simulationTime: 3, response: 0.5))
+    precondition(!springAnimationIsLogicallyComplete(startTime: 2, state: .ended, simulationTime: .nan, response: 0.5))
+    precondition(!springAnimationIsLogicallyComplete(startTime: 2, state: .ended, simulationTime: 3, response: Double.nan))
+    // Original converts elapsed Double to scalar before comparison.
+    let below = 1.0 - Double(Float.ulpOfOne) / 4
+    precondition(springAnimationIsLogicallyComplete(startTime: 0, state: .running, simulationTime: below, response: Float(1)))
+    precondition(!springAnimationIsLogicallyComplete(startTime: 0, state: .running, simulationTime: below, response: Double(1)))
+}
+
+
+private func runVelocityVerletMotionThresholdChecks() {
+    precondition(!velocityVerletExceedsMotionThreshold(velocity: SIMD2<Double>.zero, force: .zero, threshold: 0))
+    precondition(!velocityVerletExceedsMotionThreshold(velocity: SIMD2<Double>(3, 4), force: .zero, threshold: 5))
+    precondition(velocityVerletExceedsMotionThreshold(velocity: SIMD2<Double>(3, 4), force: .zero, threshold: 4.9))
+    precondition(velocityVerletExceedsMotionThreshold(velocity: SIMD2<Double>.zero, force: SIMD2(3, 4), threshold: 4.9))
+    precondition(!velocityVerletExceedsMotionThreshold(velocity: SIMD2<Double>(3, 4), force: .zero, threshold: -5))
+    typealias Simulation = VelocityVerletSimulation<SIMD2<Double>>
+    let config = Simulation.Configuration(response: 1, dampingFraction: 1, idleVelocityThreshold: 5)
+    let moving = Simulation(configuration: config, time: 100, velocity: SIMD2(6, 0), force: .zero)
+    precondition(moving.exceedsMotionThreshold)
+}
+
+
+private func runVelocityVerletIdleChecks() {
+    func idle(_ position: SIMD2<Double>, _ target: SIMD2<Double>, velocity: SIMD2<Double> = .zero) -> Bool {
+        velocityVerletIsIdle(position: position, target: target, velocity: velocity, force: .zero, threshold: 0.06)
+    }
+    precondition(idle(SIMD2(9.95, 0), SIMD2(10, 0)))
+    precondition(!idle(SIMD2(9.8, 0), SIMD2(10, 0)))
+    precondition(!idle(SIMD2(10, 0), SIMD2(10, 0), velocity: SIMD2(1, 0)))
+    // Zero target makes the source's relative tolerance zero, bypassing the
+    // position rejection after motion passes. Do not invent an absolute floor.
+    precondition(idle(SIMD2(100, -100), .zero))
+    precondition(idle(SIMD2(.nan, 0), SIMD2(10, 0)))
+    precondition(idle(SIMD2(10, 0), SIMD2(.nan, 0)))
+    typealias Simulation = VelocityVerletSimulation<SIMD2<Double>>
+    let simulation = Simulation(configuration: .init(response: 1, dampingFraction: 1), time: 0,
+        velocity: .zero, force: .zero)
+    precondition(simulation.isIdle(position: SIMD2(10, 0), target: SIMD2(10, 0)))
+}
+
+
+@MainActor private func runSpringAnimationOwnershipChecks() {
+    let animation = SpringAnimation<CGPoint>(.smooth, initialValue: CGPoint(x: 10, y: 20),
+        targetValue: CGPoint(x: 100, y: 200))
+    precondition(animation.velocity == .zero && !animation.isLogicallyComplete)
+    var frames = 0, finishes = 0
+    animation.eventHandler = { event in
+        switch event {
+        case .valueChanged: frames += 1
+        case let .finished(value):
+            precondition(animation.state == .running && value == CGPoint(x: 100, y: 200))
+            finishes += 1
+        case .retargeted: break
+        }
+    }
+    for index in 0..<2400 {
+        animation.performTick(with: AnimationUpdate(timestamp: Double(index) / 240, duration: 1.0 / 240))
+        if animation.state == .ended { break }
+    }
+    precondition(animation.state == .ended && animation.value == animation.targetValue && finishes == 1 && frames > 1)
+    precondition(animation.isLogicallyComplete)
+    let time = animation.startTime
+    let velocity = animation.velocity
+    precondition(!animation.updateParameters(.bezier(BezierParameters(.linear, duration: 1))))
+    precondition(animation.updateParameters(.spring(.bouncy)))
+    precondition(animation.startTime == time && animation.velocity == velocity)
+    animation.eventHandler = nil
+    animation.reset()
+    precondition(animation.state == .ready && animation.startTime == nil && animation.velocity == .zero)
+    precondition(!animation.isLogicallyComplete)
+}
+
+
+@MainActor private func runAnimationDescriptorFactoryChainChecks() {
+    final class Driver: AnimationDriver {
+        override func start() { isActive = true }
+        override func stop() { isActive = false }
+    }
+    final class Source: AnimationDriverSource {
+        let driver = Driver()
+        func makeAnimationDriver() -> AnimationDriver { driver }
+    }
+    let descriptors: [AnimationDescriptor] = [.bezier(BezierParameters(.easeInOut, duration: 0.2)), .spring(.smooth)]
+    for (index, descriptor) in descriptors.enumerated() {
+        let source = Source()
+        let start = CGPoint(x: 10, y: 20), target = CGPoint(x: 100, y: 200)
+        let animation = descriptor.makeAnimation(from: start, to: target)
+        precondition(index == 0 ? animation is BezierAnimation<CGPoint> : animation is SpringAnimation<CGPoint>)
+        precondition(animation.value == start && animation.initialValue == start && animation.targetValue == target)
+        var states: [AnimationState] = []
+        let transaction = Transaction(driverSource: source, descriptor: descriptor, priority: .default,
+            delay: .zero, completion: { states.append($0) })
+        transaction.perform { AnimationCoordinator.shared.register(animation) }
+        precondition(source.driver.isActive)
+        for frame in 0..<2400 {
+            source.driver.frameCallback?(AnimationUpdate(timestamp: Double(frame) / 240, duration: 1.0 / 240))
+            if !source.driver.isActive { break }
+        }
+        precondition(animation.state == .ended && animation.value == target && !source.driver.isActive)
+        precondition(states == [.running, .ended])
+        AnimationCoordinator.shared.remove(driverSource: source)
+    }
+}
+
+
+@MainActor private func runCursorAnimationStorageResetChecks() {
+    final class Owner: CursorWindowAnimationStorage {
+        var cursorMotionProgressAnimation: SpringAnimation<CGFloat>?
+        var cursorScootPositionAnimation: SpringAnimation<CGPoint>?
+        var cursorScootBaseRotationAnimation: SpringAnimation<CGFloat>?
+        var cursorScootAxisAnimation: SpringAnimation<CGFloat>?
+        var cursorScootStretchAnimation: SpringAnimation<CGFloat>?
+        var cursorScootRotationAnimation: SpringAnimation<CGFloat>?
+    }
+    let owner = Owner()
+    let progress = SpringAnimation<CGFloat>(.smooth, initialValue: 0, targetValue: 1)
+    let position = SpringAnimation<CGPoint>(.smooth, initialValue: .zero, targetValue: CGPoint(x: 1, y: 2))
+    let replacement = SpringAnimation<CGPoint>(.smooth, initialValue: .zero, targetValue: CGPoint(x: 3, y: 4))
+    owner.cursorMotionProgressAnimation = progress
+    owner.cursorScootPositionAnimation = position
+    var finishes = 0
+    progress.eventHandler = { event in
+        if case .finished = event { finishes += 1; owner.cursorScootPositionAnimation = replacement }
+    }
+    replacement.eventHandler = { _ in preconditionFailure("Position callback was not cleared") }
+    owner.resetMotionAnimations()
+    precondition(progress.state == .ended && finishes == 1)
+    precondition(position.state == .ready && replacement.state == .ended)
+    precondition(owner.cursorMotionProgressAnimation == nil && owner.cursorScootPositionAnimation == nil)
+    precondition(replacement.eventHandler == nil)
+    progress.eventHandler = nil
+    owner.resetMotionAnimations()
+    precondition(finishes == 1)
+}
+
+
+@MainActor private func runCursorScootAnimationResetChecks() {
+    final class Owner { var animation: SpringAnimation<CGFloat>? }
+    final class ReleaseProbe {
+        let onRelease: () -> Void
+        init(_ onRelease: @escaping () -> Void) { self.onRelease = onRelease }
+        deinit { onRelease() }
+    }
+    let owner = Owner()
+    let original = SpringAnimation<CGFloat>(.smooth, initialValue: 0, targetValue: 1)
+    let replacement = SpringAnimation<CGFloat>(.smooth, initialValue: 0, targetValue: 2)
+    owner.animation = original
+    do {
+        let release = ReleaseProbe { owner.animation = replacement }
+        original.eventHandler = { [release] _ in
+            withExtendedLifetime(release) {}
+            preconditionFailure("Reset emitted through cleared scoot handler")
+        }
+    }
+    stopAndClearCursorScootAnimation(owner, at: \.animation)
+    precondition(original.state == .ready && replacement.state == .ended && owner.animation == nil)
+    precondition(original.eventHandler == nil)
+    stopAndClearCursorScootAnimation(owner, at: \.animation)
+}
+
+
+@MainActor private func runCursorScootResetFieldOrderChecks() {
+    final class Owner: CursorWindowResetStorage {
+        var overlayWindowLevelReasons = CursorOverlayWindowLevelReasons()
+        var cursorMotionNextInteractionTimingHandler: (() -> Void)?
+        var cursorMotionCompletionHandler: (() -> Void)?
+        var cursorMotionDidSatisfyNextInteractionTiming = true
+        var wantsToBeVisible = true
+        var correspondingWindowID: UInt32? = 17
+        var events: [String] = []
+        func setCursorWindowLevel(_ level: Int) { precondition(level == 0); events.append("level") }
+        func correspondingWindowIsPresent() -> Bool { events.append("present"); return true }
+        func updateVisibility() { events.append("visibility") }
+        var style = ComputerUseCursorStyle()
+        var cursorMotionProgressAnimation: SpringAnimation<CGFloat>?
+        var cursorScootPositionAnimation: SpringAnimation<CGPoint>?
+        var cursorScootBaseRotationAnimation: SpringAnimation<CGFloat>?
+        var cursorScootAxisAnimation: SpringAnimation<CGFloat>?
+        var cursorScootStretchAnimation: SpringAnimation<CGFloat>?
+        var cursorScootRotationAnimation: SpringAnimation<CGFloat>?
+        var motionConfiguration = ComputerUseCursorMotionConfiguration.live
+        var cursorScootBaseRotationOffset: CGFloat = 10
+        var cursorScootAxisRotation: CGFloat = 20
+        var cursorScootStretchXScale: CGFloat = 2
+        var cursorScootStretchScale: CGFloat = 3
+        var cursorScootStretchPivotX: CGFloat = 0.1
+        var cursorScootRotationOffset: CGFloat = 30
+    }
+    final class ReleaseProbe {
+        let release: () -> Void
+        init(_ release: @escaping () -> Void) { self.release = release }
+        deinit { release() }
+    }
+    let owner = Owner()
+    let axis = SpringAnimation<CGFloat>(.smooth, initialValue: 1, targetValue: 2)
+    let stretch = SpringAnimation<CGFloat>(.smooth, initialValue: 1, targetValue: 2)
+    owner.cursorScootAxisAnimation = axis
+    owner.cursorScootStretchAnimation = stretch
+    do {
+        let probe = ReleaseProbe {
+            precondition(owner.cursorScootBaseRotationOffset == 0 && owner.cursorScootAxisRotation == 20)
+        }
+        axis.eventHandler = { [probe] _ in withExtendedLifetime(probe) {} }
+    }
+    do {
+        let probe = ReleaseProbe {
+            precondition(owner.cursorScootAxisRotation == 0 && owner.cursorScootStretchXScale == 2)
+            owner.motionConfiguration.scootStretchPivotX = 0.8
+        }
+        stretch.eventHandler = { [probe] _ in withExtendedLifetime(probe) {} }
+    }
+    owner.resetScootAnimationFields()
+    precondition(axis.state == .ended && stretch.state == .ended)
+    precondition(owner.cursorScootStretchXScale == 1 && owner.cursorScootStretchScale == 1)
+    precondition(owner.cursorScootStretchPivotX == 0.8 && owner.cursorScootRotationOffset == 0)
+    precondition(owner.cursorScootAxisAnimation == nil && owner.cursorScootStretchAnimation == nil)
+    precondition(!owner.scootStyleNeedsReset { .zero })
+    precondition(owner.scootStyleNeedsReset { .degrees(1) })
+    owner.cursorScootAxisRotation = 19 // Native scalar preflight does not inspect axis rotation.
+    precondition(!owner.scootStyleNeedsReset { .zero })
+    owner.cursorScootBaseRotationOffset = 0.001
+    precondition(!owner.scootStyleNeedsReset { .zero })
+    owner.cursorScootBaseRotationOffset = CGFloat(0.001).nextUp
+    precondition(owner.scootStyleNeedsReset { preconditionFailure("Dirty scalar queried tilt") })
+    owner.cursorScootBaseRotationOffset = 0
+    owner.cursorScootAxisAnimation = axis
+    precondition(owner.scootStyleNeedsReset { preconditionFailure("Present animation queried tilt") })
+    owner.cursorScootAxisAnimation = nil
+    precondition(abs(cursorScootResetAngle(clickAngle: -44).radians) < 1e-12)
+    precondition(abs(cursorScootResetAngle(clickAngle: 360).radians + 2 * .pi) < 1e-12)
+    precondition(cursorScootResetAngle(clickAngle: .nan).radians.isNaN)
+    final class ReplacingStyle: ComputerUseCursorStyle {
+        var onAngle: (() -> Void)?
+        override var angle: Angle { didSet { onAngle?() } }
+    }
+    let firstStyle = ReplacingStyle()
+    let replacementStyle = ComputerUseCursorStyle()
+    replacementStyle.scootStretchScale = 9
+    replacementStyle.scootTiltAngle = .degrees(23)
+    firstStyle.scootStretchScale = 7
+    firstStyle.onAngle = { owner.style = replacementStyle }
+    owner.style = firstStyle
+    owner.cursorScootRotationOffset = 2
+    owner.resetScootAnimations()
+    precondition(owner.style === replacementStyle)
+    precondition(firstStyle.scootStretchScale == 7)
+    precondition(replacementStyle.scootStretchScale == 1)
+    precondition(replacementStyle.scootStretchPivotX == 0.8)
+    precondition(replacementStyle.scootTiltAngle == .zero)
+    // Clean preflight skips style writes but still restores ignored axis state.
+    owner.cursorScootAxisRotation = 19
+    replacementStyle.scootStretchScale = 9
+    owner.resetScootAnimations()
+    precondition(owner.cursorScootAxisRotation == 0)
+    precondition(replacementStyle.scootStretchScale == 9)
+    owner.overlayWindowLevelReasons.petLaunch = true
+    owner.style.velocityX = 8
+    owner.style.velocityY = 9
+    let progress = SpringAnimation<CGFloat>(.smooth, initialValue: 0, targetValue: 1)
+    owner.cursorMotionProgressAnimation = progress
+    progress.eventHandler = { event in
+        if case .finished = event { owner.events.append("motionFinished") }
+    }
+    do {
+        let release = ReleaseProbe {
+            precondition(owner.cursorScootRotationOffset == 0)
+            precondition(owner.cursorMotionDidSatisfyNextInteractionTiming)
+            owner.events.append("nextReleased")
+        }
+        owner.cursorMotionNextInteractionTimingHandler = { [release] in withExtendedLifetime(release) {} }
+    }
+    do {
+        let release = ReleaseProbe {
+            precondition(owner.cursorMotionNextInteractionTimingHandler == nil)
+            owner.events.append("completionReleased")
+        }
+        owner.cursorMotionCompletionHandler = { [release] in withExtendedLifetime(release) {} }
+    }
+    owner.resetCursorWindowState()
+    precondition(owner.events == ["level", "motionFinished", "nextReleased", "completionReleased", "present", "visibility"])
+    precondition(progress.state == .ended && owner.cursorMotionProgressAnimation == nil)
+    precondition(!owner.overlayWindowLevelReasons.petLaunch)
+    precondition(!owner.cursorMotionDidSatisfyNextInteractionTiming)
+    precondition(owner.style.velocityX == 0 && owner.style.velocityY == 0)
+    owner.events = []
+    owner.resetCursorWindowState()
+    precondition(owner.events.isEmpty)
+    func overlay(_ enabled: Bool) {
+        updateCursorAppMonitorOverlay(enabled,
+            reasons: { owner.overlayWindowLevelReasons },
+            setAppMonitorReason: { owner.overlayWindowLevelReasons.appMonitor = $0 },
+            promote: {
+                precondition(owner.overlayWindowLevelReasons.appMonitor)
+                owner.events.append("promote")
+            }, setLevel: { owner.setCursorWindowLevel($0) },
+            updateVisibility: { owner.updateVisibility() })
+    }
+    overlay(true)
+    precondition(owner.events == ["promote", "visibility"])
+    owner.events = []
+    overlay(true)
+    precondition(owner.events.isEmpty)
+    // A live pet launch owns the overlay across app deactivation.
+    owner.overlayWindowLevelReasons.petLaunch = true
+    overlay(false)
+    precondition(owner.events == ["visibility"])
+    owner.events = []
+    overlay(true)
+    precondition(owner.events == ["visibility"])
+    owner.events = []
+    owner.overlayWindowLevelReasons.petLaunch = false
+    overlay(false)
+    precondition(owner.events == ["level", "visibility"])
+}
+
+
+@MainActor private func runCursorAppMonitorEventChecks() {
+    final class Window: CursorAppMonitorWindow {
+        var isVisible = true
+        var wantsToBeVisible = false
+        var correspondingWindowID: UInt32? = 7
+        var overlays: [Bool] = []
+        var updates = 0
+        func setAppMonitorOverlay(_ enabled: Bool) { overlays.append(enabled) }
+        func updateVisibility() { updates += 1 }
+    }
+    final class Monitor: CursorAppMonitorEventStorage {
+        var appIsActive = false
+        var menusOpen = 0
+        weak var cursorWindow: (any CursorAppMonitorWindow)?
+    }
+    let monitor = Monitor()
+    var window: Window? = Window()
+    monitor.cursorWindow = window
+    func event(_ notification: AXNotification) {
+        monitor.handleCursorApplicationNotification(notification) {
+            preconditionFailure("Menu/unknown event read primary window")
+        }
+    }
+    event(.menuClosed)
+    precondition(monitor.menusOpen == -1 && window!.overlays == [false])
+    event(.menuOpened)
+    event(.menuOpened)
+    monitor.applyApplicationActiveChange(true)
+    event(.menuClosed)
+    monitor.applyApplicationActiveChange(false)
+    precondition(monitor.menusOpen == 0)
+    precondition(window!.overlays == [false, false, true, true, true, false])
+    event(.windowCreated)
+    precondition(window!.overlays.count == 6)
+    monitor.handleCursorApplicationNotification(.focusedWindowChanged) { nil }
+    precondition(window!.correspondingWindowID == 7 && window!.updates == 0)
+    struct ReadFailure: Error {}
+    monitor.handleCursorApplicationNotification(.focusedWindowChanged) { throw ReadFailure() }
+    precondition(window!.correspondingWindowID == 7)
+    window!.isVisible = false
+    monitor.handleCursorApplicationNotification(.focusedWindowChanged) { 8 }
+    precondition(window!.correspondingWindowID == 7 && !window!.wantsToBeVisible)
+    window!.isVisible = true
+    monitor.handleCursorApplicationNotification(.focusedWindowChanged) { 9 }
+    precondition(window!.correspondingWindowID == 9 && window!.wantsToBeVisible && window!.updates == 1)
+    window = nil
+    precondition(monitor.cursorWindow == nil)
+    event(.menuOpened)
+    monitor.applyApplicationActiveChange(true)
+    precondition(monitor.menusOpen == 1 && monitor.appIsActive)
+}
+
+
+private func runCursorWindowOcclusionChecks() {
+    for (numbers, shouldReorder) in [([10, 20], false), ([20, 10], true), ([10], false), ([20], false), ([10, 10, 20], false)] {
+        var events: [String] = []
+        updateCursorWindowOcclusion(isVisible: { true }, occlusionState: { 0 },
+            reasons: { CursorOverlayWindowLevelReasons() }, correspondingWindowID: { 20 },
+            windowNumbers: { numbers }, windowNumber: { 10 },
+            restoreAssociation: { precondition($0 == 20); events.append("associate") },
+            updateVisibility: { events.append("visibility") }, styleVisibilityDidChange: { events.append("style") })
+        precondition(events == (shouldReorder ? ["associate", "visibility", "style"] : ["style"]))
+    }
+    var hookCalls = 0
+    updateCursorWindowOcclusion(isVisible: { false },
+        occlusionState: { preconditionFailure("Hidden window queried occlusion") },
+        reasons: { preconditionFailure() }, correspondingWindowID: { preconditionFailure() },
+        windowNumbers: { preconditionFailure() }, windowNumber: { preconditionFailure() },
+        restoreAssociation: { _ in preconditionFailure() }, updateVisibility: { preconditionFailure() },
+        styleVisibilityDidChange: { hookCalls += 1 })
+    precondition(hookCalls == 1)
+}
+
+
+@MainActor private func runConcreteCursorPressChecks() async {
+    var writes: [Bool] = []
+    var sleeps = 0
+    do {
+        try await animateCursorPress(count: 2, isVisible: { true },
+            setPressed: { writes.append($0) }, sleep: { duration in
+                precondition(duration == .milliseconds(50)); sleeps += 1
+            })
+        precondition(writes == [true, false, true, false] && sleeps == 5)
+        try await animateCursorPress(count: -1, isVisible: { false },
+            setPressed: { _ in preconditionFailure() }, sleep: { _ in preconditionFailure() })
+        try await animateCursorPress(count: 0, isVisible: { true },
+            setPressed: { _ in preconditionFailure() }, sleep: { _ in preconditionFailure() })
+    } catch { preconditionFailure("Unexpected press error: \(error)") }
+    let firstStyle = ComputerUseCursorStyle()
+    let replacementStyle = ComputerUseCursorStyle()
+    replacementStyle.isPressed = true
+    var currentStyle = firstStyle
+    do {
+        try await animateCursorPress(count: 1, isVisible: { true },
+            setPressed: { currentStyle.isPressed = $0 }, sleep: { _ in currentStyle = replacementStyle })
+        precondition(firstStyle.isPressed && !replacementStyle.isPressed)
+    } catch { preconditionFailure("Style replacement press failed") }
+    writes = []
+    do {
+        try await animateCursorPress(count: 1, isVisible: { true },
+            setPressed: { writes.append($0) }, sleep: { _ in throw CancellationError() })
+        preconditionFailure("Press suppressed cancellation")
+    } catch is CancellationError {
+        // Native error path propagates without running the later false setter.
+        precondition(writes == [true])
+    } catch { preconditionFailure("Wrong press error") }
+}
+
+
+private func runCursorHotspotScreenPointChecks() {
+    let middle = cursorLinearMotionSample(start: .zero, target: CGPoint(x: 10, y: 0), position: CGPoint(x: 5, y: 100))
+    precondition(middle.progress == 0.5 && abs(middle.envelope - CGFloat(pow(0.5, 0.62))) < 1e-14)
+    let shifted = cursorLinearMotionSample(start: CGPoint(x: -20, y: 30), target: CGPoint(x: -10, y: 30),
+        position: CGPoint(x: -15, y: -200))
+    precondition(shifted.progress == middle.progress && shifted.envelope == middle.envelope)
+    let before = cursorLinearMotionSample(start: .zero, target: CGPoint(x: 10, y: 0), position: CGPoint(x: -1, y: 0))
+    let after = cursorLinearMotionSample(start: .zero, target: CGPoint(x: 10, y: 0), position: CGPoint(x: 11, y: 0))
+    precondition(before.progress == 0 && before.envelope == 0 && after.progress == 1 && after.envelope == 0)
+    let degenerate = cursorLinearMotionSample(start: .zero, target: CGPoint(x: 0.01, y: 0), position: .zero)
+    precondition(degenerate.progress == 1 && degenerate.envelope == 0)
+    let invalidPosition = cursorLinearMotionSample(start: .zero, target: CGPoint(x: 10, y: 0), position: CGPoint(x: CGFloat.nan, y: 0))
+    precondition(invalidPosition.progress.isNaN && invalidPosition.envelope.isNaN)
+    let invalidPath = cursorLinearMotionSample(start: .zero, target: CGPoint(x: CGFloat.nan, y: 0), position: .zero)
+    precondition(invalidPath.progress == 1 && invalidPath.envelope == 0)
+    precondition(cursorMoveNeedsTemporaryOverlay(wasVisible: false, animated: true,
+        petLocationExists: true, initialAbsolute: .zero, targetAbsolute: CGPoint(x: 0, y: 1)))
+    precondition(!cursorMoveNeedsTemporaryOverlay(wasVisible: false, animated: true,
+        petLocationExists: true, initialAbsolute: .zero, targetAbsolute: .zero))
+    precondition(!cursorMoveNeedsTemporaryOverlay(wasVisible: true, animated: true,
+        petLocationExists: true, initialAbsolute: .zero, targetAbsolute: CGPoint(x: 1, y: 1)))
+    precondition(!cursorMoveNeedsTemporaryOverlay(wasVisible: false, animated: false,
+        petLocationExists: true, initialAbsolute: .zero, targetAbsolute: CGPoint(x: 1, y: 1)))
+    precondition(!cursorMoveNeedsTemporaryOverlay(wasVisible: false, animated: true,
+        petLocationExists: false, initialAbsolute: .zero, targetAbsolute: CGPoint(x: 1, y: 1)))
+    for appMonitor in [false, true] {
+        for temporary in [false, true] {
+            var reasons = CursorOverlayWindowLevelReasons(appMonitor: appMonitor, petLaunch: temporary)
+            var calls: [String] = []
+            clearCursorMoveTemporaryOverlay(reasons: { reasons },
+                clearTemporaryReason: { reasons.petLaunch = false; calls.append("clear") },
+                setLevel: { precondition($0 == 0 && !reasons.petLaunch); calls.append("level") },
+                updateVisibility: { calls.append("visibility") })
+            precondition(calls == (temporary ? (appMonitor ? ["clear", "visibility"] : ["clear", "level", "visibility"]) : []))
+            precondition(reasons.appMonitor == appMonitor && !reasons.petLaunch)
+        }
+    }
+    for appMonitor in [false, true] {
+        for temporary in [false, true] {
+            for requested in [false, true] {
+                var reasons = CursorOverlayWindowLevelReasons(appMonitor: appMonitor, petLaunch: temporary)
+                var calls: [String] = []
+                associateCursorWindowForMove(aboveWindowID: nil, temporaryOverlay: requested,
+                    setWantsVisible: { precondition($0); calls.append("wants") },
+                    setCorrespondingWindow: { precondition($0 == nil); calls.append("window") },
+                    reasons: { calls.append("reasons"); return reasons },
+                    setTemporaryReason: { reasons.petLaunch = true; calls.append("temporary") },
+                    promote: { precondition(reasons.petLaunch); calls.append("promote") },
+                    updateVisibility: { calls.append("visibility") })
+                var expected = ["wants", "window"]
+                if requested {
+                    expected += ["reasons", "temporary"]
+                    if !appMonitor && !temporary { expected.append("promote") }
+                }
+                expected.append("visibility")
+                precondition(calls == expected && reasons.petLaunch == (temporary || requested))
+            }
+        }
+    }
+    var events: [String] = []
+    var frameReads = 0
+    var hotspotReads = 0
+    let point = cursorHotspotScreenPoint(frame: {
+        events.append("frame"); frameReads += 1
+        return frameReads == 1 ? CGRect(x: 10, y: 20, width: 40, height: 50)
+            : CGRect(x: 999, y: 999, width: 40, height: 80)
+    }, hotspot: {
+        events.append("hotspot"); hotspotReads += 1
+        return hotspotReads == 1 ? CGPoint(x: 4, y: 999) : CGPoint(x: 999, y: 6)
+    }, zeroScreenFrame: {
+        events.append("screen"); return CGRect(x: -100, y: -20, width: 500, height: 300)
+    })
+    precondition(point == CGPoint(x: 14, y: 186))
+    precondition(events == ["frame", "hotspot", "frame", "hotspot", "screen"])
+    let absent = cursorHotspotScreenPoint(frame: { CGRect(x: 10, y: 20, width: 40, height: 50) },
+        hotspot: { CGPoint(x: 4, y: 6) }, zeroScreenFrame: { nil })
+    precondition(absent == CGPoint(x: 14, y: -64))
+    let frame = CGRect(x: -110, y: 35, width: 20, height: 23)
+    let hotspot = CGPoint(x: 4, y: 6)
+    for screen in [CGRect(x: -100, y: -20, width: 500, height: 300), nil] as [CGRect?] {
+        let observed = cursorHotspotScreenPoint(frame: { frame }, hotspot: { hotspot }, zeroScreenFrame: { screen })
+        let restored = cursorMoveOrigin(for: observed, capturedFrame: frame,
+            zeroScreenFrame: { screen }, hotspot: { hotspot })
+        precondition(restored == frame.origin)
+    }
+    var moveReads: [String] = []
+    var moveHotspotReads = 0
+    let origin = cursorMoveOrigin(for: CGPoint(x: -10, y: 40), capturedFrame: frame,
+        zeroScreenFrame: { moveReads.append("screen"); return CGRect(x: 0, y: -20, width: 500, height: 300) },
+        hotspot: {
+            moveReads.append("hotspot"); moveHotspotReads += 1
+            return moveHotspotReads == 1 ? CGPoint(x: 4, y: 999) : CGPoint(x: 999, y: 6)
+        })
+    precondition(origin == CGPoint(x: -14, y: 223))
+    precondition(moveReads == ["screen", "hotspot", "hotspot"])
+    for visible in [false, true] {
+        for animated in [false, true] {
+            for previous in [nil, CGPoint(x: 50, y: 60)] as [CGPoint?] {
+                var reads: [String] = []
+                let initial = cursorMoveInitialOrigin(targetOrigin: CGPoint(x: 100, y: 200),
+                    wasVisible: visible, animated: animated, petLocation: previous,
+                    capturedWindowFrame: frame,
+                    hotspot: { reads.append("hotspot"); return hotspot },
+                    currentWindowFrame: { reads.append("frame"); return CGRect(x: 8, y: 9, width: 99, height: 99) })
+                let expected = visible ? CGPoint(x: 8, y: 9)
+                    : (animated && previous != nil ? CGPoint(x: 46, y: 43) : CGPoint(x: 100, y: 200))
+                precondition(initial == expected)
+                precondition(reads == (previous == nil ? ["frame"] : ["hotspot", "hotspot", "frame"]))
+            }
+        }
+    }
+}
+
+
+private func runCursorObservedStateChecks() {
+    var numbers = [5, 9]
+    let id = cursorObservedWindowID { numbers.removeFirst() }
+    precondition(id == 9 && numbers.isEmpty)
+    numbers = [0, 9]
+    precondition(cursorObservedWindowID { numbers.removeFirst() } == nil && numbers == [9])
+    numbers = [5, 0]
+    precondition(cursorObservedWindowID { numbers.removeFirst() } == 0 && numbers.isEmpty)
+    let screen = CGRect(x: -20, y: -10, width: 500, height: 300)
+    precondition(cursorCenterScreenPoint(frame: CGRect(x: 10, y: 20, width: 40, height: 60),
+        zeroScreenFrame: screen) == CGPoint(x: 30, y: 240))
+    precondition(cursorCenterScreenPoint(frame: CGRect(x: 10, y: 20, width: 40, height: 60),
+        zeroScreenFrame: nil) == CGPoint(x: 30, y: -50))
+}
+
+
+@MainActor private func runCursorOrderOutChecks() async {
+    var visible = false
+    var events: [String] = []
+    var currentDelegate = "old"
+    await orderOutCursor(willHide: {
+        events.append("willHide")
+        await Task.yield()
+        visible = true
+    }, isVisible: { visible }, prepareWindow: { events.append("prepare") },
+        hideAnimated: {
+            events.append("animated")
+            await Task.yield()
+            currentDelegate = "replacement"
+        }, hideImmediately: { preconditionFailure("Used pre-delegate visibility") },
+        didHide: { events.append(currentDelegate) }, postDidHide: { events.append("notification") })
+    precondition(events == ["willHide", "prepare", "animated", "replacement", "notification"])
+    events = []
+    await orderOutCursor(willHide: { visible = false }, isVisible: { visible },
+        prepareWindow: { events.append("prepare") }, hideAnimated: { preconditionFailure() },
+        hideImmediately: { events.append("immediate") }, didHide: { events.append("delegate") },
+        postDidHide: { events.append("notification") })
+    precondition(events == ["prepare", "immediate", "delegate", "notification"])
+}
+
+
+private func runCursorBlurFilterResetChecks() {
+    final class Filter {
+        let blur: Bool
+        init(_ blur: Bool) { self.blur = blur }
+    }
+    let first = Filter(false), blur = Filter(true), last = Filter(false)
+    let original = [first, blur, last, blur]
+    var visits = 0
+    var restored: [Filter] = []
+    resetCursorBlurFilters(readFilters: { original }, isGaussianBlur: { visits += 1; return $0.blur },
+        writeFilters: { restored = $0 })
+    precondition(visits == 4 && original.count == 4 && restored.count == 2)
+    precondition(restored[0] === first && restored[1] === last)
+    var writes = 0
+    resetCursorBlurFilters(readFilters: { [first, last] }, isGaussianBlur: { $0.blur },
+        writeFilters: { precondition($0.count == 2); writes += 1 })
+    resetCursorBlurFilters(readFilters: { [Filter]() }, isGaussianBlur: { $0.blur },
+        writeFilters: { precondition($0.isEmpty); writes += 1 })
+    precondition(writes == 2)
+    resetCursorBlurFilters(readFilters: { nil as [Filter]? }, isGaussianBlur: { _ in preconditionFailure() },
+        writeFilters: { _ in preconditionFailure() })
+}
+
+
+private func runLayerFilterPropertyChecks() {
+    func restoreDefaults<Filter: LayerFilter.FilterConvertible>(_ type: Filter.Type) -> Filter {
+        let filter = Filter()
+        precondition(filter.name == Filter.name)
+        precondition(Filter.Keys.allCases.map(\.rawValue).count == 3)
+        return filter
+    }
+    final class FilterInstance: NSObject {
+        var writes: [(String, Any?)] = []
+        override func setValue(_ value: Any?, forKey key: String) { writes.append((key, value)) }
+    }
+    let instance = FilterInstance()
+    let configuration = LayerFilter.GaussianBlur(radius: 7, hardEdges: false, normalizeEdges: nil)
+    let created = configuration.makeFilterInstance { name in
+        precondition(name == .gaussianBlur); return instance
+    }
+    precondition(created === instance)
+    precondition(instance.writes.map { $0.0 } == ["inputRadius", "inputHardEdges", "inputNormalizeEdges"])
+    precondition((instance.writes[0].1 as? NSNumber)?.doubleValue == 7)
+    precondition((instance.writes[1].1 as? NSNumber)?.boolValue == false)
+    precondition(instance.writes[2].1 is NSNull)
+    precondition(configuration.makeFilterInstance(using: { _ in nil }) == nil)
+    let defaults = restoreDefaults(LayerFilter.GaussianBlur.self)
+    precondition(defaults.radius == 0 && defaults.hardEdges == nil && defaults.normalizeEdges == nil)
+    precondition(defaults.name == .gaussianBlur)
+    precondition(LayerFilter.Name.allCases.map(\.rawValue) == ["colorSaturate", "gaussianBlur", "luminanceCurveMap", "luminanceToAlpha", "variableBlur", "sdrNormalize", "alphaThreshold"])
+    var blur = LayerFilter.GaussianBlur(radius: 7, hardEdges: nil, normalizeEdges: false)
+    precondition(blur.radius == 7 && blur.hardEdges == nil && blur.normalizeEdges == false)
+    blur.$radius.erased = CGFloat(3)
+    precondition(blur.radius == 3)
+    blur.$radius.erased = "wrong type"
+    blur.$radius.erased = nil
+    precondition(blur.radius == 3)
+    blur.$hardEdges.erased = true
+    precondition(blur.hardEdges == true)
+    blur.$hardEdges.erased = nil
+    precondition(blur.hardEdges == nil)
+    // An Optional.none wrapped value is boxed as a present Any, not flattened.
+    precondition(blur.$hardEdges.erased != nil)
+    blur.$radius = LayerFilter.Property<CGFloat>(wrappedValue: -7)
+    precondition(blur.radius == -7)
+    let keys = LayerFilter.GaussianBlur.Keys.allCases
+    precondition(keys.map(\.rawValue) == ["inputRadius", "inputHardEdges", "inputNormalizeEdges"])
+    precondition(LayerFilter.GaussianBlur.Keys(rawValue: "radius") == nil)
+    blur[keyPath: blur.property(for: .inputRadius)].erased = CGFloat(12)
+    blur[keyPath: blur.property(for: .inputHardEdges)].erased = false
+    blur[keyPath: blur.property(for: .inputNormalizeEdges)].erased = nil
+    precondition(blur.radius == 12 && blur.hardEdges == false && blur.normalizeEdges == nil)
+    blur.radius = .nan
+    precondition(blur.radius.isNaN)
+}
+
+
+private func runFilterMethodSelectorChecks() {
+    let salt = "215bb664fac94b9e50faca8106be4dd77fd37a73606ca79682e992187974d983dfa5a32ce4dcfa868a6f0f6b3485a79252e0a79fef79b22854f9a6bdc92d54b"
+    guard let cls = NSClassFromString("CAFilter"), let meta = object_getClass(cls),
+          let selector = lookUpMethodSelector(in: meta, hash: 0x51575c7f8a81acb0, salt: salt) else {
+        preconditionFailure("Pinned CAFilter factory selector unavailable")
+    }
+    precondition(NSStringFromSelector(selector) == "filterWithName:")
+    // Real platform objects only; no windows, input or layer attachment.
+    let blur = LayerFilter.GaussianBlur(radius: 7, hardEdges: true, normalizeEdges: false)
+    guard let instance = blur.makeFilterInstance(), let second = blur.makeFilterInstance() else {
+        preconditionFailure("CAFilter gaussianBlur factory returned nil")
+    }
+    precondition(instance !== second)
+    precondition(instance.isKind(of: cls))
+    precondition((instance.value(forKey: "inputRadius") as? NSNumber)?.doubleValue == 7)
+    precondition((instance.value(forKey: "inputHardEdges") as? NSNumber)?.boolValue == true)
+    precondition((instance.value(forKey: "inputNormalizeEdges") as? NSNumber)?.boolValue == false)
+    precondition(LayerFilter.GaussianBlur().makeFilterInstance() != nil)
+    let restored = LayerFilter.GaussianBlur().populated(from: instance)
+    precondition(restored.radius == 7 && restored.hardEdges == true && restored.normalizeEdges == false)
+    let original = LayerFilter.GaussianBlur(radius: 19, hardEdges: false, normalizeEdges: true)
+    let partial = FilterPopulationFixture()
+    let populated = original.populated(from: partial)
+    precondition(partial.reads == ["inputRadius", "inputHardEdges", "inputNormalizeEdges"])
+    // Wrong radius type and absent hardEdges preserve the receiver's values.
+    precondition(populated.radius == 19 && populated.hardEdges == false && populated.normalizeEdges == false)
+    precondition(original.radius == 19 && original.hardEdges == false && original.normalizeEdges == true)
+    let layer = CALayer()
+    layer.setLayerFilters([blur, LayerFilter.GaussianBlur(radius: 3, hardEdges: false, normalizeEdges: true), blur])
+    let applied = layer.filters as? [NSObject]
+    precondition(applied?.count == 3)
+    precondition(applied?.map { ($0.value(forKey: "inputRadius") as? NSNumber)?.doubleValue } == [7, 3, 7])
+    precondition(applied![0] !== applied![2])
+    layer.setLayerFilters([])
+    precondition(layer.filters != nil && layer.filters!.isEmpty)
+    let values: [any LayerFilter.FilterConvertible] = [
+        LayerFilter.ColorSaturate(amount: 0.75), blur,
+        LayerFilter.LuminanceCurveMap(inputValues: [0, 0.2, 0.8, 1], inputAmount: 0.5),
+        LayerFilter.LuminanceToAlpha(inputPremultipliedValues: true),
+        LayerFilter.VariableBlur(radius: 4, normalizeEdges: false, inputFade: true, inputSourceSublayerName: "source"),
+        LayerFilter.SDRNormalize(), LayerFilter.AlphaThreshold(amount: 0.3, color: CGColor(gray: 0.25, alpha: 1))
+    ]
+    layer.layerFilters = values
+    let roundTrip = layer.layerFilters
+    precondition(roundTrip.map(\.name) == LayerFilter.Name.allCases)
+    precondition((roundTrip[0] as? LayerFilter.ColorSaturate)?.amount == 0.75)
+    precondition((roundTrip[2] as? LayerFilter.LuminanceCurveMap)?.inputValues == [0, 0.2, 0.8, 1])
+    precondition((roundTrip[2] as? LayerFilter.LuminanceCurveMap)?.inputAmount == 0.5)
+    precondition((roundTrip[3] as? LayerFilter.LuminanceToAlpha)?.inputPremultipliedValues == true)
+    precondition((roundTrip[4] as? LayerFilter.VariableBlur)?.radius == 4)
+    precondition((roundTrip[4] as? LayerFilter.VariableBlur)?.inputSourceSublayerName == "source")
+    precondition((roundTrip[6] as? LayerFilter.AlphaThreshold)?.amount == 0.3)
+    precondition((roundTrip[6] as? LayerFilter.AlphaThreshold)?.color == CGColor(gray: 0.25, alpha: 1))
+    for name in LayerFilter.Name.allCases {
+        precondition(name.filterType().init().name == name)
+        precondition(name.filterType().init().makeFilterInstance() != nil)
+    }
+    precondition(LayerFilter.EmptyKeys.allCases.isEmpty)
+    precondition(LayerFilter.EmptyKeys(rawValue: "anything") == nil)
+    layer.filters = [NSObject(), instance, "unrecognized"]
+    precondition(layer.layerFilters.map(\.name) == [.gaussianBlur])
+    layer.layerFilters = []
+    precondition(layer.layerFilters.isEmpty && layer.filters != nil)
+    layer.layerFilters = [LayerFilter.GaussianBlur(radius: 1, hardEdges: nil, normalizeEdges: nil),
+        LayerFilter.ColorSaturate(amount: 0.75),
+        LayerFilter.GaussianBlur(radius: 2, hardEdges: nil, normalizeEdges: nil)]
+    layer.updateFilter(LayerFilter.GaussianBlur(radius: 9, hardEdges: nil, normalizeEdges: nil), creatingIfNeeded: false)
+    let updated = layer.layerFilters
+    precondition(updated.map(\.name) == [.gaussianBlur, .colorSaturate, .gaussianBlur])
+    precondition((updated[0] as? LayerFilter.GaussianBlur)?.radius == 9)
+    precondition((updated[2] as? LayerFilter.GaussianBlur)?.radius == 2)
+    let unchangedInstance = layer.filters![0] as! NSObject
+    layer.updateFilter(LayerFilter.SDRNormalize(), creatingIfNeeded: false)
+    precondition(layer.filters![0] as! NSObject === unchangedInstance)
+    layer.updateFilter(LayerFilter.SDRNormalize(), creatingIfNeeded: true)
+    precondition(layer.layerFilters.map(\.name) == [.gaussianBlur, .colorSaturate, .gaussianBlur, .sdrNormalize])
+    layer.updateFilter(nil as LayerFilter.GaussianBlur?, creatingIfNeeded: true)
+    precondition(layer.layerFilters.map(\.name) == [.colorSaturate, .sdrNormalize])
+    layer.updateFilter(nil as LayerFilter.GaussianBlur?, creatingIfNeeded: false)
+    precondition(layer.layerFilters.map(\.name) == [.colorSaturate, .sdrNormalize])
+}
+
+private final class FilterPopulationFixture: NSObject {
+    var reads: [String] = []
+    override func value(forKeyPath key: String) -> Any? {
+        reads.append(key)
+        switch key {
+        case "inputRadius": return "wrong type"
+        case "inputNormalizeEdges": return NSNumber(value: false)
+        default: return nil
+        }
+    }
+}
+
+private func runCursorMotionAngleChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.clickAngle = 0
+    let early = cursorTerminalDirection(CGPoint(x: 2, y: 0), progress: 0.5, configuration: configuration)
+    precondition(early == CGPoint(x: 1, y: 0))
+    let late = cursorTerminalDirection(CGPoint(x: 2, y: 0), progress: 0.995, configuration: configuration)
+    precondition(abs(late.x - 1 / CGFloat(50).squareRoot()) < 1e-12)
+    precondition(abs(late.y - 7 / CGFloat(50).squareRoot()) < 1e-12)
+    let terminal = cursorTerminalDirection(CGPoint(x: 2, y: 0), progress: 1, configuration: configuration)
+    precondition(terminal == CGPoint(x: 0, y: 1))
+    precondition(cursorTerminalDirection(.zero, progress: 0, configuration: configuration) == terminal)
+    precondition(cursorTerminalDirection(CGPoint(x: 1, y: 0), progress: .nan, configuration: configuration) == terminal)
+    let cancellation = cursorTerminalDirection(CGPoint(x: 0, y: -1), progress: 0.5, configuration: configuration)
+    precondition(cancellation == CGPoint(x: 0, y: -1))
+    for (direction, degrees) in [(CGPoint(x: 1, y: 0), 134.0), (CGPoint(x: 0, y: 1), 44.0),
+                                 (CGPoint(x: 0, y: -1), 224.0), (CGPoint(x: -1, y: 0), -46.0)] {
+        precondition(abs(cursorMotionAngle(direction: direction, clickAngle: -44).degrees - degrees) < 1e-12)
+    }
+    precondition(cursorMotionAngle(direction: CGPoint(x: 0.0009, y: 0), clickAngle: -44) == .zero)
+    precondition(abs(cursorMotionAngle(direction: CGPoint(x: 0.001, y: 0), clickAngle: -44).degrees - 134) < 1e-12)
+    precondition(cursorMotionAngle(direction: CGPoint(x: CGFloat.nan, y: 1), clickAngle: -44).radians.isNaN)
+    // Source length is sqrt(x*x+y*y), not overflow-resistant hypot.
+    precondition(abs(cursorMotionAngle(direction: CGPoint(x: 1e300, y: 1e300), clickAngle: -44).degrees - 134) < 1e-12)
+}
+
+private func runMovingCursorAssociationChecks() {
+    for appMonitor in [false, true] {
+        for target in [nil, UInt32(3), UInt32(4)] as [UInt32?] {
+            var reasons = CursorOverlayWindowLevelReasons(appMonitor: appMonitor, petLaunch: true)
+            var calls: [String] = []
+            var hotspotReads = 0
+            updateMovingCursorAssociation(origin: CGPoint(x: 10, y: 20),
+                reasons: { reasons }, hotspot: {
+                    hotspotReads += 1
+                    return hotspotReads == 1 ? CGPoint(x: 4, y: 999) : CGPoint(x: 999, y: 6)
+                }, frame: { CGRect(x: 0, y: 0, width: 40, height: 50) }, windowNumber: { 12 },
+                hitWindow: { point, below in
+                    precondition(point == CGPoint(x: 14, y: 64) && below == 12)
+                    return 3
+                }, correspondingWindowID: { target },
+                setReasons: { reasons = $0; calls.append("reasons") },
+                setLevel: { precondition($0 == 0 && !reasons.petLaunch); calls.append("level") },
+                updateVisibility: { calls.append("visibility") })
+            let reached = target == 3
+            precondition(reasons.appMonitor == appMonitor && reasons.petLaunch == !reached && hotspotReads == 2)
+            precondition(calls == (reached ? (appMonitor ? ["reasons", "visibility"] : ["reasons", "level", "visibility"]) : ["reasons"]))
+        }
+    }
+    updateMovingCursorAssociation(origin: .zero,
+        reasons: { CursorOverlayWindowLevelReasons() },
+        hotspot: { preconditionFailure("No temporary reason must skip geometry") },
+        frame: { preconditionFailure() }, windowNumber: { preconditionFailure() },
+        hitWindow: { _, _ in preconditionFailure() }, correspondingWindowID: { preconditionFailure() },
+        setReasons: { _ in preconditionFailure() }, setLevel: { _ in preconditionFailure() },
+        updateVisibility: { preconditionFailure() })
+}
+
+private func runCursorCubicPathChecks() {
+    let curved = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 5, y: 6), control1: CGPoint(x: 1, y: 2), control2: CGPoint(x: 3, y: 4))
+    ])
+    let curvedMiddle = curved.sample(at: 0.5)
+    precondition(curvedMiddle.position == CGPoint(x: 2.125, y: 3))
+    precondition(curvedMiddle.tangent == CGPoint(x: 5.25, y: 6))
+    precondition(curved.sample(at: 0).tangent == CGPoint(x: 3, y: 6))
+    precondition(curved.sample(at: 1).tangent == CGPoint(x: 6, y: 6))
+    let path = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 3, y: 0), control1: CGPoint(x: 1, y: 0), control2: CGPoint(x: 2, y: 0)),
+        .init(endpoint: CGPoint(x: 3, y: 3), control1: CGPoint(x: 3, y: 1), control2: CGPoint(x: 3, y: 2))
+    ])
+    let first = path.sample(at: 0.25)
+    precondition(first.position == CGPoint(x: 1.5, y: 0) && first.tangent == CGPoint(x: 3, y: 0))
+    let join = path.sample(at: 0.5)
+    precondition(join.position == CGPoint(x: 3, y: 0) && join.tangent == CGPoint(x: 0, y: 3))
+    let second = path.sample(at: 0.75)
+    precondition(second.position == CGPoint(x: 3, y: 1.5) && second.tangent == CGPoint(x: 0, y: 3))
+    for value in [CGFloat(1), 2, .infinity, .nan] {
+        precondition(path.sample(at: value).position == CGPoint(x: 3, y: 3))
+    }
+    for value in [CGFloat(0), -1, -CGFloat.infinity] {
+        precondition(path.sample(at: value).position == .zero)
+    }
+}
+
+@MainActor
+private func runCursorPathBoundsChecks() {
+    let left = CGRect(x: -100, y: 0, width: 100, height: 100)
+    let right = CGRect(x: 0, y: 0, width: 100, height: 100)
+    // Earlier screen containing target beats a later screen containing start.
+    precondition(cursorPathBounds(start: CGPoint(x: 50, y: 20), target: CGPoint(x: -50, y: 20),
+        correspondingWindowFrame: nil, screenFrames: { [left, right] },
+        zeroScreenFrame: { preconditionFailure("No window conversion") }) == left)
+    precondition(cursorPathBounds(start: CGPoint(x: 500, y: 500), target: CGPoint(x: 600, y: 600),
+        correspondingWindowFrame: nil, screenFrames: { [left, right] }) == left.union(right))
+    precondition(cursorPathBounds(start: .zero, target: .zero, correspondingWindowFrame: nil,
+        screenFrames: { [] }).isNull)
+    var conversions = 0
+    let window = CGRect(x: 55, y: 66, width: -30, height: -40)
+    let bounds = cursorPathBounds(start: .zero, target: .zero, correspondingWindowFrame: window,
+        screenFrames: { preconditionFailure("Window branch must not enumerate planning screens") },
+        zeroScreenFrame: { conversions += 1; return right })
+    precondition(bounds.origin == .zero && bounds.size.width == -30 && bounds.size.height == -40)
+    precondition(conversions == 1)
+}
+
+private func runCursorStraightPathChecks() {
+    let configuration = ComputerUseCursorMotionConfiguration.live
+    let start = CGPoint(x: 12, y: -7)
+    let target = CGPoint(x: 18, y: 1)
+    let path = cursorStraightPath(start: start, target: target, configuration: configuration)!
+    precondition(path.start == start && path.segments.count == 1)
+    precondition(path.segments[0].endpoint == target)
+    precondition(path.segments[0].control1 == CGPoint(x: 14, y: -7 + 8.0 / 3.0))
+    precondition(path.segments[0].control2 == CGPoint(x: 16, y: -7 + 8.0 * (2.0 / 3.0)))
+    precondition(path.sample(at: 0).position == start && path.sample(at: 1).position == target)
+    precondition(cursorStraightPath(start: .zero, target: CGPoint(x: 10.0.nextUp, y: 0),
+        configuration: configuration) == nil)
+    precondition(cursorStraightPath(start: start, target: start, configuration: configuration)!.segments[0].control1 == start)
+    precondition(cursorStraightPath(start: .zero, target: CGPoint(x: CGFloat.nan, y: 0), configuration: configuration) == nil)
+    var changed = configuration
+    changed.straightPathDistanceThreshold = .nan
+    precondition(cursorStraightPath(start: .zero, target: .zero, configuration: changed) == nil)
+    changed.straightPathDistanceThreshold = .infinity
+    // hypot avoids overflow from squaring large finite coordinates.
+    let huge = cursorStraightPath(start: .zero, target: CGPoint(x: 1e200, y: 1e200), configuration: changed)!
+    precondition(huge.segments[0].control1.x.isFinite)
+}
+
+private func runCursorPathSeedChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.clickAngle = 0
+    let start = CGPoint(x: 10, y: 20)
+    let target = CGPoint(x: 110, y: 20)
+    let seeds = cursorPathSeeds(start: start, target: target, configuration: configuration)
+    precondition(seeds.count == 2 && seeds[0].start == start)
+    precondition(seeds[0].segments[0].control1 == CGPoint(x: 10, y: 68))
+    precondition(seeds[0].segments[0].control2 == CGPoint(x: 110, y: -28))
+    precondition(seeds[1].segments[0].control1.y == 20 + 48 * 0.65)
+    configuration.startHandle = 100
+    configuration.endpointHandle = 100
+    let capped = cursorPathSeeds(start: .zero, target: CGPoint(x: 100, y: 0), configuration: configuration)
+    precondition(capped[0].segments[0].control1.y == 90)
+    let large = cursorPathSeeds(start: .zero, target: CGPoint(x: 10000, y: 0), configuration: configuration)
+    precondition(large[0].segments[0].control1.y == 640)
+    configuration.startHandle = .nan
+    let unordered = cursorPathSeeds(start: .zero, target: CGPoint(x: 100, y: 0), configuration: configuration)
+    precondition(unordered[0].segments[0].control1.y == 90)
+}
+
+private func runCursorPathCandidateChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.clickAngle = 0
+    let paths = cursorPathCandidates(start: .zero, target: CGPoint(x: 100, y: 0), configuration: configuration)
+    precondition(paths.count == 20)
+    precondition(paths[0].segments.count == 1 && paths[1].segments.count == 1)
+    let join = paths[2].segments[0].endpoint
+    precondition(join == CGPoint(x: 50, y: 48 * 0.16 + 50 * 0.55))
+    let opposite = paths[3].segments[0].endpoint
+    precondition(opposite == CGPoint(x: 50, y: 48 * 0.16 - 50 * 0.55))
+    for path in paths.dropFirst(2) {
+        precondition(path.segments.count == 2)
+        precondition(path.sample(at: 0).position == .zero)
+        precondition(path.sample(at: 1).position == CGPoint(x: 100, y: 0))
+        let first = path.segments[0]
+        let second = path.segments[1]
+        precondition(abs((first.endpoint.x - first.control2.x) - (second.control1.x - first.endpoint.x)) < 1e-12)
+    }
+    configuration.candidateCount = 3
+    precondition(cursorPathCandidates(start: .zero, target: CGPoint(x: 100, y: 0), configuration: configuration).count == 3)
+    configuration.candidateCount = 0
+    precondition(cursorPathCandidates(start: .zero, target: .zero, configuration: configuration).isEmpty)
+    configuration.candidateCount = 99
+    precondition(cursorPathCandidates(start: .zero, target: .zero, configuration: configuration).count == 20)
+}
+
+private func runCursorPathMetricChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.boundsMargin = 0
+    let line = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 24, y: 0), control1: CGPoint(x: 8, y: 0), control2: CGPoint(x: 16, y: 0)),
+        .init(endpoint: CGPoint(x: 24, y: 24), control1: CGPoint(x: 24, y: 8), control2: CGPoint(x: 24, y: 16))
+    ])
+    let bounds = CGRect(x: -1, y: -1, width: 30, height: 30)
+    let metrics = cursorPathMetrics(line, bounds: bounds, configuration: configuration)
+    precondition(abs(metrics.length - 48) < 1e-10)
+    precondition(abs(metrics.maximumTurn - .pi / 2) < 1e-10)
+    precondition(abs(metrics.absoluteTurnSum - .pi / 2) < 1e-10)
+    precondition(abs(metrics.squaredTurnSum - (.pi / 2) * (.pi / 2)) < 1e-10)
+    precondition(metrics.staysInsideBounds)
+    configuration.boundsMargin = 2
+    precondition(!cursorPathMetrics(line, bounds: bounds, configuration: configuration).staysInsideBounds)
+    let empty = cursorPathMetrics(CursorCubicPath(start: .zero, segments: []), bounds: bounds, configuration: configuration)
+    precondition(empty.length == 0 && empty.maximumTurn == 0 && !empty.staysInsideBounds)
+}
+
+private func runCursorPathScoreChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.clickAngle = 0
+    let base = CursorPathMetrics(length: 100, squaredTurnSum: 0, maximumTurn: 0,
+        absoluteTurnSum: 0, staysInsideBounds: true)
+    precondition(cursorPathScore(start: .zero, target: CGPoint(x: 0, y: 100), metrics: base, configuration: configuration) == 100)
+    precondition(cursorPathScore(start: .zero, target: CGPoint(x: 0, y: -100), metrics: base, configuration: configuration) == 190)
+    var measured = base
+    measured.length = 200
+    measured.squaredTurnSum = 2
+    measured.maximumTurn = 3
+    measured.absoluteTurnSum = 4
+    measured.staysInsideBounds = false
+    precondition(cursorPathScore(start: .zero, target: CGPoint(x: 0, y: 100), metrics: measured, configuration: configuration) == 1457)
+    configuration.clickAngle = .nan
+    precondition(cursorPathScore(start: .zero, target: CGPoint(x: 0, y: 100), metrics: base, configuration: configuration) == 190)
+}
+
+private func runCursorPathPlannerChecks() {
+    let zero = CursorCubicPath(start: .zero, segments: [])
+    func candidate(_ score: CGFloat, inside: Bool) -> ScoredCursorPath {
+        ScoredCursorPath(path: zero, metrics: CursorPathMetrics(length: 0, squaredTurnSum: 0,
+            maximumTurn: 0, absoluteTurnSum: 0, staysInsideBounds: inside), score: score)
+    }
+    precondition(selectCursorPath([]) == nil)
+    precondition(selectCursorPath([candidate(1, inside: false), candidate(100, inside: true)])!.score == 100)
+    precondition(selectCursorPath([candidate(9, inside: false), candidate(2, inside: false)])!.score == 2)
+    precondition(selectCursorPath([candidate(.nan, inside: true), candidate(2, inside: true)])!.score.isNaN)
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.candidateCount = 0
+    let short = planCursorPath(start: .zero, target: CGPoint(x: 3, y: 0), bounds: .null, configuration: configuration)
+    precondition(short.segments.count == 1 && short.segments[0].control1 == CGPoint(x: 1, y: 0))
+    configuration = .live
+    let target = CGPoint(x: 400, y: 200)
+    let bounds = CGRect(x: -1000, y: -1000, width: 2000, height: 2000)
+    let chosen = planCursorPath(start: .zero, target: target, bounds: bounds, configuration: configuration)
+    precondition(chosen.sample(at: 0).position == .zero && chosen.sample(at: 1).position == target)
+    let selectedMetrics = cursorPathMetrics(chosen, bounds: bounds, configuration: configuration)
+    let selectedScore = cursorPathScore(start: .zero, target: target, metrics: selectedMetrics, configuration: configuration)
+    for path in cursorPathCandidates(start: .zero, target: target, configuration: configuration) {
+        let metrics = cursorPathMetrics(path, bounds: bounds, configuration: configuration)
+        if metrics.staysInsideBounds {
+            precondition(selectedScore <= cursorPathScore(start: .zero, target: target, metrics: metrics, configuration: configuration))
+        }
+    }
+}
+
+@MainActor
+private func runCursorProgressVelocityChecks() {
+    let position = CGPoint(x: 10, y: 12)
+    let previous = CGPoint(x: 7, y: 8)
+    func velocity(_ tangent: CGPoint, _ progress: CGFloat, _ count: Int = 2) -> CGPoint {
+        cursorProgressVelocity(tangent: tangent, segmentCount: count, progressVelocity: progress,
+            position: position, previousPosition: previous)
+    }
+    precondition(velocity(CGPoint(x: 3, y: -4), 5) == CGPoint(x: 30, y: -40))
+    precondition(velocity(CGPoint(x: 3, y: -4), -5) == CGPoint(x: -30, y: 40))
+    precondition(velocity(CGPoint(x: 3, y: -4), 0) == CGPoint(x: 3, y: 4))
+    precondition(velocity(CGPoint(x: CGFloat.nan, y: 1), 1) == CGPoint(x: 3, y: 4))
+    precondition(velocity(CGPoint(x: 3, y: -4), 1, 0) == CGPoint(x: 3, y: 4))
+    let first = ComputerUseCursorStyle()
+    let second = ComputerUseCursorStyle()
+    var reads = 0
+    applyCursorProgressVelocity(CGPoint(x: 11, y: 22), style: {
+        reads += 1
+        return reads == 1 ? first : second
+    })
+    precondition(reads == 2 && first.velocityX == 11 && first.velocityY == 0)
+    precondition(second.velocityX == 0 && second.velocityY == 22)
+}
+
+@MainActor
+private func runCursorProgressMotionFrameChecks() {
+    let style = SoftwareCursorStyle()
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: .live)
+    let path = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 30, y: 0), control1: CGPoint(x: 10, y: 0), control2: CGPoint(x: 20, y: 0))
+    ])
+    window.currentInterpolatedOrigin = CGPoint(x: -3, y: -4)
+    var phases: [String] = []
+    window.cursorMotionNextInteractionTimingHandler = {
+        precondition(window.currentInterpolatedOrigin == CGPoint(x: 30, y: 0))
+        phases.append("interaction")
+    }
+    window.applyProgressMotionFrame(path: path, progress: 1, finished: false, updatesAngle: true,
+        correspondingWindowFrame: { phases.append("lookup"); return nil },
+        progressVelocity: { phases.append("velocity"); return 2 },
+        afterMove: { _ in phases.append("move") })
+    precondition(phases == ["lookup", "move", "interaction", "velocity"])
+    precondition(style.velocityX == 60 && style.velocityY == 0)
+    precondition(window.cursorMotionDidSatisfyNextInteractionTiming)
+    phases = []
+    window.cursorMotionNextInteractionTimingHandler = { phases.append("interaction") }
+    window.cursorMotionCompletionHandler = {
+        precondition(style.velocityX == 0 && style.velocityY == 0)
+        phases.append("completion")
+    }
+    window.applyProgressMotionFrame(path: path, progress: 1, finished: true, updatesAngle: false,
+        correspondingWindowFrame: { nil },
+        progressVelocity: { preconditionFailure("Finished event must not read velocity") },
+        afterMove: { _ in phases.append("move") })
+    precondition(phases == ["move", "interaction", "completion"])
+    precondition(!window.isVisible && !window.cursorMotionDidSatisfyNextInteractionTiming)
+}
+
+@MainActor
+private func runCursorProgressAnimationPreparationChecks() {
+    let style = SoftwareCursorStyle()
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: .live)
+    var callbacks: [String] = []
+    let animation = window.prepareProgressAnimation(response: 0.3, timing: .finished,
+        interaction: { callbacks.append("interaction") }, completion: { callbacks.append("completion") })
+    precondition(window.cursorMotionProgressAnimation === animation)
+    precondition(animation.value == 0 && animation.targetValue == 1 && animation.state == .ready)
+    precondition(window.cursorMotionDidSatisfyNextInteractionTiming && callbacks.isEmpty)
+    window.updateCloseEnoughInteraction(progress: 1, distance: 0)
+    precondition(callbacks.isEmpty)
+    window.finishProgressMotion()
+    precondition(callbacks == ["interaction", "completion"])
+    precondition(window.cursorMotionProgressAnimation == nil)
+    callbacks = []
+    _ = window.prepareProgressAnimation(response: 0.4, timing: .closeEnough,
+        interaction: { callbacks.append("early") }, completion: { callbacks.append("done") })
+    precondition(!window.cursorMotionDidSatisfyNextInteractionTiming)
+    window.updateCloseEnoughInteraction(progress: 1, distance: 0)
+    precondition(callbacks == ["early"])
+    window.finishProgressMotion()
+    precondition(callbacks == ["early", "done"] && !window.isVisible)
+}
+
+private func runCursorSpringResponseChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.clickAngle = 0
+    let path = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 0, y: 100), control1: CGPoint(x: 0, y: 33), control2: CGPoint(x: 0, y: 66))
+    ])
+    var metrics = CursorPathMetrics(length: 100, squaredTurnSum: 0, maximumTurn: 0,
+        absoluteTurnSum: 0, staysInsideBounds: true)
+    precondition(abs(cursorSpringResponse(path: path, metrics: metrics, configuration: configuration) - 0.378) < 1e-12)
+    var joined = path
+    joined.segments.insert(.init(endpoint: CGPoint(x: 0, y: 50), control1: .zero, control2: .zero), at: 0)
+    precondition(abs(cursorSpringResponse(path: joined, metrics: metrics, configuration: configuration) - 0.3726) < 1e-12)
+    var reverse = path
+    reverse.segments[0].endpoint.y = -100
+    precondition(abs(cursorSpringResponse(path: reverse, metrics: metrics, configuration: configuration) - 0.63) < 1e-12)
+    metrics.length = 940
+    metrics.squaredTurnSum = 1.25
+    metrics.absoluteTurnSum = 4.39822971502571
+    precondition(abs(cursorSpringResponse(path: path, metrics: metrics, configuration: configuration) - 0.684) < 1e-12)
+    configuration.springResponseScaler = 0
+    precondition(cursorSpringResponse(path: path, metrics: metrics, configuration: configuration) == configuration.springResponseMin)
+    configuration.springResponseScaler = .nan
+    precondition(cursorSpringResponse(path: path, metrics: metrics, configuration: configuration) == configuration.springResponseMax)
+}
+
+@MainActor
+private func runCursorProgressEventBindingChecks() {
+    var window: ComputerUseCursorWindow? = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let path = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 30, y: 0), control1: CGPoint(x: 10, y: 0), control2: CGPoint(x: 20, y: 0))
+    ])
+    var moves = 0
+    let old = window!.prepareProgressAnimation(response: 0.3, timing: .closeEnough, interaction: nil, completion: nil)
+    window!.bindProgressEvents(old, path: path, updatesAngle: false,
+        correspondingWindowFrame: { nil }, afterMove: { _ in moves += 1 })
+    old.eventHandler?(.retargeted(fromValue: 0, toValue: 1))
+    precondition(moves == 0)
+    old.eventHandler?(.valueChanged(oldValue: 0, newValue: 0.5))
+    precondition(moves == 1 && window!.currentInterpolatedOrigin == CGPoint(x: 15, y: 0))
+    let current = window!.prepareProgressAnimation(response: 0.3, timing: .finished, interaction: nil, completion: nil)
+    old.eventHandler?(.finished(1))
+    precondition(moves == 1 && window!.cursorMotionProgressAnimation === current)
+    window!.bindProgressEvents(current, path: path, updatesAngle: false,
+        correspondingWindowFrame: { nil }, afterMove: { _ in moves += 1 })
+    current.eventHandler?(.finished(1))
+    precondition(moves == 2 && window!.cursorMotionProgressAnimation == nil)
+    current.eventHandler?(.valueChanged(oldValue: 0, newValue: 0.2))
+    precondition(moves == 2)
+    // AppKit may retain/autorelease an NSWindow beyond the local reference.
+    // Do not assert immediate deallocation as a weak-capture test.
+    window = nil
+    old.eventHandler?(.finished(1))
+    precondition(moves == 2)
+}
+
+@MainActor
+private func runCursorDrivenProgressChecks() {
+    final class Driver: AnimationDriver {
+        override func start() { isActive = true }
+        override func stop() { isActive = false }
+    }
+    final class Source: AnimationDriverSource {
+        let driver = Driver()
+        func makeAnimationDriver() -> AnimationDriver { driver }
+    }
+    let source = Source()
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let target = CGPoint(x: 300, y: 200)
+    let bounds = CGRect(x: -1000, y: -1000, width: 2000, height: 2000)
+    var interactions = 0, completions = 0, moves = 0
+    let animation = window.startPathProgressMotion(start: .zero, target: target, bounds: bounds,
+        updatesAngle: true, timing: .closeEnough, correspondingWindowFrame: { nil },
+        interaction: { interactions += 1 }, completion: { completions += 1 },
+        afterMove: { _ in moves += 1 }, enqueue: { animation, owner in
+            precondition(owner === window && owner.cursorMotionProgressAnimation === animation)
+            precondition(animation.eventHandler != nil && owner.cursorMotionCompletionHandler != nil)
+            precondition(owner.style.angle.radians.isFinite)
+            animation.start(drivenBy: source)
+        })
+    precondition(source.driver.isActive)
+    for frame in 0..<2400 {
+        source.driver.frameCallback?(AnimationUpdate(timestamp: Double(frame) / 240, duration: 1.0 / 240))
+        if !source.driver.isActive { break }
+    }
+    precondition(animation.state == .ended && animation.value == 1)
+    precondition(window.currentInterpolatedOrigin == target && moves > 1)
+    precondition(interactions == 1 && completions == 1)
+    precondition(window.cursorMotionProgressAnimation == nil && !source.driver.isActive)
+    precondition(window.style.velocityX == 0 && window.style.velocityY == 0 && !window.isVisible)
+    AnimationCoordinator.shared.remove(driverSource: source)
+}
+
+@MainActor
+private func runCursorInitialMotionAngleChecks() {
+    let style = SoftwareCursorStyle()
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: .live)
+    let path = CursorCubicPath(start: .zero, segments: [
+        .init(endpoint: CGPoint(x: 30, y: 0), control1: CGPoint(x: 10, y: 0), control2: CGPoint(x: 20, y: 0))
+    ])
+    style.angle = .degrees(7)
+    window.prepareInitialMotionAngle(path: path, updatesAngle: false)
+    precondition(style.angle.degrees == 7)
+    window.prepareInitialMotionAngle(path: path, updatesAngle: true)
+    precondition(abs(style.angle.degrees - 134) < 1e-10)
+    precondition(window.cursorMotionProgressAnimation == nil && !window.isVisible)
+}
+
+@MainActor
+private func runCursorScootGeometryChecks() {
+    let configuration = ComputerUseCursorMotionConfiguration.live
+    let horizontal = cursorScootGeometry(start: .zero, target: CGPoint(x: 10, y: 0),
+        currentAngle: .degrees(450), configuration: configuration)
+    precondition(horizontal.direction == CGPoint(x: 1, y: 0))
+    precondition(abs(horizontal.baseRotationOffset - 90) < 1e-10)
+    let reverse = cursorScootGeometry(start: CGPoint(x: 10, y: 20), target: CGPoint(x: 7, y: 16),
+        currentAngle: .degrees(-181), configuration: configuration)
+    precondition(reverse.direction == CGPoint(x: -0.6, y: -0.8))
+    precondition(abs(reverse.baseRotationOffset - 179) < 1e-10)
+    let coincident = cursorScootGeometry(start: .zero, target: .zero,
+        currentAngle: .zero, configuration: configuration)
+    precondition(abs(coincident.direction.x - sin(configuration.clickAngle * .pi / 180)) < 1e-12)
+    let style = SoftwareCursorStyle()
+    style.angle = .degrees(45)
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: configuration)
+    let geometry = window.prepareScootGeometry(start: .zero, target: CGPoint(x: 0, y: 1))
+    precondition(abs(window.cursorScootBaseRotationOffset - 45) < 1e-10)
+    precondition(geometry.direction == CGPoint(x: 0, y: 1) && !window.isVisible)
+}
+
+@MainActor
+private func runCursorScootPreparationChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let start = CGPoint(x: 12, y: 23), target = CGPoint(x: 24, y: 31)
+    var callbacks: [String] = []
+    let animation = window.prepareScootPositionAnimation(start: start, target: target, timing: .finished,
+        interaction: { callbacks.append("interaction") }, completion: { callbacks.append("completion") })
+    precondition(window.cursorScootPositionAnimation === animation)
+    precondition(window.cursorMotionProgressAnimation == nil)
+    precondition(animation.value == start && animation.targetValue == target && animation.state == .ready)
+    precondition(window.cursorMotionDidSatisfyNextInteractionTiming)
+    window.updateCloseEnoughInteraction(progress: 1, distance: 0)
+    precondition(callbacks.isEmpty)
+    let replacement = window.prepareScootPositionAnimation(start: target, target: start, timing: .closeEnough,
+        interaction: { callbacks.append("early") }, completion: { callbacks.append("done") })
+    precondition(window.cursorScootPositionAnimation === replacement && animation.state == .ready)
+    precondition(!window.cursorMotionDidSatisfyNextInteractionTiming)
+    window.updateCloseEnoughInteraction(progress: 1, distance: 0)
+    precondition(callbacks == ["early"])
+    window.cursorMotionCompletionHandler?()
+    precondition(callbacks == ["early", "done"] && !window.isVisible)
+    window.resetCursorWindowState()
+}
+
+@MainActor
+private func runCursorScootFinishChecks() {
+    let style = SoftwareCursorStyle()
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: .live)
+    let target = CGPoint(x: 10.5, y: -2.5)
+    let progress = SpringAnimation<CGFloat>(.smooth, initialValue: 0, targetValue: 1)
+    window.cursorMotionProgressAnimation = progress
+    var callbacks: [String] = []
+    let replacement = SpringAnimation<CGPoint>(.smooth, initialValue: .zero, targetValue: target)
+    window.cursorMotionNextInteractionTimingHandler = {
+        callbacks.append("interaction")
+        window.cursorScootPositionAnimation = replacement
+        window.cursorMotionCompletionHandler = {
+            precondition(window.currentInterpolatedOrigin == target)
+            precondition(window.frame.origin == CGPoint(x: 111, y: 398))
+            precondition(window.cursorScootPositionAnimation == nil)
+            precondition(window.cursorMotionNextInteractionTimingHandler == nil)
+            precondition(!window.cursorMotionDidSatisfyNextInteractionTiming)
+            precondition(style.velocityX == 0 && style.velocityY == 0)
+            callbacks.append("replacementCompletion")
+        }
+    }
+    window.cursorMotionCompletionHandler = { preconditionFailure("Stale completion") }
+    style.velocityX = 5
+    style.velocityY = 8
+    window.finishScootMotion(target: target,
+        correspondingWindowFrame: CGRect(x: 100, y: 200, width: 300, height: 400),
+        zeroScreenFrame: { CGRect(x: 0, y: 0, width: 1000, height: 1000) })
+    precondition(callbacks == ["interaction", "replacementCompletion"])
+    precondition(window.cursorMotionProgressAnimation === progress)
+    precondition(replacement.state == .ready && !window.isVisible)
+}
+
+private func runCursorScootAxisGeometryChecks() {
+    let configuration = ComputerUseCursorMotionConfiguration.live
+    for (point, degrees, pivot) in [
+        (CGPoint(x: 1, y: 0), CGFloat(0), CGFloat(1)),
+        (CGPoint(x: -1, y: 0), CGFloat(0), CGFloat(0)),
+        (CGPoint(x: 0, y: 1), CGFloat(90), CGFloat(1)),
+        (CGPoint(x: 0, y: -1), CGFloat(90), CGFloat(0))
+    ] {
+        let result = cursorScootAxisGeometry(direction: point, configuration: configuration)
+        precondition(abs(result.degrees - degrees) < 1e-10 && result.pivotX == pivot)
+    }
+    let diagonal = cursorScootAxisGeometry(direction: CGPoint(x: -1, y: -1), configuration: configuration)
+    precondition(abs(diagonal.degrees - 45) < 1e-10 && diagonal.pivotX == 0)
+    for point in [CGPoint.zero, CGPoint(x: CGFloat.nan, y: 1)] {
+        let result = cursorScootAxisGeometry(direction: point, configuration: configuration)
+        precondition(result.degrees == 0 && result.pivotX == configuration.scootStretchPivotX)
+    }
+}
+
+private func runCursorScootShapeTargetChecks() {
+    let configuration = ComputerUseCursorMotionConfiguration.live
+    let idle = cursorScootShapeTargets(envelope: 0, direction: CGPoint(x: 1, y: 0), axisPivotX: 1, configuration: configuration)
+    precondition(idle.scale == 1 && idle.xScale == 1 && idle.pivotX == 0.5 && idle.tiltDegrees == 0)
+    let peak = cursorScootShapeTargets(envelope: 1, direction: CGPoint(x: 1, y: 0), axisPivotX: 1, configuration: configuration)
+    precondition(abs(peak.scale - 0.82) < 1e-12 && peak.xScale == 1.38 && peak.pivotX == 1 && peak.tiltDegrees == 57)
+    let half = cursorScootShapeTargets(envelope: 0.5, direction: CGPoint(x: 0, y: 1), axisPivotX: 0, configuration: configuration)
+    precondition(half.pivotX == 0.25 && abs(half.tiltDegrees - 23.56) < 1e-12)
+    let saturated = cursorScootShapeTargets(envelope: 1, direction: CGPoint(x: -1, y: -1), axisPivotX: 0, configuration: configuration)
+    precondition(saturated.tiltDegrees == -76)
+    let unordered = cursorScootShapeTargets(envelope: 1, direction: CGPoint(x: CGFloat.nan, y: 0), axisPivotX: 1, configuration: configuration)
+    precondition(unordered.tiltDegrees.isNaN)
+}
+
+@MainActor
+private func runCursorScootStretchAnimationChecks() {
+    let style = SoftwareCursorStyle()
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: .live)
+    var enqueues = 0
+    let enqueue: @MainActor (SpringAnimation<CGFloat>, ComputerUseCursorWindow) -> Void = { animation, owner in
+        enqueues += 1
+        precondition(owner === window && owner.cursorScootStretchAnimation === animation)
+        precondition(animation.eventHandler != nil)
+    }
+    let first = window.updateScootStretch(scale: 0.8, xScale: 1.3, pivotX: 1, enqueue: enqueue)
+    precondition(first.value == 1 && first.targetValue == 0.8 && enqueues == 1)
+    precondition(style.scootStretchXScale == 1.3 && window.cursorScootStretchXScale == 1.3)
+    precondition(style.scootStretchPivotX == 1 && window.cursorScootStretchPivotX == 1)
+    let reused = window.updateScootStretch(scale: 0.7, xScale: 1.2, pivotX: 0, enqueue: enqueue)
+    precondition(first === reused && enqueues == 1 && first.targetValue == 0.7)
+    first.eventHandler?(.valueChanged(oldValue: 1, newValue: -0.5))
+    precondition(style.scootStretchScale == 0 && window.cursorScootStretchScale == 0)
+    first.eventHandler?(.finished(1.5))
+    precondition(style.scootStretchScale == 1 && window.cursorScootStretchAnimation === first)
+    first.state = .ended
+    let next = window.updateScootStretch(scale: 0.6, xScale: 1, pivotX: 0.5, enqueue: enqueue)
+    precondition(next !== first && enqueues == 2)
+    first.eventHandler?(.valueChanged(oldValue: 1, newValue: 0.3))
+    precondition(style.scootStretchScale == 1)
+    next.eventHandler?(.valueChanged(oldValue: 1, newValue: CGFloat.nan))
+    precondition(style.scootStretchScale.isNaN && window.cursorScootStretchScale.isNaN)
+    precondition(!window.isVisible)
+}
+
+@MainActor
+private func runCursorScootTiltAnimationChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    window.cursorScootBaseRotationOffset = 15
+    var enqueues = 0
+    let enqueue: @MainActor (SpringAnimation<CGFloat>, ComputerUseCursorWindow) -> Void = { animation, owner in
+        enqueues += 1
+        precondition(owner === window && owner.cursorScootRotationAnimation === animation)
+    }
+    let first = window.updateScootTilt(degrees: 30, enqueue: enqueue)
+    precondition(first.value == 0 && first.targetValue == 30 && enqueues == 1)
+    first.eventHandler?(.valueChanged(oldValue: 0, newValue: 30))
+    precondition(window.cursorScootRotationOffset == 30)
+    precondition(abs(window.style.angle.degrees - 15) < 1e-10)
+    precondition(abs(window.style.scootTiltAngle.degrees - 30) < 1e-10)
+    let reused = window.updateScootTilt(degrees: -40, enqueue: enqueue)
+    precondition(reused === first && first.targetValue == -40 && enqueues == 1)
+    first.eventHandler?(.finished(120))
+    precondition(window.cursorScootRotationOffset == 120)
+    first.state = .ended
+    let next = window.updateScootTilt(degrees: 0, enqueue: enqueue)
+    precondition(next !== first && next.value == 120 && enqueues == 2)
+    first.eventHandler?(.finished(5))
+    precondition(window.cursorScootRotationOffset == 120 && !window.isVisible)
+}
+
+@MainActor
+private func runCursorScootAngleSpringChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    window.cursorScootBaseRotationOffset = 170
+    window.cursorScootAxisRotation = 170
+    var enqueues = 0
+    let enqueue: @MainActor (SpringAnimation<CGFloat>, ComputerUseCursorWindow) -> Void = { _, _ in enqueues += 1 }
+    let base = window.updateScootBaseRotation(degrees: -170, enqueue: enqueue)
+    let axis = window.updateScootAxis(degrees: -170, enqueue: enqueue)
+    precondition(base.value == 170 && base.targetValue == 190)
+    precondition(axis.value == 170 && axis.targetValue == 190 && enqueues == 2)
+    base.eventHandler?(.finished(190))
+    axis.eventHandler?(.finished(190))
+    precondition(window.cursorScootBaseRotationOffset == 190 && window.cursorScootAxisRotation == 190)
+    precondition(abs(window.style.angle.degrees - 190) < 1e-10)
+    precondition(abs(window.style.scootStretchAngle.degrees - 190) < 1e-10)
+    precondition(window.updateScootBaseRotation(degrees: 0, enqueue: enqueue) === base)
+    precondition(window.updateScootAxis(degrees: 0, enqueue: enqueue) === axis)
+    precondition(base.targetValue == 360 && axis.targetValue == 360 && enqueues == 2)
+    base.state = .ended
+    axis.state = .ended
+    let nextBase = window.updateScootBaseRotation(degrees: 0, enqueue: enqueue)
+    let nextAxis = window.updateScootAxis(degrees: 0, enqueue: enqueue)
+    precondition(nextBase !== base && nextAxis !== axis && enqueues == 4)
+    base.eventHandler?(.finished(5))
+    axis.eventHandler?(.finished(5))
+    precondition(window.cursorScootBaseRotationOffset == 190 && window.cursorScootAxisRotation == 190)
+    precondition(!window.isVisible)
+}
+
+@MainActor
+private func runCursorScootFrameChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let target = CGPoint(x: 30, y: 0)
+    var events: [String] = []
+    let animation = window.prepareScootPositionAnimation(start: .zero, target: target, timing: .closeEnough,
+        interaction: { events.append("interaction") }, completion: { events.append("completion") })
+    window.bindScootEvents(animation, start: .zero, target: target, direction: CGPoint(x: 1, y: 0),
+        correspondingWindowFrame: { nil }, afterMove: { _ in events.append("move") },
+        enqueueAuxiliary: { _, _ in events.append("auxiliary") })
+    animation.eventHandler?(.valueChanged(oldValue: .zero, newValue: CGPoint(x: 15, y: 0)))
+    precondition(events == ["move", "auxiliary", "auxiliary", "auxiliary"])
+    precondition(window.currentInterpolatedOrigin == CGPoint(x: 15, y: 0))
+    precondition(window.style.scootStretchXScale > 1 && window.style.velocityX == 0)
+    events = []
+    animation.eventHandler?(.valueChanged(oldValue: CGPoint(x: 15, y: 0), newValue: target))
+    precondition(events == ["move", "interaction"])
+    events = []
+    animation.eventHandler?(.finished(target))
+    precondition(events == ["move", "completion"])
+    precondition(window.cursorScootPositionAnimation == nil && window.currentInterpolatedOrigin == target)
+    precondition(window.cursorScootAxisAnimation == nil && window.cursorScootStretchAnimation == nil)
+    precondition(window.cursorScootRotationAnimation == nil && !window.isVisible)
+    animation.eventHandler?(.valueChanged(oldValue: target, newValue: .zero))
+    precondition(window.currentInterpolatedOrigin == target)
+}
+
+@MainActor
+private func runCursorDrivenScootChecks() {
+    final class Driver: AnimationDriver {
+        override func start() { isActive = true }
+        override func stop() { isActive = false }
+    }
+    final class Source: AnimationDriverSource {
+        let driver = Driver()
+        func makeAnimationDriver() -> AnimationDriver { driver }
+    }
+    let source = Source()
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let target = CGPoint(x: 20, y: 10)
+    var interactions = 0, completions = 0, moves = 0
+    var startup: [String] = []
+    let animation = window.startScootMotion(start: .zero, target: target, timing: .closeEnough,
+        correspondingWindowFrame: { nil }, interaction: { interactions += 1 }, completion: { completions += 1 },
+        afterMove: { _ in moves += 1 }, enqueueAuxiliary: { animation, _ in
+            startup.append("auxiliary")
+            animation.start(drivenBy: source)
+        }, enqueuePosition: { animation, owner in
+            precondition(owner.cursorScootPositionAnimation === animation && animation.eventHandler != nil)
+            startup.append("position")
+            animation.start(drivenBy: source)
+        })
+    precondition(startup == ["auxiliary", "auxiliary", "position"])
+    for frame in 0..<2400 {
+        source.driver.frameCallback?(AnimationUpdate(timestamp: Double(frame) / 240, duration: 1.0 / 240))
+        if !source.driver.isActive { break }
+    }
+    precondition(animation.state == .ended && animation.value == target && moves > 1)
+    precondition(interactions == 1 && completions == 1)
+    precondition(window.currentInterpolatedOrigin == target && window.cursorScootPositionAnimation == nil)
+    precondition(window.cursorScootBaseRotationAnimation == nil && window.cursorScootAxisAnimation == nil)
+    precondition(window.cursorScootStretchAnimation == nil && window.cursorScootRotationAnimation == nil)
+    precondition(!source.driver.isActive && !window.isVisible)
+    AnimationCoordinator.shared.remove(driverSource: source)
+}
+
+@MainActor
+private func runCursorMotionStartupChecks() {
+    var configuration = ComputerUseCursorMotionConfiguration.live
+    configuration.scootDistanceThreshold = 10
+    for (distance, expectsScoot) in [(CGFloat(10), true), (CGFloat(10).nextUp, false)] {
+        let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: configuration)
+        var phases: [String] = []
+        window.startCursorMotion(start: .zero, target: CGPoint(x: distance, y: 0), initialWindowFrame: nil,
+            timing: .finished, correspondingWindowFrame: { nil }, interaction: nil, completion: nil,
+            screenFrames: { phases.append("bounds"); return [CGRect(x: -100, y: -100, width: 1000, height: 1000)] },
+            afterMove: { _ in phases.append("move") },
+            enqueueScalar: { _, _ in phases.append("scalar") },
+            enqueuePosition: { _, _ in phases.append("position") })
+        precondition(phases.first == "bounds")
+        precondition(phases == (expectsScoot ? ["bounds", "scalar", "scalar", "position"] : ["bounds", "scalar"]))
+        precondition((window.cursorScootPositionAnimation != nil) == expectsScoot)
+        precondition((window.cursorMotionProgressAnimation != nil) == !expectsScoot)
+        precondition(!window.isVisible)
+        window.resetCursorWindowState()
+    }
+}
+
+@MainActor
+private func runHostedPetLocationChecks() {
+    HostedPetLocation.clear()
+    precondition(HostedPetLocation.point == nil)
+    var replies = 0
+    HostedPetLocation.set(x: 12, y: 34, available: true) { error in
+        precondition(error == nil && HostedPetLocation.point == CGPoint(x: 12, y: 34))
+        replies += 1
+    }
+    let initial = cursorMoveInitialOrigin(targetOrigin: .zero, wasVisible: false, animated: true,
+        petLocation: HostedPetLocation.point, capturedWindowFrame: CGRect(x: 0, y: 0, width: 20, height: 30),
+        hotspot: { CGPoint(x: 4, y: 4) }, currentWindowFrame: { .zero })
+    precondition(initial == CGPoint(x: 8, y: 8))
+    precondition(HostedPetLocation.point == CGPoint(x: 12, y: 34))
+    HostedPetLocation.set(x: 99, y: 88, available: false) { error in
+        precondition(error == nil && HostedPetLocation.point == nil)
+        replies += 1
+    }
+    precondition(replies == 2)
+    HostedPetLocation.set(x: 1, y: 2, available: true) { _ in }
+    HostedPetLocation.clear()
+    precondition(HostedPetLocation.point == nil)
+}
+
+@MainActor
+private func runCursorImmediateMoveChecks() {
+    let style = SoftwareCursorStyle()
+    let window = ComputerUseCursorWindow(style: style, motionConfiguration: .live)
+    let initial = CGPoint(x: 1, y: 2)
+    let absolute = CGPoint(x: 10.5, y: -2.5)
+    window.currentInterpolatedOrigin = initial
+    var phases: [String] = []
+    var requestedOrigin: CGPoint?
+    window.completeImmediateMove(initialRelative: initial, targetRelative: CGPoint(x: 5, y: 6),
+        targetAbsolute: absolute, bounds: {
+            precondition(requestedOrigin == absolute)
+            phases.append("bounds")
+            return CGRect(x: -100, y: -100, width: 1000, height: 1000)
+        }, updatesAngle: true, interaction: {
+            precondition(requestedOrigin == absolute && window.currentInterpolatedOrigin == initial)
+            phases.append("interaction")
+        }, completion: { phases.append("completion") }, setAbsoluteOrigin: { point in
+            requestedOrigin = point
+            window.setFrameOrigin(point)
+        })
+    precondition(phases == ["bounds", "interaction", "completion"])
+    precondition(abs(style.angle.degrees) < 1e-10)
+    precondition(window.cursorMotionProgressAnimation == nil && window.cursorScootPositionAnimation == nil)
+    precondition(!window.isVisible)
+}
+
+private func runCursorMoveWindowHitTestChecks() {
+    let first = CGPoint(x: 10, y: 20), second = CGPoint(x: 100, y: 200)
+    var calls: [String] = [], points: [CGPoint] = []
+    var hotspotReads = 0, frameReads = 0
+    func run(_ id: UInt32?, hits: [Int]) -> Bool {
+        calls = []; points = []; hotspotReads = 0; frameReads = 0
+        return cursorMoveEndpointsMissWindow(firstOrigin: first, secondOrigin: second, correspondingWindowID: id,
+            hotspot: {
+                calls.append("hotspot"); hotspotReads += 1
+                return CGPoint(x: hotspotReads <= 2 ? 4 : 8, y: hotspotReads <= 2 ? 6 : 10)
+            }, frame: {
+                calls.append("frame"); frameReads += 1
+                return CGRect(x: 0, y: 0, width: 20, height: frameReads == 1 ? 30 : 40)
+            }, hitTest: { point in
+                calls.append("hit"); points.append(point)
+                return hits[points.count - 1]
+            })
+    }
+    precondition(!run(nil, hits: []) && calls.isEmpty)
+    precondition(!run(7, hits: [7]))
+    precondition(calls == ["hotspot", "frame", "hotspot", "hit"])
+    precondition(points == [CGPoint(x: 14, y: 44)])
+    precondition(!run(7, hits: [8, 7]))
+    precondition(points == [CGPoint(x: 14, y: 44), CGPoint(x: 108, y: 230)])
+    precondition(run(7, hits: [8, 9]) && hotspotReads == 4 && frameReads == 2)
+}
+
+private func runCursorMoveAnimationDecisionChecks() {
+    for animated in [false, true] {
+        for visible in [false, true] {
+            for screen in [false, true] {
+                for wasVisible in [false, true] {
+                    for equal in [false, true] {
+                        for miss in [false, true] {
+                            var calls: [String] = []
+                            let result = cursorMoveShouldAnimate(animated: animated, wasVisible: wasVisible,
+                                initialAbsolute: .zero, targetAbsolute: equal ? .zero : CGPoint(x: 1, y: 0),
+                                isVisible: { calls.append("visible"); return visible },
+                                hasScreen: { calls.append("screen"); return screen },
+                                endpointsMissWindow: { calls.append("hit"); return miss })
+                            precondition(result == (animated && visible && screen && (wasVisible || !equal) && !miss))
+                            var expected: [String] = []
+                            if animated {
+                                expected.append("visible")
+                                if visible {
+                                    expected.append("screen")
+                                    if screen && (wasVisible || !equal) { expected.append("hit") }
+                                }
+                            }
+                            precondition(calls == expected)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@MainActor
+private func runCursorAnimatedAppearanceChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let layer = window.contentViewController!.view.layer!
+    window.alphaValue = 0
+    layer.layerFilters = [LayerFilter.GaussianBlur(radius: 7, hardEdges: nil, normalizeEdges: nil)]
+    window.prepareAnimatedMoveAppearance(wasVisible: true)
+    precondition(window.alphaValue == 0)
+    precondition((layer.layerFilters.first as? LayerFilter.GaussianBlur)?.radius == 7)
+    window.prepareAnimatedMoveAppearance(wasVisible: false)
+    precondition(window.alphaValue == 1)
+    precondition((layer.layerFilters.first as? LayerFilter.GaussianBlur)?.radius == 0)
+    window.contentViewController = nil
+    window.alphaValue = 0
+    window.prepareAnimatedMoveAppearance(wasVisible: false)
+    precondition(window.alphaValue == 1 && !window.isVisible)
+}
+
+@MainActor
+private func runCursorWindowMoveGeometryChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    HostedPetLocation.set(x: 50, y: 60, available: true) { _ in }
+    let result = window.prepareWindowMoveGeometry(point: CGPoint(x: 100, y: 200), aboveWindowID: 7,
+        relativeToWindow: false, animated: true,
+        windowFrame: { _ in preconditionFailure("No relative window lookup") },
+        zeroScreenFrame: { CGRect(x: 0, y: 0, width: 1000, height: 1000) })
+    precondition(!result.wasVisible && result.petLocation == CGPoint(x: 50, y: 60))
+    precondition(result.initialAbsolute.x == 46 && result.targetAbsolute.x == 96)
+    precondition(result.relativeOrigins.initial == result.initialAbsolute)
+    precondition(result.relativeOrigins.target == result.targetAbsolute)
+    precondition(window.currentInterpolatedOrigin == result.relativeOrigins.initial)
+    var lookups: [UInt32] = []
+    let relative = window.prepareWindowMoveGeometry(point: CGPoint(x: 100, y: 200), aboveWindowID: 7,
+        relativeToWindow: true, animated: false, windowFrame: { id in
+            lookups.append(id); return CGRect(x: 10, y: 20, width: 300, height: 400)
+        }, zeroScreenFrame: { CGRect(x: 0, y: 0, width: 1000, height: 1000) })
+    precondition(lookups == [7] && relative.relativeOrigins.initial == relative.relativeOrigins.target)
+    precondition(relative.relativeOrigins.target.x == relative.targetAbsolute.x - 10)
+    precondition(relative.relativeOrigins.target.y == relative.targetAbsolute.y - 580)
+    precondition(!window.isVisible && HostedPetLocation.point == CGPoint(x: 50, y: 60))
+    HostedPetLocation.clear()
+}
+
+@MainActor
+private func runCursorWindowMoveChecks() {
+    final class Driver: AnimationDriver {
+        override func start() { isActive = true }
+        override func stop() { isActive = false }
+    }
+    final class Source: AnimationDriverSource {
+        let driver = Driver()
+        func makeAnimationDriver() -> AnimationDriver { driver }
+    }
+    let source = Source()
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    var env = CursorWindowMoveEnvironment()
+    var phases: [String] = []
+    env.associate = { owner, id, temporary in
+        phases.append(temporary ? "temporaryAssociation" : "association")
+        owner.wantsToBeVisible = true
+        owner.correspondingWindowID = id
+    }
+    env.isVisible = { _ in true }
+    env.hasScreen = { _ in true }
+    env.screenFrames = { [CGRect(x: 0, y: 0, width: 1000, height: 1000)] }
+    env.zeroScreenFrame = { CGRect(x: 0, y: 0, width: 1000, height: 1000) }
+    env.enqueueScalar = { animation, _ in phases.append("scalar"); animation.start(drivenBy: source) }
+    env.enqueuePosition = { animation, _ in phases.append("position"); animation.start(drivenBy: source) }
+    env.afterMove = { _ in }
+    HostedPetLocation.clear()
+    let immediate = window.move(to: CGPoint(x: 100, y: 200), aboveWindowID: nil, relativeToWindow: false,
+        animated: false, timing: .finished, interaction: { phases.append("interaction") },
+        completion: { phases.append("completion") }, environment: env)
+    precondition(!immediate && phases == ["association", "interaction", "completion"])
+    phases = []
+    HostedPetLocation.set(x: 50, y: 60, available: true) { _ in }
+    // Fixture screen conversion uses1000 rather than live desktop inventory.
+    let expectedTarget = CGPoint(x: 196, y: 1000 - 300 - window.frame.height + 4)
+    let started = window.move(to: CGPoint(x: 200, y: 300), aboveWindowID: nil, relativeToWindow: false,
+        animated: true, timing: .closeEnough, interaction: { phases.append("interaction") },
+        completion: { phases.append("completion") }, environment: env)
+    precondition(started && phases == ["temporaryAssociation", "scalar"])
+    for frame in 0..<2400 {
+        source.driver.frameCallback?(AnimationUpdate(timestamp: Double(frame) / 240, duration: 1.0 / 240))
+        if !source.driver.isActive { break }
+    }
+    precondition(phases == ["temporaryAssociation", "scalar", "interaction", "completion"])
+    precondition(window.currentInterpolatedOrigin == expectedTarget && !window.isVisible)
+    precondition(!source.driver.isActive && window.cursorMotionProgressAnimation == nil)
+    HostedPetLocation.clear()
+    AnimationCoordinator.shared.remove(driverSource: source)
+}
+
+@MainActor
+private func runCursorOwnerWindowMoveChecks() async {
+    let owner = ComputerUseCursor(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    var env = CursorWindowMoveEnvironment()
+    var associations = 0
+    env.associate = { window, id, _ in
+        associations += 1
+        window.wantsToBeVisible = true
+        window.correspondingWindowID = id
+    }
+    env.zeroScreenFrame = { CGRect(x: 0, y: 0, width: 1000, height: 1000) }
+    env.screenFrames = { [CGRect(x: 0, y: 0, width: 1000, height: 1000)] }
+    env.enqueueScalar = { _, _ in preconditionFailure("Immediate move enqueued scalar") }
+    env.enqueuePosition = { _, _ in preconditionFailure("Immediate move enqueued position") }
+    HostedPetLocation.clear()
+    owner.isMoving = true
+    let started = await owner.moveWindowAndWaitForInteraction(to: CGPoint(x: 100, y: 200), aboveWindowID: nil,
+        relativeToWindow: false, animated: false, timing: .closeEnough, isDelegate: false, environment: env)
+    precondition(!started && !owner.isMoving && associations == 1)
+    owner.isMoving = true
+    let delegated = await owner.moveWindowAndWaitForInteraction(to: CGPoint(x: 120, y: 220), aboveWindowID: nil,
+        relativeToWindow: false, animated: false, timing: .finished, isDelegate: true, environment: env)
+    precondition(!delegated && owner.isMoving && associations == 2)
+    precondition(!owner.window.isVisible)
+}
+
+@MainActor
+private func runCursorFadeInPhaseChecks() {
+    let window = ComputerUseCursorWindow(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let controller = NSViewController()
+    controller.view = NSView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+    controller.view.wantsLayer = true
+    window.contentViewController = controller
+    let layer = controller.view.layer!
+    layer.layerFilters = [LayerFilter.GaussianBlur(radius: 7, hardEdges: nil, normalizeEdges: nil),
+        LayerFilter.ColorSaturate()]
+    window.alphaValue = 0.6
+    window.prepareFadeIn()
+    precondition(!window.isVisible && window.alphaValue == 0)
+    precondition((layer.layerFilters.first as? LayerFilter.GaussianBlur)?.radius == 0)
+    precondition(layer.layerFilters.last is LayerFilter.ColorSaturate)
+    let animation = layer.animation(forKey: "cursorBlurTransition") as! CABasicAnimation
+    precondition((animation.fromValue as? NSNumber)?.doubleValue == 7)
+    precondition((animation.toValue as? NSNumber)?.doubleValue == 0)
+    precondition(animation.duration == 0.44)
+    // Simulate only delivery of the completion, not successful AppKit timing.
+    window.alphaValue = 0.75
+    var resumed = false
+    window.completeFadeIn {
+        precondition(layer.layerFilters.count == 1)
+        precondition(layer.layerFilters.first is LayerFilter.ColorSaturate)
+        precondition(window.alphaValue == 0.75 && !window.isVisible)
+        resumed = true
+    }
+    precondition(resumed)
+    window.contentViewController = nil
+    window.prepareFadeIn()
+    window.completeFadeIn { precondition(window.alphaValue == 0) }
+}
+
+@MainActor
+private func runCursorOwnerMoveChecks() async {
+    for started in [false, true] {
+        for animated in [false, true] {
+            for fadeIn in [false, true] {
+                for visible in [false, true] {
+                    let expected = started ? false : (visible ? false : (animated || fadeIn))
+                    precondition(cursorMoveRequiresFadeIn(started: started, animated: animated,
+                        fadeIn: fadeIn, wasVisible: visible) == expected)
+                }
+            }
+        }
+    }
+    final class Delegate: ComputerUseCursorDelegate {
+        var phases: [String] = []
+        func computerUseCursorWillMove(_ cursor: ComputerUseCursor, to point: CGPoint,
+            aboveWindowID: UInt32?, animated: Bool) async {
+            precondition(cursor.targetWindowID == 7 && !cursor.isMoving)
+            phases.append("delegate")
+        }
+        func computerUseCursorWillHide(_ cursor: ComputerUseCursor) async {}
+        func computerUseCursorDidHide(_ cursor: ComputerUseCursor) {}
+        func computerUseCursorDidMove(_ cursor: ComputerUseCursor) {}
+    }
+    let owner = ComputerUseCursor(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    let delegate = Delegate()
+    owner.delegate = delegate
+    var env = CursorWindowMoveEnvironment()
+    env.associate = { window, id, _ in
+        precondition(owner.isMoving)
+        delegate.phases.append("associate")
+        window.correspondingWindowID = id
+    }
+    env.windowFrame = { _ in nil }
+    env.zeroScreenFrame = { CGRect(x: 0, y: 0, width: 1000, height: 1000) }
+    env.screenFrames = { [CGRect(x: 0, y: 0, width: 1000, height: 1000)] }
+    env.enqueueScalar = { _, _ in preconditionFailure("Unexpected animation") }
+    env.enqueuePosition = { _, _ in preconditionFailure("Unexpected animation") }
+    let token = NotificationCenter.default.addObserver(forName: computerUseCursorDidFinishMoveNotification,
+        object: owner, queue: nil) { _ in
+        MainActor.assumeIsolated {
+            precondition(!owner.isMoving && owner.targetWindowID == 7)
+            delegate.phases.append("finished")
+        }
+    }
+    defer { NotificationCenter.default.removeObserver(token) }
+    await owner.move(to: CGPoint(x: 100, y: 200), aboveWindowID: 7, relativeToWindow: true,
+        nextInteractionTiming: .closeEnough, animated: false, fadeIn: false,
+        isDelegate: false, environment: env)
+    precondition(delegate.phases == ["delegate", "associate", "finished"])
+    precondition(!owner.window.isVisible && !owner.isMoving)
+    NotificationCenter.default.removeObserver(token)
+    delegate.phases = []
+    owner.isMoving = true
+    env.associate = { window, id, _ in
+        precondition(owner.targetWindowID == 7 && owner.isMoving)
+        delegate.phases.append("associate")
+        window.correspondingWindowID = id
+    }
+    await owner.move(to: CGPoint(x: 120, y: 220), aboveWindowID: nil, relativeToWindow: false,
+        nextInteractionTiming: .finished, animated: false, fadeIn: false,
+        isDelegate: true, environment: env)
+    precondition(delegate.phases == ["associate"] && owner.isMoving && owner.targetWindowID == 7)
+}
+
+@MainActor
+private func runAppControllerVirtualCursorChecks() {
+    let target = Target(NSRunningApplication.current)
+    let originalFactory = ComputerUseCursorStyle.current
+    defer { ComputerUseCursorStyle.current = originalFactory }
+    let style = SoftwareCursorStyle()
+    var styleCalls = 0
+    var bindCalls = 0
+    ComputerUseCursorStyle.current = { styleCalls += 1; return style }
+    precondition(target.virtualCursor == nil)
+    let cursor = target.createVirtualCursorIfNeeded(bind: { cursor, pid in
+        bindCalls += 1
+        precondition(pid == getpid() && target.virtualCursor === cursor)
+        precondition(cursor.style === style && cursor.correspondingApplicationPID == nil)
+        // Publication before binding also makes reentrant lookup reuse it.
+        let cached = target.createVirtualCursorIfNeeded(make: { preconditionFailure() },
+            bind: { _, _ in preconditionFailure() })
+        precondition(cached === cursor)
+        cursor.correspondingApplicationPID = pid
+    })
+    let cached = target.createVirtualCursorIfNeeded(make: { preconditionFailure() },
+        bind: { _, _ in preconditionFailure() })
+    precondition(cached === cursor && cursor.style === style)
+    precondition(styleCalls == 1 && bindCalls == 1 && cursor.correspondingApplicationPID == getpid())
+    precondition(cursor.window.appMonitor == nil && !cursor.window.isVisible)
+}
+
+@MainActor
+private func runElementCursorPositionPreparationChecks() async throws {
+    enum Failure: Error { case geometry }
+    for hasPoint in [false, true] {
+        for hasTiming in [false, true] {
+            for enabled in [false, true] {
+                for scrolled in [false, true] {
+                    var phases: [String] = []
+                    let point = CGPoint(x: 14, y: 29)
+                    let prepared = try await prepareElementCursorPosition(
+                        timing: hasTiming ? .finished : nil,
+                        clickablePoint: { requested in
+                            precondition(requested)
+                            phases.append("geometry")
+                            await Task.yield()
+                            return (hasPoint ? point : nil, scrolled)
+                        }, cursorFeatureEnabled: { phases.append("feature"); return enabled })
+                    precondition(prepared.didScroll == scrolled)
+                    precondition(phases == (hasPoint && hasTiming ? ["geometry", "feature"] : ["geometry"]))
+                    let moves = hasPoint && hasTiming && enabled
+                    precondition(prepared.point == (moves ? point : nil))
+                    precondition(prepared.timing == (moves ? .finished : nil))
+                }
+            }
+        }
+    }
+    do {
+        _ = try await prepareElementCursorPosition(timing: nil,
+            clickablePoint: { requested in precondition(requested); throw Failure.geometry },
+            cursorFeatureEnabled: { preconditionFailure("Feature read after geometry failure") })
+        preconditionFailure("Geometry error suppressed")
+    } catch Failure.geometry {}
+}
+
+private func runUIElementScrollPlanChecks() throws {
+    enum Failure: Error { case operation, poll }
+    // Leaf action suppresses its cell ancestor; a scroll area resets that
+    // suppression, allowing the outer ancestor's attribute request.
+    let operations = collectUIElementScrollOperations(from: 0,
+        isBoundary: { $0 == 5 }, hasScrollAction: { $0 == 0 },
+        isCell: { $0 == 1 || $0 == 3 }, isScrollAttributeSettable: { _ in true },
+        isScrollArea: { $0 == 2 || $0 == 4 }, clipsChildren: { $0 == 2 || $0 == 4 }, parent: { $0 + 1 })
+    var phases: [String] = []
+    let frame = CGRect(x: 1, y: 2, width: 3, height: 4)
+    let requested = try executeUIElementScrollOperations(operations, frame: frame,
+        performAction: { phases.append("action\($0)") },
+        setScrollAttribute: { phases.append("attribute\($0)") },
+        scrollFrame: { id, actual in precondition(actual == frame); phases.append("frame\(id)"); return false },
+        pollForGeometryChange: { phases.append("poll"); throw Failure.poll })
+    precondition(requested && phases == ["frame4", "attribute3", "frame2", "action0", "poll"])
+    phases = []
+    let empty = collectUIElementScrollOperations(from: 0, isBoundary: { _ in true },
+        hasScrollAction: { _ in preconditionFailure() }, isCell: { _ in preconditionFailure() },
+        isScrollAttributeSettable: { _ in preconditionFailure() }, isScrollArea: { _ in preconditionFailure() },
+        clipsChildren: { _ in preconditionFailure() }, parent: { _ in preconditionFailure() })
+    precondition(empty.isEmpty)
+    let noChange = try executeUIElementScrollOperations([.frame(1), .frame(2)], frame: frame,
+        performAction: { _ in preconditionFailure() }, setScrollAttribute: { _ in preconditionFailure() },
+        scrollFrame: { id, _ in phases.append("frame\(id)"); return false },
+        pollForGeometryChange: { preconditionFailure() })
+    precondition(!noChange && phases == ["frame1", "frame2"])
+    do {
+        _ = try executeUIElementScrollOperations([.action(1), .attribute(2)], frame: frame,
+            performAction: { _ in throw Failure.operation },
+            setScrollAttribute: { _ in preconditionFailure() }, scrollFrame: { _, _ in preconditionFailure() },
+            pollForGeometryChange: { preconditionFailure() })
+        preconditionFailure("Operation error suppressed")
+    } catch Failure.operation {}
+}
+
+private func runScrollVisibilityConditionChecks() {
+    var phases: [String] = []
+    precondition(!uiElementScrollCenterIsVisible(readFrame: { fresh in
+        precondition(fresh); phases.append("frame"); return nil
+    }, clippingFrame: { _ in preconditionFailure() }))
+    precondition(phases == ["frame"])
+    precondition(!uiElementScrollCenterIsVisible(readFrame: { _ in .zero }, clippingFrame: { fresh in
+        precondition(fresh); return nil
+    }))
+    precondition(uiElementScrollCenterIsVisible(readFrame: { _ in CGRect(x: 90, y: 90, width: 40, height: 40) },
+        clippingFrame: { _ in CGRect(x: 100, y: 100, width: 20, height: 20) }))
+    precondition(!uiElementScrollCenterIsVisible(readFrame: { _ in CGRect(x: 90, y: 90, width: 40, height: 40) },
+        clippingFrame: { _ in CGRect(x: 0, y: 0, width: 20, height: 20) }))
+    // A group that clips children resets suppression even though no frame
+    // operation is collected for it. The outer cell is therefore eligible.
+    let operations = collectUIElementScrollOperations(from: 0, isBoundary: { $0 == 3 },
+        hasScrollAction: { $0 == 0 }, isCell: { $0 == 2 }, isScrollAttributeSettable: { _ in true },
+        isScrollArea: { _ in false }, clipsChildren: { $0 == 1 }, parent: { $0 + 1 })
+    precondition(operations.count == 2)
+    guard case .attribute(2) = operations[0], case .action(0) = operations[1] else { preconditionFailure() }
+}
+
+private func runScrollBarPositionChecks() {
+    func position(_ a: CGFloat, _ b: CGFloat, current: CGFloat? = 0.5,
+        contentMin: CGFloat = -400, contentSize: CGFloat = 1000) -> CGFloat? {
+        scrollBarPositionForVisibleTarget(targetMin: a, targetMax: b,
+            viewportMin: 100, viewportMax: 300, viewportSize: 200,
+            contentMin: contentMin, contentSize: contentSize, currentValue: current)
+    }
+    precondition(position(120, 180) == nil)
+    // Small offscreen targets are centered; large ones align the nearest edge.
+    precondition(abs(position(320, 360)! - 0.675) < 1e-12)
+    precondition(abs(position(20, 60)! - 0.3) < 1e-12)
+    precondition(abs(position(50, 350)! - 0.4375) < 1e-12)
+    precondition(abs(position(150, 450)! - 0.6875) < 1e-12)
+    precondition(abs(position(320, 360, current: nil)! - 0.8) < 1e-12)
+    precondition(position(320, 360, current: 2) == 1)
+    precondition(position(20, 60, current: -2) == 0)
+    precondition(position(320, 360, contentSize: 200) == nil)
+    precondition(position(320, 360, contentSize: 100) == nil)
+    precondition(position(320, 360, contentSize: CGFloat.nan) == nil)
+    precondition(position(CGFloat.nan, CGFloat.nan) == nil)
+    precondition(position(320, 360, current: CGFloat.nan)!.isNaN)
+    precondition(position(320, 360, current: nil, contentMin: CGFloat.nan)!.isNaN)
+}
+
+private func runScrollBarValueWritingChecks() throws {
+    enum Failure: Error { case write }
+    let ax = AXUIElementCreateApplication(getpid())
+    let bar = ScrollBarUIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+    var writes = 0
+    for value: CGFloat in [-0.25, 0.5, 1.25, .nan] {
+        try bar.setValue(value, write: { element, encoded, attribute in
+            precondition(CFEqual(element, ax) && attribute == UIElementAttribute(kAXValueAttribute))
+            let number = encoded.value as! NSNumber
+            precondition(value.isNaN ? number.doubleValue.isNaN : number.doubleValue == Double(value))
+            writes += 1
+        })
+    }
+    precondition(writes == 4)
+    do {
+        try bar.setValue(0.7, write: { _, _, _ in throw Failure.write })
+        preconditionFailure("Scrollbar write failure suppressed")
+    } catch Failure.write {}
+    for frame in [CGRect.infinite, CGRect.null, CGRect.zero] {
+        precondition(prepareScrollFrameAdjustment(target: frame,
+            containerFrame: { preconditionFailure("Invalid target read container") }) == nil)
+    }
+    let target = CGRect(x: 10, y: 20, width: 30, height: 40)
+    precondition(prepareScrollFrameAdjustment(target: target, containerFrame: { nil }) == nil)
+    precondition(prepareScrollFrameAdjustment(target: target,
+        containerFrame: { CGRect(x: 0, y: 0, width: 100, height: 100) }) == nil)
+    let partial = CGRect(x: 0, y: 0, width: 20, height: 30)
+    precondition(prepareScrollFrameAdjustment(target: target, containerFrame: { partial }) == partial)
+}
+
+private func runScrollBarPositionApplicationChecks() throws {
+    enum Failure: Error { case write }
+    precondition(clampScrollBarPosition(-0.5) == 0)
+    precondition(clampScrollBarPosition(1.5) == 1)
+    precondition(clampScrollBarPosition(0.5) == 0.5)
+    precondition(clampScrollBarPosition(CGFloat.nan).isNaN)
+    precondition(clampScrollBarPosition(CGFloat.infinity) == 1)
+    precondition(clampScrollBarPosition(-CGFloat.infinity) == 0)
+    var phases: [String] = []
+    func apply(_ min: CGFloat, _ max: CGFloat, contentSize: CGFloat = 1000) throws -> Bool {
+        try applyScrollBarPosition(targetMin: min, targetMax: max,
+            viewportMin: 100, viewportMax: 300, viewportSize: 200,
+            contentGeometry: { phases.append("content"); return (-400, contentSize) },
+            currentValue: { phases.append("value"); return 0.5 },
+            write: { position in precondition(abs(position - 0.675) < 1e-12); phases.append("write") })
+    }
+    let applied = try apply(320, 360)
+    precondition(applied)
+    precondition(phases == ["content", "value", "write"])
+    phases = []
+    let contained = try apply(120, 180)
+    precondition(!contained && phases.isEmpty)
+    let zeroRange = try apply(320, 360, contentSize: 200)
+    precondition(!zeroRange)
+    precondition(phases == ["content", "value"])
+    do {
+        _ = try applyScrollBarPosition(targetMin: 320, targetMax: 360,
+            viewportMin: 100, viewportMax: 300, viewportSize: 200,
+            contentGeometry: { (-400, 1000) }, currentValue: { nil },
+            write: { value in precondition(abs(value - 0.8) < 1e-12); throw Failure.write })
+        preconditionFailure("Write error suppressed")
+    } catch Failure.write {}
+}
+
+private func runScrollContentFrameChecks() {
+    let roles: [Int: UIElementRole] = [0: .scrollArea, 1: .group, 2: .scrollBar, 3: .scrollArea,
+        4: .group, 5: .button, 6: .button, 7: .button]
+    let frames: [Int: CGRect] = [0: CGRect(x: -999, y: -999, width: 9999, height: 9999),
+        1: CGRect(x: 0, y: 0, width: 10, height: 10), 2: CGRect(x: 0, y: 0, width: 9999, height: 9999),
+        3: CGRect(x: 20, y: 20, width: 10, height: 10), 4: CGRect(x: 40, y: 40, width: 10, height: 10),
+        5: CGRect(x: -10, y: -20, width: 5, height: 5), 6: .zero,
+        7: CGRect(x: 500, y: 500, width: 500, height: 500)]
+    let tree = [0: [1, 2, 3, 4], 1: [5, 6, 1], 2: [7], 3: [7], 4: [7], 6: [5]]
+    var reads: [Int] = []
+    var frameReads: [Int] = []
+    var actionReads: [Int] = []
+    let bounds = uiElementScrollContentFrame(of: 0, role: { roles[$0]! }, frame: { id in
+        frameReads.append(id); return frames[id]
+    }, children: { id in reads.append(id); return tree[id] ?? [] },
+        hasPageScrollAction: { id in actionReads.append(id); return id == 4 })
+    precondition(bounds == CGRect(x: -10, y: -20, width: 60, height: 70))
+    precondition(reads == [0, 1, 6, 5])
+    precondition(frameReads == [4, 3, 1, 6, 5])
+    precondition(actionReads == [4, 1])
+    let empty = uiElementScrollContentFrame(of: 0, role: { _ in preconditionFailure() },
+        frame: { _ in preconditionFailure() }, children: { _ in [] },
+        hasPageScrollAction: { _ in preconditionFailure() })
+    precondition(empty.isNull)
+    // Missing frame does not stop descent into an ordinary node.
+    let nested = uiElementScrollContentFrame(of: 0, role: { _ in .button },
+        frame: { $0 == 2 ? CGRect(x: 1, y: 2, width: 3, height: 4) : nil },
+        children: { $0 < 2 ? [$0 + 1] : [] }, hasPageScrollAction: { _ in preconditionFailure() })
+    precondition(nested == CGRect(x: 1, y: 2, width: 3, height: 4))
+}
+
+private func runScrollFrameAdjustmentChecks() throws {
+    enum Failure: Error { case write }
+    var phases: [String] = []
+    let target = CGRect(x: 320, y: 320, width: 40, height: 40)
+    let viewport = CGRect(x: 100, y: 100, width: 200, height: 200)
+    let content = CGRect(x: -400, y: -400, width: 1000, height: 1000)
+    let changed = try adjustUIElementScrollFrame(target: target,
+        containerFrame: { phases.append("viewport"); return viewport },
+        scrollBar: { axis in phases.append("bar\(axis)"); return axis },
+        enabled: { axis in phases.append("enabled\(axis)"); return nil },
+        contentFrame: { phases.append("content"); return content },
+        currentValue: { axis in phases.append("value\(axis)"); return 0.5 },
+        write: { axis, value in precondition(abs(value - 0.675) < 1e-12); phases.append("write\(axis)") })
+    precondition(changed)
+    precondition(phases == ["viewport", "barvertical", "enabledvertical", "content", "valuevertical", "writevertical",
+        "barhorizontal", "enabledhorizontal", "content", "valuehorizontal", "writehorizontal"])
+    var writes: [ScrollFrameAxis] = []
+    let partial = try adjustUIElementScrollFrame(target: target, containerFrame: { viewport },
+        scrollBar: { $0 }, enabled: { $0 == .vertical ? false : true }, contentFrame: { content },
+        currentValue: { axis in precondition(axis == .horizontal); return nil },
+        write: { axis, value in precondition(abs(value - 0.8) < 1e-12); writes.append(axis) })
+    precondition(partial && writes == [.horizontal])
+    let invalid = try adjustUIElementScrollFrame(target: CGRect.null,
+        containerFrame: { preconditionFailure() }, scrollBar: { _ -> Int? in preconditionFailure() },
+        enabled: { _ in preconditionFailure() }, contentFrame: { preconditionFailure() },
+        currentValue: { _ in preconditionFailure() }, write: { _, _ in preconditionFailure() })
+    precondition(!invalid)
+    do {
+        _ = try adjustUIElementScrollFrame(target: target, containerFrame: { viewport },
+            scrollBar: { axis in precondition(axis == .vertical); return axis }, enabled: { _ in true },
+            contentFrame: { content }, currentValue: { _ in 0.5 }, write: { _, _ in throw Failure.write })
+        preconditionFailure("Axis write failure suppressed")
+    } catch Failure.write {}
+}
+
+private func runAXNumberValueChecks() throws {
+    let ax = AXUIElementCreateApplication(getpid())
+    let attribute = UIElementAttribute(kAXValueAttribute)
+    func partial(_ value: AnyObject) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    let cached = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [attribute],
+        attributes: [attribute: partial(NSNumber(value: 0.4))], transactionAttributes: nil))
+    let value = cached.numberValue(for: attribute, ignoringTypeMismatch: false,
+        read: { preconditionFailure("Valid cached number read AX") }, reportError: { _ in preconditionFailure() })
+    precondition(value?.doubleValue == 0.4)
+    let invalid = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [attribute],
+        attributes: [attribute: partial("bad" as NSString)], transactionAttributes: nil))
+    var reports = 0
+    let fresh = invalid.numberValue(for: attribute, ignoringTypeMismatch: false,
+        read: { (.success, partial(NSNumber(value: 0.6))) }, reportError: { _ in reports += 1 })
+    precondition(fresh?.doubleValue == 0.6 && reports == 0)
+    let mismatch = invalid.numberValue(for: attribute, ignoringTypeMismatch: false,
+        read: { (.success, partial("bad" as NSString)) }, reportError: { _ in reports += 1 })
+    precondition(mismatch == nil && reports == 1)
+    let ignored = invalid.numberValue(for: attribute, ignoringTypeMismatch: true,
+        read: { (.success, partial("bad" as NSString)) }, reportError: { _ in preconditionFailure() })
+    precondition(ignored == nil)
+    let decoded = try decodeAXNumber(NSNumber(value: 0.75), throwingOnFailure: true)
+    precondition(decoded?.doubleValue == 0.75)
+}
+
+private func runScrollingClickablePointCompositionChecks() async throws {
+    for (ids, expected): ([Int], String) in [
+        ([], ""), ([0], "0"), ([3, 1, 2, 1, 8, 10, 9], "1-3, 8-10"),
+        ([4, 2, 4], "2, 4"), ([-1, -3, -2, 1], "-3--1, 1"),
+        ([Int.max, Int.max], String(Int.max)),
+        ([Int.min, Int.min + 1, Int.max], "\(Int.min)-\(Int.min + 1), \(Int.max)")
+    ] {
+        checkEqual(removedElementIDRanges(ids), expected)
+        checkEqual(removedElementIDSummary(ids), ids.isEmpty ? nil : "Removed element IDs: " + expected)
+    }
+    func snapshotNode(_ id: Int, _ children: [UIElementRender<Int>] = []) -> UIElementRender<Int> {
+        .init(id: id + 100, elementID: id, text: "node\(id)", detailText: id == 0 ? "" : nil,
+            sourcePath: nil, children: children)
+    }
+    let deepest = snapshotNode(42)
+    let child = snapshotNode(0, [deepest])
+    let snapshotSource = UIElementRenderTree(isFocus: true,
+        roots: [snapshotNode(1, [child]), snapshotNode(2, [snapshotNode(42)])])
+    let snapshot = try snapshotSource.snapshot(subjectID: "lineage")
+    checkEqual(snapshotSource.differenceFullTreeLineCount(), 5)
+    let budgetCursor = UIElementTraversalCursor(item: child, path: IndexPath(index: 0))
+    let budgetRoot = snapshotNode(7, [snapshotNode(8), snapshotNode(9, [snapshotNode(10)])])
+    let subtreeChange = UIElementRenderDifference<Int>.Change.insert(offset: 99,
+        new: .init(item: budgetRoot, path: IndexPath(indexes: [0, 2])))
+    checkEqual(subtreeChange.lines(indent: " ", options: []),
+        ["+ 7 node7", "+  9 node9", "+   10 node10", "+  8 node8"])
+    checkEqual(subtreeChange.lines(indent: " ", options: [.withoutInsertionSubtree]), ["+ 7 node7"])
+    let removalChange = UIElementRenderDifference<Int>.Change.remove(offset: 999,
+        old: .init(item: budgetRoot, path: IndexPath(index: 0)))
+    checkEqual(removalChange.removedElementIDs(), [7, 9, 10, 8])
+    checkEqual(subtreeChange.removedElementIDs(), [])
+    let repeatedRemoval = UIElementRenderDifference<Int>.Change.remove(offset: 0,
+        old: .init(item: snapshotNode(0, [snapshotNode(0), snapshotNode(2)]), path: IndexPath(index: 0)))
+    checkEqual(repeatedRemoval.removedElementIDs(), [0, 2, 0])
+    checkEqual(removedElementIDSummary(repeatedRemoval.removedElementIDs()), "Removed element IDs: 0, 2")
+    checkEqual(formatPreparedDifferenceLines(ordinary: [subtreeChange],
+        summarizedRemovals: [repeatedRemoval], options: [.withoutInsertionSubtree]),
+        ["Removed element IDs: 0, 2", "+\t7 node7"])
+    checkEqual(formatPreparedDifferenceLines(ordinary: [subtreeChange],
+        summarizedRemovals: [], options: [.withoutInsertionSubtree]), ["+\t7 node7"])
+    checkEqual(formatPreparedDifferenceLines(ordinary: [],
+        summarizedRemovals: [repeatedRemoval], options: []), ["Removed element IDs: 0, 2"])
+    for (limit, expectedCount, expectedPending) in [
+        (0, 0, [7]), (1, 1, [8, 9]), (2, 2, [8, 10]),
+        (3, 3, [8]), (4, 4, []), (5, 4, [])
+    ] {
+        let prefix = countDifferenceBudgetPrefix(pending: .init([budgetRoot]), count: 0, remaining: limit)
+        checkEqual(prefix.count, expectedCount)
+        checkEqual(prefix.pending.map(\.id), expectedPending.map { $0 + 100 })
+    }
+    let alreadyCharged = countDifferenceBudgetPrefix(pending: .init([budgetRoot]), count: 1, remaining: 0)
+    checkEqual(alreadyCharged.count, 1)
+    checkTrue(alreadyCharged.pending.first === budgetRoot)
+    let budgetChanges: [UIElementRenderDifference<Int>.Change] = [
+        .none(offset: 0, new: budgetCursor, old: budgetCursor),
+        .insert(offset: 0, new: budgetCursor),
+        .update(offset: 0, new: budgetCursor, old: budgetCursor),
+        .remove(offset: 0, old: budgetCursor)
+    ]
+    var exceededEvents: [AccessibilityDifferenceLineBudgetExceeded] = []
+    checkEqual(budgetChanges.map { $0.differenceOrderingKey.rank }, [0, 2, 3, 1])
+    let orderedChanges = budgetChanges.sorted { $0.precedesInDifference($1) }
+    checkEqual(orderedChanges.map { $0.differenceOrderingKey.rank }, [0, 1, 2, 3])
+    checkTrue(!budgetChanges[1].precedesInDifference(budgetChanges[1]))
+    let combinedLines = renderBudgetedDifferenceLines(budgetChanges, options: [.withoutInsertionSubtree],
+        summarizesRemovedElementIDs: true, ignoreDifferenceLineBudget: true,
+        fullTreeLineCount: 10, onLineBudgetExceeded: { _ in checkTrue(false) })
+    checkEqual(combinedLines, ["Removed element IDs: 0, 42", "+0 node0 ", "~0 node0 "])
+    checkTrue(budgetChanges.allSatisfy { $0.differenceOrderingKey.path == budgetCursor.path })
+    checkEqual(budgetChanges.map { $0.rootDifferenceLine(indent: "\t", options: []) },
+        [nil, "+0 node0 ", "~0 node0 ", "-0 node0 "])
+    let nestedBudgetCursor = UIElementTraversalCursor(item: deepest, path: IndexPath(indexes: [0, 0, 0]))
+    let nestedUpdate = UIElementRenderDifference<Int>.Change.update(offset: 999,
+        new: nestedBudgetCursor, old: budgetCursor)
+    checkEqual(nestedUpdate.rootDifferenceLine(indent: " ", options: []), "~  42 node42")
+    checkEqual(nestedUpdate.rootDifferenceLine(indent: " ", options: [.withoutElementID]), "~  node42")
+    var classifiedEvents: [AccessibilityDifferenceLineBudgetExceeded] = []
+    let classified = prepareDifferenceLineChanges(budgetChanges, options: [],
+        summarizesRemovedElementIDs: true, ignoreDifferenceLineBudget: false,
+        fullTreeLineCount: 4, onLineBudgetExceeded: { classifiedEvents.append($0) })
+    checkEqual(classified?.ordinary.count, 3)
+    checkEqual(classified?.removals.count, 1)
+    checkTrue(classifiedEvents.isEmpty)
+    let summaryRejected = prepareDifferenceLineChanges([budgetChanges[2], budgetChanges[3]], options: [],
+        summarizesRemovedElementIDs: true, ignoreDifferenceLineBudget: false,
+        fullTreeLineCount: 1, onLineBudgetExceeded: { classifiedEvents.append($0) })
+    checkTrue(summaryRejected == nil)
+    checkEqual(classifiedEvents, [.removedElementSummary(fullTreeLineCount: 1)])
+    let ignoring = prepareDifferenceLineChanges(budgetChanges, options: [],
+        summarizesRemovedElementIDs: false, ignoreDifferenceLineBudget: true,
+        fullTreeLineCount: 0, onLineBudgetExceeded: { classifiedEvents.append($0) })
+    checkEqual(ignoring?.ordinary.count, 4)
+    checkEqual(ignoring?.removals.count, 0)
+    var availableBudget = 1
+    checkTrue(!budgetChanges[1].consumeDifferenceBudget(options: [], ignoreDifferenceLineBudget: false,
+        remaining: &availableBudget, fullTreeLineCount: 77, onLineBudgetExceeded: { exceededEvents.append($0) }))
+    checkEqual(availableBudget, 1)
+    checkEqual(exceededEvents, [.difference(fullTreeLineCount: 77)])
+    availableBudget = 2
+    checkTrue(budgetChanges[1].consumeDifferenceBudget(options: [], ignoreDifferenceLineBudget: false,
+        remaining: &availableBudget, fullTreeLineCount: 77, onLineBudgetExceeded: { exceededEvents.append($0) }))
+    checkEqual(availableBudget, 0)
+    availableBudget = 0
+    checkTrue(budgetChanges[2].consumeDifferenceBudget(options: [], ignoreDifferenceLineBudget: false,
+        remaining: &availableBudget, fullTreeLineCount: 77, onLineBudgetExceeded: { exceededEvents.append($0) }))
+    checkEqual(availableBudget, -1)
+    checkTrue(budgetChanges[1].consumeDifferenceBudget(options: [], ignoreDifferenceLineBudget: true,
+        remaining: &availableBudget, fullTreeLineCount: 77, onLineBudgetExceeded: { exceededEvents.append($0) }))
+    checkEqual(availableBudget, -1)
+    checkEqual(exceededEvents.count, 1)
+    for summarizes in [false, true] {
+        for hasRemovals in [false, true] {
+            for remaining in [-1, 0, 1, 2] {
+                var summaryEvents: [AccessibilityDifferenceLineBudgetExceeded] = []
+                let accepted = checkRemovalSummaryBudget(summarizesRemovedElementIDs: summarizes,
+                    hasSummarizedRemovals: hasRemovals, remaining: remaining, fullTreeLineCount: 77,
+                    onLineBudgetExceeded: { summaryEvents.append($0) })
+                let rejected = summarizes && hasRemovals && remaining < 1
+                checkEqual(accepted, !rejected)
+                checkEqual(summaryEvents, rejected ? [.removedElementSummary(fullTreeLineCount: 77)] : [])
+            }
+        }
+    }
+    for options: UIElementRenderLineOptions in [[], .withoutInsertionSubtree, .withoutRemovalSubtree,
+        [.withoutInsertionSubtree, .withoutRemovalSubtree]] {
+        for (index, change) in budgetChanges.enumerated() {
+            let seed = change.differenceBudgetTraversal(options: options)
+            let queued = (index == 1 && !options.contains(.withoutInsertionSubtree))
+                || (index == 3 && !options.contains(.withoutRemovalSubtree))
+            checkEqual(seed.count, index == 0 || queued ? 0 : 1)
+            checkEqual(seed.pending.count, queued ? 1 : 0)
+            if queued { checkTrue(seed.pending.first === child) }
+        }
+    }
+    let emptyText = UIElementRender<Int>(id: 91, elementID: 91, text: "", detailText: nil,
+        sourcePath: nil, children: [])
+    let multiline = UIElementRender<Int>(id: 92, elementID: 92, text: "first\nsecond", detailText: "third\nfourth",
+        sourcePath: nil, children: [emptyText, emptyText])
+    checkEqual(UIElementRenderTree(isFocus: false, roots: [multiline]).differenceFullTreeLineCount(), 3)
+    checkEqual(UIElementRenderTree<Int>(isFocus: false, roots: []).differenceFullTreeLineCount(), 0)
+    checkEqual(snapshot.subjectID, "lineage"); checkTrue(snapshot.isFocus)
+    checkEqual(snapshot.renders.map(\.id), [1, 2, 0, 42, 42])
+    checkEqual(snapshot.renders.map(\.parentIndex), [nil, nil, 0, 1, 2])
+    checkEqual(snapshot.renders[2].detailText, "")
+    let rebuilt = snapshot.renderTree()
+    checkTrue(rebuilt.isFocus)
+    checkEqual(rebuilt.roots.map(\.id), [1, 2])
+    checkTrue(rebuilt.roots.allSatisfy { $0.sourcePath == nil && $0.elementID == $0.id })
+    checkTrue(rebuilt.roots[1].children[0] !== rebuilt.roots[0].children[0].children[0])
+    checkEqual(try rebuilt.snapshot(subjectID: snapshot.subjectID), snapshot)
+    // The native prefix-root assumption is observable for non-BFS input; do
+    // not replace it with a filter that invents different recovery behavior.
+    let nonBFS = UIElementRenderTreeSnapshot(subjectID: "ignored", isFocus: false, renders: [
+        .init(id: 10, text: "root", detailText: nil, parentIndex: nil),
+        .init(id: 11, text: "child", detailText: nil, parentIndex: 0),
+        .init(id: 12, text: "late root", detailText: nil, parentIndex: nil)])
+    let nonBFSRoots = nonBFS.renderTree().roots
+    checkEqual(nonBFSRoots.map(\.id), [10, 11])
+    checkTrue(nonBFSRoots[0].children[0] === nonBFSRoots[1])
+    checkTrue(UIElementRenderTreeSnapshot(subjectID: "", isFocus: false, renders: []).renderTree().roots.isEmpty)
+    checkTrue(try UIElementRenderTree<Int>(isFocus: false, roots: []).snapshot(subjectID: "").renders.isEmpty)
+    enum SnapshotReadFailure: Error { case rejected }
+    for failure in [0, 1, 2] {
+        var trace: [String] = []
+        let prepared = prepareDifferenceLineTrees(baselineSnapshot: {
+            trace.append("baseline")
+            if failure == 1 { throw SnapshotReadFailure.rejected }
+            return 10
+        }, currentSnapshot: {
+            trace.append("current")
+            if failure == 2 { throw SnapshotReadFailure.rejected }
+            return 20
+        }, rebuild: { value in trace.append("rebuild\(value)"); return value + 1 })
+        if failure == 0 {
+            checkEqual(prepared?.baseline, 11); checkEqual(prepared?.current, 21)
+            checkEqual(trace, ["baseline", "rebuild10", "current", "rebuild20"])
+        } else {
+            checkTrue(prepared == nil)
+            checkEqual(trace, failure == 1 ? ["baseline"] : ["baseline", "rebuild10", "current"])
+        }
+    }
+    deepest.elementID = nil
+    do {
+        _ = try snapshotSource.snapshot(subjectID: "lineage")
+        unexpectedFailure()
+    } catch is UIElementRenderTreeSnapshotError {}
+    for text in ["", "selected", " ", "中文🙂"] {
+        let attribute = UIElementAttribute("AXSelectedText")
+        let partial = AXPartialValue(value: AXEncodedValue(value: text as NSString),
+            arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+        let element: any UIElementProtocol = UIElement(
+            axElement: AXUIElementCreateApplication(2147480022),
+            cache: UIElementCache(supportedAttributes: [attribute],
+                attributes: [attribute: partial], transactionAttributes: nil))
+        checkEqual(element.selectedText, text.isEmpty ? nil : text)
+    }
+    for text in ["selected", " ", "中文🙂"] {
+        checkEqual(uiElementSelectedText(readText: { text }, readMarkerRange: { () -> Int? in unexpectedFailure() },
+            readMarkerText: { _ in unexpectedFailure() }), text)
+    }
+    for direct: String? in [nil, ""] {
+        for markerText: String? in [nil, "", " ", "marker"] {
+            var reads: [String] = []
+            let selected = uiElementSelectedText(readText: { reads.append("text"); return direct },
+                readMarkerRange: { reads.append("range"); return 7 }, readMarkerText: { marker in
+                    checkEqual(marker, 7); reads.append("markerText"); return markerText
+                })
+            checkEqual(selected, markerText.flatMap { $0.isEmpty ? nil : $0 })
+            checkEqual(reads, ["text", "range", "markerText"])
+        }
+    }
+    enum MarkerReadFailure: Error { case rejected }
+    checkTrue(uiElementSelectedText(readText: { nil }, readMarkerRange: { 1 },
+        readMarkerText: { _ in throw MarkerReadFailure.rejected }) == nil)
+    checkTrue(uiElementSelectedText(readText: { "" }, readMarkerRange: { () -> Int? in nil },
+        readMarkerText: { _ in unexpectedFailure() }) == nil)
+    for text in ["", "selected"] {
+        var scrollDispatchTrace: [String] = []
+        enum ContentAcquisitionFailure: Error { case rejected }
+        for fails in [false, true] {
+            var acquisitionTrace: [String] = []
+            do {
+                let content = try await acquireScreenshotContent(currentProcessOnly: false, supportsCurrentProcess: true,
+                    includedWindowIDs: [7], visibleWindowIDs: { acquisitionTrace.append("visibility"); return [] },
+                    acquire: { scope in
+                        acquisitionTrace.append("acquire"); checkEqual(scope, .all)
+                        await Task.yield()
+                        if fails { throw ContentAcquisitionFailure.rejected }
+                        return 42
+                    })
+                checkTrue(!fails); checkEqual(content, 42)
+            } catch ContentAcquisitionFailure.rejected { checkTrue(fails) }
+            checkEqual(acquisitionTrace, ["visibility", "acquire"])
+        }
+        for supported in [false, true] {
+            checkEqual(screenshotContentScope(currentProcessOnly: true, supportsCurrentProcess: supported,
+                includedWindowIDs: [7], visibleWindowIDs: { unexpectedFailure() }), supported ? .currentProcess : .all)
+        }
+        checkEqual(screenshotContentScope(currentProcessOnly: false, supportsCurrentProcess: false,
+            includedWindowIDs: nil, visibleWindowIDs: { unexpectedFailure() }), .onScreenExcludingDesktop)
+        for (ids, visible, expected) in [
+            ([UInt32](), [UInt32](), ScreenshotContentScope.onScreenExcludingDesktop),
+            ([7, 7], [8, 7], .onScreenExcludingDesktop),
+            ([7, 9], [7, 8], .all), ([7], [], .all)
+        ] {
+            var visibilityReads = 0
+            checkEqual(screenshotContentScope(currentProcessOnly: false, supportsCurrentProcess: true,
+                includedWindowIDs: ids, visibleWindowIDs: { visibilityReads += 1; return visible }), expected)
+            checkEqual(visibilityReads, 1)
+        }
+        for ids: [UInt32]? in [nil, [], [7], [99], [7, 8], [7, 7]] {
+            var selectionTrace: [String] = []
+            let selected = selectScreenshotWindow(includedWindowIDs: ids, appName: "App",
+                windows: { () -> [Int] in selectionTrace.append("windows"); return [8, 7] },
+                windowID: { UInt32($0) }, matchingApp: { name in
+                    checkEqual(name, "App"); selectionTrace.append("app"); return 9
+                })
+            if ids == nil || ids?.isEmpty == true {
+                checkEqual(selected, 9); checkEqual(selectionTrace, ["app"])
+            } else if ids?.count == 1 {
+                checkEqual(selected, ids == [7] ? 7 : nil); checkEqual(selectionTrace, ["windows"])
+            } else { checkTrue(selected == nil); checkTrue(selectionTrace.isEmpty) }
+        }
+        checkTrue(selectScreenshotWindow(includedWindowIDs: nil, appName: nil,
+            windows: { () -> [Int] in unexpectedFailure() }, windowID: { UInt32($0) },
+            matchingApp: { _ in unexpectedFailure() }) == nil)
+        for shadow in [false, true] {
+            for opaque in [false, true] {
+                let rect = CGRect(x: 5, y: 6, width: 70, height: 80)
+                let config = screenshotStreamConfiguration(width: 123, height: 456, sourceRect: rect,
+                    shouldBeOpaque: opaque, includeWindowShadow: shadow)
+                checkEqual(config.width, 123); checkEqual(config.height, 456)
+                checkEqual(config.sourceRect, rect)
+                checkEqual(config.ignoreShadowsSingleWindow, !shadow)
+                checkTrue(config.ignoreShadowsDisplay); checkTrue(!config.showsCursor)
+                checkEqual(config.shouldBeOpaque, opaque)
+            }
+        }
+        let bridgeContext = CGContext(data: nil, width: 1, height: 1, bitsPerComponent: 8,
+            bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let bridgeImage = bridgeContext.makeImage()!
+        checkTrue(windowCaptureImages([] as CFArray)?.isEmpty == true)
+        // Native uses Swift's CF bridge, which accepts non-image CF objects.
+        // Check type IDs only; never invoke CGImage methods on these fixtures.
+        let nonImageBridge = windowCaptureImages(["invalid"] as CFArray)!
+        checkEqual(nonImageBridge.count, 1)
+        checkEqual(CFGetTypeID(nonImageBridge[0]), CFStringGetTypeID())
+        let mixedBridge = windowCaptureImages([bridgeImage, "invalid"] as CFArray)!
+        checkEqual(mixedBridge.count, 2)
+        checkEqual(CFGetTypeID(mixedBridge[0]), CGImage.typeID)
+        checkEqual(CFGetTypeID(mixedBridge[1]), CFStringGetTypeID())
+        var retainedBridgeImages: [CGImage]?
+        do {
+            let originalArray = [bridgeImage, bridgeImage] as CFArray
+            retainedBridgeImages = windowCaptureImages(originalArray)
+        }
+        checkEqual(retainedBridgeImages?.count, 2)
+        checkTrue(retainedBridgeImages?[0] === bridgeImage)
+        checkTrue(retainedBridgeImages?[1] === bridgeImage)
+        for returnedImages: [Int]? in [nil, [], [4], [4, 5]] {
+            var acceleratedTrace: [String] = []
+            let expectedRect = CGRect(x: -20, y: 30, width: 400, height: 200)
+            let expectedConnection = OpaquePointer(bitPattern: 7)
+            let image = captureAcceleratedWindowScreenshot([8, 9], rect: expectedRect,
+                mainConnection: { acceleratedTrace.append("connection"); return expectedConnection },
+                capture: { windows, options, rect, connection in
+                    acceleratedTrace.append("capture")
+                    checkEqual(windows, [8, 9]); checkEqual(options, .ignoreGlobalClipShape)
+                    checkEqual(rect, expectedRect); checkEqual(connection, expectedConnection)
+                    return returnedImages
+                })
+            checkEqual(image, returnedImages?.first)
+            checkEqual(acceleratedTrace, ["connection", "capture"])
+        }
+        checkEqual(WindowServerCaptureOptions.ignoreGlobalClipShape.rawValue, 0x800)
+        checkTrue(WindowServerSPI.captureWindowImagesInRect([7], options: .ignoreGlobalClipShape,
+            rect: .zero, connection: nil, capture: nil) == nil)
+        checkTrue(WindowServerSPI.captureWindowImagesInRect([], options: .ignoreGlobalClipShape,
+            rect: .zero, connection: nil, capture: { _, _, _, _, _ in unexpectedFailure() }) == nil)
+        let captureRect = CGRect(x: -20, y: 30, width: 400, height: 200)
+        for returnsNil in [false, true] {
+            var captureCalls = 0
+            let images = WindowServerSPI.captureWindowImagesInRect([7, 8, 7], options: .ignoreGlobalClipShape,
+                rect: captureRect, connection: nil, capture: { connection, pointer, count, options, rect in
+                    captureCalls += 1; checkTrue(connection == nil)
+                    checkEqual(Array(UnsafeBufferPointer(start: pointer, count: Int(count))), [7, 8, 7])
+                    checkEqual(options, 0x800); checkEqual(rect, captureRect)
+                    return returnsNil ? nil : []
+                })
+            checkEqual(captureCalls, 1)
+            if returnsNil { checkTrue(images == nil) } else { checkTrue(images?.isEmpty == true) }
+        }
+        let fractionalPixels = screenshotPixelDimensions(CGSize(width: 0.1, height: 100.01))
+        checkEqual(fractionalPixels?.width, 1); checkEqual(fractionalPixels?.height, 101)
+        for invalid: CGFloat in [0, -1, .nan, .infinity, -.infinity, CGFloat.greatestFiniteMagnitude] {
+            checkTrue(screenshotPixelDimensions(CGSize(width: invalid, height: 10)) == nil)
+            checkTrue(screenshotPixelDimensions(CGSize(width: 10, height: invalid)) == nil)
+        }
+        checkEqual(screenshotPixelDimensions(CGSize(width: 9000, height: 9000))?.width, 9000)
+        for skipScreenshot in [false, true] {
+            for hasMenuBarItem in [false, true] {
+                var retainedGeometry = AppControllerGeometryState()
+                retainedGeometry.visibleRect = CGRect(x: 1, y: 2, width: 3, height: 4)
+                retainedGeometry.scalingFactor = 7
+                retainedGeometry.scaledScreenSize = CGSize(width: 8, height: 9)
+                retainedGeometry.cursorPositionInScaledCoordinates = .init(x: 10, y: 11)
+                var captureGeometryTrace: [String] = []
+                let skipped = skipScreenshot || hasMenuBarItem
+                let output = retainedGeometry.prepareCapture(skipScreenshot: skipScreenshot, hasMenuBarItem: hasMenuBarItem,
+                    readSizingOptions: { captureGeometryTrace.append("config"); return (false, true) },
+                    readBounds: { captureGeometryTrace.append("bounds"); return CGRect(x: -10, y: 20, width: 400, height: 200) },
+                    readPixelScale: { captureGeometryTrace.append("scale"); return 2 })
+                checkEqual(captureGeometryTrace, skipped ? ["config"] : ["config", "bounds", "scale"])
+                checkEqual(output, skipped ? .zero : CGSize(width: 800, height: 400))
+                checkEqual(retainedGeometry.scalingFactor, skipped ? 7 : 0.5)
+                checkEqual(retainedGeometry.scaledScreenSize, skipped ? CGSize(width: 8, height: 9) : output)
+                checkEqual(retainedGeometry.visibleRect, skipped ? CGRect(x: 1, y: 2, width: 3, height: 4)
+                    : CGRect(x: -10, y: 20, width: 400, height: 200))
+                checkEqual(retainedGeometry.cursorPositionInScaledCoordinates, .init(x: 10, y: 11))
+            }
+        }
+        var geometryState = AppControllerGeometryState()
+        checkTrue(geometryState.visibleRect.isNull)
+        checkEqual(geometryState.scalingFactor, 0)
+        checkEqual(geometryState.scaledScreenSize, .zero)
+        checkEqual(geometryState.cursorPositionInScaledCoordinates, .init(x: 0, y: 0))
+        geometryState.cursorPositionInScaledCoordinates = .init(x: 7, y: -3)
+        let stateRect = CGRect(x: -20, y: 30, width: 400, height: 200)
+        checkEqual(geometryState.update(visibleRect: stateRect, pixelScale: 2,
+            useLegacyScreenshotSizing: false, normalizeScreenshotToPointResolution: true), CGSize(width: 800, height: 400))
+        checkEqual(geometryState.visibleRect, stateRect)
+        checkEqual(geometryState.scalingFactor, 0.5)
+        checkEqual(geometryState.scaledScreenSize, CGSize(width: 800, height: 400))
+        checkEqual(geometryState.cursorPositionInScaledCoordinates, .init(x: 7, y: -3))
+        var geometryWriteTrace: [String] = []
+        var updatedRect: CGRect?
+        var updatedScale: CGFloat?
+        var updatedSize: CGSize?
+        let geometryRect = CGRect(x: -20, y: 40, width: 400, height: 200)
+        let updatedGeometrySize = updateAppControllerGeometry(visibleRect: geometryRect, pixelScale: 2,
+            useLegacyScreenshotSizing: false, normalizeScreenshotToPointResolution: true,
+            writeVisibleRect: { rect in
+                geometryWriteTrace.append("rect"); updatedRect = rect
+                checkTrue(updatedScale == nil && updatedSize == nil)
+            }, writeScalingFactor: { scale in
+                geometryWriteTrace.append("scale"); checkEqual(updatedRect, geometryRect)
+                checkTrue(updatedSize == nil); updatedScale = scale
+            }, writeScaledScreenSize: { size in
+                geometryWriteTrace.append("size"); checkEqual(updatedScale, 0.5); updatedSize = size
+            })
+        checkEqual(geometryWriteTrace, ["rect", "scale", "size"])
+        checkEqual(updatedGeometrySize, CGSize(width: 800, height: 400))
+        checkEqual(updatedSize, updatedGeometrySize)
+        let screenFrames = [CGRect(x: 0, y: 0, width: 100, height: 100),
+            CGRect(x: 100, y: 0, width: 200, height: 100)]
+        for (bounds, preferred, expected) in [
+            (CGRect(x: 90, y: 0, width: 100, height: 50), Optional<Int>.none, Optional(1)),
+            (CGRect(x: 90, y: 0, width: 100, height: 50), Optional(0), Optional(0)),
+            (CGRect(x: 90, y: 0, width: 20, height: 50), Optional<Int>.none, Optional(0)),
+            (CGRect(x: 900, y: 0, width: 20, height: 50), Optional<Int>.none, Optional(0))
+        ] {
+            checkEqual(bestWindowScreen(for: bounds, preferred: preferred,
+                screens: { [0, 1] }, frame: { screenFrames[$0] }), expected)
+        }
+        checkTrue(bestWindowScreen(for: .zero, preferred: Optional<Int>.none,
+            screens: { [] }, frame: { _ in unexpectedFailure() }) == nil)
+        checkEqual(bestWindowScreen(for: CGRect(x: 10, y: 10, width: 10, height: 10), preferred: 0,
+            screens: { () -> [Int] in unexpectedFailure() }, frame: { screenFrames[$0] }), 0)
+        for resize in [false, true] {
+            for preferPoints in [false, true] {
+                let geometry = appControllerScaledGeometry(visibleRect: CGRect(x: -10, y: 20, width: 400, height: 200),
+                    pixelScale: 2, useLegacyScreenshotSizing: resize, normalizeScreenshotToPointResolution: preferPoints)
+                let usesPoints = resize && preferPoints
+                checkEqual(geometry.size, usesPoints ? CGSize(width: 400, height: 200) : CGSize(width: 800, height: 400))
+                checkEqual(geometry.scalingFactor, usesPoints ? 1 : 0.5)
+            }
+        }
+        let largeGeometry = appControllerScaledGeometry(visibleRect: CGRect(x: 0, y: 0, width: 4000, height: 2000),
+            pixelScale: 2, useLegacyScreenshotSizing: true, normalizeScreenshotToPointResolution: true)
+        checkEqual(largeGeometry.size, CGSize(width: 1536, height: 768))
+        checkEqual(largeGeometry.scalingFactor, 1 / (0.512 * 0.75))
+        enum ResolvedMoveFailure: Error { case denied, window }
+        for mode in 0..<3 {
+            var moveTailTrace: [String] = []
+            var tailPosition = AppControllerCursorPosition(x: 0, y: 0)
+            do {
+                try await performResolvedControllerMouseMove(target: 42,
+                    validateProcess: { target in
+                        moveTailTrace.append("validate"); checkEqual(target, 42)
+                        if mode == 1 { throw ResolvedMoveFailure.denied }
+                    }, readWindowID: { target in
+                        moveTailTrace.append("window"); checkEqual(target, 42)
+                        if mode == 2 { throw ResolvedMoveFailure.window }
+                        return 0
+                    }, createCursor: {
+                        moveTailTrace.append("create"); tailPosition = .init(x: 3, y: -2); return 7
+                    }, readPosition: { moveTailTrace.append("position"); return tailPosition },
+                    readScale: { moveTailTrace.append("scale"); return 2 },
+                    readVisibleRect: { moveTailTrace.append("rect"); return CGRect(x: -10, y: 20, width: 300, height: 400) },
+                    move: { cursor, point, window in
+                        moveTailTrace.append("move"); checkEqual(cursor, 7); checkEqual(window, 0)
+                        checkEqual(point, CGPoint(x: -4, y: 16))
+                        await Task.yield(); moveTailTrace.append("moved")
+                    })
+                checkEqual(mode, 0)
+            } catch let error as ResolvedMoveFailure {
+                switch error { case .denied: checkEqual(mode, 1); case .window: checkEqual(mode, 2) }
+            }
+            let expected = mode == 0 ? ["validate", "window", "create", "position", "scale", "rect", "move", "moved"]
+                : mode == 1 ? ["validate"] : ["validate", "window"]
+            checkEqual(moveTailTrace, expected)
+        }
+        enum MovePreparationFailure: Error { case resolution }
+        for requested: AppControllerCursorPosition? in [nil, .init(x: -2, y: 3)] {
+            var moveTrace: [String] = []
+            var storedPosition: AppControllerCursorPosition?
+            do {
+                _ = try prepareControllerMouseMove(to: requested,
+                    writePosition: { moveTrace.append("write"); storedPosition = $0 },
+                    readScale: { moveTrace.append("scale"); return 2 },
+                    readVisibleRect: { moveTrace.append("rect"); return CGRect(x: -10, y: 20, width: 300, height: 400) },
+                    orderedWindows: { moveTrace.append("windows"); return [7] },
+                    resolve: { (point: CGPoint, windows: [Int]) throws -> Int in
+                        moveTrace.append("resolve"); checkEqual(windows, [7])
+                        checkEqual(point, requested == nil ? CGPoint(x: -10, y: 20) : CGPoint(x: -14, y: 26))
+                        throw MovePreparationFailure.resolution
+                    })
+                preconditionFailure("Expected resolution failure")
+            } catch MovePreparationFailure.resolution {}
+            checkEqual(storedPosition, requested ?? .init(x: 0, y: 0))
+            checkEqual(moveTrace, ["write", "scale", "rect", "windows", "resolve"])
+        }
+        var controllerTrace: [String] = []
+        var scrollControllerPosition = AppControllerCursorPosition(x: 1, y: 2)
+        try await performControllerScroll(deltaX: -3, deltaY: 4,
+            readPosition: { controllerTrace.append("position"); return scrollControllerPosition },
+            readScale: { controllerTrace.append("scale"); return 2 },
+            readVisibleRect: { controllerTrace.append("rect"); return CGRect(x: -10, y: 20, width: 300, height: 400) },
+            orderedWindows: { controllerTrace.append("windows"); return [7] },
+            resolve: { point, windows in
+                controllerTrace.append("resolve"); checkEqual(point, CGPoint(x: -8, y: 24))
+                checkEqual(windows, [7]); return 42
+            }, validateProcess: { destination in
+                controllerTrace.append("validate"); checkEqual(destination, 42)
+                scrollControllerPosition = .init(x: 5, y: 6)
+            }, send: { destination, point, x, y in
+                controllerTrace.append("send"); checkEqual(destination, 42)
+                checkEqual(point, CGPoint(x: 0, y: 32)); checkEqual(x, -3); checkEqual(y, 4)
+                await Task.yield(); controllerTrace.append("sent")
+            })
+        checkEqual(controllerTrace, ["position", "scale", "rect", "windows", "resolve", "validate",
+            "scale", "rect", "position", "send", "sent"])
+        enum CoordinateScrollFailure: Error { case movement }
+        for shouldFail in [false, true] {
+            var coordinateTrace: [String] = []
+            do {
+                try await performCoordinateScroll(point: CGPoint(x: -2.9, y: 7.9), direction: .right, pages: 0.5,
+                    moveMouse: { position, timing in
+                        coordinateTrace.append("move")
+                        checkEqual(position, AppControllerCursorPosition(x: -2, y: 7))
+                        checkEqual(timing, .finished)
+                        if shouldFail { throw CoordinateScrollFailure.movement }
+                        await Task.yield(); coordinateTrace.append("moved")
+                    }, readVisibleRect: {
+                        coordinateTrace.append("rect"); return CGRect(x: 500, y: 600, width: 240, height: 900)
+                    }, scroll: { x, y in coordinateTrace.append("scroll"); checkEqual(x, 120); checkEqual(y, 0) })
+                checkTrue(!shouldFail)
+            } catch CoordinateScrollFailure.movement { checkTrue(shouldFail) }
+            checkEqual(coordinateTrace, shouldFail ? ["move"] : ["move", "moved", "rect", "scroll"])
+        }
+        enum ElementScrollFailure: Error { case point, movement }
+        for mode in 0..<4 {
+            var trace: [String] = []
+            do {
+                try await performElementScroll(direction: .down, pages: 0.5,
+                    readFrame: { trace.append("frame"); return CGRect(x: 0, y: 0, width: 200, height: 300) },
+                    readVisibleRect: { trace.append("rect"); return CGRect(x: -10, y: 20, width: 800, height: 900) },
+                    clickablePoint: {
+                        trace.append("point")
+                        if mode == 2 { throw ElementScrollFailure.point }
+                        return mode == 0 ? nil : CGPoint(x: -15, y: 27)
+                    }, readScale: { trace.append("scale"); return 2 },
+                    moveMouse: { position, timing in
+                        trace.append("move")
+                        checkEqual(position, AppControllerCursorPosition(x: -2, y: 3))
+                        checkEqual(timing, .finished)
+                        if mode == 3 { throw ElementScrollFailure.movement }
+                        await Task.yield(); trace.append("moved")
+                    }, scroll: { x, y in
+                        trace.append("scroll"); checkEqual(x, 0); checkEqual(y, -150)
+                    })
+                checkTrue(mode < 2)
+            } catch let error as ElementScrollFailure {
+                switch error { case .point: checkEqual(mode, 2); case .movement: checkEqual(mode, 3) }
+            }
+            let expected: [String]
+            switch mode {
+            case 0: expected = ["frame", "point", "scroll"]
+            case 1: expected = ["frame", "point", "scale", "rect", "move", "moved", "scroll"]
+            case 2: expected = ["frame", "point"]
+            default: expected = ["frame", "point", "scale", "rect", "move"]
+            }
+            checkEqual(trace, expected)
+        }
+        let scrollFrame = CGRect(x: -10, y: 20, width: -40, height: -50)
+        let scrollPoint = CGPoint(x: -15, y: 27)
+        checkEqual(elementScrollCursorPosition(clickablePoint: scrollPoint, scalingFactor: 2,
+            visibleRect: scrollFrame), AppControllerCursorPosition(x: -2, y: 3))
+        for scale: CGFloat in [0, -2, .nan, -.infinity] {
+            checkEqual(elementScrollCursorPosition(clickablePoint: scrollPoint, scalingFactor: scale,
+                visibleRect: scrollFrame), AppControllerCursorPosition(x: -5, y: 7))
+        }
+        checkEqual(elementScrollCursorPosition(clickablePoint: scrollPoint, scalingFactor: .infinity,
+            visibleRect: scrollFrame), AppControllerCursorPosition(x: 0, y: 0))
+        for frame: CGRect? in [nil, .zero, CGRect(x: 8, y: 9, width: -20, height: 70)] {
+            var sizeReads: [String] = []
+            let size = elementScrollPageSize(readFrame: { sizeReads.append("frame"); return frame },
+                readVisibleRect: { sizeReads.append("visible"); return CGRect(x: 0, y: 0, width: 400, height: 600) })
+            checkEqual(size, frame?.size ?? CGSize(width: 400, height: 600))
+            checkEqual(sizeReads, frame == nil ? ["frame", "visible"] : ["frame"])
+        }
+        for direction in [AppControllerScrollDirection.up, .down, .left, .right] {
+            let vertical = direction == .up || direction == .down
+            checkEqual(direction.pageExtent(size: CGSize(width: 240, height: 360)), vertical ? 360 : 240)
+            for dimension in [-20.0, 0, 99.5, 100] {
+                checkEqual(direction.pageExtent(size: CGSize(width: dimension, height: dimension)), 100)
+            }
+            checkTrue(direction.pageExtent(size: CGSize(width: Double.nan, height: Double.nan)).isNaN)
+        }
+        for (direction, x, y) in [(AppControllerScrollDirection.up, 0, 3), (.down, 0, -3),
+            (.left, -3, 0), (.right, 3, 0)] {
+            let delta = direction.deltas(pages: 0.5, pageExtent: 5)
+            checkEqual(delta.x, x); checkEqual(delta.y, y)
+        }
+        checkEqual(AppControllerScrollDirection.right.deltas(pages: 0.01, pageExtent: 1).x, 0)
+        checkEqual(AppControllerScrollDirection.right.deltas(pages: -0.5, pageExtent: 5).x, -3)
+        var targetTrace: [String] = []
+        var positionReadCount = 0
+        let preparedScroll = try prepareControllerScrollTarget(readPosition: {
+            targetTrace.append("position"); positionReadCount += 1
+            return AppControllerCursorPosition(x: positionReadCount, y: 3)
+        }, readScale: { targetTrace.append("scale"); return 2 },
+            readVisibleRect: { targetTrace.append("rect"); return CGRect(x: -10, y: 20, width: 30, height: 40) },
+            orderedWindows: { targetTrace.append("windows"); return [7] },
+            resolve: { point, windows in
+                checkEqual(point, CGPoint(x: -8, y: 26)); checkEqual(windows, [7])
+                targetTrace.append("resolve"); return 42
+            }, validateProcess: { target in checkEqual(target, 42); targetTrace.append("validate") })
+        checkEqual(preparedScroll.target, 42); checkEqual(preparedScroll.point, CGPoint(x: -6, y: 26))
+        checkEqual(targetTrace, ["position", "scale", "rect", "windows", "resolve", "validate", "scale", "rect", "position"])
+        enum ScrollTargetFailure: Error { case windows, resolve, denied }
+        for failure in [ScrollTargetFailure.windows, .resolve, .denied] {
+            var failedTrace: [String] = []
+            do {
+                _ = try prepareControllerScrollTarget(readPosition: {
+                    failedTrace.append("position"); return .init(x: 1, y: 2)
+                }, readScale: { failedTrace.append("scale"); return 1 },
+                    readVisibleRect: { failedTrace.append("rect"); return .zero },
+                    orderedWindows: { () throws -> [Int] in
+                        failedTrace.append("windows")
+                        if case .windows = failure { throw failure }; return []
+                    }, resolve: { _, windows in
+                        checkTrue(windows.isEmpty); failedTrace.append("resolve")
+                        if case .resolve = failure { throw failure }; return 42
+                    }, validateProcess: { _ in failedTrace.append("validate"); throw failure })
+                preconditionFailure("Expected target preparation failure")
+            } catch let error as ScrollTargetFailure {
+                switch (failure, error) {
+                case (.windows, .windows), (.resolve, .resolve), (.denied, .denied): break
+                default: preconditionFailure("Preparation changed error")
+                }
+            }
+            let prefix = ["position", "scale", "rect", "windows"]
+            switch failure {
+            case .windows: checkEqual(failedTrace, prefix)
+            case .resolve: checkEqual(failedTrace, prefix + ["resolve"])
+            case .denied: checkEqual(failedTrace, prefix + ["resolve", "validate"])
+            }
+        }
+        let controllerPosition = AppControllerCursorPosition(x: 12, y: -4)
+        checkEqual(controllerPosition.applying(scalingFactor: 2, convertingToScreenFromWindowFrame: nil),
+            CGPoint(x: 24, y: -8))
+        checkEqual(controllerPosition.applying(scalingFactor: 0.5,
+            convertingToScreenFromWindowFrame: CGRect(x: -100, y: 300, width: -40, height: -50)),
+            CGPoint(x: -94, y: 298))
+        try await dispatchControllerScroll(at: CGPoint(x: -4, y: 20), deltaX: -7, deltaY: 13,
+            targetPID: 42, window: nil, makeEvent: { point, x, y, window in
+                checkEqual(point, CGPoint(x: -4, y: 20)); checkEqual(x, -7); checkEqual(y, 13)
+                checkTrue(window == nil); scrollDispatchTrace.append("make"); return 99
+            }, sendEvent: { event, pid, delay in
+                checkEqual(event, 99); checkEqual(pid, 42); checkEqual(delay, .milliseconds(10))
+                scrollDispatchTrace.append("send")
+            })
+        checkEqual(scrollDispatchTrace, ["make", "send"])
+        var concreteScrollPosts = 0
+        var concreteScrollWaits = 0
+        let concreteScrollInstant = ContinuousClock().now
+        try await dispatchControllerScroll(at: CGPoint(x: -4, y: 20), deltaX: 0, deltaY: -13,
+            targetPID: 42, window: nil, post: { event, pid in
+                checkEqual(pid, 42); checkEqual(event.type, .scrollWheel)
+                checkEqual(event.location, CGPoint(x: -4, y: 20))
+                checkEqual(event.getIntegerValueField(.scrollWheelEventPointDeltaAxis1), -13)
+                concreteScrollPosts += 1
+            }, now: { concreteScrollInstant }, sleepUntil: { deadline in
+                checkEqual(deadline, concreteScrollInstant.advanced(by: .milliseconds(10)))
+                concreteScrollWaits += 1
+            })
+        checkEqual(concreteScrollPosts, 1); checkEqual(concreteScrollWaits, 1)
+        let sendEvents = SynthesizedEvent(cgEvents: [CGEvent(source: nil)!, CGEvent(source: nil)!])
+        var sendTrace: [String] = []
+        let sendInstant = ContinuousClock().now
+        try await sendEvents.send(to: 42, delay: .milliseconds(10), post: { _, pid in
+            checkEqual(pid, 42); sendTrace.append("post")
+        }, now: { sendTrace.append("now"); return sendInstant }, sleepUntil: { deadline in
+            checkEqual(deadline, sendInstant.advanced(by: .milliseconds(10))); sendTrace.append("sleep")
+        })
+        checkEqual(sendTrace, ["post", "now", "sleep", "post", "now", "sleep"])
+        sendTrace = []
+        try await sendEvents.send(to: 42, delay: nil, post: { _, _ in sendTrace.append("post") },
+            now: { unexpectedFailure() }, sleepUntil: { _ in unexpectedFailure() })
+        checkEqual(sendTrace, ["post", "post"])
+        try await SynthesizedEvent(cgEvents: []).send(to: 42, delay: .milliseconds(10),
+            post: { _, _ in unexpectedFailure() }, now: { unexpectedFailure() },
+            sleepUntil: { _ in unexpectedFailure() })
+        enum SendWaitFailure: Error { case rejected }
+        sendTrace = []
+        do {
+            try await sendEvents.send(to: 42, delay: .milliseconds(10),
+                post: { _, _ in sendTrace.append("post") }, now: { sendInstant },
+                sleepUntil: { _ in sendTrace.append("sleep"); throw SendWaitFailure.rejected })
+            preconditionFailure("Expected send wait failure")
+        } catch SendWaitFailure.rejected {}
+        checkEqual(sendTrace, ["post", "sleep"])
+        sendTrace = []
+        do {
+            try await sendEvents.send(to: 42, delay: .zero,
+                post: { _, _ in sendTrace.append("post") }, now: { sendInstant },
+                sleepUntil: { deadline in
+                    checkEqual(deadline, sendInstant); sendTrace.append("cancel"); throw CancellationError()
+                })
+            preconditionFailure("Expected send cancellation")
+        } catch is CancellationError {}
+        checkEqual(sendTrace, ["post", "cancel"])
+        let composed = selectionDescriptionPresentation(windowTitle: nil, applicationName: "",
+            mode: .fullTree, tree: .fullTree(["0 button"]),
+            focus: .init(selectedText: nil, lines: ["0 button"]), summarizesRemovedElementIDs: true)
+        checkEqual(composed.text, "Window: \"Unknown\", App: .\n0 button\n\nThe focused UI element is 0 button")
+        let diffComposed = selectionDescriptionPresentation(windowTitle: "", applicationName: nil,
+            mode: .difference(from: .initial), tree: .difference([]),
+            focus: .init(selectedText: text, lines: []), summarizesRemovedElementIDs: false)
+        checkEqual(diffComposed, AccessibilityTreePresentation.unchanged(windowTitle: "",
+            focusedElement: nil, selectedText: text, selectedElements: []))
+        let focus = selectionDescriptionFocus(readSelectedText: { text },
+            readFocusLines: { unexpectedFailure() })
+        checkEqual(focus.selectedText, text)
+        checkTrue(focus.lines.isEmpty)
+        checkEqual(focus.presentationContext.selectedText, text)
+        checkTrue(focus.presentationContext.focusedElement == nil)
+        checkTrue(focus.presentationContext.selectedElements.isEmpty)
+    }
+    for lines: [String]? in [nil, [], [""], ["first\nsecond"], ["first", "second"]] {
+        var trace: [String] = []
+        let focus = selectionDescriptionFocus(readSelectedText: {
+            trace.append("text"); return nil
+        }, readFocusLines: { trace.append("lines"); return lines })
+        checkTrue(focus.selectedText == nil)
+        checkEqual(focus.lines, lines ?? [])
+        checkEqual(focus.presentationContext.focusedElement, lines?.count == 1 ? lines?[0] : nil)
+        checkEqual(focus.presentationContext.selectedElements, lines?.count == 1 ? [] : (lines ?? []))
+        checkEqual(trace, ["text", "lines"])
+    }
+    for enabled in [false, true] {
+        for didScroll in [false, true] {
+            var trace: [String] = []
+            var resolutions = 0
+            let result = try await prepareInteractionElement(positionElement: enabled, resolve: {
+                resolutions += 1; trace.append("resolve"); return resolutions
+            }, activateFocusEnforcer: { trace.append("enforcer") }, position: { element in
+                checkEqual(element, 1); trace.append("position"); return didScroll
+            })
+            checkEqual(result, enabled && didScroll ? 2 : 1)
+            checkEqual(trace, ["resolve", "enforcer"] + (enabled ? ["position"] : [])
+                + (enabled && didScroll ? ["resolve"] : []))
+        }
+    }
+    enum PreparationFailure: Error { case rejected }
+    var processTrace: [String] = []
+    do {
+        _ = try await prepareInteraction(positionElement: true,
+            resolve: { processTrace.append("resolve"); return processTrace.count },
+            activateFocusEnforcer: { processTrace.append("enforcer") },
+            position: { _ in processTrace.append("position"); return true },
+            validateProcess: { element in
+                checkEqual(element, 4); processTrace.append("validate"); throw PreparationFailure.rejected
+            })
+        unexpectedFailure()
+    } catch PreparationFailure.rejected {}
+    checkEqual(processTrace, ["resolve", "enforcer", "position", "resolve", "validate"])
+    for absent in 0...2 {
+        var processReads: [String] = []
+        try validateInteractionProcess(pid: 123, application: { pid -> Int32? in
+            checkEqual(pid, 123); processReads.append("app"); return absent == 0 ? nil : pid
+        }, bundleIdentifier: { _ in
+            processReads.append("bundle"); return absent == 1 ? nil : "com.example.ordinary"
+        }, securityBundleIdentifiers: {
+            processReads.append("security"); return NativeForbiddenTargets.systemAuthentication
+        }, reject: { _ in throw PreparationFailure.rejected })
+        checkEqual(processReads, Array(["app", "bundle", "security"].prefix(absent + 1)))
+    }
+    for bundle in NativeForbiddenTargets.systemAuthentication {
+        do {
+            try validateInteractionProcess(pid: 123, application: { _ in 123 },
+                bundleIdentifier: { _ in bundle },
+                securityBundleIdentifiers: { NativeForbiddenTargets.systemAuthentication },
+                reject: { rejected in checkEqual(rejected, bundle); throw PreparationFailure.rejected })
+            unexpectedFailure()
+        } catch PreparationFailure.rejected {}
+    }
+    var failedTrace: [String] = []
+    do {
+        _ = try await prepareInteractionElement(positionElement: true,
+            resolve: { failedTrace.append("resolve"); return 1 },
+            activateFocusEnforcer: { failedTrace.append("enforcer") },
+            position: { _ in failedTrace.append("position"); throw PreparationFailure.rejected })
+        unexpectedFailure()
+    } catch PreparationFailure.rejected {}
+    checkEqual(failedTrace, ["resolve", "enforcer", "position"])
+    let protocolElement: any UIElementProtocol = RefetchReconstructionProbe(
+        element: AXUIElementCreateApplication(2147480020), reconstructed: false)
+    // Missing known-unsupported frame must propagate the native geometry error;
+    // the default protocol entry cannot scroll or silently use position/size.
+    do {
+        _ = try await protocolElement.clickablePoint(reportError: { _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch UIElementGeometryError.elementHasNoFrame {}
+    checkTrue(protocolElement.scrollContentFrame(reportError: { _ in unexpectedFailure() }).isNull)
+    for scroll in [false, true] {
+        do {
+            _ = try await protocolElement.clickablePoint(scrollToVisible: scroll,
+                reportError: { _ in unexpectedFailure() })
+            unexpectedFailure()
+        } catch UIElementGeometryError.elementHasNoFrame {}
+    }
+    var phases: [String] = []
+    var current = CGRect(x: 500, y: 500, width: 20, height: 20)
+    let clip = CGRect(x: 0, y: 0, width: 100, height: 100)
+    let resolved = try await uiElementClickablePoint(scrollToVisible: true,
+        preferredPoint: { nil }, frameBeforeScroll: { current },
+        scrollFrameToVisible: { original in
+            precondition(original.minX == 500)
+            return try executeUIElementScrollOperations([.frame(1), .action(2)], frame: original,
+                performAction: { _ in phases.append("action"); current = CGRect(x: 20, y: 30, width: 20, height: 20) },
+                setScrollAttribute: { _ in preconditionFailure() },
+                scrollFrame: { _, frame in precondition(frame == original); phases.append("frame"); return false },
+                pollForGeometryChange: { phases.append("poll") })
+        }, readFrameAttribute: { fresh in precondition(fresh); phases.append("freshFrame"); return current },
+        clippingFrame: { fresh in precondition(fresh); phases.append("freshClip"); return clip })
+    precondition(resolved.point == CGPoint(x: 30, y: 40) && resolved.didScroll)
+    precondition(phases == ["frame", "action", "poll", "freshFrame", "freshClip"])
+}
+
+@MainActor
+private func runElementPositionCompositionChecks() async throws {
+    let owner = ComputerUseCursor(style: SoftwareCursorStyle(), motionConfiguration: .live)
+    var phases: [String] = []
+    var env = CursorWindowMoveEnvironment()
+    env.associate = { window, id, _ in
+        precondition(id == 7 && owner.targetWindowID == 7 && owner.isMoving)
+        phases.append("move")
+        window.correspondingWindowID = id
+    }
+    env.windowFrame = { _ in nil }
+    env.zeroScreenFrame = { CGRect(x: 0, y: 0, width: 1000, height: 1000) }
+    env.screenFrames = { [CGRect(x: 0, y: 0, width: 1000, height: 1000)] }
+    let scrolled = try await positionElementCursor(timing: .finished, animated: false,
+        clickablePoint: { scroll in precondition(scroll); phases.append("geometry"); return (CGPoint(x: 40, y: 60), true) },
+        cursorFeatureEnabled: { phases.append("feature"); return true },
+        createCursor: { phases.append("cursor"); return owner },
+        selectedWindowID: { phases.append("selection"); return 7 }, environment: env)
+    precondition(scrolled && phases == ["geometry", "feature", "cursor", "selection", "move"])
+    precondition(!owner.isMoving && !owner.window.isVisible)
+    let skipped = try await positionElementCursor(timing: nil, animated: true,
+        clickablePoint: { scroll in precondition(scroll); return (CGPoint.zero, true) },
+        cursorFeatureEnabled: { preconditionFailure() }, createCursor: { preconditionFailure() },
+        selectedWindowID: { preconditionFailure() })
+    precondition(skipped)
+    let disabled = try await positionElementCursor(timing: .closeEnough, animated: true,
+        clickablePoint: { _ in (CGPoint.zero, false) }, cursorFeatureEnabled: { false },
+        createCursor: { preconditionFailure() }, selectedWindowID: { preconditionFailure() })
+    precondition(!disabled)
+}
+
+private func runApplicationWindowStorageChecks() {
+    let ax = AXUIElementCreateApplication(getpid())
+    let other = AXUIElementCreateApplication(Int32.max)
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let window = WindowUIElement(axElement: other, cache: cache)
+    let first = NativeWindowDescription([kCGWindowNumber as String: UInt32(7),
+        kCGWindowOwnerPID as String: Int32(42)])
+    let object = ApplicationWindow(cgWindow: first, axWindow: window, axApplication: app)
+    let retained = object
+    precondition(object.id == 7 && CFEqual(object.axWindow.axElement, other))
+    precondition(CFEqual(object.axApplication.axElement, ax))
+    object.cgWindow = NativeWindowDescription([kCGWindowNumber as String: UInt32(9)])
+    object.axWindow = WindowUIElement(axElement: ax, cache: cache)
+    precondition(retained === object && retained.id == 9)
+    precondition(CFEqual(retained.axWindow.axElement, ax) && CFEqual(retained.axApplication.axElement, ax))
+}
+
+private func runSystemSelectionStorageChecks() throws {
+    let ax = AXUIElementCreateApplication(getpid())
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let window = WindowUIElement(axElement: ax, cache: cache)
+    func makeWindow(_ id: UInt32) -> ApplicationWindow {
+        ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: id]),
+            axWindow: window, axApplication: app)
+    }
+    func makeRevision() throws -> UIElementTreeRevision<TransformedUIElement> {
+        try UIElementTreeRevision.root(UIElementTree(items: [], focusedElement: nil),
+            focusTree: nil, lineageID: "selection") { _ in
+                UIElementRenderTree(isFocus: false, roots: [])
+            }
+    }
+    let first = makeWindow(7), second = makeWindow(9)
+    let revision = try makeRevision(), replacement = try makeRevision()
+    let selection = SystemSelection(applicationWindow: first, windowRevision: revision, invalidationMonitor: nil)
+    var descriptionTrace: [String] = []
+    let boundPresentation = selection.descriptionPresentation(mode: .fullTree, lineOptions: [],
+        summarizesRemovedElementIDs: true, onLineBudgetExceeded: { _ in unexpectedFailure() },
+        readWindowTitle: { owner in
+            checkTrue(owner === first); descriptionTrace.append("title"); return "bound title"
+        }, readApplicationName: { owner in
+            checkTrue(owner === first); descriptionTrace.append("name"); return "bound app"
+        }, readSelectedText: { _ in descriptionTrace.append("selected"); return nil })
+    checkEqual(Array(descriptionTrace.prefix(2)), ["title", "name"])
+    checkTrue(boundPresentation.text.hasPrefix("Window: \"bound title\", App: bound app.\n"))
+    var llmTrace: [String] = []
+    let boundText = selection.llmDescription(.fullTree, lineOptions: [],
+        onLineBudgetExceeded: { _ in unexpectedFailure() }, readSummaryFeature: { unexpectedFailure() },
+        readWindowTitle: { _ in llmTrace.append("title"); return "bound title" },
+        readApplicationName: { _ in llmTrace.append("name"); return "bound app" },
+        readSelectedText: { _ in unexpectedFailure() },
+        readBundleIdentifier: { owner in checkTrue(owner === first); llmTrace.append("bundle"); return nil })
+    checkEqual(boundText, boundPresentation.text)
+    checkEqual(llmTrace, ["title", "name", "bundle"])
+    for bundle: String? in [nil, "", "com.spotify.client.extra", "COM.SPOTIFY.CLIENT", "other"] {
+        checkEqual(selectionDescriptionText(boundPresentation, bundleIdentifier: bundle), boundPresentation.text)
+    }
+    let spotifyDescription = selectionDescriptionText(boundPresentation, bundleIdentifier: "com.spotify.client")
+    checkTrue(spotifyDescription.hasPrefix(boundPresentation.text + "\n\nNote: In order to be usable, Spotify app links"))
+    checkTrue(spotifyDescription.contains("open.spotify.com instead of xpui.app.spotify.com"))
+    checkEqual(boundPresentation.text.hasSuffix("\n"), true)
+    checkEqual(first.appName(readLocalizedName: { pid in
+        checkEqual(pid, first.cgWindow.ownerPID); return "localized"
+    }), "localized")
+    checkEqual(first.appName(readLocalizedName: { _ in "" }), "")
+    checkEqual(first.appName(readLocalizedName: { _ in nil }), first.cgWindow.ownerName)
+    checkEqual(applicationWindowTitle(cgTitle: "CG", readAXTitle: { unexpectedFailure() },
+        isDesktopLevel: { unexpectedFailure() }, readBundleIdentifier: { unexpectedFailure() }), "CG")
+    checkEqual(applicationWindowTitle(cgTitle: "", readAXTitle: { unexpectedFailure() },
+        isDesktopLevel: { false }, readBundleIdentifier: { unexpectedFailure() }), "")
+    checkEqual(applicationWindowTitle(cgTitle: nil, readAXTitle: { "AX" },
+        isDesktopLevel: { unexpectedFailure() }, readBundleIdentifier: { unexpectedFailure() }), "AX")
+    for candidate: String? in [nil, ""] {
+        checkEqual(applicationWindowTitle(cgTitle: candidate, readAXTitle: { nil },
+            isDesktopLevel: { true }, readBundleIdentifier: { "com.apple.finder" }), "Desktop")
+        checkEqual(applicationWindowTitle(cgTitle: candidate, readAXTitle: { nil },
+            isDesktopLevel: { true }, readBundleIdentifier: { "other" }), candidate)
+    }
+    let tree = try RefetchableSkyshotAXTree(systemSelection: selection, isAXTreeDiffingEnabled: true)
+    var copied = tree.systemSelection
+    copied.applicationWindow = second
+    copied.windowRevision = replacement
+    precondition(tree.applicationWindow === first && tree.systemSelection.windowRevision === revision)
+    first.cgWindow = NativeWindowDescription([kCGWindowNumber as String: UInt32(11)])
+    precondition(selection.applicationWindow.id == 11 && tree.applicationWindow.id == 11)
+    tree.systemSelection = copied
+    precondition(tree.applicationWindow === second && tree.systemSelection.windowRevision === replacement)
+    precondition(tree.isAXTreeDiffingEnabled && tree.systemSelection.invalidationMonitor == nil)
+    enum ExtractionFailure: Error { case rejected }
+    let before = tree.systemSelection.windowRevision
+    do {
+        try tree.refetchTree { throw ExtractionFailure.rejected }
+        preconditionFailure()
+    } catch ExtractionFailure.rejected {}
+    precondition(tree.systemSelection.windowRevision === before)
+    var extractionCalls = 0
+    let published = try tree.refetchTree {
+        extractionCalls += 1
+        precondition(tree.systemSelection.windowRevision === before)
+        return selection
+    }
+    precondition(extractionCalls == 1 && published.windowRevision === revision)
+    precondition(tree.systemSelection.windowRevision === revision && tree.applicationWindow === first)
+    let disabled = try RefetchableSkyshotAXTree(systemSelection: selection, isAXTreeDiffingEnabled: false)
+    precondition(!disabled.isAXTreeDiffingEnabled && disabled.applicationWindow === first)
+    var stages: [String] = []
+    let extractedOnly = try tree.extractRefetchSelection(readContext: { _ in
+        stages.append("context")
+        return FocusedUIElementContext(element: nil, applicationWindow: second)
+    }, extract: { request in
+        stages.append("extract")
+        checkTrue(request.previousRevision === revision)
+        return copied
+    })
+    checkEqual(stages, ["context", "extract"])
+    checkTrue(extractedOnly.windowRevision === replacement)
+    checkTrue(tree.systemSelection.windowRevision === revision && tree.applicationWindow === first)
+    stages.removeAll()
+    let refreshed = try tree.refetchTree(readContext: { application in
+        checkEqual(application.axElement, app.axElement)
+        stages.append("context")
+        return FocusedUIElementContext(element: nil, applicationWindow: second)
+    }, extract: { request in
+        stages.append("extract")
+        checkTrue(request.context.applicationWindow === second)
+        checkTrue(request.previousRevision === revision && request.isAXTreeDiffingEnabled)
+        checkTrue(request.treeCache == nil && request.rootElement == nil)
+        checkEqual(request.contextType, .fullUIContext)
+        checkTrue(request.performAccessibilityEnablement && !request.alwaysIncludeScreenshot)
+        return copied
+    })
+    checkEqual(stages, ["context", "extract"])
+    checkTrue(refreshed.windowRevision === replacement && tree.applicationWindow === second)
+    do {
+        _ = try tree.refetchTree(readContext: { _ in throw ExtractionFailure.rejected },
+            extract: { _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch ExtractionFailure.rejected {}
+    checkTrue(tree.systemSelection.windowRevision === replacement)
+}
+
+private func runAXWindowDescriptionResolutionChecks() {
+    enum Failure: Error { case windowID }
+    let frame = CGRect(x: 10, y: 20, width: 30, height: 40)
+    func window(_ id: UInt32, pid: Int32 = 42, name: String? = "A", bounds: CGRect? = nil) -> NativeWindowDescription {
+        var description: [String: Any] = [kCGWindowNumber as String: id, kCGWindowOwnerPID as String: pid,
+            kCGWindowBounds as String: (bounds ?? frame).dictionaryRepresentation]
+        if let name { description[kCGWindowName as String] = name }
+        return NativeWindowDescription(description)
+    }
+    let first = window(1), second = window(2), otherName = window(3, name: "B")
+    let direct = resolveAXWindowDescription(readWindowID: { 7 }, lookupWindow: { id in
+        precondition(id == 7); return first
+    }, fallback: { preconditionFailure("Direct match called fallback") })
+    precondition(direct?.id == 1)
+    let failed = resolveAXWindowDescription(readWindowID: { throw Failure.windowID },
+        lookupWindow: { _ in preconditionFailure() }, fallback: { second })
+    precondition(failed?.id == 2)
+    let missing = resolveAXWindowDescription(readWindowID: { 7 }, lookupWindow: { _ in nil }, fallback: { nil })
+    precondition(missing == nil)
+    var ambiguities: [Int] = []
+    func match(_ windows: [NativeWindowDescription], title: String = "A") -> UInt32? {
+        matchAXWindowDescription(windows, processID: 42, frame: frame, title: title,
+            reportAmbiguity: { ambiguities.append($0) })?.id
+    }
+    precondition(match([first], title: "different") == 1)
+    precondition(match([otherName, second]) == 2)
+    precondition(match([second, first]) == 2 && ambiguities == [2])
+    precondition(match([first, second], title: "missing") == nil)
+    precondition(match([window(4, pid: 99)]) == nil)
+    precondition(match([window(5, bounds: frame.offsetBy(dx: 0.1, dy: 0))]) == nil)
+}
+
+private func runAXWindowDescriptionFallbackChecks() {
+    enum Failure: Error { case pid }
+    let desktop = NativeWindowDescription([kCGWindowNumber as String: UInt32(8), kCGWindowOwnerPID as String: Int32(42)])
+    let ordinary = NativeWindowDescription([kCGWindowNumber as String: UInt32(9), kCGWindowOwnerPID as String: Int32(0),
+        kCGWindowBounds as String: CGRect(x: 1, y: 2, width: 3, height: 4).dictionaryRepresentation])
+    let found = resolveAXWindowDescriptionFallback(isScrollArea: { true }, applicationPID: { 42 },
+        bundleIdentifier: { _ in "com.apple.finder" }, desktopWindows: { [desktop] }, isDesktopLevel: { _ in true },
+        frame: { preconditionFailure() }, title: { preconditionFailure() }, ordinaryWindows: { preconditionFailure() },
+        reportAmbiguity: { _ in preconditionFailure() })
+    precondition(found?.id == 8)
+    var phases: [String] = []
+    let fallback = resolveAXWindowDescriptionFallback(isScrollArea: { false },
+        applicationPID: { phases.append("pid"); throw Failure.pid }, bundleIdentifier: { _ in preconditionFailure() },
+        desktopWindows: { preconditionFailure() }, isDesktopLevel: { _ in preconditionFailure() },
+        frame: { phases.append("frame"); return ordinary.bounds }, title: { phases.append("title"); return "" },
+        ordinaryWindows: { phases.append("windows"); return [ordinary] }, reportAmbiguity: { _ in preconditionFailure() })
+    precondition(fallback?.id == 9 && phases == ["frame", "title", "pid", "windows"])
+    let missingTitle = resolveAXWindowDescriptionFallback(isScrollArea: { false }, applicationPID: { preconditionFailure() },
+        bundleIdentifier: { _ in preconditionFailure() }, desktopWindows: { preconditionFailure() },
+        isDesktopLevel: { _ in preconditionFailure() }, frame: { ordinary.bounds }, title: { nil },
+        ordinaryWindows: { preconditionFailure() }, reportAmbiguity: { _ in preconditionFailure() })
+    precondition(missingTitle == nil)
+}
+
+private func runTreeInvalidationMonitorChecks() {
+    enum Failure: Error { case registration, pid }
+    final class Observer {}
+    var phases: [String] = []
+    let success = makeTreeInvalidationObserver(processID: { phases.append("pid"); return 42 },
+        create: { pid in precondition(pid == 42); phases.append("create"); return Observer() },
+        register: { _, notification in phases.append(notification.name as String) },
+        start: { _, qos in precondition(qos == .utility); phases.append("start") })
+    precondition(success != nil && phases == ["pid", "create", "AXLayoutChanged", "AXUIElementDestroyed", "start"])
+    phases = []
+    let failed = makeTreeInvalidationObserver(processID: { 42 }, create: { _ in Observer() },
+        register: { _, _ in phases.append("register"); throw Failure.registration },
+        start: { _, _ in preconditionFailure() })
+    precondition(failed == nil && phases == ["register"])
+    let ax = AXUIElementCreateApplication(getpid())
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let monitor = UIElementTreeInvalidationMonitor(app: ApplicationUIElement(axElement: ax, cache: cache),
+        processID: { _ in throw Failure.pid })
+    precondition(monitor.observer == nil)
+    monitor.state.withLock { precondition(!$0.layoutChanged && $0.destroyedElements.isEmpty) }
+    recordTreeInvalidation(.uiElementDestroyed, element: ax, state: monitor.state)
+    recordTreeInvalidation(.uiElementDestroyed, element: ax, state: monitor.state)
+    monitor.state.withLock { precondition(!$0.layoutChanged && $0.destroyedElements.count == 1) }
+    recordTreeInvalidation(AXNotification("AXLayoutChanged"), element: ax, state: monitor.state)
+    recordTreeInvalidation(.windowMoved, element: ax, state: monitor.state)
+    monitor.state.withLock { precondition($0.layoutChanged && $0.destroyedElements.count == 1) }
+}
+
+private func runRefetchableElementResolutionChecks() throws {
+    enum Failure: Error { case monitor, invalidElement, refresh }
+    let target = AXUIElementCreateApplication(getpid())
+    let other = AXUIElementCreateApplication(Int32.max)
+    for layout in [false, true] {
+        for destroyed in [false, true] {
+            for validate in [false, true] {
+                for ignore in [false, true] {
+                    var phases: [String] = []
+                    let state = UIElementTreeInvalidationMonitor.State(layoutChanged: layout,
+                        destroyedElements: destroyed ? [target] : [other])
+                    let result = try resolveRefetchableElement(17, validateElement: validate, ignoreValueChange: ignore,
+                        invalidationState: { phases.append("state"); return state },
+                        identity: { value in precondition(value == 17); phases.append("identity"); return target },
+                        refetch: { value, flag in
+                            precondition(value == 17 && flag == ignore); phases.append("refresh"); return 23
+                        }, readRoleError: { _ in phases.append("validate"); return .success },
+                        invalidElementError: { preconditionFailure() },
+                        wrap: { value in phases.append("wrap"); return value })
+                    if layout || destroyed {
+                        precondition(result == 23)
+                        precondition(phases == (layout ? ["state", "refresh"] : ["state", "identity", "refresh"]))
+                    } else {
+                        precondition(result == 17)
+                        precondition(phases == (validate ? ["state", "identity", "validate", "wrap"] : ["state", "identity", "wrap"]))
+                    }
+                }
+            }
+        }
+    }
+    // A successful role decode is not required; only invalidUIElement fails
+    // validation. cannotComplete/attributeUnsupported must not trigger refresh.
+    for error in [AXError.success, .cannotComplete, .attributeUnsupported, .invalidUIElement] {
+        var wrapped = false
+        do {
+            _ = try resolveRefetchableElement(target, validateElement: true, ignoreValueChange: false,
+                invalidationState: { .init() }, identity: { $0 },
+                refetch: { _, _ -> Int in preconditionFailure() }, readRoleError: { _ in error },
+                invalidElementError: { Failure.invalidElement }, wrap: { _ in wrapped = true; return 7 })
+            precondition(error != .invalidUIElement && wrapped)
+        } catch Failure.invalidElement { precondition(error == .invalidUIElement && !wrapped) }
+    }
+    do {
+        _ = try resolveRefetchableElement(target, validateElement: true, ignoreValueChange: false,
+            invalidationState: { throw Failure.monitor }, identity: { _ in preconditionFailure() },
+            refetch: { _, _ -> Int in preconditionFailure() }, readRoleError: { _ in preconditionFailure() },
+            invalidElementError: { preconditionFailure() }, wrap: { _ in preconditionFailure() })
+        preconditionFailure()
+    } catch Failure.monitor {}
+    do {
+        _ = try resolveRefetchableElement(target, validateElement: true, ignoreValueChange: true,
+            invalidationState: { .init(layoutChanged: true) }, identity: { _ in preconditionFailure() },
+            refetch: { _, ignore -> Int in precondition(ignore); throw Failure.refresh },
+            readRoleError: { _ in preconditionFailure() }, invalidElementError: { preconditionFailure() },
+            wrap: { _ in preconditionFailure() })
+        preconditionFailure()
+    } catch Failure.refresh {}
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let monitor = UIElementTreeInvalidationMonitor(app: ApplicationUIElement(axElement: target, cache: cache),
+        processID: { _ in throw Failure.monitor })
+    recordTreeInvalidation(.uiElementDestroyed, element: target, state: monitor.state)
+    let snapshot = monitor.invalidationStateSnapshot()
+    recordTreeInvalidation(AXNotification("AXLayoutChanged"), element: target, state: monitor.state)
+    precondition(!snapshot.layoutChanged && snapshot.destroyedElements.contains(target))
+    let next = monitor.invalidationStateSnapshot()
+    precondition(next.layoutChanged && next.destroyedElements.contains(target))
+    precondition(monitor.invalidationStateSnapshot().layoutChanged)
+}
+
+private func runRefetchableElementMatchingChecks() {
+    let ax = AXUIElementCreateApplication(getpid())
+    let other = AXUIElementCreateApplication(Int32.max)
+    let fields = ["AXRole", "AXSubrole", "AXRoleDescription", "AXTitle", "AXValue", "AXValueDescription",
+        "AXDescription", "AXPlaceholderValue", "AXHelp", "AXIdentifier", "AXURL"]
+    func partial(_ value: AnyObject) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    var values: [UIElementAttribute: AXPartialValue] = [:]
+    for field in fields {
+        values[UIElementAttribute(field)] = partial((field == "AXRole" ? "AXButton" : field) as NSString)
+    }
+    values[UIElementAttribute("AXURL")] = partial(NSURL(string: "https://example.com/a")!)
+    func element(_ attributes: [UIElementAttribute: AXPartialValue], identity: AXUIElement = ax) -> UIElement {
+        UIElement(axElement: identity, cache: UIElementCache(supportedAttributes: [], attributes: attributes,
+            transactionAttributes: nil))
+    }
+    let original = element(values)
+    precondition(refetchableElementMatches(original, candidate: original, ignoreValueChange: false))
+    // Comparator does not substitute identity equality for attribute equality.
+    precondition(refetchableElementMatches(original, candidate: element(values, identity: other), ignoreValueChange: false))
+    for field in fields {
+        var changed = values
+        changed[UIElementAttribute(field)] = field == "AXURL" ? partial(NSURL(string: "https://example.com/b")!) :
+            partial((field == "AXRole" ? "AXTextField" : "changed") as NSString)
+        let candidate = element(changed)
+        precondition(!refetchableElementMatches(original, candidate: candidate, ignoreValueChange: false))
+        precondition(refetchableElementMatches(original, candidate: candidate, ignoreValueChange: true) == (field == "AXValue"))
+        changed.removeValue(forKey: UIElementAttribute(field))
+        precondition(!refetchableElementMatches(original, candidate: element(changed), ignoreValueChange: false))
+    }
+    let roleOnly = [UIElementAttribute("AXRole"): partial("AXButton" as NSString)]
+    precondition(refetchableElementMatches(element(roleOnly), candidate: element(roleOnly), ignoreValueChange: false))
+    var emptyTitle = roleOnly
+    emptyTitle[UIElementAttribute("AXTitle")] = partial("" as NSString)
+    precondition(!refetchableElementMatches(element(roleOnly), candidate: element(emptyTitle), ignoreValueChange: true))
+    var changedState = values
+    changedState[UIElementAttribute("AXEnabled")] = partial(NSNumber(value: false))
+    changedState[UIElementAttribute("AXFocused")] = partial(NSNumber(value: true))
+    precondition(refetchableElementMatches(original, candidate: element(changedState), ignoreValueChange: false))
+}
+
+private func runRefetchableElementRecoveryChecks() throws {
+    enum Failure: Error { case old(Int), missing, ambiguous(Int), refresh }
+    func failure(_ reason: ElementRefreshLookupFailure) -> any Error {
+        switch reason {
+        case .previousMatchNotUnique(let count): return Failure.old(count)
+        case .noRefreshedMatch: return Failure.missing
+        case .refreshedMatchNotUnique(let count): return Failure.ambiguous(count)
+        }
+    }
+    for ignore in [false, true] {
+        var phases: [String] = []
+        let fresh = try recoverRefetchableElement(7, ignoreValueChange: ignore,
+            reconstruct: { value in precondition(value == 7); phases.append("reconstruct"); return 8 },
+            matches: { old, new, flag in precondition(old == 7 && new == 8 && flag == ignore); phases.append("compare"); return true },
+            currentSelection: { () -> Int in preconditionFailure() },
+            matchingElements: { _, _, _ -> [Int] in preconditionFailure() },
+            refetchTree: { preconditionFailure() }, lookupError: { _ in preconditionFailure() },
+            wrapFresh: { value in phases.append("fresh"); return value }, wrapCandidate: { _ -> Int in preconditionFailure() })
+        precondition(fresh == 8 && phases == ["reconstruct", "compare", "fresh"])
+        for oldCount in [0, 1, 2] {
+            for newCount in [0, 1, 2] {
+                phases = []
+                do {
+                    let result = try recoverRefetchableElement(7, ignoreValueChange: ignore,
+                        reconstruct: { _ in phases.append("reconstruct"); return 8 },
+                        matches: { _, _, _ in phases.append("compare"); return false },
+                        currentSelection: { phases.append("selection"); return 1 },
+                        matchingElements: { selection, old, flag in
+                            precondition(old == 7)
+                            if selection == 1 {
+                                precondition(!flag); phases.append("old"); return Array(repeating: 17, count: oldCount)
+                            }
+                            precondition(selection == 2 && flag == ignore)
+                            phases.append("new"); return Array(repeating: 23, count: newCount)
+                        }, refetchTree: { phases.append("refresh"); return 2 }, lookupError: failure,
+                        wrapFresh: { _ -> Int in preconditionFailure() }, wrapCandidate: { value in phases.append("wrap"); return value })
+                    precondition(oldCount == 1 && newCount == 1 && result == 23)
+                } catch Failure.old(let count) { precondition(oldCount != 1 && count == oldCount) }
+                  catch Failure.missing { precondition(oldCount == 1 && newCount == 0) }
+                  catch Failure.ambiguous(let count) { precondition(oldCount == 1 && newCount == 2 && count == 2) }
+                var expected = ["reconstruct", "compare", "selection", "old"]
+                if oldCount == 1 { expected += ["refresh", "new"]; if newCount == 1 { expected.append("wrap") } }
+                precondition(phases == expected)
+            }
+        }
+    }
+    do {
+        _ = try recoverRefetchableElement(7, ignoreValueChange: false,
+            reconstruct: { $0 }, matches: { _, _, _ in false }, currentSelection: { 1 },
+            matchingElements: { _, _, _ in [17] }, refetchTree: { () throws -> Int in throw Failure.refresh },
+            lookupError: failure, wrapFresh: { _ -> Int in preconditionFailure() }, wrapCandidate: { _ in preconditionFailure() })
+        preconditionFailure()
+    } catch Failure.refresh {}
+}
+
+private struct RefetchableWriteProbe: UIElementProtocol {
+    static var role: UIElementRole? { nil }
+    let axElement: AXUIElement
+    let cache: UIElementCache
+    let write: (Any, UIElementAttribute) throws -> Void
+    init(element: AXUIElement) { preconditionFailure("Probe requires explicit cache and writer") }
+    init(axElement: AXUIElement, cache: UIElementCache, write: @escaping (Any, UIElementAttribute) throws -> Void) {
+        self.axElement = axElement; self.cache = cache; self.write = write
+    }
+    func setValue(_ value: Any, forAttribute attribute: UIElementAttribute) throws { try write(value, attribute) }
+}
+
+private func runRefetchableUIElementStorageChecks() throws {
+    enum Failure: Error { case write, refresh }
+    let first = AXUIElementCreateApplication(getpid()), second = AXUIElementCreateApplication(Int32.max)
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let nextCache = UIElementCache(supportedAttributes: [UIElementAttribute("AXTitle")], attributes: [:], transactionAttributes: nil)
+    let window = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: WindowUIElement(axElement: first, cache: cache), axApplication: ApplicationUIElement(axElement: first, cache: cache))
+    let revision = try UIElementTreeRevision.root(UIElementTree<TransformedUIElement>(items: [], focusedElement: nil),
+        focusTree: nil, lineageID: "wrapper") { _ in UIElementRenderTree(isFocus: false, roots: []) }
+    let selection = SystemSelection(applicationWindow: window, windowRevision: revision, invalidationMonitor: nil)
+    let tree = try RefetchableSkyshotAXTree(systemSelection: selection, isAXTreeDiffingEnabled: true)
+    let otherTree = try RefetchableSkyshotAXTree(systemSelection: selection, isAXTreeDiffingEnabled: false)
+    var phases: [String] = []
+    var throwWrite = false
+    let original = RefetchableWriteProbe(axElement: first, cache: cache) { value, attribute in
+        precondition(value as? String == "new" && attribute == UIElementAttribute("AXValue"))
+        phases.append("write")
+        if throwWrite { throw Failure.write }
+    }
+    let replacement = UIElement(axElement: second, cache: nextCache)
+    let wrapper = RefetchableUIElement(element: original, containingTree: tree)
+    let retained = wrapper
+    precondition(CFEqual(wrapper.axElement, first) && wrapper.cache.supportedAttributes.isEmpty)
+    for validate in [false, true] {
+        for ignore in [false, true] {
+            wrapper.element = original
+            try wrapper.refetchIfNeeded(validateElement: validate, ignoreValueChange: ignore) { owner, old, v, i in
+                precondition(owner === tree && CFEqual(old.axElement, first) && v == validate && i == ignore)
+                return RefetchableUIElement(element: replacement, containingTree: otherTree)
+            }
+            precondition(retained === wrapper && wrapper.containingTree === tree && CFEqual(wrapper.axElement, second))
+            precondition(wrapper.cache.supportedAttributes == nextCache.supportedAttributes)
+        }
+    }
+    wrapper.element = original
+    try wrapper.setValue("new", forAttribute: UIElementAttribute("AXValue")) { owner, old, validate, ignore in
+        phases.append("refresh")
+        precondition(owner === tree && CFEqual(old.axElement, first) && validate && ignore)
+        return RefetchableUIElement(element: replacement, containingTree: tree)
+    }
+    precondition(phases == ["write", "refresh"] && CFEqual(wrapper.axElement, second))
+    wrapper.element = original; phases = []; throwWrite = true
+    do {
+        try wrapper.setValue("new", forAttribute: UIElementAttribute("AXValue")) { _, _, _, _ in preconditionFailure() }
+        preconditionFailure()
+    } catch Failure.write {}
+    precondition(phases == ["write"] && CFEqual(wrapper.axElement, first))
+    throwWrite = false; phases = []
+    do {
+        try wrapper.setValue("new", forAttribute: UIElementAttribute("AXValue")) { _, _, _, _ in
+            phases.append("refresh"); throw Failure.refresh
+        }
+        preconditionFailure()
+    } catch Failure.refresh {}
+    precondition(phases == ["write", "refresh"] && CFEqual(wrapper.axElement, first))
+    phases = []
+    do {
+        try wrapper.setValue("new", forAttribute: UIElementAttribute("AXValue"),
+            extractSelection: { unexpectedFailure() })
+        unexpectedFailure()
+    } catch RefetchableSkyshotAXTree.Error.noInvalidationMonitorProvided {}
+    checkEqual(phases, ["write"])
+    checkEqual(wrapper.axElement, first)
+    throwWrite = true; phases = []
+    do {
+        try wrapper.setValue("new", forAttribute: UIElementAttribute("AXValue"),
+            extractSelection: { unexpectedFailure() })
+        unexpectedFailure()
+    } catch Failure.write {}
+    checkEqual(phases, ["write"])
+}
+
+private func runApplicationAXPrimaryWindowChecks() {
+    var phases: [String] = []
+    let focused = applicationPrimaryWindow(focusedWindow: { phases.append("focus"); return 7 },
+        mainWindow: { () -> Int? in preconditionFailure() }, windows: { preconditionFailure() })
+    precondition(focused == 7 && phases == ["focus"])
+    phases = []
+    let main = applicationPrimaryWindow(focusedWindow: { () -> Int? in phases.append("focus"); return nil },
+        mainWindow: { phases.append("main"); return 9 }, windows: { preconditionFailure() })
+    precondition(main == 9 && phases == ["focus", "main"])
+    for windows in [[], [11], [11, 13, 17]] {
+        phases = []
+        let fallback = applicationPrimaryWindow(focusedWindow: { () -> Int? in phases.append("focus"); return nil },
+            mainWindow: { phases.append("main"); return nil }, windows: { phases.append("windows"); return windows })
+        precondition(fallback == windows.last && phases == ["focus", "main", "windows"])
+    }
+    let appAX = AXUIElementCreateApplication(getpid()), windowAX = AXUIElementCreateApplication(Int32.max)
+    let attribute = UIElementAttribute("AXFocusedWindow")
+    func partial(_ value: AnyObject) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    let empty = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    func app(_ attributes: [UIElementAttribute: AXPartialValue], supported: Set<UIElementAttribute> = [attribute]) -> ApplicationUIElement {
+        ApplicationUIElement(axElement: appAX, cache: UIElementCache(supportedAttributes: supported,
+            attributes: attributes, transactionAttributes: nil))
+    }
+    var initialized = 0, reads = 0, errors = 0
+    let initialize: (AXUIElement) -> WindowUIElement = {
+        initialized += 1; precondition(CFEqual($0, windowAX)); return WindowUIElement(axElement: $0, cache: empty)
+    }
+    let cached = app([attribute: partial(windowAX)]).windowValue(for: attribute, initialize: initialize,
+        read: { preconditionFailure() }, reportError: { _ in preconditionFailure() })
+    precondition(cached != nil && initialized == 1)
+    let recovered = app([attribute: partial("bad cache" as NSString)]).windowValue(for: attribute, initialize: initialize,
+        read: { reads += 1; return (.success, partial(windowAX)) }, reportError: { _ in errors += 1 })
+    precondition(recovered != nil && initialized == 2 && reads == 1 && errors == 0)
+    let invalid = app([:]).windowValue(for: attribute, initialize: initialize,
+        read: { reads += 1; return (.success, partial("not a window" as NSString)) }, reportError: { _ in errors += 1 })
+    precondition(invalid == nil && initialized == 2 && reads == 2 && errors == 1)
+    let unsupported = app([:], supported: [UIElementAttribute("AXRole")]).windowValue(for: attribute, initialize: initialize,
+        read: { preconditionFailure() }, reportError: { _ in preconditionFailure() })
+    precondition(unsupported == nil)
+}
+
+private func runFocusedUIElementContextStorageChecks() throws {
+    let ax = AXUIElementCreateApplication(getpid()), other = AXUIElementCreateApplication(Int32.max)
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let window = WindowUIElement(axElement: other, cache: cache)
+    let element = UIElement(axElement: ax, cache: cache)
+    var calls = 0
+    let context = try FocusedUIElementContext(app: app, window: window, element: element) { suppliedWindow, suppliedApp in
+        calls += 1
+        precondition(CFEqual(suppliedWindow.axElement, other) && CFEqual(suppliedApp.axElement, ax))
+        return NativeWindowDescription([kCGWindowNumber as String: UInt32(7)])
+    }
+    precondition(calls == 1 && context.cgWindow.id == 7)
+    precondition(CFEqual(context.app.axElement, ax) && CFEqual(context.window.axElement, other))
+    precondition(context.element != nil && CFEqual(context.element!.axElement, ax))
+    let copy = context
+    context.applicationWindow.cgWindow = NativeWindowDescription([kCGWindowNumber as String: UInt32(9)])
+    context.applicationWindow.axWindow = WindowUIElement(axElement: ax, cache: cache)
+    precondition(copy.applicationWindow === context.applicationWindow && copy.cgWindow.id == 9)
+    precondition(CFEqual(copy.window.axElement, ax))
+    let noElement = try FocusedUIElementContext(app: app, window: window, element: nil) { _, _ in
+        NativeWindowDescription([kCGWindowNumber as String: UInt32(11)])
+    }
+    precondition(noElement.element == nil && noElement.cgWindow.id == 11)
+    do {
+        _ = try FocusedUIElementContext(app: app, window: window, element: element) { _, _ in nil }
+        preconditionFailure()
+    } catch FocusedUIElementContext.Error.cgWindowNotFound {}
+}
+
+private func runApplicationFocusedContextChecks() throws {
+    let ax = AXUIElementCreateApplication(getpid()), other = AXUIElementCreateApplication(Int32.max)
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let window = WindowUIElement(axElement: other, cache: cache)
+    let element = UIElement(axElement: ax, cache: cache)
+    var phases: [String] = []
+    do {
+        _ = try app.focusedUIElementContext(readPrimaryWindow: { phases.append("window"); return nil },
+            readFocusedElement: { preconditionFailure() }, resolve: { _, _ in preconditionFailure() })
+        preconditionFailure()
+    } catch FocusedUIElementContext.Error.noWindowsAvailable {}
+    precondition(phases == ["window"])
+    for hasFocus in [false, true] {
+        for hasCGWindow in [false, true] {
+            phases = []
+            do {
+                let context = try app.focusedUIElementContext(readPrimaryWindow: { phases.append("window"); return window },
+                    readFocusedElement: { phases.append("focus"); return hasFocus ? element : nil },
+                    resolve: { supplied, application in
+                        precondition(CFEqual(supplied.axElement, other) && CFEqual(application.axElement, ax))
+                        phases.append("cg")
+                        return hasCGWindow ? NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]) : nil
+                    })
+                precondition(hasCGWindow && (context.element != nil) == hasFocus && context.cgWindow.id == 7)
+            } catch FocusedUIElementContext.Error.cgWindowNotFound { precondition(!hasCGWindow) }
+            precondition(phases == ["window", "focus", "cg"])
+        }
+    }
+    // Compose the actual shared focused-attribute accessor into context capture:
+    // a provider error is reported once and yields nil focus, not a context error.
+    let focusedAttribute = UIElementAttribute(kAXFocusedUIElementAttribute)
+    let readableApp = ApplicationUIElement(axElement: ax, cache: UIElementCache(
+        supportedAttributes: [focusedAttribute], attributes: [:], transactionAttributes: nil))
+    var reports = 0, reads = 0
+    let context = try readableApp.focusedUIElementContext(readPrimaryWindow: { window },
+        readFocusedElement: {
+            readableApp.elementValue(for: focusedAttribute, initialize: { _ in preconditionFailure() },
+                read: { reads += 1; return (.cannotComplete, nil) }, reportError: { _ in reports += 1 })
+        }, resolve: { _, _ in NativeWindowDescription([kCGWindowNumber as String: UInt32(9)]) })
+    precondition(context.element == nil && context.cgWindow.id == 9 && reports == 1 && reads == 1)
+}
+
+private func runSelectionTreeCapturePreparationChecks(source: TransformedUIElement) {
+    enum Unavailable: Error { case pid }
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: source.axElement, cache: cache)
+    let root = UIElement(axElement: source.axElement, cache: cache)
+    let transaction = UIElementTreeTransaction(element: root,
+        cache: UIElementTransactionCache(attributeTable: [:], requestedAttributes: [],
+            fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: FrequencyTable<UIElementRole>())
+    let monitor = UIElementTreeInvalidationMonitor(app: app, processID: { _ in throw Unavailable.pid })
+    let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let populated = UIElementTree(items: [.init(element: source, subtree: empty)], focusedElement: nil)
+    let valid = TransformedUIElement.TreeCache(tree: populated, transaction: transaction, invalidationMonitor: monitor)
+    let invalid = TransformedUIElement.TreeCache(tree: empty, transaction: transaction, invalidationMonitor: monitor)
+    var foreign = source
+    foreign.element = UIElement(axElement: AXUIElementCreateApplication(Int32.max), cache: cache)
+    let foreignFirstTree = UIElementTree(items: [.init(element: foreign, subtree: empty),
+        .init(element: source, subtree: empty)], focusedElement: nil)
+    let foreignFirst = TransformedUIElement.TreeCache(tree: foreignFirstTree, transaction: transaction,
+        invalidationMonitor: monitor)
+    for context in UIElementContextType.allCases {
+        for web in [false, true] {
+            var phases: [String] = []
+            let reused = prepareSelectionTreeCapture(root: root, app: app, contextType: context, treeCache: valid,
+                isWebShaped: { phases.append("web"); return web }, makeMonitor: { _ in preconditionFailure() },
+                makeTransaction: { _, _ in preconditionFailure() })
+            precondition(phases == ["web"] && reused.treeCache != nil && reused.isWebShaped == web)
+            precondition((reused.invalidationMonitor === monitor) == (context == .fullUIContext))
+            precondition(CFEqual(reused.transaction.element.axElement, root.axElement))
+            for suppliedCache in [nil, invalid, foreignFirst] as [TransformedUIElement.TreeCache?] {
+                phases = []
+                let rebuilt = prepareSelectionTreeCapture(root: root, app: app, contextType: context, treeCache: suppliedCache,
+                    isWebShaped: { phases.append("web"); return web }, makeMonitor: { suppliedApp in
+                        precondition(CFEqual(suppliedApp.axElement, app.axElement)); phases.append("monitor"); return monitor
+                    }, makeTransaction: { suppliedRoot, limit in
+                        precondition(CFEqual(suppliedRoot.axElement, root.axElement))
+                        precondition(limit == (context == .eventStreamContext && web ? 20 : 100))
+                        phases.append("transaction"); return transaction
+                    })
+                precondition(rebuilt.treeCache == nil && rebuilt.isWebShaped == web)
+                precondition(phases == (context == .fullUIContext ? ["monitor", "web", "transaction"] : ["web", "transaction"]))
+                precondition((rebuilt.invalidationMonitor === monitor) == (context == .fullUIContext))
+            }
+        }
+    }
+}
+
+private func runApplicationBundleWebShapeChecks() {
+    enum Failure: Error { case pid }
+    let url = URL(fileURLWithPath: "/owned-fixture.app")
+    for missing in 0...3 {
+        var phases: [String] = []
+        let result = applicationBundleMatches(pid: {
+            phases.append("pid"); if missing == 0 { throw Failure.pid }; return 42
+        }, bundleURL: { pid in
+            precondition(pid == 42); phases.append("url"); return missing == 1 ? nil : url
+        }, makeBundle: { path -> Int? in
+            precondition(path == url); phases.append("bundle"); return missing == 2 ? nil : 17
+        }, classify: { bundle in precondition(bundle == 17); phases.append("classify"); return true })
+        precondition(result == (missing == 3))
+        precondition(phases == Array(["pid", "url", "bundle", "classify"].prefix(missing + 1)))
+    }
+    let ordinary = applicationBundleMatches(pid: { 42 }, bundleURL: { _ in url },
+        makeBundle: { _ in 17 }, classify: { _ in false })
+    precondition(!ordinary)
+}
+
+private func runSelectionCaptureContextChecks() throws {
+    enum Failure: Error { case capture }
+    let ax = AXUIElementCreateApplication(getpid()), other = AXUIElementCreateApplication(Int32.max)
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let window = WindowUIElement(axElement: other, cache: cache)
+    let oldFocus = UIElement(axElement: ax, cache: cache), override = UIElement(axElement: ax, cache: cache)
+    let owner = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: window, axApplication: app)
+    let context = FocusedUIElementContext(element: oldFocus, applicationWindow: owner)
+    for enabled in [false, true] {
+        for acquired in [false, true] {
+            for hasNewFocus in [false, true] {
+                var phases: [String] = []
+                let result = withSelectionCaptureContext(context: context, contextType: .eventStreamContext,
+                    rootElement: override, performAccessibilityEnablement: enabled,
+                    enable: { application, selectedWindow, type in
+                        precondition(enabled && type == .eventStreamContext)
+                        precondition(CFEqual(application.axElement, ax) && CFEqual(selectedWindow.axElement, other))
+                        phases.append("enable")
+                        return acquired ? AXEnablementAssertion(kinds: []) { _ in phases.append("release") } : nil
+                    }, readFocus: { _ in phases.append("focus"); return hasNewFocus ? UIElement(axElement: other, cache: cache) : nil },
+                    work: { root, focus in
+                        phases.append("work")
+                        precondition(CFEqual(root.axElement, ax))
+                        if enabled && acquired {
+                            precondition((focus != nil) == hasNewFocus)
+                            if let focus { precondition(CFEqual(focus.axElement, other)) }
+                        } else { precondition(focus != nil && CFEqual(focus!.axElement, ax)) }
+                        return 17
+                    })
+                var expected: [String] = []
+                if enabled { expected.append("enable"); if acquired { expected.append("focus") } }
+                expected.append("work")
+                if enabled && acquired { expected.append("release") }
+                precondition(result == 17 && phases == expected)
+                precondition(context.element != nil && CFEqual(context.element!.axElement, ax))
+            }
+        }
+    }
+    var phases: [String] = []
+    do {
+        _ = try withSelectionCaptureContext(context: context, contextType: .fullUIContext,
+            rootElement: nil, performAccessibilityEnablement: true,
+            enable: { _, _, _ in AXEnablementAssertion(kinds: []) { _ in phases.append("release") } },
+            readFocus: { _ in nil }, work: { root, focus -> Int in
+                precondition(root is WindowUIElement && CFEqual(root.axElement, other) && focus == nil)
+                phases.append("throw"); throw Failure.capture
+            })
+        preconditionFailure()
+    } catch Failure.capture {}
+    precondition(phases == ["throw", "release"])
+    phases = []
+    var retainedAssertion: AXEnablementAssertion?
+    withSelectionCaptureContext(context: context, contextType: .fullUIContext,
+        rootElement: nil, performAccessibilityEnablement: true,
+        enable: { _, _, _ in
+            retainedAssertion = AXEnablementAssertion(kinds: []) { _ in phases.append("disable") }
+            return retainedAssertion
+        }, readFocus: { _ in nil }, work: { _, _ in
+            precondition(retainedAssertion != nil && phases.isEmpty); phases.append("work")
+        })
+    precondition(retainedAssertion != nil && phases == ["work", "disable"])
+    retainedAssertion?.disable()
+    retainedAssertion = nil
+    precondition(phases == ["work", "disable"])
+}
+
+private func runSelectionExtractionTransactionChecks(source: TransformedUIElement) throws {
+    enum Failure: Error { case pid, transformation, work }
+    let ax = source.axElement
+    let emptyCache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: emptyCache)
+    let window = WindowUIElement(axElement: ax, cache: emptyCache)
+    let owner = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: window, axApplication: app)
+    let context = FocusedUIElementContext(element: UIElement(axElement: ax, cache: emptyCache), applicationWindow: owner)
+    let monitor = UIElementTreeInvalidationMonitor(app: app, processID: { _ in throw Failure.pid })
+    func transaction(_ attribute: String) -> UIElementTreeTransaction {
+        UIElementTreeTransaction(element: UIElement(axElement: ax, cache: UIElementCache(
+            supportedAttributes: [UIElementAttribute(attribute)], attributes: [:], transactionAttributes: nil)),
+            cache: UIElementTransactionCache(attributeTable: [:], requestedAttributes: [UIElementAttribute(attribute)],
+                fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: FrequencyTable<UIElementRole>())
+    }
+    let outer = transaction("AXTitle"), inner = transaction("AXValue")
+    let previous = UIElementTreeTransaction.current?.cache.requestedAttributes
+    for failure in 0...2 {
+        var phases: [String] = []
+        try outer.perform { _ in
+            do {
+                let value = try withSelectionExtractionTransaction(context: context, contextType: .fullUIContext,
+                    treeCache: nil, rootElement: nil, performAccessibilityEnablement: true,
+                    enable: { _, _, _ in
+                        phases.append("enable")
+                        return AXEnablementAssertion(kinds: []) { _ in
+                            precondition(UIElementTreeTransaction.current?.cache.requestedAttributes == outer.cache.requestedAttributes)
+                            phases.append("disable")
+                        }
+                    }, readFocus: { _ in phases.append("focus"); return nil },
+                    isWebShaped: { phases.append("web"); return false },
+                    makeMonitor: { _ in phases.append("monitor"); return monitor },
+                    makeTransaction: { root, limit in
+                        precondition(root is WindowUIElement && limit == 100)
+                        phases.append("transaction"); return inner
+                    }, prepareTransformation: { () throws -> String in
+                        precondition(UIElementTreeTransaction.current?.cache.requestedAttributes == outer.cache.requestedAttributes)
+                        phases.append("context")
+                        if failure == 1 { throw Failure.transformation }
+                        return "transformation"
+                    }, work: { root, focus, prepared, transformation in
+                        precondition(focus == nil && transformation == "transformation")
+                        precondition(root.cache.supportedAttributes == [UIElementAttribute("AXValue")])
+                        precondition(prepared.invalidationMonitor === monitor)
+                        precondition(UIElementTreeTransaction.current?.cache.requestedAttributes == inner.cache.requestedAttributes)
+                        phases.append("work")
+                        if failure == 2 { throw Failure.work }
+                        return 17
+                    })
+                precondition(failure == 0 && value == 17)
+            } catch Failure.transformation { precondition(failure == 1) }
+              catch Failure.work { precondition(failure == 2) }
+            precondition(UIElementTreeTransaction.current?.cache.requestedAttributes == outer.cache.requestedAttributes)
+        }
+        var expected = ["enable", "focus", "monitor", "web", "transaction", "context"]
+        if failure != 1 { expected.append("work") }
+        expected.append("disable")
+        precondition(phases == expected)
+        precondition(UIElementTreeTransaction.current?.cache.requestedAttributes == previous)
+    }
+    let cached = TransformedUIElement.TreeCache(
+        tree: .init(items: [.init(element: source, subtree: .init(items: [], focusedElement: nil))],
+            focusedElement: source), transaction: inner, invalidationMonitor: monitor)
+    let restrictedApp = ApplicationUIElement(axElement: ax, cache: .init(
+        supportedAttributes: [UIElementAttribute("AXTitle")], attributes: [:], transactionAttributes: nil))
+    let capturedContext = FocusedUIElementContext(element: source.element,
+        applicationWindow: ApplicationWindow(cgWindow: owner.cgWindow, axWindow: window,
+            axApplication: restrictedApp))
+    var events: [String] = []
+    let result = try withSelectionExtractionTrees(context: capturedContext, contextType: .fullUIContext,
+        treeCache: cached, rootElement: source.element, performAccessibilityEnablement: true,
+        enable: { _, _, _ in
+            events.append("enable")
+            return AXEnablementAssertion(kinds: []) { _ in
+                checkTrue(UIElementTreeTransaction.current == nil)
+                events.append("disable")
+            }
+        }, readFocus: { _ in source.element }, isWebShaped: { false },
+        makeMonitor: { _ in unexpectedFailure(); return monitor },
+        makeTransaction: { _, _ in unexpectedFailure(); return inner },
+        prepareTransformation: {
+            checkTrue(UIElementTreeTransaction.current == nil)
+            events.append("context")
+            return .init(type: .fullUIContext, application: nil, window: nil, urlConfiguration: nil)
+        }, reportMissingFocus: { _ in unexpectedFailure() },
+        reportSelectionResolutionFailure: {}, reportDepthLimit: { unexpectedFailure() },
+        reportLimit: { _ in unexpectedFailure() }, reportError: { _ in },
+        reportUnknownDateComponents: { _ in unexpectedFailure() },
+        work: { trees, prepared, transformation in
+            checkEqual(UIElementTreeTransaction.current?.cache.requestedAttributes, inner.cache.requestedAttributes)
+            checkTrue(prepared.invalidationMonitor === monitor)
+            checkEqual(trees.tree.focusedElement?.id, source.id)
+            checkTrue(trees.focusTree != nil)
+            checkEqual(transformation.type, .fullUIContext)
+            let info = try finishSelectionExtractionAccessibilityInfo(trees: trees,
+                application: restrictedApp, previousRevision: nil, isAXTreeDiffingEnabled: true,
+                context: &transformation, reportDepthLimit: { unexpectedFailure() },
+                reportLimit: { _ in unexpectedFailure() }, reportUnknownDateComponents: { _ in unexpectedFailure() },
+                reportUnknownAttributedStyle: { _ in }, reportAttributeError: { _ in },
+                reportUnexpectedNextLine: {})
+            checkEqual(info.contextType, .fullUIContext)
+            checkEqual(info.screenshotNeededForContext, trees.screenshotNeededForContext)
+            checkEqual(info.webAreaURL, trees.webAreaURL)
+            checkTrue(info.windowRevision.previousRevision == nil)
+            var publishedInfo = info
+            publishedInfo.webAreaURL = URL(string: "https://published.example/")!
+            publishedInfo.contextType = .informationalContext
+            publishedInfo.screenshotNeededForContext = true
+            let published = SystemSelection(applicationWindow: owner,
+                accessibilityInfo: publishedInfo, invalidationMonitor: monitor)
+            checkTrue(published.applicationWindow === owner)
+            checkTrue(published.windowRevision === info.windowRevision)
+            checkTrue(published.invalidationMonitor === monitor)
+            checkEqual(published.url, publishedInfo.webAreaURL)
+            checkEqual(published.contextType, .informationalContext)
+            checkTrue(published.screenshotNeededForContext)
+            var copied = published
+            copied.url = nil
+            copied.screenshotNeededForContext = false
+            checkTrue(published.url != nil && published.screenshotNeededForContext)
+            var docsInfo = info
+            docsInfo.webAreaURL = URL(string: "https://docs.google.com/document/test")!
+            docsInfo.screenshotNeededForContext = false
+            for webShaped in [false, true] {
+                let selection = makeExtractedSystemSelection(applicationWindow: owner,
+                    accessibilityInfo: docsInfo, invalidationMonitor: monitor, isWebShaped: webShaped)
+                checkEqual(selection.screenshotNeededForContext, webShaped)
+                checkEqual(selection.url, docsInfo.webAreaURL)
+                checkTrue(selection.windowRevision === docsInfo.windowRevision)
+            }
+            docsInfo.webAreaURL = nil
+            checkTrue(!makeExtractedSystemSelection(applicationWindow: owner,
+                accessibilityInfo: docsInfo, invalidationMonitor: monitor, isWebShaped: true).screenshotNeededForContext)
+            docsInfo.screenshotNeededForContext = true
+            checkTrue(makeExtractedSystemSelection(applicationWindow: owner,
+                accessibilityInfo: docsInfo, invalidationMonitor: monitor, isWebShaped: false).screenshotNeededForContext)
+            checkEqual(UIElementTreeTransaction.current?.cache.requestedAttributes, inner.cache.requestedAttributes)
+            events.append("work")
+            return 23
+        })
+    checkEqual(result, 23)
+    checkEqual(events, ["enable", "context", "work", "disable"])
+    events = []
+    let extracted = try extractSystemSelection(context: capturedContext, contextType: .fullUIContext,
+        treeCache: cached, previousRevision: nil, rootElement: source.element,
+        performAccessibilityEnablement: true, alwaysIncludeScreenshot: true, isAXTreeDiffingEnabled: true,
+        enable: { _, _, _ in
+            events.append("enable")
+            return AXEnablementAssertion(kinds: []) { _ in
+                checkTrue(UIElementTreeTransaction.current == nil)
+                events.append("disable")
+            }
+        }, readFocus: { _ in source.element }, isWebShaped: { false },
+        makeMonitor: { _ in unexpectedFailure(); return monitor },
+        makeTransaction: { _, _ in unexpectedFailure(); return inner },
+        prepareTransformation: {
+            checkTrue(UIElementTreeTransaction.current == nil)
+            events.append("context")
+            return .init(type: .fullUIContext, application: nil, window: nil, urlConfiguration: nil)
+        }, reportMissingFocus: { _ in unexpectedFailure() }, reportSelectionResolutionFailure: {},
+        reportDepthLimit: { unexpectedFailure() }, reportLimit: { _ in unexpectedFailure() },
+        reportError: { _ in }, reportUnknownDateComponents: { _ in unexpectedFailure() },
+        reportUnknownAttributedStyle: { _ in }, reportUnexpectedNextLine: {})
+    checkTrue(extracted.applicationWindow === capturedContext.applicationWindow)
+    checkTrue(extracted.invalidationMonitor === monitor)
+    checkTrue(extracted.screenshotNeededForContext)
+    checkEqual(extracted.contextType, .fullUIContext)
+    checkTrue(extracted.windowRevision.previousRevision == nil)
+    checkEqual(events, ["enable", "context", "disable"])
+
+}
+
+private func runNativeTransformationContextChecks() {
+    let empty = UIElementTransformationContext(type: .fullUIContext,
+        application: nil, window: nil, urlConfiguration: nil)
+    precondition(!empty.isCatalyst && !empty.isWebShaped && !empty.isChromium && empty.windowFrame == nil)
+    let ax = AXUIElementCreateApplication(getpid())
+    let attribute = UIElementAttribute("_AXExhibitsMacCatalystBehavior")
+    let partial = AXPartialValue(value: AXEncodedValue(value: NSNumber(value: true)),
+        arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [attribute],
+        attributes: [attribute: partial], transactionAttributes: nil))
+    precondition(app.isCatalystApp)
+    // Concrete context with no app still reads its window frame independently.
+    let expected = CGRect(x: 1, y: 2, width: 30, height: 40)
+    var rectangle = expected
+    let frameValue = AXValueCreate(.cgRect, &rectangle)!
+    let frame = AXPartialValue(value: AXEncodedValue(value: frameValue), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    let window = WindowUIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [.frame],
+        attributes: [.frame: frame], transactionAttributes: nil))
+    let framed = UIElementTransformationContext(type: .eventStreamContext,
+        application: nil, window: window, urlConfiguration: nil)
+    precondition(framed.windowFrame == expected && !framed.isCatalyst && !framed.isChromium)
+}
+
+private func runSelectionExtractionFocusChecks() {
+    let kept = resolveSelectionExtractionFocus(focused: 7, isElectron: { preconditionFailure() },
+        findSelectedWebArea: { preconditionFailure() })
+    precondition(kept == 7)
+    let ordinary: Int? = resolveSelectionExtractionFocus(focused: nil, isElectron: { false },
+        findSelectedWebArea: { preconditionFailure() })
+    precondition(ordinary == nil)
+    for result in [nil, 17] as [Int?] {
+        var phases: [String] = []
+        let found: Int? = resolveSelectionExtractionFocus(focused: nil,
+            isElectron: { phases.append("electron"); return true },
+            findSelectedWebArea: { phases.append("search"); return result })
+        precondition(found == result && phases == ["electron", "search"])
+    }
+    for length in [-1, 0, 1, 20] {
+        for marker in [false, true] {
+            var reads = 0
+            let selected = extractionWebAreaHasSelection(selectedRange: { CFRange(location: -1, length: length) },
+                hasSelectedMarkerRange: { reads += 1; return marker })
+            precondition(selected == (length > 0 || marker))
+            precondition(reads == (length > 0 ? 0 : 1))
+        }
+    }
+    for marker in [false, true] {
+        var reads = 0
+        let selected = extractionWebAreaHasSelection(selectedRange: { nil }, hasSelectedMarkerRange: { reads += 1; return marker })
+        precondition(selected == marker && reads == 1)
+    }
+}
+
+private func runUIElementSelectedRangesChecks() {
+    let ax = AXUIElementCreateApplication(getpid())
+    let rangeAttribute = UIElementAttribute("AXSelectedTextRange"), markerAttribute = UIElementAttribute("AXSelectedTextMarkerRange")
+    func partial(_ value: AnyObject) -> AXPartialValue {
+        AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    var range = CFRange(location: 2, length: 3)
+    let encoded = AXValueCreate(.cfRange, &range)!
+    func element(_ attributes: [UIElementAttribute: AXPartialValue]) -> UIElement {
+        UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [rangeAttribute, markerAttribute],
+            attributes: attributes, transactionAttributes: nil))
+    }
+    let cached = element([rangeAttribute: partial(encoded)]).selectedTextRangeValue(
+        read: { preconditionFailure() }, reportError: { _ in preconditionFailure() })
+    precondition(cached?.location == 2 && cached?.length == 3)
+    var reads = 0, reports = 0
+    let recovered = element([rangeAttribute: partial("bad" as NSString)]).selectedTextRangeValue(
+        read: { reads += 1; return (.success, partial(encoded)) }, reportError: { _ in reports += 1 })
+    precondition(recovered?.length == 3 && reads == 1 && reports == 0)
+    let invalid = element([:]).selectedTextRangeValue(read: { (.success, partial("bad" as NSString)) },
+        reportError: { _ in reports += 1 })
+    precondition(invalid == nil && reports == 1)
+    let failed = element([:]).selectedTextMarkerRangeValue(read: { (.cannotComplete, nil) }, reportError: { _ in reports += 1 })
+    precondition(failed == nil && reports == 2)
+    let bytes: [UInt8] = [1, 2, 3, 4]
+    let marker = UITextMarker(marker: bytes.withUnsafeBufferPointer { AXTextMarkerCreate(nil, $0.baseAddress!, $0.count) })
+    let markerRange = UITextMarkerRange(start: marker, end: marker)
+    let encodedMarker = encodedAXParameter(markerRange)
+    let selected = element([markerAttribute: partial(encodedMarker)]).selectedTextMarkerRangeValue(
+        read: { preconditionFailure() }, reportError: { _ in preconditionFailure() })
+    precondition(selected != nil)
+    let candidate = element([rangeAttribute: partial(encoded), markerAttribute: partial("bad" as NSString)])
+    precondition(extractionWebAreaHasSelection(selectedRange: { candidate.selectedTextRange },
+        hasSelectedMarkerRange: { preconditionFailure("Positive range must skip marker getter") }))
+}
+
+private func runUIElementTreeBuildTraversalChecks() {
+    var visited = Set<Int>(), reads = 0, limits = 0
+    for count in [0, 1, 199, 200] {
+        let accepted = beginUIElementTreeVisit(path: IndexPath(indexes: Array(repeating: 0, count: count)),
+            identity: { reads += 1; return count }, visited: &visited, reportDepthLimit: { limits += 1 })
+        precondition(accepted)
+    }
+    precondition(reads == 4 && limits == 0)
+    for count in [201, 202] {
+        let accepted = beginUIElementTreeVisit(path: IndexPath(indexes: Array(repeating: 0, count: count)),
+            identity: { preconditionFailure("Depth guard must precede identity access") },
+            visited: &visited, reportDepthLimit: { limits += 1 })
+        precondition(!accepted)
+    }
+    let duplicate = beginUIElementTreeVisit(path: IndexPath(index: 3), identity: { reads += 1; return 200 },
+        visited: &visited, reportDepthLimit: { preconditionFailure() })
+    precondition(!duplicate && reads == 5 && limits == 2 && visited.count == 4)
+    var filtered: [Int] = [], paths: [IndexPath] = [], values: [String] = []
+    let root = IndexPath(indexes: [5, 7])
+    enumerateFilteredTreeChildren(["same", "skip", "same", "last"], path: root,
+        filter: { index, _ in filtered.append(index); return index != 1 },
+        visit: { element, path in values.append(element); paths.append(path) })
+    precondition(filtered == [0, 1, 2, 3] && values == ["same", "same", "last"])
+    precondition(paths == [[5, 7, 0], [5, 7, 2], [5, 7, 3]].map { IndexPath(indexes: $0) })
+}
+
+private func runVisibleChildrenThresholdChecks() {
+    enum Failure: Error { case read }
+    // Expected routes are explicit boundary fixtures, including500 ordinary
+    // children below threshold1000: the500 guard is not a global array cap.
+    let fixtures: [(Int?, Int, UIElementContextType, Bool, Bool, [String])] = [
+        (nil, 100, .fullUIContext, false, false, ["count"]),
+        (-1, 100, .fullUIContext, false, false, ["count"]),
+        (0, 100, .eventStreamContext, true, false, ["count"]),
+        (100, 100, .fullUIContext, false, false, ["count", "partial"]),
+        (101, 100, .fullUIContext, false, true, ["count", "attribute", "visible"]),
+        (101, 100, .fullUIContext, false, false, ["count", "attribute", "position"]),
+        (499, 100, .informationalContext, true, false, ["count", "attribute", "position"]),
+        (500, 100, .fullUIContext, false, false, ["count", "attribute", "limit"]),
+        (500, 100, .fullUIContext, false, true, ["count", "attribute", "visible"]),
+        (500, 1000, .fullUIContext, false, false, ["count", "partial"]),
+        (1, 100, .eventStreamContext, true, false, ["count", "web"]),
+        (499, 100, .eventStreamContext, true, false, ["count", "web"]),
+        (500, 1000, .eventStreamContext, true, true, ["count", "limit"]),
+        (1, 100, .eventStreamContext, false, false, ["count", "partial"])
+    ]
+    let frame = CGRect(x: 1, y: 2, width: 30, height: 40)
+    for (count, threshold, context, web, hasAttribute, expected) in fixtures {
+        var trace: [String] = []
+        let result = selectTreeChildren(threshold: threshold, contextType: context, isWebShaped: web, clippingFrame: frame,
+            childCount: { trace.append("count"); return count },
+            visibleAttribute: { trace.append("attribute"); return hasAttribute ? UIElementAttribute("AXVisibleChildren") : nil },
+            visibleSubset: { attribute, maximum -> String? in
+                precondition(attribute == UIElementAttribute("AXVisibleChildren") && maximum == 0)
+                trace.append("visible"); return nil // nil is final, no fallback
+            }, partialChildren: { trace.append("partial"); return "partial" },
+            positionFiltered: { maximum, includeAll, clip in
+                if context == .eventStreamContext && web {
+                    precondition(maximum == 0 && includeAll && clip == frame); trace.append("web"); return "web"
+                }
+                precondition(maximum == 100 && !includeAll && clip == nil)
+                trace.append("position"); return "position"
+            }, reportLimit: { reason in
+                switch reason {
+                case .webEventStream: precondition(context == .eventStreamContext && web)
+                case .positionFallback: precondition(context != .eventStreamContext || !web)
+                }
+                trace.append("limit")
+            })
+        precondition(trace == expected)
+        if ["partial", "web", "position"].contains(expected.last!) { precondition(result == expected.last!) }
+        else { precondition(result == nil) }
+    }
+    let failed: String? = selectTreeChildren(threshold: 100, contextType: .fullUIContext, isWebShaped: false,
+        clippingFrame: nil, childCount: { 1 }, visibleAttribute: { preconditionFailure() },
+        visibleSubset: { _, _ in preconditionFailure() }, partialChildren: { throw Failure.read },
+        positionFiltered: { _, _, _ in preconditionFailure() }, reportLimit: { _ in preconditionFailure() })
+    precondition(failed == nil)
+}
+
+
+@MainActor
+private func runClickRoutingCursorChecks() async throws {
+    enum Failure: Error { case press }
+    final class Cursor: VirtualCursor {
+        var isPressed = false
+        var counts: [Int] = []
+        var fail = false
+        func press(count: Int) async throws {
+            counts.append(count)
+            if fail { throw Failure.press }
+        }
+    }
+    let cursor = Cursor()
+    for mode in 0..<5 {
+        cursor.counts = []
+        cursor.fail = mode == 4
+        var events: [String] = []
+        let preparation = UIElementClickPreparation(action: .press,
+            initiallyInsideWebView: false, useAccessibilityAction: mode != 2)
+        do {
+            let result = try await executePreparedUIElementClick(preparation,
+                isInsideWebView: { mode == 3 }, webClickHitsTarget: { true },
+                virtualCursor: mode == 1 ? nil : cursor,
+                prepareActionFocus: {
+                    precondition(cursor.counts == (mode == 1 ? [] : [1]))
+                    events.append("focus")
+                }, performAction: { action in
+                    precondition(action == .press)
+                    events.append("action")
+                    return "AX"
+                }, simulateClick: { _ in events.append("simulate"); return "CG" })
+            precondition(mode != 4)
+            precondition(result == ((mode == 2 || mode == 3) ? "CG" : "AX"))
+        } catch Failure.press {
+            precondition(mode == 4)
+        }
+        precondition(cursor.counts == ((mode == 1 || mode == 2 || mode == 3) ? [] : [1]))
+        precondition(events == (mode == 4 ? [] : ((mode == 2 || mode == 3) ? ["simulate"] : ["focus", "action"])))
+    }
+}
+
+
+@MainActor
+private func runMouseDiagnosticBoundaryChecks() async throws {
+    for succeeds in [false, true] {
+        var events: [(String, [String: Any])] = []
+        var calls = 0
+        do {
+            let result = try await withNativeMouseInputDiagnostic(metadata: ["snapshotId": "fixture"],
+                record: { events.append(($1, $0)) }, perform: {
+                    calls += 1
+                    if !succeeds { throw fail("STALE_OBSERVATION", "private text must not be logged") }
+                    return ["outcome": "dispatched", "secret": "must not be copied"]
+                })
+            precondition(succeeds && result["secret"] as? String == "must not be copied")
+        } catch let error as Failure {
+            precondition(!succeeds && error.code == "STALE_OBSERVATION")
+        }
+        precondition(calls == 1 && events.count == 2)
+        precondition(events[0].0 == "native.input.attempt")
+        precondition(events[1].0 == (succeeds ? "native.input.completed" : "native.input.failed"))
+        precondition(events[0].1["attemptId"] as? String == events[1].1["attemptId"] as? String)
+        precondition(events[1].1["snapshotId"] as? String == "fixture")
+        precondition(events[1].1["secret"] == nil && events[1].1["message"] == nil)
+        if !succeeds { precondition(events[1].1["errorCode"] as? String == "STALE_OBSERVATION") }
+    }
+}
+
+
+private func runConcreteTreeRefetchResolutionChecks() throws {
+    enum Failure: Error { case noMonitor, invalid }
+    let ax = AXUIElementCreateApplication(getpid())
+    let cache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let element = UIElement(axElement: ax, cache: cache)
+    let window = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: WindowUIElement(axElement: ax, cache: cache), axApplication: app)
+    let revision = try UIElementTreeRevision.root(UIElementTree<TransformedUIElement>(items: [], focusedElement: nil),
+        focusTree: nil, lineageID: "resolution") { _ in UIElementRenderTree(isFocus: false, roots: []) }
+    let tree = try RefetchableSkyshotAXTree(systemSelection: SystemSelection(applicationWindow: window,
+        windowRevision: revision, invalidationMonitor: nil), isAXTreeDiffingEnabled: true)
+    do {
+        _ = try tree.refetchElementIfNeeded(element, validateElement: false, ignoreValueChange: false,
+            missingMonitorError: { Failure.noMonitor }, invalidElementError: { preconditionFailure() },
+            readRoleError: { _ in preconditionFailure() }, refetch: { _, _ in preconditionFailure() })
+        preconditionFailure()
+    } catch Failure.noMonitor {}
+    do {
+        _ = try tree.refetchElementIfNeeded(element, validateElement: false, ignoreValueChange: false,
+            refetch: { _, _ in preconditionFailure() })
+        preconditionFailure()
+    } catch RefetchableSkyshotAXTree.Error.noInvalidationMonitorProvided {}
+    switch nativeElementRefreshLookupError(.previousMatchNotUnique(0)) {
+    case RefetchableSkyshotAXTree.Error.elementAmbiguousBeforeRefetch: break
+    default: preconditionFailure()
+    }
+    switch nativeElementRefreshLookupError(.noRefreshedMatch) {
+    case RefetchableSkyshotAXTree.Error.elementNoLongerValidAfterRefetch: break
+    default: preconditionFailure()
+    }
+    switch nativeElementRefreshLookupError(.refreshedMatchNotUnique(2)) {
+    case RefetchableSkyshotAXTree.Error.elementAmbiguousAfterRefetch: break
+    default: preconditionFailure()
+    }
+    let monitor = UIElementTreeInvalidationMonitor(app: app, processID: { _ in throw Failure.noMonitor })
+    tree.systemSelection.invalidationMonitor = monitor
+    let composed = try tree.refetchElementIfNeeded(element, validateElement: false,
+        ignoreValueChange: true, readRoleError: { _ in unexpectedFailure() },
+        extractSelection: { unexpectedFailure() })
+    checkTrue(composed.containingTree === tree)
+    checkEqual(composed.axElement, ax)
+    try composed.refetchIfNeeded(validateElement: false, ignoreValueChange: true,
+        extractSelection: { unexpectedFailure() })
+    for invalidated in [false, true] {
+        monitor.state.withLock { $0.layoutChanged = invalidated }
+        for validate in [false, true] {
+            var phases: [String] = []
+            let result = try tree.refetchElementIfNeeded(element, validateElement: validate, ignoreValueChange: true,
+                missingMonitorError: { preconditionFailure() }, invalidElementError: { preconditionFailure() },
+                readRoleError: { received in precondition(CFEqual(received, ax)); phases.append("role"); return .cannotComplete },
+                refetch: { old, ignore in
+                    precondition(CFEqual(old.axElement, ax) && ignore)
+                    phases.append("refetch")
+                    return RefetchableUIElement(element: old, containingTree: tree)
+                })
+            precondition(result.containingTree === tree && result.cache.supportedAttributes == cache.supportedAttributes)
+            precondition(phases == (invalidated ? ["refetch"] : (validate ? ["role"] : [])))
+        }
+    }
+    monitor.state.withLock { $0.layoutChanged = false }
+    do {
+        _ = try tree.refetchElementIfNeeded(element, validateElement: true, ignoreValueChange: false,
+            missingMonitorError: { preconditionFailure() }, invalidElementError: { Failure.invalid },
+            readRoleError: { _ in .invalidUIElement }, refetch: { _, _ in preconditionFailure() })
+        preconditionFailure()
+    } catch Failure.invalid {}
+}
+
+
+private func runIndexedTreeRefetchResolutionChecks(source: TransformedUIElement) throws {
+    enum Failure: Error { case noObserver }
+    let ax = source.axElement
+    let app = ApplicationUIElement(axElement: ax, cache: source.cache)
+    let window = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: WindowUIElement(axElement: ax, cache: source.cache), axApplication: app)
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let revision = try UIElementTreeRevision.root(UIElementTree(items: [.init(element: source, subtree: leaf)],
+        focusedElement: nil), focusTree: nil, lineageID: "indexed-resolution") { _ in
+            UIElementRenderTree(isFocus: false, roots: [UIElementRender(id: source.id,
+                elementID: nil, text: "fixture", detailText: nil,
+                sourcePath: IndexPath(index: 0), children: [])])
+        }
+    let tree = try RefetchableSkyshotAXTree(systemSelection: SystemSelection(applicationWindow: window,
+        windowRevision: revision, invalidationMonitor: nil), isAXTreeDiffingEnabled: true)
+    for id in [-1, 1, Int.max] {
+        do {
+            _ = try tree.refetchElementIfNeeded(id, validateElement: true,
+                readRoleError: { _ in preconditionFailure() }, refetch: { _, _ in preconditionFailure() })
+            preconditionFailure()
+        } catch RefetchableSkyshotAXTree.Error.invalidElementID(let received) { precondition(received == id) }
+    }
+    do {
+        _ = try tree.refetchElementIfNeeded(0, validateElement: false, refetch: { _, _ in preconditionFailure() })
+        preconditionFailure()
+    } catch RefetchableSkyshotAXTree.Error.noInvalidationMonitorProvided {}
+    let monitor = UIElementTreeInvalidationMonitor(app: app, processID: { _ in throw Failure.noObserver })
+    tree.systemSelection.invalidationMonitor = monitor
+    for validate in [false, true] {
+        var reads = 0
+        let result = try tree.refetchElementIfNeeded(0, validateElement: validate,
+            readRoleError: { received in precondition(CFEqual(received, ax)); reads += 1; return .success },
+            refetch: { _, _ in preconditionFailure() })
+        precondition(result.containingTree === tree && CFEqual(result.axElement, ax))
+        precondition(reads == (validate ? 1 : 0))
+        let composed = try tree.refetchElementIfNeeded(0, validateElement: validate,
+            readRoleError: { _ in .success }, extractSelection: { unexpectedFailure() })
+        checkTrue(composed.containingTree === tree)
+        checkEqual(composed.axElement, ax)
+    }
+    monitor.state.withLock { $0.layoutChanged = true }
+    var refreshed = false
+    _ = try tree.refetchElementIfNeeded(0, validateElement: true,
+        readRoleError: { _ in preconditionFailure() }, refetch: { old, ignore in
+            precondition(!ignore && CFEqual(old.axElement, ax)); refreshed = true
+            return RefetchableUIElement(element: old, containingTree: tree)
+        })
+    precondition(refreshed)
+}
+
+
+private struct RefetchReconstructionProbe: UIElementProtocol {
+    static var role: UIElementRole? { nil }
+    let axElement: AXUIElement
+    let cache: UIElementCache
+    let reconstructed: Bool
+    init(element: AXUIElement) { self.init(element: element, reconstructed: true) }
+    init(element: AXUIElement, reconstructed: Bool) {
+        axElement = element
+        self.reconstructed = reconstructed
+        let role = UIElementAttribute("AXRole")
+        cache = UIElementCache(supportedAttributes: [role], attributes: [role:
+            AXPartialValue(value: AXEncodedValue(value: "AXUnknown" as NSString),
+                arraySubsetDescriptor: nil, textTruncationDescriptor: nil)], transactionAttributes: nil)
+    }
+}
+
+private func runConcreteElementRecoveryChecks() throws {
+    let ax = AXUIElementCreateApplication(getpid())
+    let old = RefetchReconstructionProbe(element: ax, reconstructed: false)
+    // Geometry attribute readers must accept protocol values without replacing
+    // their concrete cache. Known-unsupported attributes never read the AX API.
+    let protocolElement: any UIElementProtocol = old
+    var environment = UIElementActionEnvironment.system
+    var actionReads = 0
+    environment.nativeActions = { element in
+        checkEqual(element, ax); actionReads += 1
+        return [.scrollDownByPage, .scrollDownByPage]
+    }
+    environment.supported = { _ in unexpectedFailure() }
+    environment.settable = { _, _ in unexpectedFailure() }
+    environment.read = { _, _ in unexpectedFailure() }
+    checkTrue(protocolElement.hasScrollAction(in: environment, reportError: { _ in unexpectedFailure() }))
+    checkEqual(actionReads, 1)
+    for uncached in [false, true] {
+        checkTrue(protocolElement.clippingFrame(uncached: uncached, transaction: nil,
+            environment: environment, reportError: { _ in unexpectedFailure() }) == nil)
+        checkTrue(protocolElement.clippingFrame(uncached: uncached,
+            reportError: { _ in unexpectedFailure() }) == nil)
+        checkTrue(protocolElement.clippingFrameAttribute(uncached: uncached,
+            read: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() }) == nil)
+        checkTrue(protocolElement.clippingParent(uncached: uncached,
+            initialize: { _ in unexpectedFailure() }, read: { unexpectedFailure() },
+            reportError: { _ in unexpectedFailure() }) == nil)
+    }
+    let app = ApplicationUIElement(axElement: ax, cache: old.cache)
+    let window = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: WindowUIElement(axElement: ax, cache: old.cache), axApplication: app)
+    let revision = try UIElementTreeRevision.root(UIElementTree<TransformedUIElement>(items: [], focusedElement: nil),
+        focusTree: nil, lineageID: "concrete-recovery") { _ in UIElementRenderTree(isFocus: false, roots: []) }
+    let tree = try RefetchableSkyshotAXTree(systemSelection: SystemSelection(applicationWindow: window,
+        windowRevision: revision, invalidationMonitor: nil), isAXTreeDiffingEnabled: true)
+    for ignore in [false, true] {
+        let result = try tree.recoverElement(old, ignoreValueChange: ignore,
+            extractSelection: { preconditionFailure("Equal attributes must not require tree extraction") })
+        precondition(result.containingTree === tree && CFEqual(result.axElement, ax))
+        precondition((result.element as? RefetchReconstructionProbe)?.reconstructed == true)
+        precondition(tree.systemSelection.windowRevision === revision)
+    }
+    let monitor = UIElementTreeInvalidationMonitor(app: app, processID: { _ in
+        throw fail("FIXTURE", "No observer in composition check")
+    })
+    monitor.state.withLock { $0.layoutChanged = true }
+    tree.systemSelection.invalidationMonitor = monitor
+    let resolved = try tree.refetchElementIfNeeded(old, validateElement: true, ignoreValueChange: false,
+        readRoleError: { _ in unexpectedFailure() }, extractSelection: { unexpectedFailure() })
+    checkTrue((resolved.element as? RefetchReconstructionProbe)?.reconstructed == true)
+    let wrapper = RefetchableUIElement(element: old, containingTree: tree)
+    try wrapper.refetchIfNeeded(validateElement: true, ignoreValueChange: false,
+        extractSelection: { unexpectedFailure() })
+    checkTrue((wrapper.element as? RefetchReconstructionProbe)?.reconstructed == true)
+    checkTrue(wrapper.containingTree === tree && tree.systemSelection.windowRevision === revision)
+}
+
+
+
+private func runRenderDifferenceIteratorSchedulingChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    func cursor(_ id: Int) -> Diff.Cursor {
+        Diff.Cursor(item: UIElementRender(id: id, elementID: nil, text: "node", detailText: nil,
+            sourcePath: nil, children: []), path: IndexPath(index: id))
+    }
+    var iterator = Diff.Iterator(old: [cursor(1)], new: [cursor(2)])
+    var seen: [Int] = []
+    func match(_ pair: Diff.PendingChildren, _ pending: inout Deque<Diff.PendingChildren>) -> [Diff.Change] {
+        let id = pair.old[0].item.id
+        seen.append(id)
+        if id == 1 {
+            pending.append((old: [cursor(3)], new: []))
+            pending.append((old: [cursor(4)], new: []))
+            return [.remove(offset: 1, old: pair.old[0]), .insert(offset: 2, new: pair.new[0])]
+        }
+        if id == 3 {
+            pending.append((old: [cursor(5)], new: []))
+            return [] // Empty batches must continue within the same next call.
+        }
+        return [.remove(offset: id, old: pair.old[0])]
+    }
+    if case .remove(let offset, _)? = iterator.next(matching: match) { precondition(offset == 1) }
+    else { preconditionFailure() }
+    precondition(seen == [1])
+    var copied = iterator // Deque value semantics: independent consumption.
+    if case .insert(let offset, _)? = iterator.next(matching: match) { precondition(offset == 2) }
+    else { preconditionFailure() }
+    precondition(seen == [1])
+    if case .remove(let offset, _)? = iterator.next(matching: match) { precondition(offset == 4) }
+    else { preconditionFailure() }
+    precondition(seen == [1, 3, 4])
+    if case .remove(let offset, _)? = iterator.next(matching: match) { precondition(offset == 5) }
+    else { preconditionFailure() }
+    precondition(iterator.next(matching: match) == nil && seen == [1, 3, 4, 5])
+    if case .insert(let offset, _)? = copied.next(matching: { _, _ in preconditionFailure() }) { precondition(offset == 2) }
+    else { preconditionFailure() }
+    var empty = Diff.Iterator(old: [], new: [])
+    var emptyCalls = 0
+    precondition(empty.next(matching: { pair, _ in
+        precondition(pair.old.isEmpty && pair.new.isEmpty); emptyCalls += 1; return []
+    }) == nil)
+    precondition(emptyCalls == 1)
+    precondition(empty.next(matching: { _, _ in preconditionFailure() }) == nil)
+}
+
+
+private func runRenderSiblingPrefixChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    func cursor(_ id: Int, _ text: String, child: Bool = false) -> Diff.Cursor {
+        let children = child ? [UIElementRender(id: id + 100, elementID: nil, text: "child", detailText: nil,
+            sourcePath: nil, children: [])] : []
+        return Diff.Cursor(item: UIElementRender(id: id, elementID: nil, text: text, detailText: nil,
+            sourcePath: nil, children: children), path: IndexPath(index: id))
+    }
+    let old = [cursor(1, "before", child: true), cursor(2, "same"), cursor(3, "same", child: true)]
+    let new = [cursor(1, "after", child: true), cursor(9, "same"), cursor(3, "same", child: true)]
+    var pending: Deque<Diff.PendingChildren> = []
+    let stopped = Diff.matchSiblingPrefix(old: old, new: new, pending: &pending)
+    precondition(stopped.consumed == 1 && stopped.changes.count == 1 && pending.count == 1)
+    if case .update(let offset, let n, let o) = stopped.changes[0] {
+        precondition(offset == 0 && n.item === new[0].item && o.item === old[0].item)
+    } else { preconditionFailure() }
+    // Later equal IDs must remain unconsumed for the remaining matcher.
+    precondition(pending.first?.old[0].path == IndexPath(indexes: [1, 0]))
+    for counts in [(0, 3), (3, 0), (0, 0), (2, 3), (3, 2), (3, 3)] {
+        pending = []
+        let result = Diff.matchSiblingPrefix(old: Array(old.prefix(counts.0)),
+            new: Array(old.prefix(counts.1)), pending: &pending)
+        let expected = min(counts.0, counts.1)
+        precondition(result.consumed == expected && result.changes.count == expected)
+        for (offset, change) in result.changes.enumerated() {
+            if case .none(let received, _, _) = change { precondition(received == offset) }
+            else { preconditionFailure() }
+        }
+    }
+}
+
+
+private func runRenderResidualIdentityMapChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    func cursor(_ id: Int, at index: Int) -> Diff.Cursor {
+        Diff.Cursor(item: UIElementRender(id: id, elementID: nil, text: "fixture", detailText: nil,
+            sourcePath: nil, children: []), path: IndexPath(index: index))
+    }
+    let cursors = [cursor(99, at: 0), cursor(1, at: 1), cursor(2, at: 2), cursor(1, at: 3)]
+    let result = Diff.residualIdentityMap(cursors.dropFirst(), offset: 7)
+    precondition(result.count == 2 && result[99] == nil)
+    precondition(result[1]?.offset == 9 && result[1]?.cursor.item === cursors[3].item)
+    precondition(result[1]?.cursor.path == IndexPath(index: 3))
+    precondition(result[2]?.offset == 8 && result[2]?.cursor.item === cursors[2].item)
+    precondition(Diff.residualIdentityMap(cursors[2..<2], offset: 42).isEmpty)
+    // Offset is the explicit consumed-prefix count, not ArraySlice.startIndex.
+    let shifted = Diff.residualIdentityMap(cursors[2...], offset: -3)
+    precondition(shifted[2]?.offset == -3 && shifted[1]?.offset == -2)
+}
+
+
+private func runRenderResidualMatchChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    func cursor(_ id: Int, _ text: String) -> Diff.Cursor {
+        Diff.Cursor(item: UIElementRender(id: id, elementID: nil, text: text, detailText: nil,
+            sourcePath: nil, children: []), path: IndexPath(index: id))
+    }
+    let old = [cursor(1, "old"), cursor(2, "same"), cursor(3, "removed")]
+    let new = [cursor(2, "same"), cursor(1, "new"), cursor(4, "inserted")]
+    var pending: Deque<Diff.PendingChildren> = []
+    let result = Diff.matchResidualSiblings(old: old[...], new: new[...], offset: 7,
+        retainedIdentities: nil, pending: &pending)
+    precondition(result.count == 4)
+    if case .none(let offset, let n, let o) = result[0] {
+        precondition(offset == 7 && n.item === new[0].item && o.item === old[1].item)
+    } else { preconditionFailure() }
+    if case .update(let offset, _, _) = result[1] { precondition(offset == 8) } else { preconditionFailure() }
+    if case .insert(let offset, _) = result[2] { precondition(offset == 9) } else { preconditionFailure() }
+    if case .remove(let offset, let o) = result[3] { precondition(offset == 9 && o.item === old[2].item) }
+    else { preconditionFailure() }
+    let denied = Diff.matchResidualSiblings(old: old.prefix(1), new: new[1..<2], offset: 0,
+        retainedIdentities: [], pending: &pending)
+    precondition(denied.count == 1) // Removed from lookup before retention test.
+    if case .insert = denied[0] {} else { preconditionFailure() }
+    let duplicate = Diff.matchResidualSiblings(old: old.prefix(1), new: [new[1], new[1]][...], offset: 0,
+        retainedIdentities: [1], pending: &pending)
+    precondition(duplicate.count == 2)
+    if case .update = duplicate[0] {} else { preconditionFailure() }
+    if case .insert = duplicate[1] {} else { preconditionFailure() }
+}
+
+
+private func runRenderRetentionPreflightChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    func cursor(_ id: Int) -> Diff.Cursor {
+        Diff.Cursor(item: UIElementRender(id: id, elementID: nil, text: "fixture", detailText: nil,
+            sourcePath: nil, children: []), path: IndexPath(index: id))
+    }
+    let old: [Int: Diff.IndexedCursor] = [1: (0, cursor(1)), 2: (2, cursor(2)), 3: (3, cursor(3))]
+    for ids in [[], [99], [1], [1, 99, 2, 3], [2, 3]] {
+        precondition(Diff.retainedIdentities(for: ids, old: old,
+            unordered: { _, _ in preconditionFailure("Ordered identities must skip the slow algorithm") }) == nil)
+    }
+    for ids in [[2, 1], [1, 1], [3, 99, 2]] {
+        var calls = 0
+        let result = Diff.retainedIdentities(for: ids, old: old, unordered: { received, map in
+            precondition(received == ids && map[2]?.offset == 2); calls += 1; return [2]
+        })
+        precondition(calls == 1 && result == Set([2]))
+    }
+    let negative: [Int: Diff.IndexedCursor] = [1: (-1, cursor(1))]
+    var calls = 0
+    let result = Diff.retainedIdentities(for: [1], old: negative,
+        unordered: { _, _ in calls += 1; return [] })
+    precondition(calls == 1 && result != nil && result!.isEmpty)
+}
+
+
+private func runRenderRetentionSolverChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    let old: [Int: Diff.IndexedCursor] = Dictionary(uniqueKeysWithValues: (0..<4).map { id in
+        (id, (offset: id, cursor: Diff.Cursor(item: UIElementRender(id: id, elementID: nil,
+            text: "fixture", detailText: nil, sourcePath: nil, children: []), path: IndexPath(index: id))))
+    })
+    func check(_ input: [Int]) {
+        let known = input.filter { old[$0] != nil }
+        var best: [Int] = []
+        // Independent exhaustive oracle: first maximum-length subsequence in
+        // lexicographic input-index order, with strictly increasing offsets.
+        func visit(_ start: Int, _ chosen: [Int]) {
+            if chosen.count > best.count { best = chosen }
+            guard start < known.count else { return }
+            for index in start..<known.count {
+                if let last = chosen.last, known[last] >= known[index] { continue }
+                visit(index + 1, chosen + [index])
+            }
+        }
+        visit(0, [])
+        let expected = Set(best.map { known[$0] })
+        precondition(Diff.unorderedRetainedIdentities(input, old: old) == expected)
+        let retained = Diff.retainedIdentities(for: input, old: old)
+        if let retained { precondition(retained == expected) }
+    }
+    func permutations(_ prefix: [Int], _ remaining: [Int]) {
+        if remaining.isEmpty { check(prefix); check([99] + prefix + [99]); return }
+        for (index, value) in remaining.enumerated() {
+            var rest = remaining; rest.remove(at: index)
+            permutations(prefix + [value], rest)
+        }
+    }
+    permutations([], [0, 1, 2, 3])
+    for input in [[], [99], [1, 1], [2, 1, 1, 3], [3, 2, 1, 0]] { check(input) }
+}
+
+
+private func runDefaultRenderDifferenceChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    func node(_ id: Int, _ text: String, _ children: [UIElementRender<Int>] = []) -> UIElementRender<Int> {
+        UIElementRender(id: id, elementID: nil, text: text, detailText: nil, sourcePath: nil, children: children)
+    }
+    let oldChild = node(3, "old child"), newChild = node(3, "new child")
+    let old = [node(1, "same", [oldChild]), node(2, "old root")]
+    let new = [node(1, "same", [newChild]), node(2, "new root")]
+    let changes = Array(Diff(oldRender: old, newRender: new))
+    precondition(changes.count == 3)
+    if case .none(let offset, let n, let o) = changes[0] {
+        precondition(offset == 0 && n.path == IndexPath(index: 0) && o.path == IndexPath(index: 0))
+    } else { preconditionFailure() }
+    if case .update(let offset, _, _) = changes[1] { precondition(offset == 1) } else { preconditionFailure() }
+    if case .update(let offset, let n, let o) = changes[2] {
+        precondition(offset == 0 && n.item === newChild && o.item === oldChild)
+        precondition(n.path == IndexPath(indexes: [0, 0]) && o.path == n.path)
+    } else { preconditionFailure() }
+    let reordered = Array(Diff(oldRender: [node(1, "one"), node(2, "two")],
+        newRender: [node(2, "two"), node(1, "one")]))
+    precondition(reordered.count == 2)
+    if case .none(_, let n, _) = reordered[0] { precondition(n.item.id == 2) } else { preconditionFailure() }
+    if case .insert(_, let n) = reordered[1] { precondition(n.item.id == 1) } else { preconditionFailure() }
+    precondition(Array(Diff(oldRender: [], newRender: [])).isEmpty)
+    let removed = Array(Diff(oldRender: [node(1, "one")], newRender: []))
+    if case .remove(_, let o) = removed.first { precondition(o.item.id == 1) } else { preconditionFailure() }
+}
+
+
+private func runRenderDifferenceBufferChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    let old = UIElementRender(id: 1, elementID: 42, text: "same", detailText: nil, sourcePath: nil, children: [])
+    let new = UIElementRender(id: 1, elementID: nil, text: "same", detailText: nil, sourcePath: nil, children: [])
+    let buffered = Diff(oldRender: [old], newRender: [new]).buffer()
+    precondition(!buffered.changesSortedDepthFirst && buffered.changes.count == 1)
+    precondition(buffered.difference.oldRender[0] === old && buffered.difference.newRender[0] === new)
+    new.append(child: UIElementRender(id: 2, elementID: nil, text: "later", detailText: nil,
+        sourcePath: nil, children: []))
+    precondition(Array(buffered.difference).count == 2 && buffered.changes.count == 1)
+    buffered.changes[0].inheritElementID()
+    precondition(new.elementID == 42) // Buffer retains the same node references.
+    var copied = buffered
+    copied.changes.removeAll()
+    copied.changesSortedDepthFirst = true
+    precondition(buffered.changes.count == 1 && !buffered.changesSortedDepthFirst)
+    precondition(Diff(oldRender: [], newRender: []).buffer().changes.isEmpty)
+}
+
+
+private func runRenderDifferenceDepthOrderChecks() {
+    typealias Diff = UIElementRenderDifference<Int>
+    let node = UIElementRender(id: 1, elementID: nil, text: "fixture", detailText: nil,
+        sourcePath: IndexPath(index: 99), children: [])
+    func cursor(_ path: [Int]) -> Diff.Cursor { Diff.Cursor(item: node, path: IndexPath(indexes: path)) }
+    let new = cursor([0]), old = cursor([8])
+    let none = Diff.Change.none(offset: 999, new: new, old: old)
+    let update = Diff.Change.update(offset: -1, new: new, old: old)
+    let insert = Diff.Change.insert(offset: 42, new: new)
+    let remove = Diff.Change.remove(offset: 0, old: new)
+    precondition(none.path == new.path && update.path == new.path)
+    precondition(Diff.Change.remove(offset: 0, old: old).path == old.path)
+    var buffer = Diff(oldRender: [], newRender: []).buffer()
+    buffer.changes = [.insert(offset: 0, new: cursor([1])), .insert(offset: 0, new: cursor([0, 1])),
+        update, insert, remove, none]
+    buffer.sortChangesDepthFirst()
+    precondition(buffer.changesSortedDepthFirst)
+    let priorities = buffer.changes.prefix(4).map { $0.depthFirstOrder.operationOrder }
+    precondition(priorities == [0, 1, 2, 3])
+    precondition(buffer.changes[4].path == IndexPath(indexes: [0, 1]))
+    precondition(buffer.changes[5].path == IndexPath(index: 1))
+    buffer.changes.reverse()
+    buffer.sortChangesDepthFirst()
+    precondition(buffer.changes.first!.path == IndexPath(index: 1)) // Already-sorted flag short-circuits.
+    var empty = Diff(oldRender: [], newRender: []).buffer()
+    empty.sortChangesDepthFirst()
+    precondition(empty.changes.isEmpty && empty.changesSortedDepthFirst)
+}
+
+
+private func runAppendedRevisionChecks(source: TransformedUIElement) throws {
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    func tree(_ nodes: [TransformedUIElement]) -> UIElementTree<TransformedUIElement> {
+        UIElementTree(items: nodes.map { .init(element: $0, subtree: leaf) }, focusedElement: nil)
+    }
+    func render(_ input: UIElementTree<TransformedUIElement>) -> UIElementRenderTree<AXUIElement> {
+        UIElementRenderTree(isFocus: false, roots: input.items.enumerated().map { index, item in
+            UIElementRender(id: item.element.id, elementID: nil, text: item.element.title ?? "",
+                detailText: nil, sourcePath: IndexPath(index: index), children: [])
+        })
+    }
+    let root = try UIElementTreeRevision.root(tree([source]), focusTree: nil, lineageID: "append-test", render: render)
+    var updated = source; updated.title = "updated"
+    var focus = source; focus.title = "focus"
+    var added = source; added.title = "added"
+    added.element = UIElement(axElement: AXUIElementCreateApplication(Int32.max), cache: source.cache)
+    var calls = 0
+    let next = try root.appending(tree: tree([updated, added]), focusTree: tree([focus])) { input in
+        calls += 1; return render(input)
+    }
+    precondition(calls == 2 && next.previousRevision === root && next.lineageRootRevision === root)
+    precondition(next.lineageID == root.lineageID && root.changes.isEmpty && next.changes.count == 2)
+    precondition(next.renderTree.roots.map(\.elementID) == [0, 1])
+    precondition(next.focusRenderTree?.roots[0].elementID == 0)
+    precondition(next.element(for: 0)?.title == "focus" && next.element(for: 1)?.title == "added")
+    precondition(root.element(for: 0)?.title == source.title)
+    var revisionBudgetEvents: [AccessibilityDifferenceLineBudgetExceeded] = []
+    checkEqual(next.differenceLines(from: root, options: [], summarizesRemovedElementIDs: true,
+        ignoreDifferenceLineBudget: false, onLineBudgetExceeded: { revisionBudgetEvents.append($0) }),
+        ["~0 updated", "+1 added"])
+    let reduced = try next.appending(tree: tree([updated]), focusTree: nil, render: render)
+    checkEqual(reduced.differenceLines(from: next, options: [.withoutRemovalSubtree],
+        summarizesRemovedElementIDs: true, ignoreDifferenceLineBudget: false,
+        onLineBudgetExceeded: { revisionBudgetEvents.append($0) }), ["Removed element IDs: 1"])
+    next.renderTree.roots[1].elementID = nil
+    checkTrue(next.differenceLines(from: root, options: [], summarizesRemovedElementIDs: true,
+        ignoreDifferenceLineBudget: false, onLineBudgetExceeded: { revisionBudgetEvents.append($0) }) == nil)
+    next.renderTree.roots[1].elementID = 1
+    checkTrue(revisionBudgetEvents.isEmpty)
+    let third = try next.appending(tree: tree([updated, added]), focusTree: nil, render: render)
+    precondition(third.previousRevision === next && third.lineageRootRevision === root)
+    let descriptionOwner = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(7)]),
+        axWindow: WindowUIElement(axElement: source.element.axElement, cache: source.cache),
+        axApplication: ApplicationUIElement(axElement: source.element.axElement, cache: source.cache))
+    var reducedElement = updated; reducedElement.title = "reduced"
+    let changedReduced = try next.appending(tree: tree([reducedElement]), focusTree: nil, render: render)
+    let fallbackSelection = SystemSelection(applicationWindow: descriptionOwner,
+        windowRevision: changedReduced, invalidationMonitor: nil)
+    var fallbackEvents: [AccessibilityDifferenceLineBudgetExceeded] = []
+    var fallbackFeatureReads = 0
+    let fallbackText = fallbackSelection.llmDescription(.difference(from: .previous), lineOptions: [],
+        onLineBudgetExceeded: { fallbackEvents.append($0) }, readSummaryFeature: {
+            fallbackFeatureReads += 1; return true
+        }, readWindowTitle: { _ in "fixture" }, readApplicationName: { _ in "app" },
+        readSelectedText: { _ in unexpectedFailure() }, readBundleIdentifier: { _ in nil })
+    checkEqual(fallbackEvents, [.removedElementSummary(fullTreeLineCount: 1)])
+    checkEqual(fallbackFeatureReads, 1)
+    checkEqual(fallbackText, "Window: \"fixture\", App: app.\n0 reduced\n")
+    next.renderTree.roots[1].elementID = nil
+    let invalidSelection = SystemSelection(applicationWindow: descriptionOwner,
+        windowRevision: next, invalidationMonitor: nil)
+    var invalidEvents: [AccessibilityDifferenceLineBudgetExceeded] = []
+    let invalidText = invalidSelection.llmDescription(.difference(from: .previous), lineOptions: [],
+        onLineBudgetExceeded: { invalidEvents.append($0) }, readSummaryFeature: { true },
+        readWindowTitle: { _ in "fixture" }, readApplicationName: { _ in "app" },
+        readSelectedText: { _ in unexpectedFailure() }, readBundleIdentifier: { _ in nil })
+    next.renderTree.roots[1].elementID = 1
+    checkTrue(invalidEvents.isEmpty)
+    checkTrue(invalidText.hasPrefix("Window: \"fixture\", App: app.\n0 updated\nadded\n"))
+    for (candidate, expectedReads) in [(root, 1), (next, 2), (third, 1)] {
+        let selection = SystemSelection(applicationWindow: descriptionOwner, windowRevision: candidate,
+            invalidationMonitor: nil)
+        var trace: [String] = []
+        var summaryReads = 0
+        let text = selection.llmDescription(.difference(from: .previous), lineOptions: [],
+            onLineBudgetExceeded: { _ in unexpectedFailure() }, readSummaryFeature: {
+                summaryReads += 1; trace.append("feature"); return summaryReads > 1
+            }, readWindowTitle: { _ in trace.append("title"); return "fixture" },
+            readApplicationName: { _ in trace.append("name"); return "app" },
+            readSelectedText: { _ in unexpectedFailure() },
+            readBundleIdentifier: { _ in trace.append("bundle"); return nil })
+        checkEqual(summaryReads, expectedReads)
+        checkEqual(Array(trace.prefix(2)), ["title", "name"])
+        checkEqual(trace.last, "bundle")
+        if candidate === root {
+            checkTrue(text.hasPrefix("Window: \"fixture\", App: app.\n"))
+        } else if candidate === next {
+            checkTrue(text.contains("Removed elements are summarized by ID range.\n~0 updated\n+1 added"))
+            checkTrue(text.hasSuffix("The focused UI element is 0 focus"))
+        } else {
+            checkEqual(text, "There has been no change in the accessibility tree for Window: \"fixture\".")
+        }
+    }
+    enum Failure: Error { case focus }
+    var failedMain: UIElementRenderTree<AXUIElement>?
+    calls = 0
+    do {
+        _ = try root.appending(tree: tree([updated]), focusTree: tree([focus])) { input in
+            calls += 1
+            if calls == 2 { throw Failure.focus }
+            let rendered = render(input); failedMain = rendered; return rendered
+        }
+        preconditionFailure()
+    } catch Failure.focus {}
+    precondition(calls == 2 && failedMain?.roots[0].elementID == 0)
+    precondition(root.previousRevision == nil && root.renderTree.roots[0].elementID == 0)
+}
+
+
+private func runExtractionRevisionChoiceChecks(source: TransformedUIElement) throws {
+    var item = source
+    item.role = .button; item.title = "revision choice"
+    item.url = nil
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let tree = UIElementTree(items: [.init(element: item, subtree: leaf)], focusedElement: nil)
+    func context() -> UIElementTransformationContext {
+        UIElementTransformationContext(type: .fullUIContext, application: Optional<ApplicationUIElement>.none,
+            window: Optional<WindowUIElement>.none, urlConfiguration: nil)
+    }
+    var initial = context()
+    let previous = try UIElementTreeRevision.root(tree, focusTree: nil, context: &initial)
+    for diffing in [false, true] {
+        for hasPrevious in [false, true] {
+            var renderContext = context()
+            let result = try makeSelectionTreeRevision(tree: tree, focusTree: tree,
+                previousRevision: hasPrevious ? previous : nil,
+                isAXTreeDiffingEnabled: diffing, context: &renderContext)
+            if diffing && hasPrevious {
+                precondition(result.previousRevision === previous && result.lineageID == previous.lineageID)
+                precondition(result.lineageRootRevision === previous)
+            } else {
+                precondition(result.previousRevision == nil && result.changes.isEmpty)
+                precondition(result.lineageRootRevision === result)
+            }
+            let preparedTrees = result.differenceLineTrees(from: previous)
+            let selectedDescription = result.descriptionTreeLines(mode: .difference(from: .previous),
+                lineOptions: [], summarizesRemovedElementIDs: true,
+                onLineBudgetExceeded: { _ in checkTrue(false) })
+            let unchangedPresentation = AccessibilityTreePresentation.unchanged(windowTitle: "fixture",
+                focusedElement: "0 button", selectedText: nil, selectedElements: [])
+            let changedPresentation = AccessibilityTreePresentation.difference(windowTitle: "fixture",
+                from: .previous, lines: ["~0 changed", "+1 added"], summarizesRemovedElementIDs: false,
+                focusedElement: nil, selectedText: nil, selectedElements: [])
+            checkEqual(changedPresentation.text,
+                "The following is a diff from the previous accessibility tree for Window: \"fixture\" with ~, +, and - representing changed, added, and removed elements, respectively.\n~0 changed\n+1 added")
+            checkEqual(AccessibilityTreePresentation.difference(windowTitle: "fixture", from: .initial,
+                lines: [], summarizesRemovedElementIDs: true, focusedElement: "0 button",
+                selectedText: nil, selectedElements: []), unchangedPresentation)
+            checkEqual(unchangedPresentation.text,
+                "There has been no change in the accessibility tree for Window: \"fixture\".\nThe focused UI element is 0 button")
+            let selectedPresentation = AccessibilityTreePresentation.unchanged(windowTitle: "fixture",
+                focusedElement: "0 button", selectedText: "chosen", selectedElements: ["ignored"])
+            checkTrue(selectedPresentation.text.contains("Selected text: ```\nchosen\n```"))
+            checkTrue(!selectedPresentation.text.contains("The focused UI element"))
+            if diffing && hasPrevious {
+                checkEqual(selectedDescription, .difference([]))
+            } else {
+                checkEqual(selectedDescription, .fullTree(result.renderTree.lines(indent: "\t", options: [])))
+            }
+            checkEqual(selectionDescriptionTreeLines(readDifference: { [] }, readFullTree: {
+                checkTrue(false); return []
+            }), .difference([]))
+            checkEqual(selectionDescriptionTreeLines(readDifference: { nil }, readFullTree: { ["full"] }),
+                .fullTree(["full"]))
+            checkEqual(result.differenceLines(from: previous, options: [],
+                summarizesRemovedElementIDs: true, ignoreDifferenceLineBudget: false,
+                onLineBudgetExceeded: { _ in checkTrue(false) }), [])
+            checkTrue(preparedTrees != nil)
+            checkEqual(preparedTrees?.baseline.roots.map(\.elementID), previous.renderTree.roots.map(\.elementID))
+            checkEqual(preparedTrees?.current.roots.map(\.elementID), result.renderTree.roots.map(\.elementID))
+            checkTrue(result.descriptionDifferenceBaseline(for: .fullTree) == nil)
+            checkTrue(result.descriptionDifferenceBaseline(for: .difference(from: .previous)) === result.previousRevision)
+            if let base = result.previousRevision {
+                checkTrue(result.descriptionDifferenceBaseline(for: .difference(from: .initial)) === base.lineageRootRevision)
+                var nextContext = context()
+                let next = try result.appending(tree: tree, focusTree: tree, context: &nextContext)
+                checkTrue(next.descriptionDifferenceBaseline(for: .difference(from: .previous)) === result)
+                checkTrue(next.descriptionDifferenceBaseline(for: .difference(from: .initial)) === previous)
+            } else {
+                checkTrue(result.descriptionDifferenceBaseline(for: .difference(from: .initial)) == nil)
+                var resumedContext = context()
+                let resumed = try makeSelectionTreeRevision(tree: tree, focusTree: nil,
+                    previousRevision: result, isAXTreeDiffingEnabled: true, context: &resumedContext)
+                checkTrue(resumed.previousRevision === result)
+                checkTrue(resumed.lineageRootRevision === result)
+                checkTrue(resumed.lineageRootRevision !== previous)
+                checkTrue(resumed.descriptionDifferenceBaseline(for: .difference(from: .initial)) === result)
+                checkEqual(resumed.descriptionTreeLines(mode: .difference(from: .previous), lineOptions: [],
+                    summarizesRemovedElementIDs: true, onLineBudgetExceeded: { _ in unexpectedFailure() }), .difference([]))
+            }
+            precondition(result.focusTree != nil && result.focusRenderTree != nil)
+            precondition(!result.renderTree.roots.isEmpty)
+            precondition(renderContext.type == .fullUIContext)
+        }
+    }
+}
+
+
+private func runTreeURLTrimmingChecks(source: TransformedUIElement) {
+    let url = URL(string: "https://example.com/path?query=value")!
+    for type in [UIElementContextType.fullUIContext, .informationalContext] {
+        for attributed in [false, true] {
+            var context = UIElementTransformationContext(type: type, application: Optional<ApplicationUIElement>.none,
+                window: Optional<WindowUIElement>.none, urlConfiguration: nil)
+            var interpolation = TransformedUIString.StringInterpolation(literalCapacity: 0, interpolationCount: 1)
+            interpolation.appendInterpolation(url, role: UIElementRole("AXLink"), context: &context)
+            var element = source
+            element.transformedString = TransformedUIString(stringInterpolation: interpolation)
+            element.value = element.transformedString!.description
+            element.attributedString = attributed ? NSAttributedString(string: "original") : nil
+            let originalValue = element.value
+            let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+            let child = UIElementTree(items: [.init(element: element, subtree: leaf)], focusedElement: nil)
+            var tree = UIElementTree(items: [.init(element: element, subtree: child)], focusedElement: element)
+            context.urlShortener.configuration.includeQuery = false
+            tree.trimURLs(using: &context)
+            let shortened = tree.items[0].element.transformedString!.description
+            precondition(shortened != originalValue && !shortened.contains("query=value"))
+            let expected = type == .informationalContext && attributed ? originalValue : shortened
+            precondition(tree.items[0].element.value == expected && tree.items[0].subtree.items[0].element.value == expected)
+            precondition(tree.focusedElement?.value == originalValue)
+        }
+    }
+    var context = UIElementTransformationContext(type: .fullUIContext, application: Optional<ApplicationUIElement>.none,
+        window: Optional<WindowUIElement>.none, urlConfiguration: nil)
+    var plain = source; plain.transformedString = "plain"; plain.value = "sentinel"
+    var tree = UIElementTree(items: [.init(element: plain,
+        subtree: UIElementTree<TransformedUIElement>(items: [], focusedElement: nil))], focusedElement: nil)
+    tree.trimURLs(using: &context)
+    precondition(tree.items[0].element.value == "sentinel")
+}
+
+
+private func runExtractionURLCompactionChecks(source: TransformedUIElement) throws {
+    try runExtractionTreeTransformationChecks(source: source)
+    let config = UIElementURLShortener.Configuration(individualLimit: nil, totalLimit: 30,
+        includeQuery: true, includeFragment: true, baseHost: nil)
+    var context = UIElementTransformationContext(type: .fullUIContext, application: Optional<ApplicationUIElement>.none,
+        window: Optional<WindowUIElement>.none, urlConfiguration: config)
+    var total = 10, calls = 0
+    var initialText = ""
+    _ = context.urlShortener.trim(url: URL(string: "https://stale.example/previous-capture")!, isImage: false)
+    let result = withSelectionTreeURLCompaction(context: &context, totalLength: &total) { ctx in
+        checkEqual(ctx.urlShortener.compactConfigurationIfNeeded(), 0)
+        calls += 1
+        let url = URL(string: "https://example.com/path?query=" + String(repeating: "x", count: 200))!
+        var interpolation = TransformedUIString.StringInterpolation(literalCapacity: 0, interpolationCount: 1)
+        interpolation.appendInterpolation(url, role: UIElementRole("AXLink"), context: &ctx)
+        var node = source
+        node.transformedString = TransformedUIString(stringInterpolation: interpolation)
+        node.value = node.transformedString!.description
+        initialText = node.value!
+        ctx.urlShortener.configuration.includeQuery = false
+        let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        let tree = UIElementTree(items: [.init(element: node, subtree: leaf)], focusedElement: nil)
+        return (tree, tree)
+    }
+    precondition(calls == 1 && total > 10 && context.urlShortener.configuration != config)
+    precondition(result.tree.items[0].element.value != initialText)
+    precondition(result.focusTree?.items[0].element.value == result.focusTree?.items[0].element.transformedString?.description)
+    enum Failure: Error { case transform }
+    let compacted = context.urlShortener.configuration
+    let before = total
+    _ = context.urlShortener.trim(url: URL(string: "https://stale.example/before-failure")!, isImage: false)
+    do {
+        _ = try withSelectionTreeURLCompaction(context: &context, totalLength: &total) { ctx in
+            checkEqual(ctx.urlShortener.compactConfigurationIfNeeded(), 0)
+            throw Failure.transform
+        }
+        preconditionFailure()
+    } catch Failure.transform {}
+    precondition(total == before && context.urlShortener.configuration == compacted)
+}
+
+
+private func runExtractionURLRegistrationChecks(source: TransformedUIElement) {
+    var context = UIElementTransformationContext(type: .fullUIContext, application: Optional<ApplicationUIElement>.none,
+        window: Optional<WindowUIElement>.none, urlConfiguration: .init(individualLimit: nil, totalLimit: 10000,
+            includeQuery: true, includeFragment: true, baseHost: nil))
+    var parent = source; parent.role = .button; parent.title = "parent"
+    parent.url = URL(string: "https://example.com/a")!
+    var child = parent; child.title = "child"; child.url = URL(string: "https://example.org/b")!
+    var focused = parent; focused.url = URL(string: "https://excluded.example/focus")!
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let subtree = UIElementTree(items: [.init(element: child, subtree: leaf)], focusedElement: nil)
+    let tree = UIElementTree(items: [.init(element: parent, subtree: subtree)], focusedElement: focused)
+    let focus = UIElementTree(items: [.init(element: parent, subtree: leaf)], focusedElement: parent)
+    registerSelectionTreeURLs(tree: tree, focusTree: focus, context: &context)
+    // Duplicate URL across full/focus trees is counted once by compaction;
+    // the separate focusedElement capture is not a traversal node.
+    precondition(context.urlShortener.compactConfigurationIfNeeded() == "example.com/a".count + "example.org/b".count)
+    precondition(tree.items[0].element.title == "parent" && tree.focusedElement?.url == focused.url)
+}
+
+
+private func runMacTreeTransformCompositionChecks(source: TransformedUIElement) {
+    var link = source; link.role = UIElementRole("AXLink")
+    link.url = URL(string: "https://example.com/path")!
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let tree = UIElementTree(items: [.init(element: link, subtree: leaf)], focusedElement: link)
+    let app = ApplicationUIElement(axElement: AXUIElementCreateApplication(Int32.max), cache: source.cache)
+    var context = UIElementTransformationContext(type: .fullUIContext, application: Optional<ApplicationUIElement>.none,
+        window: Optional<WindowUIElement>.none, urlConfiguration: nil)
+    let output = tree.transformed(for: app, using: [.shared(.flattenLinksIntoMarkdownText)], in: &context,
+        rebuild: { _, _, _ in preconditionFailure() }, providerTitle: { _ in preconditionFailure() },
+        owningBundleIdentifier: { _ in preconditionFailure() },
+        renderNode: { node, ctx in node.accessibilityDescription(context: &ctx) },
+        reportUnknownAttributedStyle: { _ in preconditionFailure() }, reportAttributeError: { _ in preconditionFailure() },
+        reportUnexpectedNextLine: { preconditionFailure() })
+    precondition(output.items.count == 1 && output.items[0].element.role == .staticText)
+    precondition(output.items[0].element.url == nil && output.items[0].element.value == "example.com/path")
+    precondition(output.focusedElement?.url == link.url && tree.items[0].element.role == UIElementRole("AXLink"))
+    precondition(context.urlShortener.compactConfigurationIfNeeded() == "example.com/path".count)
+}
+
+
+private func runOwningApplicationBundleResolutionChecks() {
+    enum Failure: Error { case pid }
+    var reports = 0
+    let failed = resolveOwningApplicationBundleIdentifier(processID: { throw Failure.pid },
+        bundleIdentifier: { _ in preconditionFailure() }, reportError: { error in
+            guard case Failure.pid = error else { preconditionFailure() }; reports += 1
+        })
+    precondition(failed == nil && reports == 1)
+    for identifier: String? in [nil, "com.apple.iCal", "other.app"] {
+        var reads = 0
+        let result = resolveOwningApplicationBundleIdentifier(processID: { 42 },
+            bundleIdentifier: { pid in precondition(pid == 42); reads += 1; return identifier },
+            reportError: { _ in preconditionFailure() })
+        precondition(reads == 1 && result == identifier)
+    }
+}
+
+
+private func runMacProviderTitleTransactionChecks() {
+    let ax = AXUIElementCreateApplication(getpid())
+    let title = UIElementAttribute("AXTitle")
+    for value: AnyObject in ["provider title" as NSString, "" as NSString, NSNumber(value: 42)] {
+        let partial = AXPartialValue(value: AXEncodedValue(value: value), arraySubsetDescriptor: nil,
+            textTruncationDescriptor: nil)
+        let root = UIElement(axElement: ax, cache: UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+        let transaction = UIElementTreeTransaction(element: root,
+            cache: UIElementTransactionCache(attributeTable: [ax: [title: partial]], requestedAttributes: [title],
+                fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: FrequencyTable<UIElementRole>())
+        transaction.perform { _ in
+            let result = macTransformationProviderTitle(ax)
+            if let string = value as? NSString { precondition(result == string as String) }
+            else { precondition(result == nil) }
+        }
+    }
+}
+
+private func runMacTransformationRenderChecks(source: TransformedUIElement) {
+    var element = source
+    element.url = URL(string: "https://example.com/render-default?query=value")
+    var actual = UIElementTransformationContext(type: .fullUIContext,
+        application: nil, window: nil, urlConfiguration: nil)
+    var expected = actual
+    let text = macTransformationRenderNode(element, &actual)
+    checkEqual(text, element.accessibilityDescription(context: &expected))
+    checkEqual(actual.urlShortener.configuration, expected.urlShortener.configuration)
+    // Rendering must mutate the caller's context, including URL registration.
+    checkEqual(actual.urlShortener.compactConfigurationIfNeeded(), expected.urlShortener.compactConfigurationIfNeeded())
+}
+
+private func runBuilderAppendChecks(source: TransformedUIElement) {
+    var tree = UIElementTree<TransformedUIElement>(items: [], focusedElement: source)
+    checkTrue(!tree.hasDescendant(where: \.isEnabled))
+    var child = source
+    child.isEnabled = true
+    let subtree = UIElementTree<TransformedUIElement>(items: [], focusedElement: child)
+    tree.appendBuiltElement(child, subtree: subtree, availableSubset: nil)
+    checkEqual(tree.items.count, 1)
+    checkTrue(tree.hasDescendant(where: \.isEnabled))
+    checkEqual(tree.items[0].element.id, child.id)
+    checkEqual(tree.items[0].subtree.focusedElement?.id, child.id)
+    checkEqual(tree.focusedElement?.title, source.title)
+    checkTrue(tree.items[0].availableSubset == nil)
+}
+
+private func runVisibleSubsetFallbackChecks() {
+    let rows = UIElementAttribute("AXVisibleRows")
+    let children = UIElementAttribute("AXVisibleChildren")
+    checkEqual(uiElementFullAttributeForVisibleSubset(rows), UIElementAttribute("AXRows"))
+    checkEqual(uiElementFullAttributeForVisibleSubset(children), UIElementAttribute("AXChildren"))
+    checkTrue(uiElementFullAttributeForVisibleSubset(UIElementAttribute("AXUnknown")) == nil)
+    for (count, visible, reads) in [(0, 0, 0), (1, 0, 1), (1, 1, 0), (499, 1, 1), (500, 1, 0)] {
+        var called = 0
+        let result: [Int]? = uiElementVisibleSubsetFallback(using: children, visibleCount: visible,
+            count: { checkEqual($0, UIElementAttribute("AXChildren")); return count },
+            read: { _ in called += 1; return [] })
+        checkEqual(called, reads)
+        checkTrue((result != nil) == (reads == 1))
+    }
+    let result: [Int]? = uiElementVisibleSubsetFallback(using: UIElementAttribute("AXUnknown"), visibleCount: 0,
+        count: { _ in unexpectedFailure(); return 1 }, read: { _ in unexpectedFailure(); return [] })
+    checkTrue(result == nil)
+}
+
+private func runCompleteCollectionChecks() {
+    let descriptors: [AXArraySubsetDescriptor?] = [nil, .init(count: 10),
+        .init(count: 10, availableRanges: []), .init(count: 10, availableRanges: [0..<10])]
+    for (index, descriptor) in descriptors.enumerated() {
+        var decoded = 0; var fresh = 0
+        let partial = AXPartialValue(value: AXEncodedValue(value: [] as NSArray),
+            arraySubsetDescriptor: descriptor, textTruncationDescriptor: nil)
+        let result: [Int]? = uiElementCompleteCollectionValue(cached: { partial },
+            decode: { _ in decoded += 1; return [] }, uncached: { fresh += 1; return [7] })
+        checkEqual(decoded, index < 2 ? 1 : 0)
+        checkEqual(fresh, index < 2 ? 0 : 1)
+        checkEqual(result, index < 2 ? [] : [7])
+        let invalid: [Int]? = uiElementCompleteCollectionValue(cached: { partial },
+            decode: { _ in throw UIElementError.axError(.failure) }, uncached: { return [7] })
+        checkEqual(invalid, index < 2 ? nil : [7])
+    }
+    let missing: [Int]? = uiElementCompleteCollectionValue(cached: { nil },
+        decode: { _ in unexpectedFailure(); return [] }, uncached: { nil })
+    checkTrue(missing == nil)
+}
+
+private func runVisibleCollectionResolutionChecks() {
+    let rows = UIElementAttribute("AXRows")
+    var trace: [String] = []
+    let result = resolveVisibleCollection(visible: [2, 2], cached: { attribute -> [Int]? in
+        trace.append(attribute == rows ? "rows" : "children")
+        return attribute == rows ? [1] : [2, 3, 3]
+    }, fallback: { unexpectedFailure(); return nil })
+    checkEqual(result, [2, 3, 3]); checkEqual(trace, ["rows", "children"])
+    let empty: [Int]? = resolveVisibleCollection(visible: [], cached: { attribute in
+        checkEqual(attribute, rows); return []
+    }, fallback: { unexpectedFailure(); return nil })
+    checkEqual(empty, [Int]())
+    trace = []
+    let fallback = resolveVisibleCollection(visible: [4], cached: { attribute -> [Int]? in
+        trace.append(attribute == rows ? "rows" : "children")
+        if attribute == rows { throw UIElementError.axError(.failure) }
+        return nil
+    }, fallback: { trace.append("fallback"); return [4, 4] })
+    checkEqual(fallback, [4, 4]); checkEqual(trace, ["rows", "children", "fallback"])
+}
+
+private func runVisibleIndexRangeChecks() {
+    checkEqual(uiElementVisibleIndexRanges(full: [1, 2, 3, 4, 5], visible: [2, 3, 5]), [1...2, 4...4])
+    checkEqual(uiElementVisibleIndexRanges(full: [1, 2, 1], visible: [1]), [0...0, 2...2])
+    checkEqual(uiElementVisibleIndexRanges(full: [1, 1], visible: [1]), [0...1])
+    checkEqual(uiElementVisibleIndexRanges(full: [Int](), visible: [1]), [])
+    for mask in 0..<256 {
+        let full = Array(0..<8)
+        let visible = Set(full.filter { mask & (1 << $0) != 0 })
+        let ranges = uiElementVisibleIndexRanges(full: full, visible: visible)
+        checkEqual(ranges.flatMap { Array($0) }, full.filter { visible.contains($0) })
+        for pair in zip(ranges, ranges.dropFirst()) {
+            checkTrue(pair.0.upperBound + 1 < pair.1.lowerBound)
+        }
+    }
+}
+
+private func runVisibleRangeExpansionChecks() {
+    checkEqual(expandUIElementVisibleRange(3...4, minimumCount: 5, totalCount: 10), 1...5)
+    checkEqual(expandUIElementVisibleRange(0...1, minimumCount: 5, totalCount: 10), 0...4)
+    checkEqual(expandUIElementVisibleRange(8...9, minimumCount: 5, totalCount: 10), 5...9)
+    checkEqual(expandUIElementVisibleRange(3...4, minimumCount: 20, totalCount: 10), 0...9)
+    checkEqual(expandUIElementVisibleRange(3...4, minimumCount: 1, totalCount: 10), 3...4)
+    checkEqual(expandUIElementVisibleRange(3...4, minimumCount: 0, totalCount: 10), 3...4)
+    for total in 1...10 {
+        for lower in 0..<total {
+            for upper in lower..<total {
+                for minimum in 0...12 {
+                    let expanded = expandUIElementVisibleRange(lower...upper, minimumCount: minimum, totalCount: total)
+                    checkTrue(expanded.lowerBound >= 0 && expanded.upperBound < total)
+                    checkTrue(expanded.contains(lower) && expanded.contains(upper))
+                    checkEqual(expanded.count, max(upper - lower + 1, min(minimum, total)))
+                }
+            }
+        }
+    }
+}
+
+private func runVisibleRangeSelectionChecks() {
+    checkEqual(selectUIElementVisibleRanges([0...0, 3...5, 8...10], limit: 1), [8...10])
+    checkEqual(selectUIElementVisibleRanges([0...0, 3...5, 8...10], limit: 2), [3...5, 8...10])
+    checkEqual(selectUIElementVisibleRanges([0...0], limit: 0), [])
+    checkEqual(selectUIElementVisibleRanges([], limit: 1), [])
+    let ranges = (0..<100).map { index in (index * 20)...(index * 20 + index % 7) }
+    // Independent rank oracle: size, then original offset for ties.
+    let ranked = ranges.enumerated().sorted {
+        if $0.element.count == $1.element.count { return $0.offset < $1.offset }
+        return $0.element.count < $1.element.count
+    }.map { $0.element }
+    for limit in 0...105 {
+        checkEqual(selectUIElementVisibleRanges(ranges, limit: limit), Array(ranked.suffix(min(limit, ranges.count))))
+    }
+}
+
+private func runVisibleSubsetCompositionChecks() {
+    let original = AXArraySubsetDescriptor(count: 50, availableRanges: [10..<12])
+    func build(_ visible: [Int], _ full: [Int]?, _ minimum: Int)
+        -> (array: [Int], subsetDescriptor: AXArraySubsetDescriptor?) {
+        buildUIElementVisibleSubset(partial: (visible, original), minimumCount: minimum,
+            identity: { $0 }, fullCollection: { full }, initialize: { $0 })
+    }
+    let preserved = build([2, 4], [0, 1, 2, 3, 4, 5], 0)
+    checkEqual(preserved.array, [2, 4]); checkEqual(preserved.subsetDescriptor, original)
+    let expanded = build([2, 3], [0, 1, 2, 3, 4, 5], 4)
+    checkEqual(expanded.array, [1, 2, 3, 4])
+    checkEqual(expanded.subsetDescriptor, .init(count: 6, availableRanges: [1..<5]))
+    let complete = build([2, 3], [0, 1, 2, 3, 4, 5], 10)
+    checkEqual(complete.array, [0, 1, 2, 3, 4, 5]); checkTrue(complete.subsetDescriptor == nil)
+    checkEqual(build([2], nil, 5).subsetDescriptor, original)
+    checkEqual(build([], [0, 1], 5).subsetDescriptor, original)
+}
+
+private func runPositionVisibilityChecks() {
+    let parent = CGRect(x: 0, y: 0, width: 100, height: 100)
+    let frames: [CGRect?] = [CGRect(x: 10, y: 10, width: 10, height: 10),
+        CGRect(x: 100, y: 10, width: 10, height: 10),
+        CGRect(x: 0, y: 10, width: 0.5, height: 10), nil]
+    checkEqual(uiElementPositionVisibility(parentFrame: parent, clippingFrame: nil, childFrames: frames),
+        [true, false, false, false])
+    checkEqual(uiElementPositionVisibility(parentFrame: parent,
+        clippingFrame: CGRect(x: 50, y: 0, width: 50, height: 100), childFrames: frames),
+        [false, false, false, false])
+    checkEqual(uiElementPositionVisibility(parentFrame: nil, clippingFrame: parent,
+        childFrames: [CGRect(x: 10, y: 10, width: 10, height: 10)]), [false])
+    checkEqual(uiElementPositionVisibility(parentFrame: parent, clippingFrame: nil, childFrames: []), [])
+}
+
+private func runPositionSubsetChecks() {
+    let full = Array(0..<7)
+    let visibility = [false, true, true, false, true, true, false]
+    let all = buildUIElementPositionSubset(full: full, visibility: visibility, minimumCount: 7,
+        includeAllVisibleItemRanges: true, initialize: { $0 })!
+    checkEqual(all.array, [1, 2, 4, 5])
+    checkEqual(all.subsetDescriptor, .init(count: 7, availableRanges: [1..<3, 4..<6]))
+    let one = buildUIElementPositionSubset(full: full, visibility: visibility, minimumCount: 3,
+        includeAllVisibleItemRanges: false, initialize: { $0 })!
+    checkEqual(one.array, [3, 4, 5])
+    checkEqual(one.subsetDescriptor, .init(count: 7, availableRanges: [3..<6]))
+    let none = buildUIElementPositionSubset(full: full, visibility: Array(repeating: false, count: 7),
+        minimumCount: 7, includeAllVisibleItemRanges: false, initialize: { $0 })
+    checkTrue(none == nil)
+    let complete = buildUIElementPositionSubset(full: full, visibility: visibility, minimumCount: 20,
+        includeAllVisibleItemRanges: false, initialize: { $0 })!
+    checkEqual(complete.array, full); checkTrue(complete.subsetDescriptor == nil)
+}
+
+private func runRecursiveTreeBuildChecks() {
+    let rootAX = AXUIElementCreateApplication(2147480000)
+    let childAX = AXUIElementCreateApplication(2147480001)
+    let role = UIElementAttribute("AXRole"), children = UIElementAttribute("AXChildren")
+    let value = UIElementAttribute("AXValue")
+    func partial(_ raw: AnyObject) -> AXPartialValue {
+        .init(value: AXEncodedValue(value: raw), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    let emptyCache = UIElementCache(supportedAttributes: [], attributes: [:], transactionAttributes: nil)
+    let root = UIElement(axElement: rootAX, cache: emptyCache)
+    let attributes: [AXUIElement: [UIElementAttribute: AXPartialValue]] = [
+        rootAX: [role: partial("AXDateField" as NSString), children: partial([childAX, childAX] as NSArray)],
+        childAX: [role: partial("AXIncrementor" as NSString), children: partial([rootAX] as NSArray), value: partial("5" as NSString)]]
+    let transaction = UIElementTreeTransaction(element: root,
+        cache: .init(attributeTable: attributes, requestedAttributes: [role, children, value],
+            fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: FrequencyTable<UIElementRole>())
+    var context = UIElementTransformationContext(type: .eventStreamContext, application: nil, window: nil, urlConfiguration: nil)
+    context.isChromium = true
+    transaction.perform { _ in
+        var tree = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        var visited: Set<AXUIElement> = []
+        tree.addRecursively(root, at: IndexPath(), traversalParentRole: nil, context: context,
+            visited: &visited, filter: { _, _ in true }, reportDepthLimit: { unexpectedFailure() },
+            reportLimit: { _ in unexpectedFailure() }, reportError: { _ in }, reportUnknownDateComponents: { _ in })
+        checkEqual(tree.items.count, 1)
+        checkEqual(tree.items[0].element.id, rootAX)
+        checkEqual(tree.items[0].children.count, 1)
+        checkEqual(tree.items[0].children[0].element.id, childAX)
+        checkTrue(!tree.items[0].children[0].element.isValueSettable)
+        let standalone = TransformedUIElement(element: UIElement(element: childAX), context: context,
+            traversalParentRole: nil, reportError: { _ in }, reportUnknownDateComponents: { _ in })
+        checkTrue(standalone.isValueSettable)
+        var stale = tree.items[0].children[0]
+        stale.element.title = "transformed stale title"
+        var rebuilt = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        macTransformationRebuild(&rebuilt, stale, &context, reportDepthLimit: { unexpectedFailure() },
+            reportLimit: { _ in unexpectedFailure() }, reportError: { _ in },
+            reportUnknownDateComponents: { _ in })
+        checkTrue(rebuilt.items[0].element.title == nil)
+        checkTrue(rebuilt.items[0].element.isValueSettable)
+        checkEqual(rebuilt.items[0].children[0].element.id, rootAX)
+        checkTrue(tree.items[0].children[0].children.isEmpty)
+        checkEqual(visited, Set([rootAX, childAX]))
+        var filteredTree = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        var filteredVisited: Set<AXUIElement> = []
+        var indices: [Int] = []
+        filteredTree.addRecursively(root, at: IndexPath(), traversalParentRole: nil, context: context,
+            visited: &filteredVisited, filter: { index, _ in indices.append(index); return false },
+            reportDepthLimit: { unexpectedFailure() }, reportLimit: { _ in unexpectedFailure() },
+            reportError: { _ in }, reportUnknownDateComponents: { _ in })
+        checkEqual(indices, [0, 1])
+        checkEqual(filteredVisited, Set([rootAX]))
+        checkTrue(filteredTree.items[0].children.isEmpty)
+        var depthReports = 0
+        var depthTree = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        var depthVisited: Set<AXUIElement> = []
+        depthTree.addRecursively(root, at: IndexPath(indexes: Array(repeating: 0, count: 201)),
+            traversalParentRole: nil, context: context, visited: &depthVisited,
+            filter: { _, _ in unexpectedFailure(); return true }, reportDepthLimit: { depthReports += 1 },
+            reportLimit: { _ in unexpectedFailure() }, reportError: { _ in unexpectedFailure() },
+            reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkEqual(depthReports, 1); checkTrue(depthTree.items.isEmpty && depthVisited.isEmpty)
+        var added = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        for _ in 0..<2 {
+            added.add(root, context: &context, reportDepthLimit: { unexpectedFailure() },
+                reportLimit: { _ in unexpectedFailure() }, reportError: { _ in },
+                reportUnknownDateComponents: { _ in })
+        }
+        checkEqual(added.items.count, 2)
+        checkEqual(added.items.map { $0.children.count }, [1, 1])
+        var missingSourceTree = UIElementTree<TransformedUIElement>(items: [], focusedElement: standalone)
+        var failures = 0
+        let fallbackFocus = missingSourceTree.focusTree(forSelection: [root, root], context: &context,
+            reportSelectionResolutionFailure: { failures += 1 },
+            reportDepthLimit: { unexpectedFailure() }, reportLimit: { _ in unexpectedFailure() },
+            reportError: { _ in }, reportUnknownDateComponents: { _ in })!
+        checkEqual(failures, 1)
+        checkEqual(fallbackFocus.items[0].children.map { $0.element.id }, [rootAX, rootAX])
+        checkEqual(fallbackFocus.items[0].children.map { $0.children.count }, [1, 1])
+        checkTrue(missingSourceTree.items.isEmpty)
+    }
+}
+
+private func runFocusSelectionAttributeChecks() {
+    let rows = UIElementAttribute("AXSelectedRows")
+    let cells = UIElementAttribute("AXSelectedCells")
+    let children = UIElementAttribute("AXSelectedChildren")
+    checkEqual(uiElementSupportedSelectionAttributes([children, rows, cells]), [rows, cells, children])
+    checkEqual(uiElementSupportedSelectionAttributes([children, rows, UIElementAttribute("AXSelected")]), [rows, children])
+    checkEqual(uiElementSupportedSelectionAttributes([]), [])
+}
+
+private func runFocusPositiveSelectionChecks() {
+    let rows = UIElementAttribute("AXSelectedRows")
+    let cells = UIElementAttribute("AXSelectedCells")
+    let children = UIElementAttribute("AXSelectedChildren")
+    var trace: [UIElementAttribute] = []
+    let chosen = uiElementFocusSelectionAttribute(supported: [rows, cells, children], count: {
+        trace.append($0)
+        if $0 == rows { throw UIElementError.axError(.failure) }
+        return 2
+    })
+    checkEqual(chosen, cells); checkEqual(trace, [rows, cells])
+    trace = []
+    let absent = uiElementFocusSelectionAttribute(supported: [rows, cells, children], count: {
+        trace.append($0); return $0 == rows ? nil : ($0 == cells ? -1 : 0)
+    })
+    checkTrue(absent == nil); checkEqual(trace, [rows, cells, children])
+    checkTrue(uiElementFocusSelectionAttribute(supported: [], count: { _ in unexpectedFailure(); return 1 }) == nil)
+}
+
+private func runFocusSelectionReadChecks() {
+    let rows = UIElementAttribute("AXSelectedRows"), cells = UIElementAttribute("AXSelectedCells")
+    for result: [Int]? in [nil, [], [7, 7]] {
+        var trace: [UIElementAttribute] = []
+        let value = uiElementFocusSelectionElements(supported: [rows, cells], count: {
+            checkEqual($0, rows); return 1
+        }, read: { trace.append($0); return result })
+        checkEqual(value, result); checkEqual(trace, [rows])
+    }
+    let none: [Int]? = uiElementFocusSelectionElements(supported: [rows], count: { _ in 0 },
+        read: { _ in unexpectedFailure(); return [] })
+    checkTrue(none == nil)
+}
+
+private func runFocusProviderCacheChecks() {
+    let rootAX = AXUIElementCreateApplication(2147480002)
+    let childAX = AXUIElementCreateApplication(2147480003)
+    let rows = UIElementAttribute("AXSelectedRows"), cells = UIElementAttribute("AXSelectedCells")
+    let title = UIElementAttribute("AXTitle")
+    func partial(_ raw: AnyObject, subset: AXArraySubsetDescriptor? = nil) -> AXPartialValue {
+        .init(value: AXEncodedValue(value: raw), arraySubsetDescriptor: subset, textTruncationDescriptor: nil)
+    }
+    let root = UIElement(axElement: rootAX,
+        cache: .init(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+    let transaction = UIElementTreeTransaction(element: root,
+        cache: .init(attributeTable: [childAX: [title: partial("transaction child" as NSString)]],
+            requestedAttributes: [title], fallbackElements: UIElementFallbackCache(initialState: [:])),
+        roleFrequencyTable: FrequencyTable<UIElementRole>())
+    transaction.perform { _ in
+        let childArray = partial([childAX, childAX] as NSArray)
+        let provider = UIElement(axElement: rootAX, cache: .init(supportedAttributes: [rows, cells],
+            attributes: [rows: childArray, cells: partial([] as NSArray)], transactionAttributes: nil))
+        let selected = provider.selectedElementsForFocus(reportError: { _ in unexpectedFailure() })!
+        checkEqual(selected.map { $0.axElement }, [childAX, childAX])
+        checkEqual(selected.map { $0.title }, ["transaction child", "transaction child"])
+        // A positive descriptor count may accompany an empty cached partial.
+        // The empty decode is final; cells must not replace it.
+        let empty = UIElement(axElement: rootAX, cache: .init(supportedAttributes: [rows, cells],
+            attributes: [rows: partial([] as NSArray, subset: .init(count: 2, availableRanges: [])),
+                cells: childArray], transactionAttributes: nil))
+        checkEqual(empty.selectedElementsForFocus(reportError: { _ in unexpectedFailure() })?.count, 0)
+        let malformedCount = UIElement(axElement: rootAX, cache: .init(supportedAttributes: [rows, cells],
+            attributes: [rows: partial("not an array" as NSString), cells: childArray], transactionAttributes: nil))
+        checkEqual(malformedCount.selectedElementsForFocus(reportError: { _ in unexpectedFailure() })?.count, 2)
+    }
+}
+
+private func runFocusItemResolutionChecks(source: TransformedUIElement) {
+    runSelectionWebAreaURLChecks(source: source)
+    let childAX = AXUIElementCreateApplication(2147480004)
+    let missingAX = AXUIElementCreateApplication(2147480005)
+    var child = source
+    child.element = UIElement(axElement: childAX, cache: source.element.cache)
+    child.title = "stored child"
+    let empty = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let childItem = UIElementTree<TransformedUIElement>.Item(element: child, subtree: empty,
+        availableSubset: .init(count: 5, availableRanges: [2..<3]))
+    var tree = UIElementTree(items: [.init(element: source,
+        subtree: .init(items: [childItem], focusedElement: nil))], focusedElement: source)
+    var attached = tree
+    attached.attachSelectionExtractionFocus(nil, reportMissingFocus: { _ in unexpectedFailure() })
+    checkEqual(attached.focusedElement?.id, source.id)
+    attached.attachSelectionExtractionFocus(child.element, reportMissingFocus: { _ in unexpectedFailure() })
+    checkEqual(attached.focusedElement?.title, "stored child")
+    let missing = UIElement(axElement: missingAX, cache: source.element.cache)
+    var missingReports = 0
+    attached.attachSelectionExtractionFocus(missing, reportMissingFocus: {
+        checkEqual($0.id, missingAX)
+        missingReports += 1
+    })
+    checkEqual(missingReports, 1)
+    checkTrue(attached.focusedElement == nil)
+    checkEqual(attached.items[0].children.count, 1)
+    checkEqual(tree.focusedElement?.id, source.id)
+    let resolved = tree.itemsForFocusSelection([childAX, source.id, childAX])!
+    checkEqual(resolved.map { $0.element.id }, [childAX, source.id, childAX])
+    checkEqual(resolved[0].element.title, "stored child")
+    checkEqual(resolved[0].availableSubset, childItem.availableSubset)
+    checkEqual(resolved[1].children.count, 1)
+    let focus = tree.focusTreeForResolvedSelection(resolved)!
+    checkEqual(focus.items[0].children.map { $0.element.id }, [childAX, source.id, childAX])
+    checkTrue(focus.items[0].children.allSatisfy { $0.children.isEmpty && $0.availableSubset == nil })
+    checkEqual(focus.focusedElement?.id, source.id)
+    checkEqual(tree.items[0].children.count, 1)
+    let noFocus = UIElementTree<TransformedUIElement>(items: tree.items, focusedElement: nil)
+    checkTrue(noFocus.focusTreeForResolvedSelection(resolved) == nil)
+    let rows = UIElementAttribute("AXSelectedRows")
+    let selection = AXPartialValue(value: AXEncodedValue(value: [childAX, childAX] as NSArray),
+        arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    var focused = source
+    focused.element = UIElement(axElement: source.id, cache: .init(supportedAttributes: [rows],
+        attributes: [rows: selection], transactionAttributes: nil))
+    var entryTree = UIElementTree<TransformedUIElement>(items: tree.items, focusedElement: focused)
+    let transaction = UIElementTreeTransaction(element: focused.element,
+        cache: .init(attributeTable: [childAX: [:]], requestedAttributes: [],
+            fallbackElements: UIElementFallbackCache(initialState: [:])), roleFrequencyTable: FrequencyTable<UIElementRole>())
+    transaction.perform { _ in
+        var context = UIElementTransformationContext(type: .fullUIContext, application: nil,
+            window: nil, urlConfiguration: nil)
+        let result = entryTree.focusTree(context: &context,
+            reportSelectionResolutionFailure: { unexpectedFailure() },
+            reportDepthLimit: { unexpectedFailure() }, reportLimit: { _ in unexpectedFailure() },
+            reportError: { _ in unexpectedFailure() }, reportUnknownDateComponents: { _ in unexpectedFailure() })!
+        checkEqual(result.items[0].children.map { $0.element.id }, [childAX, childAX])
+        checkEqual(result.items[0].children.map { $0.element.title }, ["stored child", "stored child"])
+        checkTrue(result.items[0].children.allSatisfy { $0.children.isEmpty && $0.availableSubset == nil })
+    }
+    checkTrue(tree.itemsForFocusSelection([childAX, missingAX, source.id]) == nil)
+    checkEqual(tree.itemsForFocusSelection([])?.count, 0)
+    checkEqual(tree.focusedElement?.id, source.id)
+}
+
+private func runImmediateMenuBarFilteringChecks() {
+    let titles: [String?] = ["Apple", "File", "Debug", "debug", "MyDebugger", "", nil]
+    var read: [Int] = []
+    let retained = immediateMenuBarItems(Array(titles.indices), title: {
+        read.append($0); return titles[$0]
+    })
+    checkEqual(retained, [1, 3, 5, 6])
+    checkEqual(read, [1, 2, 3, 4, 5, 6])
+    var trace: [String] = []
+    forEachImmediateMenuBarItem([0, 1, 2, 3], title: {
+        trace.append("title \($0)"); return $0 == 2 ? "Debug" : nil
+    }, visit: { trace.append("capture \($0)") })
+    checkEqual(trace, ["title 1", "capture 1", "title 2", "title 3", "capture 3"])
+    checkEqual(immediateMenuBarItems([0], title: { _ in unexpectedFailure(); return nil }), [])
+}
+
+private func runMenuBarProviderCompositionChecks() {
+    for kind in UIElementContextType.allCases {
+        for matches in [false, true] {
+            for present in [false, true] {
+                var events: [String] = []
+                withSelectionExtractionMenuBar(rootMatchesMenuBarScope: matches,
+                    contextType: kind, readMenuBar: { () -> Int? in
+                        events.append("read")
+                        return present ? 7 : nil
+                    }, append: { value in
+                        checkEqual(value, 7)
+                        events.append("append")
+                    })
+                let expected = !matches ? [] :
+                    (present && kind.includesMenuBar ? ["read", "append"] : ["read"])
+                checkEqual(events, expected)
+            }
+        }
+    }
+    let rootAX = AXUIElementCreateApplication(2147480006)
+    let itemAX = AXUIElementCreateApplication(2147480007)
+    let debugAX = AXUIElementCreateApplication(2147480008)
+    let role = UIElementAttribute("AXRole"), title = UIElementAttribute("AXTitle")
+    func partial(_ raw: AnyObject) -> AXPartialValue {
+        .init(value: AXEncodedValue(value: raw), arraySubsetDescriptor: nil, textTruncationDescriptor: nil)
+    }
+    let root = UIElement(axElement: rootAX, cache: .init(supportedAttributes: [], attributes: [:], transactionAttributes: nil))
+    func item(_ ax: AXUIElement, _ text: String) -> MenuBarItemUIElement {
+        .init(axElement: ax, cache: .init(supportedAttributes: [title],
+            attributes: [title: partial(text as NSString)], transactionAttributes: nil))
+    }
+    let transaction = UIElementTreeTransaction(element: root,
+        cache: .init(attributeTable: [rootAX: [role: partial("AXMenuBar" as NSString)],
+            itemAX: [role: partial("AXMenuBarItem" as NSString), title: partial("fresh File" as NSString)]],
+            requestedAttributes: [role, title], fallbackElements: UIElementFallbackCache(initialState: [:])),
+        roleFrequencyTable: FrequencyTable<UIElementRole>())
+    transaction.perform { _ in
+        var context = UIElementTransformationContext(type: .fullUIContext, application: nil, window: nil, urlConfiguration: nil)
+        var tree = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        tree.addMenuBarWithImmediateItems(root, items: [item(rootAX, "Apple"), item(itemAX, "File"), item(debugAX, "Debug")],
+            context: &context, reportError: { _ in }, reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkEqual(tree.items.count, 1)
+        checkEqual(tree.items[0].element.id, rootAX)
+        checkEqual(tree.items[0].children.map { $0.element.id }, [itemAX])
+        checkEqual(tree.items[0].children[0].element.title, "fresh File")
+        checkTrue(tree.items[0].children[0].children.isEmpty)
+        checkTrue(tree.items[0].availableSubset == nil && tree.items[0].children[0].availableSubset == nil)
+        let typed = MenuBarUIElement(axElement: rootAX, cache: .init(supportedAttributes: [UIElementAttribute("AXChildren")],
+            attributes: [UIElementAttribute("AXChildren"): partial([itemAX, itemAX] as NSArray)], transactionAttributes: nil))
+        checkEqual(typed.itemsValue(reportError: { _ in unexpectedFailure() }).map { $0.id }, [itemAX, itemAX])
+        var typedTree = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        typedTree.addMenuBarWithImmediateItems(typed, context: &context, reportError: { _ in },
+            reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkEqual(typedTree.items[0].children.map { $0.element.id }, [itemAX])
+        let empty = MenuBarUIElement(axElement: rootAX, cache: .init(supportedAttributes: [],
+            attributes: [UIElementAttribute("AXChildren"): partial([] as NSArray)], transactionAttributes: nil))
+        checkTrue(empty.itemsValue(reportError: { _ in unexpectedFailure() }).isEmpty)
+        let menuAttribute = UIElementAttribute("AXMenuBar")
+        let application = ApplicationUIElement(axElement: rootAX,
+            cache: .init(supportedAttributes: [menuAttribute], attributes: [menuAttribute: partial(rootAX)], transactionAttributes: nil))
+        let decoded = application.menuBarValue(reportError: { _ in unexpectedFailure() })!
+        checkEqual(decoded.axElement, rootAX)
+        checkEqual(decoded.cache.attributes[role]?.value.value as? NSString, "AXMenuBar" as NSString)
+        var extractedMenu = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        extractedMenu.addSelectionExtractionMenuBar(root: root, application: application,
+            context: &context, contextType: .fullUIContext, reportError: { _ in },
+            reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkEqual(extractedMenu.items.map { $0.element.id }, [rootAX])
+        let freshExtraction = buildSelectionExtractionTrees(root: root, application: application,
+            resolvedFocus: nil, cachedTree: nil, alwaysIncludeScreenshot: false, contextType: .fullUIContext, context: &context,
+            reportMissingFocus: { _ in unexpectedFailure() },
+            reportSelectionResolutionFailure: { unexpectedFailure() }, reportDepthLimit: { unexpectedFailure() },
+            reportLimit: { _ in unexpectedFailure() }, reportError: { _ in },
+            reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkEqual(freshExtraction.tree.items.map { $0.element.id }, [rootAX, rootAX])
+        checkTrue(freshExtraction.focusTree == nil)
+        checkTrue(freshExtraction.screenshotNeededForContext)
+        let reusedExtraction = buildSelectionExtractionTrees(root: root, application: application,
+            resolvedFocus: nil, cachedTree: extractedMenu, alwaysIncludeScreenshot: false, contextType: .fullUIContext, context: &context,
+            reportMissingFocus: { _ in unexpectedFailure() },
+            reportSelectionResolutionFailure: { unexpectedFailure() }, reportDepthLimit: { unexpectedFailure() },
+            reportLimit: { _ in unexpectedFailure() }, reportError: { _ in },
+            reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkEqual(reusedExtraction.tree.items.count, 2)
+        checkEqual(extractedMenu.items.count, 1)
+        var excludedMenu = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+        let otherRoot = UIElement(axElement: itemAX, cache: root.cache)
+        excludedMenu.addSelectionExtractionMenuBar(root: otherRoot, application: application,
+            context: &context, contextType: .fullUIContext, reportError: { _ in unexpectedFailure() },
+            reportUnknownDateComponents: { _ in unexpectedFailure() })
+        checkTrue(excludedMenu.items.isEmpty)
+        let unsupported = ApplicationUIElement(axElement: rootAX,
+            cache: .init(supportedAttributes: [title], attributes: [:], transactionAttributes: nil))
+        checkTrue(unsupported.menuBarValue(reportError: { _ in unexpectedFailure() }) == nil)
+    }
+}
+
+
+private func runSelectionScreenshotChecks() {
+    for text in ["https://docs.google.com/x", "https://DOCS.GOOGLE.CO.UK/", "https://sub.docs.google.com/"] {
+        checkTrue(shouldUseFullSkyshot(for: URL(string: text)!))
+    }
+    for text in ["file:///tmp/docs.google.com", "https://notdocs.google.com/", "https://docs.google.com.evil1/",
+        "https://docs.google.com-evil/", "https://google.com/docs.google.com", "https://docs.google./"] {
+        checkTrue(!shouldUseFullSkyshot(for: URL(string: text)!))
+    }
+    func evaluate(bundle: String?, count: Int, imageSize: CGSize?, actions: [String]) -> Bool {
+        selectionExtractionNeedsScreenshot(bundleIdentifier: { bundle }, elements: { Array(0..<count) },
+            isImage: { $0 == 0 }, size: { _ in imageSize }, isSticker: { $0 == 1 },
+            actionDescriptions: { _ in actions })
+    }
+    checkTrue(evaluate(bundle: nil, count: 9, imageSize: nil, actions: []))
+    checkTrue(!evaluate(bundle: nil, count: 10, imageSize: nil, actions: []))
+    for size in [CGSize(width: 100, height: 101), CGSize(width: 101, height: 100),
+        CGSize(width: CGFloat.nan, height: 101), CGSize(width: 101, height: CGFloat.nan)] {
+        checkTrue(!evaluate(bundle: nil, count: 10, imageSize: size, actions: []))
+    }
+    checkTrue(evaluate(bundle: nil, count: 10, imageSize: .init(width: 101, height: 101), actions: []))
+    for actions in [["Quick Look"], ["Add to Photos Library"], ["Quick Look", "Quick Look"]] {
+        checkTrue(evaluate(bundle: "com.apple.MobileSMS", count: 10, imageSize: nil, actions: actions))
+        checkTrue(!evaluate(bundle: nil, count: 10, imageSize: nil, actions: actions))
+    }
+    checkTrue(!evaluate(bundle: "com.apple.MobileSMS", count: 10, imageSize: nil, actions: ["quick look"]))
+    let excluded = selectionExtractionNeedsScreenshot(bundleIdentifier: { "com.openai.sky.app" },
+        elements: { () -> [Int] in unexpectedFailure() }, isImage: { _ in unexpectedFailure() },
+        size: { _ in unexpectedFailure() }, isSticker: { _ in unexpectedFailure() },
+        actionDescriptions: { _ in unexpectedFailure() })
+    checkTrue(!excluded)
+    checkTrue(selectionExtractionScreenshotNeededForContext(alwaysIncludeScreenshot: true,
+        needsScreenshot: { unexpectedFailure() }))
+    for decision in [false, true] {
+        var calls = 0
+        checkEqual(selectionExtractionScreenshotNeededForContext(alwaysIncludeScreenshot: false,
+            needsScreenshot: { calls += 1; return decision }), decision)
+        checkEqual(calls, 1)
+    }
+    var reads = 0
+    let changed = selectionExtractionNeedsScreenshot(bundleIdentifier: {
+        reads += 1; return reads == 1 ? nil : "com.apple.MobileSMS"
+    }, elements: { Array(0..<10) }, isImage: { _ in false }, size: { _ in unexpectedFailure() },
+        isSticker: { $0 == 0 }, actionDescriptions: { _ in ["Quick Look"] })
+    checkTrue(changed && reads == 2)
+}
+
+private func runSelectionWebAreaURLChecks(source: TransformedUIElement) {
+    let first = URL(string: "https://first.example/")!
+    let later = URL(string: "https://later.example/")!
+    var nonWeb = source; nonWeb.role = .button; nonWeb.url = later
+    var emptyWeb = source; emptyWeb.role = .webArea; emptyWeb.url = nil
+    var web = emptyWeb; web.url = first
+    var lastWeb = web; lastWeb.url = later
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let tree = UIElementTree<TransformedUIElement>(items: [
+        .init(element: nonWeb, subtree: .init(items: [
+            .init(element: emptyWeb, subtree: leaf), .init(element: web, subtree: leaf)
+        ], focusedElement: nil)), .init(element: lastWeb, subtree: leaf)
+    ], focusedElement: lastWeb)
+    checkEqual(selectionExtractionWebAreaURL(tree: tree), first)
+    checkTrue(selectionExtractionWebAreaURL(tree: .init(items: [
+        .init(element: nonWeb, subtree: leaf), .init(element: emptyWeb, subtree: leaf)
+    ], focusedElement: lastWeb)) == nil)
+    checkTrue(selectionExtractionWebAreaURL(tree: leaf) == nil)
+}
+
+
+private func runExtractionTreeTransformationChecks(source: TransformedUIElement) throws {
+    try runSelectionObservedNodeChecks(source: source)
+    let url = URL(string: "https://captured.example/")!
+    let tree = UIElementTree<TransformedUIElement>(items: [
+        .init(element: source, subtree: .init(items: [], focusedElement: nil))
+    ], focusedElement: nil)
+    let captured = SelectionExtractionTrees(tree: tree, focusTree: tree,
+        screenshotNeededForContext: true, webAreaURL: url)
+    var context = UIElementTransformationContext(type: .fullUIContext,
+        application: nil, window: nil, urlConfiguration: nil)
+    var total = 0, calls = 0
+    let result = transformSelectionExtractionTrees(captured, context: &context, totalLength: &total) { tree, ctx in
+        calls += 1
+        checkEqual(ctx.isChromium, calls == 2)
+        ctx.isChromium = true
+        var tree = tree
+        var items = tree.items
+        items[0].element.title = "pass \(calls)"
+        tree.items = items
+        return tree
+    }
+    checkEqual(calls, 2)
+    checkEqual(result.tree.items[0].element.title, "pass 1")
+    checkEqual(result.focusTree?.items[0].element.title, "pass 2")
+    checkTrue(result.screenshotNeededForContext)
+    checkEqual(result.webAreaURL, url)
+    checkEqual(captured.tree.items[0].element.title, source.title)
+    let info = try makeSelectionAccessibilityInfo(trees: result, previousRevision: nil,
+        isAXTreeDiffingEnabled: true, context: &context)
+    checkTrue(!info.copyMenuItemIsEnabled && info.screenshotNeededForContext)
+    checkEqual(info.webAreaURL, url)
+    checkEqual(info.contextType, .fullUIContext)
+    checkEqual(info.windowRevision.tree.items[0].element.title, "pass 1")
+    let next = try makeSelectionAccessibilityInfo(trees: result, previousRevision: info.windowRevision,
+        isAXTreeDiffingEnabled: true, context: &context)
+    checkTrue(next.windowRevision.previousRevision === info.windowRevision)
+    let reset = try makeSelectionAccessibilityInfo(trees: result, previousRevision: next.windowRevision,
+        isAXTreeDiffingEnabled: false, context: &context)
+    checkTrue(reset.windowRevision.previousRevision == nil)
+    enum Failure: Error { case transform }
+    calls = 0
+    do {
+        _ = try transformSelectionExtractionTrees(captured, context: &context, totalLength: &total) { _, _ in
+            calls += 1
+            throw Failure.transform
+        }
+        unexpectedFailure()
+    } catch Failure.transform {}
+    checkEqual(calls, 1)
+}
+
+@MainActor
+private func runNativeRefetchBindingChecks() async throws {
+    let suite = "core.cua.cursor-gate.check.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defer { defaults.removePersistentDomain(forName: suite) }
+    checkTrue(NativeCursorFeatureGate.isEnabled(defaults: defaults))
+    let summaryKey = "feature/axTreeDiffingRemovedElementIDRanges"
+    checkTrue(NativeDescriptionFeatureGate.summarizesRemovedElementIDs(defaults: defaults))
+    defaults.set(false, forKey: summaryKey)
+    checkFalse(NativeDescriptionFeatureGate.summarizesRemovedElementIDs(defaults: defaults))
+    defaults.set(true, forKey: summaryKey)
+    checkTrue(NativeDescriptionFeatureGate.summarizesRemovedElementIDs(defaults: defaults))
+    defaults.set("false", forKey: summaryKey)
+    checkTrue(NativeDescriptionFeatureGate.summarizesRemovedElementIDs(defaults: defaults))
+    defaults.set(false, forKey: "feature/computerUseCursor")
+    checkFalse(NativeCursorFeatureGate.isEnabled(defaults: defaults))
+    defaults.set(true, forKey: "feature/computerUseCursor")
+    checkTrue(NativeCursorFeatureGate.isEnabled(defaults: defaults))
+    defaults.set("false", forKey: "feature/computerUseCursor")
+    checkTrue(NativeCursorFeatureGate.isEnabled(defaults: defaults))
+    let unobserved = Target(.current)
+    do {
+        _ = try await unobserved.prepareToInteract(with: 0,
+            cursorNextInteractionTiming: nil, positionElement: true, animateCursor: true,
+            cursorFeatureEnabled: { unexpectedFailure() }, reportError: { _ in unexpectedFailure() })
+        unexpectedFailure()
+    } catch let error as Failure { checkEqual(error.code, "STALE_OBSERVATION") }
+    checkTrue(unobserved.focusEnforcer == nil && unobserved.virtualCursor == nil)
+    let ax = AXUIElementCreateApplication(2147480009)
+    let cache = UIElementCache(supportedAttributes: [UIElementAttribute("AXTitle")],
+        attributes: [:], transactionAttributes: nil)
+    let app = ApplicationUIElement(axElement: ax, cache: cache)
+    let window = WindowUIElement(axElement: ax, cache: cache)
+    let owner = ApplicationWindow(cgWindow: NativeWindowDescription([kCGWindowNumber as String: UInt32(31)]),
+        axWindow: window, axApplication: app)
+    let revision = try UIElementTreeRevision<TransformedUIElement>.root(
+        .init(items: [], focusedElement: nil), focusTree: nil, lineageID: "native-binding") { _ in
+            UIElementRenderTree(isFocus: false, roots: [])
+        }
+    let tree = try RefetchableSkyshotAXTree(systemSelection: .init(applicationWindow: owner,
+        windowRevision: revision, invalidationMonitor: nil), isAXTreeDiffingEnabled: true)
+    do {
+        _ = try tree.refetchTree(reportMissingFocus: { _ in unexpectedFailure() },
+            reportSelectionResolutionFailure: { unexpectedFailure() }, reportDepthLimit: { unexpectedFailure() },
+            reportLimit: { _ in unexpectedFailure() }, reportError: { _ in unexpectedFailure() },
+            reportUnknownDateComponents: { _ in unexpectedFailure() },
+            reportUnknownAttributedStyle: { _ in unexpectedFailure() }, reportUnexpectedNextLine: { unexpectedFailure() })
+        unexpectedFailure()
+    } catch FocusedUIElementContext.Error.noWindowsAvailable {}
+    checkTrue(tree.systemSelection.windowRevision === revision)
+    checkTrue(tree.applicationWindow === owner)
+    do {
+        _ = try tree.refetchTree()
+        unexpectedFailure()
+    } catch FocusedUIElementContext.Error.noWindowsAvailable {}
+    do {
+        _ = try tree.refetchElementIfNeeded(42, validateElement: true)
+        unexpectedFailure()
+    } catch RefetchableSkyshotAXTree.Error.invalidElementID(let id) { checkEqual(id, 42) }
+    do {
+        _ = try tree.refetchElementIfNeeded(app, validateElement: true, ignoreValueChange: false)
+        unexpectedFailure()
+    } catch RefetchableSkyshotAXTree.Error.noInvalidationMonitorProvided {}
+    let wrapper = RefetchableUIElement(element: app, containingTree: tree)
+    do {
+        try wrapper.refetchIfNeeded(validateElement: true, ignoreValueChange: false)
+        unexpectedFailure()
+    } catch RefetchableSkyshotAXTree.Error.noInvalidationMonitorProvided {}
+    checkEqual(wrapper.element.axElement, app.axElement)
+    let protocolWrapper: any UIElementProtocol = wrapper
+    checkEqual(protocolWrapper.id, ax)
+    checkTrue(RefetchableUIElement.role == nil)
+    let sameAX = RefetchableUIElement(element: app, containingTree: tree)
+    checkTrue(wrapper == sameAX)
+    checkEqual(wrapper.hashValue, sameAX.hashValue)
+    var writes = 0
+    let writer = RefetchableWriteProbe(axElement: ax, cache: cache) { value, attribute in
+        checkEqual(value as? String, "replacement")
+        checkEqual(attribute, UIElementAttribute("AXValue"))
+        writes += 1
+    }
+    let writingWrapper: any UIElementProtocol = RefetchableUIElement(element: writer, containingTree: tree)
+    do {
+        try writingWrapper.setValue("replacement", forAttribute: UIElementAttribute("AXValue"))
+        unexpectedFailure()
+    } catch RefetchableSkyshotAXTree.Error.noInvalidationMonitorProvided {}
+    checkEqual(writes, 1) // Successful write is not rolled back after refresh error.
+    let offActor = await Task.detached { () -> (Bool, String) in
+        let onMain = Thread.isMainThread
+        do {
+            try writingWrapper.setValue("replacement", forAttribute: UIElementAttribute("AXValue"))
+            return (onMain, "unexpected-success")
+        } catch let error as Failure { return (onMain, error.code) }
+        catch { return (onMain, "unexpected-error") }
+    }.value
+    checkFalse(offActor.0)
+    checkEqual(offActor.1, "INVALID_STATE")
+    checkEqual(writes, 1) // The rejected host call must not touch the writer.
+    enum WriteFailure: Error { case rejected }
+    let rejecting = RefetchableWriteProbe(axElement: ax, cache: cache) { _, _ in throw WriteFailure.rejected }
+    let rejectingWrapper: any UIElementProtocol = RefetchableUIElement(element: rejecting, containingTree: tree)
+    do {
+        try rejectingWrapper.setValue("replacement", forAttribute: UIElementAttribute("AXValue"))
+        unexpectedFailure()
+    } catch WriteFailure.rejected {}
+    checkTrue(tree.systemSelection.windowRevision === revision)
+    checkTrue(tree.applicationWindow === owner)
+}
+
+private func runObservedNodeLookupChecks() {
+    let zero = AXUIElementCreateApplication(2147480010)
+    let sparse = AXUIElementCreateApplication(2147480011)
+    let nodes = [Node(element: sparse, data: ["id": 42, "parentId": 0]),
+        Node(element: zero, data: ["id": 0])]
+    checkEqual(observedNode(for: 0, in: nodes)?.element, zero)
+    checkEqual(observedNode(for: 42, in: nodes)?.element, sparse)
+    for id in [-1, 1, 2, 41, Int.max] { checkTrue(observedNode(for: id, in: nodes) == nil) }
+    checkTrue(observedNode(for: 0, in: []) == nil)
+    let legacy = [Node(element: zero, data: ["id": 1]), Node(element: sparse, data: ["id": 2])]
+    checkEqual(observedNode(for: 2, in: legacy)?.element, sparse)
+}
+
+
+private func runSelectionObservedNodeChecks(source: TransformedUIElement) throws {
+    var child = source
+    child.element = UIElement(axElement: AXUIElementCreateApplication(2147480012), cache: source.cache)
+    child.subrole = "AXSecureTextField"; child.value = "private fixture value"; child.title = "child"
+    var focus = source
+    focus.element = UIElement(axElement: AXUIElementCreateApplication(2147480013), cache: source.cache)
+    focus.title = "focus-only"; focus.value = nil
+    let leaf = UIElementTree<TransformedUIElement>(items: [], focusedElement: nil)
+    let full = UIElementTree<TransformedUIElement>(items: [
+        .init(element: source, subtree: .init(items: [.init(element: child, subtree: leaf)], focusedElement: nil))
+    ], focusedElement: nil)
+    let focused = UIElementTree<TransformedUIElement>(items: [.init(element: focus, subtree: leaf)], focusedElement: nil)
+    var context = UIElementTransformationContext(type: .fullUIContext,
+        application: nil, window: nil, urlConfiguration: nil)
+    let revision = try UIElementTreeRevision.root(full, focusTree: focused, lineageID: "projection") { tree in
+        tree.render(with: &context) { element, _ in element.id == source.id ? "" : "visible" }
+    }
+    var frameReads = 0
+    let nodes = try selectionObservedNodes(revision) { _ in
+        frameReads += 1
+        return CGRect(x: 1, y: 2, width: 3, height: 4)
+    }
+    checkEqual(nodes.count, 2)
+    checkEqual(frameReads, 2)
+    checkEqual(nodes[0].data["id"] as? Int, 0)
+    checkEqual(nodes[0].element, child.id)
+    checkTrue(nodes[0].data["value"] == nil && nodes[0].data["parentId"] == nil)
+    checkEqual(nodes[1].element, focus.id)
+    checkEqual(nodes[1].data["name"] as? String, "focus-only")
+    checkTrue(nodes[1].data["frame"] != nil)
+    for node in nodes {
+        checkEqual(revision.item(for: node.data["id"] as! Int)?.element.id, node.element)
+    }
 }

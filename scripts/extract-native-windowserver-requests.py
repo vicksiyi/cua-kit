@@ -13,6 +13,10 @@ requests=[('functions',0x101559258,[0x1015592a8+i*0x38 for i in range(13)],0x101
 requests[0]=(*requests[0][:3],(0x10026c244&~4095)+4063*4096+0x7d0)
 requests[1]=(*requests[1][:3],(0x10026dfcc&~4095)+4062*4096+0x740)
 requests[2]=(*requests[2][:3],(0x10026e058&~4095)+4061*4096+0x6c0)
+requests.append(('captureWindowImagesInRect',
+    (0x10026db48&~4095)+4845*4096+0x520,
+    [(0x10026db58&~4095)+4845*4096+0x570],
+    (0x10026db6c&~4095)+4062*4096+0x630))
 source='// Extracted from pinned native WindowServerSPI initializers.\nstruct WindowServerSPISymbolRequest {\n    let images: [UInt64]\n    let symbols: [[UInt64]]\n    let salt: String\n'
 evidence=[]
 for name,images,symbols,salt in requests:

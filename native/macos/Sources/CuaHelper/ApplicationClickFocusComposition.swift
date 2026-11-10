@@ -1,14 +1,16 @@
 import ApplicationServices
 
-extension UIElement {
+extension UIElementProtocol {
     // ApplicationUIElement.isCatalystApp (0x100715974). The attribute is
     // _AXExhibitsMacCatalystBehavior, not a bundle/path heuristic.
     func isCatalystApplication(reportError: (Error) -> Void) -> Bool {
         booleanValue(for: UIElementAttribute("_AXExhibitsMacCatalystBehavior"),
             ignoringTypeMismatch: true, reportError: reportError) ?? false
     }
+}
 
-    func prepareSyntheticClickFocus(element: UIElement?, insideWebView: Bool,
+extension UIElementProtocol {
+    func prepareSyntheticClickFocus(element: (any UIElementProtocol)?, insideWebView: Bool,
         clickingByCoordinate: Bool, hasHeldKey: Bool, window: SyntheticActivationWindow?,
         enforcer: SyntheticAppFocusEnforcer?, applicationIsActive: () throws -> Bool,
         reportError: @escaping (Error) -> Void, send: (SynthesizedEvent) throws -> Void) async throws -> Bool {
@@ -26,7 +28,7 @@ extension UIElement {
             })
     }
 
-    func prepareAccessibilityClickFocus(element: UIElement, window: SyntheticActivationWindow?,
+    func prepareAccessibilityClickFocus(element: any UIElementProtocol, window: SyntheticActivationWindow?,
         enforcer: SyntheticAppFocusEnforcer?, probeApplicationIsActive: () throws -> Void,
         reportError: @escaping (Error) -> Void, send: (SynthesizedEvent) throws -> Void) async throws {
         try await prepareUIElementAccessibilityActionFocus(hasFocusEnforcer: enforcer != nil,

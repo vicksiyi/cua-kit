@@ -22,6 +22,8 @@ pub struct NativeServiceOptions {
     /// Explicit host configuration/auth routing; never the model environment.
     #[serde(default)]
     pub app_server_environment: BTreeMap<String, String>,
+    /// Independent host-only input diagnostics; not a worker or policy setting.
+    pub input_log_path: Option<PathBuf>,
 }
 // Preserve the existing rejection of explicit null/non-map rules, while
 // distinguishing an omitted field from a deliberately configured empty map.
@@ -89,6 +91,13 @@ impl NativeServiceOptions {
                     env.insert("CODEX_CLI_PATH".into(), path.clone());
                 }
             }
+        }
+        if let Some(path) = &self.input_log_path {
+            let value = path.to_str().ok_or("Native input log path must be UTF-8")?;
+            if !path.is_absolute() || value.contains('\0') {
+                return Err("Native input log path must be absolute and contain no NUL".into());
+            }
+            env.insert("CUA_NATIVE_INPUT_LOG".into(), value.into());
         }
         Ok(env)
     }
@@ -238,6 +247,19 @@ mod tests {
     }
 
     #[test]
+    fn input_diagnostics_are_explicit_and_independent_of_policy_source() {
+        for source in ["standalone", "app-server"] {
+            let env = options(json!({"policy_source":source,"input_log_path":"/fixture/input.jsonl"}))
+                .service_environment().unwrap();
+            assert_eq!(env["CUA_NATIVE_INPUT_LOG"], "/fixture/input.jsonl");
+        }
+        assert!(!options(json!({})).service_environment().unwrap().contains_key("CUA_NATIVE_INPUT_LOG"));
+        for path in ["", "relative.jsonl", "/fixture/\u{0}bad"] {
+            assert!(options(json!({"input_log_path":path})).service_environment().is_err());
+        }
+    }
+
+    #[test]
     fn standalone_defaults_and_explicit_rules_remain_unchanged() {
         let default = options(json!({})).service_environment().unwrap();
         assert_eq!(default["CORE_CUA_APP_POLICY"], "{}");
@@ -327,6 +349,7 @@ net.createServer().listen(socketPath, () => console.log(JSON.stringify({type:'sk
         std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
         for source in [
             json!({}),
+            json!({"input_log_path":"/fixture/input.jsonl"}),
             json!({"policy_source":"app-server","codex_cli_path":"/fixture/owned-cli","app_server_environment":{"HOME":"/fixture/home","CODEX_HOME":"/fixture/auth","PATH":"/fixture/bin","HTTPS_PROXY":"","TMPDIR":"/fixture/tmp"}}),
         ] {
             let mut config = options(source);

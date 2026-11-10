@@ -13,27 +13,27 @@ func decodeAXUIElement(
 
 // Shared type-dispatch body. The original generic decoder calls the target
 // initializer witness; the legacy explicit transaction adapter above is separate.
-func decodeAXUIElement(
+func decodeAXUIElement<Element: UIElementProtocol>(
     _ raw: AnyObject,
     throwingOnFailure: Bool,
-    initialize: (AXUIElement) -> UIElement
-) throws -> UIElement? {
+    initialize: (AXUIElement) -> Element
+) throws -> Element? {
     let kind = CFGetTypeID(raw)
     if kind == AXUIElementGetTypeID() {
         return try unwrapAXElement(raw, throwingOnFailure: throwingOnFailure, initialize: initialize)
     }
     if kind == AXTextMarkerGetTypeID() {
-        return try decodeAXTextMarker(raw as! AXTextMarker, throwingOnFailure: throwingOnFailure, as: UIElement.self)
+        return try decodeAXTextMarker(raw as! AXTextMarker, throwingOnFailure: throwingOnFailure, as: Element.self)
     }
     if kind == AXTextMarkerRangeGetTypeID() {
-        return try decodeAXTextMarkerRange(raw as! AXTextMarkerRange, throwingOnFailure: throwingOnFailure, as: UIElement.self)
+        return try decodeAXTextMarkerRange(raw as! AXTextMarkerRange, throwingOnFailure: throwingOnFailure, as: Element.self)
     }
     if kind == AXValueGetTypeID() {
-        return try decodeAXValue(raw as! AXValue, throwingOnFailure: throwingOnFailure, as: UIElement.self)
+        return try decodeAXValue(raw as! AXValue, throwingOnFailure: throwingOnFailure, as: Element.self)
     }
     if kind == CFArrayGetTypeID() {
-        _ = try resolvedAXArrayTarget(UIElement.self, throwingOnFailure: throwingOnFailure)
+        _ = try resolvedAXArrayTarget(Element.self, throwingOnFailure: throwingOnFailure)
         return nil
     }
-    return try decodeAXOrdinaryValue(raw, throwingOnFailure: throwingOnFailure, as: UIElement.self)
+    return try decodeAXOrdinaryValue(raw, throwingOnFailure: throwingOnFailure, as: Element.self)
 }
