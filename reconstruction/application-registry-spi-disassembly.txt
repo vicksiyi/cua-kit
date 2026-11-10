@@ -1,0 +1,134 @@
+(lldb) target create "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService"
+Current executable set to '/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules/@oai/sky/Codex Computer Use.app/Contents/MacOS/SkyComputerUseService' (arm64).
+(lldb) disassemble -s 0x10026d7f8 -e 0x10026d9d0
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.getProcessForPID(_: Swift.Int32, process: Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>) -> Swift.Int32:
+SkyComputerUseService[0x10026d7f8] <+0>:   b      0x101154020               ; symbol stub for: GetProcessForPID
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.getProcessPID(_: Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>, pid: Swift.UnsafeMutablePointer<Swift.Int32>) -> Swift.Int32:
+SkyComputerUseService[0x10026d7fc] <+0>:   b      0x10115402c               ; symbol stub for: GetProcessPID
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.getKeyFocusProcess(_: Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>, flag: Swift.UnsafeMutablePointer<Darwin.DarwinBoolean>) -> Swift.Int32:
+SkyComputerUseService[0x10026d800] <+0>:   adrp   x8, 4843
+SkyComputerUseService[0x10026d804] <+4>:   ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026d808] <+8>:   cmn    x8, #0x1
+SkyComputerUseService[0x10026d80c] <+12>:  b.ne   0x10026d81c               ; <+28>
+SkyComputerUseService[0x10026d810] <+16>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d814] <+20>:  ldr    x2, [x8, #0x548]
+SkyComputerUseService[0x10026d818] <+24>:  br     x2
+SkyComputerUseService[0x10026d81c] <+28>:  stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026d820] <+32>:  stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d824] <+36>:  add    x29, sp, #0x10
+SkyComputerUseService[0x10026d828] <+40>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d82c] <+44>:  add    x8, x8, #0x2a8            ; SAIAttachmentCharacter + 576
+SkyComputerUseService[0x10026d830] <+48>:  adrp   x9, -1
+SkyComputerUseService[0x10026d834] <+52>:  add    x9, x9, #0x44             ; ___lldb_unnamed_symbol61738
+SkyComputerUseService[0x10026d838] <+56>:  mov    x19, x0
+SkyComputerUseService[0x10026d83c] <+60>:  mov    x0, x8
+SkyComputerUseService[0x10026d840] <+64>:  mov    x20, x1
+SkyComputerUseService[0x10026d844] <+68>:  mov    x1, x9
+SkyComputerUseService[0x10026d848] <+72>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d84c] <+76>:  mov    x0, x19
+SkyComputerUseService[0x10026d850] <+80>:  mov    x1, x20
+SkyComputerUseService[0x10026d854] <+84>:  ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d858] <+88>:  ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026d85c] <+92>:  b      0x10026d810               ; <+16>
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.releaseKeyFocus(withID: Swift.UInt32) -> Swift.Int32:
+SkyComputerUseService[0x10026d860] <+0>:   adrp   x8, 4843
+SkyComputerUseService[0x10026d864] <+4>:   ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026d868] <+8>:   cmn    x8, #0x1
+SkyComputerUseService[0x10026d86c] <+12>:  b.ne   0x10026d87c               ; <+28>
+SkyComputerUseService[0x10026d870] <+16>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d874] <+20>:  ldr    x1, [x8, #0x550]
+SkyComputerUseService[0x10026d878] <+24>:  br     x1
+SkyComputerUseService[0x10026d87c] <+28>:  stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026d880] <+32>:  stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d884] <+36>:  add    x29, sp, #0x10
+SkyComputerUseService[0x10026d888] <+40>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d88c] <+44>:  add    x8, x8, #0x2a8            ; SAIAttachmentCharacter + 576
+SkyComputerUseService[0x10026d890] <+48>:  adrp   x1, -1
+SkyComputerUseService[0x10026d894] <+52>:  add    x1, x1, #0x44             ; ___lldb_unnamed_symbol61738
+SkyComputerUseService[0x10026d898] <+56>:  mov    x19, x0
+SkyComputerUseService[0x10026d89c] <+60>:  mov    x0, x8
+SkyComputerUseService[0x10026d8a0] <+64>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d8a4] <+68>:  mov    x0, x19
+SkyComputerUseService[0x10026d8a8] <+72>:  ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d8ac] <+76>:  ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026d8b0] <+80>:  b      0x10026d870               ; <+16>
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.setFrontProcess(_: Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>, windowID: Swift.UInt32, options: Swift.UInt32) -> __C.CGError:
+SkyComputerUseService[0x10026d8b4] <+0>:   adrp   x8, 4843
+SkyComputerUseService[0x10026d8b8] <+4>:   ldr    x8, [x8, #0x2a8]
+SkyComputerUseService[0x10026d8bc] <+8>:   cmn    x8, #0x1
+SkyComputerUseService[0x10026d8c0] <+12>:  b.ne   0x10026d8d0               ; <+28>
+SkyComputerUseService[0x10026d8c4] <+16>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d8c8] <+20>:  ldr    x3, [x8, #0x558]
+SkyComputerUseService[0x10026d8cc] <+24>:  br     x3
+SkyComputerUseService[0x10026d8d0] <+28>:  stp    x22, x21, [sp, #-0x30]!
+SkyComputerUseService[0x10026d8d4] <+32>:  stp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x10026d8d8] <+36>:  stp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x10026d8dc] <+40>:  add    x29, sp, #0x20
+SkyComputerUseService[0x10026d8e0] <+44>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d8e4] <+48>:  add    x8, x8, #0x2a8            ; SAIAttachmentCharacter + 576
+SkyComputerUseService[0x10026d8e8] <+52>:  adrp   x9, -1
+SkyComputerUseService[0x10026d8ec] <+56>:  add    x9, x9, #0x44             ; ___lldb_unnamed_symbol61738
+SkyComputerUseService[0x10026d8f0] <+60>:  mov    x19, x0
+SkyComputerUseService[0x10026d8f4] <+64>:  mov    x0, x8
+SkyComputerUseService[0x10026d8f8] <+68>:  mov    x20, x1
+SkyComputerUseService[0x10026d8fc] <+72>:  mov    x1, x9
+SkyComputerUseService[0x10026d900] <+76>:  mov    x21, x2
+SkyComputerUseService[0x10026d904] <+80>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d908] <+84>:  mov    x0, x19
+SkyComputerUseService[0x10026d90c] <+88>:  mov    x1, x20
+SkyComputerUseService[0x10026d910] <+92>:  mov    x2, x21
+SkyComputerUseService[0x10026d914] <+96>:  ldp    x29, x30, [sp, #0x20]
+SkyComputerUseService[0x10026d918] <+100>: ldp    x20, x19, [sp, #0x10]
+SkyComputerUseService[0x10026d91c] <+104>: ldp    x22, x21, [sp], #0x30
+SkyComputerUseService[0x10026d920] <+108>: b      0x10026d8c4               ; <+16>
+
+SkyComputerUseService`static SystemSoftware.ApplicationRegistrySPI.setApplicationDesiresAttention(Swift.UnsafeMutablePointer<__C.ProcessSerialNumber>, Swift.Bool) -> Swift.Int32:
+SkyComputerUseService[0x10026d924] <+0>:   adrp   x8, 4843
+SkyComputerUseService[0x10026d928] <+4>:   ldr    x8, [x8, #0x2b0]
+SkyComputerUseService[0x10026d92c] <+8>:   cmn    x8, #0x1
+SkyComputerUseService[0x10026d930] <+12>:  b.ne   0x10026d944               ; <+32>
+SkyComputerUseService[0x10026d934] <+16>:  adrp   x8, 4846
+SkyComputerUseService[0x10026d938] <+20>:  ldr    x2, [x8, #0x578]
+SkyComputerUseService[0x10026d93c] <+24>:  and    w1, w1, #0x1
+SkyComputerUseService[0x10026d940] <+28>:  br     x2
+SkyComputerUseService[0x10026d944] <+32>:  stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026d948] <+36>:  stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d94c] <+40>:  add    x29, sp, #0x10
+SkyComputerUseService[0x10026d950] <+44>:  adrp   x8, 4843
+SkyComputerUseService[0x10026d954] <+48>:  add    x8, x8, #0x2b0            ; SAIAttachmentCharacter + 584
+SkyComputerUseService[0x10026d958] <+52>:  adrp   x9, -1
+SkyComputerUseService[0x10026d95c] <+56>:  add    x9, x9, #0x744            ; ___lldb_unnamed_symbol61739
+SkyComputerUseService[0x10026d960] <+60>:  mov    x19, x0
+SkyComputerUseService[0x10026d964] <+64>:  mov    x0, x8
+SkyComputerUseService[0x10026d968] <+68>:  mov    x20, x1
+SkyComputerUseService[0x10026d96c] <+72>:  mov    x1, x9
+SkyComputerUseService[0x10026d970] <+76>:  bl     0x1011553f4               ; symbol stub for: swift_once
+SkyComputerUseService[0x10026d974] <+80>:  mov    x1, x20
+SkyComputerUseService[0x10026d978] <+84>:  mov    x0, x19
+SkyComputerUseService[0x10026d97c] <+88>:  ldp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d980] <+92>:  ldp    x20, x19, [sp], #0x20
+SkyComputerUseService[0x10026d984] <+96>:  b      0x10026d934               ; <+16>
+
+SkyComputerUseService`___lldb_unnamed_symbol61752:
+SkyComputerUseService[0x10026d988] <+0>:   stp    x20, x19, [sp, #-0x20]!
+SkyComputerUseService[0x10026d98c] <+4>:   stp    x29, x30, [sp, #0x10]
+SkyComputerUseService[0x10026d990] <+8>:   add    x29, sp, #0x10
+SkyComputerUseService[0x10026d994] <+12>:  adrp   x0, 4845
+SkyComputerUseService[0x10026d998] <+16>:  add    x0, x0, #0xc20            ; SAIAttachmentCharacter + 11192
+SkyComputerUseService[0x10026d99c] <+20>:  adrp   x1, 3838
+SkyComputerUseService[0x10026d9a0] <+24>:  add    x1, x1, #0x928            ; property descriptor for static SystemSoftware.AccessibilitySPI.copyHierarchyResultCountKey : __C.CFStringRef + 40
+SkyComputerUseService[0x10026d9a4] <+28>:  bl     0x100002b70               ; ___lldb_unnamed_symbol49413
+SkyComputerUseService[0x10026d9a8] <+32>:  mov    x19, x0
+SkyComputerUseService[0x10026d9ac] <+36>:  adrp   x1, 4845
+SkyComputerUseService[0x10026d9b0] <+40>:  add    x1, x1, #0x3d0            ; SAIAttachmentCharacter + 9064
+SkyComputerUseService[0x10026d9b4] <+44>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026d9b8] <+48>:  mov    x20, x0
+SkyComputerUseService[0x10026d9bc] <+52>:  adrp   x1, 4845
+SkyComputerUseService[0x10026d9c0] <+56>:  add    x1, x1, #0x4e8            ; SAIAttachmentCharacter + 9344
+SkyComputerUseService[0x10026d9c4] <+60>:  mov    x0, x19
+SkyComputerUseService[0x10026d9c8] <+64>:  bl     0x101155370               ; symbol stub for: swift_initStaticObject
+SkyComputerUseService[0x10026d9cc] <+68>:  mov    x1, x0

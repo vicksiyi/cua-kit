@@ -1,3 +1,4 @@
+import SystemSoftware
 import CoreGraphics
 
 enum SystemKeyFocusReleaseFailure: Equatable {

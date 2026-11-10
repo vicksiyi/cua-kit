@@ -20,7 +20,7 @@ test("native system actions use actual Swift Algorithms with Foundation bridging
       for (const entry of await readdir(folder)) if (entry.endsWith(".o")) objects.push(join(folder, entry));
     }
     const output = join(directory, "actions");
-    await exec("xcrun", ["swiftc", "-I", join(build, "Modules"),
+    await exec("xcrun", ["swiftc", "-I", join(build, "Modules"), "-I", join(build, "RunningProcess.build"),
       "-Xcc", `-fmodule-map-file=${join(root, ".build/checkouts/swift-numerics/Sources/_NumericsShims/include/module.modulemap")}`,
       ...["UIElementError", "UIElementAction", "AXActionReading"].map(name => join(root, `Sources/CuaHelper/${name}.swift`)),
       join(root, "Tests/AXActionReadingTests.swift"), ...objects, "-o", output], { maxBuffer: 1024 * 1024 });

@@ -24,7 +24,7 @@ test(
         for (const entry of await readdir(folder)) if (entry.endsWith(".o")) objects.push(join(folder, entry));
       }
       await exec("xcrun", [
-        "swiftc", "-I", join(build, "Modules"),
+        "swiftc", "-I", join(build, "Modules"), "-I", join(build, "RunningProcess.build"),
         "-Xcc", `-fmodule-map-file=${join(root, "native/macos/.build/checkouts/swift-numerics/Sources/_NumericsShims/include/module.modulemap")}`,
         ...objects,
         ...["UIElementChessComposition", "UIElementChessClickPoint", "AXHitTesting", "UIElementCachedText", "UIElementClippingComposition", "UIElementClippingFrame", "UIElementActionEnvironment", "UIElementConcreteActions", "UIElementMenuPreparation", "AXActionPerforming", "AXActionReading", "UIElementSystemChildren", "AXSingleAttributeReading", "AXRectDecoding", "AXPointDecoding", "AXSizeDecoding", "UIElementFrame", "UIElementGeometry"].map(name => join(root, `native/macos/Sources/CuaHelper/${name}.swift`)),

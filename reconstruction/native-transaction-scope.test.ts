@@ -26,7 +26,7 @@ test(
           if (name.endsWith(".o")) dependencyObjects.push(join(directory, name));
       }
       await exec("xcrun", [
-        "swiftc", "-I", join(build, "Modules"), ...dependencyObjects,
+        "swiftc", "-I", join(build, "Modules"), "-I", join(build, "RunningProcess.build"), ...dependencyObjects,
         "-Xcc", `-fmodule-map-file=${join(nativeRoot, ".build/checkouts/swift-numerics/Sources/_NumericsShims/include/module.modulemap")}`,
         join(root, "native/macos/Sources/CuaHelper/UIElementError.swift"),
         "-o",

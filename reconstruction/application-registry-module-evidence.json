@@ -1,0 +1,34 @@
+{
+  "binarySha256": "b64e219f30c655407e485d5fab47d354ea6398842fc49a6bad917810df54c862",
+  "originalModule": "SystemSoftware.ApplicationRegistrySPI",
+  "source": "native/macos/Sources/SystemSoftware/ApplicationRegistrySPI.swift",
+  "methods": {
+    "getProcessForPID": "0x10026d7f8 public Carbon",
+    "getProcessPID": "0x10026d7fc public Carbon",
+    "getKeyFocusProcess": "0x10026d800 shared primary slot7",
+    "releaseKeyFocus": "0x10026d860 shared primary slot8",
+    "setFrontProcess": "0x10026d8b4 shared primary slot9",
+    "setApplicationDesiresAttention": "0x10026d924 independent required attention binding"
+  },
+  "changes": [
+    "Move process/focus namespace from CuaHelper to original SystemSoftware",
+    "Remove wrongly exposed focus methods from WindowServerSPI; share internal primary resolver/table once",
+    "Add missing setFrontProcess; route production attention caller to original namespace",
+    "Attention request body/constants unchanged after module move",
+    "Keep native Objective-C thin Carbon bridges because current Swift SDK marks both direct imports unavailable",
+    "Normal RunningProcess target dependency and module maps for standalone consumers; no implementation-only import"
+  ],
+  "validation": {
+    "build": "23.73s exit0",
+    "linkedFixtures": "6 pass; both public Carbon read-only forwarding statuses0",
+    "transactionRegression": "native-transaction-scope.test.ts passes29.401s with module map search path",
+    "consumer": "standalone SlimCore consumer typechecks with RunningProcess.build search path",
+    "static": "scripts/audit-application-registry-spi.py verifies original public branches/primary7,8,9/independent attention slot"
+  },
+  "limits": [
+    "No private key-focus/release/front-process/attention call executed",
+    "No full ABI or language-source identity for added SDK compatibility C bridges claimed",
+    "Read-only attention binding diagnostic is an added public property, not original exported API",
+    "Native-language/module alignment is partial overall restoration; live UI and remaining modules unaccepted"
+  ]
+}

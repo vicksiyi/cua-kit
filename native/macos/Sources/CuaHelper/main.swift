@@ -375,7 +375,7 @@ if CommandLine.arguments.contains("--display-link-lifecycle-check") {
 }
 if CommandLine.arguments.contains("--window-observer-binding-check") {
     let windows = WindowServerSPI.observerBindingStatus
-    let attention = ApplicationAttentionSPI.bindingAvailable
+    let attention = ApplicationRegistrySPI.applicationAttentionBindingAvailable
     let report: [String: Any] = ["readOnly": true, "windowObserver": windows, "applicationAttention": attention]
     let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
     print(String(decoding: data, as: UTF8.self))

@@ -1,3 +1,4 @@
+import SystemSoftware
 import Carbon
 import ApplicationServices
 
@@ -14,5 +15,5 @@ func clearAppControllerAttention(processID: () throws -> Int32,
 func clearNativeAppControllerAttention(_ application: AXUIElement) {
     clearAppControllerAttention(processID: { try application.pid },
         getProcess: { ApplicationRegistrySPI.getProcessForPID($0, process: $1) },
-        setAttention: ApplicationAttentionSPI.setApplicationDesiresAttention)
+        setAttention: ApplicationRegistrySPI.setApplicationDesiresAttention)
 }

@@ -8479,3 +8479,32 @@ nil-saved-ID inventory gate, first-window exclusion, same-level matching, absent
 raise closure result and raise error identity. Static caller/argument audit passes.
 No native enumeration/activation/AXRaise, desktop/model/vendor execution occurred.
 Real activation/window-order and overall source/ABI acceptance remain incomplete.
+
+### 2026-11-11 — ApplicationRegistrySPI restored to original module/namespace
+
+Current original exports assign six process/focus/attention methods to
+SystemSoftware.ApplicationRegistrySPI. Moved process namespace there; removed
+getKeyFocusProcess/releaseKeyFocus from wrongly exposed WindowServerSPI namespace.
+Application registry now uses shared required primary slots7/8/9, adds missing
+setFrontProcess and owns setApplicationDesiresAttention entry. Independent attention
+binding helper/constants move unchanged to SystemSoftware. Production controller
+attention and key-focus callers import/use the original namespace. One extra
+read-only attention binding diagnostic property supports existing CLI and is not
+claimed original API.
+
+Direct Carbon import probe confirms modern Swift marks GetProcessPID and
+GetProcessForPID unavailable. Retained existing native Objective-C thin bridges to
+those exact C functions, not an AppKit alternative or TS reimplementation. Added
+normal RunningProcess dependency/module-map search paths for standalone consumers.
+Initial move build found legacy CLI diagnostic reference; corrected it. An initial
+implementation-only import emitted library-evolution warning; replaced with normal
+explicit dependency rather than suppressing warning. Final build passed23.73s.
+
+Six linked fixtures pass; public Carbon forwarding queries return status0 and
+match direct thin-C calls. No private focus/activation/attention SPI executed.
+Original API signatures typecheck; standalone SlimCore consumer also typechecks
+with module map. Existing native transaction regression passed29.401s; ten manual
+compiler entry points now include required C module-map directory without assertion
+changes. Static native branch/slot audit passes; attention body exact comparison
+passes. Full ABI, live behavior, bridge source identity and overall restoration
+remain unaccepted. No desktop action, vendor executable or model ran.

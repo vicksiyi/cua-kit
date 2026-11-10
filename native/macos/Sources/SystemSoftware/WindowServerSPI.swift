@@ -13,8 +13,6 @@ public enum WindowServerSPI {
     private typealias CornerWindowID = @convention(c) (AnyObject, UInt32) -> UInt32
     private typealias CornerRadii = @convention(c) (AnyObject, UInt32) -> Unmanaged<NSArray>?
     private typealias MainConnection = @convention(c) () -> OpaquePointer?
-    private typealias KeyFocus = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<DarwinBoolean>) -> Int32
-    private typealias ReleaseKeyFocus = @convention(c) (UInt32) -> Int32
     private typealias SetWindowLevel = @convention(c) (OpaquePointer?, UInt32, Int32) -> CGError
     private typealias WindowRect = @convention(c) (OpaquePointer?, UInt32, UnsafeMutablePointer<CGRect>) -> CGError
     private typealias SetWindowLocation = @convention(c) (CGEvent, CGPoint) -> Void
@@ -29,16 +27,16 @@ public enum WindowServerSPI {
         (OpaquePointer?, UnsafePointer<UInt32>, Int32, UInt32, CGRect) -> Unmanaged<CFArray>?
 
 
-    private static func resolve(_ request: WindowServerSPISymbolRequest) -> [UnsafeRawPointer?] {
+    static func resolve(_ request: WindowServerSPISymbolRequest) -> [UnsafeRawPointer?] {
         lookUpBatchSymbolPointers(images: request.images,
             symbolRequests: request.symbols, salt: request.salt).map(\.pointer)
     }
-    private static func required(_ pointer: UnsafeRawPointer?) -> UnsafeRawPointer {
+    static func required(_ pointer: UnsafeRawPointer?) -> UnsafeRawPointer {
         // The pinned native binding also traps for an unresolved required SPI.
         guard let pointer else { preconditionFailure("Required WindowServer SPI is unavailable") }
         return pointer
     }
-    private static let functions = resolve(.functions)
+    static let functions = resolve(.functions)
     // Read-only diagnostic: resolve pointers without invoking WindowServer SPI.
     public static var observerBindingStatus: [String: Bool] {
         let slots = [("mainConnection", 0), ("registerNotify", 1), ("removeNotify", 2), ("requestWindows", 3)]
@@ -81,14 +79,6 @@ public enum WindowServerSPI {
         }
     }
 
-    private static let keyFocus = unsafeBitCast(required(functions[7]), to: KeyFocus.self)
-    public static func getKeyFocusProcess(_ process: UnsafeMutablePointer<ProcessSerialNumber>,
-                                   flag: UnsafeMutablePointer<DarwinBoolean>) -> Int32 {
-        keyFocus(process, flag)
-    }
-    // 0x10026d860 tails through global 0x10155b550: primary slot 8.
-    private static let releaseFocus = unsafeBitCast(required(functions[8]), to: ReleaseKeyFocus.self)
-    public static func releaseKeyFocus(withID id: UInt32) -> Int32 { releaseFocus(id) }
     // Source wrappers 0x10026bb5c / 0x10026bc50 / 0x10026bbe0.
     // Primary binding slots 1, 2, 3, shared with mainConnection's slot 0.
     private static let registerNotify = unsafeBitCast(required(functions[1]), to: ConnectionNotify.self)

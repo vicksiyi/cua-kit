@@ -16,7 +16,7 @@ let package = Package(
         .target(name: "SoftLink"),
         .target(name: "Animation"),
         .target(name: "SlimCore", dependencies: ["SystemSoftware"]),
-        .target(name: "SystemSoftware", dependencies: ["SoftLink"]),
+        .target(name: "SystemSoftware", dependencies: ["SoftLink", "RunningProcess"]),
         .target(name: "GraphicsSupport", dependencies: ["SoftLink"]),
         .target(name: "RunningProcess", publicHeadersPath: "include", cSettings: [.unsafeFlags(["-fobjc-arc"])]),
         .executableTarget(name: "CuaHelper", dependencies: [.product(name: "Atomics", package: "swift-atomics"), .product(name: "DequeModule", package: "swift-collections"), .product(name: "OrderedCollections", package: "swift-collections"), "SoftLink", "Animation", "GraphicsSupport", "SlimCore", "SystemSoftware", .product(name: "MCP", package: "swift-sdk"), "RunningProcess", "Ink", "SwiftSoup", .product(name: "Algorithms", package: "swift-algorithms")], resources: [.process("Resources")]),
