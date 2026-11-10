@@ -10,7 +10,7 @@ struct CGWindowEventStream<Window, Observer>: AsyncSequence {
     var windowIDs: [UInt32]
     var events: [WindowServerEvent]
     var bufferingPolicy: BufferingPolicy
-    let makeObserver: ([UInt32], [WindowServerEvent], @escaping (Window, WindowServerEvent) -> Void) -> Observer
+    let makeObserver: ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer
 
     struct AsyncIterator: AsyncIteratorProtocol {
         // Source explicitly stores all three, including stream in addition to
@@ -20,7 +20,7 @@ struct CGWindowEventStream<Window, Observer>: AsyncSequence {
         private var iterator: AsyncStream<Element>.Iterator
 
         init(windowIDs: [UInt32], events: [WindowServerEvent], bufferingPolicy: BufferingPolicy,
-            makeObserver: ([UInt32], [WindowServerEvent], @escaping (Window, WindowServerEvent) -> Void) -> Observer) {
+            makeObserver: ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer) {
             let pair = AsyncStream<Element>.makeStream(bufferingPolicy: bufferingPolicy)
             stream = pair.stream
             iterator = pair.stream.makeAsyncIterator()
@@ -40,6 +40,6 @@ struct CGWindowEventStream<Window, Observer>: AsyncSequence {
 extension CGWindowEventStream where Window == NativeWindowDescription, Observer == NativeCGWindowObserver {
     init(windowIDs: [UInt32], events: [WindowServerEvent], bufferingPolicy: BufferingPolicy) {
         self.init(windowIDs: windowIDs, events: events, bufferingPolicy: bufferingPolicy,
-            makeObserver: { NativeCGWindowObserver(windowIDs: $0, events: $1, handler: $2) })
+            makeObserver: { NativeCGWindowObserver(windowIDs: $0, events: $1, eventHandler: $2) })
     }
 }

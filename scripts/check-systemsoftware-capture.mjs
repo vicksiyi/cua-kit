@@ -12,8 +12,10 @@ for (const module of ["SlimCore", "SystemSoftware", "SoftLink"]) {
 }
 const temporary = await mkdtemp(join(tmpdir(), "cua-systemsoftware-check-"));
 try {
-  const executable = join(temporary, "capture-check");
-  execFileSync("swiftc", ["-parse-as-library", "-I", join(build, "Modules"), ...objects,
-    join(root, "reconstruction/systemsoftware-capture-check.swift"), "-o", executable], { cwd: root, stdio: "inherit" });
-  execFileSync(executable, [], { stdio: "inherit", timeout: 15000 });
+  for (const fixture of ["systemsoftware-capture-check", "systemsoftware-observer-check"]) {
+    const executable = join(temporary, fixture);
+    execFileSync("swiftc", ["-parse-as-library", "-I", join(build, "Modules"), ...objects,
+      join(root, `reconstruction/${fixture}.swift`), "-o", executable], { cwd: root, stdio: "inherit" });
+    execFileSync(executable, [], { stdio: "inherit", timeout: 15000 });
+  }
 } finally { await rm(temporary, { recursive: true, force: true }); }

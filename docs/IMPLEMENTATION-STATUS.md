@@ -8332,3 +8332,33 @@ scale/screen calls, preference intersects/candidate intersection and maximum hel
 No real screen inventory/backing-scale read, desktop input/capture or model ran.
 Snapshot/observer interfaces, broader source fidelity and actual UI acceptance
 remain incomplete; these tests do not prove complete NSScreen or CGWindow parity.
+
+### 2026-11-11 — Original CGWindow.Observer storage and module restored
+
+Read allocating initializer2584c4, destructor258580 and initializer259710. Original
+object is32bytes with events+16/callbackID+24. Restored nested CGWindow.Observer
+and observe(events:eventHandler:), replacing production's extra registration
+resource object with direct fields and registry/native registration lifecycle.
+Registry and raw dispatch move to SystemSoftware; generic registration resource
+remains an extracted injectable verification seam, not production observer state.
+CuaHelper keeps transitional NativeCGWindowObserver alias. Event handler Sendable
+requirement now propagates through stream/ordering factories instead of being lost.
+
+Found and fixed a concrete fidelity discrepancy in initial snapshots: repeated ID
+followed by failed description lookup must REMOVE the previous snapshot, not keep
+it. Original initializer's failure branch looks up/removes the old dictionary
+value. Extracted snapshot builder uses optional dictionary assignment; linked
+fixtures check removal on later nil and replacement on later successful lookup.
+
+First build caught an accidentally renamed lookup reference during move; corrected.
+Build after snapshot correction passed21.46s. Final Sendable propagation build
+passed44.95s; newly introduced passing-nonsendable-handler warnings are removed.
+Existing unrelated owned-fixture Sendable warnings remain in the Swift5 build.
+Final linked capture and observer fixtures pass:32-byte class metadata, monotonic
+registry IDs, extracted registration/deinit order despite CGErrors, unlocked
+handler reentry, fresh description/initial fallback and snapshot semantics.
+Static observer size/field/lifecycle audit also passes. Tests do not instantiate
+production Observer or invoke native SPI; generic resource tests are not runtime
+proof of concrete production notifications. Original nested EventStream, snapshot
+API and full observer/concurrency/live acceptance remain incomplete. No desktop,
+paid model or vendor executable ran.

@@ -7,7 +7,7 @@ private enum WindowOrderingLoopStep { case next, resubscribe, stop }
 // and for each event. Do not hold the owner across the idle iterator.next().
 func runWindowOrderingEventLoop<Owner: AnyObject, Window, Observer>(
     weakOwner: () -> Owner?, observedWindowIDs: (Owner) -> [UInt32],
-    makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping (Window, WindowServerEvent) -> Void) -> Observer,
+    makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer,
     handle: (Owner, Window, WindowServerEvent) async throws -> Void,
     reportError: (Error) -> Void) async {
     func process(_ event: (Window, WindowServerEvent), subscribedIDs: [UInt32]) async -> WindowOrderingLoopStep {

@@ -7,7 +7,7 @@ import AppKit
 // isolated lifetime checks. Production specialization below uses WindowServer.
 final class WindowOrderingObserver<Window, Observer, Application> {
     private let store: WindowOrderingObserverTaskStore<Task<Void, Never>>
-    private let makeObserver: ([UInt32], [WindowServerEvent], @escaping (Window, WindowServerEvent) -> Void) -> Observer
+    private let makeObserver: ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer
     private let restore: (Window, @escaping () -> [UInt32]) async throws -> Void
     private let windowOwnerPID: (UInt32) -> Int32?
     private let frontmostApplication: () -> Application?
@@ -16,7 +16,7 @@ final class WindowOrderingObserver<Window, Observer, Application> {
     private let reportError: (Error) -> Void
 
     init(observedWindowIDs: [UInt32],
-        makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping (Window, WindowServerEvent) -> Void) -> Observer,
+        makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer,
         restore: @escaping (Window, @escaping () -> [UInt32]) async throws -> Void,
         windowOwnerPID: @escaping (UInt32) -> Int32?, frontmostApplication: @escaping () -> Application?,
         processIdentifier: @escaping (Application) -> Int32,
@@ -58,7 +58,7 @@ typealias NativeWindowOrderingObserver = WindowOrderingObserver<NativeWindowDesc
 extension WindowOrderingObserver where Window == NativeWindowDescription, Observer == NativeCGWindowObserver, Application == NSRunningApplication {
     convenience init(observedWindowIDs: [UInt32], reportError: @escaping (Error) -> Void) {
         self.init(observedWindowIDs: observedWindowIDs,
-            makeObserver: { NativeCGWindowObserver(windowIDs: $0, events: $1, handler: $2) },
+            makeObserver: { NativeCGWindowObserver(windowIDs: $0, events: $1, eventHandler: $2) },
             restore: { try await restoreNativeWindowOrderingAfterChange($0, observedWindowIDs: $1, reportError: reportError) },
             windowOwnerPID: { systemNativeWindowDescription($0)?.ownerPID },
             frontmostApplication: { NSWorkspace.shared.frontmostApplication }, processIdentifier: { $0.processIdentifier },

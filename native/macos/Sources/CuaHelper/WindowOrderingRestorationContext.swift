@@ -18,7 +18,7 @@ func windowOrderingRestorationContext<Application, Window>(windowID: UInt32, own
 // array holds declaration tag 8 (didChangeOrder); imported enum-case metadata
 // identifies bufferingNewest and its stored capacity is one.
 func orderingWindowEventStream<Window, Observer>(observedWindowIDs: [UInt32],
-    makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping (Window, WindowServerEvent) -> Void) -> Observer)
+    makeObserver: @escaping ([UInt32], [WindowServerEvent], @escaping @Sendable (Window, WindowServerEvent) -> Void) -> Observer)
     -> CGWindowEventStream<Window, Observer> {
     CGWindowEventStream(windowIDs: observedWindowIDs, events: [.didChangeOrder],
         bufferingPolicy: .bufferingNewest(1), makeObserver: makeObserver)

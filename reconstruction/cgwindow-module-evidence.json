@@ -12,7 +12,7 @@
   "limits": [
     "Dictionary initializer/raw description helper are extracted public boundaries; original initializer access level not claimed",
     "No original memory layout/ABI parity claim",
-    "snapshot/observer coverage remains incomplete",
+    "snapshot/original EventStream and real observer notification coverage remains incomplete",
     "No actual native window query acceptance"
   ],
   "enumeration": {
@@ -45,5 +45,23 @@
     ],
     "validation": "native build34.09s; static original callsites; linked injected preference/order/tie/no-overlap/empty checks and compile-only real API surfaces",
     "limits": "MainActor retained from existing adapter/SDK boundary; original annotation not established; real NSScreen/backing scale behavior not executed"
+  },
+  "observerAlignment": {
+    "source": "native/macos/Sources/SystemSoftware/CGWindowNotification.swift",
+    "original": "Observer allocating init2584c4, deinit258580, composition259710",
+    "changes": [
+      "Original nested CGWindow.Observer and observe(events:eventHandler:) added",
+      "Direct events/callbackID storage replaces extra registration resource object in production",
+      "Registry/registration testing seam/dispatch moved to SystemSoftware",
+      "Snapshot duplicate-ID later nil now removes previous value as original initializer does",
+      "Sendable eventHandler propagated through ordering/stream factories"
+    ],
+    "validation": "scripts/audit-cgwindow-observer.py; linked observer fixture (32-byte class metadata, registry, injected registration and dispatch, snapshot overwrite/remove); no production SPI calls",
+    "limits": [
+      "Concrete init/deinit private notifications not executed",
+      "Generic registration resource test is not runtime proof of concrete Observer",
+      "Original nested EventStream and snapshot APIs remain incomplete",
+      "Typealiases remain in CuaHelper during caller migration"
+    ]
   }
 }
