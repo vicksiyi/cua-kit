@@ -2,7 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, chmod, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { readNativePermissions, parseNativePermissions, nativePermissionsContext } from "../packages/agent-loop/src/native-permissions";
+import { readNativePermissions, parseNativePermissions, nativePermissionsContext, nativeAppPolicyContext, standaloneAppPolicyDenialHint } from "../packages/agent-loop/src/native-permissions";
+
+test("local policy guidance explains wildcard precedence and separates policy from consent",()=>{
+  assert.match(nativeAppPolicyContext({}),/Unlisted apps are denied by default/);
+  const context=nativeAppPolicyContext({'*':{decision:'allowed'},'com.core.denied':{decision:'denied'}});
+  assert.match(context,/wildcard default \(allowed\)/);
+  assert.match(context,/exact per-app rules take priority/);
+  assert.match(context,/only enables requesting user approval/);
+  assert.doesNotMatch(context,/Unlisted apps are denied by default/);
+  assert.match(standaloneAppPolicyDenialHint("Computer Use is blocked from using the app 'com.openai.codex' by your organization's policy.")!,/精确规则及 \* 默认规则/);
+});
 
 test("permission evidence requires exact booleans and a nonprompting probe",()=>{
   for(const value of [null,{},[],{accessibility:true,screenRecording:true},{accessibility:"false",screenRecording:true,requested:false},{accessibility:true,screenRecording:true,requested:true}])

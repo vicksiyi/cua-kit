@@ -348,7 +348,8 @@ async fn host_callbacks_preserve_denial_metadata_config_and_media() {
     let (fixture, session) = fixture();
     std::fs::write(fixture.root.join("service.mjs"),r#"
 export async function handleRpc(x){
- if(x.ask)return await nodeRepl.withSuspendedTimeout(()=>nodeRepl.createElicitation({message:'fixture decision'}));
+ if(x.ask)return await nodeRepl.createElicitation({message:'fixture decision'});
+ if(x.wrapped)return await nodeRepl.withSuspendedTimeout(()=>nodeRepl.createElicitation({message:'fixture decision'}));
  if(x.config)return await nodeRepl.config.read();
  return 'ready';
 }"#).unwrap();
@@ -395,6 +396,16 @@ export async function handleRpc(x){
         .unwrap();
     assert_eq!(result["ok"], true, "{result}");
     assert!(result["output"].as_str().unwrap().contains("decline"));
+    let wrapped = session
+        .execute(
+            "nodeRepl.write(await nodeRepl.rpc('fixture',{wrapped:true}))",
+            Duration::from_millis(150),
+            Value::Null,
+            None,
+        )
+        .await
+        .unwrap();
+    assert_eq!(wrapped["ok"], true, "{wrapped}");
     let config = run(
         &mut session,
         "nodeRepl.write(await nodeRepl.rpc('fixture',{config:true}))",
@@ -411,10 +422,55 @@ export async function handleRpc(x){
         .iter()
         .any(|item| item["text"] == "fixture host processed media"));
     let calls = observed.lock().unwrap();
-    assert_eq!(calls.len(), 3);
+    assert_eq!(calls.len(), 4);
     assert_eq!(calls[0].1, json!({"trusted_host":42}));
     assert_eq!(calls[0].0["exec_id"], calls[0].2);
     drop(calls);
+    session.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn cancellation_interrupts_human_approval_and_discards_worker_state() {
+    use core_runtime_supervisor::host::HostReply;
+    use std::sync::Arc;
+    let (fixture, session) = fixture();
+    std::fs::write(fixture.root.join("service.mjs"),
+        "export async function handleRpc(){return await nodeRepl.createElicitation({message:'fixture'});}").unwrap();
+    let entered = Arc::new(tokio::sync::Notify::new());
+    let notify = entered.clone();
+    let mut session = session.with_host_handler(
+        Arc::new(move |_| {
+            let notify = notify.clone();
+            Box::pin(async move {
+                notify.notify_one();
+                std::future::pending::<Result<HostReply, String>>().await
+            })
+        }),
+        true,
+    );
+    run(&mut session, "let approvalState=1").await;
+    let (send, recv) = oneshot::channel();
+    tokio::spawn(async move {
+        entered.notified().await;
+        let _ = send.send(());
+    });
+    let error = timeout(
+        Duration::from_secs(5),
+        session.execute(
+            "await nodeRepl.rpc('fixture',{})",
+            Duration::from_millis(150),
+            Value::Null,
+            Some(recv),
+        ),
+    )
+    .await
+    .unwrap()
+    .unwrap_err();
+    assert!(error.contains("cancelled"), "{error}");
+    assert_eq!(
+        run(&mut session, "nodeRepl.write(typeof approvalState)").await["output"],
+        "undefined"
+    );
     session.close().await.unwrap();
 }
 
@@ -777,9 +833,7 @@ async fn restored_worker_fetch_uses_native_service_and_real_owned_http() {
             let mut byte = [0];
             socket.read_exact(&mut byte).await.unwrap();
             request.push(byte[0]);
-            if request.ends_with(b"\r\n\r\n") {
-                break;
-            }
+            if request.ends_with(b"\r\n\r\n") { break; }
             assert!(request.len() < 8192);
         }
         assert!(String::from_utf8(request)
@@ -793,7 +847,9 @@ async fn restored_worker_fetch_uses_native_service_and_real_owned_http() {
             let mut byte = [0];
             socket.read_exact(&mut byte).await.unwrap();
             request.push(byte[0]);
-            if request.ends_with(b"\r\n\r\n") { break; }
+            if request.ends_with(b"\r\n\r\n") {
+                break;
+            }
             assert!(request.len() < 8192);
         }
         let headers = String::from_utf8(request).unwrap().to_ascii_lowercase();
@@ -803,7 +859,10 @@ async fn restored_worker_fetch_uses_native_service_and_real_owned_http() {
         let mut body = [0; 4];
         socket.read_exact(&mut body).await.unwrap();
         assert_eq!(body, [0, 127, 128, 255]);
-        socket.write_all(b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n").await.unwrap();
+        socket
+            .write_all(b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n")
+            .await
+            .unwrap();
     });
     let (fixture, session) = fixture();
     std::fs::write(fixture.root.join("config.toml"), "").unwrap();

@@ -13,7 +13,7 @@ use std::{
 pub struct NativeServiceOptions {
     pub helper: PathBuf,
     pub directory: PathBuf,
-    /// Explicit standalone native policy; absent bundle IDs are denied.
+    /// Explicit standalone native policy; '*' is an opt-in fallback for unlisted apps.
     #[serde(default, deserialize_with = "deserialize_app_policy")]
     pub app_policy: Option<BTreeMap<String, AppPolicyRule>>,
     #[serde(default)]

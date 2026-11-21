@@ -55,9 +55,9 @@ extension Target {
         guard CGPreflightScreenCaptureAccess() else { throw fail("PERMISSION_DENIED", "Screen Recording permission is required; no permission prompt was requested.") }
         initializeNativeGraphics()
         do {
-            let content = try await screenshotShareableContent(currentProcessOnly: false, includedWindowIDs: nil)
+            let capture = try await applicationCaptureContent(processID: app.processIdentifier)
             try validateIdentity()
-            return (content, content.windows.filter { $0.owningApplication?.processID == app.processIdentifier && $0.frame.width > 0 && $0.frame.height > 0 })
+            return capture
         } catch let error as Failure { throw error }
           catch { throw fail("PROVIDER_DISCONNECTED", "Window enumeration failed: \(error.localizedDescription)") }
     }

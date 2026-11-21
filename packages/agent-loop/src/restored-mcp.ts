@@ -35,7 +35,7 @@ try {
   runtime = await prepareRestoredRuntime(
     await readRuntimeEnvironment(),
     process.env.CUA_RUNTIME_SUPERVISOR,
-    undefined,
+    process.env.CUA_MCP_SESSION_ID,
     controller.signal,
   );
   controller.signal.throwIfAborted();

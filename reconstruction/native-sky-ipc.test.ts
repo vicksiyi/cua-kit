@@ -30,6 +30,32 @@ const policyRules={
  'com.core.fixture.allowed':{decision:'allowed',risk:'low',allowPersistentApproval:true},
  'com.core.fixture.forbidden':{decision:'forbidden',risk:'high',allowPersistentApproval:false,warningSubtitle:'Fixture rule'},
 };
+test('standalone wildcard policy is a fallback and exact denied or forbidden rules win', {skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:10000}, async t=>{
+ const f=await fixture(t,{
+  '*':{decision:'allowed',risk:'high',allowPersistentApproval:false},
+  'com.core.fixture.denied':{decision:'denied',risk:'low',allowPersistentApproval:false},
+  'com.core.fixture.forbidden':{decision:'forbidden',risk:'high',allowPersistentApproval:false},
+  'com.core.fixture.exact':{decision:'allowed',risk:'low',allowPersistentApproval:true},
+ });
+ const before=(globalThis as any).nodeRepl;
+ (globalThis as any).nodeRepl={env:{SKY_CUA_SERVICE_NATIVE_PIPE_PATH:f.path},nativePipe:{createConnection:f.open}};
+ try{
+  const client=new MacComputerUseClient();
+  for(const [id,decision,risk,persistent] of [
+   ['com.core.fixture.unlisted','allowed','high',false],
+   ['com.openai.codex','allowed','high',false],
+   ['com.core.fixture.denied','denied','low',false],
+   ['com.core.fixture.forbidden','forbidden','high',false],
+   ['com.core.fixture.exact','allowed','low',true],
+  ] as const){
+   const path=await appFixture(f.root,id);
+   const policy=await client.getAppPolicy(path);
+   assert.equal(policy.decision,decision);
+   assert.equal(policy.target.risk,risk);
+   assert.equal(policy.allowPersistentApproval,persistent);
+  }
+ }finally{(globalThis as any).nodeRepl=before;}
+});
 for(const source of ['restored','installed'] as const) test(`Swift IPC accepts ${source} Sky client handshake and app inventory`,{skip:process.platform!=='darwin'||process.env.CUA_TEST_NATIVE_SKY_IPC!=='1',timeout:10000},async t=>{
  const f=await fixture(t,policyRules);
  const before=(globalThis as any).nodeRepl;

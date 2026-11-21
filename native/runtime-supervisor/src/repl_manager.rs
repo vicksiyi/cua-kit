@@ -439,6 +439,9 @@ async fn route(
     let mut content_bytes = 0usize;
     let mut rpc = HashSet::new();
     let mut depth = 0usize;
+    // Human confirmation is host work, not submitted JavaScript execution.
+    // Keep this separate from explicit (possibly nested) suspension controls.
+    let mut approvals = HashSet::new();
     loop {
         let expiry = async {
             match deadline {
@@ -452,6 +455,9 @@ async fn route(
             _=expiry=>return Err("Execution timed out; worker state discarded".into()),
             completed=host_tasks.join_next(), if !host_tasks.is_empty()=>{
                 let (trusted,request_id,result)=completed.ok_or("Missing host task")?.map_err(|e|e.to_string())?;
+                if trusted && approvals.remove(&request_id) && approvals.is_empty() && depth == 0 {
+                    deadline = Some(Instant::now() + remaining);
+                }
                 let mut response=match result {
                     Ok(reply)=>{
                         if !reply.message.is_object(){return Err("Host reply must be an object".into());}
@@ -511,6 +517,16 @@ async fn route(
                     return Err("Duplicate or excessive host request identities".into());
                 }
                 let request_id = request_id.to_string();
+                if trusted && kind == "elicit" {
+                    if approvals.is_empty() && depth == 0 {
+                        remaining = deadline.unwrap().saturating_duration_since(Instant::now());
+                        if remaining.is_zero() {
+                            return Err("Execution timed out; worker state discarded".into());
+                        }
+                        deadline = None;
+                    }
+                    approvals.insert(request_id.clone());
+                }
                 let handler = host_handler.cloned();
                 let context = HostRequest {
                     message,
@@ -651,7 +667,7 @@ async fn route(
                     return Err("Uncorrelated timeout control".into());
                 }
                 if kind == "suspend_timeout" {
-                    if depth == 0 {
+                    if depth == 0 && approvals.is_empty() {
                         remaining = deadline.unwrap().saturating_duration_since(Instant::now());
                         if remaining.is_zero() {
                             return Err("Execution timed out; worker state discarded".into());
@@ -664,7 +680,7 @@ async fn route(
                         return Err("Unbalanced timeout resume".into());
                     }
                     depth -= 1;
-                    if depth == 0 {
+                    if depth == 0 && approvals.is_empty() {
                         deadline = Some(Instant::now() + remaining);
                     }
                 }

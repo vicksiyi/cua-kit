@@ -54,7 +54,9 @@ struct SkyAppPolicy {
         }
         catch { throw SkyRPCFailure(code: -10010, message: reference) }
         let identifier = app["bundleId"] as! String
-        let rule = rules[identifier] ?? SkyAppRule(decision: "denied", risk: "high", allowPersistentApproval: false, warningSubtitle: nil)
+        // An explicit standalone default makes unlisted apps eligible for the
+        // caller's approval flow. Exact rules, including denials, take priority.
+        let rule = rules[identifier] ?? rules["*"] ?? SkyAppRule(decision: "denied", risk: "high", allowPersistentApproval: false, warningSubtitle: nil)
         var target: [String: Any] = ["appPath": app["path"]!, "bundleIdentifier": identifier,
             "displayName": app["name"]!, "risk": rule.risk]
         if let warning = rule.warningSubtitle { target["warningSubtitle"] = warning }

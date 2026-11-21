@@ -28,8 +28,11 @@ export function nativePermissionsContext(status: NativePermissions): string {
 }
 
 export function nativeAppPolicyContext(policy: Record<string, {decision?: string}>): string {
-  const allowed = Object.entries(policy).filter(([,rule]) => rule?.decision === "allowed").map(([id]) => id);
-  return `This standalone demo uses local CORE_CUA_APP_POLICY configuration. Unlisted apps are denied by default. Configured allowed bundle IDs: ${JSON.stringify(allowed)}. `
+  const allowed = Object.entries(policy).filter(([id,rule]) => id !== "*" && rule?.decision === "allowed").map(([id]) => id);
+  const fallback = policy["*"]?.decision;
+  const defaultRule = fallback === undefined ? "Unlisted apps are denied by default."
+    : `Unlisted apps use the explicit wildcard default (${fallback}); exact per-app rules take priority. An allowed policy result only enables requesting user approval.`;
+  return `This standalone demo uses local CORE_CUA_APP_POLICY configuration. ${defaultRule} Configured allowed bundle IDs: ${JSON.stringify(allowed)}. `
     + "Local policy allowance, macOS Accessibility permission, macOS Screen Recording permission, and interactive App approval are separate, jointly required prerequisites for this demo's native UI observation. Fixing only one missing prerequisite is insufficient. A source error mentioning organization policy is generic wording; it does not prove this Mac is managed by an organization or that an administrator blocked the app. Explain the actual local configuration, do not invent an organization administrator. Do not attempt native operations for apps not allowed by this configuration; ask the user to configure their intended App policy explicitly. Never edit the policy or switch access paths to retry a denied action.";
 }
 
@@ -37,7 +40,7 @@ export function nativeAppPolicyContext(policy: Record<string, {decision?: string
 export function standaloneAppPolicyDenialHint(text: string): string | undefined {
   const match = /Computer Use is blocked from using the app '([^'\r\n]+)' by your organization's policy\./.exec(text);
   if (!match) return undefined;
-  return `本独立 demo 使用本地 CORE_CUA_APP_POLICY；上述 organization policy 是通用错误文案，不证明设备受组织管理。应用 ${match[1]} 的策略结果为 denied（未配置的应用也默认拒绝）。请由配置所有者检查该应用规则；自动审核参数不会覆盖此拒绝。尚未执行本次受阻的应用操作。`;
+  return `本独立 demo 使用本地 CORE_CUA_APP_POLICY；上述 organization policy 是通用错误文案，不证明设备受组织管理。应用 ${match[1]} 的策略结果为 denied。请由配置所有者检查该应用的精确规则及 * 默认规则；没有匹配规则时默认拒绝，自动审核参数不会覆盖拒绝。尚未执行本次受阻的应用操作。`;
 }
 
 /** The app-server provider supplies effective policy; no local allow-list is inferred. */
